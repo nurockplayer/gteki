@@ -18,6 +18,7 @@ type V3 = [number, number, number];
 interface Entry {
   id: string;
   generator: string;
+  anchor: string;
   params: Record<string, unknown>;
   dimension_basis: string;
   notes: string;
@@ -72,6 +73,9 @@ describe("kit_catalog.json", () => {
     expect(placed.summary.unique_ids).toBe(ids.length);
     for (const a of catalog.assets) {
       expect(["stair_dressing", "escalator_dressing"]).toContain(a.generator);
+      // Placement class (docs/assets/asset-contract.md): stairs and escalators are linear runs, so the Godot and
+      // validate checks are the linear_run ones, not the generic floor-pivot defaults.
+      expect(a.anchor, a.id).toBe("linear_run");
       expect(a.tags.length).toBeGreaterThan(0);
     }
   });

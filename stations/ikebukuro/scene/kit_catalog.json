@@ -1,11 +1,12 @@
 {
  "catalog": "gteki-ikebukuro",
  "version": "0.1.0",
- "notes": "Ikebukuro stair and escalator dressing, parameterised from scene/dressing_anchors.json by stations/ikebukuro/pipeline/build_kit_catalog.py (do not edit by hand). Every entry is station-verified and cites its anchors and PLATEAU GML hashes. Stairs are split into a nosing GLB (one bake role) and a rails GLB. Origins and yaw per anchor are in kit_placements.json. Contains PLATEAU data (MLIT), CC BY 4.0, modified.",
+ "notes": "Ikebukuro stair and escalator dressing, parameterised from scene/dressing_anchors.json by stations/ikebukuro/pipeline/build_kit_catalog.py (do not edit by hand). Every entry is station-verified and cites its anchors and PLATEAU GML hashes. Stairs are split into a nosing GLB (one bake role) and a rails GLB. Origins and yaw per anchor are in kit_placements.json. Contains PLATEAU data (MLIT), modified; terms per the PLATEAU Site Policy §3 (#161).",
  "assets": [
   {
    "id": "gteki_ik_escalator_w1009_rise2210_a2193",
    "generator": "escalator_dressing",
+   "anchor": "linear_run",
    "params": {
     "rise_mm": 2210,
     "width_mm": 1009,
@@ -30,6 +31,7 @@
   {
    "id": "gteki_ik_escalator_w1093_rise5838_a2840",
    "generator": "escalator_dressing",
+   "anchor": "linear_run",
    "params": {
     "rise_mm": 5838,
     "width_mm": 1093,
@@ -54,6 +56,7 @@
   {
    "id": "gteki_ik_escalator_w709_rise4388_a2856",
    "generator": "escalator_dressing",
+   "anchor": "linear_run",
    "params": {
     "rise_mm": 4388,
     "width_mm": 709,
@@ -78,6 +81,7 @@
   {
    "id": "gteki_ik_escalator_w986_rise4388_a2856",
    "generator": "escalator_dressing",
+   "anchor": "linear_run",
    "params": {
     "rise_mm": 4388,
     "width_mm": 986,
@@ -102,6 +106,7 @@
   {
    "id": "gteki_ik_escalator_w990_rise2210_a2193",
    "generator": "escalator_dressing",
+   "anchor": "linear_run",
    "params": {
     "rise_mm": 2210,
     "width_mm": 990,
@@ -126,6 +131,7 @@
   {
    "id": "gteki_ik_stair_n10_r147_t302_w10522_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 10,
     "riser_mm": 147,
@@ -147,6 +153,7 @@
   {
    "id": "gteki_ik_stair_n10_r147_t302_w10522_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 10,
     "riser_mm": 147,
@@ -171,6 +178,7 @@
   {
    "id": "gteki_ik_stair_n10_r161_t307_w3512_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 10,
     "riser_mm": 161,
@@ -192,6 +200,7 @@
   {
    "id": "gteki_ik_stair_n10_r161_t307_w3512_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 10,
     "riser_mm": 161,
@@ -216,6 +225,7 @@
   {
    "id": "gteki_ik_stair_n10_r162_t302_w4817_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 10,
     "riser_mm": 162,
@@ -237,6 +247,7 @@
   {
    "id": "gteki_ik_stair_n10_r162_t302_w4817_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 10,
     "riser_mm": 162,
@@ -261,6 +272,7 @@
   {
    "id": "gteki_ik_stair_n11_r166_t329_w1912_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 11,
     "riser_mm": 166,
@@ -282,6 +294,7 @@
   {
    "id": "gteki_ik_stair_n11_r166_t329_w1912_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 11,
     "riser_mm": 166,
@@ -306,6 +319,7 @@
   {
    "id": "gteki_ik_stair_n11_r170_t323_w2887_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 11,
     "riser_mm": 170,
@@ -327,6 +341,7 @@
   {
    "id": "gteki_ik_stair_n11_r170_t323_w2887_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 11,
     "riser_mm": 170,
@@ -351,6 +366,7 @@
   {
    "id": "gteki_ik_stair_n11_r173_t270_w8182_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 11,
     "riser_mm": 173,
@@ -372,6 +388,7 @@
   {
    "id": "gteki_ik_stair_n11_r173_t270_w8182_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 11,
     "riser_mm": 173,
@@ -396,6 +413,7 @@
   {
    "id": "gteki_ik_stair_n12_r165_t301_w4817_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 12,
     "riser_mm": 165,
@@ -417,6 +435,7 @@
   {
    "id": "gteki_ik_stair_n12_r165_t301_w4817_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 12,
     "riser_mm": 165,
@@ -441,6 +460,7 @@
   {
    "id": "gteki_ik_stair_n12_r168_t333_w2941_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 12,
     "riser_mm": 168,
@@ -462,6 +482,7 @@
   {
    "id": "gteki_ik_stair_n12_r168_t333_w2941_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 12,
     "riser_mm": 168,
@@ -486,6 +507,7 @@
   {
    "id": "gteki_ik_stair_n12_r171_t319_w2400_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 12,
     "riser_mm": 171,
@@ -507,6 +529,7 @@
   {
    "id": "gteki_ik_stair_n12_r171_t319_w2400_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 12,
     "riser_mm": 171,
@@ -531,6 +554,7 @@
   {
    "id": "gteki_ik_stair_n12_r173_t264_w2738_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 12,
     "riser_mm": 173,
@@ -552,6 +576,7 @@
   {
    "id": "gteki_ik_stair_n12_r173_t264_w2738_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 12,
     "riser_mm": 173,
@@ -576,6 +601,7 @@
   {
    "id": "gteki_ik_stair_n13_r158_t302_w2309_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 13,
     "riser_mm": 158,
@@ -597,6 +623,7 @@
   {
    "id": "gteki_ik_stair_n13_r158_t302_w2309_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 13,
     "riser_mm": 158,
@@ -621,6 +648,7 @@
   {
    "id": "gteki_ik_stair_n13_r162_t304_w3111_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 13,
     "riser_mm": 162,
@@ -642,6 +670,7 @@
   {
    "id": "gteki_ik_stair_n13_r162_t304_w3111_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 13,
     "riser_mm": 162,
@@ -666,6 +695,7 @@
   {
    "id": "gteki_ik_stair_n13_r163_t300_w3008_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 13,
     "riser_mm": 163,
@@ -687,6 +717,7 @@
   {
    "id": "gteki_ik_stair_n13_r163_t300_w3008_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 13,
     "riser_mm": 163,
@@ -711,6 +742,7 @@
   {
    "id": "gteki_ik_stair_n13_r165_t302_w8323_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 13,
     "riser_mm": 165,
@@ -732,6 +764,7 @@
   {
    "id": "gteki_ik_stair_n13_r165_t302_w8323_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 13,
     "riser_mm": 165,
@@ -756,6 +789,7 @@
   {
    "id": "gteki_ik_stair_n13_r168_t330_w1845_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 13,
     "riser_mm": 168,
@@ -777,6 +811,7 @@
   {
    "id": "gteki_ik_stair_n13_r168_t330_w1845_rails_post",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 13,
     "riser_mm": 168,
@@ -801,6 +836,7 @@
   {
    "id": "gteki_ik_stair_n13_r169_t329_w1845_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 13,
     "riser_mm": 169,
@@ -822,6 +858,7 @@
   {
    "id": "gteki_ik_stair_n13_r169_t329_w1845_rails_post",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 13,
     "riser_mm": 169,
@@ -846,6 +883,7 @@
   {
    "id": "gteki_ik_stair_n14_r163_t300_w1806_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 14,
     "riser_mm": 163,
@@ -867,6 +905,7 @@
   {
    "id": "gteki_ik_stair_n14_r163_t300_w1806_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 14,
     "riser_mm": 163,
@@ -891,6 +930,7 @@
   {
    "id": "gteki_ik_stair_n15_r160_t331_w3868_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 15,
     "riser_mm": 160,
@@ -912,6 +952,7 @@
   {
    "id": "gteki_ik_stair_n15_r160_t331_w3868_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 15,
     "riser_mm": 160,
@@ -936,6 +977,7 @@
   {
    "id": "gteki_ik_stair_n15_r164_t308_w8376_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 15,
     "riser_mm": 164,
@@ -957,6 +999,7 @@
   {
    "id": "gteki_ik_stair_n15_r164_t308_w8376_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 15,
     "riser_mm": 164,
@@ -981,6 +1024,7 @@
   {
    "id": "gteki_ik_stair_n16_r155_t331_w3868_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 16,
     "riser_mm": 155,
@@ -1002,6 +1046,7 @@
   {
    "id": "gteki_ik_stair_n16_r155_t331_w3868_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 16,
     "riser_mm": 155,
@@ -1026,6 +1071,7 @@
   {
    "id": "gteki_ik_stair_n16_r164_t297_w2741_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 16,
     "riser_mm": 164,
@@ -1047,6 +1093,7 @@
   {
    "id": "gteki_ik_stair_n16_r164_t297_w2741_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 16,
     "riser_mm": 164,
@@ -1071,6 +1118,7 @@
   {
    "id": "gteki_ik_stair_n16_r173_t302_w3038_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 16,
     "riser_mm": 173,
@@ -1092,6 +1140,7 @@
   {
    "id": "gteki_ik_stair_n16_r173_t302_w3038_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 16,
     "riser_mm": 173,
@@ -1116,6 +1165,7 @@
   {
    "id": "gteki_ik_stair_n16_r174_t303_w2984_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 16,
     "riser_mm": 174,
@@ -1137,6 +1187,7 @@
   {
    "id": "gteki_ik_stair_n16_r174_t303_w2984_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 16,
     "riser_mm": 174,
@@ -1161,6 +1212,7 @@
   {
    "id": "gteki_ik_stair_n16_r178_t299_w1515_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 16,
     "riser_mm": 178,
@@ -1182,6 +1234,7 @@
   {
    "id": "gteki_ik_stair_n16_r178_t299_w1515_rails_post",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 16,
     "riser_mm": 178,
@@ -1206,6 +1259,7 @@
   {
    "id": "gteki_ik_stair_n17_r174_t260_w2436_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 17,
     "riser_mm": 174,
@@ -1227,6 +1281,7 @@
   {
    "id": "gteki_ik_stair_n17_r174_t260_w2436_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 17,
     "riser_mm": 174,
@@ -1251,6 +1306,7 @@
   {
    "id": "gteki_ik_stair_n17_r176_t301_w1515_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 17,
     "riser_mm": 176,
@@ -1272,6 +1328,7 @@
   {
    "id": "gteki_ik_stair_n17_r176_t301_w1515_rails_post",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 17,
     "riser_mm": 176,
@@ -1296,6 +1353,7 @@
   {
    "id": "gteki_ik_stair_n17_r176_t301_w3054_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 17,
     "riser_mm": 176,
@@ -1317,6 +1375,7 @@
   {
    "id": "gteki_ik_stair_n17_r176_t301_w3054_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 17,
     "riser_mm": 176,
@@ -1341,6 +1400,7 @@
   {
    "id": "gteki_ik_stair_n18_r164_t320_w2411_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 18,
     "riser_mm": 164,
@@ -1362,6 +1422,7 @@
   {
    "id": "gteki_ik_stair_n18_r164_t320_w2411_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 18,
     "riser_mm": 164,
@@ -1386,6 +1447,7 @@
   {
    "id": "gteki_ik_stair_n18_r168_t328_w1904_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 18,
     "riser_mm": 168,
@@ -1407,6 +1469,7 @@
   {
    "id": "gteki_ik_stair_n18_r168_t328_w1904_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 18,
     "riser_mm": 168,
@@ -1431,6 +1494,7 @@
   {
    "id": "gteki_ik_stair_n18_r172_t300_w3054_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 18,
     "riser_mm": 172,
@@ -1452,6 +1516,7 @@
   {
    "id": "gteki_ik_stair_n18_r172_t300_w3054_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 18,
     "riser_mm": 172,
@@ -1476,6 +1541,7 @@
   {
    "id": "gteki_ik_stair_n19_r159_t328_w1968_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 19,
     "riser_mm": 159,
@@ -1497,6 +1563,7 @@
   {
    "id": "gteki_ik_stair_n19_r159_t328_w1968_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 19,
     "riser_mm": 159,
@@ -1521,6 +1588,7 @@
   {
    "id": "gteki_ik_stair_n19_r164_t298_w3008_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 19,
     "riser_mm": 164,
@@ -1542,6 +1610,7 @@
   {
    "id": "gteki_ik_stair_n19_r164_t298_w3008_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 19,
     "riser_mm": 164,
@@ -1566,6 +1635,7 @@
   {
    "id": "gteki_ik_stair_n19_r166_t323_w1966_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 19,
     "riser_mm": 166,
@@ -1587,6 +1657,7 @@
   {
    "id": "gteki_ik_stair_n19_r166_t323_w1966_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 19,
     "riser_mm": 166,
@@ -1611,6 +1682,7 @@
   {
    "id": "gteki_ik_stair_n19_r168_t328_w4347_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 19,
     "riser_mm": 168,
@@ -1632,6 +1704,7 @@
   {
    "id": "gteki_ik_stair_n19_r168_t328_w4347_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 19,
     "riser_mm": 168,
@@ -1656,6 +1729,7 @@
   {
    "id": "gteki_ik_stair_n19_r170_t299_w3038_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 19,
     "riser_mm": 170,
@@ -1677,6 +1751,7 @@
   {
    "id": "gteki_ik_stair_n19_r170_t299_w3038_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 19,
     "riser_mm": 170,
@@ -1701,6 +1776,7 @@
   {
    "id": "gteki_ik_stair_n19_r176_t304_w2999_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 19,
     "riser_mm": 176,
@@ -1722,6 +1798,7 @@
   {
    "id": "gteki_ik_stair_n19_r176_t304_w2999_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 19,
     "riser_mm": 176,
@@ -1746,6 +1823,7 @@
   {
    "id": "gteki_ik_stair_n20_r141_t299_w3055_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 20,
     "riser_mm": 141,
@@ -1767,6 +1845,7 @@
   {
    "id": "gteki_ik_stair_n20_r141_t299_w3055_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 20,
     "riser_mm": 141,
@@ -1791,6 +1870,7 @@
   {
    "id": "gteki_ik_stair_n21_r142_t300_w3055_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 21,
     "riser_mm": 142,
@@ -1812,6 +1892,7 @@
   {
    "id": "gteki_ik_stair_n21_r142_t300_w3055_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 21,
     "riser_mm": 142,
@@ -1836,6 +1917,7 @@
   {
    "id": "gteki_ik_stair_n21_r164_t328_w2942_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 21,
     "riser_mm": 164,
@@ -1857,6 +1939,7 @@
   {
    "id": "gteki_ik_stair_n21_r164_t328_w2942_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 21,
     "riser_mm": 164,
@@ -1881,6 +1964,7 @@
   {
    "id": "gteki_ik_stair_n3_r125_t316_w3065_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 3,
     "riser_mm": 125,
@@ -1902,6 +1986,7 @@
   {
    "id": "gteki_ik_stair_n3_r125_t316_w3065_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 3,
     "riser_mm": 125,
@@ -1926,6 +2011,7 @@
   {
    "id": "gteki_ik_stair_n3_r160_t299_w3929_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 3,
     "riser_mm": 160,
@@ -1947,6 +2033,7 @@
   {
    "id": "gteki_ik_stair_n3_r160_t299_w3929_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 3,
     "riser_mm": 160,
@@ -1971,6 +2058,7 @@
   {
    "id": "gteki_ik_stair_n3_r167_t202_w2436_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 3,
     "riser_mm": 167,
@@ -1992,6 +2080,7 @@
   {
    "id": "gteki_ik_stair_n3_r167_t202_w2436_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 3,
     "riser_mm": 167,
@@ -2016,6 +2105,7 @@
   {
    "id": "gteki_ik_stair_n3_r187_t259_w1516_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 3,
     "riser_mm": 187,
@@ -2037,6 +2127,7 @@
   {
    "id": "gteki_ik_stair_n3_r187_t259_w1516_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 3,
     "riser_mm": 187,
@@ -2061,6 +2152,7 @@
   {
    "id": "gteki_ik_stair_n4_r144_t338_w3915_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 4,
     "riser_mm": 144,
@@ -2082,6 +2174,7 @@
   {
    "id": "gteki_ik_stair_n4_r144_t338_w3915_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 4,
     "riser_mm": 144,
@@ -2106,6 +2199,7 @@
   {
    "id": "gteki_ik_stair_n4_r175_t226_w2206_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 4,
     "riser_mm": 175,
@@ -2127,6 +2221,7 @@
   {
    "id": "gteki_ik_stair_n4_r175_t226_w2206_rails_post",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 4,
     "riser_mm": 175,
@@ -2151,6 +2246,7 @@
   {
    "id": "gteki_ik_stair_n4_r175_t226_w2215_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 4,
     "riser_mm": 175,
@@ -2172,6 +2268,7 @@
   {
    "id": "gteki_ik_stair_n4_r175_t226_w2215_rails_post",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 4,
     "riser_mm": 175,
@@ -2196,6 +2293,7 @@
   {
    "id": "gteki_ik_stair_n5_r161_t316_w2445_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 5,
     "riser_mm": 161,
@@ -2217,6 +2315,7 @@
   {
    "id": "gteki_ik_stair_n5_r161_t316_w2445_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 5,
     "riser_mm": 161,
@@ -2241,6 +2340,7 @@
   {
    "id": "gteki_ik_stair_n5_r166_t325_w2883_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 5,
     "riser_mm": 166,
@@ -2262,6 +2362,7 @@
   {
    "id": "gteki_ik_stair_n5_r166_t325_w2883_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 5,
     "riser_mm": 166,
@@ -2286,6 +2387,7 @@
   {
    "id": "gteki_ik_stair_n5_r174_t272_w2738_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 5,
     "riser_mm": 174,
@@ -2307,6 +2409,7 @@
   {
    "id": "gteki_ik_stair_n5_r174_t272_w2738_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 5,
     "riser_mm": 174,
@@ -2331,6 +2434,7 @@
   {
    "id": "gteki_ik_stair_n6_r152_t332_w2609_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 6,
     "riser_mm": 152,
@@ -2352,6 +2456,7 @@
   {
    "id": "gteki_ik_stair_n6_r152_t332_w2609_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 6,
     "riser_mm": 152,
@@ -2376,6 +2481,7 @@
   {
    "id": "gteki_ik_stair_n6_r177_t260_w1471_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 6,
     "riser_mm": 177,
@@ -2397,6 +2503,7 @@
   {
    "id": "gteki_ik_stair_n6_r177_t260_w1471_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 6,
     "riser_mm": 177,
@@ -2421,6 +2528,7 @@
   {
    "id": "gteki_ik_stair_n6_r180_t327_w6658_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 6,
     "riser_mm": 180,
@@ -2442,6 +2550,7 @@
   {
    "id": "gteki_ik_stair_n6_r180_t327_w6658_rails_post",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 6,
     "riser_mm": 180,
@@ -2466,6 +2575,7 @@
   {
    "id": "gteki_ik_stair_n7_r145_t316_w2923_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 7,
     "riser_mm": 145,
@@ -2487,6 +2597,7 @@
   {
    "id": "gteki_ik_stair_n7_r145_t316_w2923_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 7,
     "riser_mm": 145,
@@ -2511,6 +2622,7 @@
   {
    "id": "gteki_ik_stair_n7_r164_t300_w2554_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 7,
     "riser_mm": 164,
@@ -2532,6 +2644,7 @@
   {
    "id": "gteki_ik_stair_n7_r164_t300_w2554_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 7,
     "riser_mm": 164,
@@ -2556,6 +2669,7 @@
   {
    "id": "gteki_ik_stair_n7_r171_t326_w4230_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 7,
     "riser_mm": 171,
@@ -2577,6 +2691,7 @@
   {
    "id": "gteki_ik_stair_n7_r171_t326_w4230_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 7,
     "riser_mm": 171,
@@ -2601,6 +2716,7 @@
   {
    "id": "gteki_ik_stair_n8_r166_t333_w1912_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 8,
     "riser_mm": 166,
@@ -2622,6 +2738,7 @@
   {
    "id": "gteki_ik_stair_n8_r166_t333_w1912_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 8,
     "riser_mm": 166,
@@ -2646,6 +2763,7 @@
   {
    "id": "gteki_ik_stair_n9_r155_t314_w2954_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 9,
     "riser_mm": 155,
@@ -2667,6 +2785,7 @@
   {
    "id": "gteki_ik_stair_n9_r155_t314_w2954_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 9,
     "riser_mm": 155,
@@ -2691,6 +2810,7 @@
   {
    "id": "gteki_ik_stair_n9_r165_t292_w2698_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 9,
     "riser_mm": 165,
@@ -2712,6 +2832,7 @@
   {
    "id": "gteki_ik_stair_n9_r165_t292_w2698_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 9,
     "riser_mm": 165,
@@ -2736,6 +2857,7 @@
   {
    "id": "gteki_ik_stair_n9_r168_t299_w2206_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 9,
     "riser_mm": 168,
@@ -2757,6 +2879,7 @@
   {
    "id": "gteki_ik_stair_n9_r168_t299_w2206_rails_post",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 9,
     "riser_mm": 168,
@@ -2781,6 +2904,7 @@
   {
    "id": "gteki_ik_stair_n9_r168_t299_w2215_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 9,
     "riser_mm": 168,
@@ -2802,6 +2926,7 @@
   {
    "id": "gteki_ik_stair_n9_r168_t299_w2215_rails_post",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 9,
     "riser_mm": 168,
@@ -2826,6 +2951,7 @@
   {
    "id": "gteki_ik_stair_n9_r169_t308_w8615_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 9,
     "riser_mm": 169,
@@ -2847,6 +2973,7 @@
   {
    "id": "gteki_ik_stair_n9_r169_t308_w8615_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 9,
     "riser_mm": 169,
@@ -2871,6 +2998,7 @@
   {
    "id": "gteki_ik_stair_n9_r173_t329_w2887_nosing",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 9,
     "riser_mm": 173,
@@ -2892,6 +3020,7 @@
   {
    "id": "gteki_ik_stair_n9_r173_t329_w2887_rails_wall",
    "generator": "stair_dressing",
+   "anchor": "linear_run",
    "params": {
     "step_count": 9,
     "riser_mm": 173,

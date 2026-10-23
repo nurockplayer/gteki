@@ -386,7 +386,7 @@ def main(argv=None):
         flights = sorted(f["id"] for f, *_ in stair_groups[key])
         nosing_id = f"{base}_nosing"
         entries[nosing_id] = {
-            "id": nosing_id, "generator": "stair_dressing",
+            "id": nosing_id, "generator": "stair_dressing", "anchor": "linear_run",
             "params": {"step_count": n, "riser_mm": r, "tread_mm": t, "width_mm": w, "parts": ["nosing"]},
             "dimension_basis": "station-verified",
             "notes": (f"Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: {cite}. "
@@ -400,7 +400,7 @@ def main(argv=None):
             rails_key_flights.setdefault(rails_id, []).append(flight["id"])
             if rails_id not in entries:
                 entries[rails_id] = {
-                    "id": rails_id, "generator": "stair_dressing",
+                    "id": rails_id, "generator": "stair_dressing", "anchor": "linear_run",
                     "params": {"step_count": n, "riser_mm": r, "tread_mm": t, "width_mm": w, "parts": ["handrail"],
                                "handrail_sides": "both", "rail_mount": mount,
                                "rail_segments": RAIL_SEGMENTS},
@@ -439,7 +439,7 @@ def main(argv=None):
         eid = f"{ID_PREFIX}escalator_w{width}_rise{rise}_a{int(round(angle * 100))}"
         lanes = sorted(l["id"] for l, *_ in esc_groups[key])
         entries[eid] = {
-            "id": eid, "generator": "escalator_dressing",
+            "id": eid, "generator": "escalator_dressing", "anchor": "linear_run",
             "params": {"rise_mm": rise, "width_mm": width, "angle_deg": angle, "landing_mm": ESC_LANDING_MM,
                        "treads": True, "parts": list(ESC_PARTS)},
             "dimension_basis": "station-verified",
@@ -472,7 +472,7 @@ def main(argv=None):
         "notes": ("Ikebukuro stair and escalator dressing, parameterised from scene/dressing_anchors.json by "
                   "stations/ikebukuro/pipeline/build_kit_catalog.py (do not edit by hand). Every entry is station-verified and "
                   "cites its anchors and PLATEAU GML hashes. Stairs are split into a nosing GLB (one bake role) and a rails GLB. "
-                  "Origins and yaw per anchor are in kit_placements.json. Contains PLATEAU data (MLIT), CC BY 4.0, modified."),
+                  "Origins and yaw per anchor are in kit_placements.json. Contains PLATEAU data (MLIT), modified; terms per the PLATEAU Site Policy §3 (#161)."),
         "assets": assets,
     }
     placements.sort(key=lambda p: (p["kind"], p["anchor"]))
