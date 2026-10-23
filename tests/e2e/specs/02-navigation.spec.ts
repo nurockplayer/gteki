@@ -98,6 +98,7 @@ for (const key of STATIONS) {
     const stale = (await hooks.route(page))?.stale;
     const staleBadge = await card.locator(".badge.warn", { hasText: /Possibly outdated|情報が古い可能性/ }).isVisible();
     save(testInfo, `${key}-route-card.json`, { stale: stale ?? null, staleBadge });
+    expect.soft(typeof stale, "route() reports a freshness verdict").toBe("boolean");
     if (stale === true) expect.soft(staleBadge, "stale route says so on the card").toBe(true);
     await page.waitForTimeout(1200);
     await page.screenshot({ path: shotPath(testInfo, `${key}-03-route-card.png`) });

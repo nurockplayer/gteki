@@ -12,7 +12,7 @@ test.use({ trace: "off" });
  * Distances are horizontal, along the routed polyline, from the walker's projection onto it to the sign node's.
  * Skipped unless GTEKI_SIGN_READ=1; run on phone-chromium (low tier) one invocation at a time.
  */
-test.skip(!process.env.GTEKI_SIGN_READ, "set GTEKI_SIGN_READ=1 to run the Shinjuku sign readability probe");
+test.skip(process.env.GTEKI_SIGN_READ !== "1", "set GTEKI_SIGN_READ=1 to run the Shinjuku sign readability probe");
 
 const SIGNS = ["1ecbdf77f58f423fa3142d1b71e078bf", "2d2bc35b4043433da2914b2705ef69bb", "453ea111f1524cef8f3ac139bbf2e26b",
   "c2d390021c29442f86dda359e503febd", "e31954cbec9e4b1cac647326d5bcb4e4", "3516783a1d9c4dc1828424aa135173a6"];
@@ -57,9 +57,11 @@ for (const r of routes) {
       const z = n.position.z ?? (n as { renderZ?: number }).renderZ ?? 0;
       const a = along(wps, { x: n.position.x, y: n.position.y, z });
       return { id, node: n.id, s: Math.round(a.s * 10) / 10, off: Math.round(a.off * 10) / 10 };
-    }).filter((t) => t.s !== null && t.off !== null && t.off < 4);
+    });
+    const offRoute = targets.filter((t) => t.s === null || t.off === null || t.off >= 4).map((t) => ({ id: t.id, node: t.node, offM: t.off }));
+    const onRoute = targets.filter((t) => t.s !== null && t.off !== null && t.off < 4);
     const shots: { sign: string; standoffM: number; measuredM: number; file: string; avatar: Vec3; t: number }[] = [];
-    const pending = targets.flatMap((t) => STANDOFFS.filter((d) => t.s! - d > 0.5).map((d) => ({ sign: t.id, d, at: t.s! - d })));
+    const pending = onRoute.flatMap((t) => STANDOFFS.filter((d) => t.s! - d > 0.5).map((d) => ({ sign: t.id, d, at: t.s! - d })));
     await page.locator(".sheet .card.route button.primary").click();
     await expect.poll(() => guideMode(page)).toBe("guide");
     const t0 = Date.now();
@@ -71,7 +73,7 @@ for (const r of routes) {
         if (s >= p.at) {
           const file = shotPath(testInfo, `sign-${r.label}-${p.sign.slice(0, 8)}-${p.d}m.png`);
           await page.screenshot({ path: file });
-          const sign = targets.find((x) => x.id === p.sign)!;
+          const sign = onRoute.find((x) => x.id === p.sign)!;
           shots.push({ sign: p.sign, standoffM: p.d, measuredM: Math.round((sign.s! - s) * 10) / 10, file, avatar: av, t: Date.now() - t0 });
           pending.splice(i, 1);
         }
@@ -79,7 +81,9 @@ for (const r of routes) {
       await page.waitForTimeout(150);
     }
     const tier = await page.evaluate(() => (window as any).__gteki?.quality?.() ?? (window as any).__gteki?.sceneInfo?.()?.quality ?? null);
-    save(testInfo, `sign-read-${r.label}.json`, { project: testInfo.project.name, viewport: page.viewportSize(), tier, routeLengthM: Math.round(total), targets, missed: pending, shots });
+    save(testInfo, `sign-read-${r.label}.json`, { project: testInfo.project.name, viewport: page.viewportSize(), tier, routeLengthM: Math.round(total), targets: onRoute, notOnRoute: offRoute, missed: pending, shots });
+    // Readability is judged on the frames; this only guards against a run that shot nothing it was asked for.
+    expect.soft(pending, "every planned shot was taken").toEqual([]);
     expect.soft(shots.length, "shots taken").toBeGreaterThan(0);
   });
 }

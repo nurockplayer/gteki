@@ -46,11 +46,10 @@ for (const key of ["ikebukuro", "shinjuku"] as StationKey[]) {
     await expect.poll(() => hooks.mode(page)).toBe("guide");
     await selectFastTier(page);
     while (Date.now() - t0 < 200_000 && (await hooks.mode(page)) === "guide") { await sample(); await page.waitForTimeout(500); }
-    for (const [label, act] of [["first-person on", () => hud(/^First person$/).click()], ["first-person off", () => hud(/^First person$/).click()], ["overview", () => hud(/^Overview$/).click()]] as const) {
+    for (const act of [() => hud(/^First person$/).click(), () => hud(/^First person$/).click(), () => hud(/^Overview$/).click()]) {
       await act().catch(() => {});
       await page.waitForTimeout(800);
       await sample();
-      void label;
     }
     const rec = await stopFovRecorder(page);
 
