@@ -250,8 +250,12 @@ for (const key of STATIONS) {
       const cs = toSample({ t: 0, camera: end.camera as number[] | null, avatar: end.avatar as Vec3 | null, mode: end.mode as string | null, lens: null }, 0, k, wps);
       const sq = k.lensSqueeze;
       const wideCause = cs?.stepMode === "stairs" || cs?.stepMode === "escalator" ? cs.stepMode
-        : cs && sq.comfortDistance !== null && cs.pivotDistanceEst <= sq.comfortDistance + (sq.release ?? 0) ? `squeezed (pivot ${cs.pivotDistanceEst} m)` : null;
-      events.push({ ...a, expectedFov, kind, end, windowMs: settleMs, designSettleMs, wideCause, wideByDesign: false });
+        : cs && sq.comfortDistance !== null && cs.pivotDistanceEst > 0.05 && cs.pivotDistanceEst <= sq.comfortDistance + (sq.release ?? 0) ? `squeezed (pivot ${cs.pivotDistanceEst} m)` : null;
+      // Decided here (not at the assertion) so the saved JSON carries it.
+      const sceneFov = typeof end.sceneFov === "number" ? end.sceneFov : null;
+      const wideByDesign = expectedFov === declared.follow && declared.firstPerson !== null && sceneFov !== null && wideCause !== null
+        && a.endFov !== null && Math.abs(a.endFov - declared.firstPerson) <= FOV_TOL_DEG && Math.abs(sceneFov - a.endFov) <= FOV_TOL_DEG;
+      events.push({ ...a, expectedFov, kind, end, windowMs: settleMs, designSettleMs, wideCause, wideByDesign });
     };
 
     // Start guide: overview 60 -> follow.
@@ -291,11 +295,7 @@ for (const key of STATIONS) {
       // or ceilings squeeze the boom. A follow-mode end at exactly that wide lens passes only when the app's own
       // sceneInfo().fov reports the same lens AND the avatar is on a stair/escalator or the boom is squeezed (wideCause);
       // any other end value (including a mid-ease one) still fails.
-      const sceneFov = typeof e.end.sceneFov === "number" ? e.end.sceneFov : null;
-      const wideByDesign = e.expectedFov === declared.follow && declared.firstPerson !== null && sceneFov !== null && e.wideCause !== null
-        && Math.abs(e.endFov - declared.firstPerson) <= FOV_TOL_DEG && Math.abs(sceneFov - e.endFov) <= FOV_TOL_DEG;
-      e.wideByDesign = wideByDesign;
-      if (!wideByDesign) expect.soft(Math.abs(e.endFov - e.expectedFov), `${e.event}: final FOV ${e.endFov} vs declared ${e.expectedFov}`).toBeLessThanOrEqual(FOV_TOL_DEG);
+      if (!e.wideByDesign) expect.soft(Math.abs(e.endFov - e.expectedFov), `${e.event}: final FOV ${e.endFov} vs declared ${e.expectedFov}`).toBeLessThanOrEqual(FOV_TOL_DEG);
     }
   });
 }
