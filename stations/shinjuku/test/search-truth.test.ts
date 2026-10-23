@@ -292,7 +292,9 @@ describe("facility POIs trace to the GSI facility points", () => {
       expect(pts.some((f) => near(f, p.displayPosition!) < 0.02), p.id).toBe(true);
       const notes = p.notes!.map((n) => n.text).join(" ");
       expect(notes, p.id).toMatch(/代表点/);
-      expect(notes, p.id).toMatch(/not a door position/);
+      expect(notes, p.id).toMatch(/not the door/);
+      expect(notes, p.id).not.toMatch(/F\d{3}/);
+      expect(p.evidence!.method, p.id).toContain(`GSI ${pts.find((f) => near(f, p.displayPosition!) < 0.02)!.category}`);
     }
   });
 
@@ -309,12 +311,13 @@ describe("facility POIs trace to the GSI facility points", () => {
       const gsi = new Set(own.map((f) => f.ordinal));
       const agree = [...e27].every((o) => gsi.has(o)) && [...gsi].every((o) => e27.has(o));
       const note = p.notes!.map((n) => n.text).join(" ");
-      expect(note.includes("不一致"), p.id).toBe(!agree);
-      expect(note, p.id).toContain("F012");
+      expect(/確認できません|停止がありません/.test(note), p.id).toBe(!agree);
+      expect(p.evidence!.method, p.id).toContain("F012");
       if (!agree) mismatched.push(p.id);
     }
-    // Known result at import time: the B1–B3 lift has no F012 point on B3 (reported in the notes and the import report).
+    // Known result at import time: the B1–B3 lift has no F012 point on B3.
     expect(mismatched).toEqual(["poi:elevator:2"]);
+    expect(byCategory("elevator").find((p) => p.id === "poi:elevator:2")!.notes!.find((n) => n.lang === "ja")!.text).toContain("B3の停止は構内地図で確認できません");
   });
 
   it("names ticket gates per E27 gate cluster and counts every F106 point once, for its nearest cluster", () => {
@@ -326,12 +329,22 @@ describe("facility POIs trace to the GSI facility points", () => {
       const level = floors.get(g.floorId!)!.ordinal!;
       const sameLevel = gates.filter((o) => floors.get(o.floorId!)!.ordinal === level);
       const n = pts.filter((f) => f.ordinal === level && sameLevel.reduce((best, o) => (near(f, o.displayPosition!) < near(f, best.displayPosition!) ? o : best)) === g).length;
-      const ja = g.notes!.find((x) => x.lang === "ja")!.text, en = g.notes!.find((x) => x.lang === "en")!.text;
-      expect(ja, g.id).toContain(`が最寄りのものは${n}件です（各点は最寄りの1群だけに数えます）`);
-      expect(en, g.id).toContain(`, ${n} ${n === 1 ? "has" : "have"} this cluster as the nearest (each point is counted for one cluster only)`);
+      expect(g.evidence!.method, g.id).toContain(`F106 points nearest this cluster on this level: ${n}`);
       return n;
     });
     expect(counts.reduce((a, b) => a + b, 0)).toBe(pts.length); // no overlap, none lost
+    expect(counts).toEqual([1, 4, 1]);
+  });
+
+  it("keeps internal facility codes and cross-check jargon out of user-visible notes", () => {
+    for (const p of pois) {
+      for (const n of p.notes ?? []) {
+        expect(n.text, `${p.id} ${n.lang}`).not.toMatch(/\b[FB]\d{3}\b/);
+        expect(n.text, `${p.id} ${n.lang}`).not.toContain("GSI");
+        expect(n.text, `${p.id} ${n.lang}`).not.toContain("E27 gate link");
+        expect(n.text, `${p.id} ${n.lang}`).not.toContain("NWD");
+      }
+    }
   });
 
   it("matches the old POI count plus only source-backed additions", () => {
