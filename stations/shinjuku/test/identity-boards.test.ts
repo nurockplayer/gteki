@@ -4,7 +4,7 @@ import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
 import { buildStation, type BuiltStation } from "../scene/build.ts";
 import { pointInRings, soffitHeight, type Plan } from "../scene/layout.ts";
-import { IDENTITY_GENERATED, IDENTITY_SIZE, identityGlyphBox, type LocalBox } from "../scene/identity.ts";
+import { buildIdentityBoards, IDENTITY_GENERATED, IDENTITY_SIZE, identityGlyphBox, type LocalBox } from "../scene/identity.ts";
 import { stationSpawn } from "../scene/spawn.ts";
 import { followCameraEnvironment, LANE_CAMERA, spawnView } from "../app/src/spawn-view.ts";
 import { Player } from "../app/src/player.ts";
@@ -15,6 +15,8 @@ const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;
 const corners = (box: LocalBox) => [box.min[0], box.max[0]].flatMap((x) =>
   [box.min[1], box.max[1]].flatMap((y) => [box.min[2], box.max[2]].map((z) => new THREE.Vector3(x, y, z))));
+const worldFront = (board: THREE.Object3D) =>
+  new THREE.Vector3(...board.userData.gteki_identity.front as [number, number, number]).transformDirection(board.matrixWorld);
 
 describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
   let station: BuiltStation;
@@ -25,7 +27,9 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
   afterAll(() => station?.dispose());
 
   it("tags both readable faces of every spawn/gate board with valid local name boxes", () => {
-    const boards = station.signs.filter((o) => o.name.startsWith("identity:"));
+    const boards = station.identityBoards;
+    expect(station.signs.every((o) => o.name.startsWith("sign:") && !o.userData.gteki_identity)).toBe(true);
+    expect(boards.every((o) => !station.signs.includes(o))).toBe(true);
     expect(boards.map((o) => o.name)).toEqual(["identity:spawn", ...bundle.pois.filter((p) => p.category === "ticket_gate").map((p) => `identity:gate:${p.id}`)]);
     const tagged: THREE.Object3D[] = [];
     station.root.traverse((o) => { if (o.userData.gteki_identity) tagged.push(o); });
@@ -51,9 +55,103 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
     }
   });
 
+  it("keeps every pair of identity board centres more than 1 m apart", () => {
+    const boards = station.identityBoards;
+    const distances: { a: string; b: string; metres: number }[] = [];
+    for (let i = 0; i < boards.length; i++) for (let j = i + 1; j < boards.length; j++) {
+      const a = boards[i]!, b = boards[j]!;
+      const metres = a.getWorldPosition(new THREE.Vector3()).distanceTo(b.getWorldPosition(new THREE.Vector3()));
+      distances.push({ a: a.name, b: b.name, metres });
+      expect(metres, `${a.name} / ${b.name}`).toBeGreaterThan(1);
+    }
+    console.log(JSON.stringify({ identityBoardDistances: distances }));
+  });
+
+  it("faces within 20 degrees of each matched gate line normal or its reverse", () => {
+    const findings = bundle.pois.filter((p) => p.category === "ticket_gate").map((poi) => {
+      const board = station.identityBoards.find((o) => o.name === `identity:gate:${poi.id}`)!;
+      expect(board, poi.id).toBeDefined();
+      const z = station.layout.nodeZ.get(poi.connectorNodeIds[0]!)!;
+      const gate = station.layout.gates.filter((g) => Math.abs(g.center.z - z) < 0.3)
+        .sort((a, b) => Math.hypot(a.center.x - poi.displayPosition!.x, a.center.y - poi.displayPosition!.y)
+          - Math.hypot(b.center.x - poi.displayPosition!.x, b.center.y - poi.displayPosition!.y))[0]!;
+      expect(gate, poi.id).toBeDefined();
+      // GateLine.dir is the passenger-flow axis, perpendicular to the physical gate line.
+      // ENU (east, north, up) maps to Three (east, up, -north).
+      const normal = new THREE.Vector3(gate.dir.x, 0, -gate.dir.y).normalize();
+      const degrees = THREE.MathUtils.radToDeg(Math.acos(Math.min(1, Math.abs(worldFront(board).dot(normal)))));
+      return { board: board.name, gateEdgeId: gate.edgeId, degrees };
+    });
+    console.log(JSON.stringify({ identityGateAngles: findings }));
+    for (const finding of findings) {
+      expect(finding.degrees, `${finding.board} / ${finding.gateEdgeId}: ${finding.degrees} degrees`).toBeLessThanOrEqual(20);
+    }
+  });
+
+  it("gives every back face the opposite world front and an unmirrored name box", () => {
+    for (const board of station.identityBoards) {
+      const back = board.children.find((o) => o.name === `${board.name}:back`)!;
+      expect(back, board.name).toBeDefined();
+      const normal = worldFront(back);
+      expect(normal.dot(worldFront(board)), board.name).toBeCloseTo(-1, 10);
+      const center = back.getWorldPosition(new THREE.Vector3());
+      const camera = new THREE.PerspectiveCamera(LANE_CAMERA.fov, 1, LANE_CAMERA.near, 400);
+      camera.position.copy(center).addScaledVector(normal, 4);
+      camera.lookAt(center);
+      camera.updateMatrixWorld(true);
+      const box = back.userData.gteki_identity.regions[0] as LocalBox;
+      const left = back.localToWorld(new THREE.Vector3(...box.min)).project(camera);
+      const right = back.localToWorld(new THREE.Vector3(box.max[0], box.min[1], box.min[2])).project(camera);
+      expect(left.x, board.name).toBeLessThan(right.x);
+      for (const p of [left, right]) {
+        expect(Math.abs(p.x), board.name).toBeLessThan(1);
+        expect(p.z, board.name).toBeGreaterThan(-1);
+        expect(p.z, board.name).toBeLessThan(1);
+      }
+    }
+  });
+
+  it("bakes faces/cases/rods in root-local space and returns current back world matrices", () => {
+    const disposables: { dispose(): void }[] = [];
+    const track = <T extends { dispose(): void }>(value: T) => { disposables.push(value); return value; };
+    const build = (transformed: boolean) => {
+      const root = new THREE.Group();
+      if (transformed) {
+        root.position.set(11, -7, 23);
+        root.rotation.set(0.1, 0.6, -0.2);
+        root.scale.set(1.2, 0.9, 1.1);
+      }
+      root.updateMatrixWorld(true);
+      const cases: THREE.BufferGeometry[] = [], rods: THREE.BufferGeometry[] = [];
+      const boards = withCanvasStub(() => buildIdentityBoards(bundle, station.layout, station.world, root, track, "low", cases, rods));
+      disposables.push(...cases, ...rods);
+      const faces = (root.getObjectByName("identity-faces") as THREE.Mesh).geometry;
+      return { root, boards, geometries: [faces, ...cases, ...rods] };
+    };
+    try {
+      const plain = build(false), transformed = build(true);
+      expect(transformed.geometries).toHaveLength(plain.geometries.length);
+      transformed.geometries.forEach((geometry, i) => {
+        const expected = plain.geometries[i]!;
+        for (const name of ["position", "normal", "uv"]) {
+          expect(Array.from(geometry.getAttribute(name).array), `${i} ${name}`).toEqual(Array.from(expected.getAttribute(name).array));
+        }
+        expect(Array.from(geometry.index!.array)).toEqual(Array.from(expected.index!.array));
+      });
+      for (const board of transformed.boards) {
+        const back = board.children.find((o) => o.name === `${board.name}:back`)!;
+        // Do not refresh the hierarchy here: buildIdentityBoards must return current matrices.
+        const expected = transformed.root.matrixWorld.clone().multiply(board.matrix).multiply(back.matrix);
+        expect(back.matrixWorld.elements, board.name).toEqual(expected.elements);
+      }
+    } finally {
+      disposables.forEach((value) => value.dispose());
+    }
+  });
+
   it("keeps every casing clear of walls/ceilings with at least 2.1 m headroom", () => {
     const roofs = [...station.layout.levels.flatMap((lv) => lv.ceilings), ...station.layout.soffits];
-    for (const board of station.signs.filter((o) => o.name.startsWith("identity:"))) {
+    for (const board of station.identityBoards) {
       const nodeZ = station.layout.nodeZ.get(board.userData.nodeId)!;
       const bottom = board.position.y - IDENTITY_SIZE.height / 2 - 0.02;
       expect(bottom - nodeZ, board.name).toBeGreaterThanOrEqual(2.1 - 1e-9);

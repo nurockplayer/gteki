@@ -71,6 +71,7 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
     if (!found) throw new Error(`No clear identity board placement near ${name}`);
     board.userData = { nodeId, generated: IDENTITY_GENERATED, gteki_identity: { front: [0, 0, 1], regions: [{ kind: "name", ...nameBox }] } };
     root.add(board);
+    board.updateMatrix();
     board.updateMatrixWorld(true);
     boards.push(board);
     // Two outward-facing plates: the back is readable, never mirrored. Give Explorer
@@ -78,7 +79,8 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
     for (const side of [1, -1]) {
       const geometry = new THREE.PlaneGeometry(width, height);
       geometry.rotateY(side === 1 ? 0 : Math.PI).translate(0, 0, side * (depth / 2 + 0.002));
-      geometry.applyMatrix4(board.matrixWorld);
+      // The merged meshes are root children too: bake only the board's local transform.
+      geometry.applyMatrix4(board.matrix);
       faces.push(geometry);
       if (side === -1) {
         const back = new THREE.Group();
@@ -86,13 +88,14 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
         back.rotation.y = Math.PI;
         back.userData = { generated: IDENTITY_GENERATED, gteki_identity: { front: [0, 0, 1], regions: [{ kind: "name", ...nameBox }] } };
         board.add(back);
+        board.updateMatrixWorld(true);
       }
     }
-    cases.push(new THREE.BoxGeometry(width + 0.04, height + 0.04, depth).applyMatrix4(board.matrixWorld));
+    cases.push(new THREE.BoxGeometry(width + 0.04, height + 0.04, depth).applyMatrix4(board.matrix));
     const rodLength = level.ceilingZ - top;
     for (const x of [-width * 0.35, width * 0.35]) {
       rods.push(new THREE.CylinderGeometry(0.012, 0.012, rodLength, 6)
-        .translate(x, height / 2 + rodLength / 2, 0).applyMatrix4(board.matrixWorld));
+        .translate(x, height / 2 + rodLength / 2, 0).applyMatrix4(board.matrix));
     }
   };
   const forward = { x: Math.sin(spawn.heading), y: Math.cos(spawn.heading) };

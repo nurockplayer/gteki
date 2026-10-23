@@ -30,7 +30,10 @@ export interface BuiltStation {
   /** Extra collision walls created by props (gate machines, platform doors). */
   propWalls: WallSeg[];
   escalators: { run: Run; steps: THREE.InstancedMesh; speed: number }[];
+  /** Wayfinding metadata groups, one per graph node. */
   signs: THREE.Object3D[];
+  /** Original station identity metadata groups, separate from graph wayfinding. */
+  identityBoards: THREE.Object3D[];
   levelGroups: Map<string, THREE.Group>;
   update(dt: number, t: number): void;
   /** W2: ENU camera position controls render-only street visibility. */
@@ -957,7 +960,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   world.addWalls(propWalls);
 
   // ---- wayfinding signs from the verified graph and original station identity
-  const signs = buildSigns(bundle, layout, world, root, track, opts.quality);
+  const { signs, identityBoards } = buildSigns(bundle, layout, world, root, track, opts.quality);
   addWallBackFaces(root, mat.wall, track);
   bakeFloorLightPools(layout, root, [mat.floor, mat.floorPaid, mat.floorPlatform], track);
   // Batch names say what is inside. The steel batch is the stair handrails and brackets, escalator trusses and
@@ -1254,6 +1257,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     propWalls,
     escalators,
     signs,
+    identityBoards,
     levelGroups,
     update(dt, t) { update(dt, t); surface.update(dt, t); },
     setViewer: surface.setViewer,
@@ -1599,7 +1603,7 @@ function raySeg(o: XY, d: XY, a: XY, b: XY): number | null {
 }
 
 // ---------------------------------------------------------------- signs
-function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, root: THREE.Group, track: <T extends { dispose(): void }>(x: T) => T, quality: BuildOptions["quality"]): THREE.Object3D[] {
+function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, root: THREE.Group, track: <T extends { dispose(): void }>(x: T) => T, quality: BuildOptions["quality"]): Pick<BuiltStation, "signs" | "identityBoards"> {
   const router = createRouter(bundle);
   const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
   const adj = new Map<string, string[]>();
@@ -1778,12 +1782,12 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
     mesh.userData.faceCount = page.rects.length;
     root.add(mesh);
   }
-  out.push(...buildIdentityBoards(bundle, layout, world, root, track, quality, caseGeos, rodGeos));
+  const identityBoards = buildIdentityBoards(bundle, layout, world, root, track, quality, caseGeos, rodGeos);
   for (const [geos, color, metalness] of [[caseGeos, "#2b2d30", 0.4], [rodGeos, "#888888", 0.8]] as const) {
     const geo = merged(geos);
     if (geo) { const m = new THREE.Mesh(track(geo), track(new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness }))); if (geos === caseGeos) m.name = "sign-cases"; root.add(m); }
   }
   // keep centroid helper referenced for tree-shaking clarity
   void centroid;
-  return out;
+  return { signs: out, identityBoards };
 }

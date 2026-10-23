@@ -26,8 +26,7 @@ describe("wayfinding sign batches", () => {
 
   it("keeps one metadata group per sign while merging static faces into atlas meshes", () => {
     expect(station.signs.length).toBeGreaterThan(0);
-    const wayfinding = station.signs.filter((sign) => sign.name.startsWith("sign:"));
-    const ids = wayfinding.map((sign) => sign.userData.nodeId);
+    const ids = station.signs.map((sign) => sign.userData.nodeId);
     expect(ids.every((id) => typeof id === "string")).toBe(true);
     expect(new Set(ids).size).toBe(ids.length);
 
@@ -38,7 +37,7 @@ describe("wayfinding sign batches", () => {
     expect(faceMeshes.length).toBeGreaterThan(0);
     expect(faceMeshes.length).toBeLessThanOrEqual(8);
     expect(new Set(faceMeshes.map((mesh) => mesh.material)).size).toBe(faceMeshes.length);
-    expect(faceMeshes.reduce((sum, mesh) => sum + Number(mesh.userData.faceCount), 0)).toBe(wayfinding.length * 2);
+    expect(faceMeshes.reduce((sum, mesh) => sum + Number(mesh.userData.faceCount), 0)).toBe(station.signs.length * 2);
   });
 
   it("low quality halves every atlas page on both axes and keeps the layout and UVs", () => {
