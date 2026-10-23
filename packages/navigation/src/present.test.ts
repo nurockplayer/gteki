@@ -111,7 +111,7 @@ describe("describeRoute arrival at a gate, an area or a POI with notes (#203 B7)
 
   it("shows the destination's own note in the requested language, never another language's", () => {
     const { b, dest } = toPoi("ticket_gate", [{ lang: "en", text: "Routes end at the public side of the gate." }]);
-    expect(arrival(b, dest, "en").text).toBe("Routes end at the public side of the gate.");
+    expect(arrival(b, dest, "en").text).toBe("Arrived at the public side of the gate (inside the gate is not modelled). Routes end at the public side of the gate.");
     // No ja note: the ja card says the gate fact in ja rather than showing English as if it were ja.
     expect(arrival(b, dest, "ja").text).toBe("改札外側に到着（改札内は未モデル化）");
   });
@@ -122,8 +122,13 @@ describe("describeRoute arrival at a gate, an area or a POI with notes (#203 B7)
       expect(arrival(b, dest, "ja").text, category).toBe("目的地に到着");
       expect(arrival(b, dest, "en").text, category).toBe("Arrive at destination");
     }
-    const { b, dest } = toPoi("other", [{ lang: "ja", text: "通路の北端まで案内します。" }]);
-    expect(arrival(b, dest, "ja").text).toBe("通路の北端まで案内します。");
+    const { b, dest } = toPoi("other", [
+      { lang: "ja", text: "通路の北端まで案内します。" },
+      { lang: "en", text: "Follow the north end of the passage." },
+    ]);
+    expect(arrival(b, dest, "ja").text).toBe("目的地に到着。通路の北端まで案内します。");
+    expect(arrival(b, dest, "ja").text).toMatch(/^目的地に到着/);
+    expect(arrival(b, dest, "en").text).toBe("Arrive at destination. Follow the north end of the passage.");
   });
 });
 

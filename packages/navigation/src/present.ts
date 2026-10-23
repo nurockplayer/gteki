@@ -807,11 +807,15 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
     const ridden = route.steps[route.steps.length - 1]?.mode === end.mode;
     out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: goal.floorId, connector: kind, text: t.connectorArrive(kind, poiDisplayName(destination, lang), ridden), label: null });
   } else {
-    // A gate (or any non-exit destination) says where the route stops: its own note in this language when it
-    // has one, else a gate says the paid side is not modelled. A note in another language is never shown as
-    // if it were this one; exits keep the plain arrival (#203 B7).
+    // A gate (or any non-exit destination) keeps the arrival sentence, followed by its own note in this
+    // language when it has one. A note in another language is never shown as if it were this one; exits keep
+    // the plain arrival (#203 B7).
     const note = destination && destination.category !== "exit" ? poiNote(destination, lang) : null;
-    const text = note ?? (destination?.category === "ticket_gate" ? t.gateArrive() : t.arrive());
+    const base = destination?.category === "ticket_gate" ? t.gateArrive() : t.arrive();
+    const separator = lang === "ja"
+      ? (base.endsWith("。") ? "" : "。")
+      : (base.endsWith(".") ? " " : ". ");
+    const text = note ? `${base}${separator}${note}` : base;
     out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: goal.floorId, text, label: null });
   }
 
