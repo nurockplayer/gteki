@@ -1,5 +1,5 @@
 {
-  "run_id": "overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-f86778b9c2e7f9ed1640",
+  "run_id": "overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-61ba6808c12bbce0e927",
   "command": "context-overlay",
   "policy_version": "context-overlay-v1",
   "station_id": "ikebukuro",
@@ -153,12 +153,12 @@
   },
   "outputs": {
     "geojson": {
-      "store_path": "out/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-f86778b9c2e7f9ed1640.geojson",
+      "store_path": "out/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-61ba6808c12bbce0e927.geojson",
       "sha256": "e97700e6b487bef3de66b090249b83694246578f97f81d7f5e075996a5a60fd4",
       "bytes": 20145
     },
     "glb": {
-      "store_path": "out/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-f86778b9c2e7f9ed1640.glb",
+      "store_path": "out/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-61ba6808c12bbce0e927.glb",
       "sha256": "28ae48bc9ea9798587d57a9a6649b3ea0a23119ae1705db7530cd4c0b1bf94ec",
       "bytes": 16728,
       "nodes": [
@@ -180,6 +180,6 @@
       "segments_skipped_zero_length": 0
     }
   },
-  "tool_input_sha256": "9c178ad4a59f3f0f2442514d5ffd629d1b8d50541d198c0661dfb6e12cd5ccb8",
+  "tool_input_sha256": "c185770c884736954d3eec86c0863693d63d26b23c7d29339c15077d07d02fe0",
   "tool_version": "0.1.0"
 }
