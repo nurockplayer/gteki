@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { strings } from "./i18n.ts";
+import { coverageText, strings } from "./i18n.ts";
 
 /** Dotted paths of every key under an object (functions and strings are leaves). */
 function paths(o: unknown, prefix = ""): string[] {
@@ -24,6 +24,19 @@ describe("i18n", () => {
       expect(t.guideNextTitle).toContain("]");
       expect(t.guideNextTitle).toContain("PageDown");
     }
+  });
+
+  it("shows coverage gap text in the requested language, falling back to ja then any, or the plain string (#259)", () => {
+    const both = [{ lang: "ja" as const, text: "全フロア" }, { lang: "en" as const, text: "All levels" }];
+    expect(coverageText(both, "ja")).toBe("全フロア");
+    expect(coverageText(both, "en")).toBe("All levels");
+    // A station that only supplied ja still shows ja to an en reader rather than an empty cell.
+    expect(coverageText([{ lang: "ja", text: "営業時間" }], "en")).toBe("営業時間");
+    // Any other language is preferred over nothing.
+    expect(coverageText([{ lang: "zh-Hant", text: "車站" }], "en")).toBe("車站");
+    // A legacy plain string is shown exactly as written, never translated.
+    expect(coverageText("TP-only passages", "ja")).toBe("TP-only passages");
+    expect(coverageText(undefined, "ja")).toBe("");
   });
 
   it("labels every rights value in plain language (#130)", () => {
