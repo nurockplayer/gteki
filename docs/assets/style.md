@@ -51,6 +51,7 @@ All values are sRGB authoring colours (the code converts them to linear when it 
 | Signal | `emissive_green` / `_red` | emit `#0DFF40` / `#FF0F0A` ×2.5 | 0.2 | status lamps |
 | Signal | `screen_lcd` | emit `#4C8CCC` ×1.2 | 0.1 | small LCDs |
 | Light | `light_diffuser` | emit `#FFF7EB` ×4.0 | 0.5 | ceiling LED diffusers |
+| Light | `fascia_art` | emit `#E6E6E0` ×1.0 | 0.45 / 0 | blank shopfront sign slot, swapped by name for fascia art |
 | Glass | `glass_clear` | `#CCE0E6`, α 0.18 | 0.04 | balustrades, guards |
 | Glass | `glass_frosted` | `#EBF0F2`, α 0.55 | 0.35 | screens, partitions |
 

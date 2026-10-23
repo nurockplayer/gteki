@@ -51,11 +51,14 @@ export interface KeyLike {
 
 /**
  * A keydown that belongs to an IME, not to the combobox: composing, the legacy keyCode 229 (Safari reports
- * isComposing false for the confirming Enter), or an Enter within a few ms of compositionend.
+ * isComposing false for the confirming Enter), or an Enter within a few ms of compositionend. `anyKey`
+ * extends that grace to every key: after the key that confirms a conversion, Safari can dispatch a second
+ * keydown for the same character, which is not a shortcut (guide keys).
  */
-export function isImeKeydown(e: KeyLike, lastCompositionEndMs: number, nowMs: number): boolean {
+export function isImeKeydown(e: KeyLike, lastCompositionEndMs: number, nowMs: number, anyKey = false): boolean {
   if (e.isComposing || e.keyCode === 229) return true;
-  return e.key === "Enter" && nowMs - lastCompositionEndMs >= 0 && nowMs - lastCompositionEndMs < IME_ENTER_GRACE_MS;
+  const since = nowMs - lastCompositionEndMs;
+  return (anyKey || e.key === "Enter") && since >= 0 && since < IME_ENTER_GRACE_MS;
 }
 
 export type AriaAttrs = Record<string, string | null>;

@@ -180,7 +180,8 @@ describe('context-overlay: determinism', () => {
     const one = overlayGeoJson((await select(await fixtureCollection())).features, meta);
     const two = overlayGeoJson((await select(await fixtureCollection())).features, meta);
     expect(one).toBe(two);
-    expect(sha(one)).toBe('e1389b8a0b53736041b9c6b266171b5e442f3916b6bdf288422ff61ed2072ae3');
+    expect(JSON.parse(one).policy_version).toBe('context-overlay-v2');
+    expect(sha(one)).toBe('b4acd1b17a7eeb70acb2c8ed21a822b4512d836bb125b2409740a1204dd4fdbb');
   });
   it('writes a GLB whose readback matches, with role-safe node names and 2 triangles per segment', async () => {
     const { features } = await select(await fixtureCollection());
@@ -203,7 +204,7 @@ describe('context-overlay: public receipt', () => {
     return { values: sourceValues, input: {
       run_id: 'overlay-x', station_id: 'ikebukuro', frame: { mode: 'station-enu-frame' }, window: { r_origin_m: 250 }, z: { z_m: 32.5, basis: 'render z = street floor renderElevationM' }, credit: 'SYNTHETIC credit',
       source: { source_id: 'ksj-n02-2025', source_sha256: 'a'.repeat(64), bytes: 1, license_name: 'CC BY 4.0', license_url: null, publish_gate: 'CONDITIONAL' },
-      layers: [counts], feature_hashes: { railway: features.map((f) => f.feature_hash) }, bbox: overlayBBox(features), outputs: {}, tool_input_sha256: 'd'.repeat(64), policy_version: 'context-overlay-v1', clip: { kind: 'origin_disc', radius_m: 250 },
+      layers: [counts], feature_hashes: { railway: features.map((f) => f.feature_hash) }, bbox: overlayBBox(features), outputs: {}, tool_input_sha256: 'd'.repeat(64), policy_version: 'context-overlay-v2', clip: { kind: 'origin_disc', radius_m: 250 },
     } };
   }
   it('has the expected shape: tags, counts, sorted hashes and no source value', async () => {
@@ -316,20 +317,20 @@ describe('context-overlay: clip to the origin disc', () => {
     const one = await select(await fixtureCollection(), 'railway', 32.5, R), two = await select(await fixtureCollection(), 'railway', 32.5, R);
     const text = overlayGeoJson(one.features, { ...meta, clip: { kind: 'origin_disc', radius_m: R } });
     expect(text).toBe(overlayGeoJson(two.features, { ...meta, clip: { kind: 'origin_disc', radius_m: R } }));
-    expect(sha(text)).toBe('71c86d6129375ef8686a36852ca1e443f6d027402f9ba8bd93a63f3c411739d1');
+    expect(sha(text)).toBe('d6896fff83581c26c1bb8edde50f89b4232898d78cee5837340b075d2e1eb563');
     const box = overlayBBox(one.features)!;
     expect(box.max[0]).toBeLessThanOrEqual(R + 1e-3);
     expect(box.min[0]).toBeGreaterThanOrEqual(-R - 1e-3);
     const dir = await mkdtemp(join(tmpdir(), 'gteki-overlay-')); dirs.push(dir);
     await writeOverlayGlb(join(dir, 'c.glb'), [{ kind: 'railway', width_m: 1.5, features: one.features }], { ...meta, feature_hashes_sha256: {} });
-    expect(sha((await readFile(join(dir, 'c.glb'))).toString('latin1'))).toBe('25b017fa766c1ddcd1c1b69016a91e1a1ddcea9bc2fb3ca54c6bb78cb4df1028');
+    expect(sha((await readFile(join(dir, 'c.glb'))).toString('latin1'))).toBe('a53c567b834dfd97671e7a592058c604be782594d593daae16232ad6667cf94b');
   });
   it('the receipt carries the clip block, the note and the clipped geometry bbox', async () => {
     const { features, counts, sourceValues } = await select(await fixtureCollection(), 'railway', 32.5, R);
     const r = publicOverlayReceipt({
       run_id: 'overlay-x', station_id: 'ikebukuro', frame: {}, window: {}, z: {}, credit: 'SYNTHETIC credit',
       source: { source_id: 'ksj-n02-2025', source_sha256: 'a'.repeat(64), bytes: 1, license_name: 'CC BY 4.0', license_url: null, publish_gate: 'CONDITIONAL' },
-      layers: [counts], feature_hashes: { railway: features.map((f) => f.feature_hash) }, bbox: overlayBBox(features), outputs: {}, tool_input_sha256: 'd'.repeat(64), policy_version: 'context-overlay-v1', clip: { kind: 'origin_disc', radius_m: R },
+      layers: [counts], feature_hashes: { railway: features.map((f) => f.feature_hash) }, bbox: overlayBBox(features), outputs: {}, tool_input_sha256: 'd'.repeat(64), policy_version: 'context-overlay-v2', clip: { kind: 'origin_disc', radius_m: R },
     }, sourceValues) as Record<string, any>;
     expect(r.clip).toEqual({ kind: 'origin_disc', radius_m: R, center: 'station frame origin', features_clipped: 1, vertices_before: 8, vertices_after: 8 });
     expect(r.note).toContain('clipped to a 250 m disc');
@@ -412,7 +413,7 @@ describe('context-overlay: border rings (KSJ N03)', () => {
     const r = publicOverlayReceipt({
       run_id: 'overlay-border', station_id: 'ikebukuro', frame: {}, window: { kind: 'origin_disc', radius_m: 700 }, z: {}, credit: borderMeta.credit,
       source: { source_id: 'ksj-n03-2026', source_sha256: 'a'.repeat(64), bytes: 1, license_name: 'CC BY 4.0', license_url: null, publish_gate: 'CONDITIONAL' },
-      layers: [counts], feature_hashes: { border: features.map((f) => f.feature_hash) }, bbox: overlayBBox(features), outputs: {}, tool_input_sha256: 'd'.repeat(64), policy_version: 'context-overlay-v1', clip: { kind: 'origin_disc', radius_m: 700 },
+      layers: [counts], feature_hashes: { border: features.map((f) => f.feature_hash) }, bbox: overlayBBox(features), outputs: {}, tool_input_sha256: 'd'.repeat(64), policy_version: 'context-overlay-v2', clip: { kind: 'origin_disc', radius_m: 700 },
     }, sourceValues) as Record<string, any>;
     expect(r.totals).toMatchObject({ selected: 1, outside_selection: 1 });
     expect(r.layers[0].kind).toBe('border');
