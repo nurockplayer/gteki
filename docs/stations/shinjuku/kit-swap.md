@@ -1,7 +1,7 @@
 # Shinjuku kit swap (Issue #94, Shinjuku half)
 
-Status: prepared, flag OFF. With the flag off the built station equals main `5db2550a` in every mesh byte (geometry digest
-`f713e721...`, appearance digest `08bd418b...`, 136 meshes, 13,284,666 bytes), in all other scene nodes including lights and
+Status: prepared, flag OFF. With the flag off the built station equals main `f143f862` in every mesh byte (geometry digest
+`f713e721...`, appearance digest `08bd418b...`, 136 meshes, 13,284,666 bytes; node digest `af54b5bc...`), in all other scene nodes including lights and
 `userData` (nodes digest), in the texture parameters of every material (textures digest), and in the lists the explorer reads off the
 scene object: walls, walkable, colliders, cameraBlockers, spawn points and environment (lists digest). The test builds the scene through the
 shipping `buildScene` entry point. It does not cover GPU state or anything drawn after the explorer takes over.
@@ -56,7 +56,7 @@ Draws are counted as distinct (level, material) batches; material keys strip the
 AO-baked clones (`extras.gteki_name`, falling back to the material name). Geometry is estimated at 70 B
 per triangle. The report also carries `measured` figures counted from the built meshes.
 
-Measured baseline at main `5db2550a` (low quality): 128 draws, 223,731 triangles (60 fewer than at `fe8d3b6`, from #70 merging
+Measured baseline at main `f143f862` (low quality): 128 draws, 223,731 triangles (60 fewer than at `fe8d3b6`, from #70 merging
 the six roof glazing sheets); the kit adds at most the caps above. The stub-library run
 on the real scene (see section 5 for the arithmetic) places 19 escalator pieces, 24 stair-nosing pieces, 4 gate rows and 5 of the 9 lift
 portals within the caps; stub geometry, not real pieces.

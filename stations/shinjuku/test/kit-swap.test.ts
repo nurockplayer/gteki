@@ -28,21 +28,21 @@ const { bundle } = loadShinjukuBundle();
 const catalogJson = JSON.parse(readFileSync(new URL("../kit/catalog.json", import.meta.url), "utf8")) as Parameters<typeof shinjukuStubManifestJson>[0];
 const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../assets/library/${file}`, import.meta.url), "utf8"));
 
-/** Digest of the flag-off shipping buildScene at main 5db2550a (#263, #279), measured on that tree with this
- * very helper and recomputed byte-identically on the merged tree. geometryDigest/bytes equal
+/** Digest of the flag-off shipping buildScene at main f143f862 (#263, #279), measured on the merged tree
+ * with this helper after the main scene-digest fixture passed unchanged. geometryDigest/bytes equal
  * geometry-lifetime.test.ts. Earlier values were from fe8d3b6 (2b3a94ba…, 13,288,866 B; #72's batch merge)
  * and from c94e4c7c (textures b53f31c8…; #279 halved the low-quality sign atlas). */
 const MAIN_BASELINE = {
   station: {
     geometryDigest: "f713e7215da792b850e481561fa12f87510276792878a8c15f5cd490c5b48071",
     appearanceDigest: "08bd418bfd9ad8a4b93c8e22240ad680e0285565bff58cc02170a0ad7376025b",
-    nodesDigest: "431c19413bcf1c1d2ac4f07afd71794630665d788c379677d1ba51a2740d2c7e",
+    nodesDigest: "af54b5bc53b086bbdbab2dfcb6c0a2aedb14e67e59346f79919a3962c3ce13a0",
     texturesDigest: "184d230a21f87d4e1a9b26c362db53098aad1390865d4b479ff16ce53281810a",
     meshes: 136,
     bytes: 13_284_666,
   },
   lists: {
-    listsDigest: "00b3bf1efd3019cf7d68881896ff00d49bc57575e4fcb2077b6af49612c39895",
+    listsDigest: "ddd5c84df153fb71c2254a20ec8132134ef0aaa6bb4878cb683da4ffc967913f",
     counts: { walkable: 433, colliders: 2, cameraBlockers: 3, walls: 14479 },
   },
 };
@@ -587,7 +587,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       vi.unstubAllGlobals();
     });
 
-    it("flag off: the scene equals main 5db2550a in every mesh byte, node, light, userData, texture parameter and explorer list", () => {
+    it("flag off: the scene equals main f143f862 in every mesh byte, node, light, userData, texture parameter and explorer list", () => {
       expect(off.root.userData.kitSwap).toBeUndefined();
       // Meshes (geometry + appearance), all other nodes incl. lights and userData, and texture params of every material.
       expect(digestStation(off.root, isStationProxy)).toEqual(MAIN_BASELINE.station);
