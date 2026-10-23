@@ -49,6 +49,9 @@ const DEFAULT_PITCH := -0.12
 ## Wall grid cell size (m) and padding. Padding exceeds 2 * RADIUS so a 3x3 cell lookup holds every wall in reach.
 const CELL := 4.0
 const WALL_PAD := 0.7
+## Render layer the avatar draws on (Godot layer 2). Station meshes stay on the default layer 1, so the HQ lights can
+## be masked to this layer alone while a station's baked lightmap is the station's light (gteki_hq_lights.gd, #251).
+const AVATAR_LAYER := 1 << 1
 
 ## Camera yaw (radians, 0 = -Z, as the web's `yaw`) and pitch; movement is camera-relative.
 var yaw := 0.0
@@ -72,6 +75,11 @@ var _grid: Dictionary = {}
 var inverted_walls := 0
 ## Which body_block stage refused the last blocked move (diagnostics for tests).
 var last_block := ""
+## What that refusal hit: the collider's node name, the hit point and the clearance from the body's axis to the
+## surface's plane (horizontal metres). Empty until a move is refused; the tests report a block with these.
+var last_block_collider := ""
+var last_block_point := Vector3.ZERO
+var last_block_clearance := 0.0
 
 
 func _init() -> void:
@@ -85,6 +93,7 @@ func _init() -> void:
 
 
 ## Neutral placeholder figure (no asset, no mascot): a capsule body and a small nose box showing where it faces.
+## Both meshes draw on AVATAR_LAYER, so the HQ lights can reach the avatar while leaving the station unlit.
 func _build_avatar() -> void:
 	avatar = Node3D.new()
 	avatar.name = "avatar"
@@ -98,6 +107,7 @@ func _build_avatar() -> void:
 	capsule.height = 1.7
 	body.mesh = capsule
 	body.material_override = material
+	body.layers = AVATAR_LAYER
 	body.position = Vector3(0.0, 0.85, 0.0)
 	avatar.add_child(body)
 	var nose := MeshInstance3D.new()
@@ -105,6 +115,7 @@ func _build_avatar() -> void:
 	box.size = Vector3(0.12, 0.12, 0.2)
 	nose.mesh = box
 	nose.material_override = material
+	nose.layers = AVATAR_LAYER
 	nose.position = Vector3(0.0, 1.45, -0.28)
 	avatar.add_child(nose)
 
@@ -255,6 +266,22 @@ func _touches(x: float, y: float, z: float) -> bool:
 	return false
 
 
+## Records a refusal: the stage, the collider's node name, the hit point and the clearance from the body's axis at
+## `feet` to the surface's plane (horizontal, along the hit normal), so a test can say *what* refused the move at
+## *which* place, not just that something did. The plane distance is the body clearance whatever probe found the hit;
+## an axis distance would read high for the side and radial probes, which start away from the axis.
+func _refuse(stage: String, hit: Dictionary, feet: Vector3) -> void:
+	last_block = stage
+	var collider: Variant = hit.get("collider", null)
+	last_block_collider = str(collider.name) if collider is Node else str(collider)
+	var point: Vector3 = hit.get("point", Vector3.ZERO)
+	var normal: Vector3 = hit.get("normal", Vector3.ZERO)
+	last_block_point = point
+	var offset := Vector2(point.x - feet.x, point.z - feet.z)
+	var horizontal := Vector2(normal.x, normal.z)
+	last_block_clearance = absf(offset.dot(horizontal.normalized())) if horizontal.length() > 1e-6 else offset.length()
+
+
 ## The normal of the collider surface that stops the body going from `from` to `to`, or null when the move is free.
 func body_block(from: Vector3, to: Vector3) -> Variant:
 	var m := to - from
@@ -266,7 +293,7 @@ func body_block(from: Vector3, to: Vector3) -> Variant:
 	for h in BODY_HEIGHTS:
 		var ahead := cast(from + Vector3(0.0, h, 0.0), along_dir, length + RADIUS, Scene.COLLIDER_LAYER)
 		if not ahead.is_empty():
-			last_block = "ahead h=%.1f d=%.3f" % [h, ahead.distance]
+			_refuse("ahead h=%.1f d=%.3f" % [h, ahead.distance], ahead, from)
 			return ahead.normal
 		if flat <= 1e-6:
 			continue
@@ -279,13 +306,14 @@ func body_block(from: Vector3, to: Vector3) -> Variant:
 				continue
 			var beside := cast(Vector3(from.x + px * side, from.y + h, from.z + pz * side), along_dir, length, Scene.COLLIDER_LAYER)
 			if not beside.is_empty():
-				last_block = "beside h=%.1f side=%d d=%.3f" % [h, int(side), beside.distance]
+				_refuse("beside h=%.1f side=%d d=%.3f" % [h, int(side), beside.distance], beside, from)
 				return beside.normal
 		# Radial rays at the target: the surface the motion goes most directly into.
 		var touched := Vector3.ZERO
 		var have := false
 		var deepest := INF
 		var target_origin := Vector3(to.x, to.y + h, to.z)
+		var deepest_hit := {}
 		for dir in _radial:
 			var hit := cast(target_origin, dir, RADIUS, Scene.COLLIDER_LAYER)
 			if hit.is_empty():
@@ -294,15 +322,16 @@ func body_block(from: Vector3, to: Vector3) -> Variant:
 			if along < deepest:
 				deepest = along
 				touched = hit.normal
+				deepest_hit = hit
 				have = true
 		if not have:
 			continue
 		if deepest < INTO:
-			last_block = "pushed-into h=%.1f along=%.3f" % [h, deepest]
+			_refuse("pushed-into h=%.1f along=%.3f" % [h, deepest], deepest_hit, from)
 			return touched
 		# A body that was clear must not slip into touching (rounding a corner).
 		if not _touches(from.x, from.y + h, from.z):
-			last_block = "slipped-into-touch h=%.1f" % h
+			_refuse("slipped-into-touch h=%.1f" % h, deepest_hit, from)
 			return touched
 	return null
 
@@ -336,6 +365,99 @@ func walk_from(position_godot: Vector3, heading_deg: float = 0.0) -> bool:
 	yaw = -deg_to_rad(heading_deg)
 	body_yaw = yaw
 	_sync_avatar()
+	return true
+
+
+## Where a ride may put its feet down (#287): an opening in the floor is a hole by construction, so a shaft's exit
+## vertex often sits over the car's floor — on Shinjuku S4 it does. The landing is searched forward along the route's
+## own continuation only, ring by ring from the vertex, inside a cone of RIDE_LANDING_CONE degrees either side of the
+## direction to the route's next point, and no further than RIDE_LANDING_REACH: a ride may step out of the lift, never
+## across a wall, into another room or back the way it came. The ground must be on the exit's own level to within
+## RIDE_LANDING_LEVEL (the narrowest rendered floor band here is 1.6 m, so a stair or another floor is never mistaken
+## for it), the body must fit, and the line from the vertex at body height must be clear of colliders.
+const RIDE_LANDING_RINGS: Array[float] = [0.0, 0.25, 0.5, 0.75, 1.0]
+const RIDE_LANDING_CONE := 30.0
+const RIDE_LANDING_REACH := 1.0
+const RIDE_LANDING_LEVEL := 0.2
+## Spoke angles (degrees off the route's continuation), straight ahead first and then either side: a ride steps aside
+## only when the way ahead is blocked.
+const RIDE_LANDING_SPREADS: Array[float] = [0.0, 10.0, -10.0, 20.0, -20.0, 30.0, -30.0]
+
+
+## A lift ride's landing (#287): the feet go down only where `ride_landing` finds ground the walker's own rules accept.
+## `forward` is the route's continuation from the exit vertex (flattened, unit length or zero); the yaw is kept: a ride
+## does not change where the walker faces. False when nothing qualifies, so the caller reports it instead of dropping
+## the avatar into the shaft or through a wall.
+func ride_to(target: Vector3, forward: Vector3) -> bool:
+	var landing: Variant = ride_landing(target, forward)
+	if landing == null:
+		return false
+	global_position = landing
+	body_yaw = yaw
+	_sync_avatar()
+	return true
+
+
+## The first point, from `target` outward ring by ring and spoke by spoke, where the walker can actually stand: see the
+## rules above. Null when none does, so a caller can tell "the shaft's floor is 0.5 m forward" from "there is no floor
+## ahead at all". Pure in the scene under the walker.
+func ride_landing(target: Vector3, forward: Vector3) -> Variant:
+	var flat := Vector3(forward.x, 0.0, forward.z)
+	var heading := flat.normalized() if flat.length() > 1e-6 else Vector3.ZERO
+	for ring in RIDE_LANDING_RINGS:
+		if ring > RIDE_LANDING_REACH + 1e-6:
+			continue
+		if ring > 0.0 and heading == Vector3.ZERO:
+			continue
+		# The vertex itself is probed once; around a ring, each spoke once.
+		for k in (1 if ring <= 0.0 else RIDE_LANDING_SPREADS.size()):
+			var at := target
+			if ring > 0.0:
+				at = target + heading.rotated(Vector3.UP, deg_to_rad(RIDE_LANDING_SPREADS[k])) * ring
+			var ground: Variant = _ground_near(at, target.y)
+			if not accept_ground(target.y, ground) or absf(float(ground) - target.y) > RIDE_LANDING_LEVEL:
+				continue
+			if not _body_fits(at, target.y):
+				continue
+			if ring > 0.0 and not _line_clear(target, at):
+				continue
+			return Vector3(at.x, float(ground), at.z)
+	return null
+
+
+## True when a body-height line from `from` to `to` meets no collider: nothing stands between the shaft's mouth and
+## the ground the ride would put the walker on.
+func _line_clear(from: Vector3, to: Vector3) -> bool:
+	var flat := Vector3(to.x - from.x, 0.0, to.z - from.z)
+	var distance := flat.length()
+	if distance < 1e-6:
+		return true
+	var direction := flat / distance
+	for height in BODY_HEIGHTS:
+		if not cast(from + Vector3(0.0, height, 0.0), direction, distance, Scene.COLLIDER_LAYER).is_empty():
+			return false
+	return true
+
+
+func _ground_near(at: Vector3, feet_y: float) -> Variant:
+	return ground_at(at.x, feet_y + STEP_UP + 0.05, at.z, STEP_UP + STEP_DOWN + 0.1)
+
+
+## True when a body of the walker's own radius fits at `at`: every ground probe within RADIUS is acceptable at
+## `feet_y`, no sidecar wall pushes the circle out (`resolve_walls`), and no collider stands within RADIUS at either
+## body height. A landing with a wall in the body is not a landing.
+func _body_fits(at: Vector3, feet_y: float) -> bool:
+	var pushed := resolve_walls(at.x, at.z, feet_y)
+	if Vector2(pushed.x - at.x, pushed.y - at.z).length() > 1e-4:
+		return false
+	for k in 8:
+		var angle := TAU * float(k) / 8.0
+		var around := at + Vector3(cos(angle), 0.0, sin(angle)) * RADIUS
+		if not accept_ground(feet_y, _ground_near(around, feet_y)):
+			return false
+	for height in BODY_HEIGHTS:
+		if _touches(at.x, feet_y + height, at.z):
+			return false
 	return true
 
 
