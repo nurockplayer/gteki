@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createRouter, describeRoute, floorDisplayName, instructionPoints, routePolyline } from "./index.ts";
+import type { Poi } from "@gteki/schema";
 import type { RouteProfile, RouteResult } from "./index.ts";
 import { createSyntheticBundle, syntheticEdge as edge } from "./fixtures.ts";
 
@@ -48,8 +49,8 @@ describe("describeRoute", () => {
     const straight = describeRoute(b, route(b, "start", "goal"), "ja");
     expect(straight.map((i) => i.kind)).toEqual(["start", "walk", "arrive"]);
     expect(straight[1]!.distanceM).toBe(20);
-    // `a` is a real choice point (the northern branch) and reaches the Restroom POI.
-    expect(straight[1]!.text).toBe("約20m 進む。約10m先、トイレの分岐はそのまま直進");
+    // `a` is a real choice point (the northern branch); the Restroom POI reached there does not name it (#203 B9).
+    expect(straight[1]!.text).toBe("約20m 進む。約10m先の分岐はそのまま直進");
   });
 
   it("says up/down only when evidenced and names the source floor label", () => {
@@ -84,6 +85,61 @@ describe("describeRoute", () => {
     const kinds = describeRoute(b, route(b, "start", "upper-2"), "en");
     expect(kinds.map((i) => i.kind)).toEqual(["start", "gate", "escalator", "arrive"]);
     expect(kinds[2]!.stepIndexes).toEqual([1, 2]);
+  });
+});
+
+describe("describeRoute arrival at a gate, an area or a POI with notes (#203 B7)", () => {
+  /** A destination POI reached exactly at "goal" (a plain junction, so the connector branch is not taken). */
+  function toPoi(category: Poi["category"], notes?: Poi["notes"]) {
+    const b = createSyntheticBundle([edge("s", "start", "goal")]);
+    const dest: Poi = {
+      id: "dest", category, names: [{ lang: "ja", text: "中央改札" }, { lang: "en", text: "Central Gate" }], aliases: [],
+      floorId: "concourse", displayPosition: { x: 20, y: 0, z: 0 }, connectorNodeIds: ["goal"], paid: false,
+      evidence: b.pois[0]!.evidence, ...(notes ? { notes } : {}),
+    };
+    b.pois.push(dest);
+    return { b, dest };
+  }
+  const arrival = (b: ReturnType<typeof toPoi>["b"], dest: Poi, lang: "ja" | "en") =>
+    describeRoute(b, route(b, "start", "goal"), lang, dest).at(-1)!;
+
+  it("says a ticket gate is reached from the public side, since the paid side is not modelled", () => {
+    const { b, dest } = toPoi("ticket_gate");
+    expect(arrival(b, dest, "ja").text).toBe("改札外側に到着（改札内は未モデル化）");
+    expect(arrival(b, dest, "en").text).toBe("Arrived at the public side of the gate (inside the gate is not modelled)");
+  });
+
+  it("uses plain arrival text when the bundle models a paid side at a ticket gate", () => {
+    const { b, dest } = toPoi("ticket_gate");
+    b.edges[0]!.crossesFareBoundary = true;
+    expect(arrival(b, dest, "en").text).toBe("Arrive at destination");
+    expect(arrival(b, dest, "ja").text).toBe("目的地に到着");
+
+    dest.notes = [{ lang: "en", text: "Routes end at this gate." }];
+    expect(arrival(b, dest, "en").text).toBe("Arrive at destination. Routes end at this gate.");
+    expect(arrival(b, dest, "ja").text).toBe("目的地に到着");
+  });
+
+  it("shows the destination's own note in the requested language, never another language's", () => {
+    const { b, dest } = toPoi("ticket_gate", [{ lang: "en", text: "Routes end at the public side of the gate." }]);
+    expect(arrival(b, dest, "en").text).toBe("Arrived at the public side of the gate (inside the gate is not modelled). Routes end at the public side of the gate.");
+    // No ja note: the ja card says the gate fact in ja rather than showing English as if it were ja.
+    expect(arrival(b, dest, "ja").text).toBe("改札外側に到着（改札内は未モデル化）");
+  });
+
+  it("keeps the plain arrival for exits and for an area point without a note", () => {
+    for (const category of ["exit", "other", "shop"] as const) {
+      const { b, dest } = toPoi(category);
+      expect(arrival(b, dest, "ja").text, category).toBe("目的地に到着");
+      expect(arrival(b, dest, "en").text, category).toBe("Arrive at destination");
+    }
+    const { b, dest } = toPoi("other", [
+      { lang: "ja", text: "通路の北端まで案内します。" },
+      { lang: "en", text: "Follow the north end of the passage." },
+    ]);
+    expect(arrival(b, dest, "ja").text).toBe("目的地に到着。通路の北端まで案内します。");
+    expect(arrival(b, dest, "ja").text).toMatch(/^目的地に到着/);
+    expect(arrival(b, dest, "en").text).toBe("Arrive at destination. Follow the north end of the passage.");
   });
 });
 
@@ -410,6 +466,18 @@ describe("describeRoute junction hints", () => {
     expect(describeRoute(b, route(b, "start", "g"), "en")[2]!.junctions![1]).toMatchObject({ action: "straight", name: null });
   });
 
+  it("names a junction only after an exit or ticket-gate POI, never an area or service POI (#203 B9)", () => {
+    const nameFor = (category: Poi["category"]) => {
+      const b = columnHall();
+      b.pois.find((p) => p.id === "exit-b")!.category = category;
+      return describeRoute(b, route(b, "start", "g"), "en")[2]!.junctions![1]!.name;
+    };
+    expect(nameFor("exit")).toBe("Exit B");
+    expect(nameFor("ticket_gate")).toBe("Exit B");
+    // Naming a hall or a shop the route goes into reads backwards ("past West Exit (B1)").
+    for (const category of ["other", "shop", "toilet", "service", "platform", "elevator"] as const) expect(nameFor(category), category).toBeNull();
+  });
+
   it("counts only branches that can be walked away from the node", () => {
     const strip = (b: ReturnType<typeof columnHall>) => b.edges.filter((e) => e.id !== "p-fork" && e.id !== "q-east");
     const kept = (b: ReturnType<typeof columnHall>) => describeRoute(b, route(b, "start", "g"), "en")[2]!;
@@ -714,16 +782,17 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
   });
 
   it("anchors trailing turns to the end of the walk when junction hints come before them", () => {
-    // The Restroom junction at `a` is passed after 10 m; the 2 m left turn comes after the whole 20 m.
+    // The junction at `a` is passed after 10 m; the 2 m left turn comes after the whole 20 m.
     const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("a-goal", "a", "goal"), edge("a-n", "a", "b"), edge("goal-up", "goal", "isolated", { lengthM: 2 })]);
     b.nodes.find((n) => n.id === "b")!.position = { x: 10, y: 10, z: 0 };
     b.nodes.find((n) => n.id === "isolated")!.position = { x: 20, y: 2, z: 0 };
     const r = route(b, "start", "isolated");
     expect(describeRoute(b, r, "en")[1]).toMatchObject({
       stepIndexes: [0, 1, 2], trailTurns: ["left"],
-      text: "Go ~20 m. After ~10 m, continue straight past Restroom. After ~20 m, turn left.",
+      // The Restroom POI at `a` does not name the junction (#203 B9).
+      text: "Go ~20 m. After ~10 m, continue straight through the junction. After ~20 m, turn left.",
     });
-    expect(texts(b, r, "ja")[1]).toBe("約20m 進む。約10m先、トイレの分岐はそのまま直進。約20m先で左へ");
+    expect(texts(b, r, "ja")[1]).toBe("約20m 進む。約10m先の分岐はそのまま直進。約20m先で左へ");
   });
 
   it("folds a route of short walks only into its opening leg", () => {
