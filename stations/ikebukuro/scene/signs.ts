@@ -38,9 +38,10 @@ const PX_PER_M = 300;
 const H = 0.42;
 const ATLAS_W = 4096; // atlas page side (px), lowered to the GPU's MAX_TEXTURE_SIZE where that is smaller
 /** Phone tier ("low") paints faces at this fraction of full size (PX_PER_M x this, px/m). At 0.5 the English
- *  line and the "~N m" distance stopped reading at mid range, so it is back above 0.54; the faces then spill past
+ *  line and the "~N m" distance stopped reading at mid range, so it is back above 0.54 (0.56 read as well as 0.6 on an
+ *  iPhone 15-size low-tier shoot at 6-10 m, GPU slot 2026-10-23: the render resolution, not the atlas, limits it); the faces then spill past
  *  one 4096 x 2048 page into a small overflow page (LOW_PAGE_HEIGHTS; scene/signage.test.ts pins both). */
-export const LOW_TEXEL_SCALE = 0.6;
+export const LOW_TEXEL_SCALE = 0.56;
 /** Phone tier page heights (px, pages 4096 wide): the first page, then an overflow page made only when the faces
  *  do not fit the first, as short as the rest allows. The phone tier never gets a 4096 x 4096 page. */
 const LOW_PAGE_HEIGHTS = [2048, 1024];

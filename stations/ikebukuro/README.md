@@ -265,7 +265,7 @@ Evidence stills:
   [Exit 4 stair foot](docs/evidence/27-exit4-foot.jpg), [passage north](docs/evidence/28-west-corridor.jpg)
 
 **Measured** (harness, Apple Silicon, Chromium):
-- quality "low": at most 28 draw calls and 129k triangles per frame (56 crowd agents, 100 signs; four spots × four headings in the Central, West, South-West and North areas). Signs share atlas textures and merged geometry (three draw calls for all of them; one mesh per sign had pushed this to 252). On "low" the sign atlas is one 4096 × 2048 page plus, only when the faces need it, an overflow page (4096 × 1024 today), painted at `LOW_TEXEL_SCALE` 0.6 (~180 px/m; about 64 MB of GPU texture with mipmaps, against 134 MB at full resolution); the overflow page adds one draw call to the 28 measured with a single page, and Friday's on-device shoot at 0.56 / 0.6 decides the final scale;
+- quality "low": at most 28 draw calls and 129k triangles per frame (56 crowd agents, 100 signs; four spots × four headings in the Central, West, South-West and North areas). Signs share atlas textures and merged geometry (three draw calls for all of them; one mesh per sign had pushed this to 252). On "low" the sign atlas is one 4096 × 2048 page plus, only when the faces need it, an overflow page (4096 × 512 today), painted at `LOW_TEXEL_SCALE` 0.56 (~168 px/m; about 53 MB of GPU texture with mipmaps, against 134 MB at full resolution); the overflow page adds one draw call to the 28 measured with a single page. 0.56 was chosen over 0.6 (4096 × 1024, ~64 MB) on the 2026-10-23 iPhone 15-size low-tier shoot: at 6, 8 and 10 m both read the same (Japanese, English and "~N m"), since the 1.5× render resolution, not the atlas, is the limit;
 - shipped assets: 9.5 MB at "high", with lightmap WebP 1.1 MB (4k) or 0.5 MB (2k).
 
 ### Cue source (#108 acceptance 4)
@@ -300,7 +300,7 @@ legs is [docs/b1-cue-audit.md](docs/b1-cue-audit.md).
   (西口（地下）, 西口（南）（地下）, 東口（地下）, whose names are the area names printed on the reference map) each way,
   with the graph walking distance to the hall's junction, rounded to 5 m. Passages are not named, because their
   connector is an arbitrary junction inside them. Positions are design. On "low" the sign atlas is painted at
-  `LOW_TEXEL_SCALE` 0.6 (180 px/m), on one 4096 × 2048 page and an on-demand overflow page (see "Measured").
+  `LOW_TEXEL_SCALE` 0.56 (168 px/m), on one 4096 × 2048 page and an on-demand overflow page (see "Measured").
   **Repeater signs** (`kind: "repeat"`, #108) fill verified edges of 100 m or more, spaced at most
   24 m apart between the two end signs. Each is double-sided: the front faces walkers leaving the
   edge's `from` node and the back faces the other way, with at most 3 exits and 1 gate and a

@@ -421,7 +421,7 @@ describe("ikebukuro sign provenance (#108)", () => {
 // only when the faces do not fit it, one overflow page 4096 x (power of two <= 1024); never a 4096 x 4096 page.
 // buildSigns runs for real on a stub canvas whose text measure is a flat estimate (CJK 1 em, Latin ~0.56 em),
 // so face widths, trimming and shelf packing are the production code's; only glyph widths are approximate.
-// At 0.5 the English line and the "~N m" distance did not read at mid range (Lane F), so the scale is 0.6 and the
+// At 0.5 the English line and the "~N m" distance did not read at mid range (Lane F), so the scale is 0.56 (read as well as 0.6 on the 2026-10-23 phone shoot) and the
 // small lines are SMALL_EM of the face height (they were 0.15-0.16).
 describe("ikebukuro sign atlas budget on the low tier", () => {
   function stubDocument() {
@@ -481,14 +481,14 @@ describe("ikebukuro sign atlas budget on the low tier", () => {
   }
 
   it("pins the phone scale and the small-line em", () => {
-    expect(LOW_TEXEL_SCALE).toBe(0.6);
+    expect(LOW_TEXEL_SCALE).toBe(0.56);
     expect(SMALL_EM).toBe(0.21);
   });
 
-  it("with the repeaters and place boards the low atlas is one 4096 x 2048 page and a 4096 x 1024 overflow page", () => {
+  it("with the repeaters and place boards the low atlas is one 4096 x 2048 page and a 4096 x 512 overflow page", () => {
     const { pages } = atlas(signs);
     withinLimit(pages);
-    expect(pages).toEqual([{ w: 4096, h: 2048 }, { w: 4096, h: 1024 }]);
+    expect(pages).toEqual([{ w: 4096, h: 2048 }, { w: 4096, h: 512 }]);
   });
 
   it("negative control: at this scale the faces do not fit one 2048 px page (why the overflow page exists)", () => {
