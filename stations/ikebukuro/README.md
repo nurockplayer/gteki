@@ -55,6 +55,7 @@ pnpm typecheck
 | `scene/access_fences.json` | Walker-blocking fences with a 「通行可否 未確認」/"Access unverified" marker where surveyed floor of unknown access would shortcut the routable areas | presentation |
 | `scene/finishes.json` | Finish-pack manifest for the Lane E kit: role → texture folder + repeat in metres. Empty today (see "Kit integration") | presentation |
 | `scene/dressing_anchors.json` | Stair nosing lines and escalator landings from the PLATEAU survey, where kit dressing is placed (see "Kit integration") | truth (survey positions) |
+| `scene/kit_catalog.json`, `scene/kit_placements.json` | Lane E catalog and per-anchor placements for stair and escalator dressing, generated from the anchors (see "Kit integration") | derived (survey dimensions) |
 | `pipeline/` | Reproducible data and asset build (stdlib Python + Blender; one Node walker check) | — |
 | `docs/` | G0 source audit, coverage gaps, evidence | — |
 
@@ -155,11 +156,28 @@ extract whose GML sha256 differs from `gteki/station.json`) writes `scene/dressi
 1 mm, deterministic. Facts only, derived from the surveyed EF_35 and EF_80 triangles:
 
 - `stair_flights[]`: a riser's top edge is the nosing line of the tread above; nosings one rise and one tread apart
-  chain into a flight. Each has `bottom` and `top` (`position`, `dir` = horizontal up-stair unit vector, `width_m`,
+  chain into a flight, one-to-one (each nosing has at most one successor and one predecessor; a stair the survey models
+  twice as two overlapping solids is kept as one of them, and `counts.duplicate_nosings_dropped` says how many nosings
+  that dropped). Each has `bottom` and `top` (`position`, `dir` = horizontal up-stair unit vector, `width_m`,
   end points `a` left and `b` right facing up), `steps`, `rise_m`, `run_m`, and every `nosings` row `[ax, ay, bx, by, z]`.
 - `escalator_lanes[]`: the bank's sloped walking quad gives the landing lines (low edge = `lower`, high edge =
   `upper`); the thin truss plates inside pair into lanes. Each lane has `lower` and `upper` anchors
   (`position`, `dir` up the escalator, `width_m` clear between plates), plus `rise_m`, `run_m` and `slope_deg`.
+
+**Lane E catalog.** `python3 -I pipeline/build_kit_catalog.py` (`pnpm build:kit-catalog`) turns the anchors into
+`scene/kit_catalog.json`, a Lane E batch catalog (`CATALOG=stations/ikebukuro/scene/kit_catalog.json`), and
+`scene/kit_placements.json`, which gives each flight or lane its catalog ids and ENU transform (`origin`, `dir`,
+`yaw_deg` about +Z taking the piece's +Y to `dir`, `mirror` always false). Every entry is `station-verified` and cites
+the anchors and PLATEAU GML sha256 plus the flight or lane ids it serves. Each stair flight becomes two
+`stair_dressing` entries so every GLB has one bake role: `..._nosing` (`stairs_ramps`) and `..._rails_{post,wall}`
+(handrails, `barriers`). `step_count` is the surveyed nosing count, `riser_mm` = rise / (steps - 1), `tread_mm` the mean
+nosing run, and riser, tread and width are rounded to whole mm (coarser snapping accumulated up to 40 mm by the top of a long flight); identical flights share one id and are instanced.
+`rail_mount` is `wall` when the base GLB's wall mesh lies within 0.3 m of both stair sides, else `post`. Flights with
+an implausible riser (outside 100-220 mm) or tread (under 200 mm), surveyed nosings more than 6 mm (the strip height) off the strips the generator builds with the whole-millimetre riser, and single-step flights are skipped and listed with
+their reason. Escalators carry `rise_mm`, `angle_deg` = atan2(rise, quad run) (the surveyed quad is the straight incline between the
+floors, so no `run_mm`), `width_mm` (tread width, read as the clear gap between the truss plates) and the default 800 mm
+landing. The placement origin is the bottom comb, 1.2 m before the quad's lower line along `dir` at the lower floor height
+(the top comb is 1.2 m past the upper line). Direction is not surveyed and is left out of the params. Placements carry `tiers`: nosings draw on `low` and `high`, escalators on `high` only (low waits for a phone measurement), and rails (6 segments) on `high` only and only for `main_route` flights, those a Lane F golden guided route walks (a polyline within 1 m of the flight's centre line at a matching height).
 
 **How the bake will take a kit GLB in** (not built yet; `blender_bake_lighting.py` is unchanged):
 

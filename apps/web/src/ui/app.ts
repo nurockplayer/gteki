@@ -113,6 +113,9 @@ export class App {
         if (poi) this.setDestination(poi);
       },
     });
+    // The overview is framed into the part of the view the search panel leaves free (below it on a phone,
+    // to its right on a desktop); the panel's own size changes refit it (see Explorer.setPanel).
+    this.explorer.setPanel(this.ui.panel);
     this.explorer.setGuideTier(readGuideTier());
     this.bindGuideKeys();
     watchReducedMotion((reduce) => {
@@ -1035,6 +1038,8 @@ export class App {
     box.innerHTML = "";
     box.hidden = !text;
     this.root.classList.toggle("has-credit", Boolean(text));
+    // The strip is a second occluder for the overview's free area: keep the slice above it (#114).
+    this.explorer.setCreditLine(text ? box : null);
     if (!text) return;
     box.setAttribute("aria-label", this.t.creditsLabel);
     const line = el("span", "credit-text", text);
@@ -1118,6 +1123,7 @@ export class App {
       guideControls: () => ({ paused: this.explorer.guidePaused, tier: this.explorer.guideTier, speed: guideTierSpeed(this.explorer.guideTier), instruction: this.s.activeInstruction, distanceM: this.guideS, arrived: this.arrived }),
       hud: () => [...this.ui.hud.querySelectorAll("button")].map((b) => b.textContent),
       labels: () => this.explorer.labelInfo(),
+      overviewFrame: () => this.explorer.overviewFrame(),
       quality: () => this.explorer.qualityLevel,
       mascot: () => this.ui.mascot.info(),
       avatar: () => this.explorer.avatarEnu,
