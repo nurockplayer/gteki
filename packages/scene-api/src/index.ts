@@ -119,6 +119,12 @@ export type BuildScene = (ctx: SceneContext) => StationScene | Promise<StationSc
 
 export interface StationSceneModule {
   buildScene: BuildScene;
+  /**
+   * Called once when the explorer leaves this station for a different one (or the explorer is disposed);
+   * never between reopens of the same station. Drop caches kept across opens (parsed geometry, baked
+   * textures, merged buffers) here so a big station does not hold memory while another one is shown.
+   */
+  releaseCaches?: () => void;
 }
 
 const WALKABLE_ROLES = new Set(["floor", "stairs_ramps", "walkable", "ramp", "stairs"]);
