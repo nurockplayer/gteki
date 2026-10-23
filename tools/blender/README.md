@@ -1,6 +1,6 @@
 # GTEki Blender asset factory (Lane E)
 
-Reproducible, parametric generators for a **generic, reusable station kit** (passages, junctions, fare-gate arrays, stairs, escalators, lift portals, wayfinding signs, props, and dressing fitted to a station's own stairs, escalators and floor plan). Output is contract GLB (`docs/assets/asset-contract.md`) for the Three.js Web client and Godot 4. The kit carries no navigation truth and does not replicate any operator's equipment or any specific Ikebukuro/Shinjuku location; station leads decide placement and art direction.
+Reproducible, parametric generators for a **generic, reusable station kit** (passages, junctions, fare-gate arrays, stairs, escalators, lift portals, wayfinding signs, props, toilet entrances, and dressing fitted to a station's own stairs, escalators and floor plan). Output is contract GLB (`docs/assets/asset-contract.md`) for the Three.js Web client and Godot 4. The kit carries no navigation truth and does not replicate any operator's equipment or any specific Ikebukuro/Shinjuku location; station leads decide placement and art direction.
 
 ## Requirements
 
@@ -62,6 +62,16 @@ Editable sources: add `--save-blend <dir>` to `build.py` to save a `.blend` per 
 | `bundle_kit.py` | `gteki-kit-bundle/0.1`: pack assets into one GLB with shared images/materials; extract; info |
 | `godot_import/` | Godot 4 project: headless import report + screenshot mode |
 | `web_preview/` | Three.js viewer, load-strategy bench (`bench.html`), Node GLTFLoader load test |
+
+## Facility anchors (`families/facilities.py`)
+
+`toilet_entrance` is a wall-mounted portal surround and sign for a room a station knows only as a point (Shinjuku GSI F001 / F002 / F003, [gap-list](../../docs/assets/gap-list.md) finding 5). It draws no room: no fixtures, door leaf, floor or ceiling.
+
+- **Placement `wall`:** origin on the floor at the wall plane, centred on the opening; the room is toward `-Y` (glTF `+Z`) and the wall thickness recesses toward `+Y`. `SOCKET_wall` is the opening, `SOCKET_sign` the sign face.
+- **Params:** `kind` (`male` | `female` | `unisex` | `accessible` | `pair`, mirroring F001 / F002 / F003; `pair` is a combined male | female plate), `opening_w_mm`, `opening_h_mm`, `wall_depth_mm` (reveal lining, 0 = none), `trim` (`aluminium` | `brushed` | `dark` | `accent` | `enamel`), `trim_w_mm`, `trim_proud_mm`, `sign_pos` (`above` | `left` | `right` | `none`), `sign_mm`, `screen` (`none` | `maze`, an optional privacy screen stub behind the wall) and its `screen_*_mm` sizes. Catalog tags: `toilet`, `entrance` and the kind.
+- **Pictograms:** the sign face `gteki_sign_face_toilet_<kind>` is one emissive quad drawn from the kit's own circles, capsules, rounded rectangles and polygons (`toilet_pictogram` in `texsynth.GENERATORS`). The shapes follow the general idea of public-information symbols and copy no artwork. No text; swap the material by name for wording.
+- **Collision:** the opening is never blocked. Colliders are a thin box per jamb trim (the skin proud of the wall; the station's wall collider owns the wall) and, with `screen: maze`, the screen stub.
+- Contact sheet layout: `showcase/facilities_demo.json`.
 
 ## Writing a generator
 
