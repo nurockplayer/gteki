@@ -299,7 +299,7 @@
   },
   {
    "id": "gteki-kit-0-1-0",
-   "title": "GTEki station kit 0.1.0 (Lane E): barrier rail module and a representative gate array",
+   "title": "GTEki station kit 0.1.0 (Lane E): barrier rail and column modules and a representative gate array",
    "publisher": "GTEki contributors",
    "url": "https://github.com/nurockplayer/gteki/tree/main/assets/library",
    "license": {
@@ -314,6 +314,10 @@
    "sha256": {
     "kit/high/gteki_barrier_rail_2400_solid.glb": "2a379640f23ce2e0d38c8e5ea6fd17053d2eb944e6f025776f7b08c03ca1191d",
     "kit/low/gteki_barrier_rail_2400_solid.glb": "97d20a29bab1b0ab8e7e2c9cfa18b3582a6d27503b861b1d71570c97f2340ff6",
+    "kit/high/gteki_column_square_600.glb": "65124a674dc0a42a3b6fe348091c6198827a85710d59157479753a51abdc59d6",
+    "kit/low/gteki_column_square_600.glb": "57e0acffd8aa408cdb2602efb55fbd70ff1bc5e0da3fcf02e6eb7912132857c3",
+    "kit/high/gteki_column_round_d600.glb": "fbd44a542e6e7b7e0deaee6d4624ee49a4f0b2aaf6af77d6f1a87bc95a30d001",
+    "kit/low/gteki_column_round_d600.glb": "87105fcd0ba3a310ed4c8e9f427ddca532a3dea8be2bf5e57cad8ba9a85b205d",
     "kit/high/gteki_gate_array_2.glb": "837827e00581ef8b3026bba3ffed7d16bc2886b4358c0d3e8043d8d214a59cdc",
     "kit/low/gteki_gate_array_2.glb": "41c7b914e274de83514118a8f9f8a48ab8bee9029447fa06233d7ff54db86d46"
    },
@@ -5441,7 +5445,7 @@
     "gteki-kit-0-1-0"
    ],
    "role": "visual",
-   "derivation": "PLATEAU CityGML LOD4.1 -> pipeline/extract_plateau_ubld.py (ENU) -> pipeline/blender_build_glb.py (triangulated, metric UV0); renderer frame (x, z, -y), identity transform; collision comes from per-mesh gteki_role tags (floor/stairs_ramps walkable; wall/barriers/transport collide), not from the asset role, because verified exit routes pass through door and portal panels; runtime variant assets/ikebukuro_b1_lit.glb (listed in files, not a second asset, so loaders that load every asset never stack both): the same geometry + generated ceiling LED fixtures (GTEki art direction, not surveyed) -> pipeline/blender_bake_lighting.py: second UV set (TEXCOORD_1) and a Cycles diffuse lightmap (assets/ikebukuro_b1_lightmap.webp / _2k.webp, gamma-2.2 encoded, scale in ikebukuro_b1_lit.meta.json). scene/scene.ts loads the lit variant and falls back to this GLB; kit/{high,low}/*.glb: Lane E kit pieces (see source gteki-kit-0-1-0) copied unmodified by pipeline/sync_kit.py and instanced by scene/kit.ts on the access-fence label stretches, visual only, no colliders; gteki_gate_array_2 (kit/{high,low}/): ONE generic array per node at g_jr_c1, g_jr_c2 and g_jr_s, anchored on the node with its aisles along the verified edge's arriving direction, visual only, no colliders, not in the walk graph. 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\": the aisle count, direction and side are guesses, not a surveyed layout",
+   "derivation": "PLATEAU CityGML LOD4.1 -> pipeline/extract_plateau_ubld.py (ENU) -> pipeline/blender_build_glb.py (triangulated, metric UV0); renderer frame (x, z, -y), identity transform; collision comes from per-mesh gteki_role tags (floor/stairs_ramps walkable; wall/barriers/transport collide), not from the asset role, because verified exit routes pass through door and portal panels; runtime variant assets/ikebukuro_b1_lit.glb (listed in files, not a second asset, so loaders that load every asset never stack both): the same geometry + generated ceiling LED fixtures (GTEki art direction, not surveyed) -> pipeline/blender_bake_lighting.py: second UV set (TEXCOORD_1) and a Cycles diffuse lightmap (assets/ikebukuro_b1_lightmap.webp / _2k.webp, gamma-2.2 encoded, scale in ikebukuro_b1_lit.meta.json). scene/scene.ts loads the lit variant and falls back to this GLB; kit/{high,low}/*.glb: Lane E kit pieces (see source gteki-kit-0-1-0) copied unmodified by pipeline/sync_kit.py and instanced by scene/kit.ts on the access-fence label stretches and, for the two column pieces, by scene/kit_columns.ts as sleeves on the PLATEAU column footprints in scene/columns.json (finish generic, not surveyed), visual only, no colliders; gteki_gate_array_2 (kit/{high,low}/): ONE generic array per node at g_jr_c1, g_jr_c2 and g_jr_s, anchored on the node with its aisles along the verified edge's arriving direction, visual only, no colliders, not in the walk graph. 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\": the aisle count, direction and side are guesses, not a surveyed layout",
    "files": [
     "assets/ikebukuro_b1.meta.json",
     "assets/ikebukuro_b1_lit.glb",
@@ -5450,6 +5454,10 @@
     "assets/ikebukuro_b1_lightmap_2k.webp",
     "kit/high/gteki_barrier_rail_2400_solid.glb",
     "kit/low/gteki_barrier_rail_2400_solid.glb",
+    "kit/high/gteki_column_square_600.glb",
+    "kit/low/gteki_column_square_600.glb",
+    "kit/high/gteki_column_round_d600.glb",
+    "kit/low/gteki_column_round_d600.glb",
     "kit/high/gteki_gate_array_2.glb",
     "kit/low/gteki_gate_array_2.glb"
    ]
@@ -5533,6 +5541,15 @@
    "modified": true,
    "authored": true,
    "derivation": "GTEki-authored kit placement config (which library pieces the scene places, their use, pitch and the representative gate-array label); the pieces themselves are assets[] files (gteki/kit/**); no external source"
+  },
+  {
+   "id": "columns",
+   "path": "scene/columns.json",
+   "sourceIds": [
+    "plateau-ubld-13116"
+   ],
+   "modified": true,
+   "derivation": "pipeline/extract_columns.py: PLATEAU column footprints and heights found by shape in the barriers triangles (build/ubld_enu.json, welded vertical prisms 1.5 m or taller, up to 3 m across), each with its kit sleeve piece id or null and a reason. sourceIds = PLATEAU"
   }
  ]
 }
