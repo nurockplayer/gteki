@@ -6,7 +6,7 @@ const fmt = (n: number): string => n.toLocaleString('en-US');
 const num = (n: number): string => String(Math.round(n * 1e6) / 1e6);
 let blocked: ReadonlySet<string> = new Set();
 /** A column name that contains a guarded literal (a controlled-vocabulary or POI value elsewhere in the store) is described, not quoted. */
-const colName = (name: string, index: number): string => (name.startsWith('(') || ![...blocked].some((b) => name.includes(b)) ? name : `(column ${index + 1}: name withheld by the literal guard, ${name.length} characters)`);
+const colName = (name: string, index: number): string => (![...blocked].some((b) => name.includes(b)) ? name : `(column ${index + 1}: name withheld by the literal guard, ${name.length} characters)`);
 const guardedValue = (value: string): string => (![...blocked].some((b) => value.includes(b)) ? value : `(value withheld by the literal guard, ${value.length} characters)`);
 const cols = (names: string[]): string => names.map((c, i) => `\`${colName(c, i)}\``).join(', ');
 const cell = (v: string): string => v.replace(/\|/gu, '\\|');

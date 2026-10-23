@@ -119,6 +119,46 @@ describe('csv-profile', () => {
     expect(verdictFor(inside, { ...pkg, terms_states_cc_by_4_0: false }).verdict).toBe('NOT_CLEAN');
   });
 
+  it.each(['shp', 'geojson'])('requires evaluated %s window hits for a ZIP verdict, independently of CSV rows', (format) => {
+    const pkg = { license_id: 'CC-BY-4.0', resource_licenses: [null], resources: 1, terms_sha256: 'x', terms_bytes: 1, terms_states_cc_by_4_0: true, terms_is_closure_notice: false, terms_has_exclusion_note_clause: true };
+    const csv = profileCsv(Buffer.from('name,lat,lon\nA,35.7002,139.7002\n'), [STATION]);
+    const vectorDetail = (lon: number, lat: number): Record<string, unknown> => format === 'shp'
+      ? shpDetail(shapeBuffer(1, [[[lon, lat]]]), 'GEOGCS["JGD2011"]', [STATION])
+      : geojsonDetail(Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: { type: 'Point', coordinates: [lon, lat] } }] })), [STATION]);
+    const zip: ZipProfile = { kind: 'zip', members: [
+      { extension: format, bytes: 10, format, detail: vectorDetail(139.72, 35.72) },
+      { extension: 'csv', bytes: 10, format: 'csv', detail: { profile: csv } },
+    ], vector_members: 1, holds_vector_data: true, coordinate_tables: 1, formats: { [format]: 1, csv: 1 } };
+    const outside = verdictFor(zip, pkg);
+    expect(outside.verdict).toBe('NOT_CLEAN');
+    expect(outside.reasons.join(';')).toContain('0 vector feature(s) touch a window; 1 coordinate-table row(s) in window');
+    zip.members[0].detail = vectorDetail(139.7002, 35.7002);
+    const inside = verdictFor(zip, pkg);
+    expect(inside.verdict).toBe('CLEAN_CANDIDATE');
+    expect(inside.reasons.join(';')).toContain('1 vector feature(s) touch a window; 1 coordinate-table row(s) in window');
+    zip.members.pop();
+    zip.coordinate_tables = 0;
+    delete zip.formats.csv;
+    expect(verdictFor(zip, pkg).verdict).toBe('CLEAN_CANDIDATE');
+  });
+
+  it.each([
+    null,
+    { error: 'unreadable vector member' },
+    shpDetail(shapeBuffer(1, [[[139.7002, 35.7002]]]), null, [STATION]),
+  ])('keeps a ZIP UNKNOWN when its vector member is unevaluated despite CSV hits (%j)', (detail) => {
+    const pkg = { license_id: 'CC-BY-4.0', resource_licenses: [null], resources: 1, terms_sha256: 'x', terms_bytes: 1, terms_states_cc_by_4_0: true, terms_is_closure_notice: false, terms_has_exclusion_note_clause: true };
+    const csv = profileCsv(Buffer.from('lat,lon\n35.7002,139.7002\n'), [STATION]);
+    const zip: ZipProfile = { kind: 'zip', members: [
+      { extension: 'shp', bytes: 10, format: 'shp', detail },
+      { extension: 'csv', bytes: 10, format: 'csv', detail: { profile: csv } },
+    ], vector_members: 1, holds_vector_data: true, coordinate_tables: 1, formats: { shp: 1, csv: 1 } };
+    const result = verdictFor(zip, pkg);
+    expect(result.verdict).toBe('UNKNOWN');
+    expect(result.reasons).toContain('no vector member was evaluated for station windows');
+    expect(result.reasons.join(';')).toContain('0 vector feature(s) touch a window; 1 coordinate-table row(s) in window');
+  });
+
   it('counts a GeoJSON segment crossing a disc and a polygon enclosing one', () => {
     // Both endpoints of the line are ~1 km from the origin, but the segment passes through the 250 m disc.
     const crossing = Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: { type: 'LineString', coordinates: [[139.69, 35.7], [139.71, 35.7]] } }] }));
@@ -191,8 +231,8 @@ describe('csv-profile', () => {
     expect(safeColumnName('  ', 1)).toBe('(column 2: blank header)');
   });
 
-  it('keeps row values out of the Markdown report and withholds guarded column names', () => {
-    const p = profileCsv(Buffer.from('名称,guarded term,lat,lon\nSECRET-ROW-VALUE,v,35.7002,139.7002\n'), [STATION]);
+  it.each(['guarded term', '(guarded term)', '(column 1: guarded term)'])('keeps row values out of the Markdown report and withholds column %s', (name) => {
+    const p = profileCsv(Buffer.from(`名称,${name},lat,lon\nSECRET-ROW-VALUE,v,35.7002,139.7002\n`), [STATION]);
     const md = renderProfileMarkdown([{ spec: 'synthetic', catalog_id: null, sha256: 'a'.repeat(64), bytes: 10, profile: p, error: null, package: null, verdict: { verdict: 'UNKNOWN', reasons: ['x'] } }], [STATION], new Set(['guarded term']));
     expect(md).not.toContain('SECRET-ROW-VALUE');
     expect(md).not.toContain('guarded term');
@@ -205,6 +245,10 @@ describe('csv-profile', () => {
     ['lat,lon,crs guarded term', '35.7,139.7,JGD2011'],
     ['緯度guarded term,lon,crs', '35.7,139.7,JGD2011'],
     ['lat,経度guarded term,crs', '35.7,139.7,JGD2011'],
+    ['lat,lon,crs', '35.7,139.7,(guarded term)'],
+    ['lat,lon,(座標系guarded term)', '35.7,139.7,JGD2011'],
+    ['(緯度guarded term),lon,crs', '35.7,139.7,JGD2011'],
+    ['lat,(経度guarded term),crs', '35.7,139.7,JGD2011'],
   ])('withholds guarded CRS and coordinate text for header %s', (header, row) => {
     const p = profileCsv(Buffer.from(`${header}\n${row}\n`), [STATION]);
     const md = renderProfileMarkdown([{ spec: 'synthetic', catalog_id: null, sha256: 'a'.repeat(64), bytes: 10, profile: p, error: null, package: null, verdict: { verdict: 'UNKNOWN', reasons: ['x'] } }], [STATION], new Set(['guarded term']));
@@ -220,8 +264,8 @@ describe('csv-profile', () => {
     expect(xlsxRecords(entries)).toEqual([['name', '緯度', '経度'], ['a', '', '139.7']]);
   });
 
-  it('withholds DBF field names that carry a guarded literal inside a ZIP member detail', () => {
-    const zip: ZipProfile = { kind: 'zip', members: [{ extension: 'dbf', bytes: 10, format: 'dbf', detail: { records: 1, field_count: 1, field_names: ['guarded term'] } }], vector_members: 0, holds_vector_data: false, coordinate_tables: 0, formats: { dbf: 1 } };
+  it.each(['guarded term', '(guarded term)', '(column 1: guarded term)'])('withholds DBF field %s and nested keys inside a ZIP member detail', (name) => {
+    const zip: ZipProfile = { kind: 'zip', members: [{ extension: 'dbf', bytes: 10, format: 'dbf', detail: { records: 1, field_count: 1, field_names: [name], nested: { [name]: name } } }], vector_members: 0, holds_vector_data: false, coordinate_tables: 0, formats: { dbf: 1 } };
     const md = renderProfileMarkdown([{ spec: 'synthetic-zip', catalog_id: null, sha256: 'a'.repeat(64), bytes: 10, profile: zip, error: null, package: null, verdict: { verdict: 'UNKNOWN', reasons: ['x'] } }], [STATION], new Set(['guarded term']));
     expect(md).not.toContain('guarded term');
     expect(md).toContain('withheld by the literal guard');

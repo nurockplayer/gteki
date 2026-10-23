@@ -385,21 +385,27 @@ export function verdictFor(profile: Profile | null, pkg: PackageFacts | null, op
   if (pkg.terms_is_closure_notice) reasons.push('portal terms snapshot is a closure notice');
   else if (pkg.terms_states_cc_by_4_0 === false) reasons.push('portal terms snapshot does not state CC BY 4.0');
   if (profile.kind === 'zip') {
-    if (!profile.holds_vector_data) reasons.push(profile.coordinate_tables ? 'ZIP holds no vector files (coordinate tables only)' : 'ZIP holds no vector data');
-    let touching = 0, crsKnown = false;
+    if (profile.holds_vector_data === false) reasons.push(profile.coordinate_tables ? 'ZIP holds no vector files (coordinate tables only)' : 'ZIP holds no vector data');
+    let vectorTouching = 0, csvRows = 0, evaluatedVectors = 0, crsKnown = false;
     for (const m of profile.members) {
       const d = m.detail as Record<string, unknown> | null;
       if (!d) continue;
       const hits = (d.records_touching_window ?? d.features_touching_window) as Record<string, number> | undefined;
-      if (hits) touching += Object.values(hits).reduce((n, v) => n + v, 0);
+      if (VECTOR.has(m.format) && hits) {
+        evaluatedVectors++;
+        vectorTouching += Object.values(hits).reduce((n, v) => n + v, 0);
+      }
       const csv = d.profile as CsvProfile | undefined;
-      if (csv) touching += csv.windows.reduce((n, w) => n + w.in_window, 0);
+      if (csv) csvRows += csv.windows.reduce((n, w) => n + w.in_window, 0);
       if (m.format === 'prj' && typeof d.crs_name === 'string') crsKnown = true;
       if (m.format === 'geojson' && d.declared_crs_member) crsKnown = true;
     }
-    if (profile.holds_vector_data && touching === 0) reasons.push('no feature touches any station window');
-    if (reasons.length) return { verdict: 'NOT_CLEAN', reasons };
-    return { verdict: 'CLEAN_CANDIDATE', reasons: [`dataset-level CC BY 4.0 in the snapshot and terms; vector members present; ${crsKnown ? 'CRS declared by a member' : 'no CRS declared (bbox sanity only)'}; ${touching} feature(s)/row(s) touch a window`] };
+    const counts = `${vectorTouching} vector feature(s) touch a window; ${csvRows} coordinate-table row(s) in window`;
+    if (evaluatedVectors === 0) return { verdict: reasons.length ? 'NOT_CLEAN' : 'UNKNOWN', reasons: [...reasons, 'no vector member was evaluated for station windows', counts] };
+    if (vectorTouching === 0) reasons.push('no feature touches any station window');
+    if (reasons.length) return { verdict: 'NOT_CLEAN', reasons: [...reasons, counts] };
+    if (profile.holds_vector_data !== true) return { verdict: 'UNKNOWN', reasons: ['ZIP vector data presence is UNKNOWN', counts] };
+    return { verdict: 'CLEAN_CANDIDATE', reasons: [`dataset-level CC BY 4.0 in the snapshot and terms; vector members present; ${crsKnown ? 'CRS declared by a member' : 'no CRS declared (bbox sanity only)'}; ${counts}`] };
   }
   if (profile.coordinates.valid_rows === 0) reasons.push(profile.lat_columns.length && profile.lon_columns.length ? 'lat/lon columns present but no valid coordinate rows' : 'no lat/lon columns');
   else {
