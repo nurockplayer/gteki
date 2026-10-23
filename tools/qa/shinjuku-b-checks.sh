@@ -38,6 +38,7 @@ status=0
 # Evidence must come from this run: run-candidate.sh resets the artifacts only once it reaches the tests, so a
 # run that stops earlier (merge, build, server) would otherwise summarize the previous run's files (#318).
 stamp=$(mktemp "${TMPDIR:-/tmp}/b-checks-stamp.XXXXXX")
+trap 'rm -f "$stamp"' EXIT
 # shellcheck disable=SC2086
 GTEKI_PROBE="$probes" "$here/tools/qa/run-candidate.sh" "$work" "$base" $refs -- --grep "$grep_re" --trace off "$@" || status=$?
 

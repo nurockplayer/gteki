@@ -117,7 +117,8 @@ cameraRow("C3 camera crowds avatar (#70)", "platform-exit2 walk, last 4 frames; 
   const missingWalks = perProject(PROJECTS, (p) => walks[p].filter((w) => !walkStats(w, "nearBlack").length).map((w) => w.label));
   const stat = (p, key) => {
     if (missingWalks[p].length) return undefined;
-    return Math.max(...walks[p].flatMap((w) => walkStats(w, key)));
+    const all = walks[p].flatMap((w) => walkStats(w, key));
+    return all.length ? Math.max(...all) : undefined;
   };
   const nb = perProject(PROJECTS, (p) => stat(p, "nearBlack"));
   const cw = perProject(PROJECTS, (p) => stat(p, "clippedWhite"));
@@ -170,7 +171,7 @@ probeRow("B7 second walkable surface", "S2 platform->exit2 step probe (08): wors
     item: "B4 overview draw calls", metric: "overview max draw calls (05)",
     rule: `no regression past b511263: ${DRAW_CALLS_B511263["desktop-chromium"]} desktop / ${DRAW_CALLS_B511263["phone-webkit"]} phone (main ${DRAW_CALLS_MAIN["desktop-chromium"]} / ${DRAW_CALLS_MAIN["phone-webkit"]})`,
     values: perProject(PROJECTS, (p) => (dc[p] === undefined ? NOT_RUN : String(dc[p]))),
-    verdict: lacking.length ? `n/a (walk evidence missing: ${lacking.join("; ")})`
+    verdict: lacking.length ? `n/a (not run: ${lacking.join(", ")})`
       : worse.length ? `FAIL (above main: ${worse.join(", ")})`
       : regress.length ? `GAP (regressed past b511263: ${regress.map((p) => `${p} ${dc[p]}`).join(", ")})`
       : "PASS",
@@ -254,7 +255,7 @@ probeRow("B7 second walkable surface", "S2 platform->exit2 step probe (08): wors
   row({
     item: "Phone speed (Shinjuku walk)", metric: "walk fps (05), held W", rule: `>= ${FPS_FLAG} fps (b511263: 40.2 on iPhone 15 emulation under load, main 59.4); host must be idle`,
     values: perProject(PROJECTS, (p) => (w[p] ? `${fmt(w[p].fps, 1)} fps` : NOT_RUN)),
-    verdict: lacking.length ? `n/a (walk evidence missing: ${lacking.join("; ")})` : invalid.length ? `GAP (software WebGL: ${invalid.join(", ")})`
+    verdict: lacking.length ? `n/a (not run: ${lacking.join(", ")})` : invalid.length ? `GAP (software WebGL: ${invalid.join(", ")})`
       : slow.length ? `GAP (below ${FPS_FLAG}: ${slow.map((p) => `${p} ${fmt(w[p].fps, 1)}`).join(", ")}; rerun on an idle host before judging)` : "PASS",
   });
   row({
