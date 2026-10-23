@@ -7,7 +7,7 @@ import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import kitJson from "./kit/kit.json";
 import signage from "./signage.json";
-import { type KitManifest, KIT_TILE_M, pieceUri } from "./kit.ts";
+import { type KitManifest, pieceUri } from "./kit.ts";
 import { buildSigns, type SignLayout, type SignSpec } from "./signs.ts";
 import { FLUSH_GAP_M, FRAME_PARTS, loadSignKit, signFramePlacements } from "./kit_signs.ts";
 
@@ -183,16 +183,15 @@ describe("sign frame kit contract", () => {
 });
 
 describe("sign frame loader and real tier geometry", () => {
-  it("loads the selected tier once and builds tiled, correctly oriented, visual-only instances", async () => {
+  it("loads the selected tier once and builds one batch per part of correctly oriented, visual-only instances", async () => {
     for (const low of [false, true]) {
       const h = host(low), loaded = await loadSignKit(THREE, h, kit, low);
       expect(h.loadGlb).toHaveBeenCalledExactlyOnceWith(`kit/${low ? "low" : "high"}/${ID}.glb`);
       expect(loaded.facePlaneM).toBe(spec.face_plane_m);
       const a = layout(), b = layout({ id: "far", position: { x: 100, y: 20, z: 3 } });
       const out = loaded.build(THREE, new THREE.Texture(), toRenderer, [a, b]);
-      expect(out.stats.tiles).toBe(2);
-      expect(Math.abs(a.position.x - b.position.x)).toBeGreaterThan(low ? KIT_TILE_M.low : KIT_TILE_M.high);
-      const span = out.group.children.find((m) => m.name === "kit_sign_frame:span:0:-2")
+      expect(out.stats.tiles).toBe(1); // one batch per part, however far apart the signs are
+      const span = out.group.children.find((m) => m.name === "kit_sign_frame:span:0:0")
         ?? out.group.children.find((m) => m.name.startsWith("kit_sign_frame:span:"));
       expect(span).toBeDefined();
       const matrix = new THREE.Matrix4();

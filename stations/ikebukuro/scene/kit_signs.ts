@@ -3,7 +3,7 @@
 import type * as THREE_NS from "three";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import type { SceneContext } from "@gteki/scene-api";
-import { KIT_ENV_INTENSITY, type KitManifest, pieceUri, tileGroups, tileSize } from "./kit.ts";
+import { KIT_ENV_INTENSITY, type KitManifest, pieceUri, tileGroups } from "./kit.ts";
 import type { SignLayout } from "./signs.ts";
 type ThreeNS = typeof THREE_NS;
 
@@ -26,6 +26,10 @@ export interface NineSlice {
 }
 
 export const FRAME_USE = "sign_frame";
+/** One instance batch per part for the whole station, not per kit tile. GPU slot 2026-10-23 (spec 13, 52 views vs
+ *  main): 16 m tiles added ~213 draws p50 (max 1419 -> 2439) on desktop, 64 m tiles ~92; one batch adds ~40 draws
+ *  and ~165k triangles p50 (phone: ~6 draws, ~12k triangles). Draws cost more than these triangles. */
+export const SIGN_FRAME_TILE_M = Infinity;
 /** build_signage.py FLUSH_GAP, with 1 mm for rounded ENU heights. */
 export const FLUSH_GAP_M = 0.021;
 export const FRAME_PARTS = ["end_L", "end_R", "span", "hanger", "rod", "rod_canopy"] as const;
@@ -167,7 +171,7 @@ export async function loadSignKit(THREE: ThreeNS, host: Pick<SceneContext, "asse
       };
       const base = new THREE.Matrix4(), local = new THREE.Matrix4(), q = new THREE.Quaternion();
       const up = new THREE.Vector3(0, 1, 0), offset = new THREE.Vector3(), scale = new THREE.Vector3();
-      const tiles = tileGroups(world.map((w) => ({ x: w.centre.x, z: w.centre.z })), tileSize(low));
+      const tiles = tileGroups(world.map((w) => ({ x: w.centre.x, z: w.centre.z })), SIGN_FRAME_TILE_M);
       for (const [key, idx] of [...tiles].sort(([a], [b]) => a < b ? -1 : 1)) {
         stats.tiles++;
         let tileTris = 0;

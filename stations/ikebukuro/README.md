@@ -196,7 +196,7 @@ sign using the fitted face dimensions from `buildSigns`, centred and facing with
 includes the two 3 cm side bars so the opening contains both faces, clamped to 0.5–6.1 m with a warning outside that
 range. Low-ceiling frames match the existing panel height; flush signs have no rods. Other rods and their ceiling
 canopies meet `ceilingZ`. Faces sit 1 mm inside the kit's recessed face plane; a failed kit keeps the original sign
-box and faces. Both tiers use culled instance tiles and remain visual only. These are generic Lane E presentation
+box and faces. Each part is one instance batch for the whole station, not per kit tile (fewer draws: about +40 draws p50 on desktop instead of +213 with 16 m tiles, spec 13 on 2026-10-23), and visual only. These are generic Lane E presentation
 (CC BY 4.0, GTEki contributors), not a survey of the real Ikebukuro housings. `loadSignKit` offers
 `omitPhoneRods`, which `scene.ts` turns on: phones keep the frames but not the rods, collars and canopies (all 119
 frames: ~123k triangles on desktop, ~40k on phones with rods, ~19k without). The real-GLB triangle report is printed
