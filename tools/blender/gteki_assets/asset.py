@@ -127,6 +127,19 @@ class Asset:
 
     # ---------------------------------------------------------------- build
 
+    def _fit_lightmap(self, vis_objs, res, nets, min_density):
+        """Lay the lightmap out at `res`, a size up each time the charts do not fit (or, with
+        `min_density`, are sparser than that), never past the full tier's largest map."""
+        while True:
+            try:
+                _lightmap_uvs(vis_objs, res, nets, min_density=min_density)
+                return res
+            except LightmapOverflow as error:
+                if self.ao_res_override or res >= ao.RES_FULL[-1]:
+                    raise
+                print(f"[gteki] {self.id}: AO {res}px: {error}; trying the next size", flush=True)
+                res *= 2
+
     def build(self):
         reset_scene()
         coll = bpy.context.scene.collection
@@ -180,24 +193,27 @@ class Asset:
         # a station catalog may pin the size (`ao_res`) when it places many copies of a long piece
         self.ao_res = self.ao_res_override or ao.resolution(_gltf_bounds(vis_objs), mobile)
         reference = _lightmap_reference(vis_objs, self.ao_res, bool(self.ao_res_override)) if mobile else None
-        minimum = max(8.0, reference[1] - 0.001) if reference else 8.0
+        # the face nets must at least match the old layout's density; they need not reach a fixed
+        # px/m, or a small asset would grow its map and then fall back to the worse old layout
+        minimum = reference[1] - 0.001 if reference and not self.ao_res_override else 0.0
         use_reference = False
         try:
-            while True:
-                try:
-                    _lightmap_uvs(vis_objs, self.ao_res, mobile,
-                                  min_density=minimum if mobile and not self.ao_res_override else 0.0)
-                    break
-                except LightmapOverflow as error:
-                    # Charts need more room for MARGIN_PX gaps or useful mobile density.
-                    if self.ao_res_override or self.ao_res >= ao.RES_FULL[-1]:
-                        raise
-                    print(f"[gteki] {self.id}: AO {self.ao_res}px: {error}; trying the next size", flush=True)
-                    self.ao_res *= 2
-        except RuntimeError:
+            self.ao_res = self._fit_lightmap(vis_objs, self.ao_res, mobile, minimum)
+        except LightmapOverflow:
             if reference is None:
                 raise
             use_reference = True
+        except RuntimeError as error:
+            if reference is not None:
+                use_reference = True
+            elif mobile:
+                raise
+            else:
+                # Smart UV Project can leave charts folded over each other after every repair
+                # (a narrow, finely bevelled escalator): only then does full use the face nets
+                print(f"[gteki] {self.id}: {error}; laying the lightmap out as face nets", flush=True)
+                _drop_lightmap(vis_objs)
+                self.ao_res = self._fit_lightmap(vis_objs, self.ao_res, True, 0.0)
         if reference:
             use_reference |= self.ao_res > reference[0]
             if not use_reference:
@@ -696,6 +712,17 @@ def _lightmap_seams(bm, max_span):
                 if other in remaining:
                     heapq.heappush(pending, (-round(face.normal.dot(other.normal), 5),
                                             -round(e.calc_length(), 6), e.index, other.index, fi))
+
+
+def _drop_lightmap(objs):
+    """Undo a failed lightmap layout so it can be laid out again."""
+    if bpy.context.mode != "OBJECT":
+        bpy.ops.object.mode_set(mode="OBJECT")
+    for o in objs:
+        layer = o.data.uv_layers.get("UVLightmap")
+        if layer:
+            o.data.uv_layers.remove(layer)
+        o.data.uv_layers.active = o.data.uv_layers[0]
 
 
 class LightmapOverflow(RuntimeError):
