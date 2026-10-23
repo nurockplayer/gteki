@@ -128,6 +128,14 @@ function runPanel(w: WallSeg, r: Run): WallSeg {
   return { ...w, surfaceBase: { a, b }, profile: { bottomA: a - 0.12, bottomB: b - 0.12, topA: a + 0.9, topB: b + 0.9 } };
 }
 
+/** #316: headroom over the steps; only surfaces above this band can close the void above a walker. */
+const HEAD_BAND = 2.4;
+/** #49: the shell roof sits this far above the run's steps. */
+const SHELL_RISE = 3.4;
+
+/** A level ceiling or a pitched soffit, as `soffitHeight` reads both. */
+type Finish = Parameters<typeof soffitHeight>[0];
+
 /** #49: generic finish for an unmodelled void, not a surveyed station reproduction.
  * These panels belong only to the visible root; never append them to the layout/wall lists.
  */
@@ -148,12 +156,12 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
       slope: { x: dx * (r.b.z - r.a.z) / l2, y: dy * (r.b.z - r.a.z) / l2 } };
   };
   // Reserve the complete existing walking footprints, including holes and sloping runs.
-  // 2.4 m leaves headroom for people and fixtures; the sides also clear the floor thickness.
+  // The head band leaves headroom for people and fixtures; the sides also clear the floor thickness.
   const surfaces = [...layout.levels.flatMap((lv) => lv.slabs), ...layout.pads, ...layout.linkStrips, ...layout.streetPads,
     ...layout.runs.map((r) => pitched(r, 0.04, 0.08))];
   const voids = surfaces.map((s) => {
     const points = s.rings.flat();
-    return { rings: s.rings, bottom: (p: XY) => soffitHeight(s, p) - 0.2, top: (p: XY) => soffitHeight(s, p) + 2.4,
+    return { rings: s.rings, bottom: (p: XY) => soffitHeight(s, p) - 0.2, top: (p: XY) => soffitHeight(s, p) + HEAD_BAND,
       minX: Math.min(...points.map((p) => p.x)), maxX: Math.max(...points.map((p) => p.x)),
       minY: Math.min(...points.map((p) => p.y)), maxY: Math.max(...points.map((p) => p.y)) };
   });
@@ -165,7 +173,7 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     const minY = Math.min(a.y, b.y) - 0.9, maxY = Math.max(a.y, b.y) + 0.9;
     const za = layout.nodeZ.get(e.from)!, zb = layout.nodeZ.get(e.to)!;
     voids.push({ rings: [[{ x: minX, y: minY }, { x: maxX, y: minY }, { x: maxX, y: maxY }, { x: minX, y: maxY }]],
-      bottom: () => Math.min(za, zb) - 0.2, top: () => Math.max(za, zb) + 2.4, minX, maxX, minY, maxY });
+      bottom: () => Math.min(za, zb) - 0.2, top: () => Math.max(za, zb) + HEAD_BAND, minX, maxX, minY, maxY });
   }
   // Clip arbitrary (possibly holed) roof polygons to an affine height half-plane.
   const heightMask = (polys: polygonClipping.MultiPolygon, value: (p: XY) => number): polygonClipping.MultiPolygon => {
@@ -187,26 +195,42 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
   };
   // Mirror finishUnderground's streetUnderside without changing its bake fingerprint.
   // Leave 1 mm below it so Float32 vertices remain strictly underground.
-  const streetLimit = -0.18 - 0.001;
+  const streetUnderside = -0.18;
+  const streetLimit = streetUnderside - 0.001;
   const existingRoofs = [...layout.levels.flatMap((lv) => lv.ceilings), ...layout.soffits];
   const walls: { wall: WallSeg; covered: XY[][][] }[] = [], roofs: THREE.BufferGeometry[] = [];
   for (const r of layout.runs.filter((r) => r.mode === "escalator")) {
     // Outside the truss (+0.15 m) and balustrade (+0.08 m). The 0.6 m end overlap
     // joins the inclined finish to landing ceilings without closing either run mouth.
     const roof = pitched(r, 0.45, 0.6);
-    roof.z += 3.4;
+    roof.z += SHELL_RISE;
     // Existing finish wins wherever its footprint covers the shell and its
     // affine underside is at or below the shell top. Remove the side there too:
     // otherwise its upper strip can become the first drawn roof seen by the camera.
+    // #316: only a surface above the walker's head band can close that void, so
+    // undersides (run-underside:*, shaft-invert:*) and lower ceilings never count.
+    const headTop = (p: XY) => soffitHeight(roof, p) - SHELL_RISE + HEAD_BAND;
+    // A finish levelling off at the street slab underside already caps the exit,
+    // so it wins even where it sits just above the shell top (the street clip
+    // keeps the shell below it); otherwise its lower shell roof is the first
+    // drawn roof and the exit camera meets it before the cap.
+    const atStreetFinish = (s: Finish) => !s.slope && Math.abs(s.z - streetUnderside) < 1e-6;
+    const covers = (existing: Finish): polygonClipping.MultiPolygon => {
+      let footprint: polygonClipping.MultiPolygon = [polygon(existing.rings)];
+      if (!atStreetFinish(existing)) footprint = heightMask(footprint, (p) => soffitHeight(roof, p) - soffitHeight(existing, p));
+      footprint = heightMask(footprint, (p) => soffitHeight(existing, p) - headTop(p));
+      return footprint;
+    };
     let panels: polygonClipping.MultiPolygon = [polygon(roof.rings)];
     const covered: XY[][][] = [];
     for (const existing of existingRoofs) {
       let cut = polygonClipping.intersection([polygon(roof.rings)], polygon(existing.rings));
-      cut = heightMask(cut, (p) => soffitHeight(roof, p) - soffitHeight(existing, p));
+      if (!atStreetFinish(existing)) cut = heightMask(cut, (p) => soffitHeight(roof, p) - soffitHeight(existing, p));
+      cut = heightMask(cut, (p) => soffitHeight(existing, p) - headTop(p));
       if (!cut.length) continue;
       // Keep the existing footprint for side cutting: intersecting it with the
       // shell strip would put both side walls exactly on the cutter boundary.
-      covered.push(...heightMask([polygon(existing.rings)], (p) => soffitHeight(roof, p) - soffitHeight(existing, p)).map(ringsOf));
+      covered.push(...covers(existing).map(ringsOf));
       panels = polygonClipping.difference(panels, cut);
     }
     panels = heightMask(panels, (p) => streetLimit - soffitHeight(roof, p));
@@ -239,9 +263,12 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
       return [[[along(w.a), p.bottomA], [along(w.b), p.bottomB], [along(w.b), p.topB], [along(w.a), p.topA]]];
     });
     if (!pieces.length) continue;
-    // The physical wall cutter splits into conservative height bands. Union those coplanar
-    // pieces for rendering, removing subdivision vertices rather than retaining thousands of quads.
-    const panels = heightMask(polygonClipping.union(pieces[0]!, ...pieces.slice(1)), (p) => streetLimit - p.y);
+    // The cutter leaves ~1e-5 m numeric noise on these near-coincident edges, which makes
+    // polygon-clipping emit self-overlapping rings that earcut later drops whole panels
+    // from (#316). Snap to 0.1 mm first and render the bands as they are: unioning them
+    // for rendering (the #298 approach) saved no vertices once the rings were valid.
+    const panels = heightMask(pieces.map((poly) => poly.map((ring) =>
+      ring.map(([x, y]) => [Math.round(x! * 1e4) / 1e4, Math.round(y! * 1e4) / 1e4]) as polygonClipping.Ring)), (p) => streetLimit - p.y);
     for (const poly of panels) {
       const rings = ringsOf(poly).map((closed) => {
         const ring = closed.slice(0, -1); // polygon-clipping repeats the first vertex
