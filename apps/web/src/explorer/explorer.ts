@@ -27,6 +27,8 @@ import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachFov, avatarFade, boomSqueezed, co
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
+import { collectIdentityBoards, identityFront, identityNameCentre, identityRegionRect, intersectsRect, protectIdentityChip, withinObject, type IdentityBoard, type ScreenRect } from "./identityBoards.ts";
+import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming } from "./identityFraming.ts";
 import { StationCaches } from "./stationCaches.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
@@ -162,6 +164,8 @@ interface PoiLabel {
   size: { w: number; h: number } | null;
   /** Passes that revealed this label while it was still unmeasured. */
   measureTries: number;
+  identityHidden: boolean;
+  identityOffsetY: number;
 }
 
 export class Explorer {
@@ -290,6 +294,13 @@ export class Explorer {
   private readonly labelAt = new THREE.Vector3();
   /** The station's sign meshes (see-through role, not solid): a label they alone block hides instead of fading. */
   private signMeshes: ReadonlySet<THREE.Object3D> = new Set();
+  private identityBoards: IdentityBoard[] = [];
+  /** Consumed by the first successful walker placement, including when no board qualifies. */
+  private identityPlaced = false;
+  private identityLabelsDirty = true;
+  private labelMode: ExplorerMode | null = null;
+  private labelCamFov = NaN;
+  private labelCamAspect = NaN;
   /** Camera pose at the last occlusion sweep. */
   private readonly labelCamPos = new THREE.Vector3(Infinity, 0, 0);
   private readonly labelCamQuat = new THREE.Quaternion();
@@ -402,6 +413,41 @@ export class Explorer {
       if (o.userData?.gteki_role === "sign" && Array.isArray(faces)) out.push(...faces);
     });
     return out;
+  }
+
+  /** Live recognition-proxy evidence in page CSS pixels; no renderer or label state is changed. */
+  identity(): { id: string; inFrame: boolean; frontFacing: boolean; facingDeg: number; nameRect: ScreenRect | null; nameHeightPx: number; coveredByChip: boolean; occluded: LabelOcclusion }[] {
+    this.camera.updateMatrixWorld();
+    this.refreshOccluders();
+    const host = this.host.getBoundingClientRect();
+    const { w, h } = this.viewSize;
+    return this.identityBoards.map((board) => {
+      board.object.updateWorldMatrix(true, false);
+      const centre = identityNameCentre(board);
+      const facing = THREE.MathUtils.clamp(identityFront(board).dot(this.camera.position.clone().sub(centre).normalize()), -1, 1);
+      const visible = inScene(board.object, this.scene) && objectVisible(board.object);
+      const rects = board.regions.map((region) => ({ kind: region.kind, rect: visible ? identityRegionRect(region.box, board.object, this.camera, w, h) : null }));
+      const names = rects.filter((r) => r.kind === "name");
+      const visibleNames = names.flatMap((r) => r.rect ? [r.rect] : []);
+      const name = visibleNames.length ? {
+        x0: Math.min(...visibleNames.map((r) => r.x0)), y0: Math.min(...visibleNames.map((r) => r.y0)),
+        x1: Math.max(...visibleNames.map((r) => r.x1)), y1: Math.max(...visibleNames.map((r) => r.y1)),
+      } : null;
+      const pageRect = (r: ScreenRect): ScreenRect => ({ x0: r.x0 + host.left, y0: r.y0 + host.top, x1: r.x1 + host.left, y1: r.y1 + host.top });
+      const coveredByChip = this.poiLabels.some((l) => {
+        if (!l.obj.visible || l.obj.element.style.display === "none") return false;
+        const chip = l.obj.element.getBoundingClientRect();
+        if (!chip.width || !chip.height) return false;
+        return rects.some((r) => r.rect && intersectsRect(pageRect(r.rect), { x0: chip.left, y0: chip.top, x1: chip.right, y1: chip.bottom }));
+      });
+      return {
+        id: board.object.name || board.object.uuid,
+        inFrame: names.length === visibleNames.length && name !== null && name.x0 >= 0 && name.y0 >= 0 && name.x1 <= w && name.y1 <= h,
+        frontFacing: facing > 0.2, facingDeg: THREE.MathUtils.radToDeg(Math.acos(facing)),
+        nameRect: name ? pageRect(name) : null, nameHeightPx: name ? name.y1 - name.y0 : 0, coveredByChip,
+        occluded: this.labelOccluded({ obj: { getWorldPosition: (target) => target.copy(centre) }, occluded: "none" }, board.object),
+      };
+    });
   }
 
   /** POI label states for automated visual checks. */
@@ -777,6 +823,7 @@ export class Explorer {
       const signs = cuttableSigns(seeThroughMeshes(this.stationScene.root), [this.walkable, this.colliders, this.cameraBlockers, this.cameraTargets]);
       this.seeThrough = this.cameraCut.apply(this.stationScene.root, signs);
       this.signMeshes = new Set(signs);
+      this.identityBoards = collectIdentityBoards(this.stationScene.root);
       // After the cut: shadows read the materials as they will be drawn. Frustum fit runs in the next step().
       this.attachShadows(this.stationScene.root);
     }
@@ -831,6 +878,9 @@ export class Explorer {
     this.walls = [];
     this.seeThrough = [];
     this.signMeshes = new Set();
+    this.identityBoards = [];
+    this.identityPlaced = false;
+    this.identityLabelsDirty = true;
     this.cameraCut.clear();
     this.occluders = [];
     this.proxies.clear();
@@ -947,6 +997,7 @@ export class Explorer {
   setMode(mode: ExplorerMode): void {
     if (this.mode === mode) return;
     this.mode = mode;
+    this.labelSweepDoneAt = -Infinity;
     // The overview may have deepened the far plane for its pose; the walking camera keeps its own.
     if (mode !== "overview" && this.camera.far !== CAMERA_FAR_M) { this.camera.far = CAMERA_FAR_M; this.camera.updateProjectionMatrix(); }
     this.orbit.enabled = mode === "overview";
@@ -972,6 +1023,30 @@ export class Explorer {
     return this.firstPerson;
   }
 
+  /** Initial placement only: camera look changes, never the body heading or subsequent seeks. */
+  private frameInitialIdentity(guideHeading?: number): void {
+    if (this.identityPlaced) return;
+    this.identityPlaced = true;
+    const head = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
+    // Signs stay transparent to this placement probe, including solid sign materials.
+    const signs = new Set(this.stationScene ? seeThroughMeshes(this.stationScene.root) : []);
+    const boards = this.identityBoards.filter((b) => inScene(b.object, this.scene) && objectVisible(b.object)).map((board) => {
+      board.object.updateWorldMatrix(true, false);
+      const centre = identityNameCentre(board);
+      const direction = centre.clone().sub(head);
+      this.ray.set(head, direction.clone().normalize());
+      this.ray.near = 0;
+      this.ray.far = Math.max(0, direction.length() - 0.05);
+      const targets = this.cameraTargets.filter((o) => !signs.has(o) && !withinObject(o, board.object));
+      return { centre, front: identityFront(board), blocked: direction.length() > IDENTITY_RANGE_M || castAll(this.ray, targets).length > 0 };
+    });
+    const look = identityFraming(head, this.yaw, this.pitch, boards, this.camera.aspect, FOV.follow, guideHeading);
+    if (!look) return;
+    this.yaw = look.yaw;
+    this.pitch = look.pitch;
+    this.snapCamera = true;
+  }
+
   /** Start free walking at a station ENU point (nearest walkable ground below/above it). */
   walkFrom(enu: { x: number; y: number; z: number }, headingDeg = 0): boolean {
     const p = R(enu.x, enu.y, enu.z);
@@ -986,6 +1061,7 @@ export class Explorer {
     this.bodyYaw = this.yaw;
     this.stopGuide();
     this.setMode("walk");
+    this.frameInitialIdentity();
     return true;
   }
 
@@ -1092,9 +1168,10 @@ export class Explorer {
       const obj = new CSS2DObject(el);
       obj.position.copy(at).add(new THREE.Vector3(0, LABEL_LIFT, 0));
       this.poiGroup.add(obj);
-      this.poiLabels.push({ poiId: poi.id, obj, groundY: at.y, selected: isSelected, occluded: wasOccluded.get(poi.id) ?? "none", state: "shown", decluttered: false, klass: labelClass(isSelected, poi.category), routable: Boolean(node), size: null, measureTries: 0 });
+      this.poiLabels.push({ poiId: poi.id, obj, groundY: at.y, selected: isSelected, occluded: wasOccluded.get(poi.id) ?? "none", state: "shown", decluttered: false, klass: labelClass(isSelected, poi.category), routable: Boolean(node), size: null, measureTries: 0, identityHidden: false, identityOffsetY: 0 });
     }
     this.poiGroup.updateMatrixWorld(true);
+    this.identityLabelsDirty = true;
     this.labelSweep.invalidate(this.poiLabels.length);
     this.declutterDirty = true;
   }
@@ -1189,15 +1266,20 @@ export class Explorer {
     const labels = this.poiLabels;
     if (labels.length === 0) return;
     const cam = this.camera;
-    const camMoved = cam.position.distanceToSquared(this.labelCamPos) > 1e-4 || cam.quaternion.angleTo(this.labelCamQuat) > 1e-3;
+    const camMoved = cam.position.distanceToSquared(this.labelCamPos) > 1e-4 || cam.quaternion.angleTo(this.labelCamQuat) > 1e-3 || cam.fov !== this.labelCamFov || cam.aspect !== this.labelCamAspect || this.labelMode !== this.mode;
     if (camMoved) {
       this.labelCamPos.copy(cam.position);
       this.labelCamQuat.copy(cam.quaternion);
+      this.labelMode = this.mode;
+      this.labelCamFov = cam.fov;
+      this.labelCamAspect = cam.aspect;
       this.declutterDirty = true;
     }
     const now = performance.now();
     // The periodic re-check waits LABEL_RECHECK_MS after the previous sweep completed.
-    if (camMoved || (!this.labelSweep.pending && now - this.labelSweepDoneAt >= LABEL_RECHECK_MS)) this.labelSweep.invalidate(labels.length);
+    const recheck = camMoved || (!this.labelSweep.pending && now - this.labelSweepDoneAt >= LABEL_RECHECK_MS);
+    if (recheck) this.labelSweep.invalidate(labels.length);
+    if (recheck || this.identityLabelsDirty) this.updateIdentityLabels();
     if (this.labelSweep.pending) {
       this.refreshOccluders();
       const budget = LABEL_RAYS[this.quality];
@@ -1213,7 +1295,7 @@ export class Explorer {
     const focusY = this.mode === "overview" ? null : this.pos.y;
     for (const l of labels) {
       const distance = this.labelAt.setFromMatrixPosition(l.obj.matrixWorld).distanceTo(cam.position);
-      const state = labelState({ occluded: l.occluded, distance, onFocusFloor: onFocusFloor(l.groundY, focusY), selected: l.selected });
+      const state = l.identityHidden ? "hidden" : labelState({ occluded: l.occluded, distance, onFocusFloor: onFocusFloor(l.groundY, focusY), selected: l.selected });
       if (state === l.state) continue;
       l.state = state;
       l.obj.element.classList.toggle("occluded", state === "faded");
@@ -1223,6 +1305,40 @@ export class Explorer {
     for (const l of labels) {
       const shown = l.state !== "hidden" && !l.decluttered;
       if (l.obj.visible !== shown) l.obj.visible = shown;
+    }
+  }
+
+  /** CSS2D's transform stays renderer-owned; the separate CSS translate is the chip's pixel offset. */
+  private updateIdentityLabels(): void {
+    this.identityLabelsDirty = false;
+    const { w, h } = this.viewSize;
+    this.camera.updateMatrixWorld();
+    const regions: ScreenRect[] = [];
+    if (this.mode !== "overview") for (const board of this.identityBoards) {
+      if (!inScene(board.object, this.scene) || !objectVisible(board.object)) continue;
+      board.object.updateWorldMatrix(true, false);
+      for (const region of board.regions) {
+        const rect = identityRegionRect(region.box, board.object, this.camera, w, h);
+        if (rect) regions.push(rect);
+      }
+    }
+    regions.sort((a, b) => a.y0 - b.y0);
+    for (const l of this.poiLabels) {
+      const el = l.obj.element;
+      if (!regions.length) {
+        l.identityHidden = false; l.identityOffsetY = 0; el.style.translate = "";
+        continue;
+      }
+      if (el.isConnected && el.offsetWidth > 0 && el.offsetHeight > 0) l.size = { w: el.offsetWidth, h: el.offsetHeight };
+      if (!l.size && l.measureTries++ < MEASURE_TRIES) this.identityLabelsDirty = true;
+      const size = l.size ?? estimateLabelBox(el.textContent ?? "");
+      const p = l.obj.getWorldPosition(new THREE.Vector3()).project(this.camera);
+      const x = (p.x + 1) * w / 2, y = (1 - p.y) * h / 2;
+      const chip = { x0: x - size.w / 2, x1: x + size.w / 2, y0: y - size.h / 2, y1: y + size.h / 2 };
+      const result = Math.abs(p.z) <= 1 ? protectIdentityChip(chip, l.selected, regions) : { hidden: false, offsetY: 0 };
+      l.identityHidden = result.hidden;
+      l.identityOffsetY = result.offsetY;
+      el.style.translate = result.offsetY ? `0 ${result.offsetY}px` : "";
     }
   }
 
@@ -1281,7 +1397,7 @@ export class Explorer {
    * signs do, including a backdrop within SIGN_BACKDROP_M behind the anchor or inside its 0.3 m margin,
    * else "none". Signs are tested last, with the segment extended through and past the anchor.
    */
-  private labelOccluded(label: PoiLabel): LabelOcclusion {
+  private labelOccluded(label: { obj: Pick<THREE.Object3D, "getWorldPosition">; occluded: LabelOcclusion }, ignore?: THREE.Object3D): LabelOcclusion {
     if (this.occluders.length === 0) return "none";
     const at = label.obj.getWorldPosition(new THREE.Vector3());
     // Labels behind the camera or past its far plane are hidden by the CSS2D renderer; keep their last
@@ -1323,6 +1439,7 @@ export class Explorer {
         drawn = this.cameraCut.drawnSpans(from, to);
       }
       for (const o of this.occluders) {
+        if (ignore && withinObject(o.mesh, ignore)) continue;
         if (this.signMeshes.has(o.mesh) !== (pass === 1)) continue;
         // World-box prefilter: skip meshes the segment does not reach.
         if (!o.box.containsPoint(from) && !(ray.intersectBox(o.box, entry) && entry.distanceTo(from) <= far)) continue;
@@ -1381,6 +1498,7 @@ export class Explorer {
     this.lastAvatarPos.copy(this.pos);
     this.bodyYaw = this.yaw;
     this.setMode("guide");
+    this.frameInitialIdentity(this.yaw);
   }
 
   /**
@@ -1525,7 +1643,7 @@ export class Explorer {
   private stepWalk(dt: number): void {
     const look = this.input.consumeLook();
     this.yaw -= look.dx * 0.0042;
-    this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, -1.1, 0.5);
+    this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, LOOK_PITCH.min, LOOK_PITCH.max);
     this.camDistance = THREE.MathUtils.clamp(this.camDistance + look.zoom * 0.004, 1.8, 9);
     const mv = this.input.move();
     if (mv.x === 0 && mv.y === 0) return;
@@ -1556,7 +1674,7 @@ export class Explorer {
     const g = this.guide;
     if (!g) return;
     const look = this.input.consumeLook();
-    this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, -1.1, 0.5);
+    this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, LOOK_PITCH.min, LOOK_PITCH.max);
     const mv = this.input.move();
     if (mv.x !== 0 || mv.y !== 0) {
       // Taking the controls hands over to free walking at the current spot.
@@ -1791,11 +1909,16 @@ function inScene(mesh: THREE.Object3D, scene: THREE.Scene): boolean {
   return o === scene;
 }
 
+/** Visibility inherited from groups, also used by tagged identity meshes/groups. */
+function objectVisible(object: THREE.Object3D): boolean {
+  for (let o: THREE.Object3D | null = object; o; o = o.parent) if (!o.visible) return false;
+  return true;
+}
+
 /** Rendered at all for this camera (the mesh and its ancestors visible, on a camera layer). */
 function meshDrawn(mesh: THREE.Mesh, camera: THREE.Camera): boolean {
   if (!mesh.layers.test(camera.layers)) return false;
-  for (let o: THREE.Object3D | null = mesh; o; o = o.parent) if (!o.visible) return false;
-  return true;
+  return objectVisible(mesh);
 }
 
 /** Drawn as filled, opaque enough surfaces (clear or transmissive glass and wireframes are not). */

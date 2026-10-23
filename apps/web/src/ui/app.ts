@@ -1192,6 +1192,7 @@ export class App {
       sceneInfo: () => this.explorer.sceneInfo(),
       projectEnu: (points: { x: number; y: number; z: number }[]) => this.explorer.projectEnu(points),
       signFaces: () => this.explorer.signFaces(),
+      identity: () => this.explorer.identity(),
       phase: () => this.explorer.phase,
       audio: () => this.explorer.audioInfo(),
       walkFromNode: (nodeId: string) => (this.s.loaded ? this.explorer.walkFromNode(this.s.loaded.bundle, nodeId) : false),
