@@ -84,8 +84,7 @@ export function mascotLine(t: Strings, ev: MascotEvent): MascotLine | null {
 // ---- Art ------------------------------------------------------------------------------
 // Lane E's v1 UI set (#132; assets/library/mascots/ui, CC-BY-4.0): one 64x64 SVG per (character, expression).
 // Vite inlines the raw markup at build time, so the figure is still a single inline SVG with no network request.
-// Pending Owner approval of the art and the side-by-side similarity check; the slot keeps its placeholder marker
-// until then.
+// This PR merges only after Owner approval and the similarity check.
 
 const CHARACTERS = ["cat", "dog"] as const satisfies readonly MascotId[];
 const EXPRESSIONS = ["neutral", "happy", "encourage", "sorry", "unsure"] as const satisfies readonly MascotExpression[];
@@ -125,7 +124,6 @@ export interface MascotInfo {
   expression: MascotExpression;
   lineKey: string | null;
   motion: "on" | "off";
-  placeholder: true;
 }
 
 /**
@@ -150,10 +148,8 @@ export class MascotSlot {
   ) {
     this.root = doc.createElement("div");
     this.root.className = "mascot";
-    this.root.dataset.placeholder = "true";
     this.figure = doc.createElement("span");
     this.figure.className = "mascot-figure";
-    this.figure.dataset.placeholder = "true";
     this.figure.setAttribute("aria-hidden", "true");
     this.bubble = doc.createElement("span");
     this.bubble.className = "mascot-bubble";
@@ -194,7 +190,7 @@ export class MascotSlot {
 
   /** State for QA hooks and tests. */
   info(): MascotInfo {
-    return { visible: this.cur !== null, character: this.cur?.character ?? null, expression: this.cur?.expression ?? "neutral", lineKey: this.cur?.lineKey ?? null, motion: this.motion, placeholder: true };
+    return { visible: this.cur !== null, character: this.cur?.character ?? null, expression: this.cur?.expression ?? "neutral", lineKey: this.cur?.lineKey ?? null, motion: this.motion };
   }
 
   private arm(transient: boolean): void {

@@ -172,11 +172,11 @@ describe("truthfulness: lines are fixed strings that cannot carry route facts", 
 });
 
 describe("MascotSlot", () => {
-  it("markup: figure and bubble are aria-hidden, the whole slot is marked as placeholder art", () => {
+  it("markup: figure and bubble are aria-hidden, and no placeholder marker remains", () => {
     const { root, figure, bubble } = slot();
     expect(root.className).toBe("mascot");
-    expect(root.dataset.placeholder).toBe("true");
-    expect(figure.dataset.placeholder).toBe("true");
+    expect(root.dataset.placeholder).toBeUndefined();
+    expect(figure.dataset.placeholder).toBeUndefined();
     expect(figure.getAttribute("aria-hidden")).toBe("true");
     expect(bubble.getAttribute("aria-hidden")).toBe("true");
     expect(root.getAttribute("aria-live")).toBeNull();
@@ -185,14 +185,14 @@ describe("MascotSlot", () => {
   it("starts hidden; say shows the bubble, the character and the expression", () => {
     const { s, root, figure, bubble } = slot("en");
     expect(root.hidden).toBe(true);
-    expect(s.info()).toEqual({ visible: false, character: null, expression: "neutral", lineKey: null, motion: "off", placeholder: true });
+    expect(s.info()).toEqual({ visible: false, character: null, expression: "neutral", lineKey: null, motion: "off" });
     s.say({ kind: "no_path", reason: "search_limit" });
     expect(root.hidden).toBe(false);
     expect(bubble.hidden).toBe(false);
     expect(bubble.textContent).toBe(strings("en").mascot.noPath.search_limit);
     expect(root.dataset).toMatchObject({ character: "cat", expression: "unsure" });
     expect(figure.innerHTML).toBe(MASCOT_ART.cat.unsure);
-    expect(s.info()).toMatchObject({ visible: true, character: "cat", expression: "unsure", lineKey: "no_path.search_limit", placeholder: true });
+    expect(s.info()).toMatchObject({ visible: true, character: "cat", expression: "unsure", lineKey: "no_path.search_limit" });
   });
 
   it("speaks in the current language", () => {
