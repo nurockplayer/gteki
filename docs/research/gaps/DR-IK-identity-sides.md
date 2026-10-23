@@ -9,11 +9,11 @@ Read date: **2026-10-24**. Public pages only; no browser, contact, JR East site,
 
 The Tobu page was read directly as public HTML after the fetch service timed out. Its terms basis is the existing OD-18 decision and DR-retry-unread-sources.md, not a newly granted licence. The tourism booklet's publisher is independent of Tobu department store. **West: confirmed (two independent publishers); east: unverified (one cleared explicit source)**. The east label must visibly carry 未確認 / unconfirmed. Neither side is omitted.
 
-The shipped plain labels 東武 / Tobu and 西武 / Seibu refer here to these department-store orientation facts. They do not certify railway gate locations or routes. No arrows, exit-number mapping, draft layout, Tobu Railway gate name or line badge is used. Railway-side topology is not inferred from a diagram.
+The shipped plain labels 東武百貨店 / Tobu department store and 西武池袋本店 / Seibu Ikebukuro main store name the department stores these sources describe (renamed from the bare operator names after the Ikebukuro route lane's review, so they are not read as railway facts). They do not certify railway gate locations or routes. No arrows, exit-number mapping, draft layout, Tobu Railway gate name or line badge is used. Railway-side topology is not inferred from a diagram.
 
 Also read, but **not used as side evidence**:
 
-- https://www.seiburailway.jp/railway/station/ikebukuro/ (西武鉄道; 2026-10-24): identifies Ikebukuro on the Ikebukuro Line, but its text does not explicitly state the department store's east-side relationship. OD-25 facts-only class; not registered again for an unused fact.
+- https://www.seiburailway.jp/railway/station/ikebukuro/ (西武鉄道, OD-25; read 2026-10-24, re-read by the lead 2026-10-24 at the director's request as a second east-side source): no text mentions 東口, 西口, east/west, 西武池袋本店 or 百貨店. Its only exit-like labels are 西武南口, 1F改札口付近 and B1F改札口付近, with no compass relation to the station's exits. It cannot confirm the east side, so east stays **unverified**. Its store link goes to seibu-shop.jp, a different site whose terms are unread (OD-26 practice), so it was not used.
 - https://www.seiburailway.jp/railways/ad/station-layout/pdf/SEIBU_mediaguide2024_profile_Ikebukuro.pdf (西武鉄道; 2026-10-24): fetch produced no readable text. Not relied on or called confirmation.
 - https://www.city.toshima.lg.jp/documents/55773/3_guruttotoshima2025.pdf (豊島区; 2026-10-24): general underground-map reference; not used to infer relationships from relative label placement.
 
