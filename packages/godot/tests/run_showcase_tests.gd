@@ -127,10 +127,14 @@ func check_metadata() -> void:
 	hint.name = "LIGHTHINT_fixture"
 	hint.set_meta("extras", {"light_hint": "fixture", "kind": "panel", "watts": 40.0})
 	showcase.add_child(hint)
+	var proxy := MeshInstance3D.new()
+	proxy.name = "COL_bench-colonly"
+	showcase.add_child(proxy)
 	var info := Compare.inspect_scene(scene)
 	check(info.errors.is_empty() and info.showcase.layout == "fixture", "nested gteki_showcase comes from extras metadata")
 	check(info.cameras.get("hero") == camera and camera.fov == 48.0, "inspection retains imported Camera3D and its FOV")
 	check(info.hints.size() == 1 and info.hints[0] == hint, "inspection finds LIGHTHINT nodes with extras")
+	check(info.collision_only.size() == 1 and info.collision_only[0] == proxy, "inspection returns -colonly proxies to hide")
 	hint.remove_meta("extras")
 	check("metadata 'extras'" in "\n".join(Compare.inspect_scene(scene).errors), "lost hint extras fail clearly")
 	showcase.remove_meta("extras")

@@ -131,10 +131,13 @@ static func hint_light_specs(extras: Dictionary, world: Transform3D, power: floa
 
 ## Read Godot 4.7's node metadata contract explicitly; never silently render a showcase whose extras were lost.
 ## This traversal only reads the node tree, so tests can use a tiny synthetic tree without any GLB or GPU.
+## `*-colonly` nodes are collision proxies the export keeps visible; runtime GLTFDocument loading skips the editor
+## importer's suffix handling, so they are returned for the caller to hide, as render_preview.py hides them.
 static func inspect_scene(scene: Node) -> Dictionary:
 	var showcase := {}
 	var cameras := {}
 	var hints: Array[Node3D] = []
+	var collision_only: Array[Node3D] = []
 	var errors: Array[String] = []
 	var stack: Array[Node] = [scene]
 	while not stack.is_empty():
@@ -156,9 +159,11 @@ static func inspect_scene(scene: Node) -> Dictionary:
 			if not extras.has("light_hint"):
 				errors.append("%s: missing light_hint in node metadata 'extras' (Godot 4.7 glTF contract)" % node.name)
 			hints.append(node)
+		if "-colonly" in str(node.name) and node is Node3D:
+			collision_only.append(node)
 	if showcase.is_empty():
 		errors.append("No gteki_showcase node: expected node.get_meta(\"extras\")[\"gteki_showcase\"] (Godot 4.7 glTF contract)")
-	return {"showcase": showcase, "cameras": cameras, "hints": hints, "errors": errors}
+	return {"showcase": showcase, "cameras": cameras, "hints": hints, "collision_only": collision_only, "errors": errors}
 
 
 static func find_repo_root(project_dir: String) -> String:
@@ -205,6 +210,8 @@ func run() -> void:
 	if not info.errors.is_empty():
 		fail("\n".join(info.errors))
 		return
+	for proxy: Node3D in info.collision_only:
+		proxy.visible = false
 	var layout := str(info.showcase.get("layout", ""))
 	if layout.is_empty() or layout in [".", ".."] or layout.validate_filename() != layout:
 		fail("gteki_showcase.layout must be a layout filename stem")
@@ -301,6 +308,7 @@ func run() -> void:
 		"adapter": RenderingServer.get_video_adapter_name(),
 		"resolution": [WIDTH, HEIGHT], "hint_light_counts": counts,
 		"hint_lights_enabled": hints_enabled, "spot_count": spot_count,
+		"collision_only_hidden": info.collision_only.size(),
 		"approximation": APPROXIMATION, "settle_render_frames": SETTLE_RENDER_FRAMES,
 	}
 	var report_path := str(args.out_dir).path_join(layout + "_report.json")
