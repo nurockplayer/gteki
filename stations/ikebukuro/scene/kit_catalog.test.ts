@@ -159,10 +159,13 @@ describe("kit_placements.json", () => {
     for (const id of catalog.assets.map((a) => a.id)) expect(placed.placements.some((p) => Object.values(p.ids).includes(id))).toBe(true);
     expect(placed.summary.stair_flights.covered).toBe(placed.placements.filter((p) => p.kind === "stair").length);
     expect(placed.summary.escalator_lanes.covered).toBe(placed.placements.filter((p) => p.kind === "escalator").length);
-    // the only flight the planner flags is the 196 mm tread; stair040 (two overlapping survey solids, once read as
-    // a 19-step flight with an 82 mm riser) and the 1-step stair059 fragment are now one 10-step flight that is covered
-    expect([...skipped]).toEqual(["stair068"]);
-    expect(placed.summary.skipped[0]!.reason).toMatch(/implausible tread 196 mm/);
+    // the planner flags two flights: stair013, whose surveyed nosings stray 20 mm from a uniform riser (the generator's
+    // 6 mm strips would be buried), and the 196 mm tread of stair068; stair040 (two overlapping survey solids, once read
+    // as a 19-step flight with an 82 mm riser) and the 1-step stair059 fragment are now one 10-step flight that is covered
+    expect([...skipped]).toEqual(["stair013", "stair068"]);
+    const reason = (id: string) => placed.summary.skipped.find((s: { anchor: string }) => s.anchor === id)!.reason;
+    expect(reason("stair013")).toMatch(/uneven risers: a surveyed nosing is 20\.\d mm off/);
+    expect(reason("stair068")).toMatch(/implausible tread 196 mm/);
     expect(placements.has("stair040")).toBe(true);
     expect(anchors.stair_flights.find((f) => f.id === "stair040")!.steps).toBe(10);
   });

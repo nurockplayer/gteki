@@ -21,14 +21,14 @@
   "mirror": "false everywhere: rails are on both sides, escalators are symmetric"
  },
  "summary": {
-  "unique_ids": 129,
-  "stair_nosing_ids": 62,
-  "stair_rails_ids": 62,
+  "unique_ids": 127,
+  "stair_nosing_ids": 61,
+  "stair_rails_ids": 61,
   "escalator_ids": 5,
   "stair_flights": {
    "total": 71,
-   "covered": 70,
-   "skipped": 1
+   "covered": 69,
+   "skipped": 2
   },
   "escalator_lanes": {
    "total": 5,
@@ -37,7 +37,7 @@
   },
   "rail_mount": {
    "post": 9,
-   "wall": 61
+   "wall": 60
   },
   "quantisation_max": {
    "riser_mm": {
@@ -160,15 +160,15 @@
    },
    "tiers": {
     "low": {
-     "nosing_ids": 62,
+     "nosing_ids": 61,
      "rails_ids": 0,
      "escalator_ids": 0
     },
     "high": {
-     "nosing_ids": 62,
+     "nosing_ids": 61,
      "rails_ids": 21,
      "escalator_ids": 5,
-     "rails_placements_dropped_vs_all": 49
+     "rails_placements_dropped_vs_all": 48
     }
    },
    "triangle_estimate": {
@@ -180,12 +180,17 @@
     "high": {
      "nosing_mobile": 7200,
      "escalators_mobile": 20300,
-     "rails_full": 51823,
+     "rails_full": 52672,
      "rails_full_if_all_61": 153000
     }
    }
   },
   "skipped": [
+   {
+    "anchor": "stair013",
+    "kind": "stair",
+    "reason": "uneven risers: a surveyed nosing is 20.3 mm off the uniform spacing (strip is 6 mm high)"
+   },
    {
     "anchor": "stair068",
     "kind": "stair",
@@ -829,46 +834,6 @@
     "tread_mm": 0.0,
     "width_mm": 0.121,
     "top_height_mm": 7.0,
-    "top_run_mm": 0.0
-   }
-  },
-  {
-   "anchor": "stair013",
-   "kind": "stair",
-   "scope": "room1",
-   "ids": {
-    "nosing": "gteki_ik_stair_n4_r144_t338_w3915_nosing",
-    "rails": "gteki_ik_stair_n4_r144_t338_w3915_rails_wall"
-   },
-   "origin": [
-    130.174,
-    41.17,
-    26.303
-   ],
-   "dir": [
-    0.2099,
-    -0.9777
-   ],
-   "yaw_deg": -167.883,
-   "mirror": false,
-   "main_route": false,
-   "tiers": {
-    "nosing": [
-     "low",
-     "high"
-    ],
-    "rails": []
-   },
-   "rail_mount": "wall",
-   "wall_share": {
-    "left": 1.0,
-    "right": 1.0
-   },
-   "quantisation_mm": {
-    "riser_mm": 0.333,
-    "tread_mm": 0.0,
-    "width_mm": 0.261,
-    "top_height_mm": 1.0,
     "top_run_mm": 0.0
    }
   },

@@ -60,6 +60,9 @@ ID_PREFIX = "gteki_ik_"
 QUANT_MM = 1                  # whole mm: flights are nearly all unique anyway, and coarser snapping accumulates over a flight
 RISER_MM = (100, 220)         # a plausible stair riser, on the unquantised value
 MIN_TREAD_MM = 200
+# The generator spaces nosings by one uniform riser, and its nosing strip is 6 mm high (dressing.py _nosings): a
+# flight whose surveyed nosings stray further than that from the uniform spacing would get buried or floating strips.
+MAX_NOSING_DEV_MM = 6.0
 STEP_COUNT = (2, 80)          # the generator's own limit
 ESC_ANGLE_DEG = (15.0, 35.0)  # the generator's accepted incline
 ESC_COMB_OFFSET_M = 1.2       # bottom comb line before the quad's lower line (and top comb past the upper line)
@@ -257,6 +260,11 @@ def plan_stair(flight, walls):
         return None, f"implausible riser {riser:.0f} mm ({n} steps, rise {flight['rise_m']} m); outside {RISER_MM[0]}-{RISER_MM[1]} mm", None
     if tread < MIN_TREAD_MM:
         return None, f"implausible tread {tread:.0f} mm (run {flight['run_m']} m per step); under {MIN_TREAD_MM} mm", None
+    # Each surveyed nosing (not every step has one) against the nearest step of the uniform spacing from the bottom.
+    z0, step = flight["bottom"]["position"][2], flight["rise_m"] / (n - 1)
+    dev = max((abs((r[4] - z0) - round((r[4] - z0) / step) * step) for r in flight["nosings"]), default=0.0) * 1000.0
+    if dev > MAX_NOSING_DEV_MM:
+        return None, f"uneven risers: a surveyed nosing is {dev:.1f} mm off the uniform spacing (strip is {MAX_NOSING_DEV_MM:g} mm high)", None
     width = median([math.hypot(r[2] - r[0], r[3] - r[1]) for r in flight["nosings"]]) * 1000.0
     params = {"step_count": n, "riser_mm": quant(riser), "tread_mm": quant(tread), "width_mm": quant(width)}
     err = {

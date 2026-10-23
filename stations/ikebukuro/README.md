@@ -172,7 +172,7 @@ the anchors and PLATEAU GML sha256 plus the flight or lane ids it serves. Each s
 (handrails, `barriers`). `step_count` is the surveyed nosing count, `riser_mm` = rise / (steps - 1), `tread_mm` the mean
 nosing run, and riser, tread and width are rounded to whole mm (coarser snapping accumulated up to 40 mm by the top of a long flight); identical flights share one id and are instanced.
 `rail_mount` is `wall` when the base GLB's wall mesh lies within 0.3 m of both stair sides, else `post`. Flights with
-an implausible riser (outside 100-220 mm) or tread (under 200 mm) and single-step flights are skipped and listed with
+an implausible riser (outside 100-220 mm) or tread (under 200 mm), surveyed nosings more than 6 mm off a uniform riser (the strip height), and single-step flights are skipped and listed with
 their reason. Escalators carry `rise_mm`, `angle_deg` = atan2(rise, quad run) (the surveyed quad is the straight incline between the
 floors, so no `run_mm`), `width_mm` (tread width, read as the clear gap between the truss plates) and the default 800 mm
 landing. The placement origin is the bottom comb, 1.2 m before the quad's lower line along `dir` at the lower floor height
