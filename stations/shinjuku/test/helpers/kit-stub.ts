@@ -50,7 +50,7 @@ export function catalogStubAssets(catalog: CatalogLike) {
       tags: e.tags,
       materials: escalator ? ["stub_steel", "stub_yellow"] : ["stub_yellow"],
       textures: {},
-      params: escalator ? { ...p, comb_run_m: (p.run_mm as number) / 1000 + 1.6 } // dressing.py: run_mm + 2 flat sections : p,
+      params: escalator ? { ...p, comb_run_m: (p.run_mm as number) / 1000 + 1.6 } : p, // dressing.py: run_mm + 2 flat sections
     });
   });
 }
