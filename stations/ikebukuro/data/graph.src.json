@@ -5525,6 +5525,14 @@
    "modified": true,
    "authored": true,
    "derivation": "GTEki-authored finish-pack config (role → texture folder + repeat in metres); empty today; no external source"
+  },
+  {
+   "id": "kit-manifest",
+   "path": "scene/kit/kit.json",
+   "sourceIds": [],
+   "modified": true,
+   "authored": true,
+   "derivation": "GTEki-authored kit placement config (which library pieces the scene places, their use, pitch and the representative gate-array label); the pieces themselves are assets[] files (gteki/kit/**); no external source"
   }
  ]
 }
