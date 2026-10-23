@@ -10,6 +10,7 @@ import { buildSigns, LOW_TEXEL_SCALE, type SignSpec } from "./signs.ts";
 import { type AccessFences, buildAccessFences } from "./fences.ts";
 import { type KitGraph, type KitManifest, loadKit } from "./kit.ts";
 import { type ColumnsFile, loadColumnKit } from "./kit_columns.ts";
+import { loadSignKit } from "./kit_signs.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
 import { createAmbience } from "./ambience.ts";
 import { CONTEXT_GLB, contextVisibleAt, createContextBlockers, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
@@ -391,6 +392,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   // The three JR gate nodes get one REPRESENTATIVE array each (aisle count and orientation unverified; see kit.ts).
   const kit = await loadKit(THREE, ctx, kitManifest as KitManifest, (accessFences as AccessFences).marks, low, graph as unknown as KitGraph);
   const columnKit = await loadColumnKit(THREE, ctx, kitManifest as KitManifest, (columnsFile as unknown as ColumnsFile).columns, low);
+  // Phones keep the sign frames but not their rods: with rods all 119 frames are ~40k triangles, without ~19k.
+  const signKit = await loadSignKit(THREE, ctx, kitManifest as KitManifest, low, { omitPhoneRods: true });
   const fences = buildAccessFences(THREE, accessFences as AccessFences, toRenderer, kit.railed);
   const { walkable, colliders, extra, meshesByRole, bridges } = assembleCollision(THREE, gltf.scene, {
     materialFor: (role) => mats.byRole[role],
@@ -484,8 +487,10 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   root.add(columnKit.build(THREE, env, toRenderer).group);
 
   // Low quality paints signs at LOW_TEXEL_SCALE (~168 px/m) instead of 300: under a third of the texture memory, still legible at phone size.
-  const signs = buildSigns(THREE, (signage as { signs: SignSpec[] }).signs, toRenderer, ctx.renderer.capabilities.getMaxAnisotropy(), low ? LOW_TEXEL_SCALE : 1, ctx.renderer.capabilities.maxTextureSize);
+  const signs = buildSigns(THREE, (signage as { signs: SignSpec[] }).signs, toRenderer, ctx.renderer.capabilities.getMaxAnisotropy(), low ? LOW_TEXEL_SCALE : 1, ctx.renderer.capabilities.maxTextureSize,
+    signKit.facePlaneM === undefined ? undefined : { facePlaneM: signKit.facePlaneM });
   root.add(signs.group);
+  root.add(signKit.build(THREE, env, toRenderer, signs.layouts).group);
 
   const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 56 : 150, env, (crowdLanes as { lanes: Record<string, Lane> }).lanes);
   root.add(crowd.group);
@@ -533,6 +538,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       finishes.dispose();
       kit.dispose();
       columnKit.dispose();
+      signKit.dispose();
       signs.dispose();
       envTarget.dispose();
       lightmap?.dispose();

@@ -21,6 +21,27 @@
       "height_m": 2.8,
       "note": "Origin on the floor, centred; bounds +-0.305 m x 0..2.8 m. pitch_m is the plan footprint the sleeve is scaled from. Placed on scene/columns.json entries whose kit is this id."
     },
+    "gteki_sign_frame_9slice_h480_d80": {
+      "use": "sign_frame",
+      "nine_slice": {
+        "end_m": 0.05,
+        "span_unit_m": 1.0,
+        "outer_h_m": 0.48,
+        "depth_m": 0.08,
+        "bar_m": 0.03,
+        "opening_h_m": 0.42,
+        "face_plane_m": 0.028,
+        "rod_inset_m": 0.12,
+        "rod_unit_m": 1.0,
+        "min_width_m": 0.5,
+        "max_width_m": 6.1,
+        "nominal_width_m": 1.1,
+        "centre_z_m": 2.54,
+        "hanger_base_above_centre_m": 0.24,
+        "rod_base_above_centre_m": 0.278
+      },
+      "note": "Generic Lane E hanging sign housing, CC BY 4.0; not a survey of real Ikebukuro housings. Part pivots and metre units are from the library nine-slice recipe."
+    },
     "gteki_gate_array_2": {
       "use": "gate_array_representative",
       "nodes": ["g_jr_c1", "g_jr_c2", "g_jr_s"],
