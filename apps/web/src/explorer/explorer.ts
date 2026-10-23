@@ -8,7 +8,7 @@ import { LightProbeGenerator } from "three/examples/jsm/lights/LightProbeGenerat
 import { ASSET_SCHEME, fencedUrlResolver, stationDir } from "./assetFence.ts";
 import { enuToRenderer } from "@gteki/geo";
 import type { Router, PolylinePoint } from "@gteki/navigation";
-import { nodeDisplayZ } from "@gteki/navigation";
+import { DEFAULT_PROFILE, nodeDisplayZ } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
@@ -25,6 +25,8 @@ import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { FOLLOW, avatarFade, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
+import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
+import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { StationCaches } from "./stationCaches.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
@@ -85,6 +87,10 @@ const LABEL_RAYS = { low: { count: 6, ms: 0.6 }, high: { count: 16, ms: 1.5 } } 
  * steps) and render-state changes (hidden, faded or relayered meshes) are followed.
  */
 const LABEL_RECHECK_MS = 1000;
+/** Overview declutter runs at most this often (ms) while the view changes. */
+const DECLUTTER_MS = 80;
+/** A revealed label that still cannot be measured (never laid out) is re-checked this many times, then left on its estimate. */
+const MEASURE_TRIES = 5;
 /** Instanced meshes with more instances than this occlude only as registered proxies. */
 const MAX_OCCLUDER_INSTANCES = 1024;
 
@@ -147,12 +153,21 @@ interface PoiLabel {
   selected: boolean;
   occluded: LabelOcclusion;
   state: LabelState;
+  /** Overview only: dropped by the screen-space declutter (hidden on top of `state`, never instead of it). */
+  decluttered: boolean;
+  klass: LabelClass;
+  /** Backed by a graph node (not search-only). */
+  routable: boolean;
+  /** Measured box of the label element (px), cached; null until it has been laid out. */
+  size: { w: number; h: number } | null;
+  /** Passes that revealed this label while it was still unmeasured. */
+  measureTries: number;
 }
 
 export class Explorer {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
-  readonly camera = new THREE.PerspectiveCamera(60, 1, 0.05, 2000);
+  readonly camera = new THREE.PerspectiveCamera(60, 1, 0.05, CAMERA_FAR_M);
   private readonly labels = new CSS2DRenderer();
   private readonly orbit: OrbitControls;
   private composer: PostFx | null = null;
@@ -273,6 +288,29 @@ export class Explorer {
   /** Camera pose at the last occlusion sweep. */
   private readonly labelCamPos = new THREE.Vector3(Infinity, 0, 0);
   private readonly labelCamQuat = new THREE.Quaternion();
+  /** Overview declutter: runs when the view, label states or sizes change (see updateDeclutter). */
+  private declutterDirty = true;
+  private declutterAt = -Infinity;
+  /** Some label may carry `decluttered` (set by an overview pass, cleared when leaving overview). */
+  private declutterActive = false;
+  private readonly viewSize = { w: 1, h: 1 };
+  /** The routable slice's bounds (renderer frame), or null when the bundle has no usable edge. */
+  private routableBox: THREE.Box3 | null = null;
+  /** The routable network's points (the bounds' source), for the overviewFrame QA hook. */
+  private routablePts: THREE.Vector3[] = [];
+  /** What the overview is framed on, so a resize can refit; cleared by the user's own orbit/zoom/pan. */
+  private framed: THREE.Box3 | null = null;
+  /**
+   * The points the fit sizes itself on: the routable network (the set `overviewFrame().bbox` measures), so
+   * the reported extent is what the fit targeted. Null when an explicit box is framed (its 8 corners).
+   */
+  private framedPts: readonly THREE.Vector3[] | null = null;
+  /** The HUD/search panel the overview must not frame under; its rect is read, never drawn. */
+  private panelEl: HTMLElement | null = null;
+  /** The persistent credit line along the canvas bottom; the overview keeps clear of it too. */
+  private creditEl: HTMLElement | null = null;
+  /** Refits the overview when an occluder's size changes: the panel collapsing, the credit line wrapping. */
+  private occluderResize: ResizeObserver | null = null;
   private quality: "low" | "high";
   /** Why the station's own scene could not be shown (L0 fallback is in use), if any. */
   sceneError: string | null = null;
@@ -297,6 +335,8 @@ export class Explorer {
     this.orbit.enableDamping = true;
     this.orbit.maxPolarAngle = Math.PI * 0.49;
     this.orbit.screenSpacePanning = false;
+    // Any user orbit, pan or zoom ends automatic refitting on resize.
+    this.orbit.addEventListener("start", () => { this.framed = null; this.framedPts = null; });
 
     this.input = new Input(this.renderer.domElement, host);
     this.envProbe.visible = false;
@@ -337,10 +377,39 @@ export class Explorer {
   }
 
   /** POI label states for automated visual checks. */
-  labelInfo(): { shown: number; faded: number; hidden: number } {
-    const n = { shown: 0, faded: 0, hidden: 0 };
-    for (const l of this.poiLabels) n[l.state]++;
+  labelInfo(): { shown: number; faded: number; hidden: number; decluttered: number } {
+    const n = { shown: 0, faded: 0, hidden: 0, decluttered: 0 };
+    // A label dropped by the overview declutter is off screen: counted there, not as shown or faded.
+    for (const l of this.poiLabels) { if (l.decluttered && l.state !== "hidden") n.decluttered++; else n[l.state]++; }
     return n;
+  }
+
+  /**
+   * Where the routable network sits on screen now (CSS px, page coordinates like label rects) and how
+   * big it is, measured against the FREE area — the part of the canvas neither the search panel nor the
+   * credit line covers: `extentShare` = larger bbox side / the free area's shorter side (about 0.65 right
+   * after the fit: the fit sizes the same network points). `fitShare` is the share of the AABB of those
+   * points, which is what the fit is fed; its 8 corners project outside a diagonal point band, so it can
+   * read larger than `extentShare`. `visibleRect` is that free area itself (page CSS px, so it excludes
+   * the panel and the credit strip), so a spec can check `bbox` lies outside both. Null outside overview
+   * or without a routable network.
+   */
+  overviewFrame(): { extentShare: number; fitShare: number | null; bbox: { x0: number; y0: number; x1: number; y1: number }; visibleRect: { x: number; y: number; w: number; h: number } } | null {
+    if (this.mode !== "overview" || this.routablePts.length === 0) return null;
+    const { w, h } = this.viewSize;
+    this.camera.updateMatrixWorld();
+    const net = screenBox(this.routablePts, this.camera, w, h);
+    if (!net) return null;
+    const slice = this.framed ?? this.routableBox;
+    const fit = slice ? screenBox(boxCorners({ min: slice.min, max: slice.max }), this.camera, w, h) : null;
+    const free = this.freeRect();
+    const at = this.host.getBoundingClientRect();
+    return {
+      extentShare: extentShare(net, free.w, free.h),
+      fitShare: fit ? extentShare(fit, free.w, free.h) : null,
+      bbox: { x0: net.x0 + at.left, y0: net.y0 + at.top, x1: net.x1 + at.left, y1: net.y1 + at.top },
+      visibleRect: { x: free.x + at.left, y: free.y + at.top, w: free.w, h: free.h },
+    };
   }
 
   /** Avatar position in station ENU (a virtual position, never the user's real location). */
@@ -583,6 +652,8 @@ export class Explorer {
     this.stationCaches.remember(station.key, station.scene);
     const bundle = station.bundle;
     this.graph = buildGraphView(bundle, router);
+    this.routablePts = routablePoints(bundle, (e) => router.isTraversable(e, DEFAULT_PROFILE));
+    this.routableBox = toBox3(pointsBounds(this.routablePts));
     // One loading manager per station: every request (GLB, its external buffers/images, textures)
     // must resolve through this station's fenced asset map.
     const refused: string[] = [];
@@ -716,6 +787,10 @@ export class Explorer {
     this.clearPois();
     if (this.stationScene) { this.world.remove(this.stationScene.root); this.stationScene.dispose(); this.stationScene = null; }
     if (this.graph) { this.world.remove(this.graph.root); this.overlays.remove(this.graph.overlay); this.graph.dispose(); this.graph = null; }
+    this.routableBox = null;
+    this.routablePts = [];
+    this.framed = null;
+    this.framedPts = null;
     this.walkable = [];
     this.colliders = [];
     this.cameraBlockers = [];
@@ -747,17 +822,96 @@ export class Explorer {
     return Boolean(this.graph && this.stationScene && this.graph.overlay.visible);
   }
 
-  /** Frame the whole station (or a box) from above in overview mode. */
+  /**
+   * Frame a box (default: the routable slice, else the whole scene) in overview mode, so it fills
+   * about OVERVIEW_FILL of the viewport's shorter side (see overviewFraming.ts). The viewing direction
+   * is kept; a resize refits until the user moves the camera.
+   */
   frameAll(box?: THREE.Box3): void {
-    const b = box ?? new THREE.Box3().setFromObject(this.world);
+    const b = (box ?? this.routableBox ?? new THREE.Box3().setFromObject(this.world)).clone();
     if (b.isEmpty()) b.set(new THREE.Vector3(-50, -10, -50), new THREE.Vector3(50, 10, 50));
-    const center = b.getCenter(new THREE.Vector3());
-    const size = b.getSize(new THREE.Vector3());
-    const radius = Math.max(20, Math.hypot(size.x, size.z) * 0.62);
     this.setMode("overview");
-    this.orbit.target.copy(center);
-    this.camera.position.set(center.x + radius * 0.55, center.y + radius * 0.85, center.z + radius * 0.75);
+    this.framed = b;
+    this.framedPts = box ? null : this.routablePts;
     this.camera.near = 0.1;
+    this.fitOverview();
+  }
+
+  /**
+   * Name the UI panel the overview must stay clear of (the app's search panel). The fit then fills the
+   * unobstructed area — below the panel on a phone, to the right of it on a desktop — and a panel that
+   * collapses, expands or changes size refits an overview the user has not moved. Null: the whole view.
+   */
+  setPanel(el: HTMLElement | null): void {
+    this.panelEl = el;
+    this.watchOccluders();
+    this.refitOverview();
+  }
+
+  /**
+   * Name the persistent credit line along the canvas bottom (the app's `.credit-line` footer, shown when
+   * `.app` has `has-credit`). It blocks the whole width, so the free area ends above it: the overview keeps
+   * clear of it, and its height changes (a longer string wrapping) refit a user-untouched overview. Null
+   * while there is no credit line: the whole viewport height is free.
+   */
+  setCreditLine(el: HTMLElement | null): void {
+    this.creditEl = el;
+    this.watchOccluders();
+    this.refitOverview();
+  }
+
+  /** Observe both occluders on one observer, so a size change of either refits through the same path. */
+  private watchOccluders(): void {
+    this.occluderResize?.disconnect();
+    this.occluderResize = null;
+    const els = [this.panelEl, this.creditEl].filter((e): e is HTMLElement => e !== null);
+    if (els.length === 0 || typeof ResizeObserver === "undefined") return;
+    this.occluderResize = new ResizeObserver(() => this.refitOverview());
+    for (const e of els) this.occluderResize.observe(e);
+  }
+
+  /** Re-measure the occluders and refit an automatic overview (never a camera the user has moved). */
+  refitOverview(): void {
+    if (this.mode === "overview" && this.framed) this.fitOverview();
+  }
+
+  /**
+   * The canvas area no UI covers (CSS px, canvas-relative): neither the panel nor the credit line. Both page
+   * rects are measured here, on a resize or an occluder change — never per frame.
+   */
+  private freeRect(): ViewRect {
+    const { w, h } = this.viewSize;
+    const el = this.panelEl;
+    // display:none (walk/guide on a phone), a collapsed element or none at all leaves the canvas free.
+    const measured = el && el.getClientRects().length > 0 ? el.getBoundingClientRect() : null;
+    const host = (measured || this.creditEl) ? this.host.getBoundingClientRect() : null;
+    const panel = measured && host ? { x: measured.left - host.left, y: measured.top - host.top, w: measured.width, h: measured.height } : null;
+    return freeArea({ w, h }, panel, this.creditInset(host));
+  }
+
+  /** The canvas-bottom band the credit line blocks (CSS px): it spans the width, so only its top edge counts. */
+  private creditInset(host: DOMRect | null): number {
+    const el = this.creditEl;
+    if (!host || !el || el.getClientRects().length === 0) return 0;
+    const p = el.getBoundingClientRect();
+    return Math.min(this.viewSize.h, Math.max(0, host.bottom - Math.max(host.top, p.top)));
+  }
+
+  /** Put the camera on the fit of `framed` for the current aspect, inside the panel-free area. */
+  private fitOverview(): void {
+    if (!this.framed) return;
+    const { w, h } = this.viewSize;
+    const pose = frameBounds(
+      this.framed,
+      { fovDeg: this.camera.fov, aspect: this.camera.aspect, near: this.camera.near, viewport: { w, h }, free: this.freeRect(), points: this.framedPts ?? undefined },
+      undefined,
+      OVERVIEW_OFFSET,
+    );
+    this.orbit.target.copy(pose.target);
+    this.camera.position.copy(pose.position);
+    // A short free area (a phone below its sheet and credit line) puts the pose kilometres out: deepen the
+    // far plane so the slice is not culled, or the overview would show nothing.
+    this.camera.far = overviewFar(pose.distance, this.framed.getSize(new THREE.Vector3()).length() / 2);
     this.camera.updateProjectionMatrix();
     this.orbit.update();
   }
@@ -765,6 +919,8 @@ export class Explorer {
   setMode(mode: ExplorerMode): void {
     if (this.mode === mode) return;
     this.mode = mode;
+    // The overview may have deepened the far plane for its pose; the walking camera keeps its own.
+    if (mode !== "overview" && this.camera.far !== CAMERA_FAR_M) { this.camera.far = CAMERA_FAR_M; this.camera.updateProjectionMatrix(); }
     this.orbit.enabled = mode === "overview";
     this.avatar.visible = mode !== "overview" && !this.firstPerson;
     this.input.enabled = mode !== "overview";
@@ -908,10 +1064,11 @@ export class Explorer {
       const obj = new CSS2DObject(el);
       obj.position.copy(at).add(new THREE.Vector3(0, LABEL_LIFT, 0));
       this.poiGroup.add(obj);
-      this.poiLabels.push({ poiId: poi.id, obj, groundY: at.y, selected: isSelected, occluded: wasOccluded.get(poi.id) ?? "none", state: "shown" });
+      this.poiLabels.push({ poiId: poi.id, obj, groundY: at.y, selected: isSelected, occluded: wasOccluded.get(poi.id) ?? "none", state: "shown", decluttered: false, klass: labelClass(isSelected, poi.category), routable: Boolean(node), size: null, measureTries: 0 });
     }
     this.poiGroup.updateMatrixWorld(true);
     this.labelSweep.invalidate(this.poiLabels.length);
+    this.declutterDirty = true;
   }
 
   clearPois(): void {
@@ -1008,6 +1165,7 @@ export class Explorer {
     if (camMoved) {
       this.labelCamPos.copy(cam.position);
       this.labelCamQuat.copy(cam.quaternion);
+      this.declutterDirty = true;
     }
     const now = performance.now();
     // The periodic re-check waits LABEL_RECHECK_MS after the previous sweep completed.
@@ -1030,8 +1188,63 @@ export class Explorer {
       const state = labelState({ occluded: l.occluded, distance, onFocusFloor: onFocusFloor(l.groundY, focusY), selected: l.selected });
       if (state === l.state) continue;
       l.state = state;
-      l.obj.visible = state !== "hidden";
       l.obj.element.classList.toggle("occluded", state === "faded");
+      this.declutterDirty = true;
+    }
+    this.updateDeclutter(now);
+    for (const l of labels) {
+      const shown = l.state !== "hidden" && !l.decluttered;
+      if (l.obj.visible !== shown) l.obj.visible = shown;
+    }
+  }
+
+  /**
+   * Overview only: hide labels whose screen rectangle meets a higher-priority one (see labelDeclutter.ts).
+   * Candidates are the labels the floor and occlusion rules leave on screen, so this only ever hides more.
+   * Runs when the camera, sizes or label states changed, at most every DECLUTTER_MS. Label boxes are
+   * measured once (a batched read, no per-frame layout) and cached.
+   */
+  private updateDeclutter(now: number): void {
+    const labels = this.poiLabels;
+    if (this.mode !== "overview") {
+      // Walk and guide never declutter; undo an earlier overview pass once.
+      if (this.declutterActive) for (const l of labels) l.decluttered = false;
+      this.declutterActive = false;
+      this.declutterDirty = true;
+      return;
+    }
+    if (!this.declutterDirty || now - this.declutterAt < DECLUTTER_MS) return;
+    this.declutterDirty = false;
+    this.declutterAt = now;
+    this.declutterActive = true;
+    // Measure labels the browser has laid out and not yet measured: reads only, so one layout at most.
+    for (const l of labels) {
+      const el = l.obj.element;
+      if (l.size || !el.isConnected || el.style.display === "none") continue;
+      const w = el.offsetWidth, h = el.offsetHeight;
+      if (w > 0 && h > 0) { l.size = { w, h }; this.declutterDirty = true; }
+    }
+    const { w: vw, h: vh } = this.viewSize;
+    const items: DeclutterItem[] = [];
+    const byId = new Map<string, PoiLabel>();
+    const p = new THREE.Vector3();
+    for (const l of labels) {
+      l.decluttered = false;
+      if (l.state === "hidden") continue;
+      p.setFromMatrixPosition(l.obj.matrixWorld).project(this.camera);
+      if (p.z < -1 || p.z > 1) continue; // behind the camera or past far: the CSS2D renderer hides it
+      const size = l.size ?? estimateLabelBox(l.obj.element.textContent ?? "");
+      const x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh;
+      if (x + size.w / 2 < 0 || x - size.w / 2 > vw || y + size.h / 2 < 0 || y - size.h / 2 > vh) continue;
+      items.push({ id: l.poiId, x, y, w: size.w, h: size.h, klass: l.klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible, measured: l.size !== null });
+      byId.set(l.poiId, l);
+    }
+    const keep = declutter(items);
+    for (const [id, l] of byId) l.decluttered = !keep.has(id);
+    // A label shown on an estimate gets its real size once the CSS2D renderer has laid it out: run again then.
+    // Bounded: a label that never lays out is retried MEASURE_TRIES times, then left on its estimate.
+    for (const id of revealedUnmeasured(items, keep)) {
+      if (byId.get(id)!.measureTries++ < MEASURE_TRIES) this.declutterDirty = true;
     }
   }
 
@@ -1209,6 +1422,10 @@ export class Explorer {
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.composer?.setSize(w, h);
+    this.viewSize.w = w;
+    this.viewSize.h = h;
+    this.declutterDirty = true;
+    if (this.mode === "overview") this.fitOverview();
     // A new aspect brings other labels on screen without the camera moving.
     this.labelSweep.invalidate(this.poiLabels.length);
   }
@@ -1476,6 +1693,8 @@ export class Explorer {
 
   dispose(): void {
     this.disposed = true;
+    this.occluderResize?.disconnect();
+    this.occluderResize = null;
     this.removeAudioUnlock();
     this.disconnectStationAudio();
     void this.audio?.context.close();
@@ -1537,4 +1756,9 @@ function meshDrawn(mesh: THREE.Mesh, camera: THREE.Camera): boolean {
 function blocksView(material: THREE.Material): boolean {
   const m = material as THREE.MeshPhysicalMaterial;
   return m.visible && m.colorWrite && !m.wireframe && !(m.transparent && m.opacity < 0.5) && (m.transmission ?? 0) < 0.5;
+}
+
+/** A pure Aabb (see overviewFraming.ts) as a three Box3; null stays null. */
+function toBox3(a: { min: THREE.Vector3; max: THREE.Vector3 } | null): THREE.Box3 | null {
+  return a ? new THREE.Box3(a.min.clone(), a.max.clone()) : null;
 }
