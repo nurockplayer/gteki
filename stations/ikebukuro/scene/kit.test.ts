@@ -34,8 +34,8 @@ const sha = (p: string) => crypto.createHash("sha256").update(fs.readFileSync(p)
 const toRenderer = (x: number, y: number, z: number) => new THREE.Vector3(x, z, -y); // the shared ENU -> renderer frame
 
 describe("kit manifest and the copied files", () => {
-  it("names two pieces: the solid 2.4 m barrier rail for the fence stretches and the 2-aisle gate array for the JR gate nodes", () => {
-    expect(Object.keys(kit.pieces)).toEqual([RAIL, GATE]);
+  it("names four pieces: the 2.4 m barrier rail (fence stretches), the two column pieces (batch 2, kit_columns.test.ts) and the 2-aisle gate array (JR gate nodes)", () => {
+    expect(Object.keys(kit.pieces)).toEqual([RAIL, "gteki_column_square_600", "gteki_column_round_d600", GATE]);
     expect(kit.pieces[RAIL]).toMatchObject({ use: FENCE_RAIL_USE, pitch_m: 2.4 });
     expect(kit.pieces[GATE]).toMatchObject({ use: GATE_ARRAY_USE, nodes: GATE_NODES });
     expect(kit.credit).toContain("GTEki contributors, CC BY 4.0");

@@ -1339,6 +1339,444 @@
   availability_deadline: null
   notes: "Street-level context source (#39), visual only; one of the 3rd-level meshes the Shinjuku window (300 m discs around ground-level exits 1-4, plus mesh_margin_m) needs besides 53394525/53394526. expected_bytes is the decoded size served on 2026-10-22 (curl --compressed; gzip-encoded on the wire), measured on the host before acquisition; the live catalog API lists this exact URL with fileSize 25412513 (matches). Catalog package year 2025; the per-theme survey year is not asserted here. Textures are not converted. Tran LOD1/LOD2 geometry is flat at z=0; only LOD3 carries heights. Shinjuku street-level conversion follows the station lead's decision (GitHub #39 comment 6324045059)."
   publish_gate: CONDITIONAL
+- source_id: tokyo-muni-shinjuku-public-facilities-csv
+  title: "Shinjuku ward public facilities list (CKAN t131041d0000000113)"
+  station_ids: [shinjuku]
+  publisher: "新宿区"
+  official_url: https://catalog.data.metro.tokyo.lg.jp/dataset/t131041d0000000113
+  resolution: { kind: direct }
+  expected_url: https://www.city.shinjuku.lg.jp/content/000399965.csv
+  expected_bytes: 96932
+  license_name: "CC BY 4.0"
+  license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  content_year: 2023
+  availability_deadline: null
+  notes: "Evidence-only (director decision via Owner delegation, reassessment note section 5 and 7; gate HOLD). Nothing is converted, placed or shipped from this source. The CKAN dataset record states CC BY 4.0 at dataset level and the resource licence field is absent; that is recorded in the hashed package_show snapshot, not interpreted as a rights finding. The portal terms page is snapshotted as a hashed supporting document (its content, or a closure notice, is whatever the hash holds). No row value is committed; see docs/gis/research/2026-10-22-municipal-evidence-profile.md for counts, column names and window counts. Dataset t131041d0000000113; CKAN-stated resource size 97,280 bytes; the delivered file is 96,932 bytes (the catalogue size is stale or rounded, observed 2026-10-22). Landmark option (c) candidate list."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: package-show
+      url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t131041d0000000113
+    - id: portal-terms
+      url: https://portal.data.metro.tokyo.lg.jp/terms/
+      capture_http_errors: true
+    - id: cc-by-4-deed-ja
+      url: https://creativecommons.org/licenses/by/4.0/deed.ja
+- source_id: tokyo-muni-shinjuku-tourism-csv
+  title: "Shinjuku ward tourism points list (CKAN t131041d0000000131)"
+  station_ids: [shinjuku]
+  publisher: "新宿区"
+  official_url: https://catalog.data.metro.tokyo.lg.jp/dataset/t131041d0000000131
+  resolution: { kind: direct }
+  expected_url: https://www.city.shinjuku.lg.jp/content/000399980.csv
+  expected_bytes: 2674
+  license_name: "CC BY 4.0"
+  license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  content_year: 2023
+  availability_deadline: null
+  notes: "Evidence-only (director decision via Owner delegation, reassessment note section 5 and 7; gate HOLD). Nothing is converted, placed or shipped from this source. The CKAN dataset record states CC BY 4.0 at dataset level and the resource licence field is absent; that is recorded in the hashed package_show snapshot, not interpreted as a rights finding. The portal terms page is snapshotted as a hashed supporting document (its content, or a closure notice, is whatever the hash holds). No row value is committed; see docs/gis/research/2026-10-22-municipal-evidence-profile.md for counts, column names and window counts. Dataset t131041d0000000131; CKAN-stated resource size 3,072 bytes; the delivered file is 2,674 bytes (the catalogue size is stale or rounded, observed 2026-10-22). Landmark option (c) candidate list."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: package-show
+      url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t131041d0000000131
+    - id: portal-terms
+      url: https://portal.data.metro.tokyo.lg.jp/terms/
+      capture_http_errors: true
+    - id: cc-by-4-deed-ja
+      url: https://creativecommons.org/licenses/by/4.0/deed.ja
+- source_id: tokyo-muni-shinjuku-cultural-properties-csv
+  title: "Shinjuku ward cultural properties list (CKAN t131041d0000000114)"
+  station_ids: [shinjuku]
+  publisher: "新宿区"
+  official_url: https://catalog.data.metro.tokyo.lg.jp/dataset/t131041d0000000114
+  resolution: { kind: direct }
+  expected_url: https://www.city.shinjuku.lg.jp/content/000399966.csv
+  expected_bytes: 233350
+  license_name: "CC BY 4.0"
+  license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  content_year: 2023
+  availability_deadline: null
+  notes: "Evidence-only (director decision via Owner delegation, reassessment note section 5 and 7; gate HOLD). Nothing is converted, placed or shipped from this source. The CKAN dataset record states CC BY 4.0 at dataset level and the resource licence field is absent; that is recorded in the hashed package_show snapshot, not interpreted as a rights finding. The portal terms page is snapshotted as a hashed supporting document (its content, or a closure notice, is whatever the hash holds). No row value is committed; see docs/gis/research/2026-10-22-municipal-evidence-profile.md for counts, column names and window counts. Dataset t131041d0000000114; CKAN-stated resource size 294,912 bytes; the delivered file is 233,350 bytes (the catalogue size is stale or rounded, observed 2026-10-22). Landmark option (c) candidate list."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: package-show
+      url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t131041d0000000114
+    - id: portal-terms
+      url: https://portal.data.metro.tokyo.lg.jp/terms/
+      capture_http_errors: true
+    - id: cc-by-4-deed-ja
+      url: https://creativecommons.org/licenses/by/4.0/deed.ja
+- source_id: tokyo-muni-toshima-tourism-csv
+  title: "Toshima ward tourism facilities list (CKAN t131164d0000000005)"
+  station_ids: [ikebukuro]
+  publisher: "豊島区"
+  official_url: https://catalog.data.metro.tokyo.lg.jp/dataset/t131164d0000000005
+  resolution: { kind: direct }
+  expected_url: https://www.opendata.metro.tokyo.lg.jp/toyoshima/R4_tourism.csv
+  expected_bytes: 3631
+  license_name: "CC BY 4.0"
+  license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  content_year: 2022
+  availability_deadline: null
+  notes: "Evidence-only (director decision via Owner delegation, reassessment note section 5 and 7; gate HOLD). Nothing is converted, placed or shipped from this source. The CKAN dataset record states CC BY 4.0 at dataset level and the resource licence field is absent; that is recorded in the hashed package_show snapshot, not interpreted as a rights finding. The portal terms page is snapshotted as a hashed supporting document (its content, or a closure notice, is whatever the hash holds). No row value is committed; see docs/gis/research/2026-10-22-municipal-evidence-profile.md for counts, column names and window counts. Dataset t131164d0000000005; CKAN-stated resource size 4,096 bytes; the delivered file is 3,631 bytes (the catalogue size is stale or rounded, observed 2026-10-22). Landmark option (c) candidate list."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: package-show
+      url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t131164d0000000005
+    - id: portal-terms
+      url: https://portal.data.metro.tokyo.lg.jp/terms/
+      capture_http_errors: true
+    - id: cc-by-4-deed-ja
+      url: https://creativecommons.org/licenses/by/4.0/deed.ja
+- source_id: tokyo-muni-toshima-cultural-properties-csv
+  title: "Toshima ward cultural properties list (CKAN t131164d0000000007)"
+  station_ids: [ikebukuro]
+  publisher: "豊島区"
+  official_url: https://catalog.data.metro.tokyo.lg.jp/dataset/t131164d0000000007
+  resolution: { kind: direct }
+  expected_url: https://www.opendata.metro.tokyo.lg.jp/toyoshima/R4_cultural_property.csv
+  expected_bytes: 79811
+  license_name: "CC BY 4.0"
+  license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  content_year: 2022
+  availability_deadline: null
+  notes: "Evidence-only (director decision via Owner delegation, reassessment note section 5 and 7; gate HOLD). Nothing is converted, placed or shipped from this source. The CKAN dataset record states CC BY 4.0 at dataset level and the resource licence field is absent; that is recorded in the hashed package_show snapshot, not interpreted as a rights finding. The portal terms page is snapshotted as a hashed supporting document (its content, or a closure notice, is whatever the hash holds). No row value is committed; see docs/gis/research/2026-10-22-municipal-evidence-profile.md for counts, column names and window counts. Dataset t131164d0000000007; CKAN-stated resource size 79,872 bytes; the delivered file is 79,811 bytes (the catalogue size is stale or rounded, observed 2026-10-22). Landmark option (c) candidate list."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: package-show
+      url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t131164d0000000007
+    - id: portal-terms
+      url: https://portal.data.metro.tokyo.lg.jp/terms/
+      capture_http_errors: true
+    - id: cc-by-4-deed-ja
+      url: https://creativecommons.org/licenses/by/4.0/deed.ja
+- source_id: tokyo-muni-toshima-public-facilities-csv
+  title: "Toshima ward public facilities list (CKAN t131164d0000000010)"
+  station_ids: [ikebukuro]
+  publisher: "豊島区"
+  official_url: https://catalog.data.metro.tokyo.lg.jp/dataset/t131164d0000000010
+  resolution: { kind: direct }
+  expected_url: https://www.opendata.metro.tokyo.lg.jp/toyoshima/R4_public_facility.csv
+  expected_bytes: 77834
+  license_name: "CC BY 4.0"
+  license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  content_year: 2022
+  availability_deadline: null
+  notes: "Evidence-only (director decision via Owner delegation, reassessment note section 5 and 7; gate HOLD). Nothing is converted, placed or shipped from this source. The CKAN dataset record states CC BY 4.0 at dataset level and the resource licence field is absent; that is recorded in the hashed package_show snapshot, not interpreted as a rights finding. The portal terms page is snapshotted as a hashed supporting document (its content, or a closure notice, is whatever the hash holds). No row value is committed; see docs/gis/research/2026-10-22-municipal-evidence-profile.md for counts, column names and window counts. Dataset t131164d0000000010; CKAN-stated resource size 78,848 bytes; the delivered file is 77,834 bytes (the catalogue size is stale or rounded, observed 2026-10-22). Landmark option (c) candidate list."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: package-show
+      url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t131164d0000000010
+    - id: portal-terms
+      url: https://portal.data.metro.tokyo.lg.jp/terms/
+      capture_http_errors: true
+    - id: cc-by-4-deed-ja
+      url: https://creativecommons.org/licenses/by/4.0/deed.ja
+- source_id: tokyo-muni-shinjuku-shelter-csv
+  title: "Shinjuku ward shelter list (CKAN t131041d0000000115)"
+  station_ids: [shinjuku]
+  publisher: "新宿区"
+  official_url: https://catalog.data.metro.tokyo.lg.jp/dataset/t131041d0000000115
+  resolution: { kind: direct }
+  expected_url: https://www.city.shinjuku.lg.jp/content/000399967.csv
+  expected_bytes: 3486
+  license_name: "CC BY 4.0"
+  license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  content_year: 2023
+  availability_deadline: null
+  notes: "Evidence-only (director decision via Owner delegation, reassessment note section 5 and 7; gate HOLD). Nothing is converted, placed or shipped from this source. The CKAN dataset record states CC BY 4.0 at dataset level and the resource licence field is absent; that is recorded in the hashed package_show snapshot, not interpreted as a rights finding. The portal terms page is snapshotted as a hashed supporting document (its content, or a closure notice, is whatever the hash holds). No row value is committed; see docs/gis/research/2026-10-22-municipal-evidence-profile.md for counts, column names and window counts. Dataset t131041d0000000115; CKAN-stated resource size 4,096 bytes; the delivered file is 3,486 bytes (the catalogue size is stale or rounded, observed 2026-10-22). Shelter replacement candidate (reassessment note section 4.5, B1)."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: package-show
+      url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t131041d0000000115
+    - id: portal-terms
+      url: https://portal.data.metro.tokyo.lg.jp/terms/
+      capture_http_errors: true
+    - id: cc-by-4-deed-ja
+      url: https://creativecommons.org/licenses/by/4.0/deed.ja
+- source_id: tokyo-muni-toshima-shelter-csv
+  title: "Toshima ward evacuation space list (CKAN t131164d0000000003)"
+  station_ids: [ikebukuro]
+  publisher: "豊島区"
+  official_url: https://catalog.data.metro.tokyo.lg.jp/dataset/t131164d0000000003
+  resolution: { kind: direct }
+  expected_url: https://www.opendata.metro.tokyo.lg.jp/toyoshima/R4_evacuation_space.csv
+  expected_bytes: 16636
+  license_name: "CC BY 4.0"
+  license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  content_year: 2022
+  availability_deadline: null
+  notes: "Evidence-only (director decision via Owner delegation, reassessment note section 5 and 7; gate HOLD). Nothing is converted, placed or shipped from this source. The CKAN dataset record states CC BY 4.0 at dataset level and the resource licence field is absent; that is recorded in the hashed package_show snapshot, not interpreted as a rights finding. The portal terms page is snapshotted as a hashed supporting document (its content, or a closure notice, is whatever the hash holds). No row value is committed; see docs/gis/research/2026-10-22-municipal-evidence-profile.md for counts, column names and window counts. Dataset t131164d0000000003; CKAN-stated resource size 17,408 bytes; the delivered file is 16,636 bytes (the catalogue size is stale or rounded, observed 2026-10-22). Shelter replacement candidate (reassessment note section 4.5, B1)."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: package-show
+      url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t131164d0000000003
+    - id: portal-terms
+      url: https://portal.data.metro.tokyo.lg.jp/terms/
+      capture_http_errors: true
+    - id: cc-by-4-deed-ja
+      url: https://creativecommons.org/licenses/by/4.0/deed.ja
+- source_id: tokyo-muni-shinjuku-park-csv
+  title: "Shinjuku ward park list (CKAN t131041d2025000003)"
+  station_ids: [shinjuku]
+  publisher: "新宿区"
+  official_url: https://catalog.data.metro.tokyo.lg.jp/dataset/t131041d2025000003
+  resolution: { kind: direct }
+  expected_url: https://www.opendata.metro.tokyo.lg.jp/shinjyuku/131041_shinjukuku_toshitoritukouen.csv
+  expected_bytes: 28172
+  license_name: "CC BY 4.0"
+  license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  content_year: null
+  availability_deadline: null
+  notes: "Evidence-only (director decision via Owner delegation, reassessment note section 5 and 7; gate HOLD). Nothing is converted, placed or shipped from this source. The CKAN dataset record states CC BY 4.0 at dataset level and the resource licence field is absent; that is recorded in the hashed package_show snapshot, not interpreted as a rights finding. The portal terms page is snapshotted as a hashed supporting document (its content, or a closure notice, is whatever the hash holds). No row value is committed; see docs/gis/research/2026-10-22-municipal-evidence-profile.md for counts, column names and window counts. Dataset t131041d2025000003; CKAN-stated resource size 28,672 bytes; the delivered file is 28,172 bytes (the catalogue size is stale or rounded, observed 2026-10-22). Park list (director decision B3, reassessment note)."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: package-show
+      url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t131041d2025000003
+    - id: portal-terms
+      url: https://portal.data.metro.tokyo.lg.jp/terms/
+      capture_http_errors: true
+    - id: cc-by-4-deed-ja
+      url: https://creativecommons.org/licenses/by/4.0/deed.ja
+- source_id: tokyo-emergency-route-zip
+  title: "Tokyo emergency transport roads ZIP (CKAN t000014d2000000030)"
+  station_ids: [ikebukuro, shinjuku]
+  publisher: "東京都建設局"
+  official_url: https://catalog.data.metro.tokyo.lg.jp/dataset/t000014d2000000030
+  resolution: { kind: direct }
+  expected_url: https://www.opendata.metro.tokyo.lg.jp/kensetsu/kinkyu_yusou.zip
+  expected_bytes: 454256
+  license_name: "CC BY 4.0"
+  license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  content_year: null
+  availability_deadline: null
+  notes: "Evidence-only (director decision via Owner delegation, reassessment note section 5 and 7; gate HOLD). Nothing is converted, placed or shipped from this source. The CKAN dataset record states CC BY 4.0 at dataset level and the resource licence field is absent; that is recorded in the hashed package_show snapshot, not interpreted as a rights finding. The portal terms page is snapshotted as a hashed supporting document (its content, or a closure notice, is whatever the hash holds). No row value is committed; see docs/gis/research/2026-10-22-municipal-evidence-profile.md for counts, column names and window counts. Dataset t000014d2000000030; CKAN-stated resource size 1,147,904 bytes; the delivered file is 454,256 bytes (the catalogue size is stale or rounded, observed 2026-10-22). Reassessment note section 4.6: the ZIP must hold vector data for the layer to proceed; member formats are recorded in the profile note. A third-party base-map notice inside the ZIP is checked there."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: package-show
+      url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000014d2000000030
+    - id: portal-terms
+      url: https://portal.data.metro.tokyo.lg.jp/terms/
+      capture_http_errors: true
+    - id: cc-by-4-deed-ja
+      url: https://creativecommons.org/licenses/by/4.0/deed.ja
+- source_id: tokyo-nishi-shinjuku-walk-zip
+  title: "Tokyo west-Shinjuku walking link/node ZIP, R2 (CKAN t000029d0000000007)"
+  station_ids: [shinjuku]
+  publisher: "東京都デジタルサービス局"
+  official_url: https://catalog.data.metro.tokyo.lg.jp/dataset/t000029d0000000007
+  resolution: { kind: direct }
+  expected_url: https://www.opendata.metro.tokyo.lg.jp/senryaku/society5.0/130001_nishi-shinjyuku.zip
+  expected_bytes: 154484
+  license_name: "CC BY 4.0"
+  license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  content_year: 2020
+  availability_deadline: null
+  notes: "Evidence-only (director decision via Owner delegation, reassessment note section 5 and 7; gate HOLD). Nothing is converted, placed or shipped from this source. The CKAN dataset record states CC BY 4.0 at dataset level and the resource licence field is absent; that is recorded in the hashed package_show snapshot, not interpreted as a rights finding. The portal terms page is snapshotted as a hashed supporting document (its content, or a closure notice, is whatever the hash holds). No row value is committed; see docs/gis/research/2026-10-22-municipal-evidence-profile.md for counts, column names and window counts. DR-NS-05 (R9). Ground street network per the research note; whether it holds underground links is recorded in the profile note. The area PDF (about 1 MB image map) is not acquired."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: package-show
+      url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000029d0000000007
+    - id: portal-terms
+      url: https://portal.data.metro.tokyo.lg.jp/terms/
+      capture_http_errors: true
+    - id: cc-by-4-deed-ja
+      url: https://creativecommons.org/licenses/by/4.0/deed.ja
+- source_id: tokyo-toei-station-info-csv
+  title: "Toei subway station basic information CSV (CKAN t000018d0000000053)"
+  station_ids: [shinjuku]
+  publisher: "東京都交通局"
+  official_url: https://catalog.data.metro.tokyo.lg.jp/dataset/t000018d0000000053
+  resolution: { kind: direct }
+  expected_url: https://www.opendata.metro.tokyo.lg.jp/kotsu/080_001b.csv
+  expected_bytes: 11405
+  license_name: "CC BY 4.0"
+  license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  content_year: 2015
+  availability_deadline: null
+  notes: "Evidence-only (director decision via Owner delegation, reassessment note section 5 and 7; gate HOLD). Nothing is converted, placed or shipped from this source. The CKAN dataset record states CC BY 4.0 at dataset level and the resource licence field is absent; that is recorded in the hashed package_show snapshot, not interpreted as a rights finding. The portal terms page is snapshotted as a hashed supporting document (its content, or a closure notice, is whatever the hash holds). No row value is committed; see docs/gis/research/2026-10-22-municipal-evidence-profile.md for counts, column names and window counts. DR-NS-15 (R9). Station facts table; the research note reports no coordinates. The depth-like column meaning is UNKNOWN until read in the profile note."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: package-show
+      url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000018d0000000053
+    - id: portal-terms
+      url: https://portal.data.metro.tokyo.lg.jp/terms/
+      capture_http_errors: true
+    - id: cc-by-4-deed-ja
+      url: https://creativecommons.org/licenses/by/4.0/deed.ja
+- source_id: hokonavi-oedo-shinjuku-nishiguchi-package
+  title: "Toei Oedo Shinjuku-nishiguchi E01 CKAN package_show with resource ZIPs and PDF"
+  station_ids: [shinjuku]
+  publisher: "MLIT Hokonavi DP"
+  official_url: https://ckan.hokonavi.go.jp/dataset/station_oedo_shinjukunishiguchi
+  resolution: { kind: direct }
+  expected_url: https://ckan.hokonavi.go.jp/api/3/action/package_show?id=station_oedo_shinjukunishiguchi
+  expected_bytes: null
+  license_name: "PDL 1.0"
+  license_url: https://www.digital.go.jp/resources/open_data/public_data_license_v1.0
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  content_year: null
+  availability_deadline: 2027-03-12
+  notes: "Evidence-only (R9 DR-NS-09/-10, OD-19; gate HOLD). Hokonavi CKAN package_show is the primary snapshot; the listed resources are hashed supporting documents, none is converted or placed. Licence: package PDL 1.0 (pdl-jp-1.0) and a null resource licence, with no #16 override for this dataset (same record as E27: the package label is not taken as the resource licence basis). The page states a limited release until 2027-03-12. No row value is committed. Six resources (5 ZIPs, 1 check PDF, 0.43 MB in total) are snapshotted."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: dataset-page
+      url: https://ckan.hokonavi.go.jp/dataset/station_oedo_shinjukunishiguchi
+    - id: hokonavi-site-terms
+      url: https://www.hokonavi.go.jp/terms/
+    - id: pdl-1-0-text
+      url: https://www.digital.go.jp/resources/open_data/public_data_license_v1.0
+    - id: res-network-csv-zip
+      url: https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/882c8e7d-728e-4e37-a55a-c20c18ce569f/download/nwd_oedo_shinjuku-nishiguchi_csv.zip
+    - id: res-network-geojson-zip
+      url: https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/1ad0189f-f289-4ba0-8bf4-b7a76420a845/download/nwd_oedo_shinjuku-nishiguchi_geojson.zip
+    - id: res-network-shapefile-zip
+      url: https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/bbb1ec08-1e6a-4abf-8bca-6d41e833e6d9/download/nwd_oedo_shinjuku-nishiguchi_shapefile.zip
+    - id: res-stationmap-geojson-zip
+      url: https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/b0251aca-5a90-469f-9cc0-4c981c1d2e8f/download/stationmap_oedo_shinjuku-nishiguchi_geojson.zip
+    - id: res-stationmap-shapefile-zip
+      url: https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/0a363306-c147-4108-9b18-8b699e750302/download/stationmap_oedo_shinjuku-nishiguchi_shapefile.zip
+    - id: res-check-pdf
+      url: https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/26c0b38d-a6ce-432d-b2a0-ef222ab0f117/download/station_oedo_shinjuku-nishiguchi.pdf
+- source_id: hokonavi-oedo-tochomae-package
+  title: "Toei Oedo Tochomae E28 CKAN package_show with resource ZIPs"
+  station_ids: [shinjuku]
+  publisher: "MLIT Hokonavi DP"
+  official_url: https://ckan.hokonavi.go.jp/dataset/station_oedo_tochomae
+  resolution: { kind: direct }
+  expected_url: https://ckan.hokonavi.go.jp/api/3/action/package_show?id=station_oedo_tochomae
+  expected_bytes: null
+  license_name: "PDL 1.0"
+  license_url: https://www.digital.go.jp/resources/open_data/public_data_license_v1.0
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  content_year: null
+  availability_deadline: 2027-03-12
+  notes: "Evidence-only (R9 DR-NS-09/-10, OD-19; gate HOLD). Hokonavi CKAN package_show is the primary snapshot; the listed resources are hashed supporting documents, none is converted or placed. Licence: package PDL 1.0 (pdl-jp-1.0) and a null resource licence, with no #16 override for this dataset (same record as E27: the package label is not taken as the resource licence basis). The page states a limited release until 2027-03-12. No row value is committed. Adjacent station, not Shinjuku. Five ZIP resources (about 0.31 MB) are snapshotted; the 1.9 MB check PDF is not acquired."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: dataset-page
+      url: https://ckan.hokonavi.go.jp/dataset/station_oedo_tochomae
+    - id: hokonavi-site-terms
+      url: https://www.hokonavi.go.jp/terms/
+    - id: pdl-1-0-text
+      url: https://www.digital.go.jp/resources/open_data/public_data_license_v1.0
+    - id: res-network-csv-zip
+      url: https://ckan.hokonavi.go.jp/dataset/0497448d-15ca-44be-b27b-89d99f83c85d/resource/68d7f1f9-b6f5-4355-ac53-395d7591137d/download/nwd_oedo_tochomae_csv.zip
+    - id: res-network-geojson-zip
+      url: https://ckan.hokonavi.go.jp/dataset/0497448d-15ca-44be-b27b-89d99f83c85d/resource/34a413dc-2859-4cb8-b460-b0216d646c5d/download/nwd_oedo_tochomae_geojson.zip
+    - id: res-network-shapefile-zip
+      url: https://ckan.hokonavi.go.jp/dataset/0497448d-15ca-44be-b27b-89d99f83c85d/resource/93961538-7dd1-48aa-91e9-bb2c422f5e24/download/nwd_oedo_tochomae_shapefile.zip
+    - id: res-stationmap-geojson-zip
+      url: https://ckan.hokonavi.go.jp/dataset/0497448d-15ca-44be-b27b-89d99f83c85d/resource/30a2e7a1-bfdc-45a5-b502-dac80950f936/download/stationmap_oedo_tochomae_geojson.zip
+    - id: res-stationmap-shapefile-zip
+      url: https://ckan.hokonavi.go.jp/dataset/0497448d-15ca-44be-b27b-89d99f83c85d/resource/3bdc07af-a9da-433c-94e5-f3ef7c7acea2/download/stationmap_oedo_tochomae_shapefile.zip
+- source_id: hokonavi-shibuya-sendagaya-shinjuku-package
+  title: "Hokonavi walking network Shibuya/Sendagaya/Shinjuku (nwd_shibuya_sendagaya_shinjuku) package_show with link and node CSV"
+  station_ids: [shinjuku]
+  publisher: "MLIT Hokonavi DP"
+  official_url: https://ckan.hokonavi.go.jp/dataset/nwd_shibuya_sendagaya_shinjuku
+  resolution: { kind: direct }
+  expected_url: https://ckan.hokonavi.go.jp/api/3/action/package_show?id=nwd_shibuya_sendagaya_shinjuku
+  expected_bytes: null
+  license_name: "PDL 1.0"
+  license_url: https://www.digital.go.jp/resources/open_data/public_data_license_v1.0
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  content_year: null
+  availability_deadline: null
+  notes: "Evidence-only (R9 DR-NS-08; gate HOLD). Hokonavi CKAN package_show is the primary snapshot; the link and node CSV (2.36 MB in total) are hashed supporting documents; the two GeoJSON files (9.7 MB) are not acquired. Licence: package PDL 1.0 (pdl-jp-1.0), resource licence null; the package label is not taken as the resource licence basis. Content date 2021/05/26 per the research note. No row value is committed."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: dataset-page
+      url: https://ckan.hokonavi.go.jp/dataset/nwd_shibuya_sendagaya_shinjuku
+    - id: hokonavi-site-terms
+      url: https://www.hokonavi.go.jp/terms/
+    - id: pdl-1-0-text
+      url: https://www.digital.go.jp/resources/open_data/public_data_license_v1.0
+    - id: res-link-csv
+      url: https://ckan.hokonavi.go.jp/dataset/eaf1695b-fc4c-41f0-8ff1-3279d0cfa839/resource/864b086f-de71-48bc-be52-b1560a27fe49/download/link.csv
+    - id: res-node-csv
+      url: https://ckan.hokonavi.go.jp/dataset/eaf1695b-fc4c-41f0-8ff1-3279d0cfa839/resource/7f949aa2-114f-4812-95a4-e922eb9aab89/download/node.csv
+- source_id: geospatial-0401-package
+  title: "G-spatial Information Center dataset 0401 (walking space network mirror) CKAN package_show"
+  station_ids: [ikebukuro, shinjuku]
+  publisher: "MLIT (G-spatial Information Center CKAN)"
+  official_url: https://www.geospatial.jp/ckan/dataset/0401
+  resolution: { kind: direct }
+  expected_url: https://www.geospatial.jp/ckan/api/3/action/package_show?id=0401
+  expected_bytes: null
+  license_name: "unknown"
+  license_url: null
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  content_year: null
+  availability_deadline: null
+  notes: "Evidence-only snapshot (R9 DR-NS-06/-07, OD-20; gate HOLD): the public CKAN package_show, the dataset page, the dataset's terms resource page and the PDL 1.0 text. The package lists 73 resources and states the Government Standard Terms (license_id ogl; the version number 2.0 comes from the research note, the snapshot fields give only the title). The Ikebukuro and Shinjuku mirror files are NOT acquired: each download link answers HTTP 302 to a per-request pre-signed S3 URL, which the zero-redirect runner cannot declare as a final URL, and the metadata states no sizes. A 1-byte range probe of the three Ikebukuro mirror files (link GeoJSON, node GeoJSON, ZIP) read only their size and ETag: the link GeoJSON is 1,174,159 bytes and the node GeoJSON 813,412 bytes, against 1,723,897 and 926,326 bytes for the stored R1 GeoJSON files, so the mirror GeoJSON files are NOT byte-identical to R1. No Shinjuku S02 bytes are stored, so no Shinjuku comparison was possible; no mirror byte was stored or hashed. OD-20 outcome: the mirror copies differ, so the licence of the downloaded copy would apply (Government Standard Terms as the package states), but no copy was downloaded; the original publisher's basis for R1 stays PDL 1.0. Both terms are attached here, neither upgrades the other; the terms PDF itself (a 302 download) was not read."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: dataset-page
+      url: https://www.geospatial.jp/ckan/dataset/0401
+    - id: terms-resource-page
+      url: https://www.geospatial.jp/ckan/dataset/0401/resource/f5d7885c-0350-453d-8d71-c1d0cdca8063
+    - id: pdl-1-0-text
+      url: https://www.digital.go.jp/resources/open_data/public_data_license_v1.0
 - source_id: ksj-n02-2025
   title: KSJ N02-2025 railway data (stations and railway sections, nationwide GML ZIP)
   station_ids: [ikebukuro, shinjuku]
