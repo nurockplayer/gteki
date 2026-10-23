@@ -26,6 +26,12 @@ type Point3 = [number, number, number];
  */
 export type StationVerticalMode = 'per_feature_ground';
 export interface StationOrigin { lat: number; lon: number; hM: number | null; datum: string; crs: 'EPSG:6697' | 'EPSG:6668' }
+/** Hash only the station.json origin fields compared with the frame, in a fixed key order. */
+export function stationOriginSha256(origin: { lat?: unknown; lon?: unknown; hM?: unknown; crs?: unknown }): string {
+  const { lat, lon, hM, crs } = origin;
+  return createHash('sha256').update(JSON.stringify({ lat, lon, hM, crs })).digest('hex');
+}
+
 export interface StationEnuFrame {
   frame_id: string;
   frame_kind: 'station-enu';
