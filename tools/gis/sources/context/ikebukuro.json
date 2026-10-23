@@ -55,8 +55,24 @@
         "kind": "station",
         "member": "N02-25_GML/UTF-8/N02-25_Station.geojson",
         "ribbon_width_m": 3
+      },
+      {
+        "source_id": "ksj-n03-2026",
+        "kind": "border",
+        "member": "N03-20260101_13.geojson",
+        "ribbon_width_m": 2,
+        "geometry": "polygon_rings",
+        "select": {
+          "kind": "municipality_code",
+          "property": "N03_007",
+          "code": "13116"
+        }
       }
     ],
+    "window": {
+      "kind": "origin_disc",
+      "radius_m": 700
+    },
     "clip": {
       "kind": "origin_disc",
       "radius_m": 700

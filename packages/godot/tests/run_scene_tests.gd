@@ -36,9 +36,69 @@ func run() -> void:
 		quit(1)
 		return
 	check_mapping_constants()
+	check_hide_rules()
+	check_hide_edge_cases()
 	for i in range(1, args.size()):
 		await check_station(args[0].path_join(args[i]), args[i])
 	finish()
+
+
+## #232: hiding a mesh must not hide the drawn children it carries; only its own surfaces stop painting.
+func check_hide_rules() -> void:
+	var scene := Scene.new()
+	var parent := MeshInstance3D.new()
+	parent.name = "parent"
+	parent.mesh = BoxMesh.new()
+	var child := MeshInstance3D.new()
+	child.name = "child"
+	child.mesh = BoxMesh.new()
+	parent.add_child(child)
+	scene._hide_mesh(parent)
+	check(parent.visible, "hide: a mesh with drawn children stays visible so the children render")
+	check(not Scene.is_drawn(parent), "hide: its own surfaces paint nothing")
+	check(Scene.is_drawn(child), "hide: its drawn child is untouched")
+	check(child.get_surface_override_material(0) == null, "hide: the child keeps its own material")
+	var leaf := MeshInstance3D.new()
+	leaf.mesh = BoxMesh.new()
+	scene._hide_mesh(leaf)
+	check(not leaf.visible, "hide: a mesh without drawn children is hidden as a whole")
+	parent.free()
+	leaf.free()
+
+
+## #255: the two ways hiding goes wrong beyond #232.
+func check_hide_edge_cases() -> void:
+	var scene := Scene.new()
+	# A parent with no mesh of its own still carries drawn children; there is nothing of its own to hide.
+	var holder := MeshInstance3D.new()
+	holder.name = "holder"
+	var held := MeshInstance3D.new()
+	held.name = "held"
+	held.mesh = BoxMesh.new()
+	holder.add_child(held)
+	scene._hide_mesh(holder)
+	check(holder.visible, "hide: a meshless parent stays visible, so its drawn child keeps rendering")
+	check(Scene.is_drawn(held), "hide: the meshless parent's drawn child is untouched")
+	check(holder.get_surface_override_material(0) == null, "hide: a meshless parent gets no surface override")
+	holder.free()
+	# A material_override wins over every surface override (Godot 4.7.2 get_active_material), so a mesh that carries
+	# an opaque one keeps painting unless the hide replaces it too.
+	var painted := MeshInstance3D.new()
+	painted.name = "painted"
+	painted.mesh = BoxMesh.new()
+	var opaque := StandardMaterial3D.new()
+	opaque.albedo_color = Color(1.0, 0.0, 0.0, 1.0)
+	painted.material_override = opaque
+	var painted_child := MeshInstance3D.new()
+	painted_child.name = "painted_child"
+	painted_child.mesh = BoxMesh.new()
+	painted.add_child(painted_child)
+	check(Scene.is_drawn(painted), "hide: a mesh is drawn through its material_override before hiding")
+	scene._hide_mesh(painted)
+	check(not Scene.is_drawn(painted), "hide: an opaque material_override is replaced, so the mesh paints nothing")
+	check(painted.material_override is BaseMaterial3D and (painted.material_override as BaseMaterial3D).albedo_color.a <= 0.0, "hide: the material_override left in place is the transparent one")
+	check(painted.visible and Scene.is_drawn(painted_child), "hide: the child of a mesh hidden through its override still renders")
+	painted.free()
 
 
 func check_mapping_constants() -> void:
@@ -232,7 +292,7 @@ func _check_hidden_sources(scene: Scene, id: String) -> void:
 		stack.append_array(node.get_children())
 		if node is MeshInstance3D and _extras(node).get(Scene.HIDDEN, false) == true:
 			flagged += 1
-			if node.visible and node.layers != 0:
+			if Scene.is_drawn(node):
 				drawn.append(str(node.name))
 	check(drawn.is_empty(), "%s: no visible mesh whose source was invisible (%s)" % [id, str(drawn.slice(0, 5))])
 	check(flagged == scene.counts.hidden, "%s: flagged hidden meshes found by traversal" % id)
@@ -265,7 +325,7 @@ func _check_ikebukuro_helpers(scene: Scene) -> void:
 		# portal_beyond is drawn on the web too (an opaque "beyond" surface); only the others are invisible helpers.
 		if originals.has(role) and role != "portal_beyond":
 			var helper: MeshInstance3D = originals[role]
-			check(not helper.visible or helper.layers == 0, "ikebukuro: helper %s is not drawn" % role)
+			check(not Scene.is_drawn(helper), "ikebukuro: helper %s is not drawn" % role)
 	if fence_original == null or fence_original.mesh == null:
 		return
 	# The fence collider's panels must stop rays on the collider layer, i.e. exist as collider tiles. First triangle of

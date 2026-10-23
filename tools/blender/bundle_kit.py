@@ -34,6 +34,9 @@ CONTRACT = "gteki-kit-bundle/0.1"
 # the whole file ("SOCKET_end" -> "SOCKET_end_1" / "SOCKET_end2"), so a name that
 # repeats between bundled assets is also stored in extras.gteki_name.
 NAME_KEY = "gteki_name"
+# Every asset bakes its own occlusion map, so a material it shares with other assets differs by
+# its occlusionTexture. The bundle keeps one copy per asset, named "<material>~<asset id>" with the
+# original name in extras.gteki_name (like repeated node names); any other difference is a conflict.
 GROUPS = ("bufferViews", "images", "accessors", "samplers", "textures",
           "materials", "meshes", "cameras", "nodes")
 COMPONENT_BYTES = {5120: 1, 5121: 1, 5122: 2, 5123: 2, 5125: 4, 5126: 4}
@@ -165,6 +168,8 @@ class Builder:
         self.binary = bytearray()
         self.shared = {group: {} for group in ("images", "samplers", "textures", "materials")}
         self.named_materials = {}
+        self.stripped = {}  # material name -> its definition without occlusionTexture
+        self.asset_id = None
         self.extensions = {key: set() for key in ("extensionsUsed", "extensionsRequired")}
 
     def view(self, item, payload):
@@ -177,25 +182,48 @@ class Builder:
         self.doc["bufferViews"].append(item)
         return index
 
-    def store(self, group, item):
+    def store_material(self, item):
+        name = item["name"]
+        extras = item.get("extras")
+        if self.asset_id is None and isinstance(extras, dict) and NAME_KEY in extras:  # extracting: undo the clone
+            item = copy.deepcopy(item)
+            item["name"] = name = item["extras"].pop(NAME_KEY)
+            if not item["extras"]:
+                del item["extras"]
+        stripped = canonical({k: v for k, v in item.items() if k != "occlusionTexture"})
+        if self.stripped.setdefault(name, stripped) != stripped:
+            raise ValueError(f"same-name material conflict: {name!r} has different definitions")
+        if "occlusionTexture" in item and self.asset_id is not None:
+            item = copy.deepcopy(item)
+            item["name"] = f"{name}~{self.asset_id}"
+            if not isinstance(item.setdefault("extras", {}), dict):
+                raise ValueError(f"material {name!r}: extras must be an object to record {NAME_KEY}")
+            item["extras"][NAME_KEY] = name
+            self.doc["materials"].append(item)
+            return len(self.doc["materials"]) - 1
         key = canonical(item)
+        if name in self.named_materials:
+            previous, index = self.named_materials[name]
+            if previous != key:
+                raise ValueError(f"same-name material conflict: {name!r} has different definitions")
+            return index
+        self.named_materials[name] = key, len(self.doc["materials"])
+        self.doc["materials"].append(item)
+        return len(self.doc["materials"]) - 1
+
+    def store(self, group, item):
         if group == "materials" and "name" in item:
-            name = item["name"]
-            if name in self.named_materials:
-                previous, index = self.named_materials[name]
-                if previous != key:
-                    raise ValueError(f"same-name material conflict: {name!r} has different definitions")
-                return index
-            index = len(self.doc[group])
-            self.named_materials[name] = key, index
-        elif group in self.shared:
+            return self.store_material(item)
+        key = canonical(item)
+        if group in self.shared:
             if key in self.shared[group]:
                 return self.shared[group][key]
             self.shared[group][key] = len(self.doc[group])
         self.doc[group].append(item)
         return len(self.doc[group]) - 1
 
-    def copy_asset(self, doc, binary, root):
+    def copy_asset(self, doc, binary, root, asset_id=None):
+        self.asset_id = asset_id  # bundling: per-asset materials; None when extracting
         selected = resources(doc, root)
         maps = {group: {} for group in GROUPS}
 
@@ -310,7 +338,9 @@ def bundle_assets(sources, manifest, name="gteki_kit_bundle"):
         doc, binary = embedded_document(data)
         if any(isinstance(node.get("extras"), dict) and NAME_KEY in node["extras"] for node in doc.get("nodes", [])):
             raise ValueError(f"{asset_id}: source nodes must not carry extras.{NAME_KEY}")
-        root = builder.copy_asset(doc, binary, asset_root(doc, asset_id))
+        if any(isinstance(m.get("extras"), dict) and NAME_KEY in m["extras"] for m in doc.get("materials", [])):
+            raise ValueError(f"{asset_id}: source materials must not carry extras.{NAME_KEY}")
+        root = builder.copy_asset(doc, binary, asset_root(doc, asset_id), asset_id)
         builder.doc["nodes"][0]["children"].append(root)
         metadata["assets"].append(dict(id=asset_id, node=root, source_sha256=digest, source_bytes=len(data)))
         copyrights.append(doc["asset"].get("copyright"))
@@ -548,6 +578,40 @@ def self_test():
         assert "material conflict" in str(error)
     else:
         raise AssertionError("same-name material conflict was accepted")
+    # Per-asset baked occlusion: materials that differ only by occlusionTexture become one clone per asset
+    baked = []
+    for asset_id, original in sources:
+        ao_doc, ao_binary = parse_glb(original)
+        ao_doc["materials"][0]["occlusionTexture"] = dict(index=1, texCoord=1)  # texture 1: an image per asset
+        baked.append((asset_id, encode_glb(ao_doc, ao_binary)))
+    ao_manifest = copy.deepcopy(manifest)
+    for entry, (_, data) in zip(ao_manifest["assets"], baked):
+        entry["sha256"] = sha256(data)
+    ao_bundle = bundle_assets(baked, ao_manifest)
+    assert ao_bundle == bundle_assets(baked, ao_manifest)
+    ao_doc, _, _ = read_bundle(ao_bundle)
+    clones = {m["name"]: m for m in ao_doc["materials"] if NAME_KEY in m.get("extras", {})}
+    assert sorted(clones) == ["gteki_shared~tiny_a", "gteki_shared~tiny_b"], sorted(clones)
+    assert all(m["extras"][NAME_KEY] == "gteki_shared" for m in clones.values())
+    assert clones["gteki_shared~tiny_a"]["occlusionTexture"] != clones["gteki_shared~tiny_b"]["occlusionTexture"]
+    for asset_id, data in baked:
+        extracted = extract_asset(ao_bundle, asset_id)
+        assert parse_glb(extracted)[0]["materials"] == parse_glb(data)[0]["materials"]  # names and extras restored
+    mixed_manifest = copy.deepcopy(manifest)
+    mixed_manifest["assets"][0]["sha256"] = sha256(baked[0][1])
+    mixed_doc, _, _ = read_bundle(bundle_assets([baked[0], sources[1]], mixed_manifest))
+    assert sorted(m["name"] for m in mixed_doc["materials"]) == ["gteki_shared", "gteki_shared~tiny_a", "gteki_tiny_a", "gteki_tiny_b"]
+    other_doc, other_binary = parse_glb(baked[1][1])
+    other_doc["materials"][0]["doubleSided"] = True  # a difference besides the occlusion map is still a conflict
+    other = encode_glb(other_doc, other_binary)
+    other_manifest = copy.deepcopy(ao_manifest)
+    other_manifest["assets"][1]["sha256"] = sha256(other)
+    try:
+        bundle_assets([baked[0], ("tiny_b", other)], other_manifest)
+    except ValueError as error:
+        assert "material conflict" in str(error)
+    else:
+        raise AssertionError("same-name occlusion material with another difference was accepted")
     # Alternate image sources must participate in both reachability and remapping.
     alternatives = []
     for asset_id, original in sources:
@@ -608,7 +672,7 @@ def self_test():
             assert "collides" in str(error)
         else:
             raise AssertionError(f"bundle name {clash!r} colliding with a node was accepted")
-    print("PASS self-test: deduplication, subtree metadata, repeated-name tags, determinism, extraction, geometry bytes, material conflict, bundle-name clash, alternate sources and image headers")
+    print("PASS self-test: deduplication, subtree metadata, repeated-name tags, determinism, extraction, geometry bytes, material conflict, per-asset occlusion materials, bundle-name clash, alternate sources and image headers")
 
 
 def main():

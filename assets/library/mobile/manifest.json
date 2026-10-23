@@ -1181,8 +1181,8 @@
       "family": "gate",
       "variant": "array_2",
       "file": "glb/gteki_gate_array_2.glb",
-      "sha256": "ffe72d1a05cb6dec19fb6a4fe49597b7f2720808c762f2ca62aeb6a8687e0e5a",
-      "bytes": 114924,
+      "sha256": "b955e6e6aa9ea06876ccc4cc9b0dd0b98518873f16eca83c184023c9fc82a58c",
+      "bytes": 126992,
       "triangles": 1326,
       "materials": [
         "gteki_palette"
@@ -1193,8 +1193,10 @@
           "maps": [
             "albedo",
             "emissive",
+            "occlusion",
             "orm"
-          ]
+          ],
+          "occlusion_res": 256
         }
       },
       "bounds_m": {
@@ -1641,8 +1643,8 @@
       "family": "vertical",
       "variant": "escalator",
       "file": "glb/gteki_escalator_s1000_r5000_up.glb",
-      "sha256": "7395d93cd7b26f44136740ca63d15d71c8640bef510ecf7613ad3f32c97a3e27",
-      "bytes": 602524,
+      "sha256": "fab4878c98c34ff198bd28066e7f3ab8543c4461f9546baf7eb44bf90b3402ad",
+      "bytes": 616164,
       "triangles": 7390,
       "materials": [
         "gteki_palette",
@@ -1654,16 +1656,20 @@
           "maps": [
             "albedo",
             "emissive",
+            "occlusion",
             "orm"
-          ]
+          ],
+          "occlusion_res": 512
         },
         "gteki_palette_blend": {
           "res": 64,
           "maps": [
             "albedo",
             "emissive",
+            "occlusion",
             "orm"
-          ]
+          ],
+          "occlusion_res": 512
         }
       },
       "bounds_m": {

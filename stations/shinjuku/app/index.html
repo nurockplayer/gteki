@@ -2,13 +2,14 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#101215" />
     <title>GTEki — 新宿駅 都営大江戸線</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23172125'/%3E%3Cpath d='M24 10H12v12h12v-6h-7' fill='none' stroke='%23efdab7' stroke-width='3'/%3E%3C/svg%3E" />
     <link rel="stylesheet" href="./src/style.css" />
   </head>
   <body>
-    <canvas id="view"></canvas>
+    <canvas id="view" tabindex="0" aria-label="駅を歩く Station walk. WASD to move, V to change camera."></canvas>
     <div id="fade"></div>
 
     <header id="hud-top">
@@ -19,11 +20,14 @@
       <div id="floor" class="floor" title="現在の階（表示用の推定高さ）"><span id="floor-label">B1</span><small id="floor-sub">推定 −4 m</small></div>
     </header>
 
-    <section id="panel" class="panel" tabindex="-1">
+    <section id="panel" class="panel collapsed" aria-label="経路検索 Route search">
+      <button id="sheet-handle" class="sheet-handle" aria-expanded="false" aria-controls="panel-content" aria-label="検索を開閉 Expand or collapse search"><i></i></button>
+      <button id="search-pill" class="search-pill" aria-expanded="false" aria-controls="panel-content"><span class="search-symbol">⌕</span><span id="search-label">どこへ行きますか？ <small>Find a destination</small></span><span id="search-chevron">⌄</span></button>
+      <div id="panel-content" hidden>
       <div class="search">
         <label class="field"><span>出発 From</span><input id="from" placeholder="現在地 Current location" autocomplete="off" /></label>
         <label class="field"><span>目的地 To</span><input id="to" placeholder="出口・改札・ホーム・トイレ… Exit, gate, platform…" autocomplete="off" /></label>
-        <ul id="results" class="results" role="listbox"></ul>
+        <ul id="results" class="results" aria-label="検索結果 Search results"></ul>
         <div class="toggles">
           <label><input type="checkbox" id="ticketed" checked /> きっぷ・IC あり <small>Have ticket</small></label>
           <label><input type="checkbox" id="stepfree" /> 段差なし <small>Step-free</small></label>
@@ -33,39 +37,53 @@
         <div class="route-head">
           <div><b id="route-dist">–</b><small id="route-eta"></small></div>
           <div class="route-btns">
-            <button id="guide" class="primary">▶ 案内歩行 Guide</button>
-            <button id="clear" class="ghost">✕</button>
+            <button id="guide" class="primary">▶ 出発 Start</button>
+            <button id="clear" class="ghost" aria-label="経路を消去 Clear route">✕</button>
           </div>
         </div>
-        <ol id="steps" class="steps"></ol>
+        <p id="route-floors" class="route-floors"></p>
+        <p id="route-origin" class="prov"></p>
+        <button id="edit-route" class="ghost">出発・目的地を変更 Edit endpoints</button>
+        <p id="route-fare" class="route-fare"></p>
         <div id="unknowns" class="unknowns"></div>
         <div id="prov" class="prov"></div>
+        <details><summary>道順を確認 · Route steps</summary><ol id="steps" class="steps"></ol></details>
       </div>
-      <div id="route-error" class="route-error hidden"></div>
+      <div id="route-error" role="alert" class="route-error hidden"></div>
+      </div>
     </section>
 
-    <div id="next" class="next hidden"><span id="next-icon">↑</span><div><b id="next-ja"></b><small id="next-en"></small></div></div>
-    <div id="prompt" class="prompt hidden"></div>
-    <canvas id="minimap" width="440" height="440"></canvas>
+    <div id="next" class="next hidden"><span id="next-icon">↑</span><div><b id="next-ja"></b><small id="next-en"></small></div><button id="guide-speed" class="ghost" aria-label="案内速度 1 倍 · Guide speed 1 times. Click to change">×1</button><button id="guide-pause" class="ghost" aria-label="案内歩行を開閉 Toggle guide">Ⅱ</button></div>
+    <div id="journey-evidence" class="journey-evidence hidden"><details id="evidence-disclosure"><summary id="evidence-toggle">ⓘ 未確認 · Unverified</summary><div id="evidence-detail"></div></details><span id="hours-chip">営業時間 未確認 · Hours unverified</span></div>
+    <div id="floor-toast" class="floor-toast hidden" role="status" aria-live="polite"></div>
+    <div id="maneuver-anchor" class="world-label hidden" aria-hidden="true"></div>
+    <div id="destination-label" class="world-label destination-label hidden" aria-hidden="true"></div>
+    <section id="arrival" class="arrival hidden" role="status" aria-live="polite" aria-label="到着 Arrival">
+      <span id="arrival-eyebrow" class="eyebrow">◎ 到着しました · You have arrived</span><h2 id="arrival-name"></h2><p id="arrival-place"></p><p id="arrival-exits"></p>
+      <div class="arrival-actions"><button id="route-again" class="ghost">ここから再検索 Route again</button><button id="new-destination" class="primary">次の目的地 New destination</button></div>
+    </section>
+    <button id="prompt" class="prompt hidden"></button>
+    <canvas id="minimap" width="440" height="440" tabindex="0" role="button" aria-label="地図を拡大 Toggle map" aria-pressed="false"></canvas>
 
     <div id="touch" class="touch">
       <div id="stick" class="stick"><div id="knob" class="knob"></div></div>
-      <button id="btn-run" class="tbtn">RUN</button>
-      <button id="btn-act" class="tbtn hidden">E</button>
+      <button id="btn-run" class="tbtn" aria-pressed="false">走る<br>RUN</button>
+      <button id="btn-act" class="tbtn hidden" aria-label="操作 Interact">E / Tap</button>
     </div>
 
     <footer id="foot">
-      <button id="btn-help" class="ghost small">操作 ?</button>
+      <button id="btn-help" class="ghost small">操作 Controls</button>
       <button id="btn-cov" class="ghost small">データ範囲 Coverage</button>
-      <button id="btn-sound" class="ghost small">🔇 音</button>
-      <span class="attr">出典: 国土交通省「歩行空間ネットワークデータ／構内地図データ（都営地下鉄大江戸線 新宿駅）」を加工して作成 (PDL 1.0) · 高さは推定値 · 実際の移動案内を保証しません</span>
+      <button id="btn-sound" class="ghost small">音 Sound</button>
+      <button id="btn-bob" class="ghost small" aria-pressed="true">揺れ Bob</button>
+      <span class="attr">出典: 国土交通省「歩行空間ネットワークデータ／構内地図データ（都営地下鉄大江戸線 新宿駅）」を加工して作成 · 地上の街並み: 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成（建物の基部を地表面の高さにそろえて表示） · 高さは推定値 · 実際の移動案内を保証しません</span>
     </footer>
 
     <dialog id="dlg-help">
       <h3>操作 Controls</h3>
       <ul>
         <li><b>WASD / ↑↓←→</b> 移動 Move · <b>Shift</b> 走る Run</li>
-        <li><b>ドラッグ Drag</b> 視点 Look · <b>ホイール Wheel</b> ズーム Zoom · <b>V</b> 一人称/三人称</li>
+        <li><b>ドラッグ Drag</b> 視点 Look · <b>ホイール Wheel</b> ズーム Zoom · <b>V</b> 一人称/三人称 First/third person</li>
         <li><b>/</b> 検索 Search · <b>G</b> 案内歩行 Guide · <b>E</b> エレベーター Elevator · <b>M</b> 地図 Map</li>
         <li>スマホ: 左下スティックで移動、右側ドラッグで視点 · Phone: left stick to move, drag right side to look</li>
       </ul>
@@ -73,14 +91,16 @@
       <form method="dialog"><button class="primary">OK</button></form>
     </dialog>
     <dialog id="dlg-cov"><div id="cov-body"></div><form method="dialog"><button class="primary">閉じる Close</button></form></dialog>
-    <dialog id="dlg-elev"><h3>エレベーター Elevator</h3><div id="elev-floors" class="elev-floors"></div><form method="dialog"><button class="ghost">キャンセル</button></form></dialog>
+    <dialog id="dlg-elev"><h3>エレベーター Elevator</h3><div id="elev-floors" class="elev-floors"></div><form method="dialog"><button class="ghost">キャンセル Cancel</button></form></dialog>
 
-    <div id="loading">
+    <div id="loading" aria-busy="true">
       <div class="ld-card">
         <div class="logo big">GTEki</div>
         <p>新宿駅 都営大江戸線 E27 を構築中…</p>
         <p class="sub">Building Toei Oedo Line Shinjuku from public indoor data</p>
-        <div class="bar"><i></i></div>
+        <p id="loading-step" role="status" aria-live="polite">駅のデータを準備中 · Preparing station data</p>
+        <div id="loading-progress" class="bar" role="progressbar" aria-label="準備の進行 Startup progress" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0"><i id="loading-fill"></i></div>
+        <small id="loading-count">0 / 4</small>
       </div>
     </div>
     <script type="module" src="./src/main.ts"></script>

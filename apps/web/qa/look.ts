@@ -381,10 +381,11 @@ function lumaStats(emissive: boolean, thresholds = [1, 1.5, 2, 2.5, 3, 4, 6]) {
   const size = renderer.getSize(new THREE.Vector2());
   const w = Math.round(size.x * renderer.getPixelRatio()), h = Math.round(size.y * renderer.getPixelRatio());
   const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.FloatType, depthBuffer: true });
-  const saved: [THREE.MeshStandardMaterial, number][] = [];
+  // Keyed by material: a material shared by several meshes must keep its first (real) value, not the 0 set since.
+  const saved = new Map<THREE.MeshStandardMaterial, number>();
   if (!emissive) scene.traverse((o) => {
     const m = (o as THREE.Mesh).material;
-    for (const mat of Array.isArray(m) ? m : m ? [m] : []) if ((mat as THREE.MeshStandardMaterial).isMeshStandardMaterial) { saved.push([mat as THREE.MeshStandardMaterial, (mat as THREE.MeshStandardMaterial).emissiveIntensity]); (mat as THREE.MeshStandardMaterial).emissiveIntensity = 0; }
+    for (const mat of Array.isArray(m) ? m : m ? [m] : []) if ((mat as THREE.MeshStandardMaterial).isMeshStandardMaterial) { const sm = mat as THREE.MeshStandardMaterial; if (!saved.has(sm)) saved.set(sm, sm.emissiveIntensity); sm.emissiveIntensity = 0; }
   });
   applyCamera();
   const prev = renderer.getRenderTarget();

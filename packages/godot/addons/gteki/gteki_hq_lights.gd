@@ -7,13 +7,17 @@ extends RefCounted
 ##
 ## Two directionals stand in for the web's image-based light: the key alone leaves the far side of the avatar black,
 ## which is what the #251 review found; key + fill keeps the figure readable without touching the station's materials.
+##
+## Render layers: layer 1 (`WORLD_LAYER`) is the station and every other imported node; **layer 2 (`AVATAR_LAYER`) is
+## reserved for the avatar** and nothing else may use it. That reservation is what lets `light_cull_mask` separate the
+## two without a per-object light: station meshes stay on layer 1, avatar meshes on layer 2.
 
 const Walker = preload("res://addons/gteki/gteki_walker.gd")
 
 ## Station meshes keep Godot's default render layer; the added lights are masked off it while a bake is applied.
 const WORLD_LAYER := 1 << 0
-## Every render layer Godot exposes (20), i.e. the unlit-snapshot mask.
-const ALL_LAYERS := 0xFFFFF
+## Every render layer, i.e. the unlit-snapshot mask (Godot's own `light_cull_mask` default).
+const ALL_LAYERS := 0xFFFFFFFF
 const FILL_ENERGY := 0.35
 
 
