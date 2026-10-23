@@ -21,8 +21,8 @@ describe("live messages", () => {
   });
 
   it("no route: the no-route heading", () => {
-    expect(routeLiveMessage(strings("en"), failed)).toBe("No verified route to show");
-    expect(routeLiveMessage(strings("ja"), failed)).toBe("表示できる確認済みルートがありません");
+    expect(routeLiveMessage(strings("en"), failed)).toBe("No route confirmed in the surveyed data");
+    expect(routeLiveMessage(strings("ja"), failed)).toBe("データ上で確認できたルートがありません");
   });
 
   it("search count and the empty-results message", () => {
