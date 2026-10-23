@@ -674,7 +674,7 @@ describe("the walk graph and the walker's world do not depend on the kit", () =>
   it("does not modify the graph source files the build reads (they carry no kit field)", () => {
     const graph = JSON.parse(fs.readFileSync(path.join(GTEKI, "graph.json"), "utf8"));
     expect(JSON.stringify(graph)).not.toMatch(/kit/i);
-    // The edges themselves are pinned by routing.test.ts (golden routes) and walker_replay.test.ts (fence collision).
-    expect(graph.edges.filter((e: { verification: string }) => e.verification === "verified").length).toBe(63);
+    // The edges themselves are pinned by routing.test.ts (golden routes) and walker_replay.test.ts (fence collision);
+    // a verified-edge count here would only go stale as the route lane verifies more edges.
   });
 });
