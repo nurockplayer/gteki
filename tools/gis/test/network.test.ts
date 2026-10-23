@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { archiveGeoJsonMemberReport, archiveGeoJsonNetworkInventory, candidateGraphFromGeoJsonInventory, inspectCsvPair, inspectGeoJsonFeatures, inspectGeoJsonPair, parseCsv } from '../src/network.js';
+import { archiveGeoJsonMemberReport, archiveGeoJsonNetworkInventory, candidateGraphFromGeoJsonInventory, inspectCsvPair, inspectGeoJsonFeatures, inspectGeoJsonPair, networkFloorLabels, parseCsv } from '../src/network.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const fixture = (name: string) => readFile(path.join(here, 'fixtures', name));
@@ -395,5 +395,17 @@ describe('network source inspection', () => {
     expect(member.mapped_fields.route_structure).toBe('rt_struct');
     expect(member.mapped_fields.step_class).toBe('lev_diff');
     expect(combined.mapped_fields).toEqual(member.mapped_fields);
+  });
+});
+
+describe('network floor-label summary', () => {
+  it('reads floor labels from every report shape, including the root of a GeoJSON-pair report', () => {
+    expect(networkFloorLabels({ network_inventory: { floor_label_value_hash_distribution: ['i'] }, members: [{ floor_labels_present_literally: ['m'] }] })).toEqual(['i']);
+    expect(networkFloorLabels({ members: [{ floor_label_value_hash_distribution: ['h'] }, { floor_labels_present_literally: ['L'] }] })).toEqual(['h', 'L']);
+    // GeoJSON pair: no network_inventory, members or field_statistics, only root-level fields.
+    expect(networkFloorLabels({ floor_labels_present_literally: ['-1', '0'], floor_label_counts: { '-1': 1, '0': 2 } })).toEqual(['-1', '0']);
+    expect(networkFloorLabels({ floor_label_value_hash_distribution: [{ value_sha256: 'x', count: 1 }] })).toEqual([{ value_sha256: 'x', count: 1 }]);
+    expect(networkFloorLabels({ field_statistics: { node: { floor: { distinct_values: { b: 1, a: 2 } } } } })).toEqual(['a', 'b']);
+    expect(networkFloorLabels({})).toBeNull();
   });
 });

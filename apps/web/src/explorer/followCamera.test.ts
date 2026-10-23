@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { FOLLOW, clampDistance, followBoom, followDistance, followPose, viewDirection } from "./followCamera.ts";
+import { FOLLOW, avatarFade, clampDistance, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
   it("stays under a 2.6 m ceiling at the default pitch and distance", () => {
@@ -142,5 +142,120 @@ describe("followBoom", () => {
     expect(out.distance).toBe(followDistance(wanted, cast(out.back)));
     // Never reports a distance past what is clear along the chosen boom.
     for (const h of cast(out.back)) expect(out.distance).toBeLessThanOrEqual(Math.max(FOLLOW.minDistance, h.distance - FOLLOW.clearance) + 1e-9);
+  });
+});
+
+describe("constrainedPitch", () => {
+  type Hit = { distance: number; cameraOnly: boolean };
+  const wanted = FOLLOW.defaultDistance;
+  const back0 = new THREE.Vector3(0, 0.14, 1).normalize();
+  /** A wall `wallAt` m behind the pivot, `wallTop` above it, and a slab `slabAt` above. Counts casts. */
+  const scene = (wallAt: number, wallTop: number, slabAt: number) => {
+    const calls = { n: 0 };
+    const cast = (b: THREE.Vector3): Hit[] => {
+      calls.n++;
+      const hits: Hit[] = [];
+      const flat = Math.hypot(b.x, b.z);
+      const wallD = wallAt / flat;
+      if (b.y * wallD < wallTop) hits.push({ distance: wallD, cameraOnly: false });
+      if (b.y > 1e-9) hits.push({ distance: slabAt / b.y, cameraOnly: true });
+      return hits.sort((a, c) => a.distance - c.distance);
+    };
+    return { cast, calls };
+  };
+
+  it("raises the boom over a wall 0.5 m behind with a slab above, reaching the comfortable distance", () => {
+    const { cast, calls } = scene(0.5, 0.25, 1.9);
+    const current = followDistance(wanted, cast(back0));
+    expect(current).toBeLessThan(FOLLOW.comfortDistance);
+    calls.n = 0;
+    const raise = constrainedPitch(wanted, back0, current, cast, new THREE.Vector3());
+    expect(raise).toBeGreaterThan(0);
+    expect(raise).toBeLessThanOrEqual(FOLLOW.maxRaise + 1e-9);
+    expect(calls.n).toBeLessThanOrEqual(FOLLOW.raiseSteps);
+    const raised = raisedBack(back0, raise, new THREE.Vector3());
+    expect(raised.length()).toBeCloseTo(1, 6);
+    expect(followDistance(wanted, cast(raised))).toBeGreaterThanOrEqual(FOLLOW.comfortDistance);
+    // the smallest step that works: the one below it does not reach
+    const step = FOLLOW.maxRaise / FOLLOW.raiseSteps;
+    if (raise > step + 1e-9) {
+      const lower = raisedBack(back0, raise - step, new THREE.Vector3());
+      expect(followDistance(wanted, cast(lower))).toBeLessThan(FOLLOW.comfortDistance);
+    }
+  });
+
+  it("leaves an open boom alone and casts no extra rays", () => {
+    let n = 0;
+    const cast = (): Hit[] => (n++, []);
+    expect(constrainedPitch(wanted, back0, wanted, cast, new THREE.Vector3())).toBe(0);
+    expect(n).toBe(0);
+  });
+
+  it("falls back to the shortened boom when no raise reaches the comfortable distance", () => {
+    const { cast, calls } = scene(0.5, 5, 5); // a tall wall: no pitch gets over it
+    const current = followDistance(wanted, cast(back0));
+    calls.n = 0;
+    expect(constrainedPitch(wanted, back0, current, cast, new THREE.Vector3())).toBe(0);
+    expect(calls.n).toBe(FOLLOW.raiseSteps);
+  });
+
+  /** Elevation raise (radians) of a candidate boom over `back0`. */
+  const raiseOf = (b: THREE.Vector3) => Math.asin(b.y) - Math.asin(back0.y);
+  const deg = (r: number) => (r * 180) / Math.PI;
+
+  it("finds a raise that clears only at a steep angle (distance is not monotonic in the raise)", () => {
+    let n = 0;
+    // blocked at every middling angle, clear only in a 44-51 degree window
+    const cast = (b: THREE.Vector3): Hit[] => {
+      n++;
+      const r = deg(raiseOf(b));
+      return [{ distance: r > 44 && r < 51 ? 6 : 1.0, cameraOnly: false }];
+    };
+    const raise = constrainedPitch(wanted, back0, 0.74, cast, new THREE.Vector3());
+    expect(deg(raise)).toBeGreaterThanOrEqual(45 - 1e-6);
+    expect(deg(raise)).toBeLessThanOrEqual(50 + 1e-6);
+    expect(n).toBeLessThanOrEqual(FOLLOW.raiseSteps);
+  });
+
+  it("takes the longest raised boom when none is comfortable, if it beats the unraised one", () => {
+    // booms of 0.9, 1.1, 1.3 (best), 1.2, 1.0 m at 10..50 degrees; 0.7 m unraised
+    const table = [0.9, 1.1, 1.3, 1.2, 1.0];
+    const cast = (b: THREE.Vector3): Hit[] => {
+      const step = Math.round(deg(raiseOf(b)) / 10);
+      return [{ distance: table[step - 1]! + FOLLOW.clearance, cameraOnly: false }];
+    };
+    const raise = constrainedPitch(wanted, back0, 0.7, cast, new THREE.Vector3());
+    expect(deg(raise)).toBeCloseTo(30, 6);
+  });
+
+  it("stays unraised when no raised boom beats the unraised one", () => {
+    const cast = (): Hit[] => [{ distance: 0.5 + FOLLOW.clearance, cameraOnly: false }];
+    expect(constrainedPitch(wanted, back0, 0.8, cast, new THREE.Vector3())).toBe(0);
+  });
+
+  it("eases the raise toward its target and snaps on request", () => {
+    expect(easeRaise(0, 0.5, 0.016, true)).toBe(0.5);
+    const a = easeRaise(0, 0.5, 0.016);
+    expect(a).toBeGreaterThan(0);
+    expect(a).toBeLessThan(0.5);
+    expect(easeRaise(a, 0.5, 10)).toBe(0.5);
+  });
+});
+
+describe("avatarFade", () => {
+  it("is opaque from 1.0 m out, fadeMin at the closest camera distance, and never below that", () => {
+    expect(avatarFade(FOLLOW.defaultDistance)).toBe(1);
+    expect(avatarFade(FOLLOW.fadeStart)).toBe(1);
+    expect(avatarFade(FOLLOW.minDistance)).toBeCloseTo(FOLLOW.fadeMin, 9);
+    expect(avatarFade(0)).toBeCloseTo(FOLLOW.fadeMin, 9);
+  });
+
+  it("is monotonic non-decreasing with distance", () => {
+    let last = -Infinity;
+    for (let d = 0; d <= 4; d += 0.01) {
+      const f = avatarFade(d);
+      expect(f).toBeGreaterThanOrEqual(last - 1e-12);
+      last = f;
+    }
   });
 });

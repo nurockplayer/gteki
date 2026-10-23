@@ -318,8 +318,8 @@ describe('graph-derived exit / street-level rule', () => {
     if (bytes === null) return; // standalone checkout without stations/
     const { facts, nodes } = await readGraphWindowNodes(IKEBUKURO_RULE, { stationId: 'ikebukuro' });
     expect(facts.graph_sha256).toBe(createHash('sha256').update(bytes).digest('hex'));
-    expect(facts).toMatchObject({ graph_path: 'stations/ikebukuro/gteki/graph.json', nodes_total: 62, exit_connectors: 20, street_level_nodes: 20, matched_by_both: 20, selected_nodes: 20 });
-    expect(facts.kinds_by_floor).toEqual({ 'exit@street': 20, 'junction@b1': 36, 'stair_end@b1': 3, 'ticket_gate@b1': 3 });
+    expect(facts).toMatchObject({ graph_path: 'stations/ikebukuro/gteki/graph.json', nodes_total: 66, exit_connectors: 20, street_level_nodes: 20, matched_by_both: 20, selected_nodes: 20 });
+    expect(facts.kinds_by_floor).toEqual({ 'exit@street': 20, 'junction@b1': 40, 'stair_end@b1': 3, 'ticket_gate@b1': 3 });
     expect(nodes.every((n) => n.kind === 'exit' && n.floor_id === 'street')).toBe(true);
     expect(facts.max_selected_distance_m).toBeGreaterThan(248); expect(facts.max_selected_distance_m).toBeLessThan(249); // x39: the 249 m exit
   });
@@ -359,7 +359,7 @@ describe('exit_poi_connectors: graph nodes that exit POIs name as connectors', (
     const base = await readGraphWindowNodes(IKEBUKURO_RULE, { stationId: 'ikebukuro' });
     const { facts, nodes } = await readGraphWindowNodes(POI_RULE, { stationId: 'ikebukuro' });
     expect(base.facts.pois).toBeNull(); // off unless configured
-    expect(facts.pois).toMatchObject({ pois_path: 'stations/ikebukuro/gteki/pois.json', categories: ['exit'], pois_total: 52, exit_pois: 38, exit_pois_with_connectors: 23, connector_nodes: 23, added_beyond_kind_and_floor: ['x13f', 'x36f', 'x4f'] });
+    expect(facts.pois).toMatchObject({ pois_path: 'stations/ikebukuro/gteki/pois.json', categories: ['exit'], pois_total: 53, exit_pois: 38, exit_pois_with_connectors: 23, connector_nodes: 23, added_beyond_kind_and_floor: ['x13f', 'x36f', 'x4f'] });
     expect(facts.pois!.pois_sha256).toBe(createHash('sha256').update(poisBytes).digest('hex'));
     expect(facts.graph_sha256).toBe(base.facts.graph_sha256);
     expect(facts).toMatchObject({ exit_connectors: 20, street_level_nodes: 20, selected_nodes: 23 }); // the kind/floor counts are unchanged

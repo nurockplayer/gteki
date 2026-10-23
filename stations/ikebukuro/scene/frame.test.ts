@@ -1,8 +1,9 @@
 // G1 evidence: CRS (EPSG:6697) -> station-local ENU -> renderer, for Ikebukuro.
 //
 // What this proves, in code:
-//  1. the ENU <-> renderer mapping the scene is given (`ctx.enuToRenderer`, scene.ts `toRenderer`) is the one
-//     shared packages/geo mapping, and it round-trips every station node and edge vertex bit-exactly;
+//  1. the shared packages/geo ENU <-> renderer mapping, (x, z, -y), round-trips every station node and edge vertex
+//     bit-exactly, and the scene places its geometry through whatever `ctx.enuToRenderer` it is handed (checked on
+//     the walk-bridge quads, with the real mapping and with a different one);
 //  2. the committed GLB is in the renderer frame that mapping produces: every mesh's POSITION bounds are the
 //     build-time ENU bounds (meta.json bbox_enu) mapped by enuToRenderer, and the graph sits inside the GLB;
 //  3. the three implementations of the station frame agree on the station origin from station.json to 1 cm
@@ -15,7 +16,9 @@
 // GLB, never from the GML's own coordinates. Run with GTEKI_UBLD_ENU=<path to ubld_enu.json> for check 4.
 import fs from "node:fs";
 import { spawnSync } from "node:child_process";
+import * as THREE from "three";
 import { describe, expect, it } from "vitest";
+import { assembleCollision } from "./scene.ts";
 import { ENU_TO_RENDERER_MATRIX, StationFrame, enuToRenderer, rendererToEnu } from "../../../packages/geo/src/index.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname;
@@ -55,19 +58,40 @@ function readGlb(rel: string) {
 }
 
 describe("ENU <-> renderer mapping the scene uses", () => {
-  it("is (x, z, -y), as the scene API documents, and is the mapping the web explorer hands the scene", () => {
+  it("is (x, z, -y), as the scene API documents", () => {
     expect(enuToRenderer({ x: 3, y: 5, z: 7 })).toEqual([3, 7, -5]);
     // glTF column-major matrix of the same mapping (what Godot/engines take as a node transform).
     const m = ENU_TO_RENDERER_MATRIX;
     const apply = (p: P3) => [m[0]! * p.x + m[4]! * p.y + m[8]! * p.z, m[1]! * p.x + m[5]! * p.y + m[9]! * p.z, m[2]! * p.x + m[6]! * p.y + m[10]! * p.z];
     expect(apply({ x: 3, y: 5, z: 7 }).map((v) => v + 0)).toEqual([3, 7, -5]);
-    // The scene never rolls its own mapping: scene.ts builds `toRenderer` from ctx.enuToRenderer, and the explorer's
-    // ctx.enuToRenderer is packages/geo's. Textual guards so a private re-implementation fails here.
+  });
+
+  it("the scene places its geometry through the ctx.enuToRenderer it is given, not a mapping of its own (walk-bridge quads)", () => {
+    const quads = (readJson("scene/walk_bridges.json") as { quads: number[][][] }).quads;
+    expect(quads.length).toBeGreaterThan(100);
+    const build = (mapping: (p: P3) => [number, number, number]) => {
+      const parts = assembleCollision(THREE, new THREE.Group(), {
+        materialFor: () => undefined,
+        toRenderer: (x, y, z) => new THREE.Vector3(...mapping({ x, y, z })),
+        enuToRenderer: mapping,
+        fenceCollider: new THREE.Group(),
+      });
+      return Array.from(parts.bridges!.geometry.getAttribute("position").array as Float32Array);
+    };
+    // (a) with the shared packages/geo mapping, each vertex lands at the (x, z, -y) the scene API documents.
+    const byHand = quads.flatMap((q) => q.flatMap(([x, y, z]) => [x!, z!, -y!].map(Math.fround)));
+    expect(build((p) => enuToRenderer(p))).toEqual(byHand);
+    // (b) with a deliberately different mapping the geometry follows it, so the scene has no mapping of its own.
+    const shifted = (p: P3): [number, number, number] => [p.x + 1000, p.z + 2000, -p.y + 3000];
+    expect(build(shifted)).toEqual(quads.flatMap((q) => q.flatMap(([x, y, z]) => shifted({ x: x!, y: y!, z: z! }).map(Math.fround))));
+    expect(build(shifted)).not.toEqual(byHand);
+  });
+
+  it("scene.ts derives its own toRenderer from ctx.enuToRenderer (station-local guard; buildScene itself needs a WebGL renderer)", () => {
+    // buildScene cannot run under node (environment map, sign canvases), so this stays a check on the station's own file.
+    // That the explorer hands the scene packages/geo's enuToRenderer is core's contract and core's test.
     const sceneSrc = fs.readFileSync(ROOT + "scene/scene.ts", "utf8");
     expect(sceneSrc).toMatch(/toRenderer = \(x: number, y: number, z: number\) => new THREE\.Vector3\(\.\.\.ctx\.enuToRenderer\(\{ x, y, z \}\)\)/);
-    const explorerSrc = fs.readFileSync(REPO + "apps/web/src/explorer/explorer.ts", "utf8");
-    expect(explorerSrc).toMatch(/import \{[^}]*\benuToRenderer\b[^}]*\} from "@gteki\/geo"/);
-    expect(explorerSrc).toMatch(/enuToRenderer: \(p\) => enuToRenderer\(p\)/);
   });
 
   it("round-trips every station node and edge vertex exactly (renderer -> ENU gives the stored value back)", () => {
