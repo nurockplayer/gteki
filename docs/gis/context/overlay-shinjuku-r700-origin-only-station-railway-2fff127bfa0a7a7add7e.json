@@ -1,5 +1,5 @@
 {
-  "run_id": "overlay-shinjuku-r700-origin-only-station-railway-993426c1de026ae4754a",
+  "run_id": "overlay-shinjuku-r700-origin-only-station-railway-2fff127bfa0a7a7add7e",
   "command": "context-overlay",
   "policy_version": "context-overlay-v1",
   "station_id": "shinjuku",
@@ -188,12 +188,12 @@
   },
   "outputs": {
     "geojson": {
-      "store_path": "out/overlay-shinjuku-r700-origin-only-station-railway-993426c1de026ae4754a.geojson",
+      "store_path": "out/overlay-shinjuku-r700-origin-only-station-railway-2fff127bfa0a7a7add7e.geojson",
       "sha256": "a2ff15d49332a649277d35a3dfca002bfaf05b3debf6023a746645cbb4859225",
       "bytes": 42269
     },
     "glb": {
-      "store_path": "out/overlay-shinjuku-r700-origin-only-station-railway-993426c1de026ae4754a.glb",
+      "store_path": "out/overlay-shinjuku-r700-origin-only-station-railway-2fff127bfa0a7a7add7e.glb",
       "sha256": "486ff55fa5a5772123042f70aa7d3e0c0bc66c958542404e1eccbf12e0d19e95",
       "bytes": 30924,
       "nodes": [
@@ -215,6 +215,6 @@
       "segments_skipped_zero_length": 0
     }
   },
-  "tool_input_sha256": "ee61e32afeec0242774859d2bee05870f9f13ce704b5e13a6615596ef9b30347",
+  "tool_input_sha256": "d9d46fffddd346e6b13fe668a0bffe706b2002980064dbccc6e28c3b5916bce6",
   "tool_version": "0.1.0"
 }
