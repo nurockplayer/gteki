@@ -671,6 +671,7 @@ function straightInPlan(points: PolylinePoint[], stepIndexes: number[]): boolean
  */
 export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "ja" | "en" = "ja", destination?: Poi, origin?: Poi): Instruction[] {
   const t = TEXT[lang];
+  const paidModelled = bundle.edges.some((e) => e.paid === true || e.crossesFareBoundary === true);
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const points = routePolyline(bundle, route);
@@ -807,11 +808,11 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
     const ridden = route.steps[route.steps.length - 1]?.mode === end.mode;
     out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: goal.floorId, connector: kind, text: t.connectorArrive(kind, poiDisplayName(destination, lang), ridden), label: null });
   } else {
-    // A gate (or any non-exit destination) keeps the arrival sentence, followed by its own note in this
-    // language when it has one. A note in another language is never shown as if it were this one; exits keep
-    // the plain arrival (#203 B7).
+    // The public-side/inside-not-modelled gate claim applies only where the data has no paid side (#203 B7).
+    // Any non-exit destination keeps its own note in this language when it has one; another language's note
+    // is never shown as if it were this one.
     const note = destination && destination.category !== "exit" ? poiNote(destination, lang) : null;
-    const base = destination?.category === "ticket_gate" ? t.gateArrive() : t.arrive();
+    const base = destination?.category === "ticket_gate" && !paidModelled ? t.gateArrive() : t.arrive();
     const separator = lang === "ja"
       ? (base.endsWith("。") ? "" : "。")
       : (base.endsWith(".") ? " " : ". ");

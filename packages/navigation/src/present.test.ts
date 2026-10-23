@@ -109,6 +109,17 @@ describe("describeRoute arrival at a gate, an area or a POI with notes (#203 B7)
     expect(arrival(b, dest, "en").text).toBe("Arrived at the public side of the gate (inside the gate is not modelled)");
   });
 
+  it("uses plain arrival text when the bundle models a paid side at a ticket gate", () => {
+    const { b, dest } = toPoi("ticket_gate");
+    b.edges[0]!.crossesFareBoundary = true;
+    expect(arrival(b, dest, "en").text).toBe("Arrive at destination");
+    expect(arrival(b, dest, "ja").text).toBe("目的地に到着");
+
+    dest.notes = [{ lang: "en", text: "Routes end at this gate." }];
+    expect(arrival(b, dest, "en").text).toBe("Arrive at destination. Routes end at this gate.");
+    expect(arrival(b, dest, "ja").text).toBe("目的地に到着");
+  });
+
   it("shows the destination's own note in the requested language, never another language's", () => {
     const { b, dest } = toPoi("ticket_gate", [{ lang: "en", text: "Routes end at the public side of the gate." }]);
     expect(arrival(b, dest, "en").text).toBe("Arrived at the public side of the gate (inside the gate is not modelled). Routes end at the public side of the gate.");
