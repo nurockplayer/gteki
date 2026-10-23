@@ -1,0 +1,107 @@
+{
+  "source_id": "hokonavi-oedo-shinjuku-nishiguchi-package",
+  "resolved_url": "https://ckan.hokonavi.go.jp/api/3/action/package_show?id=station_oedo_shinjukunishiguchi",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-22T12:22:37.731Z",
+  "completed_at": "2026-10-22T12:22:37.922Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/json;charset=utf-8",
+    "content-length": "17522",
+    "etag": null,
+    "last-modified": null,
+    "date": "Thu, 22 Oct 2026 12:22:37 GMT"
+  },
+  "bytes": 17522,
+  "sha256": "57f4911b67680455ef45a1b5dd640b0f0d0f8e97e19c4f500557ac0d692f6502",
+  "store_path": "raw/57f4911b67680455ef45a1b5dd640b0f0d0f8e97e19c4f500557ac0d692f6502/package_show",
+  "tool_version": "0.1.0",
+  "git_commit": "e1b9dd2deb2b1c3314524bdbbf8ca5687006e0d2",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online",
+  "supporting_documents": [
+    {
+      "id": "dataset-page",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/station_oedo_shinjukunishiguchi",
+      "url": "https://ckan.hokonavi.go.jp/dataset/station_oedo_shinjukunishiguchi",
+      "http_status": 200,
+      "sha256": "44a9350d809f3cc9fdb29cde5f96e5e1632031dcdec87b2d6f1a42346e050d2a",
+      "bytes": 29696,
+      "store_path": "raw/44a9350d809f3cc9fdb29cde5f96e5e1632031dcdec87b2d6f1a42346e050d2a/station_oedo_shinjukunishiguchi"
+    },
+    {
+      "id": "hokonavi-site-terms",
+      "requested_url": "https://www.hokonavi.go.jp/terms/",
+      "url": "https://www.hokonavi.go.jp/terms/",
+      "http_status": 200,
+      "sha256": "479ce0b33324fc6dd3ee7ba75fdb9de2a2a5f2095ab1cbacc790ad1cfe4a9aa6",
+      "bytes": 55246,
+      "store_path": "raw/479ce0b33324fc6dd3ee7ba75fdb9de2a2a5f2095ab1cbacc790ad1cfe4a9aa6/terms"
+    },
+    {
+      "id": "pdl-1-0-text",
+      "requested_url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "http_status": 200,
+      "sha256": "4d4c4cc5e8ac952f640cdf9c8242de648e36995667a361302589d468fd1e12a0",
+      "bytes": 59216,
+      "store_path": "raw/4d4c4cc5e8ac952f640cdf9c8242de648e36995667a361302589d468fd1e12a0/public_data_license_v1.0"
+    },
+    {
+      "id": "res-network-csv-zip",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/882c8e7d-728e-4e37-a55a-c20c18ce569f/download/nwd_oedo_shinjuku-nishiguchi_csv.zip",
+      "url": "https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/882c8e7d-728e-4e37-a55a-c20c18ce569f/download/nwd_oedo_shinjuku-nishiguchi_csv.zip",
+      "http_status": 200,
+      "sha256": "de580464e0367a751f57912e43c204ed68d6ff17dd43a95d0e6e928509df36f0",
+      "bytes": 25721,
+      "store_path": "raw/de580464e0367a751f57912e43c204ed68d6ff17dd43a95d0e6e928509df36f0/nwd_oedo_shinjuku-nishiguchi_csv.zip"
+    },
+    {
+      "id": "res-network-geojson-zip",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/1ad0189f-f289-4ba0-8bf4-b7a76420a845/download/nwd_oedo_shinjuku-nishiguchi_geojson.zip",
+      "url": "https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/1ad0189f-f289-4ba0-8bf4-b7a76420a845/download/nwd_oedo_shinjuku-nishiguchi_geojson.zip",
+      "http_status": 200,
+      "sha256": "18e83aba5af43e6d7fa3695bcad8d7fe41d3a3ca57834f196570629ecf6c69cb",
+      "bytes": 41726,
+      "store_path": "raw/18e83aba5af43e6d7fa3695bcad8d7fe41d3a3ca57834f196570629ecf6c69cb/nwd_oedo_shinjuku-nishiguchi_geojson.zip"
+    },
+    {
+      "id": "res-network-shapefile-zip",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/bbb1ec08-1e6a-4abf-8bca-6d41e833e6d9/download/nwd_oedo_shinjuku-nishiguchi_shapefile.zip",
+      "url": "https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/bbb1ec08-1e6a-4abf-8bca-6d41e833e6d9/download/nwd_oedo_shinjuku-nishiguchi_shapefile.zip",
+      "http_status": 200,
+      "sha256": "ec4f0a5232ad1cabf0193cc9488536deb0fef19a3f702dcb1c0da7b898fd00f0",
+      "bytes": 44862,
+      "store_path": "raw/ec4f0a5232ad1cabf0193cc9488536deb0fef19a3f702dcb1c0da7b898fd00f0/nwd_oedo_shinjuku-nishiguchi_shapefile.zip"
+    },
+    {
+      "id": "res-stationmap-geojson-zip",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/b0251aca-5a90-469f-9cc0-4c981c1d2e8f/download/stationmap_oedo_shinjuku-nishiguchi_geojson.zip",
+      "url": "https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/b0251aca-5a90-469f-9cc0-4c981c1d2e8f/download/stationmap_oedo_shinjuku-nishiguchi_geojson.zip",
+      "http_status": 200,
+      "sha256": "d16a78ded406fb9587f2c5f3c0d84fda5e2d4baa5b0c0532cf5f875b97273ebd",
+      "bytes": 54859,
+      "store_path": "raw/d16a78ded406fb9587f2c5f3c0d84fda5e2d4baa5b0c0532cf5f875b97273ebd/stationmap_oedo_shinjuku-nishiguchi_geojson.zip"
+    },
+    {
+      "id": "res-stationmap-shapefile-zip",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/0a363306-c147-4108-9b18-8b699e750302/download/stationmap_oedo_shinjuku-nishiguchi_shapefile.zip",
+      "url": "https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/0a363306-c147-4108-9b18-8b699e750302/download/stationmap_oedo_shinjuku-nishiguchi_shapefile.zip",
+      "http_status": 200,
+      "sha256": "1b945d0f120f0e82bd9ea88c6c8da82ef54c2fdef63d48c17f858bd0a0cb881c",
+      "bytes": 61249,
+      "store_path": "raw/1b945d0f120f0e82bd9ea88c6c8da82ef54c2fdef63d48c17f858bd0a0cb881c/stationmap_oedo_shinjuku-nishiguchi_shapefile.zip"
+    },
+    {
+      "id": "res-check-pdf",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/26c0b38d-a6ce-432d-b2a0-ef222ab0f117/download/station_oedo_shinjuku-nishiguchi.pdf",
+      "url": "https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/26c0b38d-a6ce-432d-b2a0-ef222ab0f117/download/station_oedo_shinjuku-nishiguchi.pdf",
+      "http_status": 200,
+      "sha256": "38a501a392c02839492787d48db13cb210cde42efb748fc0358d553ce8674f16",
+      "bytes": 203684,
+      "store_path": "raw/38a501a392c02839492787d48db13cb210cde42efb748fc0358d553ce8674f16/station_oedo_shinjuku-nishiguchi.pdf"
+    }
+  ]
+}

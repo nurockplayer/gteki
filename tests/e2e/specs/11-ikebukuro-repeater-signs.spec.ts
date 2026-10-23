@@ -4,16 +4,25 @@ import { expect, test, type Page } from "@playwright/test";
 import { hooks, openStation, stationData, type Vec3 } from "../lib/gteki.ts";
 
 /**
- * Repeater-sign probe for Ikebukuro (#108): screenshots of the five `sign-rep-sw_h__w_cj-N` signs on the
- * sw_h to w_cj passage, both faces, plus the size of every texture the page uploads (the sign atlas page in
- * particular). Measurement and evidence, not a visual golden.
+ * Sign probe for Ikebukuro (#108, #180): screenshots of the five `sign-rep-sw_h__w_cj-N` repeater signs and the
+ * six blue `sign-place-sw_h__w_cj-N` place boards on the sw_h to w_cj passage, both faces of each, plus a tight
+ * crop of every sign face at native pixels (to judge text legibility at phone resolution without zooming the full
+ * frame) and the size of every texture the page uploads (the sign atlas page in particular). Measurement and
+ * evidence, not a visual golden.
  *
  * Not part of CI (e2e-smoke.yml names its specs) and skipped unless GTEKI_REPEATERS=1. Needs a real GPU: run
  * it on the dev Mac in Brave, one project per tier, each against a built candidate (`pnpm build` in apps/web
- * first; the config serves it with `vite preview`).
+ * first; the config serves it with `vite preview`). Run from tests/e2e, one pass at a time:
  *
- *   GTEKI_REPEATERS=1 GTEKI_ROOT=<checkout> pnpm exec playwright test specs/11-ikebukuro-repeater-signs.spec.ts --project=desktop-chromium   # high, 1280x720
- *   GTEKI_REPEATERS=1 GTEKI_ROOT=<checkout> pnpm exec playwright test specs/11-ikebukuro-repeater-signs.spec.ts --project=phone-chromium     # low, Pixel 7 default size
+ *   GTEKI_REPEATERS=1 GTEKI_ROOT=<checkout> pnpm exec playwright test specs/11-ikebukuro-repeater-signs.spec.ts --project=desktop-chromium          # high, 1280x720
+ *   GTEKI_REPEATERS=1 GTEKI_ROOT=<checkout> pnpm exec playwright test specs/11-ikebukuro-repeater-signs.spec.ts --project=phone-chromium            # low, Pixel 7 (412x915, DPR 2.625)
+ *   GTEKI_REPEATERS=1 GTEKI_ROOT=<checkout> pnpm exec playwright test specs/11-ikebukuro-repeater-signs.spec.ts --project=phone-iphone15-chromium   # low, iPhone 15 size (393x852, DPR 3, touch) in Brave
+ *
+ * Add GTEKI_REPEATERS_TIER=low (or high) to assert the tier the run landed on. The iPhone pass is Brave
+ * (Chromium) at iPhone 15 geometry, not Safari: the low tier caps the render pixel ratio at 1.5, so the canvas
+ * renders at about 590x1278 and the DPR 3 screenshot upsamples it (the report records both). Outputs never
+ * overwrite each other: desktop-chromium and phone-chromium keep `<tier>/` and `ikebukuro-repeaters-<tier>.*`;
+ * any other project writes `<tier>-<project>/` and `ikebukuro-repeaters-<tier>-<project>.*`.
  *
  * Placement. The explorer exposes no "teleport to ENU" hook (`walkFrom(enu)` is not on window.__gteki and there
  * is no `?spawn=` param in apps/web; that param exists only in the stations/ikebukuro preview harness). So the
@@ -21,10 +30,21 @@ import { hooks, openStation, stationData, type Vec3 } from "../lib/gteki.ts";
  * driven along the verified edge `sw_h__w_cj` polyline with hooks.simulate (W, Shift when far) and mouse-drag
  * yaw, the way specs/04 steers. The polyline is not perfectly straight (it bends twice near its south end); each
  * stop is the point on the polyline 6 m (arc length) before the sign's own projection onto it, then the walker
- * is turned to look at the sign. Where the walker really ended up is recorded per shot.
+ * is turned to look at the sign. Where the walker really ended up is recorded per shot. Signs are visited in
+ * order along the passage (repeaters and place boards interleave about every 12 m).
  *
  * Faces. Signs face along `facing` (towards the viewer of the front face). Front is seen walking north from the
- * south (sw_h side), back is seen walking south from the north (w_cj side).
+ * south (sw_h side), back is seen walking south from the north (w_cj side). A face the sign builder did not paint
+ * (hooks.signFaces) is not shot. The place boards carry both faces.
+ *
+ * Crops and readability. For each shot the four corners of the sign face are projected through the explorer's
+ * own camera (hooks.projectEnu; face width/height come from the sign builder via hooks.signFaces) and the page is
+ * re-shot clipped to that box plus a margin, at the screenshot's native device pixels (`<name>.crop.png`). Per
+ * face the report gives the on-screen face height in CSS px, device px and canvas render px, and the smallest
+ * type as em / cap height derived from the layout in scene/signs.ts (the face canvas is 126 px high; the smallest
+ * type is 0.2 of it on repeaters (the "Exit" caption) and 0.21 on place boards (English name, distance); cap
+ * height is taken as 0.72 em, an approximation). It ends with a readability checklist, one line per face with
+ * its crop, for the reviewer to mark.
  *
  * Texture probe. An init script hooks bindTexture/activeTexture and texStorage2D/texImage2D (level 0) and
  * records width x height per texture, then learns the upload source type from the following texSubImage2D /
@@ -34,17 +54,28 @@ import { hooks, openStation, stationData, type Vec3 } from "../lib/gteki.ts";
  * reported regardless (`textures`), with the source type, so a misclassification is visible in the output.
  *
  * Env: GTEKI_REPEATERS_OUT (output dir, default <GTEKI_ROOT>/.qa/ikebukuro-repeaters),
- *      GTEKI_REPEATERS_SIGNS (comma list of 1..5, default all), GTEKI_REPEATERS_TIER (assert "low" or "high"),
+ *      GTEKI_REPEATERS_IDS (comma list of sign ids on this edge, e.g. "sign-place-sw_h__w_cj-3,sign-rep-sw_h__w_cj-2";
+ *        default: every `sign-rep-*` and `sign-place-*` on the edge),
+ *      GTEKI_REPEATERS_SIGNS (legacy: comma list of 1..5 selecting repeaters only; ignored when IDS is set),
+ *      GTEKI_REPEATERS_TIER (assert "low" or "high"),
  *      GTEKI_REPEATERS_BEFORE_M (stand-off in metres, default 6).
  */
-test.skip(!process.env.GTEKI_REPEATERS, "set GTEKI_REPEATERS=1 to run the Ikebukuro repeater-sign probe");
+test.skip(!process.env.GTEKI_REPEATERS, "set GTEKI_REPEATERS=1 to run the Ikebukuro sign probe");
 test.use({ trace: "off", video: "off", screenshot: "off" });
 
 const EDGE = "sw_h__w_cj";
 const FROM = "sw_h";
 const TO = "w_cj";
 const STANDOFF_M = Number(process.env.GTEKI_REPEATERS_BEFORE_M ?? 6);
-const WANT = (process.env.GTEKI_REPEATERS_SIGNS ?? "1,2,3,4,5").split(",").map((s) => Number(s.trim())).filter((n) => n >= 1 && n <= 5);
+const WANT_IDS = (process.env.GTEKI_REPEATERS_IDS ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+const WANT_REPEATERS = process.env.GTEKI_REPEATERS_SIGNS?.split(",").map((s) => Number(s.trim())).filter((n) => n >= 1 && n <= 5);
+/** Projects whose outputs keep the original tier-only names. */
+const LEGACY_NAMES = new Set(["desktop-chromium", "phone-chromium"]);
+/** Layout facts from scene/signs.ts: face canvas height (H 0.42 m x 300 px/m), smallest type as a fraction of it, cap height per em. */
+const CANVAS_H_PX = 126;
+/** Repeaters: the "Exit" caption, EXIT_EN_EM; place boards: English name and distance, SMALL_EM (scene/signage.test.ts pins both). */
+const MIN_EM_FRAC = { repeat: 0.2, place: 0.21 } as const;
+const CAP_PER_EM = 0.72;
 const LOOK_RAD_PER_PX = 0.0042;
 const WALK_MPS = 1.45;
 const RUN_MPS = 3.4;
@@ -228,34 +259,51 @@ async function spawn(page: Page, node: string): Promise<Walker> {
 
 // ---- the test ------------------------------------------------------------------------------------
 
-interface SignRec { id: string; n: number; position: { x: number; y: number; z: number }; facing: { x: number; y: number } }
+type Kind = "repeat" | "place";
+interface SignRec { id: string; kind: Kind; n: number; position: { x: number; y: number; z: number }; facing: { x: number; y: number }; along: number }
+interface FaceRec { id: string; side: "front" | "back"; scale: number; widthM: number; heightM: number; canvasPx: { w: number; h: number } }
+/** What the lead needs to judge legibility of one face; null where the face could not be measured. */
+interface Readability {
+  cropFile: string | null; inFrame: boolean; faceMeters: { w: number; h: number } | null;
+  faceHeightCssPx: number | null; faceHeightDevicePx: number | null; faceHeightRenderPx: number | null; faceWidthCssPx: number | null;
+  minEmCssPx: number | null; minEmDevicePx: number | null; minCapHeightDevicePx: number | null; minEmTexels: number | null;
+  cameraDistM: number | null; dpr: number; renderScale: number; texelScale: number | null;
+}
 interface Shot {
-  sign: string; n: number; face: "front" | "back"; file: string; walkingToward: string;
+  sign: string; kind: Kind; n: number; face: "front" | "back"; file: string; walkingToward: string;
   target: Pt; walker: Vec3; distToSignM: number; sideOk: boolean; offAxisDeg: number; offCorridorM: number;
-  viewportShot: { width: number; height: number } | null;
+  viewportShot: { width: number; height: number } | null; readability: Readability;
 }
 
-test("ikebukuro repeater signs: screenshots and atlas-size probe @phone", async ({ page }, testInfo) => {
-  test.setTimeout(420_000);
+test("ikebukuro signs: screenshots, crops and atlas-size probe @phone", async ({ page }, testInfo) => {
+  test.setTimeout(900_000);
   const root = process.env.GTEKI_ROOT;
   if (!root) throw new Error("GTEKI_ROOT must point at the candidate checkout");
 
-  const signage = JSON.parse(fs.readFileSync(path.join(root, "stations", "ikebukuro", "scene", "signage.json"), "utf8")) as { signs: (SignRec & { kind?: string })[] };
+  const poly = polyline();
+  const cum = arcTable(poly);
+  const total = cum[cum.length - 1]!;
+
+  const signage = JSON.parse(fs.readFileSync(path.join(root, "stations", "ikebukuro", "scene", "signage.json"), "utf8")) as { signs: { id: string; position: { x: number; y: number; z: number }; facing: { x: number; y: number } }[] };
   const signs: SignRec[] = signage.signs
-    .filter((s) => /^sign-rep-sw_h__w_cj-\d+$/.test(s.id))
-    .map((s) => ({ id: s.id, n: Number(s.id.split("-").pop()), position: s.position, facing: s.facing }))
-    .sort((a, b) => a.n - b.n);
-  expect(signs.map((s) => s.n), "repeaters 1..5 in signage.json").toEqual([1, 2, 3, 4, 5]);
-  const chosen = signs.filter((s) => WANT.includes(s.n));
+    .filter((s) => /^sign-(rep|place)-sw_h__w_cj-\d+$/.test(s.id))
+    .map((s) => ({ id: s.id, kind: (s.id.startsWith("sign-place-") ? "place" : "repeat") as Kind, n: Number(s.id.split("-").pop()), position: s.position, facing: s.facing, along: project(poly, cum, s.position).s }))
+    .sort((a, b) => a.along - b.along);
+  const repeaters = signs.filter((s) => s.kind === "repeat").map((s) => s.n).sort((a, b) => a - b);
+  expect(repeaters, "repeaters 1..5 in signage.json").toEqual([1, 2, 3, 4, 5]);
+  let chosen: SignRec[];
+  if (WANT_IDS.length) {
+    const unknown = WANT_IDS.filter((id) => !signs.some((s) => s.id === id));
+    if (unknown.length) throw new Error(`GTEKI_REPEATERS_IDS: no such sign on ${EDGE}: ${unknown.join(", ")}`);
+    chosen = signs.filter((s) => WANT_IDS.includes(s.id));
+  } else if (WANT_REPEATERS) chosen = signs.filter((s) => s.kind === "repeat" && WANT_REPEATERS.includes(s.n));
+  else chosen = signs;
+  if (!WANT_IDS.length && !WANT_REPEATERS) expect.soft(signs.filter((s) => s.kind === "place").length, "place boards (#180) in signage.json").toBe(6);
 
   const isPhone = testInfo.project.name.startsWith("phone");
   // Desktop evidence is 1280x720 (set before load so the explorer sizes its canvas and picks its tier from it);
   // the phone projects keep their device size.
   if (!isPhone) await page.setViewportSize({ width: 1280, height: 720 });
-
-  const poly = polyline();
-  const cum = arcTable(poly);
-  const total = cum[cum.length - 1]!;
 
   await page.addInitScript(TEX_PROBE);
   const { loadMs } = await openStation(page, "ikebukuro");
@@ -266,9 +314,71 @@ test("ikebukuro repeater signs: screenshots and atlas-size probe @phone", async 
   const viewport = page.viewportSize();
 
   const outDir = process.env.GTEKI_REPEATERS_OUT ?? path.join(root, ".qa", "ikebukuro-repeaters");
-  const shotDir = path.join(outDir, tier);
+  const tag = LEGACY_NAMES.has(testInfo.project.name) ? tier : `${tier}-${testInfo.project.name}`;
+  const shotDir = path.join(outDir, tag);
   fs.mkdirSync(shotDir, { recursive: true });
-  const base = path.join(outDir, `ikebukuro-repeaters-${tier}`);
+  const base = path.join(outDir, `ikebukuro-repeaters-${tag}`);
+
+  // Face sizes from the sign builder, and the texel scale the candidate uses on the low tier (read from source).
+  const faces = (await hooks.signFaces(page)) as FaceRec[];
+  const hasFace = (id: string, side: "front" | "back") => faces.length === 0 || faces.some((f) => f.id === id && f.side === side);
+  const lowScale = Number(/LOW_TEXEL_SCALE\s*=\s*([0-9.]+)/.exec(fs.readFileSync(path.join(root, "stations", "ikebukuro", "scene", "signs.ts"), "utf8"))?.[1]);
+  const texelScale = tier === "high" ? 1 : Number.isFinite(lowScale) ? lowScale : null;
+
+  /** Project the sign face's corners, clip a native-pixel crop around them, and derive the on-screen sizes. */
+  const measureFace = async (s: SignRec, face: "front" | "back", stem: string): Promise<Readability> => {
+    const e = await page.evaluate(() => {
+      const c = document.querySelector("canvas.gteki-canvas") as HTMLCanvasElement;
+      const r = c.getBoundingClientRect();
+      return { left: r.left, top: r.top, cssW: c.clientWidth, pxW: c.width, dpr: window.devicePixelRatio, vw: window.innerWidth, vh: window.innerHeight };
+    });
+    const renderScale = e.pxW / Math.max(1, e.cssW);
+    const out: Readability = {
+      cropFile: null, inFrame: false, faceMeters: null, faceHeightCssPx: null, faceHeightDevicePx: null, faceHeightRenderPx: null, faceWidthCssPx: null,
+      minEmCssPx: null, minEmDevicePx: null, minCapHeightDevicePx: null, minEmTexels: null, cameraDistM: null, dpr: e.dpr, renderScale: round(renderScale), texelScale,
+    };
+    const cam = ((await hooks.sceneInfo(page)) as { camera: number[] }).camera; // renderer frame (x, y up, z): ENU is (x, -z, y)
+    out.cameraDistM = round(Math.hypot(cam[0]! - s.position.x, -cam[2]! - s.position.y, cam[1]! - s.position.z));
+    const fc = faces.find((f) => f.id === s.id && f.side === face);
+    if (!fc) return out;
+    const wM = fc.widthM * fc.scale, hM = fc.heightM * fc.scale;
+    out.faceMeters = { w: round(wM), h: round(hM) };
+    const len = Math.hypot(s.facing.x, s.facing.y) || 1;
+    const nx = s.facing.x / len, ny = s.facing.y / len; // towards the viewer of the front face
+    const sgn = face === "front" ? 1 : -1;
+    const cx = s.position.x + nx * 0.041 * fc.scale * sgn, cy = s.position.y + ny * 0.041 * fc.scale * sgn;
+    const tx = -ny, ty = nx;
+    const corner = (u: number, v: number): Vec3 => ({ x: cx + tx * u * (wM / 2), y: cy + ty * u * (wM / 2), z: s.position.z + v * (hM / 2) });
+    const pr = await hooks.projectEnu(page, [corner(-1, 1), corner(1, 1), corner(1, -1), corner(-1, -1)]);
+    const q = pr.map((p) => ({ x: p.x + e.left, y: p.y + e.top }));
+    const behind = pr.some((p) => p.behind);
+    out.inFrame = !behind && q.every((p) => p.x >= 0 && p.x <= e.vw && p.y >= 0 && p.y <= e.vh);
+    if (behind) return out;
+    const hCss = (dist(q[0]!, q[3]!) + dist(q[1]!, q[2]!)) / 2;
+    const wCss = (dist(q[0]!, q[1]!) + dist(q[3]!, q[2]!)) / 2;
+    const emCanvas = Math.round(CANVAS_H_PX * MIN_EM_FRAC[s.kind]);
+    const emCss = hCss * (emCanvas / CANVAS_H_PX);
+    out.faceHeightCssPx = round(hCss);
+    out.faceHeightDevicePx = round(hCss * e.dpr);
+    out.faceHeightRenderPx = round(hCss * renderScale);
+    out.faceWidthCssPx = round(wCss);
+    out.minEmCssPx = round(emCss);
+    out.minEmDevicePx = round(emCss * e.dpr);
+    out.minCapHeightDevicePx = round(emCss * e.dpr * CAP_PER_EM);
+    out.minEmTexels = texelScale == null ? null : round(emCanvas * texelScale);
+    // Crop: bounding box of the projected corners plus a margin, clamped to the viewport, native device pixels.
+    const x0 = Math.min(...q.map((p) => p.x)), x1 = Math.max(...q.map((p) => p.x));
+    const y0 = Math.min(...q.map((p) => p.y)), y1 = Math.max(...q.map((p) => p.y));
+    const m = Math.max(8, 0.1 * Math.max(x1 - x0, y1 - y0));
+    const cl = { x: Math.max(0, Math.floor(x0 - m)), y: Math.max(0, Math.floor(y0 - m)) };
+    const clip = { x: cl.x, y: cl.y, width: Math.min(e.vw, Math.ceil(x1 + m)) - cl.x, height: Math.min(e.vh, Math.ceil(y1 + m)) - cl.y };
+    if (clip.width >= 4 && clip.height >= 4) {
+      const file = path.join(shotDir, `${stem}.crop.png`);
+      await page.screenshot({ path: file, clip });
+      out.cropFile = path.relative(outDir, file);
+    }
+    return out;
+  };
 
   const shots: Shot[] = [];
   const shoot = async (w: Walker, s: SignRec, face: "front" | "back", target: Pt) => {
@@ -276,8 +386,10 @@ test("ikebukuro repeater signs: screenshots and atlas-size probe @phone", async 
     await aim(page, w, s.position);
     w.pos = await hooks.simulate(page, 1.2, []);
     await page.waitForTimeout(600);
-    const file = path.join(shotDir, `rep-${s.n}-${face}.png`);
+    const stem = `${s.kind === "place" ? "place" : "rep"}-${s.n}-${face}`;
+    const file = path.join(shotDir, `${stem}.png`);
     await page.screenshot({ path: file });
+    const readability = await measureFace(s, face, stem);
     const toSign = { x: s.position.x - w.pos.x, y: s.position.y - w.pos.y };
     const d = Math.hypot(toSign.x, toSign.y);
     // Front is seen from the side `facing` points to; back from the opposite side.
@@ -286,33 +398,33 @@ test("ikebukuro repeater signs: screenshots and atlas-size probe @phone", async 
     const cos = Math.abs(side) / d;
     const proj = project(poly, cum, w.pos);
     shots.push({
-      sign: s.id, n: s.n, face, file: path.relative(outDir, file), walkingToward: face === "front" ? TO : FROM,
+      sign: s.id, kind: s.kind, n: s.n, face, file: path.relative(outDir, file), walkingToward: face === "front" ? TO : FROM,
       target, walker: { x: round(w.pos.x), y: round(w.pos.y), z: round(w.pos.z) }, distToSignM: round(d),
       sideOk: face === "front" ? side > 0 : side < 0, offAxisDeg: Math.round((Math.acos(Math.min(1, cos)) * 180) / Math.PI),
-      offCorridorM: round(proj.off), viewportShot: viewport,
+      offCorridorM: round(proj.off), viewportShot: viewport, readability,
     });
   };
 
-  // Front faces: from sw_h walking north (towards w_cj), signs 1..5 in order, one continuous walk.
+  // Front faces: from sw_h walking north (towards w_cj), signs in order along the passage, one continuous walk.
   {
     const w = await spawn(page, FROM);
     let s = 0;
     for (const sign of chosen) {
-      const along = project(poly, cum, sign.position).s;
-      const stop = Math.max(0, along - STANDOFF_M);
+      if (!hasFace(sign.id, "front")) continue;
+      const stop = Math.max(0, sign.along - STANDOFF_M);
       const wps = waypoints(poly, cum, s, stop);
       await walk(page, w, wps);
       s = stop;
       await shoot(w, sign, "front", wps[wps.length - 1]!);
     }
   }
-  // Back faces: from w_cj walking south (towards sw_h), signs 5..1.
+  // Back faces: from w_cj walking south (towards sw_h), signs in reverse order.
   {
     const w = await spawn(page, TO);
     let s = total;
     for (const sign of [...chosen].reverse()) {
-      const along = project(poly, cum, sign.position).s;
-      const stop = Math.min(total, along + STANDOFF_M);
+      if (!hasFace(sign.id, "back")) continue;
+      const stop = Math.min(total, sign.along + STANDOFF_M);
       const wps = waypoints(poly, cum, s, stop);
       await walk(page, w, wps);
       s = stop;
@@ -345,13 +457,14 @@ test("ikebukuro repeater signs: screenshots and atlas-size probe @phone", async 
       textures: entries.map((e) => ({ ...e, size: `${e.width}x${e.height}` })),
     },
     corridor: { edge: EDGE, lengthM: round(total), standoffM: STANDOFF_M, polyline: poly },
+    texelScale, lowTexelScaleInSource: Number.isFinite(lowScale) ? lowScale : null,
     shots,
   };
   fs.writeFileSync(`${base}.json`, JSON.stringify(result, null, 2));
 
   const yn = (b: unknown) => (b ? "yes" : "no");
   const md = [
-    `# Ikebukuro repeater signs: ${tier} tier (${testInfo.project.name})`,
+    `# Ikebukuro repeater signs and place boards: ${tier} tier (${testInfo.project.name})`,
     "",
     `Renderer: ${gl?.renderer ?? "unknown"} (gpuValid=${gpuValid}); viewport ${JSON.stringify(viewport)}; page load ${loadMs} ms.`,
     "",
@@ -373,13 +486,45 @@ test("ikebukuro repeater signs: screenshots and atlas-size probe @phone", async 
     "",
     ...shots.map((s) => `![${s.sign} ${s.face}](${s.file})`),
     "",
+    "## Readability checklist",
+    "",
+    `Setting: ${tier} tier, project ${testInfo.project.name}, viewport ${viewport ? `${viewport.width}x${viewport.height}` : "?"} CSS px, DPR ${shots[0]?.readability.dpr ?? "?"}, ` +
+      `canvas render scale ${shots[0]?.readability.renderScale ?? "?"}x, sign texel scale ${texelScale ?? "?"} (LOW_TEXEL_SCALE in source: ${Number.isFinite(lowScale) ? lowScale : "not found"}).`,
+    "",
+    "Open each crop at 100%: it is the page at native device pixels, so what you see is what the screen shows. " +
+      "Mark one box per face. Face height = on-screen height of the whole sign face; min cap = approximate cap height of its smallest type " +
+      "(0.2 of face height on repeaters, 0.21 on place boards, times 0.72). Heights are device px unless stated; `render` is the canvas backing resolution (the low tier renders at <= 1.5x and the screenshot upsamples it).",
+    "",
+    ...(["place", "repeat"] as const).flatMap((kind) => {
+      const rows = shots.filter((s) => s.kind === kind);
+      if (!rows.length) return [];
+      return [
+        `### ${kind === "place" ? "Place boards (blue)" : "Repeater signs (charcoal)"}`,
+        "",
+        ...rows
+          .sort((a, b) => a.n - b.n || a.face.localeCompare(b.face))
+          .flatMap((s) => {
+            const r = s.readability;
+            const nums = r.faceHeightDevicePx == null
+              ? "not measurable (face behind the camera or no face record)"
+              : `face ${r.faceHeightDevicePx} px high (render ${r.faceHeightRenderPx}), ${r.faceWidthCssPx} CSS px wide; min em ${r.minEmDevicePx} px, min cap ~${r.minCapHeightDevicePx} px; ` +
+                `min em ${r.minEmTexels ?? "?"} texels in the atlas; walker ${s.distToSignM} m / camera ${r.cameraDistM} m from the sign; ${r.inFrame ? "fully in frame" : "NOT fully in frame"}`;
+            return [
+              `- [ ] readable  [ ] not readable: \`${s.sign}\` ${s.face}, ${nums}. ${r.cropFile ? `Crop: [${r.cropFile}](${r.cropFile})` : "No crop."}`,
+              ...(r.cropFile ? ["", `  ![${s.sign} ${s.face} crop](${r.cropFile})`, ""] : []),
+            ];
+          }),
+        "",
+      ];
+    }),
   ].join("\n");
   fs.writeFileSync(`${base}.md`, md);
   testInfo.annotations.push({ type: "output", description: `${base}.json` });
   console.log(`repeater signs (${tier}) written to ${base}.json / .md`);
 
   expect(gpuValid, `renderer ${gl?.renderer}: software rendering invalidates the visuals and texture sizes`).toBe(true);
-  expect(shots.length, "screenshots taken").toBe(chosen.length * 2);
+  const expectedShots = chosen.reduce((n, s) => n + (hasFace(s.id, "front") ? 1 : 0) + (hasFace(s.id, "back") ? 1 : 0), 0);
+  expect(shots.length, "screenshots taken").toBe(expectedShots);
   for (const s of shots) {
     expect.soft(s.sideOk, `${s.sign} ${s.face}: walker is on the ${s.face} side of the sign`).toBe(true);
     expect.soft(Math.abs(s.distToSignM - STANDOFF_M), `${s.sign} ${s.face}: stand-off ${s.distToSignM} m`).toBeLessThan(2.5);

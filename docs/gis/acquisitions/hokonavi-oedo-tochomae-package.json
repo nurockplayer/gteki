@@ -1,0 +1,98 @@
+{
+  "source_id": "hokonavi-oedo-tochomae-package",
+  "resolved_url": "https://ckan.hokonavi.go.jp/api/3/action/package_show?id=station_oedo_tochomae",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-22T12:22:39.572Z",
+  "completed_at": "2026-10-22T12:22:39.620Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/json;charset=utf-8",
+    "content-length": "17545",
+    "etag": null,
+    "last-modified": null,
+    "date": "Thu, 22 Oct 2026 12:22:39 GMT"
+  },
+  "bytes": 17545,
+  "sha256": "5510069946dadda31e14d2e47ac23ad3d97bcdb8dd0baa397b92d13f74079de0",
+  "store_path": "raw/5510069946dadda31e14d2e47ac23ad3d97bcdb8dd0baa397b92d13f74079de0/package_show",
+  "tool_version": "0.1.0",
+  "git_commit": "e1b9dd2deb2b1c3314524bdbbf8ca5687006e0d2",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online",
+  "supporting_documents": [
+    {
+      "id": "dataset-page",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/station_oedo_tochomae",
+      "url": "https://ckan.hokonavi.go.jp/dataset/station_oedo_tochomae",
+      "http_status": 200,
+      "sha256": "1369ebfe59f26ad85a9786f02c955bdf522c27e59b793d4c3cd706eb4b4cf13c",
+      "bytes": 29458,
+      "store_path": "raw/1369ebfe59f26ad85a9786f02c955bdf522c27e59b793d4c3cd706eb4b4cf13c/station_oedo_tochomae"
+    },
+    {
+      "id": "hokonavi-site-terms",
+      "requested_url": "https://www.hokonavi.go.jp/terms/",
+      "url": "https://www.hokonavi.go.jp/terms/",
+      "http_status": 200,
+      "sha256": "479ce0b33324fc6dd3ee7ba75fdb9de2a2a5f2095ab1cbacc790ad1cfe4a9aa6",
+      "bytes": 55246,
+      "store_path": "raw/479ce0b33324fc6dd3ee7ba75fdb9de2a2a5f2095ab1cbacc790ad1cfe4a9aa6/terms"
+    },
+    {
+      "id": "pdl-1-0-text",
+      "requested_url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "http_status": 200,
+      "sha256": "4d4c4cc5e8ac952f640cdf9c8242de648e36995667a361302589d468fd1e12a0",
+      "bytes": 59216,
+      "store_path": "raw/4d4c4cc5e8ac952f640cdf9c8242de648e36995667a361302589d468fd1e12a0/public_data_license_v1.0"
+    },
+    {
+      "id": "res-network-csv-zip",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/0497448d-15ca-44be-b27b-89d99f83c85d/resource/68d7f1f9-b6f5-4355-ac53-395d7591137d/download/nwd_oedo_tochomae_csv.zip",
+      "url": "https://ckan.hokonavi.go.jp/dataset/0497448d-15ca-44be-b27b-89d99f83c85d/resource/68d7f1f9-b6f5-4355-ac53-395d7591137d/download/nwd_oedo_tochomae_csv.zip",
+      "http_status": 200,
+      "sha256": "7917617ae4a8b73ca4be83352ad725116d5f6098c91fd73e7bf1a6b95fe582f5",
+      "bytes": 31325,
+      "store_path": "raw/7917617ae4a8b73ca4be83352ad725116d5f6098c91fd73e7bf1a6b95fe582f5/nwd_oedo_tochomae_csv.zip"
+    },
+    {
+      "id": "res-network-geojson-zip",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/0497448d-15ca-44be-b27b-89d99f83c85d/resource/34a413dc-2859-4cb8-b460-b0216d646c5d/download/nwd_oedo_tochomae_geojson.zip",
+      "url": "https://ckan.hokonavi.go.jp/dataset/0497448d-15ca-44be-b27b-89d99f83c85d/resource/34a413dc-2859-4cb8-b460-b0216d646c5d/download/nwd_oedo_tochomae_geojson.zip",
+      "http_status": 200,
+      "sha256": "817183f3c32b8a5f777a4ee2386f26a17306e0140a3a53004736762cc0428bbf",
+      "bytes": 48671,
+      "store_path": "raw/817183f3c32b8a5f777a4ee2386f26a17306e0140a3a53004736762cc0428bbf/nwd_oedo_tochomae_geojson.zip"
+    },
+    {
+      "id": "res-network-shapefile-zip",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/0497448d-15ca-44be-b27b-89d99f83c85d/resource/93961538-7dd1-48aa-91e9-bb2c422f5e24/download/nwd_oedo_tochomae_shapefile.zip",
+      "url": "https://ckan.hokonavi.go.jp/dataset/0497448d-15ca-44be-b27b-89d99f83c85d/resource/93961538-7dd1-48aa-91e9-bb2c422f5e24/download/nwd_oedo_tochomae_shapefile.zip",
+      "http_status": 200,
+      "sha256": "238666fd14e07369a293bcc378812b4246aecd3ec44c8ac8021ed5111955eeb5",
+      "bytes": 53854,
+      "store_path": "raw/238666fd14e07369a293bcc378812b4246aecd3ec44c8ac8021ed5111955eeb5/nwd_oedo_tochomae_shapefile.zip"
+    },
+    {
+      "id": "res-stationmap-geojson-zip",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/0497448d-15ca-44be-b27b-89d99f83c85d/resource/30a2e7a1-bfdc-45a5-b502-dac80950f936/download/stationmap_oedo_tochomae_geojson.zip",
+      "url": "https://ckan.hokonavi.go.jp/dataset/0497448d-15ca-44be-b27b-89d99f83c85d/resource/30a2e7a1-bfdc-45a5-b502-dac80950f936/download/stationmap_oedo_tochomae_geojson.zip",
+      "http_status": 200,
+      "sha256": "0bbe9ee575739b95e744713d1fda2287915228712eff3ca4b2839baeae1e1d43",
+      "bytes": 87829,
+      "store_path": "raw/0bbe9ee575739b95e744713d1fda2287915228712eff3ca4b2839baeae1e1d43/stationmap_oedo_tochomae_geojson.zip"
+    },
+    {
+      "id": "res-stationmap-shapefile-zip",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/0497448d-15ca-44be-b27b-89d99f83c85d/resource/3bdc07af-a9da-433c-94e5-f3ef7c7acea2/download/stationmap_oedo_tochomae_shapefile.zip",
+      "url": "https://ckan.hokonavi.go.jp/dataset/0497448d-15ca-44be-b27b-89d99f83c85d/resource/3bdc07af-a9da-433c-94e5-f3ef7c7acea2/download/stationmap_oedo_tochomae_shapefile.zip",
+      "http_status": 200,
+      "sha256": "1fa0e75d886a0b53c4550bac43ff05bbe9bd413fa4459919bb0162c676bbc9b3",
+      "bytes": 84984,
+      "store_path": "raw/1fa0e75d886a0b53c4550bac43ff05bbe9bd413fa4459919bb0162c676bbc9b3/stationmap_oedo_tochomae_shapefile.zip"
+    }
+  ]
+}
