@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { asRealStation, createSyntheticBundle, syntheticEdge as edge } from "../../navigation/src/fixtures.ts";
 import { dataFileFactsOnlySources, isOpenAt, parseHm, parseStationFiles, validateBundle } from "./index.ts";
-import type { DataFile, GraphFile, HoursSpec, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
+import type { CoverageArea, CoverageText, DataFile, GraphFile, HoursSpec, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
 
 const ev = { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" };
 const DECISION = { url: "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", date: "2026-10-21" };
@@ -161,6 +161,14 @@ describe("parseStationFiles (fail-closed JSON loading)", () => {
     expect(parseStationFiles(m, g, p).issues[0]).toMatchObject({ code: "shape.missing" });
   });
 
+  it("accepts an optional string uriMobile on an asset and refuses other types", () => {
+    const [m, g, p] = split(createSyntheticBundle());
+    m.assets = [{ id: "a", uri: "assets/a.glb", format: "glb", floorIds: [], role: "visual", sourceIds: ["fixture-geometry"], uriMobile: "assets/a.mobile.glb" }];
+    expect(parseStationFiles(m, g, p).ok).toBe(true);
+    (m.assets[0] as { uriMobile: unknown }).uriMobile = 3;
+    expect(parseStationFiles(m, g, p).issues[0]).toMatchObject({ code: "shape.type" });
+  });
+
   it("refuses files from different stations or schema versions", () => {
     const [m, g, p] = split(createSyntheticBundle());
     g.stationId = "other";
@@ -173,6 +181,56 @@ describe("parseStationFiles (fail-closed JSON loading)", () => {
     const parsed = parseStationFiles(...split(b));
     expect(parsed.ok).toBe(false);
     expect(parsed.bundle).toBeNull();
+  });
+});
+
+describe("coverage text: a plain string or localized text (#259)", () => {
+  const area = (sourceId: string, note?: CoverageText): CoverageArea => ({
+    id: "area:test", floorId: null, status: "routable", label: [{ lang: "en", text: "Whole station" }], sourceIds: [sourceId],
+    ...(note === undefined ? {} : { note }),
+  });
+
+  it("keeps legacy plain-string gap text and area notes validating and parsing unchanged", () => {
+    const b = createSyntheticBundle();
+    b.coverage.gaps = [{ id: "gap:test", floorId: null, zone: "All levels", missingFact: "Hours", fieldWorkNeeded: "Field check", approximateExtent: "Whole station" }];
+    b.coverage.areas = [area(b.sources[0]!.id, "One language only")];
+    expect(errors(b)).toEqual([]);
+    expect(parseStationFiles(...split(b)).ok).toBe(true);
+  });
+
+  it("accepts localized gap text and area notes and carries them through parsing", () => {
+    const b = createSyntheticBundle();
+    b.coverage.gaps = [{
+      id: "gap:test", floorId: null,
+      zone: [{ lang: "ja", text: "全フロア" }, { lang: "en", text: "All levels" }],
+      missingFact: [{ lang: "ja", text: "営業時間" }],
+      approximateExtent: [{ lang: "ja", text: "駅全体" }],
+      fieldWorkNeeded: [{ lang: "en", text: "Field check" }],
+    }];
+    b.coverage.areas = [area(b.sources[0]!.id, [{ lang: "ja", text: "補足" }])];
+    expect(errors(b)).toEqual([]);
+    const parsed = parseStationFiles(...split(b));
+    expect(parsed.ok).toBe(true);
+    expect(parsed.bundle?.coverage.gaps[0]?.zone).toEqual([{ lang: "ja", text: "全フロア" }, { lang: "en", text: "All levels" }]);
+  });
+
+  it("rejects gap text that is neither a string nor complete localized text", () => {
+    for (const bad of [42, null, { lang: "ja", text: "an object, not an array" }, [{ lang: "ja" }], [{ text: "no lang" }], ["plain entry"]]) {
+      const b = createSyntheticBundle();
+      b.coverage.gaps = [{ id: "gap:test", floorId: null, zone: bad as never, missingFact: "Hours", fieldWorkNeeded: "Field check" }];
+      expect(parseStationFiles(...split(b)).ok, JSON.stringify(bad)).toBe(false);
+    }
+  });
+
+  it("rejects an area note that is neither a string nor complete localized text", () => {
+    for (const bad of [42, null, { lang: "ja", text: "an object, not an array" }, [{ lang: "ja" }]]) {
+      const b = createSyntheticBundle();
+      b.coverage.areas = [area(b.sources[0]!.id, bad as never)];
+      const parsed = parseStationFiles(...split(b));
+      expect(parsed.ok, JSON.stringify(bad)).toBe(false);
+      // The checker names the exact defect: an incomplete text entry is shape.missing, a non-text value shape.type.
+      expect(parsed.issues.map((i) => i.code)).toContain(Array.isArray(bad) ? "shape.missing" : "shape.type");
+    }
   });
 });
 
@@ -395,6 +453,42 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     expect(errors(b).filter((c) => c === "data.rights")).toHaveLength(1);
   });
 
+  it("lets an authored data file declare no source, but only with a derivation saying so (#252)", () => {
+    const real = () => {
+      const b = createSyntheticBundle();
+      b.station.synthetic = false;
+      b.edges = [];
+      return b;
+    };
+    const authored: DataFile = { id: "finishes", path: "scene/finishes.json", sourceIds: [], modified: false, authored: true, derivation: "GTEki-authored scene config: not derived from any source." };
+    const b = real();
+    b.dataFiles = [authored];
+    expect(errors(b)).not.toContain("data.source");
+    expect(errors(b)).not.toContain("data.derivation");
+    // Nothing to credit: it cites no source, so it cannot show up as citing a facts-only one.
+    expect(dataFileFactsOnlySources(b)).toEqual([]);
+    // Authored still means no sources at all.
+    const cites = real();
+    cites.dataFiles = [{ ...authored, sourceIds: ["fixture-geometry"] }];
+    expect(errors(cites)).toContain("data.source");
+    // The derivation is required and non-empty for an authored file, whatever `modified` says.
+    for (const derivation of [undefined, "", "  "]) {
+      for (const modified of [false, true]) {
+        const missing = real();
+        missing.dataFiles = [{ ...authored, modified, derivation }];
+        expect(errors(missing), `${modified} ${JSON.stringify(derivation)}`).toContain("data.derivation");
+      }
+    }
+    // A declared file that is not authored still needs provenance on a real station.
+    const plain = real();
+    plain.dataFiles = [{ id: "x", path: "scene/x.json", sourceIds: [], modified: false, derivation: "d" }];
+    expect(errors(plain)).toContain("data.source");
+    // And the field round-trips through parseStationFiles.
+    const [manifest, graph, pois] = split(createSyntheticBundle());
+    const roundTrip = parseStationFiles({ ...manifest, dataFiles: [authored] }, graph, pois);
+    expect(roundTrip.ok && roundTrip.bundle.dataFiles).toEqual([authored]);
+  });
+
   it("lists data files that cite facts-only sources for the build log", () => {
     const b = createSyntheticBundle();
     b.sources.push({ ...b.sources[0]!, id: "facts-a", usage: "facts-only" }, { ...b.sources[0]!, id: "facts-b", usage: "facts-only" });
@@ -431,6 +525,17 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     for (const bad of ["../x.webp", "assets//x.webp", "assets/x#1.webp", "assets/x?.webp", "/abs.webp", "station.json", "assets/x.exe"])
       expect(withFiles("assets/a.glb", [bad])).toContain("asset.files");
     for (const bad of ["assets/roof#west.glb", "assets/roof?west.glb"]) expect(withFiles(bad, [])).toContain("asset.uri");
+  });
+
+  it("checks uriMobile like the asset uri", () => {
+    const withMobile = (uriMobile: string) => {
+      const b = createSyntheticBundle();
+      b.assets = [{ id: "a", uri: "assets/a.glb", uriMobile, format: "glb", floorIds: [], role: "visual", sourceIds: ["fixture-geometry"] }];
+      return errors(b);
+    };
+    expect(withMobile("assets/mobile/a.glb")).toEqual([]);
+    for (const bad of ["../a.glb", "assets//a.glb", "assets/a#1.glb", "/abs.glb", "assets/a.gltf", "assets/a.webp", "assets/a.glb"])
+      expect(withMobile(bad), bad).toContain("asset.uri");
   });
 
   it("gates known floor heights on reusable sources and drawing them as known", () => {

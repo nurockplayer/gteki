@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FLOOR_BAND_M, OcclusionSweep, labelState, onFocusFloor } from "./labelVisibility.ts";
+import { FLOOR_BAND_M, OCCLUDED_FADE_MAX_M, OcclusionSweep, labelState, onFocusFloor, type LabelOcclusion } from "./labelVisibility.ts";
 
 describe("label visibility", () => {
   it("keeps every floor in focus in overview and only the walker's floor otherwise", () => {
@@ -10,17 +10,38 @@ describe("label visibility", () => {
     expect(onFocusFloor(0, -6)).toBe(false);
   });
 
-  it("fades occluded labels and hides unselected labels on other floors", () => {
-    expect(labelState({ occluded: false, onFocusFloor: true, selected: false })).toBe("shown");
-    expect(labelState({ occluded: true, onFocusFloor: true, selected: false })).toBe("faded");
-    expect(labelState({ occluded: false, onFocusFloor: false, selected: false })).toBe("hidden");
-    expect(labelState({ occluded: true, onFocusFloor: false, selected: false })).toBe("hidden");
+  const at = (occluded: LabelOcclusion, distance: number, rest: { onFocusFloor?: boolean; selected?: boolean } = {}) =>
+    labelState({ occluded, distance, onFocusFloor: true, selected: false, ...rest });
+
+  it("shows unoccluded labels at any distance and fades geometry-occluded ones near the camera", () => {
+    expect(at("none", 5)).toBe("shown");
+    expect(at("none", OCCLUDED_FADE_MAX_M * 3)).toBe("shown");
+    expect(at("geometry", 5)).toBe("faded");
+    expect(at("geometry", OCCLUDED_FADE_MAX_M)).toBe("faded");
   });
 
-  it("keeps the selected origin and destination readable through geometry and faded on other floors", () => {
-    expect(labelState({ occluded: true, onFocusFloor: true, selected: true })).toBe("shown");
-    expect(labelState({ occluded: false, onFocusFloor: false, selected: true })).toBe("faded");
-    expect(labelState({ occluded: true, onFocusFloor: false, selected: true })).toBe("faded");
+  it("hides labels behind a sign, near or far: the sign carries its own text", () => {
+    expect(at("sign", 1)).toBe("hidden");
+    expect(at("sign", 6)).toBe("hidden");
+    expect(at("sign", OCCLUDED_FADE_MAX_M * 3)).toBe("hidden");
+  });
+
+  it("hides geometry-occluded labels farther than OCCLUDED_FADE_MAX_M", () => {
+    expect(at("geometry", OCCLUDED_FADE_MAX_M + 0.1)).toBe("hidden");
+    expect(at("geometry", 95)).toBe("hidden");
+  });
+
+  it("hides unselected labels on other floors whatever blocks them", () => {
+    for (const o of ["none", "geometry", "sign"] as const) expect(at(o, 5, { onFocusFloor: false })).toBe("hidden");
+  });
+
+  it("keeps the selected origin and destination readable through geometry and signs, faded on other floors", () => {
+    for (const o of ["none", "geometry", "sign"] as const) {
+      for (const distance of [5, OCCLUDED_FADE_MAX_M * 3]) {
+        expect(at(o, distance, { selected: true })).toBe("shown");
+        expect(at(o, distance, { selected: true, onFocusFloor: false })).toBe("faded");
+      }
+    }
   });
 });
 

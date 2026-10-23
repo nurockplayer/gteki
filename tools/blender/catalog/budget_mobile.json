@@ -1,5 +1,5 @@
 {
-  "_comment": "Regression budget for the mobile-profile library (PROFILE=mobile tools/blender/build.sh validate). Limits are MiB, measured values plus ~5% headroom; see docs/assets/mobile-profile.md.",
+  "_comment": "Regression budget for the mobile-profile library (PROFILE=mobile tools/blender/build.sh validate). Limits are MiB, measured values plus ~5% headroom; see docs/assets/mobile-profile.md. The finishes_* limits are provisional (derived from the phone pack's sizes and maps, not measured; docs/assets/texture-budget.md) until the first build.",
   "applies_to": {
     "catalog": "kit_v0_1.json",
     "texture_resolution": 1024,
@@ -9,6 +9,8 @@
     "library_mib": 6.2,
     "unique_image_mib": 0.95,
     "gpu_unique_mib": 49,
-    "gpu_all_glbs_mib": 54
+    "gpu_all_glbs_mib": 54,
+    "finishes_mib": 0.6,
+    "finishes_gpu_mib": 28
   }
 }

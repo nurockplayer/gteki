@@ -1,0 +1,2930 @@
+{
+ "catalog": "gteki-ikebukuro",
+ "version": "0.1.0",
+ "notes": "Ikebukuro stair and escalator dressing, parameterised from scene/dressing_anchors.json by stations/ikebukuro/pipeline/build_kit_catalog.py (do not edit by hand). Every entry is station-verified and cites its anchors and PLATEAU GML hashes. Stairs are split into a nosing GLB (one bake role) and a rails GLB. Origins and yaw per anchor are in kit_placements.json. Contains PLATEAU data (MLIT), modified; terms per the PLATEAU Site Policy §3 (#161).",
+ "assets": [
+  {
+   "id": "gteki_ik_escalator_w1009_rise2210_a2193",
+   "generator": "escalator_dressing",
+   "ao_res": 512,
+   "anchor": "linear_run",
+   "params": {
+    "rise_mm": 2210,
+    "width_mm": 1009,
+    "angle_deg": 21.93,
+    "landing_mm": 800,
+    "treads": true,
+    "parts": [
+     "balustrade",
+     "handrail",
+     "newel",
+     "comb"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Escalator balustrade, handrail, newels, comb plates and treads (role transport). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Lanes: esc03_l2 (rise and quad run between the surveyed landing lines; rise snapped to 1 mm). angle_deg = atan2(rise, quad run) = 21.93: the surveyed quad is the straight incline between the floors, so the kit's straight middle incline lies on the slab line; origin (bottom comb) is 1.2 m before the quad's lower line, comb to comb is quad run + 2.4 m. Tread width read as the clear gap between surveyed truss plates; S600-class at 710 mm. landing_mm 800 is the generator default (not surveyed). Direction not surveyed and left out of the params; geometry is direction-agnostic.",
+   "tags": [
+    "dressing",
+    "escalator",
+    "ikebukuro"
+   ]
+  },
+  {
+   "id": "gteki_ik_escalator_w1093_rise5838_a2840",
+   "generator": "escalator_dressing",
+   "ao_res": 512,
+   "anchor": "linear_run",
+   "params": {
+    "rise_mm": 5838,
+    "width_mm": 1093,
+    "angle_deg": 28.4,
+    "landing_mm": 800,
+    "treads": true,
+    "parts": [
+     "balustrade",
+     "handrail",
+     "newel",
+     "comb"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Escalator balustrade, handrail, newels, comb plates and treads (role transport). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Lanes: esc02_l1 (rise and quad run between the surveyed landing lines; rise snapped to 1 mm). angle_deg = atan2(rise, quad run) = 28.4: the surveyed quad is the straight incline between the floors, so the kit's straight middle incline lies on the slab line; origin (bottom comb) is 1.2 m before the quad's lower line, comb to comb is quad run + 2.4 m. Tread width read as the clear gap between surveyed truss plates; S600-class at 710 mm. landing_mm 800 is the generator default (not surveyed). Direction not surveyed and left out of the params; geometry is direction-agnostic.",
+   "tags": [
+    "dressing",
+    "escalator",
+    "ikebukuro"
+   ]
+  },
+  {
+   "id": "gteki_ik_escalator_w709_rise4388_a2856",
+   "generator": "escalator_dressing",
+   "ao_res": 512,
+   "anchor": "linear_run",
+   "params": {
+    "rise_mm": 4388,
+    "width_mm": 709,
+    "angle_deg": 28.56,
+    "landing_mm": 800,
+    "treads": true,
+    "parts": [
+     "balustrade",
+     "handrail",
+     "newel",
+     "comb"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Escalator balustrade, handrail, newels, comb plates and treads (role transport). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Lanes: esc01_l1 (rise and quad run between the surveyed landing lines; rise snapped to 1 mm). angle_deg = atan2(rise, quad run) = 28.56: the surveyed quad is the straight incline between the floors, so the kit's straight middle incline lies on the slab line; origin (bottom comb) is 1.2 m before the quad's lower line, comb to comb is quad run + 2.4 m. Tread width read as the clear gap between surveyed truss plates; S600-class at 710 mm. landing_mm 800 is the generator default (not surveyed). Direction not surveyed and left out of the params; geometry is direction-agnostic.",
+   "tags": [
+    "dressing",
+    "escalator",
+    "ikebukuro"
+   ]
+  },
+  {
+   "id": "gteki_ik_escalator_w986_rise4388_a2856",
+   "generator": "escalator_dressing",
+   "ao_res": 512,
+   "anchor": "linear_run",
+   "params": {
+    "rise_mm": 4388,
+    "width_mm": 986,
+    "angle_deg": 28.56,
+    "landing_mm": 800,
+    "treads": true,
+    "parts": [
+     "balustrade",
+     "handrail",
+     "newel",
+     "comb"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Escalator balustrade, handrail, newels, comb plates and treads (role transport). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Lanes: esc01_l2 (rise and quad run between the surveyed landing lines; rise snapped to 1 mm). angle_deg = atan2(rise, quad run) = 28.56: the surveyed quad is the straight incline between the floors, so the kit's straight middle incline lies on the slab line; origin (bottom comb) is 1.2 m before the quad's lower line, comb to comb is quad run + 2.4 m. Tread width read as the clear gap between surveyed truss plates; S600-class at 710 mm. landing_mm 800 is the generator default (not surveyed). Direction not surveyed and left out of the params; geometry is direction-agnostic.",
+   "tags": [
+    "dressing",
+    "escalator",
+    "ikebukuro"
+   ]
+  },
+  {
+   "id": "gteki_ik_escalator_w990_rise2210_a2193",
+   "generator": "escalator_dressing",
+   "ao_res": 512,
+   "anchor": "linear_run",
+   "params": {
+    "rise_mm": 2210,
+    "width_mm": 990,
+    "angle_deg": 21.93,
+    "landing_mm": 800,
+    "treads": true,
+    "parts": [
+     "balustrade",
+     "handrail",
+     "newel",
+     "comb"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Escalator balustrade, handrail, newels, comb plates and treads (role transport). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Lanes: esc03_l1 (rise and quad run between the surveyed landing lines; rise snapped to 1 mm). angle_deg = atan2(rise, quad run) = 21.93: the surveyed quad is the straight incline between the floors, so the kit's straight middle incline lies on the slab line; origin (bottom comb) is 1.2 m before the quad's lower line, comb to comb is quad run + 2.4 m. Tread width read as the clear gap between surveyed truss plates; S600-class at 710 mm. landing_mm 800 is the generator default (not surveyed). Direction not surveyed and left out of the params; geometry is direction-agnostic.",
+   "tags": [
+    "dressing",
+    "escalator",
+    "ikebukuro"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n10_r147_t302_w10522_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 10,
+    "riser_mm": 147,
+    "tread_mm": 302,
+    "width_mm": 10522,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair024 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n10_r147_t302_w10522_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 10,
+    "riser_mm": 147,
+    "tread_mm": 302,
+    "width_mm": 10522,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair024. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n10_r161_t307_w3512_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 10,
+    "riser_mm": 161,
+    "tread_mm": 307,
+    "width_mm": 3512,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair040 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n10_r161_t307_w3512_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 10,
+    "riser_mm": 161,
+    "tread_mm": 307,
+    "width_mm": 3512,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair040. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n10_r162_t302_w4817_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 10,
+    "riser_mm": 162,
+    "tread_mm": 302,
+    "width_mm": 4817,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair049 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n10_r162_t302_w4817_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 10,
+    "riser_mm": 162,
+    "tread_mm": 302,
+    "width_mm": 4817,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair049. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n11_r166_t329_w1912_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 11,
+    "riser_mm": 166,
+    "tread_mm": 329,
+    "width_mm": 1912,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair023 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n11_r166_t329_w1912_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 11,
+    "riser_mm": 166,
+    "tread_mm": 329,
+    "width_mm": 1912,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair023. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n11_r170_t323_w2887_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 11,
+    "riser_mm": 170,
+    "tread_mm": 323,
+    "width_mm": 2887,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair021 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n11_r170_t323_w2887_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 11,
+    "riser_mm": 170,
+    "tread_mm": 323,
+    "width_mm": 2887,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair021. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n11_r173_t270_w8182_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 11,
+    "riser_mm": 173,
+    "tread_mm": 270,
+    "width_mm": 8182,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair039 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n11_r173_t270_w8182_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 11,
+    "riser_mm": 173,
+    "tread_mm": 270,
+    "width_mm": 8182,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair039. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n12_r165_t301_w4817_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 12,
+    "riser_mm": 165,
+    "tread_mm": 301,
+    "width_mm": 4817,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair067 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n12_r165_t301_w4817_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 12,
+    "riser_mm": 165,
+    "tread_mm": 301,
+    "width_mm": 4817,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair067. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n12_r168_t333_w2941_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 12,
+    "riser_mm": 168,
+    "tread_mm": 333,
+    "width_mm": 2941,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair015 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n12_r168_t333_w2941_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 12,
+    "riser_mm": 168,
+    "tread_mm": 333,
+    "width_mm": 2941,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair015. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n12_r171_t319_w2400_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 12,
+    "riser_mm": 171,
+    "tread_mm": 319,
+    "width_mm": 2400,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair018 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n12_r171_t319_w2400_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 12,
+    "riser_mm": 171,
+    "tread_mm": 319,
+    "width_mm": 2400,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair018. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n12_r173_t264_w2738_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 12,
+    "riser_mm": 173,
+    "tread_mm": 264,
+    "width_mm": 2738,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair004 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n12_r173_t264_w2738_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 12,
+    "riser_mm": 173,
+    "tread_mm": 264,
+    "width_mm": 2738,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair004. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n13_r158_t302_w2309_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 13,
+    "riser_mm": 158,
+    "tread_mm": 302,
+    "width_mm": 2309,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair028 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n13_r158_t302_w2309_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 13,
+    "riser_mm": 158,
+    "tread_mm": 302,
+    "width_mm": 2309,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair028. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n13_r162_t304_w3111_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 13,
+    "riser_mm": 162,
+    "tread_mm": 304,
+    "width_mm": 3111,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair031 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n13_r162_t304_w3111_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 13,
+    "riser_mm": 162,
+    "tread_mm": 304,
+    "width_mm": 3111,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair031. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n13_r163_t300_w3008_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 13,
+    "riser_mm": 163,
+    "tread_mm": 300,
+    "width_mm": 3008,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair032, stair033, stair035, stair036 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n13_r163_t300_w3008_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 13,
+    "riser_mm": 163,
+    "tread_mm": 300,
+    "width_mm": 3008,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair032, stair033, stair035, stair036. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n13_r165_t302_w8323_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 13,
+    "riser_mm": 165,
+    "tread_mm": 302,
+    "width_mm": 8323,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair065 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n13_r165_t302_w8323_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 13,
+    "riser_mm": 165,
+    "tread_mm": 302,
+    "width_mm": 8323,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair065. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n13_r168_t330_w1845_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 13,
+    "riser_mm": 168,
+    "tread_mm": 330,
+    "width_mm": 1845,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair051 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n13_r168_t330_w1845_rails_post",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 13,
+    "riser_mm": 168,
+    "tread_mm": 330,
+    "width_mm": 1845,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "post",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair051. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n13_r169_t329_w1845_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 13,
+    "riser_mm": 169,
+    "tread_mm": 329,
+    "width_mm": 1845,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair017 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n13_r169_t329_w1845_rails_post",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 13,
+    "riser_mm": 169,
+    "tread_mm": 329,
+    "width_mm": 1845,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "post",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair017. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n14_r163_t300_w1806_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 14,
+    "riser_mm": 163,
+    "tread_mm": 300,
+    "width_mm": 1806,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair034 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n14_r163_t300_w1806_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 14,
+    "riser_mm": 163,
+    "tread_mm": 300,
+    "width_mm": 1806,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair034. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n15_r160_t331_w3868_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 15,
+    "riser_mm": 160,
+    "tread_mm": 331,
+    "width_mm": 3868,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair066 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n15_r160_t331_w3868_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 15,
+    "riser_mm": 160,
+    "tread_mm": 331,
+    "width_mm": 3868,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair066. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n15_r164_t308_w8376_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 15,
+    "riser_mm": 164,
+    "tread_mm": 308,
+    "width_mm": 8376,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair059 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n15_r164_t308_w8376_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 15,
+    "riser_mm": 164,
+    "tread_mm": 308,
+    "width_mm": 8376,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair059. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n16_r164_t297_w2741_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 16,
+    "riser_mm": 164,
+    "tread_mm": 297,
+    "width_mm": 2741,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair071 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n16_r164_t297_w2741_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 16,
+    "riser_mm": 164,
+    "tread_mm": 297,
+    "width_mm": 2741,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair071. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n16_r173_t302_w3038_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 16,
+    "riser_mm": 173,
+    "tread_mm": 302,
+    "width_mm": 3038,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair057 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n16_r173_t302_w3038_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 16,
+    "riser_mm": 173,
+    "tread_mm": 302,
+    "width_mm": 3038,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair057. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n16_r174_t303_w2984_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 16,
+    "riser_mm": 174,
+    "tread_mm": 303,
+    "width_mm": 2984,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair007, stair008 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n16_r174_t303_w2984_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 16,
+    "riser_mm": 174,
+    "tread_mm": 303,
+    "width_mm": 2984,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair007, stair008. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n16_r178_t299_w1515_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 16,
+    "riser_mm": 178,
+    "tread_mm": 299,
+    "width_mm": 1515,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair053 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n16_r178_t299_w1515_rails_post",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 16,
+    "riser_mm": 178,
+    "tread_mm": 299,
+    "width_mm": 1515,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "post",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair053. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n17_r174_t260_w2436_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 17,
+    "riser_mm": 174,
+    "tread_mm": 260,
+    "width_mm": 2436,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair058 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n17_r174_t260_w2436_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 17,
+    "riser_mm": 174,
+    "tread_mm": 260,
+    "width_mm": 2436,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair058. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n18_r164_t320_w2411_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 18,
+    "riser_mm": 164,
+    "tread_mm": 320,
+    "width_mm": 2411,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair045 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n18_r164_t320_w2411_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 18,
+    "riser_mm": 164,
+    "tread_mm": 320,
+    "width_mm": 2411,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair045. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n18_r168_t328_w1904_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 18,
+    "riser_mm": 168,
+    "tread_mm": 328,
+    "width_mm": 1904,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair046 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n18_r168_t328_w1904_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 18,
+    "riser_mm": 168,
+    "tread_mm": 328,
+    "width_mm": 1904,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair046. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n18_r172_t300_w3054_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 18,
+    "riser_mm": 172,
+    "tread_mm": 300,
+    "width_mm": 3054,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair052 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n18_r172_t300_w3054_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 18,
+    "riser_mm": 172,
+    "tread_mm": 300,
+    "width_mm": 3054,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair052. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n19_r159_t328_w1968_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 19,
+    "riser_mm": 159,
+    "tread_mm": 328,
+    "width_mm": 1968,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair054 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n19_r159_t328_w1968_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 19,
+    "riser_mm": 159,
+    "tread_mm": 328,
+    "width_mm": 1968,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair054. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n19_r164_t298_w3008_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 19,
+    "riser_mm": 164,
+    "tread_mm": 298,
+    "width_mm": 3008,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair061, stair062, stair063, stair064 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n19_r164_t298_w3008_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 19,
+    "riser_mm": 164,
+    "tread_mm": 298,
+    "width_mm": 3008,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair061, stair062, stair063, stair064. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n19_r166_t323_w1966_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 19,
+    "riser_mm": 166,
+    "tread_mm": 323,
+    "width_mm": 1966,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair043 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n19_r166_t323_w1966_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 19,
+    "riser_mm": 166,
+    "tread_mm": 323,
+    "width_mm": 1966,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair043. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n19_r168_t328_w4347_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 19,
+    "riser_mm": 168,
+    "tread_mm": 328,
+    "width_mm": 4347,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair002 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n19_r168_t328_w4347_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 19,
+    "riser_mm": 168,
+    "tread_mm": 328,
+    "width_mm": 4347,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair002. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n19_r170_t299_w3038_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 19,
+    "riser_mm": 170,
+    "tread_mm": 299,
+    "width_mm": 3038,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair006 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n19_r170_t299_w3038_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 19,
+    "riser_mm": 170,
+    "tread_mm": 299,
+    "width_mm": 3038,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair006. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n19_r176_t304_w2999_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 19,
+    "riser_mm": 176,
+    "tread_mm": 304,
+    "width_mm": 2999,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair047, stair048 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n19_r176_t304_w2999_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 19,
+    "riser_mm": 176,
+    "tread_mm": 304,
+    "width_mm": 2999,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair047, stair048. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n21_r142_t300_w3055_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 21,
+    "riser_mm": 142,
+    "tread_mm": 300,
+    "width_mm": 3055,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair056 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n21_r142_t300_w3055_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 21,
+    "riser_mm": 142,
+    "tread_mm": 300,
+    "width_mm": 3055,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair056. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n21_r164_t328_w2942_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 21,
+    "riser_mm": 164,
+    "tread_mm": 328,
+    "width_mm": 2942,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair044 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n21_r164_t328_w2942_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 21,
+    "riser_mm": 164,
+    "tread_mm": 328,
+    "width_mm": 2942,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair044. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n3_r125_t316_w3065_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 3,
+    "riser_mm": 125,
+    "tread_mm": 316,
+    "width_mm": 3065,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair005 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n3_r125_t316_w3065_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 3,
+    "riser_mm": 125,
+    "tread_mm": 316,
+    "width_mm": 3065,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair005. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n3_r160_t299_w3929_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 3,
+    "riser_mm": 160,
+    "tread_mm": 299,
+    "width_mm": 3929,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair029 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n3_r160_t299_w3929_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 3,
+    "riser_mm": 160,
+    "tread_mm": 299,
+    "width_mm": 3929,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair029. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n3_r167_t202_w2436_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 3,
+    "riser_mm": 167,
+    "tread_mm": 202,
+    "width_mm": 2436,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair050 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n3_r167_t202_w2436_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 3,
+    "riser_mm": 167,
+    "tread_mm": 202,
+    "width_mm": 2436,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair050. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n3_r187_t259_w1516_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 3,
+    "riser_mm": 187,
+    "tread_mm": 259,
+    "width_mm": 1516,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair055 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n3_r187_t259_w1516_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 3,
+    "riser_mm": 187,
+    "tread_mm": 259,
+    "width_mm": 1516,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair055. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n4_r175_t226_w2206_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 4,
+    "riser_mm": 175,
+    "tread_mm": 226,
+    "width_mm": 2206,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair010 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n4_r175_t226_w2206_rails_post",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 4,
+    "riser_mm": 175,
+    "tread_mm": 226,
+    "width_mm": 2206,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "post",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair010. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n4_r175_t226_w2215_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 4,
+    "riser_mm": 175,
+    "tread_mm": 226,
+    "width_mm": 2215,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair009 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n4_r175_t226_w2215_rails_post",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 4,
+    "riser_mm": 175,
+    "tread_mm": 226,
+    "width_mm": 2215,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "post",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair009. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n5_r161_t316_w2445_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 5,
+    "riser_mm": 161,
+    "tread_mm": 316,
+    "width_mm": 2445,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair030 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n5_r161_t316_w2445_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 5,
+    "riser_mm": 161,
+    "tread_mm": 316,
+    "width_mm": 2445,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair030. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n5_r166_t325_w2883_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 5,
+    "riser_mm": 166,
+    "tread_mm": 325,
+    "width_mm": 2883,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair001 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n5_r166_t325_w2883_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 5,
+    "riser_mm": 166,
+    "tread_mm": 325,
+    "width_mm": 2883,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair001. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n5_r174_t272_w2738_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 5,
+    "riser_mm": 174,
+    "tread_mm": 272,
+    "width_mm": 2738,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair037 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n5_r174_t272_w2738_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 5,
+    "riser_mm": 174,
+    "tread_mm": 272,
+    "width_mm": 2738,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair037. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n6_r152_t332_w2609_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 6,
+    "riser_mm": 152,
+    "tread_mm": 332,
+    "width_mm": 2609,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair016 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n6_r152_t332_w2609_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 6,
+    "riser_mm": 152,
+    "tread_mm": 332,
+    "width_mm": 2609,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair016. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n6_r177_t260_w1471_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 6,
+    "riser_mm": 177,
+    "tread_mm": 260,
+    "width_mm": 1471,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair060 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n6_r177_t260_w1471_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 6,
+    "riser_mm": 177,
+    "tread_mm": 260,
+    "width_mm": 1471,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair060. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n6_r180_t327_w6658_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 6,
+    "riser_mm": 180,
+    "tread_mm": 327,
+    "width_mm": 6658,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair025 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n6_r180_t327_w6658_rails_post",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 6,
+    "riser_mm": 180,
+    "tread_mm": 327,
+    "width_mm": 6658,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "post",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair025. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n7_r145_t316_w2923_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 7,
+    "riser_mm": 145,
+    "tread_mm": 316,
+    "width_mm": 2923,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair038 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n7_r145_t316_w2923_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 7,
+    "riser_mm": 145,
+    "tread_mm": 316,
+    "width_mm": 2923,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair038. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n7_r164_t300_w2554_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 7,
+    "riser_mm": 164,
+    "tread_mm": 300,
+    "width_mm": 2554,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair069 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n7_r164_t300_w2554_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 7,
+    "riser_mm": 164,
+    "tread_mm": 300,
+    "width_mm": 2554,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair069. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n7_r171_t326_w4230_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 7,
+    "riser_mm": 171,
+    "tread_mm": 326,
+    "width_mm": 4230,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair042 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n7_r171_t326_w4230_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 7,
+    "riser_mm": 171,
+    "tread_mm": 326,
+    "width_mm": 4230,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair042. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n8_r166_t333_w1912_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 8,
+    "riser_mm": 166,
+    "tread_mm": 333,
+    "width_mm": 1912,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair003 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n8_r166_t333_w1912_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 8,
+    "riser_mm": 166,
+    "tread_mm": 333,
+    "width_mm": 1912,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair003. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n9_r155_t314_w2954_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 9,
+    "riser_mm": 155,
+    "tread_mm": 314,
+    "width_mm": 2954,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair026 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n9_r155_t314_w2954_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 9,
+    "riser_mm": 155,
+    "tread_mm": 314,
+    "width_mm": 2954,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair026. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n9_r165_t292_w2698_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 9,
+    "riser_mm": 165,
+    "tread_mm": 292,
+    "width_mm": 2698,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair070 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n9_r165_t292_w2698_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 9,
+    "riser_mm": 165,
+    "tread_mm": 292,
+    "width_mm": 2698,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair070. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n9_r168_t299_w2206_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 9,
+    "riser_mm": 168,
+    "tread_mm": 299,
+    "width_mm": 2206,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair020 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n9_r168_t299_w2206_rails_post",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 9,
+    "riser_mm": 168,
+    "tread_mm": 299,
+    "width_mm": 2206,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "post",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair020. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n9_r168_t299_w2215_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 9,
+    "riser_mm": 168,
+    "tread_mm": 299,
+    "width_mm": 2215,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair019 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n9_r168_t299_w2215_rails_post",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 9,
+    "riser_mm": 168,
+    "tread_mm": 299,
+    "width_mm": 2215,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "post",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair019. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n9_r169_t308_w8615_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 9,
+    "riser_mm": 169,
+    "tread_mm": 308,
+    "width_mm": 8615,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair041 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n9_r169_t308_w8615_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 9,
+    "riser_mm": 169,
+    "tread_mm": 308,
+    "width_mm": 8615,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair041. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n9_r173_t329_w2887_nosing",
+   "generator": "stair_dressing",
+   "ao_res": 128,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 9,
+    "riser_mm": 173,
+    "tread_mm": 329,
+    "width_mm": 2887,
+    "parts": [
+     "nosing"
+    ]
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair022 (step_count = surveyed nosing lines; riser = rise / (steps - 1); tread = mean nosing-to-nosing run; width = median nosing line; each snapped to 1 mm).",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "nosing"
+   ]
+  },
+  {
+   "id": "gteki_ik_stair_n9_r173_t329_w2887_rails_wall",
+   "generator": "stair_dressing",
+   "ao_res": 256,
+   "anchor": "linear_run",
+   "params": {
+    "step_count": 9,
+    "riser_mm": 173,
+    "tread_mm": 329,
+    "width_mm": 2887,
+    "parts": [
+     "handrail"
+    ],
+    "handrail_sides": "both",
+    "rail_mount": "wall",
+    "rail_segments": 6
+   },
+   "dimension_basis": "station-verified",
+   "notes": "Handrails only (role barriers), both sides. Station-verified from the PLATEAU survey: dressing_anchors.json sha256 231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Flights: stair022. Dimensions as the matching nosing entry. rail_mount from the wall mesh of ikebukuro_b1.glb (sha256 aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8): 'wall' when a wall lies within 0.3 m of both stair sides, else 'post'.",
+   "tags": [
+    "dressing",
+    "stair",
+    "ikebukuro",
+    "rails"
+   ]
+  }
+ ]
+}

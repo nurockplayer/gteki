@@ -7,7 +7,7 @@ export type Lang = "ja" | "en";
 
 const STRINGS = {
   ja: {
-    tagline: "駅を探して、歩いて確かめる",
+    tagline: "駅を探して、歩いて下見する",
     station: "駅",
     from: "出発地",
     to: "目的地",
@@ -16,7 +16,7 @@ const STRINGS = {
     swap: "入れ替え",
     stepFree: "段差なし",
     unpaidOnly: "改札外のみ",
-    strictHours: "営業時間確認済みのみ",
+    strictHours: "営業時間が記載されたもののみ",
     startHere: "ここから出発",
     avatarHere: "現在のアバター位置（仮想）",
     searchOnly: "検索のみ（入口未確認）",
@@ -49,23 +49,23 @@ const STRINGS = {
     soundOn: "音声オン",
     soundOff: "音声オフ",
     arrived: "目的地に到着しました",
-    noRoute: "表示できる確認済みルートがありません",
+    noRoute: "データ上で確認できたルートがありません",
     noRouteWhy: {
-      no_path: "確認済みの通路だけでは到達できません。条件（段差なし・改札外・営業時間）を見直すか、未調査区間がある可能性があります。",
+      no_path: "データ上で確認できた通路だけでは到達できません。条件（段差なし・改札外・営業時間）を見直すか、未調査区間がある可能性があります。",
       unknown_start: "出発地が経路網にありません。",
-      unknown_goal: "目的地に確認済みの入口がありません。",
+      unknown_goal: "目的地に、データ上で確認できた入口がありません。",
       start_equals_goal: "出発地と目的地が同じです。",
       search_limit: "探索が上限に達しました。ルートの有無は不明です（到達できないとは限りません）。",
     } as Record<string, string>,
     noPath: {
-      one: (option: string) => `「${option}」をオンにしたままでは、確認済みのルートがありません。`,
+      one: (option: string) => `「${option}」をオンにしたままでは、データ上で確認できたルートがありません。`,
       unsurveyed: {
         stepFree: (all: boolean) => `見つかった経路は、段差の有無が未調査の通路を${all ? "通ります" : "含みます"}。`,
         unpaidOnly: (all: boolean) => `見つかった経路は、改札の内外が未調査の通路を${all ? "通ります" : "含みます"}。`,
         strictHours: (all: boolean) => `見つかった経路は、営業時間が未確認の通路を${all ? "通ります" : "含みます"}。`,
       } as Record<string, (all: boolean) => string>,
       knownStepFree: (all: boolean) => `見つかった経路は、階段・エスカレーターなど段差のある通路を${all ? "通ります" : "含みます"}。`,
-      none: "すべての条件をオフにしても、確認済みの通路ではこの2地点がつながりません。未調査区間がある可能性があります。",
+      none: "すべての条件をオフにしても、データ上で確認できた通路ではこの2地点がつながりません。未調査区間がある可能性があります。",
       endpoint: {
         origin: { inside: "出発地は改札内にあります。", unknown: "出発地が改札外にあるか確認できません。" },
         destination: { inside: "目的地は改札内にあります。", unknown: "目的地が改札外にあるか確認できません。" },
@@ -73,6 +73,11 @@ const STRINGS = {
       },
       any: (options: string) => `次のどれか1つをオフにすると経路が見つかります: ${options}`,
       all: (options: string) => `${options}をすべてオフにすると経路が見つかります。`,
+      /** The station records nothing the option could pass on: missing data, not a known barrier. */
+      noData: {
+        stepFree: "この駅にはバリアフリー情報がありません。",
+        strictHours: "この駅には営業時間の情報がありません。",
+      } as Record<string, string>,
       unknown: "どの条件が原因か判定できませんでした。",
       relax: (option: string) => `「${option}」をオフにする`,
       relaxAll: "すべてオフにして再検索",
@@ -86,14 +91,30 @@ const STRINGS = {
     unknownAccess: "通行条件の根拠なし",
     unknownFare: "改札境界未確認",
     freshnessUnknown: "情報時点不明",
+    undatedSources: "日付不明の出典",
     expired: "有効期限切れの出典",
     timeWindow: "時間帯制限あり",
     stale: "情報が古い可能性",
     paidCrossing: "改札を通過",
     synthetic: "合成データ — 実在の駅案内ではありません",
     syntheticShort: "合成",
-    realCandidate: "公開データ由来・現地未確認を含む",
+    realCandidate: "公開データ由来・机上確認のみ（現地未確認）",
+    /** Fixed route-card line: no station records an on-site check (there is no such field), so it is always said. */
+    deskChecked: "机上確認のみ（現地未確認）",
     freshness: "データ時点",
+    /** The route card's dates: the oldest source it rests on, and the desk check of its evidence (#203 B5). */
+    oldestSource: "最古の出典",
+    deskCheckedOn: "机上確認日",
+    dateJoiner: "／",
+    /** The time estimate's assumed speeds, read from the router (#203 B6). */
+    paceNote: (walk: number, stairs: number) => `所要時間は徒歩${walk} m/s・階段${stairs} m/sで計算（ガイドは独自の速度で進みます）`,
+    /** A known stairs edge: not "wheelchair access unknown" (#203 B8). */
+    routeStairs: "階段あり",
+    /** A graph node with no POI is never shown by its raw id (#203 B11). */
+    unnamedPoint: "名称未登録の地点",
+    stairFootLabel: (name: string) => `${name}（階段下）`,
+    /** GTEki-made wayfinding signs are generated from the graph, not surveyed positions (#203 B14). */
+    generatedSigns: "看板は経路データから自動配置しています（実際の現地の看板位置ではありません）",
     sources: "出典",
     credits: "出典",
     creditsLabel: "データの出典表示",
@@ -125,6 +146,26 @@ const STRINGS = {
     routeFound: (m: number, min: number) => `ルートが見つかりました：${m}m、約${min}分`,
     liveSeparator: "。",
     coverageStatus: { routable: "経路あり", visual_only: "表示のみ", unverified: "未確認", excluded: "対象外" } as Record<string, string>,
+    /** Guide mascot lines (#132): fixed text per event kind, never interpolated with route facts. */
+    mascot: {
+      arrival: "着いたよ！おつかれさま！",
+      arrivalConnector: "ガイドはここまでだよ。このあとのことは、わたしにはわからないの。",
+      noPath: {
+        no_path: "確認できた道だけでは、つながらなかったの。",
+        unknown_start: "その出発地は、わたしにはわからないの。別の場所を選んでね。",
+        unknown_goal: "その目的地への入口は、わたしにはわからないの。",
+        start_equals_goal: "出発地と目的地が同じだよ。",
+        search_limit: "調べきれなかったの。道があるかどうか、わたしにはわからないよ。",
+        other: "うまく案内できなかったの。くわしいことは、わたしにはわからないよ。",
+      } as Record<string, string>,
+      routeUnknowns: "まだ確認できていないところがあるの。そこは、わたしにはわからないよ。バッジを見てね。",
+      searchEmpty: "ほかのことばで探してみよう！",
+      turn: "つぎの案内は、となりに出ているよ！",
+      loadError: "駅のデータを読み込めなかったの。ほかの駅を選んでみてね。",
+      sceneFallback: "3Dが表示できなかったから、線の図で見てね。",
+      /** Names the actual `to` field label. */
+      startHint: "行きたい場所を『目的地』で探してね。",
+    },
     language: "English",
   },
   en: {
@@ -137,7 +178,7 @@ const STRINGS = {
     swap: "Swap",
     stepFree: "Step-free",
     unpaidOnly: "Outside gates only",
-    strictHours: "Verified hours only",
+    strictHours: "Only places with listed hours",
     startHere: "Start here",
     avatarHere: "Current avatar position (virtual)",
     searchOnly: "Search only (entrance not verified)",
@@ -170,23 +211,23 @@ const STRINGS = {
     soundOn: "Sound on",
     soundOff: "Sound off",
     arrived: "You have arrived",
-    noRoute: "No verified route to show",
+    noRoute: "No route confirmed in the surveyed data",
     noRouteWhy: {
-      no_path: "Verified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet.",
+      no_path: "Passages confirmed in the surveyed data don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet.",
       unknown_start: "The start is not on the network.",
-      unknown_goal: "The destination has no verified entrance.",
+      unknown_goal: "The destination has no entrance confirmed in the surveyed data.",
       start_equals_goal: "Start and destination are the same.",
       search_limit: "The search hit its work limit: whether a route exists is unknown (not that there is none).",
     } as Record<string, string>,
     noPath: {
-      one: (option: string) => `No verified route with "${option}" on.`,
+      one: (option: string) => `No route confirmed in the surveyed data with "${option}" on.`,
       unsurveyed: {
         stepFree: (all: boolean) => `The connection found ${all ? "uses" : "includes"} passages whose step-free access is not surveyed.`,
         unpaidOnly: (all: boolean) => `The connection found ${all ? "uses" : "includes"} passages whose gate side is not surveyed.`,
         strictHours: (all: boolean) => `The connection found ${all ? "uses" : "includes"} passages whose hours are not verified.`,
       } as Record<string, (all: boolean) => string>,
       knownStepFree: (all: boolean) => `The connection found ${all ? "uses" : "includes"} stairs, escalators or passages not step-free.`,
-      none: "Even with every option off, verified passages don't connect these points; the link may not be surveyed yet.",
+      none: "Even with every option off, passages confirmed in the surveyed data don't connect these points; the link may not be surveyed yet.",
       endpoint: {
         origin: { inside: "The start is inside the ticket gates.", unknown: "The start is not known to be outside the ticket gates." },
         destination: { inside: "The destination is inside the ticket gates.", unknown: "The destination is not known to be outside the ticket gates." },
@@ -194,6 +235,10 @@ const STRINGS = {
       },
       any: (options: string) => `Turning off any one of these finds a route: ${options}`,
       all: (options: string) => `Turning off all of ${options} finds a route.`,
+      noData: {
+        stepFree: "This station has no step-free data.",
+        strictHours: "This station has no opening-hours data.",
+      } as Record<string, string>,
       unknown: "Couldn't determine which option is responsible.",
       relax: (option: string) => `Turn off "${option}"`,
       relaxAll: "Turn all off and retry",
@@ -207,14 +252,24 @@ const STRINGS = {
     unknownAccess: "No access evidence",
     unknownFare: "Fare boundary unknown",
     freshnessUnknown: "Data date unknown",
+    undatedSources: "Undated sources",
     expired: "Source validity ended",
     timeWindow: "Time-restricted",
     stale: "Possibly outdated",
     paidCrossing: "Passes a ticket gate",
     synthetic: "Synthetic data — not real station guidance",
     syntheticShort: "Synthetic",
-    realCandidate: "From open data; parts not field-verified",
+    realCandidate: "From open data; desk-checked only, not verified on site",
+    deskChecked: "Desk-checked against maps and surveys; not verified on site",
     freshness: "Data as of",
+    oldestSource: "Oldest source",
+    deskCheckedOn: "desk-checked",
+    dateJoiner: " · ",
+    paceNote: (walk: number, stairs: number) => `Time assumes walking ${walk} m/s and stairs ${stairs} m/s; the guide moves at its own pace`,
+    routeStairs: "Stairs",
+    unnamedPoint: "Unnamed point",
+    stairFootLabel: (name: string) => `${name} (stair foot)`,
+    generatedSigns: "Signs are placed from the route data, not at the real sign positions",
     sources: "Sources",
     credits: "Credits",
     creditsLabel: "Data credits",
@@ -245,6 +300,26 @@ const STRINGS = {
     routeFound: (m: number, min: number) => `Route found: ${m} m, about ${min} minute${min === 1 ? "" : "s"}`,
     liveSeparator: ". ",
     coverageStatus: { routable: "routable", visual_only: "visual only", unverified: "unverified", excluded: "excluded" } as Record<string, string>,
+    /** Guide mascot lines (#132): fixed text per event kind, never interpolated with route facts. */
+    mascot: {
+      arrival: "We're here! Nice work!",
+      arrivalConnector: "The guide ends here. I can't tell you what comes after.",
+      noPath: {
+        no_path: "The paths I've verified don't connect these two places.",
+        unknown_start: "I don't know that start. Please pick another place.",
+        unknown_goal: "I don't know an entrance for that destination.",
+        start_equals_goal: "Start and destination are the same place.",
+        search_limit: "I couldn't finish searching, so I don't know if there's a way.",
+        other: "I couldn't guide this one, and I don't know the details.",
+      } as Record<string, string>,
+      routeUnknowns: "Some parts aren't confirmed yet, and I don't know them. Check the badges.",
+      searchEmpty: "Let's try other words!",
+      turn: "Your next step is shown next to me!",
+      loadError: "I couldn't load this station's data. Please try another station.",
+      sceneFallback: "The 3D view didn't load, so here's the line map.",
+      /** Names the actual `to` field label. */
+      startHint: "Search for where you want to go under \"To\".",
+    },
     language: "日本語",
   },
 };
@@ -259,6 +334,15 @@ export function strings(lang: Lang): Strings {
 export function pick(texts: LocalizedText[] | undefined, lang: Lang): string {
   if (!texts || texts.length === 0) return "";
   return (texts.find((t) => t.lang === lang) ?? texts.find((t) => t.lang === "ja") ?? texts[0]!).text;
+}
+
+/**
+ * Coverage text is station data (#259): a legacy plain string, or localized text. The requested language wins,
+ * then ja, then the first entry; a plain string is shown exactly as the station wrote it.
+ */
+export function coverageText(value: string | LocalizedText[] | undefined, lang: Lang): string {
+  if (value === undefined) return "";
+  return typeof value === "string" ? value : pick(value, lang);
 }
 
 export function initialLang(): Lang {

@@ -6,12 +6,14 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NodeIO } from '@gltf-transform/core';
 import * as common from '../src/common.js';
-import { assertMeshCoverage, bboxIntersectsDisc, buildContextGlb, contextGlb, contextMergedName, contextRunDigest, contextNodeName, EXPLORER_ROLE_WORDS, explorerRoleFromName, loadContextConfig, parseKinds, parseMergeSpec, type ContextInput, type ContextVariant, type MergeSpec } from '../src/context.js';
+import { assertMeshCoverage, bboxIntersectsDisc, HEIGHT_BASIS_FLATTENED, HEIGHT_BASIS_TP, GROUND_BASES, groundOffsetStats, spreadStats, buildContextGlb, contextGlb, contextMergedName, contextRunDigest, contextNodeName, EXPLORER_ROLE_WORDS, explorerRoleFromName, loadContextConfig, graphIdsMayStayVerbatim, GRAPH_LITERALS_GTEKI_AUTHORED, publicContextReceipt, parseKinds, parseMergeSpec, type ContextInput, type ContextVariant, type MergeSpec } from '../src/context.js';
 import { bboxIntersectsAnyDisc, buildContextWindow, meshCellBounds, meshCode3, meshesTouchedByWindow, readGraphWindowNodes, type NodeRule } from '../src/context-window.js';
-import { scanContextFeatures, type ContextFeatureRecord } from '../src/context-scan.js';
+import { scanContextFeatures, type ContextFeatureRecord, type ContextKind } from '../src/context-scan.js';
 import { loadFrame } from '../src/crs.js';
+import * as crs from '../src/crs.js';
 import { loadSources } from '../src/acquire.js';
-import { isStationEnuFrame, type StationEnuFrame } from '../src/station-enu.js';
+import { isStationEnuFrame, stationOriginSha256, type StationEnuFrame } from '../src/station-enu.js';
+import type { GroundOffsetStats } from '../src/context.js';
 
 const dirs: string[] = [];
 afterEach(async () => { vi.restoreAllMocks(); for (const dir of dirs.splice(0)) await rm(dir, { recursive: true, force: true }); });
@@ -190,16 +192,17 @@ describe('bounded streaming scanner', () => {
 });
 
 describe('context command wrapper', () => {
-  it('ships a READY Ikebukuro config of manifest sources and a BLOCKED Shinjuku config that never converts', async () => {
+  it('ships READY Ikebukuro and Shinjuku configs of manifest sources (the Shinjuku decision is #39 comment 6324045059)', async () => {
     const sources = new Map(loadSources().map((s) => [s.source_id, s]));
     const ikebukuro = await loadContextConfig('ikebukuro');
     expect(ikebukuro).toMatchObject({ status: 'READY', frame_id: 'ikebukuro-station-enu-v0', radius_m: 250, merge: 'kind', window: { r_origin_m: 250, r_exit_m: 120, node_rule: { graph: 'stations/ikebukuro/gteki/graph.json', exit_kinds: ['exit'], street_floor_ids: ['street'], exit_poi_connectors: true } } });
     expect(ikebukuro.sources).toHaveLength(4);
     for (const id of ikebukuro.sources) expect(sources.get(id)!.station_ids).toContain('ikebukuro');
     const shinjuku = await loadContextConfig('shinjuku');
-    expect(shinjuku.status).toBe('BLOCKED');
+    expect(shinjuku.status).toBe('READY');
+    expect(shinjuku.blocked_reason).toBeUndefined();
+    expect(shinjuku.notes).toMatch(/6324045059/);
     for (const id of shinjuku.sources) expect(sources.get(id)!.station_ids).toContain('shinjuku');
-    await expect(contextGlb('shinjuku')).rejects.toThrow(/blocked.*vertical anchor/s);
     await expect(loadContextConfig('nowhere')).rejects.toThrow(/No context config/);
   });
 
@@ -212,6 +215,11 @@ describe('context command wrapper', () => {
     const originalWrite = common.writeJson;
     const written: string[] = [];
     vi.spyOn(common, 'writeJson').mockImplementation(async (path, value) => { const target = path.startsWith(common.docsRoot) ? join(dir, 'docs', relative(common.docsRoot, path)) : path; written.push(relative(dir, target)); return originalWrite(target, value); });
+    const frame = await stationFrame();
+    const stationPath = join(dir, 'station.json');
+    const station = { station: { origin: frame.origin }, floors: [{ ordinal: 0, renderElevationM: 32.5 }], assets: [] as string[] };
+    await writeFile(stationPath, JSON.stringify(station));
+    vi.spyOn(crs, 'loadFrame').mockResolvedValue({ ...frame, station_json_path: relative(common.repoRoot, stationPath) });
     // Two bldg meshes carry the same fixture ids: the second copy must be excluded as duplicate, never emitted twice.
     const summary = await contextGlb('ikebukuro', { sourceIds: ['plateau-13116-bldg-53394576', 'plateau-13116-bldg-53394577', 'plateau-13116-tran-53394576', 'plateau-13116-tran-53394577'], exitRadiusM: 0, kinds: 'bldg,tran' });
     expect(summary).toMatchObject({ station_id: 'ikebukuro', verification: 'UNVERIFIED', navigation_use: 'NOT_FOR_ROUTING', visual_only: true, window: { center_station_xy_m: [0, 0], radius_m: 250 } });
@@ -224,7 +232,11 @@ describe('context command wrapper', () => {
     expect(summary.lod_policy).toMatch(/LOD3 only/);
     expect(summary.validation.status).toBe('PASS');
     expect(summary.peak_rss_bytes).toBeGreaterThan(0);
-    expect(summary.station_json_changed_since_frame).toBeTypeOf('boolean');
+    expect(summary.station_origin_sha256_now).toBe(stationOriginSha256(frame.origin));
+    expect(summary.station_origin_matches_frame).toBe(true);
+    expect(summary).not.toHaveProperty('station_json_sha256_now');
+    expect(summary).not.toHaveProperty('station_json_changed_since_frame');
+    expect(summary.frame.station_json_sha256).toBe(frame.station_json_sha256);
     const glb = await readFile(join(dir, summary.store_path));
     expect(createHash('sha256').update(glb).digest('hex')).toBe(summary.output_sha256);
     expect(written.some((p) => p.startsWith(join('docs', 'gis', 'context')))).toBe(true);
@@ -234,6 +246,21 @@ describe('context command wrapper', () => {
     expect(sidecar.feature_table.rows).toHaveLength(5);
     expect(summary.feature_table).toEqual(sidecar.feature_table); // the receipt carries the same compact feature table
     expect(sidecar.source_manifests[0].publish_gate).toBe('CONDITIONAL');
+    const receipt = JSON.parse(await readFile(join(dir, 'docs', 'gis', 'context', `${summary.run_id}.json`), 'utf8'));
+    for (const value of [sidecar, receipt]) {
+      expect(value).toMatchObject({ station_origin_sha256_now: summary.station_origin_sha256_now, station_origin_matches_frame: true });
+      expect(value).not.toHaveProperty('station_json_sha256_now');
+      expect(value).not.toHaveProperty('station_json_changed_since_frame');
+    }
+    station.assets.push('synthetic-kit.glb');
+    station.floors[0]!.renderElevationM = 33.5; // context uses no station.json floor height
+    await writeFile(stationPath, JSON.stringify(station));
+    const again = await contextGlb('ikebukuro', { sourceIds: Object.keys(paths), exitRadiusM: 0, kinds: 'bldg,tran' });
+    expect(again.run_id).toBe(summary.run_id);
+    expect(again.station_origin_sha256_now).toBe(summary.station_origin_sha256_now);
+    station.station.origin = { ...frame.origin, lat: frame.origin.lat + 0.001 };
+    await writeFile(stationPath, JSON.stringify(station));
+    await expect(contextGlb('ikebukuro', { sourceIds: Object.keys(paths), exitRadiusM: 0, kinds: 'bldg,tran' })).rejects.toThrow(/origin no longer matches frame/);
     // Receipt and sidecar never claim a rights clearance.
     expect(JSON.stringify(summary)).not.toMatch(/"(?:cleared|clearance)"/);
   });
@@ -788,5 +815,557 @@ describe('--kinds (buildings-only context)', () => {
     expect(config.kinds).toBeUndefined();
     await expect(buildContextGlb({ frame: await stationFrame(), radiusM: 250, inputs, outputPath: join(dir, 'x.glb'), kinds: ['bldg', 'x' as never] })).rejects.toThrow(/Invalid --kinds/);
     await expect(buildContextGlb({ frame: await stationFrame(), radiusM: 250, inputs: [inputs[0]!], outputPath: join(dir, 'y.glb'), kinds: ['tran'] })).rejects.toThrow(/at least one source of kind tran/);
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Shinjuku (decision: GitHub #39 comment 6324045059): per-feature ground flattening, poi_ids window, r_origin_m 0.
+
+const SJ_ATTRIBUTION = '出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成';
+const sjInputs: ContextInput[] = [
+  { sourceId: 'synthetic-sj-bldg', sourceSha256: 'c'.repeat(64), kind: 'bldg', path: fixture('context-bldg-shinjuku.xml'), attributionText: SJ_ATTRIBUTION },
+  { sourceId: 'synthetic-sj-tran', sourceSha256: 'd'.repeat(64), kind: 'tran', path: fixture('context-tran-shinjuku.xml'), attributionText: SJ_ATTRIBUTION },
+];
+const SJ_EXIT_IDS = ['poi:exit:1', 'poi:exit:2', 'poi:exit:3', 'poi:exit:4'];
+const SJ_RULE: NodeRule = { graph: 'stations/shinjuku/gteki/graph.json', exit_kinds: [], street_floor_ids: [], poi_ids: SJ_EXIT_IDS };
+/** Shinjuku-like graph: exits 1-4 near the origin on toei-nwd floors, exits 5 and 6 on B1 far away (only exit 5 reaches the fixture building sj_only_exit5). */
+const SJ_NODES = [node('x1', 'exit', 'toei-nwd-0', 0, 0), node('x2', 'exit', 'toei-nwd-0', 10, 0), node('x3', 'exit', 'toei-nwd-1', 0, 10), node('x4', 'exit', 'toei-nwd-0', 10, 10), node('x5', 'exit', 'toei-nwd-m1', 500, 500), node('x6', 'exit', 'toei-nwd-m1', -500, -500)];
+const SJ_POIS = [1, 2, 3, 4, 5, 6].map((n) => poi(`poi:exit:${n}`, 'exit', [`x${n}`]));
+async function shinjukuFrame(): Promise<StationEnuFrame> {
+  const frame = await loadFrame('shinjuku-station-enu-v0');
+  if (!isStationEnuFrame(frame)) throw new Error('expected a station-enu frame');
+  return frame;
+}
+async function buildSj(opts: { kinds?: ContextKind[]; groundAttrs?: string[]; merge?: MergeSpec; nodes?: ReturnType<typeof node>[]; pois?: unknown[]; rule?: NodeRule; exitR?: number; neighbourR?: number; attributionText?: string; attributionDecision?: string } = {}) {
+  const dir = await mkdtemp(join(tmpdir(), 'gteki-context-sj-')); dirs.push(dir);
+  const graphPath = await writeGraph(dir, opts.nodes ?? SJ_NODES, 'shinjuku');
+  const poisPath = await writePois(dir, opts.pois ?? SJ_POIS, 'shinjuku');
+  const window = await buildContextWindow({ r_origin_m: 0, r_exit_m: opts.exitR ?? 300, node_rule: opts.rule ?? SJ_RULE }, { stationId: 'shinjuku', graphPath, poisPath });
+  const frame = await shinjukuFrame();
+  const outputPath = join(dir, 'context.glb');
+  const report = await buildContextGlb({ frame, window, inputs: sjInputs, outputPath, merge: opts.merge ?? { mode: 'none' }, kinds: opts.kinds ?? ['bldg'], ...(opts.groundAttrs ? { groundHeightAttributes: opts.groundAttrs } : {}), ...(opts.neighbourR !== undefined ? { exitNeighbourRadiusM: opts.neighbourR } : {}), ...(opts.attributionText !== undefined ? { attributionText: opts.attributionText } : {}), ...(opts.attributionDecision !== undefined ? { attributionDecision: opts.attributionDecision } : {}) });
+  const document = await new NodeIO().readBinary(await readFile(outputPath));
+  return { dir, outputPath, frame, window, report, document, graphPath, poisPath };
+}
+/** Min and max station z (glTF y) of one node's mesh. */
+function zRange(document: Awaited<ReturnType<typeof buildSj>>['document'], name: string): [number, number] {
+  const node = document.getRoot().listNodes().find((n) => n.getName() === name);
+  if (!node) throw new Error(`no node ${name}`);
+  let lo = Infinity, hi = -Infinity;
+  for (const primitive of node.getMesh()!.listPrimitives()) { const acc = primitive.getAttribute('POSITION')!; for (let i = 0; i < acc.getCount(); i++) { const y = acc.getElement(i, [0, 0, 0])[1]!; lo = Math.min(lo, y); hi = Math.max(hi, y); } }
+  return [lo, hi];
+}
+const near = (actual: number, expected: number): void => { expect(Math.abs(actual - expected)).toBeLessThan(2e-3); };
+const sjIds = (report: Awaited<ReturnType<typeof buildSj>>['report']): string[] => report.per_feature.map((f) => String(f.gml_id)).sort();
+
+describe('Shinjuku: each building is flattened to symbolic street z = 0 by its own ground height', () => {
+  it('two buildings at different ground heights both end with base z = 0 and keep their relative roof heights', async () => {
+    const { report, document } = await buildSj();
+    expect(sjIds(report)).toEqual(['sj_a', 'sj_b', 'sj_c', 'sj_d', 'sj_gs', 'sj_lod2', 'sj_lod2only']);
+    const a = zRange(document, 'ctx_bldg_sj_a'), b = zRange(document, 'ctx_bldg_sj_b'), d = zRange(document, 'ctx_bldg_sj_d');
+    // sj_a: TP 30..45, sj_b: TP 40..52, sj_d: TP 36..60 -> base 0, roof = the building's own height.
+    near(a[0], 0); near(a[1], 15);
+    near(b[0], 0); near(b[1], 12);
+    near(d[0], 0); near(d[1], 24);
+    // One constant for all buildings would have left at least one base off zero.
+    expect(new Set(report.per_feature.map((f) => f.ground_height_m)).size).toBeGreaterThan(3);
+  });
+
+  it('LOD2 drawn with bldg:GroundSurface: the ground is the GroundSurface minimum (not the lower wall bottom of a sunken entrance), with the spread recorded', async () => {
+    const { report, document } = await buildSj();
+    // sj_gs: LOD1 base 35, GroundSurface polygons at 36.0 and 36.5, walls down to 34.0, roof 50.
+    expect(report.per_feature.find((f) => f.gml_id === 'sj_gs')).toMatchObject({ lod_used: 'LOD2', ground_height_m: 36, ground_basis: 'ground_surface_lod2', ground_surface_spread_m: 0.5 });
+    const [lo, hi] = zRange(document, 'ctx_bldg_sj_gs');
+    near(lo, -2); near(hi, 14); // the wall bottom sits 2 m below the street, it does not drag the base down
+    // Buildings that do not use that basis carry no spread.
+    expect(report.per_feature.filter((f) => f.ground_basis !== 'ground_surface_lod2').every((f) => f.ground_surface_spread_m === null)).toBe(true);
+    expect(report.ground_offsets!.ground_surface_spread).toEqual({ count: 1, min_m: 0.5, median_m: 0.5, max_m: 0.5 });
+  });
+
+  it('LOD2 drawn without a GroundSurface falls back to the bottom of the lod1Solid, not the LOD2 minimum', async () => {
+    const { report, document } = await buildSj();
+    expect(report.per_feature.find((f) => f.gml_id === 'sj_lod2')).toMatchObject({ lod_used: 'LOD2', ground_height_m: 29, ground_basis: 'lod1_solid_bottom', ground_surface_spread_m: null }); // LOD2 starts at 31
+    const [lo, hi] = zRange(document, 'ctx_bldg_sj_lod2');
+    near(lo, 2); near(hi, 15);
+    // A LOD1-drawn building uses its own lod1Solid bottom too.
+    expect(report.per_feature.find((f) => f.gml_id === 'sj_a')).toMatchObject({ lod_used: 'LOD1', ground_height_m: 30, ground_basis: 'lod1_solid_bottom' });
+  });
+
+  it('last resort: a LOD2-only building without GroundSurface or lod1Solid uses the min z of the drawn LOD', async () => {
+    const { report, document } = await buildSj();
+    expect(report.per_feature.find((f) => f.gml_id === 'sj_lod2only')).toMatchObject({ lod_used: 'LOD2', ground_height_m: 32, ground_basis: 'min_z_of_drawn_lod' });
+    const [lo, hi] = zRange(document, 'ctx_bldg_sj_lod2only');
+    near(lo, 0); near(hi, 12);
+  });
+
+  it('priority: the configured ground-height attribute beats every other basis, then GroundSurface, lod1Solid, drawn-LOD min; counts per basis in priority order', async () => {
+    const without = await buildSj();
+    expect(without.report.ground_offsets!.buildings).toEqual({ count: 7, min_m: 29, median_m: 35, max_m: 40, basis_counts: { ground_height_attribute: 0, ground_surface_lod2: 1, lod1_solid_bottom: 5, min_z_of_drawn_lod: 1 } });
+    expect(Object.keys(without.report.ground_offsets!.buildings!.basis_counts)).toEqual(['ground_height_attribute', 'ground_surface_lod2', 'lod1_solid_bottom', 'min_z_of_drawn_lod']);
+    expect(without.report.per_feature.find((f) => f.gml_id === 'sj_c')).toMatchObject({ ground_height_m: 35, ground_basis: 'lod1_solid_bottom' });
+    const withAttr = await buildSj({ groundAttrs: ['groundHeight'] });
+    expect(withAttr.report.per_feature.find((f) => f.gml_id === 'sj_c')).toMatchObject({ ground_height_m: 33.5, ground_basis: 'ground_height_attribute' });
+    expect(withAttr.report.per_feature.map((f) => [f.gml_id, f.ground_basis])).toEqual([['sj_a', 'lod1_solid_bottom'], ['sj_b', 'lod1_solid_bottom'], ['sj_c', 'ground_height_attribute'], ['sj_d', 'lod1_solid_bottom'], ['sj_lod2', 'lod1_solid_bottom'], ['sj_gs', 'ground_surface_lod2'], ['sj_lod2only', 'min_z_of_drawn_lod']]);
+    // The attribute (33.5) sits 1.5 m below the building's own LOD1 base (35): the base is not forced to 0, the offset is the attribute.
+    const [lo, hi] = zRange(withAttr.document, 'ctx_bldg_sj_c');
+    near(lo, 1.5); near(hi, 13.5);
+    expect(withAttr.report.ground_offsets!.buildings).toEqual({ count: 7, min_m: 29, median_m: 33.5, max_m: 40, basis_counts: { ground_height_attribute: 1, ground_surface_lod2: 1, lod1_solid_bottom: 4, min_z_of_drawn_lod: 1 } });
+  });
+
+  it('the low variant draws LOD1, so every building with a lod1Solid uses its bottom; the LOD2-only building is excluded there', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-context-sj-low-')); dirs.push(dir);
+    const window = await buildContextWindow({ r_origin_m: 0, r_exit_m: 300, node_rule: SJ_RULE }, { stationId: 'shinjuku', graphPath: await writeGraph(dir, SJ_NODES, 'shinjuku'), poisPath: await writePois(dir, SJ_POIS, 'shinjuku') });
+    const report = await buildContextGlb({ frame: await shinjukuFrame(), window, inputs: [sjInputs[0]!], outputPath: join(dir, 'low.glb'), variant: 'low', kinds: ['bldg'] });
+    expect(report.ground_offsets!.buildings!.basis_counts).toEqual({ ground_height_attribute: 0, ground_surface_lod2: 0, lod1_solid_bottom: 6, min_z_of_drawn_lod: 0 });
+    expect(report.per_feature.find((f) => f.gml_id === 'sj_gs')).toMatchObject({ lod_used: 'LOD1', ground_height_m: 35, ground_basis: 'lod1_solid_bottom' });
+    expect(report.sources[0]!.excluded).toMatchObject({ building_no_lod1_excluded_in_low_variant: 1 });
+  });
+
+  it('records min, median and max of the subtracted ground heights and the count per basis, keys in priority order (median of an even count = mean of the middle two)', () => {
+    expect(groundOffsetStats([])).toBeNull();
+    const stats = groundOffsetStats([{ offset: 30, basis: 'min_z_of_drawn_lod' }, { offset: 41, basis: 'ground_height_attribute' }, { offset: 32, basis: 'lod1_solid_bottom' }, { offset: 35.1234, basis: 'ground_surface_lod2' }])!;
+    expect(stats).toEqual({ count: 4, min_m: 30, median_m: 33.562, max_m: 41, basis_counts: { ground_height_attribute: 1, ground_surface_lod2: 1, lod1_solid_bottom: 1, min_z_of_drawn_lod: 1 } });
+    expect(Object.keys(stats.basis_counts)).toEqual([...GROUND_BASES]);
+    expect(spreadStats([])).toBeNull();
+    expect(spreadStats([0.4, 0.1, 0.25, 0.8])).toEqual({ count: 4, min_m: 0.1, median_m: 0.325, max_m: 0.8 });
+  });
+
+  it('refuses a configured ground-height attribute that is not a number or has a non-metre unit, rather than guessing', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-context-sj-bad-')); dirs.push(dir);
+    const xml = await readFile(fixture('context-bldg-shinjuku.xml'), 'utf8');
+    for (const [name, bad, pattern] of [['nan', xml.replace('uom="m">33.5<', 'uom="m">high<'), /not a finite number/], ['feet', xml.replace('uom="m">33.5<', 'uom="ft">33.5<'), /only metres are supported/]] as const) {
+      const path = join(dir, `${name}.xml`); await writeFile(path, bad);
+      await expect(scanContextFeatures(path, { kind: 'bldg', mode: 'collect', retain: () => true, groundHeightAttributes: ['groundHeight'], onFeature: () => undefined })).rejects.toThrow(pattern);
+    }
+    // Unconfigured: the attribute is ignored entirely (no ground_height on any record).
+    const records: ContextFeatureRecord[] = [];
+    await scanContextFeatures(fixture('context-bldg-shinjuku.xml'), { kind: 'bldg', mode: 'collect', retain: () => true, onFeature: (r) => records.push(r) });
+    expect(records.some((r) => r.ground_height !== undefined)).toBe(false);
+    const configured: ContextFeatureRecord[] = [];
+    await scanContextFeatures(fixture('context-bldg-shinjuku.xml'), { kind: 'bldg', mode: 'collect', retain: () => true, groundHeightAttributes: ['groundHeight'], onFeature: (r) => configured.push(r) });
+    expect(configured.filter((r) => r.ground_height !== undefined).map((r) => [r.gml_id, r.ground_height])).toEqual([['sj_c', { attribute: 'groundHeight', value_m: 33.5 }]]);
+  });
+
+  it('flattens roads per feature the same way when tran is requested', async () => {
+    const { report, document } = await buildSj({ kinds: ['tran'] });
+    expect(sjIds(report)).toEqual(['sj_road1', 'sj_road2']);
+    expect(report.per_feature.map((f) => [f.gml_id, f.ground_height_m])).toEqual([['sj_road1', 31], ['sj_road2', 41.5]]);
+    const r1 = zRange(document, 'ctx_road_sj_road1'), r2 = zRange(document, 'ctx_road_sj_road2');
+    near(r1[0], 0); near(r1[1], 2); near(r2[0], 0); near(r2[1], 0.3);
+    expect(report.ground_offsets).toMatchObject({ buildings: null, ground_surface_spread: null, roads: { count: 2, min_m: 31, median_m: 36.25, max_m: 41.5, basis_counts: { ground_height_attribute: 0, ground_surface_lod2: 0, lod1_solid_bottom: 0, min_z_of_drawn_lod: 2 } } }); // roads keep the drawn-LOD min
+    expect(report.modifications).toEqual(['road surfaces flattened to street level']);
+  });
+
+  it('carries the modification notice and the vertical mode in the receipt, scene extras and every node and mesh extras', async () => {
+    const { report, document } = await buildSj({ merge: { mode: 'kind' } });
+    const notice = 'building bases flattened to street level';
+    expect(report.modifications).toEqual([notice]);
+    expect(report.modification_notice).toContain(notice);
+    expect(report).toMatchObject({ vertical_mode: 'per_feature_ground', height_basis: 'per_feature_ground_flattened_symbolic_street_z0', attribution_text: SJ_ATTRIBUTION, frame: { vertical_mode: 'per_feature_ground', origin: { hM: null } } });
+    expect(HEIGHT_BASIS_FLATTENED).toBe('per_feature_ground_flattened_symbolic_street_z0');
+    const scene = document.getRoot().listScenes()[0]!.getExtras();
+    expect(scene).toMatchObject({ gteki_role: 'context', navigation_use: 'NOT_FOR_ROUTING', visual_only: true, vertical_mode: 'per_feature_ground', height_basis: HEIGHT_BASIS_FLATTENED, modifications: [notice], attribution_text: SJ_ATTRIBUTION });
+    expect(String(scene.modification_notice)).toContain(notice);
+    expect((scene.ground_offsets as { buildings: GroundOffsetStats }).buildings.count).toBe(7);
+    expect(scene.selection_rule).toMatch(/node_rule\.poi_ids/);
+    for (const n of document.getRoot().listNodes()) for (const extras of [n.getExtras(), n.getMesh()!.getExtras()]) {
+      expect(extras).toMatchObject({ gteki_role: 'context', navigation_use: 'NOT_FOR_ROUTING', visual_only: true, vertical_mode: 'per_feature_ground', height_basis: HEIGHT_BASIS_FLATTENED, modifications: [notice], attribution_text: SJ_ATTRIBUTION });
+      expect(String(extras.modification_notice)).toContain(notice);
+    }
+    expect(document.getRoot().listNodes().map((n) => n.getName())).toEqual(['ctx_bldg_all']); // merge kind, ctx_bldg_* naming, no textures
+    expect(document.getRoot().listTextures()).toHaveLength(0);
+    expect(report.validation.status).toBe('PASS');
+  });
+
+  it('adds the road notice only when roads are converted', async () => {
+    const { report } = await buildSj({ kinds: ['bldg', 'tran'], merge: { mode: 'kind' } });
+    expect(report.modifications).toEqual(['building bases flattened to street level', 'road surfaces flattened to street level']);
+  });
+});
+
+describe('Shinjuku: exit-neighbour ground-height spread (exit_neighbour_radius_m)', () => {
+  // Exits 1-3 sit next to fixture buildings; exit 4 is far from everything; exit 5 (B1, not a window POI) sits inside sj_a.
+  const NODES = [node('x1', 'exit', 'toei-nwd-0', 30, 50), node('x2', 'exit', 'toei-nwd-0', 110, 80), node('x3', 'exit', 'toei-nwd-1', -80, 50), node('x4', 'exit', 'toei-nwd-0', 500, -500), node('x5', 'exit', 'toei-nwd-m1', 45, 45), node('x6', 'exit', 'toei-nwd-m1', -500, -500)];
+
+  it('per window POI: count, min/median/max of the subtracted ground height, basis counts and gml_ids of buildings within the radius of its connector', async () => {
+    const { report } = await buildSj({ nodes: NODES, neighbourR: 30 });
+    const n = report.exit_neighbours!;
+    expect(n.radius_m).toBe(30);
+    expect(n.pois.map((p) => p.poi_id)).toEqual(SJ_EXIT_IDS); // exits 5 and 6 are not window POIs: no entry
+    expect(n.pois[0]).toEqual({ poi_id: 'poi:exit:1', connector_node_ids: ['x1'], count: 1, ground_height_m: { count: 1, min_m: 30, median_m: 30, max_m: 30 }, basis_counts: { ground_height_attribute: 0, ground_surface_lod2: 0, lod1_solid_bottom: 1, min_z_of_drawn_lod: 0 }, gml_ids: ['sj_a'] });
+    expect(n.pois[1]).toMatchObject({ poi_id: 'poi:exit:2', count: 2, ground_height_m: { count: 2, min_m: 36, median_m: 38, max_m: 40 }, gml_ids: ['sj_b', 'sj_d'] });
+    expect(n.pois[2]).toMatchObject({ poi_id: 'poi:exit:3', count: 2, ground_height_m: { count: 2, min_m: 29, median_m: 32.5, max_m: 36 }, basis_counts: { ground_surface_lod2: 1, lod1_solid_bottom: 1 }, gml_ids: ['sj_gs', 'sj_lod2'] });
+    expect(n.pois[3]).toMatchObject({ poi_id: 'poi:exit:4', count: 0, ground_height_m: null, gml_ids: [] });
+    expect(n.rule).toMatch(/footprint bbox/);
+  });
+
+  it('the radius is the config value: a smaller one drops the buildings, and without it (or on a TP frame) nothing is computed', async () => {
+    const small = await buildSj({ nodes: NODES, neighbourR: 5 });
+    expect(small.report.exit_neighbours!.pois.map((p) => p.count)).toEqual([0, 0, 0, 0]);
+    const wide = await buildSj({ nodes: NODES, neighbourR: 60 });
+    expect(wide.report.exit_neighbours!.pois[0]!.gml_ids).toEqual(['sj_a', 'sj_c']); // sj_c (40..60, 100..120) is 51 m from (30, 50)
+    expect((await buildSj({ nodes: NODES })).report.exit_neighbours).toBeUndefined();
+    expect('exit_neighbours' in (await build()).report).toBe(false);
+    for (const bad of [0, -3, 501, Number.NaN]) await expect(buildSj({ nodes: NODES, neighbourR: bad })).rejects.toThrow(/exit_neighbour_radius_m/);
+  });
+
+  it('ships exit_neighbour_radius_m 30 in the Shinjuku config and not in Ikebukuro\'s', async () => {
+    expect((await loadContextConfig('shinjuku')).exit_neighbour_radius_m).toBe(30);
+    expect((await loadContextConfig('ikebukuro')).exit_neighbour_radius_m).toBeUndefined();
+  });
+});
+
+describe('Shinjuku: window of 300 m discs around ground-level exits 1-4 (node_rule.poi_ids)', () => {
+  it('gives a disc to the connector nodes of exits 1-4 only; exits 5 and 6 (kind exit, B1) get none and no origin disc exists', async () => {
+    const { window, report } = await buildSj();
+    expect(window.discs.map((d) => [d.id, d.x, d.y, d.r, d.origin])).toEqual([['x1', 0, 0, 300, 'node'], ['x2', 10, 0, 300, 'node'], ['x3', 0, 10, 300, 'node'], ['x4', 10, 10, 300, 'node']]);
+    expect(window.graph).toMatchObject({ nodes_total: 6, selected_nodes: 4, exit_connectors: 0, street_level_nodes: 0, pois: { poi_ids: SJ_EXIT_IDS, connector_nodes: 4 } });
+    expect(window.graph!.selected.map((n) => [n.id, n.matched_by, n.poi_ids])).toEqual([['x1', ['poi_id'], ['poi:exit:1']], ['x2', ['poi_id'], ['poi:exit:2']], ['x3', ['poi_id'], ['poi:exit:3']], ['x4', ['poi_id'], ['poi:exit:4']]]);
+    // sj_only_exit5 lies only inside exit 5's disc: not selected when exits 5 and 6 are excluded; sj_far lies in none.
+    expect(sjIds(report)).not.toContain('sj_only_exit5');
+    expect(sjIds(report)).not.toContain('sj_far');
+    expect(report.window).toMatchObject({ r_origin_m: 0, radius_m: 0, r_exit_m: 300, disc_count: 4, node_rule: { poi_ids: SJ_EXIT_IDS } });
+    // Listing exit 5 as well does reach it: the rule is exactly the listed ids.
+    const withFive = await buildSj({ rule: { ...SJ_RULE, poi_ids: [...SJ_EXIT_IDS, 'poi:exit:5'] } });
+    expect(sjIds(withFive.report)).toContain('sj_only_exit5');
+  });
+
+  it('fails closed on a configured POI id that is missing, has no connector node, or names a node that is not in the graph', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-context-sj-poi-')); dirs.push(dir);
+    const graphPath = await writeGraph(dir, SJ_NODES, 'shinjuku');
+    const read = async (poiIds: string[], pois: unknown[]) => readGraphWindowNodes({ ...SJ_RULE, poi_ids: poiIds }, { stationId: 'shinjuku', graphPath, poisPath: await writePois(dir, pois, 'shinjuku') });
+    await expect(read([...SJ_EXIT_IDS, 'poi:exit:9'], SJ_POIS)).rejects.toThrow(/poi:exit:9, which is not in .*pois\.json; refusing to guess/);
+    await expect(read(SJ_EXIT_IDS, SJ_POIS.map((p) => (p.id === 'poi:exit:2' ? { ...p, connectorNodeIds: [] } : p)))).rejects.toThrow(/poi:exit:2 has no resolvable connectorNodeIds/);
+    await expect(read(SJ_EXIT_IDS, SJ_POIS.map((p) => { const { connectorNodeIds, ...rest } = p; return p.id === 'poi:exit:3' ? rest : p; }))).rejects.toThrow(/poi:exit:3 has no resolvable connectorNodeIds/);
+    await expect(read(SJ_EXIT_IDS, SJ_POIS.map((p) => (p.id === 'poi:exit:4' ? { ...p, connectorNodeIds: ['x404'] } : p)))).rejects.toThrow(/poi:exit:4 names connector node x404 that is not in/);
+    await expect(read([], SJ_POIS)).rejects.toThrow(/poi_ids must be a non-empty array/);
+    await expect(read(['poi:exit:1', 'poi:exit:1'], SJ_POIS)).rejects.toThrow(/poi_ids must be a non-empty array of distinct/);
+    // Whole-window level: the failure stops the build, nothing is converted.
+    await expect(buildContextWindow({ r_origin_m: 0, r_exit_m: 300, node_rule: { ...SJ_RULE, poi_ids: ['poi:exit:9'] } }, { stationId: 'shinjuku', graphPath, poisPath: await writePois(dir, SJ_POIS, 'shinjuku') })).rejects.toThrow(/poi:exit:9/);
+  });
+
+  it('r_origin_m 0 adds no disc; a window with no disc at all is refused; a positive R_origin still adds the origin disc', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-context-sj-r0-')); dirs.push(dir);
+    const graphPath = await writeGraph(dir, SJ_NODES, 'shinjuku'), poisPath = await writePois(dir, SJ_POIS, 'shinjuku');
+    const zero = await buildContextWindow({ r_origin_m: 0, r_exit_m: 300, node_rule: SJ_RULE }, { stationId: 'shinjuku', graphPath, poisPath });
+    expect(zero.discs.some((d) => d.id === 'origin')).toBe(false);
+    expect(zero.discs).toHaveLength(4);
+    expect(zero.spec.r_origin_m).toBe(0);
+    const some = await buildContextWindow({ r_origin_m: 100, r_exit_m: 300, node_rule: SJ_RULE }, { stationId: 'shinjuku', graphPath, poisPath });
+    expect(some.discs.map((d) => d.id)).toEqual(['origin', 'x1', 'x2', 'x3', 'x4']);
+    await expect(buildContextWindow({ r_origin_m: 0, r_exit_m: 0 }, { stationId: 'shinjuku' })).rejects.toThrow(/no disc.*radius/);
+    await expect(buildContextWindow({ r_origin_m: 0, r_exit_m: 300, node_rule: SJ_RULE }, { stationId: 'shinjuku', graphPath: await writeGraph(dir, [], 'shinjuku'), poisPath })).rejects.toThrow(/names connector node x1 that is not in/);
+    await expect(buildContextWindow({ r_origin_m: -1, r_exit_m: 300, node_rule: SJ_RULE }, { stationId: 'shinjuku', graphPath, poisPath })).rejects.toThrow(/radius/);
+  });
+
+  it('reads the committed Shinjuku graph: exits 1-4 on toei-nwd floors, the 4 connector positions, and exactly meshes 53394525, 26, 35 and 36', async () => {
+    const dirOf = fileURLToPath(new URL('../../../stations/shinjuku/gteki/', import.meta.url));
+    const graphBytes = await readFile(join(dirOf, 'graph.json')).catch(() => null);
+    if (graphBytes === null) return; // standalone checkout without stations/
+    const config = await loadContextConfig('shinjuku');
+    const window = await buildContextWindow({ r_origin_m: config.window!.r_origin_m!, r_exit_m: config.window!.r_exit_m, node_rule: config.window!.node_rule!, mesh_margin_m: config.window!.mesh_margin_m! }, { stationId: 'shinjuku' });
+    // E27 node ids are class (b) (#129): the test pins their sha256, never the id text.
+    expect(window.graph!.selected.map((n) => [createHash('sha256').update(n.id, 'utf8').digest('hex'), n.floor_id, n.x, n.y])).toEqual([
+      ['7a090306c4bfb3754cd2f625b346d48a4c4cc8a1cb5330e4dde2c45d677c46b8', 'toei-nwd-0', -58.1, 146.84], ['0c2933b4d01db6d6e1bffd0b8d38f0bb040e7a35459b56f98f7190f47f90b027', 'toei-nwd-0', -59.9, 211.96],
+      ['7f4ca2a2cb13598a58cabc1f5e2394bb79967ce2dacfa8d851d7e6c64d326c04', 'toei-nwd-0', 2.85, -9.56], ['d0a9d2c55f4ed45eccc2cdb76a46a1c161880f9f69b4e5b67e65d6aca8998445', 'toei-nwd-1', -2.59, 3.56],
+    ]);
+    expect(window.graph!.selected.map((n) => n.poi_ids![0]).sort()).toEqual(SJ_EXIT_IDS);
+    expect(window.graph!.graph_sha256).toBe(createHash('sha256').update(graphBytes).digest('hex'));
+    expect(window.discs).toHaveLength(4); expect(window.discs.every((d) => d.r === 300 && d.id !== 'origin')).toBe(true);
+    const frame = await shinjukuFrame();
+    expect(meshesTouchedByWindow(window.discs, frame, window.spec.mesh_margin_m).meshes).toEqual(['53394525', '53394526', '53394535', '53394536']);
+    expect(meshesTouchedByWindow(window.discs, frame, 0).meshes).toEqual(['53394525', '53394526']); // the north pair is brought in by the 50 m margin (exit 1's disc ends at y 512 m, the cell edge is at about 518 m)
+    const sourceIds = config.sources;
+    expect(assertMeshCoverage('shinjuku', window, frame, sourceIds, ['bldg']).neededSources).toEqual(['plateau-13104-bldg-53394525', 'plateau-13104-bldg-53394526', 'plateau-13104-bldg-53394535', 'plateau-13104-bldg-53394536']);
+    // Fail closed: without the two north meshes the window is refused, never clipped.
+    expect(() => assertMeshCoverage('shinjuku', window, frame, sourceIds.filter((id) => !/5339453[56]/.test(id)), ['bldg'])).toThrow(/53394535 bldg \(not in the context config\), 53394536 bldg/);
+  });
+});
+
+describe('Shinjuku: config, sources and the full command wrapper', () => {
+  it('defaults to buildings only; READY with the 300 m exit 1-4 window, r_origin 0, the 4 needed meshes and a flattening frame', async () => {
+    const config = await loadContextConfig('shinjuku');
+    expect(config).toMatchObject({ status: 'READY', frame_id: 'shinjuku-station-enu-v0', radius_m: 0, kinds: ['bldg'], merge: 'kind', variant: 'high', window: { r_origin_m: 0, r_exit_m: 300, node_rule: { graph: 'stations/shinjuku/gteki/graph.json', exit_kinds: [], street_floor_ids: [], poi_ids: SJ_EXIT_IDS } } });
+    expect(config.sources.filter((id) => id.includes('-bldg-')).sort()).toEqual(['plateau-13104-bldg-53394525', 'plateau-13104-bldg-53394526', 'plateau-13104-bldg-53394535', 'plateau-13104-bldg-53394536']);
+    expect(config.sources.filter((id) => id.includes('-tran-')).sort()).toEqual(['plateau-13104-tran-53394525', 'plateau-13104-tran-53394526', 'plateau-13104-tran-53394535', 'plateau-13104-tran-53394536']);
+    expect(parseKinds(config.kinds!)).toEqual(['bldg']);
+    const frame = await shinjukuFrame();
+    expect(frame).toMatchObject({ vertical_mode: 'per_feature_ground', horizontal_origin_height_m: 0, origin: { lat: 35.687, lon: 139.6994, hM: null, crs: 'EPSG:6668', datum: 'JGD2011' }, source_crs: 'EPSG:6697', navigation_use: 'NOT_FOR_ROUTING', verification: 'UNVERIFIED' });
+  });
+
+  it('lists 53394535 and 53394536 (bldg and tran) in sources.yaml like 53394525/26, with the decoded sizes measured on the host and the catalog URL in the same package directory', async () => {
+    const sources = new Map(loadSources().map((s) => [s.source_id, s]));
+    const reference = sources.get('plateau-13104-bldg-53394525')!;
+    const catalog = JSON.parse(await readFile(fixture('plateau-catalog-meshes-13116-13104.json'), 'utf8')) as { meshes: Record<string, string[]> };
+    for (const kind of ['bldg', 'tran'] as const) for (const mesh of ['53394535', '53394536']) {
+      const entry = sources.get(`plateau-13104-${kind}-${mesh}`)!;
+      expect(entry, `${kind} ${mesh}`).toBeDefined();
+      expect(catalog.meshes[`13104-${kind}`]).toContain(mesh); // the catalog lists this mesh for this kind
+      expect(entry).toMatchObject({ station_ids: ['shinjuku'], publisher: 'MLIT Project PLATEAU', official_url: reference.official_url, license_name: 'CC BY 4.0', attribution_text: SJ_ATTRIBUTION, expected_bytes: ({ 'bldg-53394535': 124173341, 'bldg-53394536': 138190372, 'tran-53394535': 31785752, 'tran-53394536': 25412513 } as Record<string, number>)[`${kind}-${mesh}`], publish_gate: 'CONDITIONAL', resolution: { kind: 'plateau_catalog_api', catalog_source_id: 'plateau-catalog-bldg-tran-13116-13104', match: `${mesh}_${kind}_6697_op.gml` } });
+      expect(entry.expected_url).toBe(`https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/${kind}/${mesh}_${kind}_6697_op.gml`);
+      expect(entry.notes).toMatch(/decoded size served on 2026-10-22/);
+    }
+    expect(reference.expected_url.startsWith('https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/')).toBe(true);
+  });
+
+  it('writes a Shinjuku receipt: per-building offsets, offset stats, basis counts, notice, run id with r0 and bldg, feature table with the offset column', async () => {
+    const dirOf = fileURLToPath(new URL('../../../stations/shinjuku/gteki/', import.meta.url));
+    if (await readFile(join(dirOf, 'graph.json')).catch(() => null) === null) return;
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-context-sj-run-')); dirs.push(dir);
+    const manifest = new Map(loadSources().map((s) => [s.source_id, s]));
+    const bldgIds = ['plateau-13104-bldg-53394525', 'plateau-13104-bldg-53394526', 'plateau-13104-bldg-53394535', 'plateau-13104-bldg-53394536'];
+    const stored = vi.spyOn(common, 'getStoredSource').mockImplementation(async (id: string) => ({ path: fixture('context-bldg-shinjuku.xml'), record: { source_id: id, sha256: createHash('sha256').update(id).digest('hex') }, source: manifest.get(id)! }) as Awaited<ReturnType<typeof common.getStoredSource>>);
+    vi.spyOn(common, 'getStoreRoot').mockReturnValue(dir);
+    const originalWrite = common.writeJson;
+    vi.spyOn(common, 'writeJson').mockImplementation(async (path, value) => originalWrite(path.startsWith(common.docsRoot) ? join(dir, 'docs', relative(common.docsRoot, path)) : path, value));
+    const summary = await contextGlb('shinjuku');
+    expect(stored.mock.calls.map((c) => c[0]).sort()).toEqual(bldgIds); // default kinds bldg: no tran source is opened
+    expect(summary.run_id).toMatch(/^context-shinjuku-r0-x300-shinjuku-station-enu-v0-high-kind-bldg-[a-f0-9]{20}$/);
+    expect(summary.mesh_coverage).toMatchObject({ needed_meshes: ['53394525', '53394526', '53394535', '53394536'], kinds: ['bldg'], needed_sources: bldgIds });
+    expect(summary).toMatchObject({ kinds: ['bldg'], merge: 'kind', vertical_mode: 'per_feature_ground', height_basis: HEIGHT_BASIS_FLATTENED, modifications: ['building bases flattened to street level'], window: { r_origin_m: 0, r_exit_m: 300, disc_count: 4 } });
+    expect(summary.ground_offsets!.buildings).toEqual({ count: 7, min_m: 29, median_m: 35, max_m: 40, basis_counts: { ground_height_attribute: 0, ground_surface_lod2: 1, lod1_solid_bottom: 5, min_z_of_drawn_lod: 1 } });
+    expect(summary.feature_table.columns).toEqual(['gml_id', 'source_id', 'lod', 'mesh', 'tri_start', 'tri_count', 'ground_offset_m', 'ground_basis', 'ground_surface_spread_m']);
+    expect(summary.feature_table.rows.map((r) => [r[0], r[6], r[7], r[8]])).toEqual([['sj_a', 30, 'lod1_solid_bottom', null], ['sj_b', 40, 'lod1_solid_bottom', null], ['sj_c', 35, 'lod1_solid_bottom', null], ['sj_d', 36, 'lod1_solid_bottom', null], ['sj_lod2', 29, 'lod1_solid_bottom', null], ['sj_gs', 36, 'ground_surface_lod2', 0.5], ['sj_lod2only', 32, 'min_z_of_drawn_lod', null]]);
+    const receipt = JSON.parse(await readFile(join(dir, 'docs', 'gis', 'context', `${summary.run_id}.json`), 'utf8'));
+    expect(receipt).toMatchObject({ run_id: summary.run_id, vertical_mode: 'per_feature_ground', ground_offsets: { buildings: { count: 7 } }, modifications: ['building bases flattened to street level'] });
+    expect(receipt.modification_notice).toContain('building bases flattened to street level');
+    expect(receipt.window.graph.pois.poi_ids).toEqual(SJ_EXIT_IDS);
+    expect(JSON.stringify(receipt)).not.toMatch(/"(?:cleared|clearance)"/);
+    const sidecar = JSON.parse(await readFile(join(dir, summary.sidecar_path), 'utf8'));
+    expect(sidecar.per_feature.map((f: Record<string, unknown>) => [f.gml_id, f.ground_height_m, f.ground_basis, f.ground_surface_spread_m])).toEqual(summary.feature_table.rows.map((r) => [r[0], r[6], r[7], r[8]]));
+    // The other three bldg sources hold the same ids in this fixture-backed run: excluded as duplicates, never emitted twice.
+    expect(summary.sources.map((src) => src.converted)).toEqual([7, 0, 0, 0]);
+    // Owner decision Q10 Option A (#39 comment 6324813261): the Shinjuku credit wording replaces the source credit in every output, the per-source credit stays.
+    expect(summary).toMatchObject({ attribution_text: SJ_CREDIT, attribution_decision: SJ_CREDIT_DECISION });
+    expect(receipt).toMatchObject({ attribution_text: SJ_CREDIT, attribution_decision: SJ_CREDIT_DECISION });
+    expect(sidecar).toMatchObject({ attribution_text: SJ_CREDIT, attribution_decision: SJ_CREDIT_DECISION });
+    expect(sidecar.source_manifests.map((m: { attribution_text: string }) => m.attribution_text)).toEqual(bldgIds.map(() => SJ_ATTRIBUTION));
+    const written = await new NodeIO().readBinary(await readFile(join(dir, summary.store_path)));
+    expect(written.getRoot().getAsset().copyright).toBe(SJ_CREDIT);
+    expect(written.getRoot().listScenes()[0]!.getExtras()).toMatchObject({ attribution_text: SJ_CREDIT, attribution_decision: SJ_CREDIT_DECISION });
+    for (const n of written.getRoot().listNodes()) { expect(n.getExtras().attribution_text).toBe(SJ_CREDIT); expect(n.getMesh()!.getExtras().attribution_text).toBe(SJ_CREDIT); }
+    // exit_neighbour_radius_m 30 from the config: one entry per window POI; no fixture building lies within 30 m of the real connectors.
+    expect(receipt.exit_neighbours).toMatchObject({ radius_m: 30 });
+    expect(receipt.exit_neighbours.pois.map((p: { poi_id: string; count: number }) => [p.poi_id, p.count])).toEqual(SJ_EXIT_IDS.map((id) => [id, 0]));
+  });
+
+  describe('graph node ids in the committed receipt (class (b) E27 ids are hashed, issue #129)', () => {
+    const E27_ID = /n:[0-9a-f]{32}/;
+    /** One Shinjuku run on the fixture building mesh with the config field replaced (`null` removes it). Returns the receipt as written and the store sidecar. */
+    async function runShinjuku(graphLiteralSourceId: string | null) {
+      const dir = await mkdtemp(join(tmpdir(), 'gteki-context-sj-ids-')); dirs.push(dir);
+      const manifest = new Map(loadSources().map((s) => [s.source_id, s]));
+      vi.spyOn(common, 'getStoredSource').mockImplementation(async (id: string) => ({ path: fixture('context-bldg-shinjuku.xml'), record: { source_id: id, sha256: createHash('sha256').update(id).digest('hex') }, source: manifest.get(id)! }) as Awaited<ReturnType<typeof common.getStoredSource>>);
+      vi.spyOn(common, 'getStoreRoot').mockReturnValue(dir);
+      const originalRead = common.readJson, originalWrite = common.writeJson;
+      vi.spyOn(common, 'readJson').mockImplementation((async (path: string) => {
+        const value = await originalRead<Record<string, unknown>>(path);
+        if (!path.endsWith(join('sources', 'context', 'shinjuku.json'))) return value;
+        const { graph_literal_source_id: _removed, ...rest } = value;
+        return graphLiteralSourceId === null ? rest : { ...rest, graph_literal_source_id: graphLiteralSourceId };
+      }) as typeof common.readJson);
+      vi.spyOn(common, 'writeJson').mockImplementation(async (path, value) => originalWrite(path.startsWith(common.docsRoot) ? join(dir, 'docs', relative(common.docsRoot, path)) : path, value));
+      const summary = await contextGlb('shinjuku');
+      const receiptText = await readFile(join(dir, 'docs', 'gis', 'context', `${summary.run_id}.json`), 'utf8');
+      const sidecarText = await readFile(join(dir, summary.sidecar_path), 'utf8');
+      return { summary, receipt: JSON.parse(receiptText), receiptText, sidecar: JSON.parse(sidecarText), sidecarText };
+    }
+    const graphExists = async (): Promise<boolean> => (await readFile(join(fileURLToPath(new URL('../../../stations/shinjuku/gteki/', import.meta.url)), 'graph.json')).catch(() => null)) !== null;
+    const hashOf = (id: string): { value_sha256: string; value_type: 'string' } => ({ value_sha256: createHash('sha256').update(id, 'utf8').digest('hex'), value_type: 'string' });
+    // The 4 connector ids are E27 (class (b)): pinned here by sha256 only and read verbatim from the committed graph at run time.
+    const SJ_NODE_ID_SHA256 = ['7a090306c4bfb3754cd2f625b346d48a4c4cc8a1cb5330e4dde2c45d677c46b8', '0c2933b4d01db6d6e1bffd0b8d38f0bb040e7a35459b56f98f7190f47f90b027', '7f4ca2a2cb13598a58cabc1f5e2394bb79967ce2dacfa8d851d7e6c64d326c04', 'd0a9d2c55f4ed45eccc2cdb76a46a1c161880f9f69b4e5b67e65d6aca8998445'];
+    const sha = (id: string): string => createHash('sha256').update(id, 'utf8').digest('hex');
+    const hashed = (digest: string): { value_sha256: string; value_type: 'string' } => ({ value_sha256: digest, value_type: 'string' });
+    const sjNodeIds = async (): Promise<string[]> => {
+      const config = await loadContextConfig('shinjuku');
+      const window = await buildContextWindow({ r_origin_m: config.window!.r_origin_m!, r_exit_m: config.window!.r_exit_m, node_rule: config.window!.node_rule!, mesh_margin_m: config.window!.mesh_margin_m! }, { stationId: 'shinjuku' });
+      const ids = window.graph!.selected.map((n) => n.id);
+      expect(ids.map(sha)).toEqual(SJ_NODE_ID_SHA256);
+      return ids;
+    };
+
+    it('is configured per station: Shinjuku names the class (b) E27 network source, Ikebukuro its hand-authored graph', async () => {
+      const shinjuku = await loadContextConfig('shinjuku'), ikebukuro = await loadContextConfig('ikebukuro');
+      expect(shinjuku.graph_literal_source_id).toBe('hokonavi-oedo-shinjuku-network-geojson');
+      expect(graphIdsMayStayVerbatim(shinjuku.graph_literal_source_id)).toBe(false);
+      expect(ikebukuro.graph_literal_source_id).toBe(GRAPH_LITERALS_GTEKI_AUTHORED);
+      expect(graphIdsMayStayVerbatim(ikebukuro.graph_literal_source_id)).toBe(true);
+    });
+
+    it('keeps ids verbatim only for GTEki-authored or a class (a) source; missing, class (b), unknown or empty text hash', () => {
+      expect(graphIdsMayStayVerbatim(GRAPH_LITERALS_GTEKI_AUTHORED)).toBe(true);
+      expect(graphIdsMayStayVerbatim('hokonavi-ikebukuro-walk-node-csv')).toBe(true); // class (a)
+      expect(graphIdsMayStayVerbatim(undefined)).toBe(false);
+      expect(graphIdsMayStayVerbatim('hokonavi-oedo-shinjuku-network-geojson')).toBe(false); // class (b)
+      expect(graphIdsMayStayVerbatim('plateau-13104-codelists')).toBe(false); // class (b)
+      expect(graphIdsMayStayVerbatim('not-a-listed-source')).toBe(false);
+      expect(graphIdsMayStayVerbatim('')).toBe(false);
+      expect(graphIdsMayStayVerbatim('GTEKI-AUTHORED')).toBe(false);
+    });
+
+    it('rejects a non-string or blank graph_literal_source_id in a config file at load time', async () => {
+      const original = common.readJson;
+      for (const bad of [7, '  ', null]) {
+        vi.spyOn(common, 'readJson').mockImplementation((async (path: string) => ({ ...(await original<Record<string, unknown>>(path)), graph_literal_source_id: bad })) as typeof common.readJson);
+        await expect(loadContextConfig('shinjuku')).rejects.toThrow(/graph_literal_source_id must be a non-empty string/);
+        vi.restoreAllMocks();
+      }
+    });
+
+    it('publicContextReceipt hashes whole-string ids anywhere (values, arrays, nested), is deterministic and leaves everything else alone', () => {
+      const receipt = { a: 'n:keep', ids: ['n:x1', 'n:x2'], deep: { list: [{ id: 'n:x1', floor_id: 'toei-nwd-0', note: 'text' }] }, number: 3 };
+      const out = publicContextReceipt(receipt, ['n:x1', 'n:x2'], false);
+      expect(out).toEqual({ a: 'n:keep', ids: [hashOf('n:x1'), hashOf('n:x2')], deep: { list: [{ id: hashOf('n:x1'), floor_id: 'toei-nwd-0', note: 'text' }] }, number: 3 });
+      expect(JSON.stringify(publicContextReceipt(receipt, ['n:x2', 'n:x1'], false))).toBe(JSON.stringify(out));
+      expect(receipt.ids).toEqual(['n:x1', 'n:x2']); // the input (the sidecar's data) is not mutated
+      expect(publicContextReceipt(receipt, ['n:x1'], true)).toBe(receipt);
+      expect(publicContextReceipt(receipt, [], false)).toBe(receipt);
+    });
+
+    it('publicContextReceipt refuses to write when an id would survive inside a longer string or as a key', () => {
+      expect(() => publicContextReceipt({ message: 'node n:x1 is dangling' }, ['n:x1'], false)).toThrow(/still contains a graph node id/);
+      expect(() => publicContextReceipt({ 'n:x1': 1 }, ['n:x1'], false)).toThrow(/still contains a graph node id/);
+    });
+
+    it('class (b) config: the receipt carries the 4 connector ids only as { value_sha256, value_type } (selected, connector_node_ids); the sidecar keeps them verbatim', async () => {
+      if (!(await graphExists())) return;
+      const SJ_NODE_IDS = await sjNodeIds();
+      const { summary, receipt, receiptText, sidecar, sidecarText } = await runShinjuku('hokonavi-oedo-shinjuku-network-geojson');
+      expect(receiptText).not.toMatch(E27_ID);
+      expect(JSON.stringify(summary)).not.toMatch(E27_ID); // the returned object is the committed form
+      expect(receipt.window.graph.selected.map((n: { id: unknown }) => n.id)).toEqual(SJ_NODE_IDS.map(hashOf));
+      expect(receipt.window.graph.selected.map((n: { kind: string; floor_id: string; matched_by: string[]; poi_ids: string[] }) => [n.kind, n.floor_id, n.matched_by, n.poi_ids.length])).toEqual([['exit', 'toei-nwd-0', ['poi_id'], 1], ['exit', 'toei-nwd-0', ['poi_id'], 1], ['exit', 'toei-nwd-0', ['poi_id'], 1], ['exit', 'toei-nwd-1', ['poi_id'], 1]]);
+      const connectors = receipt.exit_neighbours.pois.map((p: { poi_id: string; connector_node_ids: unknown[] }) => [p.poi_id, p.connector_node_ids]);
+      expect(connectors).toEqual([['poi:exit:1', [hashed('0c2933b4d01db6d6e1bffd0b8d38f0bb040e7a35459b56f98f7190f47f90b027')]], ['poi:exit:2', [hashed('7a090306c4bfb3754cd2f625b346d48a4c4cc8a1cb5330e4dde2c45d677c46b8')]], ['poi:exit:3', [hashed('d0a9d2c55f4ed45eccc2cdb76a46a1c161880f9f69b4e5b67e65d6aca8998445')]], ['poi:exit:4', [hashed('7f4ca2a2cb13598a58cabc1f5e2394bb79967ce2dacfa8d851d7e6c64d326c04')]]]);
+      expect(receipt.window.graph.graph_sha256).toMatch(/^[0-9a-f]{64}$/); // file hash, not a literal
+      expect(sidecar.window.graph.selected.map((n: { id: string }) => n.id)).toEqual(SJ_NODE_IDS);
+      expect(sidecar.exit_neighbours.pois.flatMap((p: { connector_node_ids: string[] }) => p.connector_node_ids).sort()).toEqual(SJ_NODE_IDS);
+      for (const id of SJ_NODE_IDS) { expect(sidecarText).toContain(id); expect(receiptText).not.toContain(id); }
+      // Everything but the ids is identical: the receipt is the sidecar's data with the ids replaced.
+      expect(receipt.feature_table_sha256).toBe(sidecar.feature_table_sha256);
+      expect(receipt.run_id).toBe(sidecar.run_id);
+    });
+
+    it('class (a) or GTEki-authored config keeps the ids verbatim in the receipt', async () => {
+      if (!(await graphExists())) return;
+      const SJ_NODE_IDS = await sjNodeIds();
+      for (const source of ['hokonavi-ikebukuro-walk-node-csv', GRAPH_LITERALS_GTEKI_AUTHORED]) {
+        const { receipt, receiptText } = await runShinjuku(source);
+        expect(receipt.window.graph.selected.map((n: { id: string }) => n.id), source).toEqual(SJ_NODE_IDS);
+        expect(receipt.exit_neighbours.pois.flatMap((p: { connector_node_ids: string[] }) => p.connector_node_ids).sort(), source).toEqual(SJ_NODE_IDS);
+        expect(receiptText, source).toContain(SJ_NODE_IDS[0]!);
+        vi.restoreAllMocks();
+      }
+    });
+
+    it('missing config hashes, as do unknown ids and class (b) sources other than the network one', async () => {
+      if (!(await graphExists())) return;
+      const SJ_NODE_IDS = await sjNodeIds();
+      for (const source of [null, 'not-a-listed-source', 'hokonavi-oedo-shinjuku-stationmap-geojson', 'plateau-13104-codelists']) {
+        const { receipt, receiptText } = await runShinjuku(source);
+        expect(receiptText, String(source)).not.toMatch(E27_ID);
+        expect(receipt.window.graph.selected.map((n: { id: unknown }) => n.id), String(source)).toEqual(SJ_NODE_IDS.map(hashOf));
+        vi.restoreAllMocks();
+      }
+    });
+
+    it('the run id does not depend on the receipt form: the graph file hash is already in the digest, so class (b) and class (a) runs name the same artifact', async () => {
+      if (!(await graphExists())) return;
+      const hashed = await runShinjuku('hokonavi-oedo-shinjuku-network-geojson'); vi.restoreAllMocks();
+      const kept = await runShinjuku(GRAPH_LITERALS_GTEKI_AUTHORED);
+      expect(hashed.summary.run_id).toBe(kept.summary.run_id);
+      expect(hashed.receipt.output_sha256).toBe(kept.receipt.output_sha256);
+    });
+  });
+
+  it('fails closed before reading any source when a needed Shinjuku mesh source is missing from the run', async () => {
+    const dirOf = fileURLToPath(new URL('../../../stations/shinjuku/gteki/', import.meta.url));
+    if (await readFile(join(dirOf, 'graph.json')).catch(() => null) === null) return;
+    const stored = vi.spyOn(common, 'getStoredSource');
+    await expect(contextGlb('shinjuku', { sourceIds: ['plateau-13104-bldg-53394525', 'plateau-13104-bldg-53394526'] })).rejects.toThrow(/53394535 bldg \(not in the context config\), 53394536 bldg/);
+    expect(stored).not.toHaveBeenCalled();
+  });
+});
+
+const SJ_CREDIT = '出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成（建物の基部を地表面の高さにそろえて表示）';
+const SJ_CREDIT_DECISION = 'https://github.com/nurockplayer/gteki/issues/39#issuecomment-6324813261';
+describe('Shinjuku credit wording (Owner decision Q10 Option A, #39 comment 6324813261)', () => {
+  it('the Shinjuku config carries the exact credit and its decision URL, and the credit starts with every Shinjuku source attribution', async () => {
+    const config = await loadContextConfig('shinjuku');
+    expect(config.attribution_text).toBe(SJ_CREDIT);
+    expect(config.attribution_decision).toBe(SJ_CREDIT_DECISION);
+    const sources = new Map(loadSources().map((src) => [src.source_id, src]));
+    for (const id of config.sources) expect(config.attribution_text!.startsWith(sources.get(id)!.attribution_text)).toBe(true);
+  });
+
+  it('an override replaces the credit in the GLB copyright, scene, node and mesh extras and the report, and the decision is recorded', async () => {
+    const { report, document } = await buildSj({ attributionText: SJ_CREDIT, attributionDecision: SJ_CREDIT_DECISION, merge: { mode: 'kind' } });
+    expect(report).toMatchObject({ attribution_text: SJ_CREDIT, attribution_decision: SJ_CREDIT_DECISION });
+    expect(document.getRoot().getAsset().copyright).toBe(SJ_CREDIT);
+    expect(document.getRoot().listScenes()[0]!.getExtras()).toMatchObject({ attribution_text: SJ_CREDIT, attribution_decision: SJ_CREDIT_DECISION });
+    for (const n of document.getRoot().listNodes()) { expect(n.getExtras().attribution_text).toBe(SJ_CREDIT); expect(n.getMesh()!.getExtras().attribution_text).toBe(SJ_CREDIT); }
+    expect(report.sources.every((src) => src.source_id.startsWith('synthetic-sj'))).toBe(true); // the per-source list is untouched
+  });
+
+  it('fails closed when the credit does not start with the exact source attribution, or has no decision URL', async () => {
+    await expect(buildSj({ attributionText: '出典：Project PLATEAU（建物の基部を地表面の高さにそろえて表示）', attributionDecision: SJ_CREDIT_DECISION })).rejects.toThrow(/does not start with the exact source attribution/);
+    await expect(buildSj({ attributionText: `（建物の基部を地表面の高さにそろえて表示）${SJ_ATTRIBUTION}`, attributionDecision: SJ_CREDIT_DECISION })).rejects.toThrow(/does not start with the exact source attribution/);
+    await expect(buildSj({ attributionText: SJ_CREDIT })).rejects.toThrow(/needs attribution_decision/);
+    // Config level: text and decision travel together and the decision is an https URL.
+    const base = JSON.parse(await readFile(fileURLToPath(new URL('../sources/context/shinjuku.json', import.meta.url)), 'utf8'));
+    for (const [change, pattern] of [[{ attribution_decision: undefined }, /must be given together/], [{ attribution_text: undefined }, /must be given together/], [{ attribution_decision: 'issue 39' }, /https URL/], [{ attribution_text: '  ' }, /non-empty string/]] as const) {
+      vi.spyOn(common, 'readJson').mockResolvedValueOnce({ ...base, ...change });
+      await expect(loadContextConfig('shinjuku')).rejects.toThrow(pattern);
+    }
+  });
+
+  it('through contextGlb, a source whose attribution the configured credit does not start with fails the run before anything is written', async () => {
+    const dirOf = fileURLToPath(new URL('../../../stations/shinjuku/gteki/', import.meta.url));
+    if (await readFile(join(dirOf, 'graph.json')).catch(() => null) === null) return;
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-context-sj-credit-')); dirs.push(dir);
+    const manifest = new Map(loadSources().map((src) => [src.source_id, src]));
+    vi.spyOn(common, 'getStoredSource').mockImplementation(async (id: string) => ({ path: fixture('context-bldg-shinjuku.xml'), record: { source_id: id, sha256: createHash('sha256').update(id).digest('hex') }, source: { ...manifest.get(id)!, attribution_text: '出典：別の出典' } }) as Awaited<ReturnType<typeof common.getStoredSource>>);
+    vi.spyOn(common, 'getStoreRoot').mockReturnValue(dir);
+    const writes = vi.spyOn(common, 'writeJson').mockResolvedValue(undefined);
+    await expect(contextGlb('shinjuku')).rejects.toThrow(/does not start with the exact source attribution "出典：別の出典"/);
+    expect(writes).not.toHaveBeenCalled();
+  });
+
+  it('Ikebukuro keeps the plain source credit: no decision key anywhere and no override in its config', async () => {
+    const { report, document } = await build();
+    expect(report.attribution_text).toBe('出典：SYNTHETIC attribution');
+    expect('attribution_decision' in report).toBe(false);
+    expect(document.getRoot().getAsset().copyright).toBe('出典：SYNTHETIC attribution');
+    expect('attribution_decision' in document.getRoot().listScenes()[0]!.getExtras()).toBe(false);
+    for (const n of document.getRoot().listNodes()) expect(n.getExtras().attribution_text).toBe('出典：SYNTHETIC attribution');
+    const config = await loadContextConfig('ikebukuro');
+    expect(config.attribution_text).toBeUndefined(); expect(config.attribution_decision).toBeUndefined();
+  });
+});
+
+describe('Ikebukuro is unchanged by the Shinjuku support', () => {
+  it('keeps the TP height basis, no modification field, no ground offsets and the 6-column feature table', async () => {
+    const { report, document } = await build();
+    expect(report.height_basis).toBeUndefined();
+    expect('ground_offsets' in report || 'modifications' in report || 'vertical_mode' in report).toBe(false);
+    expect(report.per_feature.every((f) => !('ground_height_m' in f))).toBe(true);
+    const scene = document.getRoot().listScenes()[0]!.getExtras();
+    expect(Object.keys(scene)).not.toEqual(expect.arrayContaining(['modifications']));
+    for (const key of ['modifications', 'modification_notice', 'vertical_mode', 'ground_offsets', 'height_basis']) expect(key in scene).toBe(false);
+    for (const n of document.getRoot().listNodes()) {
+      expect(n.getExtras().height_basis).toBe(HEIGHT_BASIS_TP);
+      expect('modifications' in n.getExtras() || 'vertical_mode' in n.getExtras()).toBe(false);
+    }
+    expect(scene.selection_rule).not.toMatch(/poi_ids/);
+    expect(report.frame.vertical_mode).toBeUndefined();
+    expect(report.frame.origin.hM).toBe(0);
+  });
+
+  it('a TP frame with the Ikebukuro origin still projects z = height - hM and its window text carries no poi_ids sentence', async () => {
+    const { report } = await build();
+    const rows = report.per_feature.filter((f) => f.gml_id === 'bldg_lod1only');
+    expect(rows).toHaveLength(1);
+    expect(report.window.rule).not.toMatch(/poi_ids/);
+    expect(report.bbox_local_ENU!.min[2]).toBeGreaterThan(32); // TP heights (32.5 and up), not flattened
   });
 });

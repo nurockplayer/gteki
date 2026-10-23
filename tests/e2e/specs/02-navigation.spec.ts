@@ -53,6 +53,8 @@ for (const key of STATIONS) {
         }
       }
       save(testInfo, `${key}-navigation.json`, summaries);
+      // The golden is byte-for-byte an input of stations/ikebukuro/pipeline/build_kit_catalog.py (its sha256 is in
+      // kit_catalog.json), so it keeps the same shape as main, `stale` included.
       expect(JSON.stringify(summaries, null, 2)).toMatchSnapshot(`${key}-routes.json`);
     });
 
@@ -91,6 +93,13 @@ for (const key of STATIONS) {
     await expect(card).toBeVisible();
     await expect(card.locator(".route-head")).toContainText(/min/);
     await expect(card.locator(".instructions li").first()).toBeVisible();
+    // Freshness is a calendar verdict (sources older than the core's staleAfterDays, 730 by default), so a
+    // stale route must say so on the card; Ikebukuro's 2022 guide is past it.
+    const stale = (await hooks.route(page))?.stale;
+    const staleBadge = await card.locator(".badge.warn", { hasText: /Possibly outdated|情報が古い可能性/ }).isVisible();
+    save(testInfo, `${key}-route-card.json`, { stale: stale ?? null, staleBadge });
+    expect.soft(typeof stale, "route() reports a freshness verdict").toBe("boolean");
+    if (stale === true) expect.soft(staleBadge, "stale route says so on the card").toBe(true);
     await page.waitForTimeout(1200);
     await page.screenshot({ path: shotPath(testInfo, `${key}-03-route-card.png`) });
     // Clicking an instruction frames that segment in the overview.

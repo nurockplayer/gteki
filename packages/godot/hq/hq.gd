@@ -1,7 +1,11 @@
 extends Node3D
 ## HQ client (G-1 loader + G-2 walk): picks a station snapshot, loads it, and lets you walk it third-person.
-## No search/route (G-3) and no HQ look (G-4) yet.
-## Run:  godot --path packages/godot res://hq/hq.tscn -- [--station=<id>] [--scenes=<dir>] [--lightmap=on|off] [--check]
+## No search/route (G-3) yet. The HQ look (G-4b) is opt-in: `--look=hq` builds the sidecar-driven Environment and
+## applies the station's material table (gteki_look.gd); the default `baseline` is today's look.
+## Run:  godot --path packages/godot res://hq/hq.tscn -- [--station=<id>] [--scenes=<dir>] [--lightmap=on|off] [--look=baseline|hq] [--gi=off|sdfgi] [--check]
+## Capture (windowed; see hq_capture.gd): --capture=<dir> [--poses=<file>] [--perf=<seconds>]. On a headless display
+## `--capture` says so and exits 0 after loading the station; `--perf` says "perf needs a display" and exits 0 before
+## loading anything, because a frame time nobody rendered is no measurement.
 ## <dir> holds <stationId>/{scene.glb,scene.json} from packages/godot/src/export-scene.ts (default: .cache/scenes).
 ## Keys: WASD/arrows move, Shift runs, drag (left or right mouse) or right stick orbits, wheel zooms,
 ##       Tab switches station, N cycles the station's spawn points. --check loads every station (or the one named by
@@ -12,8 +16,10 @@ extends Node3D
 const Scene = preload("res://addons/gteki/gteki_scene.gd")
 const Walker = preload("res://addons/gteki/gteki_walker.gd")
 const FollowCamera = preload("res://addons/gteki/gteki_follow_camera.gd")
+const Capture = preload("res://hq/hq_capture.gd")
 const GuideHud = preload("res://hq/hq_guide.gd")
 const HqLights = preload("res://addons/gteki/gteki_hq_lights.gd")
+const Look = preload("res://addons/gteki/gteki_look.gd")
 
 ## Web wheel notch (deltaY) in the units apply_look expects, and stick look speed in pixels per second.
 const WHEEL_UNITS := 100.0
@@ -29,6 +35,12 @@ var camera: FollowCamera
 var spawn_index := 0
 var guide_hud: GuideHud
 var lightmap := true
+## G-4b: "baseline" (today's look) or "hq" (style-bible look); see gteki_look.gd.
+var look_profile := "baseline"
+var gi := "off"
+var look_node: WorldEnvironment
+var material_table: Dictionary = {}
+var materials_applied := 0
 ## Key + fill, masked to the avatar layer while a station bake is applied (gteki_hq_lights.gd).
 var lights: Array[DirectionalLight3D] = []
 var _look := Vector2.ZERO
@@ -53,6 +65,28 @@ func _ready() -> void:
 				get_tree().quit(2)
 				return
 			lightmap = value == "on"
+	var capture_args := Capture.parse_args(OS.get_cmdline_user_args())
+	if not (capture_args.error as String).is_empty():
+		printerr(capture_args.error)
+		get_tree().quit(2)
+		return
+	var capture_dir := str(capture_args.capture)
+	var poses_file := str(capture_args.poses)
+	var perf_seconds := float(capture_args.perf_s)
+	# No display, no frame time: a headless "measurement" would be a number nobody rendered, so it is refused before a
+	# station is even loaded and nothing is written.
+	if perf_seconds > 0.0 and DisplayServer.get_name() == "headless":
+		print("perf needs a display (run windowed, not --headless)")
+		get_tree().quit(0)
+		return
+	var look_args := Look.parse_args(OS.get_cmdline_user_args())
+	if not (look_args.errors as Array).is_empty():
+		for message in look_args.errors:
+			printerr(message)
+		get_tree().quit(2)
+		return
+	look_profile = str(look_args.profile)
+	gi = str(look_args.gi)
 	station_ids = list_stations(scenes_dir)
 	if station_ids.is_empty():
 		printerr("No station snapshots in %s (run packages/godot/run-scenes.sh)" % scenes_dir)
@@ -66,7 +100,12 @@ func _ready() -> void:
 	add_child(camera)
 	camera.current = true
 	lights = HqLights.build(self)
-	if not check_only:
+	look_node = Look.build(self, look_profile)
+	if look_profile == "hq":
+		material_table = Look.load_table()
+		if material_table.is_empty():
+			printerr("--look=hq but %s is missing or unreadable" % Look.TABLE_PATH)
+	if not check_only and capture_dir.is_empty():
 		guide_hud = GuideHud.new()
 		add_child(guide_hud)
 		guide_hud.setup(self)
@@ -90,6 +129,18 @@ func _ready() -> void:
 	var ok := load_station(wanted if not wanted.is_empty() else station_ids[0])
 	if ok:
 		ok = await place_at_spawn(0)
+	if not capture_dir.is_empty():
+		if not ok:
+			get_tree().quit(1)
+			return
+		if DisplayServer.get_name() == "headless":
+			print("capture needs a display (run windowed, not --headless)")
+			get_tree().quit(0)
+			return
+		var capture := Capture.new()
+		var code := await capture.run(self, capture_dir, poses_file, look_profile, gi, perf_seconds)
+		get_tree().quit(code)
+		return
 
 
 func lightmap_summary() -> String:
@@ -98,6 +149,17 @@ func lightmap_summary() -> String:
 	if current.lightmap_applied:
 		return "lightmap %d meshes / %d surfaces, %dx%d" % [current.lightmap_meshes, current.lightmap_surfaces, current.lightmap_texture_size.x, current.lightmap_texture_size.y]
 	return "no lightmap"
+
+
+## One line for the station summary: the look profile, or what the hq Environment took from the sidecar.
+func look_summary() -> String:
+	if look_node == null or look_node.environment == null:
+		return "look baseline"
+	var environment := look_node.environment
+	var ambient := "ambient off" if environment.ambient_light_source == Environment.AMBIENT_SOURCE_DISABLED else "ambient %.2f" % environment.ambient_light_energy
+	var fog := "fog %d..%d" % [int(environment.fog_depth_begin), int(environment.fog_depth_end)] if environment.fog_enabled else "no fog"
+	return "look hq (AgX %.2f, ssao, %s, %s, %s, %d surfaces mapped)" % [
+		environment.tonemap_exposure, fog, ambient, "sdfgi" if environment.sdfgi_enabled else "gi off", materials_applied]
 
 
 ## --check: the added lights' cull masks are exactly the expected ones (`gteki_hq_lights.gd`), every station mesh that
@@ -161,11 +223,23 @@ func load_station(id: String) -> bool:
 	if not ok:
 		printerr("Cannot load %s: %s" % [id, str(current.issues)])
 		return false
-	print("%s: %d meshes (walkable %d, collider %d), %d walls, %d spawn points, %d export warnings, %s" % [id, current.counts.meshes, current.counts.walkable, current.counts.collider, current.wall_shapes, current.spawn_points.size(), current.sidecar.warnings.size(), lightmap_summary()])
 	# The bake is the station's light and the web adds no scene lights: the added lights then reach the avatar layer
 	# only, so the avatar stays shaded instead of a black silhouette. The unlit snapshot (--lightmap=off or a station
 	# without a lightmap such as Shinjuku) keeps them on every layer.
 	HqLights.apply(lights, current.lightmap_applied)
+	# G-4b: the Environment follows the station just loaded (exposure, fog, ambient rule), then the material table.
+	Look.apply(look_node, current, gi)
+	materials_applied = 0
+	if look_profile == "hq":
+		var table := Look.apply_materials(current.root, material_table, id)
+		materials_applied = int(table.applied)
+		if not (table.missing as Array).is_empty():
+			printerr("%s: material table names %s, absent from the snapshot" % [id, str(table.missing)])
+		# The snapshot's material names are positional, so a mapping that no longer matches its recorded evidence is
+		# skipped instead of repainting whatever took the name (#254/#257).
+		if not (table.mismatched as Array).is_empty():
+			printerr("%s: material mappings skipped, evidence no longer matches: %s" % [id, str(table.mismatched)])
+	print("%s: %d meshes (walkable %d, collider %d), %d walls, %d spawn points, %d export warnings, %s, %s" % [id, current.counts.meshes, current.counts.walkable, current.counts.collider, current.wall_shapes, current.spawn_points.size(), current.sidecar.warnings.size(), lightmap_summary(), look_summary()])
 	var background: Variant = current.environment.get("background")
 	if background is float or background is int:
 		RenderingServer.set_default_clear_color(Color.hex((int(background) << 8) | 0xff))

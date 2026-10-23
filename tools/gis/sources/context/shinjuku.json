@@ -1,16 +1,38 @@
 {
   "station": "shinjuku",
-  "status": "BLOCKED",
+  "status": "READY",
   "frame_id": "shinjuku-station-enu-v0",
-  "radius_m": 250,
+  "radius_m": 0,
+  "window": {
+    "r_origin_m": 0,
+    "r_exit_m": 300,
+    "node_rule": {
+      "graph": "stations/shinjuku/gteki/graph.json",
+      "exit_kinds": [],
+      "street_floor_ids": [],
+      "poi_ids": ["poi:exit:1", "poi:exit:2", "poi:exit:3", "poi:exit:4"]
+    },
+    "mesh_margin_m": 50
+  },
+  "graph_literal_source_id": "hokonavi-oedo-shinjuku-network-geojson",
+  "merge": "kind",
+  "variant": "high",
+  "kinds": ["bldg"],
+  "ground_height_attributes": [],
+  "exit_neighbour_radius_m": 30,
+  "attribution_text": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成（建物の基部を地表面の高さにそろえて表示）",
+  "attribution_decision": "https://github.com/nurockplayer/gteki/issues/39#issuecomment-6324813261",
   "sources": [
     "plateau-13104-bldg-53394525",
     "plateau-13104-bldg-53394526",
+    "plateau-13104-bldg-53394535",
+    "plateau-13104-bldg-53394536",
     "plateau-13104-tran-53394525",
-    "plateau-13104-tran-53394526"
+    "plateau-13104-tran-53394526",
+    "plateau-13104-tran-53394535",
+    "plateau-13104-tran-53394536"
   ],
-  "blocked_reason": "stations/shinjuku/gteki/station.json has origin.hM null, origin.crs EPSG:6668 and symbolic floors (street = 0, elevationSource symbolic). PLATEAU heights are real TP (street is roughly 32 m), so the vertical anchor and reference origin are a station-lead decision. No station-enu frame is created and nothing is converted until that decision is recorded.",
-  "notes": "Sources are acquired (hash-recorded) and the config shape is final; only the anchor decision is missing.",
+  "notes": "Decision: station lead, GitHub #39 comment 6324045059. Reference origin = stations/shinjuku/gteki/station.json origin (35.687, 139.6994, JGD2011 EPSG:6668, ENU, h 0; hM null on purpose), the same GRS80 geodetic -> ECEF -> ENU as Ikebukuro at that origin; frame shinjuku-station-enu-v0 is horizontal-only (vertical_mode per_feature_ground, from `gis station-frame shinjuku --vertical per_feature_ground`). No vertical datum: each building is flattened to symbolic street z = 0 by subtracting its own ground height (z_local = z_TP - groundHeight(building)); groundHeight is the building's own CityGML ground-height attribute if it carries one of ground_height_attributes (none is configured: the PLATEAU 2025 Shinjuku bldg files 53394525/53394526 carry no such attribute, and the uro 3.2 schema defines none on bldg:Building), else, for buildings, by priority: (2) when LOD2 is drawn and the building has bldg:GroundSurface polygons, their minimum z (basis ground_surface_lod2; their max-min spread is recorded per building), so a sunken entrance or light well in the walls cannot pull the base down; (3) the minimum z of the lod1Solid even when LOD2 is drawn (lod1_solid_bottom); (4) the minimum z of the LOD drawn (min_z_of_drawn_lod); roads keep (4). Never one constant for all buildings; the receipt records the basis of every building, the count per basis and the min/median/max subtracted offset, and, per window POI (poi:exit:1..4), the count, min/median/max subtracted ground height and gml_ids of the buildings whose footprint bbox lies within exit_neighbour_radius_m (30 m) of its connector node, so the mismatch at the exit tops can be judged. Window = union of 300 m discs around the connector nodes (graph.json) of POIs poi:exit:1..4 only (ground-level exits, pois.json connectorNodeIds); exits 5 and 6 reach only B1 and are excluded; there is no origin disc (r_origin_m 0 adds none); a configured POI id that is missing, or has no resolvable connector node, fails the run. The window touches 3rd-level meshes 53394525, 53394526, 53394535 and 53394536 (with the 50 m mesh_margin_m for features that straddle a mesh edge); a missing or unacquired mesh fails the run. 53394535 and 53394536 bldg are acquired with measured expected_bytes (read, but they select no building in this window); the four 13104 tran sources are listed with measured expected_bytes and are not acquired. Default kinds = [\"bldg\"]: Shinjuku's own surface layer already draws roads, so the Shinjuku director asked for buildings only. The Owner extended the roads risk acceptance to Shinjuku (Q12 = Yes, #39 comment 6324726321), so tran is optional via --kinds and, when requested, flattens roads per feature the same way. Visual-only context (gteki_role context, NOT_FOR_ROUTING); textures are not converted. graph_literal_source_id names the class (b) E27 network source whose node ids (n:<E27 node_id>, stations/shinjuku/tools/import-e27.ts) the graph carries: the committed receipt holds them only as { value_sha256, value_type }; the store sidecar and GLB keep them verbatim. The field is read at receipt time only and is not part of the run digest.",
   "overlay": {
     "frame": {
       "mode": "origin-only",
@@ -39,12 +61,31 @@
         "kind": "station",
         "member": "N02-25_GML/UTF-8/N02-25_Station.geojson",
         "ribbon_width_m": 3
+      },
+      {
+        "source_id": "ksj-n03-2026",
+        "kind": "border",
+        "member": "N03-20260101_13.geojson",
+        "ribbon_width_m": 2,
+        "geometry": "polygon_rings",
+        "select": {
+          "kind": "municipality_code",
+          "property": "N03_007",
+          "code": "13104"
+        }
       }
     ],
+    "window": {
+      "kind": "origin_disc",
+      "radius_m": 700
+    },
     "clip": {
       "kind": "origin_disc",
       "radius_m": 700
     },
     "notes": "station.json has origin.hM null (the vertical anchor is undecided, which is why the PLATEAU building context stays BLOCKED), so no station-enu frame exists; the overlay uses the horizontal origin only and a symbolic street z = 0. Window = origin disc of radius_m (no graph node rule is configured)."
+  },
+  "profile": {
+    "window": { "kind": "origin_disc", "radius_m": 700 }
   }
 }
