@@ -23,6 +23,28 @@ them.
 **Status: NOT YET ACCEPTED.** Desk-verified, not field-verified. Opening hours are unknown. This
 is not a whole-station model (see [coverage gaps](docs/coverage-gaps.md)).
 
+**Station identity boards (#342 Q1b/Q3).** `scene/identity.json` declares original
+GTEki panels showing 池袋 / いけぶくろ / Ikebukuro at the six spawn views and three
+main-passage junctions, plus a name/location-only いけふくろう meeting-point marker
+on the east side of North Passage. The marker's exact point is **APPROXIMATE**;
+it has no statue or owl graphic. Station names and plain-text transfer references
+come from OpenStreetMap (© OpenStreetMap contributors, ODbL 1.0); approximate
+meeting-point facts come from Tabi-mag and LIVE JAPAN, reference only. Codes and
+line names use plain GTEki type, without operator graphics or route claims.
+JR 山手線 Yamanote JY13 / 埼京線 Saikyo JA12 / 湘南新宿ライン
+Shonan-Shinjuku JS21 use the director-supplied OSM route-relation facts retrieved
+2026-10-24. Station panels separate JR and Metro text into two secondary lines.
+`textVerification` describes the text facts; all placements are GTEki-authored,
+not surveyed sign locations. The equipment report counts existing scene cues
+only; spawns below two report **proxy not met (equipment)**. No utility props
+are added to satisfy that proxy.
+`pipeline/build_identity.py --check` checks geometry; `check_identity_rhythm.py`
+reports cue gaps on both guided routes. CPU results are labelled **recognition
+proxy**, not a five-second human recognition or rendered frame acceptance claim.
+The [local CPU receipt](docs/identity-342.md) lists all boards, spawn text sizes,
+equipment visibility, atlas deltas and before/after route gaps. Its current
+atlas figures supersede the historical rendering measurements below.
+
 ## Run it
 
 ```sh

@@ -6,7 +6,7 @@ import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { ENV_INTENSITY, createMaterials } from "./materials.ts";
 import { type FinishManifest, loadFinishPacks } from "./finishes.ts";
 import { buildFloorIndex, noseDistances, wallFloorAttribute } from "./geomattrs.ts";
-import { buildSigns, LOW_TEXEL_SCALE, type SignSpec } from "./signs.ts";
+import { buildSigns, LOW_TEXEL_SCALE, type SignSpec, type IdentityBoard } from "./signs.ts";
 import { type AccessFences, buildAccessFences } from "./fences.ts";
 import { type KitGraph, type KitManifest, loadKit } from "./kit.ts";
 import { type ColumnsFile, loadColumnKit } from "./kit_columns.ts";
@@ -18,6 +18,7 @@ import { loadN02Overlay } from "./n02_overlay.ts";
 import crowdLanes from "./crowd_lanes.json";
 import finishManifest from "./finishes.json";
 import signage from "./signage.json";
+import identity from "./identity.json";
 import walkBridges from "./walk_bridges.json";
 import accessFences from "./access_fences.json";
 import kitManifest from "./kit/kit.json";
@@ -497,7 +498,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
 
   // Low quality paints signs at LOW_TEXEL_SCALE (~168 px/m) instead of 300: under a third of the texture memory, still legible at phone size.
   const signs = buildSigns(THREE, (signage as { signs: SignSpec[] }).signs, toRenderer, ctx.renderer.capabilities.getMaxAnisotropy(), low ? LOW_TEXEL_SCALE : 1, ctx.renderer.capabilities.maxTextureSize,
-    signKit.facePlaneM === undefined ? undefined : { facePlaneM: signKit.facePlaneM });
+    signKit.facePlaneM === undefined ? undefined : { facePlaneM: signKit.facePlaneM }, (identity as { boards: IdentityBoard[] }).boards);
   root.add(signs.group);
   root.add(signKit.build(THREE, env, toRenderer, signs.layouts).group);
 

@@ -185,7 +185,10 @@
    "datasetDate": "2022-01",
    "notes": "Used only to identify which PLATEAU openings are which named passage, exit or gate. No image, layout or pictogram is reproduced.",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   }
   },
   {
    "id": "toshima-terminal-sign-guideline-draft-v1.3",
@@ -200,7 +203,10 @@
    "datasetDate": "2026-03",
    "notes": "Draft (案, 草案) Ver1.3, 第14回 委員会 (2026-03-25), 資料3-3 p20 text layer only (p21 figure not read); listed on https://www.city.toshima.lg.jp/405/kuse/shingi/kaigichiran/006335.html. Used only for the names-to-number mapping of main exits (東口(北)=22, 東口(中央)=37, 東口(南)=38, 西口(北)=20a, 西口(中央)=19, 西口(南)=4), never as route evidence (OD-22, PR #222). Freshness check: replace when the final guideline is published.",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/165#issuecomment-6340635823", "date": "2026-10-22" }
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/165#issuecomment-6340635823",
+    "date": "2026-10-22"
+   }
   },
   {
    "id": "tokyometro-ikebukuro-yardmap-2026-03",
@@ -215,7 +221,10 @@
    "datasetDate": "2026-03",
    "notes": "Exit numbers and the public status of B1 passages were read from the official map. Nothing is reproduced.",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   }
   },
   {
    "id": "tokyometro-ikebukuro-accessibility-2026-10",
@@ -230,7 +239,10 @@
    "datasetDate": null,
    "notes": "ライセンスなし・事実のみ参照（複製なし）。Owner decision #26 (FACTS_ONLY_REFERENCE). Terms: all rights reserved, no use beyond private use/quotation without permission (https://www.tokyometro.jp/terms/index.html). Read only for names and lift/escalator connections; no text block, map or graphic is copied. Fact used: under the 改札外 lift and escalator lists, 南通路西改札～４番出入口（エソラ）. Hours not stated. Same record as DR-IK-02 / M-acc in docs/research/gaps/DR-IK-station-facts.md (PR #177).",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   }
   },
   {
    "id": "plateau-13116-bldg-53394576",
@@ -347,6 +359,48 @@
     "kit/low/gteki_sign_frame_9slice_h480_d80.glb": "abb2aa5de0d46b423bb2e2ca1e39117f3920fc84e819247295725628ddbfde1d"
    },
    "notes": "Original project art, generic and unbranded; not a measurement of Ikebukuro. The earlier rail, column and gate GLBs' embedded licence strings still read UNDECIDED until the kit's EMBED_SPDX rebuild; REUSE.toml records CC-BY-4.0 for gteki/kit/**. gteki_gate_array_2 is placed once at each of the gate nodes g_jr_c1, g_jr_c2 and g_jr_s as a generic stand-in: 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\". It is never a verified layout of the Ikebukuro gates. Hanging sign frames are generic Lane E presentation (CC BY 4.0), not a survey of the real Ikebukuro housings."
+  },
+  {
+   "id": "osm-ikebukuro-station-refs-2026-10",
+   "title": "OpenStreetMap Ikebukuro station names and transfer references",
+   "publisher": "OpenStreetMap contributors",
+   "url": "https://www.openstreetmap.org/copyright",
+   "license": {
+    "name": "ODbL 1.0",
+    "url": "https://opendatacommons.org/licenses/odbl/1-0/"
+   },
+   "rights": "REUSABLE_WITH_CONDITIONS",
+   "attribution": "© OpenStreetMap contributors",
+   "modified": true,
+   "retrievedAt": "2026-10-23T15:15:00Z",
+   "datasetDate": null,
+   "gteki_role": "context",
+   "navigation_use": "NOT_FOR_ROUTING",
+   "visual_only": true,
+   "derivation": "api.openstreetmap.org/api/0.6, retrieved 2026-10-23T15:15Z: node 2558121915 v35 (2026-06-18), 池袋 / Ikebukuro, operator 東日本旅客鉄道, ref JA12;JS21;JY13; relation 9240336 v13 Marunouchi M25; relation 9240281 v12 Yurakucho Y09; relation 7967610 v17 Fukutoshin F09. Additional route-relation facts retrieved 2026-10-24 (time unspecified): relation 1972920 v130 (2026-10-08), type=route route=train ref=JY name=JR山手線 operator=東日本旅客鉄道 (1972960 v134 is the other direction); relation 21361895 v7 (2026-10-05), ref=JA name=JR埼京線 (新宿 → 大宮); relation 4684034 v138 (2026-10-10), ref=JS name=湘南新宿ライン. Plain-text line names paired with the station node refs: 山手線 Yamanote JY13, 埼京線 Saikyo JA12, 湘南新宿ライン Shonan-Shinjuku JS21.",
+   "notes": "Director #342 supplied source facts, including the 2026-10-24 JR-line ruling; plain-text transfer information only. retrievedAt records the original station/Metro retrieval; the additional JR retrieval date is recorded in derivation without inventing a time. Route relations supply line names only, never route evidence, platform mapping or transfer paths. No operator graphics or copied sign layout. Station.codes has no evidence field; this source is the basis of its M25/Y09/F09/JY13 entries and all six transfer references in scene/identity.json."
+  },
+  {
+   "id": "ikefukuro-location-references-2026-10",
+   "title": "Ikefukuro meeting-point location references (approximate)",
+   "publisher": "Tabi-mag; LIVE JAPAN",
+   "url": "https://tabi-mag.jp/tk1226/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/342",
+    "date": "2026-10-24"
+   },
+   "attribution": "Tabi-mag / LIVE JAPAN (location facts only; no content reproduced)",
+   "modified": false,
+   "retrievedAt": null,
+   "datasetDate": null,
+   "gteki_role": "context",
+   "navigation_use": "NOT_FOR_ROUTING",
+   "visual_only": true,
+   "verification": "APPROXIMATE",
+   "notes": "Director #342 supplied facts, retrieved 2026-10-24 (time unspecified; retrievedAt null rather than inventing a timestamp): https://tabi-mag.jp/tk1226/ and https://livejapan.com/ja/in-tokyo/in-pref-tokyo/in-ikebukuro/article-a0000017/ place the indoor B1 meeting point on the North Passage east side near Exit 22 / JR North Gate. Exact point approximate. No local copy of the Toshima underground guide available to check a page; no page claim or guide citation for this marker. Name/location only; no replica, lookalike, owl graphic or copied content."
   }
  ],
  "floors": [
@@ -1593,6 +1647,17 @@
    ],
    "modified": true,
    "derivation": "pipeline/extract_columns.py: PLATEAU column footprints and heights found by shape in the barriers triangles (build/ubld_enu.json, welded vertical prisms 1.5 m or taller, up to 3 m across), each with its kit sleeve piece id or null and a reason. sourceIds = PLATEAU"
+  },
+  {
+   "id": "identity",
+   "path": "scene/identity.json",
+   "sourceIds": [
+    "ikefukuro-location-references-2026-10",
+    "osm-ikebukuro-station-refs-2026-10",
+    "plateau-ubld-13116"
+   ],
+   "modified": true,
+   "derivation": "pipeline/build_identity.py: GTEki-authored board placements fitted to shipped PLATEAU ceilings/walls with fittings excluded from Sightlines; station/transfer facts from OSM and approximate meeting-point facts from reference-only sources. NOT_FOR_ROUTING."
   }
  ]
 }

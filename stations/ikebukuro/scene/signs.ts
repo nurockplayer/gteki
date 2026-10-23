@@ -16,7 +16,44 @@ interface SignContent {
   places?: { id: string; ja: string | null; en: string | null; distanceM?: number }[];
 }
 
+export interface IdentityBoard {
+  id: string;
+  anchor: { nodeId?: string; edgeId?: string };
+  kind: "station-name" | "meeting-point";
+  text: { ja: string; kana?: string; en: string; transfer?: string; location?: string; locationEn?: string; status?: string };
+  sourceIds: string[];
+  textVerification: "VERIFIED" | "APPROXIMATE";
+  placement: "GTEki-authored, not a surveyed sign location";
+  position: { x: number; y: number; z: number };
+  facing: { x: number; y: number };
+  widthM: number;
+  heightM: number;
+  ceilingZ: number;
+  mount?: "ceiling" | "wall";
+}
+
+// replace with IdentityBoardTag from @gteki/scene-api once #347 lands
+type IdentityBoardTag = {
+  front?: [number, number, number];
+  regions?: { kind: "name" | "arrow"; min: [number, number, number]; max: [number, number, number] }[];
+};
+
+/** Conservative cap-height proxy (0.7 em), not measured glyph ink or a recognition study. */
+export const IDENTITY_TYPE = { jaEm: 0.56, enEm: 0.40, cap: 0.7 } as const;
+
+export function identityTypography(board: IdentityBoard) {
+  const h = Math.round(0.42 * 300);
+  const fit = Math.min(1, board.widthM / 2.2);
+  const jaPx = Math.round(h * IDENTITY_TYPE.jaEm * fit), enPx = Math.round(h * IDENTITY_TYPE.enEm * fit);
+  const jpWidth = 2*jaPx/300, enWidth = 9*0.56*enPx/300, gap = 0.08*fit;
+  const jaX = 0.5-(jpWidth+enWidth+gap)/2/board.widthM;
+  const enX = jaX+(jpWidth+gap)/board.widthM;
+  const stacked = board.widthM < 1.5;
+  return { jaPx, enPx, jaX, enX, fit, h, stacked, jaY: stacked ? 0.30 : 0.43, enY: stacked ? 0.36 : 0.50, kanaY: stacked ? 0.10 : 0.18 };
+}
+
 export interface SignSpec extends SignContent {
+  identity?: IdentityBoard;
   id: string;
   position: { x: number; y: number; z: number };
   facing: { x: number; y: number };
@@ -105,6 +142,52 @@ type Part = { w: number; draw: (g: CanvasRenderingContext2D, x: number) => void 
 type Theme = { panel: string; rule: string; divider: string };
 const THEME_DIRECTION: Theme = { panel: "#1c222b", rule: "#2b3340", divider: "#4a5361" };
 const THEME_PLACE: Theme = { panel: "#124a68", rule: "#2f7fa6", divider: "#5b93b3" };
+
+/** Original GTEki layout: two name columns above plain JR and Metro transfer rows.
+ *  No operator colour, ring, badge, pictogram or copied sign composition. */
+function paintIdentity(board: IdentityBoard) {
+  const c = document.createElement("canvas");
+  // Same atlas shelf height as the existing signs; physical face height is independent.
+  c.width = Math.round(board.widthM * PX_PER_M);
+  c.height = Math.round(H * PX_PER_M);
+  const g = c.getContext("2d")!;
+  const w = c.width, h = c.height;
+  const type = identityTypography(board);
+  const bounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+  g.fillStyle = board.kind === "meeting-point" ? THEME_PLACE.panel : "#263d48";
+  g.fillRect(0, 0, w, h);
+  g.fillStyle = "#ffffff";
+  g.textAlign = "left";
+  g.textBaseline = "middle";
+  const line = (text: string, x: number, y: number, em: number, weight = 500, name = false) => {
+    g.font = `${weight} ${Math.round(h * em)}px ${FONT}`;
+    g.fillText(text, x * w, y * h, (1-x-0.04)*w);
+    if (name) {
+      const m = g.measureText(text);
+      bounds.minX = Math.min(bounds.minX, x*w - (m.actualBoundingBoxLeft ?? 0));
+      bounds.maxX = Math.max(bounds.maxX, x*w + (m.actualBoundingBoxRight ?? m.width));
+      bounds.minY = Math.min(bounds.minY, y*h - (m.actualBoundingBoxAscent ?? h*em/2));
+      bounds.maxY = Math.max(bounds.maxY, y*h + (m.actualBoundingBoxDescent ?? h*em/2));
+    }
+  };
+  if (board.kind === "station-name") {
+    line(board.text.ja, type.jaX, type.jaY, type.jaPx/h, 700, true);
+    line(board.text.kana!, type.enX, type.kanaY, 0.15*type.fit, 500, true);
+    line(board.text.en, type.enX, type.enY, type.enPx/h, 600, true);
+    const transfers = board.text.transfer!.split(" · ");
+    line(transfers.slice(0, 3).join(" · "), 0.04, 0.77, 0.075);
+    line(transfers.slice(3).join(" · "), 0.04, 0.92, 0.075);
+  } else {
+    line(board.text.ja, 0.04, 0.22, 0.25, 700, true);
+    line(board.text.en, 0.38, 0.23, 0.16, 500, true);
+    line(board.text.location!, 0.04, 0.49, 0.13);
+    line(board.text.locationEn!, 0.04, 0.68, 0.105);
+    line(board.text.status!, 0.04, 0.89, 0.10);
+  }
+  return { canvas: c, widthM: board.widthM, h: board.heightM, bg: board.kind === "meeting-point" ? THEME_PLACE.panel : "#263d48",
+    nameRegion: { min: [(bounds.minX/w-0.5)*board.widthM, (0.5-bounds.maxY/h)*board.heightM],
+      max: [(bounds.maxX/w-0.5)*board.widthM, (0.5-bounds.minY/h)*board.heightM] } };
+}
 
 /** "~140 m": the distance still to go, small type under an exit badge / after a gate's English name. */
 const distLabel = (m: number) => `~${m} m`;
@@ -367,6 +450,7 @@ export function buildSigns(
   texelScale = 1,
   maxTextureSize = ATLAS_W,
   frame?: { facePlaneM: number },
+  identityBoards: IdentityBoard[] = [],
 ) {
   const group = new THREE.Group();
   group.name = "ikebukuro_signs";
@@ -379,15 +463,19 @@ export function buildSigns(
     const widthM = Math.min(fit.widthM, maxW);
     return { canvas: fit.canvas, widthM, h: H * (widthM / fit.widthM), bg: theme.panel }; // last resort: scale a single item down
   };
-  for (const s of specs) {
+  const allSpecs: SignSpec[] = [...specs, ...identityBoards.map((b) => ({
+    id: b.id, position: b.position, facing: b.facing, ceilingZ: b.ceilingZ, exits: [], gates: [], identity: b,
+  }))];
+  for (const s of allSpecs) {
     const scale = s.scale ?? 1;
     const maxW = (s.maxWidthM ?? Infinity) / scale;
     const theme = s.kind === "place" ? THEME_PLACE : THEME_DIRECTION;
-    const front = face([s], maxW, theme);
+    const identityFront = s.identity ? paintIdentity(s.identity) : null;
+    const front = identityFront ?? face([s], maxW, theme);
     const backBlocks = (s.back ?? []).filter((b) => b.exits.length > 0 || b.gates.length > 0 || (b.places?.length ?? 0) > 0);
     const back = backBlocks.length ? face(backBlocks, maxW, theme) : null;
     const width = Math.max(front.widthM, back?.widthM ?? 0);
-    layouts.push({ id: s.id, position: s.position, facing: s.facing, ceilingZ: s.ceilingZ, scale,
+    if (!s.identity) layouts.push({ id: s.id, position: s.position, facing: s.facing, ceilingZ: s.ceilingZ, scale,
       widthM: width * scale, heightM: Math.max(front.h, back?.h ?? 0) * scale });
     // Plane faces +Z in local space; rotate so it faces the ENU 'facing' vector.
     const f = toRenderer(s.facing.x, s.facing.y, 0).sub(toRenderer(0, 0, 0));
@@ -399,9 +487,30 @@ export function buildSigns(
     // A loaded kit supplies the trim. Its face plane is recessed at +-0.028 m (outer depth 0.08 m):
     // move faces 1 mm inside it and the backing another 1 mm behind, rather than covering the rim at +-0.041.
     // Offsets are world metres even for a scaled low-ceiling sign. Without a kit, keep the original box and face offsets.
-    const faceZ = frame ? (frame.facePlaneM - 0.001) / scale : 0.041;
-    boxes.push({ geo: new THREE.BoxGeometry(frame ? width : width + 0.06, frame ? H : H + 0.06,
-      frame ? 2 * (faceZ - 0.001 / scale) : 0.08), matrix: signM });
+    const useFrame = s.identity ? undefined : frame;
+    const faceZ = useFrame ? (useFrame.facePlaneM - 0.001) / scale : 0.041;
+    if (s.identity && identityFront) {
+      const proxy = new THREE.Object3D();
+      proxy.name = s.id;
+      proxy.applyMatrix4(signM);
+      // Metadata only: no Mesh/geometry, draw call, collider or walking surface.
+      const tag: IdentityBoardTag = {
+        front: [0, 0, 1],
+        regions: [{ kind: "name",
+          min: [identityFront.nameRegion.min[0]!, identityFront.nameRegion.min[1]!, faceZ - 0.002],
+          max: [identityFront.nameRegion.max[0]!, identityFront.nameRegion.max[1]!, faceZ + 0.002] }],
+      };
+      proxy.userData = { gteki_role: "sign", gteki_identity: tag };
+      group.add(proxy);
+    }
+    const housingH = s.identity ? front.h * (0.60 / 0.54) : useFrame ? H : H + 0.06;
+    boxes.push({ geo: new THREE.BoxGeometry(useFrame ? width : width + 0.06, housingH,
+      useFrame ? 2 * (faceZ - 0.001 / scale) : 0.08), matrix: signM });
+    if (s.identity?.mount !== "wall" && s.identity) {
+      const gap = Math.max(0, s.identity.ceilingZ - s.position.z - housingH/2);
+      for (const side of [-1, 1]) boxes.push({ geo: new THREE.BoxGeometry(0.015, gap, 0.015),
+        matrix: signM.clone().multiply(new THREE.Matrix4().makeTranslation(side*(width/2-0.12), housingH/2+gap/2, 0)) });
+    }
     faces.push({ ...front, id: s.id, side: "front", scale, local: new THREE.Matrix4().makeTranslation(0, 0, faceZ), sign: signM });
     if (back) faces.push({ ...back, id: s.id, side: "back", scale, local: new THREE.Matrix4().makeRotationY(Math.PI).setPosition(0, 0, -faceZ), sign: signM });
   }
