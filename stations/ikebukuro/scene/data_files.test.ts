@@ -58,6 +58,7 @@ const EXPECTED: Record<string, { script: string; sources: () => string[]; author
   "scene/signage.json": { script: "pipeline/build_signage.py", sources: () => [PLATEAU, ...verifiedEdges(), ...shownPois()] },
   "scene/finishes.json": { script: "GTEki-authored", sources: () => [], authored: true },
   "scene/kit/kit.json": { script: "GTEki-authored", sources: () => [], authored: true },
+  "scene/columns.json": { script: "pipeline/extract_columns.py", sources: () => [PLATEAU] },
 };
 
 const declared: DataFile[] = src.dataFiles;

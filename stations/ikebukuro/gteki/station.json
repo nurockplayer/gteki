@@ -1266,6 +1266,15 @@
    "modified": true,
    "authored": true,
    "derivation": "GTEki-authored kit placement config (which library pieces the scene places, their use, pitch and the representative gate-array label); the pieces themselves are assets[] files (gteki/kit/**); no external source"
+  },
+  {
+   "id": "columns",
+   "path": "scene/columns.json",
+   "sourceIds": [
+    "plateau-ubld-13116"
+   ],
+   "modified": true,
+   "derivation": "pipeline/extract_columns.py: PLATEAU column footprints and heights found by shape in the barriers triangles (build/ubld_enu.json, welded vertical prisms 1.5 m or taller, up to 3 m across), each with its kit sleeve piece id or null and a reason. sourceIds = PLATEAU"
   }
  ]
 }
