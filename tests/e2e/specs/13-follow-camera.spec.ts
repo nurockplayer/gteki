@@ -265,7 +265,11 @@ for (const key of STATIONS) {
       // keeps the wide lens for SLOPE.hold after that speed falls below SLOPE.exit (#322). So a stair or escalator
       // excuses the wide lens when the avatar moved vertically within smoothing lag (3 time constants) + hold before
       // the end of the window.
-      const speeds = zs.slice(1).map((b, i) => ({ t: b.t, v: Math.abs(b.z - zs[i]!.z) / Math.max(0.05, (b.t - zs[i]!.t) / 1000) }));
+      // A height step above SLOPE.jump between samples is a teleport (e.g. Start guide from Overview), which the app does
+      // not count as a climb, so it does not count as motion here either.
+      const jumpM = k.lensSlope.jump ?? 0.5;
+      const speeds = zs.slice(1).map((b, i) => ({ t: b.t, dz: Math.abs(b.z - zs[i]!.z), dt: Math.max(0.05, (b.t - zs[i]!.t) / 1000) }))
+        .filter((x) => x.dz <= jumpM).map((x) => ({ t: x.t, v: x.dz / x.dt }));
       const vzMps = speeds.length ? Math.round(speeds.at(-1)!.v * 100) / 100 : null;
       const lastMoving = speeds.filter((x) => x.v >= VZ_MOVING_MPS).at(-1)?.t ?? null;
       const sinceMotionMs = lastMoving !== null ? Date.now() - lastMoving : null;

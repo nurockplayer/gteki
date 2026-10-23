@@ -31,8 +31,8 @@ export interface FollowConstants {
   /** #136's reasons to widen the follow lens: boom squeezed below comfortDistance (released above comfortDistance + release). null: not in the source. */
   lensSqueeze: { comfortDistance: number | null; release: number | null };
   /** #136's slope lens: the wide lens is kept for `hold` s after the smoothed vertical speed (time constant `smooth` s)
-   *  drops below `exit` m/s. null: not in the source. */
-  lensSlope: { exit: number | null; hold: number | null; smooth: number | null };
+   *  drops below `exit` m/s; a height change above `jump` m in one frame is a teleport. null: not in the source. */
+  lensSlope: { exit: number | null; hold: number | null; smooth: number | null; jump: number | null };
 }
 
 // origin/main values when this was written (apps/web/src/explorer/followCamera.ts, packages/scene-api).
@@ -41,7 +41,7 @@ const FALLBACK: FollowConstants = {
   minDistance: 0.55, defaultDistance: 3.4, shoulder: 0.42, clearance: 0.3, lowestBoom: -0.1, eyeM: 1.62, bodyTopM: 1.7,
   declaredFov: { follow: null, firstPerson: null, overview: null, settleS: null, source: "none" },
   lensSqueeze: { comfortDistance: null, release: null },
-  lensSlope: { exit: null, hold: null, smooth: null },
+  lensSlope: { exit: null, hold: null, smooth: null, jump: null },
 };
 
 export function followConstants(): FollowConstants {
@@ -73,7 +73,7 @@ export function followConstants(): FollowConstants {
     const squeeze = /export const SQUEEZE = \{([^}]*)\}/.exec(follow)?.[1] ?? "";
     const lensSqueeze = { comfortDistance: num(block, "comfortDistance"), release: num(squeeze, "release") };
     const slope = /export const SLOPE = \{([\s\S]*?)\} as const/.exec(follow)?.[1] ?? "";
-    const lensSlope = { exit: num(slope, "exit"), hold: num(slope, "hold"), smooth: num(slope, "smooth") };
+    const lensSlope = { exit: num(slope, "exit"), hold: num(slope, "hold"), smooth: num(slope, "smooth"), jump: num(slope, "jump") };
     return { source: "GTEKI_ROOT apps/web/src/explorer/followCamera.ts FOLLOW + packages/scene-api WALKER_BODY", ...(c as Omit<FollowConstants, "source" | "declaredFov" | "lensSqueeze" | "lensSlope">), declaredFov, lensSqueeze, lensSlope };
   } catch {
     return FALLBACK;
