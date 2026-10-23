@@ -313,15 +313,15 @@
    "datasetDate": "2026-10",
    "sha256": {
     "kit/high/gteki_barrier_rail_2400_solid.glb": "2a379640f23ce2e0d38c8e5ea6fd17053d2eb944e6f025776f7b08c03ca1191d",
-    "kit/low/gteki_barrier_rail_2400_solid.glb": "97d20a29bab1b0ab8e7e2c9cfa18b3582a6d27503b861b1d71570c97f2340ff6",
+    "kit/low/gteki_barrier_rail_2400_solid.glb": "1a6db2db1ea1c7e46d47fa81575bdc13d95142256c05ebb573fdfc27eaa42591",
     "kit/high/gteki_column_square_600.glb": "65124a674dc0a42a3b6fe348091c6198827a85710d59157479753a51abdc59d6",
-    "kit/low/gteki_column_square_600.glb": "57e0acffd8aa408cdb2602efb55fbd70ff1bc5e0da3fcf02e6eb7912132857c3",
+    "kit/low/gteki_column_square_600.glb": "1cb14a59f97a601d56c555d227a92e4025e7bd08bfe5ca9e00875bc930c86df8",
     "kit/high/gteki_column_round_d600.glb": "fbd44a542e6e7b7e0deaee6d4624ee49a4f0b2aaf6af77d6f1a87bc95a30d001",
-    "kit/low/gteki_column_round_d600.glb": "87105fcd0ba3a310ed4c8e9f427ddca532a3dea8be2bf5e57cad8ba9a85b205d",
+    "kit/low/gteki_column_round_d600.glb": "78eafab3c83e90495fb257a6b599aa825b1951c70bf393a1afbbd996597e80df",
     "kit/high/gteki_gate_array_2.glb": "837827e00581ef8b3026bba3ffed7d16bc2886b4358c0d3e8043d8d214a59cdc",
-    "kit/low/gteki_gate_array_2.glb": "41c7b914e274de83514118a8f9f8a48ab8bee9029447fa06233d7ff54db86d46",
+    "kit/low/gteki_gate_array_2.glb": "ef9ee106810bf17002c273f3aadab8bb1286da2f0b5d7ed8a9438e1191508930",
     "kit/high/gteki_sign_frame_9slice_h480_d80.glb": "889db7bac82595d051674b30a0d88618e1180cbabd5a0873570a000efe575099",
-    "kit/low/gteki_sign_frame_9slice_h480_d80.glb": "6a48a1a5805a2bb0e0877de2bd2b0af2d6dec2e9923419b6d5104f36e0b8938e"
+    "kit/low/gteki_sign_frame_9slice_h480_d80.glb": "abb2aa5de0d46b423bb2e2ca1e39117f3920fc84e819247295725628ddbfde1d"
    },
    "notes": "Original project art, generic and unbranded; not a measurement of Ikebukuro. The earlier rail, column and gate GLBs' embedded licence strings still read UNDECIDED until the kit's EMBED_SPDX rebuild; REUSE.toml records CC-BY-4.0 for gteki/kit/**. gteki_gate_array_2 is placed once at each of the gate nodes g_jr_c1, g_jr_c2 and g_jr_s as a generic stand-in: 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\". It is never a verified layout of the Ikebukuro gates. Hanging sign frames are generic Lane E presentation (CC BY 4.0), not a survey of the real Ikebukuro housings."
   }
