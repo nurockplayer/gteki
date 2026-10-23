@@ -127,7 +127,7 @@ export interface DeclaredStationFiles {
   dir: string;
   /** Real path of stations/<dir>/. */
   folder: string;
-  /** Real paths: assets[].uri, assets[].files (relative to gteki/) and dataFiles[].path (relative to the folder). */
+  /** Real paths: assets[].uri, assets[].uriMobile, assets[].files (relative to gteki/) and dataFiles[].path (relative to the folder). */
   declared: ReadonlySet<string>;
   /**
    * Symlinks inside the station folder that resolve outside it: real target (file or directory) -> the link's
@@ -157,13 +157,13 @@ function symlinkEscapes(dir: string, fence: string, depth = 0, out = new Map<str
 export function declaredStationFiles(stations: DiscoveredStation[]): DeclaredStationFiles[] {
   return stations.map((s) => {
     const folder = path.dirname(s.gtekiDir);
-    let manifest: { assets?: { uri?: unknown; files?: unknown }[]; dataFiles?: { path?: unknown }[] } = {};
+    let manifest: { assets?: { uri?: unknown; uriMobile?: unknown; files?: unknown }[]; dataFiles?: { path?: unknown }[] } = {};
     try { manifest = JSON.parse(fs.readFileSync(path.join(s.gtekiDir, "station.json"), "utf8")); } catch { /* invalid: publishableAssets refuses it */ }
     const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
     const real = (p: string) => { try { return fs.realpathSync(p); } catch { return null; } };
     const declared = new Set<string>();
     for (const a of Array.isArray(manifest.assets) ? manifest.assets : [])
-      for (const f of [...strings([a?.uri]), ...strings(a?.files)]) { const r = real(path.join(s.gtekiDir, f)); if (r) declared.add(r); }
+      for (const f of [...strings([a?.uri]), ...strings([a?.uriMobile]), ...strings(a?.files)]) { const r = real(path.join(s.gtekiDir, f)); if (r) declared.add(r); }
     for (const d of Array.isArray(manifest.dataFiles) ? manifest.dataFiles : [])
       for (const f of strings([d?.path])) { const r = real(path.join(folder, f)); if (r) declared.add(r); }
     const fence = real(folder) ?? folder;
@@ -179,7 +179,7 @@ const VITE_QUERY = /\?[\w-]+(?:=[^&#?]*)?(?:&[\w-]+(?:=[^&#?]*)?)*$/;
 
 /**
  * Module ids of a production build that inline a non-code data file from a station folder without the
- * station's manifest declaring it (`assets[].uri`/`files` or `dataFiles[]`, each with a source id that
+ * station's manifest declaring it (`assets[].uri`/`uriMobile`/`files` or `dataFiles[]`, each with a source id that
  * `PUBLICATION_RULES` checks), or that reach one through a symlink resolving outside the station folder
  * (refused even when declared, as `walk()` refuses such assets). Pure: ids are real file paths as Vite
  * reports them (only a trailing Vite `?query` is ignored; virtual `\0` ids and anything outside every station
