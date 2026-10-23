@@ -93,6 +93,8 @@ const LABEL_RECHECK_MS = 1000;
 const DECLUTTER_MS = 80;
 /** A revealed label that still cannot be measured (never laid out) is re-checked this many times, then left on its estimate. */
 const MEASURE_TRIES = 5;
+/** Let the initial station identity framing remain readable before guide yaw steering resumes. */
+const IDENTITY_HOLD_S = 4;
 /** Instanced meshes with more instances than this occlude only as registered proxies. */
 const MAX_OCCLUDER_INSTANCES = 1024;
 
@@ -282,6 +284,7 @@ export class Explorer {
   private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
   /** Every stop of the running guide (`guide.stops` is consumed as they are reached; a seek restores the ones still ahead). */
   private guideAllStops: { s: number; index: number }[] = [];
+  private guideIdentityHoldS = 0;
   /** The user's guide speed tier; kept across instruction changes and later guides. */
   private tier: GuideTierId = DEFAULT_GUIDE_TIER;
   private poiLabels: PoiLabel[] = [];
@@ -996,6 +999,7 @@ export class Explorer {
 
   setMode(mode: ExplorerMode): void {
     if (this.mode === mode) return;
+    this.guideIdentityHoldS = 0;
     this.mode = mode;
     this.labelSweepDoneAt = -Infinity;
     // The overview may have deepened the far plane for its pose; the walking camera keeps its own.
@@ -1024,8 +1028,8 @@ export class Explorer {
   }
 
   /** Initial placement only: camera look changes, never the body heading or subsequent seeks. */
-  private frameInitialIdentity(guideHeading?: number): void {
-    if (this.identityPlaced) return;
+  private frameInitialIdentity(guideHeading?: number): boolean {
+    if (this.identityPlaced) return false;
     this.identityPlaced = true;
     const head = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     // Signs stay transparent to this placement probe, including solid sign materials.
@@ -1041,10 +1045,11 @@ export class Explorer {
       return { centre, front: identityFront(board), blocked: direction.length() > IDENTITY_RANGE_M || castAll(this.ray, targets).length > 0 };
     });
     const look = identityFraming(head, this.yaw, this.pitch, boards, this.camera.aspect, FOV.follow, guideHeading);
-    if (!look) return;
+    if (!look) return false;
     this.yaw = look.yaw;
     this.pitch = look.pitch;
     this.snapCamera = true;
+    return true;
   }
 
   /** Start free walking at a station ENU point (nearest walkable ground below/above it). */
@@ -1323,22 +1328,31 @@ export class Explorer {
       }
     }
     regions.sort((a, b) => a.y0 - b.y0);
+    // Measure unmeasured labels in one read-only batch before changing any chip's translate.
+    if (regions.length) for (const l of this.poiLabels) {
+      const el = l.obj.element;
+      if (l.size || !el.isConnected || el.style.display === "none") continue;
+      const w = el.offsetWidth, h = el.offsetHeight;
+      if (w > 0 && h > 0) l.size = { w, h };
+    }
     for (const l of this.poiLabels) {
       const el = l.obj.element;
       if (!regions.length) {
-        l.identityHidden = false; l.identityOffsetY = 0; el.style.translate = "";
+        if (l.identityHidden) l.identityHidden = false;
+        if (l.identityOffsetY) { l.identityOffsetY = 0; el.style.translate = ""; }
         continue;
       }
-      if (el.isConnected && el.offsetWidth > 0 && el.offsetHeight > 0) l.size = { w: el.offsetWidth, h: el.offsetHeight };
       if (!l.size && l.measureTries++ < MEASURE_TRIES) this.identityLabelsDirty = true;
       const size = l.size ?? estimateLabelBox(el.textContent ?? "");
       const p = l.obj.getWorldPosition(new THREE.Vector3()).project(this.camera);
       const x = (p.x + 1) * w / 2, y = (1 - p.y) * h / 2;
       const chip = { x0: x - size.w / 2, x1: x + size.w / 2, y0: y - size.h / 2, y1: y + size.h / 2 };
       const result = Math.abs(p.z) <= 1 ? protectIdentityChip(chip, l.selected, regions) : { hidden: false, offsetY: 0 };
-      l.identityHidden = result.hidden;
-      l.identityOffsetY = result.offsetY;
-      el.style.translate = result.offsetY ? `0 ${result.offsetY}px` : "";
+      if (l.identityHidden !== result.hidden) l.identityHidden = result.hidden;
+      if (l.identityOffsetY !== result.offsetY) {
+        l.identityOffsetY = result.offsetY;
+        el.style.translate = result.offsetY ? `0 ${result.offsetY}px` : "";
+      }
     }
   }
 
@@ -1498,7 +1512,7 @@ export class Explorer {
     this.lastAvatarPos.copy(this.pos);
     this.bodyYaw = this.yaw;
     this.setMode("guide");
-    this.frameInitialIdentity(this.yaw);
+    this.guideIdentityHoldS = this.frameInitialIdentity(this.yaw) ? IDENTITY_HOLD_S : 0;
   }
 
   /**
@@ -1507,6 +1521,7 @@ export class Explorer {
    * `firstStop` count as passed; the others (including one at `s`) apply, again if they were reached before.
    */
   seekGuide(s: number, firstStop = 0): void {
+    this.guideIdentityHoldS = 0;
     const g = this.guide;
     if (!g) return;
     const total = g.cum[g.cum.length - 1]!;
@@ -1545,6 +1560,7 @@ export class Explorer {
   }
 
   stopGuide(): void {
+    this.guideIdentityHoldS = 0;
     this.guide = null;
     if (this.mode === "guide") this.setMode("walk");
   }
@@ -1676,6 +1692,7 @@ export class Explorer {
     const look = this.input.consumeLook();
     this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, LOOK_PITCH.min, LOOK_PITCH.max);
     const mv = this.input.move();
+    if (look.dx || look.dy || look.zoom || mv.x || mv.y) this.guideIdentityHoldS = 0;
     if (mv.x !== 0 || mv.y !== 0) {
       // Taking the controls hands over to free walking at the current spot.
       this.guide = null;
@@ -1688,9 +1705,11 @@ export class Explorer {
     if (stopped !== null) g.paused = g.holding = true;
     const p = samplePolyline(g.pts, g.cum, g.s);
     this.pos.set(p.x, p.y, p.z);
+    const steeringDt = Math.max(0, dt - this.guideIdentityHoldS);
+    this.guideIdentityHoldS = Math.max(0, this.guideIdentityHoldS - dt);
     if (p.tx || p.tz) {
       const targetYaw = Math.atan2(-p.tx, -p.tz);
-      this.yaw += angleDelta(this.yaw, targetYaw) * Math.min(1, dt * 4);
+      this.yaw += angleDelta(this.yaw, targetYaw) * Math.min(1, steeringDt * 4);
     }
     this.yaw -= look.dx * 0.0042;
     const stepIndex = g.steps[Math.min(g.steps.length - 1, p.segment + 1)] ?? -1;

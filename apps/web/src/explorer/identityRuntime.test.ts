@@ -23,10 +23,25 @@ function runtime(boardZ = -10) {
     mode: "overview", camera: new THREE.PerspectiveCamera(50, 9 / 19.5, 0.05, 100),
     cameraTargets: [], skyTargets: [], ray: new THREE.Raycaster(), occluders: [], proxies: new Set(), signMeshes: new Set(), cameraCut: new CameraCut(),
     labelSweep: new OcclusionSweep(), labelSweepDoneAt: -Infinity, labelCamPos: new THREE.Vector3(Infinity, 0, 0), labelCamQuat: new THREE.Quaternion(), labelAt: new THREE.Vector3(), quality: "low",
-    guideAllStops: [], groundAt: vi.fn(() => 0), setMode: vi.fn((mode: string) => { e.mode = mode; }),
+    guide: null, guideAllStops: [], guideIdentityHoldS: 0, tier: "run", events: {}, groundAt: vi.fn(() => 0),
+    input: { consumeLook: vi.fn(() => ({ dx: 0, dy: 0, zoom: 0 })), move: vi.fn(() => ({ x: 0, y: 0, run: false })) },
+    orbit: { target: new THREE.Vector3() }, avatar: new THREE.Group(), routeGroup: new THREE.Group(), world: root, overviewLook: { set: vi.fn() },
+    street: { restore: vi.fn() }, setFov: vi.fn(), camDistance: 4,
     host: { getBoundingClientRect: () => ({ left: 10, top: 20 }) }, viewSize: { w: 390, h: 845 }, poiLabels: [],
   });
   return { e, board, root };
+}
+
+function labelAt(board: THREE.Object3D, selected: boolean) {
+  let translate = "";
+  const obj = Object.assign(new THREE.Object3D(), {
+    element: {
+      isConnected: true, get offsetWidth() { return 100; }, get offsetHeight() { return 26; },
+      textContent: "Name", style: { get translate() { return translate; }, set translate(value: string) { translate = value; } }, classList: { toggle: vi.fn() },
+    },
+  });
+  obj.position.copy(board.position); obj.updateMatrixWorld(true);
+  return { selected, obj, groundY: 0, occluded: "none", size: null, measureTries: 0, identityHidden: false, identityOffsetY: 0, state: "shown", decluttered: false };
 }
 
 describe("initial identity placement", () => {
@@ -98,7 +113,130 @@ describe("initial identity placement", () => {
   });
 });
 
+describe("guide identity steering hold", () => {
+  const route = [{ x: 0, y: 0, z: 0, stepIndex: 0 }, { x: 0, y: 100, z: 0, stepIndex: 0 }];
+
+  it("holds the framed yaw for four seconds while advancing along the route, then resumes steering", () => {
+    const { e } = runtime();
+    e.startGuide(route);
+    const yaw = e.yaw;
+    expect(yaw).toBeGreaterThan(0.05);
+    for (let i = 0; i < 16; i++) {
+      e.stepGuide(0.25);
+      expect(e.yaw).toBe(yaw);
+    }
+    expect(e.pos.z).toBeLessThan(-10);
+    expect(e.pos.x).toBe(0);
+    e.stepGuide(0.125);
+    expect(e.yaw).toBeCloseTo(yaw / 2);
+  });
+
+  it("steers only for the portion of a frame after the hold expires", () => {
+    const { e } = runtime();
+    e.startGuide(route);
+    const yaw = e.yaw;
+    for (let i = 0; i < 15; i++) e.stepGuide(0.25);
+    e.stepGuide(0.375);
+    expect(e.yaw).toBeCloseTo(yaw / 2);
+  });
+
+  it.each([{ dx: 10, dy: 0, zoom: 0 }, { dx: 0, dy: 10, zoom: 0 }, { dx: 0, dy: 0, zoom: 10 }])("look input %j ends the hold immediately", (look) => {
+    const { e } = runtime();
+    e.startGuide(route);
+    const yaw = e.yaw;
+    e.input.consumeLook.mockReturnValueOnce(look);
+    e.stepGuide(0.125);
+    expect(e.yaw).toBeCloseTo(yaw / 2 - look.dx * 0.0042);
+    const afterInput = e.yaw;
+    e.stepGuide(0.125);
+    expect(e.yaw).toBeCloseTo(afterInput / 2);
+  });
+
+  it("move input ends the hold and hands over to walking", () => {
+    const { e } = runtime();
+    e.startGuide(route);
+    e.input.move.mockReturnValueOnce({ x: 0, y: 1, run: false });
+    e.stepGuide(0.125);
+    expect(e.mode).toBe("walk");
+    expect(e.guide).toBeNull();
+    expect(e.guideIdentityHoldS).toBe(0);
+  });
+
+  it.each(["seek", "stop", "mode"])("%s ends the hold without restoring it on guide re-entry", (action) => {
+    const { e } = runtime();
+    e.startGuide(route);
+    expect(e.guideIdentityHoldS).toBe(4);
+    if (action === "seek") e.seekGuide(2);
+    else if (action === "stop") e.stopGuide();
+    else e.setMode("overview");
+    expect(e.guideIdentityHoldS).toBe(0);
+    if (action === "stop") e.startGuide(route);
+    else e.setMode("guide");
+    e.yaw = 0.6;
+    e.stepGuide(0.125);
+    expect(e.yaw).toBeCloseTo(0.3);
+  });
+
+  it("does not hold when no board qualifies for framing", () => {
+    const { e } = runtime(10);
+    e.startGuide(route);
+    expect(e.guideIdentityHoldS).toBe(0);
+    e.yaw = 0.6;
+    e.stepGuide(0.125);
+    expect(e.yaw).toBeCloseTo(0.3);
+  });
+
+  it("walk spawn leaves input in control and does not arm a guide hold", () => {
+    const { e } = runtime();
+    e.walkFrom({ x: 0, y: 0, z: 0 });
+    expect(e.guideIdentityHoldS).toBe(0);
+    const yaw = e.yaw;
+    e.stepWalk(0.25);
+    expect(e.yaw).toBe(yaw);
+    e.input.consumeLook.mockReturnValueOnce({ dx: 10, dy: 0, zoom: 0 });
+    e.stepWalk(0.25);
+    expect(e.yaw).toBeCloseTo(yaw - 0.042);
+    e.startGuide(route);
+    e.yaw = 0.6;
+    e.stepGuide(0.125);
+    expect(e.yaw).toBeCloseTo(0.3);
+  });
+});
+
 describe("identity QA and chip integration", () => {
+  it("batches initial measurements before writes and reuses sizes without redundant translate writes", () => {
+    const { e, board } = runtime();
+    e.mode = "walk";
+    e.camera.position.set(-2, 2, 0); e.camera.lookAt(board.position); e.camera.updateMatrixWorld(true);
+    const labels = [labelAt(board, true), labelAt(board, true)];
+    e.poiLabels = labels;
+    const events: string[] = [];
+    const spies = labels.map((l, i) => ({
+      width: vi.spyOn(l.obj.element, "offsetWidth", "get").mockImplementation(() => { events.push(`width${i}`); return 100; }),
+      height: vi.spyOn(l.obj.element, "offsetHeight", "get").mockImplementation(() => { events.push(`height${i}`); return 26; }),
+      translate: vi.spyOn(l.obj.element.style, "translate", "set").mockImplementation(() => { events.push(`write${i}`); }),
+    }));
+    e.updateIdentityLabels();
+    expect(events).toEqual(["width0", "height0", "width1", "height1", "write0", "write1"]);
+    for (const l of labels) expect(l.size).toEqual({ w: 100, h: 26 });
+    for (const s of spies) { s.width.mockClear(); s.height.mockClear(); s.translate.mockClear(); }
+    for (let i = 0; i < 5; i++) e.updateIdentityLabels();
+    for (const s of spies) {
+      expect(s.width).not.toHaveBeenCalled();
+      expect(s.height).not.toHaveBeenCalled();
+      expect(s.translate).not.toHaveBeenCalled();
+    }
+    e.mode = "overview";
+    e.updateIdentityLabels();
+    for (const s of spies) { expect(s.translate).toHaveBeenCalledExactlyOnceWith(""); s.translate.mockClear(); }
+    for (let i = 0; i < 5; i++) e.updateIdentityLabels();
+    for (const s of spies) {
+      expect(s.width).not.toHaveBeenCalled();
+      expect(s.height).not.toHaveBeenCalled();
+      expect(s.translate).not.toHaveBeenCalled();
+    }
+  });
+
   it("reports actual chip coverage and does not report a hidden or detached board in frame", () => {
     const { e, board, root } = runtime();
     e.camera.position.set(-2, 2, 0); e.camera.lookAt(board.position); e.camera.updateMatrixWorld(true);
@@ -134,13 +272,7 @@ describe("identity QA and chip integration", () => {
     e.mode = "walk";
     e.camera.position.set(-2, 2, 0); e.camera.lookAt(board.position); e.camera.updateMatrixWorld(true);
     const r = e.identity()[0].nameRect;
-    const label = (selected: boolean) => {
-      const obj = new THREE.Object3D() as THREE.Object3D & { element: unknown };
-      obj.position.copy(board.position); obj.updateMatrixWorld(true);
-      obj.element = { isConnected: true, offsetWidth: 100, offsetHeight: 26, textContent: "Name", style: {}, classList: { toggle: vi.fn() } };
-      return { selected, obj, groundY: 0, occluded: "none", size: null, measureTries: 0, identityHidden: false, identityOffsetY: 0, state: "shown", decluttered: false };
-    };
-    const plain = label(false), endpoint = label(true); e.poiLabels = [plain, endpoint];
+    const plain = labelAt(board, false), endpoint = labelAt(board, true); e.poiLabels = [plain, endpoint];
     e.updateLabels();
     expect(plain.identityHidden).toBe(true); expect(endpoint.identityHidden).toBe(false);
     expect(endpoint.identityOffsetY).toBeLessThan(0);
