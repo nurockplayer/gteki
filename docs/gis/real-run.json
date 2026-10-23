@@ -180,8 +180,8 @@
     }
   ],
   "invalidated": {
-    "at": "2026-10-22T16:29:29.749Z",
-    "by_command": "gis literals-report",
+    "at": "2026-10-23T00:36:24.837Z",
+    "by_command": "gis csv-profile tokyo-muni-shinjuku-public-facilities-csv tokyo-muni-shinjuku-tourism-csv tokyo-muni-shinjuku-cultural-properties-csv tokyo-muni-toshima-tourism-csv tokyo-muni-toshima-cultural-properties-csv tokyo-muni-toshima-public-facilities-csv tokyo-muni-shinjuku-shelter-csv tokyo-muni-toshima-shelter-csv tokyo-muni-shinjuku-park-csv tokyo-emergency-route-zip tokyo-nishi-shinjuku-walk-zip tokyo-toei-station-info-csv hokonavi-oedo-shinjuku-nishiguchi-package:res-network-csv-zip hokonavi-oedo-shinjuku-nishiguchi-package:res-network-geojson-zip hokonavi-oedo-shinjuku-nishiguchi-package:res-network-shapefile-zip hokonavi-oedo-shinjuku-nishiguchi-package:res-stationmap-geojson-zip hokonavi-oedo-shinjuku-nishiguchi-package:res-stationmap-shapefile-zip hokonavi-oedo-tochomae-package:res-network-csv-zip hokonavi-oedo-tochomae-package:res-network-geojson-zip hokonavi-oedo-tochomae-package:res-network-shapefile-zip hokonavi-oedo-tochomae-package:res-stationmap-geojson-zip hokonavi-oedo-tochomae-package:res-stationmap-shapefile-zip hokonavi-shibuya-sendagaya-shinjuku-package:res-link-csv hokonavi-shibuya-sendagaya-shinjuku-package:res-node-csv",
     "reason": "Report-writing command run outside real-run; rerun real-run before summarizing"
   }
 }

@@ -236,7 +236,7 @@ A CSV row is in the window when its point lies inside any disc; a vector feature
 | Member format | Bytes | Facts |
 | --- | --- | --- |
 | geojson | 138,440 | {"features":254,"geometry_types":{"LineString":254},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6986591269929,"lat_min":35.69217140521896,"lon_max":139.6994428970646,"lat_max":35.69425765677936},"vertices_as_is_in_japan":508,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":123}} |
-| geojson | 92,063 | {"features":225,"geometry_types":{"Point":225},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6986591269929,"lat_min":35.69217140521896,"lon_max":139.6994428970646,"lat_max":35.69425765677936},"vertices_as_is_in_japan":225,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":0}} |
+| geojson | 92,063 | {"features":225,"geometry_types":{"Point":225},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6986591269929,"lat_min":35.69217140521896,"lon_max":139.6994428970646,"lat_max":35.69425765677936},"vertices_as_is_in_japan":225,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":105}} |
 
 ### hokonavi-oedo-shinjuku-nishiguchi-package:res-network-shapefile-zip
 
@@ -251,7 +251,7 @@ A CSV row is in the window when its point lies inside any disc; a vector feature
 | shx | 2,132 |  |
 | dbf | 415,736 | {"records":225,"field_count":11,"field_names":["node_id","lat","lon","floor","in_out","link1_id","link2_id","link3_id","link4_id","link5_id","link6_id"]} |
 | prj | 145 | {"crs_name":"GCS_JGD_2011"} |
-| shp | 6,400 | {"shape_type_code":1,"bbox_native":{"x_min":139.6986591269929,"y_min":35.69217140521896,"x_max":139.6994428970646,"y_max":35.69425765677936},"window_evaluation":"not evaluated: shape type is not a polyline or polygon"} |
+| shp | 6,400 | {"shape_type_code":1,"bbox_native":{"x_min":139.6986591269929,"y_min":35.69217140521896,"x_max":139.6994428970646,"y_max":35.69425765677936},"crs_interpretation":"geographic longitude/latitude","records_read":225,"bbox_lonlat":{"lon_min":139.6986591269929,"lat_min":35.69217140521896,"lon_max":139.6994428970646,"lat_max":35.69425765677936},"records_touching_window":{"ikebukuro":0,"shinjuku":105}} |
 | shx | 1,900 |  |
 
 ### hokonavi-oedo-shinjuku-nishiguchi-package:res-stationmap-geojson-zip
@@ -261,16 +261,16 @@ A CSV row is in the window when its point lies inside any disc; a vector feature
 
 | Member format | Bytes | Facts |
 | --- | --- | --- |
-| geojson | 2,948 | {"features":11,"geometry_types":{"Point":11},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6990624391616,"lat_min":35.69218573363334,"lon_max":139.69941981254325,"lat_max":35.69285915552645},"vertices_as_is_in_japan":11,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":0}} |
+| geojson | 2,948 | {"features":11,"geometry_types":{"Point":11},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6990624391616,"lat_min":35.69218573363334,"lon_max":139.69941981254325,"lat_max":35.69285915552645},"vertices_as_is_in_japan":11,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":11}} |
 | geojson | 3,527 | {"features":2,"geometry_types":{"Polygon":2},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6990518307332,"lat_min":35.69216427392749,"lon_max":139.69950254436233,"lat_max":35.69288036455656},"vertices_as_is_in_japan":75,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":2}} |
 | geojson | 16,591 | {"features":19,"geometry_types":{"Polygon":19},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.69905183073317,"lat_min":35.69216427392749,"lon_max":139.69950254436233,"lat_max":35.69288036455652},"vertices_as_is_in_japan":280,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":19}} |
-| geojson | 7,871 | {"features":30,"geometry_types":{"Point":30},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.69881788329587,"lat_min":35.69241792418446,"lon_max":139.69944252800363,"lat_max":35.694226155359836},"vertices_as_is_in_japan":30,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":0}} |
+| geojson | 7,871 | {"features":30,"geometry_types":{"Point":30},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.69881788329587,"lat_min":35.69241792418446,"lon_max":139.69944252800363,"lat_max":35.694226155359836},"vertices_as_is_in_japan":30,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":14}} |
 | geojson | 7,412 | {"features":2,"geometry_types":{"Polygon":2},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6988125425419,"lat_min":35.692362554555636,"lon_max":139.69944560317728,"lat_max":35.6942706024887},"vertices_as_is_in_japan":173,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":1}} |
 | geojson | 53,442 | {"features":64,"geometry_types":{"Polygon":64},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.69881254254187,"lat_min":35.69236255455565,"lon_max":139.69944560317725,"lat_max":35.69427060248871},"vertices_as_is_in_japan":887,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":36}} |
-| geojson | 7,349 | {"features":28,"geometry_types":{"Point":28},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.69902571773315,"lat_min":35.69269725472834,"lon_max":139.69928045625636,"lat_max":35.69389531156452},"vertices_as_is_in_japan":28,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":0}} |
+| geojson | 7,349 | {"features":28,"geometry_types":{"Point":28},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.69902571773315,"lat_min":35.69269725472834,"lon_max":139.69928045625636,"lat_max":35.69389531156452},"vertices_as_is_in_japan":28,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":13}} |
 | geojson | 6,960 | {"features":1,"geometry_types":{"Polygon":1},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6989431768883,"lat_min":35.69262653929785,"lon_max":139.6993797929794,"lat_max":35.69390894471439},"vertices_as_is_in_japan":167,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":1}} |
 | geojson | 68,077 | {"features":85,"geometry_types":{"Polygon":85},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.69894317688826,"lat_min":35.69262653929783,"lon_max":139.69937979297939,"lat_max":35.69390894471439},"vertices_as_is_in_japan":1104,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":54}} |
-| geojson | 1,903 | {"features":7,"geometry_types":{"Point":7},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6990602782751,"lat_min":35.693162293756146,"lon_max":139.6991921476514,"lat_max":35.6937147378328},"vertices_as_is_in_japan":7,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":0}} |
+| geojson | 1,903 | {"features":7,"geometry_types":{"Point":7},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6990602782751,"lat_min":35.693162293756146,"lon_max":139.6991921476514,"lat_max":35.6937147378328},"vertices_as_is_in_japan":7,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":2}} |
 | geojson | 1,702 | {"features":1,"geometry_types":{"Polygon":1},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6989153812101,"lat_min":35.69284886629439,"lon_max":139.69926025534156,"lat_max":35.69407840663301},"vertices_as_is_in_japan":35,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":1}} |
 | geojson | 63,833 | {"features":74,"geometry_types":{"Polygon":74},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6989153812101,"lat_min":35.6928488662944,"lon_max":139.69926025534156,"lat_max":35.694078406633004},"vertices_as_is_in_japan":1076,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":28}} |
 
@@ -283,7 +283,7 @@ A CSV row is in the window when its point lies inside any disc; a vector feature
 | --- | --- | --- |
 | dbf | 7,443 | {"records":11,"field_count":5,"field_names":["id","category","floor_id","name","source"]} |
 | prj | 145 | {"crs_name":"GCS_JGD_2011"} |
-| shp | 584 | {"shape_type_code":11,"bbox_native":{"x_min":139.6990624391616,"y_min":35.69218573363334,"x_max":139.69941981254325,"y_max":35.69285915552645},"window_evaluation":"not evaluated: shape type is not a polyline or polygon"} |
+| shp | 584 | {"shape_type_code":11,"bbox_native":{"x_min":139.6990624391616,"y_min":35.69218573363334,"x_max":139.69941981254325,"y_max":35.69285915552645},"crs_interpretation":"geographic longitude/latitude","records_read":11,"bbox_lonlat":{"lon_min":139.6990624391616,"lat_min":35.69218573363334,"lon_max":139.69941981254325,"lat_max":35.69285915552645},"records_touching_window":{"ikebukuro":0,"shinjuku":11}} |
 | shx | 188 |  |
 | dbf | 734 | {"records":2,"field_count":6,"field_names":["id","category","name","ordinal","short_name","source"]} |
 | prj | 145 | {"crs_name":"GCS_JGD_2011"} |
@@ -297,7 +297,7 @@ A CSV row is in the window when its point lies inside any disc; a vector feature
 | shx | 252 |  |
 | dbf | 19,964 | {"records":30,"field_count":5,"field_names":["id","category","floor_id","name","source"]} |
 | prj | 145 | {"crs_name":"GCS_JGD_2011"} |
-| shp | 1,420 | {"shape_type_code":11,"bbox_native":{"x_min":139.69881788329587,"y_min":35.69241792418446,"x_max":139.69944252800363,"y_max":35.694226155359836},"window_evaluation":"not evaluated: shape type is not a polyline or polygon"} |
+| shp | 1,420 | {"shape_type_code":11,"bbox_native":{"x_min":139.69881788329587,"y_min":35.69241792418446,"x_max":139.69944252800363,"y_max":35.694226155359836},"crs_interpretation":"geographic longitude/latitude","records_read":30,"bbox_lonlat":{"lon_min":139.69881788329587,"lat_min":35.69241792418446,"lon_max":139.69944252800363,"lat_max":35.694226155359836},"records_touching_window":{"ikebukuro":0,"shinjuku":14}} |
 | shx | 340 |  |
 | dbf | 734 | {"records":2,"field_count":6,"field_names":["id","category","name","ordinal","short_name","source"]} |
 | prj | 145 | {"crs_name":"GCS_JGD_2011"} |
@@ -311,7 +311,7 @@ A CSV row is in the window when its point lies inside any disc; a vector feature
 | shx | 612 |  |
 | dbf | 18,646 | {"records":28,"field_count":5,"field_names":["id","category","floor_id","name","source"]} |
 | prj | 145 | {"crs_name":"GCS_JGD_2011"} |
-| shp | 1,332 | {"shape_type_code":11,"bbox_native":{"x_min":139.69902571773315,"y_min":35.69269725472834,"x_max":139.69928045625636,"y_max":35.69389531156452},"window_evaluation":"not evaluated: shape type is not a polyline or polygon"} |
+| shp | 1,332 | {"shape_type_code":11,"bbox_native":{"x_min":139.69902571773315,"y_min":35.69269725472834,"x_max":139.69928045625636,"y_max":35.69389531156452},"crs_interpretation":"geographic longitude/latitude","records_read":28,"bbox_lonlat":{"lon_min":139.69902571773315,"lat_min":35.69269725472834,"lon_max":139.69928045625636,"lat_max":35.69389531156452},"records_touching_window":{"ikebukuro":0,"shinjuku":13}} |
 | shx | 324 |  |
 | dbf | 480 | {"records":1,"field_count":6,"field_names":["id","category","name","ordinal","short_name","source"]} |
 | prj | 145 | {"crs_name":"GCS_JGD_2011"} |
@@ -326,7 +326,7 @@ A CSV row is in the window when its point lies inside any disc; a vector feature
 | shx | 772 |  |
 | dbf | 4,807 | {"records":7,"field_count":5,"field_names":["id","category","floor_id","name","source"]} |
 | prj | 145 | {"crs_name":"GCS_JGD_2011"} |
-| shp | 408 | {"shape_type_code":11,"bbox_native":{"x_min":139.6990602782751,"y_min":35.693162293756146,"x_max":139.6991921476514,"y_max":35.6937147378328},"window_evaluation":"not evaluated: shape type is not a polyline or polygon"} |
+| shp | 408 | {"shape_type_code":11,"bbox_native":{"x_min":139.6990602782751,"y_min":35.693162293756146,"x_max":139.6991921476514,"y_max":35.6937147378328},"crs_interpretation":"geographic longitude/latitude","records_read":7,"bbox_lonlat":{"lon_min":139.6990602782751,"lat_min":35.693162293756146,"lon_max":139.6991921476514,"lat_max":35.6937147378328},"records_touching_window":{"ikebukuro":0,"shinjuku":2}} |
 | shx | 156 |  |
 | dbf | 480 | {"records":1,"field_count":6,"field_names":["id","category","name","ordinal","short_name","source"]} |
 | prj | 145 | {"crs_name":"GCS_JGD_2011"} |
@@ -357,7 +357,7 @@ A CSV row is in the window when its point lies inside any disc; a vector feature
 | Member format | Bytes | Facts |
 | --- | --- | --- |
 | geojson | 167,355 | {"features":307,"geometry_types":{"LineString":307},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6903443220001,"lat_min":35.690076360000035,"lon_max":139.69344039800012,"lat_max":35.69078859200005},"vertices_as_is_in_japan":617,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":59}} |
-| geojson | 110,539 | {"features":270,"geometry_types":{"Point":270},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.69034432243257,"lat_min":35.69007635963635,"lon_max":139.69344039775626,"lat_max":35.69078859211987},"vertices_as_is_in_japan":270,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":0}} |
+| geojson | 110,539 | {"features":270,"geometry_types":{"Point":270},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.69034432243257,"lat_min":35.69007635963635,"lon_max":139.69344039775626,"lat_max":35.69078859211987},"vertices_as_is_in_japan":270,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":47}} |
 
 ### hokonavi-oedo-tochomae-package:res-network-shapefile-zip
 
@@ -372,7 +372,7 @@ A CSV row is in the window when its point lies inside any disc; a vector feature
 | shx | 2,556 |  |
 | dbf | 498,806 | {"records":270,"field_count":11,"field_names":["node_id","lat","lon","floor","in_out","link1_id","link2_id","link3_id","link4_id","link5_id","link6_id"]} |
 | prj | 145 | {"crs_name":"GCS_JGD_2011"} |
-| shp | 7,660 | {"shape_type_code":1,"bbox_native":{"x_min":139.69034432243257,"y_min":35.69007635963635,"x_max":139.69344039775626,"y_max":35.69078859211987},"window_evaluation":"not evaluated: shape type is not a polyline or polygon"} |
+| shp | 7,660 | {"shape_type_code":1,"bbox_native":{"x_min":139.69034432243257,"y_min":35.69007635963635,"x_max":139.69344039775626,"y_max":35.69078859211987},"crs_interpretation":"geographic longitude/latitude","records_read":270,"bbox_lonlat":{"lon_min":139.69034432243257,"lat_min":35.69007635963635,"lon_max":139.69344039775626,"lat_max":35.69078859211987},"records_touching_window":{"ikebukuro":0,"shinjuku":47}} |
 | shx | 2,260 |  |
 
 ### hokonavi-oedo-tochomae-package:res-stationmap-geojson-zip
@@ -382,16 +382,16 @@ A CSV row is in the window when its point lies inside any disc; a vector feature
 
 | Member format | Bytes | Facts |
 | --- | --- | --- |
-| geojson | 2,687 | {"features":10,"geometry_types":{"Point":10},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.69035270409378,"lat_min":35.69015925607073,"lon_max":139.69342156675995,"lat_max":35.69045915402862},"vertices_as_is_in_japan":10,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":0}} |
+| geojson | 2,687 | {"features":10,"geometry_types":{"Point":10},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.69035270409378,"lat_min":35.69015925607073,"lon_max":139.69342156675995,"lat_max":35.69045915402862},"vertices_as_is_in_japan":10,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":2}} |
 | geojson | 5,502 | {"features":5,"geometry_types":{"Polygon":5},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6903358497129,"lat_min":35.690138331367415,"lon_max":139.6934465082215,"lat_max":35.69046547702222},"vertices_as_is_in_japan":110,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":1}} |
 | geojson | 8,349 | {"features":9,"geometry_types":{"Polygon":9},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6903358497129,"lat_min":35.69013833136741,"lon_max":139.6934465082215,"lat_max":35.69046547702222},"vertices_as_is_in_japan":144,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":1}} |
-| geojson | 6,338 | {"features":24,"geometry_types":{"Point":24},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6903492156382,"lat_min":35.69009062054457,"lon_max":139.69343358345316,"lat_max":35.690706062979444},"vertices_as_is_in_japan":24,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":0}} |
+| geojson | 6,338 | {"features":24,"geometry_types":{"Point":24},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6903492156382,"lat_min":35.69009062054457,"lon_max":139.69343358345316,"lat_max":35.690706062979444},"vertices_as_is_in_japan":24,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":6}} |
 | geojson | 17,636 | {"features":3,"geometry_types":{"Polygon":3},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.69031965681606,"lat_min":35.69007773251985,"lon_max":139.69345649203785,"lat_max":35.690800514946666},"vertices_as_is_in_japan":425,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":1}} |
 | geojson | 57,134 | {"features":46,"geometry_types":{"Polygon":46},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.69031965681603,"lat_min":35.69007773251985,"lon_max":139.69345649203785,"lat_max":35.69080051494667},"vertices_as_is_in_japan":1107,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":12}} |
-| geojson | 9,467 | {"features":36,"geometry_types":{"Point":36},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.69062157464188,"lat_min":35.69023897630783,"lon_max":139.6930837802459,"lat_max":35.690720037245995},"vertices_as_is_in_japan":36,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":0}} |
+| geojson | 9,467 | {"features":36,"geometry_types":{"Point":36},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.69062157464188,"lat_min":35.69023897630783,"lon_max":139.6930837802459,"lat_max":35.690720037245995},"vertices_as_is_in_japan":36,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":3}} |
 | geojson | 22,365 | {"features":1,"geometry_types":{"Polygon":1},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6905857592643,"lat_min":35.69021865717151,"lon_max":139.69312045703896,"lat_max":35.69073333260362},"vertices_as_is_in_japan":554,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":1}} |
 | geojson | 72,680 | {"features":78,"geometry_types":{"Polygon":78},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6905857592643,"lat_min":35.69021865717152,"lon_max":139.69312045703896,"lat_max":35.69073333260363},"vertices_as_is_in_japan":1270,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":8}} |
-| geojson | 3,209 | {"features":12,"geometry_types":{"Point":12},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.69241769419335,"lat_min":35.690476411803175,"lon_max":139.69310666242848,"lat_max":35.69072703702567},"vertices_as_is_in_japan":12,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":0}} |
+| geojson | 3,209 | {"features":12,"geometry_types":{"Point":12},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.69241769419335,"lat_min":35.690476411803175,"lon_max":139.69310666242848,"lat_max":35.69072703702567},"vertices_as_is_in_japan":12,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":2}} |
 | geojson | 4,903 | {"features":2,"geometry_types":{"Polygon":2},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6919011728175,"lat_min":35.69038968568292,"lon_max":139.69345150762788,"lat_max":35.69080005951527},"vertices_as_is_in_japan":110,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":2}} |
 | geojson | 131,973 | {"features":142,"geometry_types":{"Polygon":142},"declared_crs_member":"EPSG:6668","bbox":{"lon_min":139.6919011728175,"lat_min":35.69038968568293,"lon_max":139.6934515076279,"lat_max":35.69080005951527},"vertices_as_is_in_japan":2304,"vertices_swapped_in_japan":0,"features_touching_window":{"ikebukuro":0,"shinjuku":36}} |
 
@@ -404,7 +404,7 @@ A CSV row is in the window when its point lies inside any disc; a vector feature
 | --- | --- | --- |
 | dbf | 12,904 | {"records":10,"field_count":5,"field_names":["id","category","floor_id","name","source"]} |
 | prj | 145 | {"crs_name":"GCS_JGD_2011"} |
-| shp | 540 | {"shape_type_code":11,"bbox_native":{"x_min":139.69035270409378,"y_min":35.69015925607073,"x_max":139.69342156675995,"y_max":35.69045915402862},"window_evaluation":"not evaluated: shape type is not a polyline or polygon"} |
+| shp | 540 | {"shape_type_code":11,"bbox_native":{"x_min":139.69035270409378,"y_min":35.69015925607073,"x_max":139.69342156675995,"y_max":35.69045915402862},"crs_interpretation":"geographic longitude/latitude","records_read":10,"bbox_lonlat":{"lon_min":139.69035270409378,"lat_min":35.69015925607073,"lon_max":139.69342156675995,"lat_max":35.69045915402862},"records_touching_window":{"ikebukuro":0,"shinjuku":2}} |
 | shx | 180 |  |
 | dbf | 6,646 | {"records":5,"field_count":6,"field_names":["id","category","name","ordinal","short_name","source"]} |
 | prj | 145 | {"crs_name":"GCS_JGD_2011"} |
@@ -416,7 +416,7 @@ A CSV row is in the window when its point lies inside any disc; a vector feature
 | shx | 172 |  |
 | dbf | 30,698 | {"records":24,"field_count":5,"field_names":["id","category","floor_id","name","source"]} |
 | prj | 145 | {"crs_name":"GCS_JGD_2011"} |
-| shp | 1,156 | {"shape_type_code":11,"bbox_native":{"x_min":139.6903492156382,"y_min":35.69009062054457,"x_max":139.69343358345316,"y_max":35.690706062979444},"window_evaluation":"not evaluated: shape type is not a polyline or polygon"} |
+| shp | 1,156 | {"shape_type_code":11,"bbox_native":{"x_min":139.6903492156382,"y_min":35.69009062054457,"x_max":139.69343358345316,"y_max":35.690706062979444},"crs_interpretation":"geographic longitude/latitude","records_read":24,"bbox_lonlat":{"lon_min":139.6903492156382,"lat_min":35.69009062054457,"lon_max":139.69343358345316,"lat_max":35.690706062979444},"records_touching_window":{"ikebukuro":0,"shinjuku":6}} |
 | shx | 292 |  |
 | dbf | 4,078 | {"records":3,"field_count":6,"field_names":["id","category","name","ordinal","short_name","source"]} |
 | prj | 145 | {"crs_name":"GCS_JGD_2011"} |
@@ -428,7 +428,7 @@ A CSV row is in the window when its point lies inside any disc; a vector feature
 | shx | 468 |  |
 | dbf | 45,950 | {"records":36,"field_count":5,"field_names":["id","category","floor_id","name","source"]} |
 | prj | 145 | {"crs_name":"GCS_JGD_2011"} |
-| shp | 1,684 | {"shape_type_code":11,"bbox_native":{"x_min":139.69062157464188,"y_min":35.69023897630783,"x_max":139.6930837802459,"y_max":35.690720037245995},"window_evaluation":"not evaluated: shape type is not a polyline or polygon"} |
+| shp | 1,684 | {"shape_type_code":11,"bbox_native":{"x_min":139.69062157464188,"y_min":35.69023897630783,"x_max":139.6930837802459,"y_max":35.690720037245995},"crs_interpretation":"geographic longitude/latitude","records_read":36,"bbox_lonlat":{"lon_min":139.69062157464188,"lat_min":35.69023897630783,"lon_max":139.6930837802459,"lat_max":35.690720037245995},"records_touching_window":{"ikebukuro":0,"shinjuku":3}} |
 | shx | 388 |  |
 | dbf | 1,510 | {"records":1,"field_count":6,"field_names":["id","category","name","ordinal","short_name","source"]} |
 | prj | 145 | {"crs_name":"GCS_JGD_2011"} |
@@ -440,7 +440,7 @@ A CSV row is in the window when its point lies inside any disc; a vector feature
 | shx | 724 |  |
 | dbf | 15,446 | {"records":12,"field_count":5,"field_names":["id","category","floor_id","name","source"]} |
 | prj | 145 | {"crs_name":"GCS_JGD_2011"} |
-| shp | 628 | {"shape_type_code":11,"bbox_native":{"x_min":139.69241769419335,"y_min":35.690476411803175,"x_max":139.69310666242848,"y_max":35.69072703702567},"window_evaluation":"not evaluated: shape type is not a polyline or polygon"} |
+| shp | 628 | {"shape_type_code":11,"bbox_native":{"x_min":139.69241769419335,"y_min":35.690476411803175,"x_max":139.69310666242848,"y_max":35.69072703702567},"crs_interpretation":"geographic longitude/latitude","records_read":12,"bbox_lonlat":{"lon_min":139.69241769419335,"lat_min":35.690476411803175,"lon_max":139.69310666242848,"lat_max":35.69072703702567},"records_touching_window":{"ikebukuro":0,"shinjuku":2}} |
 | shx | 196 |  |
 | dbf | 2,794 | {"records":2,"field_count":6,"field_names":["id","category","name","ordinal","short_name","source"]} |
 | prj | 145 | {"crs_name":"GCS_JGD_2011"} |
