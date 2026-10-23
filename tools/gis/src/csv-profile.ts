@@ -262,18 +262,20 @@ export function shpDetail(data: Buffer, prjText: string | null, windows: Station
     const project = stationEnuProjector({ lat: w.origin.lat, lon: w.origin.lon, hM: 0 });
     return { w, discs: w.discs, toFrame: (lon: number, lat: number): FramePoint => { const [x, y] = project(lat, lon, 0); return [x, y]; }, n: 0 };
   });
-  const areal = [13, 15, 25].includes(shapeType);
+  const areal = [5, 15, 25].includes(shapeType);
+  const point = [1, 11, 21].includes(shapeType), multipoint = [8, 18, 28].includes(shapeType);
   let records = 0, minLon = Infinity, minLat = Infinity, maxLon = -Infinity, maxLat = -Infinity;
-  if ([3, 5, 13, 15, 23, 25].includes(shapeType)) {
+  if (point || multipoint || [3, 5, 13, 15, 23, 25].includes(shapeType)) {
     for (let o = 100; o + 8 <= data.length;) {
       const length = data.readInt32BE(o + 4) * 2;
       const rec = o + 8;
-      if (rec + length > data.length || length < 44) break;
-      const numParts = data.readInt32LE(rec + 36), numPoints = data.readInt32LE(rec + 40);
-      if (numPoints < 0 || numParts < 0 || rec + 44 + numParts * 4 > rec + length) break;
+      if (rec + length > data.length || length < (point ? 20 : multipoint ? 40 : 44)) break;
+      const numParts = point || multipoint ? 0 : data.readInt32LE(rec + 36);
+      const numPoints = point ? 1 : data.readInt32LE(rec + (multipoint ? 36 : 40));
+      const pts = point ? rec + 4 : multipoint ? rec + 40 : rec + 44 + numParts * 4;
+      if (numPoints < 0 || numParts < 0 || pts + numPoints * 16 > rec + length) break;
       const parts: number[] = [];
       for (let i = 0; i < numParts; i++) parts.push(data.readInt32LE(rec + 44 + i * 4));
-      const pts = rec + 44 + numParts * 4;
       const points: Array<[number, number]> = [];
       for (let i = 0; i < numPoints && pts + i * 16 + 16 <= data.length; i++) {
         const [lon, lat] = toLonLat(data.readDoubleLE(pts + i * 16), data.readDoubleLE(pts + i * 16 + 8));
@@ -282,7 +284,7 @@ export function shpDetail(data: Buffer, prjText: string | null, windows: Station
       }
       const bounds = numParts ? [...parts, numPoints] : [0, numPoints];
       // Per-window frames differ, so build each path in its own frame from the geographic points.
-      const geographic = bounds.slice(0, -1).map((start, k) => points.slice(start, bounds[k + 1]));
+      const geographic = point || multipoint ? points.map((p) => [p]) : bounds.slice(0, -1).map((start, k) => points.slice(start, bounds[k + 1]));
       perWindow.forEach((p, k) => {
         const rings = geographic.map((path) => path.map(([lon, lat]) => p.toFrame(lon, lat)));
         const hit = areal ? polygonMeetsDiscs(rings, p.discs) : rings.some((ring) => pathMeetsDiscs(ring, p.discs));
@@ -291,7 +293,7 @@ export function shpDetail(data: Buffer, prjText: string | null, windows: Station
       records++;
       o = rec + length;
     }
-  } else return { ...base, window_evaluation: 'not evaluated: shape type is not a polyline or polygon' };
+  } else return { ...base, window_evaluation: 'not evaluated: shape type is not a point, multipoint, polyline or polygon' };
   return { ...base, crs_interpretation: geographic ? 'geographic longitude/latitude' : 'Japan Plane Rectangular zone IX (EPSG:6677 parameters)', records_read: records,
     bbox_lonlat: Number.isFinite(minLon) ? { lon_min: minLon, lat_min: minLat, lon_max: maxLon, lat_max: maxLat } : null, records_touching_window: Object.fromEntries(perWindow.map((p) => [p.w.station, p.n])) };
 }

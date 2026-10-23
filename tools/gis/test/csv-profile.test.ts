@@ -14,6 +14,31 @@ const IN_ORIGIN = 'A,35.7002,139.7002';
 const OUT = 'B,35.72,139.72';
 const IN_EXIT_DISC = 'C,35.7,139.7118'; // about 1,070 m east of the origin: inside the 100 m disc around the node at x = 1000
 
+function shapeBuffer(type: number, paths: Array<Array<[number, number]>>): Buffer {
+  const points = paths.flat(), point = [1, 11, 21].includes(type), multipoint = [8, 18, 28].includes(type);
+  const xyOffset = point ? 4 : multipoint ? 40 : 44 + paths.length * 4;
+  const extra = point ? (type === 11 ? 16 : type === 21 ? 8 : 0) : (type > 10 ? (16 + points.length * 8) * (type < 20 ? 2 : 1) : 0);
+  const content = Buffer.alloc(xyOffset + points.length * 16 + extra);
+  content.writeInt32LE(type, 0);
+  if (!point) {
+    const xs = points.map((p) => p[0]), ys = points.map((p) => p[1]);
+    content.writeDoubleLE(Math.min(...xs), 4); content.writeDoubleLE(Math.min(...ys), 12);
+    content.writeDoubleLE(Math.max(...xs), 20); content.writeDoubleLE(Math.max(...ys), 28);
+    if (multipoint) content.writeInt32LE(points.length, 36);
+    else {
+      content.writeInt32LE(paths.length, 36); content.writeInt32LE(points.length, 40);
+      let start = 0;
+      paths.forEach((path, i) => { content.writeInt32LE(start, 44 + i * 4); start += path.length; });
+    }
+  }
+  points.forEach(([x, y], i) => { content.writeDoubleLE(x, xyOffset + i * 16); content.writeDoubleLE(y, xyOffset + i * 16 + 8); });
+  const header = Buffer.alloc(100), record = Buffer.alloc(8);
+  header.writeInt32BE(9994, 0); header.writeInt32BE((108 + content.length) / 2, 24);
+  header.writeInt32LE(1000, 28); header.writeInt32LE(type, 32);
+  record.writeInt32BE(1, 0); record.writeInt32BE(content.length / 2, 4);
+  return Buffer.concat([header, record, content]);
+}
+
 describe('csv-profile', () => {
   it('decodes Shift_JIS, UTF-8 (with and without BOM) and UTF-16LE', () => {
     const sjis = decodeCsvBytes(sjisCsv(['x,1,2']));
@@ -123,6 +148,31 @@ describe('csv-profile', () => {
     const shape = Buffer.concat([header, rec, content]);
     const detail = shpDetail(shape, 'GEOGCS["JGD2011",DATUM["JGD2011"]]', [STATION]);
     expect(detail.records_touching_window).toEqual({ testville: 1 });
+  });
+
+  it.each([5, 15, 25])('counts containment and respects holes for shapefile polygon type %i', (type) => {
+    const outer: Array<[number, number]> = [[139.69, 35.69], [139.71, 35.69], [139.71, 35.71], [139.69, 35.71], [139.69, 35.69]];
+    const hole: Array<[number, number]> = [[139.695, 35.695], [139.705, 35.695], [139.705, 35.705], [139.695, 35.705], [139.695, 35.695]];
+    const windows = [{ ...STATION, discs: [STATION.discs[0]] }];
+    expect(shpDetail(shapeBuffer(type, [outer]), 'GEOGCS["JGD2011"]', windows).records_touching_window).toEqual({ testville: 1 });
+    expect(shpDetail(shapeBuffer(type, [outer, hole]), 'GEOGCS["JGD2011"]', windows).records_touching_window).toEqual({ testville: 0 });
+  });
+
+  it.each([3, 13, 23])('keeps shapefile polyline type %i open', (type) => {
+    const path: Array<[number, number]> = [[139.69, 35.7], [139.69, 35.71], [139.71, 35.71], [139.71, 35.7]];
+    const windows = [{ ...STATION, discs: [STATION.discs[0]] }];
+    expect(shpDetail(shapeBuffer(type, [path]), 'GEOGCS["JGD2011"]', windows).records_touching_window).toEqual({ testville: 0 });
+  });
+
+  it.each([1, 11, 21, 8, 18, 28])('tests shapefile point or multipoint type %i without connecting members', (type) => {
+    const windows = [{ ...STATION, discs: [STATION.discs[0]] }];
+    const profile = (points: Array<[number, number]>): Record<string, unknown> => shpDetail(shapeBuffer(type, [points]), 'GEOGCS["JGD2011"]', windows);
+    expect(profile([[139.7, 35.7]])).toMatchObject({ records_read: 1, records_touching_window: { testville: 1 } });
+    expect(profile([[139.69, 35.7]]).records_touching_window).toEqual({ testville: 0 });
+    if ([8, 18, 28].includes(type)) {
+      expect(profile([[139.69, 35.7], [139.71, 35.7]]).records_touching_window).toEqual({ testville: 0 });
+      expect(profile([[139.7, 35.7], [139.7001, 35.7]]).records_touching_window).toEqual({ testville: 1 });
+    }
   });
 
   it('describes long or blank headers instead of quoting them', () => {

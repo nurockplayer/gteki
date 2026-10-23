@@ -32,17 +32,24 @@ function segmentMeetsDisc(a: Point, b: Point, d: Disc): boolean {
   return distanceToSegment(d.x, d.y, a, b) <= d.r;
 }
 
-/**
- * A polyline (open) or ring (closed) meets any disc: a vertex, or a segment crossing the disc.
- * A ring also counts when it encloses a disc centre.
- */
-export function pathMeetsDiscs(path: readonly Point[], discs: readonly Disc[], closed = false): boolean {
+/** Edge tests only, so polygon containment can account for every ring together. */
+function pathEdgesMeetDiscs(path: readonly Point[], discs: readonly Disc[], closed: boolean): boolean {
   if (path.length === 0) return false;
+  if (path.length === 1) return discs.some((d) => Math.hypot(path[0]![0] - d.x, path[0]![1] - d.y) <= d.r);
   const last = closed ? path.length : path.length - 1;
   for (let i = 0; i < last; i++) {
     const a = path[i]!, b = path[(i + 1) % path.length]!;
     for (const d of discs) if (segmentMeetsDisc(a, b, d)) return true;
   }
+  return false;
+}
+
+/**
+ * A polyline (open) or ring (closed) meets any disc: a vertex, or a segment crossing the disc.
+ * A ring also counts when it encloses a disc centre.
+ */
+export function pathMeetsDiscs(path: readonly Point[], discs: readonly Disc[], closed = false): boolean {
+  if (pathEdgesMeetDiscs(path, discs, closed)) return true;
   if (!closed) return false;
   // A polygon enclosing a whole disc has no edge within reach of its centre.
   return discs.some((d) => pointInRing(d.x, d.y, path));
@@ -51,7 +58,7 @@ export function pathMeetsDiscs(path: readonly Point[], discs: readonly Disc[], c
 /** A polygon is its outer ring plus holes; a disc is inside when it sits in an odd number of rings. */
 export function polygonMeetsDiscs(rings: readonly (readonly Point[])[], discs: readonly Disc[]): boolean {
   if (rings.length === 0) return false;
-  if (rings.some((ring) => pathMeetsDiscs(ring, discs, true))) return true;
+  if (rings.some((ring) => pathEdgesMeetDiscs(ring, discs, true))) return true;
   return discs.some((d) => rings.filter((ring) => pointInRing(d.x, d.y, ring)).length % 2 === 1);
 }
 
@@ -78,7 +85,7 @@ export function geometryPaths(geometry: { type?: string; coordinates?: unknown }
   const coords = geometry?.coordinates;
   switch (geometry?.type) {
     case 'Point': out.lines.push(positions([coords])); break;
-    case 'MultiPoint': out.lines.push(positions(coords)); break;
+    case 'MultiPoint': for (const point of positions(coords)) out.lines.push([point]); break;
     case 'LineString': out.lines.push(positions(coords)); break;
     case 'MultiLineString': for (const part of Array.isArray(coords) ? coords : []) out.lines.push(positions(part)); break;
     case 'Polygon': out.polygons.push((Array.isArray(coords) ? coords : []).map(positions)); break;
