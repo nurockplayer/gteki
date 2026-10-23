@@ -40,6 +40,7 @@ pnpm typecheck
 - **Street-context budget probe** (draws/tris underground vs street, one run per tier; real GPU, not in CI): after `pnpm build`, in `tests/e2e` run `GTEKI_BUDGET=1 GTEKI_ROOT=<repo> pnpm exec playwright test specs/10-ikebukuro-context-budget.spec.ts --project=phone-chromium` (low) or `--project=desktop-chromium` (high); results land in `<repo>/.qa/ikebukuro-context-budget/`. It counts every pass at the WebGL boundary, so its numbers are not comparable with the scene-pass budget below; to check a change, run it once on the base branch and pass that run's `.json` as `GTEKI_BUDGET_BASELINE` (underground views must match, street views may add at most the context's own 8 meshes). Measured 2026-10-22, low tier, all passes: underground p50 44–53 draws / 132–136k triangles on both main and #110; street views +5–9 draws and +20–30k triangles with the context.
 - **Capture tooling** (dev only): `gt.capture(name)` and `gt.walkCapture(...)` write frames to
   `build/captures/`.
+- **Repeater-sign screenshots and atlas-size probe** (opt-in, needs a real GPU and a built `apps/web`; run from `tests/e2e`): `GTEKI_REPEATERS=1 GTEKI_ROOT=<checkout> pnpm exec playwright test specs/11-ikebukuro-repeater-signs.spec.ts --project=desktop-chromium` (or `--project=phone-chromium` for the low tier); writes `.qa/ikebukuro-repeaters/`.
 
 ## Layout
 
@@ -56,6 +57,7 @@ pnpm typecheck
 | `scene/kit/kit.json`, `scene/kit.ts` | Kit GLBs placed as instances on existing data (batch 1: barrier rails on the access-fence stretches; plus one labelled representative gate array per JR gate node); copies in `gteki/kit/` | presentation |
 | `scene/columns.json`, `scene/kit_columns.ts` | PLATEAU column footprints (found by shape in the `barriers` triangles, `pipeline/extract_columns.py`) and the kit column sleeves placed on them (batch 2) | truth (footprints, heights) / presentation (sleeves) |
 | `scene/dressing_anchors.json` | Stair nosing lines and escalator landings from the PLATEAU survey, where kit dressing is placed (see "Kit integration") | truth (survey positions) |
+| `scene/kit_catalog.json`, `scene/kit_placements.json` | Lane E catalog and per-anchor placements for stair and escalator dressing, generated from the anchors (see "Kit integration") | derived (survey dimensions) |
 | `pipeline/` | Reproducible data and asset build (stdlib Python + Blender; one Node walker check) | — |
 | `docs/` | G0 source audit, coverage gaps, evidence | — |
 
@@ -194,11 +196,28 @@ extract whose GML sha256 differs from `gteki/station.json`) writes `scene/dressi
 1 mm, deterministic. Facts only, derived from the surveyed EF_35 and EF_80 triangles:
 
 - `stair_flights[]`: a riser's top edge is the nosing line of the tread above; nosings one rise and one tread apart
-  chain into a flight. Each has `bottom` and `top` (`position`, `dir` = horizontal up-stair unit vector, `width_m`,
+  chain into a flight, one-to-one (each nosing has at most one successor and one predecessor; a stair the survey models
+  twice as two overlapping solids is kept as one of them, and `counts.duplicate_nosings_dropped` says how many nosings
+  that dropped). Each has `bottom` and `top` (`position`, `dir` = horizontal up-stair unit vector, `width_m`,
   end points `a` left and `b` right facing up), `steps`, `rise_m`, `run_m`, and every `nosings` row `[ax, ay, bx, by, z]`.
 - `escalator_lanes[]`: the bank's sloped walking quad gives the landing lines (low edge = `lower`, high edge =
   `upper`); the thin truss plates inside pair into lanes. Each lane has `lower` and `upper` anchors
   (`position`, `dir` up the escalator, `width_m` clear between plates), plus `rise_m`, `run_m` and `slope_deg`.
+
+**Lane E catalog.** `python3 -I pipeline/build_kit_catalog.py` (`pnpm build:kit-catalog`) turns the anchors into
+`scene/kit_catalog.json`, a Lane E batch catalog (`CATALOG=stations/ikebukuro/scene/kit_catalog.json`), and
+`scene/kit_placements.json`, which gives each flight or lane its catalog ids and ENU transform (`origin`, `dir`,
+`yaw_deg` about +Z taking the piece's +Y to `dir`, `mirror` always false). Every entry is `station-verified` and cites
+the anchors and PLATEAU GML sha256 plus the flight or lane ids it serves. Each stair flight becomes two
+`stair_dressing` entries so every GLB has one bake role: `..._nosing` (`stairs_ramps`) and `..._rails_{post,wall}`
+(handrails, `barriers`). `step_count` is the surveyed nosing count, `riser_mm` = rise / (steps - 1), `tread_mm` the mean
+nosing run, and riser, tread and width are rounded to whole mm (coarser snapping accumulated up to 40 mm by the top of a long flight); identical flights share one id and are instanced.
+`rail_mount` is `wall` when the base GLB's wall mesh lies within 0.3 m of both stair sides, else `post`. Flights with
+an implausible riser (outside 100-220 mm) or tread (under 200 mm), surveyed nosings more than 6 mm (the strip height) off the strips the generator builds with the whole-millimetre riser, and single-step flights are skipped and listed with
+their reason. Escalators carry `rise_mm`, `angle_deg` = atan2(rise, quad run) (the surveyed quad is the straight incline between the
+floors, so no `run_mm`), `width_mm` (tread width, read as the clear gap between the truss plates) and the default 800 mm
+landing. The placement origin is the bottom comb, 1.2 m before the quad's lower line along `dir` at the lower floor height
+(the top comb is 1.2 m past the upper line). Direction is not surveyed and is left out of the params. Placements carry `tiers`: nosings draw on `low` and `high`, escalators on `high` only (low waits for a phone measurement), and rails (6 segments) on `high` only and only for `main_route` flights, those a Lane F golden guided route walks (a polyline within 1 m of the flight's centre line at a matching height).
 
 **How the bake will take a kit GLB in** (not built yet; `blender_bake_lighting.py` is unchanged):
 
@@ -308,6 +327,21 @@ Evidence stills:
 - quality "low": at most 28 draw calls and 129k triangles per frame (56 crowd agents, 100 signs; four spots × four headings in the Central, West, South-West and North areas). Signs share atlas textures and merged geometry (three draw calls for all of them; one mesh per sign had pushed this to 252). On "low" the sign atlas is one 4096 × 2048 page painted at ~160 px/m (about 45 MB of GPU texture with mipmaps, down from 134 MB at full resolution);
 - shipped assets: 9.5 MB at "high", with lightmap WebP 1.1 MB (4k) or 0.5 MB (2k).
 
+### Cue source (#108 acceptance 4)
+
+The cues along the two guided legs, and where each comes from. Nothing here is invented: signs list
+only POIs the verified graph routes to, and the junctions are graph nodes.
+
+| Cue | Where | Source |
+| --- | --- | --- |
+| End signs at junctions | ~4 m along each verified edge from a junction | `graph:<edge>` + `poi:<exit or gate>`, derived by `pipeline/build_signage.py` |
+| Repeater 1 to 5 (`sign-rep-sw_h__w_cj-1…5`) | on `sw_h__w_cj` (152 m), 24 m apart between its two end signs | `basis`: `graph:sw_h__w_cj`, `fact:af-west-corridor`, and the `poi:` ids shown: `exit-4`, `exit-13`, `exit-15`, `exit-17`, `exit-38`, `exit-41`, `jr-central-gate-1`, `jr-south-gate` |
+| Junction nodes | `w_cj`, `sw_h` and the other graph junctions on the legs | `data/graph.src.json` nodes snapped to the PLATEAU walkable grid |
+
+The `basis` field of every repeater in `scene/signage.json` is the authoritative list. The
+`westb1-exit4` leg ran 143 m between two signs before this; it now has a readable sign every 24 m at
+most (`scene/signage.test.ts`). `jrc2-exit35` already met the 30 m rule.
+
 ## Deliberate simplifications
 
 - **Light fixtures** are generated on a regular 2.4 × 3.0 m grid under surveyed ceilings. They are
@@ -319,6 +353,14 @@ Evidence stills:
 - **Signs** use GTEki's design, placed about 4 m along each verified edge from junctions. Their
   content is computed from the verified graph. Positions are not real sign locations. Gate names
   carry a plain line-colour chip ("JR" on green), not an operator logo.
+  **Repeater signs** (`kind: "repeat"`, #108) fill verified edges of 100 m or more, spaced at most
+  24 m apart between the two end signs. Each is double-sided: the front faces walkers leaving the
+  edge's `from` node and the back faces the other way, with at most 3 exits and 1 gate and a
+  small "~140 m" countdown per item. The countdown is the graph's own walking distance
+  (`lengthM`, Dijkstra) to the POI's connector node less the sign's position, rounded to 5 m.
+  Exit 4 counts down to its stair foot, where the route ends. Content is a fact (verified edge,
+  routable POI); the positions and the spacing are design, not the real signs' locations. They
+  add two faces each to the sign atlas (see the budget test in `scene/signage.test.ts`).
 - **Crowd** is ambient decoration on verified edges, clamped to surveyed walkable lanes. It is
   not a pedestrian-flow model.
 - **Openings into unmodelled space** (fare areas, shops) block movement and render as a fogged
