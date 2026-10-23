@@ -8,6 +8,11 @@ along that edge. One sign per (junction, edge) is placed a few metres along
 the edge, facing back to the junction; its back face lists what lies ahead
 through the junction. Signs therefore only ever state destinations that the
 verified graph can actually route to.
+Long verified edges (REPEAT_MIN_EDGE_M or more) also get repeater signs between the two end signs so
+that no stretch of a passage goes more than REPEAT_SPACING_M without one (#108). A repeater is one
+double-sided sign: its front faces walkers leaving the edge's `from` node and lists what lies ahead
+toward `to`, its back is read walking the other way. Each exit / gate carries a distance counted down
+along the graph's own edge lengths. Content is as factual as the end signs; positions are design.
 Output: stations/ikebukuro/scene/signage.json (station-owned display data).
 """
 import heapq
@@ -28,6 +33,14 @@ SIGN_H = 0.48            # the housing: a 0.42 m panel plus a 0.03 m frame top a
 MIN_SIGN_H = 0.23        # housing for a 0.2 m panel; smaller is unreadable: try elsewhere or omit it
 FLUSH_GAP = 0.02         # under a low ceiling the panel is mounted flush
 CEIL_GAP = 0.08
+# Repeaters (#108). Each adds two atlas faces; lowering the spacing or the minimum edge length adds signs
+# and grows the low-tier sign atlas (one 4096 x 2048 page with ~4 rows spare), so re-check
+# scene/signage.test.ts's atlas budget if either is lowered.
+REPEAT_MIN_EDGE_M = 100.0
+REPEAT_SPACING_M = 24.0
+REPEAT_MAX_EXITS = 3
+REPEAT_MAX_GATES = 1
+DIST_STEP_M = 5.0
 
 
 def name(p, lang):
@@ -139,6 +152,169 @@ def lowest_ceiling(ceil, ax, ay, bx, by, above):
     return None if best is None else round(best, 3)
 
 
+def place(geom, ceil, segs, sgrid, target_d):
+    """Sign at target_d m along the edge: centred across the passage, under the ceiling."""
+    acc = 0.0
+    for a, b in zip(geom, geom[1:]):
+        seg = math.dist((a["x"], a["y"]), (b["x"], b["y"]))
+        if acc + seg >= target_d and seg > 0:
+            t = (target_d - acc) / seg
+            px, py = a["x"] + (b["x"] - a["x"]) * t, a["y"] + (b["y"] - a["y"]) * t
+            pz = a["z"] + (b["z"] - a["z"]) * t
+            dirx, diry = (b["x"] - a["x"]) / seg, (b["y"] - a["y"]) / seg
+            break
+        acc += seg
+    else:
+        return None
+    def ceiling_over(cx, cy, half):
+        """Lowest ceiling over the panel span. Any ceiling above the floor counts, low ones and
+        beams included: one at or under 2 m must shrink, move or omit the sign."""
+        return lowest_ceiling(ceil, cx - rx * half, cy - ry * half, cx + rx * half, cy + ry * half, pz + 0.3)
+
+    def fit(ceiling_z):
+        bottom, sign_h = pz + CLEAR_BELOW_SIGN, SIGN_H
+        if ceiling_z is not None and bottom + SIGN_H > ceiling_z - CEIL_GAP:
+            bottom = max(pz + MIN_CLEAR, ceiling_z - CEIL_GAP - SIGN_H)
+            sign_h = min(SIGN_H, ceiling_z - FLUSH_GAP - bottom)
+            if sign_h < MIN_SIGN_H:
+                return None
+        return bottom, sign_h
+
+    rx, ry = diry, -dirx  # right of the walking direction
+    x0, y0 = px, py
+    fitted = fit(ceiling_over(x0, y0, 0.0))
+    if fitted is None:
+        return None
+    # Walls are found within the panel's height band, and the band depends on the ceiling over
+    # the panel's final span. Walls are checked over every band tried so far, which only grows,
+    # so the loop settles once the fitted band lies inside it. Centring starts from the edge point.
+    zlo, zhi = fitted[0], fitted[0] + fitted[1]
+    for _ in range(6):
+        dr = wall_hit(segs, sgrid, x0, y0, rx, ry, zlo, zhi)
+        dl = wall_hit(segs, sgrid, x0, y0, -rx, -ry, zlo, zhi)
+        if dl + dr < 2 * MAX_SIGN_W:  # bounded passage: centre between its walls
+            shift = (dr - dl) / 2
+            half = (dl + dr) / 2
+        else:  # open on one side: ease away from the near wall (<= 1.5 m), stay symmetric
+            want = MAX_SIGN_W / 2 + SIDE_MARGIN
+            if dl < dr:
+                shift = min(1.5, max(0.0, want - dl))
+            else:
+                shift = -min(1.5, max(0.0, want - dr))
+            half = min(dl + shift, dr - shift)
+        px, py = x0 + rx * shift, y0 + ry * shift
+        room_w = round(max(0.6, min(MAX_SIGN_W, 2 * half - 2 * SIDE_MARGIN)), 2)
+        # The ceiling across the whole panel at its final position bounds it (beams beside the
+        # centre); where a beam leaves no room, a narrower panel (content trimmed) beats no sign.
+        for max_w in [room_w] + [w for w in (4.5, 3.0, 2.0, 1.2) if w < room_w]:
+            ceiling_z = ceiling_over(px, py, max_w / 2)
+            refit = fit(ceiling_z)
+            if refit is not None:
+                break
+        else:
+            return None
+        bottom, sign_h = refit
+        if zlo <= bottom and bottom + sign_h <= zhi:
+            break
+        zlo, zhi = min(zlo, bottom), max(zhi, bottom + sign_h)
+    else:
+        return None
+    return px, py, bottom, dirx, diry, ceiling_z, max_w, round(sign_h / SIGN_H, 3)
+
+
+def choose_place(geom, ceil, segs, sgrid, cands):
+    """First acceptable of the candidate offsets along geom, preferring full-size, wide panels.
+    Returns (placement, offset) or (None, None)."""
+    best, best_d = None, None
+    for d in cands:
+        r = place(geom, ceil, segs, sgrid, d)
+        if r is None:
+            continue
+        if best is None or r[7] > best[7] + 0.05 or (r[7] >= best[7] - 0.05 and r[6] > best[6] + 0.5):
+            best, best_d = r, d
+        if best[6] >= 4.2 and best[7] == 1:
+            break
+    return best, best_d
+
+
+def step_dist(m):
+    """Distance shown on a sign: rounded to DIST_STEP_M, never below one step."""
+    return int(max(DIST_STEP_M, round(m / DIST_STEP_M) * DIST_STEP_M))
+
+
+def uniq(pois, cap):
+    seen, res = set(), []
+    for p in pois:
+        if p["id"] not in seen:
+            seen.add(p["id"])
+            res.append(p)
+    return res[:cap]
+
+
+def repeaters(graph, edges, ahead, offset, ceil, segs, sgrid):
+    """Repeater signs along long verified edges (see the module docstring), in edge-id order."""
+    src = json.load(open(os.path.join(ROOT, "data", "graph.src.json")))
+    fact_of = {(e["from"], e["to"]): e.get("access") for e in src["edges"]}
+    out = []
+    for eid in sorted(edges):
+        e = edges[eid]
+        if e["verification"] != "verified" or e["lengthM"] < REPEAT_MIN_EDGE_M:
+            continue
+        fwd, bwd = (eid, False), (eid, True)
+        if fwd not in ahead or bwd not in ahead:
+            continue
+        geom = e["geometry"]
+        total = sum(math.dist((a["x"], a["y"]), (b["x"], b["y"])) for a, b in zip(geom, geom[1:]))
+        a_end = offset.get(fwd, 0.0)  # end signs; an end without one counts from the node itself
+        b_end = total - offset.get(bwd, 0.0)
+        gap = b_end - a_end
+        n = math.ceil(gap / REPEAT_SPACING_M) - 1
+        if n < 1:
+            continue
+        k_len = e["lengthM"] / total  # polyline metres -> graph metres
+        f_exits, f_gates, f_dist = ahead[fwd]
+        b_exits, b_gates, b_dist = ahead[bwd]
+        f_exits, f_gates = uniq(f_exits, REPEAT_MAX_EXITS), uniq(f_gates, REPEAT_MAX_GATES)
+        b_exits, b_gates = uniq(b_exits, REPEAT_MAX_EXITS), uniq(b_gates, REPEAT_MAX_GATES)
+
+        def counted(exits, gates, dmap, at):
+            return ([{**exit_item(p), "distanceM": step_dist(dmap[p["id"]] - at)} for p in exits],
+                    [{**gate_item(p), "distanceM": step_dist(dmap[p["id"]] - at)} for p in gates])
+
+        for k in range(1, n + 1):
+            want = a_end + gap * k / (n + 1)
+            cands = [want] + [want + s * j for j in (1, 2, 3) for s in (1, -1)]
+            cands = [c for c in cands if a_end + 2.0 <= c <= b_end - 2.0]
+            best, pos = choose_place(geom, ceil, segs, sgrid, cands)
+            if best is None:
+                print(f"warning: no repeater {eid} #{k}", file=sys.stderr)
+                continue
+            px, py, bottom, dirx, diry, ceiling_z, max_w, scale = best
+            fe, fg = counted(f_exits, f_gates, f_dist, pos * k_len)
+            be, bg = counted(b_exits, b_gates, b_dist, (total - pos) * k_len)
+            fact = fact_of.get((e["from"], e["to"]))
+            basis = [f"graph:{eid}"] + [f"poi:{i}" for i in sorted({p["id"] for p in f_exits + f_gates + b_exits + b_gates})]
+            if fact:
+                basis.append(f"fact:{fact}")
+            out.append({
+                "id": f"sign-rep-{eid}-{k}",
+                "kind": "repeat",
+                "atNode": e["from"],
+                "position": {"x": round(px, 3), "y": round(py, 3), "z": round(bottom + SIGN_H * scale / 2, 3)},
+                "maxWidthM": max_w,
+                "scale": scale,
+                # toward the edge's `from` node: the front is read walking from -> to
+                "facing": {"x": round(-dirx, 4), "y": round(-diry, 4)},
+                "ceilingZ": ceiling_z,
+                "exits": fe,
+                "gates": fg,
+                "arrow": "up",
+                "back": [{"arrow": "up", "exits": be, "gates": bg}],
+                "basis": basis,
+            })
+    return out
+
+
 def main():
     graph = json.load(open(os.path.join(ROOT, "gteki", "graph.json")))
     pois = json.load(open(os.path.join(ROOT, "gteki", "pois.json")))["pois"]
@@ -182,6 +358,8 @@ def main():
         return (x - n["x"]) / L, (y - n["y"]) / L
 
     signs = []
+    ahead = {}   # (edge id, rev) -> (exits, gates, {poi id: graph distance from the edge's start node})
+    offset = {}  # (edge id, rev) -> metres along the edge (in that direction) where its end sign sits
     for nid, n in nodes.items():
         if n["kind"] == "exit" or len(adj.get(nid, [])) < 2:
             continue
@@ -229,90 +407,18 @@ def main():
             geom = e["geometry"][::-1] if rev else e["geometry"]
             total = sum(math.dist((a["x"], a["y"]), (b["x"], b["y"])) for a, b in zip(geom, geom[1:]))
 
-            def place(target_d):
-                """Sign at target_d m along the edge: centred across the passage, under the ceiling."""
-                acc = 0.0
-                for a, b in zip(geom, geom[1:]):
-                    seg = math.dist((a["x"], a["y"]), (b["x"], b["y"]))
-                    if acc + seg >= target_d and seg > 0:
-                        t = (target_d - acc) / seg
-                        px, py = a["x"] + (b["x"] - a["x"]) * t, a["y"] + (b["y"] - a["y"]) * t
-                        pz = a["z"] + (b["z"] - a["z"]) * t
-                        dirx, diry = (b["x"] - a["x"]) / seg, (b["y"] - a["y"]) / seg
-                        break
-                    acc += seg
-                else:
-                    return None
-                def ceiling_over(cx, cy, half):
-                    """Lowest ceiling over the panel span. Any ceiling above the floor counts, low ones and
-                    beams included: one at or under 2 m must shrink, move or omit the sign."""
-                    return lowest_ceiling(ceil, cx - rx * half, cy - ry * half, cx + rx * half, cy + ry * half, pz + 0.3)
-
-                def fit(ceiling_z):
-                    bottom, sign_h = pz + CLEAR_BELOW_SIGN, SIGN_H
-                    if ceiling_z is not None and bottom + SIGN_H > ceiling_z - CEIL_GAP:
-                        bottom = max(pz + MIN_CLEAR, ceiling_z - CEIL_GAP - SIGN_H)
-                        sign_h = min(SIGN_H, ceiling_z - FLUSH_GAP - bottom)
-                        if sign_h < MIN_SIGN_H:
-                            return None
-                    return bottom, sign_h
-
-                rx, ry = diry, -dirx  # right of the walking direction
-                x0, y0 = px, py
-                fitted = fit(ceiling_over(x0, y0, 0.0))
-                if fitted is None:
-                    return None
-                # Walls are found within the panel's height band, and the band depends on the ceiling over
-                # the panel's final span. Walls are checked over every band tried so far, which only grows,
-                # so the loop settles once the fitted band lies inside it. Centring starts from the edge point.
-                zlo, zhi = fitted[0], fitted[0] + fitted[1]
-                for _ in range(6):
-                    dr = wall_hit(segs, sgrid, x0, y0, rx, ry, zlo, zhi)
-                    dl = wall_hit(segs, sgrid, x0, y0, -rx, -ry, zlo, zhi)
-                    if dl + dr < 2 * MAX_SIGN_W:  # bounded passage: centre between its walls
-                        shift = (dr - dl) / 2
-                        half = (dl + dr) / 2
-                    else:  # open on one side: ease away from the near wall (<= 1.5 m), stay symmetric
-                        want = MAX_SIGN_W / 2 + SIDE_MARGIN
-                        if dl < dr:
-                            shift = min(1.5, max(0.0, want - dl))
-                        else:
-                            shift = -min(1.5, max(0.0, want - dr))
-                        half = min(dl + shift, dr - shift)
-                    px, py = x0 + rx * shift, y0 + ry * shift
-                    room_w = round(max(0.6, min(MAX_SIGN_W, 2 * half - 2 * SIDE_MARGIN)), 2)
-                    # The ceiling across the whole panel at its final position bounds it (beams beside the
-                    # centre); where a beam leaves no room, a narrower panel (content trimmed) beats no sign.
-                    for max_w in [room_w] + [w for w in (4.5, 3.0, 2.0, 1.2) if w < room_w]:
-                        ceiling_z = ceiling_over(px, py, max_w / 2)
-                        refit = fit(ceiling_z)
-                        if refit is not None:
-                            break
-                    else:
-                        return None
-                    bottom, sign_h = refit
-                    if zlo <= bottom and bottom + sign_h <= zhi:
-                        break
-                    zlo, zhi = min(zlo, bottom), max(zhi, bottom + sign_h)
-                else:
-                    return None
-                return px, py, bottom, dirx, diry, ceiling_z, max_w, round(sign_h / SIGN_H, 3)
-
             # ~4 m from the junction (45% of short edges); slide along the edge if a low ceiling, a
             # column or a narrowing leaves too little room there, preferring positions close to 4 m.
             base = min(4.0, total * 0.45)
             cands = [base] + [base + k for k in (1, -1, 2, -1.5, 3, 4, 5) if 1.5 <= base + k <= total * 0.6]
-            best = None
-            for d in cands:
-                r = place(d)
-                if r is None:
-                    continue
-                if best is None or r[7] > best[7] + 0.05 or (r[7] >= best[7] - 0.05 and r[6] > best[6] + 0.5):
-                    best = r
-                if best[6] >= 4.2 and best[7] == 1:
-                    break
+            best, best_d = choose_place(geom, ceil, segs, sgrid, cands)
+            dist_map = {}
+            for dd, p in items:
+                dist_map[p["id"]] = min(dd, dist_map.get(p["id"], 1e18))
+            ahead[key] = (exits, gates, dist_map)
             if best is None:
                 continue
+            offset[key] = best_d
             px, py, bottom, dirx, diry, ceiling_z, max_w, scale = best
             signs.append({
                 "id": f"sign-{nid}-{e['id']}{'-r' if rev else ''}",
@@ -328,6 +434,7 @@ def main():
                 "arrow": "up",
                 "back": sorted(blocks.values(), key=lambda b: ARROW_ORDER[b["arrow"]]),
             })
+    signs += repeaters(graph, edges, ahead, offset, ceil, segs, sgrid)
     out = os.path.join(ROOT, "scene", "signage.json")
     write_json(out, {"generatedFrom": "gteki/graph.json + gteki/pois.json (verified edges only)", "signs": signs}, indent=1)
     print(f"{len(signs)} signs -> {out}")

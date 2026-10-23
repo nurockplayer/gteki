@@ -31,6 +31,8 @@
 //   fog=0                 remove the explorer's fog
 //   ground=0|1            Blender studio ground plane (default: on for vertical_demo, i.e. mode "studio")
 //   ao=0|1                GTAO blend off/on (high quality only)
+//   aoMap=0               strip the baked aoMaps (kit GLB occlusionTexture, UV1) for A/B
+//   aoMapI=<n>            baked aoMap intensity (replaces the per-tier scale: game = x0.6 on high, x1 on low; authored strength is 1)
 //   refl=0 grade=0 bloom=0  disable floor reflections / grade+vignette / bloom (high quality only)
 //   bloomT=<n> bloomS=<n> contrast=<n> sat=<n> vig=<n>   bloom threshold / strength, grade contrast / saturation / vignette (high quality only)
 //   loop=0                render on demand only (default: rAF re-render of the static scene each frame)
@@ -41,6 +43,7 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { GTAOPass } from "three/examples/jsm/postprocessing/GTAOPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { Explorer } from "../src/explorer/explorer.ts";
+import { applyBakedAo, type BakedAoCounts } from "../src/explorer/bakedAo.ts";
 import verticalDemo from "../../../tools/blender/showcase/vertical_demo.json";
 import concourseDemo from "../../../tools/blender/showcase/concourse_demo.json";
 
@@ -136,6 +139,8 @@ function applyCamera(): void {
 // ---- kit loading --------------------------------------------------------------------------------------
 const assetId = (item: ItemDef): string => item.glb.split("/").pop()!.replace(/\.glb$/, "");
 
+let bakedAo: BakedAoCounts = { materials: 0, scaled: 0, disabled: 0, textureBytes: 0 };
+
 async function loadKit(): Promise<void> {
   const table = GLB_URLS[tier];
   const key = (id: string) => Object.keys(table).find((k) => k.endsWith(`/${id}.glb`));
@@ -159,6 +164,14 @@ async function loadKit(): Promise<void> {
     kit.add(obj);
   }
   kit.updateMatrixWorld(true);
+  // Baked AO (kit GLBs carry an occlusionTexture on UV1): the explorer's own per-tier policy, as at station attach.
+  if (flag("aoMap") === false) {
+    kit.traverse((n) => { const m = (n as THREE.Mesh).material; for (const x of Array.isArray(m) ? m : m ? [m] : []) { const a = x as THREE.MeshStandardMaterial; if (a.aoMap) { a.aoMap = null; a.needsUpdate = true; } } });
+    applied.aoMap = 0;
+  }
+  const aoI = num("aoMapI");
+  if (aoI !== null) applied.aoMapI = aoI;
+  bakedAo = applyBakedAo(kit, ex.quality, aoI ?? undefined);
 }
 
 /** render_preview.py _close_flaps: VIS_flap_<aisle>_<side> turns about the hinge's up axis (Blender Z = three Y). */
@@ -356,6 +369,7 @@ function info() {
         drawCalls: frame.drawCalls, triangles: frame.triangles,
     programs: ri.programs?.length ?? 0,
     kitMeshes, kitTriangles,
+    bakedAo,
     applied,
   };
 }
