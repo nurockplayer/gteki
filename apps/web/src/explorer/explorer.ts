@@ -20,10 +20,11 @@ import { castAll, castCamera, cuttableSigns, explorerTargets, keepBelowBlockers 
 import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
-import { FOLLOW, followBoom, followDistance, followPose } from "./followCamera.ts";
+import { FOLLOW, avatarFade, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
+import { StationCaches } from "./stationCaches.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
 import { avatarMotion } from "./avatarMotion.ts";
@@ -210,6 +211,10 @@ export class Explorer {
   private yaw = 0; // radians; 0 = facing north (-Z)
   private pitch = -0.12;
   private camDistance: number = FOLLOW.defaultDistance;
+  /** Smoothed extra boom elevation (radians) raised over a wall/slab squeeze; see constrainedPitch. */
+  private boomRaise = 0;
+  private readonly raiseScratch = new THREE.Vector3();
+  private readonly raisedBoom = new THREE.Vector3();
   private firstPerson = false;
   private mode: ExplorerMode = "overview";
   private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
@@ -405,6 +410,14 @@ export class Explorer {
 
   private loadGeneration = 0;
 
+  /** The station module whose retained caches must be dropped when the explorer leaves it (see StationCaches). */
+  private readonly stationCaches = new StationCaches();
+
+  /** Run the previous station's cache-release hook when `nextId` is a different station (null: disposing). */
+  private releaseStationCaches(nextId: string | null): void {
+    this.stationCaches.releaseFor(nextId);
+  }
+
   /**
    * Abandon any in-flight load and show nothing: called as soon as another station is selected, so a
    * slow previous station can never appear under the new selection (even if the new one fails to load).
@@ -420,8 +433,11 @@ export class Explorer {
   async loadStation(station: LoadedStation, router: Router): Promise<boolean> {
     const generation = ++this.loadGeneration;
     this.phase = "graph";
+    // Leaving another station drops its retained caches first; the same station reopening keeps them.
+    this.releaseStationCaches(station.key);
     this.clearStation();
     this.station = station;
+    this.stationCaches.remember(station.key, station.scene);
     const bundle = station.bundle;
     this.graph = buildGraphView(bundle, router);
     this.routablePts = routablePoints(bundle, (e) => router.isTraversable(e, DEFAULT_PROFILE));
@@ -1357,12 +1373,24 @@ export class Explorer {
       };
       // Under a camera-only blocker (a hanging sign box, a low cap) the boom slides lower before the camera is pulled in.
       ({ back, distance: dist } = this.blockerTargets.size ? followBoom(this.camDistance, pose.back, cast) : { back: pose.back, distance: followDistance(this.camDistance, cast(pose.back)) });
+      // Squeezed under the comfortable distance (a shaft wall behind, a slab above): look over the shoulder from
+      // higher up if some raised boom clears it (at most FOLLOW.raiseSteps raise casts + 1 recast = 6 extra rays, none when open).
+      const wantedRaise = constrainedPitch(this.camDistance, back, dist, cast, this.raiseScratch);
+      this.boomRaise = easeRaise(this.boomRaise, wantedRaise, dt, snap);
+      if (this.boomRaise > 0) {
+        back = raisedBack(back, this.boomRaise, this.raisedBoom);
+        dist = followDistance(this.camDistance, cast(back));
+      }
     }
     const desired = pose.pivot.clone().addScaledVector(back, dist);
     this.camera.position.lerp(desired, snap || this.reducedMotion ? 1 : 1 - Math.exp(-dt * 10));
     // The smoothed position, not only the target, stays below camera-only blockers.
     if (this.blockerTargets.size) keepBelowBlockers(pose.pivot, this.camera.position, [...this.blockerTargets], FOLLOW.clearance, this.ray);
     this.camera.lookAt(pose.target);
+    // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
+    const fade = avatarFade(this.camera.position.distanceTo(pose.pivot));
+    this.avatarRig?.setFade(fade);
+    this.composer?.setAvatarFade(this.avatarRig?.root ?? null, fade);
   }
 
   private ensureAudio(): boolean {
@@ -1430,6 +1458,7 @@ export class Explorer {
     void this.audio?.context.close();
     this.audio = null;
     this.renderer.setAnimationLoop(null);
+    this.releaseStationCaches(null);
     this.clearStation();
     this.input.dispose();
     this.disposeComposer();
