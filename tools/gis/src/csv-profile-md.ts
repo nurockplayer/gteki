@@ -7,6 +7,7 @@ const num = (n: number): string => String(Math.round(n * 1e6) / 1e6);
 let blocked: ReadonlySet<string> = new Set();
 /** A column name that contains a guarded literal (a controlled-vocabulary or POI value elsewhere in the store) is described, not quoted. */
 const colName = (name: string, index: number): string => (name.startsWith('(') || ![...blocked].some((b) => name.includes(b)) ? name : `(column ${index + 1}: name withheld by the literal guard, ${name.length} characters)`);
+const guardedValue = (value: string): string => (![...blocked].some((b) => value.includes(b)) ? value : `(value withheld by the literal guard, ${value.length} characters)`);
 const cols = (names: string[]): string => names.map((c, i) => `\`${colName(c, i)}\``).join(', ');
 const cell = (v: string): string => v.replace(/\|/gu, '\\|');
 const bbox = (b: CsvProfile['coordinates']['bbox']): string => (b ? `lon ${num(b.lon_min)} to ${num(b.lon_max)}, lat ${num(b.lat_min)} to ${num(b.lat_max)}` : 'none');
@@ -35,7 +36,7 @@ function csvSection(r: Result, p: CsvProfile): string[] {
   out.push(`- Columns (${p.columns.length}): ${cols(p.columns)}.`);
   out.push(`- Latitude columns: ${p.lat_columns.length ? cols(p.lat_columns) : 'none'}; longitude columns: ${p.lon_columns.length ? cols(p.lon_columns) : 'none'}.`);
   if (p.crs_columns.length) {
-    for (const [i, c] of p.crs_values.entries()) out.push(`- CRS column \`${colName(c.column, i)}\`: ${c.distinct === 0 ? 'every row blank, so no CRS is declared' : c.values ? `distinct values ${c.values.map((v, j) => `\`${colName(v.value, j)}\` (${v.rows} rows)`).join(', ')}` : `${c.distinct} distinct values (not listed)`}.`);
+    for (const c of p.crs_values) out.push(`- CRS column \`${colName(c.column, p.columns.indexOf(c.column))}\`: ${c.distinct === 0 ? 'every row blank, so no CRS is declared' : c.values ? `distinct values ${c.values.map((v) => `\`${guardedValue(v.value)}\` (${v.rows} rows)`).join(', ')}` : `${c.distinct} distinct values (not listed)`}.`);
   } else out.push('- CRS column: none; the file declares no CRS (UNKNOWN).');
   out.push(`- Coordinates: ${fmt(p.coordinates.valid_rows)} valid rows, ${fmt(p.coordinates.blank_rows)} blank, ${fmt(p.coordinates.invalid_rows)} invalid. Bbox (as labelled by the columns): ${bbox(p.coordinates.bbox)}.`);
   out.push(`- Axis check: ${p.axis_swap.verdict} (${p.axis_swap.as_is_in_japan} rows inside the Japan box as labelled, ${p.axis_swap.swapped_in_japan} only if the columns are swapped, ${p.axis_swap.as_is_in_tokyo_box} inside the Tokyo sanity box).`);
