@@ -17,13 +17,13 @@ import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
-import { castAll, castCamera, cuttableSigns, explorerTargets, keepBelowBlockers } from "./raycast.ts";
+import { castAll, castCamera, cuttableSigns, explorerTargets } from "./raycast.ts";
 import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
-import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachFov, avatarFade, boomSqueezed, followPose, solveRaisedBoom, stepSlope, targetFov, type SlopeState } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, followDistance, followPose, solveRaisedBoom, stepSlope, targetFov, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -1642,12 +1642,12 @@ export class Explorer {
     let back = pose.back;
     let dist = this.camDistance;
     if (!this.cameraTargets.length) this.boomRaise = 0;
+    const cast = (b: THREE.Vector3, length = this.camDistance) => {
+      this.ray.set(pose.pivot, b);
+      this.ray.far = length + FOLLOW.clearance;
+      return castCamera(this.ray, this.cameraTargets, this.blockerTargets).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
+    };
     if (this.cameraTargets.length) {
-      const cast = (b: THREE.Vector3) => {
-        this.ray.set(pose.pivot, b);
-        this.ray.far = this.camDistance + FOLLOW.clearance;
-        return castCamera(this.ray, this.cameraTargets, this.blockerTargets).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
-      };
       const solved = solveRaisedBoom(this.camDistance, pose.back, cast, this.boomRaise, dt, snap || this.reducedMotion);
       back = solved.back;
       dist = solved.distance;
@@ -1657,10 +1657,20 @@ export class Explorer {
       ? (snap ? dist < FOLLOW.comfortDistance : boomSqueezed(this.squeezed, dist))
       : false;
     this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
+    const previousDistance = this.camera.position.distanceTo(pose.pivot);
     const desired = pose.pivot.clone().addScaledVector(back, dist);
     this.camera.position.lerp(desired, snap || this.reducedMotion ? 1 : 1 - Math.exp(-dt * 10));
-    // The smoothed position, not only the target, stays below camera-only blockers.
-    if (this.blockerTargets.size) keepBelowBlockers(pose.pivot, this.camera.position, [...this.blockerTargets], FOLLOW.clearance, this.ray);
+    // Preserve angular/extension damping, but control contraction separately. Cast the actual interpolated
+    // direction as well: a yaw change can sweep a different wall from the solved boom's ray.
+    const offset = this.camera.position.clone().sub(pose.pivot);
+    const length = offset.length();
+    if (length > 1e-9) {
+      offset.divideScalar(length);
+      const hits = this.cameraTargets.length ? cast(offset, Math.max(length, this.camDistance)) : [];
+      const target = Math.min(length, dist, followDistance(this.camDistance, hits));
+      const actual = approachBoom(previousDistance, target, hits[0]?.distance ?? null, this.camera.near, dt, snap || this.reducedMotion);
+      this.camera.position.copy(pose.pivot).addScaledVector(offset, actual);
+    }
     this.camera.lookAt(pose.target);
     // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
     const fade = avatarFade(this.camera.position.distanceTo(pose.pivot));

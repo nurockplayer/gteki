@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachFov, avatarFade, boomSqueezed, clampDistance, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack, solveRaisedBoom, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, clampDistance, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack, solveRaisedBoom, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
   it("stays under a 2.6 m ceiling at the default pitch and distance", () => {
@@ -394,5 +394,52 @@ describe("solved raise after a slab squeeze", () => {
     const walking = solveRaisedBoom(3, back, () => [], 0.5, 1 / 60);
     expect(walking.raise).toBeGreaterThan(0);
     expect(walking.raise).toBeLessThan(0.5);
+  });
+});
+
+
+describe("boom contraction", () => {
+  it("ramps distance and fade monotonically over multiple 60 Hz frames after a sudden occluder", () => {
+    const hit = 1.05;
+    const target = clampDistance(FOLLOW.defaultDistance, hit);
+    let distance: number = FOLLOW.defaultDistance;
+    let fade = avatarFade(distance);
+    let rampFrames = 0;
+    for (let frame = 0; frame < 60; frame++) {
+      const next = approachBoom(distance, target, hit, 0.05, 1 / 60);
+      const nextFade = avatarFade(next);
+      expect(next).toBeLessThanOrEqual(distance);
+      expect(next).toBeLessThanOrEqual(hit - 0.05 - FOLLOW.nearEpsilon + 1e-12);
+      expect(nextFade).toBeLessThanOrEqual(fade);
+      if (nextFade < fade) rampFrames++;
+      if (frame > 0) expect(distance - next).toBeLessThanOrEqual(FOLLOW.contractSpeed / 60 + 1e-12);
+      distance = next;
+      fade = nextFade;
+    }
+    expect(rampFrames).toBeGreaterThanOrEqual(3);
+    expect(distance).toBeCloseTo(target);
+    expect(fade).toBeCloseTo(avatarFade(target));
+  });
+
+  it("only cuts to the safety margin first, then contracts at the bounded speed", () => {
+    const first = approachBoom(3, 0.6, 0.9, 0.05, 1 / 60);
+    expect(first).toBeCloseTo(0.83);
+    expect(approachBoom(first, 0.6, 0.9, 0.05, 1 / 60)).toBeCloseTo(first - FOLLOW.contractSpeed / 60);
+  });
+
+  it("snaps for reduced motion/placements, keeps extension damping, and ignores negative time", () => {
+    expect(approachBoom(3, 0.75, 1.05, 0.05, 1 / 60, true)).toBe(0.75);
+    expect(approachBoom(0.7, 0.8, null, 0.05, 1 / 60)).toBe(0.8);
+    expect(approachBoom(0.9, 0.7, null, 0.05, -1)).toBe(0.9);
+  });
+
+  it("is independent of frame rate while contracting inside the safety band", () => {
+    const run = (hz: number) => {
+      let d = 0.98;
+      for (let i = 0; i < hz / 5; i++) d = approachBoom(d, 0.6, 1.05, 0.05, 1 / hz);
+      return d;
+    };
+    expect(run(30)).toBeCloseTo(run(60), 9);
+    expect(run(60)).toBeCloseTo(run(120), 9);
   });
 });

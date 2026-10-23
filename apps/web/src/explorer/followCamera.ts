@@ -15,6 +15,10 @@ export const FOLLOW = {
   aim: 5,
   /** Clearance kept in front of whatever the backward ray hits (m). */
   clearance: 0.3,
+  /** Inward boom speed (m/s): traverses the 0.3 m clearance band in roughly a quarter second. */
+  contractSpeed: 0.8,
+  /** Extra clearance beyond the near plane for an emergency collision cut (m). */
+  nearEpsilon: 0.02,
   /** Closest the camera comes to the pivot (m). */
   minDistance: 0.55,
   /**
@@ -168,6 +172,17 @@ export function followDistance(wanted: number, hits: readonly { distance: number
   const blocker = hits.find((h) => h.cameraOnly);
   if (blocker) distance = Math.min(distance, Math.max(0, blocker.distance - FOLLOW.clearance));
   return distance;
+}
+
+/**
+ * Contract at a bounded speed through the clearance band. Safety wins when a newly appearing hit
+ * would contain the old camera: cut only as far as its near-plane margin, then resume the ramp.
+ * Increases keep the caller's existing position damping. Placements and reduced motion snap.
+ */
+export function approachBoom(current: number, target: number, hitDistance: number | null, near: number, dt: number, snap = false): number {
+  const safe = hitDistance === null ? Infinity : Math.max(0, hitDistance - near - FOLLOW.nearEpsilon);
+  const next = snap || target >= current ? target : Math.max(target, current - FOLLOW.contractSpeed * Math.max(0, dt));
+  return Math.min(next, safe);
 }
 
 /**
