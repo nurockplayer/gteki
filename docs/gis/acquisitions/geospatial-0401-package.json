@@ -1,0 +1,53 @@
+{
+  "source_id": "geospatial-0401-package",
+  "resolved_url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=0401",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-22T12:39:07.520Z",
+  "completed_at": "2026-10-22T12:39:07.920Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/json;charset=utf-8",
+    "content-length": null,
+    "etag": null,
+    "last-modified": null,
+    "date": "Thu, 22 Oct 2026 12:39:07 GMT"
+  },
+  "bytes": 150272,
+  "sha256": "23c94fe2c8b0ced85d0d6eeb8b916a5034f8cb9a19ee9ada173a401dc902e18e",
+  "store_path": "raw/23c94fe2c8b0ced85d0d6eeb8b916a5034f8cb9a19ee9ada173a401dc902e18e/package_show",
+  "tool_version": "0.1.0",
+  "git_commit": "e1b9dd2deb2b1c3314524bdbbf8ca5687006e0d2",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online",
+  "supporting_documents": [
+    {
+      "id": "dataset-page",
+      "requested_url": "https://www.geospatial.jp/ckan/dataset/0401",
+      "url": "https://www.geospatial.jp/ckan/dataset/0401",
+      "http_status": 200,
+      "sha256": "631f133e879ba79f85d8f4db7e231dab1f2549759cd0d139777f3ce6086e206e",
+      "bytes": 226407,
+      "store_path": "raw/631f133e879ba79f85d8f4db7e231dab1f2549759cd0d139777f3ce6086e206e/0401"
+    },
+    {
+      "id": "terms-resource-page",
+      "requested_url": "https://www.geospatial.jp/ckan/dataset/0401/resource/f5d7885c-0350-453d-8d71-c1d0cdca8063",
+      "url": "https://www.geospatial.jp/ckan/dataset/0401/resource/f5d7885c-0350-453d-8d71-c1d0cdca8063",
+      "http_status": 200,
+      "sha256": "67864d3c6ba61b283f01bd823052a087b87f8b6d774bfc92a1f38c6de25a504c",
+      "bytes": 48520,
+      "store_path": "raw/67864d3c6ba61b283f01bd823052a087b87f8b6d774bfc92a1f38c6de25a504c/f5d7885c-0350-453d-8d71-c1d0cdca8063"
+    },
+    {
+      "id": "pdl-1-0-text",
+      "requested_url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "http_status": 200,
+      "sha256": "59735ae2f0acf8a099b233917bfb9f766be1e76ef82dd8ff35f6fe3a9368c555",
+      "bytes": 59216,
+      "store_path": "raw/59735ae2f0acf8a099b233917bfb9f766be1e76ef82dd8ff35f6fe3a9368c555/public_data_license_v1.0"
+    }
+  ]
+}

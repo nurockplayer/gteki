@@ -5,6 +5,8 @@ Generators:
   sign_wall     flush wall-mounted single-sided light box (back at the wall, y = 0)
   sign_totem    free-standing double-sided directory / map-board pillar
   sign_blade    wall-projecting double-sided "blade" sign (faces look along +-X)
+  sign_frame_9slice  faceless hanging light-box frame in pieces (end caps, 1 m span, rod)
+                     that a station stretches at runtime to any width
 
 Conventions (docs/assets/asset-contract.md): front faces Blender -Y (glTF +Z).
 Wall-backed items put their back plane at y = 0 and extend toward -Y; the origin
@@ -790,9 +792,140 @@ def sign_blade(asset_id, params, tex_res):
     return finish(a, collision="sign" if z0 < 2.05 else None)
 
 
+# ---------------------------------------------------------------------------
+# sign_frame_9slice: faceless hanging frame cut into separately scalable nodes
+# ---------------------------------------------------------------------------
+
+NS_MIN_W, NS_MAX_W = 0.5, 6.1  # widths the runtime stretches the frame to (m)
+NS_HANGER_HALF = 0.04  # half width of the hanger block (m)
+NS_HANGER_H = 0.038  # hanger block + collar height above the frame top (m)
+NS_CANOPY_T = 0.012  # ceiling disc thickness (m)
+
+
+def _range(p, key, lo, hi):
+    v = p[key]
+    if isinstance(v, bool) or not isinstance(v, (int, float)) or not lo <= v <= hi:
+        raise ValueError(f"{key} must be a number in [{lo}, {hi}], got {v!r}")
+
+
+def _prism_y(k, profile, y0, y1, mat, caps=(True, True), joints=()):
+    """Closed polygon in the (x, z) plane (CCW seen from -Y) extruded along Y from y0 to y1.
+
+    `caps` = (front y0, back y1) faces. Side faces whose two ends both lie at one of the x values
+    in `joints` are left out, so the shell stays open where it butts against the next piece."""
+    n0 = k.mark()
+    f = k.part._face
+    n = len(profile)
+    for i in range(n):
+        (ax, az), (bx, bz) = profile[i], profile[(i + 1) % n]
+        if any(abs(ax - jx) < 1e-9 and abs(bx - jx) < 1e-9 for jx in joints):
+            continue
+        f([(ax, y1, az), (bx, y1, bz), (bx, y0, bz), (ax, y0, az)], mat, smooth=False)
+    if caps[0]:
+        f([(x, y0, z) for x, z in profile], mat, smooth=False)
+    if caps[1]:
+        f([(x, y1, z) for x, z in reversed(profile)], mat, smooth=False)
+    k.weld(n0)
+
+
+def _c_profile(xo, xj, za, zb, t, right=False):
+    """C-shaped outline of an end cap: a vertical bar of width t at the outer edge xo and
+    arms of thickness t reaching the joint at xj (left end: xo < xj; right end: mirrored)."""
+    pts = [(xo, za), (xj, za), (xj, za + t), (xo + t, za + t), (xo + t, zb - t), (xj, zb - t), (xj, zb), (xo, zb)]
+    return [(-x, z) for x, z in reversed(pts)] if right else pts
+
+
+def sign_frame_9slice(asset_id, params, tex_res):
+    """Faceless double-sided hanging light-box frame for runtime-stretched widths.
+
+    The frame is cut into separate nodes so a station can draw any width with a few
+    InstancedMeshes: two fixed end caps, a 1 m span scaled in X, and a 1 m rod scaled in Y.
+    Every piece is a pivoted group, so it also stays its own node in the mobile profile
+    (see Asset.pivot). The exported GLB shows the nominal sign of width 1 m + 2 * end_m."""
+    p = _merge(dict(height=0.48, depth=0.08, bar=0.03, recess=0.012, end_m=0.05, mount_height=2.3), params)
+    _range(p, "height", 0.2, 1.0)
+    _range(p, "depth", 0.04, 0.3)
+    _range(p, "bar", 0.015, 0.06)
+    _range(p, "recess", 0.004, p["depth"] / 2 - 0.02)
+    _range(p, "end_m", p["bar"] + 0.012, 0.15)
+    _range(p, "mount_height", 0.0, 8.0)
+    H, D, bar, rc, em = p["height"], p["depth"], p["bar"], p["recess"], p["end_m"]
+    if H - 2 * bar < 0.1:
+        raise ValueError(f"height {H} leaves an opening under 0.1 m with bar {bar}")
+    if NS_MIN_W - 2 * em < 0.2:
+        raise ValueError(f"end_m {em} leaves the span under 0.2 m at the minimum width {NS_MIN_W}")
+    z0 = p["mount_height"]
+    z1 = z0 + H
+    zc = z0 + H / 2
+    g, bead = 0.006, 0.004  # gasket width and thickness (as sign_hanging)
+    xj = 0.5  # joint edge of the span, |x|
+    xo = xj + em  # outer edge of the nominal sign
+    dface = D / 2 - rc  # |y| of each face plane
+    rod_inset = min(0.12, NS_MIN_W / 2 - em - NS_HANGER_HALF)
+    a = Asset(asset_id, "signage", asset_id.replace("gteki_sign_", ""), p, GEN, contract.SYNTHETIC, tex_res,
+              notes="Faceless frame cut for runtime stretching: VIS_end_L/R fixed caps, VIS_span exactly 1 m in X, VIS_rod 1 m in Z with its pivot "
+                    "at the bottom, optional VIS_hanger and VIS_rod_canopy. Recipe and numbers in params.nine_slice. Faces go at glTF z = +-face_plane_m. "
+                    "Defaults match Ikebukuro's sign housings; station-verified values live in the station's catalog.")
+    # end caps: vertical bar + first em of the top/bottom bars, open at the joint
+    for name, right in (("end_L", False), ("end_R", True)):
+        sgn = 1 if right else -1
+        frame = K(a, name, bevel=0.006, bevel_segments=2)
+        gasket = K(a, name, bevel=0.0012, bevel_segments=1)
+        _prism_y(frame, _c_profile(-xo, -xj, z0, z1, bar, right), -D / 2, D / 2, ALU, joints=(sgn * xj,))
+        gin = _c_profile(-xo + bar, -xj, z0 + bar, z1 - bar, g, right)
+        # beads sit just inside each recessed face plane; the plane side stays open for the face
+        _prism_y(gasket, gin, -dface - bead, -dface, DARK, caps=(True, False), joints=(sgn * xj,))
+        _prism_y(gasket, gin, dface, dface + bead, DARK, caps=(False, True), joints=(sgn * xj,))
+        a.pivot(name, (sgn * xj, 0.0, zc))
+    # span: top and bottom bars and their gasket strips, open at both ends
+    frame = K(a, "span", bevel=0.006, bevel_segments=2)
+    gasket = K(a, "span", bevel=0.0012, bevel_segments=1)
+    for za, zb in ((z0, z0 + bar), (z1 - bar, z1)):
+        _prism_y(frame, [(-xj, za), (xj, za), (xj, zb), (-xj, zb)], -D / 2, D / 2, ALU, joints=(-xj, xj))
+    for za, zb in ((z0 + bar, z0 + bar + g), (z1 - bar - g, z1 - bar)):
+        strip = [(-xj, za), (xj, za), (xj, zb), (-xj, zb)]
+        _prism_y(gasket, strip, -dface - bead, -dface, DARK, caps=(True, False), joints=(-xj, xj))
+        _prism_y(gasket, strip, dface, dface + bead, DARK, caps=(False, True), joints=(-xj, xj))
+    a.pivot("span", (0.0, 0.0, zc))
+    # suspension: hanger block + collar on the frame top, 1 m rod, ceiling disc (one of each; the
+    # runtime instances them per rod)
+    hanger = K(a, "hanger", bevel=0.0015, bevel_segments=1)
+    hanger.box((-NS_HANGER_HALF, -0.03, z1), (NS_HANGER_HALF, 0.03, z1 + 0.008), ALU)
+    hanger.cylinder((0, 0, z1 + 0.008), 0.011, NS_HANGER_H - 0.008, ALU, segments=16)
+    a.pivot("hanger", (0.0, 0.0, z1))
+    zr = z1 + NS_HANGER_H
+    rod = K(a, "rod")
+    rod.cylinder((0, 0, zr), 0.0055, 1.0, ALU, segments=10)
+    a.pivot("rod", (0.0, 0.0, zr))
+    canopy = K(a, "rod_canopy", bevel=0.0015, bevel_segments=1)
+    canopy.cylinder((0, 0, zr + 1.0 - NS_CANOPY_T), 0.038, NS_CANOPY_T, ALU, segments=20)
+    a.pivot("rod_canopy", (0.0, 0.0, zr + 1.0))
+    p["nine_slice"] = {
+        "end_m": em,
+        "span_unit_m": 1.0,
+        "outer_h_m": H,
+        "depth_m": D,
+        "bar_m": bar,
+        "opening_h_m": round(H - 2 * bar, 4),
+        "face_plane_m": round(dface, 4),
+        "rod_inset_m": round(rod_inset, 4),
+        "rod_unit_m": 1.0,
+        "min_width_m": NS_MIN_W,
+        "max_width_m": NS_MAX_W,
+        "nominal_width_m": round(2 * xo, 4),
+        "centre_z_m": round(zc, 4),
+        "hanger_base_above_centre_m": round(H / 2, 4),
+        "rod_base_above_centre_m": round(H / 2 + NS_HANGER_H, 4),
+        "recipe": "end_L.x = -W/2 + end_m; end_R.x = W/2 - end_m; span.scale.x = W - 2*end_m; "
+                  "rods at +-(W/2 - rod_inset_m), rod.scale.y = drop",
+    }
+    return finish(a, collision=None)
+
+
 GENERATORS = {
     "sign_hanging": sign_hanging,
     "sign_wall": sign_wall,
     "sign_totem": sign_totem,
     "sign_blade": sign_blade,
+    "sign_frame_9slice": sign_frame_9slice,
 }

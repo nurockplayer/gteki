@@ -37,8 +37,8 @@ const SPECS = {
   gap: { id: "string", floorId: "string|null", zone: "string|texts", missingFact: "string|texts", fieldWorkNeeded: "string|texts", approximateExtent: "string|texts?", sourceDate: "string|null?" },
   point2: { x: "number", y: "number" },
   coverage: { summary: "array", areas: "array", gaps: "array", freshness: "string|null" },
-  asset: { id: "string", uri: "string", format: "string", floorIds: "array", role: "string", sourceIds: "array", transform: "array?", derivation: "string?", files: "array?" },
-  dataFile: { id: "string", path: "string", sourceIds: "array", modified: "boolean", derivation: "string?" },
+  asset: { id: "string", uri: "string", uriMobile: "string?", format: "string", floorIds: "array", role: "string", sourceIds: "array", transform: "array?", derivation: "string?", files: "array?" },
+  dataFile: { id: "string", path: "string", sourceIds: "array", modified: "boolean", authored: "boolean?", derivation: "string?" },
 } satisfies Record<string, Spec>;
 
 function kindOf(v: unknown): string {

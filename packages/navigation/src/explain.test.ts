@@ -25,7 +25,7 @@ function explain(edges: Edge[], profile: RouteProfile): { cause: NoPathCause; ex
 }
 
 const flat = (id: string, from: string, to: string, o: Partial<Edge> = {}) => edge(id, from, to, o);
-const opt = (option: string, evidence: string | null, complete = true) => ({ option, evidence, complete });
+const opt = (option: string, evidence: string | null, complete = true, noData = false) => ({ option, evidence, complete, ...(noData ? { noData: true } : {}) });
 
 describe("explainNoPath: single options and their evidence", () => {
   it("step-free: the only link is a stair (known not step-free)", () => {
@@ -57,7 +57,7 @@ describe("explainNoPath: single options and their evidence", () => {
     expect(explain(edges, { ...base, stepFree: true }).cause).toEqual({ kind: "option", options: [opt("stepFree", "known")] });
     // A stair whose access flags are unknown is still a known refusal (the mode is known).
     const stair = [edge("r3", "start", "goal", { mode: "stairs", wheelchair: null, steps: null })];
-    expect(explain(stair, { ...base, stepFree: true }).cause).toEqual({ kind: "option", options: [opt("stepFree", "known")] });
+    expect(explain(stair, { ...base, stepFree: true }).cause).toEqual({ kind: "option", options: [opt("stepFree", "known", true, true)] });
   });
 
   it("evidence ignores unknowns that belong to another option (unknown hours on a step-free refusal)", () => {
@@ -74,7 +74,7 @@ describe("explainNoPath: single options and their evidence", () => {
 
   it("verified hours only: the link has unknown hours", () => {
     const { cause, extra } = explain([flat("h1", "start", "goal", { hours: null })], { ...base, hours: "require_known" });
-    expect(cause).toEqual({ kind: "option", options: [opt("strictHours", "unknown")] });
+    expect(cause).toEqual({ kind: "option", options: [opt("strictHours", "unknown", true, true)] });
     expect(extra).toBe(1);
   });
 
@@ -226,5 +226,46 @@ describe("explainNoPathBetween: endpoint refusals", () => {
     expect(routeBetween(gated.router, { kind: "poi", poi: e }, { ...t, connectorNodeIds: ["goal"] }, unpaid)).toMatchObject({ ok: false, reason: "no_path" });
     expect(explainNoPathBetween(gated.router, gated.bundle, { kind: "poi", poi: e }, { ...t, connectorNodeIds: ["goal"] }, unpaid))
       .toEqual({ kind: "option", options: [opt("unpaidOnly", "known")] });
+  });
+});
+
+describe("explainNoPath: a station with no data for the option, told apart from a known barrier", () => {
+  // Ikebukuro's shape: wheelchair access is recorded nowhere (null) and hours nowhere (null).
+  const path = (o: Partial<Edge>) => [flat("n1", "start", "a", o), flat("n2", "a", "goal", o)];
+
+  it("step-free: no edge records wheelchair access, so the cause says the station has no data", () => {
+    const { cause, extra } = explain(path({ wheelchair: null }), { ...base, stepFree: true });
+    expect(cause).toEqual({ kind: "option", options: [opt("stepFree", "unknown", true, true)] });
+    expect(extra).toBe(1);
+  });
+
+  it("step-free: one edge anywhere recording wheelchair access (even false) is data, so a refusal is not 'no data'", () => {
+    const known = [...path({ wheelchair: null }), flat("k", "isolated", "other", { wheelchair: false })];
+    expect(explain(known, { ...base, stepFree: true }).cause).toEqual({ kind: "option", options: [opt("stepFree", "unknown")] });
+  });
+
+  it("step-free: access flags without accessEvidence are UNKNOWN to the router, so they are not data either", () => {
+    expect(explain(path({ wheelchair: true, accessEvidence: null }), { ...base, stepFree: true }).cause)
+      .toEqual({ kind: "option", options: [opt("stepFree", "unknown", true, true)] });
+  });
+
+  it("strict hours: no edge has hours at all is 'no data'; one documented edge elsewhere is not", () => {
+    expect(explain(path({ hours: null }), { ...base, hours: "require_known" }).cause)
+      .toEqual({ kind: "option", options: [opt("strictHours", "unknown", true, true)] });
+    const some = [...path({ hours: null }), flat("h", "isolated", "other")];
+    expect(explain(some, { ...base, hours: "require_known" }).cause).toEqual({ kind: "option", options: [opt("strictHours", "unknown")] });
+  });
+
+  it("a combination reports which of its options the station has no data for", () => {
+    const { cause } = explain(path({ wheelchair: null, hours: null }), { ...base, stepFree: true, hours: "require_known" });
+    expect(cause).toEqual({ kind: "combination", options: ["stepFree", "strictHours"], noData: ["stepFree", "strictHours"] });
+    // Only the option with no data at all is named.
+    const partial = [flat("p1", "start", "a", { wheelchair: null, hours: null }), flat("p2", "a", "goal", { wheelchair: true, hours: null })];
+    expect(explain(partial, { ...base, stepFree: true, hours: "require_known" }).cause).toEqual({ kind: "combination", options: ["stepFree", "strictHours"], noData: ["strictHours"] });
+  });
+
+  it("outside-gates is never 'no data'", () => {
+    expect(explain([flat("g", "start", "goal", { paid: null, crossesFareBoundary: null })], { ...base, fare: "unpaid_only" }).cause)
+      .toEqual({ kind: "option", options: [opt("unpaidOnly", "unknown")] });
   });
 });

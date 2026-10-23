@@ -1,0 +1,88 @@
+{
+  "format": "gteki-finish/0.1",
+  "id": "gteki_finish_band_line_accent",
+  "kit_version": "0.1.0",
+  "tier": "full",
+  "role": "band",
+  "gteki_role": "wall",
+  "facility": [
+    "passage",
+    "concourse",
+    "platform"
+  ],
+  "use": "line-colour stripe on the wall; the station multiplies the base by its line colour at runtime",
+  "pattern": "neutral near-white painted metal #F2F2F0 with faint orange peel; the base carries no colour",
+  "source_material": null,
+  "repeat_m": [
+    0.25,
+    0.25
+  ],
+  "uv": {
+    "u": "along the wall",
+    "v": "up",
+    "surface": "wall face",
+    "origin": "a repeat starts at u = k x repeat_m along the wall and at v = 0 on the floor"
+  },
+  "maps": {
+    "albedo": {
+      "file": "albedo.jpg",
+      "size": [
+        256,
+        256
+      ],
+      "bytes": 3065,
+      "sha256": "81b9e1c42517eba71c5345493301b09881ecc354bedd21167c4799ff9ec2b6b3"
+    },
+    "normal": {
+      "file": "normal.jpg",
+      "size": [
+        256,
+        256
+      ],
+      "bytes": 5035,
+      "sha256": "573b254c8392fd8c172aefe7f2e609b8e10293cc5124bde9f697119afa50e22c"
+    }
+  },
+  "factors": {
+    "baseColorFactor": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "roughnessFactor": 0.299625,
+    "metallicFactor": 0.0
+  },
+  "omitted_maps": [
+    "orm"
+  ],
+  "texel_density_px_per_m": [
+    1024.0,
+    1024.0
+  ],
+  "tint": true,
+  "sample_glb": "../glb/gteki_finish_band_line_accent.glb",
+  "sample": {
+    "plane": "wall",
+    "repeats": 4,
+    "size_m": [
+      1.0,
+      1.0
+    ]
+  },
+  "dimension_basis": "synthetic",
+  "generator": "tools/blender/gteki_assets/finishes.py",
+  "license": "CC-BY-4.0 — original GTEki work; attribution: GTEki contributors",
+  "provenance": "original procedural geometry and textures; see assets/library/PROVENANCE.md",
+  "tint_info": {
+    "mode": "multiply",
+    "formula": "rendered base colour = albedo texture (sRGB, decoded to linear) x baseColorFactor, per channel in linear light",
+    "set": "baseColorFactor = the station line colour as linear RGB (three.js material.color.set('#rrggbb'), Godot albedo_color); leave the texture as shipped",
+    "neutral_base_srgb": "#F2F2F0",
+    "gain": "the base is about 0.89 in linear light, so the line colour renders about 11% darker than its hex; multiply the factor by 1.12 (clamped to 1) to match the hex",
+    "example": {
+      "line": "#b6007a",
+      "baseColorFactor_srgb": "#b6007a"
+    }
+  }
+}

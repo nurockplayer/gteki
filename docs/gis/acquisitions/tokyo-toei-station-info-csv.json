@@ -1,0 +1,53 @@
+{
+  "source_id": "tokyo-toei-station-info-csv",
+  "resolved_url": "https://www.opendata.metro.tokyo.lg.jp/kotsu/080_001b.csv",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-22T12:22:37.511Z",
+  "completed_at": "2026-10-22T12:22:37.550Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "text/csv",
+    "content-length": null,
+    "etag": "W/\"2c8d-6486478ca1518\"",
+    "last-modified": "Thu, 15 Jan 2026 03:03:40 GMT",
+    "date": "Thu, 22 Oct 2026 12:22:37 GMT"
+  },
+  "bytes": 11405,
+  "sha256": "8800e11685b525450a0307236fc1d321a19582be564ead551938f636cbdfaba0",
+  "store_path": "raw/8800e11685b525450a0307236fc1d321a19582be564ead551938f636cbdfaba0/080_001b.csv",
+  "tool_version": "0.1.0",
+  "git_commit": "e1b9dd2deb2b1c3314524bdbbf8ca5687006e0d2",
+  "expected_bytes": 11405,
+  "expected_url_match": true,
+  "size_check": "MATCH",
+  "mode": "online",
+  "supporting_documents": [
+    {
+      "id": "package-show",
+      "requested_url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000018d0000000053",
+      "url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000018d0000000053",
+      "http_status": 200,
+      "sha256": "71f570907df903a1c8bf1b84d4a92e38e12031dbf5e3f75654d966f4cd3e28c4",
+      "bytes": 3537,
+      "store_path": "raw/71f570907df903a1c8bf1b84d4a92e38e12031dbf5e3f75654d966f4cd3e28c4/package_show"
+    },
+    {
+      "id": "portal-terms",
+      "requested_url": "https://portal.data.metro.tokyo.lg.jp/terms/",
+      "url": "https://portal.data.metro.tokyo.lg.jp/terms/",
+      "http_status": 200,
+      "sha256": "74e591bc0092beaed0921015d3b2b0b9bf90c70e67508b036155f6e5400cd67a",
+      "bytes": 44403,
+      "store_path": "raw/74e591bc0092beaed0921015d3b2b0b9bf90c70e67508b036155f6e5400cd67a/terms"
+    },
+    {
+      "id": "cc-by-4-deed-ja",
+      "requested_url": "https://creativecommons.org/licenses/by/4.0/deed.ja",
+      "url": "https://creativecommons.org/licenses/by/4.0/deed.ja",
+      "http_status": 200,
+      "sha256": "cf5b3d5b092076f0c146b9c41d7bca8a5ad5171660b7033cd8125ba5ac6d0382",
+      "bytes": 33449,
+      "store_path": "raw/cf5b3d5b092076f0c146b9c41d7bca8a5ad5171660b7033cd8125ba5ac6d0382/deed.ja"
+    }
+  ]
+}

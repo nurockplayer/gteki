@@ -161,6 +161,14 @@ describe("parseStationFiles (fail-closed JSON loading)", () => {
     expect(parseStationFiles(m, g, p).issues[0]).toMatchObject({ code: "shape.missing" });
   });
 
+  it("accepts an optional string uriMobile on an asset and refuses other types", () => {
+    const [m, g, p] = split(createSyntheticBundle());
+    m.assets = [{ id: "a", uri: "assets/a.glb", format: "glb", floorIds: [], role: "visual", sourceIds: ["fixture-geometry"], uriMobile: "assets/a.mobile.glb" }];
+    expect(parseStationFiles(m, g, p).ok).toBe(true);
+    (m.assets[0] as { uriMobile: unknown }).uriMobile = 3;
+    expect(parseStationFiles(m, g, p).issues[0]).toMatchObject({ code: "shape.type" });
+  });
+
   it("refuses files from different stations or schema versions", () => {
     const [m, g, p] = split(createSyntheticBundle());
     g.stationId = "other";
@@ -445,6 +453,42 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     expect(errors(b).filter((c) => c === "data.rights")).toHaveLength(1);
   });
 
+  it("lets an authored data file declare no source, but only with a derivation saying so (#252)", () => {
+    const real = () => {
+      const b = createSyntheticBundle();
+      b.station.synthetic = false;
+      b.edges = [];
+      return b;
+    };
+    const authored: DataFile = { id: "finishes", path: "scene/finishes.json", sourceIds: [], modified: false, authored: true, derivation: "GTEki-authored scene config: not derived from any source." };
+    const b = real();
+    b.dataFiles = [authored];
+    expect(errors(b)).not.toContain("data.source");
+    expect(errors(b)).not.toContain("data.derivation");
+    // Nothing to credit: it cites no source, so it cannot show up as citing a facts-only one.
+    expect(dataFileFactsOnlySources(b)).toEqual([]);
+    // Authored still means no sources at all.
+    const cites = real();
+    cites.dataFiles = [{ ...authored, sourceIds: ["fixture-geometry"] }];
+    expect(errors(cites)).toContain("data.source");
+    // The derivation is required and non-empty for an authored file, whatever `modified` says.
+    for (const derivation of [undefined, "", "  "]) {
+      for (const modified of [false, true]) {
+        const missing = real();
+        missing.dataFiles = [{ ...authored, modified, derivation }];
+        expect(errors(missing), `${modified} ${JSON.stringify(derivation)}`).toContain("data.derivation");
+      }
+    }
+    // A declared file that is not authored still needs provenance on a real station.
+    const plain = real();
+    plain.dataFiles = [{ id: "x", path: "scene/x.json", sourceIds: [], modified: false, derivation: "d" }];
+    expect(errors(plain)).toContain("data.source");
+    // And the field round-trips through parseStationFiles.
+    const [manifest, graph, pois] = split(createSyntheticBundle());
+    const roundTrip = parseStationFiles({ ...manifest, dataFiles: [authored] }, graph, pois);
+    expect(roundTrip.ok && roundTrip.bundle.dataFiles).toEqual([authored]);
+  });
+
   it("lists data files that cite facts-only sources for the build log", () => {
     const b = createSyntheticBundle();
     b.sources.push({ ...b.sources[0]!, id: "facts-a", usage: "facts-only" }, { ...b.sources[0]!, id: "facts-b", usage: "facts-only" });
@@ -481,6 +525,17 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     for (const bad of ["../x.webp", "assets//x.webp", "assets/x#1.webp", "assets/x?.webp", "/abs.webp", "station.json", "assets/x.exe"])
       expect(withFiles("assets/a.glb", [bad])).toContain("asset.files");
     for (const bad of ["assets/roof#west.glb", "assets/roof?west.glb"]) expect(withFiles(bad, [])).toContain("asset.uri");
+  });
+
+  it("checks uriMobile like the asset uri", () => {
+    const withMobile = (uriMobile: string) => {
+      const b = createSyntheticBundle();
+      b.assets = [{ id: "a", uri: "assets/a.glb", uriMobile, format: "glb", floorIds: [], role: "visual", sourceIds: ["fixture-geometry"] }];
+      return errors(b);
+    };
+    expect(withMobile("assets/mobile/a.glb")).toEqual([]);
+    for (const bad of ["../a.glb", "assets//a.glb", "assets/a#1.glb", "/abs.glb", "assets/a.gltf", "assets/a.webp", "assets/a.glb"])
+      expect(withMobile(bad), bad).toContain("asset.uri");
   });
 
   it("gates known floor heights on reusable sources and drawing them as known", () => {

@@ -1,10 +1,37 @@
 import type { RouteFailure, RouteResult } from "@gteki/navigation";
 import type { Strings } from "../i18n.ts";
 
-/** One short sentence for a route result: the summary when found, the no-route heading otherwise. */
+/** A route's unknown-fact kind in plain words (#203 B5): the card's badges and the live message share it. */
+export function unknownLabel(t: Strings, kind: string): string {
+  const label: Record<string, string> = { hours: t.unknownHours, wheelchair: t.unknownWheelchair, steps: t.unknownSteps, paid: t.unknownPaid, fare_boundary: t.unknownFare, access_evidence: t.unknownAccess };
+  return label[kind] ?? kind;
+}
+
+/**
+ * Why a route's freshness is stale (true) or unknown (null), in the card's own words — the badge says the
+ * state, this says the cause. Null when the freshness is fresh.
+ */
+export function freshnessReason(t: Strings, r: RouteResult): string | null {
+  if (r.stale === true) return r.expiredSourceIds?.length ? `${t.expired}: ${r.expiredSourceIds.join(", ")}` : `${t.oldestSource} ${r.oldestSourceDate ?? "?"}`;
+  if (r.stale === null) return r.undatedSourceIds?.length ? `${t.undatedSources}: ${r.undatedSourceIds.join(", ")}` : `${t.oldestSource} ${r.oldestSourceDate ?? "?"}`;
+  return null;
+}
+
+/**
+ * One short announcement for a route result: the summary when found, the no-route heading otherwise. When the
+ * route is stale or its freshness unknown, or some facts are unknown, it also says so (the same strings the
+ * card uses) — a screen-reader user should not hear a route as fully known (#203 B5).
+ */
 export function routeLiveMessage(t: Strings, r: RouteResult | RouteFailure): string {
   if (!r.ok) return t.noRoute;
-  return t.routeFound(Math.round(r.totalLengthM), Math.max(1, Math.round(r.estimatedSeconds / 60)));
+  const parts = [t.routeFound(Math.round(r.totalLengthM), Math.max(1, Math.round(r.estimatedSeconds / 60)))];
+  if (r.stale === true) parts.push(t.stale);
+  else if (r.stale === null) parts.push(t.freshnessUnknown);
+  const reason = freshnessReason(t, r);
+  if (reason) parts.push(reason);
+  // Each unknown kind once, without counts: this is read aloud, not scanned.
+  for (const kind of new Set((r.unknowns ?? []).map((u) => unknownLabel(t, u.kind)))) parts.push(kind);
+  return joinLive(parts, t);
 }
 
 /** The search result count, or the empty-results message. */

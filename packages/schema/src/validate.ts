@@ -274,6 +274,11 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     // Canonical form only: the Web loader keys assets by their exact relative path and Godot refuses ":" and "\\".
     if (!isCanonicalAssetPath(a.uri)) err("asset.uri", CANONICAL_MESSAGE, a.id);
     else if (!a.uri.toLowerCase().endsWith(".glb")) err("asset.uri", "glb asset uri must end in .glb", a.id);
+    if (a.uriMobile !== undefined) {
+      if (!isCanonicalAssetPath(a.uriMobile)) err("asset.uri", `uriMobile: ${CANONICAL_MESSAGE}`, a.id);
+      else if (!a.uriMobile.toLowerCase().endsWith(".glb")) err("asset.uri", "glb asset uriMobile must end in .glb", a.id);
+      else if (a.uriMobile === a.uri) err("asset.uri", "uriMobile must differ from uri (omit it when there is no lighter variant)", a.id);
+    }
     for (const f of a.files ?? []) {
       if (!isCanonicalAssetPath(f)) err("asset.files", `${f}: ${CANONICAL_MESSAGE}`, a.id);
       else if (!ASSET_FILE_EXT.test(f) || CONTRACT_FILES.has(f)) err("asset.files", `${f}: not a publishable asset file type`, a.id);
@@ -317,9 +322,17 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
       if (rights !== undefined && !isShippableRights(rights) && !b.station.synthetic)
         err("data.rights", `data derives from source ${s} with rights ${rights}; it cannot ship in the public bundle`, d.id);
     }
-    if (d.sourceIds.length === 0 && !b.station.synthetic) err("data.source", "data file without source provenance", d.id);
-    if ((d.modified || citesFactsOnly) && !(typeof d.derivation === "string" && d.derivation.trim()))
-      err("data.derivation", `${d.modified ? "modified data" : "data citing a facts-only source"} needs a derivation naming the generating script`, d.id);
+    const hasDerivation = typeof d.derivation === "string" && d.derivation.trim() !== "";
+    if (d.authored) {
+      // An authored file is GTEki's own config, derived from nothing: it cites no sources, is never credited (#252),
+      // and its derivation must say so.
+      if (d.sourceIds.length > 0) err("data.source", "an authored data file cites no sources", d.id);
+      if (!hasDerivation) err("data.derivation", "an authored data file needs a derivation saying so", d.id);
+    } else {
+      if (d.sourceIds.length === 0 && !b.station.synthetic) err("data.source", "data file without source provenance", d.id);
+      if ((d.modified || citesFactsOnly) && !hasDerivation)
+        err("data.derivation", `${d.modified ? "modified data" : "data citing a facts-only source"} needs a derivation naming the generating script`, d.id);
+    }
   }
 
   const poiIds = new Set<string>();

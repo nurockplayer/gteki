@@ -1,0 +1,53 @@
+{
+  "source_id": "tokyo-muni-shinjuku-tourism-csv",
+  "resolved_url": "https://www.city.shinjuku.lg.jp/content/000399980.csv",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-22T12:23:42.095Z",
+  "completed_at": "2026-10-22T12:23:42.126Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/octet-stream",
+    "content-length": "2674",
+    "etag": "\"6ad9cd15-a72\"",
+    "last-modified": "Thu, 22 Oct 2026 08:45:09 GMT",
+    "date": "Thu, 22 Oct 2026 12:23:42 GMT"
+  },
+  "bytes": 2674,
+  "sha256": "5403c83dda794c83d2dfd067cb7af118fd3288cd4e039d381e9f23727c8f2972",
+  "store_path": "raw/5403c83dda794c83d2dfd067cb7af118fd3288cd4e039d381e9f23727c8f2972/000399980.csv",
+  "tool_version": "0.1.0",
+  "git_commit": "e1b9dd2deb2b1c3314524bdbbf8ca5687006e0d2",
+  "expected_bytes": 2674,
+  "expected_url_match": true,
+  "size_check": "MATCH",
+  "mode": "online",
+  "supporting_documents": [
+    {
+      "id": "package-show",
+      "requested_url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t131041d0000000131",
+      "url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t131041d0000000131",
+      "http_status": 200,
+      "sha256": "333c46eb0d4634fd6a3648aaa5076c769ab55155d144c74f7685c80e266a9d83",
+      "bytes": 2973,
+      "store_path": "raw/333c46eb0d4634fd6a3648aaa5076c769ab55155d144c74f7685c80e266a9d83/package_show"
+    },
+    {
+      "id": "portal-terms",
+      "requested_url": "https://portal.data.metro.tokyo.lg.jp/terms/",
+      "url": "https://portal.data.metro.tokyo.lg.jp/terms/",
+      "http_status": 200,
+      "sha256": "74e591bc0092beaed0921015d3b2b0b9bf90c70e67508b036155f6e5400cd67a",
+      "bytes": 44403,
+      "store_path": "raw/74e591bc0092beaed0921015d3b2b0b9bf90c70e67508b036155f6e5400cd67a/terms"
+    },
+    {
+      "id": "cc-by-4-deed-ja",
+      "requested_url": "https://creativecommons.org/licenses/by/4.0/deed.ja",
+      "url": "https://creativecommons.org/licenses/by/4.0/deed.ja",
+      "http_status": 200,
+      "sha256": "cf5b3d5b092076f0c146b9c41d7bca8a5ad5171660b7033cd8125ba5ac6d0382",
+      "bytes": 33449,
+      "store_path": "raw/cf5b3d5b092076f0c146b9c41d7bca8a5ad5171660b7033cd8125ba5ac6d0382/deed.ja"
+    }
+  ]
+}
