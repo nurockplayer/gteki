@@ -1,0 +1,76 @@
+{
+  "format": "gteki-finish/0.1",
+  "id": "gteki_finish_floor_terrazzo",
+  "kit_version": "0.1.0",
+  "tier": "full",
+  "role": "floor",
+  "gteki_role": "floor",
+  "facility": [
+    "concourse",
+    "passage"
+  ],
+  "use": "public (free-side) concourse and passage floor",
+  "pattern": "polished terrazzo, 16,000 chips per m2; no joints",
+  "source_material": "gteki_floor_terrazzo",
+  "repeat_m": [
+    1.0,
+    1.0
+  ],
+  "uv": {
+    "u": "east",
+    "v": "north",
+    "surface": "floor, in the surface plane",
+    "origin": "a repeat starts where u and v are whole multiples of repeat_m from the surface origin"
+  },
+  "maps": {
+    "albedo": {
+      "file": "albedo.jpg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 420867,
+      "sha256": "8d04f23d515ac39171db9014c252f49b01953f2a16a3bc640b6c0702a2282048"
+    },
+    "orm": {
+      "file": "orm.jpg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 143439,
+      "sha256": "cb2bc29e67c5ac7da6aa23718359b5c476a942451aee13f71eeeff885a50cbd0"
+    }
+  },
+  "factors": {
+    "baseColorFactor": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "roughnessFactor": 1.0,
+    "metallicFactor": 1.0
+  },
+  "omitted_maps": [
+    "normal"
+  ],
+  "texel_density_px_per_m": [
+    1024.0,
+    1024.0
+  ],
+  "tint": false,
+  "sample_glb": "../glb/gteki_finish_floor_terrazzo.glb",
+  "sample": {
+    "plane": "floor",
+    "repeats": 2,
+    "size_m": [
+      2.0,
+      2.0
+    ]
+  },
+  "dimension_basis": "synthetic",
+  "generator": "tools/blender/gteki_assets/finishes.py",
+  "license": "CC-BY-4.0 — original GTEki work; attribution: GTEki contributors",
+  "provenance": "original procedural geometry and textures; see assets/library/PROVENANCE.md"
+}

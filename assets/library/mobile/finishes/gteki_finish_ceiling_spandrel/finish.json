@@ -1,0 +1,83 @@
+{
+  "format": "gteki-finish/0.1",
+  "id": "gteki_finish_ceiling_spandrel",
+  "kit_version": "0.1.0",
+  "tier": "mobile",
+  "role": "ceiling",
+  "gteki_role": "ceiling",
+  "facility": [
+    "concourse",
+    "passage"
+  ],
+  "use": "linear metal ceiling",
+  "pattern": "100 mm strips along u, 8 mm dark groove between strips",
+  "source_material": "gteki_ceiling_spandrel",
+  "repeat_m": [
+    1.0,
+    1.0
+  ],
+  "uv": {
+    "u": "east",
+    "v": "south",
+    "surface": "ceiling, seen from below (the kit's box UV)",
+    "origin": "a repeat starts where u and v are whole multiples of repeat_m from the surface origin"
+  },
+  "maps": {
+    "albedo": {
+      "file": "albedo.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 25191,
+      "sha256": "2fa700caf8a82ee7bb5992849087e203808ae464510ab75d422253db81278806"
+    },
+    "orm": {
+      "file": "orm.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 16482,
+      "sha256": "cc167c8ad7666028053242c7434642116f7f2357212e737f78541376db8b2fc3"
+    },
+    "normal": {
+      "file": "normal.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 22977,
+      "sha256": "a47ddbceb326da9620794542dd1747dc5149efef8ef52526b354e8a15fd84f5d"
+    }
+  },
+  "factors": {
+    "baseColorFactor": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "roughnessFactor": 1.0,
+    "metallicFactor": 1.0
+  },
+  "omitted_maps": [],
+  "texel_density_px_per_m": [
+    512.0,
+    512.0
+  ],
+  "tint": false,
+  "sample_glb": "../glb/gteki_finish_ceiling_spandrel.glb",
+  "sample": {
+    "plane": "wall",
+    "repeats": 2,
+    "size_m": [
+      2.0,
+      2.0
+    ]
+  },
+  "dimension_basis": "synthetic",
+  "generator": "tools/blender/gteki_assets/finishes.py",
+  "license": "CC-BY-4.0 — original GTEki work; attribution: GTEki contributors",
+  "provenance": "original procedural geometry and textures; see assets/library/PROVENANCE.md"
+}
