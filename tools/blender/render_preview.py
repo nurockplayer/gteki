@@ -198,18 +198,21 @@ def add_studio_lights(layout):
         g.data.materials.append(m)
 
 
-def add_camera(layout):
-    c = layout["camera"]
-    cd = bpy.data.cameras.new("cam")
+def make_camera(name, c):
+    cd = bpy.data.cameras.new(name)
     cd.lens = c.get("lens", 24)
     cd.clip_start = 0.05
     cd.clip_end = 400
-    co = bpy.data.objects.new("cam", cd)
+    co = bpy.data.objects.new(name, cd)
     bpy.context.scene.collection.objects.link(co)
     co.location = Vector(c["pos"])
     d = Vector(c["look_at"]) - co.location
     co.rotation_euler = d.to_track_quat("-Z", "Y").to_euler()
-    bpy.context.scene.camera = co
+    return co
+
+
+def add_camera(layout):
+    bpy.context.scene.camera = make_camera("cam", layout["camera"])
 
 
 def main(argv):
