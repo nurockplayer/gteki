@@ -125,6 +125,12 @@ W1 needs its own generator and an Owner look check before any piece uses it.
 - A sign face is one emissive quad in a recessed aluminium frame (28–35 mm bar) with a 4 mm dark gasket.
 - **No text, digits, pictograms or typefaces are generated.** Art is a colour field, a thin inner rule, an optional geometric arrow block and a blank text panel. Stations add their own wording at runtime (see [HANDOFF](HANDOFF.md)).
 - Arrow directions are left, right, up or none. The back face carries the mirrored arrow.
+- **Exception: facility pictograms (batch P1).** Approved by the director under the Owner's delegation, 2026-10-22 ([#151](https://github.com/nurockplayer/gteki/pull/151)). This narrow exception covers only the toilet entrance sign (`toilet_entrance`), which carries a procedurally drawn figure:
+  - It is GTEki's own geometric figure: a signed-distance texture hand-built from circles, capsules, rounded rectangles and convex polygons in `families/facilities.py`. ISO 7001 and JIS Z8210 are stylistic references only. No artwork was traced, copied or imported.
+  - It only restates the facility the source names, with the matching `kind`. A station places it only where the source gives the entrance or door position.
+  - A space-representative point alone is not enough, because the piece would imply a door the source doesn't give. This rules out GSI F001 / F002 / F003 by themselves, so Shinjuku does not place it.
+  - The `accessible` figure claims an accessible toilet, so it is used only where the source says so.
+  - Still no text or digits.
 
 | Tone | Field | Panel | Rim | Ink | Emission |
 | --- | --- | --- | --- | --- | --- |

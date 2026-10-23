@@ -850,7 +850,7 @@ def self_test():
     assert Validator("tiny.glb", encode_glb(doc, binary)).check()["status"] == "PASS"
     assert Validator("tiny.glb", encode_glb(doc, binary), require_occlusion=True).check()["status"] == "FAIL"  # ... unless asked
     print("PASS self-test: valid, broken, truncated, NaN, out-of-range index, sparse, transformed, strip and fan GLBs, "
-          "root identity, extensions, triangle count, gteki_role (allowed value, root and VIS_* agree), below floor, texCoord (core, extension, transform, extras), palette mipmaps, mobile finish PNG normal, lightmap (overlap, strips, fans, range, NaN, collapsed, mobile UV1)")
+          "root identity, extensions, triangle count, gteki_role (allowed value, root and VIS_* agree), below floor, texCoord (core, extension, transform, extras), palette mipmaps, mobile finish PNG normal, lightmap (overlap, strips, fans, range, NaN, collapsed, mobile UV1), occlusion (texCoord, TEXCOORD_1, joint atlas overlap, strength, size, shared map)")
 
 
 def main():
