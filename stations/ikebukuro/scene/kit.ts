@@ -22,6 +22,8 @@ type ThreeNS = typeof THREE_NS;
 
 export interface KitPiece {
   use: string;
+  /** Hanging-frame recipe, copied from the library manifest. */
+  nine_slice?: import("./kit_signs.ts").NineSlice;
   /** Rail pieces: module length along the run (m). */
   pitch_m?: number;
   note?: string;

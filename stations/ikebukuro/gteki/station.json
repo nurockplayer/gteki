@@ -294,7 +294,7 @@
   },
   {
    "id": "gteki-kit-0-1-0",
-   "title": "GTEki station kit 0.1.0 (Lane E): barrier rail and column modules and a representative gate array",
+   "title": "GTEki station kit 0.1.0 (Lane E): barrier rails, column modules, hanging sign frames and a representative gate array",
    "publisher": "GTEki contributors",
    "url": "https://github.com/nurockplayer/gteki/tree/main/assets/library",
    "license": {
@@ -314,9 +314,11 @@
     "kit/high/gteki_column_round_d600.glb": "fbd44a542e6e7b7e0deaee6d4624ee49a4f0b2aaf6af77d6f1a87bc95a30d001",
     "kit/low/gteki_column_round_d600.glb": "87105fcd0ba3a310ed4c8e9f427ddca532a3dea8be2bf5e57cad8ba9a85b205d",
     "kit/high/gteki_gate_array_2.glb": "837827e00581ef8b3026bba3ffed7d16bc2886b4358c0d3e8043d8d214a59cdc",
-    "kit/low/gteki_gate_array_2.glb": "41c7b914e274de83514118a8f9f8a48ab8bee9029447fa06233d7ff54db86d46"
+    "kit/low/gteki_gate_array_2.glb": "41c7b914e274de83514118a8f9f8a48ab8bee9029447fa06233d7ff54db86d46",
+    "kit/high/gteki_sign_frame_9slice_h480_d80.glb": "889db7bac82595d051674b30a0d88618e1180cbabd5a0873570a000efe575099",
+    "kit/low/gteki_sign_frame_9slice_h480_d80.glb": "6a48a1a5805a2bb0e0877de2bd2b0af2d6dec2e9923419b6d5104f36e0b8938e"
    },
-   "notes": "Original project art, generic and unbranded; not a measurement of Ikebukuro. The GLBs' embedded licence strings still read UNDECIDED until the kit's EMBED_SPDX rebuild; REUSE.toml records CC-BY-4.0 for gteki/kit/**. gteki_gate_array_2 is placed once at each of the gate nodes g_jr_c1, g_jr_c2 and g_jr_s as a generic stand-in: 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\". It is never a verified layout of the Ikebukuro gates."
+   "notes": "Original project art, generic and unbranded; not a measurement of Ikebukuro. The earlier rail, column and gate GLBs' embedded licence strings still read UNDECIDED until the kit's EMBED_SPDX rebuild; REUSE.toml records CC-BY-4.0 for gteki/kit/**. gteki_gate_array_2 is placed once at each of the gate nodes g_jr_c1, g_jr_c2 and g_jr_s as a generic stand-in: 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\". It is never a verified layout of the Ikebukuro gates. Hanging sign frames are generic Lane E presentation (CC BY 4.0), not a survey of the real Ikebukuro housings."
   }
  ],
  "floors": [
@@ -400,6 +402,10 @@
      {
       "lang": "en",
       "text": "Central Passage (east) and east exits"
+     },
+     {
+      "lang": "ja",
+      "text": "中央通路（東）・東側出口"
      }
     ],
     "polygon": [
@@ -1036,6 +1042,10 @@
      {
       "lang": "en",
       "text": "Other PLATEAU B1 passages (explore only)"
+     },
+     {
+      "lang": "ja",
+      "text": "その他のPLATEAU地下1階通路（表示のみ）"
      }
     ],
     "polygon": [
@@ -1059,7 +1069,16 @@
     "sourceIds": [
      "plateau-ubld-13116"
     ],
-    "note": "Geometry present; graph and access facts not yet authored."
+    "note": [
+     {
+      "lang": "en",
+      "text": "Geometry present; graph and access facts not yet authored."
+     },
+     {
+      "lang": "ja",
+      "text": "形状はありますが、経路と通行できるかどうかの情報はまだ作っていません。"
+     }
+    ]
    },
    {
     "id": "fare-areas",
@@ -1069,80 +1088,336 @@
      {
       "lang": "en",
       "text": "Fare-paid concourses and platforms (JR, Tobu, Seibu, Tokyo Metro)"
+     },
+     {
+      "lang": "ja",
+      "text": "改札内コンコース・ホーム（JR・東武・西武・東京メトロ）"
      }
     ],
     "sourceIds": [
      "plateau-ubld-13116"
     ],
-    "note": "Not present in open geometry."
+    "note": [
+     {
+      "lang": "en",
+      "text": "Not present in open geometry."
+     },
+     {
+      "lang": "ja",
+      "text": "公開されている形状データに含まれていません。"
+     }
+    ]
    }
   ],
   "gaps": [
    {
     "id": "gap-hours",
     "floorId": "b1",
-    "zone": "all passages and exits",
-    "missingFact": "Opening hours of the B1 passages and each exit stair",
-    "fieldWorkNeeded": "Official hours statement per exit, or dated on-site photographs of posted hours",
+    "zone": [
+     {
+      "lang": "en",
+      "text": "all passages and exits"
+     },
+     {
+      "lang": "ja",
+      "text": "全通路・全出口"
+     }
+    ],
+    "missingFact": [
+     {
+      "lang": "en",
+      "text": "Opening hours of the B1 passages and each exit stair"
+     },
+     {
+      "lang": "ja",
+      "text": "地下1階の通路と各出口階段を利用できる時間"
+     }
+    ],
+    "fieldWorkNeeded": [
+     {
+      "lang": "en",
+      "text": "Official hours statement per exit, or dated on-site photographs of posted hours"
+     },
+     {
+      "lang": "ja",
+      "text": "出口ごとの公式な時間の記載、または掲示された時間を写した日付入りの現地写真"
+     }
+    ],
     "sourceDate": null
    },
    {
     "id": "gap-metro-tobu-gates",
     "floorId": "b1",
-    "zone": "Central Passage, west and central parts",
-    "missingFact": "Exact openings of the Marunouchi west/central/east gates and the Tobu central gates 1/2 in the PLATEAU geometry (two floor-level openings near the projected Marunouchi gates look like stairwells)",
-    "fieldWorkNeeded": "On-site check of gate lines relative to columns; photos where permitted"
+    "zone": [
+     {
+      "lang": "en",
+      "text": "Central Passage, west and central parts"
+     },
+     {
+      "lang": "ja",
+      "text": "中央通路の西側と中央部"
+     }
+    ],
+    "missingFact": [
+     {
+      "lang": "en",
+      "text": "Exact openings of the Marunouchi west/central/east gates and the Tobu central gates 1/2 in the PLATEAU geometry (two floor-level openings near the projected Marunouchi gates look like stairwells)"
+     },
+     {
+      "lang": "ja",
+      "text": "丸ノ内線の西・中央・東改札と東武の中央1・2改札が、計測データのどの開口にあたるか正確に分かりません（丸ノ内線改札の推定位置付近にある床の開口2か所は、階段の吹き抜けのように見えます）"
+     }
+    ],
+    "fieldWorkNeeded": [
+     {
+      "lang": "en",
+      "text": "On-site check of gate lines relative to columns; photos where permitted"
+     },
+     {
+      "lang": "ja",
+      "text": "柱の位置に対する改札の並びを現地で確認、撮影できる場所では写真"
+     }
+    ]
    },
    {
     "id": "gap-step-free",
     "floorId": "b1",
-    "zone": "east hall to east corridor (z 27.8 -> 26.9) and all exits",
-    "missingFact": "Step-free alternatives: elevators (EF_80 transport elements exist but their type, served levels and hours are unknown) and ramps",
-    "fieldWorkNeeded": "Verify lifts/escalators near Exits 34/35 against the Tokyo Metro accessibility page and on site"
+    "zone": [
+     {
+      "lang": "en",
+      "text": "east hall to east corridor (z 27.8 -> 26.9) and all exits"
+     },
+     {
+      "lang": "ja",
+      "text": "東側ホールから東側通路へ下がる高低差（約0.9 m）と全出口"
+     }
+    ],
+    "missingFact": [
+     {
+      "lang": "en",
+      "text": "Step-free alternatives: elevators (EF_80 transport elements exist but their type, served levels and hours are unknown) and ramps"
+     },
+     {
+      "lang": "ja",
+      "text": "段差のない経路（エレベーター・スロープ）。計測データには移動用の設備がありますが、その種類・停止階・利用時間は分かりません"
+     }
+    ],
+    "fieldWorkNeeded": [
+     {
+      "lang": "en",
+      "text": "Verify lifts/escalators near Exits 34/35 against the Tokyo Metro accessibility page and on site"
+     },
+     {
+      "lang": "ja",
+      "text": "出口34・35付近のエレベーター・エスカレーターを、東京メトロのバリアフリー情報と現地で確認"
+     }
+    ]
    },
    {
     "id": "gap-freshness",
     "floorId": null,
-    "zone": "whole slice",
-    "missingFact": "Geometry is from a 2023 survey; construction changes since then are unknown",
-    "fieldWorkNeeded": "Dated walk-through comparing columns, exits and openings"
+    "zone": [
+     {
+      "lang": "en",
+      "text": "whole slice"
+     },
+     {
+      "lang": "ja",
+      "text": "対象範囲全体"
+     }
+    ],
+    "missingFact": [
+     {
+      "lang": "en",
+      "text": "Geometry is from a 2023 survey; construction changes since then are unknown"
+     },
+     {
+      "lang": "ja",
+      "text": "形状は2023年の計測によるもので、その後の工事による変化は分かりません"
+     }
+    ],
+    "fieldWorkNeeded": [
+     {
+      "lang": "en",
+      "text": "Dated walk-through comparing columns, exits and openings"
+     },
+     {
+      "lang": "ja",
+      "text": "柱・出口・開口を見比べる日付入りの現地踏査"
+     }
+    ]
    },
    {
     "id": "gap-south-west",
     "floorId": "b1",
-    "zone": "South Passage, south side between the JR South Gate and the West Exit (South) hall",
-    "missingFact": "Which PLATEAU features are the Yurakucho Line South Passage East and West Gates: the gate machines on the official map sit inside surveyed floor with no gate-line opening, so their exact lines and the paid side are not established. Tokyo Metro's accessibility page does state a lift and escalator connection 南通路西改札～４番出入口（エソラ） (改札外), but it gives neither the gate's position nor the passage geometry, so 南通路西改札 is a search-only POI (metro-y-south-west-gate) and the link to Exit 4 is not an edge",
-    "fieldWorkNeeded": "on-site check of both Yurakucho gate lines against column positions"
+    "zone": [
+     {
+      "lang": "en",
+      "text": "South Passage, south side between the JR South Gate and the West Exit (South) hall"
+     },
+     {
+      "lang": "ja",
+      "text": "南通路の南側、JR南改札と西口（南）地下広場の間"
+     }
+    ],
+    "missingFact": [
+     {
+      "lang": "en",
+      "text": "Which PLATEAU features are the Yurakucho Line South Passage East and West Gates: the gate machines on the official map sit inside surveyed floor with no gate-line opening, so their exact lines and the paid side are not established. Tokyo Metro's accessibility page does state a lift and escalator connection 南通路西改札～４番出入口（エソラ） (改札外), but it gives neither the gate's position nor the passage geometry, so 南通路西改札 is a search-only POI (metro-y-south-west-gate) and the link to Exit 4 is not an edge"
+     },
+     {
+      "lang": "ja",
+      "text": "有楽町線の南通路東改札・西改札が計測データのどれにあたるか確定していません。公式案内図の改札機は計測された床の内側にあり、改札の並びにあたる開口がないため、正確な位置と改札内の側は分かりません。東京メトロのバリアフリー情報には「南通路西改札～４番出入口（エソラ）（改札外）」のエレベーター・エスカレーター経路が記載されていますが、改札の位置や通路の形は示されていません。そのため南通路西改札は検索のみの地点とし、出口4へのルートは作っていません"
+     }
+    ],
+    "fieldWorkNeeded": [
+     {
+      "lang": "en",
+      "text": "on-site check of both Yurakucho gate lines against column positions"
+     },
+     {
+      "lang": "ja",
+      "text": "有楽町線の両改札の並びを、柱の位置と照らして現地で確認"
+     }
+    ]
    },
    {
     "id": "gap-ne-north",
     "floorId": "b1",
-    "zone": "North-east, north of the Ikebukuro Shopping Park passage",
-    "missingFact": "Exits 23, 24, 25, 29, 30 and 31: the official map shows two stairs (24, 25) where PLATEAU has one stair top, and 23/29/30/31 lie outside the surveyed geometry",
-    "fieldWorkNeeded": "On-site check of which stair is 24 and which is 25; a survey source for the passage north of it"
+    "zone": [
+     {
+      "lang": "en",
+      "text": "North-east, north of the Ikebukuro Shopping Park passage"
+     },
+     {
+      "lang": "ja",
+      "text": "北東部、池袋ショッピングパーク通路の北側"
+     }
+    ],
+    "missingFact": [
+     {
+      "lang": "en",
+      "text": "Exits 23, 24, 25, 29, 30 and 31: the official map shows two stairs (24, 25) where PLATEAU has one stair top, and 23/29/30/31 lie outside the surveyed geometry"
+     },
+     {
+      "lang": "ja",
+      "text": "出口23・24・25・29・30・31。公式案内図では階段が2つ（24・25）ありますが、計測データでは階段の上端が1つしかありません。23・29・30・31は計測範囲の外です"
+     }
+    ],
+    "fieldWorkNeeded": [
+     {
+      "lang": "en",
+      "text": "On-site check of which stair is 24 and which is 25; a survey source for the passage north of it"
+     },
+     {
+      "lang": "ja",
+      "text": "どちらの階段が24でどちらが25かを現地で確認。その北側の通路の計測資料"
+     }
+    ]
    },
    {
     "id": "gap-west-stairs",
     "floorId": "b1",
-    "zone": "West Exit area: Exits 8, 9, 14, 16, 19 and two unmatched stairwells",
-    "missingFact": "PLATEAU models only the lower flights of Exit 9 and of two stairwells near (-181, 126) and (-165, 113) (to TP ~30 m, street ~33 m). Exit 9's flight lies ~9 m from its map position; the (-181, 126) flight sits beside the wide stair to the Fukutoshin Line West Passage, and the (-165, 113) flight runs into the Hope Center block towards Exit 7's map position, so neither is matched. Exit 8's stairs lie at the west end of the passage, ~12 m beyond the surveyed floor. Exits 14, 16 and 19 (西口（中央）) have no stair in the survey. (Exit 13's lower flight matches its map position and is routed to its foot.)",
-    "fieldWorkNeeded": "a survey source for the upper flights and the passage west to Exit 8 (or a later PLATEAU release); on-site check of which stairwell is which exit",
+    "zone": [
+     {
+      "lang": "en",
+      "text": "West Exit area: Exits 8, 9, 14, 16, 19 and two unmatched stairwells"
+     },
+     {
+      "lang": "ja",
+      "text": "西口付近：出口8・9・14・16・19と、どの出口か分からない階段2か所"
+     }
+    ],
+    "missingFact": [
+     {
+      "lang": "en",
+      "text": "PLATEAU models only the lower flights of Exit 9 and of two stairwells near (-181, 126) and (-165, 113) (to TP ~30 m, street ~33 m). Exit 9's flight lies ~9 m from its map position; the (-181, 126) flight sits beside the wide stair to the Fukutoshin Line West Passage, and the (-165, 113) flight runs into the Hope Center block towards Exit 7's map position, so neither is matched. Exit 8's stairs lie at the west end of the passage, ~12 m beyond the surveyed floor. Exits 14, 16 and 19 (西口（中央）) have no stair in the survey. (Exit 13's lower flight matches its map position and is routed to its foot.)"
+     },
+     {
+      "lang": "ja",
+      "text": "計測データにあるのは、出口9と階段2か所の下側部分だけです（いずれも地上まで約3 m残ります）。出口9の階段は案内図の位置から約9 mずれています。階段の1か所は副都心線西通路へ向かう幅の広い階段の横にあり、もう1か所はホープセンターの区画の中へ、案内図の出口7の方向に延びているため、どちらも出口と対応づけられません。出口8の階段は通路の西端、計測された床から約12 m先にあります。出口14・16・19（西口（中央））は計測データに階段がありません（出口13の下側の階段は案内図の位置と一致するため、階段の下端まで案内しています）"
+     }
+    ],
+    "fieldWorkNeeded": [
+     {
+      "lang": "en",
+      "text": "a survey source for the upper flights and the passage west to Exit 8 (or a later PLATEAU release); on-site check of which stairwell is which exit"
+     },
+     {
+      "lang": "ja",
+      "text": "階段の上側部分と出口8へ向かう西側通路の計測資料（またはPLATEAUの新しい版）。どの階段がどの出口かを現地で確認"
+     }
+    ],
     "sourceDate": null
    },
    {
     "id": "gap-west-corridor-exits",
     "floorId": "b1",
-    "zone": "Passage north from the West Exit (South) hall; Hope Center block",
-    "missingFact": "Exits 5, 6a, 6b and 7: their stairs are outside the PLATEAU survey, and their feet cannot be matched one-to-one to PLATEAU openings (Exit 5 has two candidate openings 6 and 13 m from the map position, Exit 6b's nearest is 11 m away and raised; 6a and 7 lie inside the Hope Center block, whose interior is not surveyed)",
-    "fieldWorkNeeded": "on-site note of where each exit stair leaves the passage, counted against column positions",
+    "zone": [
+     {
+      "lang": "en",
+      "text": "Passage north from the West Exit (South) hall; Hope Center block"
+     },
+     {
+      "lang": "ja",
+      "text": "西口（南）地下広場から北へ向かう通路、ホープセンターの区画"
+     }
+    ],
+    "missingFact": [
+     {
+      "lang": "en",
+      "text": "Exits 5, 6a, 6b and 7: their stairs are outside the PLATEAU survey, and their feet cannot be matched one-to-one to PLATEAU openings (Exit 5 has two candidate openings 6 and 13 m from the map position, Exit 6b's nearest is 11 m away and raised; 6a and 7 lie inside the Hope Center block, whose interior is not surveyed)"
+     },
+     {
+      "lang": "ja",
+      "text": "出口5・6a・6b・7。階段は計測範囲の外にあり、階段の下端を計測データの開口と1対1で対応づけられません（出口5は案内図の位置から6 mと13 mの所に候補の開口が2つあり、出口6bに最も近い開口は11 m離れていて高い位置にあり、6aと7はホープセンターの区画の中で、その内部は計測されていません）"
+     }
+    ],
+    "fieldWorkNeeded": [
+     {
+      "lang": "en",
+      "text": "on-site note of where each exit stair leaves the passage, counted against column positions"
+     },
+     {
+      "lang": "ja",
+      "text": "各出口の階段が通路から分かれる位置を、柱の位置を基準に現地で記録"
+     }
+    ],
     "sourceDate": null
    },
    {
     "id": "gap-tobu-jr-link",
     "floorId": "b1",
-    "zone": "Passage along the west side of the JR block, between the South Passage and the Central Passage (west)",
-    "missingFact": "Whether this surveyed passage is public (outside fare gates) or a JR-Tobu transfer concourse: the official map shows gate machines along its JR side and Tobu Central Gate 1 at its north end",
-    "fieldWorkNeeded": "on-site check of both ends for gate lines and posted signage",
+    "zone": [
+     {
+      "lang": "en",
+      "text": "Passage along the west side of the JR block, between the South Passage and the Central Passage (west)"
+     },
+     {
+      "lang": "ja",
+      "text": "JRの区画の西側に沿った、南通路と中央通路（西）の間の通路"
+     }
+    ],
+    "missingFact": [
+     {
+      "lang": "en",
+      "text": "Whether this surveyed passage is public (outside fare gates) or a JR-Tobu transfer concourse: the official map shows gate machines along its JR side and Tobu Central Gate 1 at its north end"
+     },
+     {
+      "lang": "ja",
+      "text": "この計測された通路が改札外の公共通路か、JRと東武の乗り換え通路かが分かりません。公式案内図では、JR側に沿って改札機があり、北端に東武の中央1改札があります"
+     }
+    ],
+    "fieldWorkNeeded": [
+     {
+      "lang": "en",
+      "text": "on-site check of both ends for gate lines and posted signage"
+     },
+     {
+      "lang": "ja",
+      "text": "両端の改札の並びと掲示を現地で確認"
+     }
+    ],
     "sourceDate": null
    }
   ],
@@ -1170,7 +1445,7 @@
     "gteki-kit-0-1-0"
    ],
    "role": "visual",
-   "derivation": "PLATEAU CityGML LOD4.1 -> pipeline/extract_plateau_ubld.py (ENU) -> pipeline/blender_build_glb.py (triangulated, metric UV0); renderer frame (x, z, -y), identity transform; collision comes from per-mesh gteki_role tags (floor/stairs_ramps walkable; wall/barriers/transport collide), not from the asset role, because verified exit routes pass through door and portal panels; runtime variant assets/ikebukuro_b1_lit.glb (listed in files, not a second asset, so loaders that load every asset never stack both): the same geometry + generated ceiling LED fixtures (GTEki art direction, not surveyed) -> pipeline/blender_bake_lighting.py: second UV set (TEXCOORD_1) and a Cycles diffuse lightmap (assets/ikebukuro_b1_lightmap.webp / _2k.webp, gamma-2.2 encoded, scale in ikebukuro_b1_lit.meta.json). scene/scene.ts loads the lit variant and falls back to this GLB; kit/{high,low}/*.glb: Lane E kit pieces (see source gteki-kit-0-1-0) copied unmodified by pipeline/sync_kit.py and instanced by scene/kit.ts on the access-fence label stretches and, for the two column pieces, by scene/kit_columns.ts as sleeves on the PLATEAU column footprints in scene/columns.json (finish generic, not surveyed), visual only, no colliders; gteki_gate_array_2 (kit/{high,low}/): ONE generic array per node at g_jr_c1, g_jr_c2 and g_jr_s, anchored on the node with its aisles along the verified edge's arriving direction, visual only, no colliders, not in the walk graph. 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\": the aisle count, direction and side are guesses, not a surveyed layout",
+   "derivation": "PLATEAU CityGML LOD4.1 -> pipeline/extract_plateau_ubld.py (ENU) -> pipeline/blender_build_glb.py (triangulated, metric UV0); renderer frame (x, z, -y), identity transform; collision comes from per-mesh gteki_role tags (floor/stairs_ramps walkable; wall/barriers/transport collide), not from the asset role, because verified exit routes pass through door and portal panels; runtime variant assets/ikebukuro_b1_lit.glb (listed in files, not a second asset, so loaders that load every asset never stack both): the same geometry + generated ceiling LED fixtures (GTEki art direction, not surveyed) -> pipeline/blender_bake_lighting.py: second UV set (TEXCOORD_1) and a Cycles diffuse lightmap (assets/ikebukuro_b1_lightmap.webp / _2k.webp, gamma-2.2 encoded, scale in ikebukuro_b1_lit.meta.json). scene/scene.ts loads the lit variant and falls back to this GLB; kit/{high,low}/*.glb: Lane E kit pieces (see source gteki-kit-0-1-0) copied unmodified by pipeline/sync_kit.py and instanced by scene/kit.ts on the access-fence label stretches and, for the two column pieces, by scene/kit_columns.ts as sleeves on the PLATEAU column footprints in scene/columns.json (finish generic, not surveyed), visual only, no colliders; gteki_gate_array_2 (kit/{high,low}/): ONE generic array per node at g_jr_c1, g_jr_c2 and g_jr_s, anchored on the node with its aisles along the verified edge's arriving direction, visual only, no colliders, not in the walk graph. 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\": the aisle count, direction and side are guesses, not a surveyed layout; scene/kit_signs.ts stretches the generic sign frame around the existing sign faces; presentation only, never walkable or colliders",
    "files": [
     "assets/ikebukuro_b1.meta.json",
     "assets/ikebukuro_b1_lit.glb",
@@ -1184,7 +1459,9 @@
     "kit/high/gteki_column_round_d600.glb",
     "kit/low/gteki_column_round_d600.glb",
     "kit/high/gteki_gate_array_2.glb",
-    "kit/low/gteki_gate_array_2.glb"
+    "kit/low/gteki_gate_array_2.glb",
+    "kit/high/gteki_sign_frame_9slice_h480_d80.glb",
+    "kit/low/gteki_sign_frame_9slice_h480_d80.glb"
    ]
   },
   {
@@ -1218,7 +1495,7 @@
     "toshima-underground-guide-2022"
    ],
    "modified": true,
-   "derivation": "pipeline/build_signage.py: sign positions, facing and arrows from verified edge geometry and routing (gteki/graph.json); placement against PLATEAU ceiling and wall surfaces (build/ubld_enu.json); exit and gate names/labels from gteki/pois.json (names only, no source sign layout reproduced). sourceIds = every verified edge's geometry/access evidence and its end nodes' sourceRefs, plus the evidence of each exit and gate a sign shows (a wide set)"
+   "derivation": "pipeline/build_signage.py: sign positions, facing and arrows from verified edge geometry and routing (gteki/graph.json); placement against PLATEAU ceiling and wall surfaces (build/ubld_enu.json), with continuous 6-10 m full-face sight-line envelopes from the 1.62 m walker eye and default follow camera against the shipped lit GLB walls/ceiling/barriers/light_fixtures and scene/columns.json kit sleeves (nearest clear candidate, otherwise retained and reported blocked); exit and gate names/labels from gteki/pois.json (names only, no source sign layout reproduced). sourceIds = every verified edge's geometry/access evidence and its end nodes' sourceRefs, plus the evidence of each exit and gate a sign shows (a wide set)"
   },
   {
    "id": "crowd-lanes",

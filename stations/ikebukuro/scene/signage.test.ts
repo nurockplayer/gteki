@@ -1,6 +1,8 @@
 // Wayfinding cue coverage (#108): along the two guided legs there is a distinct, graph-grounded cue (a sign, a
 // junction or a POI node) in every 30 m window, on the committed signage.json. Node only: no DOM, no GPU.
 import { readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import { buildSigns, EXIT_EN_EM, EXIT_JA_EM, FONT, LOW_TEXEL_SCALE, SMALL_EM, type SignSpec } from "./signs.ts";
@@ -25,6 +27,15 @@ type Sign = SignSpec & { basis?: string[]; atNode: string };
 const graph = json("../gteki/graph.json") as { nodes: { id: string; kind: string }[]; edges: Edge[] };
 const pois = json("../gteki/pois.json").pois as Poi[];
 const signs = json("./signage.json").signs as Sign[];
+
+for (const script of ["test_sign_sightlines.py", "test_fitting_exclusion.py"]) it(`checks ${script} against station geometry (#308)`, () => {
+  // The outer vitest command owns gteki-local-test.lock. The stdlib Python child
+  // runs serially here; it reads the shipped GLB, not the gitignored ENU extract.
+  const result = spawnSync("python3", ["-I", fileURLToPath(here(`../pipeline/${script}`))], { encoding: "utf8" });
+  expect(result.signal, result.stderr).toBeNull();
+  expect(result.status, result.stdout + result.stderr).toBe(0);
+  expect(result.stderr).not.toContain("expected failure");
+}, 30_000);
 // The two guided legs, routed live with the shared router (the same POI pairs as Lane F's I1 and I2 goldens), so a
 // graph rebuild never leaves this test reading a stale e2e golden. Steps keep the golden's ">edge" / "<edge" form.
 const bundle = (() => {
