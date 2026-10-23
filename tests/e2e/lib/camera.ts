@@ -141,7 +141,7 @@ export const LENS_PROBE = `(() => {
     if (!best) return null;
     const P = best.proj, vw = L.views.get(bestKey) ?? null, V = vw ? vw.view : null;
     const cam = V ? [0, 1, 2].map((j) => -(V[j * 4] * V[12] + V[j * 4 + 1] * V[13] + V[j * 4 + 2] * V[14])) : null;
-    let share = null, inFrame = null, cx = null;
+    let share = null, inFrame = null, headIn = null, feetIn = null, cx = null;
     if (avatar && V) {
       const proj = (x, y, z) => {
         const v = [0, 1, 2].map((i) => V[i] * x + V[4 + i] * y + V[8 + i] * z + V[12 + i]);
@@ -152,20 +152,22 @@ export const LENS_PROBE = `(() => {
       const f = proj(avatar.x, avatar.z, -avatar.y), h = proj(avatar.x, avatar.z + bodyTopM, -avatar.y);
       if (f && h) {
         share = Math.round(((h[1] - f[1]) / 2) * 1000) / 1000;
-        inFrame = Math.abs(f[0]) <= 1 && Math.abs(h[0]) <= 1 && Math.abs(f[1]) <= 1 && Math.abs(h[1]) <= 1;
+        headIn = Math.abs(h[0]) <= 1 && Math.abs(h[1]) <= 1;
+        feetIn = Math.abs(f[0]) <= 1 && Math.abs(f[1]) <= 1;
+        inFrame = headIn && feetIn;
         cx = Math.round(((f[0] + h[0]) / 2) * 1000) / 1000;
       }
     }
     const now = performance.now();
     return {
       fovV: Math.round(2 * Math.atan(1 / P[5]) * 180 / Math.PI * 1000) / 1000, aspect: Math.round(ca * 1000) / 1000,
-      cam: cam ? cam.map((v) => Math.round(v * 1000) / 1000) : null, ageMs: Math.round(now - best.t), viewAgeMs: vw ? Math.round(now - vw.t) : null, share, inFrame, cx,
+      cam: cam ? cam.map((v) => Math.round(v * 1000) / 1000) : null, ageMs: Math.round(now - best.t), viewAgeMs: vw ? Math.round(now - vw.t) : null, share, inFrame, headIn, feetIn, cx,
       candidates: best.fovs.map((f) => Math.round(f.fov * 100) / 100),
     };
   };
 })();`;
 
-export interface LensRead { fovV: number; aspect: number; cam: number[] | null; ageMs: number; viewAgeMs: number | null; share: number | null; inFrame: boolean | null; cx: number | null; candidates: number[] }
+export interface LensRead { fovV: number; aspect: number; cam: number[] | null; ageMs: number; viewAgeMs: number | null; share: number | null; inFrame: boolean | null; headIn: boolean | null; feetIn: boolean | null; cx: number | null; candidates: number[] }
 
 // ---- Samplers -------------------------------------------------------------------------------------
 
@@ -243,6 +245,10 @@ export interface CameraSample {
   avatarHeightShare: number | null;
   /** Avatar feet and top both inside the viewport. */
   avatarInFrame: boolean | null;
+  /** Top of the avatar (bodyTopM) inside the viewport; false means the head is lost, not only the feet. */
+  avatarHeadInFrame: boolean | null;
+  /** Avatar feet inside the viewport. */
+  avatarFeetInFrame: boolean | null;
   /** Edge mode of the route step the avatar is on (nearest route segment), when a route was given. */
   stepMode: string | null;
 }
@@ -274,7 +280,7 @@ export function toSample(raw: RawCameraSample, t0: number, k: FollowConstants, w
     overheadBlocker: null,
     fovV, aspect,
     fovH: fovV !== null && aspect !== null ? r(2 * Math.atan(Math.tan((fovV / 2) / DEG) * aspect) * DEG, 100) : null,
-    avatarHeightShare: raw.lens?.share ?? null, avatarInFrame: raw.lens?.inFrame ?? null,
+    avatarHeightShare: raw.lens?.share ?? null, avatarInFrame: raw.lens?.inFrame ?? null, avatarHeadInFrame: raw.lens?.headIn ?? null, avatarFeetInFrame: raw.lens?.feetIn ?? null,
     stepMode: wps && wps.length > 1 ? stepModeAt(wps, raw.avatar) : null,
   };
 }
@@ -330,7 +336,10 @@ function stats(samples: CameraSample[], intervalMs: number) {
     longestCrowdedRun: longestRunMs(samples, (s) => s.crowded, intervalMs),
     minCameraAboveHead: n ? Math.min(...samples.map((s) => s.cameraAboveHead)) : null,
     avatarHeightShare: { min: share[0] ?? null, median: quantile(share, 0.5), max: share.at(-1) ?? null, n: share.length },
+    // Combined (feet or head out), kept for comparison with earlier runs; the split says which end left the frame.
     fractionAvatarOutOfFrame: n ? Math.round((samples.filter((s) => s.avatarInFrame === false).length / n) * 1000) / 1000 : null,
+    fractionHeadOutOfFrame: n ? Math.round((samples.filter((s) => s.avatarHeadInFrame === false).length / n) * 1000) / 1000 : null,
+    fractionFeetOutOfFrame: n ? Math.round((samples.filter((s) => s.avatarFeetInFrame === false).length / n) * 1000) / 1000 : null,
   };
 }
 

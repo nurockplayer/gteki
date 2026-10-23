@@ -140,6 +140,7 @@ for (const key of STATIONS) {
         if (fresh.some((s) => s.belowClamp)) reasons.push("below-clamp");
         else if (fresh.some((s) => s.atClamp)) reasons.push("at-clamp");
         if (fresh.some((s) => s.avatarInFrame === false)) reasons.push("avatar-out-of-frame");
+        if (fresh.some((s) => s.avatarHeadInFrame === false)) reasons.push("avatar-head-out-of-frame");
         const periodic = loop % 3 === 0;
         let stats: Awaited<ReturnType<typeof imageStats>> | null = null;
         let file: string | null = null;
@@ -224,7 +225,7 @@ for (const key of STATIONS) {
     await startWalkUi(page, key, w);
     const hud = (name: RegExp) => page.locator(".hud button").filter({ hasText: name }).first();
 
-    const events: (FovEase & { expectedFov: number | null; kind: "ease" | "snap-by-design"; end: Record<string, unknown> })[] = [];
+    const events: (FovEase & { expectedFov: number | null; kind: "ease" | "snap-by-design"; end: Record<string, unknown>; windowMs: number; designSettleMs: number | null })[] = [];
     const declared = k.declaredFov;
     const run = async (event: string, act: () => Promise<void>, expectedFov: number | null, kind: "ease" | "snap-by-design" = "ease", settleMs = 900) => {
       await startFovRecorder(page);
@@ -237,7 +238,12 @@ for (const key of STATIONS) {
         const w = window as any, c = document.querySelector("canvas.gteki-canvas") as HTMLCanvasElement | null, info = w.__gteki?.sceneInfo?.() ?? {};
         return { mode: w.__gteki?.mode?.() ?? null, sceneFov: info.fov ?? null, sceneFar: info.far ?? null, cameraAspect: info.aspect ?? null, canvasAspect: c && c.clientHeight ? c.clientWidth / c.clientHeight : null };
       });
-      events.push({ ...analyseFovEase(event, rec), expectedFov, kind, end });
+      const a = analyseFovEase(event, rec);
+      // Report only: the time the declared exponential ease (settle s) needs to come within FOV_TOL_DEG of a change
+      // this size, next to the measured settle time, so a slow or unfinished ease is visible as a number.
+      const delta = a.startFov !== null && a.endFov !== null ? Math.abs(a.endFov - a.startFov) : 0;
+      const designSettleMs = declared.settleS && delta > FOV_TOL_DEG ? Math.round(declared.settleS * 1000 * Math.log(delta / FOV_TOL_DEG)) : null;
+      events.push({ ...a, expectedFov, kind, end, windowMs: settleMs, designSettleMs });
     };
 
     // Start guide: overview 60 -> follow.
@@ -266,13 +272,20 @@ for (const key of STATIONS) {
       note: "FOV is the perspective projectionMatrix the renderer uploaded (LENS_PROBE), sampled on every animation frame; t = 0 is the click. 'snap-by-design' events are recorded, not asserted smooth.",
       events: events.map((e) => ({ ...e, curve: e.curve })),
     });
-    for (const e of events) console.log(`[lens-ease] ${key} ${testInfo.project.name} @${candidate.sha?.slice(0, 7) ?? "?"} ${e.event}: ${e.startFov} -> ${e.endFov} deg, max step ${e.maxStepDeg}, settle ${e.settleMs} ms`);
+    for (const e of events) console.log(`[lens-ease] ${key} ${testInfo.project.name} @${candidate.sha?.slice(0, 7) ?? "?"} ${e.event}: ${e.startFov} -> ${e.endFov} deg, max step ${e.maxStepDeg}, settle ${e.settleMs} ms (design ${e.designSettleMs ?? "n/a"} ms, window ${e.windowMs} ms), app ${e.end.sceneFov}`);
 
     expect.soft(events.every((e) => e.startFov !== null && e.endFov !== null), "the lens was measured around every event (a perspective matrix was seen)").toBe(true);
     for (const e of events) {
       if (e.startFov === null || e.endFov === null) continue;
       if (e.kind === "ease") expect.soft(e.maxStepDeg ?? 0, `${e.event}: largest single-frame FOV change (deg)`).toBeLessThanOrEqual(FOV_JUMP_MAX_DEG);
-      if (e.expectedFov !== null) expect.soft(Math.abs(e.endFov - e.expectedFov), `${e.event}: final FOV ${e.endFov} vs declared ${e.expectedFov}`).toBeLessThanOrEqual(FOV_TOL_DEG);
+      if (e.expectedFov === null) continue;
+      // #136 widens the follow lens to the wide lens (declared.firstPerson, 60) on stairs/escalators and while walls
+      // or ceilings squeeze the boom. A follow-mode end at exactly that wide lens passes only when the app's own
+      // sceneInfo().fov reports the same lens; any other end value (including a mid-ease one) still fails.
+      const sceneFov = typeof e.end.sceneFov === "number" ? e.end.sceneFov : null;
+      const wideByDesign = e.expectedFov === declared.follow && declared.firstPerson !== null && sceneFov !== null
+        && Math.abs(e.endFov - declared.firstPerson) <= FOV_TOL_DEG && Math.abs(sceneFov - e.endFov) <= FOV_TOL_DEG;
+      if (!wideByDesign) expect.soft(Math.abs(e.endFov - e.expectedFov), `${e.event}: final FOV ${e.endFov} vs declared ${e.expectedFov}`).toBeLessThanOrEqual(FOV_TOL_DEG);
     }
   });
 }
