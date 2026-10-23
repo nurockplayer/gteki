@@ -385,9 +385,9 @@ godot --path packages/godot --rendering-method forward_plus res://hq/hq.tscn -- 
 godot --path packages/godot --rendering-method forward_plus res://hq/hq.tscn -- \
   --station=shinjuku --look=hq --gi=sdfgi --capture=.cache/g5/shinjuku-hq-sdfgi --perf=5
 
-# 6. the table, from every report.json the runs wrote
+# 6. the table, from every report.json the runs wrote (absolute paths: Godot resolves relative ones against --path)
 godot --headless --path packages/godot --script res://tests/perf_report.gd -- \
-  packages/godot/docs/evidence/g5-performance.md packages/godot/.cache/g5/*/report.json
+  "$PWD/packages/godot/docs/evidence/g5-performance.md" "$PWD"/packages/godot/.cache/g5/*/report.json
 ```
 
 Each capture command has its own 10-minute bound (`hq_capture.gd` `TIMEOUT_MS`) and stops before starting a pose the
