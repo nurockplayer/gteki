@@ -101,3 +101,23 @@ Determinism: all randomness is seeded, textures are cached by content hash, UVs 
 A catalog entry may set `"gteki_role"` to override a generator's default role: `null` drops it, or another of `barriers`, `transport`, `stairs_ramps` (contract §10).
 
 Variants are the `gteki_escalator_dress_*`, `gteki_stair_*`, `gteki_railing_run_*` and `gteki_fare_fence_*` ids in the catalog. Build them with `ONLY=<ids> tools/blender/build.sh build`.
+
+## Street family (batch D4)
+
+`families/street.py` holds the street-exit canopy and street furniture, all with `*_mm` catalog params and `dimension_basis` `synthetic`:
+
+| Generator | Pieces | Placement | Collision |
+| --- | --- | --- | --- |
+| `street_canopy` | glazed roof on a steel frame, blank sign fascia (`SOCKET_fascia`, `SOCKET_opening`), posts or cantilever, optional glass side screens, flat, pitched or curved roof | `linear` (origin at the centre of the opening edge, roof toward +Y) | one box per post and per screen; none for the roof |
+| `street_bollard` | fixed, or removable with an aluminium collar | `free` | 12-sided cylinder |
+| `street_guard_rail` | posts and two rails along a `points_mm` polyline, `SOCKET_start` / `SOCKET_end` | `linear` | one thin full-height box per segment |
+| `street_lamp` | pole, gooseneck arm, luminaire head, `LIGHTHINT_head` | `free` | 12-sided cylinder on the pole |
+| `street_planter` | box or round concrete planter with an optional shrub | `free` | box or 12-sided cylinder |
+
+The fascia is a blank `gteki_sign_face_*` quad with a 0..1 UV island for the station's own signage. It carries no wording. Four flat materials (`gteki_street_steel`, `_concrete`, `_soil`, `_foliage`) are new; they add no texture. Status and rationale are in `docs/assets/gap-list.md` (D4 status).
+
+```bash
+ONLY=$(python3 -c "import json;print(','.join(a['id'] for a in json.load(open('tools/blender/catalog/kit_v0_1.json'))['assets'] if a['id'].startswith('gteki_street_')))") tools/blender/build.sh build
+PROFILE=mobile ONLY=<same ids> tools/blender/build.sh build
+blender -b --factory-startup -P tools/blender/render_preview.py -- --layout tools/blender/showcase/street_demo.json --camera hero --out street_hero.png   # also: canopy, furniture
+```

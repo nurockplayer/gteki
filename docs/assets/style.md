@@ -56,6 +56,8 @@ All values are sRGB authoring colours (the code converts them to linear when it 
 
 Props, such as bins and vending bodies, may use the secondary colours already in `families/props.py`: bin blue, green, orange and grey; vending slate, graphite, sage and sand.
 
+Street pieces (`families/street.py`) add four flat colours with no texture, so they cost no download or GPU memory: `street_steel` `#45474C`, 0.45 / 0 (painted graphite steel for canopy frame, posts, rails and lamp, lighter than `steel_painted_dark` so large surfaces stay out of near-black); `street_concrete` `#8F8F8A`, 0.88 / 0 (precast planter body); `street_soil` `#2B1F17`, 0.95 / 0; `street_foliage` `#2B5C2B`, 0.72 / 0 (one flat green for the generic shrub). Also `gteki_stainless_polished` and `gteki_vertical_safety_yellow` are reused for bollards and guard rails.
+
 **Rule:** a new piece uses these materials by name. A genuinely new colour or material is added to this table and to `materials.py` in the same PR, with its role.
 
 ## 3. Material library
