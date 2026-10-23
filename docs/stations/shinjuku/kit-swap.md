@@ -1,10 +1,20 @@
 # Shinjuku kit swap (Issue #94, Shinjuku half)
 
-Status: prepared, flag OFF. With the flag off the built station equals main `f143f862` in every mesh byte (geometry digest
-`f713e721...`, appearance digest `08bd418b...`, 136 meshes, 13,284,666 bytes; node digest `af54b5bc...`), in all other scene nodes including lights and
-`userData` (nodes digest), in the texture parameters of every material (textures digest), and in the lists the explorer reads off the
-scene object: walls, walkable, colliders, cameraBlockers, spawn points and environment (lists digest). The test builds the scene through the
-shipping `buildScene` entry point. It does not cover GPU state or anything drawn after the explorer takes over.
+Status: prepared, flag OFF. With the flag off the built station equals main `45250364` (#298 escalator shell) in every mesh byte:
+138 meshes, 13,296,864 bytes. Measured with `test/helpers/station-digest.ts` on this merged tree after the unchanged main
+`scene-digest.test.ts` passed. All other scene nodes (including lights and `userData`), material texture parameters and the
+explorer's lists are covered too. Walkable 433, colliders 2, cameraBlockers 3 and walls 14,479 are unchanged.
+
+| Digest | main `45250364`, flag off |
+|---|---|
+| Geometry | `04a401299e738f05b134fee6053a71f95965131d5b1837fceddee863391046c4` |
+| Appearance | `c45106d83d6500652ae0911b8a037f9020e7a7e38ae05fce61ff495dd0835003` |
+| Nodes | `8716cc4d548465dd836e07e69646928ad33791f37d6fc1a1dc02e2519c9e6ed7` |
+| Textures | `b799e0f81a0e2ce49682593e2da04738723a9dc414d4a94f41b3e74b3b50d08c` |
+| Lists | `ddd5c84df153fb71c2254a20ec8132134ef0aaa6bb4878cb683da4ffc967913f` |
+
+The test builds the scene through the shipping `buildScene` entry point. It does not cover GPU state or anything drawn after the
+explorer takes over.
 Nothing here claims a licence for the library: the manifest `license` string is carried through to
 `KitSwapReport.license` verbatim, for credit wiring.
 
@@ -53,13 +63,36 @@ output. The coordinator will do this.
 `planKitPlacements` sorts placements by (role rank, anchor key) and keeps the longest prefix inside every
 cap; the rest are dropped, logged as `kit swap: dropped ...`, and listed in `report.dropped`.
 Draws are counted as distinct (level, material) batches; material keys strip the `~<asset_id>` suffix of
-AO-baked clones (`extras.gteki_name`, falling back to the material name). Geometry is estimated at 70 B
-per triangle. The report also carries `measured` figures counted from the built meshes.
+AO-baked clones (`extras.gteki_name`, falling back to the material name). Runtime batching merges those clones per floor and clears
+`aoMap`; the GPU texture estimate excludes the manifest's `occlusion` maps and counts only retained maps, taking the largest
+estimate per shared material across assets and floors. Geometry is estimated at 70 B per triangle. The report also carries `measured`
+figures counted from the built meshes; its GPU texture bytes remain a manifest estimate, not a device measurement.
 
-Measured baseline at main `f143f862` (low quality): 128 draws, 223,731 triangles (60 fewer than at `fe8d3b6`, from #70 merging
-the six roof glazing sheets); the kit adds at most the caps above. The stub-library run
+Baseline at main `45250364` (low quality): 130 draws, 223,924 triangles (#298 adds two shell batches and 193 triangles to
+`f143f862`); the kit adds at most the caps above. The stub-library run
 on the real scene (see section 5 for the arithmetic) places 19 escalator pieces, 24 stair-nosing pieces, 4 gate rows and 5 of the 9 lift
 portals within the caps; stub geometry, not real pieces.
+
+### Current real library (main `45250364`)
+
+Both `assets/library/manifest.json` and `assets/library/mobile/manifest.json` declare kit version `0.1.0` and contain 74 assets.
+Both tiers select the same Shinjuku candidates: `gteki_lift_portal_w1000`, `gteki_gate_array_1w` (one aisle, 1.02 m clear),
+`gteki_stair_nosing_w2400_n18` (nosing only), and `gteki_escalator_dress_s1000_r4000_comb_newel` (comb and newel only).
+The other stair/escalator dressings include rails, skirts or balustrades and are refused to avoid doubled geometry. Two exit candidates
+also exist: `gteki_street_canopy_w3000_d3000_posts` and `gteki_street_canopy_w4500_d3000_cantilever_curved`. The exit placeholder
+hook remains disabled, so neither can be placed by the production planner.
+
+On the actual Shinjuku anchors the mobile manifest plans **4 gate rows and 9 lift portals**, with no budget drops:
+4 floor/material batches, 13,226 triangles, 925,820 estimated geometry bytes and 65,536 estimated GPU texture bytes after dropping AO.
+The stair candidate (18 steps, 2.88 m rise, 5.4 m run, 2.4 m width) fits none of the 24 stair runs; the escalator candidate
+(4 m rise, 9.3282 m comb run, 1 m step width) fits none of the 21 escalator runs. All 45 dressing placements are dropped as
+`no piece fits this anchor`, so those placeholders stay. Exits (4) and toilets (3) remain gaps. The full tier without KTX2 places
+nothing: the first gate would require 19,573,419 GPU texture bytes, above the 8,000,000 cap, so lower-ranked gates and lifts are dropped too.
+
+The real library offers `gteki_bench_4seat`, `gteki_bench_3seat_slat`, `gteki_vending_machine`, `gteki_vending_machine_sand` and
+`gteki_ticket_kiosk`; none is selected or placed, and there is no shop-front asset. Shinjuku has no source anchors for these props.
+These are manifest-derived plans, with the apply path checked using stub meshes. No station kit bundle ships here, so ordinary
+`?kit=1` still falls back to placeholders; real GLB rendering and device costs have not been verified.
 
 ## 4. Placeholder inventory and mapping
 
@@ -68,14 +101,14 @@ Ranked by screen time on the main routes. Measured with `packages/navigation` on
 (about 26% of the time), 22 m stairs (about 17%), 6 gate crossings, 9 ramp edges, lift edges on some
 routes and on both step-free routes that exist).
 
-| # | Placeholder / procedural visual (scene/build.ts unless noted) | Kit 0.1.0 piece | Status |
+| # | Placeholder / procedural visual (scene/build.ts unless noted) | Kit piece | Status |
 |---|---|---|---|
-| 1 | Escalators: truss, handrails, instanced steps | `escalator_dressing`, parts comb + newel (Lane E PR #143, not built yet), one catalog entry per distinct run | **Prepared.** 19 of 21 runs fit the kit's 15 to 35 degree range (catalog section below); 2 stay as drawn. Additive: the placeholder draws no comb plates or newels, so nothing is hidden. Truss, steps, balustrade panels, handrails and lamps stay. |
-| 2 | Stairs: box per step merged into "walkable", nosing strips | `stair_dressing`, parts nosing (PR #143) | **Prepared.** All 24 runs. Each run's per-step nosing boxes are tagged in `build.ts` and hidden when its piece is placed; side stringers, handrails and walls stay. |
+| 1 | Escalators: truss, handrails, instanced steps | `escalator_dressing`, parts comb + newel (Lane E PR #143), one station-catalog entry per distinct run | **Prepared.** The generic library dressing fits none; 19 of 21 runs fit the station catalog's 15 to 35 degree range (catalog section below); 2 stay as drawn. Additive: the placeholder draws no comb plates or newels, so nothing is hidden. Truss, steps, balustrade panels, handrails and lamps stay. |
+| 2 | Stairs: box per step merged into "walkable", nosing strips | `stair_dressing`, parts nosing (PR #143) | **Prepared.** The station catalog covers all 24 runs; the generic library nosing fits none. Each run's per-step nosing boxes are tagged in `build.ts` and hidden when its piece is placed; side stringers, handrails and walls stay. |
 | 3 | Walls, floors, ceilings, platform edge | none (finishes F1 pending) | Wait for F1 finish packs (`assets/library/finishes/`, `gteki-finish/0.1`). Colliders and blockers never change. |
-| 4 | Fare gates: bodies/tops/IC readers/OK lamps, two machines per verified row | `gate_array` with aisles 1 (`gteki_gate_array_1w`, PR #143; station entry `gteki_sj_gate_1w_w1020`) | **Prepared.** 4 distinct rows (5 gate edges). The selector requires `params.aisles === 1`, so a multi-aisle array is never used; a clear width outside 1.00 to 1.04 m is refused. The machines are hidden when the piece is placed. |
-| 5 | Lift boxes: `elevator-portal:finish` meshes, one per portal | `gteki_lift_portal_w1000` | **Placed** (flag on). Door plane (`SOCKET_end`, z = -0.26) on the existing wall plane plus 4 mm. About 15 elevator nodes grouped into portals. No status claims. |
-| 6 | Street exit canopies (`scene/surface.ts`, `surface-layout.ts`) | none | Gap: canopy piece (D4) plus a hook in `surface.ts`. 4 exit tops. |
+| 4 | Fare gates: bodies/tops/IC readers/OK lamps, two machines per verified row | `gate_array` with aisles 1 (`gteki_gate_array_1w`, PR #143; station entry `gteki_sj_gate_1w_w1020`) | **Planned with the real mobile manifest** (bundle pending). 4 distinct rows (5 gate edges). The selector requires `params.aisles === 1`, so a multi-aisle array is never used; a clear width outside 1.00 to 1.04 m is refused. The machines are hidden when the piece is placed. |
+| 5 | Lift boxes: `elevator-portal:finish` meshes, one per portal | `gteki_lift_portal_w1000` | **Planned with the real mobile manifest** (bundle pending). Door plane (`SOCKET_end`, z = -0.26) on the existing wall plane plus 4 mm. About 15 elevator nodes grouped into portals. No status claims. |
+| 6 | Street exit canopies (`scene/surface.ts`, `surface-layout.ts`) | Two `gteki_street_canopy_*` pieces exist | **Gap:** the placeholder hook in `surface.ts` is not implemented. All 4 exit tops stay unchanged. |
 | 7 | Tactile ribbons (107 polylines) | none | Wait for F1 finish. |
 | 8 | Hanging signs: cases, rods, atlas `sign-faces:*` | not replaced | Stay: deliberate GTEki atlas. |
 | 9 | Toilets (3 facility points at B3: F001, F002, F003) | none placed | **Gap, deliberately.** The GSI facility point is a representative point of the room, not a door, and the dataset has no door source, so an entrance piece would be invented placement. `ROLE_DISABLED.toilet` reports the 3 anchors as a gap whatever the manifest offers; there is no toilet selector or placement code. Revisit when a door source exists. |
@@ -93,9 +126,14 @@ hides only the lift boxes' own triangles, so it is not a large saving. Item 5 is
 
 ## 5. Station catalog (`stations/shinjuku/kit/catalog.json`)
 
+Lane E's supplied report on #94 (issuecomment-6356537660, main `2c8489c`) says the rebuilt station catalog has 33 ids in both
+tiers, a 5.77 MB mobile AO GPU estimate and 19,914 triangles. None of these `gteki_sj_*` ids or GLBs is in `assets/library` on
+this tree; that report is not evidence that a station bundle ships. The runtime drops per-asset AO during batching, so the upstream
+AO estimate is not the swap's retained-texture estimate. No catalog GLBs were added here.
+
 Lane E (PR #143) builds the dressing pieces from a catalog in our tree, in the same entry shape as
 `tools/blender/catalog/kit_v0_1.json` (`id`, `generator`, `params`, `tags`, plus `dimension_basis` and `notes`, both of which
-`build.py` reads). Stair dressings carry `ao_res: 128`; escalator dressings carry `ao_res: 256` so their many parts fit the AO atlas. Every stair and escalator dressing carries `anchor: "linear_run"` as required by contract §10; the gate array carries no anchor. The mobile kit texture estimate is about 3.1 MB + 2.5 MiB ≈ 5.6 MiB, inside the provisional 12 MiB warning line; this is an estimate and has not been measured on device. We bundle with `tools/blender/bundle_kit.py` ourselves. Do not run Blender or the bundler from this lane.
+`build.py` reads). Stair dressings carry `ao_res: 128`; escalator dressings carry `ao_res: 256` so their many parts fit the AO atlas. Every stair and escalator dressing carries `anchor: "linear_run"` as required by contract §10; the gate array carries no anchor. The reported mobile AO GPU estimate above is inside the upstream provisional 12 MiB warning line; this has not been measured on device, and the swap enforces its own 8 MB retained-texture cap. We bundle with `tools/blender/bundle_kit.py` ourselves. Do not run Blender or the bundler from this lane.
 
 - 33 entries: 22 `stair_dressing` (`parts: ["nosing"]`), 10 `escalator_dressing` (`parts: ["comb","newel"]`),
   1 `gate_array` (`aisles 1, wide_aisles [0], wide_w 1.02`). Ids are `gteki_sj_stair_<edge>`, `gteki_sj_escalator_<edge>` and
@@ -105,7 +143,7 @@ Lane E (PR #143) builds the dressing pieces from a catalog in our tree, in the s
   The worst error from rounding is written in each entry's `notes` and is inside the fit tolerance (rise 0.1 m, length 0.25 m, width 0.15 m).
 - Every param has its derivation in the entry's `notes`: stair `step_count = max(2, round(rise / 0.165))` (the stepping `build.ts` draws),
   `riser_mm = rise / step_count`, `tread_mm = plan length / step_count`, `width_mm` = the scene's MLIT width-class estimate; escalator
-  `rise_mm` = drawn rise, `run_mm` = plan length minus 2.4 m so the comb-to-comb run lands both comb lines on the end nodes,
+  `rise_mm` = drawn rise, `run_mm` = plan length minus 1.6 m (two flat sections; transitions already belong to `run_mm`) so the comb-to-comb run lands both comb lines on the end nodes,
   `width_mm` = 1.25 m scene constant minus the 0.1 m inset `build.ts` takes off the steps, `landing_mm 800` and `flat_steps 2` = kit defaults.
 - **Not surveyed.** Shinjuku heights are symbolic (`station.json` `hM` is null). Every rise is the scene's drawn rise between the two
   end nodes, so `dimension_basis` is `synthetic`, never `station-verified`.
@@ -113,7 +151,7 @@ Lane E (PR #143) builds the dressing pieces from a catalog in our tree, in the s
   and no gate count is claimed. It matches the +/-0.62 m machine spacing the scene already draws. The entry equals the kit's own
   `gteki_gate_array_1w`; Lane E may alias it instead of building a second copy.
 - Two escalators stay as drawn because their drawn incline is outside the kit range 15 to 35 degrees: `e:4bee1c5e...` (rise 7.80 m
-  over 9.33 m, 48 degrees) and `e:27d3ed49...` (rise 7.54 m over 12.86 m, 35.5 degrees). They are reported as `dropped: no piece fits`.
+  over 9.33 m, implied kit incline 48.3 degrees) and `e:27d3ed49...` (rise 7.54 m over 12.86 m, implied kit incline 35.7 degrees). They are reported as `dropped: no piece fits`.
 - Assumed names from Lane E's addendum (#143 at 465a3d5): escalator `parts` values `balustrade|handrail|newel|comb`, stair `parts` values
   `nosing|handrail|skirt`; the escalator's `comb_run_m` is read from the built manifest when present (otherwise computed from
   `run_mm` / `angle_deg` with the kit's flat steps).
@@ -173,9 +211,10 @@ nothing hard-coded blocks them.
 
 ## 7. Requests to Lane E
 
-1. Build `stations/shinjuku/kit/catalog.json` (PR #143 generators) and confirm the `parts` value names and that the built
-   manifest echoes the catalog params (and `comb_run_m` for escalators). The mobile triangle counts decide how many lift portals fit.
-2. Exit canopy (D4), railing runs (D2), luminaires (D1), finishes (F1). No toilet piece is requested: there is no door source to place one on.
+1. Land the reported rebuild of `stations/shinjuku/kit/catalog.json` in the library and provide the station bundle; confirm that the
+   built manifest echoes the catalog params (and `comb_run_m` for escalators). The measured mobile triangle counts decide how many lift portals fit.
+2. Remaining integration: exit canopy placeholder hook (two generic pieces exist), railing runs (D2), luminaires (D1), finishes (F1).
+   No toilet piece is requested: there is no door source to place one on.
 4. `line_accent` as a slot in the main library (today only in the `claude/lane-e-batch1-finishes` branch as
    `gteki_finish_band_line_accent`).
 5. Bundle script output per tier with `userData.gteki_bundle` (or tell us the existing format).
@@ -196,7 +235,8 @@ I could not render anything. Please check:
 7. `line_accent` reads as #b6007a once a piece carries that slot.
 8. Draw and triangle counts: kit adds at most 30 draws and 60k triangles; check frame rate on a phone.
 9. `?kit=1` falls back cleanly (placeholders intact, one log line) when no bundle ships.
-10. Exit canopies unchanged (a gap today). Gates, stairs and escalators change only once the PR #143 pieces are bundled:
+10. Exit canopies unchanged (a gap today). Gates can change once the existing one-aisle piece is bundled; stairs and escalators
+    need the fitting station-catalog pieces bundled:
     gate cabinets centred on the verified row with the flaps open; yellow nosing strips on every step with no doubled strip
     underneath; escalator comb plates flush with the floor at both ends and the newels at the balustrade ends, no gap or overlap
     against the drawn balustrade panels and rubber handrail, nothing floating at the top comb (the rise is the drawn rise).

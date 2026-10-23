@@ -28,18 +28,18 @@ const { bundle } = loadShinjukuBundle();
 const catalogJson = JSON.parse(readFileSync(new URL("../kit/catalog.json", import.meta.url), "utf8")) as Parameters<typeof shinjukuStubManifestJson>[0];
 const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../assets/library/${file}`, import.meta.url), "utf8"));
 
-/** Digest of the flag-off shipping buildScene at main f143f862 (#263, #279), measured on the merged tree
- * with this helper after the main scene-digest fixture passed unchanged. geometryDigest/bytes equal
- * geometry-lifetime.test.ts. Earlier values were from fe8d3b6 (2b3a94ba…, 13,288,866 B; #72's batch merge)
- * and from c94e4c7c (textures b53f31c8…; #279 halved the low-quality sign atlas). */
+/** Digest of the flag-off shipping buildScene at main 45250364 (#298 escalator shell), measured with
+ * test/helpers/station-digest.ts after main's scene-digest.test.ts passed unchanged on this tree.
+ * geometryDigest/bytes equal geometry-lifetime.test.ts. Previous main f143f862 had 136 meshes,
+ * 13,284,666 B and geometry f713e721…; #298 adds two visual-only shell batches. Physical lists stay identical. */
 const MAIN_BASELINE = {
   station: {
-    geometryDigest: "f713e7215da792b850e481561fa12f87510276792878a8c15f5cd490c5b48071",
-    appearanceDigest: "08bd418bfd9ad8a4b93c8e22240ad680e0285565bff58cc02170a0ad7376025b",
-    nodesDigest: "af54b5bc53b086bbdbab2dfcb6c0a2aedb14e67e59346f79919a3962c3ce13a0",
-    texturesDigest: "184d230a21f87d4e1a9b26c362db53098aad1390865d4b479ff16ce53281810a",
-    meshes: 136,
-    bytes: 13_284_666,
+    geometryDigest: "04a401299e738f05b134fee6053a71f95965131d5b1837fceddee863391046c4",
+    appearanceDigest: "c45106d83d6500652ae0911b8a037f9020e7a7e38ae05fce61ff495dd0835003",
+    nodesDigest: "8716cc4d548465dd836e07e69646928ad33791f37d6fc1a1dc02e2519c9e6ed7",
+    texturesDigest: "b799e0f81a0e2ce49682593e2da04738723a9dc414d4a94f41b3e74b3b50d08c",
+    meshes: 138,
+    bytes: 13_296_864,
   },
   lists: {
     listsDigest: "ddd5c84df153fb71c2254a20ec8132134ef0aaa6bb4878cb683da4ffc967913f",
@@ -93,8 +93,10 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
     it("parses both real manifests and refuses a tier mix-up", () => {
       const full = parseKitManifest(library("manifest.json"), "full");
       const mobile = parseKitManifest(library("mobile/manifest.json"), "mobile");
-      expect(full.assets.length).toBe(48);
-      expect(mobile.assets.length).toBe(48);
+      expect(library("manifest.json").kit_version).toBe("0.1.0");
+      expect(library("mobile/manifest.json").kit_version).toBe("0.1.0");
+      expect(full.assets.length).toBe(74);
+      expect(mobile.assets.length).toBe(74);
       expect(() => parseKitManifest(library("mobile/manifest.json"), "full")).toThrow(KitManifestError);
       expect(() => parseKitManifest(library("manifest.json"), "mobile")).toThrow(KitManifestError);
     });
@@ -127,11 +129,17 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         expect([role, selectAssets(mobile, selector).map((a) => a.id)]).toEqual([role, selectAssets(full, selector).map((a) => a.id)]);
       }
     });
-    it("kit 0.1.0 has a lift portal and none of the other Shinjuku pieces: those wait for Lane E PR #143 and later", () => {
-      expect(selectAssets(mobile, ROLE_SELECTORS.lift).map((a) => a.id)).toEqual(["gteki_lift_portal_w1000"]);
-      for (const role of ["gate", "exit", "stairs", "escalator"] as const) {
-        expect([role, selectAssets(mobile, ROLE_SELECTORS[role]).length]).toEqual([role, 0]);
-        expect([role, selectAssets(full, ROLE_SELECTORS[role]).length]).toEqual([role, 0]);
+    it("the 74-asset kit 0.1.0 offers a lift portal, one-aisle gate, safe dressing parts and exit canopies", () => {
+      const ids = {
+        lift: ["gteki_lift_portal_w1000"],
+        gate: ["gteki_gate_array_1w"],
+        stairs: ["gteki_stair_nosing_w2400_n18"],
+        escalator: ["gteki_escalator_dress_s1000_r4000_comb_newel"],
+        exit: ["gteki_street_canopy_w3000_d3000_posts", "gteki_street_canopy_w4500_d3000_cantilever_curved"],
+      };
+      for (const role of Object.keys(ids) as (keyof typeof ids)[]) {
+        expect([role, selectAssets(mobile, ROLE_SELECTORS[role]).map((a) => a.id)]).toEqual([role, ids[role]]);
+        expect([role, selectAssets(full, ROLE_SELECTORS[role]).map((a) => a.id)]).toEqual([role, ids[role]]);
       }
     });
     it("the real lift portal fits the budget on the mobile tier, but not on the full tier even with KTX2", () => {
@@ -203,7 +211,13 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       expect(r.placed).toEqual([]);
       const real = parseKitManifest(library("mobile/manifest.json"), "mobile");
       const all = planKitPlacements({ anchors: anchors(4, 15, 3), manifest: real, budget: KIT_BUDGET, caps: { ktx2: false } });
-      expect(all.placed.every((p) => p.role === "lift")).toBe(true);
+      // The real library now offers a one-aisle gate too; allowed gate placements are not props.
+      expect(all.placed.filter((p) => p.role === "gate")).toHaveLength(4);
+      expect(all.placed.filter((p) => p.role === "lift")).toHaveLength(15);
+      const propIds = real.assets.filter((a) => /bench|vending|kiosk|shop/.test(a.id) || a.tags.includes("shop")).map((a) => a.id);
+      expect(propIds.sort()).toEqual(["gteki_bench_3seat_slat", "gteki_bench_4seat", "gteki_ticket_kiosk", "gteki_vending_machine", "gteki_vending_machine_sand"]);
+      expect(all.placed.every((p) => p.role === "gate" || p.role === "lift")).toBe(true);
+      expect(all.placed.map((p) => p.assetId).filter((id) => propIds.includes(id))).toEqual([]);
       expect(all.placed.map((p) => p.assetId).join()).not.toMatch(/bench|vending|kiosk|shop|bin_|poster|column/);
     });
     it("refuses roles whose placeholder the build does not record (exits), so geometry is never doubled", () => {
@@ -433,6 +447,61 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         expect((out.meshes.find((m) => m.name === "kit:L:stub_palette")!.material as THREE.MeshStandardMaterial).aoMap).toBeNull();
       }
     });
+    it("budgets AO clones as the runtime's floor/material batches and counts only retained texture maps", () => {
+      const ids = ["stub_ao_a", "stub_ao_b"];
+      const maps = ["albedo", "normal", "emissive", "orm", "occlusion"];
+      const assets = ids.map((id) => stubAsset(id, "vertical", "wall", {
+        materials: [`stub_palette~${id}`],
+        textures: { [`stub_palette~${id}`]: { res: 64, maps } },
+      }));
+      const manifest = parseKitManifest(stubManifestJson({ extra: assets }), "mobile");
+      const placed: KitPlacement[] = [0, 1, 2].map((i) => ({
+        role: "lift", anchorKey: String(i), assetId: ids[i % 2]!, rank: 5,
+        floorId: i === 2 ? "upper" : "lower", position: [i * 3, 0, 0], yaw: 0, replaces: "lift-portals",
+      }));
+      const kept = { map: new THREE.Texture(), normalMap: new THREE.Texture(), emissiveMap: new THREE.Texture(), roughnessMap: new THREE.Texture() };
+      const sources = ids.map((id, i) => {
+        const m = new THREE.MeshStandardMaterial({ ...kept, metalnessMap: kept.roughnessMap, aoMap: new THREE.Texture() });
+        m.name = `stub_palette~${id}`;
+        if (i === 0) m.userData.gteki_name = "stub_palette"; // also exercise the name fallback for the other clone
+        return m;
+      });
+      const geometry = new THREE.BoxGeometry();
+      const tracked = new Set<{ dispose(): void }>();
+      const out = batchKitPlacements({
+        placed, manifest, tint: [], track: (x) => (tracked.add(x), x),
+        provider: { instantiate: (a) => new THREE.Mesh(geometry, sources[ids.indexOf(a.id)]!) },
+      });
+      try {
+        expect(out.meshes.map((m) => m.name)).toEqual(["kit:lower:stub_palette", "kit:upper:stub_palette"]);
+        expect(out.drawn.size).toBe(3);
+        for (const mesh of out.meshes) {
+          const material = mesh.material as THREE.MeshStandardMaterial;
+          expect(material.aoMap).toBeNull();
+          for (const [slot, texture] of Object.entries(kept)) expect(material[slot as keyof typeof kept]).toBe(texture);
+          expect(material.metalnessMap).toBe(kept.roughnessMap); // ORM is one texture, even in two slots
+        }
+        for (const ktx2 of [false, true]) {
+          const totals = totalsFor(placed, manifest, { ktx2 });
+          expect(totals.draws).toBe(out.meshes.length);
+          // Four retained maps, shared across both assets and floors; per-asset occlusion is discarded.
+          expect(totals.gpuTextureBytes).toBe(Math.round(64 * 64 * (4 / 3) * 4 * (ktx2 ? 1 : 4)));
+        }
+        for (const source of sources) expect(source.aoMap).not.toBeNull();
+      } finally {
+        for (const resource of tracked) resource.dispose();
+        for (const source of sources) { source.aoMap!.dispose(); source.dispose(); }
+        geometry.dispose();
+      }
+    });
+    it("charges no GPU texture bytes for a manifest material with only discarded occlusion", () => {
+      const manifest = parseKitManifest(stubManifestJson({ extra: [stubAsset("stub_ao_only", "vertical", "wall", {
+        textures: { stub_palette: { res: 1024, maps: ["occlusion"] } },
+      })] }), "mobile");
+      const p: KitPlacement = { role: "lift", anchorKey: "ao", assetId: "stub_ao_only", rank: 5, floorId: "L", position: [0, 0, 0], yaw: 0, replaces: "lift-portals" };
+      expect(totalsFor([p], manifest, { ktx2: false }).gpuTextureBytes).toBe(0);
+      expect(totalsFor([p], manifest, { ktx2: true }).gpuTextureBytes).toBe(0);
+    });
     it("splits a multi-material mesh by its geometry groups, and counts one without groups as not drawn", () => {
       const manifest = parseKitManifest(stubManifestJson(), "mobile");
       const provider = stubProvider();
@@ -587,7 +656,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       vi.unstubAllGlobals();
     });
 
-    it("flag off: the scene equals main f143f862 in every mesh byte, node, light, userData, texture parameter and explorer list", () => {
+    it("flag off: the scene equals main 45250364 in every mesh byte, node, light, userData, texture parameter and explorer list", () => {
       expect(off.root.userData.kitSwap).toBeUndefined();
       // Meshes (geometry + appearance), all other nodes incl. lights and userData, and texture params of every material.
       expect(digestStation(off.root, isStationProxy)).toEqual(MAIN_BASELINE.station);
@@ -664,19 +733,42 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       expect(report.placed.filter((p) => p.role === "lift").map((p) => p.anchorKey)).toEqual(["0", "1", "2", "3", "4"]);
     });
 
-    it("the real kit 0.1.0 has no dressing piece, so with the real manifest stairs and escalators stay placeholders", () => {
+    it("the 74-asset real kit places mobile gates and lifts; available dressing pieces fit no Shinjuku run", () => {
       const mobile = parseKitManifest(library("mobile/manifest.json"), "mobile");
       const anchors = collectKitAnchors({ layout: captured.layout, protection: captured.protection, plan: captured.plan, bundle, lifts: captured.liftAnchors });
       expect(anchors.runs.filter((r) => r.role === "stairs").length).toBe(24);
       expect(anchors.runs.filter((r) => r.role === "escalator").length).toBe(21);
       const r = planKitPlacements({ anchors, manifest: mobile, budget: KIT_BUDGET, caps: { ktx2: false } });
-      expect(r.placed.every((p) => p.role === "lift")).toBe(true);
-      expect(r.gaps.filter((g) => /no (stairs|escalator|gate) piece/.test(g.reason)).map((g) => g.role).sort()).toEqual(["escalator", "gate", "stairs"]);
-      // Exit tops: anchors exist for each street exit, the build records no placeholder for them, and no canopy exists.
+      expect(r.placed.map((p) => p.assetId)).toEqual([
+        ...Array<string>(4).fill("gteki_gate_array_1w"), ...Array<string>(9).fill("gteki_lift_portal_w1000"),
+      ]);
+      expect(r.totals).toEqual({ draws: 4, triangles: 13_226, geometryBytes: 925_820, gpuTextureBytes: 65_536 });
+      expect(r.dropped.filter((d) => d.role === "stairs")).toHaveLength(24);
+      expect(r.dropped.filter((d) => d.role === "escalator")).toHaveLength(21);
+      expect(r.dropped.every((d) => d.reason === "no piece fits this anchor")).toBe(true);
+      expect(r.gaps.filter((g) => /none fits any/.test(g.reason)).map((g) => g.role).sort()).toEqual(["escalator", "stairs"]);
+      expect(r.gaps.some((g) => g.role === "gate")).toBe(false);
+      // Exercise the apply path with these real manifest entries but stub meshes: no real GLB claim.
+      const realOn = assembleScene(ctx, createKitSwap({ manifest: mobile, provider: stubProvider(), caps: { ktx2: false }, tint: [], log: () => {} }));
+      try {
+        const applied = realOn.root.userData.kitSwap as KitSwapReport;
+        expect(applied.placed).toEqual(r.placed);
+        expect(applied.totals).toEqual(r.totals);
+        expect(applied.hidden["gate-machines"]).toBeGreaterThan(0);
+        expect(applied.hidden["lift-portals"]).toBeGreaterThan(0);
+        expect(applied.hidden["stair-nosing"]).toBeUndefined();
+        expect(digestSceneLists(realOn)).toEqual(MAIN_BASELINE.lists);
+      } finally { realOn.dispose(); }
+      const full = planKitPlacements({ anchors, manifest: parseKitManifest(library("manifest.json"), "full"), budget: KIT_BUDGET, caps: { ktx2: false } });
+      expect(full.placed).toEqual([]);
+      expect(full.dropped.find((d) => d.role === "gate")?.reason).toMatch(/over budget \(GPU textures 19573419 B > 8000000 B/);
+      // Canopies now exist, but the production build still has no exit placeholder hook.
       expect(anchors.exits.length).toBe(4);
       expect(r.gaps.find((g) => g.role === "exit")?.reason).toMatch(/does not record/);
       const exits = planKitPlacements({ anchors, manifest: mobile, budget: KIT_BUDGET, caps: { ktx2: false }, placeable: new Set(["exit"]) });
-      expect(exits.gaps.find((g) => g.role === "exit")?.reason).toMatch(/no exit piece/);
+      // Only this explicit test override enables the role; the normal planner above refuses it.
+      expect(exits.placed.filter((p) => p.role === "exit")).toHaveLength(4);
+      expect(exits.gaps.some((g) => g.role === "exit")).toBe(false);
     });
 
     describe("failure and partial results", () => {
