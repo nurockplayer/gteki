@@ -44,6 +44,15 @@ Measured in your own scenes, on scratch copies of the station branches with prob
 
 Which gates, how many aisles, and where they stand is the station lead's decision.
 
+**Station manifests: `uri` and `uriMobile`** (Explorer contract, lands with #134). A station manifest asset can set an optional `uriMobile` next to `uri`. It follows the same canonical-path and `.glb` rules. On the low tier (phones) the explorer loads `uriMobile` when it is set, and `uri` otherwise. For kit placements, ship two bundles made from the same id list or layout:
+
+```sh
+python3 tools/blender/bundle_kit.py bundle --library assets/library        --ids <ids> --out stations/<id>/gteki/assets/kit/full.glb    # -> uri
+python3 tools/blender/bundle_kit.py bundle --library assets/library/mobile --ids <ids> --out stations/<id>/gteki/assets/kit/mobile.glb  # -> uriMobile
+```
+
+`--library` is the directory that holds `manifest.json`, not its `glb/` subdirectory. The two bundles carry the same asset ids, sockets and node names (the `extras.gteki_name` values included), so station code treats them the same way. Each one carries the per-asset AO material clones (`<material>~<asset id>`). Rebuild both from the same library commit, because a mobile palette change (a new colour-only material) moves the swatch UVs in every mobile GLB.
+
 ## Placing pieces
 
 Units are metres, glTF +Y is up, and the root carries `extras.gteki` (contract, params, `placement`, bounds, licence). The **placement class** tells you where the origin sits:
@@ -62,6 +71,8 @@ T_B = T_A · S_A_end · RotY(180°) · inverse(S_B_start)
 `S_x` is the socket's local transform inside its own GLB. Every linear module's `start` socket sits at the origin with yaw 180°, so for linear pieces this simplifies to `T_B = T_A · S_A_end`.
 
 **Collision.** `COL_*-colonly` nodes become `StaticBody3D` in Godot automatically. In three.js, hide them, or feed them to your physics engine. Stairs and escalators collide as smooth ramps. Gate flaps and hanging signs have no collision. Kit collision is only for character movement; **it is not navigation truth** (`extras.gteki.navigation`). Routes must come from your verified station graph (G2).
+
+A station whose walkable floors and colliders come from its own layout can build a visual-only copy: `"collision": false` in its catalog entry drops every `COL_*-colonly` node on both tiers (`false` or absent; any other value fails the build). `"gteki_role": null` drops a dressing piece's role (contract §9). Together they keep kit geometry from becoming walkable or a collider in any loader.
 
 **Lights.** `LIGHTHINT_*` empties mark where fixtures are. Their extras give `kind` (`linear_led`, `panel`, `step_light`, `indicator`), `length_m` or `size_m`, `watts` and `colour_temp_k`. The kit exports no lights; spawn whatever your renderer can afford. `tools/blender/render_preview.py` shows one way to map them to area lights.
 
@@ -95,6 +106,17 @@ flap.rotation.y = THREE.MathUtils.degToRad(params.flap_close_yaw_deg[side]) * t;
 The physical position of the flaps never gates passage. Whether a passenger may pass is runtime logic.
 
 ![Closed flaps](img/concourse_gates_closed.jpg)
+
+## Stretching a hanging sign frame
+
+`sign_frame_9slice` (catalog id `gteki_sign_frame_9slice_h480_d80`) is a faceless double-sided light-box frame for stations that draw many housings of different widths (Ikebukuro: 100, from 0.5 to 6.1 m). It is cut into separate nodes, which stay separate in the mobile profile too: `VIS_end_L` / `VIS_end_R` (fixed caps, origin at the inner joint edge), `VIS_span` (exactly 1 m in X, origin at x=0), `VIS_rod` (1 m in Z, origin at its bottom), plus optional `VIS_hanger` (origin at its bottom, on the frame top) and `VIS_rod_canopy` (ceiling disc, origin at its top face). Draw each as one InstancedMesh. Only the span is scaled in X and only the rod in Y:
+
+```
+end_L.x = -W/2 + end_m;  end_R.x = W/2 - end_m;  span.scale.x = W - 2*end_m
+rods at ±(W/2 - rod_inset_m), rod.scale.y = drop   // skip the rod when drop < 0.05 m
+```
+
+Faces go at glTF z = ±`face_plane_m` (front +Z) and fill the opening; the frame has none. The numbers (`end_m`, `bar_m`, `outer_h_m`, `opening_h_m`, `depth_m`, `face_plane_m`, `rod_inset_m`, the 0.5 / 6.1 m width range, and the heights of the hanger and rod pivots above the sign centre) are in `params.nine_slice`. The exported GLB shows the nominal sign of width 1 m + 2·`end_m`. The defaults match Ikebukuro's sign housings; station-verified values belong in the station's own catalog. There is no collision. The piece is in the catalog and appears in `assets/library` after the next library rebuild.
 
 ## Quality upgrade path (Godot HQ)
 

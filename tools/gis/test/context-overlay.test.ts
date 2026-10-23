@@ -12,9 +12,10 @@ import { stationLocal, isStationEnuFrame, type StationEnuFrame } from '../src/st
 import { buildContextWindow } from '../src/context-window.js';
 import { loadContextConfig, explorerRoleFromName } from '../src/context.js';
 import {
-  assertNoSourceValues, assertOverlayConfig, clipPolylineToDisc, axisOrderOfPosition, overlayBBox, overlayGeoJson, parseOverlayKinds, polylineMeetsAnyDisc, publicOverlayReceipt, selectLayer, writeOverlayGlb,
+  assertNoSourceValues, assertOverlayConfig, clipPolylineToDisc, axisOrderOfPosition, originDiscWindow, overlayBBox, overlayGeoJson, parseOverlayKinds, polylineMeetsAnyDisc, publicOverlayReceipt, selectLayer, writeOverlayGlb,
   OVERLAY_PROPERTY_KEYS, type LayerInput, type OverlayMeta, type OverlayProjection, type OverlayReceiptInput,
 } from '../src/context-overlay.js';
+import { loadSources } from '../src/acquire.js';
 
 const dirs: string[] = [];
 afterEach(async () => { for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
@@ -159,7 +160,7 @@ describe('context-overlay: z basis', () => {
       expect(overlay.z).toMatchObject({ mode: 'constant', z_m: z, basis, datum_asserted: false });
       const floors = (JSON.parse(await readFile(join(repo, overlay.z.check.path), 'utf8')) as { floors: Array<{ ordinal: number; renderElevationM: number }> }).floors;
       expect(floors.filter((f) => f.ordinal === overlay.z.check.floor_ordinal).map((f) => f.renderElevationM)).toEqual([z]);
-      expect(overlay.layers.map((l) => l.kind).sort()).toEqual(['railway', 'station']);
+      expect(overlay.layers.map((l) => l.kind).sort()).toEqual(['border', 'railway', 'station']);
     }
     expect((await loadContextConfig('ikebukuro') as { overlay?: { frame: unknown } }).overlay!.frame).toEqual({ mode: 'station-enu-frame', frame_id: 'ikebukuro-station-enu-v0' });
     expect((await loadContextConfig('shinjuku') as { overlay?: { frame: { mode: string } } }).overlay!.frame.mode).toBe('origin-only');
@@ -339,6 +340,7 @@ describe('context-overlay: clip to the origin disc', () => {
     expect(off.note).toContain('not clipped');
   });
   it('--clip-radius 0 and none are accepted by the CLI parser path (config default is overridden)', async () => {
+
     const dir = await mkdtemp(join(tmpdir(), 'gteki-overlay-cli-')); dirs.push(dir);
     const run = async (...args: string[]): Promise<string> => {
       try { await promisify(execFile)(join(pkg, 'node_modules', '.bin', 'tsx'), ['src/cli.ts', 'context-overlay', ...args], { cwd: pkg, env: { ...process.env, GTEKI_GIS_STORE: join(dir, 'store') } }); return 'ok'; }
@@ -347,4 +349,117 @@ describe('context-overlay: clip to the origin disc', () => {
     // Past argument validation the run reaches the (empty) store and fails there, not on --clip-radius.
     for (const v of ['0', 'none', '500']) expect(await run('ikebukuro', '--clip-radius', v)).not.toContain('--clip-radius must be');
   }, 60_000);
+});
+
+describe('context-overlay: border rings (KSJ N03)', () => {
+  // Synthetic attribute values in the N03 field shape: none of them is source data.
+  const WARD_NAME = '合成市', WARD_CODE = '999999', OTHER_CODE = '888888';
+  const borderLayer = { source_id: 'ksj-n03-2026', kind: 'border' as const, member: 'synthetic-n03.geojson', ribbon_width_m: 2, geometry: 'polygon_rings' as const, select: { kind: 'municipality_code' as const, property: 'N03_007', code: WARD_CODE } };
+  const borderMeta: OverlayMeta = { station_id: 'ikebukuro', frame_label: 'ikebukuro-station-enu-v0', credit: 'SYNTHETIC credit', source_id: 'ksj-n03-2026', source_sha256: 'a'.repeat(64), z_m: 32.5, z_basis: 'render z = street floor renderElevationM', window_label: 'origin_disc 700 m' };
+  async function rect(e0: number, n0: number, e1: number, n1: number): Promise<number[][]> {
+    return [await at(e0, n0), await at(e1, n0), await at(e1, n1), await at(e0, n1), await at(e0, n0)];
+  }
+  /** One MultiPolygon municipality containing the origin and one Polygon neighbour that does not. */
+  async function borderCollection(): Promise<Record<string, unknown>> {
+    const feature = (code: string, coordinates: unknown, type: string) => ({ type: 'Feature', properties: { N03_004: WARD_NAME, N03_007: code }, geometry: { type, coordinates } });
+    return {
+      type: 'FeatureCollection', crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:EPSG::6668' } },
+      features: [feature(WARD_CODE, [[await rect(-500, -500, 500, 500)]], 'MultiPolygon'), feature(OTHER_CODE, [await rect(800, -500, 1400, 500)], 'Polygon')],
+    };
+  }
+  async function selectBorder(collection: unknown, clip: number | null = null) {
+    const window = originDiscWindow({ kind: 'origin_disc', radius_m: 700 });
+    const input: LayerInput = { layer: borderLayer, sourceSha256: 'a'.repeat(64), memberSha256: 'b'.repeat(64), collection };
+    return { window, ...selectLayer(input, await projection(), window, 32.5, clip) };
+  }
+
+  it("reads Polygon and MultiPolygon rings as closed lines and keeps only the station municipality's polygon", async () => {
+    const { features, counts } = await selectBorder(await borderCollection());
+    expect(counts).toMatchObject({ features_in_source: 2, outside_selection: 1, selected: 1 });
+    expect(features).toHaveLength(1);
+    expect(features[0]!.kind).toBe('border');
+    const ring = features[0]!.parts[0]!;
+    expect(ring).toHaveLength(5);
+    expect([ring[0]![0], ring[0]![1]]).toEqual([ring[4]![0], ring[4]![1]]); // the ring is closed
+    expect(ring.every((p) => p[2] === 32.5)).toBe(true);
+    expect(new Set(features[0]!.parts.flat().map((p) => p[2]))).toEqual(new Set([32.5]));
+  });
+
+  it('clips the rings to the 700 m disc: every vertex inside and the source hash unchanged', async () => {
+    // A wide municipality ring: its top and bottom edges pass 300 m from the origin, its sides are 1200 m out.
+    const big = { type: 'FeatureCollection', crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:EPSG::6668' } }, features: [{ type: 'Feature', properties: { N03_004: WARD_NAME, N03_007: WARD_CODE }, geometry: { type: 'MultiPolygon', coordinates: [[await rect(-1200, -300, 1200, 300)]] } }] };
+    const whole = await selectBorder(big), clipped = await selectBorder(big, 700);
+    expect(clipped.counts).toMatchObject({ selected_before_clip: 1, selected: 1, features_clipped: 1, dropped_by_clip: 0 });
+    expect(clipped.features[0]!.parts).toHaveLength(2);
+    for (const line of clipped.features[0]!.parts) for (const p of line) expect(Math.hypot(p[0]!, p[1]!)).toBeLessThanOrEqual(700 + 1e-3);
+    expect(clipped.features[0]!.vertices_before_clip).toBe(5);
+    expect(clipped.features[0]!.feature_hash).toBe(whole.features[0]!.feature_hash);
+  });
+
+  it('carries no N03 property: the allow-list only, and no source key or value in the GeoJSON, GLB or receipt', async () => {
+    const { features, sourceValues, counts } = await selectBorder(await borderCollection());
+    const text = overlayGeoJson(features, borderMeta);
+    for (const f of (JSON.parse(text) as { features: Array<{ properties: Record<string, unknown> }> }).features) expect(Object.keys(f.properties).sort()).toEqual([...OVERLAY_PROPERTY_KEYS]);
+    for (const needle of [WARD_NAME, WARD_CODE, OTHER_CODE, 'N03_', '"N03_007"']) expect(text).not.toContain(needle);
+    expect(() => assertNoSourceValues(text, sourceValues, 'geojson')).not.toThrow();
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-overlay-')); dirs.push(dir);
+    const path = join(dir, 'border.glb');
+    const glb = await writeOverlayGlb(path, [{ kind: 'border', width_m: 2, features }], { ...borderMeta, feature_hashes_sha256: {} });
+    expect(glb.triangles).toEqual({ ctx_border_all: 2 * 4 });
+    const glbText = (await readFile(path)).toString('latin1') + JSON.stringify((await new NodeIO().readBinary(await readFile(path))).getRoot().listNodes().map((n) => n.getExtras()));
+    for (const needle of [WARD_CODE, OTHER_CODE, 'N03_']) expect(glbText).not.toContain(needle);
+    expect(glbText).not.toContain(WARD_NAME);
+    const r = publicOverlayReceipt({
+      run_id: 'overlay-border', station_id: 'ikebukuro', frame: {}, window: { kind: 'origin_disc', radius_m: 700 }, z: {}, credit: borderMeta.credit,
+      source: { source_id: 'ksj-n03-2026', source_sha256: 'a'.repeat(64), bytes: 1, license_name: 'CC BY 4.0', license_url: null, publish_gate: 'CONDITIONAL' },
+      layers: [counts], feature_hashes: { border: features.map((f) => f.feature_hash) }, bbox: overlayBBox(features), outputs: {}, tool_input_sha256: 'd'.repeat(64), policy_version: 'context-overlay-v1', clip: { kind: 'origin_disc', radius_m: 700 },
+    }, sourceValues) as Record<string, any>;
+    expect(r.totals).toMatchObject({ selected: 1, outside_selection: 1 });
+    expect(r.layers[0].kind).toBe('border');
+    expect(r.note).toContain('municipality');
+    for (const needle of [WARD_NAME, WARD_CODE, OTHER_CODE, 'N03_']) expect(JSON.stringify(r)).not.toContain(needle);
+  });
+
+  it('the registered N03-2026 credit carries the page notice verbatim', () => {
+    const source = loadSources().find((s) => s.source_id === 'ksj-n03-2026')!;
+    expect(source.license_name).toBe('CC BY 4.0');
+    expect(source.publish_gate).toBe('CONDITIONAL');
+    expect(source.attribution_text).toContain('出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2026.html）を加工して作成');
+    expect(source.attribution_text).toContain('測量法に基づく国土地理院長承認（複製）R 7JHf 351');
+    expect(source.expected_url).toBe('https://nlftp.mlit.go.jp/ksj/gml/data/N03/N03-2026/N03-20260101_13_GML.zip');
+    expect(source.expected_url_match).toBe(true);
+    // The credit with the notice passes the leak guard of the synthetic border fixture it ships with.
+    const r = publicOverlayReceipt({
+      run_id: 'r', station_id: 'ikebukuro', frame: {}, window: {}, z: {}, credit: source.attribution_text,
+      source: { source_id: 'ksj-n03-2026', source_sha256: 'a'.repeat(64), bytes: 1, license_name: 'CC BY 4.0', license_url: null, publish_gate: 'CONDITIONAL' },
+      layers: [], feature_hashes: {}, bbox: null, outputs: {}, tool_input_sha256: 'd'.repeat(64), policy_version: 'v', clip: { kind: 'none', radius_m: null },
+    }, new Set()) as Record<string, any>;
+    expect(r.credit).toContain('R 7JHf 351');
+  });
+
+  it('selects with the config window: one 700 m origin disc, a 650 m line in and a 750 m line out', async () => {
+    expect(originDiscWindow({ kind: 'origin_disc', radius_m: 700 })).toMatchObject({ spec: { r_origin_m: 700, r_exit_m: 0, node_rule: null }, discs: [{ x: 0, y: 0, r: 700, origin: 'origin', id: 'origin' }], graph: null });
+    const near = { type: 'FeatureCollection', crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:EPSG::6668' } }, features: [{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [await at(-650, 0), await at(650, 0)] } }] };
+    const far = { type: 'FeatureCollection', crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:EPSG::6668' } }, features: [{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [await at(-100, 730), await at(100, 730)] } }] };
+    const input = (collection: unknown): LayerInput => ({ layer: { ...layer, source_id: 'ksj-n02-2025' }, sourceSha256: 'a'.repeat(64), memberSha256: 'b'.repeat(64), collection });
+    const window = originDiscWindow({ kind: 'origin_disc', radius_m: 700 });
+    expect(selectLayer(input(near), await projection(), window, 32.5).counts).toMatchObject({ selected: 1, outside_window: 0 });
+    expect(selectLayer(input(far), await projection(), window, 32.5).counts).toMatchObject({ selected: 0, outside_window: 1 });
+    for (const station of ['ikebukuro', 'shinjuku']) {
+      const overlay = assertOverlayConfig(station, (await loadContextConfig(station) as { overlay?: unknown }).overlay);
+      expect(overlay.window).toEqual({ kind: 'origin_disc', radius_m: 700 });
+      expect(overlay.layers.find((l) => l.kind === 'border')).toMatchObject({ source_id: 'ksj-n03-2026', member: 'N03-20260101_13.geojson', geometry: 'polygon_rings', select: { kind: 'municipality_code', property: 'N03_007', code: station === 'ikebukuro' ? '13116' : '13104' } });
+    }
+  });
+
+  it('accepts border in --kinds and rejects a border layer without ring reading or origin selection', () => {
+    expect(parseOverlayKinds('border')).toEqual(['border']);
+    expect(parseOverlayKinds('station,railway,border')).toEqual(['station', 'railway', 'border']);
+    const good = { frame: { mode: 'origin-only', station_json: 'stations/x/gteki/station.json' }, z: { mode: 'constant', z_m: 0, basis: 'b', datum_asserted: false, check: { path: 'p', floor_ordinal: 0, field: 'renderElevationM' } }, layers: [borderLayer] };
+    expect(() => assertOverlayConfig('x', good)).not.toThrow();
+    expect(() => assertOverlayConfig('x', { ...good, layers: [{ ...borderLayer, geometry: 'lines' }] })).toThrow(/border layer/);
+    expect(() => assertOverlayConfig('x', { ...good, layers: [{ ...borderLayer, select: undefined }] })).toThrow(/border layer/);
+    expect(() => assertOverlayConfig('x', { ...good, layers: [{ ...borderLayer, select: { kind: 'municipality_code', property: 'N03_007', code: '' } }] })).toThrow(/select for x/);
+    expect(() => assertOverlayConfig('x', { ...good, window: { kind: 'origin_disc', radius_m: 0 } })).toThrow(/overlay.window/);
+  });
 });
