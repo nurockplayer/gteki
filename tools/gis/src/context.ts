@@ -4,11 +4,13 @@ import { dirname, join } from 'node:path';
 import { Document, NodeIO } from '@gltf-transform/core';
 import { docsRoot, getStoredSource, getStoreRoot, packageRoot, readJson, repoRoot, writeJson, TOOL_VERSION, type SourceManifest } from './common.js';
 import { loadFrame, toGltf, fromGltf, type Point3 } from './crs.js';
-import { stationEnuProjector, stationLocal, isStationEnuFrame, STATION_ENU_FRAME_ID_PATTERN, type StationEnuFrame } from './station-enu.js';
-import { scanContextFeatures, type ContextFeatureRecord, type ContextKind, type ContextScanSummary, type LodDigit } from './context-scan.js';
+import { stationEnuProjector, stationHorizontal, stationLocal, projectorOrigin, isStationEnuFrame, STATION_ENU_FRAME_ID_PATTERN, type StationEnuFrame } from './station-enu.js';
+import { scanContextFeatures, type ContextFeatureRecord, type ContextKind, type RetainedPolygon, type ContextScanSummary, type LodDigit } from './context-scan.js';
 import { triangulate } from './triangulate.js';
 import { toolFingerprint } from './provenance.js';
-import { bboxIntersectsAnyDisc, buildContextWindow, meshesTouchedByWindow, missingMeshSources, WINDOW_RULE, type ContextWindow, type Disc, type NodeRule } from './context-window.js';
+import { LITERAL_CLASSES } from './literal-classes.js';
+import { hashedValue } from './literal-public.js';
+import { bboxIntersectsAnyDisc, bboxIntersectsCircle, buildContextWindow, meshesTouchedByWindow, missingMeshSources, windowRuleFor, WINDOW_RULE, WINDOW_RULE_POI_IDS, type ContextWindow, type Disc, type NodeRule } from './context-window.js';
 
 /** Bump when the selection, LOD, window or merge rules change; part of the run id. */
 export const CONTEXT_POLICY_VERSION = 'context-v2';
@@ -17,6 +19,36 @@ export const CONTEXT_ROLE = 'context';
 export const EXPLORER_ROLE_WORDS = ['floor', 'stairs_ramps', 'walkable', 'ramp', 'stairs', 'wall', 'walls', 'barriers', 'barrier', 'transport', 'collider', 'camera_blocker', 'sign', 'signs', 'signage'] as const;
 
 export const SELECTION_RULE = `A top-level bldg:Building / tran:Road is selected when the XY bounding box of all its polygon vertices (every LOD) in the station frame intersects any closed disc of the window (the union of a disc of R_origin around the frame origin and a disc of R_exit around each exit connector / street-level graph node). Selected features are converted whole; geometry is never cut at the window edge. ${WINDOW_RULE}`;
+/** The selection rule text for a window: the original text, plus the poi_ids / R_origin 0 sentence only when the window uses them. */
+export const selectionRuleFor = (window: Pick<ContextWindow, 'spec'>): string => (windowRuleFor(window) === WINDOW_RULE ? SELECTION_RULE : `${SELECTION_RULE} ${WINDOW_RULE_POI_IDS}`);
+/** Vertical contract of a per_feature_ground frame (Shinjuku; decision GitHub #39 comment 6324045059). */
+export const HEIGHT_BASIS_TP = 'EPSG:6697 orthometric height as published (TP); station z = height - origin.hM; no ground height synthesised';
+export const HEIGHT_BASIS_FLATTENED = 'per_feature_ground_flattened_symbolic_street_z0';
+export const MODIFICATION_BUILDINGS_FLATTENED = 'building bases flattened to street level';
+export const MODIFICATION_ROADS_FLATTENED = 'road surfaces flattened to street level';
+/** Ground basis in priority order (buildings; roads only ever use min_z_of_drawn_lod). */
+export type GroundBasis = 'ground_height_attribute' | 'ground_surface_lod2' | 'lod1_solid_bottom' | 'min_z_of_drawn_lod';
+export const GROUND_BASES: readonly GroundBasis[] = ['ground_height_attribute', 'ground_surface_lod2', 'lod1_solid_bottom', 'min_z_of_drawn_lod'];
+export const GROUND_OFFSET_RULE = 'z_local = z_TP - groundHeight(feature), per feature, never one constant for all features. Buildings, in priority order: (1) ground_height_attribute: the feature\'s own CityGML ground-height attribute when it carries one of the configured generic attributes; (2) ground_surface_lod2: when LOD2 is drawn and the building has bldg:GroundSurface polygons, the minimum z of those polygons (their max - min spread is recorded per building), so a sunken entrance or light well in the walls cannot pull the base down; (3) lod1_solid_bottom: the minimum z of the building\'s lod1Solid, even when LOD2 is drawn; (4) min_z_of_drawn_lod: the minimum source height over the triangulated polygons of the LOD drawn. Roads: min_z_of_drawn_lod. Relative heights inside one feature are unchanged.';
+export const isPerFeatureGround = (frame: Pick<StationEnuFrame, 'vertical_mode'>): boolean => frame.vertical_mode === 'per_feature_ground';
+const round3 = (v: number): number => Math.round(v * 1000) / 1000;
+export interface GroundOffsetStats { count: number; min_m: number; median_m: number; max_m: number; basis_counts: Record<GroundBasis, number> }
+export interface Spread { count: number; min_m: number; median_m: number; max_m: number }
+const medianOf = (sorted: number[]): number => { const mid = sorted.length >> 1; return sorted.length % 2 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2; };
+/** count / min / median / max of plain numbers (metres rounded to 1 mm); null when empty. */
+export function spreadStats(values: readonly number[]): Spread | null {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  return { count: sorted.length, min_m: round3(sorted[0]!), median_m: round3(medianOf(sorted)), max_m: round3(sorted.at(-1)!) };
+}
+/** Min / median / max of the subtracted ground heights (median of an even count = mean of the two middle values; metres rounded to 1 mm) and the count per basis. */
+export function groundOffsetStats(rows: ReadonlyArray<{ offset: number; basis: GroundBasis }>): GroundOffsetStats | null {
+  if (!rows.length) return null;
+  const sorted = rows.map((r) => r.offset).sort((a, b) => a - b);
+  const basis_counts = Object.fromEntries(GROUND_BASES.map((b) => [b, 0])) as Record<GroundBasis, number>; // keys in priority order
+  for (const r of rows) basis_counts[r.basis]++;
+  return { count: rows.length, min_m: round3(sorted[0]!), median_m: round3(medianOf(sorted)), max_m: round3(sorted.at(-1)!), basis_counts };
+}
 export const LOD_POLICY = 'Buildings: LOD2 where the building has lod2Solid or a lod2MultiSurface boundary (all inline LOD2 polygons incl. installations), else LOD1; LOD0 is never converted; one LOD per building (a building whose LOD2 solid references do not all resolve to its own inline LOD2 polygons falls back to LOD1, never a mix). Roads: LOD3 only, because LOD1/LOD2 road geometry is flat at z=0; roads without LOD3 height are excluded and counted; no ground height is ever synthesised.';
 export const LOD_POLICY_LOW = 'Variant low: buildings use LOD1 only (LOD0 is never converted; a building without LOD1 polygons is excluded and counted, never replaced by LOD2). Roads: LOD3 only, as in the high variant, because LOD1/LOD2 road geometry is flat at z=0; road triangles are reported separately so they can be dropped from low. No geometry is decimated or simplified; no ground height is ever synthesised.';
 
@@ -69,6 +101,17 @@ export interface ContextBuildArgs {
   variant?: ContextVariant;
   /** Kinds to convert (default both). Inputs of an excluded kind are never opened. */
   kinds?: readonly ContextKind[];
+  /** per_feature_ground frames only: names of generic attributes that carry a feature's own ground height (default none, so every feature uses its min z). */
+  groundHeightAttributes?: readonly string[];
+  /** per_feature_ground frames only: radius (m, horizontal station frame, footprint bbox to connector) of the exit-neighbour ground-height statistics per poi_ids POI. Absent = not computed. */
+  exitNeighbourRadiusM?: number;
+  /**
+   * Credit text that replaces the source-derived attribution string in the GLB (asset copyright, scene, node and mesh extras) and the
+   * report. It must start with the exact attribution of every converted source, so the PLATEAU credit can never be dropped. Absent = the source attribution(s), unchanged.
+   */
+  attributionText?: string;
+  /** URL of the decision that fixed `attributionText`; recorded in the report and the scene extras. */
+  attributionDecision?: string;
 }
 export type ExclusionReason =
   | 'missing_gml_id' | 'duplicate_gml_id' | 'no_polygon_geometry'
@@ -82,6 +125,8 @@ interface SourceCounts {
 interface Group { positions: number[]; normals: number[]; indices: number[] }
 interface Built {
   gml_id: string; kind: ContextKind; type: 'Building' | 'Road'; source: ContextInput; lod_used: string; lod_fallback: string | null;
+  /** per_feature_ground frames only: the subtracted ground height (source height, m) and where it came from. */
+  ground_height_m: number | null; ground_basis: GroundBasis | null; ground_surface_spread_m: number | null;
   groups: Map<string, Group>; polygons_converted: number; polygons_degenerate: number; unresolved_refs: number;
 }
 interface Bucket {
@@ -95,9 +140,10 @@ export function bboxIntersectsDisc(box: { minX: number; minY: number; maxX: numb
   return Math.hypot(dx, dy) <= radiusM;
 }
 /** Run-id digest: every provenance input embedded in the GLB must be here, or two different builds would share one artifact path. */
-export function contextRunDigest(input: { frame: unknown; windowSpec: unknown; discs: unknown; graphSha256: string | null; poisSha256: string | null; merge: string; variant: string; kinds: readonly string[]; sources: [string, string][]; fingerprint: string }): string {
-  const { frame, windowSpec, discs, graphSha256, poisSha256, merge, variant, kinds, sources, fingerprint } = input;
-  return createHash('sha256').update(JSON.stringify({ frame, window: windowSpec, discs, graph: graphSha256, pois: poisSha256, merge, variant, kinds, sources, policy: CONTEXT_POLICY_VERSION, fingerprint })).digest('hex').slice(0, 20);
+export function contextRunDigest(input: { frame: unknown; windowSpec: unknown; discs: unknown; graphSha256: string | null; poisSha256: string | null; merge: string; variant: string; kinds: readonly string[]; sources: [string, string][]; fingerprint: string; groundHeightAttributes?: readonly string[]; exitNeighbourRadiusM?: number; attributionText?: string }): string {
+  const { frame, windowSpec, discs, graphSha256, poisSha256, merge, variant, kinds, sources, fingerprint, groundHeightAttributes, exitNeighbourRadiusM, attributionText } = input;
+  // groundHeightAttributes is undefined (and so absent from the JSON) for every TP-basis frame: Ikebukuro digests are unchanged by it.
+  return createHash('sha256').update(JSON.stringify({ frame, window: windowSpec, discs, graph: graphSha256, pois: poisSha256, merge, variant, kinds, sources, policy: CONTEXT_POLICY_VERSION, fingerprint, groundHeightAttributes, exitNeighbourRadiusM, attributionText })).digest('hex').slice(0, 20);
 }
 export function contextNodeName(kind: ContextKind, gmlId: string): string { return kind === 'bldg' ? `ctx_bldg_${gmlId}` : `ctx_road_${gmlId}`; }
 const pad = (n: number, width: number): string => String(n).padStart(width, '0');
@@ -140,6 +186,7 @@ function materialFor(kind: ContextKind, surface: string | null, normalY: number,
 }
 
 function convertFeature(record: ContextFeatureRecord, plan: { lod: LodDigit }, input: ContextInput, frame: StationEnuFrame, counts: SourceCounts, merged: boolean): Built | null {
+  const flatten = isPerFeatureGround(frame);
   const polygons = record.polygons ?? [];
   let lod: LodDigit = plan.lod, fallback: string | null = null;
   const inlineIds = (digit: LodDigit): Set<string> => new Set(polygons.filter((p) => p.lod === digit && p.polygon_id !== null).map((p) => p.polygon_id!));
@@ -150,10 +197,11 @@ function convertFeature(record: ContextFeatureRecord, plan: { lod: LodDigit }, i
     counts.lod2_fallback_to_lod1++;
   }
   counts.unresolved_refs_in_drawn_lod += unresolvedAt(lod);
-  const built: Built = { gml_id: record.gml_id!, kind: input.kind, type: record.type, source: input, lod_used: `LOD${lod}`, lod_fallback: fallback, groups: new Map(), polygons_converted: 0, polygons_degenerate: 0, unresolved_refs: unresolvedAt(lod) };
+  const built: Built = { gml_id: record.gml_id!, kind: input.kind, type: record.type, source: input, lod_used: `LOD${lod}`, lod_fallback: fallback, ground_height_m: null, ground_basis: null, ground_surface_spread_m: null, groups: new Map(), polygons_converted: 0, polygons_degenerate: 0, unresolved_refs: unresolvedAt(lod) };
   for (const polygon of polygons) {
     if (polygon.lod !== lod) continue; // never two LODs for one feature; LOD0 is never drawn
-    const rings = polygon.rings.map((ring) => ring.map((p) => toGltf(stationLocal(p, frame))));
+    // per_feature_ground: x/y from the frame, z kept as the source (TP) height until this feature's ground height is known.
+    const rings = polygon.rings.map((ring) => ring.map((p) => toGltf(flatten ? [...stationHorizontal(p, frame), p[2]!] as Point3 : stationLocal(p, frame))));
     const geometry = triangulate(rings);
     if (!geometry) { built.polygons_degenerate++; counts.skipped_degenerate_polygons++; continue; }
     const material = materialFor(input.kind, polygon.surface, geometry.normal[1], merged);
@@ -165,6 +213,26 @@ function convertFeature(record: ContextFeatureRecord, plan: { lod: LodDigit }, i
     built.polygons_converted++;
   }
   if (!built.polygons_converted) { bump(counts.excluded, 'no_convertible_polygons'); return null; }
+  if (flatten) {
+    // groundHeight, per feature, never a shared constant (glTF y is height up; z of the raw rings is the same source height).
+    //  buildings: (1) own attribute, (2) LOD2 drawn and bldg:GroundSurface polygons: their min z (+ spread), (3) min z of the lod1Solid, (4) min z of the drawn LOD.
+    //  roads: (1), else (4). Everything here comes from the polygons the single collect pass already retained.
+    const zs = (polys: RetainedPolygon[]): number[] => polys.flatMap((poly) => poly.rings.flatMap((ring) => ring.map((p) => p[2]!)));
+    let ground = Infinity, basis: GroundBasis | null = null;
+    if (record.ground_height) { ground = record.ground_height.value_m; basis = 'ground_height_attribute'; }
+    if (basis === null && record.type === 'Building' && lod === 2) {
+      const z = zs(polygons.filter((poly) => poly.lod === 2 && poly.surface === 'GroundSurface'));
+      if (z.length) { ground = z.reduce((a, b) => Math.min(a, b)); built.ground_surface_spread_m = z.reduce((a, b) => Math.max(a, b)) - ground; basis = 'ground_surface_lod2'; }
+    }
+    if (basis === null && record.type === 'Building') {
+      const z = zs(polygons.filter((poly) => poly.lod === 1 && poly.lod_property === 'lod1Solid'));
+      if (z.length) { ground = z.reduce((a, b) => Math.min(a, b)); basis = 'lod1_solid_bottom'; }
+    }
+    if (basis === null) { for (const group of built.groups.values()) for (let i = 1; i < group.positions.length; i += 3) if (group.positions[i]! < ground) ground = group.positions[i]!; basis = 'min_z_of_drawn_lod'; }
+    if (!Number.isFinite(ground)) throw new Error(`No finite ground height for ${record.gml_id}`);
+    for (const group of built.groups.values()) for (let i = 1; i < group.positions.length; i += 3) group.positions[i] = group.positions[i]! - ground;
+    built.ground_height_m = ground; built.ground_basis = basis;
+  }
   return built;
 }
 
@@ -181,8 +249,10 @@ export async function buildContextGlb(args: ContextBuildArgs) {
   const window = args.window ?? await buildContextWindow({ r_origin_m: args.radiusM as number, r_exit_m: 0 }, { stationId: frame.station_id });
   if (!inputs.length) throw new Error(`context conversion needs at least one source of kind ${kindsLabel(kinds)}`);
   const merged = merge.mode !== 'none';
+  const flatten = isPerFeatureGround(frame);
+  const groundRows: Array<{ kind: ContextKind; offset: number; basis: GroundBasis; spread: number | null; gml_id: string; bbox: { minX: number; minY: number; maxX: number; maxY: number } }> = [];
   const discs: readonly Disc[] = window.discs;
-  const project = stationEnuProjector(frame.origin);
+  const project = stationEnuProjector(projectorOrigin(frame));
   // Tile grid anchor: the window bounding box floored to the tile size, so tile names are stable across variants and sources.
   const windowMin = { x: Math.min(...discs.map((d) => d.x - d.r)), y: Math.min(...discs.map((d) => d.y - d.r)) };
   const windowMax = { x: Math.max(...discs.map((d) => d.x + d.r)), y: Math.max(...discs.map((d) => d.y + d.r)) };
@@ -199,7 +269,14 @@ export async function buildContextGlb(args: ContextBuildArgs) {
   };
 
   const document = new Document(), buffer = document.createBuffer();
-  const attribution = [...new Set(inputs.map((i) => i.attributionText))].join(' / ');
+  const sourceAttribution = [...new Set(inputs.map((i) => i.attributionText))].join(' / ');
+  const attributionOverride = args.attributionText;
+  if (attributionOverride !== undefined) {
+    // Fail closed: the override may add wording but must begin with every source's own credit.
+    for (const credit of new Set(inputs.map((i) => i.attributionText))) if (!attributionOverride.startsWith(credit)) throw new Error(`attribution_text ${JSON.stringify(attributionOverride)} does not start with the exact source attribution ${JSON.stringify(credit)}; the source credit must never be dropped`);
+    if (!args.attributionDecision) throw new Error('attribution_text needs attribution_decision (the URL of the decision that fixed it)');
+  }
+  const attribution = attributionOverride ?? sourceAttribution;
   document.getRoot().getAsset().copyright = attribution;
   const scene = document.createScene('UNVERIFIED NOT_FOR_ROUTING street-level context (visual only)');
   const materials = Object.fromEntries((merged ? MERGED_MATERIALS : PER_FEATURE_MATERIALS).map((name) => [name, document.createMaterial(name).setBaseColorFactor(MATERIALS[name]!).setMetallicFactor(0).setRoughnessFactor(1).setDoubleSided(true)]));
@@ -226,7 +303,7 @@ export async function buildContextGlb(args: ContextBuildArgs) {
     const empty = (): ContextScanSummary => ({ envelope: null, srs_names: [], top_level_features: 0, other_top_level_elements: {}, polygons_without_lod: 0, unconsumed_coordinate_elements: {}, unsupported_geometry_elements: {}, external_href_count: 0 });
     const counts: SourceCounts = { source_id: input.sourceId, source_sha256: input.sourceSha256, kind: input.kind, features_in_source: 0, outside_window: 0, selected: 0, converted: 0, excluded: {}, lod_used: {}, lod2_fallback_to_lod1: 0, unresolved_refs_in_drawn_lod: 0, skipped_degenerate_polygons: 0, footprint_scan: empty(), collect_pass_top_level_features: 0 };
     // Pass 1: ids + XY bbox + LOD facts only.
-    const plans = new Map<string, { lod: LodDigit; tile: [number, number] | null }>();
+    const plans = new Map<string, { lod: LodDigit; tile: [number, number] | null; bbox: { minX: number; minY: number; maxX: number; maxY: number } }>();
     counts.footprint_scan = await scanContextFeatures(input.path, {
       kind: input.kind, mode: 'footprint', project,
       onFeature: (record) => {
@@ -238,12 +315,12 @@ export async function buildContextGlb(args: ContextBuildArgs) {
         if (seenIds.has(record.gml_id) || plans.has(record.gml_id)) { bump(counts.excluded, 'duplicate_gml_id'); return; }
         const plan = planFeature(record, variant);
         if (plan.lod === null) { bump(counts.excluded, plan.reason!); return; }
-        plans.set(record.gml_id, { lod: plan.lod, tile: merge.mode === 'tiles' ? tileOf(record.bbox) : null });
+        plans.set(record.gml_id, { lod: plan.lod, tile: merge.mode === 'tiles' ? tileOf(record.bbox) : null, bbox: { ...record.bbox } });
       },
     });
     // Pass 2: only the selected, convertible features are retained, converted on arrival and discarded.
     const collectScan = await scanContextFeatures(input.path, {
-      kind: input.kind, mode: 'collect', retain: (id) => plans.has(id),
+      kind: input.kind, mode: 'collect', retain: (id) => plans.has(id), ...(flatten && args.groundHeightAttributes?.length ? { groundHeightAttributes: args.groundHeightAttributes } : {}),
       onFeature: (record) => {
         const plan = record.gml_id === null ? undefined : plans.get(record.gml_id);
         if (!plan || seenIds.has(record.gml_id!)) return;
@@ -266,9 +343,10 @@ export async function buildContextGlb(args: ContextBuildArgs) {
         bucket.lodUsed[built.lod_used] = (bucket.lodUsed[built.lod_used] ?? 0) + 1;
         bucket.sources.set(input.sourceId, input.sourceSha256); bucket.attributions.add(input.attributionText);
         counts.converted++;
+        if (flatten) groundRows.push({ kind: built.kind, offset: built.ground_height_m!, basis: built.ground_basis!, spread: built.ground_surface_spread_m, gml_id: built.gml_id, bbox: plan.bbox });
         counts.lod_used[built.lod_used] = (counts.lod_used[built.lod_used] ?? 0) + 1;
         // tri_start/tri_count index the merged mesh's triangle sequence (in the per-feature layout every node starts at 0).
-        perFeature.push({ gml_id: built.gml_id, node: bucket.name, mesh: bucket.name, type: built.type, source_id: input.sourceId, lod_used: built.lod_used, lod_fallback: built.lod_fallback, polygons_converted: built.polygons_converted, polygons_degenerate: built.polygons_degenerate, unresolved_refs: built.unresolved_refs, triangles, tri_start: triStart, tri_count: triangles });
+        perFeature.push({ gml_id: built.gml_id, node: bucket.name, mesh: bucket.name, type: built.type, source_id: input.sourceId, lod_used: built.lod_used, lod_fallback: built.lod_fallback, polygons_converted: built.polygons_converted, polygons_degenerate: built.polygons_degenerate, unresolved_refs: built.unresolved_refs, triangles, tri_start: triStart, tri_count: triangles, ...(flatten ? { ground_height_m: built.ground_height_m, ground_basis: built.ground_basis, ground_surface_spread_m: built.ground_surface_spread_m } : {}) });
       },
     });
     counts.collect_pass_top_level_features = collectScan.top_level_features;
@@ -289,15 +367,30 @@ export async function buildContextGlb(args: ContextBuildArgs) {
   // Emit meshes: per-feature nodes in file order; merged meshes sorted by name.
   const emitted = merged ? [...order].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)) : order;
   const windowExtras = { kinds, r_origin_m: window.spec.r_origin_m, r_exit_m: window.spec.r_exit_m, disc_count: discs.length, node_rule: window.spec.node_rule, mesh_margin_m: window.spec.mesh_margin_m, graph_sha256: window.graph?.graph_sha256 ?? null, pois_sha256: window.graph?.pois?.pois_sha256 ?? null };
+  const groundOffsets = flatten ? { buildings: groundOffsetStats(groundRows.filter((r) => r.kind === 'bldg')), ground_surface_spread: spreadStats(groundRows.filter((r) => r.kind === 'bldg' && r.spread !== null).map((r) => r.spread!)), roads: groundOffsetStats(groundRows.filter((r) => r.kind === 'tran')), unit: 'm', subtracted: 'groundHeight(feature) in source (TP) metres, rounded to 1 mm in these statistics; the per-feature value is in the feature table', rule: GROUND_OFFSET_RULE } : null;
+  // Exit-neighbour spread (flatten + exit_neighbour_radius_m): for every poi_ids POI, the converted buildings whose footprint bbox lies within the radius of one of its connector nodes (horizontal station frame).
+  const exitRadius = flatten ? args.exitNeighbourRadiusM : undefined;
+  if (exitRadius !== undefined && (!Number.isFinite(exitRadius) || exitRadius <= 0 || exitRadius > 500)) throw new Error('exit_neighbour_radius_m must be a finite number of metres in (0, 500]');
+  const exitNeighbours = exitRadius === undefined ? null : {
+    radius_m: exitRadius, unit: 'm',
+    rule: 'Per window POI (node_rule.poi_ids): the converted buildings whose footprint bbox (all vertices of every LOD, horizontal station frame) lies within radius_m of any connector node of that POI (closed distance, bbox to point). Statistics are over the subtracted ground height of those buildings; gml_ids lists them. Roads are not counted. A building near two exits is listed under both.',
+    pois: (window.spec.node_rule?.poi_ids ?? []).map((poiId) => {
+      const connectors = (window.graph?.selected ?? []).filter((n) => n.poi_ids?.includes(poiId));
+      const near = groundRows.filter((r) => r.kind === 'bldg' && connectors.some((c) => bboxIntersectsCircle(r.bbox, c.x, c.y, exitRadius)));
+      return { poi_id: poiId, connector_node_ids: connectors.map((c) => c.id).sort(), count: near.length, ground_height_m: spreadStats(near.map((r) => r.offset)), basis_counts: Object.fromEntries(GROUND_BASES.map((b) => [b, near.filter((r) => r.basis === b).length])), gml_ids: near.map((r) => r.gml_id).sort() };
+    }),
+  };
+  const modifications = flatten ? [...(kinds.includes('bldg') ? [MODIFICATION_BUILDINGS_FLATTENED] : []), ...(kinds.includes('tran') ? [MODIFICATION_ROADS_FLATTENED] : [])] : null;
+  const verticalExtras = flatten ? { vertical_mode: 'per_feature_ground', modifications, modification_notice: `Modified from the source: ${modifications!.join('; ')} (z_local = z_TP - per-feature ground height; symbolic street z = 0; no vertical datum)` } : {};
   let triangleCount = 0, drawCalls = 0;
   const meshReport: Array<Record<string, unknown>> = [];
   const trianglesByKind: Record<ContextKind, number> = { bldg: 0, tran: 0 };
   let localBBox: { min: Point3; max: Point3 } | null = null;
   for (const bucket of emitted) {
-    const common = { gteki_role: CONTEXT_ROLE, navigation_use: 'NOT_FOR_ROUTING', visual_only: true, verification: 'UNVERIFIED', geometry_status: 'UNVERIFIED_RAW_CONVERSION', frame_id: frame.frame_id, station_id: frame.station_id, station_json_sha256: frame.station_json_sha256, attribution_text: [...bucket.attributions].join(' / '), height_basis: 'EPSG:6697 orthometric height as published (TP); station z = height - origin.hM; no ground height synthesised' };
+    const common = { gteki_role: CONTEXT_ROLE, navigation_use: 'NOT_FOR_ROUTING', visual_only: true, verification: 'UNVERIFIED', geometry_status: 'UNVERIFIED_RAW_CONVERSION', frame_id: frame.frame_id, station_id: frame.station_id, station_json_sha256: frame.station_json_sha256, attribution_text: attributionOverride ?? [...bucket.attributions].join(' / '), height_basis: flatten ? HEIGHT_BASIS_FLATTENED : HEIGHT_BASIS_TP, ...verticalExtras };
     const extras = bucket.single
-      ? { ...common, kinds, gml_id: bucket.single.gml_id, feature_type: bucket.single.type, source_id: bucket.single.source.sourceId, source_sha256: bucket.single.source.sourceSha256, lod_used: bucket.single.lod_used, lod_fallback: bucket.single.lod_fallback }
-      : { ...common, merged: true, merge: mergeLabel(merge), variant, kinds, kind: bucket.kind === 'bldg' ? 'building' : 'road', tile: bucket.tile, feature_count: bucket.features, source_ids: [...bucket.sources.keys()].sort(), source_sha256s: Object.fromEntries([...bucket.sources].sort(([a], [b]) => (a < b ? -1 : 1))), lod_used: Object.fromEntries(Object.entries(bucket.lodUsed).sort(([a], [b]) => (a < b ? -1 : 1))), graph_sha256: window.graph?.graph_sha256 ?? null, pois_sha256: window.graph?.pois?.pois_sha256 ?? null, window: windowExtras, feature_table: 'sidecar and receipt: gml_id, source_id, lod, mesh, tri_start, tri_count' };
+      ? { ...common, kinds, gml_id: bucket.single.gml_id, feature_type: bucket.single.type, source_id: bucket.single.source.sourceId, source_sha256: bucket.single.source.sourceSha256, lod_used: bucket.single.lod_used, lod_fallback: bucket.single.lod_fallback, ...(flatten ? { ground_height_m: bucket.single.ground_height_m, ground_basis: bucket.single.ground_basis, ground_surface_spread_m: bucket.single.ground_surface_spread_m } : {}) }
+      : { ...common, merged: true, merge: mergeLabel(merge), variant, kinds, kind: bucket.kind === 'bldg' ? 'building' : 'road', tile: bucket.tile, feature_count: bucket.features, source_ids: [...bucket.sources.keys()].sort(), source_sha256s: Object.fromEntries([...bucket.sources].sort(([a], [b]) => (a < b ? -1 : 1))), lod_used: Object.fromEntries(Object.entries(bucket.lodUsed).sort(([a], [b]) => (a < b ? -1 : 1))), graph_sha256: window.graph?.graph_sha256 ?? null, pois_sha256: window.graph?.pois?.pois_sha256 ?? null, window: windowExtras, feature_table: flatten ? 'sidecar and receipt: gml_id, source_id, lod, mesh, tri_start, tri_count, ground_offset_m, ground_basis, ground_surface_spread_m' : 'sidecar and receipt: gml_id, source_id, lod, mesh, tri_start, tri_count' };
     const node = document.createNode(bucket.name).setExtras(extras);
     const mesh = document.createMesh(bucket.name).setExtras(extras);
     for (const [material, group] of [...bucket.groups].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
@@ -317,11 +410,13 @@ export async function buildContextGlb(args: ContextBuildArgs) {
     if (merged) meshReport.push({ name: bucket.name, kind: bucket.kind === 'bldg' ? 'building' : 'road', tile: bucket.tile, features: bucket.features, triangles: bucket.triangles, primitives: bucket.groups.size, materials: [...bucket.groups.keys()].sort(), lod_used: bucket.lodUsed, source_ids: [...bucket.sources.keys()].sort() });
   }
   const nodeCount = emitted.length;
-  const sceneWindow = { kinds, center_station_xy_m: [0, 0] as [number, number], radius_m: window.spec.r_origin_m, r_origin_m: window.spec.r_origin_m, r_exit_m: window.spec.r_exit_m, disc_count: discs.length, mesh_margin_m: window.spec.mesh_margin_m, node_rule: window.spec.node_rule, graph: window.graph, rule: WINDOW_RULE };
+  const sceneWindow = { kinds, center_station_xy_m: [0, 0] as [number, number], radius_m: window.spec.r_origin_m, r_origin_m: window.spec.r_origin_m, r_exit_m: window.spec.r_exit_m, disc_count: discs.length, mesh_margin_m: window.spec.mesh_margin_m, node_rule: window.spec.node_rule, graph: window.graph, rule: windowRuleFor(window) };
   scene.setExtras({
     gteki_role: CONTEXT_ROLE, navigation_use: 'NOT_FOR_ROUTING', visual_only: true, verification: 'UNVERIFIED', station_id: frame.station_id, frame_id: frame.frame_id,
     station_json_sha256: frame.station_json_sha256, graph_sha256: window.graph?.graph_sha256 ?? null, pois_sha256: window.graph?.pois?.pois_sha256 ?? null, window: windowExtras, kinds, merge: mergeLabel(merge), variant,
-    selection_rule: SELECTION_RULE, lod_policy: variant === 'low' ? LOD_POLICY_LOW : LOD_POLICY, policy_version: CONTEXT_POLICY_VERSION, attribution_text: attribution,
+    selection_rule: selectionRuleFor(window), lod_policy: variant === 'low' ? LOD_POLICY_LOW : LOD_POLICY, policy_version: CONTEXT_POLICY_VERSION, attribution_text: attribution,
+    ...(attributionOverride !== undefined ? { attribution_decision: args.attributionDecision } : {}),
+    ...(flatten ? { height_basis: HEIGHT_BASIS_FLATTENED, ...verticalExtras, ground_offsets: groundOffsets } : {}),
   });
   await mkdir(dirname(outputPath), { recursive: true });
   const io = new NodeIO();
@@ -363,7 +458,7 @@ export async function buildContextGlb(args: ContextBuildArgs) {
   const featuresByKind = { building: perSource.filter((s) => s.kind === 'bldg').reduce((n, s) => n + s.converted, 0), road: perSource.filter((s) => s.kind === 'tran').reduce((n, s) => n + s.converted, 0) };
   return {
     verification: 'UNVERIFIED' as const, navigation_use: 'NOT_FOR_ROUTING' as const, visual_only: true, geometry_status: 'UNVERIFIED_RAW_CONVERSION' as const,
-    station_id: frame.station_id, frame, window: sceneWindow, selection_rule: SELECTION_RULE, lod_policy: variant === 'low' ? LOD_POLICY_LOW : LOD_POLICY, policy_version: CONTEXT_POLICY_VERSION,
+    station_id: frame.station_id, frame, window: sceneWindow, selection_rule: selectionRuleFor(window), lod_policy: variant === 'low' ? LOD_POLICY_LOW : LOD_POLICY, policy_version: CONTEXT_POLICY_VERSION,
     variant, merge: mergeLabel(merge), kinds,
     sources: perSource,
     totals: {
@@ -374,7 +469,8 @@ export async function buildContextGlb(args: ContextBuildArgs) {
     },
     layout: { merge: mergeLabel(merge), mesh_count: nodeCount, draw_calls: drawCalls, tile_size_m: tileSize || null, tiles_used: tilesUsed, tile_grid_origin_station_xy_m: tileSize ? [gridX0, gridY0] : null, tile_centres_clamped_to_grid: tilesClamped, materials: merged ? MERGED_MATERIALS : PER_FEATURE_MATERIALS, meshes: meshReport },
     bbox_local_ENU: localBBox as { min: Point3; max: Point3 } | null, textures: 'not converted: PLATEAU texture lineage is aerial photography and its licence is unassessed',
-    attribution_text: attribution, selected_gml_ids_sha256: createHash('sha256').update([...selectedIds].sort().join('\n')).digest('hex'), per_feature: perFeature, validation,
+    ...(flatten ? { vertical_mode: 'per_feature_ground', height_basis: HEIGHT_BASIS_FLATTENED, modifications: modifications!, modification_notice: verticalExtras.modification_notice, ground_offsets: groundOffsets!, ...(exitNeighbours ? { exit_neighbours: exitNeighbours } : {}) } : {}),
+    attribution_text: attribution, ...(attributionOverride !== undefined ? { attribution_decision: args.attributionDecision! } : {}), selected_gml_ids_sha256: createHash('sha256').update([...selectedIds].sort().join('\n')).digest('hex'), per_feature: perFeature, validation,
   };
 }
 
@@ -382,6 +478,42 @@ export interface StationWindowConfig { r_origin_m?: number; r_exit_m: number; no
 export interface StationContextConfig {
   station: string; status: 'READY' | 'BLOCKED'; frame_id: string; radius_m: number; sources: string[]; blocked_reason?: string; notes?: string;
   window?: StationWindowConfig; merge?: string; variant?: ContextVariant; kinds?: ContextKind[];
+  /** per_feature_ground frames only: generic attribute names that carry a feature's own ground height (default none: every feature uses its min z). */
+  ground_height_attributes?: string[];
+  /** per_feature_ground frames only: radius (m) for the exit-neighbour ground-height statistics per poi_ids POI (Shinjuku 30). */
+  exit_neighbour_radius_m?: number;
+  /** Optional credit that replaces the source attribution in the outputs; must start with every selected source's exact attribution (checked at run time). Needs attribution_decision. */
+  attribution_text?: string;
+  /** https URL of the decision that fixed attribution_text (recorded in the receipt). */
+  attribution_decision?: string;
+  /**
+   * Who owns the text of the station graph's node ids (`graph.json` `nodes[].id`), so the committed receipt knows whether it may quote them.
+   * Either a `source_id` of LITERAL_CLASSES (class (a): ids stay verbatim in the receipt; class (b) or an id that is not listed: ids become
+   * `{ value_sha256, value_type }`) or `gteki-authored` (the ids are names GTEki minted; no third-party text). Absent or anything else = hashed.
+   */
+  graph_literal_source_id?: string;
+}
+/** `graph_literal_source_id` value for a graph whose ids GTEki wrote itself (Ikebukuro: hand-authored `data/graph.src.json`). */
+export const GRAPH_LITERALS_GTEKI_AUTHORED = 'gteki-authored';
+/** True only when the configured source is GTEki-authored or listed as class (a) in LITERAL_CLASSES. Missing, class (b) or unknown: false (hash). */
+export function graphIdsMayStayVerbatim(sourceId: string | undefined): boolean {
+  if (sourceId === undefined) return false;
+  return sourceId === GRAPH_LITERALS_GTEKI_AUTHORED || LITERAL_CLASSES.some((entry) => entry.source_id === sourceId && entry.class === 'a');
+}
+/**
+ * Committed form of a context receipt (docs/gis, public): every string that equals a graph node id of the window becomes `hashedValue(id)`
+ * unless `keepVerbatim`. The store sidecar and GLB keep the verbatim ids. Fails closed: if an id is still in the JSON text afterwards
+ * (as a key or inside a longer string), nothing is written.
+ */
+export function publicContextReceipt<T>(receipt: T, graphNodeIds: readonly string[], keepVerbatim: boolean): T {
+  const ids = new Set(graphNodeIds.filter((id) => id !== ''));
+  if (keepVerbatim || ids.size === 0) return receipt;
+  const walk = (value: unknown): unknown => typeof value === 'string' ? (ids.has(value) ? hashedValue(value) : value)
+    : Array.isArray(value) ? value.map(walk)
+    : value !== null && typeof value === 'object' ? Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, entry]) => [key, walk(entry)])) : value;
+  const out = walk(receipt), text = JSON.stringify(out);
+  for (const id of ids) if (text.includes(id)) throw new Error('The context receipt still contains a graph node id outside a whole-string value; refusing to write a verbatim class (b) id to docs/gis');
+  return out as T;
 }
 export async function loadContextConfig(station: string): Promise<StationContextConfig> {
   if (!STATION_ENU_FRAME_ID_PATTERN.test(station)) throw new Error(`Invalid station id: ${station}`);
@@ -393,6 +525,11 @@ export async function loadContextConfig(station: string): Promise<StationContext
   if (config.merge !== undefined) parseMergeSpec(config.merge);
   if (config.variant !== undefined) parseVariant(config.variant);
   if (config.kinds !== undefined) parseKinds(config.kinds);
+  if (config.ground_height_attributes !== undefined && (!Array.isArray(config.ground_height_attributes) || config.ground_height_attributes.some((n) => typeof n !== 'string' || n === ''))) throw new Error(`Context config for ${station}: ground_height_attributes must be an array of attribute names`);
+  if (config.exit_neighbour_radius_m !== undefined && (typeof config.exit_neighbour_radius_m !== 'number' || !Number.isFinite(config.exit_neighbour_radius_m) || config.exit_neighbour_radius_m <= 0 || config.exit_neighbour_radius_m > 500)) throw new Error(`Context config for ${station}: exit_neighbour_radius_m must be a number of metres in (0, 500]`);
+  if (config.graph_literal_source_id !== undefined && (typeof config.graph_literal_source_id !== 'string' || !config.graph_literal_source_id.trim())) throw new Error(`Context config for ${station}: graph_literal_source_id must be a non-empty string`);
+  if ((config.attribution_text === undefined) !== (config.attribution_decision === undefined)) throw new Error(`Context config for ${station}: attribution_text and attribution_decision must be given together`);
+  if (config.attribution_text !== undefined && (typeof config.attribution_text !== 'string' || !config.attribution_text.trim() || typeof config.attribution_decision !== 'string' || !/^https:\/\/\S+$/.test(config.attribution_decision))) throw new Error(`Context config for ${station}: attribution_text must be a non-empty string and attribution_decision an https URL`);
   return config;
 }
 
@@ -402,7 +539,7 @@ export interface MeshCoverageReport {
   missing: Array<{ mesh: string; kind: 'bldg' | 'tran'; reason: string }>;
 }
 /** Fail closed: every 3rd-level mesh the window touches needs a configured bldg and tran source. Returns what the window needs. */
-export function assertMeshCoverage(station: string, window: ContextWindow, frame: Pick<StationEnuFrame, 'origin'>, sourceIds: readonly string[], kinds: readonly ContextKind[] = ALL_KINDS): { meshes: string[]; unusedSources: string[]; excludedKindSources: string[]; neededSources: string[] } {
+export function assertMeshCoverage(station: string, window: ContextWindow, frame: Pick<StationEnuFrame, 'origin' | 'vertical_mode' | 'horizontal_origin_height_m'>, sourceIds: readonly string[], kinds: readonly ContextKind[] = ALL_KINDS): { meshes: string[]; unusedSources: string[]; excludedKindSources: string[]; neededSources: string[] } {
   const coverage = meshesTouchedByWindow(window.discs, frame, window.spec.mesh_margin_m);
   const missing = missingMeshSources(coverage.meshes, sourceIds, kinds);
   const needed = new Set(coverage.meshes);
@@ -462,17 +599,21 @@ export async function contextGlb(station: string, options: ContextRunOptions = {
   const meshCoverage: MeshCoverageReport = { method: 'JIS X 0410 3rd-level (8 digit) cells, projected into the station frame, tested against every disc of the window (closed; widened by margin_m)', needed_meshes: coverage.meshes, margin_m: window.spec.mesh_margin_m, needed_sources: coverage.neededSources, unused_sources: coverage.unusedSources, excluded_kind_sources: coverage.excludedKindSources, kinds, missing: [] };
 
   const fingerprint = await toolFingerprint();
-  const digest = contextRunDigest({ frame, windowSpec: window.spec, discs: window.discs.map((d) => [d.id, d.x, d.y, d.r]), graphSha256: window.graph?.graph_sha256 ?? null, poisSha256: window.graph?.pois?.pois_sha256 ?? null, merge: mergeLabel(merge), variant, kinds, sources: inputs.map((i) => [i.sourceId, i.sourceSha256]), fingerprint });
+  const flatten = isPerFeatureGround(frame), groundHeightAttributes = flatten ? config.ground_height_attributes ?? [] : undefined;
+  const exitNeighbourRadiusM = flatten ? config.exit_neighbour_radius_m : undefined;
+  const attributionText = config.attribution_text;
+  const digest = contextRunDigest({ frame, windowSpec: window.spec, discs: window.discs.map((d) => [d.id, d.x, d.y, d.r]), graphSha256: window.graph?.graph_sha256 ?? null, poisSha256: window.graph?.pois?.pois_sha256 ?? null, merge: mergeLabel(merge), variant, kinds, sources: inputs.map((i) => [i.sourceId, i.sourceSha256]), fingerprint, groundHeightAttributes, exitNeighbourRadiusM, ...(attributionText !== undefined ? { attributionText } : {}) });
   const exitPart = window.spec.r_exit_m > 0 ? `-x${window.spec.r_exit_m}` : '';
   const kindsPart = kinds.length === ALL_KINDS.length ? '' : `-${kinds.join('-')}`; // full (bldg+tran) runs keep the old id shape; a subset is visible in the id
   const runId = `context-${station}-r${radiusM}${exitPart}-${frame.frame_id}-${variant}-${mergeLabel(merge).replace(':', '')}${kindsPart}-${digest}`;
   const relativeOutput = `out/${runId}.glb`, outputPath = join(getStoreRoot(), relativeOutput);
-  const report = await buildContextGlb({ frame, window, inputs, outputPath, merge, variant, kinds });
+  const report = await buildContextGlb({ frame, window, inputs, outputPath, merge, variant, kinds, ...(groundHeightAttributes ? { groundHeightAttributes } : {}), ...(exitNeighbourRadiusM !== undefined ? { exitNeighbourRadiusM } : {}), ...(attributionText !== undefined ? { attributionText, attributionDecision: config.attribution_decision! } : {}) });
   const outputBytes = await readFile(outputPath), outputSha256 = createHash('sha256').update(outputBytes).digest('hex');
   const { per_feature, ...summaryBody } = report;
   // The feature table (gml_id -> mesh and triangle range) travels in the sidecar and, compactly, in the receipt.
-  const columns = ['gml_id', 'source_id', 'lod', 'mesh', 'tri_start', 'tri_count'] as const;
-  const featureTable = { columns, rows: per_feature.map((f) => [f.gml_id, f.source_id, f.lod_used, f.mesh, f.tri_start, f.tri_count]) };
+  // per_feature_ground frames add each feature's subtracted ground offset (m, source height) and its basis; TP-basis tables are unchanged.
+  const columns = flatten ? ['gml_id', 'source_id', 'lod', 'mesh', 'tri_start', 'tri_count', 'ground_offset_m', 'ground_basis', 'ground_surface_spread_m'] as const : ['gml_id', 'source_id', 'lod', 'mesh', 'tri_start', 'tri_count'] as const;
+  const featureTable = { columns, rows: per_feature.map((f) => (flatten ? [f.gml_id, f.source_id, f.lod_used, f.mesh, f.tri_start, f.tri_count, f.ground_height_m, f.ground_basis, f.ground_surface_spread_m] : [f.gml_id, f.source_id, f.lod_used, f.mesh, f.tri_start, f.tri_count])) };
   const featureTableSha256 = createHash('sha256').update(JSON.stringify(featureTable)).digest('hex');
   const sidecar = { ...report, run_id: runId, mesh_coverage: meshCoverage, feature_table: featureTable, feature_table_sha256: featureTableSha256, tool_version: TOOL_VERSION, tool_input_sha256: fingerprint, station_json_sha256_now: stationJsonShaNow, station_json_changed_since_frame: stationJsonShaNow !== frame.station_json_sha256,
     source_records: manifests.map((m) => m.record), source_manifests: manifests.map((m) => m.source), store_path: relativeOutput, output_sha256: outputSha256, output_bytes: outputBytes.length };
@@ -484,6 +625,8 @@ export async function contextGlb(station: string, options: ContextRunOptions = {
     elapsed_ms: Math.round(performance.now() - started), peak_rss_bytes: process.resourceUsage().maxRSS * 1024,
   };
   // Context receipts live beside, not inside, docs/gis/conversions so real-run/summarize never mistake them for ubld conversions.
-  await writeJson(join(docsRoot, 'gis', 'context', `${runId}.json`), summary);
-  return summary;
+  // Graph node ids are Hokonavi E27 text for Shinjuku (class (b)): the committed receipt carries them as hashes, the sidecar above keeps them.
+  const receipt = publicContextReceipt(summary, (window.graph?.selected ?? []).map((n) => n.id), graphIdsMayStayVerbatim(config.graph_literal_source_id));
+  await writeJson(join(docsRoot, 'gis', 'context', `${runId}.json`), receipt);
+  return receipt;
 }

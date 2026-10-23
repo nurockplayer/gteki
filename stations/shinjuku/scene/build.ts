@@ -7,13 +7,18 @@ import polygonClipping from "polygon-clipping";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { StationBundle } from "@gteki/schema";
 import { createRouter } from "@gteki/navigation";
-import { buildLayout, centroid, pointInRings, soffitHeight, STREET_PAD, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
+import { centroid, pointInRings, soffitHeight, STREET_PAD, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
 import { ceilingTexture, signTexture, tactileTexture, tileTextures, wallTexture, SIGN_ROW_HEIGHT, type SignIcon } from "./textures.ts";
-import { protectFareAndAccess, gateMachines, accessSigns, ACCESS_WORDING } from "./fare-fence.ts";
+import { prepareLayout } from "./build-cache.ts";
+import { gateMachines, accessSigns, ACCESS_WORDING } from "./fare-fence.ts";
 import surfaceJson from "../data/surface.json";
+import bakedSurface from "../data/surface-baked.ts";
 import { buildSurface, surfaceWalls, trimSurfaceCeilingFixtures, type SurfaceData } from "./surface.ts";
+import { withSurfaceMemo } from "./surface-layout.ts";
+import { surfaceSeed } from "./surface-bake.ts";
 
-export const OEDO_MAGENTA = "#b6007a"; // public line colour of the Oedo Line
+import { OEDO_MAGENTA } from "./palette.ts";
+export { OEDO_MAGENTA };
 
 const v3 = (p: XYZ) => new THREE.Vector3(p.x, p.z, -p.y);
 
@@ -36,6 +41,16 @@ export interface BuiltStation {
 
 export interface BuildOptions {
   quality: "low" | "high";
+  /** Reuse the built layout and fences across builds of equal bundle and plan (the shared explorer's
+   * reopen). Output is byte-identical; see build-cache.ts. */
+  reuseLayout?: boolean;
+  /** Default true, and buildScene keeps it true: the restricted-area input fingerprint (~90 ms cold) is the only
+   * load-time guard against a stale generated fence table; root CI (`root-test`, #148) also fails on one.
+   * false is for tests that exercise the unchecked path. */
+  verifyRestrictedInput?: boolean;
+  /** false derives the street layer's polygons instead of reading data/surface-baked.ts. Default true; the
+   * baked table is used only if it was made from exactly this surface, bundle and plan (surface-bake.ts). */
+  useBakedSurface?: boolean;
 }
 
 // ---------------------------------------------------------------- helpers
@@ -303,8 +318,8 @@ function cylAlong(a: THREE.Vector3, b: THREE.Vector3, r: number, seg = 8): THREE
 
 // ---------------------------------------------------------------- main
 export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptions): BuiltStation {
-  const layout = buildLayout(bundle, plan);
-  const protection = protectFareAndAccess(layout, plan, bundle);
+  // `let`, not `const`: both are cleared before returning (see the end of this function).
+  let { layout, protection } = prepareLayout(bundle, plan, { reuse: opts.reuseLayout, verifyGeneratedInput: opts.verifyRestrictedInput });
   const root = new THREE.Group();
   root.name = "shinjuku-e27";
   const disposables: { dispose(): void }[] = [];
@@ -793,11 +808,14 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   }
 
   // ---- wayfinding signs from the verified graph
-  const signs = buildSigns(bundle, layout, root, track);
+  const signs = buildSigns(bundle, layout, root, track, opts.quality);
   addWallBackFaces(root, mat.wall, track);
   bakeFloorLightPools(layout, root, [mat.floor, mat.floorPaid, mat.floorPlatform], track);
-  mergeRootFinishes(root, [mat.steel, mat.glass], track, true);
-  mergeRootFinishes(root, [mat.darkSteel, mat.gateOk, mat.accent], track);
+  // Batch names say what is inside. The steel batch is the stair handrails and brackets, escalator trusses and
+  // skirts, fare/access fence rails and posts, lift-portal door finishes and level trim: ~50k triangles in all,
+  // of which the portals are only ~650 (#72). The batch used to inherit the name "elevator-portal:finish".
+  mergeRootFinishes(root, [[mat.steel, "static-steel-finishes"], [mat.glass, "static-glass-finishes"]], track, true);
+  mergeRootFinishes(root, [[mat.darkSteel, "static-dark-steel-finishes"], [mat.gateOk, "static-gate-ok-finishes"], [mat.accent, "static-accent-finishes"]], track);
   installTightCulling(root);
 
   // ---- collision world
@@ -1068,9 +1086,14 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   update(0, 0);
 
   // W2 surface hook: context adds obstacles only; existing pads remain the walk limit.
-  const surface = buildSurface(surfaceJson as SurfaceData, layout, { ...opts, bundle });
+  // The street layer and its walls ask for the same polygon derivations; compute each once (see surface-layout.ts).
+  const seed = opts.useBakedSurface === false ? null : surfaceSeed(bakedSurface, surfaceJson as SurfaceData, layout, bundle, plan);
+  const { surface, surfaceBarriers } = withSurfaceMemo(() => ({
+    surface: buildSurface(surfaceJson as SurfaceData, layout, { ...opts, bundle }),
+    surfaceBarriers: surfaceWalls(layout, bundle, surfaceJson as SurfaceData),
+  }), seed);
+  surface.root.userData.bakedSurface = seed !== null; // observable by tests: was the baked table used?
   root.add(surface.root);
-  const surfaceBarriers = surfaceWalls(layout, bundle, surfaceJson as SurfaceData);
   propWalls.push(...surfaceBarriers);
   world.addWalls(surfaceBarriers);
   trimSurfaceCeilingFixtures(root, [mat.light, mat.lightHousing]); // remove only floating street ceiling strips
@@ -1079,7 +1102,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   track(surface);
   disposeRetiredGeometries(root, disposables);
 
-  return {
+  const built: BuiltStation = {
     root,
     layout,
     world,
@@ -1098,12 +1121,19 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       });
     },
   };
+  // The closures above (update, dispose, onBeforeRender hooks) share this function's scope for as long as
+  // the scene lives, and they never read the layout or the fare protection again. Without this, a running
+  // scene kept ~9 MB of build-time polygons reachable through them (#72). `built.layout` still holds it
+  // for callers that want it (the lane app, tests); the shared explorer's scene drops `built`.
+  layout = undefined as never;
+  protection = undefined as never;
+  return built;
 }
 
 /** Merge static trim; instanced train finishes, gate leaves and fixtures stay independent. */
-function mergeRootFinishes(root: THREE.Group, materials: THREE.Material[], track: <T extends { dispose(): void }>(x: T) => T, includeLevelTrim = false) {
+function mergeRootFinishes(root: THREE.Group, materials: [THREE.Material, string][], track: <T extends { dispose(): void }>(x: T) => T, includeLevelTrim = false) {
   root.updateMatrixWorld(true);
-  for (const material of materials) {
+  for (const [material, name] of materials) {
     const meshes: THREE.Mesh[] = [];
     root.traverse((o) => {
       if (o instanceof THREE.Mesh && !(o instanceof THREE.InstancedMesh) && o.material === material &&
@@ -1113,8 +1143,8 @@ function mergeRootFinishes(root: THREE.Group, materials: THREE.Material[], track
     const geos = meshes.map((m) => m.geometry.clone().applyMatrix4(m.matrixWorld));
     const mesh = new THREE.Mesh(track(merged(geos)!), material);
     const portal = meshes.find((m) => m.name === "elevator-portal:finish");
-    mesh.name = portal ? portal.name : "static-metal-finishes";
-    if (portal) mesh.userData = portal.userData;
+    mesh.name = name;
+    if (portal) mesh.userData = portal.userData; // the lift portals' metadata rides on the batch that holds them
     for (const m of meshes) m.removeFromParent();
     root.add(mesh);
   }
@@ -1424,7 +1454,7 @@ function raySeg(o: XY, d: XY, a: XY, b: XY): number | null {
 }
 
 // ---------------------------------------------------------------- signs
-function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, track: <T extends { dispose(): void }>(x: T) => T): THREE.Object3D[] {
+function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, track: <T extends { dispose(): void }>(x: T) => T, quality: BuildOptions["quality"]): THREE.Object3D[] {
   const router = createRouter(bundle);
   const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
   const adj = new Map<string, string[]>();
@@ -1524,6 +1554,10 @@ function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, tr
   const faceBuckets = new Map<string, THREE.BufferGeometry[]>();
   const cols = 3, cellW = 1040, margin = 8, pageCapacity = 30;
   const pageW = cols * cellW;
+  // Phones (quality "low") get atlas pixels halved on both axes: every shelf, cell and gutter coordinate is
+  // scaled by the same factor, and the UV rects are derived in full-resolution space, so the layout is
+  // identical and only the sampling is blurrier. High quality keeps the full 3120 px pages (#276).
+  const atlasScale = quality === "high" ? 1 : 0.5;
   const byLevel = new Map<string, FaceDraft[]>();
   byLevel.set("station", faceDrafts);
   for (const [floorId, faces] of byLevel) {
@@ -1537,9 +1571,11 @@ function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, tr
       const rowStarts = rowHeights.map((_, row) => rowHeights.slice(0, row).reduce((sum, h) => sum + h, 0));
       const pageH = rowHeights.reduce((sum, h) => sum + h, 0);
       const canvas = document.createElement("canvas");
-      canvas.width = pageW;
-      canvas.height = pageH;
+      canvas.width = Math.round(pageW * atlasScale);
+      canvas.height = Math.round(pageH * atlasScale);
       const ctx = canvas.getContext("2d")!;
+      // Draw in full-resolution coordinates; the canvas and the rects stay proportional at either scale.
+      if (atlasScale !== 1) ctx.scale(atlasScale, atlasScale);
       const rects: { u0: number; v0: number; u1: number; v1: number }[] = [];
       const pageIndex = pages.length;
       for (const [slot, face] of pageFaces.entries()) {

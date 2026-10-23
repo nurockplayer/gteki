@@ -1,0 +1,94 @@
+{
+  "run_id": "overlay-ikebukuro-r700-ikebukuro-station-enu-v0-border-299c905009e47f50f48b",
+  "command": "context-overlay",
+  "policy_version": "context-overlay-v1",
+  "station_id": "ikebukuro",
+  "gteki_role": "context",
+  "navigation_use": "NOT_FOR_ROUTING",
+  "visual_only": true,
+  "verification": "UNVERIFIED",
+  "note": "Geometry, kind and a per-feature source hash only. No source name, code or attribute is copied; the border layer ships the ring lines of the municipality configured for the station (selected by code in the overlay config; the station origin need not fall inside it), and that municipality's name and code are not copied; the geometry is clipped to a 700 m disc around the station frame origin and is not the full source line; feature_hash is the hash of the whole source feature. No feature of this source meets the window: no GeoJSON and no GLB are written for this run, and the layer counts record where each source feature left the selection.",
+  "clip": {
+    "kind": "origin_disc",
+    "radius_m": 700,
+    "center": "station frame origin",
+    "features_clipped": 0,
+    "vertices_before": 0,
+    "vertices_after": 0
+  },
+  "frame": {
+    "mode": "station-enu-frame",
+    "frame_id": "ikebukuro-station-enu-v0",
+    "station_json_path": "stations/ikebukuro/gteki/station.json",
+    "station_json_sha256": "1ed71d890544489dcf83e0086f49cae32291b74b2b333cada2aee405124cef87",
+    "origin_crs": "EPSG:6697"
+  },
+  "window": {
+    "kind": "origin_disc",
+    "radius_m": 700,
+    "center": "station frame origin",
+    "disc_count": 1,
+    "selection_rule": "A feature is selected when any segment of its projected polyline meets a closed disc of the window; selected features are then clipped to the clip disc (when one is configured), after projection; without a clip they are kept whole. The border layer first keeps only the municipality polygon whose code matches the station's ward (the code and property name are not copied); its rings are read as closed lines and no ring role or name is carried."
+  },
+  "z_basis": {
+    "mode": "constant",
+    "z_m": 32.5,
+    "basis": "render z = street floor renderElevationM",
+    "datum_asserted": false,
+    "drape": "none",
+    "baked_offset_m": 0,
+    "evidence_path": "stations/ikebukuro/gteki/station.json",
+    "evidence_sha256": "1ed71d890544489dcf83e0086f49cae32291b74b2b333cada2aee405124cef87",
+    "evidence_field": "floors[ordinal 0].renderElevationM"
+  },
+  "credit": "出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2026.html）を加工して作成／測量法に基づく国土地理院長承認（複製）R 7JHf 351",
+  "source": {
+    "source_id": "ksj-n03-2026",
+    "source_sha256": "94f10b26256566db970dd74b09d614f059c1e8a432f9244ac9c4add76c32ff16",
+    "bytes": 13153227,
+    "license_name": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "publish_gate": "CONDITIONAL"
+  },
+  "layers": [
+    {
+      "kind": "border",
+      "source_id": "ksj-n03-2026",
+      "member": "N03-20260101_13.geojson",
+      "member_sha256": "4a26ebbc6e8fbdbe3042780e4ed4577c0bdb0fa6b50114353b595f06d55e48ca",
+      "axis_order": "lon,lat",
+      "crs": "urn:ogc:def:crs:EPSG::6668",
+      "features_in_source": 6904,
+      "outside_selection": 6903,
+      "outside_prefilter": 0,
+      "outside_window": 1,
+      "selected_before_clip": 0,
+      "dropped_by_clip": 0,
+      "selected": 0,
+      "features_clipped": 0,
+      "vertices_before_clip": 0,
+      "vertices": 0
+    }
+  ],
+  "totals": {
+    "features_in_source": 6904,
+    "outside_selection": 6903,
+    "outside_prefilter": 0,
+    "outside_window": 1,
+    "selected_before_clip": 0,
+    "dropped_by_clip": 0,
+    "selected": 0,
+    "vertices_before_clip": 0,
+    "vertices": 0
+  },
+  "feature_hashes_sha256": {
+    "border": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "feature_hashes": {
+    "border": []
+  },
+  "bbox_local_ENU": null,
+  "outputs": {},
+  "tool_input_sha256": "d355cfb305eea2cf5ad0ae6f07c1b2990de94d8b22c036573f1ed2f61ca7ea19",
+  "tool_version": "0.1.0"
+}

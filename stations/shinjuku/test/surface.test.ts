@@ -62,7 +62,7 @@ describe("PLATEAU surface importer", () => {
     expect(simplifyRing([[0, 0], [1, 0.05], [2, 0], [2, 2], [0, 2], [0, 0]])).toEqual([[0, 0], [2, 0], [2, 2], [0, 2], [0, 0]]);
   });
   it("ships only compact render context with attribution and preserved source heights", () => {
-    expect(data.note).toBe("render-only context, not routing"); expect(data.license).toBe("CC-BY-4.0");
+    expect(data.note).toBe("render-only context, not routing"); expect(data.license).toBe("PLATEAU Site Policy 「３．著作権について」に拠る");
     expect(data.attribution).toMatch(/Modified by GTEki/); expect(JSON.stringify(data).length).toBeLessThan(1_500_000);
     expect(data.buildings.length).toBeGreaterThan(100);
     expect(new Set(data.buildings.map((b) => b.id)).size).toBe(data.buildings.length);
