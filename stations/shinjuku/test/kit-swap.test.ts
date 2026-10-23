@@ -221,7 +221,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         role, key: "r1", lo: { x: 0, y: 0, z: -7.8 }, hi: { x: length, y: 0, z: -7.8 + rise }, width, dir: { x: 1, y: 0 }, floorId: "B1",
       });
       const stair = (extra: Record<string, unknown> = {}) => stubAsset("stub_stair_nosing", "dressing", "linear", { tags: ["dressing", "stair"], materials: ["stub_yellow"], textures: {}, params: { step_count: 16, riser_mm: 200, tread_mm: 300, width_mm: 2400, parts: ["nosing"], ...extra } });
-      const esc = (extra: Record<string, unknown> = {}) => stubAsset("stub_esc_comb_newel", "dressing", "linear", { tags: ["dressing", "escalator"], materials: ["stub_steel"], textures: {}, params: { rise_mm: 3200, width_mm: 1150, run_mm: 6000, parts: ["comb", "newel"], ...extra } });
+      const esc = (extra: Record<string, unknown> = {}) => stubAsset("stub_esc_comb_newel", "dressing", "linear", { tags: ["dressing", "escalator"], materials: ["stub_steel"], textures: {}, params: { rise_mm: 3200, width_mm: 1150, run_mm: 6800, parts: ["comb", "newel"], ...extra } });
       const plan = (assets: unknown[], runs: ReturnType<typeof run>[]) => {
         const a = anchors(0, 0);
         a.runs = runs;
@@ -263,12 +263,12 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         const r = plan([esc()], [run("escalator", 1.25, 3.5, 8.4)]);
         expect(r.placed).toEqual([]);
         expect(r.dropped.map((d) => d.reason)).toEqual(["no piece fits this anchor"]);
-        expect(plan([esc({ run_mm: 3000 })], [run("escalator", 1.25, 3.2, 8.4)]).placed).toEqual([]); // comb run 5.4 vs 8.4
+        expect(plan([esc({ run_mm: 3000 })], [run("escalator", 1.25, 3.2, 8.4)]).placed).toEqual([]); // comb run 4.6 vs 8.4
       });
       it("derives the comb-to-comb run from the manifest, or from run_mm / angle_deg with the kit's flat steps", () => {
         expect(combRunM({ comb_run_m: 7.5, rise_mm: 1 })).toBe(7.5);
-        expect(combRunM({ rise_mm: 4000, run_mm: 5000 })).toBeCloseTo(7.4, 9);
-        expect(combRunM({ rise_mm: 4000, run_mm: 5000, flat_steps: 3 })).toBeCloseTo(5 + 2 * 3 * 0.4 + 0.8, 9);
+        expect(combRunM({ rise_mm: 4000, run_mm: 5000 })).toBeCloseTo(6.6, 9);
+        expect(combRunM({ rise_mm: 4000, run_mm: 5000, flat_steps: 3 })).toBeCloseTo(5 + 2 * 3 * 0.4, 9);
         expect(combRunM({ rise_mm: 4000, angle_deg: 30 })).toBeCloseTo(4 / Math.tan(Math.PI / 6) + 2.4, 9);
         expect(combRunM({ rise_mm: 4000 })).toBeNull();
       });
