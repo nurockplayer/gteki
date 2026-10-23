@@ -129,9 +129,11 @@ function runPanel(w: WallSeg, r: Run): WallSeg {
 }
 
 /** #316: headroom over the steps; only surfaces above this band can close the void above a walker. */
-const HEAD_BAND = 2.4;
+export const HEAD_BAND = 2.4;
 /** #49: the shell roof sits this far above the run's steps. */
-const SHELL_RISE = 3.4;
+export const SHELL_RISE = 3.4;
+/** The street slab underside; the shell stays strictly below it (see streetLimit). */
+export const STREET_UNDERSIDE = -0.18;
 
 /** A level ceiling or a pitched soffit, as `soffitHeight` reads both. */
 type Finish = Parameters<typeof soffitHeight>[0];
@@ -195,8 +197,7 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
   };
   // Mirror finishUnderground's streetUnderside without changing its bake fingerprint.
   // Leave 1 mm below it so Float32 vertices remain strictly underground.
-  const streetUnderside = -0.18;
-  const streetLimit = streetUnderside - 0.001;
+  const streetLimit = STREET_UNDERSIDE - 0.001;
   const existingRoofs = [...layout.levels.flatMap((lv) => lv.ceilings), ...layout.soffits];
   const walls: { wall: WallSeg; covered: XY[][][] }[] = [], roofs: THREE.BufferGeometry[] = [];
   for (const r of layout.runs.filter((r) => r.mode === "escalator")) {
@@ -214,7 +215,7 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     // so it wins even where it sits just above the shell top (the street clip
     // keeps the shell below it); otherwise its lower shell roof is the first
     // drawn roof and the exit camera meets it before the cap.
-    const atStreetFinish = (s: Finish) => !s.slope && Math.abs(s.z - streetUnderside) < 1e-6;
+    const atStreetFinish = (s: Finish) => !s.slope && Math.abs(s.z - STREET_UNDERSIDE) < 1e-6;
     const covers = (existing: Finish): polygonClipping.MultiPolygon => {
       let footprint: polygonClipping.MultiPolygon = [polygon(existing.rings)];
       if (!atStreetFinish(existing)) footprint = heightMask(footprint, (p) => soffitHeight(roof, p) - soffitHeight(existing, p));
@@ -265,8 +266,9 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     if (!pieces.length) continue;
     // The cutter leaves ~1e-5 m numeric noise on these near-coincident edges, which makes
     // polygon-clipping emit self-overlapping rings that earcut later drops whole panels
-    // from (#316). Snap to 0.1 mm first and render the bands as they are: unioning them
-    // for rendering (the #298 approach) saved no vertices once the rings were valid.
+    // from (#316). Snapping to 0.1 mm first is what repairs the fill; heightMask's
+    // intersection already dissolves overlapping and edge-adjacent bands, so the extra
+    // render-time union (#298) is redundant and must not be reintroduced as a fix.
     const panels = heightMask(pieces.map((poly) => poly.map((ring) =>
       ring.map(([x, y]) => [Math.round(x! * 1e4) / 1e4, Math.round(y! * 1e4) / 1e4]) as polygonClipping.Ring)), (p) => streetLimit - p.y);
     for (const poly of panels) {

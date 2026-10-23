@@ -3,7 +3,7 @@ import * as THREE from "three";
 import type { StationScene } from "@gteki/scene-api";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import { buildScene } from "../gteki/scene.ts";
-import { escalatorShellGeometry } from "../scene/build.ts";
+import { escalatorShellGeometry, HEAD_BAND, SHELL_RISE, STREET_UNDERSIDE } from "../scene/build.ts";
 import { buildLayout, pointInRings, soffitHeight, type Plan, type SlabPoly, type XY, type XYZ } from "../scene/layout.ts";
 import plan from "../data/plan.json" with { type: "json" };
 import baseline from "./fixtures/scene-digest.json" with { type: "json" };
@@ -42,15 +42,17 @@ describe("#49 render-only escalator enclosure", () => {
     expect(soffits).toBeInstanceOf(THREE.Mesh);
     // Measured on 2026-10-24 after #316, identical in both quality tiers. #298 recorded 193
     // because surfaces below the runs suppressed almost the whole shell (#316 fixes that).
-    // The sides keep every conservative cutter band (4604 triangles); unioning them first
-    // shrank the mesh to 1298 but dropped panels, which the strict check below caught.
+    // The sides keep every conservative cutter band (4604 triangles). Before the 0.1 mm
+    // snap, polygon-clipping emitted self-overlapping rings and earcut dropped whole panels,
+    // which the strict check below caught.
     expect([sides, soffits].map((m) => m.geometry.index!.count / 3)).toEqual([4604, 451]);
     const misses: string[] = [];
     const roofs: (SlabPoly & { origin?: XY; slope?: XY })[] = [...layout.levels.flatMap((lv) => lv.ceilings), ...layout.soffits];
-    // Mirrors the shell's handoff rule (#316): a finish covers only from above the 2.4 m head
-    // band, at or below the shell top — or levelling off at the street slab underside (-0.18).
+    // Mirrors the shell's handoff rule (#316): a finish covers only from above the head band,
+    // at or below the shell top — or levelling off at the street slab underside.
     const covered = (p: XYZ, top: number) => roofs.some((s) => pointInRings(p, s.rings) &&
-      soffitHeight(s, p) >= p.z + 2.4 && (soffitHeight(s, p) <= top + 1e-6 || (!s.slope && Math.abs(s.z + 0.18) < 1e-6)));
+      soffitHeight(s, p) >= p.z + HEAD_BAND &&
+      (soffitHeight(s, p) <= top + 1e-6 || (!s.slope && Math.abs(s.z - STREET_UNDERSIDE) < 1e-6)));
     // The same walking head bands that cut the shell: `voids` in escalatorShellGeometry.
     const runVoid = (r: (typeof runs)[number]): SlabPoly & { origin: XY; slope: XY } => {
       const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y, l2 = dx * dx + dy * dy, length = Math.sqrt(l2);
@@ -63,15 +65,17 @@ describe("#49 render-only escalator enclosure", () => {
     const walkSurfaces = [...layout.levels.flatMap((lv) => lv.slabs), ...layout.pads, ...layout.linkStrips, ...layout.streetPads,
       ...layout.runs.map(runVoid)];
     const inHeadBand = (p: XYZ) => walkSurfaces.some((s) => pointInRings(p, s.rings) &&
-      soffitHeight(s, p) - 0.2 <= p.z && p.z <= soffitHeight(s, p) + 2.4);
+      soffitHeight(s, p) - 0.2 <= p.z && p.z <= soffitHeight(s, p) + HEAD_BAND);
     const ray = new THREE.Raycaster();
     for (const r of runs) {
       const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y, length = Math.hypot(dx, dy);
       for (const t of [0.1, 0.3, 0.5, 0.7, 0.9]) {
         const p = { x: r.a.x + dx * t, y: r.a.y + dy * t, z: r.a.z + (r.b.z - r.a.z) * t };
-        ray.set(v3({ ...p, z: p.z + 2.45 }), new THREE.Vector3(0, 1, 0));
+        ray.set(v3({ ...p, z: p.z + HEAD_BAND + 0.05 }), new THREE.Vector3(0, 1, 0));
         ray.far = 4;
-        if (p.z + 3.4 < -0.181 && !covered(p, p.z + 3.4) && !ray.intersectObject(probes.soffits, false).length) misses.push(`${r.edgeId}@${t}:roof`);
+        if (p.z + SHELL_RISE < STREET_UNDERSIDE - 0.001 && !covered(p, p.z + SHELL_RISE) && !ray.intersectObject(probes.soffits, false).length) {
+          misses.push(`${r.edgeId}@${t}:roof`);
+        }
         // Where a neighbouring walkway opens the body band, the upper side finish remains.
         for (const side of [-1, 1]) {
           ray.set(v3({ ...p, z: p.z + 2.8 }), new THREE.Vector3(-dy / length * side, 0, -dx / length * side));
@@ -80,9 +84,11 @@ describe("#49 render-only escalator enclosure", () => {
             // Crossing passages remain open, and existing ceilings take precedence over
             // the shell. Otherwise the side finish must be drawn at every sample — not
             // only mid-run as before #316. A street-bound flight hands off above the slab.
-            const streetHandoff = Math.max(r.a.z, r.b.z) >= -0.5 && p.z + 2.8 >= -0.18;
+            const streetHandoff = Math.max(r.a.z, r.b.z) >= -0.5 && p.z + 2.8 >= STREET_UNDERSIDE;
             const atSide = { ...p, x: p.x - dy / length * side * (r.width / 2 + 0.45), y: p.y + dx / length * side * (r.width / 2 + 0.45) };
-            if (!streetHandoff && !covered(atSide, p.z + 3.4) && !inHeadBand({ ...atSide, z: p.z + 2.8 })) misses.push(`${r.edgeId}@${t}:side${side}`);
+            if (!streetHandoff && !covered(atSide, p.z + SHELL_RISE) && !inHeadBand({ ...atSide, z: p.z + 2.8 })) {
+              misses.push(`${r.edgeId}@${t}:side${side}`);
+            }
           }
         }
       }
@@ -93,7 +99,7 @@ describe("#49 render-only escalator enclosure", () => {
   it("keeps every shell vertex strictly below the street slab underside", () => {
     for (const mesh of [sides, soffits]) {
       const positions = mesh.geometry.attributes.position!;
-      for (let i = 0; i < positions.count; i++) expect(positions.getY(i), `${mesh.name}:${i}`).toBeLessThan(-0.18);
+      for (let i = 0; i < positions.count; i++) expect(positions.getY(i), `${mesh.name}:${i}`).toBeLessThan(STREET_UNDERSIDE);
     }
   });
 
@@ -133,7 +139,7 @@ describe("#49 render-only escalator enclosure", () => {
     const lower = { ...layout.soffits[0]!, rings: [strip(0.2, 0.6, half + 1), strip(0.35, 0.45, half + 0.5)],
       z: r.a.z + 2.9, origin: r.a, slope: { x: dx * (r.b.z - r.a.z) / length ** 2, y: dy * (r.b.z - r.a.z) / length ** 2 } };
     // This roof crosses the shell height at t=.8; only its lower half wins.
-    const crossing = { ...lower, rings: [strip(0.7, 0.9, half + 1)], z: r.a.z + 3.4 - 0.8,
+    const crossing = { ...lower, rings: [strip(0.7, 0.9, half + 1)], z: r.a.z + SHELL_RISE - 0.8,
       slope: { x: lower.slope.x + dx / length ** 2, y: lower.slope.y + dy / length ** 2 } };
     const shell = escalatorShellGeometry({ ...layout, levels: [], pads: [], linkStrips: [], streetPads: [], runs: [r], soffits: [lower, crossing] }, { ...bundle, edges: [] });
     const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
