@@ -70,6 +70,12 @@ ESC_LANDING_MM = 800          # the generator default; the anchors say nothing d
 ESC_PARTS = ["balustrade", "handrail", "newel", "comb"]
 WALL_NEAR_M = 0.3
 WALL_SIDE_SHARE = 0.5         # a side counts as walled when this share of its nosings has a wall within WALL_NEAR_M
+# Baked-AO texture size per entry (px), pinned as Shinjuku does: unpinned, the kit stepped 29 full-tier pieces up to
+# 1024 px (~286 MiB of AO on the GPU). One pin applies to both tiers, and a piece whose chart does not fit fails its
+# build (LightmapOverflow). Lane E's trial build of 128/256 on main 7a2880f: every nosing fit at 128, but 47 of 57
+# rails (wall and post) and all 5 escalators overflowed on the full tier; all fit one step up. Rails take 256 as a
+# kind, not per id, so a regenerated catalog never depends on which flight happened to fit. ~28 MiB per tier.
+AO_RES = {"nosing": 128, "rails": 256, "escalator": 512}
 RAIL_SEGMENTS = 6             # rail_segments param of the rails entries (generator range 6-16, default 10)
 ROUTE_NEAR_M = 1.0            # a golden route polyline within this of the flight's centre line uses the flight
 ROUTE_FALLBACK_M = 4.0        # a route with a stairs edge but no flight within ROUTE_NEAR_M: flights this close to that edge
@@ -396,7 +402,7 @@ def main(argv=None):
         flights = sorted(f["id"] for f, *_ in stair_groups[key])
         nosing_id = f"{base}_nosing"
         entries[nosing_id] = {
-            "id": nosing_id, "generator": "stair_dressing", "anchor": "linear_run",
+            "id": nosing_id, "generator": "stair_dressing", "ao_res": AO_RES["nosing"], "anchor": "linear_run",
             "params": {"step_count": n, "riser_mm": r, "tread_mm": t, "width_mm": w, "parts": ["nosing"]},
             "dimension_basis": "station-verified",
             "notes": (f"Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: {cite}. "
@@ -410,7 +416,7 @@ def main(argv=None):
             rails_key_flights.setdefault(rails_id, []).append(flight["id"])
             if rails_id not in entries:
                 entries[rails_id] = {
-                    "id": rails_id, "generator": "stair_dressing", "anchor": "linear_run",
+                    "id": rails_id, "generator": "stair_dressing", "ao_res": AO_RES["rails"], "anchor": "linear_run",
                     "params": {"step_count": n, "riser_mm": r, "tread_mm": t, "width_mm": w, "parts": ["handrail"],
                                "handrail_sides": "both", "rail_mount": mount,
                                "rail_segments": RAIL_SEGMENTS},
@@ -449,7 +455,7 @@ def main(argv=None):
         eid = f"{ID_PREFIX}escalator_w{width}_rise{rise}_a{int(round(angle * 100))}"
         lanes = sorted(l["id"] for l, *_ in esc_groups[key])
         entries[eid] = {
-            "id": eid, "generator": "escalator_dressing", "anchor": "linear_run",
+            "id": eid, "generator": "escalator_dressing", "ao_res": AO_RES["escalator"], "anchor": "linear_run",
             "params": {"rise_mm": rise, "width_mm": width, "angle_deg": angle, "landing_mm": ESC_LANDING_MM,
                        "treads": True, "parts": list(ESC_PARTS)},
             "dimension_basis": "station-verified",
