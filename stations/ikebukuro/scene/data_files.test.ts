@@ -13,7 +13,7 @@ const PLATEAU = "plateau-ubld-13116";
 
 interface Evidence { sourceIds: string[] }
 interface Edge { from: string; to: string; verification: string; geometryEvidence?: Evidence; accessEvidence?: Evidence }
-interface DataFile { id: string; path: string; sourceIds: string[]; modified: boolean; derivation?: string }
+interface DataFile { id: string; path: string; sourceIds: string[]; modified: boolean; authored?: boolean; derivation?: string }
 
 const src = read("data/graph.src.json");
 const station = read("gteki/station.json");
@@ -49,11 +49,14 @@ function shownPois(): string[] {
   return [...ids].flatMap((id) => pois.get(id)!.evidence.sourceIds);
 }
 
-const EXPECTED: Record<string, { script: string; sources: () => string[] }> = {
+/** Derived files name their generating script and cite the sources it reads; an authored file (GTEki's own config,
+ *  #256) cites none and its derivation says it is GTEki-authored. */
+const EXPECTED: Record<string, { script: string; sources: () => string[]; authored?: boolean }> = {
   "scene/walk_bridges.json": { script: "pipeline/build_walkfix.py", sources: () => [PLATEAU] },
   "scene/access_fences.json": { script: "pipeline/build_access.py", sources: () => [PLATEAU, ...routableAreas()] },
   "scene/crowd_lanes.json": { script: "pipeline/build_station.py", sources: () => [PLATEAU, ...routableAreas(), ...verifiedEdges()] },
   "scene/signage.json": { script: "pipeline/build_signage.py", sources: () => [PLATEAU, ...verifiedEdges(), ...shownPois()] },
+  "scene/finishes.json": { script: "GTEki-authored", sources: () => [], authored: true },
 };
 
 const declared: DataFile[] = src.dataFiles;
@@ -63,11 +66,12 @@ describe("ikebukuro dataFiles", () => {
     expect(station.dataFiles).toEqual(declared);
   });
 
-  it.each(Object.entries(EXPECTED))("%s cites exactly the sources its generator reads", (path, { script, sources }) => {
+  it.each(Object.entries(EXPECTED))("%s cites exactly the sources its generator reads", (path, { script, sources, authored }) => {
     const d = declared.find((f) => f.path === path);
     expect(d, `${path} is not declared`).toBeDefined();
     expect(d!.sourceIds).toEqual([...new Set(sources())].sort());
     expect(d!.modified).toBe(true);
+    expect(d!.authored ?? false).toBe(authored ?? false);
     expect(d!.derivation?.startsWith(`${script}`)).toBe(true);
   });
 

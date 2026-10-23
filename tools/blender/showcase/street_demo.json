@@ -1,0 +1,24 @@
+{
+  "title": "SYNTHETIC KIT DEMO — D4 street-exit canopies and street furniture, not a station layout",
+  "mode": "studio",
+  "exposure": -0.2,
+  "hint_lights": false,
+  "items": [
+    {"glb": "assets/library/glb/gteki_street_canopy_w3000_d3000_posts.glb", "pos": [-3.5, 9.0, 0], "yaw": 180},
+    {"glb": "assets/library/glb/gteki_street_canopy_w4500_d3000_cantilever_curved.glb", "pos": [2.5, 9.0, 0], "yaw": 180},
+    {"glb": "assets/library/glb/gteki_street_bollard_fixed_d114_h900.glb", "pos": [-4.2, 3.5, 0]},
+    {"glb": "assets/library/glb/gteki_street_bollard_fixed_d114_h900.glb", "pos": [-3.4, 3.5, 0]},
+    {"glb": "assets/library/glb/gteki_street_bollard_fixed_d114_h900.glb", "pos": [-2.6, 3.5, 0]},
+    {"glb": "assets/library/glb/gteki_street_bollard_removable_d114_h900.glb", "pos": [-1.8, 3.5, 0]},
+    {"glb": "assets/library/glb/gteki_street_planter_box_1200x600_h600.glb", "pos": [0.3, 3.2, 0]},
+    {"glb": "assets/library/glb/gteki_street_planter_round_d800_h500.glb", "pos": [1.7, 3.2, 0]},
+    {"glb": "assets/library/glb/gteki_street_lamp_h5000_arm900.glb", "pos": [-6.5, 6.0, 0]},
+    {"glb": "assets/library/glb/gteki_street_guard_rail_3000.glb", "pos": [6.5, 3.0, 0]},
+    {"glb": "assets/library/glb/gteki_street_guard_rail_l_3000x2000_stainless.glb", "pos": [8.5, 3.0, 0]}
+  ],
+  "cameras": {
+    "hero": {"pos": [1.5, -5.5, 1.7], "look_at": [1.5, 6.0, 1.9], "lens": 22},
+    "canopy": {"pos": [-3.5, -1.5, 1.6], "look_at": [-3.5, 6.0, 2.6], "lens": 24},
+    "furniture": {"pos": [5.0, -3.0, 1.5], "look_at": [7.0, 5.0, 0.8], "lens": 24}
+  }
+}

@@ -298,6 +298,107 @@ walked by the same step rules as on the web, nothing more. Camera and walker fee
 Runtime APIs: [GLTFDocument](https://docs.godotengine.org/en/latest/classes/class_gltfdocument.html)
 and [Godot glTF scene export](https://docs.godotengine.org/en/latest/tutorials/assets_pipeline/exporting_3d_scenes.html).
 
+## Capture and performance (G-4 prep / G-5b of #164)
+
+Windowed only. `project.godot` stays `gl_compatibility`; Forward+ comes from the command line.
+
+```
+godot --path packages/godot --rendering-method forward_plus res://hq/hq.tscn -- --station=<id> --capture=<outDir> \
+  [--look=baseline|hq] [--gi=off|sdfgi] [--perf=<seconds>] [--poses=<file>]
+```
+
+Per pose it places the walker, settles the follow camera for 45 physics frames, waits 3 rendered frames, saves a 1600x900
+PNG and writes its camera transform, FOV and `RenderingServer` counts into `<outDir>/report.json` (`gteki.capture/0.1`),
+together with the run's station, look, GI, renderer, driver, adapter, window size, machine, and any pose it could not
+take (`pose_problems`). `renderer` is the method the run actually rendered with
+(`RenderingServer.get_current_rendering_method()`), because `project.godot` says `gl_compatibility` while the runbook
+asks for Forward+ on the command line; the project setting is recorded apart as `project_renderer` and never labelled
+as the measured renderer. Default poses: each spawn point x 4 yaws; Ikebukuro adds the `g_jr_c2` -> `x35` route every 15 m
+(needs `.cache/routes/ikebukuro.route.json`, written by `run-walk.sh` or by the router command in the runbook below; a
+missing route file is recorded in `pose_problems` and makes the run exit non-zero, with the other poses still captured,
+rather than quietly shortening the list) and the #227 stall area; Shinjuku adds 3 poses at inverted-band walls. Then the **G-5 evidence poses**: for every route the
+evidence walk covers (`addons/gteki/gteki_evidence.gd`; `run-capture.sh` fails if that list and the walk's own plan
+ever disagree) its start,
+its mid-stair point and its goal — the route comes from the real router through the bridge, the mid-stair point is the
+middle of the route's own `stairs` step that has walkable ground, and a route the router refuses, or a route with no
+stairs step, is stated in `pose_problems` instead of being filled in — plus each lift's landing, where the walker's own
+ride rules put the feet (Shinjuku S4's is the one shaft in the goldens). `--poses` takes a JSON array of
+`{name, position:[x,y,z], yaw_deg, pitch?, distance?}` (Godot frame). Hard 10-minute bound, which also counts the perf
+window about to start.
+
+`--perf=<seconds>` measures every settled pose: 60 rendered warm-up frames first (shader compilation, first-use uploads),
+then rendered frames until the window has passed. No warm-up frame is in any series. Per measured frame it records the
+real interval between rendered frames (vsync, presenter and compositor included) and
+`RenderingServer.get_frame_setup_time_cpu()` (the CPU time the renderer spent setting up that frame), reporting
+p50/p95/max of each (nearest rank), the frame's draw calls, primitives and video memory, and the run's window size,
+renderer, driver and
+`RenderingServer.get_video_adapter_name()`. `Performance.TIME_PROCESS` is not sampled as a series: the engine refreshes
+it about once a second with the largest process time seen in that second, so it is recorded once per pose as
+`process_interval_max_ms` and the report keeps it out of every percentile. `--perf` needs `--capture=<dir>`, because the
+figures go into that report.
+**On a headless display `--capture` says "capture needs a display" and exits 0 after loading the station, and `--perf`
+says "perf needs a display" and exits 0 before anything is loaded; neither writes a report or a perf figure.** An
+argument that makes no sense (`--perf=0`, `--perf=soon`, `--perf` without `--capture`) exits 2.
+
+`tests/run_capture_tests.gd` (run by `run-capture.sh`) checks the argument rules, the percentiles, that a missing route
+file fails the run instead of shortening it, that the capture's
+route list is exactly the evidence walk's routable routes, that every route has its start and goal (and its mid-stair
+point where it has a `stairs` step, standing on a stairs step inside that step's own span), that S4's lift landing is
+captured within the ride's reach on the exit's level, that every pose stands on ground the real walker accepts, and the
+report generator on fixture reports — which must name the machine, print the measured values, say "No frames were
+sampled" for a run captured without `--perf`, and write nothing for a file that is not a capture report. It asks the
+real router for the routes, so it needs `pnpm install`; nothing in it renders.
+
+```sh
+lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-capture.sh
+```
+
+## GPU slot runbook (G-5b)
+
+The captures are the one part that needs a display and a GPU, so they run in the lead's GPU slot, on the machine whose
+figures go into `docs/evidence/g5-performance.md`. In order, from the workspace root:
+
+```sh
+# 0. the snapshots the client loads, and the route file the Ikebukuro G-4 poses sample (skip if already fresh)
+pnpm tsx packages/godot/src/export-scene.ts ikebukuro packages/godot/.cache/scenes/ikebukuro
+pnpm tsx packages/godot/src/export-scene.ts shinjuku packages/godot/.cache/scenes/shinjuku
+mkdir -p packages/godot/.cache/routes
+pnpm tsx packages/cli/src/route.ts stations/ikebukuro g_jr_c2 x35 > packages/godot/.cache/routes/ikebukuro.route.json
+
+# 1. Ikebukuro, baseline look (53 poses, ~6 min)
+godot --path packages/godot --rendering-method forward_plus res://hq/hq.tscn -- \
+  --station=ikebukuro --look=baseline --capture=.cache/g5/ikebukuro-baseline --perf=5
+
+# 2. Ikebukuro, hq look (~6 min)
+godot --path packages/godot --rendering-method forward_plus res://hq/hq.tscn -- \
+  --station=ikebukuro --look=hq --capture=.cache/g5/ikebukuro-hq --perf=5
+
+# 3. Shinjuku, baseline look (27 poses, ~3 min)
+godot --path packages/godot --rendering-method forward_plus res://hq/hq.tscn -- \
+  --station=shinjuku --look=baseline --capture=.cache/g5/shinjuku-baseline --perf=5
+
+# 4. Shinjuku, hq look (~3 min)
+godot --path packages/godot --rendering-method forward_plus res://hq/hq.tscn -- \
+  --station=shinjuku --look=hq --capture=.cache/g5/shinjuku-hq --perf=5
+
+# 5. Shinjuku, hq look with SDFGI (~3 min; gl_compatibility warns that it ignores SDFGI, which is itself the finding)
+godot --path packages/godot --rendering-method forward_plus res://hq/hq.tscn -- \
+  --station=shinjuku --look=hq --gi=sdfgi --capture=.cache/g5/shinjuku-hq-sdfgi --perf=5
+
+# 6. the table, from every report.json the runs wrote
+godot --headless --path packages/godot --script res://tests/perf_report.gd -- \
+  packages/godot/docs/evidence/g5-performance.md packages/godot/.cache/g5/*/report.json
+```
+
+Each capture command has its own 10-minute bound (`hq_capture.gd` `TIMEOUT_MS`) and stops before starting a pose the
+bound could not hold. At `--perf=5` and 60 rendered frames a second the five runs take about 22 minutes; at half that
+frame rate each pose spends twice as long in its 60-frame warm-up and the whole set takes about 25. A capture that exits
+non-zero still wrote its `report.json`: the reason is in its `pose_problems` (a missing route file, a pose with no
+walkable ground, the timeout), and the table below lists it. The captures write only
+under `packages/godot/.cache/g5/` (gitignored): each run's `report.json` and its PNGs. The generated
+`docs/evidence/g5-performance.md` is the one file to commit; every line of it is a report's own, labelled with the
+machine and the GPU slot it was measured in.
+
 ## Search, route and guided walk (G-3 of #164)
 
 `hq.tscn` now has a HUD (left panel, built for 1600x900): search box, results with name (ja/en toggle), category, floor and a
@@ -317,6 +418,79 @@ on first use). `normalizeJa` is not ported, so matches are not highlighted.
   (`evidenceCheckedDate`, `oldestSourceDate`, `stale`, `unknowns`, ...) are printed as the JSON gives them, with `hours: UNKNOWN`.
 - "Guided walk" moves the avatar along the polyline at 3.4 m/s (web guide tier "run"), no collisions, with the follow camera; any
   movement key returns to free walking at that spot.
+- A route that states a lift can be ridden (#287): guided walking walks up to the shaft and waits there — `Guide.advance`
+  never carries the avatar past a shaft the route has not ridden — and, while standing on that route's `elevator` step
+  (or, for the last 1.0 m of the approach that ends at it, the same step through `Guide.step_at`), the HUD offers
+  `E: ride the lift` (or the gamepad's A). Taking it fades out for 0.3 s, puts the feet down through
+  `gteki_walker.gd`'s own rules (`ride_to`: `accept_ground`, the exit's level, forward along the route inside a ±30°
+  cone and at most 1.0 m, body fits and a clear body-height line — on S4, 0.75 m forward of the exit vertex, which sits
+  over the opening), snaps the follow camera to the landing while the screen is black, fades back in and resumes guided
+  walking from the landing, never from the vertex over the shaft. If nothing qualifies the ride is refused, the HUD
+  says so and the avatar stays at the shaft. The yaw is kept, free walking is never offered a lift, and no other step or
+  key can start one: the ride is read from the route's own steps, never guessed from the geometry. The HUD asks
+  `Guide.ride_near`, the same predicate the evidence walk checks.
 
 Tests: `lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-guide.sh` (golden searches on both stations, Ikebukuro
-`jr-central-gate-2` to `exit-35` ribbon, Shinjuku `poi:platform:oedo` to `poi:exit:1` symbolic, negative route, guided walk, HUD state).
+`jr-central-gate-2` to `exit-35` ribbon, Shinjuku `poi:platform:oedo` to `poi:exit:1` symbolic, the S4 lift ride and its
+negatives, the landing rules against a synthetic floor — behind the shaft, off the exit's level, across a wall, into a
+wall, nothing at all — negative route, guided walk, HUD state, the HUD ride flow and a refused ride). The evidence run
+additionally drives the client's HUD with the real walker on the real S4 snapshot: wait at the shaft, E, the camera on
+the landing while black, then guided ticks that must keep the feet on accepted ground.
+
+## Evidence walks (G-5a of #164)
+
+```sh
+lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-evidence.sh              # Ikebukuro -> docs/evidence/g5-ikebukuro.md
+lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-evidence.sh shinjuku     # Shinjuku  -> docs/evidence/g5-shinjuku.md
+```
+
+`tests/run_evidence_tests.gd` holds one plan per station (`PLANS`): the golden it replays, the table it writes and the
+golden scenarios it covers. Ikebukuro walks four guided routes (W1 Central Gate 2 to Exit 35, W3 Central Gate 1 to Exit
+22, W4 South Gate to Exit 18, I7 Exit 26 to Exit 10) plus a flat control (W2, West Exit B1 to Exit 4); Shinjuku replays
+all nine scenarios of its golden. For each scenario it asks the real bridge for the route and compares distance, time,
+node count, floor changes and the ordered step list with the web's golden
+(`tests/e2e/specs/__goldens__/02-navigation.spec.ts/<station>-routes.json`) exactly. A scenario the golden refuses must
+be refused by the router, with the golden's own reason (and the scenario's `profile` toggles passed as `--step-free`,
+`--unpaid-only`, `--strict-hours`); a refused route has no polyline and is not walked. A scenario the golden routes is
+walked along the polyline with `gteki_walker.gd`, recording walked length against the route's, stops, body-block
+episodes, the floor bands the walker's own height trace crosses, the rides it took, the arrival distance and the time
+at 1.45 m/s. The table carries the commit and Godot versions; it is committed with the change it describes.
+
+Two comparisons follow the router's own definitions rather than one fixed notion:
+- **Length**: the router measures an edge in 3D when its heights are known and in plan when they are symbolic
+  (`geometryLength(geometry, symbolicZ)` in `packages/navigation/src/router.ts`), so the walk compares its flat figure
+  for a symbolic route (all of Shinjuku's are) and its 3D figure otherwise (Ikebukuro's). The table shows both and its
+  **Length basis** column names the figure that was compared, route by route.
+- **Floors**: `floorChanges` counts graph floor transitions, while the walker's height trace counts rendered floor bands.
+  A stair edge can span floors the route has no node on, so the walker crosses rendered bands the stair passes through
+  that the route never visits. The walk must start on the route's first floor, reach every floor the route names in
+  order and end on its goal floor, and every band crossed in between must lie strictly between the two route floors
+  being travelled between and move toward the second — a band outside that range, a reversal or an ending elsewhere
+  fails. The table shows the walker's crossings beside the route's count.
+- **Rides**: a route that states a lift is walked, and the ride is read from the route itself (#287). Inside an
+  `elevator` step, a consecutive polyline pair that moves under 0.5 m horizontally while changing height by more than
+  1.0 m is the shaft (`RIDE_MAX_FLAT` / `RIDE_MIN_DROP` in `gteki_guide.gd`); the same vertical span under `walk` or
+  `stairs` is never a ride. The walk states that explicitly before it starts: a vertical jump no step calls a lift is
+  neither walkable nor rideable, so a route with one fails as a route the walk cannot take rather than as the stall it
+  would cause. Shinjuku S4's one shaft is 0.473 m wide with a 7.8 m drop — inside the gate with a visible margin. The
+  walk takes it through the same `Guide.take_ride()` the HQ client's E prompt uses, and only once the walker has
+  actually stalled at the shaft's edge (the ground ends at the opening), so the approach gap is the measured unwalkable
+  ground, not the 1.0 m offer distance. A shaft's exit vertex is over the opening (the car's floor is the hole), so the
+  feet are set down on the first ground forward along the route's own continuation — within 1.0 m of the vertex, inside
+  a ±30° cone of the direction to the next point, straight ahead first, on the exit's level, with the body fitting and
+  a clear body-height line (on S4 that is 0.75 m out); nothing qualifying refuses the ride and fails, so no landing is
+  ever behind the shaft or across a wall. The table's **Rides** column shows the count, each shaft's width and drop and
+  the total height, **Approach** and **Landing** the two measured stretches, and **Excluded** the ridden span plus
+  both, held to the ride span plus 1.0 m approach and 1.0 m landing per ride. All of it is excluded from the walked
+  length, and a route that states a ride the walk did not take fails.
+
+The walk follows the polyline itself: it turns toward the next vertex only once it is within 0.05 m of the current one,
+so by construction it never cuts a corner the line does not cut. A larger reach cut a corner at a sharp vertex and the
+chord put the body into a wall corner; that was the walk, not the station (#284), and with the vertex reach the
+Ikebukuro routes walk with no stop and no body block. Any block, anywhere, fails the test and is reported with the
+collider that refused the step, the walker's feet where it stood and the clearance to the surface's plane. A stall with
+no refused step reports where the ground ends instead, because a step can also be refused for having no ground to land
+on (a lift opening).
+
+The table is written only by a run in which every check passed; a failing run prints the table it would have written
+instead and leaves the committed one untouched.
