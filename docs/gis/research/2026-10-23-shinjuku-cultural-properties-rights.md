@@ -60,3 +60,15 @@ So the current standard dataset is published through the Tokyo catalogue under C
 ## Verdict
 
 Every licence item clears under the dataset's CC BY 4.0 grant, with attribution and a change notice. The source is ready for a bounded conversion PR (coordinates and class only, context role) once the director accepts open items 1 and 5. Items 2 to 4 are recorded in the receipt and need no decision.
+
+## Director rulings (2026-10-23, gteki-4a, rights and data authority delegated by the Owner)
+
+1. **Shipped fields:** coordinates, `名称` and `文化財分類`. The dataset-level CC BY 4.0 grant covers `名称`, and a cultural property's name is a factual identifier. `説明` stays out and is recorded as UNKNOWN (third-party authorship not excluded) in the conversion receipt.
+2. **Credit holder:** 新宿区 only. 東京都 is not named, because the template's 【その他の著作権者】 stands for the actual holder and naming 東京都 would imply rights it does not hold. Credit, with change notice:
+   - ja: 出典：新宿区『文化財一覧（自治体標準データセット）』（CC BY 4.0、東京都オープンデータカタログサイト経由）。GTEki が加工して作成
+   - en: Source: Shinjuku City, "文化財一覧（自治体標準データセット）" (CC BY 4.0, via the Tokyo Open Data Catalog). Modified by GTEki.
+3. **Unchanged conditions:**
+   - Before conversion, re-acquire the Tokyo portal terms and update their hash.
+   - Record the CRS as unknown.
+   - Keep the output `NOT_FOR_ROUTING`.
+   - The conversion goes to a worker after the Sat 11:00 resource window.
