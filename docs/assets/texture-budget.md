@@ -315,7 +315,7 @@ Target: back under the cap after #46 recalibrates it. Not part of this PR.
 
 | PR | change | mobile delta | offset | reason |
 | --- | --- | --- | --- | --- |
-| this PR | Ikebukuro catalog: 5 wide stair nosings AO 128 -> 256 px (both tiers) | about +1.25 MiB AO per tier | none | 128 px gives < 8 px/m on these strips (Lane E #335 trial on 7a1db59: 24-43 px/m at 256, no LightmapOverflow) |
+| #337 | Ikebukuro catalog: 5 wide stair nosings AO 128 -> 256 px (both tiers) | about +1.25 MiB AO per tier | none | 128 px gives < 8 px/m on these strips (Lane E #335 trial on 7a1db59: 24-43 px/m at 256, no LightmapOverflow) |
 
 ### Not changed
 
