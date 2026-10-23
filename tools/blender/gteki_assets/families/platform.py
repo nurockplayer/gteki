@@ -238,7 +238,7 @@ def platform_screen_door(asset_id, params, tex_res):
     _pane(frame, glass, lo - op, lo + leaf_w - op, 0.04, H, xa, xa + thin, frame_mat=ALU)
     _pane(frame, glass, hi - leaf_w + op, hi + op, 0.04, H, xb, xb + thin, frame_mat=ALU)
     # header box: light body, 30 mm blue band, black cap with an 8 mm overhang
-    head.box((x0, 0, H), (x0 + D, L, H + 0.03), BAND, skip=("-z",))
+    head.box((x0, 0, H), (x0 + D, L, H + 0.03), BAND)  # hangs at H: its underside is seen from the platform
     head.box((x0, 0, H + 0.03), (x0 + D, L, H + hh - 0.02), BODY)
     cap.box((x0 - 0.008, 0, H + hh - 0.02), (x0 + D + 0.008, L, H + hh), CAP)
     a.socket("start", (0, 0, 0), 180.0, width=round(x0 + D, 4), height=round(H + hh, 4))
