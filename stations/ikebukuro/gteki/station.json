@@ -2,6 +2,89 @@
  "schema": "gteki.station/0.1",
  "station": {
   "id": "ikebukuro",
+  "identity": {
+   "names": [
+    {
+     "lang": "ja",
+     "text": "池袋"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "いけぶくろ"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro"
+    }
+   ],
+   "sides": [
+    {
+     "side": "west",
+     "exit": [
+      {
+       "lang": "ja",
+       "text": "西口"
+      },
+      {
+       "lang": "en",
+       "text": "West Exit"
+      }
+     ],
+     "landmark": [
+      {
+       "lang": "ja",
+       "text": "東武"
+      },
+      {
+       "lang": "en",
+       "text": "Tobu"
+      }
+     ],
+     "evidence": {
+      "sourceIds": [
+       "identity-tobu-access",
+       "identity-toshima-fun"
+      ],
+      "method": "public-page-facts-only",
+      "checkedDate": "2026-10-24",
+      "note": "Department-store orientation only; no gate names or route connections. See docs/research/gaps/DR-IK-identity-sides.md."
+     },
+     "verification": "confirmed"
+    },
+    {
+     "side": "east",
+     "exit": [
+      {
+       "lang": "ja",
+       "text": "東口"
+      },
+      {
+       "lang": "en",
+       "text": "East Exit"
+      }
+     ],
+     "landmark": [
+      {
+       "lang": "ja",
+       "text": "西武"
+      },
+      {
+       "lang": "en",
+       "text": "Seibu"
+      }
+     ],
+     "evidence": {
+      "sourceIds": [
+       "identity-toshima-fun"
+      ],
+      "method": "public-page-facts-only",
+      "checkedDate": "2026-10-24",
+      "note": "Department-store orientation only; no gate names or route connections. See docs/research/gaps/DR-IK-identity-sides.md."
+     },
+     "verification": "unverified"
+    }
+   ]
+  },
   "names": [
    {
     "lang": "ja",
@@ -122,6 +205,36 @@
   "generatedAt": "2026-10-21T15:00:00+00:00"
  },
  "sources": [
+  {
+   "id": "identity-tobu-access",
+   "title": "東武百貨店 池袋店 アクセス",
+   "publisher": "東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/access/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/342", "date": "2026-10-24" },
+   "attribution": "東武百貨店 — 東武百貨店 池袋店 アクセス",
+   "modified": false,
+   "retrievedAt": "2026-10-24T00:00:00+09:00",
+   "datasetDate": null,
+   "notes": "OD-18 and #342 ruling 10: store directly connected to the West Exit; independently confirmed by the Toshima tourism association booklet. No Tobu Railway gate names, text, maps or layout copied."
+  },
+  {
+   "id": "identity-toshima-fun",
+   "title": "豊島、もっと楽しく FUN 池袋 (2025年3月), PDF page 2",
+   "publisher": "一般社団法人豊島区観光協会（協力：豊島区）",
+   "url": "https://www.city.toshima.lg.jp/documents/55769/1_toshimafun_ja.pdf",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/342", "date": "2026-10-24" },
+   "attribution": "一般社団法人豊島区観光協会（協力：豊島区） — 豊島、もっと楽しく FUN 池袋 (2025年3月), PDF page 2",
+   "modified": false,
+   "retrievedAt": "2026-10-24T00:00:00+09:00",
+   "datasetDate": "2025-03",
+   "notes": "PDF page 2 prose locates Seibu Ikebukuro on the east and Tobu department store on the west. Facts-only orientation under #342; not geometry or route evidence. East has only this cleared explicit source and is UNVERIFIED; no independent second confirmation claimed. All artwork, prose and layout remain reference-only."
+  },
   {
    "id": "ksj-n02-2025",
    "title": "KSJ N02-2025 railway data (stations and railway sections)",

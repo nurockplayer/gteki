@@ -97,9 +97,24 @@ export interface Operator {
   names: LocalizedText[];
 }
 
+export interface StationIdentity {
+  /** Short place name without 駅 or a line qualifier. Requires ja and en; ja-Hrkt recommended. */
+  names: LocalizedText[];
+  /** Plain orientation facts, shown together only when every side has evidence. */
+  sides?: {
+    side: "east" | "west" | "north" | "south";
+    exit: LocalizedText[];
+    landmark: LocalizedText[];
+    evidence: EvidenceRef;
+    /** Confirmed requires at least two independent source publishers. */
+    verification: "confirmed" | "unverified";
+  }[];
+}
+
 export interface Station {
   id: string;
   names: LocalizedText[];
+  identity?: StationIdentity;
   /** Station codes such as "E27"; operator-scoped. */
   codes?: { operatorId: string; code: string }[];
   operators: Operator[];
