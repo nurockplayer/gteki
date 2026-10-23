@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { describe, expect, it, vi } from "vitest";
+import { WALKER_SPEED } from "@gteki/scene-api";
 import { Explorer } from "./explorer.ts";
 import { FOLLOW, NO_SLOPE, followPose, type CameraHold } from "./followCamera.ts";
 
@@ -35,6 +36,34 @@ const pocket = () => {
 };
 
 describe("Explorer follow camera wiring", () => {
+  it.each([false, true].flatMap((floor) => [
+    { motion: "walk", speed: 1.4, turn: 0, floor },
+    { motion: "run", speed: WALKER_SPEED.runMps, turn: 0, floor },
+    { motion: "walk with steady yaw", speed: 1.4, turn: 0.3, floor },
+  ]))("keeps the boom steady for 10 seconds of $motion with floor=$floor", ({ speed, turn, floor, motion }) => {
+    const state = cameraStand();
+    if (floor) {
+      const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial());
+      ground.position.y = -0.01;
+      ground.updateMatrixWorld(true);
+      state.cameraTargets = [ground];
+    }
+    place(state, true);
+    const steady: number[] = [];
+    for (let frame = 1; frame <= 600; frame++) {
+      state.yaw += turn / 60;
+      state.pos.x -= Math.sin(state.yaw) * speed / 60;
+      state.pos.z -= Math.cos(state.yaw) * speed / 60;
+      place(state);
+      // Check every frame, including startup: locomotion must never accumulate boom length.
+      expect(state.boomActual).toBeLessThanOrEqual(FOLLOW.defaultDistance + 1e-9);
+      expect(Math.abs(state.boomActual - FOLLOW.defaultDistance)).toBeLessThan(0.05);
+      if (frame >= 120) steady.push(state.boomActual);
+    }
+    expect(Math.max(...steady) - Math.min(...steady)).toBeLessThan(0.001);
+    console.info(`${motion}, floor=${floor}: steady boom ${Math.min(...steady).toFixed(6)}..${Math.max(...steady).toFixed(6)} m; at 10 s ${state.boomActual.toFixed(6)} m`);
+  });
+
   it("ramps the rendered avatar fade after an occluder appears and remains on its near side", () => {
     const state = cameraStand();
     place(state, true);
@@ -148,6 +177,17 @@ describe("Explorer wall fallback and QA controls", () => {
 });
 
 describe("Explorer placement snapping", () => {
+  it.each([0, 9])("replaces stale boom length %s on placement and keeps it on the next frame", (stale) => {
+    const state = cameraStand();
+    state.boomActual = stale;
+    state.pos.set(100, 5, -100);
+    state.camera.position.set(-50, 20, 50);
+    place(state, true);
+    expect(state.boomActual).toBeCloseTo(FOLLOW.defaultDistance, 9);
+    place(state);
+    expect(state.boomActual).toBeCloseTo(FOLLOW.defaultDistance, 9);
+  });
+
   it("marks guide starts, seeks and restarts for the same solved camera snap", () => {
     const state = Object.assign(cameraStand(), { mode: "guide", lastAvatarPos: new THREE.Vector3(), teleported: false, bodyYaw: 0 });
     const route = [0, 2].map((x, i) => ({ x, y: 0, z: 0, zKnown: true, stepIndex: i, floorId: "b1" }));

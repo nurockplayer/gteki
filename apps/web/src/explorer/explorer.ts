@@ -1703,7 +1703,9 @@ export class Explorer {
       ? (snap ? dist < FOLLOW.comfortDistance : boomSqueezed(this.squeezed, dist))
       : false;
     this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
-    const previousDistance = this.camera.position.distanceTo(pose.pivot);
+    // Use the last frame's actual boom, measured against its own pivot. Measuring the old
+    // camera against the new pivot would rate-limit the walker's movement as contraction.
+    const previousDistance = this.boomActual;
     const desired = pose.pivot.clone().addScaledVector(back, dist);
     this.camera.position.lerp(desired, snap || this.reducedMotion || raisedClear ? 1 : 1 - Math.exp(-dt * 10));
     // Preserve angular/extension damping, but control contraction separately. Cast the actual interpolated
