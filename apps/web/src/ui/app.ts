@@ -554,7 +554,7 @@ export class App {
     if (!best.ok && best.reason === "no_path") this.s.noPath = explainNoPathBetween(router, loaded.bundle, origin, destination, profile);
     if (best.ok) {
       this.s.polyline = routePolyline(loaded.bundle, best);
-      this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination);
+      this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination, origin.kind === "poi" ? origin.poi : undefined);
       this.s.activeInstruction = 0;
       this.explorer.showRoute(this.s.polyline);
       if (this.explorer.currentMode === "overview") this.explorer.focusPoints(this.s.polyline);
@@ -601,6 +601,8 @@ export class App {
       el("span", undefined, t.floors(r.floorChanges)),
     );
     card.append(head);
+    // No station records an on-site check, so a real station's route is always said to be desk-checked only (synthetic data says so itself).
+    if (!r.synthetic) card.append(el("p", "desk-check", t.deskChecked));
 
     const badges = el("div", "badges");
     const badge = (text: string, cls: string, title?: string) => { const x = el("span", `badge ${cls}`, text); if (title) x.title = title; badges.append(x); };

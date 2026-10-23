@@ -17,6 +17,7 @@ import sys
 
 CONTRACT = "gteki-asset/0.1"
 PALETTES = ("gteki_palette", "gteki_palette_blend")  # mobile swatch atlases
+ROLES = ("barriers", "transport", "stairs_ramps")  # station bake roles; keep in step with gteki_assets/contract.py ROLES
 REQUIRED = ("contract id family variant version generator params bounds_m triangles "
             "dimension_basis fidelity navigation provenance license").split()
 IDENTITY = [1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.]
@@ -559,6 +560,19 @@ class Validator:
                 visit(child, world, collision)
 
         visit(root_index, IDENTITY)
+        # contract §10: gteki_role is on the root and every VIS_* node (mobile VIS_body included), one value
+        carried = {i: nodes[i]["extras"]["gteki_role"] for i in visited
+                   if "gteki_role" in (nodes[i].get("extras") or {})}
+        if carried:
+            for i, value in carried.items():
+                if value not in ROLES:
+                    self.message("FAIL", f"node {nodes[i].get('name')!r} gteki_role {value!r} must be one of {ROLES}")
+            values = {json.dumps(value) for value in carried.values()}
+            tagged = [i for i in visited if i == root_index or nodes[i].get("name", "").startswith("VIS_")]
+            missing = [nodes[i].get("name") for i in tagged if i not in carried]
+            if missing or len(values) > 1:
+                self.message("FAIL", "gteki_role must be one value on the root and every VIS_* node"
+                             + (f"; missing on {missing}" if missing else "") + (f"; found {sorted(values)}" if len(values) > 1 else ""))
         if shared_atlas:
             # one occlusion map for the whole asset: every visual node lays its islands out in the same
             # UV space, so they must not overlap across nodes (a mesh instanced twice overlaps itself)
@@ -622,6 +636,31 @@ def self_test():
                accessors=[dict(bufferView=0, componentType=5126, count=3, type="VEC3", min=[-1, 0, -1], max=[1, 1, 0])],
                materials=[dict(name="gteki_test")], meshes=[dict(primitives=[dict(attributes=dict(POSITION=0), material=0)])])
     assert Validator("tiny.glb", encode_glb(doc, binary)).check()["status"] == "PASS"
+    # Mobile finish normals can keep their source PNG (declaration/bytes checked by validate_finish).
+    import zlib
+
+    def png_chunk(tag, body):
+        return struct.pack(">I", len(body)) + tag + body + struct.pack(">I", zlib.crc32(tag + body) & 0xFFFFFFFF)
+
+    png = (b"\x89PNG\r\n\x1a\n" + png_chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0))
+           + png_chunk(b"IDAT", zlib.compress(b"\x00\x80\x80\xff")) + png_chunk(b"IEND", b""))
+    finish = copy.deepcopy(doc)
+    fid = "gteki_finish_test"
+    finish["nodes"][0]["name"] = fid
+    finish["nodes"][0]["extras"]["gteki"].update(id=fid, family="finish", profile="mobile",
+                                                   params={"mobile_normal_format": "png"})
+    uv_data = struct.pack("<6f", 0, 0, 1, 0, 0, 1)
+    finish_data = binary + uv_data + png
+    finish["buffers"][0]["byteLength"] = len(finish_data)
+    finish["bufferViews"] += [dict(buffer=0, byteOffset=len(binary), byteLength=len(uv_data)),
+                              dict(buffer=0, byteOffset=len(binary) + len(uv_data), byteLength=len(png))]
+    finish["accessors"].append(dict(bufferView=1, componentType=5126, count=3, type="VEC2"))
+    finish["meshes"][0]["primitives"][0]["attributes"].update(TEXCOORD_0=1, TEXCOORD_1=1)
+    finish["materials"] = [dict(name=fid, normalTexture=dict(index=0))]
+    finish["textures"] = [dict(source=0)]
+    finish["images"] = [dict(bufferView=2, mimeType="image/png")]
+    result = Validator(f"{fid}.glb", encode_glb(finish, finish_data)).check()
+    assert result["status"] == "PASS", result
     broken = copy.deepcopy(doc)
     broken["nodes"][0]["scale"] = [-1, 1, 1]
     broken["materials"][0]["name"] = "wrong"
@@ -678,6 +717,24 @@ def self_test():
         below["accessors"][0].update(min=[-1, -0.5, -1], max=[1, 0.5, 0])
         below["nodes"][0]["extras"]["gteki"].update(params=params, bounds_m=dict(min=[-1, -0.5, -1], max=[1, 0.5, 0]))
         assert Validator("tiny.glb", encode_glb(below, pit)).check()["status"] == status, params
+    # contract §10: gteki_role on the root and every VIS_* node, an allowed value, one value
+    def roled(root_role="barriers", vis_role="barriers", extra=None):
+        tagged = copy.deepcopy(doc)
+        for index, role in ((0, root_role), (1, vis_role)):
+            if role is not None:
+                tagged["nodes"][index]["extras"] = dict(tagged["nodes"][index].get("extras", {}), gteki_role=role)
+        for index, role in (extra or {}).items():
+            tagged["nodes"][index]["extras"] = dict(tagged["nodes"][index].get("extras", {}), gteki_role=role)
+        return Validator("tiny.glb", encode_glb(tagged, binary)).check()["status"]
+
+    assert roled() == "PASS"
+    assert roled(None, None) == "PASS"  # no role anywhere: untagged assets stay valid
+    assert roled("transport", "transport") == "PASS" and roled("stairs_ramps", "stairs_ramps") == "PASS"
+    assert roled("floor", "floor") == "FAIL"  # outside the allowed set
+    assert roled("barriers", "transport") == "FAIL"  # root and VIS_* differ
+    assert roled("barriers", None) == "FAIL" and roled(None, "barriers") == "FAIL"  # one of them missing
+    assert roled(extra={3: "wall"}) == "FAIL"  # an invalid value on any node is caught
+    assert roled(root_role=None, vis_role=None, extra={3: "barriers"}) == "FAIL"  # a socket carrying it alone
     # AABB mismatch stays advice
     aabb = copy.deepcopy(doc)
     aabb["nodes"][0]["extras"]["gteki"]["bounds_m"] = dict(min=[-1, 0, -1], max=[1, 2, 0])
@@ -793,7 +850,7 @@ def self_test():
     assert Validator("tiny.glb", encode_glb(doc, binary)).check()["status"] == "PASS"
     assert Validator("tiny.glb", encode_glb(doc, binary), require_occlusion=True).check()["status"] == "FAIL"  # ... unless asked
     print("PASS self-test: valid, broken, truncated, NaN, out-of-range index, sparse, transformed, strip and fan GLBs, "
-          "root identity, extensions, triangle count, below floor, texCoord (core, extension, transform, extras), palette mipmaps, lightmap (overlap, strips, fans, range, NaN, collapsed, mobile UV1), occlusion (texCoord, TEXCOORD_1, joint atlas overlap, strength, size, shared map)")
+          "root identity, extensions, triangle count, gteki_role (allowed value, root and VIS_* agree), below floor, texCoord (core, extension, transform, extras), palette mipmaps, mobile finish PNG normal, lightmap (overlap, strips, fans, range, NaN, collapsed, mobile UV1), occlusion (texCoord, TEXCOORD_1, joint atlas overlap, strength, size, shared map)")
 
 
 def main():

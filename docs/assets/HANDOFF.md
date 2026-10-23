@@ -107,6 +107,17 @@ The physical position of the flaps never gates passage. Whether a passenger may 
 
 ![Closed flaps](img/concourse_gates_closed.jpg)
 
+## Stretching a hanging sign frame
+
+`sign_frame_9slice` (catalog id `gteki_sign_frame_9slice_h480_d80`) is a faceless double-sided light-box frame for stations that draw many housings of different widths (Ikebukuro: 100, from 0.5 to 6.1 m). It is cut into separate nodes, which stay separate in the mobile profile too: `VIS_end_L` / `VIS_end_R` (fixed caps, origin at the inner joint edge), `VIS_span` (exactly 1 m in X, origin at x=0), `VIS_rod` (1 m in Z, origin at its bottom), plus optional `VIS_hanger` (origin at its bottom, on the frame top) and `VIS_rod_canopy` (ceiling disc, origin at its top face). Draw each as one InstancedMesh. Only the span is scaled in X and only the rod in Y:
+
+```
+end_L.x = -W/2 + end_m;  end_R.x = W/2 - end_m;  span.scale.x = W - 2*end_m
+rods at ±(W/2 - rod_inset_m), rod.scale.y = drop   // skip the rod when drop < 0.05 m
+```
+
+Faces go at glTF z = ±`face_plane_m` (front +Z) and fill the opening; the frame has none. The numbers (`end_m`, `bar_m`, `outer_h_m`, `opening_h_m`, `depth_m`, `face_plane_m`, `rod_inset_m`, the 0.5 / 6.1 m width range, and the heights of the hanger and rod pivots above the sign centre) are in `params.nine_slice`. The exported GLB shows the nominal sign of width 1 m + 2·`end_m`. The defaults match Ikebukuro's sign housings; station-verified values belong in the station's own catalog. There is no collision. The piece is in the catalog and appears in `assets/library` after the next library rebuild.
+
 ## Quality upgrade path (Godot HQ)
 
 - `TEX_RES=2048 OUT=/path/to/hq sh tools/blender/build.sh build` (or 4096) regenerates every texture at higher resolution. It keeps the same physical relief and tiling, with the same geometry and node names. Swap the HQ library in for Godot builds, and keep the 1024 library for Web.

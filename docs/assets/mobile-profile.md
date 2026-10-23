@@ -50,6 +50,8 @@ Kept on purpose: sign-face text and posters. Mobile cannot read colour from vert
 
 Sign and screen faces keep their own textures (re-encoded as JPEG q88), so signs and the vending machine shrink least.
 
+Finish packs keep their own materials ([contract §9](asset-contract.md#9-finish-packs--gteki-finish01)), at most 512 px on mobile. The director approved a lossless normal PNG for `gteki_finish_floor_granite_tile` and `gteki_finish_floor_tile600`, declared by `mobile_normal_format: "png"` in the catalog and mobile `finish.json`. Blender's JPEG encoder always uses 4:2:0; at 512 px it breaks the wrap of thin grout on the texture edge. Loose `normal.png` and the sample GLB's `image/png` are the same cached generator bytes. GPU memory stays the same; download grows slightly. Other finish maps and the full tier stay JPEG.
+
 Concourse demo (29 items), from `texture_budget.py --layout`:
 
 | Strategy | Full, download / GPU est. | Mobile, download / GPU est. |
