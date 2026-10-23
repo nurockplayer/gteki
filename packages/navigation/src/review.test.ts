@@ -316,7 +316,7 @@ describe("short connectors name a turn exactly once (PR #15 re-review 2)", () =>
     const b = withNodes([edge("s-a", "start", "a"), edge("g", "a", "a2", { mode: "gate" }), edge("a2-n", "a2", "north")],
       [{ id: "a2", x: 10, y: 0 }, { id: "north", x: 10, y: 10 }]);
     const fwd = texts(b, "start", "north");
-    expect(fwd).toEqual(["Start", "Go straight ~10 m", "Pass the ticket gate", "Turn left, ~10 m", "Arrive at destination"]);
+    expect(fwd).toEqual(["Start", "Go ~10 m", "Pass the ticket gate", "Turn left, ~10 m", "Arrive at destination"]);
     expect(turns(texts(b, "north", "start"))).toBe(1);
   });
 
@@ -387,7 +387,7 @@ describe("moving walkway entry turns (PR #15 Codex review 7)", () => {
     const template = b.nodes.find((n) => n.id === "a")!;
     b.nodes.push({ ...template, id: "b2", position: { x: 10, y: 20, z: 0 } });
     const texts = describeRoute(b, ok(createRouter(b).route("start", "b2", base)), "en").map((i) => i.text);
-    expect(texts).toEqual(["Start", "Go straight ~10 m", "Turn left, then take the moving walkway ~10 m", "Arrive at destination"]);
+    expect(texts).toEqual(["Start", "Go ~10 m", "Turn left, then take the moving walkway ~10 m", "Arrive at destination"]);
     const ja = describeRoute(b, ok(createRouter(b).route("start", "b2", base)), "ja").map((i) => i.text);
     expect(ja).toContain("左へ曲がり、動く歩道で約10m");
   });
@@ -907,10 +907,10 @@ describe("short legs never fold into or across a wait (rebased onto waits for op
     const r = ok(createRouter(b).route("start", "d", { ...base, at: { weekday: "mon", minutes: 12 * 60 } }));
     expect(r.steps[2]!.waitUntil).toEqual({ weekday: "mon", minutes: 12 * 60 + 1, dayOffset: 0 });
     const en = describeRoute(b, r, "en");
-    expect(en.map((i) => i.text)).toEqual(["Start", "Go straight ~20 m, then turn left", "Wait until 12:01", "Go straight ~2 m", "Turn right, ~20 m", "Arrive at destination"]);
+    expect(en.map((i) => i.text)).toEqual(["Start", "Go ~20 m, then turn left", "Wait until 12:01", "Go straight ~2 m", "Turn right, ~20 m", "Arrive at destination"]);
     expect(en.map((i) => i.stepIndexes)).toEqual([[], [0, 1], [], [2], [3], []]);
     expect(en[2]).toMatchObject({ kind: "wait", beforeStepIndex: 2 });
-    expect(describeRoute(b, r, "ja").map((i) => i.text)).toEqual(["出発", "約20m 直進、その先で左へ", "12:01まで待つ", "約2m 直進", "右へ曲がり約20m", "目的地に到着"]);
+    expect(describeRoute(b, r, "ja").map((i) => i.text)).toEqual(["出発", "約20m 進む、その先で左へ", "12:01まで待つ", "約2m 直進", "右へ曲がり約20m", "目的地に到着"]);
   });
 
   it("names a turn on the first leg after a wait, folded into the next line at the wait point", () => {
@@ -927,7 +927,7 @@ describe("short legs never fold into or across a wait (rebased onto waits for op
     const r = ok(createRouter(b).route("start", "c", { ...base, at: { weekday: "mon", minutes: 12 * 60 } }));
     expect(r.steps[1]!.waitUntil).toEqual({ weekday: "mon", minutes: 12 * 60 + 1, dayOffset: 0 });
     const en = describeRoute(b, r, "en");
-    expect(en.map((i) => i.text)).toEqual(["Start", "Go straight ~20 m", "Wait until 12:01", "Turn left, then right, ~20 m", "Arrive at destination"]);
+    expect(en.map((i) => i.text)).toEqual(["Start", "Go ~20 m", "Wait until 12:01", "Turn left, then right, ~20 m", "Arrive at destination"]);
     expect(en[3]).toMatchObject({ stepIndexes: [1, 2], leadTurns: ["left"] });
     expect(en[2]).toMatchObject({ kind: "wait", stepIndexes: [], beforeStepIndex: 1 });
     expect(describeRoute(b, r, "ja")[3]!.text).toBe("左へ曲がり、すぐ右へ曲がり約20m");

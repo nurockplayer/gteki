@@ -83,7 +83,7 @@ App 起點：North Passage，往 26／28番出口方向。
 
 ## I — 公開資料研究帶出的追加確認（2026-10-22）
 
-來源：data-research PR #177（`docs/research/gaps/DR-IK-station-facts.md`，FC-IK-01 至 03；I8 的 POI 於 PR #185 新增為 search-only）與 PR #174（`docs/research/gaps/DR-changes-since-2023.md`，CH-IK-01、02、04、05/06）。這些是「去看一眼」的項目，不是結論：公開資料沒有一項能確定開口或樓梯是哪個出口，也沒有改動任何路網、POI 或通行資料。全部在改札外（I8 的改札線只需站在改札外觀察，不必進站）；照片規則同上。順路時一併記錄即可，各項已對應到上面既有的 A–H 項目。I9、I10 來自 PR #197（`docs/research/gaps/DR-retry-unread-sources.md`，FC-RT-01、02）；I11–I13 來自 [step-free-coverage.md](step-free-coverage.md)（無障礙路線覆蓋報告：目前 63 條邊的已驗證無障礙為 0 條），只補上 H2、I2、I4、I5、I8 沒有涵蓋的「某一段通道有沒有臺階或坡道」與「短樓梯旁有沒有替代設施」。
+來源：data-research PR #177（`docs/research/gaps/DR-IK-station-facts.md`，FC-IK-01 至 03；I8 的 POI 於 PR #185 新增為 search-only）與 PR #174（`docs/research/gaps/DR-changes-since-2023.md`，CH-IK-01、02、04、05/06）。這些是「去看一眼」的項目，不是結論：公開資料沒有一項能確定開口或樓梯是哪個出口，也沒有改動任何路網、POI 或通行資料。全部在改札外（I8 的改札線只需站在改札外觀察，不必進站）；照片規則同上。順路時一併記錄即可，各項已對應到上面既有的 A–H 項目。I9、I10 來自 PR #197（`docs/research/gaps/DR-retry-unread-sources.md`，FC-RT-01、02）；I11–I13 來自 [step-free-coverage.md](step-free-coverage.md)（無障礙路線覆蓋報告：目前 67 條邊的已驗證無障礙為 0 條），只補上 H2、I2、I4、I5、I8 沒有涵蓋的「某一段通道有沒有臺階或坡道」與「短樓梯旁有沒有替代設施」。
 
 | # | Check | Closes / 對應 | Source |
 |---|---|---|---|
@@ -102,6 +102,7 @@ App 起點：North Passage，往 26／28番出口方向。
 | I13 | PLATEAU 測量裡有 3 座手扶梯，目前沒有任何邊使用：(1) 35番出口樓梯旁（併入 I2 一起看）；(2) 33番出口樓梯旁；(3) 北通路往購物街通道的短樓梯旁（與 I12 (c) 同一處）。每座：真的是手扶梯嗎？往哪個方向？有在運轉嗎？旁邊有沒有電梯？ | `gap-step-free`；(1) 併入 I2、H2 | `scene/dressing_anchors.json`（esc01 至 esc03，PLATEAU 測量；種類、方向、運轉時間沒有任何來源）、step-free-coverage.md 第 4 節 |
 | I14 (OD-22) | 西口（北）／20a番出口：現場有沒有 20a 這個出口？在哪裡（離西口地下廣場或哪條通路最近）？標示牌寫什麼？（豊島区サインガイドライン（案）Ver1.3 p20 把西口（北）對應到 20a；那是草案，只能當名稱來源，資料裡沒有這個 POI） | 新 POI 候選（目前沒有）；與 B 區一起看 | 豊島区 Ver1.3（案）p20（OD-22，#165 comment 6340635823） |
 | I15 (FC-RT-03) | 4番和5番出口的標示牌：還有沒有「(新)」或「(旧4)」這類註記？拍下牌面文字。 | `exit-4`、`exit-5`；與 I14、B 區一起看 | #233（R8b，豊島区 資料3 標示變更表） |
+| I16 | 26番出口樓梯頂端：量階梯最上面一階的淨寬，以及兩側側牆比最上面一階高多少（捲尺即可）；側牆在街面那一端是否與地面齊平。App 的路線在這裡離側牆約 0.33 m，是離牆 0.35 m 規則唯一的例外（`CLEARANCE_EXCEPTIONS`；依 PLATEAU 測量，最窄處的側牆頂比那裡的踏面高約 0.44 m）；實測可用來確認或移除這個例外 | `ne_j__x26`；與 G 區一起看 | `pipeline/build_station.py` `CLEARANCE_EXCEPTIONS`（Refs [#227](https://github.com/nurockplayer/gteki/issues/227)） |
 
 另外兩項補充，併入既有項目：
 

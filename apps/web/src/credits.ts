@@ -47,3 +47,14 @@ export function factsOnlyCredit(s: Source, t: Pick<Strings, "factsOnly" | "right
     decision: s.decision && href ? { label: `${t.rightsDecision} ${s.decision.date}`, href } : null,
   };
 }
+
+/** Human wording for a source's rights status (#130); an unknown value reads as unverified rather than leaking the enum. */
+export function rightsLabel(rights: Source["rights"], t: Pick<Strings, "rightsReusable" | "rightsOwnerOverride" | "rightsReference" | "rightsRestricted" | "rightsUnverified">): string {
+  switch (rights) {
+    case "REUSABLE_WITH_CONDITIONS": return t.rightsReusable;
+    case "PUBLISHED_UNDER_OWNER_OVERRIDE": return t.rightsOwnerOverride;
+    case "REFERENCE_ONLY": return t.rightsReference;
+    case "RESTRICTED": return t.rightsRestricted;
+    default: return t.rightsUnverified;
+  }
+}

@@ -1267,3 +1267,51 @@
   availability_deadline: null
   notes: Street-level context source (#39), visual only. Catalog fileSize is the uncompressed GML size; the file is served gzip-encoded and hashed over the decoded bytes. Catalog package year 2025; the per-theme survey year is not asserted here. Tran LOD1/LOD2 geometry is flat at z=0; only LOD3 carries heights. Textures are not converted. Shinjuku street-level conversion is blocked on the symbolic vertical anchor decision.
   publish_gate: CONDITIONAL
+- source_id: ksj-n02-2025
+  title: KSJ N02-2025 railway data (stations and railway sections, nationwide GML ZIP)
+  station_ids: [ikebukuro, shinjuku]
+  publisher: MLIT National Land Information (KSJ)
+  official_url: https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html
+  resolution: { kind: direct }
+  expected_url: https://nlftp.mlit.go.jp/ksj/gml/data/N02/N02-25/N02-25_GML.zip
+  expected_bytes: 14903774
+  expected_url_match: true
+  license_name: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/
+  attribution_text: 出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html）を加工して作成
+  commercial_use: { status: conditional, evidence: "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html (product page, usage terms row: 2020 onward open data CC BY 4.0; hashed in supporting_documents)" }
+  modification_allowed: { status: conditional, evidence: "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html (product page, usage terms row: 2020 onward open data CC BY 4.0; hashed in supporting_documents)" }
+  redistribution_allowed: { status: conditional, evidence: "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html (product page, usage terms row: 2020 onward open data CC BY 4.0; hashed in supporting_documents)" }
+  content_year: 2025
+  availability_deadline: null
+  notes: "Lane D context overlay input (visual only, never routable). CC BY 4.0 at product level, credit and change notice required. Context-only: the overlay ships geometry and a coarse kind (station or railway) and no source name, code or attribute. N02 carries no underground versus at-grade attribute, so railway ribbons do not show track level. Content year is the reference date year of the edition (reference 2025-12-31 per the product page)."
+  publish_gate: CONDITIONAL
+  supporting_documents:
+    - id: ksj-n02-2025-page
+      url: https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html
+    - id: ksj-terms
+      url: https://nlftp.mlit.go.jp/ksj/other/agreement.html
+- source_id: ksj-n03-2026
+  title: KSJ N03-2026 administrative boundary data (Tokyo prefecture, municipal polygons, GML ZIP)
+  station_ids: [ikebukuro, shinjuku]
+  publisher: MLIT National Land Information (KSJ)
+  official_url: https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2026.html
+  resolution: { kind: direct }
+  expected_url: https://nlftp.mlit.go.jp/ksj/gml/data/N03/N03-2026/N03-20260101_13_GML.zip
+  expected_bytes: 13153227
+  expected_url_match: true
+  license_name: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/
+  attribution_text: 出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2026.html）を加工して作成／測量法に基づく国土地理院長承認（複製）R 7JHf 351
+  commercial_use: { status: conditional, evidence: "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2026.html (product page, usage terms row: 2020 onward open data CC BY 4.0; hashed in supporting_documents)" }
+  modification_allowed: { status: conditional, evidence: "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2026.html (product page, usage terms row: 2020 onward open data CC BY 4.0; hashed in supporting_documents)" }
+  redistribution_allowed: { status: conditional, evidence: "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2026.html (product page, usage terms row: 2020 onward open data CC BY 4.0; hashed in supporting_documents)" }
+  content_year: 2026
+  availability_deadline: null
+  notes: "Context overlay input for municipal boundaries (visual only, never routable). CC BY 4.0 at product level, credit, change notice and the page's reproduction-approval notice required. The Tokyo (13) file is used; the ward polygon is selected by its municipal code in the station overlay config, and only its rings ship, as geometry with a coarse kind and a feature hash: no municipal name and no N03 code or other attribute. Content year is the reference date year of the edition (reference 2026-01-01 per the product page). The page prints 「測量法に基づく国土地理院長承認（複製）R 7JHf 351」 and that string travels unchanged in attribution_text."
+  publish_gate: CONDITIONAL
+  supporting_documents:
+    - id: ksj-n03-2026-page
+      url: https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2026.html
+    - id: ksj-terms
+      url: https://nlftp.mlit.go.jp/ksj/other/agreement.html

@@ -356,7 +356,7 @@
      "text": "street level"
     }
    ],
-   "_note": "No source names this level; it is the open ground where exit stairs end (PLATEAU closure surfaces at the stair tops)."
+   "_note": "Labelled 地上 from PLATEAU (plateau-ubld-13116, per sourceLabels): the open ground where the exit stairs end, at the PLATEAU closure surfaces on the stair tops."
   }
  ],
  "accessFacts": [
@@ -793,6 +793,44 @@
    "zHint": 26.9
   },
   {
+   "id": "e_hall_stair_top",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    115.0,
+    30.5
+   ],
+   "zHint": 27.79,
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35"
+    }
+   ],
+   "evidence": {
+    "method": "Upper end of the stair flight on this edge: the walkable-grid cell (0.5 m) on surveyed floor next to the EF_35 stair-tread cells of the A* path between the neighbouring nodes, i.e. the stair-face / floor boundary; zHint is the surveyed floor height there (#203 A1)"
+   }
+  },
+  {
+   "id": "e_hall_stair_foot",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    117.5,
+    32.5
+   ],
+   "zHint": 26.88,
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35"
+    }
+   ],
+   "evidence": {
+    "method": "Lower end of the stair flight on this edge: the walkable-grid cell (0.5 m) on surveyed floor next to the EF_35 stair-tread cells of the A* path between the neighbouring nodes, i.e. the stair-face / floor boundary; zHint is the surveyed floor height there (#203 A1)"
+   }
+  },
+  {
    "id": "se_1",
    "kind": "junction",
    "floor": "b1",
@@ -1013,6 +1051,44 @@
    "zHint": 26.69
   },
   {
+   "id": "s41_stair_foot",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    73.0,
+    -70.0
+   ],
+   "zHint": 25.86,
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35"
+    }
+   ],
+   "evidence": {
+    "method": "Lower end of the stair flight on this edge: the walkable-grid cell (0.5 m) on surveyed floor next to the EF_35 stair-tread cells of the A* path between the neighbouring nodes, i.e. the stair-face / floor boundary; zHint is the surveyed floor height there (#203 A1)"
+   }
+  },
+  {
+   "id": "s41_stair_top",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    73.5,
+    -67.5
+   ],
+   "zHint": 26.69,
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35"
+    }
+   ],
+   "evidence": {
+    "method": "Upper end of the stair flight on this edge: the walkable-grid cell (0.5 m) on surveyed floor next to the EF_35 stair-tread cells of the A* path between the neighbouring nodes, i.e. the stair-face / floor boundary; zHint is the surveyed floor height there (#203 A1)"
+   }
+  },
+  {
    "id": "s40_j",
    "kind": "junction",
    "floor": "b1",
@@ -1207,7 +1283,20 @@
   },
   {
    "from": "e_hall",
+   "to": "e_hall_stair_top",
+   "mode": "walk",
+   "access": "af-east-exits"
+  },
+  {
+   "from": "e_hall_stair_top",
+   "to": "e_hall_stair_foot",
+   "mode": "stairs",
+   "access": "af-east-exits"
+  },
+  {
+   "from": "e_hall_stair_foot",
    "to": "e_low",
+   "mode": "walk",
    "access": "af-east-exits"
   },
   {
@@ -1276,7 +1365,20 @@
   },
   {
    "from": "s41_j",
+   "to": "s41_stair_foot",
+   "mode": "walk",
+   "access": "af-south-exits"
+  },
+  {
+   "from": "s41_stair_foot",
+   "to": "s41_stair_top",
+   "mode": "stairs",
+   "access": "af-south-exits"
+  },
+  {
+   "from": "s41_stair_top",
    "to": "s41_f",
+   "mode": "walk",
    "access": "af-south-exits"
   },
   {
@@ -1953,7 +2055,7 @@
      "text": "36號出口"
     }
    ],
-   "floorId": "b1",
+   "floorId": "street",
    "displayPosition": null,
    "connectorNodeIds": [
     "x36f"
@@ -4167,7 +4269,7 @@
      "text": "Nishiguchi (Minami)"
     }
    ],
-   "floorId": "b1",
+   "floorId": "street",
    "displayPosition": null,
    "connectorNodeIds": [
     "x4f"
@@ -4219,7 +4321,7 @@
      "text": "13號出口"
     }
    ],
-   "floorId": "b1",
+   "floorId": "street",
    "displayPosition": null,
    "connectorNodeIds": [
     "x13f"
@@ -5293,7 +5395,7 @@
     "sourceDate": null
    }
   ],
-  "freshness": "2023"
+  "freshness": "2022-01"
  },
  "spawnNodeIds": [
   "c_mid",
@@ -5343,6 +5445,59 @@
    "files": [
     "assets/ikebukuro_context_high.glb"
    ]
+  }
+ ],
+ "dataFiles": [
+  {
+   "id": "signage",
+   "path": "scene/signage.json",
+   "sourceIds": [
+    "plateau-ubld-13116",
+    "tokyometro-ikebukuro-yardmap-2026-03",
+    "toshima-terminal-sign-guideline-draft-v1.3",
+    "toshima-underground-guide-2022"
+   ],
+   "modified": true,
+   "derivation": "pipeline/build_signage.py: sign positions, facing and arrows from verified edge geometry and routing (gteki/graph.json); placement against PLATEAU ceiling and wall surfaces (build/ubld_enu.json); exit and gate names/labels from gteki/pois.json (names only, no source sign layout reproduced). sourceIds = every verified edge's geometry/access evidence and its end nodes' sourceRefs, plus the evidence of each exit and gate a sign shows (a wide set)"
+  },
+  {
+   "id": "crowd-lanes",
+   "path": "scene/crowd_lanes.json",
+   "sourceIds": [
+    "plateau-ubld-13116",
+    "tokyometro-ikebukuro-yardmap-2026-03",
+    "toshima-underground-guide-2022"
+   ],
+   "modified": true,
+   "derivation": "pipeline/build_station.py crowd_lanes(): per verified edge (gteki/graph.json geometry), the lateral width a pedestrian may stand off the polyline, sampled on the PLATEAU walkable grid (build/ubld_enu.json, >= 0.35 m from walls) inside the routable coverage areas (data/graph.src.json). sourceIds = PLATEAU, the routable areas' sources and every verified edge's geometry/access evidence and end nodes' sourceRefs (a wide set)"
+  },
+  {
+   "id": "walk-bridges",
+   "path": "scene/walk_bridges.json",
+   "sourceIds": [
+    "plateau-ubld-13116"
+   ],
+   "modified": true,
+   "derivation": "pipeline/build_walkfix.py: thin invisible quads bridging hairline cracks (< 0.30 m, same height within 0.06 m) between adjacent PLATEAU floor and stair-tread polygons (build/ubld_enu.json); they change neither the graph nor the rendered geometry"
+  },
+  {
+   "id": "access-fences",
+   "path": "scene/access_fences.json",
+   "sourceIds": [
+    "plateau-ubld-13116",
+    "tokyometro-ikebukuro-yardmap-2026-03",
+    "toshima-underground-guide-2022"
+   ],
+   "modified": true,
+   "derivation": "pipeline/build_access.py: fence pieces and 'access unverified' label stretches along the outline of the routable coverage areas (data/graph.src.json) where PLATEAU floor (build/ubld_enu.json) lies beside it; verified edge geometry (gteki/graph.json) is only checked for clearance and does not shape the output. sourceIds = PLATEAU and the routable areas' sources"
+  },
+  {
+   "id": "finishes",
+   "path": "scene/finishes.json",
+   "sourceIds": [],
+   "modified": true,
+   "authored": true,
+   "derivation": "GTEki-authored finish-pack config (role → texture folder + repeat in metres); empty today; no external source"
   }
  ]
 }

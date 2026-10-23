@@ -318,8 +318,8 @@ describe('graph-derived exit / street-level rule', () => {
     if (bytes === null) return; // standalone checkout without stations/
     const { facts, nodes } = await readGraphWindowNodes(IKEBUKURO_RULE, { stationId: 'ikebukuro' });
     expect(facts.graph_sha256).toBe(createHash('sha256').update(bytes).digest('hex'));
-    expect(facts).toMatchObject({ graph_path: 'stations/ikebukuro/gteki/graph.json', nodes_total: 62, exit_connectors: 20, street_level_nodes: 20, matched_by_both: 20, selected_nodes: 20 });
-    expect(facts.kinds_by_floor).toEqual({ 'exit@street': 20, 'junction@b1': 36, 'stair_end@b1': 3, 'ticket_gate@b1': 3 });
+    expect(facts).toMatchObject({ graph_path: 'stations/ikebukuro/gteki/graph.json', nodes_total: 66, exit_connectors: 20, street_level_nodes: 20, matched_by_both: 20, selected_nodes: 20 });
+    expect(facts.kinds_by_floor).toEqual({ 'exit@street': 20, 'junction@b1': 40, 'stair_end@b1': 3, 'ticket_gate@b1': 3 });
     expect(nodes.every((n) => n.kind === 'exit' && n.floor_id === 'street')).toBe(true);
     expect(facts.max_selected_distance_m).toBeGreaterThan(248); expect(facts.max_selected_distance_m).toBeLessThan(249); // x39: the 249 m exit
   });

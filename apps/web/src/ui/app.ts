@@ -1,5 +1,5 @@
-import { createRouter, describeRoute, floorDisplayName, instructionPoints, routeBetween, routePolyline } from "@gteki/navigation";
-import type { Instruction, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
+import { createRouter, describeRoute, explainNoPathBetween, floorDisplayName, instructionPoints, routeBetween, routePolyline } from "@gteki/navigation";
+import type { Instruction, NoPathCause, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
 import type { Poi, Source, StationBundle } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
@@ -9,8 +9,10 @@ import { firstStopFor, guideKeyAction, instructionStartsM, jumpTarget, StepClock
 import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, paceReadout, polylineLengthM, type GuideTierId, type PaceSpan } from "../explorer/guidePace.ts";
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
+import { noPathView } from "../noPath.ts";
 import { stationClock } from "../stationClock.ts";
-import { factsOnlyCredit, sourceCredit } from "../credits.ts";
+import { factsOnlyCredit, rightsLabel, sourceCredit } from "../credits.ts";
+import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { LiveRegion, routeLiveMessage, searchLiveMessage } from "./live.ts";
 import { watchReducedMotion } from "./motion.ts";
@@ -32,6 +34,8 @@ interface State {
   destination: Poi | null;
   profile: { stepFree: boolean; unpaidOnly: boolean; strictHours: boolean };
   route: RouteResult | RouteFailure | null;
+  /** Which enabled option made the last `no_path` refuse (null = not a no_path). */
+  noPath: NoPathCause | null;
   polyline: PolylinePoint[];
   instructions: Instruction[];
   activeInstruction: number;
@@ -62,7 +66,7 @@ export class App {
   private readonly s: State = {
     lang: initialLang(), entries: [], entry: null, loaded: null, router: null, search: null,
     origin: null, destination: null, profile: { stepFree: false, unpaidOnly: false, strictHours: false },
-    route: null, polyline: [], instructions: [], activeInstruction: 0,
+    route: null, noPath: null, polyline: [], instructions: [], activeInstruction: 0,
   };
   private explorer!: Explorer;
   private readonly ui = {
@@ -81,6 +85,7 @@ export class App {
     langBtn: el("button", "ghost lang"),
     coverageBtn: el("button", "ghost"),
     hint: el("div", "hint"),
+    credit: el("footer", "credit-line"),
     panel: el("section", "panel"),
     more: el("button", "ghost more", "⋯"),
     live: new LiveRegion(() => this.t),
@@ -155,7 +160,7 @@ export class App {
     panel.append(this.ui.banner, fields, this.ui.spawnChips, this.ui.profile, this.ui.more);
 
     this.ui.hint.setAttribute("role", "note");
-    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.toast, this.ui.live.el, this.ui.coverage, this.ui.hint);
+    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.toast, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit);
     this.layoutText();
   }
 
@@ -236,6 +241,7 @@ export class App {
     this.s.route = null;
     this.s.polyline = [];
     this.s.instructions = [];
+    this.renderCredit();
     this.ui.fromInput.value = "";
     this.ui.toInput.value = "";
     this.closeResults("from");
@@ -294,6 +300,7 @@ export class App {
 
   private refreshAll(): void {
     this.updatePanelCollapse();
+    this.renderCredit();
     const b = this.s.loaded?.bundle;
     this.renderBanner(b);
     this.renderSpawnChips(b);
@@ -532,18 +539,22 @@ export class App {
   private computeRoute(): void {
     const { router, loaded, origin, destination } = this.s;
     this.s.route = null;
+    this.s.noPath = null;
     this.s.polyline = [];
     this.s.instructions = [];
     this.explorer.clearRoute();
     if (!router || !loaded || !origin || !destination) { this.renderSheet(); return; }
     // One multi-source query: the router ranks entrances by its own cost and keeps "already there";
     // routeBetween also applies the fare policy to the POIs themselves.
-    const best: RouteResult | RouteFailure = routeBetween(router, origin, destination, this.profile());
+    const profile = this.profile();
+    const best: RouteResult | RouteFailure = routeBetween(router, origin, destination, profile);
     this.s.route = best;
     this.ui.live.announce(routeLiveMessage(this.t, best));
+    // Only after a no_path: re-ask with the user's own options relaxed to say which one refused.
+    if (!best.ok && best.reason === "no_path") this.s.noPath = explainNoPathBetween(router, loaded.bundle, origin, destination, profile);
     if (best.ok) {
       this.s.polyline = routePolyline(loaded.bundle, best);
-      this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination);
+      this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination, origin.kind === "poi" ? origin.poi : undefined);
       this.s.activeInstruction = 0;
       this.explorer.showRoute(this.s.polyline);
       if (this.explorer.currentMode === "overview") this.explorer.focusPoints(this.s.polyline);
@@ -561,7 +572,24 @@ export class App {
     const t = this.t;
     if (!r.ok) {
       const card = el("div", "card no-route");
-      card.append(el("h2", undefined, t.noRoute), el("p", undefined, t.noRouteWhy[r.reason] ?? r.message));
+      const view = r.reason === "no_path" && this.s.noPath ? noPathView(t, this.s.noPath) : null;
+      card.append(el("h2", undefined, t.noRoute), el("p", undefined, view?.text ?? t.noRouteWhy[r.reason] ?? r.message));
+      if (view && view.relax.length > 0) {
+        const relax = el("div", "actions");
+        const relaxOff = (keys: typeof view.relax) => { for (const k of keys) this.s.profile[k] = false; this.renderProfile(); this.computeRoute(); };
+        if (view.all) {
+          const b = el("button", "chip accent", t.noPath.relaxAll);
+          b.addEventListener("click", () => relaxOff(view.relax));
+          relax.append(b);
+        } else {
+          for (const k of view.relax) {
+            const b = el("button", "chip accent", t.noPath.relax(t[k]));
+            b.addEventListener("click", () => relaxOff([k]));
+            relax.append(b);
+          }
+        }
+        card.append(relax);
+      }
       sheet.append(card);
       return;
     }
@@ -573,6 +601,8 @@ export class App {
       el("span", undefined, t.floors(r.floorChanges)),
     );
     card.append(head);
+    // No station records an on-site check, so a real station's route is always said to be desk-checked only (synthetic data says so itself).
+    if (!r.synthetic) card.append(el("p", "desk-check", t.deskChecked));
 
     const badges = el("div", "badges");
     const badge = (text: string, cls: string, title?: string) => { const x = el("span", `badge ${cls}`, text); if (title) x.title = title; badges.append(x); };
@@ -884,9 +914,12 @@ export class App {
     }
   }
 
-  /** A source's credit line: title (linked), attribution, licence (linked) and the modification notice. */
-  private creditItem(s: Source): HTMLLIElement {
-    const c = sourceCredit(s);
+  /**
+   * A credit line for one source, or for several sources sharing an attribution: titles (linked), the attribution once,
+   * the distinct licences (linked) and the modification notice; a facts-only source adds the #26 wording and decision link
+   * (Coverage dialog and the route card's 出典 both use this).
+   */
+  private creditItem(...sources: Source[]): HTMLLIElement {
     const link = (text: string, href: string | null): HTMLElement => {
       if (!href) return el("span", undefined, text);
       const a = el("a", undefined, text);
@@ -896,16 +929,47 @@ export class App {
       return a;
     };
     const li = el("li");
-    li.append(link(c.title, c.href), el("span", "muted", ` — ${c.attribution}`));
-    if (c.license) li.append(el("span", "muted", " ("), link(c.license.name, c.license.href), el("span", "muted", ")"));
-    if (c.modified) li.append(el("span", "muted", ` · ${this.t.modified}`));
-    // Facts-only sources have no licence to show: say so (Coverage dialog and the route card's 出典 both use this).
-    const facts = factsOnlyCredit(s, this.t);
-    if (facts) {
+    sources.forEach((s, i) => {
+      const c = sourceCredit(s);
+      if (i) li.append(el("span", "muted", "、"));
+      li.append(link(c.title, c.href));
+    });
+    const attribution = sources[0]?.attribution.replace(/\s+/g, " ").trim() ?? "";
+    if (attribution) li.append(el("span", "muted", ` — ${attribution}`));
+    const licenses = groupLicenses(sources);
+    if (licenses.length) {
+      li.append(el("span", "muted", " ("));
+      licenses.forEach((l, i) => { if (i) li.append(el("span", "muted", ", ")); li.append(link(l.name, l.href)); });
+      li.append(el("span", "muted", ")"));
+    }
+    if (sources.some((s) => s.modified)) li.append(el("span", "muted", ` · ${this.t.modified}`));
+    for (const s of sources) {
+      const facts = factsOnlyCredit(s, this.t);
+      if (!facts) continue;
       li.append(el("span", "muted", ` · ${facts.text}`));
       if (facts.decision) li.append(el("span", "muted", " ("), link(facts.decision.label, facts.decision.href), el("span", "muted", ")"));
     }
     return li;
+  }
+
+  /** The persistent credit line (bottom strip, above the safe-area inset): drawn sources' attributions, each once; "Credits" opens the full list. */
+  private renderCredit(): void {
+    const b = this.s.loaded?.bundle;
+    const text = b ? creditLineFor(b) : "";
+    const box = this.ui.credit;
+    box.innerHTML = "";
+    box.hidden = !text;
+    this.root.classList.toggle("has-credit", Boolean(text));
+    if (!text) return;
+    box.setAttribute("aria-label", this.t.creditsLabel);
+    const line = el("span", "credit-text", text);
+    line.title = text;
+    const btn = el("button", "ghost credit-btn", this.t.credits);
+    // The text does not take pointer events (joystick area), so the button carries the full text as its tooltip too.
+    btn.title = text;
+    btn.setAttribute("aria-haspopup", "dialog");
+    btn.addEventListener("click", () => this.openCoverage());
+    box.append(line, btn);
   }
 
   // ---- Coverage --------------------------------------------------------------------
@@ -931,10 +995,12 @@ export class App {
       if (!b.coverage.gaps.length) gaps.append(el("li", "muted", "—"));
       d.append(gaps, el("h3", undefined, this.t.sources));
       const src = el("ul");
-      // Every source, including those cited only by assets or coverage: link, licence and modification notice.
-      for (const s of b.sources) {
-        const li = this.creditItem(s);
-        li.append(el("span", "muted", ` [${s.rights}${s.usage === "facts-only" ? `, ${this.t.factsOnlyTag}` : ""}]`));
+      // Every source exactly once, including those cited only by assets or coverage. Sources sharing an attribution form one item;
+      // facts-only and blank-attribution sources stay single. Rights are plain language (#130), never the internal enum.
+      for (const g of creditEntries(b.sources)) {
+        const li = this.creditItem(...g.sources);
+        const rights = entryRightsLabels(g.sources, this.t);
+        if (rights.length) li.append(el("span", "muted", ` · ${rights.join(" / ")}`));
         src.append(li);
       }
       d.append(src);
