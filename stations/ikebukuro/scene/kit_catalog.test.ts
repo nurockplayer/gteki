@@ -159,12 +159,14 @@ describe("kit_placements.json", () => {
     for (const id of catalog.assets.map((a) => a.id)) expect(placed.placements.some((p) => Object.values(p.ids).includes(id))).toBe(true);
     expect(placed.summary.stair_flights.covered).toBe(placed.placements.filter((p) => p.kind === "stair").length);
     expect(placed.summary.escalator_lanes.covered).toBe(placed.placements.filter((p) => p.kind === "escalator").length);
-    // the planner flags two flights: stair013, whose surveyed nosings stray 20 mm from a uniform riser (the generator's
-    // 6 mm strips would be buried), and the 196 mm tread of stair068; stair040 (two overlapping survey solids, once read
-    // as a 19-step flight with an 82 mm riser) and the 1-step stair059 fragment are now one 10-step flight that is covered
-    expect([...skipped]).toEqual(["stair013", "stair068"]);
+    // the planner flags the 196 mm tread of stair068 and every flight where a surveyed nosing would sit more than the
+    // 6 mm strip height off the strip the generator builds: stair013 (uneven risers, ~21 mm) and four long flights where
+    // the whole-millimetre riser drifts 7-9 mm by the top (stair057, on a golden route, sits at exactly 6.0 mm and stays). stair040 (two overlapping survey solids, once read as a
+    // 19-step flight with an 82 mm riser) and the 1-step stair059 fragment are now one 10-step flight that is covered
+    const MISMATCH = ["stair011", "stair012", "stair013", "stair014", "stair027"];
+    expect([...skipped]).toEqual([...MISMATCH, "stair068"]);
     const reason = (id: string) => placed.summary.skipped.find((s: { anchor: string }) => s.anchor === id)!.reason;
-    expect(reason("stair013")).toMatch(/uneven risers: a surveyed nosing is 20\.\d mm off/);
+    for (const id of MISMATCH) expect(reason(id)).toMatch(/^nosing mismatch: a surveyed nosing is \d+\.\d mm off the generated strip/);
     expect(reason("stair068")).toMatch(/implausible tread 196 mm/);
     expect(placements.has("stair040")).toBe(true);
     expect(anchors.stair_flights.find((f) => f.id === "stair040")!.steps).toBe(10);

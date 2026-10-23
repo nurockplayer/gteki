@@ -260,11 +260,13 @@ def plan_stair(flight, walls):
         return None, f"implausible riser {riser:.0f} mm ({n} steps, rise {flight['rise_m']} m); outside {RISER_MM[0]}-{RISER_MM[1]} mm", None
     if tread < MIN_TREAD_MM:
         return None, f"implausible tread {tread:.0f} mm (run {flight['run_m']} m per step); under {MIN_TREAD_MM} mm", None
-    # Each surveyed nosing (not every step has one) against the nearest step of the uniform spacing from the bottom.
-    z0, step = flight["bottom"]["position"][2], flight["rise_m"] / (n - 1)
-    dev = max((abs((r[4] - z0) - round((r[4] - z0) / step) * step) for r in flight["nosings"]), default=0.0) * 1000.0
-    if dev > MAX_NOSING_DEV_MM:
-        return None, f"uneven risers: a surveyed nosing is {dev:.1f} mm off the uniform spacing (strip is {MAX_NOSING_DEV_MM:g} mm high)", None
+    # Each surveyed nosing (not every step has one) against the strip the generator will actually build for that step:
+    # the step index comes from the survey's own spacing, the height from the whole-millimetre riser the catalog ships,
+    # stacked from the placement origin (the bottom nosing), so rounding drift over a long flight counts too.
+    z0, step, built = flight["bottom"]["position"][2], flight["rise_m"] / (n - 1), quant(riser) / 1000.0
+    dev = max((abs((r[4] - z0) - round((r[4] - z0) / step) * built) for r in flight["nosings"]), default=0.0) * 1000.0
+    if round(dev, 1) > MAX_NOSING_DEV_MM:  # at 0.1 mm, so float noise never decides a flight sitting on the limit
+        return None, f"nosing mismatch: a surveyed nosing is {dev:.1f} mm off the generated strip (uneven risers or riser rounding; strip is {MAX_NOSING_DEV_MM:g} mm high)", None
     width = median([math.hypot(r[2] - r[0], r[3] - r[1]) for r in flight["nosings"]]) * 1000.0
     params = {"step_count": n, "riser_mm": quant(riser), "tread_mm": quant(tread), "width_mm": quant(width)}
     err = {
