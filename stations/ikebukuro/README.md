@@ -55,6 +55,7 @@ pnpm typecheck
 | `scene/access_fences.json` | Walker-blocking fences with a 「通行可否 未確認」/"Access unverified" marker where surveyed floor of unknown access would shortcut the routable areas | presentation |
 | `scene/finishes.json` | Finish-pack manifest for the Lane E kit: role → texture folder + repeat in metres. Empty today (see "Kit integration") | presentation |
 | `scene/kit/kit.json`, `scene/kit.ts` | Kit GLBs placed as instances on existing data (batch 1: barrier rails on the access-fence stretches; plus one labelled representative gate array per JR gate node); copies in `gteki/kit/` | presentation |
+| `scene/columns.json`, `scene/kit_columns.ts` | PLATEAU column footprints (found by shape in the `barriers` triangles, `pipeline/extract_columns.py`) and the kit column sleeves placed on them (batch 2) | truth (footprints, heights) / presentation (sleeves) |
 | `scene/dressing_anchors.json` | Stair nosing lines and escalator landings from the PLATEAU survey, where kit dressing is placed (see "Kit integration") | truth (survey positions) |
 | `scene/kit_catalog.json`, `scene/kit_placements.json` | Lane E catalog and per-anchor placements for stair and escalator dressing, generated from the anchors (see "Kit integration") | derived (survey dimensions) |
 | `pipeline/` | Reproducible data and asset build (stdlib Python + Blender; one Node walker check) | — |
@@ -177,6 +178,18 @@ it arrives, the first aisle's centre stands on the node at mid-depth (the edge r
 lifted 1 cm against z-fighting with the piece's floor plate. Like the rails the arrays are visual only (no collider, not in
 `walkable` or the walk graph). The three arrays are merged per material and instanced: one draw on the phone tier (one
 palette material, always drawn) and one draw per material per 16 m tile on desktop.
+
+**Column sleeves (batch 2).** PLATEAU has no per-column object or class: the columns are part of the one `barriers` triangle
+soup. `python3 -I pipeline/extract_columns.py` (from `build/ubld_enu.json`; same GML-hash check as the anchors) finds them
+by shape (welded components that are vertical prisms, 1.5 m or taller, up to 3 m across) and writes `scene/columns.json`
+with centre, footprint (square, rect, round or polygon), rotation, base and top height, level band and the source
+installation and polygon ids, plus a `kit` piece id or `null` with a reason. `scene/kit_columns.ts` scales
+`gteki_column_square_600` / `gteki_column_round_d600` onto the measured footprint plus 2 cm on every side (scaled from the piece's visible 0.60 m body, allowing for the square piece's rounded corners so a column corner never pokes through) (so it stands
+clear of the PLATEAU faces and does not z-fight), never stretches it taller than the 2.8 m piece and stops 1 cm under the
+column top (so on the 2 square columns over 3.05 m and 24 between 2.8 and 3.05 m the PLATEAU column shows above the sleeve; the
+library's `_h3200` variant is round only and no kit-matched round column is taller than 2.9 m). 281 columns are found; 145 get a
+sleeve (42 square, 103 round), 136 are listed with a reason and keep the flat column. The PLATEAU column stays in `barriers` and stays the collider; the sleeve is visual only. The finish is the
+kit's generic tile or enamel, not a survey of the real columns.
 
 **Dressing anchors.** `python3 -I pipeline/build_dressing_anchors.py` (from `build/ubld_enu.json`; it refuses an
 extract whose GML sha256 differs from `gteki/station.json`) writes `scene/dressing_anchors.json`, ENU metres to
@@ -311,7 +324,7 @@ Evidence stills:
   [Exit 4 stair foot](docs/evidence/27-exit4-foot.jpg), [passage north](docs/evidence/28-west-corridor.jpg)
 
 **Measured** (harness, Apple Silicon, Chromium):
-- quality "low": at most 28 draw calls and 129k triangles per frame (56 crowd agents, 100 signs; four spots × four headings in the Central, West, South-West and North areas). Signs share atlas textures and merged geometry (three draw calls for all of them; one mesh per sign had pushed this to 252). On "low" the sign atlas is one 4096 × 2048 page painted at ~160 px/m (about 45 MB of GPU texture with mipmaps, down from 134 MB at full resolution);
+- quality "low": at most 28 draw calls and 129k triangles per frame (56 crowd agents, 100 signs; four spots × four headings in the Central, West, South-West and North areas). Signs share atlas textures and merged geometry (three draw calls for all of them; one mesh per sign had pushed this to 252). On "low" the sign atlas is one 4096 × 2048 page plus, only when the faces need it, an overflow page (4096 × 512 today), painted at `LOW_TEXEL_SCALE` 0.56 (~168 px/m; about 53 MB of GPU texture with mipmaps, against 134 MB at full resolution); the overflow page adds one draw call to the 28 measured with a single page. 0.56 was chosen over 0.6 (4096 × 1024, ~64 MB) on the 2026-10-23 iPhone 15-size low-tier shoot: at 6, 8 and 10 m both read the same (Japanese, English and "~N m"), since the 1.5× render resolution, not the atlas, is the limit;
 - shipped assets: 9.5 MB at "high", with lightmap WebP 1.1 MB (4k) or 0.5 MB (2k).
 
 ### Cue source (#108 acceptance 4)
@@ -323,11 +336,13 @@ only POIs the verified graph routes to, and the junctions are graph nodes.
 | --- | --- | --- |
 | End signs at junctions | ~4 m along each verified edge from a junction | `graph:<edge>` + `poi:<exit or gate>`, derived by `pipeline/build_signage.py` |
 | Repeater 1 to 5 (`sign-rep-sw_h__w_cj-1…5`) | on `sw_h__w_cj` (152 m), 24 m apart between its two end signs | `basis`: `graph:sw_h__w_cj`, `fact:af-west-corridor`, and the `poi:` ids shown: `exit-4`, `exit-13`, `exit-15`, `exit-17`, `exit-38`, `exit-41`, `jr-central-gate-1`, `jr-south-gate` |
+| Place boards 1 to 6 (`sign-place-sw_h__w_cj-1…6`) | blue boards halfway between neighbouring signs on `sw_h__w_cj`, so two sign kinds alternate every ~12 m | `basis`: `graph:sw_h__w_cj`, `fact:af-west-corridor`, `poi:west-exit-b1`, `poi:west-exit-south-b1` (area names as printed on the reference map; distances are graph walks to the hall's junction) |
 | Junction nodes | `w_cj`, `sw_h` and the other graph junctions on the legs | `data/graph.src.json` nodes snapped to the PLATEAU walkable grid |
 
 The `basis` field of every repeater in `scene/signage.json` is the authoritative list. The
 `westb1-exit4` leg ran 143 m between two signs before this; it now has a readable sign every 24 m at
-most (`scene/signage.test.ts`). `jrc2-exit35` already met the 30 m rule.
+most (`scene/signage.test.ts`). `jrc2-exit35` already met the 30 m rule. The per-window audit of both
+legs is [docs/b1-cue-audit.md](docs/b1-cue-audit.md).
 
 ## Deliberate simplifications
 
@@ -340,6 +355,11 @@ most (`scene/signage.test.ts`). `jrc2-exit35` already met the 30 m rule.
 - **Signs** use GTEki's design, placed about 4 m along each verified edge from junctions. Their
   content is computed from the verified graph. Positions are not real sign locations. Gate names
   carry a plain line-colour chip ("JR" on green), not an operator logo.
+  **Place boards** (`kind: "place"`, #108) sit between the repeaters: a blue panel naming the nearest B1 hall
+  (西口（地下）, 西口（南）（地下）, 東口（地下）, whose names are the area names printed on the reference map) each way,
+  with the graph walking distance to the hall's junction, rounded to 5 m. Passages are not named, because their
+  connector is an arbitrary junction inside them. Positions are design. On "low" the sign atlas is painted at
+  `LOW_TEXEL_SCALE` 0.56 (168 px/m), on one 4096 × 2048 page and an on-demand overflow page (see "Measured").
   **Repeater signs** (`kind: "repeat"`, #108) fill verified edges of 100 m or more, spaced at most
   24 m apart between the two end signs. Each is double-sided: the front faces walkers leaving the
   edge's `from` node and the back faces the other way, with at most 3 exits and 1 gate and a

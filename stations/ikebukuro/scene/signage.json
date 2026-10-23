@@ -10404,6 +10404,300 @@
     "poi:jr-south-gate",
     "fact:af-west-corridor"
    ]
+  },
+  {
+   "id": "sign-place-sw_h__w_cj-1",
+   "kind": "place",
+   "atNode": "sw_h",
+   "position": {
+    "x": -117.952,
+    "y": -13.302,
+    "z": 29.85
+   },
+   "maxWidthM": 6.0,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.1178,
+    "y": -0.993
+   },
+   "ceilingZ": 30.17,
+   "exits": [],
+   "gates": [],
+   "places": [
+    {
+     "id": "west-exit-b1",
+     "ja": "西口（地下）",
+     "en": "West Exit (B1)",
+     "distanceM": 155
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [],
+     "gates": [],
+     "places": [
+      {
+       "id": "west-exit-south-b1",
+       "ja": "西口（南）（地下）",
+       "en": "West Exit South (B1)",
+       "distanceM": 15
+      }
+     ]
+    }
+   ],
+   "basis": [
+    "graph:sw_h__w_cj",
+    "poi:west-exit-b1",
+    "poi:west-exit-south-b1",
+    "fact:af-west-corridor"
+   ]
+  },
+  {
+   "id": "sign-place-sw_h__w_cj-2",
+   "kind": "place",
+   "atNode": "sw_h",
+   "position": {
+    "x": -122.579,
+    "y": 8.716,
+    "z": 30.4
+   },
+   "maxWidthM": 5.3,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.0264,
+    "y": -0.9997
+   },
+   "ceilingZ": 31.0,
+   "exits": [],
+   "gates": [],
+   "places": [
+    {
+     "id": "west-exit-b1",
+     "ja": "西口（地下）",
+     "en": "West Exit (B1)",
+     "distanceM": 130
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [],
+     "gates": [],
+     "places": [
+      {
+       "id": "west-exit-south-b1",
+       "ja": "西口（南）（地下）",
+       "en": "West Exit South (B1)",
+       "distanceM": 40
+      }
+     ]
+    }
+   ],
+   "basis": [
+    "graph:sw_h__w_cj",
+    "poi:west-exit-b1",
+    "poi:west-exit-south-b1",
+    "fact:af-west-corridor"
+   ]
+  },
+  {
+   "id": "sign-place-sw_h__w_cj-3",
+   "kind": "place",
+   "atNode": "sw_h",
+   "position": {
+    "x": -123.646,
+    "y": 32.555,
+    "z": 30.4
+   },
+   "maxWidthM": 5.17,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.0264,
+    "y": -0.9997
+   },
+   "ceilingZ": 31.0,
+   "exits": [],
+   "gates": [],
+   "places": [
+    {
+     "id": "west-exit-b1",
+     "ja": "西口（地下）",
+     "en": "West Exit (B1)",
+     "distanceM": 110
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [],
+     "gates": [],
+     "places": [
+      {
+       "id": "west-exit-south-b1",
+       "ja": "西口（南）（地下）",
+       "en": "West Exit South (B1)",
+       "distanceM": 65
+      }
+     ]
+    }
+   ],
+   "basis": [
+    "graph:sw_h__w_cj",
+    "poi:west-exit-b1",
+    "poi:west-exit-south-b1",
+    "fact:af-west-corridor"
+   ]
+  },
+  {
+   "id": "sign-place-sw_h__w_cj-4",
+   "kind": "place",
+   "atNode": "sw_h",
+   "position": {
+    "x": -126.165,
+    "y": 56.355,
+    "z": 30.4
+   },
+   "maxWidthM": 5.7,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.0264,
+    "y": -0.9997
+   },
+   "ceilingZ": 31.0,
+   "exits": [],
+   "gates": [],
+   "places": [
+    {
+     "id": "west-exit-b1",
+     "ja": "西口（地下）",
+     "en": "West Exit (B1)",
+     "distanceM": 85
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [],
+     "gates": [],
+     "places": [
+      {
+       "id": "west-exit-south-b1",
+       "ja": "西口（南）（地下）",
+       "en": "West Exit South (B1)",
+       "distanceM": 90
+      }
+     ]
+    }
+   ],
+   "basis": [
+    "graph:sw_h__w_cj",
+    "poi:west-exit-b1",
+    "poi:west-exit-south-b1",
+    "fact:af-west-corridor"
+   ]
+  },
+  {
+   "id": "sign-place-sw_h__w_cj-5",
+   "kind": "place",
+   "atNode": "sw_h",
+   "position": {
+    "x": -127.255,
+    "y": 80.192,
+    "z": 30.4
+   },
+   "maxWidthM": 5.7,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.0264,
+    "y": -0.9997
+   },
+   "ceilingZ": 31.0,
+   "exits": [],
+   "gates": [],
+   "places": [
+    {
+     "id": "west-exit-b1",
+     "ja": "西口（地下）",
+     "en": "West Exit (B1)",
+     "distanceM": 60
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [],
+     "gates": [],
+     "places": [
+      {
+       "id": "west-exit-south-b1",
+       "ja": "西口（南）（地下）",
+       "en": "West Exit South (B1)",
+       "distanceM": 110
+      }
+     ]
+    }
+   ],
+   "basis": [
+    "graph:sw_h__w_cj",
+    "poi:west-exit-b1",
+    "poi:west-exit-south-b1",
+    "fact:af-west-corridor"
+   ]
+  },
+  {
+   "id": "sign-place-sw_h__w_cj-6",
+   "kind": "place",
+   "atNode": "sw_h",
+   "position": {
+    "x": -128.155,
+    "y": 104.035,
+    "z": 30.4
+   },
+   "maxWidthM": 5.74,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.0264,
+    "y": -0.9997
+   },
+   "ceilingZ": 31.0,
+   "exits": [],
+   "gates": [],
+   "places": [
+    {
+     "id": "west-exit-b1",
+     "ja": "西口（地下）",
+     "en": "West Exit (B1)",
+     "distanceM": 35
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [],
+     "gates": [],
+     "places": [
+      {
+       "id": "west-exit-south-b1",
+       "ja": "西口（南）（地下）",
+       "en": "West Exit South (B1)",
+       "distanceM": 135
+      }
+     ]
+    }
+   ],
+   "basis": [
+    "graph:sw_h__w_cj",
+    "poi:west-exit-b1",
+    "poi:west-exit-south-b1",
+    "fact:af-west-corridor"
+   ]
   }
  ]
 }

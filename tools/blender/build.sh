@@ -78,6 +78,7 @@ validate_finishes() {
 }
 
 selftest() {
+    python3 -I "$HERE/test_uvpack.py" || return $?
     python3 -I "$HERE/validate_glb.py" --self-test || return $?
     python3 -I "$HERE/validate_finish.py" --self-test || return $?
     python3 -I "$HERE/texture_budget.py" --self-test || return $?

@@ -1,20 +1,21 @@
-import { createRouter, describeRoute, explainNoPathBetween, floorDisplayName, instructionPoints, routeBetween, routePolyline } from "@gteki/navigation";
+import { createRouter, describeRoute, explainNoPathBetween, floorDisplayName, instructionPoints, routeBetween, routePolyline, ROUTE_PACE } from "@gteki/navigation";
 import type { Instruction, NoPathCause, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
 import type { Poi, Source, StationBundle } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
 import { guideStops } from "../explorer/guideStops.ts";
-import { firstStopFor, guideKeyAction, instructionStartsM, jumpTarget, StepClock } from "../explorer/guideSteps.ts";
+import { firstStopFor, guideKeyActionGuarded, instructionStartsM, jumpTarget, StepClock } from "../explorer/guideSteps.ts";
 import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, paceReadout, polylineLengthM, type GuideTierId, type PaceSpan } from "../explorer/guidePace.ts";
-import { initialLang, pick, strings, type Lang } from "../i18n.ts";
+import { coverageText, initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
 import { stationClock } from "../stationClock.ts";
 import { factsOnlyCredit, rightsLabel, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
-import { LiveRegion, routeLiveMessage, searchLiveMessage } from "./live.ts";
+import { nodeLabel, poiLabel } from "./labels.ts";
+import { LiveRegion, freshnessReason, routeLiveMessage, searchLiveMessage, unknownLabel } from "./live.ts";
 import { MascotSlot, type MascotEvent } from "./mascot.ts";
 import { watchReducedMotion } from "./motion.ts";
 import { railDemoLink } from "./railTravel.ts";
@@ -99,6 +100,8 @@ export class App {
   /** Listbox state of the two search comboboxes. */
   private readonly combo: Record<"from" | "to", ComboState> = { from: COMBO_CLOSED, to: COMBO_CLOSED };
   private panelExpanded = false;
+  /** When the last IME composition ended anywhere on the page; the guide keys ignore its confirming keys. */
+  private compositionEndMs = -Infinity;
 
   constructor(private readonly root: HTMLElement) {}
 
@@ -360,7 +363,7 @@ export class App {
     this.closeResults("to");
     this.ui.fromInput.value = this.originLabel();
     this.ui.toInput.value = this.s.destination ? this.poiName(this.s.destination) : "";
-    if (b) this.explorer.showPois(b, (p) => this.poiName(p), [this.s.destination?.id, this.s.origin?.kind === "poi" ? this.s.origin.poi.id : undefined].filter(Boolean) as string[]);
+    if (b) this.explorer.showPois(b, (p) => poiLabel(b, p, this.s.lang, this.t), [this.s.destination?.id, this.s.origin?.kind === "poi" ? this.s.origin.poi.id : undefined].filter(Boolean) as string[]);
     this.computeRoute();
     this.syncPanelMascot();
   }
@@ -374,6 +377,14 @@ export class App {
     const fresh = b.coverage.freshness;
     if (fresh) this.ui.banner.append(el("span", "muted", ` · ${this.t.freshness} ${fresh}`));
     this.ui.banner.append(el("span", "muted", ` · ${this.t.noIndoorPositioning}`));
+    // Only a station whose scene draws its own signs from the graph is told that they mark no surveyed position.
+    if (this.sceneSignsFromGraph()) this.ui.banner.append(el("span", "muted", ` · ${this.t.generatedSigns}`));
+  }
+
+  /** The loaded scene declares that its wayfinding signs are GTEki's own, generated from the graph (#203 B14). */
+  private sceneSignsFromGraph(): boolean {
+    const scene = this.s.loaded?.scene as { generatedSignageFromGraph?: unknown } | null | undefined;
+    return !this.explorer.sceneError && scene?.generatedSignageFromGraph === true;
   }
 
   private renderSpawnChips(b: StationBundle | undefined): void {
@@ -413,8 +424,7 @@ export class App {
   }
 
   private nodeLabel(b: StationBundle, nodeId: string): string {
-    const poi = b.pois.find((p) => p.connectorNodeIds.includes(nodeId));
-    return poi ? this.poiName(poi) : nodeId;
+    return nodeLabel(b, nodeId, this.s.lang, this.t);
   }
 
   private originLabel(): string {
@@ -679,24 +689,29 @@ export class App {
       el("span", undefined, t.floors(r.floorChanges)),
     );
     card.append(head);
+    // The time estimate's assumed pace, taken from the router's own constants (never a copy), and the guide is its own pace.
+    card.append(el("p", "muted pace-note", t.paceNote(ROUTE_PACE.walkMps, ROUTE_PACE.stairsMps)));
     // No station records an on-site check, so a real station's route is always said to be desk-checked only (synthetic data says so itself).
     if (!r.synthetic) card.append(el("p", "desk-check", t.deskChecked));
 
     const badges = el("div", "badges");
     const badge = (text: string, cls: string, title?: string) => { const x = el("span", `badge ${cls}`, text); if (title) x.title = title; badges.append(x); };
     if (r.synthetic) badge(t.syntheticShort, "warn", t.synthetic);
-    const unknownText: Record<string, string> = { hours: t.unknownHours, wheelchair: t.unknownWheelchair, steps: t.unknownSteps, paid: t.unknownPaid, fare_boundary: t.unknownFare, access_evidence: t.unknownAccess };
-    for (const u of r.unknowns) badge(`${unknownText[u.kind] ?? u.kind} ×${u.edgeIds.length}`, "unknown");
+    for (const u of r.unknowns) badge(`${unknownLabel(t, u.kind)} ×${u.edgeIds.length}`, "unknown");
     // Waiting for an opening window is part of the time, and is said so.
     if (r.waitSeconds > 0) badge(t.waiting(Math.max(1, Math.round(r.waitSeconds / 60))), "info");
     if (r.timeRestricted.length) badge(`${t.timeWindow}: ${r.timeRestricted.map((w) => `${w.open}–${w.close}`).join(", ")}`, "unknown");
     if (r.crossesFareBoundary === true) badge(t.paidCrossing, "info");
-    if (r.stale === true) badge(t.stale, "warn", r.expiredSourceIds.length > 0 ? `${t.expired}: ${r.expiredSourceIds.join(", ")}` : (r.oldestSourceDate ?? undefined));
+    if (r.stale === true) badge(t.stale, "warn");
     // UNKNOWN freshness is shown whatever its cause: undated sources, or a year/month date straddling the cutoff.
-    else if (r.stale === null) badge(t.freshnessUnknown, "unknown", r.undatedSourceIds.length > 0 ? r.undatedSourceIds.join(", ") : (r.oldestSourceDate ?? undefined));
+    else if (r.stale === null) badge(t.freshnessUnknown, "unknown");
+    if (r.steps.some((s) => s.mode === "stairs")) badge(t.routeStairs, "info");
     if (this.s.polyline.some((p) => !p.zKnown)) badge(t.symbolicHeight, "muted");
     if (r.operatorIds.length > 1) badge(`${t.operators}: ${r.operatorIds.join(" → ")}`, "info");
     card.append(badges);
+    // Why the freshness is stale or unknown, as text: a tooltip alone is invisible on touch (#203 B5).
+    const reason = freshnessReason(t, r);
+    if (reason) card.append(el("p", `freshness-reason${r.stale === true ? " warn" : ""}`, reason));
     if (r.unknowns.length > 0) this.mascotSay({ kind: "route_unknowns" }, card);
 
     const actions = el("div", "actions");
@@ -726,7 +741,7 @@ export class App {
     card.append(list);
 
     const prov = el("details", "provenance");
-    prov.append(el("summary", undefined, `${t.sources} · ${t.freshness} ${r.oldestSourceDate ?? "?"}${r.evidenceCheckedDate ? ` / ${r.evidenceCheckedDate}` : ""}`));
+    prov.append(el("summary", undefined, `${t.sources} · ${t.oldestSource} ${r.oldestSourceDate ?? "?"}${r.evidenceCheckedDate ? `${t.dateJoiner}${t.deskCheckedOn} ${r.evidenceCheckedDate}` : ""}`));
     const srcList = el("ul");
     for (const id of r.sourceIds) {
       const s = b.sources.find((x) => x.id === id);
@@ -983,8 +998,11 @@ export class App {
 
   /** `[` / `]` or PageUp / PageDown step the guide; never while typing in a field or with a dialog open. */
   private bindGuideKeys(): void {
+    // IME composition can start anywhere on the page, and Safari can land the confirming keydown on a
+    // non-input target. Track the end of composition document-wide so no guide shortcut fires from it.
+    document.addEventListener("compositionend", () => { this.compositionEndMs = performance.now(); }, true);
     window.addEventListener("keydown", (e) => {
-      const action = guideKeyAction(e);
+      const action = guideKeyActionGuarded(e, this.compositionEndMs, performance.now());
       if (!action || this.explorer.currentMode !== "guide" || this.ui.coverage.open) return;
       if ((e.target as HTMLElement | null)?.closest?.("input, textarea, select, [contenteditable]")) return;
       e.preventDefault();
@@ -1103,12 +1121,19 @@ export class App {
       d.append(el("p", undefined, pick(b.coverage.summary, this.s.lang)));
       if (b.coverage.areas.length) {
         const ul = el("ul");
-        for (const a of b.coverage.areas) ul.append(el("li", `cov-${a.status}`, `${this.t.coverageStatus[a.status] ?? a.status} · ${pick(a.label, this.s.lang)}${a.note ? ` — ${a.note}` : ""}`));
+        for (const a of b.coverage.areas) ul.append(el("li", `cov-${a.status}`, `${this.t.coverageStatus[a.status] ?? a.status} · ${pick(a.label, this.s.lang)}${a.note ? ` — ${coverageText(a.note, this.s.lang)}` : ""}`));
         d.append(ul);
       }
       d.append(el("h3", undefined, this.t.gaps));
       const gaps = el("ul");
-      for (const g of b.coverage.gaps) gaps.append(el("li", undefined, `${g.zone}: ${g.missingFact} → ${g.fieldWorkNeeded}`));
+      for (const g of b.coverage.gaps)
+        gaps.append(
+          el(
+            "li",
+            undefined,
+            `${coverageText(g.zone, this.s.lang)}: ${coverageText(g.missingFact, this.s.lang)} → ${coverageText(g.fieldWorkNeeded, this.s.lang)}`,
+          ),
+        );
       if (!b.coverage.gaps.length) gaps.append(el("li", "muted", "—"));
       d.append(gaps, el("h3", undefined, this.t.sources));
       const src = el("ul");
@@ -1165,6 +1190,8 @@ export class App {
       mascot: () => this.ui.mascot.info(),
       avatar: () => this.explorer.avatarEnu,
       sceneInfo: () => this.explorer.sceneInfo(),
+      projectEnu: (points: { x: number; y: number; z: number }[]) => this.explorer.projectEnu(points),
+      signFaces: () => this.explorer.signFaces(),
       phase: () => this.explorer.phase,
       audio: () => this.explorer.audioInfo(),
       walkFromNode: (nodeId: string) => (this.s.loaded ? this.explorer.walkFromNode(this.s.loaded.bundle, nodeId) : false),

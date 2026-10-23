@@ -91,6 +91,7 @@ const STRINGS = {
     unknownAccess: "通行条件の根拠なし",
     unknownFare: "改札境界未確認",
     freshnessUnknown: "情報時点不明",
+    undatedSources: "日付不明の出典",
     expired: "有効期限切れの出典",
     timeWindow: "時間帯制限あり",
     stale: "情報が古い可能性",
@@ -101,6 +102,19 @@ const STRINGS = {
     /** Fixed route-card line: no station records an on-site check (there is no such field), so it is always said. */
     deskChecked: "机上確認のみ（現地未確認）",
     freshness: "データ時点",
+    /** The route card's dates: the oldest source it rests on, and the desk check of its evidence (#203 B5). */
+    oldestSource: "最古の出典",
+    deskCheckedOn: "机上確認日",
+    dateJoiner: "／",
+    /** The time estimate's assumed speeds, read from the router (#203 B6). */
+    paceNote: (walk: number, stairs: number) => `所要時間は徒歩${walk} m/s・階段${stairs} m/sで計算（ガイドは独自の速度で進みます）`,
+    /** A known stairs edge: not "wheelchair access unknown" (#203 B8). */
+    routeStairs: "階段あり",
+    /** A graph node with no POI is never shown by its raw id (#203 B11). */
+    unnamedPoint: "名称未登録の地点",
+    stairFootLabel: (name: string) => `${name}（階段下）`,
+    /** GTEki-made wayfinding signs are generated from the graph, not surveyed positions (#203 B14). */
+    generatedSigns: "看板は経路データから自動配置しています（実際の現地の看板位置ではありません）",
     sources: "出典",
     credits: "出典",
     creditsLabel: "データの出典表示",
@@ -238,6 +252,7 @@ const STRINGS = {
     unknownAccess: "No access evidence",
     unknownFare: "Fare boundary unknown",
     freshnessUnknown: "Data date unknown",
+    undatedSources: "Undated sources",
     expired: "Source validity ended",
     timeWindow: "Time-restricted",
     stale: "Possibly outdated",
@@ -247,6 +262,14 @@ const STRINGS = {
     realCandidate: "From open data; desk-checked only, not verified on site",
     deskChecked: "Desk-checked against maps and surveys; not verified on site",
     freshness: "Data as of",
+    oldestSource: "Oldest source",
+    deskCheckedOn: "desk-checked",
+    dateJoiner: " · ",
+    paceNote: (walk: number, stairs: number) => `Time assumes walking ${walk} m/s and stairs ${stairs} m/s; the guide moves at its own pace`,
+    routeStairs: "Stairs",
+    unnamedPoint: "Unnamed point",
+    stairFootLabel: (name: string) => `${name} (stair foot)`,
+    generatedSigns: "Signs are placed from the route data, not at the real sign positions",
     sources: "Sources",
     credits: "Credits",
     creditsLabel: "Data credits",
@@ -311,6 +334,15 @@ export function strings(lang: Lang): Strings {
 export function pick(texts: LocalizedText[] | undefined, lang: Lang): string {
   if (!texts || texts.length === 0) return "";
   return (texts.find((t) => t.lang === lang) ?? texts.find((t) => t.lang === "ja") ?? texts[0]!).text;
+}
+
+/**
+ * Coverage text is station data (#259): a legacy plain string, or localized text. The requested language wins,
+ * then ja, then the first entry; a plain string is shown exactly as the station wrote it.
+ */
+export function coverageText(value: string | LocalizedText[] | undefined, lang: Lang): string {
+  if (value === undefined) return "";
+  return typeof value === "string" ? value : pick(value, lang);
 }
 
 export function initialLang(): Lang {

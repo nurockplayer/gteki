@@ -1,7 +1,7 @@
 {
-  "run_id": "overlay-ikebukuro-r700-ikebukuro-station-enu-v0-border-3661ff9fcb4b63c3736c",
+  "run_id": "overlay-ikebukuro-r700-ikebukuro-station-enu-v0-border-6f82fc6eacdc83d6c8f1",
   "command": "context-overlay",
-  "policy_version": "context-overlay-v1",
+  "policy_version": "context-overlay-v2",
   "station_id": "ikebukuro",
   "gteki_role": "context",
   "navigation_use": "NOT_FOR_ROUTING",
@@ -20,7 +20,7 @@
     "mode": "station-enu-frame",
     "frame_id": "ikebukuro-station-enu-v0",
     "station_json_path": "stations/ikebukuro/gteki/station.json",
-    "station_json_sha256": "de4318e353abfdbb9aeb8be88c8ca45eb8d081dd79f2b227dfef7d4c98121670",
+    "station_origin_sha256": "c387e18e5d90af281a8ec55e479d23fe52bcb394fccaa99b1a237d13ffeea36a",
     "origin_crs": "EPSG:6697"
   },
   "window": {
@@ -38,7 +38,7 @@
     "drape": "none",
     "baked_offset_m": 0,
     "evidence_path": "stations/ikebukuro/gteki/station.json",
-    "evidence_sha256": "de4318e353abfdbb9aeb8be88c8ca45eb8d081dd79f2b227dfef7d4c98121670",
+    "evidence_value_sha256": "94c5e6319a416f70ac5b5734482f03f7536b3252d6aa2ed165dbc61d220f53ce",
     "evidence_field": "floors[ordinal 0].renderElevationM"
   },
   "credit": "出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2026.html）を加工して作成／測量法に基づく国土地理院長承認（複製）R 7JHf 351",
@@ -89,6 +89,6 @@
   },
   "bbox_local_ENU": null,
   "outputs": {},
-  "tool_input_sha256": "d9d46fffddd346e6b13fe668a0bffe706b2002980064dbccc6e28c3b5916bce6",
+  "tool_input_sha256": "bf2953766fccaf620496594f5b3b3870c481796c853392121da64869dcf30aa9",
   "tool_version": "0.1.0"
 }

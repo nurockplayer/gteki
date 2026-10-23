@@ -25,6 +25,37 @@ describe("live messages", () => {
     expect(routeLiveMessage(strings("ja"), failed)).toBe("データ上で確認できたルートがありません");
   });
 
+  it("announces stale freshness with its reason, and unknown facts by kind (#203 B5)", () => {
+    const stale = {
+      ok: true, totalLengthM: 203.4, estimatedSeconds: 170,
+      stale: true, expiredSourceIds: ["mlit-b1"], undatedSourceIds: [], oldestSourceDate: "2024-05-01",
+      unknowns: [{ kind: "hours", edgeIds: ["e1", "e2"] }, { kind: "hours", edgeIds: ["e3"] }, { kind: "wheelchair", edgeIds: ["e4"] }],
+    } as unknown as RouteResult;
+    expect(routeLiveMessage(strings("en"), stale)).toBe(
+      "Route found: 203 m, about 3 minutes. Possibly outdated. Source validity ended: mlit-b1. Hours unverified. Wheelchair access unknown",
+    );
+    expect(routeLiveMessage(strings("ja"), stale)).toBe("ルートが見つかりました：203m、約3分。情報が古い可能性。有効期限切れの出典: mlit-b1。営業時間未確認。車いす可否未確認");
+  });
+
+  it("says why the freshness is unknown, with the oldest date when no source is expired or undated", () => {
+    const unknownDate = { ok: true, totalLengthM: 100, estimatedSeconds: 100, stale: null, expiredSourceIds: [], undatedSourceIds: ["src-a"], oldestSourceDate: null, unknowns: [] } as unknown as RouteResult;
+    expect(routeLiveMessage(strings("en"), unknownDate)).toBe("Route found: 100 m, about 2 minutes. Data date unknown. Undated sources: src-a");
+    const noUndated = { ...unknownDate, undatedSourceIds: [], oldestSourceDate: "2024-01-02" } as unknown as RouteResult;
+    expect(routeLiveMessage(strings("en"), noUndated)).toBe("Route found: 100 m, about 2 minutes. Data date unknown. Oldest source 2024-01-02");
+    const staleNoExpired = { ...unknownDate, stale: true, undatedSourceIds: [], oldestSourceDate: null } as unknown as RouteResult;
+    expect(routeLiveMessage(strings("en"), staleNoExpired)).toBe("Route found: 100 m, about 2 minutes. Possibly outdated. Oldest source ?");
+  });
+
+  it("a fresh route with no unknown facts stays one sentence", () => {
+    const fresh = { ...found, stale: false, unknowns: [], expiredSourceIds: [], undatedSourceIds: [] } as unknown as RouteResult;
+    expect(routeLiveMessage(strings("en"), fresh)).toBe("Route found: 203 m, about 3 minutes");
+  });
+
+  it("names an unknown kind it has no label for by its own key, once", () => {
+    const odd = { ...found, stale: false, unknowns: [{ kind: "mystery", edgeIds: ["e"] }, { kind: "mystery", edgeIds: ["f"] }] } as unknown as RouteResult;
+    expect(routeLiveMessage(strings("en"), odd)).toBe("Route found: 203 m, about 3 minutes. mystery");
+  });
+
   it("search count and the empty-results message", () => {
     expect(searchLiveMessage(strings("en"), 5)).toBe("5 results");
     expect(searchLiveMessage(strings("en"), 1)).toBe("1 result");

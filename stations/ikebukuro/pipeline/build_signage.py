@@ -13,6 +13,10 @@ that no stretch of a passage goes more than REPEAT_SPACING_M without one (#108).
 double-sided sign: its front faces walkers leaving the edge's `from` node and lists what lies ahead
 toward `to`, its back is read walking the other way. Each exit / gate carries a distance counted down
 along the graph's own edge lengths. Content is as factual as the end signs; positions are design.
+Between the repeaters the same edge gets place boards (`kind: "place"`, #108): a blue board naming the
+halls ahead and behind (the three B1 halls, whose names are the area names printed on the reference
+map) with graph walking distances, so that a long passage alternates two visibly different kinds of
+sign about every 12 m instead of repeating one.
 Output: stations/ikebukuro/scene/signage.json (station-owned display data).
 """
 import heapq
@@ -40,6 +44,12 @@ REPEAT_MIN_EDGE_M = 100.0
 REPEAT_SPACING_M = 24.0
 REPEAT_MAX_EXITS = 3
 REPEAT_MAX_GATES = 1
+PLACE_MAX = 1  # halls named per face of a place board: the nearest one, so every board of a passage reads alike
+# Areas a board may name: the three B1 halls (西口 / 西口（南） / 東口). Each POI's connector is the hall's own junction,
+# so "~N m" is the walk to the hall. The passages (中央通路, 北通路, 南通路) are linear areas whose connector is an
+# arbitrary junction inside them; a distance to it would misstate where the passage begins, so they are not named.
+PLACE_IDS = {"west-exit-b1", "west-exit-south-b1", "east-exit-b1"}
+PLACE_MIN_GAP_M = 6.0  # a place board stays at least this far (polyline m) from the neighbouring repeaters
 DIST_STEP_M = 5.0
 
 
@@ -251,7 +261,34 @@ def uniq(pois, cap):
     return res[:cap]
 
 
-def repeaters(graph, edges, ahead, offset, ceil, segs, sgrid):
+def place_dists(adj, dest, start, banned_edge):
+    """Graph distance from `start` to each nameable hall (PLACE_IDS) over verified edges, never
+    using `banned_edge` (the passage being signed): {poi id: (distance, poi)}."""
+    dist = {start: 0.0}
+    pq = [(0.0, start)]
+    while pq:
+        d, u = heapq.heappop(pq)
+        if d > dist[u]:
+            continue
+        for v, e, _ in adj.get(u, []):
+            if e["id"] == banned_edge:
+                continue
+            if d + e["lengthM"] < dist.get(v, 1e18):
+                dist[v] = d + e["lengthM"]
+                heapq.heappush(pq, (dist[v], v))
+    best = {}
+    for node, d in dist.items():
+        for p in dest.get(node, []):
+            if p["id"] in PLACE_IDS and d < best.get(p["id"], (1e18, None))[0]:
+                best[p["id"]] = (d, p)
+    return best
+
+
+def place_item(p, d):
+    return {"id": p["id"], "ja": name(p, "ja"), "en": name(p, "en"), "distanceM": step_dist(d)}
+
+
+def repeaters(graph, edges, ahead, offset, ceil, segs, sgrid, adj, dest):
     """Repeater signs along long verified edges (see the module docstring), in edge-id order."""
     src = json.load(open(os.path.join(ROOT, "data", "graph.src.json")))
     fact_of = {(e["from"], e["to"]): e.get("access") for e in src["edges"]}
@@ -310,6 +347,49 @@ def repeaters(graph, edges, ahead, offset, ceil, segs, sgrid):
                 "gates": fg,
                 "arrow": "up",
                 "back": [{"arrow": "up", "exits": be, "gates": bg}],
+                "basis": basis,
+            })
+        # Place boards in the middle of each stretch between neighbouring signs (end sign, repeaters, end sign).
+        rep_pos = [a_end] + [a_end + gap * k / (n + 1) for k in range(1, n + 1)] + [b_end]
+        ahead_places = place_dists(adj, dest, e["to"], eid)
+        behind_places = place_dists(adj, dest, e["from"], eid)
+
+        def near(table, at):
+            items = sorted(((d + at, pid, p) for pid, (d, p) in table.items()), key=lambda t: (t[0], t[1]))
+            return [place_item(p, d) for d, _, p in items[:PLACE_MAX]]
+
+        for j in range(n + 1):
+            lo, hi = rep_pos[j], rep_pos[j + 1]
+            want = (lo + hi) / 2
+            cands = [want] + [want + sg * q for q in (1, 2, 3) for sg in (1, -1)]
+            cands = [c for c in cands if lo + PLACE_MIN_GAP_M <= c <= hi - PLACE_MIN_GAP_M]
+            best, pos = choose_place(geom, ceil, segs, sgrid, cands)
+            if best is None:
+                print(f"warning: no place board {eid} #{j + 1}", file=sys.stderr)
+                continue
+            px, py, bottom, dirx, diry, ceiling_z, max_w, scale = best
+            fp = near(ahead_places, (total - pos) * k_len)
+            bp = near(behind_places, pos * k_len)
+            if not fp or not bp:
+                continue
+            fact = fact_of.get((e["from"], e["to"]))
+            basis = [f"graph:{eid}"] + [f"poi:{i}" for i in sorted({q["id"] for q in fp + bp})]
+            if fact:
+                basis.append(f"fact:{fact}")
+            out.append({
+                "id": f"sign-place-{eid}-{j + 1}",
+                "kind": "place",
+                "atNode": e["from"],
+                "position": {"x": round(px, 3), "y": round(py, 3), "z": round(bottom + SIGN_H * scale / 2, 3)},
+                "maxWidthM": max_w,
+                "scale": scale,
+                "facing": {"x": round(-dirx, 4), "y": round(-diry, 4)},
+                "ceilingZ": ceiling_z,
+                "exits": [],
+                "gates": [],
+                "places": fp,
+                "arrow": "up",
+                "back": [{"arrow": "up", "exits": [], "gates": [], "places": bp}],
                 "basis": basis,
             })
     return out
@@ -434,7 +514,7 @@ def main():
                 "arrow": "up",
                 "back": sorted(blocks.values(), key=lambda b: ARROW_ORDER[b["arrow"]]),
             })
-    signs += repeaters(graph, edges, ahead, offset, ceil, segs, sgrid)
+    signs += repeaters(graph, edges, ahead, offset, ceil, segs, sgrid, adj, dest)
     out = os.path.join(ROOT, "scene", "signage.json")
     write_json(out, {"generatedFrom": "gteki/graph.json + gteki/pois.json (verified edges only)", "signs": signs}, indent=1)
     print(f"{len(signs)} signs -> {out}")
