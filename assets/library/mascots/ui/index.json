@@ -1,0 +1,19 @@
+{
+  "cat": {
+    "neutral": "cat_neutral.svg",
+    "happy": "cat_happy.svg",
+    "encourage": "cat_encourage.svg",
+    "sorry": "cat_sorry.svg",
+    "unsure": "cat_unsure.svg"
+  },
+  "dog": {
+    "neutral": "dog_neutral.svg",
+    "happy": "dog_happy.svg",
+    "encourage": "dog_encourage.svg",
+    "sorry": "dog_sorry.svg",
+    "unsure": "dog_unsure.svg"
+  },
+  "licence": "CC-BY-4.0",
+  "attribution": "GTEki contributors",
+  "design_ref": "#132 v1"
+}
