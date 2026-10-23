@@ -6,7 +6,7 @@ import { protectFareAndAccess } from "../scene/fare-fence.ts";
 import { buildLayout, type Plan } from "../scene/layout.ts";
 import { runAnchors } from "../scene/kit/anchors.ts";
 import {
-  buildStationCatalog, CATALOG_FIT_LIMITS, CATALOG_ID_PATTERN, escalatorProblem, validateStationCatalog, type CatalogEntry, type StationCatalog,
+  buildStationCatalog, CATALOG_FIT_LIMITS, CATALOG_ID_PATTERN, ESCALATOR_AO_RES, escalatorProblem, STAIR_AO_RES, validateStationCatalog, type CatalogEntry, type StationCatalog,
 } from "../scene/kit/catalog.ts";
 import { escalatorPlacement, stairPlacement } from "../scene/kit/place.ts";
 import { parseKitManifest } from "../scene/kit/manifest.ts";
@@ -30,16 +30,17 @@ describe("Shinjuku station catalog for the Lane E kit (Issue #94)", () => {
     const kit = JSON.parse(readFileSync(new URL("../../../tools/blender/catalog/kit_v0_1.json", import.meta.url), "utf8"));
     expect(Object.keys(kit)).toEqual(expect.arrayContaining(["catalog", "version", "notes", "assets"]));
     for (const k of ["catalog", "version", "notes", "assets"]) expect(committed).toHaveProperty(k);
-    // ao_res and gteki_role are optional keys: dressings carry both, the gate carries collision false only.
-    for (const e of committed.assets) expect(Object.keys(e).filter((k) => !["ao_res", "gteki_role", "collision"].includes(k)).sort()).toEqual(["dimension_basis", "generator", "id", "notes", "params", "tags"]);
+    // anchor, ao_res and gteki_role are optional keys: dressings carry all three, the gate carries collision false only.
+    for (const e of committed.assets) expect(Object.keys(e).filter((k) => !["anchor", "ao_res", "gteki_role", "collision"].includes(k)).sort()).toEqual(["dimension_basis", "generator", "id", "notes", "params", "tags"]);
   });
 
-  it("dressings carry ao_res 128 at entry level (stairs and escalators); the gate array carries none", () => {
+  it("dressings carry category AO and linear_run anchor at entry level; the gate array carries neither", () => {
     const dressings = committed.assets.filter((e) => e.generator !== "gate_array");
     expect(dressings.map((e) => e.generator).filter((g) => g === "escalator_dressing").length).toBe(10);
     expect(dressings.map((e) => e.generator).filter((g) => g === "stair_dressing").length).toBe(22);
     for (const e of dressings) {
-      expect(e.ao_res).toBe(128);
+      expect(e.ao_res).toBe(e.generator === "stair_dressing" ? STAIR_AO_RES : ESCALATOR_AO_RES);
+      expect(e.anchor).toBe("linear_run");
       expect(e.params).not.toHaveProperty("ao_res");
       // Visual-only: an explicit null role, so Lane E's builder does not tag them stairs_ramps or transport.
       expect(e).toHaveProperty("gteki_role", null);
@@ -47,6 +48,7 @@ describe("Shinjuku station catalog for the Lane E kit (Issue #94)", () => {
     }
     for (const e of committed.assets.filter((x) => x.generator === "gate_array")) {
       expect(e).not.toHaveProperty("ao_res");
+      expect(e).not.toHaveProperty("anchor");
       expect(e).not.toHaveProperty("gteki_role");
       // Lane E strips the gate's COL_* nodes, so Godot builds no StaticBody for it.
       expect(e).toHaveProperty("collision", false);
@@ -145,8 +147,11 @@ describe("Shinjuku station catalog for the Lane E kit (Issue #94)", () => {
     expect(validateStationCatalog(mutate(gate, { collision: undefined })).join()).toMatch(/collision must be false/);
     expect(validateStationCatalog(mutate(base, { collision: false as never })).join()).toMatch(/collision is set on the gate array only/);
     expect(validateStationCatalog(mutate(base, { ao_res: 64 as never })).join()).toMatch(/ao_res must be one of/);
-    expect(validateStationCatalog(mutate(base, { ao_res: 256 })).join()).toMatch(/ao_res must be 128/);
+    expect(validateStationCatalog(mutate(base, { ao_res: 128 })).join()).toMatch(/ao_res must be 256/);
+    expect(validateStationCatalog(mutate(stair, { ao_res: 256 })).join()).toMatch(/ao_res must be 128/);
     expect(validateStationCatalog(mutate(stair, { ao_res: undefined })).join()).toMatch(/ao_res must be 128/);
+    expect(validateStationCatalog(mutate(base, { anchor: undefined })).join()).toMatch(/anchor must be linear_run/);
+    expect(validateStationCatalog(mutate(gate, { anchor: "linear_run" })).join()).toMatch(/anchor is set on stair and escalator/);
     expect(validateStationCatalog(mutate(gate, { ao_res: 128 })).join()).toMatch(/stair and escalator dressings only/);
     expect(validateStationCatalog({ ...committed, assets: [base, base] }).join()).toMatch(/duplicate id/);
     expect(validateStationCatalog({})).not.toEqual([]);

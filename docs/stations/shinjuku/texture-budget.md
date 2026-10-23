@@ -55,6 +55,8 @@ Reasoning:
 | kit (#94, mobile tier with AO) | 12 | 0 | — |
 | **total** | **112** | **189.5** | **yes** |
 
+For #94, the regenerated catalog's mobile kit texture estimate is about 3.1 MB + 2.5 MiB for the ten escalator dressings at `ao_res: 256`, or approximately 5.6 MiB. This is an estimate from the Lane E AO figures, not a device measurement; the `Today` value above remains the measured flag-off baseline.
+
 How to check it: run `texture-memory.test.ts`, or the same helper on another station's scene, and compare the low-tier rows with this table.
 
 Ikebukuro #180's sign atlas, 53–64 MiB on the phone, is above the 40 MiB signage line. Per the director it is **not blocked** by this line; the Friday real-phone shots decide it.
