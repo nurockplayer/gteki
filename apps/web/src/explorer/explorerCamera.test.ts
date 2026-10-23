@@ -1,8 +1,9 @@
 import * as THREE from "three";
 import { describe, expect, it, vi } from "vitest";
-import { WALKER_SPEED } from "@gteki/scene-api";
+import { WALKER_BODY, WALKER_SPEED } from "@gteki/scene-api";
 import { Explorer } from "./explorer.ts";
-import { FOLLOW, NO_SLOPE, followPose, type CameraHold } from "./followCamera.ts";
+import { FOLLOW, NO_SLOPE, SLOPE, descentAimDrop, followPose, type CameraHold } from "./followCamera.ts";
+import { guidePaceSpans, type PaceSpan } from "./guidePace.ts";
 
 /** Exercise the real camera wiring with CPU raycasts; no renderer or browser is constructed. */
 function cameraStand() {
@@ -18,7 +19,8 @@ function cameraStand() {
     setFov: vi.fn(), avatarRig: { root: new THREE.Group(), setFade: vi.fn() },
     composer: { setAvatarFade: vi.fn() },
     qaCamera: {} as CameraHold, qaCameraSnap: false, qaAvatarFade: null as number | null,
-    boomActual: 0, cameraFade: 1,
+    boomActual: 0, cameraFade: 1, descentDrop: 0,
+    guide: null as { s: number; spans: readonly PaceSpan[] } | null,
   };
   return Object.assign(Object.create(Explorer.prototype) as typeof state, state);
 }
@@ -212,5 +214,119 @@ describe("Explorer placement snapping", () => {
     expect(state.pos.x).toBe(0);
     place(state, state.teleported);
     expect(state.boomActual).toBeCloseTo(FOLLOW.defaultDistance);
+  });
+});
+
+describe("Explorer descending framing", () => {
+  it.each([0.5, Math.tan(Math.PI / 6)].flatMap((grade) => [-0.12, 0.2].map((pitch) => ({ grade, pitch }))))("keeps feet above the bottom eight percent at 60 degrees, descending at grade=$grade, pitch=$pitch", ({ grade, pitch }) => {
+    const state = cameraStand();
+    state.pitch = pitch;
+    // Run the real FOV transition as well as the camera placement, without a renderer.
+    state.setFov.mockImplementation((...args: unknown[]) => {
+      (Explorer.prototype as unknown as { setFov(target: number, snap: boolean, dt: number): void })
+        .setFov.apply(state, args as [number, boolean, number]);
+    });
+    place(state, true);
+    const runMps = 0.9 / Math.hypot(1, grade);
+    for (let frame = 0; frame < 120; frame++) {
+      state.pos.z -= runMps / 60;
+      state.pos.y -= runMps * grade / 60;
+      place(state);
+    }
+    expect(state.camera.fov).toBe(60);
+    state.camera.updateMatrixWorld(true);
+    const footY = state.pos.clone().project(state.camera).y;
+    // Negative control: the unchanged boom with the original pure aim target. At an upward-looking
+    // pitch it reproduces the reported crop; the default pitch already clears -0.84 before the fix.
+    const original = state.camera.clone();
+    original.lookAt(followPose(state.pos.clone().add(new THREE.Vector3(0, WALKER_BODY.eyeM, 0)), state.yaw, pitch).target);
+    original.updateMatrixWorld(true);
+    const beforeY = state.pos.clone().project(original).y;
+    process.stdout.write(`descending grade=${grade.toFixed(6)}, pitch=${pitch}: foot NDC ${beforeY.toFixed(6)} -> ${footY.toFixed(6)}\n`);
+    if (pitch > 0) expect(beforeY).toBeLessThan(-0.84);
+    expect(footY).toBeGreaterThan(-0.84);
+    expect(footY).toBeGreaterThan(beforeY);
+  });
+
+  it.each([0, 0.5])("preserves the pure pose on level/up-stairs at grade=%s", (grade) => {
+    const state = cameraStand();
+    state.reducedMotion = true; // Compare the solved pose directly, without positional damping.
+    for (let frame = 0; frame < 120; frame++) {
+      state.pos.z -= 0.9 / 60;
+      state.pos.y += grade * 0.9 / 60;
+      place(state);
+      const pose = followPose(state.pos.clone().add(new THREE.Vector3(0, WALKER_BODY.eyeM, 0)), state.yaw, state.pitch);
+      const expected = new THREE.PerspectiveCamera();
+      expected.position.copy(pose.pivot).addScaledVector(pose.back, FOLLOW.defaultDistance);
+      expected.lookAt(pose.target);
+      expect(state.descentDrop).toBe(0);
+      expect(state.camera.position.distanceTo(expected.position)).toBeLessThan(1e-12);
+      expect(state.camera.quaternion.angleTo(expected.quaternion)).toBeLessThan(1e-7);
+    }
+  });
+
+  it("eases descending aim in and out, and snaps for reduced motion and placements", () => {
+    const state = cameraStand();
+    place(state, true);
+    for (let frame = 0; frame < 30; frame++) {
+      state.pos.y -= 0.4 / 60;
+      place(state);
+    }
+    expect(state.descentDrop).toBeGreaterThan(0);
+    expect(state.descentDrop).toBeLessThan(descentAimDrop(state.slope));
+    state.reducedMotion = true;
+    state.pos.y -= 0.4 / 60;
+    place(state);
+    expect(state.descentDrop).toBe(descentAimDrop(state.slope));
+    state.reducedMotion = false;
+    const descending = state.descentDrop;
+    for (let frame = 0; frame < 30; frame++) place(state);
+    expect(state.descentDrop).toBeGreaterThan(0);
+    expect(state.descentDrop).toBeLessThan(descending);
+    for (let frame = 0; frame < 90; frame++) place(state);
+    expect(state.descentDrop).toBe(0);
+    state.descentDrop = descending;
+    place(state, true);
+    expect(state.descentDrop).toBe(0);
+    expect(state.slope).toEqual(NO_SLOPE);
+  });
+});
+
+describe("Explorer guide stair lens", () => {
+  it.each(["stairs", "escalator"] as const)("widens on shallow %s and holds across a short landing", (mode) => {
+    const state = Object.assign(cameraStand(), { mode: "guide", lastAvatarPos: new THREE.Vector3(), teleported: false, bodyYaw: 0 });
+    const route = [
+      { x: 0, y: 0, z: 0, zKnown: true, stepIndex: -1, floorId: "b1" },
+      { x: 0, y: 0.5, z: -10, zKnown: true, stepIndex: 0, floorId: "b1" },
+      { x: 0, y: 0.5, z: -20, zKnown: true, stepIndex: 1, floorId: "b1" },
+    ];
+    const spans = guidePaceSpans(route, [{ mode }, { mode: "walk" }], []);
+    qa(state).startGuide(route, 0, [], spans);
+    place(state, true);
+    expect(state.setFov.mock.lastCall?.[0]).toBe(60);
+    for (let i = 0; i < 60; i++) {
+      state.guide!.s += 0.9 / 60;
+      state.pos.y += 0.045 / 60; // Far below SLOPE.enter.
+      place(state);
+    }
+    expect(state.slope.speed).toBeLessThan(SLOPE.enter);
+    expect(state.setFov.mock.lastCall?.[0]).toBe(60);
+    state.guide!.s = spans[0]!.toS;
+    for (let i = 0; i < SLOPE.hold * 60 - 1; i++) place(state);
+    expect(state.setFov.mock.lastCall?.[0]).toBe(60);
+    // Another stair flight before hold expires resets the landing timer.
+    state.guide!.s = 1;
+    place(state);
+    state.guide!.s = spans[0]!.toS;
+    for (let i = 0; i < SLOPE.hold * 60 + 1; i++) place(state);
+    expect(state.setFov.mock.lastCall?.[0]).toBe(50);
+  });
+
+  it("keeps level walking at 50 even if an old guide has a stairs span", () => {
+    const state = cameraStand();
+    state.guide = { s: 1, spans: [{ fromS: 0, toS: 10, maxMps: 0.9, scales: true, mode: "stairs" }] };
+    for (let i = 0; i < 120; i++) place(state);
+    expect(state.slope.on).toBe(false);
+    expect(state.setFov.mock.lastCall?.[0]).toBe(50);
   });
 });
