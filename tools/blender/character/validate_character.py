@@ -29,7 +29,7 @@ TIME_TOLERANCE_S = 1e-4
 MIB = 1024 * 1024
 
 # §3 export skeleton: joint -> expected parent (the UE mannequin chain). The contract fixes the names; the parent of
-# each joint is read from its UE mannequin role, and a different parent is a warning, not a failure (see the report).
+# each joint follows the UE mannequin chain, and a different parent fails check 2.
 JOINT_PARENTS = {
     "root": None, "pelvis": "root", "spine_01": "pelvis", "spine_02": "spine_01", "spine_03": "spine_02",
     "neck_01": "spine_03", "head": "neck_01", "daypack": "spine_03",
@@ -60,17 +60,16 @@ TIERS = {
                    texture_gpu_bytes=2 * MIB, file_fail=2 * MIB, file_warn=int(1.5 * MIB)),
 }
 
-# §6 clips: name -> (kind, calibration speed in m/s; None where the table gives a range).
+# §6 clips: name -> (kind, calibration speed in m/s).
 CLIPS = {
     "idle": ("cycle", 0.0), "walk": ("cycle", 1.45), "jog": ("cycle", 2.30), "run": ("cycle", 3.20),
-    "start_l": ("one-shot", None), "start_r": ("one-shot", None),
-    "stop_l": ("one-shot", None), "stop_r": ("one-shot", None),
+    "start_l": ("one-shot", 1.45), "start_r": ("one-shot", 1.45),
+    "stop_l": ("one-shot", 1.45), "stop_r": ("one-shot", 1.45),
     "turn90_l": ("one-shot", 0.0), "turn90_r": ("one-shot", 0.0),
     "turn180_l": ("one-shot", 0.0), "turn180_r": ("one-shot", 0.0),
     "stairs_up": ("cycle", 0.9), "stairs_down": ("cycle", 0.9), "escalator_stand": ("cycle", 0.0),
 }
-START_STOP_SPEED = (0.0, 1.45)
-TURN_YAW = {"turn90_l": 90.0, "turn90_r": 90.0, "turn180_l": 180.0, "turn180_r": 180.0}
+TURN_YAW = {"turn90_l": 90.0, "turn90_r": -90.0, "turn180_l": 180.0, "turn180_r": -180.0}
 STAIRS = dict(riser_m=0.16, tread_m=0.30, steps_per_cycle=2)
 PELVIS_DRIFT_M = 0.01
 LOOP_POP_DEG = 0.5
@@ -280,11 +279,12 @@ def image_size(raw):
 # ---- the validator ---------------------------------------------------------------------------------------------------
 
 class Validator:
-    def __init__(self, name, data, tier, drift_gate=True):
+    def __init__(self, name, data, tier, drift_gate=True, required_clips=None):
         if tier not in TIERS:
             raise ValueError(f"unknown tier {tier!r}")
         self.name, self.data, self.tier = name, data, tier
         self.drift_gate = drift_gate  # False: check 9 is measured and reported, but its limits only warn
+        self.required_clips = set(CLIPS if required_clips is None else required_clips)
         self.result = dict(file=name, tier=tier, bytes=len(data), triangles=0, primitives=0, texture_gpu_bytes=0,
                            images=[], joint_count=0, parents={}, mesh_top_m=None, clips={}, messages=[])
 
@@ -404,9 +404,8 @@ class Validator:
                 moved.append(f"{name} under {parent_name} (expected {expected})")
         if "root" in joints and self.result["parents"].get("root") != arm:
             self.fail(2, f"the root joint must be a direct child of {arm}")
-        moved = [entry for entry in moved if not entry.startswith("root ")]
         if moved:
-            self.warn(2, f"joint parents differ from the UE mannequin chain: {'; '.join(moved)}")
+            self.fail(2, f"joint parents differ from the UE mannequin chain: {'; '.join(moved)}")
         return joints
 
     # -- 3. skin attributes --
@@ -486,6 +485,12 @@ class Validator:
             name = material.get("name", "?")
             if material.get("alphaMode", "OPAQUE") != "OPAQUE":
                 self.fail(5, f"material {name!r} alphaMode is {material['alphaMode']} (only OPAQUE)")
+            if self.tier == "mobile":
+                pbr = material.get("pbrMetallicRoughness", {})
+                if pbr.get("metallicRoughnessTexture") is not None:
+                    self.fail(5, f"mobile material {name!r} carries a metallicRoughnessTexture (base colour only)")
+                if material.get("occlusionTexture") is not None:
+                    self.fail(5, f"mobile material {name!r} carries an occlusionTexture (base colour only)")
             for extension in material.get("extensions", {}):
                 if extension in FORBIDDEN_MATERIAL_EXTENSIONS:
                     self.fail(5, f"material {name!r} uses {extension}")
@@ -507,6 +512,7 @@ class Validator:
 
     def check_budgets(self, vis):
         limits = TIERS[self.tier]
+        image_sizes = []
         for index in vis.values():
             node = self.nodes[index]
             mesh = item(self.doc.get("meshes", []), node["mesh"]) if "mesh" in node else {}
@@ -522,11 +528,30 @@ class Validator:
             self.fail(6, f"{self.result['primitives']} primitives is over the limit of {limits['primitives']}")
         for i, image in enumerate(self.doc.get("images", [])):
             width, height = image_size(self.image_bytes(image))
+            image_sizes.append((width, height))
             gpu = int(width * height * 4 * 4 / 3)
             self.result["images"].append(dict(index=i, width=width, height=height, gpu_bytes=gpu))
             self.result["texture_gpu_bytes"] += gpu
             if max(width, height) > limits["max_texture"]:
                 self.fail(6, f"image {i} is {width}x{height}, over the {self.tier} size of {limits['max_texture']}²")
+        if self.tier == "mobile":
+            for name, index in vis.items():
+                max_size = 512 if name == "VIS_body" else 256
+                mesh = item(self.doc.get("meshes", []), self.nodes[index]["mesh"])
+                for primitive in mesh.get("primitives", []):
+                    material_index = primitive.get("material")
+                    if material_index is None:
+                        continue
+                    material = item(self.doc.get("materials", []), material_index)
+                    texture = material.get("pbrMetallicRoughness", {}).get("baseColorTexture")
+                    if texture is None:
+                        continue
+                    source = item(self.doc.get("textures", []), texture["index"]).get("source")
+                    if source is None:
+                        continue
+                    width, height = item(image_sizes, source)
+                    if max(width, height) > max_size:
+                        self.fail(6, f"{name} base-colour image is {width}x{height}, over the mobile size of {max_size}²")
         if self.result["texture_gpu_bytes"] > limits["texture_gpu_bytes"]:
             self.fail(6, f"texture GPU bytes {self.result['texture_gpu_bytes']} are over the {self.tier} limit of "
                          f"{limits['texture_gpu_bytes']}")
@@ -543,7 +568,7 @@ class Validator:
         joint_nodes = {index: name for name, index in joints.items()}
         animations = self.doc.get("animations", [])
         names = [animation.get("name", "") for animation in animations]
-        missing = [name for name in CLIPS if name not in names]
+        missing = [name for name in CLIPS if name in self.required_clips and name not in names]
         unknown = [name for name in names if name not in CLIPS]
         if missing:
             self.fail(7, f"required §6 clips missing: {', '.join(missing)}")
@@ -706,8 +731,10 @@ class Validator:
             calib = None
         elif speed is not None and abs(calib - speed) > 1e-6:
             self.fail(8, f"clip {name!r} calib_speed_mps must be {speed}, got {calib}")
-        elif speed is None and kind is not None and not START_STOP_SPEED[0] <= calib <= START_STOP_SPEED[1]:
-            self.fail(8, f"clip {name!r} calib_speed_mps must be within {START_STOP_SPEED[0]}-{START_STOP_SPEED[1]}")
+        if name.startswith(("start_", "stop_")):
+            if not number(calib) or abs(calib - 1.45) > 1e-6:
+                self.fail(8, f"clip {name!r} calib_speed_mps must be 1.45")
+            self.check_speed_profile(name, entry.get("speed_profile"))
         distance = entry.get("distance_per_cycle_m")
         if kind == "cycle" and distance is None:
             self.fail(8, f"cycle {name!r} lacks distance_per_cycle_m")
@@ -718,12 +745,43 @@ class Validator:
                              f"({want:.4f}) within 1 %")
         self.check_contacts(name, entry.get("contacts"), kind, clip)
         self.check_provenance(name, entry.get("provenance"))
-        if name in TURN_YAW and (not number(entry.get("yaw_deg")) or abs(abs(entry["yaw_deg"]) - TURN_YAW[name]) > 1):
-            self.fail(8, f"turn {name!r} must record yaw_deg of ±{TURN_YAW[name]:.0f}, got {entry.get('yaw_deg')!r}")
+        if name in TURN_YAW and (not number(entry.get("yaw_deg")) or abs(entry["yaw_deg"] - TURN_YAW[name]) > 1):
+            self.fail(8, f"turn {name!r} must record yaw_deg {TURN_YAW[name]:+.0f} ±1°, got {entry.get('yaw_deg')!r}")
         if name.startswith("stairs_"):
             for key, value in STAIRS.items():
                 if not number(entry.get(key)) or abs(entry[key] - value) > 1e-6:
                     self.fail(8, f"stairs {name!r} must record {key} {value}, got {entry.get(key)!r}")
+
+    def check_speed_profile(self, name, profile):
+        if (not isinstance(profile, list) or len(profile) < 2 or
+                any(not isinstance(pair, list) or len(pair) != 2 or not all(number(v) for v in pair)
+                    for pair in profile)):
+            self.fail(8, f"clip {name!r} speed_profile must be a list of [u, mps] pairs")
+            return
+        times = [pair[0] for pair in profile]
+        speeds = [pair[1] for pair in profile]
+        if abs(times[0]) > 1e-6 or abs(times[-1] - 1) > 1e-6 or any(b <= a for a, b in zip(times, times[1:])):
+            self.fail(8, f"clip {name!r} speed_profile u must rise strictly from 0 to 1")
+        if any(speed < 0 for speed in speeds):
+            self.fail(8, f"clip {name!r} speed_profile mps values must be non-negative")
+        expected = (0.0, 1.45) if name.startswith("start_") else (1.45, 0.0)
+        if abs(speeds[0] - expected[0]) > 1e-3 or abs(speeds[-1] - expected[1]) > 1e-3:
+            self.fail(8, f"clip {name!r} speed_profile must begin at {expected[0]} and end at {expected[1]} ±1e-3")
+
+    @staticmethod
+    def profile_distance(profile, u, duration):
+        """Integrate a piecewise-linear speed profile over normalized clip time."""
+        distance, end = 0.0, min(max(u, 0.0), 1.0)
+        for (u0, v0), (u1, v1) in zip(profile, profile[1:]):
+            span = min(end, u1) - u0
+            if span <= 0:
+                break
+            span = min(span, u1 - u0)
+            vend = v0 + (v1 - v0) * span / (u1 - u0)
+            distance += (v0 + vend) * 0.5 * span * duration
+            if end <= u1:
+                break
+        return distance
 
     def check_contacts(self, name, contacts, kind, clip):
         if not isinstance(contacts, dict):
@@ -793,6 +851,7 @@ class Validator:
     def glide(self, name, entry, calib):
         """Velocity (m/s) of a planted foot under the ideal in-place motion: +Z, or along the stair slope."""
         if name.startswith("stairs_"):
+            # §6 defines stair calibration speed along the stair slope.
             riser = entry.get("riser_m") if number(entry.get("riser_m")) else STAIRS["riser_m"]
             tread = entry.get("tread_m") if number(entry.get("tread_m")) else STAIRS["tread_m"]
             length = math.hypot(riser, tread)
@@ -816,11 +875,22 @@ class Validator:
             frames = clip["frames"]
             positions = [self.foot_points(clip["tracks"], refs, feet, f / FPS) for f in range(frames + 1)]
             cycle = CLIPS[name][0] == "cycle"
+            profile = entry.get("speed_profile")
+            glide_positions = None
+            profile_valid = (isinstance(profile, list) and len(profile) >= 2 and
+                             all(isinstance(pair, list) and len(pair) == 2 and all(number(v) for v in pair)
+                                 for pair in profile) and abs(profile[0][0]) <= 1e-6 and
+                             abs(profile[-1][0] - 1) <= 1e-6 and
+                             all(b[0] > a[0] for a, b in zip(profile, profile[1:])))
+            if name.startswith(("start_", "stop_")) and profile_valid:
+                glide_positions = [self.profile_distance(profile, f / frames, clip["duration"])
+                                   for f in range(frames + 1)]
             drift = {}
             for side in ("l", "r"):
                 worst = 0.0
                 for window in entry["contacts"].get(side) or []:
-                    worst = max(worst, self.window_drift(positions, side, window, frames, cycle, velocity))
+                    worst = max(worst, self.window_drift(positions, side, window, frames, cycle, velocity,
+                                                         glide_positions))
                 drift[side] = round(worst, 5)
             limit = DRIFT_LIMITS_M[name]
             self.result["clips"].setdefault(name, {}).update(foot_drift_m=drift, drift_limit_m=limit,
@@ -838,7 +908,7 @@ class Validator:
         return points
 
     @staticmethod
-    def window_drift(positions, side, window, frames, cycle, velocity):
+    def window_drift(positions, side, window, frames, cycle, velocity, glide_positions=None):
         """Largest horizontal travel of a planted heel or ball inside one stance window, the ideal glide removed."""
         if not isinstance(window, list) or len(window) != 2 or not all(number(x) for x in window) or not frames:
             return 0.0
@@ -853,8 +923,12 @@ class Validator:
             corrected = []
             for f in steps:
                 point = positions[f % frames if cycle else f][side][ref]
-                elapsed = (f - first) / FPS
-                corrected.append([p - v * elapsed for p, v in zip(point, velocity)])
+                if glide_positions is not None:
+                    displacement = glide_positions[f] - glide_positions[first]
+                    corrected.append([point[0], point[1], point[2] - displacement])
+                else:
+                    elapsed = (f - first) / FPS
+                    corrected.append([p - v * elapsed for p, v in zip(point, velocity)])
             floor = min(p[1] for p in corrected)
             planted = []
             for k, p in enumerate(corrected):
@@ -872,6 +946,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("files", nargs="+", type=Path)
     parser.add_argument("--tier", required=True, choices=sorted(TIERS))
+    parser.add_argument("--clips", type=parse_clips, default=tuple(CLIPS),
+                        help="required §6 clip subset as comma-separated names (default: all)")
     parser.add_argument("--report", type=Path, help="write every measured value as JSON")
     parser.add_argument("--drift-advisory", action="store_true",
                         help="measure and report check 9 but only warn on its limits (the P0 sample, §8)")
@@ -879,7 +955,8 @@ def main():
     results = []
     for path in args.files:
         try:
-            result = Validator(str(path), path.read_bytes(), args.tier, not args.drift_advisory).check()
+            result = Validator(str(path), path.read_bytes(), args.tier, not args.drift_advisory,
+                               required_clips=args.clips).check()
         except OSError as error:
             result = dict(file=str(path), tier=args.tier, status="FAIL",
                           messages=[dict(level="FAIL", check=0, message=str(error))])
@@ -893,6 +970,18 @@ def main():
         args.report.write_text(json.dumps(dict(contract=CONTRACT, tier=args.tier, summary=counts, files=results),
                                           indent=2, allow_nan=False) + "\n")
     return int(counts["FAIL"] > 0)
+
+
+def parse_clips(value):
+    names = value.split(",")
+    unknown = sorted(set(names) - set(CLIPS))
+    if not value or any(not name for name in names):
+        raise argparse.ArgumentTypeError("--clips must be a comma-separated list of clip names")
+    if unknown:
+        raise argparse.ArgumentTypeError(f"unknown clip name(s): {', '.join(unknown)}")
+    if len(set(names)) != len(names):
+        raise argparse.ArgumentTypeError("--clips names must not repeat")
+    return tuple(names)
 
 
 if __name__ == "__main__":

@@ -7,11 +7,14 @@ Its moving cycles (walk, jog, run, stairs) plant each foot with a two-bone IK on
 backward at the calibration speed exactly; the other clips stand still.
 """
 import copy
+import contextlib
+import io
 import json
 import math
 from pathlib import Path
 import struct
 import sys
+import tempfile
 import unittest
 import zlib
 
@@ -121,9 +124,13 @@ def clip_meta(name):
         stride = name in MOVING
         entry["contacts"] = dict(l=[[0.0, 0.5]], r=[[0.5, 1.0]]) if stride else dict(l=[[0.0, 1.0]], r=[[0.5, 1.5]])
     else:
-        entry["contacts"] = dict(l=[[0.0, 1.0]], r=[[0.0, 1.0]])
+        if name.startswith(("start_", "stop_")):
+            entry["contacts"] = dict(l=[[0.0, 1 / frames]], r=[[0.0, 1 / frames]])
+            entry["speed_profile"] = [[0.0, 0.0], [1.0, 1.45]] if name.startswith("start_") else [[0.0, 1.45], [1.0, 0.0]]
+        else:
+            entry["contacts"] = dict(l=[[0.0, 1.0]], r=[[0.0, 1.0]])
     if name in vc.TURN_YAW:
-        entry["yaw_deg"] = vc.TURN_YAW[name] * (1 if name.endswith("_l") else -1)
+        entry["yaw_deg"] = vc.TURN_YAW[name]
     if name.startswith("stairs_"):
         entry.update(vc.STAIRS)
     return entry
@@ -274,6 +281,22 @@ class PassingCharacter(unittest.TestCase):
     def test_mobile_tier_passes_too(self):
         self.assertEqual(failures(validate(*character(tier="mobile"), tier="mobile")), [])
 
+    def test_idle_only_p0_sample_passes_with_cli_options(self):
+        doc, binary = character(clips=["idle"])
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "idle.glb"
+            path.write_bytes(encode(doc, binary))
+            old_argv = sys.argv
+            sys.argv = ["validate_character.py", "--tier", "high", "--clips", "idle",
+                        "--drift-advisory", str(path)]
+            try:
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    self.assertEqual(vc.main(), 0)
+                self.assertIn("1 files; 1 PASS", output.getvalue())
+            finally:
+                sys.argv = old_argv
+
 
 class FailingChecks(unittest.TestCase):
     def assertFailsCheck(self, result, check, text=""):
@@ -310,6 +333,15 @@ class FailingChecks(unittest.TestCase):
         doc, binary = character()
         doc["skins"].append(copy.deepcopy(doc["skins"][0]))
         self.assertFailsCheck(validate(doc, binary), 2, "exactly one skin")
+
+    def test_2_wrong_joint_parent_fails(self):
+        doc, binary = character()
+        pelvis = next(i for i, n in enumerate(doc["nodes"]) if n.get("name") == "pelvis")
+        correct_parent = next(i for i, n in enumerate(doc["nodes"]) if n.get("name") == "root")
+        wrong_parent = next(i for i, n in enumerate(doc["nodes"]) if n.get("name") == "spine_01")
+        doc["nodes"][correct_parent]["children"].remove(pelvis)
+        doc["nodes"][wrong_parent].setdefault("children", []).append(pelvis)
+        self.assertFailsCheck(validate(doc, binary), 2, "pelvis under spine_01")
 
     # 3. skin attributes
     def test_3_weight_sum(self):
@@ -359,12 +391,24 @@ class FailingChecks(unittest.TestCase):
         doc["extensionsUsed"] = ["KHR_texture_basisu"]
         self.assertFailsCheck(validate(doc, binary), 5, "KHR_texture_basisu")
 
+    def test_5_mobile_orm_texture_fails(self):
+        doc, binary = character(tier="mobile")
+        doc["materials"][0]["pbrMetallicRoughness"]["metallicRoughnessTexture"] = {"index": 0}
+        self.assertFailsCheck(validate(doc, binary, tier="mobile"), 5, "metallicRoughnessTexture")
+        doc, binary = character(tier="mobile")
+        doc["materials"][0]["occlusionTexture"] = {"index": 0}
+        self.assertFailsCheck(validate(doc, binary, tier="mobile"), 5, "occlusionTexture")
+
     # 6. budgets
     def test_6_mobile_texture_gpu_bytes(self):
         doc, binary = character(tier="mobile", image=(1024, 1024))
         result = validate(doc, binary, tier="mobile")
         self.assertFailsCheck(result, 6, "texture GPU bytes")
         self.assertFailsCheck(result, 6, "1024x1024")
+
+    def test_6_mobile_head_texture_size(self):
+        doc, binary = character(tier="mobile", image=(512, 512))
+        self.assertFailsCheck(validate(doc, binary, tier="mobile"), 6, "VIS_head base-colour image")
 
     def test_6_mobile_triangles(self):
         doc, binary = character(tier="mobile", triangles=5001)
@@ -380,6 +424,20 @@ class FailingChecks(unittest.TestCase):
     def test_7_required_clip_missing(self):
         doc, binary = character(clips=[name for name in vc.CLIPS if name != "jog"])
         self.assertFailsCheck(validate(doc, binary), 7, "jog")
+
+    def test_7_clip_subset_and_unknown_cli_name(self):
+        doc, binary = character(clips=["idle"])
+        result = vc.Validator("idle.glb", encode(doc, binary), "high", drift_gate=False,
+                              required_clips=["idle"]).check()
+        self.assertEqual(failures(result), [])
+        old_argv = sys.argv
+        sys.argv = ["validate_character.py", "--tier", "high", "--clips", "idle,dance", "missing.glb"]
+        try:
+            with self.assertRaises(SystemExit) as raised:
+                vc.main()
+            self.assertEqual(raised.exception.code, 2)
+        finally:
+            sys.argv = old_argv
 
     def test_7_unknown_clip(self):
         doc, binary = character()
@@ -466,6 +524,22 @@ class FailingChecks(unittest.TestCase):
         self.meta(doc)["clips"]["walk"]["distance_per_cycle_m"] *= 1.05
         self.assertFailsCheck(validate(doc, binary), 8, "distance_per_cycle_m")
 
+    def test_8_start_stop_profile_required_and_validated(self):
+        doc, binary = character()
+        del self.meta(doc)["clips"]["start_l"]["speed_profile"]
+        self.assertFailsCheck(validate(doc, binary), 8, "speed_profile")
+        doc, binary = character()
+        self.meta(doc)["clips"]["start_l"]["calib_speed_mps"] = 1.4
+        self.meta(doc)["clips"]["start_l"]["speed_profile"] = [[0, 0], [0.5, -0.1], [1, 1.45]]
+        result = validate(doc, binary)
+        self.assertFailsCheck(result, 8, "calib_speed_mps must be 1.45")
+        self.assertFailsCheck(result, 8, "mps values must be non-negative")
+
+    def test_8_turn_yaw_sign(self):
+        doc, binary = character()
+        self.meta(doc)["clips"]["turn90_r"]["yaw_deg"] = 90
+        self.assertFailsCheck(validate(doc, binary), 8, "yaw_deg -90")
+
     def test_8_contacts_missing(self):
         doc, binary = character()
         del self.meta(doc)["clips"]["jog"]["contacts"]
@@ -509,6 +583,11 @@ class FootDrift(unittest.TestCase):
         result = validate(*character(slide=0.05), drift_gate=False)
         self.assertEqual(failures(result), [])
         self.assertEqual(result["status"], "WARN")
+
+    def test_9_start_stop_profile_integrates_piecewise_linear_speed(self):
+        self.assertAlmostEqual(vc.Validator.profile_distance([[0, 0], [1, 1.45]], 1, 2), 1.45)
+        self.assertAlmostEqual(vc.Validator.profile_distance([[0, 1.45], [1, 0]], 1, 2), 1.45)
+        self.assertAlmostEqual(vc.Validator.profile_distance([[0, 0], [0.5, 1], [1, 0]], 0.5, 2), 0.5)
 
 
 class CommandLine(unittest.TestCase):
