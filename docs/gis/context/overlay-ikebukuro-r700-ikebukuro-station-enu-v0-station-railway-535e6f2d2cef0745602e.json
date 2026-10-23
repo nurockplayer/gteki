@@ -1,5 +1,5 @@
 {
-  "run_id": "overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-2dae5e5baa15c71c07b9",
+  "run_id": "overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-535e6f2d2cef0745602e",
   "command": "context-overlay",
   "policy_version": "context-overlay-v1",
   "station_id": "ikebukuro",
@@ -20,7 +20,7 @@
     "mode": "station-enu-frame",
     "frame_id": "ikebukuro-station-enu-v0",
     "station_json_path": "stations/ikebukuro/gteki/station.json",
-    "station_json_sha256": "9096030ad73131519f65fa0fac3be17cf074a8e2865da682642ff56be7dafb80",
+    "station_json_sha256": "1ed71d890544489dcf83e0086f49cae32291b74b2b333cada2aee405124cef87",
     "origin_crs": "EPSG:6697"
   },
   "window": {
@@ -38,7 +38,7 @@
     "drape": "none",
     "baked_offset_m": 0,
     "evidence_path": "stations/ikebukuro/gteki/station.json",
-    "evidence_sha256": "9096030ad73131519f65fa0fac3be17cf074a8e2865da682642ff56be7dafb80",
+    "evidence_sha256": "1ed71d890544489dcf83e0086f49cae32291b74b2b333cada2aee405124cef87",
     "evidence_field": "floors[ordinal 0].renderElevationM"
   },
   "credit": "出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html）を加工して作成",
@@ -153,12 +153,12 @@
   },
   "outputs": {
     "geojson": {
-      "store_path": "out/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-2dae5e5baa15c71c07b9.geojson",
+      "store_path": "out/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-535e6f2d2cef0745602e.geojson",
       "sha256": "e97700e6b487bef3de66b090249b83694246578f97f81d7f5e075996a5a60fd4",
       "bytes": 20145
     },
     "glb": {
-      "store_path": "out/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-2dae5e5baa15c71c07b9.glb",
+      "store_path": "out/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-535e6f2d2cef0745602e.glb",
       "sha256": "28ae48bc9ea9798587d57a9a6649b3ea0a23119ae1705db7530cd4c0b1bf94ec",
       "bytes": 16728,
       "nodes": [
@@ -180,6 +180,6 @@
       "segments_skipped_zero_length": 0
     }
   },
-  "tool_input_sha256": "05c016fe8b36291c29988e08f0fc27fb7f75b2e23a950ec8da4ac55f5bfcfa55",
+  "tool_input_sha256": "d355cfb305eea2cf5ad0ae6f07c1b2990de94d8b22c036573f1ed2f61ca7ea19",
   "tool_version": "0.1.0"
 }

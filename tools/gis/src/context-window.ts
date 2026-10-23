@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { isAbsolute, resolve } from 'node:path';
 import { repoRoot } from './common.js';
-import { stationEnuProjector, type StationEnuFrame } from './station-enu.js';
+import { projectorOrigin, stationEnuProjector, type StationEnuFrame } from './station-enu.js';
 
 /**
  * The context window: a union of closed discs in the station frame (x east, y north, metres).
@@ -22,14 +22,21 @@ export interface NodeRule {
   pois?: string;
   /** POI `category` values that mean "exit" (default ["exit"]). */
   exit_poi_categories?: string[];
+  /**
+   * Explicit POI ids (pois.json `id`): exactly the graph nodes these POIs name in `connectorNodeIds` get a disc. For a station whose
+   * graph floors are not `street` and whose exits are not all ground level (Shinjuku: exits 1-4 reach the street, 5 and 6 only B1),
+   * so the kind / floorId rules do not fit. Fails closed: an id that is missing from pois.json, or a POI without a resolvable
+   * connector node, is an error (nothing is guessed or skipped). With only poi_ids, exit_kinds and street_floor_ids may be empty.
+   */
+  poi_ids?: string[];
 }
 export interface WindowSpec { r_origin_m: number; r_exit_m: number; node_rule?: NodeRule; mesh_margin_m?: number }
-export interface GraphNodeSummary { id: string; kind: string; floor_id: string; x: number; y: number; matched_by: Array<'exit_kind' | 'street_floor' | 'exit_poi_connector'>; distance_from_origin_m: number; poi_ids?: string[] }
+export interface GraphNodeSummary { id: string; kind: string; floor_id: string; x: number; y: number; matched_by: Array<'exit_kind' | 'street_floor' | 'exit_poi_connector' | 'poi_id'>; distance_from_origin_m: number; poi_ids?: string[] }
 export interface GraphWindowFacts {
   graph_path: string; graph_sha256: string; nodes_total: number; kinds_by_floor: Record<string, number>;
   exit_connectors: number; street_level_nodes: number; matched_by_both: number; selected_nodes: number; max_selected_distance_m: number;
   /** Only with exit_poi_connectors: the pois.json read (read-only) and what it added beyond the kind/floor rule. */
-  pois: null | { pois_path: string; pois_sha256: string; categories: string[]; fields: string; pois_total: number; exit_pois: number; exit_pois_with_connectors: number; connector_nodes: number; added_beyond_kind_and_floor: string[] };
+  pois: null | { pois_path: string; pois_sha256: string; categories: string[]; fields: string; pois_total: number; exit_pois: number; exit_pois_with_connectors: number; connector_nodes: number; added_beyond_kind_and_floor: string[]; poi_ids?: string[] };
   selected: GraphNodeSummary[];
 }
 export interface ContextWindow {
@@ -39,6 +46,10 @@ export interface ContextWindow {
 }
 
 export const WINDOW_RULE = 'The window is the union of closed discs in the station frame: R_origin around the origin plus R_exit around every graph node whose kind is in node_rule.exit_kinds (exit connector) or whose floorId is in node_rule.street_floor_ids (street-level node). A feature is selected when its XY bbox meets any disc. With node_rule.exit_poi_connectors, every graph node that pois.json names in connectorNodeIds of a POI whose category is an exit category also gets a disc (an exit whose connector is a stair foot instead of a street node).';
+/** Appended to the rule text only for windows that use node_rule.poi_ids and/or r_origin_m 0 (so Ikebukuro's rule text, which is embedded in its GLB, is unchanged). */
+export const WINDOW_RULE_POI_IDS = 'With node_rule.poi_ids, exactly the graph nodes that pois.json names in connectorNodeIds of the listed POI ids get a disc (an id missing from pois.json, or a POI with no resolvable connector node, fails the run). R_origin 0 adds no origin disc.';
+export const windowRuleFor = (window: Pick<ContextWindow, 'spec'>): string => (window.spec.node_rule?.poi_ids !== undefined || window.spec.r_origin_m === 0 ? `${WINDOW_RULE} ${WINDOW_RULE_POI_IDS}` : WINDOW_RULE);
+
 
 /** Whether a station-frame XY box meets the closed disc (center cx,cy; radius R). */
 export function bboxIntersectsCircle(box: { minX: number; minY: number; maxX: number; maxY: number }, cx: number, cy: number, radiusM: number): boolean {
@@ -54,7 +65,8 @@ const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFi
 
 /** Read graph.json (read-only), classify nodes by the explicit rule and return the nodes that get a disc. */
 export async function readGraphWindowNodes(rule: NodeRule, options: { stationId: string; graphPath?: string; poisPath?: string }): Promise<{ facts: GraphWindowFacts; nodes: GraphNodeSummary[] }> {
-  if (!Array.isArray(rule.exit_kinds) || !Array.isArray(rule.street_floor_ids) || (!rule.exit_kinds.length && !rule.street_floor_ids.length)) throw new Error('node_rule needs at least one exit_kinds or street_floor_ids entry');
+  if (rule.poi_ids !== undefined && (!Array.isArray(rule.poi_ids) || !rule.poi_ids.length || rule.poi_ids.some((id) => typeof id !== 'string' || id === '') || new Set(rule.poi_ids).size !== rule.poi_ids.length)) throw new Error('node_rule.poi_ids must be a non-empty array of distinct POI id strings');
+  if (!Array.isArray(rule.exit_kinds) || !Array.isArray(rule.street_floor_ids) || (!rule.exit_kinds.length && !rule.street_floor_ids.length && !rule.poi_ids?.length)) throw new Error('node_rule needs at least one exit_kinds, street_floor_ids or poi_ids entry');
   const expectedRelative = `stations/${options.stationId}/gteki/graph.json`;
   if (options.graphPath === undefined && rule.graph !== expectedRelative) throw new Error(`node_rule.graph must be ${expectedRelative}`);
   if (options.graphPath === undefined && isAbsolute(rule.graph)) throw new Error('node_rule.graph must be repo-relative');
@@ -67,7 +79,8 @@ export async function readGraphWindowNodes(rule: NodeRule, options: { stationId:
   // Optional derived rule: connectors of exit POIs (explicit pois.json fields `category` and `connectorNodeIds`).
   let poiFacts: GraphWindowFacts['pois'] = null;
   const poiConnectors = new Map<string, string[]>();
-  if (rule.exit_poi_connectors) {
+  const explicitConnectors = new Map<string, string[]>();
+  if (rule.exit_poi_connectors || rule.poi_ids) {
     const poisRelative = rule.pois ?? `stations/${options.stationId}/gteki/pois.json`;
     if (options.poisPath === undefined && poisRelative !== `stations/${options.stationId}/gteki/pois.json`) throw new Error(`node_rule.pois must be stations/${options.stationId}/gteki/pois.json`);
     const poiBytes = await readFile(options.poisPath ?? resolve(repoRoot, poisRelative));
@@ -75,20 +88,32 @@ export async function readGraphWindowNodes(rule: NodeRule, options: { stationId:
     if (poiDoc.stationId !== options.stationId) throw new Error(`${poisRelative}: stationId ${JSON.stringify(poiDoc.stationId)} does not match ${options.stationId}`);
     if (!Array.isArray(poiDoc.pois)) throw new Error(`${poisRelative}: no pois array`);
     const categories = rule.exit_poi_categories ?? ['exit'];
-    if (!categories.length) throw new Error('node_rule.exit_poi_categories must not be empty');
+    if (rule.exit_poi_connectors && !categories.length) throw new Error('node_rule.exit_poi_categories must not be empty');
     let exitPois = 0, withConnectors = 0;
+    const byId = new Map<string, Record<string, unknown>>();
     for (const poi of poiDoc.pois as Array<Record<string, unknown>>) {
       if (typeof poi.id !== 'string' || typeof poi.category !== 'string') throw new Error(`${poisRelative}: a POI lacks string id/category`);
-      if (!categories.includes(poi.category)) continue;
+      byId.set(poi.id, poi);
+      if (!rule.exit_poi_connectors || !categories.includes(poi.category)) continue;
       exitPois++;
       if (!Array.isArray(poi.connectorNodeIds) || poi.connectorNodeIds.some((c) => typeof c !== 'string')) throw new Error(`${poisRelative}: exit POI ${poi.id} has no connectorNodeIds string array`);
       if (poi.connectorNodeIds.length) withConnectors++;
       for (const c of poi.connectorNodeIds as string[]) poiConnectors.set(c, [...(poiConnectors.get(c) ?? []), poi.id]);
     }
-    poiFacts = { pois_path: poisRelative, pois_sha256: createHash('sha256').update(poiBytes).digest('hex'), categories, fields: 'pois[].category in exit categories; pois[].connectorNodeIds -> graph nodes[].id', pois_total: poiDoc.pois.length, exit_pois: exitPois, exit_pois_with_connectors: withConnectors, connector_nodes: poiConnectors.size, added_beyond_kind_and_floor: [] };
+    // Explicit POI ids: every listed id must exist and name at least one connector node (the graph check below makes each one resolvable).
+    for (const id of rule.poi_ids ?? []) {
+      const poi = byId.get(id);
+      if (!poi) throw new Error(`node_rule.poi_ids names ${id}, which is not in ${poisRelative}; refusing to guess`);
+      if (!Array.isArray(poi.connectorNodeIds) || !poi.connectorNodeIds.length || poi.connectorNodeIds.some((c) => typeof c !== 'string' || c === '')) throw new Error(`${poisRelative}: POI ${id} has no resolvable connectorNodeIds; refusing to guess a position`);
+      for (const c of poi.connectorNodeIds as string[]) explicitConnectors.set(c, [...(explicitConnectors.get(c) ?? []), id]);
+    }
+    poiFacts = rule.exit_poi_connectors
+      ? { pois_path: poisRelative, pois_sha256: createHash('sha256').update(poiBytes).digest('hex'), categories, fields: 'pois[].category in exit categories; pois[].connectorNodeIds -> graph nodes[].id', pois_total: poiDoc.pois.length, exit_pois: exitPois, exit_pois_with_connectors: withConnectors, connector_nodes: poiConnectors.size, added_beyond_kind_and_floor: [], ...(rule.poi_ids ? { poi_ids: [...rule.poi_ids] } : {}) }
+      : { pois_path: poisRelative, pois_sha256: createHash('sha256').update(poiBytes).digest('hex'), categories: [], fields: 'pois[id in node_rule.poi_ids].connectorNodeIds -> graph nodes[].id', pois_total: poiDoc.pois.length, exit_pois: rule.poi_ids!.length, exit_pois_with_connectors: rule.poi_ids!.length, connector_nodes: explicitConnectors.size, added_beyond_kind_and_floor: [], poi_ids: [...rule.poi_ids!] };
   }
   const graphIds = new Set((graph.nodes as Array<Record<string, unknown>>).map((n) => n.id));
   for (const c of poiConnectors.keys()) if (!graphIds.has(c)) throw new Error(`pois.json names connector node ${c} (exit POI ${poiConnectors.get(c)!.join(', ')}) that is not in ${rule.graph}; refusing to guess`);
+  for (const c of explicitConnectors.keys()) if (!graphIds.has(c)) throw new Error(`node_rule.poi_ids: POI ${explicitConnectors.get(c)!.join(', ')} names connector node ${c} that is not in ${rule.graph}; refusing to guess`);
   const kindsByFloor: Record<string, number> = {};
   const nodes: GraphNodeSummary[] = [];
   let exits = 0, streets = 0, both = 0;
@@ -102,8 +127,10 @@ export async function readGraphWindowNodes(rule: NodeRule, options: { stationId:
     if (kinds.has(raw.kind)) { matchedBy.push('exit_kind'); exits++; }
     if (floors.has(raw.floorId)) { matchedBy.push('street_floor'); streets++; }
     if (matchedBy.length === 2) both++;
-    const viaPoi = poiConnectors.get(raw.id);
-    if (viaPoi) { if (!matchedBy.length && poiFacts) poiFacts.added_beyond_kind_and_floor.push(raw.id); matchedBy.push('exit_poi_connector'); }
+    const viaExitPoi = poiConnectors.get(raw.id), viaExplicit = explicitConnectors.get(raw.id);
+    if (viaExitPoi) { if (!matchedBy.length && poiFacts) poiFacts.added_beyond_kind_and_floor.push(raw.id); matchedBy.push('exit_poi_connector'); }
+    if (viaExplicit) matchedBy.push('poi_id');
+    const viaPoi = viaExitPoi || viaExplicit ? [...new Set([...(viaExitPoi ?? []), ...(viaExplicit ?? [])])] : undefined;
     if (matchedBy.length) nodes.push({ id: raw.id, kind: raw.kind, floor_id: raw.floorId, x: pos.x, y: pos.y, matched_by: matchedBy, distance_from_origin_m: Math.hypot(pos.x, pos.y), ...(viaPoi ? { poi_ids: viaPoi } : {}) });
   }
   const ids = new Set<string>();
@@ -119,17 +146,18 @@ export async function readGraphWindowNodes(rule: NodeRule, options: { stationId:
 
 /** Resolve the window from its spec: reads the graph only when a node rule and a positive R_exit are given. */
 export async function buildContextWindow(spec: WindowSpec, options: { stationId: string; graphPath?: string; poisPath?: string }): Promise<ContextWindow> {
-  if (!finite(spec.r_origin_m) || spec.r_origin_m <= 0 || spec.r_origin_m > 2000) throw new Error('radius must be a finite number of metres in (0, 2000] (R_origin)');
+  if (!finite(spec.r_origin_m) || spec.r_origin_m < 0 || spec.r_origin_m > 2000) throw new Error('radius must be a finite number of metres in [0, 2000] (R_origin; 0 adds no origin disc)');
   if (!finite(spec.r_exit_m) || spec.r_exit_m < 0 || spec.r_exit_m > 2000) throw new Error('R_exit must be a finite number of metres in [0, 2000] (0 disables exit discs)');
   const margin = spec.mesh_margin_m ?? 0;
   if (!finite(margin) || margin < 0 || margin > 500) throw new Error('mesh_margin_m must be in [0, 500]');
-  const discs: Disc[] = [{ x: 0, y: 0, r: spec.r_origin_m, origin: 'origin', id: 'origin' }];
+  const discs: Disc[] = spec.r_origin_m > 0 ? [{ x: 0, y: 0, r: spec.r_origin_m, origin: 'origin', id: 'origin' }] : [];
   let graph: GraphWindowFacts | null = null;
   if (spec.r_exit_m > 0 && spec.node_rule) {
     const read = await readGraphWindowNodes(spec.node_rule, options);
     graph = read.facts;
     for (const n of read.nodes) discs.push({ x: n.x, y: n.y, r: spec.r_exit_m, origin: 'node', id: n.id });
   } else if (spec.r_exit_m > 0) throw new Error('R_exit > 0 needs a node_rule (exit_kinds / street_floor_ids) to find the exit connectors; set r_exit_m 0 to use the origin disc only');
+  if (!discs.length) throw new Error('The context window has no disc: the radius (R_origin) is 0 and no graph node got an exit disc');
   return { spec: { r_origin_m: spec.r_origin_m, r_exit_m: spec.r_exit_m, node_rule: spec.node_rule ?? null, mesh_margin_m: margin }, discs, graph };
 }
 
@@ -173,8 +201,8 @@ export interface MeshCoverage { meshes: string[]; disc_count: number; margin_m: 
  * The 3rd-level meshes whose cell (projected into the station frame, edges subdivided) meets any disc of the window
  * (closed, so a cell touching a disc counts), widened by `marginM` metres. Pure geometry; no store or source access.
  */
-export function meshesTouchedByWindow(discs: readonly Disc[], frame: Pick<StationEnuFrame, 'origin'>, marginM = 0): MeshCoverage {
-  const project = stationEnuProjector(frame.origin);
+export function meshesTouchedByWindow(discs: readonly Disc[], frame: Pick<StationEnuFrame, 'origin' | 'vertical_mode' | 'horizontal_origin_height_m'>, marginM = 0): MeshCoverage {
+  const project = stationEnuProjector(projectorOrigin(frame));
   const o = frame.origin;
   const found = new Set<string>();
   const metresPerDegLat = 110000; // below the true minimum (110.57 km), so the candidate range is generous

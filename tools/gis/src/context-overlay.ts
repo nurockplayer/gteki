@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { Document, NodeIO } from '@gltf-transform/core';
 import { docsRoot, getStoredSource, getStoreRoot, repoRoot, writeJson, TOOL_VERSION } from './common.js';
 import { loadFrame, toGltf, fromGltf, type Point3 } from './crs.js';
-import { stationEnuProjector, stationLocal, isStationEnuFrame, type StationEnuFrame } from './station-enu.js';
+import { stationEnuProjector, stationHorizontal, isStationEnuFrame, type StationEnuFrame } from './station-enu.js';
 import { buildContextWindow, type ContextWindow, type Disc } from './context-window.js';
 import { CONTEXT_ROLE, explorerRoleFromName, loadContextConfig, type StationContextConfig } from './context.js';
 import { toolFingerprint } from './provenance.js';
@@ -443,7 +443,7 @@ async function overlayRun(station: string, config: StationContextConfig, overlay
     const stationBytes = await readFile(join(repoRoot, frame.station_json_path));
     const o = (JSON.parse(stationBytes.toString('utf8')) as { station?: { origin?: { lat?: number; lon?: number; hM?: number | null; crs?: string } } }).station?.origin;
     if (!o || o.lat !== frame.origin.lat || o.lon !== frame.origin.lon || o.hM !== frame.origin.hM || o.crs !== frame.origin.crs) throw new Error(`${frame.station_json_path} origin no longer matches frame ${frame.frame_id}; regenerate it with station-frame`);
-    projection = { origin: { lat: frame.origin.lat, lon: frame.origin.lon }, project: (lat, lon) => { const p = stationLocal([lat, lon, frame.origin.hM], frame as StationEnuFrame); return [p[0], p[1]]; } };
+    projection = { origin: { lat: frame.origin.lat, lon: frame.origin.lon }, project: (lat, lon) => stationHorizontal([lat, lon], frame as StationEnuFrame) };
     frameLabel = frame.frame_id;
     frameFacts = { mode: 'station-enu-frame', frame_id: frame.frame_id, station_json_path: frame.station_json_path, station_json_sha256: sha256(stationBytes), origin_crs: frame.origin.crs };
   } else {
