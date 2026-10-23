@@ -18,6 +18,11 @@ strategies are costed:
 --check fails (exit 1) when a library exceeds the budget file or breaks a rule:
   * an image's size exceeds the manifest's texture plan for its material
   * the same image bytes are embedded twice in one GLB
+
+A finish pack (`<library>/finishes/`, docs/assets/asset-contract.md section 9) is reported on its own
+rows: the loose map files stations load (bytes and estimated GPU memory, each unique file once). Its
+sample GLBs get the same per-image rules as any library, and `limits.finishes_mib` /
+`limits.finishes_gpu_mib` cap the maps when the budget file has them.
 """
 
 import argparse
@@ -84,7 +89,7 @@ def scan_glb(path):
         images.append(dict(index=index, sha=hashlib.sha256(raw).hexdigest(), bytes=len(raw),
                            w=w, h=h, kind=kind, gpu=gpu_bytes(w, h, kind)))
     # which materials sample each image (for the texture-plan check)
-    users, sampled = {}, {}
+    users, sampled, occluding = {}, {}, {}
     textures = doc.get("textures", [])
     for material in doc.get("materials", []):
         refs = [material.get("pbrMetallicRoughness", {}).get(k) for k in ("baseColorTexture", "metallicRoughnessTexture")]
@@ -97,8 +102,12 @@ def scan_glb(path):
                     source = ext.get("source", source)
                 users.setdefault(source, set()).add(material.get("name"))
                 sampled.setdefault(material.get("name"), set()).add(source)
+        if material.get("occlusionTexture"):  # the per-asset baked map has its own size in the plan
+            tex = textures[material["occlusionTexture"]["index"]]
+            occluding.setdefault(tex.get("source"), set()).add(material.get("name"))
     for image in images:
         image["materials"] = sorted(users.get(image["index"], ()))
+        image["occlusion_of"] = sorted(occluding.get(image["index"], ()))
     return dict(file=path.name, bytes=len(data), sha256=hashlib.sha256(data).hexdigest(), images=images,
                 material_images={k: len(v) for k, v in sampled.items()})
 
@@ -109,6 +118,45 @@ def scan_library(root):
     manifest = json.loads((root / "manifest.json").read_text())
     meta = {k: v for k, v in manifest.items() if k != "assets"}
     return glbs, {a["id"]: a for a in manifest["assets"]}, meta
+
+
+def scan_finishes(root):
+    """Cost of the loose finish maps under `<root>/finishes` (None when the library has no pack)."""
+    pack = Path(root) / "finishes"
+    if not (pack / "manifest.json").is_file():
+        return None
+    manifest = json.loads((pack / "manifest.json").read_text())
+    seen = {}
+    for rec in manifest.get("finishes", []):
+        for entry in rec.get("files", {}).values():
+            raw = (pack / entry["file"]).read_bytes()
+            w, h, kind = image_size(raw)
+            seen[hashlib.sha256(raw).hexdigest()] = dict(bytes=len(raw), gpu=gpu_bytes(w, h, kind), w=w, h=h)
+    tier = manifest.get("profile", "full")
+    return dict(tier=tier, finishes=len(manifest.get("finishes", [])), maps=len(seen),
+                bytes=sum(v["bytes"] for v in seen.values()), gpu=sum(v["gpu"] for v in seen.values()),
+                gpu_ktx2=sum(v["w"] * v["h"] * 4 / 3 for v in seen.values()),
+                max_side=max((max(v["w"], v["h"]) for v in seen.values()), default=0))
+
+
+def check_finishes(root, budget):
+    """Problems of the finish pack: per-image rules on its sample GLBs, then the budget's finish limits."""
+    pack = Path(root) / "finishes"
+    if not (pack / "manifest.json").is_file():
+        return []
+    glbs, manifest, meta = scan_library(pack)
+    problems = [f"finishes: {p}" for p in check(glbs, manifest, {}, meta)]
+    fin = scan_finishes(root)
+    kit_meta = json.loads((Path(root) / "manifest.json").read_text())
+    tier = kit_meta.get("profile", "full")
+    if fin["tier"] != tier:  # a pack of the other tier would be judged against the wrong limits
+        problems.append(f"finishes: pack is the {fin['tier']} tier in a {tier} library")
+    if budget_applies(budget, kit_meta):
+        limits = budget.get("limits", {})
+        for key, value in (("finishes_mib", fin["bytes"] / MIB), ("finishes_gpu_mib", fin["gpu"] / MIB)):
+            if key in limits and value > limits[key]:
+                problems.append(f"budget {key}: {value:.2f} > {limits[key]}")
+    return problems
 
 
 def summarize(glbs, ids=None, counts=None):
@@ -191,8 +239,10 @@ def check(glbs, manifest, budget, manifest_meta=None):
                 problems.append(f"{aid}: image {im['index']} duplicates image {seen[im['sha']]} (same bytes)")
             seen[im["sha"]] = im["index"]
             for name in im["materials"]:
-                if name in plan and max(im["w"], im["h"]) > plan[name]["res"]:
-                    problems.append(f"{aid}: {name} image {im['w']}x{im['h']} exceeds plan {plan[name]['res']}")
+                # the occlusion map is sized per asset, not per material (`occlusion_res`)
+                limit = plan[name].get("occlusion_res", plan[name]["res"]) if name in plan and name in im["occlusion_of"] else None
+                if name in plan and max(im["w"], im["h"]) > (plan[name]["res"] if limit is None else limit):
+                    problems.append(f"{aid}: {name} image {im['w']}x{im['h']} exceeds plan {plan[name]['res'] if limit is None else limit}")
     if manifest_meta is not None and not budget_applies(budget, manifest_meta):
         return problems
     limits = budget.get("limits", {})
@@ -214,8 +264,9 @@ def _png_header(w, h, salt=b""):
     return b"\x89PNG\r\n\x1a\n" + struct.pack(">I4sII", 13, b"IHDR", w, h) + b"\x08\x02\x00\x00\x00" + salt
 
 
-def _fake_glb(images, material_refs):
-    """GLB with `images` (bytes) and one material sampling `material_refs` image indices."""
+def _fake_glb(images, material_refs, occlusion=None):
+    """GLB with `images` (bytes) and one material sampling `material_refs` image indices
+    (and image `occlusion` as its occlusionTexture)."""
     binary, views = b"", []
     for raw in images:
         views.append({"buffer": 0, "byteOffset": len(binary), "byteLength": len(raw)})
@@ -225,8 +276,11 @@ def _fake_glb(images, material_refs):
     material = {"name": "gteki_test", "pbrMetallicRoughness": pbr}
     if len(material_refs) > 2:
         material["normalTexture"] = {"index": material_refs[2]}
+    if occlusion is not None:
+        material["occlusionTexture"] = {"index": occlusion, "texCoord": 1}
     doc = {"asset": {"version": "2.0"}, "buffers": [{"byteLength": len(binary)}], "bufferViews": views,
-           "images": [{"bufferView": i, "mimeType": "image/png"} for i in range(len(images))],
+           "images": [{"bufferView": i, "mimeType": "image/jpeg" if raw.startswith(b"\xff\xd8") else "image/png"}
+                      for i, raw in enumerate(images)],
            "textures": [{"source": i} for i in range(len(images))], "materials": [material]}
     return encode_glb(doc, binary)
 
@@ -287,6 +341,62 @@ def self_test():
         assert [p.split(":")[1].split()[1] for p in stale if p not in unplanned] == ["sha256", "bytes"], stale
         both = {**rec(path, plan), "gteki_gone": {"textures": plan}}
         assert [p for p in check(glbs, both, budget, meta) if "gteki_gone" in p] == ["gteki_gone: in manifest.json but its GLB is missing"]
+        # the baked occlusion map is sized per asset: it checks against occlusion_res, not the material's res
+        path.write_bytes(_fake_glb([_png_header(128, 128, b"a"), _png_header(512, 512, b"o")], [0], occlusion=1))
+        glbs = {path.stem: scan_glb(path)}
+        for occlusion_res, want in ((512, []), (256, [f"{path.stem}: gteki_test image 512x512 exceeds plan 256"])):
+            ao = {"gteki_test": {"res": 128, "maps": ["albedo", "occlusion"], "occlusion_res": occlusion_res}}
+            assert check(glbs, rec(path, ao), budget, meta) == want, (occlusion_res, check(glbs, rec(path, ao), budget, meta))
+    # finish pack: loose maps counted once per unique file, limits from the budget file
+    with tempfile.TemporaryDirectory() as tmp:
+        lib = Path(tmp)
+        (lib / "finishes" / "gteki_finish_a").mkdir(parents=True)
+        files = {"albedo": _png_header(512, 512, b"a"), "orm": _png_header(512, 256, b"b")}
+        rec = {"id": "gteki_finish_a", "files": {}}
+        for key, raw in files.items():
+            (lib / "finishes" / "gteki_finish_a" / f"{key}.jpg").write_bytes(raw)
+            rec["files"][key] = {"file": f"gteki_finish_a/{key}.jpg"}
+        (lib / "finishes" / "glb").mkdir()
+        (lib / "finishes" / "manifest.json").write_text(json.dumps({"finishes": [rec], "assets": [], "texture_resolution": 512}))
+        (lib / "manifest.json").write_text(json.dumps(meta))
+        fin = scan_finishes(lib)
+        assert (fin["finishes"], fin["maps"], fin["max_side"]) == (1, 2, 512), fin
+        assert abs(fin["gpu"] - (512 * 512 + 512 * 256) * 4 * 4 / 3) < 1, fin
+        assert check_finishes(lib, {"applies_to": {"catalog": "kit.json", "texture_resolution": 1024}, "limits": {"finishes_mib": 1.0}}) == []
+        tight = {"applies_to": {"catalog": "kit.json", "texture_resolution": 1024}, "limits": {"finishes_gpu_mib": 0.001}}
+        assert any("finishes_gpu_mib" in p for p in check_finishes(lib, tight))
+        assert scan_finishes(lib / "finishes") is None
+        # the phone pack is held to the mobile budget: a mobile library and pack, limits scoped to profile mobile
+        mobile = {"applies_to": {"catalog": "kit.json", "texture_resolution": 1024, "profile": "mobile"},
+                  "limits": {"finishes_mib": 0.00001, "finishes_gpu_mib": 4.0}}
+        pack_manifest = json.loads((lib / "finishes" / "manifest.json").read_text())
+        (lib / "finishes" / "manifest.json").write_text(json.dumps({**pack_manifest, "profile": "mobile"}))
+        (lib / "manifest.json").write_text(json.dumps({**meta, "profile": "mobile"}))
+        assert scan_finishes(lib)["tier"] == "mobile"
+        got = check_finishes(lib, mobile)
+        assert [p.split(":")[0] for p in got] == ["budget finishes_mib"], got  # bytes over, GPU (2.0 MiB) within
+        assert check_finishes(lib, {**mobile, "limits": {"finishes_mib": 1.0, "finishes_gpu_mib": 4.0}}) == []
+        assert [p.split(":")[0] for p in check_finishes(lib, {**mobile, "limits": {"finishes_gpu_mib": 1.0}})] == ["budget finishes_gpu_mib"]
+        # the full budget does not apply to the mobile library, and a full pack in a mobile library is a problem
+        assert check_finishes(lib, tight) == []
+        (lib / "finishes" / "manifest.json").write_text(json.dumps(pack_manifest))
+        assert any("tier" in p for p in check_finishes(lib, mobile))
+    # Mixed JPEG/PNG finish sample: a lossless normal changes download bytes, not GPU cost.
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "gteki_finish_test.glb"
+        jpeg = b"\xff\xd8\xff\xc0\x00\x11\x08" + struct.pack(">HH", 512, 512) + bytes(10)
+        normal = _png_header(512, 512, b"normal")
+        path.write_bytes(_fake_glb([jpeg, jpeg + b"orm", normal], [0, 1, 2]))
+        glb = scan_glb(path)
+        plan = {"gteki_test": {"res": 512, "maps": ["albedo", "orm", "normal"]}}
+        manifest = {path.stem: {"sha256": glb["sha256"], "bytes": glb["bytes"], "textures": plan}}
+        assert check({path.stem: glb}, manifest, {}, {"profile": "mobile", "texture_resolution": 512}) == []
+        assert [im["kind"] for im in glb["images"]] == ["jpeg", "jpeg", "png"]
+        assert len({im["gpu"] for im in glb["images"]}) == 1
+    # both shipped budget files cap the finish pack (the mobile one used to omit the limits)
+    for name in ("budget.json", "budget_mobile.json"):
+        shipped = json.loads((Path(__file__).resolve().parent / "catalog" / name).read_text())["limits"]
+        assert shipped.get("finishes_mib", 0) > 0 and shipped.get("finishes_gpu_mib", 0) > 0, name
     for w, h in ((512, 256), (1024, 1024)):
         assert image_size(_png_header(w, h)) == (w, h, "png")
     print("texture_budget self-test: PASS")
@@ -333,6 +443,11 @@ def main():
     for label in report:
         s = report[label]["summary"]
         print(f"{label}: {s['image_instances']} image instances, {s['unique_images']} unique")
+    fin = scan_finishes(args.library)
+    if fin:
+        report["current"]["finishes"] = fin
+        print(f"{'finishes':>34} {fin['finishes']} finishes, {fin['maps']} maps, {fin['bytes'] / MIB:.2f} MiB download, "
+              f"{fin['gpu'] / MIB:.1f} MiB GPU est. ({fin['gpu_ktx2'] / MIB:.1f} MiB as KTX2), largest {fin['max_side']} px")
     for i, layout in enumerate(args.layout):
         print(f"\nlayout {layout}")
         for strategy in ("per_instance", "per_asset", "bundle"):
@@ -346,7 +461,7 @@ def main():
     if args.check:
         glbs, manifest, meta = current
         budget = json.loads(Path(args.check).read_text())
-        problems = check(glbs, manifest, budget, meta)
+        problems = check(glbs, manifest, budget, meta) + check_finishes(args.library, budget)
         if not budget_applies(budget, meta):
             print(f"budget limits skipped: library is not {budget.get('applies_to')} (per-image rules still checked)")
         for p in problems:

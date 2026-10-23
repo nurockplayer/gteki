@@ -81,16 +81,16 @@ describe("station POI search", () => {
   });
 
   it("penalises subsequence gaps and rejects reversed character order", () => {
-    const index = indexFor(bundleWith([poi("wide", "a---xxx---b---xxx---c"), poi("tight", "axbc"), poi("wrong", "cba")]));
-    const hits = index.search("abc");
+    const index = indexFor(bundleWith([poi("wide", "a---xxx---b---xxx---c---d"), poi("tight", "axbcd"), poi("wrong", "dcba")]));
+    const hits = index.search("abcd");
     expect(hits.map((hit) => hit.poi.id)).toEqual(["tight", "wide"]);
     expect(hits[0]!.score).toBeGreaterThan(hits[1]!.score);
     expect(hits[0]!.score).toBeLessThanOrEqual(40);
   });
 
   it("finds a tight later subsequence rather than penalising an early loose match", () => {
-    const index = indexFor(bundleWith([poi("later", "a very long path axbc"), poi("only", "axxbc")]));
-    expect(index.search("abc").map((hit) => hit.poi.id)).toEqual(["later", "only"]);
+    const index = indexFor(bundleWith([poi("later", "a very long path axbcd"), poi("only", "axxbcd")]));
+    expect(index.search("abcd").map((hit) => hit.poi.id)).toEqual(["later", "only"]);
   });
 
   it("matches multi-word latin tokens in a different order", () => {
@@ -139,15 +139,133 @@ describe("station POI search", () => {
     expect(index.search("shop", { limit: 0 })).toEqual([]);
   });
 
-  it("sorts ties by display name then id regardless of bundle order", () => {
+  it("sorts ties by id regardless of bundle order", () => {
     const pois = [
       poi("z", "Alpha", { aliases: [{ lang: "en", text: "Gate" }] }),
-      poi("a", "Alpha", { aliases: [{ lang: "en", text: "Gate" }] }),
-      poi("b", "Beta", { aliases: [{ lang: "en", text: "Gate" }] }),
+      poi("a", "Beta", { aliases: [{ lang: "en", text: "Gate" }] }),
+      poi("b", "Alpha", { aliases: [{ lang: "en", text: "Gate" }] }),
     ];
     const expected = indexFor(bundleWith(pois)).search("gate");
-    expect(expected.map((hit) => hit.poi.id)).toEqual(["a", "z", "b"]);
+    expect(expected.map((hit) => hit.poi.id)).toEqual(["a", "b", "z"]);
     expect(indexFor(bundleWith([...pois].reverse())).search("gate")).toEqual(expected);
+  });
+
+  it("breaks score ties by match quality: starts with the query, then the shorter matched name", () => {
+    // Same score, ids sort the other way round: the shorter matched name wins.
+    const sub = indexFor(bundleWith([
+      poi("a-long", "B1 Central East Gate Underground"), poi("b-short", "B1 East Gate Hall"), poi("c-lead", "East Gate Plaza Annex"),
+      poi("d-shorter", "1 East Gate Hall"),
+    ]));
+    expect(sub.search("east gate").map((hit) => [hit.poi.id, hit.score])).toEqual([
+      ["c-lead", 80], ["d-shorter", 60], ["b-short", 60], ["a-long", 60],
+    ]);
+    const prefix = indexFor(bundleWith([poi("a-long", "East Gate Plaza Annex"), poi("b-short", "East Gate Hall")]));
+    expect(prefix.search("east gate").map((hit) => hit.poi.id)).toEqual(["b-short", "a-long"]);
+    // 東口: exact, then starts-with, then the shorter of the names that merely contain it.
+    const ja = indexFor(bundleWith([
+      poi("a", "地下東口コンコース"), poi("b", "東口"), poi("c", "B1東口（地下）"), poi("d", "東口広場"),
+    ]));
+    expect(ja.search("東口").map((hit) => hit.poi.id)).toEqual(["b", "d", "c", "a"]);
+  });
+
+  it("picks each POI's best matching text on equal score, so name/alias order does not change ranking", () => {
+    const name = { lang: "en", text: "East Gate Plaza Annex" };
+    const alias = { lang: "en", text: "East Gate Hall" };
+    const lobby = poi("b", "East Gate Lobby");
+    const order = (a: Poi) => indexFor(bundleWith([a, lobby])).search("east gate").map((hit) => [hit.poi.id, hit.score, hit.matched]);
+    const expected = [["a", 80, "East Gate Hall"], ["b", 80, "East Gate Lobby"]];
+    expect(order(poi("a", "East Gate Plaza Annex", { aliases: [alias] }))).toEqual(expected);
+    expect(order(poi("a", "East Gate Hall", { aliases: [name] }))).toEqual(expected);
+    expect(order(poi("a", "x", { names: [{ lang: "en", text: name.text }, { lang: "en", text: alias.text }] }))).toEqual(expected);
+  });
+});
+
+describe("short-query fuzz floor", () => {
+  it("does not match short queries as a loose subsequence", () => {
+    const index = indexFor(bundleWith([
+      poi("noise", "丸之内線 中央通道東剪票口"), poi("tobu", "Tobu Tojo Line Central Gate"), poi("east", "東口"), poi("jr", "JR East Gate"),
+    ]));
+    expect(index.search("東口").map((hit) => hit.poi.id)).toEqual(["east"]);
+    expect(index.search("JR").map((hit) => hit.poi.id)).toEqual(["jr"]);
+    expect(index.search("exi")).toEqual([]);
+  });
+
+  it("still finds substring, prefix and suffix matches of short queries", () => {
+    const index = indexFor(bundleWith([poi("a", "B1 東口（地下）"), poi("b", "新東口"), poi("c", "East JR Gate")]));
+    expect(index.search("東口").map((hit) => hit.poi.id)).toEqual(["b", "a"]);
+    expect(index.search("jr")[0]).toMatchObject({ poi: { id: "c" }, score: 60 });
+  });
+
+  it("keeps subsequence fuzz from four characters", () => {
+    expect(indexFor(bundleWith([poi("f", "ab-c-d")])).search("abcd")).toMatchObject([{ poi: { id: "f" } }]);
+  });
+});
+
+describe("exit numbers", () => {
+  const exits = () => indexFor(bundleWith([
+    poi("e2", "2番出口"), poi("e22", "22番出口"), poi("e3", "出口（地下1階・南側・通路/コンコースに隣接）"),
+    poi("line", "1号線 ホーム"), poi("platform", "1番線 ホーム"),
+  ]));
+
+  it.each(["22号出口", "22號出口", "22番出口", "２２号出口", "22号"])("folds 号 / 號 / 番 and full-width digits: %s", (query) => {
+    expect(exits().search(query).map((hit) => hit.poi.id)).toEqual(["e22"]);
+  });
+
+  it("folds the index side too", () => {
+    const index = indexFor(bundleWith([poi("g", "22号出口"), poi("h", "35號出口")]));
+    expect(index.search("22番出口")).toMatchObject([{ poi: { id: "g" }, score: 100 }]);
+    expect(index.search("35番出口").map((hit) => hit.poi.id)).toEqual(["h"]);
+  });
+
+  it("matches the digits as a whole number and ignores descriptive exit names", () => {
+    const index = exits();
+    expect(index.search("2番出口").map((hit) => hit.poi.id)).toEqual(["e2"]);
+    expect(index.search("2号出口").map((hit) => hit.poi.id)).toEqual(["e2"]);
+    expect(index.search("3番出口")).toEqual([]);
+    expect(index.search("2番")).toMatchObject([{ poi: { id: "e2" } }]);
+  });
+
+  it("does not turn line or car numbers into exit numbers", () => {
+    expect(normalizeJa("1号線")).toBe("1号線");
+    const index = exits();
+    expect(index.search("1号線").map((hit) => hit.poi.id)).toEqual(["line"]);
+    expect(index.search("1番線").map((hit) => hit.poi.id)).toEqual(["platform"]);
+  });
+});
+
+describe("station-name prefix", () => {
+  function station(pois: Poi[]) {
+    const bundle = bundleWith(pois);
+    bundle.station.names = [
+      { lang: "ja", text: "池袋駅" }, { lang: "ja-Latn", text: "Ikebukuro" }, { lang: "en", text: "Ikebukuro Station (Test Line)" },
+    ];
+    return indexFor(bundle);
+  }
+  const pois = () => [
+    poi("east", "東口", { aliases: [{ lang: "en", text: "East Exit" }] }), poi("west", "西口", { aliases: [{ lang: "en", text: "West Exit" }] }),
+    poi("platform", "池袋駅ホーム", { aliases: [{ lang: "en", text: "Ikebukuro Station platform" }] }),
+  ];
+
+  it("also searches the remainder after the station's own name", () => {
+    const index = station(pois());
+    expect(index.search("池袋東口")[0]).toMatchObject({ poi: { id: "east" }, score: 98 });
+    expect(index.search("池袋駅東口")[0]!.poi.id).toBe("east");
+    expect(index.search("ikebukuro east exit")[0]).toMatchObject({ poi: { id: "east" }, matched: "East Exit" });
+    expect(index.search("Ikebukuro Station West Exit")[0]!.poi.id).toBe("west");
+    expect(index.search("ikebukuro east exit").map((hit) => hit.poi.id)).not.toContain("west");
+  });
+
+  it("leaves a query that is only the station name as it was", () => {
+    const index = station(pois());
+    for (const query of ["池袋", "池袋駅", "ikebukuro", "ikebukuro station"]) {
+      expect(index.search(query)[0]!.poi.id).toBe("platform");
+      expect(index.search(query).map((hit) => hit.poi.id)).not.toContain("east");
+    }
+  });
+
+  it("ranks a literal match above a stripped one", () => {
+    const index = station([...pois(), poi("literal", "池袋東口")]);
+    expect(index.search("池袋東口").map((hit) => hit.poi.id).slice(0, 2)).toEqual(["literal", "east"]);
   });
 });
 
