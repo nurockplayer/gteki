@@ -206,7 +206,8 @@ def shopfront(asset_id, params, tex_res):
         if oh < 1.2 or hb <= 0:
             raise ValueError("housing_h_mm leaves too little opening")
         rail = 0.06  # guide rails
-        panels.box((xi0, -0.13, oh), (xi1, 0, top), LIGHT_STEEL, skip=nb)
+        # the housing hangs above the opening: only its wall face stays out, the underside is seen from below
+        panels.box((xi0, -0.13, oh), (xi1, 0, top), LIGHT_STEEL, skip=("+y",))
         frame.box((xi0, -0.08, 0), (xi0 + rail, 0, oh), BRUSHED, skip=nb)
         frame.box((xi1 - rail, -0.08, 0), (xi1, 0, oh), BRUSHED, skip=nb)
         xc0, xc1 = xi0 + rail, xi1 - rail
