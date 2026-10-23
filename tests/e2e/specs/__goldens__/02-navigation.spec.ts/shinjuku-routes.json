@@ -16,7 +16,6 @@
       "unknowns": [
         "hours×23"
       ],
-      "stale": false,
       "sources": 2,
       "nodes": 24,
       "modes": [
@@ -88,7 +87,6 @@
       "unknowns": [
         "hours×31"
       ],
-      "stale": false,
       "sources": 2,
       "nodes": 32,
       "modes": [
@@ -171,7 +169,6 @@
       "unknowns": [
         "hours×22"
       ],
-      "stale": false,
       "sources": 2,
       "nodes": 23,
       "modes": [
@@ -239,7 +236,6 @@
       "unknowns": [
         "hours×6"
       ],
-      "stale": false,
       "sources": 2,
       "nodes": 7,
       "modes": [
