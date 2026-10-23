@@ -3,7 +3,7 @@ extends SceneTree
 ## into `docs/evidence/g5-performance.md`. Nothing is measured here: every number is printed from a report, each run is
 ## labelled with the machine and adapter its own report recorded, and a run captured without `--perf` says so instead of
 ## showing zeroes. This is the table step of the README's "GPU slot runbook"; the captures themselves are the lead's.
-## Usage: godot --headless --path packages/godot --script res://tests/perf_report.gd -- <out.md> <report.json>...
+## Usage: godot --headless --path packages/godot --script res://tests/perf_report.gd -- <out.md> <report.json>... (absolute paths)
 
 const CONTRACT := "gteki.capture/0.1"
 const SLOT := "the lead's GPU slot"
