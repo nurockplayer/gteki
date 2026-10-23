@@ -43,6 +43,13 @@ const emitted = async (p: { root: string; app: string }) => {
   return bundles.flatMap((b) => ("output" in b ? b.output : [])).filter((o) => o.type === "asset").map((o) => o.fileName);
 };
 
+/** Run `fn` with `GTEKI_INLINE_DATA_GATE` set (`undefined`: unset), restoring the previous value afterwards. */
+async function withMode(mode: string | undefined, fn: () => Promise<void>): Promise<void> {
+  const before = process.env.GTEKI_INLINE_DATA_GATE;
+  if (mode === undefined) delete process.env.GTEKI_INLINE_DATA_GATE; else process.env.GTEKI_INLINE_DATA_GATE = mode;
+  try { await fn(); } finally { if (before === undefined) delete process.env.GTEKI_INLINE_DATA_GATE; else process.env.GTEKI_INLINE_DATA_GATE = before; }
+}
+
 describe("production build publication allowlist", () => {
   it("emits declared station files", async () => {
     const files = await emitted(project(`export const buildScene = () => null;`));
@@ -51,7 +58,8 @@ describe("production build publication allowlist", () => {
 
   it("refuses a file a scene imports directly without declaring it", async () => {
     const p = project(`import url from "../private/traced.png?url";\nexport const buildScene = () => url;`);
-    await expect(run(p)).rejects.toThrow(/refusing to publish undeclared files.*traced\.png/);
+    // The inline gate would fail this first (the ?url module is a module id too); warn lets the allowlist refuse it.
+    await withMode("warn", async () => { await expect(run(p)).rejects.toThrow(/refusing to publish undeclared files.*traced\.png/); });
   }, 30_000);
 
   it("refuses an undeclared file reached through new URL(…, import.meta.url)", async () => {
@@ -72,15 +80,19 @@ describe("production build publication allowlist", () => {
     await expect(run(p)).resolves.toBeDefined();
     const big = project(`import url from "../private/traced.png?url";\nexport const buildScene = () => url;`);
     fs.writeFileSync(path.join(big.station, "private", "traced.png"), Buffer.alloc(8192, 1));
-    await expect(build({ root: big.app, configFile: false, logLevel: "silent", plugins: [gtekiStations([path.join(big.root, "stations")])], build: { write: false } }))
-      .rejects.toThrow(/refusing to publish undeclared files.*traced\.png/);
+    await withMode("warn", async () => {
+      await expect(build({ root: big.app, configFile: false, logLevel: "silent", plugins: [gtekiStations([path.join(big.root, "stations")])], build: { write: false } }))
+        .rejects.toThrow(/refusing to publish undeclared files.*traced\.png/);
+    });
   }, 30_000);
 
   it("checks emitted data files of any type, e.g. an SVG above the inline limit", async () => {
     const p = project(`import url from "../private/traced.svg?url";\nexport const buildScene = () => url;`);
     fs.writeFileSync(path.join(p.station, "private", "traced.svg"), `<svg xmlns="http://www.w3.org/2000/svg">${"<g/>".repeat(4000)}</svg>`);
-    await expect(build({ root: p.app, configFile: false, logLevel: "silent", plugins: [gtekiStations([path.join(p.root, "stations")])], build: { write: false } }))
-      .rejects.toThrow(/refusing to publish undeclared files.*traced\.svg/);
+    await withMode("warn", async () => {
+      await expect(build({ root: p.app, configFile: false, logLevel: "silent", plugins: [gtekiStations([path.join(p.root, "stations")])], build: { write: false } }))
+        .rejects.toThrow(/refusing to publish undeclared files.*traced\.svg/);
+    });
   }, 30_000);
 
   it("applies the publication rights rules to synthetic stations too", async () => {
@@ -146,15 +158,18 @@ describe("production build publication allowlist", () => {
         build: { write: false, assetsInlineLimit: 0, outDir: path.join(p.root, "dist") } };
       return { lines, run: () => build(options) };
     };
-    const withMode = async (mode: string | undefined, fn: () => Promise<void>) => {
-      const before = process.env.GTEKI_INLINE_DATA_GATE;
-      if (mode === undefined) delete process.env.GTEKI_INLINE_DATA_GATE; else process.env.GTEKI_INLINE_DATA_GATE = mode;
-      try { await fn(); } finally { if (before === undefined) delete process.env.GTEKI_INLINE_DATA_GATE; else process.env.GTEKI_INLINE_DATA_GATE = before; }
-    };
 
-    it("warns about an undeclared inlined JSON by default and still builds; the declared one is silent", async () => {
+    it("fails by default on an undeclared inlined JSON, naming only that file", async () => {
       const l = logged(dataProject());
-      await withMode(undefined, async () => { await expect(l.run()).resolves.toBeDefined(); });
+      await withMode(undefined, async () => {
+        await expect(l.run()).rejects.toThrow(/alpha: scene\/undeclared\.json/);
+        await expect(l.run()).rejects.not.toThrow(/scene\/declared\.json/);
+      });
+    }, 30_000);
+
+    it("only logs undeclared inlined JSON when the mode is explicitly warn; the declared one is silent", async () => {
+      const l = logged(dataProject());
+      await withMode("warn", async () => { await expect(l.run()).resolves.toBeDefined(); });
       const text = l.lines.warn.join("\n");
       expect(text).toMatch(/inlined into the bundle without a manifest declaration/);
       expect(text).toContain("alpha: scene/undeclared.json");
@@ -194,7 +209,7 @@ describe("production build publication allowlist", () => {
       fs.writeFileSync(path.join(p.station, "gteki", "scene.ts"), `import svg from "../scene/sign.svg?raw";\nexport const buildScene = () => svg;`);
       fs.writeFileSync(path.join(p.station, "scene", "sign.svg"), "<svg/>");
       const l = logged(p);
-      await withMode(undefined, async () => { await l.run(); });
+      await withMode("warn", async () => { await l.run(); });
       expect(l.lines.warn.join("\n")).toContain("alpha: scene/sign.svg");
       m.dataFiles.push({ id: "sign", path: "scene/sign.svg", sourceIds: ["demo-synthetic"], modified: false });
       fs.writeFileSync(manifest, JSON.stringify(m));
@@ -217,8 +232,11 @@ describe("production build publication allowlist", () => {
       m.dataFiles.pop();
       fs.writeFileSync(manifest, JSON.stringify(m));
       const l = logged(p);
-      await withMode(undefined, async () => { await l.run(); });
+      await withMode("warn", async () => { await l.run(); });
       expect(l.lines.warn.join("\n")).toContain("alpha: scene/linked.json (symlink resolving outside the station folder)");
+      // The default fails the build on the same link.
+      const l2 = logged(p);
+      await withMode(undefined, async () => { await expect(l2.run()).rejects.toThrow(/alpha: scene\/linked\.json/); });
     }, 30_000);
   });
 

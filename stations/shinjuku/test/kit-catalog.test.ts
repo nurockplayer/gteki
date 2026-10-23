@@ -109,7 +109,7 @@ describe("Shinjuku station catalog for the Lane E kit (Issue #94)", () => {
         expect(p.step_count).toBe(Math.max(2, Math.round(rise / 0.165)));
       } else {
         expect(Math.abs(p.rise_mm! / 1000 - rise)).toBeLessThan(CATALOG_FIT_LIMITS.riseM / 2);
-        expect(Math.abs(p.run_mm! / 1000 + 2.4 - length)).toBeLessThan(CATALOG_FIT_LIMITS.lengthM / 2);
+        expect(Math.abs(p.run_mm! / 1000 + 1.6 - length)).toBeLessThan(CATALOG_FIT_LIMITS.lengthM / 2);
         expect(p.width_mm).toBe(Math.round((r.width - 0.1) * 1000));
         expect(escalatorProblem(e.params)).toBeNull();
       }

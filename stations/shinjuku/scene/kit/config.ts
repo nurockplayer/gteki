@@ -133,8 +133,10 @@ export const RUN_FIT = { riseM: 0.1, widthM: 0.15, lengthM: 0.25 } as const;
 /** build.ts draws the escalator steps `run.width - 0.1` wide; the dressing's `width_mm` is the step width. */
 export const ESCALATOR_STEP_INSET_M = 0.1;
 /**
- * Comb-to-comb horizontal run of an `escalator_dressing` piece = `run_mm` + 2 * flat_steps * 0.4 m + 0.8 m
- * (two flat step sections and one transition, from `vertical._escalator_path` in PR #143 at flat_steps 2).
+ * Comb-to-comb horizontal run of an `escalator_dressing` piece = `run_mm` + 2 * flat_steps * 0.4 m. `run_mm` already
+ * holds the eased transitions (`dressing.py` sets the straight incline to `run_mm` - one 0.8 m transition run, and
+ * `vertical._escalator_path` adds two half-length eases), so no transition is added on top. Given `angle_deg` instead,
+ * the run is rise / tan(angle) + one transition run.
  */
 export const ESCALATOR_STEP_DEPTH_M = 0.4;
 export const ESCALATOR_TRANSITION_M = 0.8;

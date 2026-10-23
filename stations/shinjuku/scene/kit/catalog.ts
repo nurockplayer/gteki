@@ -145,8 +145,8 @@ function stairNotes(g: Group<RunAnchor>): string {
 
 // ----------------------------------------------------------------- escalators
 
-/** Comb-to-comb horizontal extent of the dressing beyond its `run_mm`: two flat step sections and one transition. */
-export const ESCALATOR_COMB_EXTRA_M = 2 * ESCALATOR_FLAT_STEPS * ESCALATOR_STEP_DEPTH_M + ESCALATOR_TRANSITION_M;
+/** Comb-to-comb horizontal extent of the dressing beyond its `run_mm`: the two flat step sections (`run_mm` already holds the transitions). */
+export const ESCALATOR_COMB_EXTRA_M = 2 * ESCALATOR_FLAT_STEPS * ESCALATOR_STEP_DEPTH_M;
 
 export function escalatorParams(a: RunAnchor): { params: CatalogParams; riseErr: number; runErr: number } | { reason: string } {
   const { rise, length } = geometry(a);
@@ -171,8 +171,8 @@ function escalatorNotes(g: Group<RunAnchor>): string {
     HEIGHTS,
     `rise_mm = drawn rise rounded to ${ESCALATOR_RISE_STEP_MM} mm (first run: ${geo.rise.toFixed(2)} m).`,
     `run_mm = plan length of the edge (${geo.length.toFixed(2)} m for the first run) minus ${ESCALATOR_COMB_EXTRA_M.toFixed(1)} m, rounded to ${ESCALATOR_RUN_STEP_MM} mm,`,
-    `so that the comb-to-comb run of the piece (run_mm + 2 x ${ESCALATOR_FLAT_STEPS} flat steps x ${ESCALATOR_STEP_DEPTH_M} m + ${ESCALATOR_TRANSITION_M} m transition) lands the two comb lines on the two end nodes;`,
-    `the implied incline is ${((Math.atan2(p.rise_mm, p.run_mm) * 180) / Math.PI).toFixed(1)} degrees.`,
+    `so that the comb-to-comb run of the piece (run_mm + 2 x ${ESCALATOR_FLAT_STEPS} flat steps x ${ESCALATOR_STEP_DEPTH_M} m; run_mm already holds the eased transitions) lands the two comb lines on the two end nodes;`,
+    `the implied incline is ${((Math.atan2(p.rise_mm, p.run_mm - ESCALATOR_TRANSITION_M * 1000) * 180) / Math.PI).toFixed(1)} degrees (the generator's straight incline is run_mm minus one ${ESCALATOR_TRANSITION_M} m transition run).`,
     `Rounding moves the top comb by at most ${cm(g.maxRiseErrM)} in height and ${cm(g.maxRunErrM)} along the run for the grouped runs.`,
     `width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the ${ESCALATOR_STEP_INSET_M} m the scene takes off for the steps.`,
     `landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts.`,
@@ -204,9 +204,10 @@ export function escalatorProblem(p: CatalogParams): string | null {
   const rise = num("rise_mm"), width = num("width_mm"), run = num("run_mm"), landing = num("landing_mm"), flat = num("flat_steps");
   if (rise === null || rise <= 0 || width === null || width <= 0 || run === null || run <= 0 || landing === null || landing <= 0) return "escalator params must be finite positive numbers";
   if (flat !== 2 && flat !== 3) return "flat_steps must be 2 or 3";
-  const angle = (Math.atan2(rise, run) * 180) / Math.PI;
-  if (angle < 15 || angle > 35) return `incline ${angle.toFixed(1)} degrees is outside the kit range 15 to 35`;
   if (run / 1000 - ESCALATOR_TRANSITION_M <= 0) return "run_mm is too small for the transition run";
+  // dressing.py: angle_deg = atan2(rise_mm, run_mm - transition_run)
+  const angle = (Math.atan2(rise, run - ESCALATOR_TRANSITION_M * 1000) * 180) / Math.PI;
+  if (angle < 15 || angle > 35) return `incline ${angle.toFixed(1)} degrees is outside the kit range 15 to 35`;
   return null;
 }
 
