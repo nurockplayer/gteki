@@ -185,19 +185,37 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     }
     return mask.length < 3 ? [] : polygonClipping.intersection(polys, polygon([mask]));
   };
-  const walls: WallSeg[] = [], roofs: THREE.BufferGeometry[] = [];
+  // Mirror finishUnderground's streetUnderside without changing its bake fingerprint.
+  // Leave 1 mm below it so Float32 vertices remain strictly underground.
+  const streetLimit = -0.18 - 0.001;
+  const existingRoofs = [...layout.levels.flatMap((lv) => lv.ceilings), ...layout.soffits];
+  const walls: { wall: WallSeg; covered: XY[][][] }[] = [], roofs: THREE.BufferGeometry[] = [];
   for (const r of layout.runs.filter((r) => r.mode === "escalator")) {
     // Outside the truss (+0.15 m) and balustrade (+0.08 m). The 0.6 m end overlap
     // joins the inclined finish to landing ceilings without closing either run mouth.
     const roof = pitched(r, 0.45, 0.6);
     roof.z += 3.4;
+    // Existing finish wins wherever its footprint covers the shell and its
+    // affine underside is at or below the shell top. Remove the side there too:
+    // otherwise its upper strip can become the first drawn roof seen by the camera.
+    let panels: polygonClipping.MultiPolygon = [polygon(roof.rings)];
+    const covered: XY[][][] = [];
+    for (const existing of existingRoofs) {
+      let cut = polygonClipping.intersection([polygon(roof.rings)], polygon(existing.rings));
+      cut = heightMask(cut, (p) => soffitHeight(roof, p) - soffitHeight(existing, p));
+      if (!cut.length) continue;
+      // Keep the existing footprint for side cutting: intersecting it with the
+      // shell strip would put both side walls exactly on the cutter boundary.
+      covered.push(...heightMask([polygon(existing.rings)], (p) => soffitHeight(roof, p) - soffitHeight(existing, p)).map(ringsOf));
+      panels = polygonClipping.difference(panels, cut);
+    }
+    panels = heightMask(panels, (p) => streetLimit - soffitHeight(roof, p));
     const ring = roof.rings[0]!;
     for (const [a, b] of [[ring[0]!, ring[1]!], [ring[3]!, ring[2]!]]) {
       const topA = soffitHeight(roof, a!), topB = soffitHeight(roof, b!);
-      walls.push({ a: a!, b: b!, side: 1, kind: "wall", zMin: Math.min(topA, topB) - 4.5, zMax: Math.max(topA, topB),
-        profile: { bottomA: topA - 4.5, bottomB: topB - 4.5, topA, topB } });
+      walls.push({ wall: { a: a!, b: b!, side: 1, kind: "wall", zMin: Math.min(topA, topB) - 4.5, zMax: Math.max(topA, topB),
+        profile: { bottomA: topA - 4.5, bottomB: topB - 4.5, topA, topB } }, covered });
     }
-    let panels: polygonClipping.MultiPolygon = [polygon(roof.rings)];
     const points = roof.rings.flat();
     const minX = Math.min(...points.map((p) => p.x)), maxX = Math.max(...points.map((p) => p.x));
     const minY = Math.min(...points.map((p) => p.y)), maxY = Math.max(...points.map((p) => p.y));
@@ -211,18 +229,19 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     for (const panel of panels) roofs.push(soffitGeometry({ ...roof, rings: ringsOf(panel) }));
   }
   const sides: THREE.BufferGeometry[] = [];
-  for (const wall of walls) {
+  for (const { wall, covered } of walls) {
     const dx = wall.b.x - wall.a.x, dy = wall.b.y - wall.a.y, length = Math.hypot(dx, dy);
     const u = { x: dx / length, y: dy / length };
     const along = (p: XY) => (p.x - wall.a.x) * u.x + (p.y - wall.a.y) * u.y;
-    const pieces = cutWallsByVoids([wall], voids).map((w): polygonClipping.Polygon => {
+    const roofVoids = covered.map((rings) => ({ rings, bottom: () => wall.zMin - 1, top: () => wall.zMax + 1 }));
+    const pieces = cutWallsByVoids([wall], [...voids, ...roofVoids]).map((w): polygonClipping.Polygon => {
       const p = w.profile!;
       return [[[along(w.a), p.bottomA], [along(w.b), p.bottomB], [along(w.b), p.topB], [along(w.a), p.topA]]];
     });
     if (!pieces.length) continue;
     // The physical wall cutter splits into conservative height bands. Union those coplanar
     // pieces for rendering, removing subdivision vertices rather than retaining thousands of quads.
-    const panels = polygonClipping.union(pieces[0]!, ...pieces.slice(1));
+    const panels = heightMask(polygonClipping.union(pieces[0]!, ...pieces.slice(1)), (p) => streetLimit - p.y);
     for (const poly of panels) {
       const rings = ringsOf(poly).map((closed) => {
         const ring = closed.slice(0, -1); // polygon-clipping repeats the first vertex
