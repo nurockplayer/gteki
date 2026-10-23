@@ -1,5 +1,5 @@
 {
-  "run_id": "overlay-shinjuku-r700-origin-only-station-railway-ccd9531c1491aedef947",
+  "run_id": "overlay-shinjuku-r700-origin-only-station-railway-eb1e09a83d22663dbca8",
   "command": "context-overlay",
   "policy_version": "context-overlay-v1",
   "station_id": "shinjuku",
@@ -20,7 +20,7 @@
     "mode": "origin-only",
     "note": "horizontal ENU at the station.json origin (evaluated at height 0; no vertical anchor exists and none is asserted); same x/y as the station-enu frame would give to well under a millimetre",
     "station_json_path": "stations/shinjuku/gteki/station.json",
-    "station_json_sha256": "9d7c6be8d400932622693b23e98c7b70c640b4459fee6715ce866f1a9752684f",
+    "station_json_sha256": "8fdef8f8798d099b7195308318042494a041413247ec31bc26502e7a249fcb64",
     "origin_crs": "EPSG:6668"
   },
   "window": {
@@ -38,7 +38,7 @@
     "drape": "none",
     "baked_offset_m": 0,
     "evidence_path": "stations/shinjuku/gteki/station.json",
-    "evidence_sha256": "9d7c6be8d400932622693b23e98c7b70c640b4459fee6715ce866f1a9752684f",
+    "evidence_sha256": "8fdef8f8798d099b7195308318042494a041413247ec31bc26502e7a249fcb64",
     "evidence_field": "floors[ordinal 0].renderElevationM"
   },
   "credit": "出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html）を加工して作成",
@@ -188,12 +188,12 @@
   },
   "outputs": {
     "geojson": {
-      "store_path": "out/overlay-shinjuku-r700-origin-only-station-railway-ccd9531c1491aedef947.geojson",
+      "store_path": "out/overlay-shinjuku-r700-origin-only-station-railway-eb1e09a83d22663dbca8.geojson",
       "sha256": "a2ff15d49332a649277d35a3dfca002bfaf05b3debf6023a746645cbb4859225",
       "bytes": 42269
     },
     "glb": {
-      "store_path": "out/overlay-shinjuku-r700-origin-only-station-railway-ccd9531c1491aedef947.glb",
+      "store_path": "out/overlay-shinjuku-r700-origin-only-station-railway-eb1e09a83d22663dbca8.glb",
       "sha256": "486ff55fa5a5772123042f70aa7d3e0c0bc66c958542404e1eccbf12e0d19e95",
       "bytes": 30924,
       "nodes": [

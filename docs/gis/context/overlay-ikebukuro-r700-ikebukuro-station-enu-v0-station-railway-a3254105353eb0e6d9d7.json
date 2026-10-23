@@ -1,5 +1,5 @@
 {
-  "run_id": "overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-f9aeb6a7cbc1a90e523f",
+  "run_id": "overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-a3254105353eb0e6d9d7",
   "command": "context-overlay",
   "policy_version": "context-overlay-v1",
   "station_id": "ikebukuro",
@@ -20,7 +20,7 @@
     "mode": "station-enu-frame",
     "frame_id": "ikebukuro-station-enu-v0",
     "station_json_path": "stations/ikebukuro/gteki/station.json",
-    "station_json_sha256": "151df9821fe9e1372118db614b33917cc84c577b2a7e4ad2903ca0cbbb976f33",
+    "station_json_sha256": "654da9f377e2a05e5bc0cead76b04839c31ed8a016e255684eda00d47d0f39c1",
     "origin_crs": "EPSG:6697"
   },
   "window": {
@@ -38,7 +38,7 @@
     "drape": "none",
     "baked_offset_m": 0,
     "evidence_path": "stations/ikebukuro/gteki/station.json",
-    "evidence_sha256": "151df9821fe9e1372118db614b33917cc84c577b2a7e4ad2903ca0cbbb976f33",
+    "evidence_sha256": "654da9f377e2a05e5bc0cead76b04839c31ed8a016e255684eda00d47d0f39c1",
     "evidence_field": "floors[ordinal 0].renderElevationM"
   },
   "credit": "出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html）を加工して作成",
@@ -153,12 +153,12 @@
   },
   "outputs": {
     "geojson": {
-      "store_path": "out/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-f9aeb6a7cbc1a90e523f.geojson",
+      "store_path": "out/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-a3254105353eb0e6d9d7.geojson",
       "sha256": "e97700e6b487bef3de66b090249b83694246578f97f81d7f5e075996a5a60fd4",
       "bytes": 20145
     },
     "glb": {
-      "store_path": "out/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-f9aeb6a7cbc1a90e523f.glb",
+      "store_path": "out/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-a3254105353eb0e6d9d7.glb",
       "sha256": "28ae48bc9ea9798587d57a9a6649b3ea0a23119ae1705db7530cd4c0b1bf94ec",
       "bytes": 16728,
       "nodes": [

@@ -1,5 +1,5 @@
 {
-  "run_id": "overlay-shinjuku-r700-origin-only-border-384e50279d97e803a171",
+  "run_id": "overlay-shinjuku-r700-origin-only-border-dd7761f0d6af7828357e",
   "command": "context-overlay",
   "policy_version": "context-overlay-v1",
   "station_id": "shinjuku",
@@ -20,7 +20,7 @@
     "mode": "origin-only",
     "note": "horizontal ENU at the station.json origin (evaluated at height 0; no vertical anchor exists and none is asserted); same x/y as the station-enu frame would give to well under a millimetre",
     "station_json_path": "stations/shinjuku/gteki/station.json",
-    "station_json_sha256": "9d7c6be8d400932622693b23e98c7b70c640b4459fee6715ce866f1a9752684f",
+    "station_json_sha256": "8fdef8f8798d099b7195308318042494a041413247ec31bc26502e7a249fcb64",
     "origin_crs": "EPSG:6668"
   },
   "window": {
@@ -38,7 +38,7 @@
     "drape": "none",
     "baked_offset_m": 0,
     "evidence_path": "stations/shinjuku/gteki/station.json",
-    "evidence_sha256": "9d7c6be8d400932622693b23e98c7b70c640b4459fee6715ce866f1a9752684f",
+    "evidence_sha256": "8fdef8f8798d099b7195308318042494a041413247ec31bc26502e7a249fcb64",
     "evidence_field": "floors[ordinal 0].renderElevationM"
   },
   "credit": "出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2026.html）を加工して作成／測量法に基づく国土地理院長承認（複製）R 7JHf 351",
@@ -103,12 +103,12 @@
   },
   "outputs": {
     "geojson": {
-      "store_path": "out/overlay-shinjuku-r700-origin-only-border-384e50279d97e803a171.geojson",
+      "store_path": "out/overlay-shinjuku-r700-origin-only-border-dd7761f0d6af7828357e.geojson",
       "sha256": "26ccc80da88d20866be5681def25a8b89b4817b23b6420ad94bb150819b623c5",
       "bytes": 2630
     },
     "glb": {
-      "store_path": "out/overlay-shinjuku-r700-origin-only-border-384e50279d97e803a171.glb",
+      "store_path": "out/overlay-shinjuku-r700-origin-only-border-dd7761f0d6af7828357e.glb",
       "sha256": "7a360df52c629129f5466a13874a497c8ef24cb9e87593cff2af54c18f4ecc8b",
       "bytes": 11728,
       "nodes": [
