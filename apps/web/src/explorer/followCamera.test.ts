@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachFov, avatarFade, clampDistance, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachFov, avatarFade, boomSqueezed, clampDistance, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
   it("stays under a 2.6 m ceiling at the default pitch and distance", () => {
@@ -196,6 +196,10 @@ describe("slope lens", () => {
     expect(targetFov("overview", false, true)).toBe(FOV.overview);
   });
 
+  it("widens third person when the boom is squeezed", () => {
+    expect(targetFov("guide", false, true)).toBe(60);
+  });
+
   const run = (state: typeof NO_SLOPE, vy: number, seconds: number, dt = 1 / 60) => {
     for (let i = 0; i < Math.round(seconds / dt); i++) state = stepSlope(state, vy * dt, dt);
     return state;
@@ -229,6 +233,16 @@ describe("slope lens", () => {
   it("is frame-rate independent", () => {
     const at = (hz: number) => run(NO_SLOPE, 0.5, 0.3, 1 / hz).speed;
     expect(at(30)).toBeCloseTo(at(144), 1);
+  });
+});
+
+describe("squeeze lens", () => {
+  it("uses hysteresis around the comfortable boom distance", () => {
+    expect(boomSqueezed(false, FOLLOW.comfortDistance)).toBe(false);
+    expect(boomSqueezed(false, 1.59)).toBe(true);
+    expect(boomSqueezed(true, 1.7)).toBe(true);
+    expect(boomSqueezed(true, 1.91)).toBe(false);
+    expect(boomSqueezed(false, 1.7)).toBe(false);
   });
 });
 

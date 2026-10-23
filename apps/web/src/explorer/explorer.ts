@@ -22,7 +22,7 @@ import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } fr
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
-import { FOLLOW, FOV, NO_SLOPE, approachFov, avatarFade, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack, stepSlope, targetFov, type SlopeState } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, approachFov, avatarFade, boomSqueezed, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack, stepSlope, targetFov, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { StationCaches } from "./stationCaches.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
@@ -136,6 +136,8 @@ export class Explorer {
   private readonly overviewLook = new OverviewLook();
   /** Stair/escalator/ramp detection from the walker's vertical speed; widens the follow lens (see targetFov). */
   private slope: SlopeState = NO_SLOPE;
+  /** The boom is squeezed under its comfortable distance (walls, ceilings); also widens the follow lens (see boomSqueezed). */
+  private squeezed = false;
   private slopeY = 0;
   private readonly street = new StreetBackdrop();
   /** Render height of the station's street floor when it is an underground (scene-lit) station, else null. */
@@ -1258,12 +1260,12 @@ export class Explorer {
     // The slope state follows the walker's height; a teleport or snap restarts it so a jump is not read as a climb.
     this.slope = snap || dt <= 0 ? NO_SLOPE : stepSlope(this.slope, this.pos.y - this.slopeY, dt);
     this.slopeY = this.pos.y;
-    this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on), snap, dt);
     const head = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const dir = new THREE.Vector3(-Math.sin(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), -Math.cos(this.yaw) * Math.cos(this.pitch));
     if (this.firstPerson) {
       this.camera.position.copy(head);
       this.camera.lookAt(head.clone().add(dir));
+      this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
       return;
     }
     // Over-the-shoulder framing; the pivot itself is pulled in if a wall is closer than the shoulder offset.
@@ -1295,6 +1297,10 @@ export class Explorer {
         dist = followDistance(this.camDistance, cast(back));
       }
     }
+    this.squeezed = this.cameraTargets.length
+      ? (snap ? dist < FOLLOW.comfortDistance : boomSqueezed(this.squeezed, dist))
+      : false;
+    this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
     const desired = pose.pivot.clone().addScaledVector(back, dist);
     this.camera.position.lerp(desired, snap || this.reducedMotion ? 1 : 1 - Math.exp(-dt * 10));
     // The smoothed position, not only the target, stays below camera-only blockers.

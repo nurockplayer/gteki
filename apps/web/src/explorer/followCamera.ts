@@ -66,13 +66,21 @@ export const FOV = {
 } as const;
 
 /**
- * The vertical FOV a camera mode wants. On a stair, escalator or ramp (`onSlope`) the third-person lens widens to
- * the first-person 60: at 50 the boom, which trails behind and above, loses the avatar on a long climb or descent
- * (Lane F: out of frame in 39% of Exit 35 guide samples vs 14% at 60). It eases back to 50 on level ground.
+ * The vertical FOV a camera mode wants. On a slope, or with the boom squeezed under its comfortable distance, the
+ * third-person lens widens to the first-person 60. It eases back to 50 when neither condition applies.
  */
-export function targetFov(mode: "overview" | "walk" | "guide", firstPerson: boolean, onSlope = false): number {
+export function targetFov(mode: "overview" | "walk" | "guide", firstPerson: boolean, wide = false): number {
   if (mode === "overview") return FOV.overview;
-  return firstPerson || onSlope ? FOV.firstPerson : FOV.follow;
+  return firstPerson || wide ? FOV.firstPerson : FOV.follow;
+}
+
+/** Boom squeeze for the lens: on below FOLLOW.comfortDistance, off again only above comfortDistance + SQUEEZE.release. */
+export const SQUEEZE = { release: 0.3 } as const;
+
+export function boomSqueezed(wasSqueezed: boolean, distance: number): boolean {
+  return wasSqueezed
+    ? distance <= FOLLOW.comfortDistance + SQUEEZE.release
+    : distance < FOLLOW.comfortDistance;
 }
 
 /** Slope detection from the walker's smoothed vertical speed, with hysteresis and a hold so landings do not flutter the lens. */
