@@ -32,7 +32,8 @@ for (const key of STATIONS) {
     const overlaps = await labelUiOverlaps(page);
 
     // Coverage dialog must list gaps and sources.
-    await page.locator(".top-actions button").first().click();
+    // By label: the top bar also holds the rail-ride button (#240), hidden at most stations and placed first.
+    await page.locator(".top-actions button").filter({ hasText: /^(Coverage|カバー範囲)$/ }).click();
     const dialog = page.locator("dialog.coverage");
     await expect(dialog).toBeVisible();
     const coverageText = (await dialog.textContent()) ?? "";

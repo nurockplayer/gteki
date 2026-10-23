@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { createRouter, describeRoute, routePolyline } from "@gteki/navigation";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 import { advanceGuide, guideStops, seekGuideState } from "./guideStops.ts";
-import { firstStopFor, guideKeyAction, instructionIndexAt, instructionStartsM, jumpTarget, RESTART_AFTER_M, RESTART_AFTER_S, StepClock } from "./guideSteps.ts";
+import { IME_ENTER_GRACE_MS } from "../ui/combobox.ts";
+import { firstStopFor, guideKeyAction, guideKeyActionGuarded, instructionIndexAt, instructionStartsM, jumpTarget, RESTART_AFTER_M, RESTART_AFTER_S, StepClock } from "./guideSteps.ts";
 import { cumulativeLengths } from "./walker.ts";
 
 const hours = (open: string, close: string) => ({ kind: "window" as const, open, close, evidence: { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" } });
@@ -270,5 +271,38 @@ describe("guide keys", () => {
     expect(guideKeyAction({ key: "PageDown", metaKey: true })).toBeNull();
     expect(guideKeyAction({ key: "PageUp", altKey: true })).toBeNull();
     expect(guideKeyAction({ key: "]", isComposing: true })).toBeNull();
+  });
+});
+
+describe("guide keys behind the IME guard (#116 follow-up)", () => {
+  const NEVER = -Infinity;
+
+  it("takes ordinary keys: no composition ever seen", () => {
+    expect(guideKeyActionGuarded({ key: "]" }, NEVER, 1000)).toBe("next");
+    expect(guideKeyActionGuarded({ key: "PageUp" }, NEVER, 1000)).toBe("prev");
+    expect(guideKeyActionGuarded({ key: "a" }, NEVER, 1000)).toBeNull();
+  });
+
+  it("ignores a keydown while the IME is composing", () => {
+    for (const key of ["]", "[", "PageDown", "PageUp"]) expect(guideKeyActionGuarded({ key, isComposing: true }, NEVER, 1000)).toBeNull();
+  });
+
+  it("ignores the legacy keyCode 229 Safari sends when composing", () => {
+    expect(guideKeyActionGuarded({ key: "]", keyCode: 229 }, NEVER, 1000)).toBeNull();
+    expect(guideKeyActionGuarded({ key: "PageUp", keyCode: 229, isComposing: false }, NEVER, 1000)).toBeNull();
+  });
+
+  it("ignores any key in the few ms after compositionend, then takes it again", () => {
+    const end = 1000;
+    expect(guideKeyActionGuarded({ key: "]" }, end, end + 1)).toBeNull();
+    expect(guideKeyActionGuarded({ key: "PageDown" }, end, end + IME_ENTER_GRACE_MS - 1)).toBeNull();
+    expect(guideKeyActionGuarded({ key: "]" }, end, end + IME_ENTER_GRACE_MS)).toBe("next");
+    // A compositionend after the keydown (clock skew) is not a grace.
+    expect(guideKeyActionGuarded({ key: "]" }, end, end - 10)).toBe("next");
+  });
+
+  it("still honours the plain model's chords and repeats inside the guard", () => {
+    expect(guideKeyActionGuarded({ key: "]", metaKey: true }, NEVER, 1000)).toBeNull();
+    expect(guideKeyActionGuarded({ key: "]", repeat: true }, NEVER, 1000)).toBeNull();
   });
 });

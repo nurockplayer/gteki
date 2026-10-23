@@ -9,8 +9,11 @@ import { hooks, openStation, routeWaypoints, save, shotPath, type StationKey } f
  * that ends at the right place but off the display height points at overlapping walkable surfaces.
  *
  *   GTEKI_PROBE=shinjuku:poi:platform:oedo>poi:exit:2 pnpm exec playwright test specs/08-step-probe.spec.ts
+ *
+ * GTEKI_PROBE takes several probes, comma-separated (one test each, one JSON each), so a single
+ * Playwright run can cover S1 and S2 (tools/qa/shinjuku-b-checks.sh).
  */
-const spec = process.env.GTEKI_PROBE;
+const specs = (process.env.GTEKI_PROBE ?? "").split(",").map((x) => x.trim()).filter(Boolean);
 const LOOK_RAD_PER_PX = 0.0042;
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
@@ -27,13 +30,15 @@ async function drag(page: Page, dx: number) {
   }
 }
 
-test.skip(!spec, "set GTEKI_PROBE=<station>:<from>><to>");
 test.use({ trace: "off" });
 
-test(`step probe ${spec}`, async ({ page }, testInfo) => {
+if (specs.length === 0) test.skip("step probe (set GTEKI_PROBE=<station>:<from>><to>[,...])", () => {});
+
+for (const spec of specs) test(`step probe ${spec}`, async ({ page }, testInfo) => {
   test.setTimeout(600_000);
-  const [key, rest] = [spec!.slice(0, spec!.indexOf(":")) as StationKey, spec!.slice(spec!.indexOf(":") + 1)];
+  const [key, rest] = [spec.slice(0, spec.indexOf(":")) as StationKey, spec.slice(spec.indexOf(":") + 1)];
   const [from, to] = rest.split(">") as [string, string];
+  const slug = `${from}-${to}`.replace(/\W+/g, "_");
   await openStation(page, key);
   await hooks.setProfile(page, { stepFree: false, unpaidOnly: false, strictHours: false });
   await hooks.setOrigin(page, from);
@@ -62,10 +67,10 @@ test(`step probe ${spec}`, async ({ page }, testInfo) => {
     const end = pts.at(-1)!;
     const miss = Math.hypot(end.x - pos.x, end.y - pos.y);
     const r = { s, edgeId: step.edgeId, mode: step.mode, vertices: pts.length, end: pos, missM: Math.round(miss * 100) / 100, worstVertexMissM: Math.round(worst * 100) / 100, dz: Math.round((pos.z - end.z) * 100) / 100 };
-    if (miss > 1 || Math.abs(pos.z - end.z) > 0.6) await page.screenshot({ path: shotPath(testInfo, `${key}-probe-step${String(s).padStart(2, "0")}.png`) });
+    if (miss > 1 || Math.abs(pos.z - end.z) > 0.6) await page.screenshot({ path: shotPath(testInfo, `${key}-probe-${slug}-step${String(s).padStart(2, "0")}.png`) });
     results.push(r);
   }
-  save(testInfo, `${key}-step-probe.json`, { from, to, results });
+  save(testInfo, `${key}-step-probe-${slug}.json`, { from, to, results });
   expect.soft(results.filter((r) => typeof r.missM === "number" && (r.missM as number) > 1), "steps that stop more than 1 m short of their end").toEqual([]);
   expect.soft(results.filter((r) => typeof r.dz === "number" && Math.abs(r.dz as number) > 0.6), "steps that end off the route's display height").toEqual([]);
 });

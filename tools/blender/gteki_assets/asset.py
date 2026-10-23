@@ -127,6 +127,19 @@ class Asset:
 
     # ---------------------------------------------------------------- build
 
+    def _fit_lightmap(self, vis_objs, res, nets, min_density):
+        """Lay the lightmap out at `res`, a size up each time the charts do not fit (or, with
+        `min_density`, are sparser than that), never past the full tier's largest map."""
+        while True:
+            try:
+                _lightmap_uvs(vis_objs, res, nets, min_density=min_density)
+                return res
+            except LightmapOverflow as error:
+                if self.ao_res_override or res >= ao.RES_FULL[-1]:
+                    raise
+                print(f"[gteki] {self.id}: AO {res}px: {error}; trying the next size", flush=True)
+                res *= 2
+
     def build(self):
         reset_scene()
         coll = bpy.context.scene.collection
@@ -179,16 +192,48 @@ class Asset:
         # one shared occlusion map per asset; baked before the colliders exist, so they never occlude
         # a station catalog may pin the size (`ao_res`) when it places many copies of a long piece
         self.ao_res = self.ao_res_override or ao.resolution(_gltf_bounds(vis_objs), mobile)
-        while True:
-            try:
-                _lightmap_uvs(vis_objs, self.ao_res)
-                break
-            except LightmapOverflow:
-                # too many charts to keep MARGIN_PX gaps on this map (mobile joins every static
-                # part into one atlas): the next size up, never past the full tier's largest
-                if self.ao_res_override or self.ao_res >= ao.RES_FULL[-1]:
-                    raise
-                self.ao_res *= 2
+        reference = _lightmap_reference(vis_objs, self.ao_res, bool(self.ao_res_override)) if mobile else None
+        # the face nets must at least match the old layout's density; they need not reach a fixed
+        # px/m, or a small asset would grow its map and then fall back to the worse old layout
+        minimum = reference[1] - 0.001 if reference and not self.ao_res_override else 0.0
+        use_reference = False
+        try:
+            self.ao_res = self._fit_lightmap(vis_objs, self.ao_res, mobile, minimum)
+        except LightmapOverflow:
+            if reference is None:
+                raise
+            use_reference = True
+        except RuntimeError as error:
+            if reference is not None:
+                use_reference = True
+            elif mobile:
+                raise
+            else:
+                # Smart UV Project can leave charts folded over each other after every repair
+                # (a narrow, finely bevelled escalator): only then does full use the face nets
+                print(f"[gteki] {self.id}: {error}; laying the lightmap out as face nets", flush=True)
+                _drop_lightmap(vis_objs)
+                self.ao_res = self._fit_lightmap(vis_objs, self.ao_res, True, 0.0)
+        if reference:
+            use_reference |= self.ao_res > reference[0]
+            if not use_reference:
+                quality = _object_lightmap_density(vis_objs, self.ao_res, with_metrics=True)
+                prior = reference[3]
+                use_reference = (quality[0] + 0.001 < prior[0] or quality[1] + 1e-5 < prior[1]
+                                 or quality[2] > prior[2])
+            if bpy.context.mode != "OBJECT":
+                bpy.ops.object.mode_set(mode="OBJECT")
+            for obj, mesh in reference[2]:
+                if use_reference:
+                    current, name = obj.data, obj.data.name
+                    obj.data = mesh
+                    bpy.data.meshes.remove(current)
+                    mesh.name = name
+                else:
+                    bpy.data.meshes.remove(mesh)
+            if use_reference:
+                self.ao_res = reference[0]
+                print(f"[gteki] {self.id}: retaining the legacy lightmap to preserve atlas quality and map size", flush=True)
         self.ao_png = ao.png(*ao.bake(vis_objs, self.ao_res))
 
         col_objs = []
@@ -432,11 +477,11 @@ def _bind_uv(mat, uv_name):
             nt.links.new(uvn.outputs["UV"], node.inputs["Vector"])
 
 
-def _lightmap_uvs(objs, res):
+def _lightmap_uvs(objs, res, mobile=False, min_density=0.0):
     """Non-overlapping lightmap UVs in a second layer (exported as TEXCOORD_1), laid out jointly
     for every visual object: one atlas, because the asset's occlusion map is shared by all of
-    them. Islands keep `ao.MARGIN_PX` px of a `res` px map between them. Smart UV Project keeps
-    connected charts, so vertices stay shared and lightmaps get few seams."""
+    them. Mobile conformal face nets keep connected pieces together without projecting their
+    side faces edge-on; full keeps its original Smart UV Project layout."""
     margin = ao.MARGIN_PX / res
     view_layer = bpy.context.view_layer
     for o in objs:
@@ -447,7 +492,7 @@ def _lightmap_uvs(objs, res):
     bpy.ops.object.mode_set(mode="EDIT")
     bpy.ops.mesh.select_all(action="SELECT")
     try:
-        _unwrap_lightmap(objs, margin)
+        _unwrap_lightmap(objs, margin, mobile, min_density)
     except LightmapOverflow:  # leave the objects as they were, for a retry at another size
         bpy.ops.object.mode_set(mode="OBJECT")
         for o in objs:
@@ -476,21 +521,274 @@ def _lightmap_uvs(objs, res):
             bm.free()
 
 
-def _unwrap_lightmap(objs, margin):
-    bpy.ops.uv.smart_project(angle_limit=math.radians(66), island_margin=0.0, area_weight=0.0,
-                             correct_aspect=True, scale_to_bounds=False)
-    _pack(margin)
-    _separate_overlaps(objs, margin)  # the layers are invalid once in edit mode
+def _unwrap_lightmap(objs, margin, mobile=False, min_density=0.0):
+    if mobile:
+        bms = [bmesh.from_edit_mesh(o.data) for o in objs]
+        max_span = math.sqrt(2 * sum(f.calc_area() for bm in bms for f in bm.faces))
+        for o, bm in zip(objs, bms):
+            _lightmap_seams(bm, max_span)
+            bmesh.update_edit_mesh(o.data)
+        bpy.ops.uv.unwrap(method="CONFORMAL", fill_holes=False, correct_aspect=True, margin=0.0)
+        bpy.ops.uv.average_islands_scale()
+    else:
+        bpy.ops.uv.smart_project(angle_limit=math.radians(66), island_margin=0.0, area_weight=0.0,
+                                 correct_aspect=True, scale_to_bounds=False)
+    _pack(objs, margin, mobile)
+    _separate_overlaps(objs, margin, mobile=mobile)  # the layers are invalid once in edit mode
+    if min_density:
+        median = _lightmap_density([bmesh.from_edit_mesh(o.data) for o in objs], ao.MARGIN_PX / margin)
+        if median < min_density:
+            raise LightmapOverflow(f"lightmap density p50 {median:.2f} px/m is below {min_density:g} px/m")
+
+
+def _lightmap_density(bms, res, with_metrics=False):
+    from validate_glb import _area, VISIBLE_GEOMETRY_M2
+
+    samples, parents, seen = [], [], {}
+    fill, islands = 0.0, 0
+
+    def root(i):
+        while parents[i] != i:
+            parents[i] = parents[parents[i]]
+            i = parents[i]
+        return i
+
+    for bi, bm in enumerate(bms):
+        uv = bm.loops.layers.uv["UVLightmap"]
+        for tri in bm.calc_loop_triangles():
+            coords = tuple(tuple(loop[uv].uv) for loop in tri)
+            uv_area = abs(_area(coords))
+            fill += uv_area
+            if with_metrics:
+                index = len(parents)
+                parents.append(index)
+                islands += 1
+                for k in range(3):
+                    key = bi, tuple(sorted((coords[k], coords[(k + 1) % 3])))
+                    if key in seen:
+                        a, b = root(index), root(seen[key])
+                        if a != b:
+                            parents[a] = b
+                            islands -= 1
+                    else:
+                        seen[key] = index
+            p, q, r = (loop.vert.co for loop in tri)
+            area = (q - p).cross(r - p).length / 2
+            if area >= VISIBLE_GEOMETRY_M2:
+                samples.append((res * math.sqrt(uv_area / area), area))
+    halfway = sum(area for _, area in samples) / 2
+    covered, median = 0.0, 0.0
+    for median, area in sorted(samples):
+        covered += area
+        if covered >= halfway:
+            break
+    return (median, fill, islands) if with_metrics else median
+
+
+def _object_lightmap_density(objs, res, with_metrics=False):
+    bms = []
+    try:
+        for obj in objs:
+            bm = bmesh.new()
+            bm.from_mesh(obj.data)
+            bms.append(bm)
+        return _lightmap_density(bms, res, with_metrics)
+    finally:
+        for bm in bms:
+            bm.free()
+
+
+def _lightmap_reference(objs, res, fixed):
+    """Measure the old mobile layout on disposable meshes, without baking or changing UV0."""
+    originals = [(obj, obj.data) for obj in objs]
+    copies = [(obj, obj.data.copy()) for obj in objs]
+    keep = False
+    try:
+        for obj, mesh in copies:
+            obj.data = mesh
+        while True:
+            try:
+                _lightmap_uvs(objs, res)
+                break
+            except LightmapOverflow:
+                if fixed or res >= ao.RES_FULL[-1]:
+                    return None
+                res *= 2
+        quality = _object_lightmap_density(objs, res, with_metrics=True)
+        keep = True
+        return res, quality[0], copies, quality
+    except RuntimeError:  # an invalid legacy unwrap must not prevent a repaired mobile build
+        return None
+    finally:
+        if bpy.context.mode != "OBJECT":
+            bpy.ops.object.mode_set(mode="OBJECT")
+        for obj, mesh in originals:
+            obj.data = mesh
+        if not keep:
+            for _, mesh in copies:
+                bpy.data.meshes.remove(mesh)
+
+
+def _lightmap_seams(bm, max_span):
+    """Grow non-overlapping face nets, keeping long, flat connections first."""
+    import heapq
+    from validate_glb import _area, _clip
+
+    bm.faces.index_update()
+    bm.edges.index_update()
+    bm.faces.ensure_lookup_table()
+    bm.edges.ensure_lookup_table()
+    triangles = [[] for _ in bm.faces]
+    for tri in bm.calc_loop_triangles():
+        triangles[tri[0].face.index].append(tri)
+    remaining = set(bm.faces)
+    for edge in bm.edges:
+        edge.seam = True
+
+    def project(face, edge, a, b):
+        p, q = (v.co for v in edge.verts)
+        u = (q - p).normalized()
+        v = face.normal.cross(u).normalized()
+        x = (b - a).normalized()
+        y = Vector((-x.y, x.x))
+        coords = {}
+        for loop in face.loops:
+            d = loop.vert.co - p
+            coords[loop] = a + x * d.dot(u) + y * d.dot(v)
+            if loop.vert == edge.verts[0]:
+                coords[loop] = a.copy()
+            elif loop.vert == edge.verts[1]:
+                coords[loop] = b.copy()
+        return coords
+
+    for seed in sorted(bm.faces, key=lambda f: (-round(f.calc_area(), 6), f.index)):
+        if seed not in remaining:
+            continue
+        edge = max(seed.edges, key=lambda e: (round(e.calc_length(), 6), -e.index))
+        pending = [(0, 0, edge.index, seed.index, None)]
+        coords, occupied = {}, []
+        area, bounds = 0.0, None
+        while pending:
+            _, _, ei, fi, parent = heapq.heappop(pending)
+            face = bm.faces[fi]
+            if face not in remaining:
+                continue
+            edge = bm.edges[ei]
+            if parent is None:
+                a, b = Vector((0.0, 0.0)), Vector((edge.calc_length(), 0.0))
+            else:
+                loops = {loop.vert: loop for loop in bm.faces[parent].loops}
+                a, b = (coords[loops[v]] for v in edge.verts)
+            candidate = project(face, edge, a, b)
+            tris = [tuple(tuple(candidate[loop]) for loop in tri) for tri in triangles[fi]]
+            tris = [tri if _area(tri) >= 0 else tri[::-1] for tri in tris]
+            boxes = [(min(p[0] for p in tri), min(p[1] for p in tri),
+                      max(p[0] for p in tri), max(p[1] for p in tri)) for tri in tris]
+            new_area = area + sum(abs(_area(tri)) for tri in tris)
+            all_boxes = boxes + ([bounds] if bounds else [])
+            box = (min(b[0] for b in all_boxes), min(b[1] for b in all_boxes),
+                   max(b[2] for b in all_boxes), max(b[3] for b in all_boxes))
+            # Bent tube strips can enclose enormous empty regions. Cut those nets before
+            # their gutters consume the atlas; ordinary box nets stay connected.
+            if parent is not None and new_area < 0.35 * (box[2] - box[0]) * (box[3] - box[1]):
+                continue
+            # A dense but very long rim can set the scale of the entire square atlas.
+            if parent is not None and max(box[2] - box[0], box[3] - box[1]) > max_span:
+                continue
+            if any(x[0] < y[2] and y[0] < x[2] and x[1] < y[3] and y[1] < x[3]
+                   and abs(_area(_clip(t, s))) > 1e-9
+                   for t, x in zip(tris, boxes) for s, y in occupied):
+                continue
+            remaining.remove(face)
+            coords.update(candidate)
+            occupied.extend(zip(tris, boxes))
+            area, bounds = new_area, box
+            if parent is not None:
+                edge.seam = False
+            for e in face.edges:
+                if not e.is_manifold:
+                    continue
+                other = next(f for f in e.link_faces if f != face)
+                if other in remaining:
+                    heapq.heappush(pending, (-round(face.normal.dot(other.normal), 5),
+                                            -round(e.calc_length(), 6), e.index, other.index, fi))
+
+
+def _drop_lightmap(objs):
+    """Undo a failed lightmap layout so it can be laid out again."""
+    if bpy.context.mode != "OBJECT":
+        bpy.ops.object.mode_set(mode="OBJECT")
+    for o in objs:
+        layer = o.data.uv_layers.get("UVLightmap")
+        if layer:
+            o.data.uv_layers.remove(layer)
+        o.data.uv_layers.active = o.data.uv_layers[0]
 
 
 class LightmapOverflow(RuntimeError):
-    """The charts do not fit the unit square with the requested margin."""
+    """The map cannot fit the charts with the requested margin or texel density."""
 
 
-def _pack(margin):
+def _pack(objs, margin, mobile=False):
     bpy.ops.mesh.select_all(action="SELECT")
     bpy.ops.uv.select_all(action="SELECT")
-    bpy.ops.uv.pack_islands(rotate=False, margin=margin, margin_method="FRACTION")
+    if not mobile:
+        bpy.ops.uv.pack_islands(rotate=False, margin=margin, margin_method="FRACTION")
+        return
+    # FRACTION pads both islands: half the requested gap on each boundary.
+    bpy.ops.uv.pack_islands(rotate=True, rotate_method="ANY", shape_method="AABB",
+                           margin=margin / 2, margin_method="FRACTION")
+    _pack_rectangles(objs, margin)
+
+
+def _pack_rectangles(objs, margin):
+    """Improve on Blender's placement when padded chart rectangles can fit at a larger scale."""
+    from .uvpack import pack_rectangles
+
+    charts = []
+    for o in sorted(objs, key=lambda o: o.name):
+        bm = bmesh.from_edit_mesh(o.data)
+        bm.faces.index_update()
+        bm.edges.index_update()
+        uv = bm.loops.layers.uv["UVLightmap"]
+        parents, seen = list(range(len(bm.faces))), {}
+
+        def root(i):
+            while parents[i] != i:
+                parents[i] = parents[parents[i]]
+                i = parents[i]
+            return i
+
+        for face in bm.faces:
+            for loop in face.loops:
+                a, b = tuple(loop[uv].uv), tuple(loop.link_loop_next[uv].uv)
+                if loop.vert != loop.edge.verts[0]:
+                    a, b = b, a
+                key = loop.edge.index, a, b
+                if key in seen:
+                    parents[root(face.index)] = root(seen[key])
+                else:
+                    seen[key] = face.index
+        groups = {}
+        for face in bm.faces:
+            groups.setdefault(root(face.index), []).extend(face.loops)
+        for index in sorted(groups):
+            loops = groups[index]
+            x, y = (min(loop[uv].uv[k] for loop in loops) for k in (0, 1))
+            w, h = (max(loop[uv].uv[k] for loop in loops) - low for k, low in ((0, x), (1, y)))
+            charts.append((uv, loops, x, y, w, h))
+    scale, placements = pack_rectangles([(c[4], c[5]) for c in charts], margin)
+    if scale <= 1.0001:  # retain Blender's layout unless rectangle placement increases fill
+        return
+    for index, x, y, rotate in placements:
+        uv, loops, lx, ly, w, h = charts[index]
+        for loop in loops:
+            u, v = loop[uv].uv.x - lx, loop[uv].uv.y - ly
+            if rotate:
+                u, v = v, w - u
+            loop[uv].uv = (x + u * scale, y + v * scale)
+    for o in objs:
+        bmesh.update_edit_mesh(o.data)
 
 
 def _lightmap_overlaps(bms):
@@ -516,8 +814,8 @@ def _lightmap_overlaps(bms):
     return [sorted(x) for x in bad], [sorted(x) for x in folded]
 
 
-def _separate_overlaps(objs, margin, attempts=4):
-    """Smart UV Project can fold a chart over itself. Detach every face that overlaps another
+def _separate_overlaps(objs, margin, attempts=4, mobile=False):
+    """Unwrapping or quantization can fold a chart over itself. Detach every face that overlaps another
     into its own chart (splitting faces that fold over themselves) and repack, until nothing
     overlaps (validate_glb checks the export)."""
     for attempt in range(attempts + 1):
@@ -529,16 +827,16 @@ def _separate_overlaps(objs, margin, attempts=4):
         collapsed = _collapsed_lightmap_faces(bms)
         if any(collapsed) and attempt < attempts:  # a sliver projected edge-on: unwrap it alone
             _reproject_faces(objs, bms, collapsed)
-            _pack(margin)
+            _pack(objs, margin, mobile)
             continue
         outside = any(not -1e-6 <= c <= 1 + 1e-6 for bm in bms for f in bm.faces
                       for loop in f.loops for c in loop[bm.loops.layers.uv["UVLightmap"]].uv)
-        if not any(bad) and not outside:
+        if not any(bad) and not outside and not any(collapsed):
             return
         if attempt == attempts:
             break
         if not any(bad):  # a repack left charts parked outside the unit square: pack again
-            _pack(margin)
+            _pack(objs, margin, mobile)
             continue
         if any(folded):  # its triangles become faces of their own; detached on the next pass
             for o, bm, faces in zip(objs, bms, folded):
@@ -554,7 +852,7 @@ def _separate_overlaps(objs, margin, attempts=4):
                     loop[uv].uv += Vector((2.0 + 2.0 * n, 0.0))
                 n += 1
             bmesh.update_edit_mesh(o.data)
-        _pack(margin)
+        _pack(objs, margin, mobile)
     if not any(bad):
         raise LightmapOverflow(f"lightmap charts do not fit the unit square at margin {margin:g}")
     raise RuntimeError(f"lightmap UVs still overlap after {attempts} repairs")

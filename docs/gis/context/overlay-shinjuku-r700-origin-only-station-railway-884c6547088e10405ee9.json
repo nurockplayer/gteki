@@ -1,7 +1,7 @@
 {
-  "run_id": "overlay-shinjuku-r700-origin-only-station-railway-2fff127bfa0a7a7add7e",
+  "run_id": "overlay-shinjuku-r700-origin-only-station-railway-884c6547088e10405ee9",
   "command": "context-overlay",
-  "policy_version": "context-overlay-v1",
+  "policy_version": "context-overlay-v2",
   "station_id": "shinjuku",
   "gteki_role": "context",
   "navigation_use": "NOT_FOR_ROUTING",
@@ -20,7 +20,7 @@
     "mode": "origin-only",
     "note": "horizontal ENU at the station.json origin (evaluated at height 0; no vertical anchor exists and none is asserted); same x/y as the station-enu frame would give to well under a millimetre",
     "station_json_path": "stations/shinjuku/gteki/station.json",
-    "station_json_sha256": "8fdef8f8798d099b7195308318042494a041413247ec31bc26502e7a249fcb64",
+    "station_origin_sha256": "816473fd5c95a86b868f06faad0b32d84d4d61fb82e90e996f0b0c6462a5ade7",
     "origin_crs": "EPSG:6668"
   },
   "window": {
@@ -38,7 +38,7 @@
     "drape": "none",
     "baked_offset_m": 0,
     "evidence_path": "stations/shinjuku/gteki/station.json",
-    "evidence_sha256": "8fdef8f8798d099b7195308318042494a041413247ec31bc26502e7a249fcb64",
+    "evidence_value_sha256": "3bd62d06acb6a8d914a2d5b5cb56980cd30e0a603e97ddf1174a826ac2b390ae",
     "evidence_field": "floors[ordinal 0].renderElevationM"
   },
   "credit": "出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html）を加工して作成",
@@ -188,13 +188,13 @@
   },
   "outputs": {
     "geojson": {
-      "store_path": "out/overlay-shinjuku-r700-origin-only-station-railway-2fff127bfa0a7a7add7e.geojson",
-      "sha256": "a2ff15d49332a649277d35a3dfca002bfaf05b3debf6023a746645cbb4859225",
+      "store_path": "out/overlay-shinjuku-r700-origin-only-station-railway-884c6547088e10405ee9.geojson",
+      "sha256": "879ce329781c46daa3fb5fe141fff61aedf7080a9103ff028dbd9be7e492cd0e",
       "bytes": 42269
     },
     "glb": {
-      "store_path": "out/overlay-shinjuku-r700-origin-only-station-railway-2fff127bfa0a7a7add7e.glb",
-      "sha256": "486ff55fa5a5772123042f70aa7d3e0c0bc66c958542404e1eccbf12e0d19e95",
+      "store_path": "out/overlay-shinjuku-r700-origin-only-station-railway-884c6547088e10405ee9.glb",
+      "sha256": "948ccf74fac3db372209d8694b6493d91f6513772dc22dc8b9c8337a4d45c69b",
       "bytes": 30924,
       "nodes": [
         "ctx_rail_all",
@@ -215,6 +215,6 @@
       "segments_skipped_zero_length": 0
     }
   },
-  "tool_input_sha256": "d9d46fffddd346e6b13fe668a0bffe706b2002980064dbccc6e28c3b5916bce6",
+  "tool_input_sha256": "bf2953766fccaf620496594f5b3b3870c481796c853392121da64869dcf30aa9",
   "tool_version": "0.1.0"
 }
