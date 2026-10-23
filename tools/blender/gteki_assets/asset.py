@@ -192,13 +192,17 @@ class Asset:
         # one shared occlusion map per asset; baked before the colliders exist, so they never occlude
         # a station catalog may pin the size (`ao_res`) when it places many copies of a long piece
         self.ao_res = self.ao_res_override or ao.resolution(_gltf_bounds(vis_objs), mobile)
-        reference = _lightmap_reference(vis_objs, self.ao_res, bool(self.ao_res_override)) if mobile else None
+        # mobile always lays out face nets; full does too when the catalog pins `ao_res`, because Smart UV
+        # Project's 5 px margins would eat a small pinned atlas. A pinned full asset keeps the Smart UV
+        # layout as its reference and is only switched to the face nets when they are no worse.
+        nets = mobile or bool(self.ao_res_override)
+        reference = _lightmap_reference(vis_objs, self.ao_res, bool(self.ao_res_override)) if nets else None
         # the face nets must at least match the old layout's density; they need not reach a fixed
         # px/m, or a small asset would grow its map and then fall back to the worse old layout
         minimum = reference[1] - 0.001 if reference and not self.ao_res_override else 0.0
         use_reference = False
         try:
-            self.ao_res = self._fit_lightmap(vis_objs, self.ao_res, mobile, minimum)
+            self.ao_res = self._fit_lightmap(vis_objs, self.ao_res, nets, minimum)
         except LightmapOverflow:
             if reference is None:
                 raise
@@ -206,7 +210,7 @@ class Asset:
         except RuntimeError as error:
             if reference is not None:
                 use_reference = True
-            elif mobile:
+            elif nets:
                 raise
             else:
                 # Smart UV Project can leave charts folded over each other after every repair
@@ -219,8 +223,10 @@ class Asset:
             if not use_reference:
                 quality = _object_lightmap_density(vis_objs, self.ao_res, with_metrics=True)
                 prior = reference[3]
+                # island count guards mobile's single joined body against fragmentation; full keeps
+                # its parts as separate meshes, where the nets add islands but gain density and fill
                 use_reference = (quality[0] + 0.001 < prior[0] or quality[1] + 1e-5 < prior[1]
-                                 or quality[2] > prior[2])
+                                 or (mobile and quality[2] > prior[2]))
             if bpy.context.mode != "OBJECT":
                 bpy.ops.object.mode_set(mode="OBJECT")
             for obj, mesh in reference[2]:
