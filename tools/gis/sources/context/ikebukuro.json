@@ -18,6 +18,7 @@
     },
     "mesh_margin_m": 50
   },
+  "graph_literal_source_id": "gteki-authored",
   "merge": "kind",
   "variant": "high",
   "sources": [
@@ -26,10 +27,7 @@
     "plateau-13116-tran-53394576",
     "plateau-13116-tran-53394577"
   ],
-  "notes": "Window = union of a 250 m disc at the origin and a 120 m disc around every graph node whose kind is in exit_kinds (exit connector) or whose floorId is in street_floor_ids (street-level node); exit_poi_connectors adds the graph nodes that stations/ikebukuro/gteki/pois.json names in connectorNodeIds of POIs with category exit (x36f, x4f, x13f: exits whose connector is a b1 stair foot, not a street node). graph.json and pois.json are read-only and their sha256 go in the receipt. The window touches third-level meshes 53394576 and 53394577 only (plus 50 m mesh_margin_m for features that straddle a mesh edge; a third mesh, 53394586, first matters at roughly 100-110 m, with or without the stair-foot discs); a missing or unacquired mesh fails the run. Default merge kind = one building mesh and one road mesh. Visual-only context (gteki_role context, NOT_FOR_ROUTING); textures are not converted. Default kinds = both. Roads ship as geometry only under an Owner risk acceptance (docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md; #39 comment 6323977745): the GSI approval 令7関公第296号 in the tran lineage is treated as attribute-scoped and no tran attribute is shipped; --kinds bldg gives the buildings-only files.",
-  "profile": {
-    "window": { "kind": "origin_disc", "radius_m": 700 }
-  },
+  "notes": "Window = union of a 250 m disc at the origin and a 120 m disc around every graph node whose kind is in exit_kinds (exit connector) or whose floorId is in street_floor_ids (street-level node); exit_poi_connectors adds the graph nodes that stations/ikebukuro/gteki/pois.json names in connectorNodeIds of POIs with category exit (x36f, x4f, x13f: exits whose connector is a b1 stair foot, not a street node). graph.json and pois.json are read-only and their sha256 go in the receipt. The window touches third-level meshes 53394576 and 53394577 only (plus 50 m mesh_margin_m for features that straddle a mesh edge; a third mesh, 53394586, first matters at roughly 100-110 m, with or without the stair-foot discs); a missing or unacquired mesh fails the run. Default merge kind = one building mesh and one road mesh. Visual-only context (gteki_role context, NOT_FOR_ROUTING); textures are not converted. Default kinds = both. Roads ship as geometry only under an Owner risk acceptance (docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md; #39 comment 6323977745): the GSI approval 令7関公第296号 in the tran lineage is treated as attribute-scoped and no tran attribute is shipped; --kinds bldg gives the buildings-only files. graph_literal_source_id gteki-authored: the graph ids are names GTEki wrote in stations/ikebukuro/data/graph.src.json (hand-authored, README Layout; stations/ikebukuro/docs/G0-source-audit.md: Hokonavi R1 'Not used for the indoor graph'), so the receipt keeps them verbatim; the field is read at receipt time only and is not part of the run digest.",
   "overlay": {
     "frame": {
       "mode": "station-enu-frame",
@@ -81,5 +79,8 @@
       "radius_m": 700
     },
     "notes": "z is the station lead's render anchor (the ordinal-0 street floor renderElevationM in station.json), not a surveyed or TP ground height: that floor has elevationM null and elevationSource unknown. No DEM draping and no baked offset; the scene owns depth offset and draw order."
+  },
+  "profile": {
+    "window": { "kind": "origin_disc", "radius_m": 700 }
   }
 }
