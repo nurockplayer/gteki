@@ -272,13 +272,7 @@ for (const key of STATIONS) {
     for (const e of events) {
       if (e.startFov === null || e.endFov === null) continue;
       if (e.kind === "ease") expect.soft(e.maxStepDeg ?? 0, `${e.event}: largest single-frame FOV change (deg)`).toBeLessThanOrEqual(FOV_JUMP_MAX_DEG);
-      if (e.expectedFov === null) continue;
-      // #136 widens the follow lens to 60 on stairs/escalators and while walls or ceilings squeeze the boom; the
-      // walks here start on or next to stairs. A wide follow end is expected when the app reports that same lens.
-      const sceneFov = typeof e.end.sceneFov === "number" ? e.end.sceneFov : null;
-      const wideByDesign = e.expectedFov === declared.follow && declared.firstPerson !== null && sceneFov !== null
-        && Math.abs(e.endFov - declared.firstPerson) <= FOV_TOL_DEG && Math.abs(sceneFov - e.endFov) <= FOV_TOL_DEG;
-      if (!wideByDesign) expect.soft(Math.abs(e.endFov - e.expectedFov), `${e.event}: final FOV ${e.endFov} vs declared ${e.expectedFov}`).toBeLessThanOrEqual(FOV_TOL_DEG);
+      if (e.expectedFov !== null) expect.soft(Math.abs(e.endFov - e.expectedFov), `${e.event}: final FOV ${e.endFov} vs declared ${e.expectedFov}`).toBeLessThanOrEqual(FOV_TOL_DEG);
     }
   });
 }
