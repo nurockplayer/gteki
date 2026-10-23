@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { parse } from 'csv-parse/sync';
 import { getStoreRoot, getStoredSource, repoRoot } from './common.js';
 import { buildContextWindow, type Disc, type WindowSpec } from './context-window.js';
-import { geometryPaths, pathMeetsDiscs, polygonMeetsDiscs, type Point as FramePoint } from './window-geometry.js';
+import { geometryPaths as memberGeometryPaths, pathMeetsDiscs, polygonMeetsDiscs, type Point as FramePoint } from './window-geometry.js';
 import { stationEnuProjector } from './station-enu.js';
 import proj4 from 'proj4';
 import { IX_PROJ } from './crs.js';
@@ -175,7 +175,12 @@ export function profileTable(records: string[][], encoding: CsvProfile['encoding
       points.push([lat, lon]);
     }
   }
-  const bbox = points.length ? { lon_min: Math.min(...points.map((p) => p[1])), lat_min: Math.min(...points.map((p) => p[0])), lon_max: Math.max(...points.map((p) => p[1])), lat_max: Math.max(...points.map((p) => p[0])) } : null;
+  let minLon = Infinity, minLat = Infinity, maxLon = -Infinity, maxLat = -Infinity;
+  for (const [lat, lon] of points) {
+    minLon = Math.min(minLon, lon); minLat = Math.min(minLat, lat);
+    maxLon = Math.max(maxLon, lon); maxLat = Math.max(maxLat, lat);
+  }
+  const bbox = points.length ? { lon_min: minLon, lat_min: minLat, lon_max: maxLon, lat_max: maxLat } : null;
   const asIs = points.filter(([lat, lon]) => inBox(lat, lon, JAPAN_BOX)).length;
   const swapped = points.filter(([lat, lon]) => !inBox(lat, lon, JAPAN_BOX) && inBox(lon, lat, JAPAN_BOX)).length;
   const tokyo = points.filter(([lat, lon]) => inBox(lat, lon, TOKYO_BOX)).length;
@@ -207,19 +212,46 @@ function formatOf(name: string, data: Buffer): string {
   return ext === '' ? 'no-extension' : `other(${ext})`;
 }
 
-function visit(coords: unknown, fn: (lon: number, lat: number) => void): void {
+type GeojsonGeometry = { type?: string; coordinates?: unknown; geometries?: GeojsonGeometry[] };
+const MAX_GEOMETRY_DEPTH = 32;
+
+/** Visit collection members without flattening lines, polygons or their holes. */
+function visit(geometry: GeojsonGeometry | null | undefined, fn: (geometry: GeojsonGeometry) => void, depth = 0): boolean {
+  if (depth > MAX_GEOMETRY_DEPTH) return false;
+  if (geometry?.type !== 'GeometryCollection') {
+    if (geometry) fn(geometry);
+    return true;
+  }
+  let evaluated = true;
+  for (const member of geometry.geometries ?? []) {
+    if (!visit(member, fn, depth + 1)) evaluated = false;
+  }
+  return evaluated;
+}
+
+function geometryPaths(geometry: GeojsonGeometry | null | undefined): ReturnType<typeof memberGeometryPaths> & { evaluated: boolean } {
+  const out: ReturnType<typeof memberGeometryPaths> = { lines: [], polygons: [] };
+  const evaluated = visit(geometry, (member) => {
+    const paths = memberGeometryPaths(member);
+    for (const line of paths.lines) out.lines.push(line);
+    for (const polygon of paths.polygons) out.polygons.push(polygon);
+  });
+  return { ...out, evaluated };
+}
+
+function visitCoordinates(coords: unknown, fn: (lon: number, lat: number) => void): void {
   if (!Array.isArray(coords)) return;
   if (typeof coords[0] === 'number' && typeof coords[1] === 'number') { fn(coords[0], coords[1]); return; }
-  for (const c of coords) visit(c, fn);
+  for (const c of coords) visitCoordinates(c, fn);
 }
 
 export function geojsonDetail(data: Buffer, windows: StationWindow[]): Record<string, unknown> {
-  const doc = JSON.parse(data.toString('utf8')) as { type?: string; features?: Array<{ geometry?: { type?: string; coordinates?: unknown } | null }>; crs?: { properties?: { name?: string } } };
+  const doc = JSON.parse(data.toString('utf8')) as { type?: string; features?: Array<{ geometry?: GeojsonGeometry | null }>; crs?: { properties?: { name?: string } } };
   // A standalone Feature or bare geometry is one feature; only a FeatureCollection carries a list.
   const geometryTypes = ['Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon'];
   const features = doc.type === 'FeatureCollection' && Array.isArray(doc.features) ? doc.features
-    : doc.type === 'Feature' ? [doc as { geometry?: { type?: string; coordinates?: unknown } | null }]
-    : geometryTypes.includes(doc.type ?? '') ? [{ geometry: doc as { type?: string; coordinates?: unknown } }] : [];
+    : doc.type === 'Feature' ? [doc as { geometry?: GeojsonGeometry | null }]
+    : geometryTypes.includes(doc.type ?? '') ? [{ geometry: doc as GeojsonGeometry }] : [];
   // A GeometryCollection is recognised as GeoJSON but not walked here: report it unevaluated, not as zero coverage.
   if (doc.type === 'GeometryCollection') return { features: 0, geometry_types: { GeometryCollection: 1 }, declared_crs_member: doc.crs?.properties?.name ?? null, window_evaluation: 'not evaluated: top-level GeometryCollection' };
   const types: Record<string, number> = {};
@@ -229,18 +261,20 @@ export function geojsonDetail(data: Buffer, windows: StationWindow[]): Record<st
     const project = stationEnuProjector({ lat: w.origin.lat, lon: w.origin.lon, hM: 0 });
     return { w, discs: w.discs, toFrame: (lon: number, lat: number): FramePoint => { const [x, y] = project(lat, lon, 0); return [x, y]; }, n: 0 };
   });
-  let minLon = Infinity, minLat = Infinity, maxLon = -Infinity, maxLat = -Infinity, swapped = 0, asIs = 0;
+  let minLon = Infinity, minLat = Infinity, maxLon = -Infinity, maxLat = -Infinity, swapped = 0, asIs = 0, unevaluated = 0;
   for (const f of features) {
     const t = f.geometry?.type ?? 'null';
     types[t] = (types[t] ?? 0) + 1;
+    const paths = geometryPaths(f.geometry);
+    // Omit the whole feature rather than report partial bounds or coverage beyond the depth cap.
+    if (!paths.evaluated) { unevaluated++; continue; }
     let asIsVertices = 0;
     const hits = new Set<number>();
-    visit(f.geometry?.coordinates, (lon, lat) => {
+    visit(f.geometry, (member) => visitCoordinates(member.coordinates, (lon, lat) => {
       minLon = Math.min(minLon, lon); maxLon = Math.max(maxLon, lon); minLat = Math.min(minLat, lat); maxLat = Math.max(maxLat, lat);
       if (inBox(lat, lon, JAPAN_BOX)) { asIs++; asIsVertices++; } else if (inBox(lon, lat, JAPAN_BOX)) swapped++;
-    });
+    }));
     if (asIsVertices > 0) {
-      const paths = geometryPaths(f.geometry);
       perWindow.forEach((p, i) => {
         if (paths.lines.some((line) => pathMeetsDiscs(line.map(([lon, lat]) => p.toFrame(lon, lat)), p.discs))) hits.add(i);
         else if (paths.polygons.some((rings) => polygonMeetsDiscs(rings.map((ring) => ring.map(([lon, lat]) => p.toFrame(lon, lat))), p.discs))) hits.add(i);
@@ -250,7 +284,8 @@ export function geojsonDetail(data: Buffer, windows: StationWindow[]): Record<st
   }
   return { features: features.length, geometry_types: types, declared_crs_member: doc.crs?.properties?.name ?? null,
     bbox: Number.isFinite(minLon) ? { lon_min: minLon, lat_min: minLat, lon_max: maxLon, lat_max: maxLat } : null, vertices_as_is_in_japan: asIs, vertices_swapped_in_japan: swapped,
-    features_touching_window: Object.fromEntries(perWindow.map((p) => [p.w.station, p.n])) };
+    features_touching_window: Object.fromEntries(perWindow.map((p) => [p.w.station, p.n])),
+    ...(unevaluated > 0 ? { features_unevaluated: unevaluated } : {}) };
 }
 
 export function shpDetail(data: Buffer, prjText: string | null, windows: StationWindow[]): Record<string, unknown> {
