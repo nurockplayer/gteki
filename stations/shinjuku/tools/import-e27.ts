@@ -30,6 +30,7 @@ import {
   validateBundle,
   type CoverageArea,
   type CoverageGap,
+  type DataFile,
   type Edge,
   type EdgeMode,
   type EvidenceRef,
@@ -42,6 +43,7 @@ import {
 } from "@gteki/schema";
 import { runWidth } from "../scene/layout.ts";
 import { floorLabel } from "../app/src/narrate.ts";
+import { SURFACE_CREDIT } from "./import-surface.ts";
 import { loadRawE27, normId, pointInPolygon, RAW_DIR, type GeoFeature, type PolyG, type RawSpaceP } from "./e27-raw.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -67,6 +69,8 @@ const PUBLICATION_PERIOD_END = "2027-03-12";
 const PERIOD_NOTE = `Publication period (公開提供期限): limited publication for 公共交通オープンデータチャレンジ2026 until ${PUBLICATION_PERIOD_END}, per the dataset page. This is the provider's publication period, not a confirmed end of any licence; reuse of derived data after that date is unconfirmed with the provider (see coverage gap:reuse-after-publication). Licence basis for this resource is unconfirmed: it ships under the Owner's override at the #16 merge, and PDL 1.0 is not treated as covering it (Owner decision #39, Q11 = No).`;
 /** Honest licence value for the E27 resources: validate.ts requires a data source to name a licence with an http(s) link, so link the provider's dataset page. */
 const E27_LICENSE = { name: "Licence unconfirmed — published under the Owner's override (#16)", url: "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45" };
+// #130: the E27 resources ship under the Owner's recorded override (the #16 merge), not under a confirmed licence.
+const E27_OVERRIDE = { decision: "https://github.com/nurockplayer/gteki/pull/16#issuecomment-6313815757", date: "2026-10-21" };
 const SRC_NWD = "mlit-hokonavi-e27-nwd";
 const SRC_MAP = "mlit-hokonavi-e27-stationmap";
 const OP = "toei";
@@ -563,6 +567,7 @@ for (const n of raw.nodes) {
 interface ExitInfo {
   nodeId: string;
   p: { x: number; y: number };
+  lonlat: [number, number];
   level: string;
   d: number;
 }
@@ -578,7 +583,7 @@ for (const { level, f, p } of allFacilities) {
   const outside = nearestNode(p, (n) => onFloor(n) && n.properties.in_out === 1);
   const best = outside && outside.d <= 6 ? outside : nearestNode(p, onFloor);
   if (best && best.d <= 6) {
-    exits.push({ nodeId: best.id, p, level: level.label, d: best.d });
+    exits.push({ nodeId: best.id, p, lonlat: f.geometry.coordinates, level: level.label, d: best.d });
     nodeKind.set(best.id, "exit");
   } else anomalies.push(`exit point on ${level.label} has no same-floor node within 6 m (left unroutable)`);
 }
@@ -682,64 +687,135 @@ const compass = (p: { x: number; y: number }) => {
   return dirs[(Math.round(((a + 360) % 360) / 45) % 8) as 0]!;
 };
 const vEv = (method: string, note?: string) => ev([SRC_NWD, SRC_MAP], method, note);
-// Exits whose level + compass side coincide are told apart by how they are reached: the first
-// vertical connector (elevator / stairs / escalator) found on foot from the exit node, nearest by
-// walked length over the source graph (≤ 40 m). Graph fact, not an official exit name.
-const ACCESS_LABEL = { elevator: ["エレベーター", "elevator"], stairs: ["階段", "stairs"], escalator: ["エスカレーター", "escalator"] } as const;
-function exitAccess(nodeId: string): keyof typeof ACCESS_LABEL | null {
-  const dist = new Map([[`n:${nodeId}`, 0]]);
-  const queue = [`n:${nodeId}`];
-  let best: { mode: keyof typeof ACCESS_LABEL; d: number } | null = null;
-  while (queue.length) {
-    queue.sort((a, b) => dist.get(a)! - dist.get(b)!);
-    const id = queue.shift()!;
-    const d = dist.get(id)!;
-    if (d > 40 || (best && d >= best.d)) break;
-    for (const e of edges) {
-      if (e.from !== id && e.to !== id) continue;
-      if (e.mode in ACCESS_LABEL) {
-        if (!best || d < best.d) best = { mode: e.mode as keyof typeof ACCESS_LABEL, d };
-        continue;
-      }
-      if (e.mode !== "walk") continue;
-      const other = e.from === id ? e.to : e.from;
-      const nd = d + (e.lengthM ?? 0);
-      if (nd < (dist.get(other) ?? Infinity)) {
-        dist.set(other, nd);
-        queue.push(other);
-      }
-    }
+// ---- Exit display names (issue #106) -------------------------------------------------------
+// The dataset has NO official exit numbers (gap:exit-numbers), so a display name is built only from
+// descriptors that trace to a source field, and every word below is a description, never a number:
+//  - level: the GSI map level of the F108 point (street / B1);
+//  - compass side: the F108 point's bearing from the centroid of the mapped network nodes (computed
+//    from coordinates; the ENU origin is itself at the south end of the network, so it would give
+//    meaningless bearings for the three exits within 12 m of it);
+//  - roof: E27 link attribute 屋根の有無 (1 = なし, 2 = あり, 99 = 不明), street-level exits only
+//    (a roof says nothing about a B1 exit). The codes of ALL links within ROOF_RADIUS_M of the F108
+//    point (any floor: the plan view is what a person standing there sees) are collected, plus every
+//    link inside the stairs / elevator / escalator space the name cites. A roof word is said only
+//    when all of them agree and none is 99; otherwise the roof word is omitted;
+//  - adjacent GSI space category: the stairs / elevator / escalator / walkway space (GSI indoor spec
+//    2019: B021 / B022 / B023 / B029) that contains the F108 point or touches it within 0.5 m. "Other
+//    room" (B019) and other categories are not informative enough to name.
+const ADJACENT_RADIUS_M = 0.5;
+const ROOF_RADIUS_M = 1.5;
+const SPACE_WORDS: Record<string, { ja: string; en: string; zh: string; kana: string; romaji: string }> = {
+  B021: { ja: "階段", en: "stairs", zh: "樓梯", kana: "かいだん", romaji: "kaidan" },
+  B022: { ja: "エレベーター", en: "elevator", zh: "電梯", kana: "えれべーたー", romaji: "erebeta" },
+  B023: { ja: "エスカレーター", en: "escalator", zh: "手扶梯", kana: "えすかれーたー", romaji: "esukareta" },
+  B029: { ja: "通路/コンコース", en: "walkway/concourse", zh: "通道", kana: "つうろ こんこーす", romaji: "tsuro konkosu" },
+};
+const COMPASS_WORDS: Record<string, { zh: string; kana: string; romaji: string }> = {
+  北: { zh: "北", kana: "きた", romaji: "kita" },
+  北東: { zh: "東北", kana: "ほくとう", romaji: "hokuto" },
+  東: { zh: "東", kana: "ひがし", romaji: "higashi" },
+  南東: { zh: "東南", kana: "なんとう", romaji: "nanto" },
+  南: { zh: "南", kana: "みなみ", romaji: "minami" },
+  南西: { zh: "西南", kana: "なんせい", romaji: "nansei" },
+  西: { zh: "西", kana: "にし", romaji: "nishi" },
+  北西: { zh: "西北", kana: "ほくせい", romaji: "hokusei" },
+};
+function distToRing(p: { x: number; y: number }, ring: { x: number; y: number }[]) {
+  let m = Infinity;
+  for (let i = 0; i + 1 < ring.length; i++) {
+    const a = ring[i]!, b = ring[i + 1]!;
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy || 1)));
+    m = Math.min(m, Math.hypot(a.x + t * dx - p.x, a.y + t * dy - p.y));
   }
-  return best?.mode ?? null;
+  return m;
 }
-const exitBase = exits.map((x) => {
-  const [ja, en] = compass(x.p);
-  return { ja: `${x.level === "1" ? "地上" : "地下1階"}・${ja}側`, en: `${x.level === "1" ? "street level" : "B1"}, ${en} side` };
+/** GSI spaces (informative categories only) that contain or touch an exit's F108 point, in SPACE_WORDS order. */
+function adjacentSpaces(x: ExitInfo) {
+  const level = mapLevels.find((m) => m.label === x.level)!;
+  const found = level.spaces.filter((sp) => sp.properties.category in SPACE_WORDS && (pointInPolygon(x.lonlat[0], x.lonlat[1], sp.geometry.coordinates) || sp.enu.some((ring) => distToRing(x.p, ring) <= ADJACENT_RADIUS_M)));
+  const order = Object.keys(SPACE_WORDS);
+  return found.sort((a, b) => order.indexOf(a.properties.category) - order.indexOf(b.properties.category));
+}
+const CONVEYANCE_SPACES = new Set(["B021", "B022", "B023"]);
+/**
+ * E27 roof codes around an exit: every link within ROOF_RADIUS_M of the F108 point, plus every link
+ * (on a floor equivalent to the exit's map level) whose midpoint lies in a cited stairs / elevator /
+ * escalator space. "roofed" / "open" only when all agree and none is 99 (不明); otherwise null.
+ */
+function exitRoof(x: ExitInfo, spaces: ReturnType<typeof adjacentSpaces>): { roof: "roofed" | "open" | null; codes: number[] } {
+  const floorsHere = exitFloors(mapLevels.find((m) => m.label === x.level)!.ordinal);
+  const codes = new Set<number>();
+  for (const l of links) {
+    const pts = l.geometry.coordinates.map(([lo, la]) => enu(lo, la));
+    let near = false;
+    for (let i = 0; i + 1 < pts.length && !near; i++) near = distToRing(x.p, [pts[i]!, pts[i + 1]!]) <= ROOF_RADIUS_M;
+    if (!near) {
+      const onFloor = [l.properties.start_id, l.properties.end_id].some((id) => floorsHere.includes(rawNodes.get(id)!.properties.floor));
+      const [mx, my] = sampleAlong(l.geometry.coordinates, 0.5);
+      near = onFloor && spaces.some((sp) => CONVEYANCE_SPACES.has(sp.properties.category) && pointInPolygon(mx, my, sp.geometry.coordinates));
+    }
+    if (near) codes.add(l.properties.roof);
+  }
+  const list = [...codes].sort((a, b) => a - b);
+  const roof = list.length === 1 ? (list[0] === 2 ? "roofed" : list[0] === 1 ? "open" : null) : null;
+  return { roof, codes: list };
+}
+const exitDescriptors = exits.map((x) => {
+  if (x.level !== "1" && x.level !== "B1") throw new Error(`exit on map level ${x.level}: no level wording defined`);
+  const street = x.level === "1";
+  const [cja, cen] = compass(x.p);
+  const adjacent = adjacentSpaces(x);
+  const spaces = adjacent.map((sp) => sp.properties.category);
+  const { roof, codes: roofCodes } = street ? exitRoof(x, adjacent) : { roof: null, codes: [] as number[] };
+  const cw = COMPASS_WORDS[cja]!;
+  const sw = spaces.map((c) => SPACE_WORDS[c]!);
+  const parts = {
+    ja: [street ? "地上" : "地下1階", `${cja}側`, ...(sw.length ? [`${sw.map((w) => w.ja).join("と")}に隣接`] : []), ...(roof ? [roof === "roofed" ? "屋根あり" : "屋根なし"] : [])],
+    en: [street ? "street level" : "underground level B1", `${cen} side`, ...(sw.length ? [`next to ${sw.map((w) => w.en).join(" and ")}`] : []), ...(roof ? [roof === "roofed" ? "roofed" : "no roof"] : [])],
+  };
+  // Readings of the same descriptors. The romaji level word goes last: "chijo" has a "j", and any
+  // later "r" in the string would let a "JR" query match this exit through the ranker's fuzzy subsequence rule.
+  const kana = ["でぐち", street ? "ちじょう" : "ちかいっかい", `${cw.kana}がわ`, ...sw.map((w) => w.kana), ...(roof ? [roof === "roofed" ? "やねあり" : "やねなし"] : [])].join(" ");
+  const romaji = ["deguchi", `${cw.romaji}-gawa`, ...sw.map((w) => w.romaji), ...(roof ? [roof === "roofed" ? "yane ari" : "yane nashi"] : []), street ? "chijo" : "chika ikkai"].join(" ");
+  const en = ["exit", street ? "street level" : "underground level B1", cen, ...sw.map((w) => w.en), ...(roof ? [roof === "roofed" ? "roofed" : "no roof"] : [])].join(" ");
+  const zh = ["出口", street ? "地面" : "地下1樓", `${cw.zh}側`, ...sw.map((w) => w.zh), ...(roof ? [roof === "roofed" ? "有屋頂" : "無屋頂"] : [])].join(" ");
+  return { parts, kana, romaji, en, zh, roof, roofCodes, spaces };
 });
+for (const lang of ["ja", "en"] as const) {
+  const names = exitDescriptors.map((d) => d.parts[lang].join("・"));
+  if (new Set(names).size !== names.length) throw new Error(`exit display names are not unique in ${lang}: ${names.join(" | ")}`);
+}
 exits.forEach((x, i) => {
   const n = rawNodes.get(x.nodeId)!;
-  let { ja, en } = exitBase[i]!;
-  if (exitBase.some((b, j) => j !== i && b.ja === ja)) {
-    const access = exitAccess(x.nodeId);
-    if (access) (ja += `・${ACCESS_LABEL[access][0]}`), (en += `, ${ACCESS_LABEL[access][1]}`);
-  }
+  const d = exitDescriptors[i]!;
   pois.push({
     id: `poi:exit:${i + 1}`,
     category: "exit",
     names: [
-      { lang: "ja", text: `出口（${ja}）` },
-      { lang: "en", text: `Exit (${en})` },
+      { lang: "ja", text: `出口（${d.parts.ja.join("・")}）` },
+      { lang: "en", text: `Exit (${d.parts.en.join(", ")})` },
     ],
     aliases: [
       { lang: "ja-Hrkt", text: "でぐち" },
       { lang: "ja-Latn", text: "deguchi" },
       { lang: "en", text: "exit" },
+      { lang: "zh-Hant", text: "出口" },
+      { lang: "ja-Hrkt", text: d.kana },
+      { lang: "ja-Latn", text: d.romaji },
+      { lang: "en", text: d.en },
+      { lang: "zh-Hant", text: d.zh },
     ],
     floorId: floorId(n.properties.floor),
     displayPosition: { ...x.p, z: null },
     connectorNodeIds: [`n:${x.nodeId}`],
     paid: nodeToll.get(x.nodeId) === "paid" ? true : nodeToll.get(x.nodeId) === "free" ? false : null,
-    evidence: vEv(`GSI facility F108 on map level ${x.level} → nearest NWD node on an equivalent floor (${x.d.toFixed(1)} m)`, "Exit number/name not in source (coverage gap)"),
+    evidence: vEv(
+      `GSI facility F108 on map level ${x.level} → nearest NWD node on an equivalent floor (${x.d.toFixed(1)} m); name words: level of the F108 map level, compass side from the F108 point vs the node centroid, ` +
+        `adjacent GSI space ${d.spaces.length ? d.spaces.join("+") : "none"} (contains or touches the F108 point within ${ADJACENT_RADIUS_M} m), ` +
+        `E27 屋根の有無 roof: ${x.level === "1" ? (d.roof ?? `not stated (codes ${d.roofCodes.join("/")} within ${ROOF_RADIUS_M} m and in the cited stairs/lift/escalator space are mixed or unknown)`) : "not stated (below street level)"} (all links within ${ROOF_RADIUS_M} m of the F108 point, plus links in the cited stairs/lift/escalator space)`,
+      "Exit number/name not in source (coverage gap); the words in the name are descriptors, not official exit numbers",
+    ),
   });
 });
 // Ticket gates: cluster gate links by GSI gate points.
@@ -754,6 +830,12 @@ for (const id of gateLinks) {
 }
 gateClusters.forEach((g, i) => {
   const [ja, en] = compass(g.p);
+  // Each F106 point on this level is counted once, for the nearest gate cluster on the same level.
+  const f106Near = allFacilities.filter((f) => {
+    if (f.f.properties.category !== "F106" || f.level.label !== g.level) return false;
+    const nearest = gateClusters.filter((c) => c.level === g.level).reduce((best, c) => (Math.hypot(f.p.x - c.p.x, f.p.y - c.p.y) < Math.hypot(f.p.x - best.p.x, f.p.y - best.p.y) ? c : best));
+    return nearest === g;
+  }).length;
   const nodeIds = [...new Set(g.links.flatMap((id) => { const l = links.find((x) => x.properties.link_id === id)!; return [l.properties.start_id, l.properties.end_id]; }))];
   const freeSide = nodeIds.filter((id) => nodeToll.get(id) === "free").map((id) => `n:${id}`);
   pois.push({
@@ -773,6 +855,10 @@ gateClusters.forEach((g, i) => {
     displayPosition: { ...g.p, z: null },
     connectorNodeIds: freeSide,
     paid: false,
+    notes: [
+      { lang: "ja", text: `位置はE27の改札リンク${g.links.length}本のまとまりの位置です。この階のGSI構内地図の改札口代表点（F106）のうち、この改札群が最寄りのものは${f106Near}件です（各点は最寄りの1群だけに数えます）。` },
+      { lang: "en", text: `Position comes from ${g.links.length} E27 gate link${g.links.length === 1 ? "" : "s"} grouped together. Of the GSI station map's ticket-gate representative points (F106) on this level, ${f106Near} ${f106Near === 1 ? "has" : "have"} this cluster as the nearest (each point is counted for one cluster only).` },
+    ],
     evidence: vEv("toll transition links clustered (≤30 m) + GSI F106 ≤8 m"),
   });
 });
@@ -781,9 +867,12 @@ const platformNodes = nodes.filter((n) => n.kind === "platform").map((n) => n.id
 pois.push({
   id: "poi:platform:oedo",
   category: "platform",
+  // Station-name anchor (issue #106). The names reuse the station record's own wording (station.names:
+  // 新宿駅（都営大江戸線） / Shinjuku Station (Toei Oedo Line) / 新宿站（都營大江戶線); code E27), so
+  // searching 新宿 / Shinjuku lands on the Toei Oedo Line station and never implies JR or other operators.
   names: [
-    { lang: "ja", text: "大江戸線 ホーム" },
-    { lang: "en", text: "Oedo Line platform" },
+    { lang: "ja", text: "新宿駅（都営大江戸線）ホーム" },
+    { lang: "en", text: "Toei Oedo Line platform (Shinjuku Station, E27)" },
   ],
   aliases: [
     { lang: "ja-Hrkt", text: "おおえどせん ほーむ" },
@@ -792,11 +881,38 @@ pois.push({
     { lang: "zh-Hant", text: "大江戶線 月台" },
     { lang: "ja", text: "都庁前・光が丘方面" },
     { lang: "ja", text: "六本木・両国方面" },
+    { lang: "ja", text: "新宿" },
+    { lang: "ja", text: "新宿駅" },
+    { lang: "ja", text: "都営大江戸線" },
+    { lang: "ja", text: "大江戸線" },
+    { lang: "ja", text: "大江戸線 ホーム" },
+    { lang: "ja-Hrkt", text: "しんじゅく" },
+    { lang: "ja-Hrkt", text: "しんじゅくえき" },
+    { lang: "ja-Hrkt", text: "とえいおおえどせん" },
+    { lang: "ja-Hrkt", text: "おおえどせん" },
+    { lang: "ja-Latn", text: "shinjuku" },
+    { lang: "ja-Latn", text: "shinjuku eki" },
+    { lang: "ja-Latn", text: "toei oedo sen" },
+    { lang: "ja-Latn", text: "oedo sen" },
+    { lang: "en", text: "Shinjuku" },
+    { lang: "en", text: "Shinjuku Station" },
+    { lang: "en", text: "Toei Oedo Line" },
+    { lang: "en", text: "Oedo Line" },
+    { lang: "en", text: "Oedo" },
+    { lang: "en", text: "Oedo Line platform" },
+    { lang: "zh-Hant", text: "新宿" },
+    { lang: "zh-Hant", text: "新宿站" },
+    { lang: "zh-Hant", text: "都營大江戶線" },
+    { lang: "zh-Hant", text: "大江戶線" },
   ],
   floorId: floorId(-6),
   displayPosition: null,
   connectorNodeIds: platformNodes,
   paid: true,
+  notes: [
+    { lang: "ja", text: "都営大江戸線 新宿駅（E27）のみのデータです。JR・京王・小田急・東京メトロ・都営新宿線など、他事業者・他路線の施設は含みません。" },
+    { lang: "en", text: "Data for the Toei Oedo Line station (E27) only. Facilities of JR, Keio, Odakyu, Tokyo Metro, the Toei Shinjuku Line and other operators or lines are not modelled." },
+  ],
   evidence: vEv("NWD floor=-6 nodes inside GSI paid (toll=2) walkway on 地下6階", "Track/direction assignment per platform side not in source → not shown"),
 });
 // Elevators: group elevator links into shafts by xy proximity.
@@ -811,9 +927,24 @@ for (const l of elevLinks) {
   }
 }
 // Merge shafts that share a link (car link connects two floors at ~same xy).
+// Cross-check against the GSI lift points (F012, "エレベーターの範囲の代表点"): a shaft and a point agree when
+// they lie within 4 m in plan; the GSI map levels of a shaft's points are compared with the E27 floors it serves.
+const liftPoints = allFacilities.filter((f) => f.f.properties.category === "F012");
+const mapOrdinalOfFloor = (f: number) => (f === 0 ? 1 : f);
+const liftCrossCheck: { poi: string; e27Floors: number[]; gsiLevels: number[]; missingInGsi: number[]; missingInE27: number[] }[] = [];
+const claimedLifts = new Set<(typeof liftPoints)[number]>();
 shafts.forEach((s, i) => {
   const fl = [...new Set([...s.nodeIds].map((id) => rawNodes.get(id)!.properties.floor))].sort((a, b) => b - a);
   const label = fl.map((f) => (f > 0 ? `${f}F` : f === 0 ? "地上" : `B${Math.abs(f)}`)).join("・");
+  const near = liftPoints.filter((f) => Math.hypot(f.p.x - s.p.x, f.p.y - s.p.y) <= 4);
+  near.forEach((f) => claimedLifts.add(f));
+  const e27Floors = [...new Set(fl.map(mapOrdinalOfFloor))].sort((a, b) => b - a);
+  const gsiLevels = [...new Set(near.map((f) => f.level.ordinal))].sort((a, b) => b - a);
+  const missingInGsi = e27Floors.filter((o) => !gsiLevels.includes(o));
+  const missingInE27 = gsiLevels.filter((o) => !e27Floors.includes(o));
+  const lvl = (o: number) => (o > 0 ? "1F" : `B${Math.abs(o)}`);
+  liftCrossCheck.push({ poi: `poi:elevator:${i + 1}`, e27Floors, gsiLevels, missingInGsi, missingInE27 });
+  const agree = missingInGsi.length === 0 && missingInE27.length === 0 && near.length > 0;
   pois.push({
     id: `poi:elevator:${i + 1}`,
     category: "elevator",
@@ -831,9 +962,25 @@ shafts.forEach((s, i) => {
     displayPosition: { ...s.p, z: null },
     connectorNodeIds: [...s.nodeIds].map((id) => `n:${id}`),
     paid: null,
-    evidence: vEv("NWD route_type=4 links (elevator code 5: wheelchair + visually-impaired accessible) grouped ≤4 m"),
+    notes: [
+      {
+        lang: "ja",
+        text: agree
+          ? `GSI構内地図のエレベーター代表点（F012）と照合済み：E27の停止階（${e27Floors.map(lvl).join("・")}）と一致します。`
+          : `GSI構内地図のエレベーター代表点（F012）と照合：E27の停止階（${e27Floors.map(lvl).join("・")}）に対し、F012は${gsiLevels.length ? gsiLevels.map(lvl).join("・") : "なし"}。${missingInGsi.length ? `${missingInGsi.map(lvl).join("・")}にはF012がありません（不一致）。` : ""}${missingInE27.length ? `${missingInE27.map(lvl).join("・")}のF012にE27の停止がありません（不一致）。` : ""}`,
+      },
+      {
+        lang: "en",
+        text: agree
+          ? `Cross-checked against the GSI station-map lift points (F012): they agree with the E27 stops (${e27Floors.map(lvl).join(", ")}).`
+          : `Cross-check against the GSI station-map lift points (F012): E27 stops at ${e27Floors.map(lvl).join(", ")}; F012 points on ${gsiLevels.length ? gsiLevels.map(lvl).join(", ") : "no level"}. ${missingInGsi.length ? `No F012 point on ${missingInGsi.map(lvl).join(", ")} (mismatch). ` : ""}${missingInE27.length ? `F012 on ${missingInE27.map(lvl).join(", ")} has no E27 stop (mismatch).` : ""}`.trim(),
+      },
+    ],
+    evidence: vEv("NWD route_type=4 links (elevator code 5: wheelchair + visually-impaired accessible) grouped ≤4 m; cross-checked against GSI F012 within 4 m"),
   });
 });
+const unmatchedLifts = liftPoints.filter((f) => !claimedLifts.has(f)).map((f) => `${f.level.label} ${f.p.x},${f.p.y}`);
+if (unmatchedLifts.length) anomalies.push(`GSI lift point(s) with no E27 lift shaft within 4 m: ${unmatchedLifts.join("; ")}`);
 // Toilets (GSI F001–F003) — connector = nearest node on same map level & same fare side as most nearby space.
 const TOILET: Record<string, [string, string]> = { F001: ["トイレ（男性）", "Toilet (men)"], F002: ["トイレ（女性）", "Toilet (women)"], F003: ["トイレ（男女共用）", "Toilet (unisex)"] };
 let ti = 0;
@@ -864,6 +1011,10 @@ for (const { level, f, p } of allFacilities) {
     displayPosition: { ...p, z: null },
     connectorNodeIds: [`n:${best.id}`],
     paid: nodeToll.get(best.id) === "paid" ? true : nodeToll.get(best.id) === "free" ? false : null,
+    notes: [
+      { lang: "ja", text: `位置はGSI構内地図のトイレ空間の代表点（${f.properties.category}）であり、出入口の位置ではありません。` },
+      { lang: "en", text: `Position is the GSI station-map representative point of the toilet space (${f.properties.category}), not a door position.` },
+    ],
     evidence: vEv(`GSI facility ${f.properties.category} → nearest same-floor NWD node (${best.d.toFixed(1)} m)`, "Connector is the nearest walkway node, not a surveyed doorway"),
   });
 }
@@ -878,7 +1029,8 @@ const sources: Source[] = [
     url: "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45",
     downloadUrls: ["https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45/resource/d4519a9a-917a-4de8-9104-83e21246c04c/download/nwd_oedo_shinjuku_geojson.zip"],
     license: E27_LICENSE,
-    rights: "REUSABLE_WITH_CONDITIONS",
+    rights: "PUBLISHED_UNDER_OWNER_OVERRIDE",
+    override: E27_OVERRIDE,
     attribution: "「歩行空間ネットワークデータ（都営地下鉄大江戸線 新宿駅）」（国土交通省）を加工して作成",
     modified: true,
     retrievedAt: ACQUIRED_AT,
@@ -894,7 +1046,8 @@ const sources: Source[] = [
     url: "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45",
     downloadUrls: ["https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45/resource/9c5ecc7b-a6e4-4d92-978c-9b66ca642172/download/stationmap_oedo_shinjuku_geojson.zip"],
     license: E27_LICENSE,
-    rights: "REUSABLE_WITH_CONDITIONS",
+    rights: "PUBLISHED_UNDER_OWNER_OVERRIDE",
+    override: E27_OVERRIDE,
     attribution: "「構内地図データ（都営地下鉄大江戸線 新宿駅）」（国土交通省）を加工して作成",
     modified: true,
     retrievedAt: ACQUIRED_AT,
@@ -910,20 +1063,21 @@ const sources: Source[] = [
 // app ships stays in the station record (it adds no nodes, edges, POIs or coverage).
 {
   const m = JSON.parse(readFileSync(join(HERE, "../sources/surface-manifest.json"), "utf8")) as {
-    dataset: string; datasetUrl: string; licenseUrl: string; year: number;
+    dataset: string; datasetUrl: string; license: string; licenseUrl: string; year: number;
     files: { path: string; url: string; sha256: string; kind: string; acquiredAt: string }[];
   };
   const data = m.files.filter((f) => f.kind === "bldg" || f.kind === "tran");
   sources.push({
     id: "plateau-13104-shinjuku-ku-2025",
     title: `${m.dataset} — bldg / tran CityGML（E27 出口周辺 4 メッシュ）`,
-    publisher: "国土交通省 Project PLATEAU（東京都 新宿区 3D都市モデル）",
+    publisher: "国土交通省 Project PLATEAU",
     url: m.datasetUrl,
     downloadUrls: data.map((f) => f.url),
-    license: { name: "CC BY 4.0", url: m.licenseUrl },
+    // Catalogue licence (PLATEAU Site Policy §3). The CC BY 4.0 clause inside the data metadata is unconfirmed evidence, not shown (#161).
+    license: { name: m.license, url: m.licenseUrl },
     rights: "REUSABLE_WITH_CONDITIONS",
     usage: "data",
-    attribution: `「${m.dataset}」（国土交通省 Project PLATEAU）を加工して作成`,
+    attribution: SURFACE_CREDIT,
     modified: true,
     retrievedAt: data.map((f) => f.acquiredAt).sort().at(-1)!,
     sha256: Object.fromEntries(data.map((f) => [f.path, f.sha256])),
@@ -976,6 +1130,32 @@ const spawnNodeIds = (["ticket_gate", "platform", "exit"] as const).flatMap((cat
   return poi?.connectorNodeIds[0] ? [poi.connectorNodeIds[0]] : [];
 });
 
+// Non-code data the web bundle inlines (#186). Declared here so station.json carries the same
+// source and rights gate as assets; each derivation names the script that writes the file.
+const dataFiles: DataFile[] = [
+  {
+    id: "plan",
+    path: "data/plan.json",
+    sourceIds: [SRC_NWD, SRC_MAP].sort(),
+    modified: true,
+    derivation: "tools/import-e27.ts: render-only plan from the 構内地図 polygons (level outlines, spaces and their restricted/toll flags, facilities) and the NWD node positions behind nodeRenderZ; heights are symbolic estimates from stair/escalator run lengths, not measurements. It is not routing truth.",
+  },
+  {
+    id: "surface",
+    path: "data/surface.json",
+    sourceIds: [SRC_NWD, "plateau-13104-shinjuku-ku-2025"].sort(),
+    modified: true,
+    derivation: "tools/import-surface.ts: LOD1 building footprints/heights and road polygons from the PLATEAU bldg/tran CityGML around the E27 exits, simplified and flattened to the symbolic street level; gteki/graph.json only supplies the street-level exit node positions that bound the selection radius. Render-only context, not routing.",
+  },
+  {
+    id: "fare-restricted",
+    path: "scene/fare-restricted.generated.json",
+    sourceIds: [SRC_NWD, SRC_MAP].sort(),
+    modified: true,
+    derivation: "test/helpers/generate-restricted-fences.ts: fare/access containment geometry recomputed from the bundle's verified edges (gteki/graph.json) and the restricted spaces/ 構内地図 polygons in data/plan.json; it never supplies or alters routing edges.",
+  },
+];
+
 const bundle: StationBundle = {
   schema: SCHEMA_VERSION,
   station: {
@@ -1000,6 +1180,7 @@ const bundle: StationBundle = {
   pois,
   coverage,
   spawnNodeIds,
+  dataFiles,
 };
 
 // ---------------------------------------------------------------- plan (render geometry)
@@ -1042,6 +1223,8 @@ const report = {
   gates: gateLinks.size,
   gateClusters: gateClusters.length,
   exits: exits.length,
+  exitNameBasis: { compass: "bearing of the F108 point from the centroid of the mapped NWD nodes (not the ENU origin)", compassCentroidEnu: { x: round(centroid.x, 2), y: round(centroid.y, 2) }, adjacentSpaceRadiusM: ADJACENT_RADIUS_M, roofRadiusM: ROOF_RADIUS_M },
+  liftCrossCheck,
   anomalies,
   validation: { errors: errors.length, warnings: issues.length - errors.length, sample: issues.slice(0, 5) },
 };

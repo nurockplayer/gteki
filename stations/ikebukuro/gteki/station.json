@@ -1108,6 +1108,14 @@
    ],
    "modified": true,
    "derivation": "pipeline/build_access.py: fence pieces and 'access unverified' label stretches along the outline of the routable coverage areas (data/graph.src.json) where PLATEAU floor (build/ubld_enu.json) lies beside it; verified edge geometry (gteki/graph.json) is only checked for clearance and does not shape the output. sourceIds = PLATEAU and the routable areas' sources"
+  },
+  {
+   "id": "finishes",
+   "path": "scene/finishes.json",
+   "sourceIds": [],
+   "modified": true,
+   "authored": true,
+   "derivation": "GTEki-authored finish-pack config (role → texture folder + repeat in metres); empty today; no external source"
   }
  ]
 }

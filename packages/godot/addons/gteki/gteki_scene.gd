@@ -173,6 +173,10 @@ func _apply_collider_side(mesh: MeshInstance3D) -> void:
 ## their own flags): those stay, and this mesh's own surfaces get a fully transparent override material instead
 ## (#232). Drawing nothing is stronger than `layers = 0`, which only keeps the node out of every camera.
 func _hide_mesh(mesh: MeshInstance3D) -> void:
+	if mesh.mesh == null:
+		# A meshless node paints nothing of its own, and `visible = false` would also hide the drawn children it carries
+		# (#255). Leaving it visible changes nothing on screen.
+		return
 	for child in mesh.get_children():
 		if not child is CollisionObject3D:
 			_hide_own_surfaces(mesh)
@@ -184,7 +188,6 @@ func _hide_mesh(mesh: MeshInstance3D) -> void:
 ## material; the node itself (and its children) keeps rendering.
 func _hide_own_surfaces(mesh: MeshInstance3D) -> void:
 	if mesh.mesh == null:
-		mesh.visible = false
 		return
 	mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var invisible := StandardMaterial3D.new()
@@ -192,6 +195,12 @@ func _hide_own_surfaces(mesh: MeshInstance3D) -> void:
 	invisible.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	invisible.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	invisible.cull_mode = BaseMaterial3D.CULL_DISABLED
+	# The instance's material_override is what every surface draws with when it is set (Godot 4.7.2
+	# `get_active_material` returns it ahead of the surface overrides), so surface overrides alone would leave an
+	# opaque override painting the whole mesh (#255). Replace it rather than clear it, which would fall back to the
+	# mesh's own materials.
+	if mesh.material_override != null:
+		mesh.material_override = invisible
 	for surface in range(mesh.mesh.get_surface_count()):
 		mesh.set_surface_override_material(surface, invisible)
 
@@ -201,6 +210,10 @@ func _hide_own_surfaces(mesh: MeshInstance3D) -> void:
 static func is_drawn(mesh: MeshInstance3D) -> bool:
 	if not mesh.visible or mesh.layers == 0 or mesh.mesh == null:
 		return false
+	# A material_override is what the whole instance draws with when set — ahead of the surface overrides, checked
+	# against Godot 4.7.2's own get_active_material — so it decides every surface at once (#255).
+	if mesh.material_override != null:
+		return not _is_transparent(mesh.material_override)
 	for surface in range(mesh.mesh.get_surface_count()):
 		var material: Material = mesh.get_surface_override_material(surface)
 		if material == null:
