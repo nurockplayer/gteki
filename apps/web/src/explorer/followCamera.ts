@@ -251,6 +251,37 @@ export function easeRaise(current: number, target: number, dt: number, snap = fa
 }
 
 /**
+ * Solve the raised boom before smoothing it. If easing would leave the camera squeezed while the
+ * solved raise clears the lip, use the solved pose now; walking must not linger below a slab either.
+ * A placement/reduced-motion snap takes the complete solution immediately, including a zero raise.
+ */
+export function solveRaisedBoom(
+  wanted: number,
+  back: THREE.Vector3,
+  cast: (back: THREE.Vector3) => readonly { distance: number; cameraOnly: boolean }[],
+  currentRaise: number,
+  dt: number,
+  snap = false,
+): { back: THREE.Vector3; distance: number; raise: number } {
+  const base = followBoom(wanted, back, cast);
+  const scratch = new THREE.Vector3();
+  const target = constrainedPitch(wanted, base.back, base.distance, cast, scratch);
+  let raise = easeRaise(currentRaise, target, dt, snap);
+  let raised = raisedBack(base.back, raise, new THREE.Vector3());
+  let distance = raise > 0 ? followDistance(wanted, cast(raised)) : base.distance;
+  if (!snap && target > raise && distance < Math.min(FOLLOW.comfortDistance, wanted)) {
+    const solved = raisedBack(base.back, target, scratch);
+    const clear = followDistance(wanted, cast(solved));
+    if (clear >= distance + FOLLOW.raiseGain) {
+      raise = target;
+      raised = solved.clone();
+      distance = clear;
+    }
+  }
+  return { back: raised, distance, raise };
+}
+
+/**
  * Avatar opacity for a camera `distanceM` from the pivot: 1 at `fadeStart` or farther, `fadeMin` at
  * `minDistance` (the closest the camera gets) or closer, smooth and monotonic between. A pure function of distance; the avatar renders it as
  * a screen-door dither, so there is no transparency and no sort.

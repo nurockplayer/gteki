@@ -23,7 +23,7 @@ import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
-import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachFov, avatarFade, boomSqueezed, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack, stepSlope, targetFov, type SlopeState } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachFov, avatarFade, boomSqueezed, followPose, solveRaisedBoom, stepSlope, targetFov, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -180,10 +180,8 @@ export class Explorer {
   private readonly street = new StreetBackdrop();
   /** Render height of the station's street floor when it is an underground (scene-lit) station, else null. */
   private streetY: number | null = null;
-  /** Set by each discrete placement (walkFrom, startGuide); consumed by the next frame outside overview. */
+  /** Set by each discrete placement (walkFrom, startGuide, seekGuide); consumed by the next frame outside overview. */
   private teleported = false;
-  /** A teleport made while already walking/guiding: the follow camera jumps with the walker instead of gliding. */
-  private snapCamera = false;
   /** prefers-reduced-motion: the follow camera and orbit damping cut instead of gliding, and decorative route motion stops. */
   private reducedMotion = false;
   private readonly streetProbe = { at: new THREE.Vector3(Infinity, 0, 0), wait: 0, outdoors: false, level: true };
@@ -271,8 +269,6 @@ export class Explorer {
   private camDistance: number = FOLLOW.defaultDistance;
   /** Smoothed extra boom elevation (radians) raised over a wall/slab squeeze; see constrainedPitch. */
   private boomRaise = 0;
-  private readonly raiseScratch = new THREE.Vector3();
-  private readonly raisedBoom = new THREE.Vector3();
   private firstPerson = false;
   private mode: ExplorerMode = "overview";
   private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
@@ -957,7 +953,7 @@ export class Explorer {
     if (xray) xray.visible = mode === "overview";
     this.routeLines?.setXray(mode === "overview");
     this.graph?.setXray(mode === "overview");
-    if (mode === "overview") { this.street.restore(this.scene); this.snapCamera = false; this.setFov(FOV.overview, true); }
+    if (mode === "overview") { this.street.restore(this.scene); this.setFov(FOV.overview, true); }
     this.overviewLook.set(this.scene, this.world, mode === "overview");
     this.events.onMode?.(mode);
   }
@@ -979,7 +975,6 @@ export class Explorer {
     if (ground === null) return false;
     this.pos.set(p.x, ground, p.z);
     this.teleported = true;
-    this.snapCamera = this.mode !== "overview";
     this.yaw = (-headingDeg * Math.PI) / 180;
     // The avatar appears at the new spot facing the new heading (no run blend from the old one).
     this.lastAvatarPos.copy(this.pos);
@@ -1376,7 +1371,6 @@ export class Explorer {
     const first = samplePolyline(pts, this.guide.cum, fromS);
     this.pos.set(first.x, first.y, first.z);
     this.teleported = true;
-    this.snapCamera = this.mode !== "overview";
     if (first.tx || first.tz) this.yaw = Math.atan2(-first.tx, -first.tz);
     this.lastAvatarPos.copy(this.pos);
     this.bodyYaw = this.yaw;
@@ -1396,7 +1390,6 @@ export class Explorer {
     const p = samplePolyline(g.pts, g.cum, g.s);
     this.pos.set(p.x, p.y, p.z);
     this.teleported = true;
-    this.snapCamera = true;
     if (p.tx || p.tz) this.yaw = Math.atan2(-p.tx, -p.tz);
     this.lastAvatarPos.copy(this.pos);
     this.bodyYaw = this.yaw;
@@ -1501,8 +1494,7 @@ export class Explorer {
     else this.orbit.update();
 
     if (this.mode !== "overview") {
-      this.placeCamera(dt, this.snapCamera);
-      this.snapCamera = false;
+      this.placeCamera(dt, this.teleported);
       // A teleport re-probes at once and snaps the backdrop to its target (no daylight carried underground).
       const snap = this.teleported;
       this.teleported = false;
@@ -1649,22 +1641,17 @@ export class Explorer {
     const pose = followPose(head, this.yaw, this.pitch, shoulder);
     let back = pose.back;
     let dist = this.camDistance;
+    if (!this.cameraTargets.length) this.boomRaise = 0;
     if (this.cameraTargets.length) {
       const cast = (b: THREE.Vector3) => {
         this.ray.set(pose.pivot, b);
         this.ray.far = this.camDistance + FOLLOW.clearance;
         return castCamera(this.ray, this.cameraTargets, this.blockerTargets).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
       };
-      // Under a camera-only blocker (a hanging sign box, a low cap) the boom slides lower before the camera is pulled in.
-      ({ back, distance: dist } = this.blockerTargets.size ? followBoom(this.camDistance, pose.back, cast) : { back: pose.back, distance: followDistance(this.camDistance, cast(pose.back)) });
-      // Squeezed under the comfortable distance (a shaft wall behind, a slab above): look over the shoulder from
-      // higher up if some raised boom clears it (at most FOLLOW.raiseSteps raise casts + 1 recast = 6 extra rays, none when open).
-      const wantedRaise = constrainedPitch(this.camDistance, back, dist, cast, this.raiseScratch);
-      this.boomRaise = easeRaise(this.boomRaise, wantedRaise, dt, snap);
-      if (this.boomRaise > 0) {
-        back = raisedBack(back, this.boomRaise, this.raisedBoom);
-        dist = followDistance(this.camDistance, cast(back));
-      }
+      const solved = solveRaisedBoom(this.camDistance, pose.back, cast, this.boomRaise, dt, snap || this.reducedMotion);
+      back = solved.back;
+      dist = solved.distance;
+      this.boomRaise = solved.raise;
     }
     this.squeezed = this.cameraTargets.length
       ? (snap ? dist < FOLLOW.comfortDistance : boomSqueezed(this.squeezed, dist))

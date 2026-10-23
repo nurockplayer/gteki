@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachFov, avatarFade, boomSqueezed, clampDistance, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachFov, avatarFade, boomSqueezed, clampDistance, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack, solveRaisedBoom, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
   it("stays under a 2.6 m ceiling at the default pitch and distance", () => {
@@ -364,5 +364,35 @@ describe("avatarFade", () => {
       expect(f).toBeGreaterThanOrEqual(last - 1e-12);
       last = f;
     }
+  });
+});
+
+
+describe("solved raise after a slab squeeze", () => {
+  const back = new THREE.Vector3(0, 0.14, 1).normalize();
+  // A slab lip behind the walker: the shallow boom hits its edge, the steeper boom clears it.
+  const cast = (b: THREE.Vector3) => b.y / b.z < 0.6 ? [{ distance: 0.8, cameraOnly: false }] : [];
+
+  it("takes the solved raise on the first seek/restart frame, independent of the old pose", () => {
+    for (const oldRaise of [0, FOLLOW.maxRaise]) {
+      const solved = solveRaisedBoom(FOLLOW.defaultDistance, back, cast, oldRaise, 1 / 60, true);
+      expect(solved.raise).toBeGreaterThan(0);
+      expect(solved.distance).toBe(FOLLOW.defaultDistance);
+      expect(solved.back.y / solved.back.z).toBeGreaterThanOrEqual(0.6);
+    }
+  });
+
+  it("does not ease through the lip while walking when the solved raised boom clears it", () => {
+    const solved = solveRaisedBoom(FOLLOW.defaultDistance, back, cast, 0, 1 / 60);
+    expect(solved.distance).toBe(FOLLOW.defaultDistance);
+    expect(solved.raise).toBeGreaterThan(0);
+    expect(cast(solved.back)).toEqual([]);
+  });
+
+  it("clears stale raise immediately on a seek to open space and eases it during walking", () => {
+    expect(solveRaisedBoom(3, back, () => [], 0.5, 1 / 60, true).raise).toBe(0);
+    const walking = solveRaisedBoom(3, back, () => [], 0.5, 1 / 60);
+    expect(walking.raise).toBeGreaterThan(0);
+    expect(walking.raise).toBeLessThan(0.5);
   });
 });
