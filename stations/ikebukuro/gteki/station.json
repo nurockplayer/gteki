@@ -117,7 +117,7 @@
    "crs": "EPSG:6697"
   },
   "frame": "ENU",
-  "datasetVersion": "ikebukuro-b1-slice5.4",
+  "datasetVersion": "ikebukuro-b1-slice5.5",
   "synthetic": false,
   "generatedAt": "2026-10-21T15:00:00+00:00"
  },
@@ -205,6 +205,94 @@
    "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
   },
   {
+   "id": "plateau-13116-bldg-53394576",
+   "title": "PLATEAU 豊島区 2025 建築物モデル (bldg) 53394576 — street-level context buildings (visual only)",
+   "publisher": "国土交通省 Project PLATEAU",
+   "url": "https://www.mlit.go.jp/plateau/",
+   "downloadUrls": [
+    "https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/bldg/53394576_bldg_6697_op.gml"
+   ],
+   "license": {
+    "name": "PLATEAU Site Policy 「３．著作権について」に拠る",
+    "url": "https://www.mlit.go.jp/plateau/site-policy/"
+   },
+   "rights": "REUSABLE_WITH_CONDITIONS",
+   "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+   "modified": true,
+   "retrievedAt": "2026-10-21T16:54:53Z",
+   "sha256": {
+    "53394576_bldg_6697_op.gml": "29009b87ac7c7bf07f2bc8862362629d7c11fb81240b392b2c975ff04f6f7873"
+   },
+   "datasetDate": "2025",
+   "notes": "Visual-only street-level context (#39); never geometry for routing, walking or collision. GIS rights gate for this layer is CONDITIONAL (PLATEAU Site Policy §3: 出典 plus a 加工 notice required; the CC BY 4.0 clause inside the source file is recorded as unconfirmed evidence, not shown in the app (#161)). Catalog package year 2025; the per-theme survey year is not asserted. The hash is over the decoded bytes of the file served by the PLATEAU catalog API. Textures are not shipped."
+  },
+  {
+   "id": "plateau-13116-bldg-53394577",
+   "title": "PLATEAU 豊島区 2025 建築物モデル (bldg) 53394577 — street-level context buildings (visual only)",
+   "publisher": "国土交通省 Project PLATEAU",
+   "url": "https://www.mlit.go.jp/plateau/",
+   "downloadUrls": [
+    "https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/bldg/53394577_bldg_6697_op.gml"
+   ],
+   "license": {
+    "name": "PLATEAU Site Policy 「３．著作権について」に拠る",
+    "url": "https://www.mlit.go.jp/plateau/site-policy/"
+   },
+   "rights": "REUSABLE_WITH_CONDITIONS",
+   "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+   "modified": true,
+   "retrievedAt": "2026-10-21T16:54:54Z",
+   "sha256": {
+    "53394577_bldg_6697_op.gml": "96b2c510ac44d955c0902612d0c702ee3594ca699993e0b187cbff86c2b82c37"
+   },
+   "datasetDate": "2025",
+   "notes": "Visual-only street-level context (#39); never geometry for routing, walking or collision. GIS rights gate for this layer is CONDITIONAL (PLATEAU Site Policy §3: 出典 plus a 加工 notice required; the CC BY 4.0 clause inside the source file is recorded as unconfirmed evidence, not shown in the app (#161)). Catalog package year 2025; the per-theme survey year is not asserted. The hash is over the decoded bytes of the file served by the PLATEAU catalog API. Textures are not shipped."
+  },
+  {
+   "id": "plateau-13116-tran-53394576",
+   "title": "PLATEAU 豊島区 2025 道路モデル (tran) 53394576 — street-level context roads (visual only)",
+   "publisher": "国土交通省 Project PLATEAU",
+   "url": "https://www.mlit.go.jp/plateau/",
+   "downloadUrls": [
+    "https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/tran/53394576_tran_6697_op.gml"
+   ],
+   "license": {
+    "name": "PLATEAU Site Policy 「３．著作権について」に拠る",
+    "url": "https://www.mlit.go.jp/plateau/site-policy/"
+   },
+   "rights": "REUSABLE_WITH_CONDITIONS",
+   "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+   "modified": true,
+   "retrievedAt": "2026-10-21T16:54:15Z",
+   "sha256": {
+    "53394576_tran_6697_op.gml": "6cc53f9c3ddfa90423ae1ae5c5741ceb004be2ddd6580b533644c449a7d068f7"
+   },
+   "datasetDate": "2025",
+   "notes": "Visual-only street-level context (#39); never geometry for routing, walking or collision. Road GEOMETRY only (triangulated LOD3 surfaces, POSITION and NORMAL): no tran attribute (function, usage, class or any code value) is shipped. GIS rights gate for this layer is CONDITIONAL (PLATEAU Site Policy §3: 出典 plus a 加工 notice required; the CC BY 4.0 clause inside the source file is recorded as unconfirmed evidence, not shown in the app (#161)). The PLATEAU lineage cites a GSI approval (国土地理院長承認（使用）令7関公第296号) for tran:function and TrafficArea; its scope is unconfirmed, and the project treats it as covering the attributes only. That is an assumption the Owner accepted as a risk (option b), recorded in docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md; if the scope turns up and does not fit, roads go back to HOLD. Catalog package year 2025. The hash is over the decoded bytes of the file served by the PLATEAU catalog API. Textures are not shipped."
+  },
+  {
+   "id": "plateau-13116-tran-53394577",
+   "title": "PLATEAU 豊島区 2025 道路モデル (tran) 53394577 — street-level context roads (visual only)",
+   "publisher": "国土交通省 Project PLATEAU",
+   "url": "https://www.mlit.go.jp/plateau/",
+   "downloadUrls": [
+    "https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/tran/53394577_tran_6697_op.gml"
+   ],
+   "license": {
+    "name": "PLATEAU Site Policy 「３．著作権について」に拠る",
+    "url": "https://www.mlit.go.jp/plateau/site-policy/"
+   },
+   "rights": "REUSABLE_WITH_CONDITIONS",
+   "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+   "modified": true,
+   "retrievedAt": "2026-10-21T16:54:16Z",
+   "sha256": {
+    "53394577_tran_6697_op.gml": "052919a57424e9a6d33edc1bbaad8e2bdea91dac33ebaeb62c032769e0b52cb2"
+   },
+   "datasetDate": "2025",
+   "notes": "Visual-only street-level context (#39); never geometry for routing, walking or collision. Road GEOMETRY only (triangulated LOD3 surfaces, POSITION and NORMAL): no tran attribute (function, usage, class or any code value) is shipped. GIS rights gate for this layer is CONDITIONAL (PLATEAU Site Policy §3: 出典 plus a 加工 notice required; the CC BY 4.0 clause inside the source file is recorded as unconfirmed evidence, not shown in the app (#161)). The PLATEAU lineage cites a GSI approval (国土地理院長承認（使用）令7関公第296号) for tran:function and TrafficArea; its scope is unconfirmed, and the project treats it as covering the attributes only. That is an assumption the Owner accepted as a risk (option b), recorded in docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md; if the scope turns up and does not fit, roads go back to HOLD. Catalog package year 2025. The hash is over the decoded bytes of the file served by the PLATEAU catalog API. Textures are not shipped."
+  },
+  {
    "id": "gteki-kit-0-1-0",
    "title": "GTEki station kit 0.1.0 (Lane E): barrier rail and column modules and a representative gate array",
    "publisher": "GTEki contributors",
@@ -219,14 +307,14 @@
    "retrievedAt": "2026-10-22T00:00:00Z",
    "datasetDate": "2026-10",
    "sha256": {
-    "kit/high/gteki_barrier_rail_2400_solid.glb": "39aeede21a45fcc3d711dc650f48070eedad952be6ee8d80b08b8418d95b46b2",
-    "kit/low/gteki_barrier_rail_2400_solid.glb": "66e620f277ab6bd7d8802b354a020dba73c5eaec1a1c42ff03b1c19a5189c8f4",
-    "kit/high/gteki_column_square_600.glb": "c8222d1b2b7f847596b45925dee9cfc6fd02d1d17cc5ce7ca81e30fb022a1f40",
-    "kit/low/gteki_column_square_600.glb": "513cc0284917dabf1f51e09d57da84a107d2e26cda0dc54876bfe23be74dff04",
-    "kit/high/gteki_column_round_d600.glb": "b1472e33bb0ff8e43e6a890ffb997cb9f49b74e2366e1a588a1570610652a233",
-    "kit/low/gteki_column_round_d600.glb": "86568a1536ec940766231bf0aa93783c6ffa268d9ab4ea7889215c2187d4aec3",
-    "kit/high/gteki_gate_array_2.glb": "dcde3c90db16d7db016f27eaf06f3f9efc8efeac85c5669df068608e0e3a0c38",
-    "kit/low/gteki_gate_array_2.glb": "b955e6e6aa9ea06876ccc4cc9b0dd0b98518873f16eca83c184023c9fc82a58c"
+    "kit/high/gteki_barrier_rail_2400_solid.glb": "2a379640f23ce2e0d38c8e5ea6fd17053d2eb944e6f025776f7b08c03ca1191d",
+    "kit/low/gteki_barrier_rail_2400_solid.glb": "97d20a29bab1b0ab8e7e2c9cfa18b3582a6d27503b861b1d71570c97f2340ff6",
+    "kit/high/gteki_column_square_600.glb": "65124a674dc0a42a3b6fe348091c6198827a85710d59157479753a51abdc59d6",
+    "kit/low/gteki_column_square_600.glb": "57e0acffd8aa408cdb2602efb55fbd70ff1bc5e0da3fcf02e6eb7912132857c3",
+    "kit/high/gteki_column_round_d600.glb": "fbd44a542e6e7b7e0deaee6d4624ee49a4f0b2aaf6af77d6f1a87bc95a30d001",
+    "kit/low/gteki_column_round_d600.glb": "87105fcd0ba3a310ed4c8e9f427ddca532a3dea8be2bf5e57cad8ba9a85b205d",
+    "kit/high/gteki_gate_array_2.glb": "837827e00581ef8b3026bba3ffed7d16bc2886b4358c0d3e8043d8d214a59cdc",
+    "kit/low/gteki_gate_array_2.glb": "41c7b914e274de83514118a8f9f8a48ab8bee9029447fa06233d7ff54db86d46"
    },
    "notes": "Original project art, generic and unbranded; not a measurement of Ikebukuro. The GLBs' embedded licence strings still read UNDECIDED until the kit's EMBED_SPDX rebuild; REUSE.toml records CC-BY-4.0 for gteki/kit/**. gteki_gate_array_2 is placed once at each of the gate nodes g_jr_c1, g_jr_c2 and g_jr_s as a generic stand-in: 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\". It is never a verified layout of the Ikebukuro gates."
   }
@@ -1098,6 +1186,25 @@
     "kit/high/gteki_gate_array_2.glb",
     "kit/low/gteki_gate_array_2.glb"
    ]
+  },
+  {
+   "id": "street-context",
+   "uri": "assets/ikebukuro_context_low.glb",
+   "format": "glb",
+   "floorIds": [
+    "street"
+   ],
+   "sourceIds": [
+    "plateau-13116-bldg-53394576",
+    "plateau-13116-bldg-53394577",
+    "plateau-13116-tran-53394576",
+    "plateau-13116-tran-53394577"
+   ],
+   "role": "visual",
+   "derivation": "PLATEAU bldg (LOD1 low / LOD2 high) and tran (road geometry only) -> tools/gis: `gis context-glb ikebukuro --variant low --merge tiles:380` (assets/ikebukuro_context_low.glb, 8 meshes, 30,418 tris; receipt docs/gis/context/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-tiles380-daebc9ca51cbeea3c90a.json) and `gis context-glb ikebukuro --variant high --merge tiles:380` (assets/ikebukuro_context_high.glb, 8 meshes, 139,525 tris; receipt docs/gis/context/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-high-tiles380-015891c342423501b9d1.json); the high file is listed in files, not a second asset, so loaders that load every asset never stack both. Committed bytes equal the receipts: ikebukuro_context_low.glb sha256 0629b00cf18a57f816d341c871052fd19f835e39ffdfc445058a216346d5487c (2,266,864 B), ikebukuro_context_high.glb sha256 ad55b6da91ae7c8960db789cc6e654043735736bbf5e813f904c15a6519dcdb6 (9,488,428 B). Station ENU frame, TP heights, whole features, no textures, no tran attributes. Roads ship as geometry only under the Owner's risk acceptance (docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md). Every node is gteki_role=context, named ctx_bldg_* or ctx_road_*, NOT_FOR_ROUTING, visual_only: never walkable, never a collider, never a camera blocker. scene/scene.ts loads the variant matching ctx.quality in the background and shows it only when the camera is near street level.",
+   "files": [
+    "assets/ikebukuro_context_high.glb"
+   ]
   }
  ],
  "dataFiles": [
@@ -1143,6 +1250,14 @@
    ],
    "modified": true,
    "derivation": "pipeline/build_access.py: fence pieces and 'access unverified' label stretches along the outline of the routable coverage areas (data/graph.src.json) where PLATEAU floor (build/ubld_enu.json) lies beside it; verified edge geometry (gteki/graph.json) is only checked for clearance and does not shape the output. sourceIds = PLATEAU and the routable areas' sources"
+  },
+  {
+   "id": "finishes",
+   "path": "scene/finishes.json",
+   "sourceIds": [],
+   "modified": true,
+   "authored": true,
+   "derivation": "GTEki-authored finish-pack config (role → texture folder + repeat in metres); empty today; no external source"
   }
  ]
 }
