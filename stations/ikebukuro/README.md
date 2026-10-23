@@ -37,6 +37,7 @@ pnpm typecheck
     no post FX).
 - **Shared explorer** (core lane, `apps/web`): discovers `gteki/` automatically. Search, route,
   guided walk and free walk run there.
+- **Street-context budget probe** (draws/tris underground vs street, one run per tier; real GPU, not in CI): after `pnpm build`, in `tests/e2e` run `GTEKI_BUDGET=1 GTEKI_ROOT=<repo> pnpm exec playwright test specs/10-ikebukuro-context-budget.spec.ts --project=phone-chromium` (low) or `--project=desktop-chromium` (high); results land in `<repo>/.qa/ikebukuro-context-budget/`. It counts every pass at the WebGL boundary, so its numbers are not comparable with the scene-pass budget below; to check a change, run it once on the base branch and pass that run's `.json` as `GTEKI_BUDGET_BASELINE` (underground views must match, street views may add at most the context's own 8 meshes). Measured 2026-10-22, low tier, all passes: underground p50 44–53 draws / 132–136k triangles on both main and #110; street views +5–9 draws and +20–30k triangles with the context.
 - **Capture tooling** (dev only): `gt.capture(name)` and `gt.walkCapture(...)` write frames to
   `build/captures/`.
 
@@ -344,6 +345,29 @@ Evidence stills:
   (`scene/walker_replay.test.ts`, harness `pipeline/walker_replay.ts`; `scene/walker_replay.heavy.test.ts`
   is the dense version, `pnpm test:heavy`). Negative controls: removing the longest panel, and removing
   every fence. Fences block the walker only; the graph, routing and gridnav are unchanged.
+
+## Street-level context (#39)
+
+`assets/ikebukuro_context_low.glb` (8 tiled meshes, 30,418 triangles, 2.3 MB) and `_high.glb` (8 meshes, 139,525
+triangles, 9.5 MB) are visual-only PLATEAU surface **buildings and roads** around the exits, built by `tools/gis`
+(`gis context-glb ikebukuro --variant low|high --merge tiles:380`; commands, receipts in `docs/gis/context/` and
+sha256s are on the `street-context` asset in `station.json`). Every node is `gteki_role=context`, `ctx_bldg_*` or
+`ctx_road_*`, `NOT_FOR_ROUTING`: never walkable, never a collider, and `assembleCollision`
+never sees them. `scene/scene.ts` loads the file for `ctx.quality` (fails soft) with a cheap daylight material that
+takes the explorer's street fog, and keeps the group **out of the scene** unless the camera is at street height:
+renderer y within [street - 1 m, street + 25 m] (street = 32.5 m) and the scene is fogged (`scene/context.ts`, read
+from an `onBeforeRender` on the B1 floor mesh, so one frame late and no extra draw call). Underground and in overview
+(camera about 301 m up, no fog) the context costs nothing and does not change the overview framing; at street level
+low adds at most 8 draws and 30.4k triangles. The credit 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成
+is each context source's `attribution`, which the app's coverage dialog lists. **Roads ship as geometry only** (no
+`tran` attribute) under the Owner's risk acceptance that the GSI approval (令7関公第296号) covers attributes only:
+`docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md`. If that scope turns up and does not fit, the
+`--kinds bldg` build is the buildings-only fallback. The **buildings** (not the roads) also stop the follow camera, so it
+cannot end up inside one near the exits: the explorer reads `cameraBlockers` once when `buildScene` resolves, so
+`scene/scene.ts` returns one empty camera-only mesh per street node and `createContextBlockers` fills them from the
+`ctx_bldg_*` triangles within 20 m of the node when the context arrives (about 1.4k triangles low, 11k high, in
+world space and outside the scene graph); they are switched on only with the context, so underground and overview
+rays never test them, and walking is unchanged.
 
 ## Next
 

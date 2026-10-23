@@ -1,0 +1,83 @@
+{
+  "format": "gteki-finish/0.1",
+  "id": "gteki_finish_wall_wainscot_blue",
+  "kit_version": "0.1.0",
+  "tier": "mobile",
+  "role": "wall",
+  "gteki_role": "wall",
+  "facility": [
+    "passage",
+    "concourse"
+  ],
+  "use": "lower wall band up to 1.1 m",
+  "pattern": "deep blue enamel #334F66; vertical 8 mm joints every 1.2 m (u = k x 1.2 m), no horizontal joint",
+  "source_material": "gteki_wall_panel_accent",
+  "repeat_m": [
+    1.2,
+    1.2
+  ],
+  "uv": {
+    "u": "along the wall",
+    "v": "up",
+    "surface": "wall face",
+    "origin": "a repeat starts at u = k x repeat_m along the wall and at v = 0 on the floor"
+  },
+  "maps": {
+    "albedo": {
+      "file": "albedo.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 7534,
+      "sha256": "a75a073b7f003198d7d63670dcb3341f0b5efe20e82eeece075ee415225b7d70"
+    },
+    "orm": {
+      "file": "orm.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 10418,
+      "sha256": "385237000b61199e0755ab6a79681ddd0cb257e0f5e43d0a78b58da3350097b1"
+    },
+    "normal": {
+      "file": "normal.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 20660,
+      "sha256": "373baeb99e3ab600b2a665b8f06af197c888e1f457e53e0f474222d5dd27f85e"
+    }
+  },
+  "factors": {
+    "baseColorFactor": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "roughnessFactor": 1.0,
+    "metallicFactor": 1.0
+  },
+  "omitted_maps": [],
+  "texel_density_px_per_m": [
+    426.7,
+    426.7
+  ],
+  "tint": false,
+  "sample_glb": "../glb/gteki_finish_wall_wainscot_blue.glb",
+  "sample": {
+    "plane": "wall",
+    "repeats": 2,
+    "size_m": [
+      2.4,
+      2.4
+    ]
+  },
+  "dimension_basis": "synthetic",
+  "generator": "tools/blender/gteki_assets/finishes.py",
+  "license": "CC-BY-4.0 — original GTEki work; attribution: GTEki contributors",
+  "provenance": "original procedural geometry and textures; see assets/library/PROVENANCE.md"
+}
