@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { Document, NodeIO } from '@gltf-transform/core';
 import { docsRoot, getStoredSource, getStoreRoot, packageRoot, readJson, repoRoot, writeJson, TOOL_VERSION, type SourceManifest } from './common.js';
 import { loadFrame, toGltf, fromGltf, type Point3 } from './crs.js';
-import { stationEnuProjector, stationHorizontal, stationLocal, projectorOrigin, isStationEnuFrame, STATION_ENU_FRAME_ID_PATTERN, type StationEnuFrame } from './station-enu.js';
+import { stationEnuProjector, stationHorizontal, stationLocal, stationOriginSha256, projectorOrigin, isStationEnuFrame, STATION_ENU_FRAME_ID_PATTERN, type StationEnuFrame } from './station-enu.js';
 import { scanContextFeatures, type ContextFeatureRecord, type ContextKind, type RetainedPolygon, type ContextScanSummary, type LodDigit } from './context-scan.js';
 import { triangulate } from './triangulate.js';
 import { toolFingerprint } from './provenance.js';
@@ -573,12 +573,12 @@ export async function contextGlb(station: string, options: ContextRunOptions = {
     { stationId: station, ...(options.graphPath ? { graphPath: options.graphPath } : {}), ...(options.poisPath ? { poisPath: options.poisPath } : {}) },
   );
   const radiusM = window.spec.r_origin_m;
-  // station.json is read-only input. The frame must still describe its origin; a changed hash with the same origin is recorded, not fatal.
+  // station.json is read-only input. Check and hash only the origin fields the frame uses.
   const stationBytes = await readFile(join(repoRoot, frame.station_json_path));
   const stationNow = JSON.parse(stationBytes.toString('utf8')) as { station?: { origin?: { lat?: number; lon?: number; hM?: number | null; crs?: string } } };
   const o = stationNow.station?.origin;
   if (!o || o.lat !== frame.origin.lat || o.lon !== frame.origin.lon || o.hM !== frame.origin.hM || o.crs !== frame.origin.crs) throw new Error(`${frame.station_json_path} origin no longer matches frame ${frame.frame_id}; regenerate it with station-frame`);
-  const stationJsonShaNow = createHash('sha256').update(stationBytes).digest('hex');
+  const stationOriginShaNow = stationOriginSha256(o);
 
   // Fail closed on mesh coverage before any source is read or converted.
   for (const id of sourceIds) if (!SOURCE_ID.test(id)) throw new Error(`${id} is not a PLATEAU bldg/tran mesh source`);
@@ -615,12 +615,12 @@ export async function contextGlb(station: string, options: ContextRunOptions = {
   const columns = flatten ? ['gml_id', 'source_id', 'lod', 'mesh', 'tri_start', 'tri_count', 'ground_offset_m', 'ground_basis', 'ground_surface_spread_m'] as const : ['gml_id', 'source_id', 'lod', 'mesh', 'tri_start', 'tri_count'] as const;
   const featureTable = { columns, rows: per_feature.map((f) => (flatten ? [f.gml_id, f.source_id, f.lod_used, f.mesh, f.tri_start, f.tri_count, f.ground_height_m, f.ground_basis, f.ground_surface_spread_m] : [f.gml_id, f.source_id, f.lod_used, f.mesh, f.tri_start, f.tri_count])) };
   const featureTableSha256 = createHash('sha256').update(JSON.stringify(featureTable)).digest('hex');
-  const sidecar = { ...report, run_id: runId, mesh_coverage: meshCoverage, feature_table: featureTable, feature_table_sha256: featureTableSha256, tool_version: TOOL_VERSION, tool_input_sha256: fingerprint, station_json_sha256_now: stationJsonShaNow, station_json_changed_since_frame: stationJsonShaNow !== frame.station_json_sha256,
+  const sidecar = { ...report, run_id: runId, mesh_coverage: meshCoverage, feature_table: featureTable, feature_table_sha256: featureTableSha256, tool_version: TOOL_VERSION, tool_input_sha256: fingerprint, station_origin_sha256_now: stationOriginShaNow, station_origin_matches_frame: true,
     source_records: manifests.map((m) => m.record), source_manifests: manifests.map((m) => m.source), store_path: relativeOutput, output_sha256: outputSha256, output_bytes: outputBytes.length };
   await writeJson(outputPath.replace(/\.glb$/, '.provenance.json'), sidecar);
   const summary = {
     run_id: runId, ...summaryBody, mesh_coverage: meshCoverage, feature_table: featureTable, feature_table_sha256: featureTableSha256, per_feature_count: per_feature.length, tool_version: TOOL_VERSION, tool_input_sha256: fingerprint,
-    station_json_sha256_now: stationJsonShaNow, station_json_changed_since_frame: stationJsonShaNow !== frame.station_json_sha256,
+    station_origin_sha256_now: stationOriginShaNow, station_origin_matches_frame: true,
     store_path: relativeOutput, sidecar_path: relativeOutput.replace(/\.glb$/, '.provenance.json'), output_sha256: outputSha256, output_bytes: outputBytes.length,
     elapsed_ms: Math.round(performance.now() - started), peak_rss_bytes: process.resourceUsage().maxRSS * 1024,
   };

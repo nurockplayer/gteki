@@ -267,7 +267,7 @@ Run the two variants one after the other (not in parallel). Expected need per ru
 
 ### Context overlay: station, railway and municipal boundary lines (`context-overlay`)
 
-Visual-only 2D lines from KSJ N02-2025 (`ksj-n02-2025`) and KSJ N03-2026 (`ksj-n03-2026`), both CC BY 4.0, publish gate CONDITIONAL, in the station frame. `UNVERIFIED`, `gteki_role context`, `NOT_FOR_ROUTING`, never routable. Layers are grouped by source, so each receipt, its credit and its leak guard cover exactly one source: a station run writes one station+railway receipt and one border receipt.
+Visual-only 2D lines from KSJ N02-2025 (`ksj-n02-2025`) and KSJ N03-2026 (`ksj-n03-2026`), both CC BY 4.0, publish gate CONDITIONAL, in the station frame. `UNVERIFIED`, `gteki_role context`, `NOT_FOR_ROUTING`, never routable. Layers are grouped by source, so each receipt, its credit and its leak guard cover exactly one source: a station run writes one station+railway receipt and one border receipt. Overlay and context receipts hash only the station.json origin (`lat`, `lon`, `hM`, `crs`), plus the street-floor `renderElevationM` for overlay z evidence, so unrelated station.json edits do not re-key runs. A context receipt also retains the frame's historical `station_json_sha256`.
 
 ```sh
 pnpm --dir tools/gis gis acquire ksj-n02-2025                        # 14.9 MB nationwide ZIP + product page + KSJ terms snapshots
