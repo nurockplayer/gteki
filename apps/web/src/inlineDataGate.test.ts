@@ -70,10 +70,13 @@ describe("undeclaredInlinedData", () => {
 });
 
 describe("inlineDataGateMode", () => {
-  it("warns by default and fails only when set to error", () => {
-    expect(inlineDataGateMode({})).toBe("warn");
+  it("fails by default: both stations have declared their files, so undeclared data is a real error", () => {
+    expect(inlineDataGateMode({})).toBe("error");
+    expect(inlineDataGateMode({ GTEKI_INLINE_DATA_GATE: "" })).toBe("error");
+    // Only an explicit warn downgrades it, for local debugging; a typo must not silently pass a build.
     expect(inlineDataGateMode({ GTEKI_INLINE_DATA_GATE: "warn" })).toBe("warn");
-    expect(inlineDataGateMode({ GTEKI_INLINE_DATA_GATE: "error" })).toBe("error");
+    expect(inlineDataGateMode({ GTEKI_INLINE_DATA_GATE: "ERROR" })).toBe("error");
+    expect(inlineDataGateMode({ GTEKI_INLINE_DATA_GATE: "off" })).toBe("error");
   });
 });
 

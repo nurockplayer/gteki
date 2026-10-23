@@ -219,9 +219,12 @@ export function factsOnlyDataLines(stations: DiscoveredStation[]): string[] {
   });
 }
 
-/** `GTEKI_INLINE_DATA_GATE=error` fails the build on undeclared inlined data; anything else only warns (the default). */
+/**
+ * Undeclared inlined data fails the build by default. Only an explicit `GTEKI_INLINE_DATA_GATE=warn` logs it
+ * and still builds (a local debugging aid); any other value — including a typo — fails.
+ */
 export function inlineDataGateMode(env: Record<string, string | undefined> = process.env): "warn" | "error" {
-  return env.GTEKI_INLINE_DATA_GATE === "error" ? "error" : "warn";
+  return env.GTEKI_INLINE_DATA_GATE === "warn" ? "warn" : "error";
 }
 
 const VIRTUAL = "virtual:gteki-stations";
@@ -287,7 +290,7 @@ export function gtekiStations(roots: string[]): Plugin {
      * Bytes a scene module inlines into code (a JSON import, `?raw`) are never emitted as files, so
      * `generateBundle` can't see them: check every module id of the build instead. Data under a station
      * folder must be declared in its manifest with sources (see `undeclaredInlinedData`). Mode is
-     * `GTEKI_INLINE_DATA_GATE`: `warn` (default) logs the list, `error` fails the build.
+     * `GTEKI_INLINE_DATA_GATE`: undeclared data fails the build unless the mode is explicitly `warn`.
      */
     buildEnd(error) {
       if (serve || error) return;
