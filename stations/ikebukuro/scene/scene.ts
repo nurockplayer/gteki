@@ -9,6 +9,7 @@ import { buildFloorIndex, noseDistances, wallFloorAttribute } from "./geomattrs.
 import { buildSigns, LOW_TEXEL_SCALE, type SignSpec } from "./signs.ts";
 import { type AccessFences, buildAccessFences } from "./fences.ts";
 import { type KitGraph, type KitManifest, loadKit } from "./kit.ts";
+import { type CatalogPlacement, loadKitCatalog } from "./kit_catalog_loader.ts";
 import { type ColumnsFile, loadColumnKit } from "./kit_columns.ts";
 import { loadSignKit } from "./kit_signs.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
@@ -21,6 +22,7 @@ import signage from "./signage.json";
 import walkBridges from "./walk_bridges.json";
 import accessFences from "./access_fences.json";
 import kitManifest from "./kit/kit.json";
+import kitPlacements from "./kit_placements.json";
 import columnsFile from "./columns.json";
 import graph from "../gteki/graph.json";
 import litMeta from "../gteki/assets/ikebukuro_b1_lit.meta.json";
@@ -399,6 +401,9 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   // The three JR gate nodes get one REPRESENTATIVE array each (aisle count and orientation unverified; see kit.ts).
   const kit = await loadKit(THREE, ctx, kitManifest as KitManifest, (accessFences as AccessFences).marks, low, graph as unknown as KitGraph);
   const columnKit = await loadColumnKit(THREE, ctx, kitManifest as KitManifest, (columnsFile as unknown as ColumnsFile).columns, low);
+  // Lane E station catalog (scene/kit_placements.json, tier by quality): surveyed stair and escalator dressing,
+  // visual only like the other kits. Batch A ships the 5 escalators on the desktop tier (see kit_catalog_loader.ts).
+  const catalogKit = await loadKitCatalog(THREE, ctx, (kitPlacements as unknown as { placements: CatalogPlacement[] }).placements, low);
   // Phones keep the sign frames but not their rods: with rods all 119 frames are ~40k triangles, without ~19k.
   const signKit = await loadSignKit(THREE, ctx, kitManifest as KitManifest, low, { omitPhoneRods: true });
   const fences = buildAccessFences(THREE, accessFences as AccessFences, toRenderer, kit.railed);
@@ -494,6 +499,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
 
   root.add(kit.build(THREE, env, toRenderer).group);
   root.add(columnKit.build(THREE, env, toRenderer).group);
+  root.add(catalogKit.build(THREE, env, toRenderer).group);
 
   // Low quality paints signs at LOW_TEXEL_SCALE (~168 px/m) instead of 300: under a third of the texture memory, still legible at phone size.
   const signs = buildSigns(THREE, (signage as { signs: SignSpec[] }).signs, toRenderer, ctx.renderer.capabilities.getMaxAnisotropy(), low ? LOW_TEXEL_SCALE : 1, ctx.renderer.capabilities.maxTextureSize,
@@ -548,6 +554,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       finishes.dispose();
       kit.dispose();
       columnKit.dispose();
+      catalogKit.dispose();
       signKit.dispose();
       signs.dispose();
       envTarget.dispose();
