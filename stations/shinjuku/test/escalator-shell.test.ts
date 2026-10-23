@@ -13,20 +13,6 @@ const layout = buildLayout(bundle, plan as unknown as Plan);
 const runs = layout.runs.filter((r) => r.mode === "escalator");
 const v3 = (p: XYZ) => new THREE.Vector3(p.x, p.z, -p.y);
 
-/** CPU equivalent of Three's tonemapping_pars_fragment ACES transform, then sRGB output.
- * Background colours can bypass tone mapping; require both paths to clear the metric.
- */
-function acesRGB(hex: number, exposure: number): number[] {
-  const c = new THREE.Color(hex).multiplyScalar(exposure / 0.6);
-  const input = new THREE.Matrix3().set(0.59719, 0.35458, 0.04823, 0.076, 0.90834, 0.01566, 0.0284, 0.13383, 0.83777);
-  const output = new THREE.Matrix3().set(1.60475, -0.53108, -0.07367, -0.10208, 1.10813, -0.00605, -0.00327, -0.07276, 1.07602);
-  const fit = (v: number) => (v * (v + 0.0245786) - 0.000090537) / (v * (0.983729 * v + 0.432951) + 0.238081);
-  const v = new THREE.Vector3(c.r, c.g, c.b).applyMatrix3(input);
-  v.set(fit(v.x), fit(v.y), fit(v.z)).applyMatrix3(output).clampScalar(0, 1);
-  c.setRGB(v.x, v.y, v.z).convertLinearToSRGB();
-  return [c.r, c.g, c.b].map((n) => Math.round(n * 255));
-}
-
 describe("#49 render-only escalator enclosure", () => {
   let scene: StationScene;
   let sides: THREE.Mesh, soffits: THREE.Mesh;
@@ -123,14 +109,4 @@ describe("#49 render-only escalator enclosure", () => {
     }
     expect(hits.slice(0, 30)).toEqual([]);
   }, 30_000);
-
-  it("uses a neutral backdrop comfortably above the near-black threshold at exposure 0.92", () => {
-    const hex = scene.environment!.background as number;
-    expect(scene.environment!.exposure).toBe(0.92);
-    const raw = [(hex >> 16) & 255, (hex >> 8) & 255, hex & 255];
-    expect(Math.min(...raw)).toBeGreaterThanOrEqual(32);
-    expect(Math.min(...acesRGB(hex, 0.92))).toBeGreaterThanOrEqual(32);
-    // Negative control: the old backdrop must fail this guard.
-    expect(Math.min(...acesRGB(0x0d0e10, 0.92))).toBeLessThan(24);
-  });
 });

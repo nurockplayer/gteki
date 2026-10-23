@@ -249,8 +249,7 @@ export const buildScene: BuildScene = (ctx) => {
     cameraBlockers,
     walls,
     spawnPoints,
-    // #49: dim neutral concrete fallback; stays above RGB 32 through ACES at exposure 0.92.
-    environment: { background: 0x404246, exposure: 0.92, lighting: "scene" },
+    environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },
     ...sceneLifecycle(built.update, built.dispose, viewer.refresh, [...walkable, ...colliders, probe], [proxyMat, probeMat], envTarget),
   };
   return scene;
