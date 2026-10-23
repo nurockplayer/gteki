@@ -57,6 +57,8 @@ All values are sRGB authoring colours (the code converts them to linear when it 
 
 Props, such as bins and vending bodies, may use the secondary colours already in `families/props.py`: bin blue, green, orange and grey; vending slate, graphite, sage and sand.
 
+Street pieces (`families/street.py`) add four flat colours with no texture, so they cost no download or GPU memory: `street_steel` `#45474C`, 0.45 / 0 (painted graphite steel for canopy frame, posts, rails and lamp, lighter than `steel_painted_dark` so large surfaces stay out of near-black); `street_concrete` `#8F8F8A`, 0.88 / 0 (precast planter body); `street_soil` `#2B1F17`, 0.95 / 0; `street_foliage` `#2B5C2B`, 0.72 / 0 (one flat green for the generic shrub). Also `gteki_stainless_polished` and `gteki_vertical_safety_yellow` are reused for bollards and guard rails.
+
 **Rule:** a new piece uses these materials by name. A genuinely new colour or material is added to this table and to `materials.py` in the same PR, with its role.
 
 ## 3. Material library
@@ -124,6 +126,12 @@ W1 needs its own generator and an Owner look check before any piece uses it.
 - A sign face is one emissive quad in a recessed aluminium frame (28–35 mm bar) with a 4 mm dark gasket.
 - **No text, digits, pictograms or typefaces are generated.** Art is a colour field, a thin inner rule, an optional geometric arrow block and a blank text panel. Stations add their own wording at runtime (see [HANDOFF](HANDOFF.md)).
 - Arrow directions are left, right, up or none. The back face carries the mirrored arrow.
+- **Exception: facility pictograms (batch P1).** Approved by the director under the Owner's delegation, 2026-10-22 ([#151](https://github.com/nurockplayer/gteki/pull/151)). This narrow exception covers only the toilet entrance sign (`toilet_entrance`), which carries a procedurally drawn figure:
+  - It is GTEki's own geometric figure: a signed-distance texture hand-built from circles, capsules, rounded rectangles and convex polygons in `families/facilities.py`. ISO 7001 and JIS Z8210 are stylistic references only. No artwork was traced, copied or imported.
+  - It only restates the facility the source names, with the matching `kind`. A station places it only where the source gives the entrance or door position.
+  - A space-representative point alone is not enough, because the piece would imply a door the source doesn't give. This rules out GSI F001 / F002 / F003 by themselves, so Shinjuku does not place it.
+  - The `accessible` figure claims an accessible toilet, so it is used only where the source says so.
+  - Still no text or digits.
 
 | Tone | Field | Panel | Rim | Ink | Emission |
 | --- | --- | --- | --- | --- | --- |

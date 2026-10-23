@@ -12,6 +12,7 @@ import { GTAOPass } from "three/examples/jsm/postprocessing/GTAOPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import { FloorReflectionPass } from "./floorReflectionPass.ts";
+import { avatarDitherActive, ditherFade, sanitizeAvatarFade } from "./avatarDither.ts";
 
 export interface PostFxSettings {
   bloom: { strength: number; radius: number; threshold: number };
@@ -67,9 +68,82 @@ export const GradeShader = {
     }`,
 };
 
+/**
+ * GTAOPass whose depth/normal render shows the avatar body exactly as the main render does while it is dithered:
+ * the same surviving screen-door fragments, no more. GTAO draws the whole scene with one override material that
+ * would otherwise ignore the body's `discard` (a full-body silhouette: a dark halo on the walls behind, and a
+ * floor-reflection mask over holes the camera sees through). So while the fade is active each avatar mesh is
+ * drawn with a normal-material twin carrying the same dither (`allowOverride = false` keeps it out of the
+ * override). The swap is a pointer write per mesh around that one draw: nothing is allocated and the twins'
+ * programs compile once. A per-draw flag uniform on the override material is not an option: three uploads the
+ * uniforms of a non-ShaderMaterial only when the material or camera changes, so it would not reach the GPU.
+ *
+ * The pattern keys on gl_FragCoord, and the composer sizes GTAO's targets in device pixels like the main target
+ * (see PostFx), so both discard the same pixels. The main render and the shadow pass are untouched.
+ */
+export class FadeAwareGTAOPass extends GTAOPass {
+  /** The one uniform object every twin reads; written by `setFade`, never reallocated. */
+  readonly fadeUniform = { value: 1 };
+  private object: THREE.Object3D | null = null;
+  private active = false;
+  private meshes: THREE.Mesh[] = [];
+  private twins: THREE.Material[] = [];
+  private originals: THREE.Material[] = [];
+  private readonly twinBySource = new Map<THREE.Material, THREE.MeshNormalMaterial>();
+
+  /** Call once per frame before the composer renders; `fade` is the object's opacity (1 opaque). */
+  setFade(object: THREE.Object3D | null, fade: number): void {
+    if (object !== this.object) this.collect(object);
+    this.fadeUniform.value = sanitizeAvatarFade(fade);
+    this.active = this.meshes.length > 0 && avatarDitherActive(this.fadeUniform.value);
+  }
+
+  /** Finds the object's single-material meshes and their twins; runs when the registered object changes, not per frame. */
+  private collect(object: THREE.Object3D | null): void {
+    this.object = object;
+    this.meshes = [];
+    this.twins = [];
+    this.originals = [];
+    object?.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if (!mesh.isMesh || Array.isArray(mesh.material)) return;
+      this.meshes.push(mesh);
+      this.twins.push(this.twinOf(mesh.material));
+      this.originals.push(mesh.material);
+    });
+  }
+
+  private twinOf(source: THREE.Material): THREE.MeshNormalMaterial {
+    let twin = this.twinBySource.get(source);
+    if (!twin) {
+      twin = new THREE.MeshNormalMaterial({ side: source.side });
+      twin.blending = THREE.NoBlending;
+      twin.allowOverride = false;
+      ditherFade(twin, this.fadeUniform);
+      this.twinBySource.set(source, twin);
+    }
+    return twin;
+  }
+
+  override render(...args: Parameters<GTAOPass["render"]>): void {
+    if (!this.active) return super.render(...args);
+    const { meshes, twins, originals } = this;
+    for (let i = 0; i < meshes.length; i++) { originals[i] = meshes[i]!.material as THREE.Material; meshes[i]!.material = twins[i]!; }
+    try { super.render(...args); } finally {
+      for (let i = 0; i < meshes.length; i++) meshes[i]!.material = originals[i]!;
+    }
+  }
+
+  override dispose(): void {
+    for (const twin of this.twinBySource.values()) twin.dispose();
+    this.twinBySource.clear();
+    super.dispose();
+  }
+}
+
 export class PostFx {
   readonly composer: EffectComposer;
-  private readonly gtao: GTAOPass;
+  private readonly gtao: FadeAwareGTAOPass;
   private readonly bloom: UnrealBloomPass;
   private readonly grade: ShaderPass;
 
@@ -86,7 +160,7 @@ export class PostFx {
     // below are not scaled by the pixel ratio a second time.
     this.composer.setSize(size.x, size.y);
     this.composer.addPass(new RenderPass(scene, camera));
-    this.gtao = new GTAOPass(scene, camera, size.x, size.y);
+    this.gtao = new FadeAwareGTAOPass(scene, camera, size.x, size.y);
     this.gtao.blendIntensity = settings.ao.blend;
     this.gtao.updateGtaoMaterial({ radius: settings.ao.radius, distanceFallOff: settings.ao.distanceFallOff, thickness: settings.ao.thickness });
     this.composer.addPass(this.gtao);
@@ -112,6 +186,11 @@ export class PostFx {
   setSize(w: number, h: number): void {
     this.composer.setSize(w, h);
     this.grade.uniforms.uAspect!.value = w / Math.max(1, h);
+  }
+
+  /** Mirrors a dithered `avatar` into GTAO and so the floor reflection (both read GTAO's depth/normals); null clears it. */
+  setAvatarFade(avatar: THREE.Object3D | null, fade: number): void {
+    this.gtao.setFade(avatar, fade);
   }
 
   render(dt: number): void {

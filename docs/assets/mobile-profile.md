@@ -18,7 +18,7 @@ Where gates go, how many aisles they have, and how they look stay with each stat
 | Draws per asset | one per material per group | Static `VIS_*` groups merge into `VIS_body`. Pivoted groups (gate flaps) stay separate nodes, so they can still be animated |
 | Materials | `gteki_*` PBR, 1–3 JPEG maps each | Every colour-only material folds into one kit-wide palette. `gteki_palette` is opaque and `gteki_palette_blend` is glass: a 64×64 PNG with 4×4-texel swatches for albedo + alpha, ORM and emissive (strength 4). Each face's UV is the centre of its swatch, and the palette sampler is NEAREST for both magnification and minification (no mipmaps): below 16×16 a mip would average neighbouring swatches. `validate_glb.py` fails a palette texture whose sampler mipmaps. Content materials keep their own textures, as JPEG: sign faces (`gteki_sign_face_*`), screens and posters |
 | Geometry | full bevels and segments | Visual parts use half the segments (cylinders ≥ 8, tubes ≥ 6) and no bevels, and tube paths are Douglas–Peucker simplified (distance to the chord segment, at half the tube radius). **Collision is byte-identical to full**: `build.py` generates each asset a second time at full detail (bmesh only) and keeps that twin's colliders. `bounds_m` covers the tier's own visuals and colliders, within 3.1 mm of full |
-| Lightmap UV | — | `UVLightmap` (glTF `TEXCOORD_1`) on every visual mesh, for stations that bake lighting (Ikebukuro does). Smart UV Project can fold a chart over itself (square columns, escalators), so every face whose triangles overlap another's (in Blender's own tessellation, which the exporter writes) is detached into its own chart and the layout is repacked; a face that folds over itself is split into triangles first. The build checks again after the final repack and after UV quantization. `validate_glb.py` fails a mobile visual primitive without UV1, and any UV1 that is not a dense VEC2, is NaN/Inf, leaves the unit square, collapses a triangle of at least 1 mm² to a point or line, or overlaps (triangles, strips and fans alike). Slivers below 1 mm² may collapse when UVs snap to the 1/65536 grid (17 stair-nosing slivers in the current library, each ≤ 0.19 mm²) |
+| Lightmap UV | `UVLightmap` too, once an asset carries its baked occlusion map ([contract §4](asset-contract.md#4-materials-and-textures)); one atlas shared by all visual nodes | `UVLightmap` (glTF `TEXCOORD_1`) on every visual mesh, for stations that bake lighting (Ikebukuro does). Smart UV Project can fold a chart over itself (square columns, escalators), so every face whose triangles overlap another's (in Blender's own tessellation, which the exporter writes) is detached into its own chart and the layout is repacked; a face that folds over itself is split into triangles first. The build checks again after the final repack and after UV quantization. `validate_glb.py` fails a mobile visual primitive without UV1, and any UV1 that is not a dense VEC2, is NaN/Inf, leaves the unit square, collapses a triangle of at least 1 mm² to a point or line, or overlaps (triangles, strips and fans alike). The lightmap layer snaps to a 2^-20 grid (UV0 to 1/65536), so slivers on long assets keep their area. Slivers below 1 mm² may still collapse. The layout is packed jointly over all visual nodes (the flaps included) with at least 4 px between islands, at a map size of 128 px (largest extent under 1.5 m) or 256 px (full: 256, 512 or 1024 px at 1.5 m and 6 m). If the charts do not fit at that size, the build steps it up (to 1024 px at most) and `occlusion_res` records it. A face whose chart squeezes visible geometry to a point or a line is unwrapped on its own plane and repacked, because the asset's baked occlusion map (`occlusionTexture`, `texCoord` 1) is shared by the palette and content materials alike |
 | Texture binding | implicit UV0 | Every texture is bound to UV0 by an explicit UV Map node in Blender, and exports with `texCoord` omitted (glTF's default, 0). Without that node the exporter wrote `texCoord: -1` (invalid) or a nondeterministic `1`. `validate_glb.py` now fails any texture, in a core or an extension slot, whose effective `texCoord` (including a `KHR_texture_transform` override) is not an int ≥ 0 naming an existing `TEXCOORD_n` |
 | Manifest | — | Top-level `"profile": "mobile"`; `materials` and `textures` list what was exported (palette plan included). The full manifest is byte-identical to before |
 
@@ -50,6 +50,8 @@ Kept on purpose: sign-face text and posters. Mobile cannot read colour from vert
 
 Sign and screen faces keep their own textures (re-encoded as JPEG q88), so signs and the vending machine shrink least.
 
+Finish packs keep their own materials ([contract §9](asset-contract.md#9-finish-packs--gteki-finish01)), at most 512 px on mobile. The director approved a lossless normal PNG for `gteki_finish_floor_granite_tile` and `gteki_finish_floor_tile600`, declared by `mobile_normal_format: "png"` in the catalog and mobile `finish.json`. Blender's JPEG encoder always uses 4:2:0; at 512 px it breaks the wrap of thin grout on the texture edge. Loose `normal.png` and the sample GLB's `image/png` are the same cached generator bytes. GPU memory stays the same; download grows slightly. Other finish maps and the full tier stay JPEG.
+
 Concourse demo (29 items), from `texture_budget.py --layout`:
 
 | Strategy | Full, download / GPU est. | Mobile, download / GPU est. |
@@ -59,6 +61,31 @@ Concourse demo (29 items), from `texture_budget.py --layout`:
 | bundle | 4.28 / 145 MiB | 2.33 / 36 MiB |
 
 The 29 placements hold 55.0k triangles on full and 24.2k on mobile. In three.js (`bench.html`, per_asset), the default view draws **63 calls on mobile against 244 on full**.
+
+## Station runtime: `uri` / `uriMobile`
+
+In a station manifest, an asset may set an optional `uriMobile` next to `uri`. The explorer loads it on the low tier (phones) and loads `uri` otherwise. This is the Explorer contract approved by the director, and it lands with #134.
+
+For kit placements a station ships two bundles:
+- `bundle_kit.py bundle --library assets/library`, used as `uri`;
+- `bundle_kit.py bundle --library assets/library/mobile`, used as `uriMobile`.
+
+Both are built from the same ids or layout and the same library commit, so the ids, transforms and node names match and station code needs no tier branch. Both carry the per-asset AO material clones. The commands are in [HANDOFF](HANDOFF.md#phones-the-mobile-tier).
+
+## AO map size rule
+
+The size follows the asset's largest bounds extent, with a cap per tier:
+
+| Extent | Full | Mobile |
+| --- | --- | --- |
+| under 1.5 m | 256 px | 128 px |
+| 1.5 m to under 6 m | 512 px | 256 px |
+| 6 m and up | 1024 px | 256 px |
+
+- On the GPU, a 256² map is about 0.35 MB with mips, and a 512² map about 1.4 MB. Every placed asset type carries its own map.
+- Full gets 1024 px from 6 m up. A 13 m escalator at 512 px packed thin bevel slivers so small that thousands of UV1 triangles collapsed.
+- Mobile steps a map up (512, then 1024 px) only when its charts overflow the unit square with 4 px gaps; `occlusion_res` in the manifest shows the result.
+- A station that places many copies of one long piece can pin a smaller map in its catalog entry: `"ao_res": 128`. Allowed values are 128, 256, 512 and 1024. The value applies to both tiers.
 
 ## Godot full ↔ mobile
 
@@ -97,9 +124,10 @@ What this means for the station leads (offers, not decisions):
 
 1. **Ikebukuro's low tier** documents at most 28 draw calls. The scene uses 23–28 at these views today. Three naive mobile gates add up to 39, and naive full gates up to 102. With a `BatchedMesh` per material, all three gates cost **+1** on mobile, and the flaps can still animate: `setMatrixAt` per flap instance. A merged mesh also costs +1, but the flaps are baked open and it never culls.
 2. **Shinjuku** renders procedural box gates in 3–4 draws today. The mobile kit as a BatchedMesh replaces them for **2–3 fewer draw calls**, with real cabinets, IC readers and flaps, and about 3k triangles per gate in view.
-3. **Lighting.** Ikebukuro lights its scene with a lightmap and no dynamic lights, so unbaked kit PBR materials render near-black there (checked in the probe frames). Before kit props can be used there, the station needs to bake them, using the mobile tier's `UVLightmap` (TEXCOORD_1), or give them local light. Shinjuku's local fill lights light the kit gates correctly.
-4. **Frame time** at 1280×720 on an M2 Pro desktop (scene pass, 20 frames, synced by a 1-pixel readback): every delta was within run-to-run noise, below 1 ms. Phone GPU frame time has not been measured. It belongs with each station's L2 walkthrough on the target device.
-5. Godot has no `BatchedMesh`. The palette still means one material per tier in Godot, so a station can merge static kit meshes with `SurfaceTool` and keep the flap nodes. This was not measured in either station.
+3. **Baked occlusion and batching.** Every asset carries its own AO map, so the materials it shares with other asset types (the palette included) are one copy per asset (`<material>~<asset id>` in a kit bundle, [contract §7](asset-contract.md#7-kit-bundles--gteki-kit-bundle01-derived-optional)). A `BatchedMesh` per material therefore becomes one per distinct AO'd asset type per original material, not only one per material; instances of the same asset still share it. A station with gate arrays alone stays at **+1 draw**. If phones suffer from the extra draws, the fallback is a bundle-level AO atlas with UV1 repacked per bundle (not done now; agreed with the Explorer lighting owner).
+4. **Lighting.** Ikebukuro lights its scene with a lightmap and no dynamic lights, so unbaked kit PBR materials render near-black there (checked in the probe frames). Before kit props can be used there, the station needs to bake them, using the mobile tier's `UVLightmap` (TEXCOORD_1), or give them local light. Shinjuku's local fill lights light the kit gates correctly.
+5. **Frame time** at 1280×720 on an M2 Pro desktop (scene pass, 20 frames, synced by a 1-pixel readback): every delta was within run-to-run noise, below 1 ms. Phone GPU frame time has not been measured. It belongs with each station's L2 walkthrough on the target device.
+6. Godot has no `BatchedMesh`. The palette still means one material per tier in Godot, so a station can merge static kit meshes with `SurfaceTool` and keep the flap nodes. This was not measured in either station.
 
 ```js
 // three.js: one BatchedMesh per material for every placed kit asset (flaps stay animatable)
