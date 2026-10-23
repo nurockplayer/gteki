@@ -84,5 +84,8 @@
       "radius_m": 700
     },
     "notes": "station.json has origin.hM null (the vertical anchor is undecided, which is why the PLATEAU building context stays BLOCKED), so no station-enu frame exists; the overlay uses the horizontal origin only and a symbolic street z = 0. Window = origin disc of radius_m (no graph node rule is configured)."
+  },
+  "profile": {
+    "window": { "kind": "origin_disc", "radius_m": 700 }
   }
 }

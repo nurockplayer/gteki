@@ -1,0 +1,53 @@
+{
+  "source_id": "tokyo-muni-toshima-cultural-properties-csv",
+  "resolved_url": "https://www.opendata.metro.tokyo.lg.jp/toyoshima/R4_cultural_property.csv",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-22T12:23:43.192Z",
+  "completed_at": "2026-10-22T12:23:43.243Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "text/csv",
+    "content-length": null,
+    "etag": "W/\"137c3-64864681c46c8\"",
+    "last-modified": "Thu, 15 Jan 2026 02:59:00 GMT",
+    "date": "Thu, 22 Oct 2026 12:23:43 GMT"
+  },
+  "bytes": 79811,
+  "sha256": "c4ccce11bf5582c18663e746263bc7b6a907411f9e59bec3581016577d661f5a",
+  "store_path": "raw/c4ccce11bf5582c18663e746263bc7b6a907411f9e59bec3581016577d661f5a/R4_cultural_property.csv",
+  "tool_version": "0.1.0",
+  "git_commit": "e1b9dd2deb2b1c3314524bdbbf8ca5687006e0d2",
+  "expected_bytes": 79811,
+  "expected_url_match": true,
+  "size_check": "MATCH",
+  "mode": "online",
+  "supporting_documents": [
+    {
+      "id": "package-show",
+      "requested_url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t131164d0000000007",
+      "url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t131164d0000000007",
+      "http_status": 200,
+      "sha256": "f8a7d9e5b445a351b501e4bdc24227d8353108bcd38dbd14e34f475436c00bb4",
+      "bytes": 3067,
+      "store_path": "raw/f8a7d9e5b445a351b501e4bdc24227d8353108bcd38dbd14e34f475436c00bb4/package_show"
+    },
+    {
+      "id": "portal-terms",
+      "requested_url": "https://portal.data.metro.tokyo.lg.jp/terms/",
+      "url": "https://portal.data.metro.tokyo.lg.jp/terms/",
+      "http_status": 200,
+      "sha256": "74e591bc0092beaed0921015d3b2b0b9bf90c70e67508b036155f6e5400cd67a",
+      "bytes": 44403,
+      "store_path": "raw/74e591bc0092beaed0921015d3b2b0b9bf90c70e67508b036155f6e5400cd67a/terms"
+    },
+    {
+      "id": "cc-by-4-deed-ja",
+      "requested_url": "https://creativecommons.org/licenses/by/4.0/deed.ja",
+      "url": "https://creativecommons.org/licenses/by/4.0/deed.ja",
+      "http_status": 200,
+      "sha256": "cf5b3d5b092076f0c146b9c41d7bca8a5ad5171660b7033cd8125ba5ac6d0382",
+      "bytes": 33449,
+      "store_path": "raw/cf5b3d5b092076f0c146b9c41d7bca8a5ad5171660b7033cd8125ba5ac6d0382/deed.ja"
+    }
+  ]
+}
