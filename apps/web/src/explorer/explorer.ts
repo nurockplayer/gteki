@@ -23,7 +23,7 @@ import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
-import { FOLLOW, avatarFade, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachFov, avatarFade, boomSqueezed, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack, stepSlope, targetFov, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -167,11 +167,16 @@ interface PoiLabel {
 export class Explorer {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
-  readonly camera = new THREE.PerspectiveCamera(60, 1, 0.05, CAMERA_FAR_M);
+  readonly camera = new THREE.PerspectiveCamera(FOV.overview, 1, 0.05, CAMERA_FAR_M);
   private readonly labels = new CSS2DRenderer();
   private readonly orbit: OrbitControls;
   private composer: PostFx | null = null;
   private readonly overviewLook = new OverviewLook();
+  /** Stair/escalator/ramp detection from the walker's vertical speed; widens the follow lens (see targetFov). */
+  private slope: SlopeState = NO_SLOPE;
+  /** The boom is squeezed under its comfortable distance (walls, ceilings); also widens the follow lens (see boomSqueezed). */
+  private squeezed = false;
+  private slopeY = 0;
   private readonly street = new StreetBackdrop();
   /** Render height of the station's street floor when it is an underground (scene-lit) station, else null. */
   private streetY: number | null = null;
@@ -360,14 +365,14 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
       walkable: this.walkable.length, colliders: this.colliders.length, cameraBlockers: this.cameraBlockers.length, seeThrough: this.seeThrough.length,
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
       bakedAo: { ...this.bakedAo }, assets: this.loadedAssets.map((a) => ({ ...a })),
-      camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), mode: this.mode,
+      camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), fov: Math.round(this.camera.fov * 100) / 100, far: this.camera.far, aspect: Math.round(this.camera.aspect * 1000) / 1000, mode: this.mode,
       lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
       environment: this.envProbe.visible ? "probe" : this.scene.environment ? "envMap" : null,
       environmentIntensity: this.envProbe.visible || this.scene.environment ? this.scene.environmentIntensity : null, exposure: this.renderer.toneMappingExposure, overlayToneResidual: this.overlayResidual === null ? null : Math.round(this.overlayResidual * 100) / 100,
@@ -929,7 +934,7 @@ export class Explorer {
     if (xray) xray.visible = mode === "overview";
     this.routeLines?.setXray(mode === "overview");
     this.graph?.setXray(mode === "overview");
-    if (mode === "overview") { this.street.restore(this.scene); this.snapCamera = false; }
+    if (mode === "overview") { this.street.restore(this.scene); this.snapCamera = false; this.setFov(FOV.overview, true); }
     this.overviewLook.set(this.scene, this.world, mode === "overview");
     this.events.onMode?.(mode);
   }
@@ -1587,12 +1592,26 @@ export class Explorer {
     p.level = atStreetTop(hit ? hit.point : this.pos, this.streetTops, footing);
   }
 
+  /** Move the lens toward `target`; the projection is rebuilt only while the FOV actually changes. */
+  private setFov(target: number, snap: boolean, dt = 0): void {
+    const next = snap || this.reducedMotion ? target : approachFov(this.camera.fov, target, dt);
+    if (next === this.camera.fov) return;
+    this.camera.fov = next;
+    this.camera.updateProjectionMatrix();
+  }
+
   private placeCamera(dt: number, snap = false): void {
+    // The slope state follows the walker's height; a large one-frame jump, snap, or stopped clock restarts it instead of reading a teleport as a climb.
+    this.slope = snap || dt <= 0 || Math.abs(this.pos.y - this.slopeY) > SLOPE.jump
+      ? NO_SLOPE
+      : stepSlope(this.slope, this.pos.y - this.slopeY, dt);
+    this.slopeY = this.pos.y;
     const head = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const dir = new THREE.Vector3(-Math.sin(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), -Math.cos(this.yaw) * Math.cos(this.pitch));
     if (this.firstPerson) {
       this.camera.position.copy(head);
       this.camera.lookAt(head.clone().add(dir));
+      this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
       return;
     }
     // Over-the-shoulder framing; the pivot itself is pulled in if a wall is closer than the shoulder offset.
@@ -1624,6 +1643,10 @@ export class Explorer {
         dist = followDistance(this.camDistance, cast(back));
       }
     }
+    this.squeezed = this.cameraTargets.length
+      ? (snap ? dist < FOLLOW.comfortDistance : boomSqueezed(this.squeezed, dist))
+      : false;
+    this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
     const desired = pose.pivot.clone().addScaledVector(back, dist);
     this.camera.position.lerp(desired, snap || this.reducedMotion ? 1 : 1 - Math.exp(-dt * 10));
     // The smoothed position, not only the target, stays below camera-only blockers.
