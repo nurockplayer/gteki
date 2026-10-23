@@ -1,5 +1,5 @@
 {
-  "run_id": "context-shinjuku-r0-x300-shinjuku-station-enu-v0-high-kind-bldg-2b7f1f05ac1bb96ed204",
+  "run_id": "context-shinjuku-r0-x300-shinjuku-station-enu-v0-high-kind-bldg-8071301e342edb913448",
   "verification": "UNVERIFIED",
   "navigation_use": "NOT_FOR_ROUTING",
   "visual_only": true,
@@ -55,7 +55,7 @@
     },
     "graph": {
       "graph_path": "stations/shinjuku/gteki/graph.json",
-      "graph_sha256": "37a24b303828755fbdbdb76f59d1b1a529e535cc16e9e3c19424468771cf928b",
+      "graph_sha256": "06d6193124f0dc6d44a663c5a1bfdff224bcd0d71114fc303c154501555863be",
       "nodes_total": 233,
       "kinds_by_floor": {
         "elevator@toei-nwd-1": 1,
@@ -97,7 +97,7 @@
       "max_selected_distance_m": 220.261,
       "pois": {
         "pois_path": "stations/shinjuku/gteki/pois.json",
-        "pois_sha256": "1d0a31debe634e46bd1c2831070284552bce1edbe458e7032fbfb9fd0bb5574a",
+        "pois_sha256": "4dbfe47b1eb68fad3add8222aa65d92ee1f42025989303aef24433068a64abe7",
         "categories": [],
         "fields": "pois[id in node_rule.poi_ids].connectorNodeIds -> graph nodes[].id",
         "pois_total": 16,
@@ -114,7 +114,10 @@
       },
       "selected": [
         {
-          "id": "n:value_sha256:f99dfe3d77cc6abf154aad9e53298a422d6bc1c3078e17c01e3ba11ad36dcdec",
+          "id": {
+            "value_sha256": "7a090306c4bfb3754cd2f625b346d48a4c4cc8a1cb5330e4dde2c45d677c46b8",
+            "value_type": "string"
+          },
           "kind": "exit",
           "floor_id": "toei-nwd-0",
           "x": -58.1,
@@ -128,7 +131,10 @@
           ]
         },
         {
-          "id": "n:value_sha256:0f85d03a840463d557f7232a5e15737028fdb75ec09f9f9c4ba148154fefc7c3",
+          "id": {
+            "value_sha256": "0c2933b4d01db6d6e1bffd0b8d38f0bb040e7a35459b56f98f7190f47f90b027",
+            "value_type": "string"
+          },
           "kind": "exit",
           "floor_id": "toei-nwd-0",
           "x": -59.9,
@@ -142,7 +148,10 @@
           ]
         },
         {
-          "id": "n:value_sha256:6e5fef8ec599a4bf8d33242c1361d34e348dbda2001e2c645ca088b511d57e72",
+          "id": {
+            "value_sha256": "7f4ca2a2cb13598a58cabc1f5e2394bb79967ce2dacfa8d851d7e6c64d326c04",
+            "value_type": "string"
+          },
           "kind": "exit",
           "floor_id": "toei-nwd-0",
           "x": 2.85,
@@ -156,7 +165,10 @@
           ]
         },
         {
-          "id": "n:value_sha256:9a8d2b3d6baddce67203ac3a648b94512b8494135a2a20260eef920cddd76eb4",
+          "id": {
+            "value_sha256": "d0a9d2c55f4ed45eccc2cdb76a46a1c161880f9f69b4e5b67e65d6aca8998445",
+            "value_type": "string"
+          },
           "kind": "exit",
           "floor_id": "toei-nwd-1",
           "x": -2.59,
@@ -454,7 +466,10 @@
       {
         "poi_id": "poi:exit:1",
         "connector_node_ids": [
-          "n:value_sha256:0f85d03a840463d557f7232a5e15737028fdb75ec09f9f9c4ba148154fefc7c3"
+          {
+            "value_sha256": "0c2933b4d01db6d6e1bffd0b8d38f0bb040e7a35459b56f98f7190f47f90b027",
+            "value_type": "string"
+          }
         ],
         "count": 10,
         "ground_height_m": {
@@ -485,7 +500,10 @@
       {
         "poi_id": "poi:exit:2",
         "connector_node_ids": [
-          "n:value_sha256:f99dfe3d77cc6abf154aad9e53298a422d6bc1c3078e17c01e3ba11ad36dcdec"
+          {
+            "value_sha256": "7a090306c4bfb3754cd2f625b346d48a4c4cc8a1cb5330e4dde2c45d677c46b8",
+            "value_type": "string"
+          }
         ],
         "count": 3,
         "ground_height_m": {
@@ -509,7 +527,10 @@
       {
         "poi_id": "poi:exit:3",
         "connector_node_ids": [
-          "n:value_sha256:9a8d2b3d6baddce67203ac3a648b94512b8494135a2a20260eef920cddd76eb4"
+          {
+            "value_sha256": "d0a9d2c55f4ed45eccc2cdb76a46a1c161880f9f69b4e5b67e65d6aca8998445",
+            "value_type": "string"
+          }
         ],
         "count": 6,
         "ground_height_m": {
@@ -536,7 +557,10 @@
       {
         "poi_id": "poi:exit:4",
         "connector_node_ids": [
-          "n:value_sha256:6e5fef8ec599a4bf8d33242c1361d34e348dbda2001e2c645ca088b511d57e72"
+          {
+            "value_sha256": "7f4ca2a2cb13598a58cabc1f5e2394bb79967ce2dacfa8d851d7e6c64d326c04",
+            "value_type": "string"
+          }
         ],
         "count": 6,
         "ground_height_m": {
@@ -6343,13 +6367,13 @@
   "feature_table_sha256": "2ca40149cd7d46b430bda6b8bf50291d3ec593395b16f8e67fa540c46b066a07",
   "per_feature_count": 520,
   "tool_version": "0.1.0",
-  "tool_input_sha256": "2c04ead5fe75e4d3430ba8914229e438b85aa1dfe697f21d840c9c72086ac626",
-  "station_json_sha256_now": "9d7c6be8d400932622693b23e98c7b70c640b4459fee6715ce866f1a9752684f",
-  "station_json_changed_since_frame": false,
-  "store_path": "out/context-shinjuku-r0-x300-shinjuku-station-enu-v0-high-kind-bldg-2b7f1f05ac1bb96ed204.glb",
-  "sidecar_path": "out/context-shinjuku-r0-x300-shinjuku-station-enu-v0-high-kind-bldg-2b7f1f05ac1bb96ed204.provenance.json",
-  "output_sha256": "8dd7429b9ed1c9aa9fb21f105b2a72c84503af24426ee9ce6726700595337329",
+  "tool_input_sha256": "d355cfb305eea2cf5ad0ae6f07c1b2990de94d8b22c036573f1ed2f61ca7ea19",
+  "station_json_sha256_now": "8fdef8f8798d099b7195308318042494a041413247ec31bc26502e7a249fcb64",
+  "station_json_changed_since_frame": true,
+  "store_path": "out/context-shinjuku-r0-x300-shinjuku-station-enu-v0-high-kind-bldg-8071301e342edb913448.glb",
+  "sidecar_path": "out/context-shinjuku-r0-x300-shinjuku-station-enu-v0-high-kind-bldg-8071301e342edb913448.provenance.json",
+  "output_sha256": "ff95739186586b26b7912054f75df45a9556f4fca1012b03c8388929032d1ab0",
   "output_bytes": 5329544,
-  "elapsed_ms": 61696,
-  "peak_rss_bytes": 216485888
+  "elapsed_ms": 10330,
+  "peak_rss_bytes": 229236736
 }
