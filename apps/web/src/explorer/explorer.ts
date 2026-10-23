@@ -208,6 +208,8 @@ export class Explorer {
   private groundTargets: THREE.Object3D[] = [];
   private colliderTargets: THREE.Object3D[] = [];
   private cameraTargets: THREE.Object3D[] = [];
+  /** All camera surfaces collide from both sides, independent of source winding. Rebuilt with the targets. */
+  private cameraSides: ReadonlySet<THREE.Object3D> = new Set();
   /** Walls and floors only: the street probe's sky test (camera-only blockers such as signs never hide the sky). */
   private skyTargets: THREE.Object3D[] = [];
   private blockerTargets: ReadonlySet<THREE.Object3D> = new Set();
@@ -797,6 +799,7 @@ export class Explorer {
     this.colliderTargets = targets.collider;
     this.skyTargets = targets.sky;
     this.cameraTargets = targets.camera;
+    this.cameraSides = new Set(targets.camera);
     this.blockerTargets = targets.blockers;
     // Every ray target is in the camera set (walls, floors, blockers); trees are built here, never mid-frame.
     this.rayTrees = prepareRayTrees(targets.camera);
@@ -854,6 +857,7 @@ export class Explorer {
     this.groundTargets = [];
     this.colliderTargets = [];
     this.cameraTargets = [];
+    this.cameraSides = new Set();
     this.skyTargets = [];
     this.blockerTargets = new Set();
     this.rayTrees = { trees: 0, triangles: 0, bytes: 0, buildMs: 0 };
@@ -1672,7 +1676,7 @@ export class Explorer {
     }
     // Over-the-shoulder framing; the pivot itself is pulled in if a wall is closer than the shoulder offset.
     // Signs (visual-only) are never camera targets and never pull the camera in; cameraCut sees through them instead.
-    const cameraSides = new Set(this.cameraTargets);
+    const cameraSides = this.cameraSides;
     let shoulder: number = FOLLOW.shoulder;
     if (this.cameraTargets.length) {
       this.ray.set(head, new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw)));

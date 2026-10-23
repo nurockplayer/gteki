@@ -430,6 +430,20 @@ describe("boom contraction", () => {
     expect(approachBoom(first, 0.6, 0.9, 0.05, 1 / 60)).toBeCloseTo(first - FOLLOW.contractSpeed / 60);
   });
 
+  it.each([0.98, FOLLOW.defaultDistance])("settles at full clearance even when the caller's target is %s", (target) => {
+    const hit = 1.05;
+    let distance = approachBoom(FOLLOW.defaultDistance, target, hit, 0.05, 1 / 60);
+    expect(distance).toBeCloseTo(hit - 0.05 - FOLLOW.nearEpsilon);
+    for (let frame = 1; frame <= 60; frame++) {
+      const next = approachBoom(distance, target, hit, 0.05, 1 / 60);
+      expect(next).toBeLessThanOrEqual(distance);
+      expect(distance - next).toBeLessThanOrEqual(FOLLOW.contractSpeed / 60 + 1e-12);
+      distance = next;
+    }
+    expect(distance).toBeCloseTo(hit - FOLLOW.clearance, 9);
+    expect(hit - distance).toBeGreaterThanOrEqual(FOLLOW.clearance - 1e-9);
+  });
+
   it("snaps for reduced motion/placements, keeps extension damping, and ignores negative time", () => {
     expect(approachBoom(3, 0.75, 1.05, 0.05, 1 / 60, true)).toBe(0.75);
     expect(approachBoom(0.7, 0.8, null, 0.05, 1 / 60)).toBe(0.8);

@@ -13,7 +13,7 @@ function cameraStand() {
   const state = {
     pos, camera, slope: { ...NO_SLOPE }, slopeY: 0, firstPerson: false, mode: "walk",
     yaw: 0, pitch: -0.12, camDistance: FOLLOW.defaultDistance as number, boomRaise: 0,
-    cameraTargets: [] as THREE.Object3D[], blockerTargets: new Set<THREE.Object3D>(),
+    cameraTargets: [] as THREE.Object3D[], cameraSides: new Set<THREE.Object3D>(), blockerTargets: new Set<THREE.Object3D>(),
     ray: new THREE.Raycaster(), reducedMotion: false, squeezed: false,
     setFov: vi.fn(), avatarRig: { root: new THREE.Group(), setFade: vi.fn() },
     composer: { setAvatarFade: vi.fn() },
@@ -26,6 +26,11 @@ function cameraStand() {
 const place = (state: ReturnType<typeof cameraStand>, snap = false) => {
   (Explorer.prototype as unknown as { placeCamera(this: typeof state, dt: number, snap: boolean): void })
     .placeCamera.call(state, 1 / 60, snap);
+};
+
+const setTargets = (state: ReturnType<typeof cameraStand>, targets: THREE.Object3D[]) => {
+  state.cameraTargets = targets;
+  state.cameraSides = new Set(targets);
 };
 
 const pocket = () => {
@@ -46,7 +51,7 @@ describe("Explorer follow camera wiring", () => {
       const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial());
       ground.position.y = -0.01;
       ground.updateMatrixWorld(true);
-      state.cameraTargets = [ground];
+      setTargets(state, [ground]);
     }
     place(state, true);
     const steady: number[] = [];
@@ -67,7 +72,7 @@ describe("Explorer follow camera wiring", () => {
   it("ramps the rendered avatar fade after an occluder appears and remains on its near side", () => {
     const state = cameraStand();
     place(state, true);
-    state.cameraTargets = [pocket()];
+    setTargets(state, [pocket()]);
     const pivot = followPose(new THREE.Vector3(0, 1.62, 0), 0, -0.12).pivot;
     let distance = state.camera.position.distanceTo(pivot);
     let fade = 1;
@@ -86,11 +91,12 @@ describe("Explorer follow camera wiring", () => {
     }
     expect(rampFrames).toBeGreaterThanOrEqual(3);
     expect(fade).toBeLessThan(1);
+    expect(distance).toBeLessThanOrEqual(1.05 - FOLLOW.clearance + 1e-9);
   });
 
   it.each(["placement", "reduced motion"])("snaps the boom for %s", (reason) => {
     const state = cameraStand();
-    state.cameraTargets = [pocket()];
+    setTargets(state, [pocket()]);
     state.reducedMotion = reason === "reduced motion";
     place(state, reason === "placement");
     const first = state.camera.position.clone();
@@ -110,7 +116,7 @@ const wall = (z: number, side: THREE.Side = THREE.DoubleSide) => {
 describe("Explorer wall fallback and QA controls", () => {
   it.each([THREE.FrontSide, THREE.BackSide, THREE.DoubleSide])("stays on the avatar side of a wall below the minimum, with material side %s", (side) => {
     const state = cameraStand();
-    state.cameraTargets = [wall(0.2, side)];
+    setTargets(state, [wall(0.2, side)]);
     place(state, true);
     expect(state.camera.position.z).toBeLessThanOrEqual(0.2 - state.camera.near - FOLLOW.nearEpsilon);
     expect(state.boomActual).toBeLessThan(FOLLOW.minDistance);
@@ -121,7 +127,7 @@ describe("Explorer wall fallback and QA controls", () => {
 
   it("checks the interpolated camera direction when yaw sweeps across a wall", () => {
     const state = cameraStand();
-    state.cameraTargets = [wall(0.8)];
+    setTargets(state, [wall(0.8)]);
     state.yaw = Math.PI / 2; // Solved boom is parallel to the wall; interpolated old position crosses it.
     place(state);
     expect(state.camera.position.z).toBeLessThan(0.8 - state.camera.near);
@@ -132,7 +138,7 @@ describe("Explorer wall fallback and QA controls", () => {
     const lip = new THREE.Mesh(new THREE.BoxGeometry(10, 1.97, 0.2), new THREE.MeshBasicMaterial());
     lip.position.set(0, 1.97 / 2, 0.6);
     lip.updateMatrixWorld(true);
-    state.cameraTargets = [lip];
+    setTargets(state, [lip]);
     place(state);
     expect(state.boomRaise).toBeGreaterThan(0);
     expect(state.camera.position.y).toBeGreaterThan(1.97);

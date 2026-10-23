@@ -168,10 +168,12 @@ export function followDistance(wanted: number, hits: readonly { distance: number
 /**
  * Contract at a bounded speed through the clearance band. Safety wins when a newly appearing hit
  * would contain the old camera: cut only as far as its near-plane margin, then resume the ramp.
+ * The ramp always settles at full clearance; the near-plane margin is only an emergency bound.
  * Increases keep the caller's existing position damping. Placements and reduced motion snap.
  */
 export function approachBoom(current: number, target: number, hitDistance: number | null, near: number, dt: number, snap = false): number {
   const safe = hitDistance === null ? Infinity : Math.max(0, hitDistance - near - FOLLOW.nearEpsilon);
+  target = clampDistance(target, hitDistance);
   const next = snap || target >= current ? target : Math.max(target, current - FOLLOW.contractSpeed * Math.max(0, dt));
   return Math.min(next, safe);
 }
