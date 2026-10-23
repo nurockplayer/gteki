@@ -35,9 +35,14 @@ Node tree:
 
 ## 3. Export skeleton
 
-The skeleton is authored with Rigify and **baked to the export skeleton below**: Rigify's control, mechanism and helper bones are not exported. It has **38 joints**; the contract allows 32–48 and sets a hard ceiling of 64.
+The skeleton is authored with Rigify and **baked to the export skeleton below**: Rigify's control, mechanism and helper bones are not exported. It has **38 joints**. Version 0.1 requires exactly these 38 names and no others. The 32–48 range and the 64 ceiling stay as guards for later contract versions, which may add optional joints.
 
-Joint names follow UE mannequin naming, so the Quaternius UAL skeleton (65 joints, audit §2) maps across by name. Each joint's parent is the first joint named on its row.
+Joint names follow UE mannequin naming, so the Quaternius UAL skeleton (65 joints, audit §2) maps across by name. Parents follow the UE mannequin chain, and a joint with a different parent fails validation:
+
+- `root` → `pelvis` → `spine_01` → `spine_02` → `spine_03` → `neck_01` → `head`; `spine_03` → `daypack`.
+- `spine_03` → `clavicle_*` → `upperarm_*` → `lowerarm_*` → `hand_*`; `upperarm_*` → `upperarm_twist_01_*`; `lowerarm_*` → `lowerarm_twist_01_*`.
+- `hand_*` → `thumb_01_*` → `thumb_02_*`; `hand_*` → `fingers_01_*` → `fingers_02_*`.
+- `pelvis` → `thigh_*` → `calf_*` → `foot_*` → `ball_*`; `thigh_*` → `thigh_twist_01_*`.
 
 | Group | Joints | Count |
 | --- | --- | --- |
@@ -74,7 +79,7 @@ From the UAL skeleton:
 | --- | --- | --- |
 | Triangles (all primitives) | ≤ 12 000 (target 10 000) | ≤ 5 000 (target 4 000) |
 | Primitives | ≤ 3 | ≤ 3 |
-| Textures | base colour + ORM, 1024² atlas (body) and 512² (head) | 512² body and 256² head; **GPU ≤ 2 MiB** (ruling 2) |
+| Textures | base colour + ORM: 1024² (body) and 512² (head) | base colour only: 512² (body) and 256² (head); ORM comes from material factors. **GPU ≤ 2 MiB** (ruling 2), estimated as w × h × 4 × 4/3 with mips: 1.67 MiB |
 | Joints, weights | same skeleton on both tiers | same skeleton on both tiers |
 
 **Materials:**
@@ -116,11 +121,11 @@ All clips are **in place**: the walker owns position and yaw (#339 runtime plan)
 | `walk` | cycle | 1.45 | ×0.85–1.15 covers 1.23–1.67 m/s, including the 1.6 walk tier |
 | `jog` | cycle | 2.30 | covers 1.96–2.65 m/s |
 | `run` | cycle | 3.20 | covers 2.72–3.68 m/s, including the 3.4 run tier |
-| `start_l`, `start_r` | one-shot | 0 → 1.45 | first step with the left / right foot; ends in phase with `walk` |
-| `stop_l`, `stop_r` | one-shot | 1.45 → 0 | last step with the left / right foot; ends in the `idle` pose |
-| `turn90_l`, `turn90_r`, `turn180_l`, `turn180_r` | one-shot | 0 | turn in place; `yaw_deg` is recorded; the runtime applies yaw, the clip carries none on `root` |
-| `stairs_up` | cycle | 0.9 along the path | riser 0.16 m and tread 0.30 m, the kit defaults ([vertical.py](../../tools/blender/gteki_assets/families/vertical.py)); one cycle = 2 steps |
-| `stairs_down` | cycle | 0.9 along the path | **authored separately, not ascent reversed** |
+| `start_l`, `start_r` | one-shot | 1.45, with a `speed_profile` from 0 | first step with the left / right foot; ends in phase with `walk` |
+| `stop_l`, `stop_r` | one-shot | 1.45, with a `speed_profile` down to 0 | last step with the left / right foot; ends in the `idle` pose |
+| `turn90_l`, `turn90_r`, `turn180_l`, `turn180_r` | one-shot | 0 | turn in place; `yaw_deg` is recorded, positive for `_l` (counter-clockwise seen from +Y) and negative for `_r`; the runtime applies yaw, the clip carries none on `root` |
+| `stairs_up` | cycle | 0.9 along the stair slope | riser 0.16 m and tread 0.30 m, the kit defaults ([vertical.py](../../tools/blender/gteki_assets/families/vertical.py)); one cycle = 2 steps |
+| `stairs_down` | cycle | 0.9 along the stair slope | **authored separately, not ascent reversed** |
 | `escalator_stand` | cycle | 0 relative to the step | standing, hand on the rail; the runtime adds the support's motion (`CONNECTOR_MPS.escalator` 0.75) |
 
 **Not clips:**
@@ -163,6 +168,8 @@ Root node `extras.gteki_character` holds:
 - `distance_per_cycle_m` is equal to `calib_speed_mps × duration_s`, within 1 %.
 - `derived_from` is present only when `source` is `derived`. Its licence then points at `LicenseRef-Quaternius-UAL-CC0-archive` (audit §2).
 - Turns add `yaw_deg`. Stairs add `riser_m`, `tread_m` and `steps_per_cycle`.
+- Start and stop add `speed_profile`: `[[u, mps], …]` in normalised clip time, piecewise linear. A start begins at 0 and ends at `calib_speed_mps`; a stop does the reverse. The drift check integrates this profile for the ideal glide.
+- The pelvis's 1 cm net forward limit (§6) applies to every clip, one-shots included, because every clip is in place.
 
 ## 8. New exporter and validator
 
@@ -204,7 +211,9 @@ For the mobile tier it uses the decimated mesh and the smaller atlases, with the
 
    These are ruling 3's gates applied before any runtime correction. They may be retuned after F0.
 
-It writes a JSON report with every measured value, kept next to the build log. The P0 acceptance sample (a minimal skinned body with a blinking head and a 2-frame `idle`) must pass items 1–8. That sample is built only after #156 ends; item 9 applies from E2 on.
+It writes a JSON report with every measured value, kept next to the build log. The P0 acceptance sample (a minimal skinned body with a blinking head and a 2-frame `idle`) must pass items 1–8 when run with `--clips idle --drift-advisory`. `--clips` names the §6 clips a partial build must carry (E2 uses `idle,walk,jog,run`), and the full set is the default. `--drift-advisory` reports item 9 as warnings. The sample is built only after #156 ends; item 9 gates from E2 on.
+
+Tests: `python3 -I tools/blender/character/test_validate_character.py` from the repo root (stdlib `unittest`, no Blender).
 
 ## 9. Licensing and REUSE
 
