@@ -81,46 +81,41 @@ export function mascotLine(t: Strings, ev: MascotEvent): MascotLine | null {
   }
 }
 
-// ---- Placeholder art ------------------------------------------------------------------
-// PLACEHOLDER ONLY (#132): tiny geometric faces authored for this repo, no external files or third-party art.
-// Final art comes from Lane E's model sheet after Owner approval; `unsure` is our own fifth face, pending a model
-// sheet drawing. It drops in by replacing MASCOT_ART, a plain (character, expression) -> svg string lookup.
-// Faces look right, toward the text.
+// ---- Art ------------------------------------------------------------------------------
+// Lane E's v1 UI set (#132; assets/library/mascots/ui, CC-BY-4.0): one 64x64 SVG per (character, expression).
+// Vite inlines the raw markup at build time, so the figure is still a single inline SVG with no network request.
+// Pending Owner approval of the art and the side-by-side similarity check; the slot keeps its placeholder marker
+// until then.
 
-const INK = "#2b2118";
-const STROKE = `fill="none" stroke="${INK}" stroke-width="1.8" stroke-linecap="round"`;
-const dot = (x: number, y: number, r: number): string => `<circle cx="${x}" cy="${y}" r="${r}" fill="${INK}"/>`;
-const svg = (body: string): string => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" focusable="false">${body}</svg>`;
+const CHARACTERS = ["cat", "dog"] as const satisfies readonly MascotId[];
+const EXPRESSIONS = ["neutral", "happy", "encourage", "sorry", "unsure"] as const satisfies readonly MascotExpression[];
 
-/** Eyes and brows for one expression, around the eye line `y` at x1 and x2. */
-function eyes(e: MascotExpression, x1: number, x2: number, y: number): string {
-  switch (e) {
-    case "happy": return `<path ${STROKE} d="M${x1 - 2.5} ${y + 1}q2.5-4 5 0M${x2 - 2.5} ${y + 1}q2.5-4 5 0"/>`;
-    case "encourage": return dot(x1, y, 2.7) + dot(x2, y, 2.7);
-    case "sorry": return dot(x1, y, 2) + dot(x2, y, 2) + `<path ${STROKE} d="M${x1 - 3} ${y - 5}l6 2M${x2 + 3} ${y - 5}l-6 2"/>`;
-    case "unsure": return dot(x1, y, 2) + dot(x2, y, 2) + `<path ${STROKE} d="M${x1 - 3} ${y - 5}h6M${x2 - 3} ${y - 5}h6"/>`;
-    case "neutral": return dot(x1, y, 2) + dot(x2, y, 2);
+const ART_DIR = "../../../../assets/library/mascots/ui";
+/** Raw SVG markup, keyed by the path Vite gives the glob (e.g. "../../../../assets/library/mascots/ui/cat_neutral.svg"). */
+const FILES = import.meta.glob("../../../../assets/library/mascots/ui/*.svg", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+
+/**
+ * One face's markup from Lane E's set. The `xmlns` goes (the markup is inlined in HTML, and the cost guard forbids
+ * remote references), and `focusable="false"` is set as the placeholder faces had it: the figure is aria-hidden
+ * and must not take focus.
+ */
+function artFor(character: MascotId, expression: MascotExpression): string {
+  const name = `${character}_${expression}.svg`;
+  const file = FILES[`${ART_DIR}/${name}`];
+  if (file === undefined) throw new Error(`mascot art missing: ${name} (assets/library/mascots/ui)`);
+  return file.replace(/\s+xmlns="[^"]*"/, "").replace(/^<svg\b/, '<svg focusable="false"');
+}
+
+function buildArt(): Record<MascotId, Record<MascotExpression, string>> {
+  const out = {} as Record<MascotId, Record<MascotExpression, string>>;
+  for (const character of CHARACTERS) {
+    out[character] = Object.fromEntries(EXPRESSIONS.map((expression) => [expression, artFor(character, expression)])) as Record<MascotExpression, string>;
   }
+  return out;
 }
 
-/** A small mouth at (x, y). */
-function mouth(e: MascotExpression, x: number, y: number): string {
-  const d = { neutral: `M${x} ${y}h6`, happy: `M${x - 0.5} ${y - 1}q3.5 5 7 0`, encourage: `M${x} ${y - 1}q3 3.5 6 0`, sorry: `M${x} ${y + 1}q3-3 6 0`, unsure: `M${x - 0.5} ${y + 2}l6-2` }[e];
-  return `<path ${STROKE} d="${d}"/>`;
-}
-
-const cat = (e: MascotExpression): string =>
-  svg(`<path d="M11 21 14 5 24 14ZM38 21 36 5 27 14Z" fill="#d9c3a0"/><circle cx="25" cy="28" r="15" fill="#ecdcc0"/>${eyes(e, 21, 32, 26)}<circle cx="29" cy="31" r="1.4" fill="#c0707a"/>${mouth(e, 26, 35)}`);
-
-const dog = (e: MascotExpression): string =>
-  svg(`<ellipse cx="11.5" cy="27" rx="5" ry="10" fill="#a8742f" transform="rotate(8 11.5 27)"/><ellipse cx="38.5" cy="27" rx="5" ry="10" fill="#a8742f" transform="rotate(-8 38.5 27)"/><circle cx="25" cy="27" r="14" fill="#d8a96b"/><ellipse cx="30" cy="33" rx="7" ry="5" fill="#f1dcb8"/>${eyes(e, 22, 32, 24)}<ellipse cx="32" cy="30.5" rx="2.4" ry="1.7" fill="${INK}"/>${mouth(e, 28, 36.5)}`);
-
-const EXPRESSIONS: readonly MascotExpression[] = ["neutral", "happy", "encourage", "sorry", "unsure"];
-const table = (make: (e: MascotExpression) => string): Record<MascotExpression, string> =>
-  Object.fromEntries(EXPRESSIONS.map((e) => [e, make(e)])) as Record<MascotExpression, string>;
-
-/** (character, expression) -> inline SVG. Placeholder; replace the whole table with Lane E's final art. */
-export const MASCOT_ART: Record<MascotId, Record<MascotExpression, string>> = { cat: table(cat), dog: table(dog) };
+/** (character, expression) -> inline SVG (Lane E v1 art, #132). Throws at module load if a face is missing. */
+export const MASCOT_ART: Record<MascotId, Record<MascotExpression, string>> = buildArt();
 
 // ---- DOM slot -------------------------------------------------------------------------
 
