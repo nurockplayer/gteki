@@ -1,0 +1,365 @@
+import fs from "node:fs";
+import path from "node:path";
+import { expect, test, type Page } from "@playwright/test";
+import { hooks, openStation, stationData } from "../lib/gteki.ts";
+
+/**
+ * Vantage-shot probe for Ikebukuro (#94 gates and rails, #181 street pavement plane): a fixed set of "vantage"
+ * spots, four headings each, one full-viewport screenshot per view plus the draw calls and triangles of the frame
+ * counted at the WebGL boundary (every pass, shadow and post included, as in spec 10). Measurement and evidence,
+ * not a visual golden: nothing is compared against a baseline here. Run it once per candidate build (and per
+ * tier) and compare the PNGs and the tables side by side.
+ *
+ * Not part of CI (e2e-smoke.yml names its specs) and skipped unless GTEKI_VANTAGE=1. Needs a real GPU: run it on
+ * the dev Mac in Brave against a built candidate (`pnpm build` in apps/web first; the config serves it with
+ * `vite preview`). Run from tests/e2e, one pass at a time:
+ *
+ *   GTEKI_VANTAGE=1 GTEKI_ROOT=<checkout> pnpm exec playwright test specs/13-ikebukuro-vantage-shots.spec.ts --project=desktop-chromium   # high tier
+ *   GTEKI_VANTAGE=1 GTEKI_ROOT=<checkout> pnpm exec playwright test specs/13-ikebukuro-vantage-shots.spec.ts --project=phone-chromium     # low tier (Pixel 7, 412x915)
+ *
+ * Tier comes from the explorer (hooks.quality: coarse pointer or screen under 700 px => low), so the phone project
+ * is the low run. Add GTEKI_VANTAGE_TIER=low (or high) to assert the tier the run landed on.
+ *
+ * Default spots (all verified against stations/ikebukuro/gteki/graph.json; override with GTEKI_VANTAGE_NODES):
+ *   gate     g_jr_c1, g_jr_c2, g_jr_s                  the three JR ticket-gate nodes (representative gate arrays, #94)
+ *   rail     c_g2, c_c    on the I1 route (JR Central Gate 2 -> Exit 35); 7.9 m and 11.1 m from the nearest mark in
+ *            scene/access_fences.json (g_jr_c2 itself is 1.1 m, it is in the gate group)
+ *            w_c, x4f     on the I2 route (West Exit B1 -> Exit 4 stair foot); 3.5 m and 4.5 m from the nearest mark
+ *                         (sw_h, the next node, is 15.7 m; w_cj 6.6 m, a good swap if one of these is blocked)
+ *            The distances are re-derived from access_fences.json and printed in the report ("fence m").
+ *   exit     x10, x11, x15, x39, x42    the street-level end node of each exit's stair edge (#181 pavement plane check)
+ *   control  x35                        the exit used by spec 10 and the I1 route; the known-good street view
+ * A node id that is not in the graph is dropped and listed under "dropped" in the report; the run goes on.
+ *
+ * Headings. Each spot is shot at four headings. Heading 0 is the bearing (0 = north, 90 = east, compass degrees in
+ * station ENU) along the first `verified` edge at the node (else its first edge), read from the edge geometry
+ * (the point about 2 m from the node); then +90, +180, +270. The walker spawns facing north (walkFrom resets yaw),
+ * so the probe turns by dragging the canvas (yaw -= dx * 0.0042, as specs 04 and 10 steer) and tracks the yaw it
+ * has sent; the camera's measured facing is recorded next to it as a cross-check (`facing`, flagged "(!)" when
+ * more than 25 degrees off).
+ *
+ * Per view: wait 2 animation frames after the turn plus GTEKI_VANTAGE_SETTLE_MS (default 600) for the follow
+ * camera, count FRAMES rendered frames (default 5), then take the screenshot. Draws and triangles in the table
+ * are the p50 over those frames; the max is next to it. A street-level spot waits (up to 8 s) for
+ * sceneInfo().street.active and then 1.5 s for the context to finish loading before the first heading.
+ *
+ * Output (per project, so desktop and phone runs never overwrite each other):
+ *   <out>/<group>-<node>-h<bearing>.png    full viewport, CSS pixels x DPR
+ *   <out>/vantage-<project>.md             header (label, renderer, tier, viewport), per-view table, per-group
+ *                                          max / p50 of draws and triangles, rows over the low-tier draw limit marked
+ *   <out>/vantage-<project>.json           the same data, plus sceneInfo() per view and any renderer.info-style
+ *                                          fields the build exposes on it (sceneInfo().renderer / .info / .render)
+ *
+ * Env: GTEKI_VANTAGE_NODES    comma list of graph node ids; an item may be `group:node` to pick the group
+ *                             (otherwise the default group, else gate / exit by node kind and floor, else `node`)
+ *      GTEKI_VANTAGE_HEADINGS comma list of degrees added to the edge bearing (default 0,90,180,270); prefix an item
+ *                             with `@` for an absolute compass heading (`@45`)
+ *      GTEKI_VANTAGE_OUT      output dir (default <GTEKI_ROOT>/.qa/ikebukuro-vantage/<project>)
+ *      GTEKI_VANTAGE_LABEL    free text recorded in the report, e.g. the candidate SHAs
+ *      GTEKI_VANTAGE_FRAMES   frames counted per view (default 5)
+ *      GTEKI_VANTAGE_SETTLE_MS extra settle after the turn (default 600)
+ *      GTEKI_VANTAGE_LOW_DRAWS draw-call limit marked on the low tier (default 28)
+ *      GTEKI_VANTAGE_TIER     assert the explorer tier ("low" or "high")
+ *
+ * Runtime: about 13 spots x 4 headings = 52 views at roughly 2 to 3 s each, plus page load and the street-context
+ * waits on the 6 street spots: expect 3 to 6 minutes per project on the dev Mac.
+ */
+test.skip(!process.env.GTEKI_VANTAGE, "set GTEKI_VANTAGE=1 to run the Ikebukuro vantage-shot probe");
+test.use({ trace: "off", video: "off", screenshot: "off" });
+
+const DEFAULT_NODES = [
+  "gate:g_jr_c1", "gate:g_jr_c2", "gate:g_jr_s",
+  "rail:c_g2", "rail:c_c", "rail:w_c", "rail:x4f",
+  "exit:x10", "exit:x11", "exit:x15", "exit:x39", "exit:x42",
+  "control:x35",
+];
+const DEFAULT_HEADINGS = ["0", "90", "180", "270"];
+const FRAMES = Number(process.env.GTEKI_VANTAGE_FRAMES ?? 5);
+const SETTLE_MS = Number(process.env.GTEKI_VANTAGE_SETTLE_MS ?? 600);
+const LOW_DRAW_LIMIT = Number(process.env.GTEKI_VANTAGE_LOW_DRAWS ?? 28);
+const LOOK_RAD_PER_PX = 0.0042;
+
+/** Counts draw calls and triangles per rendered frame at the WebGL boundary (independent of lib PROBE_SCRIPT; as in spec 10). */
+const TRI_PROBE = `(() => {
+  const st = { draws: [], tris: [], zero: 0, curD: 0, curT: 0 };
+  window.__van = st;
+  const T = (mode, n) => (mode === 4 ? Math.floor(n / 3) : mode === 5 || mode === 6 ? Math.max(0, n - 2) : 0);
+  const wrap = (C) => {
+    if (!C) return;
+    const w = (fn, f) => { const o = C.prototype[fn]; if (o) C.prototype[fn] = function (...a) { st.curD++; st.curT += f(...a); return o.apply(this, a); }; };
+    w("drawElements", (m, c) => T(m, c));
+    w("drawArrays", (m, f, c) => T(m, c));
+    w("drawElementsInstanced", (m, c, t, o, i) => T(m, c) * i);
+    w("drawArraysInstanced", (m, f, c, i) => T(m, c) * i);
+    w("drawRangeElements", (m, s, e, c) => T(m, c));
+  };
+  wrap(self.WebGL2RenderingContext);
+  wrap(self.WebGLRenderingContext);
+  const loop = () => {
+    if (st.curD > 0) { st.draws.push(st.curD); st.tris.push(st.curT); } else st.zero++;
+    st.curD = 0; st.curT = 0;
+    if (st.draws.length > 6000) { st.draws.splice(0, 3000); st.tris.splice(0, 3000); }
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+})();`;
+
+interface Pt { x: number; y: number }
+
+const round = (n: number, d = 1): number => Math.round(n * 10 ** d) / 10 ** d;
+const wrapRad = (a: number): number => Math.atan2(Math.sin(a), Math.cos(a));
+const pct = (a: number[], p: number): number | null => {
+  if (!a.length) return null;
+  const s = [...a].sort((x, y) => x - y);
+  return s[Math.min(s.length - 1, Math.floor(s.length * p))]!;
+};
+const pad3 = (n: number): string => String(n).padStart(3, "0");
+
+/** Drag the canvas by dx pixels in chunks that stay inside the (phone-width) canvas. Returns the dx sent. */
+async function drag(page: Page, at: Pt, dx: number): Promise<number> {
+  const box = (await page.locator("canvas.gteki-canvas").boundingBox())!;
+  const maxChunk = Math.max(20, Math.floor(box.width * 0.3));
+  let sent = 0;
+  while (Math.abs(dx - sent) >= 1) {
+    const chunk = Math.max(-maxChunk, Math.min(maxChunk, Math.round(dx - sent)));
+    await page.mouse.move(at.x, at.y);
+    await page.mouse.down();
+    await page.mouse.move(at.x + chunk, at.y, { steps: 3 });
+    await page.mouse.up();
+    sent += chunk;
+  }
+  return sent;
+}
+
+/** A point on the canvas that is not covered by UI, to start drags from. */
+async function canvasPoint(page: Page): Promise<Pt> {
+  return page.evaluate(() => {
+    const c = document.querySelector("canvas.gteki-canvas")!.getBoundingClientRect();
+    for (const [fx, fy] of [[0.5, 0.45], [0.7, 0.35], [0.3, 0.35], [0.6, 0.6], [0.85, 0.5]]) {
+      const x = c.left + c.width * fx!, y = c.top + c.height * fy!;
+      const el = document.elementFromPoint(x, y);
+      if (el?.classList.contains("gteki-canvas") || el?.classList.contains("gteki-labels")) return { x, y };
+    }
+    return { x: c.left + c.width / 2, y: c.top + c.height / 2 };
+  });
+}
+
+/** Distance (m) from p to the nearest segment {a, b} of a list. */
+function nearestSegment(p: Pt, segs: { a: number[]; b: number[] }[]): number | null {
+  let best = Infinity;
+  for (const s of segs) {
+    const [ax, ay] = s.a as [number, number], [bx, by] = s.b as [number, number];
+    const vx = bx - ax, vy = by - ay, len2 = vx * vx + vy * vy || 1;
+    const t = Math.max(0, Math.min(1, ((p.x - ax) * vx + (p.y - ay) * vy) / len2));
+    best = Math.min(best, Math.hypot(p.x - ax - t * vx, p.y - ay - t * vy));
+  }
+  return Number.isFinite(best) ? best : null;
+}
+
+/** Compass bearing (0 = north, 90 = east) from `from` to `to` in station ENU. */
+const bearing = (from: Pt, to: Pt): number => ((Math.atan2(to.x - from.x, to.y - from.y) * 180) / Math.PI + 360) % 360;
+
+async function measure(page: Page, frames: number) {
+  await page.evaluate(() => { const b = (window as any).__van; b.draws.length = 0; b.tris.length = 0; b.zero = 0; });
+  await page.waitForFunction((n) => (window as any).__van.draws.length >= n, frames, { timeout: 60_000 });
+  return page.evaluate((n) => {
+    const b = (window as any).__van;
+    return { draws: (b.draws as number[]).slice(0, n), tris: (b.tris as number[]).slice(0, n), zeroFrames: b.zero as number };
+  }, frames);
+}
+
+interface Row {
+  group: string; node: string; nodeKind: string | null; floor: string | null; fenceM: number | null;
+  offsetDeg: number | null; absolute: boolean; heading: number; facing: number | null; headingOk: boolean | null;
+  draws: number | null; drawsMax: number | null; tris: number | null; trisMax: number | null; frames: number; zeroFrames: number;
+  overLowLimit: boolean; streetActive: boolean | null; streetOpacity: number | null;
+  walker: { x: number; y: number; z: number } | null; file: string | null; error?: string;
+  renderInfo: unknown; sceneInfo: unknown;
+}
+
+test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ page }, testInfo) => {
+  test.setTimeout(900_000);
+  const root = process.env.GTEKI_ROOT;
+  if (!root) throw new Error("GTEKI_ROOT must point at the candidate checkout");
+
+  const { graph } = stationData("ikebukuro");
+  const byId = new Map(graph.nodes.map((n) => [n.id, n as typeof n & { kind?: string }]));
+
+  // ---- spot list ------------------------------------------------------------------------------------
+  const requested = (process.env.GTEKI_VANTAGE_NODES ? process.env.GTEKI_VANTAGE_NODES.split(",") : DEFAULT_NODES).map((s) => s.trim()).filter(Boolean);
+  const defaultGroup = new Map(DEFAULT_NODES.map((s) => s.split(":") as [string, string]).map(([g, n]) => [n, g]));
+  const spots: { group: string; node: string }[] = [];
+  const dropped: string[] = [];
+  for (const item of requested) {
+    const [g, n] = item.includes(":") ? (item.split(":") as [string, string]) : [undefined, item];
+    const node = byId.get(n!);
+    if (!node) { dropped.push(n!); continue; }
+    const group = g ?? defaultGroup.get(n!) ?? (node.kind === "ticket_gate" ? "gate" : node.kind === "exit" ? "exit" : "node");
+    spots.push({ group, node: n! });
+  }
+  if (dropped.length) console.warn(`vantage: dropped nodes not in the graph: ${dropped.join(", ")}`);
+  expect(spots.length, "at least one valid node").toBeGreaterThan(0);
+
+  const headings = (process.env.GTEKI_VANTAGE_HEADINGS ? process.env.GTEKI_VANTAGE_HEADINGS.split(",") : DEFAULT_HEADINGS)
+    .map((s) => s.trim()).filter(Boolean)
+    .map((s) => (s.startsWith("@") ? { deg: Number(s.slice(1)), absolute: true } : { deg: Number(s), absolute: false }));
+  for (const h of headings) expect(Number.isFinite(h.deg), "numeric heading").toBe(true);
+
+  /** Bearing along the first verified edge at a node (else its first edge), from the edge geometry about 2 m out. */
+  const edgeBearing = (id: string): { deg: number; edge: string | null } => {
+    const node = byId.get(id)!;
+    const here = { x: node.position.x, y: node.position.y };
+    const edges = graph.edges.filter((e) => e.from === id || e.to === id) as (typeof graph.edges[number] & { verification?: string })[];
+    const e = edges.find((x) => x.verification === "verified") ?? edges[0];
+    if (!e) return { deg: 0, edge: null };
+    const other = byId.get(e.from === id ? e.to : e.from)!;
+    let pts: Pt[] = e.geometry && e.geometry.length >= 2 ? e.geometry.map((g) => ({ x: g.x, y: g.y })) : [here, { x: other.position.x, y: other.position.y }];
+    // Orient the polyline so it starts at this node.
+    const d0 = Math.hypot(pts[0]!.x - here.x, pts[0]!.y - here.y), d1 = Math.hypot(pts.at(-1)!.x - here.x, pts.at(-1)!.y - here.y);
+    if (d1 < d0) pts = [...pts].reverse();
+    let target = pts.at(-1)!;
+    for (const p of pts.slice(1)) { if (Math.hypot(p.x - here.x, p.y - here.y) >= 2) { target = p; break; } }
+    return { deg: Math.round(bearing(here, target)), edge: e.id };
+  };
+
+  const accessFile = path.join(root, "stations", "ikebukuro", "scene", "access_fences.json");
+  const fences: { a: number[]; b: number[] }[] = fs.existsSync(accessFile) ? (JSON.parse(fs.readFileSync(accessFile, "utf8")).fences ?? []) : [];
+
+  // ---- page ------------------------------------------------------------------------------------------
+  await page.addInitScript(TRI_PROBE);
+  const { loadMs } = await openStation(page, "ikebukuro");
+  const tier = await hooks.quality(page);
+  if (process.env.GTEKI_VANTAGE_TIER) expect(tier, "explorer quality tier").toBe(process.env.GTEKI_VANTAGE_TIER);
+  const gl = await page.evaluate(() => (window as any).__qa?.gl ?? null);
+  const gpuValid = Boolean(gl?.renderer) && !/SwiftShader|llvmpipe|Software/i.test(String(gl?.renderer));
+  const viewport = page.viewportSize();
+  const dpr = await page.evaluate(() => window.devicePixelRatio);
+  const project = testInfo.project.name;
+  const label = process.env.GTEKI_VANTAGE_LABEL ?? "";
+
+  const outDir = process.env.GTEKI_VANTAGE_OUT ?? path.join(root, ".qa", "ikebukuro-vantage", project);
+  fs.mkdirSync(outDir, { recursive: true });
+
+  const rows: Row[] = [];
+  for (const spot of spots) {
+    const node = byId.get(spot.node)!;
+    const eb = edgeBearing(spot.node);
+    const fenceM = nearestSegment({ x: node.position.x, y: node.position.y }, fences);
+    const ok = await hooks.walkFromNode(page, spot.node);
+    const base = {
+      group: spot.group, node: spot.node, nodeKind: node.kind ?? null, floor: node.floorId, fenceM: fenceM === null ? null : round(fenceM),
+    };
+    if (!ok) {
+      for (const h of headings) {
+        rows.push({
+          ...base, offsetDeg: h.deg, absolute: h.absolute, heading: Math.round((h.absolute ? h.deg : eb.deg + h.deg) % 360), facing: null, headingOk: null,
+          draws: null, drawsMax: null, tris: null, trisMax: null, frames: 0, zeroFrames: 0, overLowLimit: false, streetActive: null, streetOpacity: null,
+          walker: null, file: null, error: "walkFromNode returned false (no walkable ground at the node)", renderInfo: null, sceneInfo: null,
+        });
+      }
+      continue;
+    }
+    await expect.poll(() => hooks.mode(page)).toBe("walk");
+    if (node.floorId === "street") {
+      // The street gate lags the camera by a frame and the backdrop fades in: wait for it, never fail on it.
+      await page.waitForFunction(() => (window as any).__gteki.sceneInfo().street.active, null, { timeout: 8_000 }).catch(() => undefined);
+      await page.waitForTimeout(1_500);
+    } else {
+      await page.waitForTimeout(500);
+    }
+    const at = await canvasPoint(page);
+    let yaw = 0; // walkFrom resets yaw to 0 (north); yaw = -heading in radians
+
+    for (const h of headings) {
+      const heading = ((Math.round(h.absolute ? h.deg : eb.deg + h.deg) % 360) + 360) % 360;
+      const delta = wrapRad((-heading * Math.PI) / 180 - yaw);
+      const dx = Math.round(-delta / LOOK_RAD_PER_PX);
+      if (Math.abs(dx) >= 1) yaw = wrapRad(yaw - (await drag(page, at, dx)) * LOOK_RAD_PER_PX);
+      await page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
+      await page.waitForTimeout(SETTLE_MS);
+
+      const m = await measure(page, FRAMES);
+      const info = await hooks.sceneInfo(page);
+      const av = await hooks.avatar(page);
+      // Where the camera looks: avatar minus camera, renderer frame is (x, up, -north). 0 = north, 90 = east.
+      const cam = info.camera as number[];
+      const facing = Math.round(((Math.atan2(av.x - cam[0]!, -(-av.y - cam[2]!)) * 180) / Math.PI + 360) % 360);
+      const diff = Math.abs(((facing - heading + 540) % 360) - 180);
+
+      const file = `${spot.group}-${spot.node}-h${pad3(heading)}.png`;
+      await page.screenshot({ path: path.join(outDir, file) });
+
+      const drawsP50 = pct(m.draws, 0.5), drawsMax = Math.max(...m.draws);
+      // renderer.info-style numbers, if the build exposes them on sceneInfo() (this branch does not).
+      const any = info as Record<string, unknown>;
+      const renderInfo = any.renderer ?? any.info ?? any.render ?? null;
+      rows.push({
+        ...base, offsetDeg: h.deg, absolute: h.absolute, heading, facing, headingOk: diff <= 25,
+        draws: drawsP50, drawsMax, tris: pct(m.tris, 0.5), trisMax: Math.max(...m.tris), frames: m.draws.length, zeroFrames: m.zeroFrames,
+        overLowLimit: tier === "low" && drawsMax > LOW_DRAW_LIMIT,
+        streetActive: info.street.active, streetOpacity: info.street.opacity,
+        walker: { x: round(av.x), y: round(av.y), z: round(av.z) }, file, renderInfo, sceneInfo: info,
+      });
+    }
+  }
+
+  // ---- report ----------------------------------------------------------------------------------------
+  const measured = rows.filter((r) => r.draws !== null);
+  const groups = [...new Set(rows.map((r) => r.group))].map((g) => {
+    const rs = measured.filter((r) => r.group === g);
+    const nums = (k: "draws" | "drawsMax" | "tris" | "trisMax") => rs.map((r) => r[k] as number);
+    return {
+      group: g, views: rs.length, nodes: [...new Set(rs.map((r) => r.node))],
+      drawsMax: rs.length ? Math.max(...nums("drawsMax")) : null, drawsP50: pct(nums("draws"), 0.5),
+      trisMax: rs.length ? Math.max(...nums("trisMax")) : null, trisP50: pct(nums("tris"), 0.5),
+      overLowLimit: rs.filter((r) => r.overLowLimit).length,
+    };
+  });
+  const failed = rows.filter((r) => r.error);
+  const result = {
+    probe: "ikebukuro-vantage-shots", label, tier, project, viewport, dpr, loadMs, gl, gpuValid,
+    frames: FRAMES, settleMs: SETTLE_MS, lowDrawLimit: LOW_DRAW_LIMIT, headings: headings.map((h) => (h.absolute ? `@${h.deg}` : String(h.deg))),
+    requested, dropped, groups, rows,
+  };
+  const base = path.join(outDir, `vantage-${project}`);
+  fs.writeFileSync(`${base}.json`, JSON.stringify(result, null, 2));
+
+  const cell = (v: unknown) => (v === null || v === undefined ? "n/a" : String(v));
+  const md = [
+    `# Ikebukuro vantage shots: ${tier} tier (${project})`,
+    "",
+    `- Label: ${label || "(none)"}`,
+    `- Renderer: ${gl?.renderer ?? "unknown"} (vendor ${gl?.vendor ?? "unknown"}, gpuValid=${gpuValid})`,
+    `- Tier: ${tier}; viewport ${viewport ? `${viewport.width}x${viewport.height}` : "?"} CSS px, DPR ${dpr}; page load ${loadMs} ms`,
+    `- ${FRAMES} frames per view (p50 shown, max beside it); draws and triangles counted at the WebGL boundary, all passes. Settle ${SETTLE_MS} ms after each turn.`,
+    `- Headings: edge bearing (first verified edge at the node) ${result.headings.map((h) => (h.startsWith("@") ? `${h.slice(1)} (absolute)` : `+${h}`)).join(", ")}.`,
+    tier === "low" ? `- Rows with draws max over ${LOW_DRAW_LIMIT} on the low tier are marked OVER.` : `- Not the low tier: no row is marked against the ${LOW_DRAW_LIMIT}-draw low-tier limit (run phone-chromium for that).`,
+    dropped.length ? `- Dropped (not in the graph): ${dropped.join(", ")}` : "- Dropped nodes: none",
+    failed.length ? `- Could not place: ${[...new Set(failed.map((r) => r.node))].join(", ")}` : "- Could not place: none",
+    "",
+    "## Per group",
+    "",
+    "| group | nodes | views | draws max | draws p50 | tris max | tris p50 | rows over limit |",
+    "|---|---|---|---|---|---|---|---|",
+    ...groups.map((g) => `| ${g.group} | ${g.nodes.join(", ")} | ${g.views} | ${cell(g.drawsMax)} | ${cell(g.drawsP50)} | ${cell(g.trisMax)} | ${cell(g.trisP50)} | ${g.overLowLimit} |`),
+    "",
+    "## Views",
+    "",
+    "| group | node | fence m | heading | facing | draws p50 | draws max | tris p50 | tris max | street.active | file |",
+    "|---|---|---|---|---|---|---|---|---|---|---|",
+    ...rows.map((r) =>
+      `| ${r.group} | ${r.node} | ${cell(r.fenceM)} | ${r.heading} | ${cell(r.facing)}${r.headingOk === false ? " (!)" : ""} | ${cell(r.draws)} | ${cell(r.drawsMax)}${r.overLowLimit ? " OVER" : ""} | ${cell(r.tris)} | ${cell(r.trisMax)} | ${cell(r.streetActive)} | ${r.file ? `[${r.file}](${r.file})` : `ERROR: ${r.error}`} |`),
+    "",
+    "`fence m` is the distance from the node to the nearest fence segment in scene/access_fences.json (blank when the file is absent).",
+    "",
+    ...rows.filter((r) => r.file).map((r) => `![${r.group} ${r.node} h${r.heading}](${r.file})`),
+    "",
+  ].join("\n");
+  fs.writeFileSync(`${base}.md`, md);
+  testInfo.annotations.push({ type: "output", description: `${base}.json` });
+  console.log(`vantage shots (${tier}, ${project}) written to ${base}.json / .md (${measured.length} views)`);
+
+  expect(gpuValid, `renderer ${gl?.renderer}: software rendering invalidates the visuals and the counts`).toBe(true);
+  expect.soft(failed.map((r) => r.node), "nodes the walker could not be placed on").toEqual([]);
+  expect.soft(measured.length, "views captured").toBe(spots.length * headings.length - failed.length);
+});

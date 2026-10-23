@@ -94,9 +94,11 @@ func _inspect(scene_root: Node) -> Dictionary:
 			"linear_run":
 				# entry line at z=0, run toward -Z; newels, handrail ends and post caps may reach
 				# up to 1 m in front, and a piece mounted on its host may start up to one riser up
+				# (a wall-mounted handrail has no foot: its lowest point is the rail end, up to 1 m)
+				var base_max := 1.0 if str(params.get("rail_mount", "")) == "wall" else 0.5
 				result.checks.extends_negative_z = merged.position.z < -0.01
 				result.checks.front_reach_within_1m = merged.end.z <= 1.0
-				result.checks.base_between_slab_and_first_riser = (merged.position.y >= -0.1 or below_ok) and merged.position.y <= 0.5
+				result.checks.base_between_slab_and_first_riser = (merged.position.y >= -0.1 or below_ok) and merged.position.y <= base_max
 			"surface":
 				# a flat finish sample lying on its wall plane (z=0) instead of projecting from it
 				result.checks.floor_min_y_near_zero = floor_ok

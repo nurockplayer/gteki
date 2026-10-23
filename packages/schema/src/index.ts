@@ -260,6 +260,13 @@ export interface Poi {
 
 export type CoverageStatus = "routable" | "visual_only" | "unverified" | "excluded";
 
+/**
+ * Coverage text as station data: either the legacy plain string (one language, whatever the source used) or
+ * localized text in the POI-name shape. Clients show the requested language, then ja, then any entry, and take
+ * the plain string as-is; they never translate it (#259).
+ */
+export type CoverageText = string | LocalizedText[];
+
 export interface CoverageArea {
   id: string;
   floorId: string | null;
@@ -268,17 +275,17 @@ export interface CoverageArea {
   /** Polygon rings in ENU (x,y); optional for coarse descriptors. */
   polygon?: { x: number; y: number }[];
   sourceIds: string[];
-  note?: string;
+  note?: CoverageText;
 }
 
 export interface CoverageGap {
   id: string;
   floorId: string | null;
-  zone: string;
-  missingFact: string;
-  approximateExtent?: string;
+  zone: CoverageText;
+  missingFact: CoverageText;
+  approximateExtent?: CoverageText;
   sourceDate?: string | null;
-  fieldWorkNeeded: string;
+  fieldWorkNeeded: CoverageText;
 }
 
 export interface Coverage {
