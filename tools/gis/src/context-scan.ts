@@ -20,6 +20,7 @@ const XLINK = 'http://www.w3.org/1999/xlink';
 const NS_BLDG = /^http:\/\/www\.opengis\.net\/citygml\/building\/\d+\.\d+$/;
 const NS_TRAN = /^http:\/\/www\.opengis\.net\/citygml\/transportation\/\d+\.\d+$/;
 const NS_CITYGML = /^http:\/\/www\.opengis\.net\/citygml\/\d+\.\d+$/;
+const NS_GEN = /^http:\/\/www\.opengis\.net\/citygml\/generics\/\d+\.\d+$/;
 const EPSG6697 = /(?:EPSG\/0\/6697|EPSG::6697|EPSG:6697)$/;
 const SURFACE_LOCALS = new Set(['WallSurface', 'RoofSurface', 'GroundSurface', 'OuterCeilingSurface', 'OuterFloorSurface', 'ClosureSurface', 'BuildingInstallation', 'TrafficArea', 'AuxiliaryTrafficArea']);
 /** GML elements a Polygon-based surface/solid legitimately contains; any other gml element inside a lodN property is counted as unsupported. */
@@ -38,6 +39,11 @@ export interface ContextFeatureRecord {
   /** Min/max source height of the polygons of each LOD digit (EPSG:6697 height, not station z). */
   height_range_by_lod: Partial<Record<LodDigit, [number, number]>>;
   refs: ContextRef[];
+  /**
+   * Only when `groundHeightAttributes` is configured and the feature carries one of those generic attributes directly: its own
+   * ground height in metres (a source height, EPSG:6697 orthometric). Absent otherwise; never synthesised.
+   */
+  ground_height?: { attribute: string; value_m: number };
   /** Only in collect mode and only for retained features. */
   polygons?: RetainedPolygon[];
 }
@@ -58,6 +64,12 @@ export interface ContextScanOptions {
   project?: (lat: number, lon: number, h: number) => [number, number, number];
   /** collect mode: which top-level gml:ids to retain whole. */
   retain?: (gmlId: string) => boolean;
+  /**
+   * Names (`name="..."`) of CityGML generic attributes (gen:measureAttribute / doubleAttribute / intAttribute / stringAttribute, a direct
+   * child of the feature) that carry that feature's own ground height in metres. Default: none. PLATEAU 2025 bldg for Shinjuku carries no
+   * such attribute (checked in 53394525/53394526), so the default config lists none and every building falls back to its min z.
+   */
+  groundHeightAttributes?: readonly string[];
   onFeature: (record: ContextFeatureRecord) => void;
 }
 
@@ -69,6 +81,8 @@ interface Frame {
   collect: boolean; text: string;
   poly: PolyAcc | null; ring: number[][] | null;
   srsDimension: string | null;
+  /** A configured ground-height generic attribute (its name) / the gen:value inside one. */
+  groundAttr: string | null; groundUom: string | null; genValue: boolean;
 }
 interface FeatureAcc { record: ContextFeatureRecord; retained: boolean; lodProps: Set<string> }
 
@@ -77,7 +91,7 @@ const numeric = (text: string): number[] => {
   if (values.some((v) => !Number.isFinite(v))) throw new Error(`Malformed CityGML numeric coordinate: ${text.slice(0, 120)}`);
   return values;
 };
-interface TagAttrs { srsName?: string; srsDimension?: string; id?: string; href?: string; orientation?: string }
+interface TagAttrs { srsName?: string; srsDimension?: string; id?: string; href?: string; orientation?: string; name?: string; uom?: string }
 /** One pass over a tag's attributes (this runs once per element of a 150 MB file). */
 const readAttrs = (tag: SaxesTagNS): TagAttrs => {
   const out: TagAttrs = {};
@@ -86,6 +100,8 @@ const readAttrs = (tag: SaxesTagNS): TagAttrs => {
       if (raw.local === 'srsName') out.srsName = raw.value;
       else if (raw.local === 'srsDimension') out.srsDimension = raw.value;
       else if (raw.local === 'orientation') out.orientation = raw.value;
+      else if (raw.local === 'name') out.name = raw.value;
+      else if (raw.local === 'uom') out.uom = raw.value;
     } else if (raw.local === 'id' && GML_URIS.has(raw.uri)) { if (raw.value.trim() !== '') out.id = raw.value; }
     else if (raw.local === 'href' && raw.uri === XLINK) out.href = raw.value;
   }
@@ -98,6 +114,7 @@ export async function scanContextFeatures(path: string, options: ContextScanOpti
   const footprint = options.mode === 'footprint';
   if (footprint && !options.project) throw new Error('footprint mode needs a projector');
   if (!footprint && !options.retain) throw new Error('collect mode needs a retain predicate');
+  const groundNames = new Set(options.groundHeightAttributes ?? []);
   const stack: Frame[] = [];
   const srsNames = new Set<string>();
   const other: Record<string, number> = {};
@@ -131,7 +148,12 @@ export async function scanContextFeatures(path: string, options: ContextScanOpti
         if (sign === '-') negative = !negative;
       }
     }
-    const frame: Frame = { uri, local, lod, surface, negative, collect: false, text: '', poly: parent?.poly ?? null, ring: parent?.ring ?? null, srsDimension: attrs.srsDimension ?? parent?.srsDimension ?? null };
+    const frame: Frame = { uri, local, lod, surface, negative, collect: false, text: '', poly: parent?.poly ?? null, ring: parent?.ring ?? null, srsDimension: attrs.srsDimension ?? parent?.srsDimension ?? null, groundAttr: null, groundUom: null, genValue: false };
+    // A configured ground-height generic attribute directly under the feature, and its gen:value.
+    if (feature && groundNames.size && parent && NS_GEN.test(uri)) {
+      if (/^(measure|double|int|string)Attribute$/.test(local) && wanted.ns.test(parent.uri) && parent.local === wanted.local && attrs.name !== undefined && groundNames.has(attrs.name)) { frame.groundAttr = attrs.name; }
+      else if (local === 'value' && parent.groundAttr !== null) { frame.collect = true; frame.genValue = true; frame.groundAttr = parent.groundAttr; frame.groundUom = attrs.uom ?? null; } // CityGML puts the unit on gen:value
+    }
     // Top-level feature: a direct child of core:cityObjectMember.
     if (!feature && parent && NS_CITYGML.test(parent.uri) && parent.local === 'cityObjectMember') {
       if (wanted.ns.test(uri) && local === wanted.local) {
@@ -180,6 +202,14 @@ export async function scanContextFeatures(path: string, options: ContextScanOpti
       return;
     }
     if (!feature) return;
+    if (frame.genValue && frame.groundAttr !== null) {
+      const text = frame.text.trim(), value = Number(text);
+      if (text === '' || !Number.isFinite(value)) throw new Error(`Ground-height attribute ${JSON.stringify(frame.groundAttr)} of ${feature.record.gml_id ?? '(no gml:id)'} is not a finite number: ${JSON.stringify(text.slice(0, 40))}`);
+      if (frame.groundUom !== null && !/^(?:.*[:#/])?m$/.test(frame.groundUom)) throw new Error(`Ground-height attribute ${JSON.stringify(frame.groundAttr)} of ${feature.record.gml_id ?? '(no gml:id)'} has unit ${JSON.stringify(frame.groundUom)}; only metres are supported`);
+      if (feature.record.ground_height) throw new Error(`Ambiguous ground height for ${feature.record.gml_id ?? '(no gml:id)'}: more than one configured ground-height attribute value`);
+      feature.record.ground_height = { attribute: frame.groundAttr, value_m: value };
+      return;
+    }
     if (frame.collect && isGml && (frame.local === 'posList' || frame.local === 'pos')) {
       const dim = Number(frame.srsDimension ?? 3);
       if (dim !== 3) throw new Error(`CityGML EPSG:6697 geometry dimension ${dim} is inconsistent with the declared 3D CRS`);

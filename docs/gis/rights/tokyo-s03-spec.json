@@ -4,7 +4,7 @@
   "station_ids": [
     "shinjuku"
   ],
-  "tool_input_sha256": "05c016fe8b36291c29988e08f0fc27fb7f75b2e23a950ec8da4ac55f5bfcfa55",
+  "tool_input_sha256": "d355cfb305eea2cf5ad0ae6f07c1b2990de94d8b22c036573f1ed2f61ca7ea19",
   "input_sources": [
     {
       "source_id": "tokyo-s03-spec",
@@ -142,7 +142,7 @@
           "id": "tokyo-s03-catalog#site-reservation",
           "source_id": "tokyo-s03-catalog",
           "supporting_document": "tokyo-bureau-policy",
-          "sha256": "ff245d912dc11bed2f5ee3a65e52f38d1feede906266463885973c77a830d592",
+          "sha256": "cbcbf61622e36d9840b76cadaa0449be9c066cc9f159d6d71381efd5e4ae9fbe",
           "url": "https://www.toshiseibi.metro.tokyo.lg.jp/policy",
           "section": "著作権について / general site only; does not override dataset grant",
           "quote": "無断で複製・転用することはできません。"
