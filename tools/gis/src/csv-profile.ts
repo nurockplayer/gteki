@@ -267,13 +267,14 @@ export function shpDetail(data: Buffer, prjText: string | null, windows: Station
   let records = 0, minLon = Infinity, minLat = Infinity, maxLon = -Infinity, maxLat = -Infinity;
   if (point || multipoint || [3, 5, 13, 15, 23, 25].includes(shapeType)) {
     for (let o = 100; o + 8 <= data.length;) {
-      const length = data.readInt32BE(o + 4) * 2;
+      const length = data.readUInt32BE(o + 4) * 2;
       const rec = o + 8;
-      if (rec + length > data.length || length < (point ? 20 : multipoint ? 40 : 44)) break;
+      if (rec + length > data.length) break;
+      if (length < 4 || data.readInt32LE(rec) === 0 || length < (point ? 20 : multipoint ? 40 : 44)) { o = rec + length; continue; }
       const numParts = point || multipoint ? 0 : data.readInt32LE(rec + 36);
       const numPoints = point ? 1 : data.readInt32LE(rec + (multipoint ? 36 : 40));
       const pts = point ? rec + 4 : multipoint ? rec + 40 : rec + 44 + numParts * 4;
-      if (numPoints < 0 || numParts < 0 || pts + numPoints * 16 > rec + length) break;
+      if (numPoints < 0 || numParts < 0 || pts + numPoints * 16 > rec + length) { o = rec + length; continue; }
       const parts: number[] = [];
       for (let i = 0; i < numParts; i++) parts.push(data.readInt32LE(rec + 44 + i * 4));
       const points: Array<[number, number]> = [];

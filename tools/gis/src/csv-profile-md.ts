@@ -33,9 +33,9 @@ function csvSection(r: Result, p: CsvProfile): string[] {
   out.push(`- File: ${fmt(r.bytes)} bytes, SHA-256 \`${r.sha256}\`.`);
   out.push(`- Encoding: ${p.encoding}; delimiter: ${p.delimiter}; data rows: ${fmt(p.rows)}; rows with a different cell count from the header: ${p.ragged_rows}.`);
   out.push(`- Columns (${p.columns.length}): ${cols(p.columns)}.`);
-  out.push(`- Latitude columns: ${p.lat_columns.length ? p.lat_columns.map((c) => `\`${c}\``).join(', ') : 'none'}; longitude columns: ${p.lon_columns.length ? p.lon_columns.map((c) => `\`${c}\``).join(', ') : 'none'}.`);
+  out.push(`- Latitude columns: ${p.lat_columns.length ? cols(p.lat_columns) : 'none'}; longitude columns: ${p.lon_columns.length ? cols(p.lon_columns) : 'none'}.`);
   if (p.crs_columns.length) {
-    for (const c of p.crs_values) out.push(`- CRS column \`${c.column}\`: ${c.distinct === 0 ? 'every row blank, so no CRS is declared' : c.values ? `distinct values ${c.values.map((v) => `\`${v.value}\` (${v.rows} rows)`).join(', ')}` : `${c.distinct} distinct values (not listed)`}.`);
+    for (const [i, c] of p.crs_values.entries()) out.push(`- CRS column \`${colName(c.column, i)}\`: ${c.distinct === 0 ? 'every row blank, so no CRS is declared' : c.values ? `distinct values ${c.values.map((v, j) => `\`${colName(v.value, j)}\` (${v.rows} rows)`).join(', ')}` : `${c.distinct} distinct values (not listed)`}.`);
   } else out.push('- CRS column: none; the file declares no CRS (UNKNOWN).');
   out.push(`- Coordinates: ${fmt(p.coordinates.valid_rows)} valid rows, ${fmt(p.coordinates.blank_rows)} blank, ${fmt(p.coordinates.invalid_rows)} invalid. Bbox (as labelled by the columns): ${bbox(p.coordinates.bbox)}.`);
   out.push(`- Axis check: ${p.axis_swap.verdict} (${p.axis_swap.as_is_in_japan} rows inside the Japan box as labelled, ${p.axis_swap.swapped_in_japan} only if the columns are swapped, ${p.axis_swap.as_is_in_tokyo_box} inside the Tokyo sanity box).`);

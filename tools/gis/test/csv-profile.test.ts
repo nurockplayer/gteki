@@ -175,6 +175,16 @@ describe('csv-profile', () => {
     }
   });
 
+  it('skips a null-shape record and counts the following point at the disc centre', () => {
+    const point = shapeBuffer(1, [[[STATION.origin.lon, STATION.origin.lat]]]);
+    const nullRecord = Buffer.alloc(12);
+    nullRecord.writeInt32BE(1, 0); nullRecord.writeInt32BE(2, 4);
+    const shape = Buffer.concat([point.subarray(0, 100), nullRecord, point.subarray(100)]);
+    shape.writeInt32BE(shape.length / 2, 24); shape.writeInt32BE(2, 112);
+    const detail = shpDetail(shape, 'GEOGCS["JGD2011"]', [STATION]);
+    expect(detail).toMatchObject({ records_read: 1, records_touching_window: { testville: 1 } });
+  });
+
   it('describes long or blank headers instead of quoting them', () => {
     expect(safeColumnName('緯度', 0)).toBe('緯度');
     expect(safeColumnName('x'.repeat(41), 3)).toBe('(column 4: free-text header of 41 characters)');
@@ -188,6 +198,18 @@ describe('csv-profile', () => {
     expect(md).not.toContain('guarded term');
     expect(md).toContain('name withheld by the literal guard');
     expect(md).toContain('`名称`');
+  });
+
+  it.each([
+    ['lat,lon,crs', '35.7,139.7,guarded term'],
+    ['lat,lon,crs guarded term', '35.7,139.7,JGD2011'],
+    ['緯度guarded term,lon,crs', '35.7,139.7,JGD2011'],
+    ['lat,経度guarded term,crs', '35.7,139.7,JGD2011'],
+  ])('withholds guarded CRS and coordinate text for header %s', (header, row) => {
+    const p = profileCsv(Buffer.from(`${header}\n${row}\n`), [STATION]);
+    const md = renderProfileMarkdown([{ spec: 'synthetic', catalog_id: null, sha256: 'a'.repeat(64), bytes: 10, profile: p, error: null, package: null, verdict: { verdict: 'UNKNOWN', reasons: ['x'] } }], [STATION], new Set(['guarded term']));
+    expect(md).not.toContain('guarded term');
+    expect(md).toContain('withheld by the literal guard');
   });
 
   it('reads the first worksheet of an OOXML workbook', () => {
