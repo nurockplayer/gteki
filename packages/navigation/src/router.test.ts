@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { validateBundle } from "@gteki/schema";
 import type { Edge, EdgeMode, StationBundle } from "@gteki/schema";
-import { createRouter, DEFAULT_PROFILE } from "./index.ts";
+import { createRouter, DEFAULT_PROFILE, ROUTE_PACE } from "./index.ts";
 import type { RouteProfile, RouteResult, Router } from "./index.ts";
 import { asRealStation, createSyntheticBundle, syntheticEdge as edge, syntheticEvidence } from "./fixtures.ts";
 
@@ -204,6 +204,14 @@ describe("access and verification rules", () => {
     expect(route.unknowns).toEqual([{ kind: "steps", edgeIds: ["link"] }]);
   });
 
+  it("does not call a known stairs edge's wheelchair access unknown (#203 B8)", () => {
+    const stairs = success(routerFor([edge("st", "start", "goal", { mode: "stairs", wheelchair: null })]).route("start", "goal"));
+    expect(stairs.unknowns).toEqual([]);
+    // Any other mode with no recorded wheelchair fact stays UNKNOWN.
+    const walk = success(routerFor([edge("w", "start", "goal", { wheelchair: null })]).route("start", "goal"));
+    expect(walk.unknowns).toEqual([{ kind: "wheelchair", edgeIds: ["w"] }]);
+  });
+
   it.each<Edge["verification"]>(["unverified", "geometry_only"])("never uses %s edges, even in synthetic bundles", (verification) => {
     const shortcut = edge("shortcut", "start", "goal", { verification, lengthM: 1 });
     const router = routerFor([shortcut, edge("detour-1", "start", "a"), edge("detour-2", "a", "goal")]);
@@ -315,6 +323,14 @@ describe("length, cost and time", () => {
     const route = success(routerFor([edge("link", "start", "goal", { mode, lengthM: 12 })]).route("start", "goal"));
     expect(route.totalLengthM).toBe(12);
     expect(route.estimatedSeconds).toBe(seconds);
+  });
+
+  it("exports the pace its time estimate assumes, so a client never copies the numbers (#203 B6)", () => {
+    expect(ROUTE_PACE).toMatchObject({ walkMps: 1.2, stairsMps: 0.5 });
+    const walk = success(routerFor([edge("w", "start", "goal", { lengthM: 12 })]).route("start", "goal"));
+    expect(walk.estimatedSeconds).toBeCloseTo(12 / ROUTE_PACE.walkMps);
+    const stairs = success(routerFor([edge("st", "start", "goal", { mode: "stairs", lengthM: 6 })]).route("start", "goal"));
+    expect(stairs.estimatedSeconds).toBeCloseTo(6 / ROUTE_PACE.stairsMps);
   });
 
   it("handles null-length elevators: plan walking distance from geometry, fixed ride time", () => {
