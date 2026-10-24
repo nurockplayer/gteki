@@ -196,6 +196,11 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        layout, tracing, pictogram or logo is copied. Credit as recorded:
        「豊島区「池袋駅地下空間案内図」(facts only; not reproduced)」 and
        「東京メトロ 池袋駅構内図 (facts only; not reproduced)」.
+       豊島区 pages: facts only, director ruling OD-34 (2026-10-25). The site
+       policy (https://www.city.toshima.lg.jp/012/kuse/koho/homepage/sitepolicy.html,
+       retrieved 2026-10-25T02:10:49+09:00) forbids unauthorised reproduction or
+       adaptation of its documents and images except private-use copies and
+       quotation permitted by copyright law; nothing is reproduced.
        Research data (gteki-1b ruling 2026-10-24): every file under
        docs/research/merchants/, docs/research/lines/ and
        docs/research/facilities/ carries this identifier unless a later REUSE
