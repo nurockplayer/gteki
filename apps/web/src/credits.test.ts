@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Source } from "@gteki/schema";
-import { factsOnlyCredit, overrideCredits, rightsLabel, safeHref, sourceCredit } from "./credits.ts";
+import { assetDerivationPresentation, factsOnlyCredit, overrideCredits, rightsLabel, safeHref, sourceCredit } from "./credits.ts";
+import { entryRightsLabels } from "./creditLine.ts";
 import { strings } from "./i18n.ts";
 
 const glbSource: Source = {
@@ -25,6 +26,35 @@ describe("source credits", () => {
     expect(safeHref("data:text/html,x")).toBeNull();
     expect(safeHref("not a url")).toBeNull();
     expect(sourceCredit({ ...glbSource, license: { name: "PDL 1.0", url: "" } }).license).toEqual({ name: "PDL 1.0", href: null });
+  });
+
+  it("localizes licence names with requested-language and ja/first fallbacks", () => {
+    const localized = { ...glbSource, license: { name: [{ lang: "ja", text: "日本語" }, { lang: "en", text: "English" }], url: "https://example.org/licence" } } as Source;
+    expect(sourceCredit(localized, "ja").license?.name).toBe("日本語");
+    expect(sourceCredit(localized, "en").license?.name).toBe("English");
+    expect(sourceCredit({ ...localized, license: { ...localized.license!, name: [{ lang: "ja", text: "日本語" }, { lang: "fr", text: "Français" }] } }, "en").license?.name).toBe("日本語");
+    expect(sourceCredit({ ...localized, license: { ...localized.license!, name: [{ lang: "fr", text: "Français" }] } }, "en").license?.name).toBe("Français");
+    expect(sourceCredit(glbSource, "en").license?.name).toBe("CC BY 4.0");
+  });
+});
+
+describe("asset derivation presentation", () => {
+  const derivation = "pipeline/build.ts: full provenance and processing record";
+  const summary = [{ lang: "ja", text: "通路の形状から案内表示を作成" }, { lang: "en", text: "Wayfinding signs made from passage geometry" }];
+
+  it("shows the localized summary and retains full derivation behind details", () => {
+    expect(assetDerivationPresentation(derivation, summary, "ja", strings("ja").derivationDetails)).toEqual({
+      text: "通路の形状から案内表示を作成", details: derivation, detailsLabel: "加工の詳細",
+    });
+    expect(assetDerivationPresentation(derivation, summary, "en", strings("en").derivationDetails)).toEqual({
+      text: "Wayfinding signs made from passage geometry", details: derivation, detailsLabel: "Derivation details",
+    });
+  });
+
+  it("keeps the old full-text output when there is no summary", () => {
+    expect(assetDerivationPresentation(derivation, undefined, "en", strings("en").derivationDetails)).toEqual({
+      text: derivation, details: null, detailsLabel: null,
+    });
   });
 });
 
@@ -73,6 +103,22 @@ describe("rights label (#130)", () => {
         expect(label).toBe(t.rightsUnverified);
         expect(label).not.toContain("SOMETHING_NEW");
       }
+    }
+  });
+
+  it("keeps the controlled override wording when an English licence name says CC BY 4.0", () => {
+    const overridden: Source = {
+      ...glbSource,
+      rights: "PUBLISHED_UNDER_OWNER_OVERRIDE",
+      license: {
+        name: [{ lang: "ja", text: "ライセンス未確認" }, { lang: "en", text: "CC BY 4.0" }],
+        url: "https://example.org/terms",
+      },
+    };
+    expect(sourceCredit(overridden, "en").license?.name).toBe("CC BY 4.0");
+    for (const lang of ["ja", "en"] as const) {
+      const t = strings(lang);
+      expect(entryRightsLabels([overridden], t)).toEqual([t.rightsOwnerOverride]);
     }
   });
 });

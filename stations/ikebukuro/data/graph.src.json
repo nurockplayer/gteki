@@ -406,6 +406,36 @@
    "visual_only": true,
    "verification": "APPROXIMATE",
    "notes": "Director #342 supplied facts, retrieved 2026-10-24 (time unspecified; retrievedAt null rather than inventing a timestamp): https://tabi-mag.jp/tk1226/ and https://livejapan.com/ja/in-tokyo/in-pref-tokyo/in-ikebukuro/article-a0000017/ place the indoor B1 meeting point on the North Passage east side near Exit 22 / JR North Gate. Exact point approximate. No local copy of the Toshima underground guide available to check a page; no page claim or guide citation for this marker. Name/location only; no replica, lookalike, owl graphic or copied content."
+  },
+  {
+   "id": "tokyometro-ikebukuro-shops-2026-10",
+   "title": "東京メトロ 池袋駅 施設・店舗",
+   "publisher": "東京地下鉄",
+   "url": "https://www.tokyometro.jp/station/ikebukuro/shop/index.html",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" },
+   "attribution": "東京メトロ 池袋駅 施設・店舗 (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T00:40:00Z",
+   "datasetDate": null,
+   "notes": "Shop names and the facility label (Echika池袋) only, read as facts (#211 DR-MR-01). No text, logos, photos or layout reproduced. Page undated."
+  },
+  {
+   "id": "isp-floorguide-2026-10",
+   "title": "池袋ショッピングパーク フロアガイド",
+   "publisher": "池袋ショッピングパーク",
+   "url": "https://www.web-isp.co.jp/floorguide/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/360#issuecomment-6377632614", "date": "2026-10-24" },
+   "attribution": "池袋ショッピングパーク フロアガイド (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T00:40:00Z",
+   "datasetDate": null,
+   "notes": "Shop names and the zone label (南館) only, under OD-23/OD-31: POI attributes only, never route evidence (#211 DR-MR-04). Page undated."
   }
  ],
  "floors": [
@@ -4737,6 +4767,171 @@
     "method": "official-map-reading (facts only): area name as printed on the map; connector = a junction inside that area",
     "checkedDate": "2026-10-21"
    }
+  },
+  {
+   "id": "shop-ikb-mr-001",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "Soup Stock Tokyo"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only directory listing (#26 facts-only), UNVERIFIED, SEARCH_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Listed on Tokyo Metro's Ikebukuro shop page; facility or area not stated. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-mr-002",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "Patio de METRO"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "パティオ ドゥ メトロ"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only directory listing (#26 facts-only), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "Echika池袋内。 位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Inside Echika Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-mr-003",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "Tabio"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only directory listing (#26 facts-only), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "Echika池袋。 位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-mr-004",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "マツモトキヨシ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。 位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-mr-005",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "スターバックス コーヒー 南館店"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。 位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
   }
  ],
  "coverage": {
