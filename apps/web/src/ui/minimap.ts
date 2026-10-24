@@ -4,7 +4,7 @@ import type { Poi, StationBundle } from "@gteki/schema";
 import type { ExplorerPose } from "../explorer/explorer.ts";
 import { pick, strings, type Lang } from "../i18n.ts";
 import { poiLabel } from "./labels.ts";
-import { arrowRotationDeg, currentFloorId, floorPois, floorTransitions, floorWalkGraph, rimBearing, routeOnFloor, routeProgress, toMinimap, type FloorTransition, type MinimapOrientation } from "./minimapGeometry.ts";
+import { advanceRouteSeg, arrowRotationDeg, currentFloorId, floorPois, floorTransitions, floorWalkGraph, rimBearing, routeOnFloor, toMinimap, type FloorTransition, type MinimapOrientation } from "./minimapGeometry.ts";
 
 const ORIENTATION_KEY = "gteki.minimap.orientation";
 const COLLAPSED_KEY = "gteki.minimap.collapsed";
@@ -72,8 +72,8 @@ export class Minimap {
   private routeDirty = false;
   /** Every floor-changing step, computed once per route; per-tick selection only reads this. */
   private transitions: FloorTransition[] = [];
-  /** Monotonic along route order: the last step reached, also the floor for the next search. */
-  private progress = -1;
+  /** Route progress as a polyline segment index; forward-only, reset to 0 with a new route. */
+  private seg = 0;
   private connectorHint: FloorTransition | null = null;
   private connectorDirty = true;
   private labelKey = "";
@@ -147,7 +147,7 @@ export class Minimap {
     this.destinationPoint = null;
     this.routeDirty = false;
     this.transitions = [];
-    this.progress = -1;
+    this.seg = 0;
     this.connectorHint = null;
     this.connectorDirty = true;
     this.labelKey = "";
@@ -184,7 +184,7 @@ export class Minimap {
     this.destination = destination;
     this.transitions = points && route ? floorTransitions(points, route.steps) : [];
     this.destinationPoint = null;
-    this.progress = -1;
+    this.seg = 0;
     this.connectorDirty = true;
     this.labelKey = "";
     this.routeDirty = true;
@@ -282,16 +282,18 @@ export class Minimap {
       this.arrow.style.display = floorId === null ? "none" : "";
       this.updateText();
     }
-    // The connector hint follows progress, but a turn alone cannot advance it: only a new position,
-    // floor or route re-runs the search. `>=` keeps the current cross-floor step while inside it.
+    // Progress only advances, and only on a new position, floor or route — a turn alone changes
+    // nothing. The hint is the first floor change whose start is at or after the current segment.
     const position = `${pose.east},${pose.north},${pose.up}`;
     const moved = position !== this.lastPosition;
     this.lastPosition = position;
     if (floorChanged || this.connectorDirty || moved) {
-      const progress = this.route && floorId ? routeProgress(this.route, floorId, pose.east, pose.north, this.progress) : -1;
-      if (floorChanged || this.connectorDirty || progress !== this.progress) {
-        this.progress = progress;
-        this.connectorHint = floorId ? this.transitions.find((t) => t.fromFloorId === floorId && t.stepIndex >= progress) ?? null : null;
+      const seg = this.route && floorId
+        ? advanceRouteSeg(this.route, this.steps ?? [], floorId, pose.east, pose.north, this.seg, floorChanged)
+        : this.seg;
+      if (floorChanged || this.connectorDirty || seg !== this.seg) {
+        this.seg = seg;
+        this.connectorHint = floorId ? this.transitions.find((t) => t.fromFloorId === floorId && t.startIndex >= seg) ?? null : null;
         this.renderLabel();
       }
       this.connectorDirty = false;

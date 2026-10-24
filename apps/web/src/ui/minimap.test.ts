@@ -323,11 +323,50 @@ describe("Minimap route overlay (#220 PR2)", () => {
     expect(map.el.querySelector(".minimap-connector-marker")!.getAttribute("transform")).toBe("translate(115 95)");
     expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
 
+    // Walk the route: up the stairs, across 1F, down again, then along the concourse.
+    pose = { ...pose!, east: 10, north: 0 };
+    tick();
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
+    pose = { ...pose!, up: 4 };
+    tick();
+    pose = { ...pose!, east: 10, north: 10 };
+    tick();
+    pose = { ...pose!, up: 0 };
+    tick();
     pose = { ...pose!, east: 20, north: 10 };
     tick();
     // Back on B1F after the detour, the already-walked stairs are no longer the hint.
     expect(map.el.querySelector(".minimap-connector-marker")!.getAttribute("transform")).toBe("translate(95 95)");
     expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by escalator");
+  });
+
+  it("restarts progress at the first segment when the route is recomputed", () => {
+    const bundle = createSyntheticBundle();
+    bundle.nodes = bundle.nodes.filter((node) => node.id !== "other");
+    const map = create(bundle);
+    const points = [
+      point(0, 0, "concourse", -1), point(10, 0, "concourse", 0),
+      point(10, 0, "upper", 1), point(10, 10, "upper", 2),
+      point(10, 10, "concourse", 3), point(20, 10, "concourse", 4),
+      point(20, 10, "upper", 5),
+    ];
+    const steps = [
+      step("concourse", "concourse"), step("concourse", "upper", "stairs"), step("upper", "upper"),
+      step("upper", "concourse", "stairs"), step("concourse", "concourse"), step("concourse", "upper", "escalator"),
+    ];
+    map.setRoute({ points, steps }, null);
+    for (const next of [
+      { east: 10, north: 0, up: 0 }, { east: 10, north: 0, up: 4 },
+      { east: 10, north: 10, up: 4 }, { east: 10, north: 10, up: 0 },
+      { east: 20, north: 10, up: 0 },
+    ]) {
+      pose = { ...pose!, ...next };
+      tick();
+    }
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by escalator");
+    // A recomputed route is new evidence: progress starts over at its first segment.
+    map.setRoute({ points, steps }, null);
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
   });
 
   it("drops a route segment whose step data is missing rather than drawing it flat", () => {
@@ -356,8 +395,15 @@ describe("Minimap route overlay (#220 PR2)", () => {
     expect(map.el.querySelector(".minimap-connector-marker")!.getAttribute("transform")).toBe("translate(115 95)");
     expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
 
+    // A turn alone changes nothing about progress: the same stairs hint stays.
+    pose = { ...pose!, headingDeg: 90 };
+    tick();
+    expect(display(map, ".minimap-connector-marker")).toBe("");
+    expect(map.el.querySelector(".minimap-connector-marker")!.getAttribute("transform")).toBe("translate(95 75)");
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
+
     // Middle: standing on the stairs, the step is still the one being walked.
-    pose = { ...pose!, east: 10, north: 1 };
+    pose = { ...pose!, east: 10, north: 1, headingDeg: 0 };
     tick();
     expect(map.el.querySelector(".minimap-connector-marker")!.getAttribute("transform")).toBe("translate(95 97)");
     expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
