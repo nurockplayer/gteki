@@ -11,9 +11,9 @@ import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGu
 import { coverageText, initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
-import { isUnlocatedShop, noRouteText } from "./noRouteText.ts";
+import { isUnlocatedShop, noRouteText, poiNoteText } from "./noRouteText.ts";
 import { stationClock } from "../stationClock.ts";
-import { assetDerivationPresentation, factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
+import { assetDerivationPresentation, dataFileCredits, dataFileRowText, factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { nodeLabel, poiLabel } from "./labels.ts";
@@ -87,6 +87,8 @@ export class App {
     banner: el("div", "banner"),
     fromInput: el("input", "field-input"),
     toInput: el("input", "field-input"),
+    fromNote: el("p", "field-note"),
+    toNote: el("p", "field-note"),
     fromResults: el("div", "results"),
     toResults: el("div", "results"),
     spawnChips: el("div", "chips"),
@@ -174,8 +176,8 @@ export class App {
 
     const panel = this.ui.panel;
     this.ui.more.addEventListener("click", () => { this.panelExpanded = !this.panelExpanded; this.updatePanelCollapse(); });
-    const fromRow = this.field("from", this.ui.fromInput, this.ui.fromResults);
-    const toRow = this.field("to", this.ui.toInput, this.ui.toResults);
+    const fromRow = this.field("from", this.ui.fromInput, this.ui.fromResults, this.ui.fromNote);
+    const toRow = this.field("to", this.ui.toInput, this.ui.toResults, this.ui.toNote);
     const swap = el("button", "swap", "⇅");
     swap.title = this.t.swap;
     swap.setAttribute("aria-label", this.t.swap);
@@ -204,7 +206,7 @@ export class App {
     this.ui.hint.textContent = matchMedia("(pointer: coarse)").matches ? t.touchHint : t.controlsHint;
   }
 
-  private field(which: "from" | "to", input: HTMLInputElement, results: HTMLDivElement): HTMLDivElement {
+  private field(which: "from" | "to", input: HTMLInputElement, results: HTMLDivElement, note: HTMLParagraphElement): HTMLDivElement {
     const row = el("div", `field field-${which}`);
     const label = el("label", "field-label");
     label.dataset.label = which;
@@ -231,7 +233,11 @@ export class App {
       else this.setCombo(which, out);
     });
     input.addEventListener("blur", () => setTimeout(() => this.closeResults(which), 160));
-    row.append(label, input, results);
+    // A picked search-only POI keeps its note beside the field (the input holds only the searchable name).
+    note.id = `gteki-${which}-note`;
+    note.hidden = true;
+    input.setAttribute("aria-describedby", note.id);
+    row.append(label, input, results, note);
     return row;
   }
 
@@ -274,6 +280,8 @@ export class App {
     this.renderCredit();
     this.ui.fromInput.value = "";
     this.ui.toInput.value = "";
+    this.renderEndpointNote(this.ui.fromNote, null);
+    this.renderEndpointNote(this.ui.toNote, null);
     this.closeResults("from");
     this.closeResults("to");
     this.ui.mascot.clear();
@@ -380,6 +388,8 @@ export class App {
     this.closeResults("to");
     this.ui.fromInput.value = this.originLabel();
     this.ui.toInput.value = this.destinationLabel();
+    this.renderEndpointNote(this.ui.fromNote, this.s.origin?.kind === "poi" ? this.s.origin.poi : null);
+    this.renderEndpointNote(this.ui.toNote, this.s.destination);
     if (b) this.explorer.showPois(b, (p) => poiLabel(b, p, this.s.lang, this.t), [this.s.destination?.id, this.s.origin?.kind === "poi" ? this.s.origin.poi.id : undefined].filter(Boolean) as string[]);
     this.computeRoute();
     this.syncPanelMascot();
@@ -444,6 +454,13 @@ export class App {
     return nodeLabel(b, nodeId, this.s.lang, this.t);
   }
 
+  /** A picked endpoint that is search-only shows its note (e.g. "as of 2020; current status unknown") under the field. */
+  private renderEndpointNote(box: HTMLParagraphElement, poi: Poi | null): void {
+    const note = poi && poi.connectorNodeIds.length === 0 ? poiNoteText(poi, this.s.lang) : null;
+    box.textContent = note ?? "";
+    box.hidden = !note;
+  }
+
   private originLabel(): string {
     const o = this.s.origin;
     if (!o) return "";
@@ -500,8 +517,11 @@ export class App {
       const asOf = h.tenant && checkedDate ? this.t.tenantAsOf(checkedDate) : null;
       b.append(dot, name, meta);
       if (asOf) b.append(el("span", "result-asof", asOf));
-      // The accessible name carries the visible tags and the as-of line.
-      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...tags, ...(asOf ? [asOf] : [])].join(", ")));
+      // A search-only POI's note (e.g. a 2020 status word in the copied name) is shown beside it, not only in routes.
+      const note = h.routable ? null : poiNoteText(h.poi, this.s.lang);
+      if (note) b.append(el("span", "result-note", note));
+      // The accessible name carries the visible tags, the as-of line and the note, so "search only" is heard too.
+      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...tags, ...(asOf ? [asOf] : []), ...(note ? [note] : [])].join(", ")));
       b.addEventListener("mousedown", (e) => e.preventDefault());
       b.addEventListener("click", () => {
         this.closeResults(which);
@@ -708,6 +728,10 @@ export class App {
       // The picked brand came from an unverified directory (#419): the failed card says when it was checked.
       const asOf = tenantAsOfNote(this.s.destinationTenant, t);
       if (asOf) card.append(el("p", "muted tenant-asof", asOf));
+      const origin = this.s.origin?.kind === "poi" ? this.s.origin.poi : null;
+      const endpointNote = r.reason === "unknown_goal" ? poiNoteText(this.s.destination, this.s.lang)
+        : r.reason === "unknown_start" ? poiNoteText(origin, this.s.lang) : null;
+      if (endpointNote) card.append(el("p", "muted", endpointNote));
       if (view && view.relax.length > 0) {
         const relax = el("div", "actions");
         const relaxOff = (keys: typeof view.relax) => { for (const k of keys) this.s.profile[k] = false; this.renderProfile(); this.computeRoute(); };
@@ -1246,6 +1270,17 @@ export class App {
           ul.append(li);
         }
         d.append(el("h3", undefined, this.t.assetDerivations), ul);
+      }
+      // Declared data files that GTEki derived from sources (#121); authored config files are never credited.
+      const dataRows = dataFileCredits(b.dataFiles, b.sources);
+      if (dataRows.length) {
+        const ul = el("ul");
+        for (const f of dataRows) {
+          const li = el("li");
+          li.append(document.createTextNode(dataFileRowText(f)));
+          ul.append(li);
+        }
+        d.append(el("h3", undefined, this.t.dataFileDerivations), ul);
       }
     }
     d.showModal();
