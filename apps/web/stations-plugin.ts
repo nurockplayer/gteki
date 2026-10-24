@@ -13,6 +13,8 @@ import { dataFileFactsOnlySources, parseStationFiles, validateBundle } from "../
 
 export interface DiscoveredStation {
   dir: string;
+  /** Real path of stations/<dir>/, kept separate from gtekiDir because gteki/ may itself be a symlink. */
+  folder: string;
   gtekiDir: string;
   scene: string | null;
   assets: string[];
@@ -58,14 +60,12 @@ export function discoverStations(roots: string[]): DiscoveredStation[] {
   for (const root of roots) {
     if (!fs.existsSync(root)) continue;
     for (const dir of fs.readdirSync(root).sort()) {
-      const stationPath = path.join(root, dir);
-      if (seen.has(dir) || !fs.existsSync(path.join(stationPath, "gteki", "station.json"))) continue;
-      const stationFolder = fs.realpathSync(stationPath);
-      const gtekiDir = fs.realpathSync(path.join(stationFolder, "gteki"));
+      const gtekiDir = path.join(root, dir, "gteki");
+      if (seen.has(dir) || !fs.existsSync(path.join(gtekiDir, "station.json"))) continue;
+      const folder = fs.realpathSync(path.join(root, dir));
       seen.add(dir);
-      const realGtekiDir = fs.realpathSync(gtekiDir);
-      const scene = ["scene.ts", "scene.js"].map((f) => path.join(realGtekiDir, f)).find((f) => fs.existsSync(f)) ?? null;
-      found.push({ dir, gtekiDir: realGtekiDir, scene: scene ? fs.realpathSync(scene) : null, assets: walk(realGtekiDir, stationFolder) });
+      const scene = ["scene.ts", "scene.js"].map((f) => path.join(gtekiDir, f)).find((f) => fs.existsSync(f)) ?? null;
+      found.push({ dir, folder, gtekiDir, scene, assets: walk(gtekiDir, folder) });
     }
   }
   return found;
@@ -106,9 +106,9 @@ export function publishableAssets(stations: DiscoveredStation[]): Map<string, Se
     const found = new Set(s.assets);
     const missing = [...declared].filter((f) => !found.has(f));
     // A canonical name may still link to a target whose real path Vite would read as a query or fragment.
-    const odd = [...declared].filter((f) => found.has(f) && /[?#]/.test(path.relative(path.dirname(s.gtekiDir), fs.realpathSync(path.join(s.gtekiDir, f)))));
+    const odd = [...declared].filter((f) => found.has(f) && /[?#]/.test(path.relative(s.folder, fs.realpathSync(path.join(s.gtekiDir, f)))));
     if (odd.length) failures.push(`${s.dir}: declared asset files resolve to paths containing ? or #: ${odd.join(", ")}`);
-    const folder = path.dirname(s.gtekiDir);
+    const folder = s.folder;
     const dataPaths = (parsed.bundle.dataFiles ?? []).map((d) => d.path);
     const noData = dataPaths.filter((p) => !fs.existsSync(path.join(folder, p)));
     if (noData.length) failures.push(`${s.dir}: declared data files not found: ${noData.join(", ")}`);
@@ -159,7 +159,7 @@ function symlinkEscapes(dir: string, fence: string, depth = 0, out = new Map<str
  */
 export function declaredStationFiles(stations: DiscoveredStation[]): DeclaredStationFiles[] {
   return stations.map((s) => {
-    const folder = path.dirname(s.gtekiDir);
+    const folder = s.folder;
     let manifest: { assets?: { uri?: unknown; uriMobile?: unknown; files?: unknown }[]; dataFiles?: { path?: unknown }[] } = {};
     try { manifest = JSON.parse(fs.readFileSync(path.join(s.gtekiDir, "station.json"), "utf8")); } catch { /* invalid: publishableAssets refuses it */ }
     const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
@@ -222,7 +222,7 @@ export function outsideStationData(
   stations: readonly DiscoveredStation[],
 ): string[] {
   const byId = new Map<string, readonly string[]>(graph);
-  const folders = stations.map((s) => ({ dir: s.dir, folder: path.dirname(s.gtekiDir) }));
+  const folders = stations.map((s) => ({ dir: s.dir, folder: s.folder }));
   const findings = new Set<string>();
   for (const [stationName, entry] of stationEntries) {
     const visited = new Set<string>();
@@ -262,7 +262,7 @@ export function isInlineDataCode(id: string, code: string): boolean {
 
 /** Read original station-owned JavaScript/TypeScript source for the data-shape heuristic. */
 export function stationCodeSources(moduleIds: Iterable<string>, stations: readonly DiscoveredStation[]): Map<string, string> {
-  const folders = stations.map((s) => ({ folder: path.dirname(s.gtekiDir) }));
+  const folders = stations.map((s) => ({ folder: s.folder }));
   const sources = new Map<string, string>();
   for (const id of moduleIds) {
     const file = modulePath(id);
@@ -279,7 +279,7 @@ export function wrappedStationData(
   stations: readonly DiscoveredStation[],
 ): string[] {
   const findings = new Set<string>();
-  const folders = stations.map((s) => ({ dir: s.dir, folder: path.dirname(s.gtekiDir) }));
+  const folders = stations.map((s) => ({ dir: s.dir, folder: s.folder }));
   for (const [rawId, code] of modules) {
     const id = modulePath(rawId);
     if (id.startsWith("\0") || !path.isAbsolute(id) || hasNodeModulesSegment(id) || !isInlineDataCode(rawId, code)) continue;
@@ -391,7 +391,7 @@ export function gtekiStations(roots: string[]): Plugin {
         const module = this.getModuleInfo(id);
         graph.set(id, module ? [...module.importedIds, ...module.dynamicallyImportedIds] : []);
       }
-      const entries = new Map(stations.flatMap((s) => s.scene ? [[s.dir, s.scene] as const] : []));
+      const entries = new Map(stations.flatMap((s) => s.scene ? [[s.dir, fs.realpathSync(s.scene)] as const] : []));
       for (const finding of outsideStationData(graph, entries, stations)) {
         this.warn(`gteki-stations: station scene reaches data outside every station folder (${finding}); move the data into that station folder and declare it in dataFiles[].`);
       }
