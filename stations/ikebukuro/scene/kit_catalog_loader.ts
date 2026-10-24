@@ -22,6 +22,31 @@ type ThreeNS = typeof THREE_NS;
 
 export type Tier = "low" | "high";
 
+// Thin handrails and escalator balustrades are local detail: keep 50 m from the sphere surface (not the
+// anchor, so long flights stay intact), rather than drawing them through walls out to the 180 m fog limit.
+export const CULL_M = 50;
+
+/** Separate from render callbacks so invisible dressing also skips the GTAO depth/normal pass. */
+export function catalogVisibility(THREE: ThreeNS) {
+  const meshes: THREE_NS.InstancedMesh[] = [];
+  const at = new THREE.Vector3(), sphere = new THREE.Sphere();
+  return {
+    add(group: THREE_NS.Group) {
+      for (const child of group.children) meshes.push(child as THREE_NS.InstancedMesh);
+    },
+    update(camera: THREE_NS.Camera) {
+      camera.getWorldPosition(at);
+      // Reuse both scratch objects; no per-frame arrays, closures, vectors or spheres.
+      for (const mesh of meshes) {
+        mesh.updateWorldMatrix(true, false);
+        sphere.copy(mesh.boundingSphere!).applyMatrix4(mesh.matrixWorld);
+        const reach = CULL_M + sphere.radius;
+        mesh.visible = at.distanceToSquared(sphere.center) <= reach * reach;
+      }
+    },
+  };
+}
+
 /** One entry of scene/kit_placements.json `placements[]` (ENU metres). */
 export interface CatalogPlacement {
   anchor: string;
@@ -222,6 +247,7 @@ export function lazyKitCatalog(
   const ids = [...new Set(wanted.map((w) => w.id))].sort();
   const loaded: LoadedCatalogKit[] = [];
   const groups: THREE_NS.Group[] = [];
+  const visibility = catalogVisibility(THREE);
   let disposed = false;
   let started = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -239,10 +265,12 @@ export function lazyKitCatalog(
       if (group.children.length) {
         groups.push(group);
         root.add(group);
+        visibility.add(group);
       }
     }
   };
   return {
+    update: visibility.update,
     start() {
       if (started || disposed || !ids.length) return;
       started = true;
