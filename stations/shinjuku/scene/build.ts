@@ -1782,7 +1782,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
     mesh.userData.faceCount = page.rects.length;
     root.add(mesh);
   }
-  const identityBoards = buildIdentityBoards(bundle, layout, world, root, track, quality, caseGeos, rodGeos);
+  const identityBoards = buildIdentityBoards(bundle, layout, world, root, track, quality);
   for (const [geos, color, metalness] of [[caseGeos, "#2b2d30", 0.4], [rodGeos, "#888888", 0.8]] as const) {
     const geo = merged(geos);
     if (geo) { const m = new THREE.Mesh(track(geo), track(new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness }))); if (geos === caseGeos) m.name = "sign-cases"; root.add(m); }

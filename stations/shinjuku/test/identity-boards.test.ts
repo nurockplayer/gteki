@@ -5,6 +5,7 @@ import planJson from "../data/plan.json" with { type: "json" };
 import { buildStation, type BuiltStation } from "../scene/build.ts";
 import { pointInRings, soffitHeight, type Plan } from "../scene/layout.ts";
 import { buildIdentityBoards, IDENTITY_GENERATED, IDENTITY_SIZE, identityGlyphBox, type LocalBox } from "../scene/identity.ts";
+import { IDENTITY_FADE_NEAR, IDENTITY_FADE_FAR, IDENTITY_FADE_FRAGMENT, identityFadeCoverage, identityDitherVisible } from "../scene/identity-fade.ts";
 import { stationSpawn } from "../scene/spawn.ts";
 import { followCameraEnvironment, LANE_CAMERA, spawnView } from "../app/src/spawn-view.ts";
 import { Player } from "../app/src/player.ts";
@@ -25,6 +26,60 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
     station.root.updateMatrixWorld(true);
   }, 60_000);
   afterAll(() => station?.dispose());
+
+  it("patches both opaque identity materials using the active camera, with distinct compile keys", () => {
+    const meshes = ["identity-faces", "identity-cases-rods"].map((name) => station.root.getObjectByName(name) as THREE.Mesh);
+    const keys: string[] = [];
+    for (const mesh of meshes) {
+      const material = mesh.material as THREE.MeshBasicMaterial | THREE.MeshStandardMaterial;
+      const source = material.type === "MeshBasicMaterial" ? THREE.ShaderLib.basic : THREE.ShaderLib.standard;
+      const shader = { vertexShader: source.vertexShader, fragmentShader: source.fragmentShader, uniforms: THREE.UniformsUtils.clone(source.uniforms) };
+      material.onBeforeCompile(shader as never, {} as THREE.WebGLRenderer);
+      expect(material.transparent, mesh.name).toBe(false);
+      expect(material.depthWrite, mesh.name).toBe(true);
+      expect(material.opacity, mesh.name).toBe(1);
+      expect(material.defines?.GTEKI_IDENTITY_NEAR_FADE).toBe(1);
+      expect(shader.uniforms.gtekiIdentityNear?.value).toBe(IDENTITY_FADE_NEAR);
+      expect(shader.uniforms.gtekiIdentityFar?.value).toBe(IDENTITY_FADE_FAR);
+      expect(shader.vertexShader).toContain("#include <project_vertex>\nvGtekiIdentityViewPosition = mvPosition.xyz;");
+      expect(shader.fragmentShader).toContain(IDENTITY_FADE_FRAGMENT);
+      expect(shader.fragmentShader).toContain("smoothstep(gtekiIdentityNear, gtekiIdentityFar, length(vGtekiIdentityViewPosition))");
+      expect(shader.fragmentShader).toContain("if (gtekiIdentityCoverage < gtekiIdentityThreshold(gl_FragCoord.xy)) discard;");
+      const plain = material.type === "MeshBasicMaterial" ? new THREE.MeshBasicMaterial() : new THREE.MeshStandardMaterial();
+      expect(material.customProgramCacheKey()).not.toBe(plain.customProgramCacheKey());
+      plain.dispose();
+      expect(material.customProgramCacheKey()).toContain("gteki-identity-near-fade-v1");
+      keys.push(material.customProgramCacheKey());
+      if (mesh.name === "identity-cases-rods") {
+        expect(shader.vertexShader).toContain("vIdentityMetalness = identityMetalness;");
+        expect(shader.fragmentShader).toContain("metalnessFactor *= vIdentityMetalness;");
+        expect((material as THREE.MeshStandardMaterial).vertexColors).toBe(true);
+        expect(new Set(Array.from(mesh.geometry.getAttribute("identityMetalness").array)).size).toBe(2);
+        expect(mesh.geometry.getAttribute("color").count).toBe(mesh.geometry.getAttribute("position").count);
+      }
+    }
+    expect(new Set(keys).size).toBe(2);
+    const cases = station.root.getObjectByName("sign-cases") as THREE.Mesh;
+    expect((cases.material as THREE.MeshStandardMaterial).defines?.GTEKI_IDENTITY_NEAR_FADE).toBeUndefined();
+    expect(cases.geometry.index!.count / 3).toBe(station.signs.length * 12);
+  });
+
+  it("hides/shows the complete dither tile at near/far and covers half at 2.3 m", () => {
+    const tile = (distance: number) => Array.from({ length: 16 }, (_, i) => identityDitherVisible(distance, i % 4, Math.floor(i / 4)));
+    for (const distance of [1.0, IDENTITY_FADE_NEAR]) {
+      expect(identityFadeCoverage(distance)).toBe(0);
+      expect(tile(distance).filter(Boolean)).toHaveLength(0);
+    }
+    expect(identityFadeCoverage(2.3)).toBeCloseTo(0.5, 12);
+    expect(tile(2.3)).toEqual([true, false, true, false, false, true, false, true, true, false, true, false, false, true, false, true]);
+    for (const distance of [IDENTITY_FADE_FAR, 3.5]) {
+      expect(identityFadeCoverage(distance)).toBe(1);
+      expect(tile(distance).filter(Boolean)).toHaveLength(16);
+    }
+    for (let y = -4; y < 4; y++) for (let x = -4; x < 4; x++) {
+      expect(identityDitherVisible(2.3, x, y)).toBe(identityDitherVisible(2.3, x + 4, y + 4));
+    }
+  });
 
   it("tags both readable faces of every spawn/gate board with valid local name boxes", () => {
     const boards = station.identityBoards;
@@ -122,18 +177,16 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
         root.scale.set(1.2, 0.9, 1.1);
       }
       root.updateMatrixWorld(true);
-      const cases: THREE.BufferGeometry[] = [], rods: THREE.BufferGeometry[] = [];
-      const boards = withCanvasStub(() => buildIdentityBoards(bundle, station.layout, station.world, root, track, "low", cases, rods));
-      disposables.push(...cases, ...rods);
-      const faces = (root.getObjectByName("identity-faces") as THREE.Mesh).geometry;
-      return { root, boards, geometries: [faces, ...cases, ...rods] };
+      const boards = withCanvasStub(() => buildIdentityBoards(bundle, station.layout, station.world, root, track, "low"));
+      const geometries = ["identity-faces", "identity-cases-rods"].map((name) => (root.getObjectByName(name) as THREE.Mesh).geometry);
+      return { root, boards, geometries };
     };
     try {
       const plain = build(false), transformed = build(true);
       expect(transformed.geometries).toHaveLength(plain.geometries.length);
       transformed.geometries.forEach((geometry, i) => {
         const expected = plain.geometries[i]!;
-        for (const name of ["position", "normal", "uv"]) {
+        for (const name of Object.keys(expected.attributes)) {
           expect(Array.from(geometry.getAttribute(name).array), `${i} ${name}`).toEqual(Array.from(expected.getAttribute(name).array));
         }
         expect(Array.from(geometry.index!.array)).toEqual(Array.from(expected.index!.array));
@@ -215,6 +268,14 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
       camera.lookAt(look.x, look.z, -look.y);
       camera.updateMatrixWorld(true);
       const board = station.root.getObjectByName("identity:spawn")!;
+      const nameDistances = station.identityBoards.flatMap((front) => [front, ...front.children]).map((face) => {
+        const region = face.userData.gteki_identity.regions[0] as LocalBox;
+        const box = new THREE.Box3(new THREE.Vector3(...region.min), new THREE.Vector3(...region.max));
+        const nearest = box.clampPoint(face.worldToLocal(camera.position.clone()), new THREE.Vector3());
+        return { board: face.name, metres: face.localToWorld(nearest).distanceTo(camera.position) };
+      });
+      const nearestNameMetres = Math.min(...nameDistances.map((d) => d.metres));
+      expect(nearestNameMetres, "every name box stays beyond the fade at normal spawn").toBeGreaterThan(IDENTITY_FADE_FAR);
       const normal = new THREE.Vector3(...board.userData.gteki_identity.front as [number, number, number]).transformDirection(board.matrixWorld);
       expect(normal.dot(camera.position.clone().sub(board.position).normalize())).toBeGreaterThan(0.8);
       const project = (box: LocalBox) => corners(box).map((p) => board.localToWorld(p).project(camera));
@@ -233,14 +294,14 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
           return Math.abs(b.y - a.y) * height! / 2;
         })));
       const ja = capHeight(identityGlyphBox("ja")), en = capHeight(identityGlyphBox("en"));
-      console.log(JSON.stringify({ viewport: `${width}x${height}`, jaCssPx: ja, enCssPx: en, nameNdc: { left: Math.min(...name.map((p) => p.x)), right: Math.max(...name.map((p) => p.x)), bottom: Math.min(...name.map((p) => p.y)), top: Math.max(...name.map((p) => p.y)) } }));
+      console.log(JSON.stringify({ viewport: `${width}x${height}`, nearestNameMetres, nameDistances, jaCssPx: ja, enCssPx: en, nameNdc: { left: Math.min(...name.map((p) => p.x)), right: Math.max(...name.map((p) => p.x)), bottom: Math.min(...name.map((p) => p.y)), top: Math.max(...name.map((p) => p.y)) } }));
       expect(ja).toBeGreaterThanOrEqual(18);
       expect(en).toBeGreaterThanOrEqual(12);
     });
   }
 
   for (const quality of ["low", "high"] as const) {
-    it(`reports the shared ${quality} identity texture and one added face draw`, () => {
+    it(`reports the shared ${quality} identity texture and two identity draws`, () => {
       const built = quality === "high" ? station : withCanvasStub(() => buildStation(bundle, plan, { quality }));
       try {
         const budget = textureBudget(built.root);
@@ -252,8 +313,13 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
         const faces = built.root.getObjectByName("identity-faces") as THREE.Mesh;
         expect(faces.userData.faceCount).toBe(8);
         expect(faces.geometry.index!.count / 3).toBe(16);
+        const hardware = built.root.getObjectByName("identity-cases-rods") as THREE.Mesh;
+        expect(hardware.geometry.index!.count / 3).toBe(240);
+        expect(hardware.geometry.groups).toHaveLength(0);
+        expect(Array.isArray(hardware.material)).toBe(false);
         let draws = 0;
         built.root.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh) draws += Array.isArray(m.material) ? m.material.length : 1; });
+        expect(draws).toBe(140); // 139 before the fade; only the hardware draw is new.
         console.log(JSON.stringify({ quality, identityTexture: entry, totalTextureBytes: budget.totalBytes, meshMaterialDraws: draws }));
       } finally { if (built !== station) built.dispose(); }
     }, 60_000);

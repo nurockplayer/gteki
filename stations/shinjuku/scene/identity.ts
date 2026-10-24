@@ -4,10 +4,35 @@ import type { StationBundle } from "@gteki/schema";
 import { pointInRings, soffitHeight, type Layout, type WalkWorld, type XY, type XYZ } from "./layout.ts";
 import { stationSpawn } from "./spawn.ts";
 import { IDENTITY_ART, identityTexture } from "./textures.ts";
+import { identityNearFade } from "./identity-fade.ts";
 
 export const IDENTITY_SIZE = { width: 1.72, height: 0.86, depth: 0.07 } as const;
 export const IDENTITY_GENERATED = "GTEki station identity board (original design; not operator signage)";
 export type LocalBox = { min: [number, number, number]; max: [number, number, number] };
+
+/** Preserve the old casing/rod colours and metalness within one hardware draw. */
+function hardwarePart(geometry: THREE.BufferGeometry, color: string, metalness: number) {
+  const count = geometry.getAttribute("position").count;
+  const colors = new Float32Array(count * 3), tint = new THREE.Color(color);
+  for (let i = 0; i < count; i++) tint.toArray(colors, i * 3);
+  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  geometry.setAttribute("identityMetalness", new THREE.BufferAttribute(new Float32Array(count).fill(metalness), 1));
+  return geometry;
+}
+
+function hardwareMaterial() {
+  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 1 });
+  material.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader
+      .replace("#include <common>", "#include <common>\nattribute float identityMetalness;\nvarying float vIdentityMetalness;")
+      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvIdentityMetalness = identityMetalness;");
+    shader.fragmentShader = shader.fragmentShader
+      .replace("#include <common>", "#include <common>\nvarying float vIdentityMetalness;")
+      .replace("#include <metalnessmap_fragment>", "#include <metalnessmap_fragment>\nmetalnessFactor *= vIdentityMetalness;");
+  };
+  material.customProgramCacheKey = () => "gteki-identity-hardware-v1";
+  return identityNearFade(material);
+}
 
 /** Canvas pixel rectangle → the actual plate's local coordinates (origin at its centre). */
 export function identityBox(left: number, top: number, right: number, bottom: number): LocalBox {
@@ -24,11 +49,10 @@ export function identityGlyphBox(kind: "ja" | "en"): LocalBox {
 
 /** Original render-only identity boards; no routing, collision or source-data changes. */
 export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world: WalkWorld, root: THREE.Group,
-  track: <T extends { dispose(): void }>(value: T) => T, quality: "low" | "high",
-  cases: THREE.BufferGeometry[], rods: THREE.BufferGeometry[]): THREE.Object3D[] {
+  track: <T extends { dispose(): void }>(value: T) => T, quality: "low" | "high"): THREE.Object3D[] {
   const spawn = stationSpawn(bundle, layout.nodeZ, world);
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
-  const faces: THREE.BufferGeometry[] = [], boards: THREE.Object3D[] = [];
+  const faces: THREE.BufferGeometry[] = [], hardware: THREE.BufferGeometry[] = [], boards: THREE.Object3D[] = [];
   const { width, height, depth } = IDENTITY_SIZE;
   const region = IDENTITY_ART.name;
   const nameBox = identityBox(region.left, region.top, region.right, region.bottom);
@@ -91,11 +115,11 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
         board.updateMatrixWorld(true);
       }
     }
-    cases.push(new THREE.BoxGeometry(width + 0.04, height + 0.04, depth).applyMatrix4(board.matrix));
+    hardware.push(hardwarePart(new THREE.BoxGeometry(width + 0.04, height + 0.04, depth).applyMatrix4(board.matrix), "#2b2d30", 0.4));
     const rodLength = level.ceilingZ - top;
     for (const x of [-width * 0.35, width * 0.35]) {
-      rods.push(new THREE.CylinderGeometry(0.012, 0.012, rodLength, 6)
-        .translate(x, height / 2 + rodLength / 2, 0).applyMatrix4(board.matrix));
+      hardware.push(hardwarePart(new THREE.CylinderGeometry(0.012, 0.012, rodLength, 6)
+        .translate(x, height / 2 + rodLength / 2, 0).applyMatrix4(board.matrix), "#888888", 0.8));
     }
   };
   const forward = { x: Math.sin(spawn.heading), y: Math.cos(spawn.heading) };
@@ -118,12 +142,21 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
     const geometry = mergeGeometries(faces)!;
     faces.forEach((g) => g.dispose());
     const texture = track(identityTexture(quality));
-    const material = track(new THREE.MeshBasicMaterial({ map: texture, toneMapped: false }));
+    const material = track(identityNearFade(new THREE.MeshBasicMaterial({ map: texture, toneMapped: false })));
     const mesh = new THREE.Mesh(track(geometry), material);
     mesh.name = "identity-faces";
     mesh.userData.gteki_role = "sign";
     mesh.userData.generated = IDENTITY_GENERATED;
     mesh.userData.faceCount = faces.length;
+    root.add(mesh);
+  }
+  if (hardware.length) {
+    const geometry = mergeGeometries(hardware)!;
+    hardware.forEach((g) => g.dispose());
+    const mesh = new THREE.Mesh(track(geometry), track(hardwareMaterial()));
+    mesh.name = "identity-cases-rods";
+    mesh.userData.gteki_role = "sign";
+    mesh.userData.generated = IDENTITY_GENERATED;
     root.add(mesh);
   }
   return boards;
