@@ -472,10 +472,6 @@
      "triangles": 6960,
      "hash": "c5031808189ecc4d197ad4952d7047798f1666d6b17f39fc9a15b3d9fe6797a8"
     },
-    "[\"MeshBasicMaterial\",\"\",\"7fd3ff\",null,null,0.16,true,2,true,null,null,false,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 26,
-     "hash": "b6ffdeb098f404177b910e64a66dbfd4f96167d1ca8edeb6c19cb8e8f3a99ed6"
-    },
     "[\"MeshBasicMaterial\",\"\",\"899493\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 11320,
      "hash": "78fdc0a7cad1b77e94bdce5ca7caad26afbe860ced3c8069d89a79e0c775c714"
@@ -536,173 +532,177 @@
      "triangles": 26,
      "hash": "095faffe0dde256ddf68c7dff4bc2e0cfff418ee7f7aebbbec10bac8ae85b0ec"
     },
-    "[\"MeshStandardMaterial\",\"\",\"121314\",\"000000\",1,1,false,0,true,0.55,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 13488,
-     "hash": "1e092a3af36360e462c4edd092e57823474df98de72d075334a4494145495d1e"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"1a507e\",\"3983b0\",0.18,1,false,0,true,0.45,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 96,
-     "hash": "503b6e367798feb5ddc7f1ae7d81898bc742f12cbd0596c6a69ee45747ffc4da"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"1c232a\",\"fff2d6\",0.35,1,false,0,true,0.08,0.2,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
-     "triangles": 96,
-     "hash": "e394b9538f9191afb78e3bb6f71182ccab5579522aad4bf912a0c843c4fa4574"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"1c232a\",\"fff2d6\",0.35,1,false,0,true,0.08,0.2,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 96,
-     "hash": "a6cac678ca0494731b969d698cfda32a894dd3d325ff6145b9a9105c552c6b96"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"247c53\",\"4bcb86\",0.16,1,false,0,true,0.45,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 672,
-     "hash": "b017a1ebe3616e52bbc7e21e8b2df16928c3c69aa9d4522e38e0d10dfe9af692"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"2a2826\",\"000000\",1,1,false,0,true,0.95,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 12504,
-     "hash": "24d6097d480206fffa4c2538a0a60046966c609642ea5a6d0e827df341bc3ba5"
+    "[\"MeshBasicMaterial\",\"mat.portal\",\"7fd3ff\",null,null,0.16,true,2,true,null,null,false,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 26,
+     "hash": "b6ffdeb098f404177b910e64a66dbfd4f96167d1ca8edeb6c19cb8e8f3a99ed6"
     },
     "[\"MeshStandardMaterial\",\"\",\"2b2d30\",\"000000\",1,1,false,0,true,0.4,0.4,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 264,
      "hash": "2e288950e207ea8d06f85da11676b0b5af403b0cdd2b4c39620e988958e6dc4d"
     },
-    "[\"MeshStandardMaterial\",\"\",\"303532\",\"000000\",1,1,false,0,true,0.7,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 5974,
-     "hash": "5100cf3657a2da704a689aa2f2fc364263100cf18f486f1f983ff6f6680fcad4"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"303634\",\"000000\",1,1,false,0,true,0.58,0.15,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 96,
-     "hash": "c78243cf74512aab885bde303cf9266c42b87472b4b9de42e4c1e2e1575a60d0"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"3a3b3d\",\"000000\",1,1,false,2,true,0.95,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 299,
-     "hash": "db31f4327bada7362ebc906291f807dd71f761c4eef985cbbbed1886aee494dd"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
-     "triangles": 96,
-     "hash": "3988b5240e4b11c0b613658e22ecc8c998b8d62411b2c94f7549eeb7c9c92b95"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 6832,
-     "hash": "4668f5889aeeff78f58329a3d4c6f265b75b611d399c68544c197548efc3d317"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 96,
-     "hash": "7884048760eb01274be6f7d424e79ab14d2959282b878396e643be002f1d9635"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"6d7177\",\"000000\",1,1,false,0,true,0.4,0.7,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 18984,
-     "hash": "182960d4d26be37bca6f93585f3204f9d0812125ce36a6977be2042ec16c87dd"
-    },
     "[\"MeshStandardMaterial\",\"\",\"888888\",\"000000\",1,1,false,0,true,0.4,0.8,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 1056,
      "hash": "f7628af7dfb54cfd6a74835092866784e398405b2c85926c2934685490cf8f69"
     },
-    "[\"MeshStandardMaterial\",\"\",\"8d887d\",\"000000\",1,1,false,0,true,0.76,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 10998,
-     "hash": "bb732b7c158a0b5eb1484ff594e0c6f7f9629331ca0db6d9abc368ee3e7aef14"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"8d8f92\",\"000000\",1,1,false,0,true,0.3,0.9,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 2664,
-     "hash": "24375c43cd3ef9e16884b2473cbd7279a8241ac76f9b6c2a3c371de1d53c8956"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"9a9ea2\",\"000000\",1,1,false,0,true,0.35,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 0,
-     "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"a39e96\",\"000000\",1,1,false,0,true,0.9,0,true,true,true,false,false,false]#visible=false#order=0#instanced=false": {
-     "triangles": 60,
-     "hash": "5c966d49ae5e8eea847c5f5a096dd6b9378134b7f01fe4a17a21119ded4a2b3e"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 49560,
-     "hash": "8561fb6234dd8cc59656252b1617f60c484a4a7985f2e018c34060cbd876c5f7"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
-     "triangles": 96,
-     "hash": "76dec8f5f37ed819ce08e42c819c5746a465f5936919b2b6201efba1688dfb47"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 684,
-     "hash": "db34b78a58975d263e1ba707f682f641cf8da6e140a48fe6ae88a881056b9ae4"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 96,
-     "hash": "4a5b17bdd7a56bdf97715168bd4eeb8caf4d7da051eb063f6ac0047045174c2c"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"b4ccd1\",\"000000\",1,0.28,true,2,true,0.32,0.08,false,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 3942,
-     "hash": "a409ccb421bf2d438d369bf43f3c075cc32f14e16ee073693a5c0c87260dc60a"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"b8bdc1\",\"000000\",1,1,false,0,true,0.25,0.8,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
-     "triangles": 288,
-     "hash": "c7db729c2d54209a859a2207dc51179198d682386376e84f5d44c49c32dd89f5"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"b8bdc1\",\"000000\",1,1,false,0,true,0.25,0.8,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 288,
-     "hash": "c1e75db0989aafbcf1ca9faff29058bdc12b158622248cd35a763067835ff88c"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"c0c2bd\",\"000000\",1,1,false,2,true,0.96,0,true,true,true,true,true,false]#visible=false#order=0#instanced=false": {
-     "triangles": 47,
-     "hash": "6a1646c94edfd1a45fa45000694f0eca1e83f1a8cc4281d73d740e2050af09af"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"c0c2bd\",\"000000\",1,1,false,2,true,0.96,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 4831,
-     "hash": "23c15be6b7b1914483ebd8cbb52244d6a4241db3ad374402a8578ed186e1ad11"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"c9d6dd\",\"000000\",1,0.85,true,0,true,0.15,0.4,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 1152,
-     "hash": "8a73c72295f21f4a85646ec5249566c550aa88e706d78ed58deb692d363c3ede"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"d3cec4\",\"000000\",1,1,false,0,true,0.76,0.03,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 18644,
-     "hash": "f08779d804063b1a393a217ea63dde342d667d8eef7ffe94fcc929404a63576b"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"d4d8dc\",\"000000\",1,1,false,0,true,0.3,0.5,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 576,
-     "hash": "c342abb4ed9b8bd554192da712e23cdbb6b5a4cc9370fa17556677d3f3d58e8b"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"d9dcde\",\"000000\",1,1,false,0,true,0.3,0.75,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
-     "triangles": 480,
-     "hash": "8825abf2d521d83facb55be19d3f7f5aba288a404dbbe3c527ed0b434ed171ce"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"d9dcde\",\"000000\",1,1,false,0,true,0.3,0.75,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 480,
-     "hash": "64775b7dc9787f040f9404e7acd2c530a5c7a34d23f03e0d9b3b21545672dd4d"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"e64060\",\"000000\",1,0.85,true,0,true,0.4,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 252,
-     "hash": "0ac30c92f38b8fa8e30c164ec6367b149742b035fd676c79351af1cb54a148fa"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"e9ebec\",\"000000\",1,1,false,0,true,0.35,0.15,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 96,
-     "hash": "d21d72336e4b7d5088e40e80d307290cc1ee0b71ced085e13a92360826ed71ab"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"ffffff\",\"000000\",1,1,false,0,true,0.6,0,true,true,true,true,false,true]#visible=true#order=0#instanced=false": {
-     "triangles": 214,
-     "hash": "7bfc988bef80a5a037b573116f06f22f92008abe1988b328c5e9e27df83c424c"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"ffffff\",\"000000\",1,1,false,0,true,0.68,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 790,
-     "hash": "3056050990d11865803d9398d36f12936374b889e3fbee8d8f7b7916c30d8d7b"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"ffffff\",\"000000\",1,1,false,0,true,0.72,0,true,true,true,true,true,false]#visible=false#order=0#instanced=false": {
-     "triangles": 37,
-     "hash": "11a884267ee13ad5be9ac66cdc3daf8a54c3d96eeb21751c21fff1665716bf2c"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"ffffff\",\"000000\",1,1,false,0,true,0.72,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 1339,
-     "hash": "4337986141295f065ea7bd8d937c801ef701bc4a037ea9a12a2b8a9824330ee1"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"ffffff\",\"000000\",1,1,false,0,true,0.82,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 319,
-     "hash": "0ac9ba7d11cc1e60516677e6c2504400675d7279d4055d0847191b76aa5dc248"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"ffffff\",\"fff6e8\",3.2,1,false,0,true,0.4,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 588,
-     "hash": "5a970f48cf4b8b6c145a1205e186fffc100d513b6a91d470876a075529681019"
-    },
     "[\"MeshStandardMaterial\",\"\",\"ffffff\",\"ffffff\",0.2,1,false,0,true,0.5,0,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 88,
      "hash": "bfbe84436aa1d7e85e66d30dc2b13733531f4ac60b0f04b06369a3d0cb779639"
+    },
+    "[\"MeshStandardMaterial\",\"mat.accent\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
+     "triangles": 96,
+     "hash": "76dec8f5f37ed819ce08e42c819c5746a465f5936919b2b6201efba1688dfb47"
+    },
+    "[\"MeshStandardMaterial\",\"mat.accent\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 684,
+     "hash": "db34b78a58975d263e1ba707f682f641cf8da6e140a48fe6ae88a881056b9ae4"
+    },
+    "[\"MeshStandardMaterial\",\"mat.accent\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
+     "triangles": 96,
+     "hash": "4a5b17bdd7a56bdf97715168bd4eeb8caf4d7da051eb063f6ac0047045174c2c"
+    },
+    "[\"MeshStandardMaterial\",\"mat.ceiling\",\"c0c2bd\",\"000000\",1,1,false,2,true,0.96,0,true,true,true,true,true,false]#visible=false#order=0#instanced=false": {
+     "triangles": 47,
+     "hash": "6a1646c94edfd1a45fa45000694f0eca1e83f1a8cc4281d73d740e2050af09af"
+    },
+    "[\"MeshStandardMaterial\",\"mat.ceiling\",\"c0c2bd\",\"000000\",1,1,false,2,true,0.96,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
+     "triangles": 4831,
+     "hash": "23c15be6b7b1914483ebd8cbb52244d6a4241db3ad374402a8578ed186e1ad11"
+    },
+    "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
+     "triangles": 96,
+     "hash": "3988b5240e4b11c0b613658e22ecc8c998b8d62411b2c94f7549eeb7c9c92b95"
+    },
+    "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 6832,
+     "hash": "4668f5889aeeff78f58329a3d4c6f265b75b611d399c68544c197548efc3d317"
+    },
+    "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
+     "triangles": 96,
+     "hash": "7884048760eb01274be6f7d424e79ab14d2959282b878396e643be002f1d9635"
+    },
+    "[\"MeshStandardMaterial\",\"mat.escStep\",\"6d7177\",\"000000\",1,1,false,0,true,0.4,0.7,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
+     "triangles": 18984,
+     "hash": "182960d4d26be37bca6f93585f3204f9d0812125ce36a6977be2042ec16c87dd"
+    },
+    "[\"MeshStandardMaterial\",\"mat.flap\",\"e64060\",\"000000\",1,0.85,true,0,true,0.4,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 252,
+     "hash": "0ac30c92f38b8fa8e30c164ec6367b149742b035fd676c79351af1cb54a148fa"
+    },
+    "[\"MeshStandardMaterial\",\"mat.floor\",\"ffffff\",\"000000\",1,1,false,0,true,0.72,0,true,true,true,true,true,false]#visible=false#order=0#instanced=false": {
+     "triangles": 37,
+     "hash": "11a884267ee13ad5be9ac66cdc3daf8a54c3d96eeb21751c21fff1665716bf2c"
+    },
+    "[\"MeshStandardMaterial\",\"mat.floor\",\"ffffff\",\"000000\",1,1,false,0,true,0.72,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
+     "triangles": 1339,
+     "hash": "4337986141295f065ea7bd8d937c801ef701bc4a037ea9a12a2b8a9824330ee1"
+    },
+    "[\"MeshStandardMaterial\",\"mat.floorPaid\",\"ffffff\",\"000000\",1,1,false,0,true,0.68,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
+     "triangles": 790,
+     "hash": "3056050990d11865803d9398d36f12936374b889e3fbee8d8f7b7916c30d8d7b"
+    },
+    "[\"MeshStandardMaterial\",\"mat.floorPlatform\",\"ffffff\",\"000000\",1,1,false,0,true,0.82,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
+     "triangles": 319,
+     "hash": "0ac9ba7d11cc1e60516677e6c2504400675d7279d4055d0847191b76aa5dc248"
+    },
+    "[\"MeshStandardMaterial\",\"mat.gateBody\",\"e9ebec\",\"000000\",1,1,false,0,true,0.35,0.15,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 96,
+     "hash": "d21d72336e4b7d5088e40e80d307290cc1ee0b71ced085e13a92360826ed71ab"
+    },
+    "[\"MeshStandardMaterial\",\"mat.gateIc\",\"1a507e\",\"3983b0\",0.18,1,false,0,true,0.45,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 96,
+     "hash": "503b6e367798feb5ddc7f1ae7d81898bc742f12cbd0596c6a69ee45747ffc4da"
+    },
+    "[\"MeshStandardMaterial\",\"mat.gateOk\",\"247c53\",\"4bcb86\",0.16,1,false,0,true,0.45,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 672,
+     "hash": "b017a1ebe3616e52bbc7e21e8b2df16928c3c69aa9d4522e38e0d10dfe9af692"
+    },
+    "[\"MeshStandardMaterial\",\"mat.gateTop\",\"303634\",\"000000\",1,1,false,0,true,0.58,0.15,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 96,
+     "hash": "c78243cf74512aab885bde303cf9266c42b87472b4b9de42e4c1e2e1575a60d0"
+    },
+    "[\"MeshStandardMaterial\",\"mat.glass\",\"b4ccd1\",\"000000\",1,0.28,true,2,true,0.32,0.08,false,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 3942,
+     "hash": "a409ccb421bf2d438d369bf43f3c075cc32f14e16ee073693a5c0c87260dc60a"
+    },
+    "[\"MeshStandardMaterial\",\"mat.light\",\"ffffff\",\"fff6e8\",3.2,1,false,0,true,0.4,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 588,
+     "hash": "5a970f48cf4b8b6c145a1205e186fffc100d513b6a91d470876a075529681019"
+    },
+    "[\"MeshStandardMaterial\",\"mat.lightHousing\",\"9a9ea2\",\"000000\",1,1,false,0,true,0.35,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 0,
+     "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "[\"MeshStandardMaterial\",\"mat.nosing\",\"303532\",\"000000\",1,1,false,0,true,0.7,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 5974,
+     "hash": "5100cf3657a2da704a689aa2f2fc364263100cf18f486f1f983ff6f6680fcad4"
+    },
+    "[\"MeshStandardMaterial\",\"mat.psd\",\"d4d8dc\",\"000000\",1,1,false,0,true,0.3,0.5,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 576,
+     "hash": "c342abb4ed9b8bd554192da712e23cdbb6b5a4cc9370fa17556677d3f3d58e8b"
+    },
+    "[\"MeshStandardMaterial\",\"mat.psdLeaf\",\"c9d6dd\",\"000000\",1,0.85,true,0,true,0.15,0.4,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
+     "triangles": 1152,
+     "hash": "8a73c72295f21f4a85646ec5249566c550aa88e706d78ed58deb692d363c3ede"
+    },
+    "[\"MeshStandardMaterial\",\"mat.rail\",\"8d8f92\",\"000000\",1,1,false,0,true,0.3,0.9,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 2664,
+     "hash": "24375c43cd3ef9e16884b2473cbd7279a8241ac76f9b6c2a3c371de1d53c8956"
+    },
+    "[\"MeshStandardMaterial\",\"mat.rubber\",\"121314\",\"000000\",1,1,false,0,true,0.55,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 13488,
+     "hash": "1e092a3af36360e462c4edd092e57823474df98de72d075334a4494145495d1e"
+    },
+    "[\"MeshStandardMaterial\",\"mat.sidewalk\",\"a39e96\",\"000000\",1,1,false,0,true,0.9,0,true,true,true,false,false,false]#visible=false#order=0#instanced=false": {
+     "triangles": 60,
+     "hash": "5c966d49ae5e8eea847c5f5a096dd6b9378134b7f01fe4a17a21119ded4a2b3e"
+    },
+    "[\"MeshStandardMaterial\",\"mat.stair\",\"8d887d\",\"000000\",1,1,false,0,true,0.76,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 10998,
+     "hash": "bb732b7c158a0b5eb1484ff594e0c6f7f9629331ca0db6d9abc368ee3e7aef14"
+    },
+    "[\"MeshStandardMaterial\",\"mat.steel\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 49560,
+     "hash": "8561fb6234dd8cc59656252b1617f60c484a4a7985f2e018c34060cbd876c5f7"
+    },
+    "[\"MeshStandardMaterial\",\"mat.tactile\",\"ffffff\",\"000000\",1,1,false,0,true,0.6,0,true,true,true,true,false,true]#visible=true#order=0#instanced=false": {
+     "triangles": 214,
+     "hash": "7bfc988bef80a5a037b573116f06f22f92008abe1988b328c5e9e27df83c424c"
+    },
+    "[\"MeshStandardMaterial\",\"mat.trackBed\",\"2a2826\",\"000000\",1,1,false,0,true,0.95,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 12504,
+     "hash": "24d6097d480206fffa4c2538a0a60046966c609642ea5a6d0e827df341bc3ba5"
+    },
+    "[\"MeshStandardMaterial\",\"mat.trainBody\",\"d9dcde\",\"000000\",1,1,false,0,true,0.3,0.75,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
+     "triangles": 480,
+     "hash": "8825abf2d521d83facb55be19d3f7f5aba288a404dbbe3c527ed0b434ed171ce"
+    },
+    "[\"MeshStandardMaterial\",\"mat.trainBody\",\"d9dcde\",\"000000\",1,1,false,0,true,0.3,0.75,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
+     "triangles": 480,
+     "hash": "64775b7dc9787f040f9404e7acd2c530a5c7a34d23f03e0d9b3b21545672dd4d"
+    },
+    "[\"MeshStandardMaterial\",\"mat.trainDoor\",\"b8bdc1\",\"000000\",1,1,false,0,true,0.25,0.8,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
+     "triangles": 288,
+     "hash": "c7db729c2d54209a859a2207dc51179198d682386376e84f5d44c49c32dd89f5"
+    },
+    "[\"MeshStandardMaterial\",\"mat.trainDoor\",\"b8bdc1\",\"000000\",1,1,false,0,true,0.25,0.8,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
+     "triangles": 288,
+     "hash": "c1e75db0989aafbcf1ca9faff29058bdc12b158622248cd35a763067835ff88c"
+    },
+    "[\"MeshStandardMaterial\",\"mat.trainWindow\",\"1c232a\",\"fff2d6\",0.35,1,false,0,true,0.08,0.2,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
+     "triangles": 96,
+     "hash": "e394b9538f9191afb78e3bb6f71182ccab5579522aad4bf912a0c843c4fa4574"
+    },
+    "[\"MeshStandardMaterial\",\"mat.trainWindow\",\"1c232a\",\"fff2d6\",0.35,1,false,0,true,0.08,0.2,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
+     "triangles": 96,
+     "hash": "a6cac678ca0494731b969d698cfda32a894dd3d325ff6145b9a9105c552c6b96"
+    },
+    "[\"MeshStandardMaterial\",\"mat.tunnel\",\"3a3b3d\",\"000000\",1,1,false,2,true,0.95,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 299,
+     "hash": "db31f4327bada7362ebc906291f807dd71f761c4eef985cbbbed1886aee494dd"
+    },
+    "[\"MeshStandardMaterial\",\"mat.wall\",\"d3cec4\",\"000000\",1,1,false,0,true,0.76,0.03,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
+     "triangles": 18644,
+     "hash": "f08779d804063b1a393a217ea63dde342d667d8eef7ffe94fcc929404a63576b"
     },
     "[\"ShaderMaterial\",\"\",null,null,null,1,false,1,true,null,null,false,false,true,false,false,false]#visible=true#order=-1000#instanced=false": {
      "triangles": 528,
@@ -1152,10 +1152,10 @@
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|9",
     "|surface-ground||[\"MeshBasicMaterial\",\"\",\"f2eee5\",null,null,1,false,2,true,null,null,true,true,true,true,false,false]|2793",
     "|surface-stone||[\"MeshBasicMaterial\",\"\",\"b7b8b2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]|11234",
-    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"\",\"247c53\",\"4bcb86\",0.16,1,false,0,true,0.45,0,true,true,true,false,false,false]|672",
-    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]|6832",
-    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]|49560",
-    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]|108"
+    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.accent\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]|108",
+    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]|6832",
+    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.gateOk\",\"247c53\",\"4bcb86\",0.16,1,false,0,true,0.45,0,true,true,true,false,false,false]|672",
+    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.steel\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]|49560"
    ]
   },
   "high": {
@@ -1615,10 +1615,6 @@
      "triangles": 6960,
      "hash": "c5031808189ecc4d197ad4952d7047798f1666d6b17f39fc9a15b3d9fe6797a8"
     },
-    "[\"MeshBasicMaterial\",\"\",\"7fd3ff\",null,null,0.16,true,2,true,null,null,false,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 26,
-     "hash": "b6ffdeb098f404177b910e64a66dbfd4f96167d1ca8edeb6c19cb8e8f3a99ed6"
-    },
     "[\"MeshBasicMaterial\",\"\",\"899493\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 11320,
      "hash": "78fdc0a7cad1b77e94bdce5ca7caad26afbe860ced3c8069d89a79e0c775c714"
@@ -1679,173 +1675,177 @@
      "triangles": 26,
      "hash": "095faffe0dde256ddf68c7dff4bc2e0cfff418ee7f7aebbbec10bac8ae85b0ec"
     },
-    "[\"MeshStandardMaterial\",\"\",\"121314\",\"000000\",1,1,false,0,true,0.55,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 13488,
-     "hash": "1e092a3af36360e462c4edd092e57823474df98de72d075334a4494145495d1e"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"1a507e\",\"3983b0\",0.18,1,false,0,true,0.45,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 96,
-     "hash": "503b6e367798feb5ddc7f1ae7d81898bc742f12cbd0596c6a69ee45747ffc4da"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"1c232a\",\"fff2d6\",0.35,1,false,0,true,0.08,0.2,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
-     "triangles": 96,
-     "hash": "e394b9538f9191afb78e3bb6f71182ccab5579522aad4bf912a0c843c4fa4574"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"1c232a\",\"fff2d6\",0.35,1,false,0,true,0.08,0.2,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 96,
-     "hash": "a6cac678ca0494731b969d698cfda32a894dd3d325ff6145b9a9105c552c6b96"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"247c53\",\"4bcb86\",0.16,1,false,0,true,0.45,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 672,
-     "hash": "b017a1ebe3616e52bbc7e21e8b2df16928c3c69aa9d4522e38e0d10dfe9af692"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"2a2826\",\"000000\",1,1,false,0,true,0.95,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 12504,
-     "hash": "24d6097d480206fffa4c2538a0a60046966c609642ea5a6d0e827df341bc3ba5"
+    "[\"MeshBasicMaterial\",\"mat.portal\",\"7fd3ff\",null,null,0.16,true,2,true,null,null,false,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 26,
+     "hash": "b6ffdeb098f404177b910e64a66dbfd4f96167d1ca8edeb6c19cb8e8f3a99ed6"
     },
     "[\"MeshStandardMaterial\",\"\",\"2b2d30\",\"000000\",1,1,false,0,true,0.4,0.4,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 264,
      "hash": "2e288950e207ea8d06f85da11676b0b5af403b0cdd2b4c39620e988958e6dc4d"
     },
-    "[\"MeshStandardMaterial\",\"\",\"303532\",\"000000\",1,1,false,0,true,0.7,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 5974,
-     "hash": "5100cf3657a2da704a689aa2f2fc364263100cf18f486f1f983ff6f6680fcad4"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"303634\",\"000000\",1,1,false,0,true,0.58,0.15,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 96,
-     "hash": "c78243cf74512aab885bde303cf9266c42b87472b4b9de42e4c1e2e1575a60d0"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"3a3b3d\",\"000000\",1,1,false,2,true,0.95,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 299,
-     "hash": "db31f4327bada7362ebc906291f807dd71f761c4eef985cbbbed1886aee494dd"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
-     "triangles": 96,
-     "hash": "3988b5240e4b11c0b613658e22ecc8c998b8d62411b2c94f7549eeb7c9c92b95"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 6832,
-     "hash": "4668f5889aeeff78f58329a3d4c6f265b75b611d399c68544c197548efc3d317"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 96,
-     "hash": "7884048760eb01274be6f7d424e79ab14d2959282b878396e643be002f1d9635"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"6d7177\",\"000000\",1,1,false,0,true,0.4,0.7,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 18984,
-     "hash": "182960d4d26be37bca6f93585f3204f9d0812125ce36a6977be2042ec16c87dd"
-    },
     "[\"MeshStandardMaterial\",\"\",\"888888\",\"000000\",1,1,false,0,true,0.4,0.8,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 1056,
      "hash": "f7628af7dfb54cfd6a74835092866784e398405b2c85926c2934685490cf8f69"
     },
-    "[\"MeshStandardMaterial\",\"\",\"8d887d\",\"000000\",1,1,false,0,true,0.76,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 10998,
-     "hash": "bb732b7c158a0b5eb1484ff594e0c6f7f9629331ca0db6d9abc368ee3e7aef14"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"8d8f92\",\"000000\",1,1,false,0,true,0.3,0.9,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 2664,
-     "hash": "24375c43cd3ef9e16884b2473cbd7279a8241ac76f9b6c2a3c371de1d53c8956"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"9a9ea2\",\"000000\",1,1,false,0,true,0.35,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 0,
-     "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"a39e96\",\"000000\",1,1,false,0,true,0.9,0,true,true,true,false,false,false]#visible=false#order=0#instanced=false": {
-     "triangles": 60,
-     "hash": "5c966d49ae5e8eea847c5f5a096dd6b9378134b7f01fe4a17a21119ded4a2b3e"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 49560,
-     "hash": "8561fb6234dd8cc59656252b1617f60c484a4a7985f2e018c34060cbd876c5f7"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
-     "triangles": 96,
-     "hash": "76dec8f5f37ed819ce08e42c819c5746a465f5936919b2b6201efba1688dfb47"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 684,
-     "hash": "db34b78a58975d263e1ba707f682f641cf8da6e140a48fe6ae88a881056b9ae4"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 96,
-     "hash": "4a5b17bdd7a56bdf97715168bd4eeb8caf4d7da051eb063f6ac0047045174c2c"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"b4ccd1\",\"000000\",1,0.28,true,2,true,0.32,0.08,false,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 3942,
-     "hash": "a409ccb421bf2d438d369bf43f3c075cc32f14e16ee073693a5c0c87260dc60a"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"b8bdc1\",\"000000\",1,1,false,0,true,0.25,0.8,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
-     "triangles": 288,
-     "hash": "c7db729c2d54209a859a2207dc51179198d682386376e84f5d44c49c32dd89f5"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"b8bdc1\",\"000000\",1,1,false,0,true,0.25,0.8,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 288,
-     "hash": "c1e75db0989aafbcf1ca9faff29058bdc12b158622248cd35a763067835ff88c"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"c0c2bd\",\"000000\",1,1,false,2,true,0.96,0,true,true,true,true,true,false]#visible=false#order=0#instanced=false": {
-     "triangles": 47,
-     "hash": "6a1646c94edfd1a45fa45000694f0eca1e83f1a8cc4281d73d740e2050af09af"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"c0c2bd\",\"000000\",1,1,false,2,true,0.96,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 4831,
-     "hash": "23c15be6b7b1914483ebd8cbb52244d6a4241db3ad374402a8578ed186e1ad11"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"c9d6dd\",\"000000\",1,0.85,true,0,true,0.15,0.4,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 1152,
-     "hash": "8a73c72295f21f4a85646ec5249566c550aa88e706d78ed58deb692d363c3ede"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"d3cec4\",\"000000\",1,1,false,0,true,0.76,0.03,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 18644,
-     "hash": "f08779d804063b1a393a217ea63dde342d667d8eef7ffe94fcc929404a63576b"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"d4d8dc\",\"000000\",1,1,false,0,true,0.3,0.5,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 576,
-     "hash": "c342abb4ed9b8bd554192da712e23cdbb6b5a4cc9370fa17556677d3f3d58e8b"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"d9dcde\",\"000000\",1,1,false,0,true,0.3,0.75,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
-     "triangles": 480,
-     "hash": "8825abf2d521d83facb55be19d3f7f5aba288a404dbbe3c527ed0b434ed171ce"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"d9dcde\",\"000000\",1,1,false,0,true,0.3,0.75,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 480,
-     "hash": "64775b7dc9787f040f9404e7acd2c530a5c7a34d23f03e0d9b3b21545672dd4d"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"e64060\",\"000000\",1,0.85,true,0,true,0.4,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 252,
-     "hash": "0ac30c92f38b8fa8e30c164ec6367b149742b035fd676c79351af1cb54a148fa"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"e9ebec\",\"000000\",1,1,false,0,true,0.35,0.15,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 96,
-     "hash": "d21d72336e4b7d5088e40e80d307290cc1ee0b71ced085e13a92360826ed71ab"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"ffffff\",\"000000\",1,1,false,0,true,0.6,0,true,true,true,true,false,true]#visible=true#order=0#instanced=false": {
-     "triangles": 214,
-     "hash": "7bfc988bef80a5a037b573116f06f22f92008abe1988b328c5e9e27df83c424c"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"ffffff\",\"000000\",1,1,false,0,true,0.68,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 790,
-     "hash": "3056050990d11865803d9398d36f12936374b889e3fbee8d8f7b7916c30d8d7b"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"ffffff\",\"000000\",1,1,false,0,true,0.72,0,true,true,true,true,true,false]#visible=false#order=0#instanced=false": {
-     "triangles": 37,
-     "hash": "11a884267ee13ad5be9ac66cdc3daf8a54c3d96eeb21751c21fff1665716bf2c"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"ffffff\",\"000000\",1,1,false,0,true,0.72,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 1339,
-     "hash": "4337986141295f065ea7bd8d937c801ef701bc4a037ea9a12a2b8a9824330ee1"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"ffffff\",\"000000\",1,1,false,0,true,0.82,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 319,
-     "hash": "0ac9ba7d11cc1e60516677e6c2504400675d7279d4055d0847191b76aa5dc248"
-    },
-    "[\"MeshStandardMaterial\",\"\",\"ffffff\",\"fff6e8\",3.2,1,false,0,true,0.4,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 588,
-     "hash": "5a970f48cf4b8b6c145a1205e186fffc100d513b6a91d470876a075529681019"
-    },
     "[\"MeshStandardMaterial\",\"\",\"ffffff\",\"ffffff\",0.2,1,false,0,true,0.5,0,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 88,
      "hash": "bfbe84436aa1d7e85e66d30dc2b13733531f4ac60b0f04b06369a3d0cb779639"
+    },
+    "[\"MeshStandardMaterial\",\"mat.accent\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
+     "triangles": 96,
+     "hash": "76dec8f5f37ed819ce08e42c819c5746a465f5936919b2b6201efba1688dfb47"
+    },
+    "[\"MeshStandardMaterial\",\"mat.accent\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 684,
+     "hash": "db34b78a58975d263e1ba707f682f641cf8da6e140a48fe6ae88a881056b9ae4"
+    },
+    "[\"MeshStandardMaterial\",\"mat.accent\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
+     "triangles": 96,
+     "hash": "4a5b17bdd7a56bdf97715168bd4eeb8caf4d7da051eb063f6ac0047045174c2c"
+    },
+    "[\"MeshStandardMaterial\",\"mat.ceiling\",\"c0c2bd\",\"000000\",1,1,false,2,true,0.96,0,true,true,true,true,true,false]#visible=false#order=0#instanced=false": {
+     "triangles": 47,
+     "hash": "6a1646c94edfd1a45fa45000694f0eca1e83f1a8cc4281d73d740e2050af09af"
+    },
+    "[\"MeshStandardMaterial\",\"mat.ceiling\",\"c0c2bd\",\"000000\",1,1,false,2,true,0.96,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
+     "triangles": 4831,
+     "hash": "23c15be6b7b1914483ebd8cbb52244d6a4241db3ad374402a8578ed186e1ad11"
+    },
+    "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
+     "triangles": 96,
+     "hash": "3988b5240e4b11c0b613658e22ecc8c998b8d62411b2c94f7549eeb7c9c92b95"
+    },
+    "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 6832,
+     "hash": "4668f5889aeeff78f58329a3d4c6f265b75b611d399c68544c197548efc3d317"
+    },
+    "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
+     "triangles": 96,
+     "hash": "7884048760eb01274be6f7d424e79ab14d2959282b878396e643be002f1d9635"
+    },
+    "[\"MeshStandardMaterial\",\"mat.escStep\",\"6d7177\",\"000000\",1,1,false,0,true,0.4,0.7,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
+     "triangles": 18984,
+     "hash": "182960d4d26be37bca6f93585f3204f9d0812125ce36a6977be2042ec16c87dd"
+    },
+    "[\"MeshStandardMaterial\",\"mat.flap\",\"e64060\",\"000000\",1,0.85,true,0,true,0.4,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 252,
+     "hash": "0ac30c92f38b8fa8e30c164ec6367b149742b035fd676c79351af1cb54a148fa"
+    },
+    "[\"MeshStandardMaterial\",\"mat.floor\",\"ffffff\",\"000000\",1,1,false,0,true,0.72,0,true,true,true,true,true,false]#visible=false#order=0#instanced=false": {
+     "triangles": 37,
+     "hash": "11a884267ee13ad5be9ac66cdc3daf8a54c3d96eeb21751c21fff1665716bf2c"
+    },
+    "[\"MeshStandardMaterial\",\"mat.floor\",\"ffffff\",\"000000\",1,1,false,0,true,0.72,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
+     "triangles": 1339,
+     "hash": "4337986141295f065ea7bd8d937c801ef701bc4a037ea9a12a2b8a9824330ee1"
+    },
+    "[\"MeshStandardMaterial\",\"mat.floorPaid\",\"ffffff\",\"000000\",1,1,false,0,true,0.68,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
+     "triangles": 790,
+     "hash": "3056050990d11865803d9398d36f12936374b889e3fbee8d8f7b7916c30d8d7b"
+    },
+    "[\"MeshStandardMaterial\",\"mat.floorPlatform\",\"ffffff\",\"000000\",1,1,false,0,true,0.82,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
+     "triangles": 319,
+     "hash": "0ac9ba7d11cc1e60516677e6c2504400675d7279d4055d0847191b76aa5dc248"
+    },
+    "[\"MeshStandardMaterial\",\"mat.gateBody\",\"e9ebec\",\"000000\",1,1,false,0,true,0.35,0.15,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 96,
+     "hash": "d21d72336e4b7d5088e40e80d307290cc1ee0b71ced085e13a92360826ed71ab"
+    },
+    "[\"MeshStandardMaterial\",\"mat.gateIc\",\"1a507e\",\"3983b0\",0.18,1,false,0,true,0.45,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 96,
+     "hash": "503b6e367798feb5ddc7f1ae7d81898bc742f12cbd0596c6a69ee45747ffc4da"
+    },
+    "[\"MeshStandardMaterial\",\"mat.gateOk\",\"247c53\",\"4bcb86\",0.16,1,false,0,true,0.45,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 672,
+     "hash": "b017a1ebe3616e52bbc7e21e8b2df16928c3c69aa9d4522e38e0d10dfe9af692"
+    },
+    "[\"MeshStandardMaterial\",\"mat.gateTop\",\"303634\",\"000000\",1,1,false,0,true,0.58,0.15,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 96,
+     "hash": "c78243cf74512aab885bde303cf9266c42b87472b4b9de42e4c1e2e1575a60d0"
+    },
+    "[\"MeshStandardMaterial\",\"mat.glass\",\"b4ccd1\",\"000000\",1,0.28,true,2,true,0.32,0.08,false,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 3942,
+     "hash": "a409ccb421bf2d438d369bf43f3c075cc32f14e16ee073693a5c0c87260dc60a"
+    },
+    "[\"MeshStandardMaterial\",\"mat.light\",\"ffffff\",\"fff6e8\",3.2,1,false,0,true,0.4,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 588,
+     "hash": "5a970f48cf4b8b6c145a1205e186fffc100d513b6a91d470876a075529681019"
+    },
+    "[\"MeshStandardMaterial\",\"mat.lightHousing\",\"9a9ea2\",\"000000\",1,1,false,0,true,0.35,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 0,
+     "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "[\"MeshStandardMaterial\",\"mat.nosing\",\"303532\",\"000000\",1,1,false,0,true,0.7,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 5974,
+     "hash": "5100cf3657a2da704a689aa2f2fc364263100cf18f486f1f983ff6f6680fcad4"
+    },
+    "[\"MeshStandardMaterial\",\"mat.psd\",\"d4d8dc\",\"000000\",1,1,false,0,true,0.3,0.5,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 576,
+     "hash": "c342abb4ed9b8bd554192da712e23cdbb6b5a4cc9370fa17556677d3f3d58e8b"
+    },
+    "[\"MeshStandardMaterial\",\"mat.psdLeaf\",\"c9d6dd\",\"000000\",1,0.85,true,0,true,0.15,0.4,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
+     "triangles": 1152,
+     "hash": "8a73c72295f21f4a85646ec5249566c550aa88e706d78ed58deb692d363c3ede"
+    },
+    "[\"MeshStandardMaterial\",\"mat.rail\",\"8d8f92\",\"000000\",1,1,false,0,true,0.3,0.9,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 2664,
+     "hash": "24375c43cd3ef9e16884b2473cbd7279a8241ac76f9b6c2a3c371de1d53c8956"
+    },
+    "[\"MeshStandardMaterial\",\"mat.rubber\",\"121314\",\"000000\",1,1,false,0,true,0.55,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 13488,
+     "hash": "1e092a3af36360e462c4edd092e57823474df98de72d075334a4494145495d1e"
+    },
+    "[\"MeshStandardMaterial\",\"mat.sidewalk\",\"a39e96\",\"000000\",1,1,false,0,true,0.9,0,true,true,true,false,false,false]#visible=false#order=0#instanced=false": {
+     "triangles": 60,
+     "hash": "5c966d49ae5e8eea847c5f5a096dd6b9378134b7f01fe4a17a21119ded4a2b3e"
+    },
+    "[\"MeshStandardMaterial\",\"mat.stair\",\"8d887d\",\"000000\",1,1,false,0,true,0.76,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 10998,
+     "hash": "bb732b7c158a0b5eb1484ff594e0c6f7f9629331ca0db6d9abc368ee3e7aef14"
+    },
+    "[\"MeshStandardMaterial\",\"mat.steel\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 49560,
+     "hash": "8561fb6234dd8cc59656252b1617f60c484a4a7985f2e018c34060cbd876c5f7"
+    },
+    "[\"MeshStandardMaterial\",\"mat.tactile\",\"ffffff\",\"000000\",1,1,false,0,true,0.6,0,true,true,true,true,false,true]#visible=true#order=0#instanced=false": {
+     "triangles": 214,
+     "hash": "7bfc988bef80a5a037b573116f06f22f92008abe1988b328c5e9e27df83c424c"
+    },
+    "[\"MeshStandardMaterial\",\"mat.trackBed\",\"2a2826\",\"000000\",1,1,false,0,true,0.95,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 12504,
+     "hash": "24d6097d480206fffa4c2538a0a60046966c609642ea5a6d0e827df341bc3ba5"
+    },
+    "[\"MeshStandardMaterial\",\"mat.trainBody\",\"d9dcde\",\"000000\",1,1,false,0,true,0.3,0.75,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
+     "triangles": 480,
+     "hash": "8825abf2d521d83facb55be19d3f7f5aba288a404dbbe3c527ed0b434ed171ce"
+    },
+    "[\"MeshStandardMaterial\",\"mat.trainBody\",\"d9dcde\",\"000000\",1,1,false,0,true,0.3,0.75,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
+     "triangles": 480,
+     "hash": "64775b7dc9787f040f9404e7acd2c530a5c7a34d23f03e0d9b3b21545672dd4d"
+    },
+    "[\"MeshStandardMaterial\",\"mat.trainDoor\",\"b8bdc1\",\"000000\",1,1,false,0,true,0.25,0.8,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
+     "triangles": 288,
+     "hash": "c7db729c2d54209a859a2207dc51179198d682386376e84f5d44c49c32dd89f5"
+    },
+    "[\"MeshStandardMaterial\",\"mat.trainDoor\",\"b8bdc1\",\"000000\",1,1,false,0,true,0.25,0.8,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
+     "triangles": 288,
+     "hash": "c1e75db0989aafbcf1ca9faff29058bdc12b158622248cd35a763067835ff88c"
+    },
+    "[\"MeshStandardMaterial\",\"mat.trainWindow\",\"1c232a\",\"fff2d6\",0.35,1,false,0,true,0.08,0.2,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
+     "triangles": 96,
+     "hash": "e394b9538f9191afb78e3bb6f71182ccab5579522aad4bf912a0c843c4fa4574"
+    },
+    "[\"MeshStandardMaterial\",\"mat.trainWindow\",\"1c232a\",\"fff2d6\",0.35,1,false,0,true,0.08,0.2,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
+     "triangles": 96,
+     "hash": "a6cac678ca0494731b969d698cfda32a894dd3d325ff6145b9a9105c552c6b96"
+    },
+    "[\"MeshStandardMaterial\",\"mat.tunnel\",\"3a3b3d\",\"000000\",1,1,false,2,true,0.95,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
+     "triangles": 299,
+     "hash": "db31f4327bada7362ebc906291f807dd71f761c4eef985cbbbed1886aee494dd"
+    },
+    "[\"MeshStandardMaterial\",\"mat.wall\",\"d3cec4\",\"000000\",1,1,false,0,true,0.76,0.03,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
+     "triangles": 18644,
+     "hash": "f08779d804063b1a393a217ea63dde342d667d8eef7ffe94fcc929404a63576b"
     },
     "[\"ShaderMaterial\",\"\",null,null,null,1,false,1,true,null,null,false,false,true,false,false,false]#visible=true#order=-1000#instanced=false": {
      "triangles": 528,
@@ -2295,10 +2295,10 @@
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|9",
     "|surface-ground||[\"MeshBasicMaterial\",\"\",\"f2eee5\",null,null,1,false,2,true,null,null,true,true,true,true,false,false]|2793",
     "|surface-stone||[\"MeshBasicMaterial\",\"\",\"b7b8b2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]|11234",
-    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"\",\"247c53\",\"4bcb86\",0.16,1,false,0,true,0.45,0,true,true,true,false,false,false]|672",
-    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]|6832",
-    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]|49560",
-    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]|108"
+    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.accent\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]|108",
+    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]|6832",
+    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.gateOk\",\"247c53\",\"4bcb86\",0.16,1,false,0,true,0.45,0,true,true,true,false,false,false]|672",
+    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.steel\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]|49560"
    ]
   }
  }

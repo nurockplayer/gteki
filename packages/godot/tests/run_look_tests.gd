@@ -28,6 +28,7 @@ func run() -> void:
 		return
 	check_args()
 	check_guard()
+	check_name_keying()
 	var table := Look.load_table()
 	check_table(table)
 	for i in range(1, args.size()):
@@ -64,6 +65,67 @@ func check_guard() -> void:
 	check(not Look.fingerprint_mismatch({"color": "#ff0000", "metal": 0.5, "roughness": 0.5, "meshes": "Mesh7"}, actual).is_empty(), "guard: sample meshes that are not a list are a mismatch")
 	check(not Look.fingerprint_mismatch({"color": "#ff0000"}, actual).is_empty(), "guard: evidence missing metal never applies")
 	check(not Look.fingerprint_mismatch(null, actual).is_empty(), "guard: a mapping without `from` evidence never applies")
+
+
+func check_name_keying() -> void:
+	var table := {
+		"styles": {
+			"alpha_style": {"albedo": "#11AA22", "roughness": 0.4, "metal": 0.1},
+			"beta_style": {"albedo": "#3344CC", "roughness": 0.7, "metal": 0.8},
+		},
+		"stations": {"fixture": {"materials": {
+			"mat.alpha": {"style": "alpha_style", "from": {"color": "#aa0000", "metal": 0.0, "roughness": 0.5, "meshes": ["alpha_mesh"]}},
+			"mat.beta": {"style": "beta_style", "from": {"color": "#00aa00", "metal": 0.2, "roughness": 0.6, "meshes": ["beta_mesh"]}},
+		}}},
+	}
+	for order in [["mat.alpha", "mat.beta"], ["mat.beta", "mat.alpha"]]:
+		var root := named_material_scene(order)
+		var result := Look.apply_materials(root, table, "fixture")
+		check(result.applied == 2 and (result.mismatched as Array).is_empty(), "named materials apply in either material order")
+		for item in [["alpha_mesh", "#11AA22"], ["beta_mesh", "#3344CC"]]:
+			var mesh := root.get_node(item[0]) as MeshInstance3D
+			var override := mesh.get_surface_override_material(0) as StandardMaterial3D
+			check(override != null and override.albedo_color.to_html(false).to_upper() == str(item[1]).trim_prefix("#"), "%s keeps its named style after reorder" % item[0])
+		root.free()
+
+	var duplicate_root := Node3D.new()
+	for mesh_name in ["duplicate_a", "duplicate_b"]:
+		var material := StandardMaterial3D.new()
+		material.resource_name = "mat.duplicate"
+		material.albedo_color = Color("#aa0000")
+		var mesh := MeshInstance3D.new()
+		mesh.name = mesh_name
+		var box := BoxMesh.new()
+		box.material = material
+		mesh.mesh = box
+		duplicate_root.add_child(mesh)
+	var duplicate_table := {
+		"styles": {"alpha_style": {"albedo": "#11AA22", "roughness": 0.4, "metal": 0.1}},
+		"stations": {"fixture": {"materials": {"mat.duplicate": {"style": "alpha_style", "from": {"color": "#aa0000", "metal": 0.0, "roughness": 0.5}}}}},
+	}
+	var duplicate_result := Look.apply_materials(duplicate_root, duplicate_table, "fixture")
+	check((duplicate_result.mismatched as Array).size() == 1 and str(duplicate_result.mismatched[0]).contains("shared by 2 distinct materials"), "duplicate material name is reported as a mismatch")
+	check(duplicate_result.applied == 0, "duplicate material name is never applied")
+	for child in duplicate_root.get_children():
+		check((child as MeshInstance3D).get_surface_override_material(0) == null, "ambiguous material keeps its original surface")
+	duplicate_root.free()
+
+
+func named_material_scene(order: Array) -> Node3D:
+	var root := Node3D.new()
+	for source_name in order:
+		var material := StandardMaterial3D.new()
+		material.resource_name = source_name
+		material.albedo_color = Color("#aa0000") if source_name == "mat.alpha" else Color("#00aa00")
+		material.metallic = 0.0 if source_name == "mat.alpha" else 0.2
+		material.roughness = 0.5 if source_name == "mat.alpha" else 0.6
+		var mesh := MeshInstance3D.new()
+		mesh.name = "alpha_mesh" if source_name == "mat.alpha" else "beta_mesh"
+		var box := BoxMesh.new()
+		box.material = material
+		mesh.mesh = box
+		root.add_child(mesh)
+	return root
 
 
 ## The IEC 61966-2-1 sRGB transfer function (linear → sRGB), written out here so the expectations do not come from

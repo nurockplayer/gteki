@@ -1,6 +1,7 @@
-import { parseStationFiles, type StationBundle, type ValidationIssue } from "@gteki/schema";
+import { parseStationFiles, type StationIdentity, type StationBundle, type ValidationIssue } from "@gteki/schema";
 import type { StationSceneModule } from "@gteki/scene-api";
 import { stations as discovered } from "virtual:gteki-stations";
+import { identityNamesOf } from "./ui/identityCard.ts";
 import { createDemoFiles } from "./demo.ts";
 
 /** A station the explorer can open. Everything station-specific comes from its files. */
@@ -8,6 +9,7 @@ export interface StationEntry {
   key: string;
   label: string;
   synthetic: boolean;
+  identity?: StationIdentity;
   load(): Promise<LoadedStation>;
 }
 
@@ -62,14 +64,19 @@ export async function listStations(): Promise<StationEntry[]> {
       key: s.dir,
       label,
       synthetic,
+      identity: identityNamesOf(manifest),
       async load() {
         // The scene module is optional presentation: its failure must never block valid routing data.
         let sceneImportError: string | null = null;
         const scenePromise = s.scene
           ? s.scene().catch((err: unknown) => { sceneImportError = err instanceof Error ? err.message : String(err); return null; })
           : Promise.resolve(null);
-        const [graph, pois, sceneModule] = await Promise.all([s.graph(), s.pois(), scenePromise]);
-        const parsed = parseStationFiles(manifest, graph, pois);
+        // `tenants` is optional (#419): undefined = the station ships no brand directory. A file whose content is
+        // null or not an object is passed through and refused by `parseStationFiles`, never read as absent.
+        const [graph, pois, tenants, sceneModule] = await Promise.all([
+          s.graph(), s.pois(), s.tenants ? s.tenants() : Promise.resolve(undefined), scenePromise,
+        ]);
+        const parsed = parseStationFiles(manifest, graph, pois, tenants);
         if (!parsed.ok) throw new StationLoadError(s.dir, parsed.issues);
         if (sceneModule !== null && !isSceneModule(sceneModule)) sceneImportError = "scene module does not export buildScene(ctx)";
         const assetUrls = new Map<string, string>();

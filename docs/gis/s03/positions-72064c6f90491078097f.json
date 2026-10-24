@@ -1,0 +1,102 @@
+{
+  "policy_version": "s03-positions-v1",
+  "digest_inputs": {
+    "policy_version": "s03-positions-v1",
+    "tool_input_sha256": "4f5530a96937b8d467ccb30b66d2c2d33c7a3b6c8e69dcb121ed5586d7c8c903",
+    "zip_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+    "station_json_sha256": "43f74f0d68fca44358884c7461a8570a8aa44df2ec155bb36156ab9fb7d13728",
+    "pois_json_sha256": "45937ec00e20397769cb2d4eb5cd6a97ebf5c759fe5771324b7a8a27caa2fd3e",
+    "entity_source_sha256": "abf486b8925caa7b1232a766904c8ff863f30714ba5f110ff630e27fad9c79fc",
+    "floor_mapping_sha256": "062f61527031ac513b322b6c5b03d3744c907838a201e9419eb29270c7c3c6ea",
+    "publish_gate": "CONDITIONAL",
+    "sources_yaml_sha256": "c2d7e124ea677952f4ee6a1874fe644a207ec74372fe56f6c60d7a7f26f71ed7"
+  },
+  "digest": "72064c6f90491078097f",
+  "run_id": "positions-72064c6f90491078097f",
+  "source_id": "tokyo-s03-zip",
+  "source_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+  "publish_gate": "CONDITIONAL",
+  "gteki_role": "context",
+  "navigation_use": "NOT_FOR_ROUTING",
+  "verification": "UNVERIFIED",
+  "label": "approximate (±max(5 m, polygon radius))",
+  "counts": {
+    "candidates": 26,
+    "pointed": 25,
+    "unpointed": 1,
+    "platforms_skipped": 19,
+    "s03_citing_pois": 45
+  },
+  "unpointed": [
+    {
+      "reason": "SOURCE_DEFECT_HOLE_OUTSIDE_SHELL",
+      "count": 1
+    }
+  ],
+  "methods": [
+    {
+      "method": "area_weighted_centroid",
+      "count": 11
+    },
+    {
+      "method": "largest_part_closest_point",
+      "count": 14
+    }
+  ],
+  "uncertainty_m": {
+    "rule": "max(5 m, radius to the farthest vertex) rounded up to 0.1 m",
+    "count": 25,
+    "min": 5,
+    "median": 5,
+    "p90": 10.42,
+    "max": 14.1
+  },
+  "floor_counts": [
+    {
+      "floor_ordinal": -2,
+      "pointed": 2
+    },
+    {
+      "floor_ordinal": -1,
+      "pointed": 15
+    },
+    {
+      "floor_ordinal": 1,
+      "pointed": 1
+    },
+    {
+      "floor_ordinal": 2,
+      "pointed": 7
+    }
+  ],
+  "floor_mapping": {
+    "verification": "UNVERIFIED",
+    "rule": "The S03 level label maps to a comparison ordinal by assertion (docs/gis/s03/...); it is not a station floor and not an elevation."
+  },
+  "position_rule": "One representative point per gate or transfer: the area-weighted centroid of all parts of its S03 feature geometry in horizontal station ENU; if that point is outside every part, the closest point of the largest part boundary instead. A candidate whose feature is excluded by the WP7 topology ruling stays unpointed, with its reason code only. Platforms keep no point. Search display only; never routing or connectors.",
+  "public_receipt_rule": "This receipt carries counts and distributions only: no coordinate, no POI name and no S03 entity or feature id. The `source_id` is GTEki's own registry id for the dataset, not a value read from the source.",
+  "inputs": [
+    {
+      "role": "station",
+      "path": "stations/shinjuku/gteki/station.json",
+      "sha256": "43f74f0d68fca44358884c7461a8570a8aa44df2ec155bb36156ab9fb7d13728"
+    },
+    {
+      "role": "pois",
+      "path": "stations/shinjuku/gteki/pois.json",
+      "sha256": "45937ec00e20397769cb2d4eb5cd6a97ebf5c759fe5771324b7a8a27caa2fd3e"
+    },
+    {
+      "role": "entity_source",
+      "path": "docs/research/lines/shinjuku-line-pois.json",
+      "sha256": "abf486b8925caa7b1232a766904c8ff863f30714ba5f110ff630e27fad9c79fc"
+    }
+  ],
+  "outputs": {
+    "private": {
+      "store_path": "out/s03/positions-72064c6f90491078097f.json",
+      "sha256": "b3f74ca1f83eedc427e4b3929893fb4c946bab036efac93a77d34b86844c79e2",
+      "bytes": 23601
+    }
+  }
+}

@@ -13,29 +13,33 @@ import type { Poi, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
+import { loadSignFont } from "../signFont.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
-import { castAll, castCamera, cuttableSigns, explorerTargets, keepBelowBlockers } from "./raycast.ts";
+import { castAll, castCamera, cuttableSigns, explorerTargets } from "./raycast.ts";
 import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
-import { PostFx } from "./postfx.ts";
+import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
-import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachFov, avatarFade, boomSqueezed, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack, stepSlope, targetFov, type SlopeState } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
+import { collectIdentityBoards, identityBoardObjects, identityFront, identityNameBehind, identityNameCentre, identityNameCorners, identityNameSamples, identityRegionRect, intersectsRect, protectIdentityChip, withinObject, type IdentityBoard, type ScreenRect } from "./identityBoards.ts";
+import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming } from "./identityFraming.ts";
 import { StationCaches } from "./stationCaches.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
-import { createAvatar, type AvatarRig } from "./avatar.ts";
+import { createAvatarRig, type AvatarSelection } from "./avatarSelection.ts";
 import { avatarMotion } from "./avatarMotion.ts";
 import { contactShadow } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
-import { CAST_RETUNE_M, SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, setCasters, shadowYRange, type ShadowCandidate } from "./shadows.ts";
+import { SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, needsCasterRetune, setCasters, shadowFitRange, type ShadowCandidate } from "./shadows.ts";
 import { buildGraphView, type GraphView } from "./graphView.ts";
 import { Input } from "./input.ts";
+import { headingFromYaw } from "./pose.ts";
 import { DEFAULT_GROUND, acceptGround, angleDelta, cumulativeLengths, resolveWalls, samplePolyline, wallToRenderer, type Segment2 } from "./walker.ts";
 import { OcclusionSweep, SIGN_BACKDROP_M, labelState, onFocusFloor, type LabelOcclusion, type LabelState } from "./labelVisibility.ts";
 import { TriangleBvh, segmentHitsBox, type Cull } from "./triangleBvh.ts";
@@ -44,6 +48,10 @@ import { occludedLineStyle, type OccludedLineStyle } from "./occludedLine.ts";
 import { BLOOM_HEADROOM, OVERLAY_INPUT_MIN, compensate, linearToSrgb, type Vec3 } from "./toneComp.ts";
 
 export type ExplorerMode = "overview" | "walk" | "guide";
+
+export interface ExplorerPose { east: number; north: number; up: number; headingDeg: number; mode: ExplorerMode }
+
+export interface ExplorerOptions { avatarGlbUrl?: string }
 
 /** The walker-following sun shadow's fixed inputs (set at attach) and what it currently holds. */
 interface ShadowFit {
@@ -91,6 +99,8 @@ const LABEL_RECHECK_MS = 1000;
 const DECLUTTER_MS = 80;
 /** A revealed label that still cannot be measured (never laid out) is re-checked this many times, then left on its estimate. */
 const MEASURE_TRIES = 5;
+/** Let the initial station identity framing remain readable before guide yaw steering resumes. */
+const IDENTITY_HOLD_S = 4;
 /** Instanced meshes with more instances than this occlude only as registered proxies. */
 const MAX_OCCLUDER_INSTANCES = 1024;
 
@@ -162,6 +172,8 @@ interface PoiLabel {
   size: { w: number; h: number } | null;
   /** Passes that revealed this label while it was still unmeasured. */
   measureTries: number;
+  identityHidden: boolean;
+  identityOffsetY: number;
 }
 
 export class Explorer {
@@ -180,10 +192,8 @@ export class Explorer {
   private readonly street = new StreetBackdrop();
   /** Render height of the station's street floor when it is an underground (scene-lit) station, else null. */
   private streetY: number | null = null;
-  /** Set by each discrete placement (walkFrom, startGuide); consumed by the next frame outside overview. */
+  /** Set by each discrete placement (walkFrom, startGuide, seekGuide); consumed by the next frame outside overview. */
   private teleported = false;
-  /** A teleport made while already walking/guiding: the follow camera jumps with the walker instead of gliding. */
-  private snapCamera = false;
   /** prefers-reduced-motion: the follow camera and orbit damping cut instead of gliding, and decorative route motion stops. */
   private reducedMotion = false;
   private readonly streetProbe = { at: new THREE.Vector3(Infinity, 0, 0), wait: 0, outdoors: false, level: true };
@@ -197,6 +207,12 @@ export class Explorer {
   private readonly timer = new THREE.Timer();
   private readonly input: Input;
   private readonly ray = new THREE.Raycaster();
+  private readonly qaSignBounds = new THREE.Box3();
+  private readonly qaSignExpanded = new THREE.Box3();
+  private qaSignCount = 0;
+  private qaSignInside = false;
+  private qaSignNearestName = "";
+  private qaSignNearestGap = Infinity;
 
   private station: LoadedStation | null = null;
   private stationScene: StationScene | null = null;
@@ -210,6 +226,8 @@ export class Explorer {
   private groundTargets: THREE.Object3D[] = [];
   private colliderTargets: THREE.Object3D[] = [];
   private cameraTargets: THREE.Object3D[] = [];
+  /** All camera surfaces collide from both sides, independent of source winding. Rebuilt with the targets. */
+  private cameraSides: ReadonlySet<THREE.Object3D> = new Set();
   /** Walls and floors only: the street probe's sky test (camera-only blockers such as signs never hide the sky). */
   private skyTargets: THREE.Object3D[] = [];
   private blockerTargets: ReadonlySet<THREE.Object3D> = new Set();
@@ -227,13 +245,15 @@ export class Explorer {
   private readonly cameraCut = new CameraCut();
   private routeTexture: THREE.CanvasTexture | null = null;
   private routeLines: OccludedLineStyle | null = null;
+  /** QA hook state: the start/destination beacons follow it, including across route recomputes. */
+  private routeMarkersVisible = true;
   /** `toneMapped: false` overlays whose colour is pre-compensated for the high tier's OutputPass (see applyOverlayTone). */
   private overlayTints: OverlayTint[] = [];
   /** Max modelled display error (0..255) over the compensated overlays; null on the low tier or with no overlays. */
   private overlayResidual: number | null = null;
 
   private readonly avatar = new THREE.Group();
-  private avatarRig: AvatarRig | null = null;
+  private avatarRig: AvatarSelection | null = null;
   /** Where the body faces (it turns toward travel; the camera keeps `yaw`). */
   private bodyYaw = 0;
   private readonly lastAvatarPos = new THREE.Vector3();
@@ -271,13 +291,20 @@ export class Explorer {
   private camDistance: number = FOLLOW.defaultDistance;
   /** Smoothed extra boom elevation (radians) raised over a wall/slab squeeze; see constrainedPitch. */
   private boomRaise = 0;
-  private readonly raiseScratch = new THREE.Vector3();
-  private readonly raisedBoom = new THREE.Vector3();
+  private boomActual = 0;
+  private cameraFade = 1;
+  /** Set when the follow camera resumes after the overview: the fade left from before it is stale, so it snaps once. */
+  private fadeStale = false;
+  /** Empty/null until the QA hooks are explicitly called. */
+  private qaCamera: CameraHold = {};
+  private qaCameraSnap = false;
+  private qaAvatarFade: number | null = null;
   private firstPerson = false;
   private mode: ExplorerMode = "overview";
   private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
   /** Every stop of the running guide (`guide.stops` is consumed as they are reached; a seek restores the ones still ahead). */
   private guideAllStops: { s: number; index: number }[] = [];
+  private guideIdentityHoldS = 0;
   /** The user's guide speed tier; kept across instruction changes and later guides. */
   private tier: GuideTierId = DEFAULT_GUIDE_TIER;
   private poiLabels: PoiLabel[] = [];
@@ -290,6 +317,13 @@ export class Explorer {
   private readonly labelAt = new THREE.Vector3();
   /** The station's sign meshes (see-through role, not solid): a label they alone block hides instead of fading. */
   private signMeshes: ReadonlySet<THREE.Object3D> = new Set();
+  private identityBoards: IdentityBoard[] = [];
+  /** Consumed by the first successful walker placement, including when no board qualifies. */
+  private identityPlaced = false;
+  private identityLabelsDirty = true;
+  private labelMode: ExplorerMode | null = null;
+  private labelCamFov = NaN;
+  private labelCamAspect = NaN;
   /** Camera pose at the last occlusion sweep. */
   private readonly labelCamPos = new THREE.Vector3(Infinity, 0, 0);
   private readonly labelCamQuat = new THREE.Quaternion();
@@ -314,6 +348,7 @@ export class Explorer {
   private panelEl: HTMLElement | null = null;
   /** The persistent credit line along the canvas bottom; the overview keeps clear of it too. */
   private creditEl: HTMLElement | null = null;
+  private minimapEl: HTMLElement | null = null;
   /** Refits the overview when an occluder's size changes: the panel collapsing, the credit line wrapping. */
   private occluderResize: ResizeObserver | null = null;
   private quality: "low" | "high";
@@ -321,7 +356,7 @@ export class Explorer {
   sceneError: string | null = null;
   private disposed = false;
 
-  constructor(private readonly host: HTMLElement, private readonly events: ExplorerEvents = {}) {
+  constructor(private readonly host: HTMLElement, private readonly events: ExplorerEvents = {}, options: ExplorerOptions = {}) {
     this.quality = matchMedia("(pointer: coarse)").matches || Math.min(screen.width, screen.height) < 700 ? "low" : "high";
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.quality === "high" ? 2 : 1.5));
@@ -347,7 +382,7 @@ export class Explorer {
     this.envProbe.visible = false;
     this.scene.add(this.world, this.overlays, this.avatar, this.street.group, this.envProbe);
     this.overlays.add(this.routeGroup, this.poiGroup);
-    this.buildAvatar();
+    this.buildAvatar(options.avatarGlbUrl);
     this.defaultEnvironment();
     this.applyLighting();
 
@@ -358,6 +393,35 @@ export class Explorer {
 
   get currentMode(): ExplorerMode {
     return this.mode;
+  }
+
+  /** Follow-camera diagnostics for the QA hook. Angles are radians, distances metres. */
+  cameraInfo(): { fov: number; far: number; slopeOn: boolean; boomWanted: number; boomActual: number; raise: number; pitch: number; yaw: number; avatarFade: number; reflections: boolean; mode: ExplorerMode } {
+    return {
+      fov: this.camera.fov, far: this.camera.far, slopeOn: this.slope.on,
+      boomWanted: this.camDistance, boomActual: this.boomActual, raise: this.boomRaise,
+      pitch: this.pitch, yaw: this.yaw, avatarFade: this.cameraFade,
+      reflections: this.composer?.settings.reflections ?? false, mode: this.mode,
+    };
+  }
+
+  /** QA-only: hold supplied controls across guide steering/input; null releases all held controls. */
+  setCamera(patch: CameraHold | null): void {
+    this.qaCamera = patchCameraHold(this.qaCamera, patch);
+    this.qaCameraSnap = patch !== null;
+  }
+
+  /** QA-only: hold the shared body/postprocessing fade; null restores the automatic value. */
+  holdAvatarFade(value: number | null): void {
+    this.qaAvatarFade = fadeHold(value);
+    this.applyAvatarFade(0, true);
+  }
+
+  private applyAvatarFade(dt: number, snap: boolean): void {
+    this.cameraFade = this.qaAvatarFade ?? stepAvatarFade(this.cameraFade, avatarFade(this.boomActual), dt, snap || this.fadeStale || this.reducedMotion);
+    this.fadeStale = false;
+    this.avatarRig?.setFade(this.cameraFade);
+    this.composer?.setAvatarFade(this.avatarRig?.root ?? null, this.cameraFade);
   }
 
   get qualityLevel(): "low" | "high" {
@@ -404,6 +468,65 @@ export class Explorer {
     return out;
   }
 
+  /** Live recognition-proxy evidence in page CSS pixels; no renderer or label state is changed. */
+  identity(): { id: string; inFrame: boolean; frontFacing: boolean; facingDeg: number; nameRect: ScreenRect | null; nameHeightPx: number | null; coveredByChip: boolean; occluded: LabelOcclusion }[] {
+    this.camera.updateMatrixWorld();
+    this.refreshOccluders();
+    const host = this.host.getBoundingClientRect();
+    const { w, h } = this.viewSize;
+    return this.identityBoards.map((board) => {
+      board.object.updateWorldMatrix(true, false);
+      const centre = identityNameCentre(board);
+      const facing = THREE.MathUtils.clamp(identityFront(board).dot(this.camera.position.clone().sub(centre).normalize()), -1, 1);
+      const visible = inScene(board.object, this.scene) && objectVisible(board.object);
+      const rects = board.regions.map((region) => ({ kind: region.kind, rect: visible ? identityRegionRect(region.box, board.object, this.camera, w, h) : null }));
+      const names = rects.filter((r) => r.kind === "name");
+      const visibleNames = names.flatMap((r) => r.rect ? [r.rect] : []);
+      const name = visibleNames.length ? {
+        x0: Math.min(...visibleNames.map((r) => r.x0)), y0: Math.min(...visibleNames.map((r) => r.y0)),
+        x1: Math.max(...visibleNames.map((r) => r.x1)), y1: Math.max(...visibleNames.map((r) => r.y1)),
+      } : null;
+      const pageRect = (r: ScreenRect): ScreenRect => ({ x0: r.x0 + host.left, y0: r.y0 + host.top, x1: r.x1 + host.left, y1: r.y1 + host.top });
+      const coveredByChip = this.poiLabels.some((l) => {
+        if (!l.obj.visible || l.obj.element.style.display === "none") return false;
+        const chip = l.obj.element.getBoundingClientRect();
+        if (!chip.width || !chip.height) return false;
+        return rects.some((r) => r.rect && intersectsRect(pageRect(r.rect), { x0: chip.left, y0: chip.top, x1: chip.right, y1: chip.bottom }));
+      });
+      // A name corner behind the camera projects to a meaningless rect; report no size then.
+      const inFrame = !identityNameBehind(board, this.camera) &&
+        names.length === visibleNames.length && name !== null && name.x0 >= 0 && name.y0 >= 0 && name.x1 <= w && name.y1 <= h;
+      return {
+        id: board.object.name || board.object.uuid,
+        inFrame,
+        frontFacing: facing > 0.2, facingDeg: THREE.MathUtils.radToDeg(Math.acos(facing)),
+        nameRect: inFrame && name ? pageRect(name) : null, nameHeightPx: inFrame && name ? name.y1 - name.y0 : null, coveredByChip,
+        occluded: this.identityOccluded(identityNameSamples(board, this.camera.getWorldPosition(new THREE.Vector3())), identityBoardObjects(board, this.identityBoards)),
+      };
+    });
+  }
+
+  /**
+   * Identity occlusion over the name rect: the centre ray decides, else a majority (3 of 4) of the inset
+   * corner rays; among the rays that block, geometry beats sign. Each ray stops at the name's visible face.
+   */
+  private identityOccluded(samples: readonly THREE.Vector3[], ignore: readonly THREE.Object3D[]): LabelOcclusion {
+    const at = (p: THREE.Vector3) => this.labelOccluded({ obj: { getWorldPosition: (target) => target.copy(p) }, occluded: "none" }, { ignore, segmentOnly: true });
+    const centre = at(samples[0]!);
+    if (centre !== "none") return centre;
+    const corners = samples.slice(1).map(at).filter((r) => r !== "none");
+    if (corners.length < 3) return "none";
+    return corners.includes("geometry") ? "geometry" : "sign";
+  }
+
+  /**
+   * Whether the camera actually sees the board's name face. Only a visible board reserves room on screen;
+   * one behind a wall must not displace POI chips that the user can read (#342).
+   */
+  private identityBoardVisible(board: IdentityBoard): boolean {
+    return this.identityOccluded(identityNameSamples(board, this.camera.getWorldPosition(new THREE.Vector3())), identityBoardObjects(board, this.identityBoards)) === "none";
+  }
+
   /** POI label states for automated visual checks. */
   labelInfo(): { shown: number; faded: number; hidden: number; decluttered: number } {
     const n = { shown: 0, faded: 0, hidden: 0, decluttered: 0 };
@@ -445,6 +568,13 @@ export class Explorer {
     return { x: this.pos.x, y: -this.pos.z, z: this.pos.y };
   }
 
+  /** Read-only walker pose for 2D HUD overlays (ENU metres, body heading clockwise from north). Null before a station loads. */
+  getPose(): ExplorerPose | null {
+    if (!this.station) return null;
+    const { x, y, z } = this.avatarEnu;
+    return { east: x, north: y, up: z, headingDeg: headingFromYaw(this.bodyYaw), mode: this.mode };
+  }
+
   private defaultEnvironment(): void {
     this.scene.background = new THREE.Color(0x0b1018);
     this.scene.fog = new THREE.Fog(0x0b1018, 60, 420);
@@ -480,9 +610,13 @@ export class Explorer {
    */
   private attachShadows(root: THREE.Object3D, focus: THREE.Vector3 | null = null, halfExtentM = SHADOW_HALF_EXTENT_M, floorY: number | null = focus ? focus.y : null): { casters: number; receivers: number } {
     this.shadowFit = null;
-    const r = applyStationShadows(root, this.quality, this.lighting);
-    if (r.bounds.isEmpty()) return r;
-    this.shadowFit = { yRange: shadowYRange(r.bounds), candidates: r.candidates, tallCandidates: r.tallCandidates, casters: 0, castFloorY: NaN, receivers: r.receivers, fitted: null, walkHalf: halfExtentM, focus, floorY };
+    // The caster mask is applied at attach (shadows.ts), with the walker's feet: no frame has the ceilings casting.
+    const feetY = floorY ?? this.pos.y;
+    const r = applyStationShadows(root, this.quality, this.lighting, feetY);
+    const yRange = shadowFitRange(r.bounds);
+    // Nothing to fit (no drawn geometry), or a non-finite box (a mesh with NaN positions): following it would throw every frame.
+    if (!yRange) return r;
+    this.shadowFit = { yRange, candidates: r.candidates, tallCandidates: r.tallCandidates, casters: r.casters, castFloorY: feetY, receivers: r.receivers, fitted: null, walkHalf: halfExtentM, focus, floorY };
     return r;
   }
 
@@ -511,7 +645,9 @@ export class Explorer {
     }
     // Only geometry starting below the walker's head casts (shadows.ts). Recomputed on a floor change, not per frame.
     const floorY = f.floorY ?? this.pos.y; // pos is the feet
-    if (!(Math.abs(floorY - f.castFloorY) <= CAST_RETUNE_M)) { f.castFloorY = floorY; f.casters = setCasters(f.candidates, floorY); }
+    // A non-finite feet Y would retune the mask to "nothing casts" every frame; skip the frame instead.
+    if (!Number.isFinite(floorY)) return;
+    if (needsCasterRetune(floorY, f.castFloorY)) { f.castFloorY = floorY; f.casters = setCasters(f.candidates, floorY); }
     f.fitted = "follow";
     const at = f.focus ?? this.pos;
     // followShadow throws on a non-finite target; skip the frame rather than throw every frame.
@@ -542,11 +678,7 @@ export class Explorer {
     this.envProbe.intensity = plan.environmentIntensity;
     this.envProbe.visible = this.probeWanted && this.probeBake === "ready";
     if (this.probeWanted && this.probeBake === "idle") this.bakeEnvProbe();
-    this.avatar.traverse((o) => {
-      const m = (o as THREE.Mesh).material;
-      const next = plan.avatarEnvMap ? envMap : null;
-      if (m instanceof THREE.MeshStandardMaterial && m.envMap !== next) { m.envMap = next; m.needsUpdate = true; }
-    });
+    this.avatarRig?.setEnvMap(plan.avatarEnvMap ? envMap : null);
   }
 
   private coreEnv(): THREE.Texture {
@@ -631,13 +763,13 @@ export class Explorer {
   /** Built once: the composer only references this explorer's scene and camera, so stations reuse it. */
   private setupComposer(): void {
     if (this.composer || this.quality !== "high") return;
-    this.composer = new PostFx(this.renderer, this.scene, this.camera);
+    this.composer = new PostFx(this.renderer, this.scene, this.camera, qaPostFxSettings(location.search));
     this.composer.setBloomThreshold(this.bloomThreshold);
     this.applyOverlayTone();
   }
 
-  private buildAvatar(): void {
-    this.avatarRig = createAvatar({ quality: this.quality });
+  private buildAvatar(glbUrl?: string): void {
+    this.avatarRig = createAvatarRig({ quality: this.quality, glbUrl });
     // A slim marker ring keeps "this is you" readable without outshining the character.
     const ring = new THREE.Mesh(new THREE.RingGeometry(0.46, 0.5, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5ef0ff, transparent: true, opacity: 0.38, depthWrite: false }));
     ring.position.y = 0.02;
@@ -662,8 +794,9 @@ export class Explorer {
    * Abandon any in-flight load and show nothing: called as soon as another station is selected, so a
    * slow previous station can never appear under the new selection (even if the new one fails to load).
    */
-  cancelPendingLoad(): void {
+  cancelPendingLoad(nextId: string): void {
     this.loadGeneration++;
+    this.releaseStationCaches(nextId);
     this.clearStation();
     this.station = null;
     this.phase = "idle";
@@ -676,6 +809,7 @@ export class Explorer {
     // Leaving another station drops its retained caches first; the same station reopening keeps them.
     this.releaseStationCaches(station.key);
     this.clearStation();
+    void this.avatarRig?.loadGlb();
     this.station = station;
     this.stationCaches.remember(station.key, station.scene);
     const bundle = station.bundle;
@@ -768,6 +902,7 @@ export class Explorer {
     this.colliderTargets = targets.collider;
     this.skyTargets = targets.sky;
     this.cameraTargets = targets.camera;
+    this.cameraSides = new Set(targets.camera);
     this.blockerTargets = targets.blockers;
     // Every ray target is in the camera set (walls, floors, blockers); trees are built here, never mid-frame.
     this.rayTrees = prepareRayTrees(targets.camera);
@@ -777,6 +912,7 @@ export class Explorer {
       const signs = cuttableSigns(seeThroughMeshes(this.stationScene.root), [this.walkable, this.colliders, this.cameraBlockers, this.cameraTargets]);
       this.seeThrough = this.cameraCut.apply(this.stationScene.root, signs);
       this.signMeshes = new Set(signs);
+      this.identityBoards = collectIdentityBoards(this.stationScene.root);
       // After the cut: shadows read the materials as they will be drawn. Frustum fit runs in the next step().
       this.attachShadows(this.stationScene.root);
     }
@@ -795,6 +931,7 @@ export class Explorer {
 
   private async buildStationScene(station: LoadedStation, ctx: SceneContext): Promise<StationScene | null> {
     if (station.sceneImportError) throw new Error(`scene module failed to load: ${station.sceneImportError}`);
+    await loadSignFont();
     if (station.scene) return await station.scene.buildScene(ctx);
     const assets = station.bundle.assets ?? [];
     if (assets.length === 0) return null;
@@ -803,6 +940,7 @@ export class Explorer {
   }
 
   private clearStation(): void {
+    this.avatarRig?.cancelPendingLoad();
     this.street.restore(this.scene);
     this.street.attach(null);
     this.streetY = null;
@@ -825,12 +963,16 @@ export class Explorer {
     this.groundTargets = [];
     this.colliderTargets = [];
     this.cameraTargets = [];
+    this.cameraSides = new Set();
     this.skyTargets = [];
     this.blockerTargets = new Set();
     this.rayTrees = { trees: 0, triangles: 0, bytes: 0, buildMs: 0 };
     this.walls = [];
     this.seeThrough = [];
     this.signMeshes = new Set();
+    this.identityBoards = [];
+    this.identityPlaced = false;
+    this.identityLabelsDirty = true;
     this.cameraCut.clear();
     this.occluders = [];
     this.proxies.clear();
@@ -888,11 +1030,18 @@ export class Explorer {
     this.refitOverview();
   }
 
-  /** Observe both occluders on one observer, so a size change of either refits through the same path. */
+  /** Name the top-right minimap occluder; hidden maps leave the canvas free. */
+  setMinimap(el: HTMLElement | null): void {
+    this.minimapEl = el;
+    this.watchOccluders();
+    this.refitOverview();
+  }
+
+  /** Observe the occluders on one observer, so size changes refit through the same path. */
   private watchOccluders(): void {
     this.occluderResize?.disconnect();
     this.occluderResize = null;
-    const els = [this.panelEl, this.creditEl].filter((e): e is HTMLElement => e !== null);
+    const els = [this.panelEl, this.creditEl, this.minimapEl].filter((e): e is HTMLElement => e !== null);
     if (els.length === 0 || typeof ResizeObserver === "undefined") return;
     this.occluderResize = new ResizeObserver(() => this.refitOverview());
     for (const e of els) this.occluderResize.observe(e);
@@ -904,7 +1053,7 @@ export class Explorer {
   }
 
   /**
-   * The canvas area no UI covers (CSS px, canvas-relative): neither the panel nor the credit line. Both page
+   * The canvas area no UI covers (CSS px, canvas-relative): panel, credit line and minimap. Their page
    * rects are measured here, on a resize or an occluder change — never per frame.
    */
   private freeRect(): ViewRect {
@@ -912,9 +1061,11 @@ export class Explorer {
     const el = this.panelEl;
     // display:none (walk/guide on a phone), a collapsed element or none at all leaves the canvas free.
     const measured = el && el.getClientRects().length > 0 ? el.getBoundingClientRect() : null;
-    const host = (measured || this.creditEl) ? this.host.getBoundingClientRect() : null;
+    const cornerRect = this.minimapEl && this.minimapEl.getClientRects().length > 0 ? this.minimapEl.getBoundingClientRect() : null;
+    const host = (measured || this.creditEl || cornerRect) ? this.host.getBoundingClientRect() : null;
     const panel = measured && host ? { x: measured.left - host.left, y: measured.top - host.top, w: measured.width, h: measured.height } : null;
-    return freeArea({ w, h }, panel, this.creditInset(host));
+    const corner = cornerRect && host ? { x: cornerRect.left - host.left, y: cornerRect.top - host.top, w: cornerRect.width, h: cornerRect.height } : null;
+    return freeArea({ w, h }, panel, this.creditInset(host), corner);
   }
 
   /** The canvas-bottom band the credit line blocks (CSS px): it spans the width, so only its top edge counts. */
@@ -946,7 +1097,10 @@ export class Explorer {
 
   setMode(mode: ExplorerMode): void {
     if (this.mode === mode) return;
+    this.guideIdentityHoldS = 0;
+    if (this.mode === "overview") this.fadeStale = true;
     this.mode = mode;
+    this.labelSweepDoneAt = -Infinity;
     // The overview may have deepened the far plane for its pose; the walking camera keeps its own.
     if (mode !== "overview" && this.camera.far !== CAMERA_FAR_M) { this.camera.far = CAMERA_FAR_M; this.camera.updateProjectionMatrix(); }
     this.orbit.enabled = mode === "overview";
@@ -957,7 +1111,7 @@ export class Explorer {
     if (xray) xray.visible = mode === "overview";
     this.routeLines?.setXray(mode === "overview");
     this.graph?.setXray(mode === "overview");
-    if (mode === "overview") { this.street.restore(this.scene); this.snapCamera = false; this.setFov(FOV.overview, true); }
+    if (mode === "overview") { this.street.restore(this.scene); this.setFov(FOV.overview, true); }
     this.overviewLook.set(this.scene, this.world, mode === "overview");
     this.events.onMode?.(mode);
   }
@@ -972,6 +1126,39 @@ export class Explorer {
     return this.firstPerson;
   }
 
+  /** Initial placement only: camera look changes, never the body heading or subsequent seeks. */
+  private frameInitialIdentity(guideHeading?: number): boolean {
+    if (this.identityPlaced) return false;
+    this.identityPlaced = true;
+    const head = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
+    // Signs stay transparent to this placement probe, including solid sign materials.
+    const signs = new Set(this.stationScene ? seeThroughMeshes(this.stationScene.root) : []);
+    const boards = this.identityBoards.filter((b) => inScene(b.object, this.scene) && objectVisible(b.object)).map((board) => {
+      board.object.updateWorldMatrix(true, false);
+      const centre = identityNameCentre(board);
+      const targets = this.cameraTargets.filter((o) => !signs.has(o) && !withinObject(o, board.object));
+      const visible = (from: THREE.Vector3, to: THREE.Vector3): boolean => {
+        const direction = to.clone().sub(from);
+        this.ray.set(from, direction.clone().normalize());
+        this.ray.near = 0;
+        this.ray.far = Math.max(0, direction.length() - 0.05);
+        return castAll(this.ray, targets).length === 0;
+      };
+      return { centre, front: identityFront(board), nameCorners: identityNameCorners(board), blocked: head.distanceTo(centre) > IDENTITY_RANGE_M || !visible(head, centre), visible };
+    });
+    if (boards.length === 0) return false;
+    const { w, h } = this.viewSize;
+    const free = this.freeRect();
+    const ndcFree = { x0: 2 * free.x / w - 1, x1: 2 * (free.x + free.w) / w - 1, y0: 1 - 2 * (free.y + free.h) / h, y1: 1 - 2 * free.y / h };
+    const look = identityFraming(head, this.yaw, this.pitch, boards, this.camera.aspect, FOV.follow, guideHeading, ndcFree);
+    if (!look) return false;
+    this.yaw = look.yaw;
+    this.pitch = look.pitch;
+    // The framed look lands as a snap on the next frame: the camera and slope must not pan from the old pose.
+    this.teleported = true;
+    return true;
+  }
+
   /** Start free walking at a station ENU point (nearest walkable ground below/above it). */
   walkFrom(enu: { x: number; y: number; z: number }, headingDeg = 0): boolean {
     const p = R(enu.x, enu.y, enu.z);
@@ -979,21 +1166,21 @@ export class Explorer {
     if (ground === null) return false;
     this.pos.set(p.x, ground, p.z);
     this.teleported = true;
-    this.snapCamera = this.mode !== "overview";
     this.yaw = (-headingDeg * Math.PI) / 180;
     // The avatar appears at the new spot facing the new heading (no run blend from the old one).
     this.lastAvatarPos.copy(this.pos);
     this.bodyYaw = this.yaw;
     this.stopGuide();
     this.setMode("walk");
+    this.frameInitialIdentity();
     return true;
   }
 
-  walkFromNode(bundle: StationBundle, nodeId: string): boolean {
+  walkFromNode(bundle: StationBundle, nodeId: string, headingDeg: number): boolean {
     const n = bundle.nodes.find((x) => x.id === nodeId);
     if (!n) return false;
     const z = nodeDisplayZ(n, bundle.floors.find((f) => f.id === n.floorId)).z;
-    return this.walkFrom({ x: n.position.x, y: n.position.y, z });
+    return this.walkFrom({ x: n.position.x, y: n.position.y, z }, headingDeg);
   }
 
   private groundAt(x: number, fromY: number, z: number, maxDrop: number): number | null {
@@ -1053,8 +1240,15 @@ export class Explorer {
     ring.position.y = 0.08;
     g.add(col, ring);
     g.position.copy(at);
-    g.userData.pulse = ring;
+    g.userData = { pulse: ring, routeMarker: true };
+    g.visible = this.routeMarkersVisible;
     return g;
+  }
+
+  /** QA hook: show or hide the route's start/destination beacons; the route and guidance are untouched. */
+  setRouteMarkersVisible(visible: boolean): void {
+    this.routeMarkersVisible = visible;
+    for (const g of this.routeGroup.children) if (g.userData.routeMarker) g.visible = visible;
   }
 
   /** Removing the route also ends any guidance along it: a recomputed or failed route never keeps the old guide. */
@@ -1092,9 +1286,10 @@ export class Explorer {
       const obj = new CSS2DObject(el);
       obj.position.copy(at).add(new THREE.Vector3(0, LABEL_LIFT, 0));
       this.poiGroup.add(obj);
-      this.poiLabels.push({ poiId: poi.id, obj, groundY: at.y, selected: isSelected, occluded: wasOccluded.get(poi.id) ?? "none", state: "shown", decluttered: false, klass: labelClass(isSelected, poi.category), routable: Boolean(node), size: null, measureTries: 0 });
+      this.poiLabels.push({ poiId: poi.id, obj, groundY: at.y, selected: isSelected, occluded: wasOccluded.get(poi.id) ?? "none", state: "shown", decluttered: false, klass: labelClass(isSelected, poi.category), routable: Boolean(node), size: null, measureTries: 0, identityHidden: false, identityOffsetY: 0 });
     }
     this.poiGroup.updateMatrixWorld(true);
+    this.identityLabelsDirty = true;
     this.labelSweep.invalidate(this.poiLabels.length);
     this.declutterDirty = true;
   }
@@ -1189,15 +1384,20 @@ export class Explorer {
     const labels = this.poiLabels;
     if (labels.length === 0) return;
     const cam = this.camera;
-    const camMoved = cam.position.distanceToSquared(this.labelCamPos) > 1e-4 || cam.quaternion.angleTo(this.labelCamQuat) > 1e-3;
+    const camMoved = cam.position.distanceToSquared(this.labelCamPos) > 1e-4 || cam.quaternion.angleTo(this.labelCamQuat) > 1e-3 || cam.fov !== this.labelCamFov || cam.aspect !== this.labelCamAspect || this.labelMode !== this.mode;
     if (camMoved) {
       this.labelCamPos.copy(cam.position);
       this.labelCamQuat.copy(cam.quaternion);
+      this.labelMode = this.mode;
+      this.labelCamFov = cam.fov;
+      this.labelCamAspect = cam.aspect;
       this.declutterDirty = true;
     }
     const now = performance.now();
     // The periodic re-check waits LABEL_RECHECK_MS after the previous sweep completed.
-    if (camMoved || (!this.labelSweep.pending && now - this.labelSweepDoneAt >= LABEL_RECHECK_MS)) this.labelSweep.invalidate(labels.length);
+    const recheck = camMoved || (!this.labelSweep.pending && now - this.labelSweepDoneAt >= LABEL_RECHECK_MS);
+    if (recheck) this.labelSweep.invalidate(labels.length);
+    if (recheck || this.identityLabelsDirty) this.updateIdentityLabels();
     if (this.labelSweep.pending) {
       this.refreshOccluders();
       const budget = LABEL_RAYS[this.quality];
@@ -1213,7 +1413,7 @@ export class Explorer {
     const focusY = this.mode === "overview" ? null : this.pos.y;
     for (const l of labels) {
       const distance = this.labelAt.setFromMatrixPosition(l.obj.matrixWorld).distanceTo(cam.position);
-      const state = labelState({ occluded: l.occluded, distance, onFocusFloor: onFocusFloor(l.groundY, focusY), selected: l.selected });
+      const state = l.identityHidden ? "hidden" : labelState({ occluded: l.occluded, distance, onFocusFloor: onFocusFloor(l.groundY, focusY), selected: l.selected, overview: this.mode === "overview" });
       if (state === l.state) continue;
       l.state = state;
       l.obj.element.classList.toggle("occluded", state === "faded");
@@ -1223,6 +1423,53 @@ export class Explorer {
     for (const l of labels) {
       const shown = l.state !== "hidden" && !l.decluttered;
       if (l.obj.visible !== shown) l.obj.visible = shown;
+    }
+  }
+
+  /** CSS2D's transform stays renderer-owned; the separate CSS translate is the chip's pixel offset. */
+  private updateIdentityLabels(): void {
+    this.identityLabelsDirty = false;
+    const { w, h } = this.viewSize;
+    this.camera.updateMatrixWorld();
+    const regions: ScreenRect[] = [];
+    if (this.mode !== "overview" && this.identityBoards.length) {
+      // Visibility rays read occluder bounds: bring them current even when no POI sweep is pending.
+      this.refreshOccluders();
+      for (const board of this.identityBoards) {
+        if (!inScene(board.object, this.scene) || !objectVisible(board.object)) continue;
+        board.object.updateWorldMatrix(true, false);
+        const rects = board.regions.map((region) => identityRegionRect(region.box, board.object, this.camera, w, h)).filter((r): r is ScreenRect => r !== null);
+        // A board no ray reaches still projects a rect, but it protects empty screen: skip it (#342).
+        if (!rects.length || !this.identityBoardVisible(board)) continue;
+        regions.push(...rects);
+      }
+    }
+    regions.sort((a, b) => a.y0 - b.y0);
+    // Measure unmeasured labels in one read-only batch before changing any chip's translate.
+    if (regions.length) for (const l of this.poiLabels) {
+      const el = l.obj.element;
+      if (l.size || !el.isConnected || el.style.display === "none") continue;
+      const w = el.offsetWidth, h = el.offsetHeight;
+      if (w > 0 && h > 0) l.size = { w, h };
+    }
+    for (const l of this.poiLabels) {
+      const el = l.obj.element;
+      if (!regions.length) {
+        if (l.identityHidden) l.identityHidden = false;
+        if (l.identityOffsetY) { l.identityOffsetY = 0; el.style.translate = ""; }
+        continue;
+      }
+      if (!l.size && l.measureTries++ < MEASURE_TRIES) this.identityLabelsDirty = true;
+      const size = l.size ?? estimateLabelBox(el.textContent ?? "");
+      const p = l.obj.getWorldPosition(new THREE.Vector3()).project(this.camera);
+      const x = (p.x + 1) * w / 2, y = (1 - p.y) * h / 2;
+      const chip = { x0: x - size.w / 2, x1: x + size.w / 2, y0: y - size.h / 2, y1: y + size.h / 2 };
+      const result = Math.abs(p.z) <= 1 ? protectIdentityChip(chip, l.selected, regions, h) : { hidden: false, offsetY: 0 };
+      if (l.identityHidden !== result.hidden) l.identityHidden = result.hidden;
+      if (l.identityOffsetY !== result.offsetY) {
+        l.identityOffsetY = result.offsetY;
+        el.style.translate = result.offsetY ? `0 ${result.offsetY}px` : "";
+      }
     }
   }
 
@@ -1279,9 +1526,10 @@ export class Explorer {
   /**
    * What blocks the camera's view of `label`: "geometry" when any non-sign occluder does, "sign" when only
    * signs do, including a backdrop within SIGN_BACKDROP_M behind the anchor or inside its 0.3 m margin,
-   * else "none". Signs are tested last, with the segment extended through and past the anchor.
+   * else "none". Identity probes only the name rect (`identityOccluded`), stopping at its visible face,
+   * and ignores all faces of the same board.
    */
-  private labelOccluded(label: PoiLabel): LabelOcclusion {
+  private labelOccluded(label: { obj: Pick<THREE.Object3D, "getWorldPosition">; occluded: LabelOcclusion }, options: { ignore?: readonly THREE.Object3D[]; segmentOnly?: boolean } = {}): LabelOcclusion {
     if (this.occluders.length === 0) return "none";
     const at = label.obj.getWorldPosition(new THREE.Vector3());
     // Labels behind the camera or past its far plane are hidden by the CSS2D renderer; keep their last
@@ -1289,11 +1537,12 @@ export class Explorer {
     if (Math.abs(at.clone().project(this.camera).z) > 1) return label.occluded;
     const from = this.camera.getWorldPosition(new THREE.Vector3());
     const dist = from.distanceTo(at);
-    if (dist < 0.5) return "none";
-    // Geometry ends just short of the label, so the surface right at its anchor does not count.
-    const to = at.lerp(from, 0.3 / dist);
+    if (dist < (options.segmentOnly ? 1e-6 : 0.5)) return "none";
+    // POI geometry stops short of its anchor; identity probes the full camera-to-name segment.
+    const margin = options.segmentOnly ? 0 : 0.3;
+    const to = at.lerp(from, margin / dist);
     const ray = new THREE.Ray(from, to.clone().sub(from).normalize());
-    let far = dist - 0.3;
+    let far = dist - margin;
     const entry = new THREE.Vector3();
     const toLocal = new THREE.Matrix4();
     const instance = new THREE.Matrix4();
@@ -1317,12 +1566,13 @@ export class Explorer {
     for (let pass = 0; pass < 2; pass++) {
       if (pass === 1 && this.signMeshes.size === 0) break;
       if (pass === 1) {
-        // Same ray direction, extended through the anchor to include its sign backdrop.
-        far = dist + SIGN_BACKDROP_M;
+        // POI signs include the backdrop; identity signs stop exactly at the name.
+        far = dist + (options.segmentOnly ? 0 : SIGN_BACKDROP_M);
         to.copy(from).addScaledVector(ray.direction, far);
         drawn = this.cameraCut.drawnSpans(from, to);
       }
       for (const o of this.occluders) {
+        if (options.ignore?.some((root) => withinObject(o.mesh, root))) continue;
         if (this.signMeshes.has(o.mesh) !== (pass === 1)) continue;
         // World-box prefilter: skip meshes the segment does not reach.
         if (!o.box.containsPoint(from) && !(ray.intersectBox(o.box, entry) && entry.distanceTo(from) <= far)) continue;
@@ -1376,11 +1626,11 @@ export class Explorer {
     const first = samplePolyline(pts, this.guide.cum, fromS);
     this.pos.set(first.x, first.y, first.z);
     this.teleported = true;
-    this.snapCamera = this.mode !== "overview";
     if (first.tx || first.tz) this.yaw = Math.atan2(-first.tx, -first.tz);
     this.lastAvatarPos.copy(this.pos);
     this.bodyYaw = this.yaw;
     this.setMode("guide");
+    this.guideIdentityHoldS = this.frameInitialIdentity(this.yaw) ? IDENTITY_HOLD_S : 0;
   }
 
   /**
@@ -1389,6 +1639,7 @@ export class Explorer {
    * `firstStop` count as passed; the others (including one at `s`) apply, again if they were reached before.
    */
   seekGuide(s: number, firstStop = 0): void {
+    this.guideIdentityHoldS = 0;
     const g = this.guide;
     if (!g) return;
     const total = g.cum[g.cum.length - 1]!;
@@ -1396,7 +1647,6 @@ export class Explorer {
     const p = samplePolyline(g.pts, g.cum, g.s);
     this.pos.set(p.x, p.y, p.z);
     this.teleported = true;
-    this.snapCamera = true;
     if (p.tx || p.tz) this.yaw = Math.atan2(-p.tx, -p.tz);
     this.lastAvatarPos.copy(this.pos);
     this.bodyYaw = this.yaw;
@@ -1427,6 +1677,7 @@ export class Explorer {
   }
 
   stopGuide(): void {
+    this.guideIdentityHoldS = 0;
     this.guide = null;
     if (this.mode === "guide") this.setMode("walk");
   }
@@ -1473,6 +1724,109 @@ export class Explorer {
     return this.avatarEnu;
   }
 
+  /**
+   * Walk renderer-space points (x/z, optional y in metres) in the explorer world frame, through normal walk input.
+   * A point is reached when its horizontal distance is within 0.35 m and, if it carries `y`, the feet are within 0.6 m of it vertically.
+   * stuck: no waypoint advanced and under 0.1 m of 3D displacement over the last second. timedOut: maxSeconds ran out while still moving.
+   */
+  walkPath(
+    points: { x: number; z: number; y?: number }[],
+    opts: { speed?: "walk" | "run"; dt?: number; maxSeconds?: number; onStep?: (i: number) => void } = {},
+  ): { done: boolean; stuck: boolean; timedOut: boolean; steps: number } {
+    if (this.mode !== "walk") return { done: false, stuck: false, timedOut: false, steps: 0 };
+    const dt = opts.dt ?? 1 / 60;
+    const maxSeconds = opts.maxSeconds ?? 60;
+    if (!(dt > 0) || !Number.isFinite(dt) || !(maxSeconds >= 0) || !Number.isFinite(maxSeconds)) {
+      throw new RangeError("walkPath dt must be positive and maxSeconds must be non-negative");
+    }
+    if (points.length === 0) return { done: true, stuck: false, timedOut: false, steps: 0 };
+    this.input.virtualKeys.clear();
+    const reached = (p: { x: number; z: number; y?: number }): boolean =>
+      Math.hypot(p.x - this.pos.x, p.z - this.pos.z) <= 0.35 && (p.y === undefined || Math.abs(this.pos.y - p.y) <= 0.6);
+    const checkpointPos = this.pos.clone();
+    let point = 0;
+    let steps = 0;
+    let elapsed = 0;
+    let checkpointT = 0;
+    let done = false;
+    let stuck = false;
+    let timedOut = false;
+    const maxSteps = Math.floor(maxSeconds / dt + 1e-9);
+    const t0 = this.timer.getElapsed();
+    // Moves past every waypoint already reached; true once the last one is reached.
+    const advance = (): boolean => {
+      while (reached(points[point]!)) {
+        if (point === points.length - 1) return true;
+        point++;
+        checkpointT = elapsed;
+        checkpointPos.copy(this.pos);
+      }
+      return false;
+    };
+    try {
+      for (;;) {
+        if (advance()) { done = true; break; }
+        if (elapsed - checkpointT >= 1 - 1e-9) {
+          if (this.pos.distanceTo(checkpointPos) < 0.1) { stuck = true; break; }
+          checkpointT = elapsed;
+          checkpointPos.copy(this.pos);
+        }
+        if (steps >= maxSteps) { timedOut = true; break; }
+        const target = points[point]!;
+        const dx = target.x - this.pos.x;
+        const dz = target.z - this.pos.z;
+        this.yaw = Math.atan2(-dx, -dz);
+        this.input.virtualKeys.add("KeyW");
+        if (opts.speed === "run") this.input.virtualKeys.add("ShiftLeft");
+        this.step(dt, t0 + elapsed);
+        steps++;
+        elapsed += dt;
+        opts.onStep?.(steps - 1);
+      }
+    } finally {
+      this.input.virtualKeys.clear();
+    }
+    this.render(dt);
+    return { done, stuck, timedOut, steps };
+  }
+
+  /**
+   * QA sign clearance around the camera, by box distance (not a frustum test). Counts camera blockers and cuttable sign boxes
+   * within radiusM horizontally whose top reaches 0.3 m below the camera or higher (hanging signs; floor props are ignored).
+   * gapM = box bottom minus camera Y (positive means above the camera). inside = camera within the box grown by near plane + 0.05 m.
+   */
+  signClearance(radiusM = 6): { nearest: { name: string; gapM: number } | null; inside: boolean; count: number } {
+    this.qaSignCount = 0;
+    this.qaSignInside = false;
+    this.qaSignNearestName = "";
+    this.qaSignNearestGap = Infinity;
+    const camera = this.camera.position;
+    for (const mesh of this.blockerTargets) this.measureSignClearance(mesh, camera, radiusM);
+    for (const mesh of this.signMeshes) if (!this.blockerTargets.has(mesh)) this.measureSignClearance(mesh, camera, radiusM);
+    return {
+      nearest: this.qaSignCount ? { name: this.qaSignNearestName, gapM: this.qaSignNearestGap } : null,
+      inside: this.qaSignInside,
+      count: this.qaSignCount,
+    };
+  }
+
+  private measureSignClearance(mesh: THREE.Object3D, camera: THREE.Vector3, radiusM: number): void {
+    this.qaSignBounds.setFromObject(mesh);
+    const dx = Math.max(this.qaSignBounds.min.x - camera.x, 0, camera.x - this.qaSignBounds.max.x);
+    const dz = Math.max(this.qaSignBounds.min.z - camera.z, 0, camera.z - this.qaSignBounds.max.z);
+    // Only boxes reaching into the band the near plane can touch when pitched down are clearance; floor-standing props are not.
+    if (Math.hypot(dx, dz) > radiusM || this.qaSignBounds.max.y <= camera.y - 0.3) return;
+    this.qaSignCount++;
+    if (!this.qaSignInside) {
+      this.qaSignInside = this.qaSignExpanded.copy(this.qaSignBounds).expandByScalar(this.camera.near + 0.05).containsPoint(camera);
+    }
+    const gapM = this.qaSignBounds.min.y - camera.y;
+    if (gapM < this.qaSignNearestGap) {
+      this.qaSignNearestName = mesh.name;
+      this.qaSignNearestGap = gapM;
+    }
+  }
+
   private frame(): void {
     if (this.disposed) return;
     this.timer.update();
@@ -1501,8 +1855,7 @@ export class Explorer {
     else this.orbit.update();
 
     if (this.mode !== "overview") {
-      this.placeCamera(dt, this.snapCamera);
-      this.snapCamera = false;
+      this.placeCamera(dt, this.teleported);
       // A teleport re-probes at once and snaps the backdrop to its target (no daylight carried underground).
       const snap = this.teleported;
       this.teleported = false;
@@ -1525,7 +1878,7 @@ export class Explorer {
   private stepWalk(dt: number): void {
     const look = this.input.consumeLook();
     this.yaw -= look.dx * 0.0042;
-    this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, -1.1, 0.5);
+    this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, LOOK_PITCH.min, LOOK_PITCH.max);
     this.camDistance = THREE.MathUtils.clamp(this.camDistance + look.zoom * 0.004, 1.8, 9);
     const mv = this.input.move();
     if (mv.x === 0 && mv.y === 0) return;
@@ -1556,8 +1909,9 @@ export class Explorer {
     const g = this.guide;
     if (!g) return;
     const look = this.input.consumeLook();
-    this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, -1.1, 0.5);
+    this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, LOOK_PITCH.min, LOOK_PITCH.max);
     const mv = this.input.move();
+    if (look.dx || look.dy || look.zoom || mv.x || mv.y) this.guideIdentityHoldS = 0;
     if (mv.x !== 0 || mv.y !== 0) {
       // Taking the controls hands over to free walking at the current spot.
       this.guide = null;
@@ -1570,9 +1924,11 @@ export class Explorer {
     if (stopped !== null) g.paused = g.holding = true;
     const p = samplePolyline(g.pts, g.cum, g.s);
     this.pos.set(p.x, p.y, p.z);
+    const steeringDt = Math.max(0, dt - this.guideIdentityHoldS);
+    this.guideIdentityHoldS = Math.max(0, this.guideIdentityHoldS - dt);
     if (p.tx || p.tz) {
       const targetYaw = Math.atan2(-p.tx, -p.tz);
-      this.yaw += angleDelta(this.yaw, targetYaw) * Math.min(1, dt * 4);
+      this.yaw += angleDelta(this.yaw, targetYaw) * Math.min(1, steeringDt * 4);
     }
     this.yaw -= look.dx * 0.0042;
     const stepIndex = g.steps[Math.min(g.steps.length - 1, p.segment + 1)] ?? -1;
@@ -1624,6 +1980,11 @@ export class Explorer {
   }
 
   private placeCamera(dt: number, snap = false): void {
+    if (this.qaCamera.yaw !== undefined) this.yaw = this.qaCamera.yaw;
+    if (this.qaCamera.pitch !== undefined) this.pitch = this.qaCamera.pitch;
+    if (this.qaCamera.distance !== undefined) this.camDistance = this.qaCamera.distance;
+    snap ||= this.qaCameraSnap;
+    this.qaCameraSnap = false;
     // The slope state follows the walker's height; a large one-frame jump, snap, or stopped clock restarts it instead of reading a teleport as a climb.
     this.slope = snap || dt <= 0 || Math.abs(this.pos.y - this.slopeY) > SLOPE.jump
       ? NO_SLOPE
@@ -1632,6 +1993,9 @@ export class Explorer {
     const head = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const dir = new THREE.Vector3(-Math.sin(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), -Math.cos(this.yaw) * Math.cos(this.pitch));
     if (this.firstPerson) {
+      this.boomActual = 0;
+      this.boomRaise = 0;
+      this.applyAvatarFade(dt, snap);
       this.camera.position.copy(head);
       this.camera.lookAt(head.clone().add(dir));
       this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
@@ -1639,46 +2003,57 @@ export class Explorer {
     }
     // Over-the-shoulder framing; the pivot itself is pulled in if a wall is closer than the shoulder offset.
     // Signs (visual-only) are never camera targets and never pull the camera in; cameraCut sees through them instead.
+    const cameraSides = this.cameraSides;
     let shoulder: number = FOLLOW.shoulder;
     if (this.cameraTargets.length) {
       this.ray.set(head, new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw)));
       this.ray.far = FOLLOW.shoulder + 0.25;
-      const side = castCamera(this.ray, this.cameraTargets, this.blockerTargets)[0];
+      const side = castCamera(this.ray, this.cameraTargets, cameraSides)[0];
       if (side) shoulder = Math.max(0, side.distance - 0.25);
     }
     const pose = followPose(head, this.yaw, this.pitch, shoulder);
     let back = pose.back;
     let dist = this.camDistance;
+    let raisedClear = false;
+    if (!this.cameraTargets.length) this.boomRaise = 0;
+    const cast = (b: THREE.Vector3, length = this.camDistance) => {
+      this.ray.set(pose.pivot, b);
+      this.ray.far = length + FOLLOW.clearance;
+      return castCamera(this.ray, this.cameraTargets, cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
+    };
     if (this.cameraTargets.length) {
-      const cast = (b: THREE.Vector3) => {
-        this.ray.set(pose.pivot, b);
-        this.ray.far = this.camDistance + FOLLOW.clearance;
-        return castCamera(this.ray, this.cameraTargets, this.blockerTargets).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
-      };
-      // Under a camera-only blocker (a hanging sign box, a low cap) the boom slides lower before the camera is pulled in.
-      ({ back, distance: dist } = this.blockerTargets.size ? followBoom(this.camDistance, pose.back, cast) : { back: pose.back, distance: followDistance(this.camDistance, cast(pose.back)) });
-      // Squeezed under the comfortable distance (a shaft wall behind, a slab above): look over the shoulder from
-      // higher up if some raised boom clears it (at most FOLLOW.raiseSteps raise casts + 1 recast = 6 extra rays, none when open).
-      const wantedRaise = constrainedPitch(this.camDistance, back, dist, cast, this.raiseScratch);
-      this.boomRaise = easeRaise(this.boomRaise, wantedRaise, dt, snap);
-      if (this.boomRaise > 0) {
-        back = raisedBack(back, this.boomRaise, this.raisedBoom);
-        dist = followDistance(this.camDistance, cast(back));
-      }
+      const solved = solveRaisedBoom(this.camDistance, pose.back, cast, this.boomRaise, dt, snap || this.reducedMotion);
+      // A lip-clearing raise also needs to move the camera now; interpolating from below the slab
+      // would recreate the same obstruction even though the target boom has already cleared it.
+      raisedClear = solved.raise > this.boomRaise && solved.distance >= Math.min(FOLLOW.comfortDistance, this.camDistance);
+      back = solved.back;
+      dist = solved.distance;
+      this.boomRaise = solved.raise;
     }
     this.squeezed = this.cameraTargets.length
       ? (snap ? dist < FOLLOW.comfortDistance : boomSqueezed(this.squeezed, dist))
       : false;
     this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
+    // Use the last frame's actual boom, measured against its own pivot. Measuring the old
+    // camera against the new pivot would rate-limit the walker's movement as contraction.
+    const previousDistance = this.boomActual;
     const desired = pose.pivot.clone().addScaledVector(back, dist);
-    this.camera.position.lerp(desired, snap || this.reducedMotion ? 1 : 1 - Math.exp(-dt * 10));
-    // The smoothed position, not only the target, stays below camera-only blockers.
-    if (this.blockerTargets.size) keepBelowBlockers(pose.pivot, this.camera.position, [...this.blockerTargets], FOLLOW.clearance, this.ray);
+    this.camera.position.lerp(desired, snap || this.reducedMotion || raisedClear ? 1 : 1 - Math.exp(-dt * 10));
+    // Preserve angular/extension damping, but control contraction separately. Cast the actual interpolated
+    // direction as well: a yaw change can sweep a different wall from the solved boom's ray.
+    const offset = this.camera.position.clone().sub(pose.pivot);
+    const length = offset.length();
+    if (length > 1e-9) {
+      offset.divideScalar(length);
+      const hits = this.cameraTargets.length ? cast(offset, Math.max(length, this.camDistance)) : [];
+      const target = Math.min(length, dist, followDistance(this.camDistance, hits));
+      const actual = approachBoom(previousDistance, target, hits[0]?.distance ?? null, this.camera.near, dt, snap || this.reducedMotion);
+      this.camera.position.copy(pose.pivot).addScaledVector(offset, actual);
+    }
     this.camera.lookAt(pose.target);
     // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
-    const fade = avatarFade(this.camera.position.distanceTo(pose.pivot));
-    this.avatarRig?.setFade(fade);
-    this.composer?.setAvatarFade(this.avatarRig?.root ?? null, fade);
+    this.boomActual = this.camera.position.distanceTo(pose.pivot);
+    this.applyAvatarFade(dt, snap);
   }
 
   private ensureAudio(): boolean {
@@ -1791,11 +2166,16 @@ function inScene(mesh: THREE.Object3D, scene: THREE.Scene): boolean {
   return o === scene;
 }
 
+/** Visibility inherited from groups, also used by tagged identity meshes/groups. */
+function objectVisible(object: THREE.Object3D): boolean {
+  for (let o: THREE.Object3D | null = object; o; o = o.parent) if (!o.visible) return false;
+  return true;
+}
+
 /** Rendered at all for this camera (the mesh and its ancestors visible, on a camera layer). */
 function meshDrawn(mesh: THREE.Mesh, camera: THREE.Camera): boolean {
   if (!mesh.layers.test(camera.layers)) return false;
-  for (let o: THREE.Object3D | null = mesh; o; o = o.parent) if (!o.visible) return false;
-  return true;
+  return objectVisible(mesh);
 }
 
 /** Drawn as filled, opaque enough surfaces (clear or transmissive glass and wireframes are not). */

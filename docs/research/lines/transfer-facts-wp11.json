@@ -1,0 +1,1207 @@
+{
+  "schema": "gteki.lines-transfers/0.1-draft",
+  "generatedAt": "2026-10-24",
+  "generatedBy": "WP11 transcription (DeepSeek ds-core) + lines-lead: image-only facts read by lines-lead (Opus vision) on gteki-1b instruction; Toei station-level list de-duplicated; source ids made distinct from #414/#421",
+  "sources": [
+    {
+      "id": "tokyometro-yardmap-other-lines-2026-10",
+      "title": "東京メトロ",
+      "publisher": "東京地下鉄",
+      "url": "https://www.tokyometro.jp/library/station/include/yardmap_other_lines.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "東京メトロ 駅の路線 のりかえ情報 (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T20:00:00+09:00",
+      "datasetDate": null,
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。The shared transfer table behind the station page's のりかえ出口案内 tab. Read per line tab: 丸ノ内線, 有楽町線, 副都心線. Took only the 池袋 and 新宿 rows — the printed transfer line names and their 東京メトロ線 / 他社線 grouping. These rows print no gate, passage or exit.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
+    },
+    {
+      "id": "toei-shinjuku-norikae-2026-10",
+      "title": "新宿 ｜ 東京都交通局",
+      "publisher": "東京都交通局",
+      "url": "https://www.kotsu.metro.tokyo.jp/subway/stations/shinjuku.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "東京都交通局 新宿駅ページ (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T20:00:00+09:00",
+      "datasetDate": null,
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。Read the 乗り換え案内 block of 基本情報 (one list for the station, not split between the two Toei lines) and the 出入口一覧. The 構内図 is an image only. lines-lead also read the page's 構内図 image (新宿駅構内立体図 with its のりかえ・出口案内 part) for printed transfer labels, direction labels and gate hours only; nothing from the image is reproduced and no position or layout is taken (OD-03). Distinct id from toei-shinjuku-station-2026-10 (#421), which records the same page for exits. Earlier ruling OD-01 A (PR #178, 2026-10-22) also covers Toei station-page facts.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896",
+        "date": "2026-10-24"
+      }
+    },
+    {
+      "id": "seibu-ikebukuro-norikae-2026-10",
+      "title": "池袋駅 ：西武鉄道Webサイト",
+      "publisher": "西武鉄道",
+      "url": "https://www.seiburailway.jp/railway/station/ikebukuro/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "西武鉄道 池袋駅ページ (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T20:00:00+09:00",
+      "datasetDate": "2026-08",
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。Read the 他社乗換路線 list. Gate and exit wording appears only in the AED notice (1F改札口, B1F改札口) and the station map is an image; neither ties a gate to a transfer. lines-lead also read the station-map image (dated 2026.8.1 on the image) for printed direction-arrow labels and the platform legend only; no position or layout is taken (OD-03). Distinct id from seibu-ikebukuro-station-2026-10 (#414). Rights class: OD-25 (Seibu terms read as the Tokyo Metro class under #26).",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
+    },
+    {
+      "id": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "title": "東京メトロ のりかえ出口案内（池袋）",
+      "publisher": "東京地下鉄",
+      "url": "https://www.tokyometro.jp/station/line_marunouchi/position.html?station=ikebukuro",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "東京メトロ のりかえ出口案内（池袋） (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T20:40:00+09:00",
+      "datasetDate": null,
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。lines-lead read the platform diagrams for 池袋 on the 丸ノ内線, 有楽町線 and 副都心線 のりかえ出口案内 pages (position.html?station=ikebukuro under line_marunouchi, line_yurakucho, line_fukutoshin): only printed transfer-line labels, the direction labels each group points to, and printed hours. Car positions and layout are not taken (OD-03); the images are not stored.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
+    },
+    {
+      "id": "tokyometro-shinjuku-norikae-figures-2026-10",
+      "title": "東京メトロ のりかえ出口案内（新宿）",
+      "publisher": "東京地下鉄",
+      "url": "https://www.tokyometro.jp/station/line_marunouchi/position.html?station=shinjuku",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "東京メトロ のりかえ出口案内（新宿） (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T20:40:00+09:00",
+      "datasetDate": null,
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。lines-lead read the 丸ノ内線 新宿 platform diagrams: printed transfer-line labels, the direction labels each group points to, and the printed footnote on the 都営大江戸線 label. Car positions and layout are not taken (OD-03); the images are not stored.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
+    }
+  ],
+  "transfers": [
+    {
+      "station": "ikebukuro",
+      "fromLine": "丸ノ内線",
+      "toLine": "有楽町線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists 有楽町線 as a transfer line from the 丸ノ内線 at 池袋, in the 東京メトロ線 group. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 池袋 row under the 丸ノ内線 tab, のりかえ路線 column (東京メトロ線 group)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "丸ノ内線",
+      "toLine": "副都心線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists 副都心線 as a transfer line from the 丸ノ内線 at 池袋, in the 東京メトロ線 group. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 池袋 row under the 丸ノ内線 tab, のりかえ路線 column (東京メトロ線 group)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "丸ノ内線",
+      "toLine": "JR線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists JR線 as a transfer line from the 丸ノ内線 at 池袋, in the 他社線 group. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 池袋 row under the 丸ノ内線 tab, のりかえ路線 column (他社線 group)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "丸ノ内線",
+      "toLine": "東武東上線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists 東武東上線 as a transfer line from the 丸ノ内線 at 池袋, in the 他社線 group. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 池袋 row under the 丸ノ内線 tab, のりかえ路線 column (他社線 group)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "丸ノ内線",
+      "toLine": "西武池袋線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists 西武池袋線 as a transfer line from the 丸ノ内線 at 池袋, in the 他社線 group. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 池袋 row under the 丸ノ内線 tab, のりかえ路線 column (他社線 group)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "有楽町線",
+      "toLine": "丸ノ内線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists 丸ノ内線 as a transfer line from the 有楽町線 at 池袋, in the 東京メトロ線 group. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 池袋 row under the 有楽町線 tab, のりかえ路線 column (東京メトロ線 group)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "有楽町線",
+      "toLine": "副都心線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists 副都心線 as a transfer line from the 有楽町線 at 池袋, in the 東京メトロ線 group. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 池袋 row under the 有楽町線 tab, のりかえ路線 column (東京メトロ線 group)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "有楽町線",
+      "toLine": "JR線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists JR線 as a transfer line from the 有楽町線 at 池袋, in the 他社線 group. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 池袋 row under the 有楽町線 tab, のりかえ路線 column (他社線 group)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "有楽町線",
+      "toLine": "東武東上線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists 東武東上線 as a transfer line from the 有楽町線 at 池袋, in the 他社線 group. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 池袋 row under the 有楽町線 tab, のりかえ路線 column (他社線 group)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "有楽町線",
+      "toLine": "西武池袋線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists 西武池袋線 as a transfer line from the 有楽町線 at 池袋, in the 他社線 group. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 池袋 row under the 有楽町線 tab, のりかえ路線 column (他社線 group)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "副都心線",
+      "toLine": "丸ノ内線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists 丸ノ内線 as a transfer line from the 副都心線 at 池袋, in the 東京メトロ線 group. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 池袋 row under the 副都心線 tab, のりかえ路線 column (東京メトロ線 group)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "副都心線",
+      "toLine": "有楽町線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists 有楽町線 as a transfer line from the 副都心線 at 池袋, in the 東京メトロ線 group. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 池袋 row under the 副都心線 tab, のりかえ路線 column (東京メトロ線 group)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "副都心線",
+      "toLine": "JR線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists JR線 as a transfer line from the 副都心線 at 池袋, in the 他社線 group. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 池袋 row under the 副都心線 tab, のりかえ路線 column (他社線 group)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "副都心線",
+      "toLine": "東武東上線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists 東武東上線 as a transfer line from the 副都心線 at 池袋, in the 他社線 group. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 池袋 row under the 副都心線 tab, のりかえ路線 column (他社線 group)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "副都心線",
+      "toLine": "西武池袋線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists 西武池袋線 as a transfer line from the 副都心線 at 池袋, in the 他社線 group. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 池袋 row under the 副都心線 tab, のりかえ路線 column (他社線 group)"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "丸ノ内線",
+      "toLine": "都営大江戸線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists 都営大江戸線 as a transfer line from the 丸ノ内線 at 新宿, and prints the station note [新宿駅・新宿西口駅] beside it. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 新宿 row under the 丸ノ内線 tab, のりかえ路線 column (都営線 group)"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "丸ノ内線",
+      "toLine": "JR線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists JR線 as a transfer line from the 丸ノ内線 at 新宿, in the 他社線 group. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 新宿 row under the 丸ノ内線 tab, のりかえ路線 column (他社線 group)"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "丸ノ内線",
+      "toLine": "京王線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists 京王線 as a transfer line from the 丸ノ内線 at 新宿, in the 他社線 group. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 新宿 row under the 丸ノ内線 tab, のりかえ路線 column (他社線 group)"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "丸ノ内線",
+      "toLine": "小田急小田原線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The operator's station transfer table lists 小田急小田原線 as a transfer line from the 丸ノ内線 at 新宿, in the 他社線 group. The row names no gate, passage or exit for the transfer.",
+      "sourceId": "tokyometro-yardmap-other-lines-2026-10",
+      "locator": "Transfer table, 新宿 row under the 丸ノ内線 tab, のりかえ路線 column (他社線 group)"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "都営新宿線・都営大江戸線（駅全体）",
+      "toLine": "JR山手線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station page's 乗り換え案内 block lists JR山手線 among the lines reachable at 新宿; the block is printed once for the station and is not split between the 新宿線 and 大江戸線. No gate, passage or exit is named for the transfer. Recorded once for the station, since the page does not split the list between the two Toei lines.",
+      "sourceId": "toei-shinjuku-norikae-2026-10",
+      "locator": "乗り換え案内 block, 基本情報 section (station level, both Toei lines)"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "都営新宿線・都営大江戸線（駅全体）",
+      "toLine": "中央・総武線（各駅停車）",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station page's 乗り換え案内 block lists 中央・総武線（各駅停車） among the lines reachable at 新宿; the block is printed once for the station and is not split between the 新宿線 and 大江戸線. No gate, passage or exit is named for the transfer. Recorded once for the station, since the page does not split the list between the two Toei lines.",
+      "sourceId": "toei-shinjuku-norikae-2026-10",
+      "locator": "乗り換え案内 block, 基本情報 section (station level, both Toei lines)"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "都営新宿線・都営大江戸線（駅全体）",
+      "toLine": "中央線快速",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station page's 乗り換え案内 block lists 中央線快速 among the lines reachable at 新宿; the block is printed once for the station and is not split between the 新宿線 and 大江戸線. No gate, passage or exit is named for the transfer. Recorded once for the station, since the page does not split the list between the two Toei lines.",
+      "sourceId": "toei-shinjuku-norikae-2026-10",
+      "locator": "乗り換え案内 block, 基本情報 section (station level, both Toei lines)"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "都営新宿線・都営大江戸線（駅全体）",
+      "toLine": "埼京線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station page's 乗り換え案内 block lists 埼京線 among the lines reachable at 新宿; the block is printed once for the station and is not split between the 新宿線 and 大江戸線. No gate, passage or exit is named for the transfer. Recorded once for the station, since the page does not split the list between the two Toei lines.",
+      "sourceId": "toei-shinjuku-norikae-2026-10",
+      "locator": "乗り換え案内 block, 基本情報 section (station level, both Toei lines)"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "都営新宿線・都営大江戸線（駅全体）",
+      "toLine": "湘南新宿ライン",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station page's 乗り換え案内 block lists 湘南新宿ライン among the lines reachable at 新宿; the block is printed once for the station and is not split between the 新宿線 and 大江戸線. No gate, passage or exit is named for the transfer. Recorded once for the station, since the page does not split the list between the two Toei lines.",
+      "sourceId": "toei-shinjuku-norikae-2026-10",
+      "locator": "乗り換え案内 block, 基本情報 section (station level, both Toei lines)"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "都営新宿線・都営大江戸線（駅全体）",
+      "toLine": "京王線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station page's 乗り換え案内 block lists 京王線 among the lines reachable at 新宿; the block is printed once for the station and is not split between the 新宿線 and 大江戸線. No gate, passage or exit is named for the transfer. Recorded once for the station, since the page does not split the list between the two Toei lines.",
+      "sourceId": "toei-shinjuku-norikae-2026-10",
+      "locator": "乗り換え案内 block, 基本情報 section (station level, both Toei lines)"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "都営新宿線・都営大江戸線（駅全体）",
+      "toLine": "小田急線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station page's 乗り換え案内 block lists 小田急線 among the lines reachable at 新宿; the block is printed once for the station and is not split between the 新宿線 and 大江戸線. No gate, passage or exit is named for the transfer. Recorded once for the station, since the page does not split the list between the two Toei lines.",
+      "sourceId": "toei-shinjuku-norikae-2026-10",
+      "locator": "乗り換え案内 block, 基本情報 section (station level, both Toei lines)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "池袋線",
+      "toLine": "JR埼京線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station page's 他社乗換路線 list names JR埼京線 as a transfer line at 池袋. The list names no gate, passage or exit for the transfer.",
+      "sourceId": "seibu-ikebukuro-norikae-2026-10",
+      "locator": "他社乗換路線 list, station page body"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "池袋線",
+      "toLine": "JR山手線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station page's 他社乗換路線 list names JR山手線 as a transfer line at 池袋. The list names no gate, passage or exit for the transfer.",
+      "sourceId": "seibu-ikebukuro-norikae-2026-10",
+      "locator": "他社乗換路線 list, station page body"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "池袋線",
+      "toLine": "JR湘南新宿ライン",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station page's 他社乗換路線 list names JR湘南新宿ライン as a transfer line at 池袋. The list names no gate, passage or exit for the transfer.",
+      "sourceId": "seibu-ikebukuro-norikae-2026-10",
+      "locator": "他社乗換路線 list, station page body"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "池袋線",
+      "toLine": "東武東上線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station page's 他社乗換路線 list names 東武東上線 as a transfer line at 池袋. The list names no gate, passage or exit for the transfer.",
+      "sourceId": "seibu-ikebukuro-norikae-2026-10",
+      "locator": "他社乗換路線 list, station page body"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "池袋線",
+      "toLine": "東京メトロ有楽町線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station page's 他社乗換路線 list names 東京メトロ有楽町線 as a transfer line at 池袋. The list names no gate, passage or exit for the transfer.",
+      "sourceId": "seibu-ikebukuro-norikae-2026-10",
+      "locator": "他社乗換路線 list, station page body"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "池袋線",
+      "toLine": "東京メトロ副都心線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station page's 他社乗換路線 list names 東京メトロ副都心線 as a transfer line at 池袋. The list names no gate, passage or exit for the transfer.",
+      "sourceId": "seibu-ikebukuro-norikae-2026-10",
+      "locator": "他社乗換路線 list, station page body"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "池袋線",
+      "toLine": "東京メトロ丸ノ内線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station page's 他社乗換路線 list names 東京メトロ丸ノ内線 as a transfer line at 池袋. The list names no gate, passage or exit for the transfer.",
+      "sourceId": "seibu-ikebukuro-norikae-2026-10",
+      "locator": "他社乗換路線 list, station page body"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "丸ノ内線",
+      "toLine": "有楽町線",
+      "viaLabels": [
+        "中央通路"
+      ],
+      "viaPoiIds": [
+        "central-passage"
+      ],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded.",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Marunouchi line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "丸ノ内線",
+      "toLine": "JR線",
+      "viaLabels": [
+        "中央通路"
+      ],
+      "viaPoiIds": [
+        "central-passage"
+      ],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded.",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Marunouchi line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "丸ノ内線",
+      "toLine": "西武線",
+      "viaLabels": [
+        "中央通路"
+      ],
+      "viaPoiIds": [
+        "central-passage"
+      ],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded.",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Marunouchi line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "丸ノ内線",
+      "toLine": "有楽町線",
+      "viaLabels": [
+        "東京芸術劇場",
+        "東武百貨店"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded.",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Marunouchi line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "丸ノ内線",
+      "toLine": "東武線",
+      "viaLabels": [
+        "東京芸術劇場",
+        "東武百貨店"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded.",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Marunouchi line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "丸ノ内線",
+      "toLine": "副都心線",
+      "viaLabels": [
+        "東京芸術劇場",
+        "東武百貨店"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded. A separate footnote on the diagram gives the 副都心線連絡通路 hours as 始発～0:06 (as read on 2026-10-24; may have changed).",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Marunouchi line page, 池袋 platform diagrams, footnote"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "丸ノ内線",
+      "toLine": "西武線",
+      "viaLabels": [
+        "西武百貨店",
+        "サンシャインシティ"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded.",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Marunouchi line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "有楽町線",
+      "toLine": "丸ノ内線",
+      "viaLabels": [
+        "Esola池袋",
+        "東武百貨店"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded.",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Yurakucho line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "有楽町線",
+      "toLine": "副都心線",
+      "viaLabels": [
+        "Esola池袋",
+        "東武百貨店"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded.",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Yurakucho line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "有楽町線",
+      "toLine": "JR線",
+      "viaLabels": [
+        "Esola池袋",
+        "東武百貨店"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded.",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Yurakucho line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "有楽町線",
+      "toLine": "東武線",
+      "viaLabels": [
+        "Esola池袋",
+        "東武百貨店"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded.",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Yurakucho line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "有楽町線",
+      "toLine": "丸ノ内線",
+      "viaLabels": [
+        "西武百貨店",
+        "サンシャインシティ方面"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded.",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Yurakucho line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "有楽町線",
+      "toLine": "JR線",
+      "viaLabels": [
+        "西武百貨店",
+        "サンシャインシティ方面"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded.",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Yurakucho line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "有楽町線",
+      "toLine": "西武線",
+      "viaLabels": [
+        "西武百貨店",
+        "サンシャインシティ方面"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded.",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Yurakucho line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "副都心線",
+      "toLine": "有楽町線",
+      "viaLabels": [
+        "立教大学"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded.",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Fukutoshin line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "副都心線",
+      "toLine": "有楽町線",
+      "viaLabels": [
+        "東武百貨店"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded. One of the two routes the diagram shows for this group carries the printed hours 始発～23:55 (as read on 2026-10-24; may have changed).",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Fukutoshin line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "副都心線",
+      "toLine": "JR線",
+      "viaLabels": [
+        "東武百貨店"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded. One of the two routes the diagram shows for this group carries the printed hours 始発～23:55 (as read on 2026-10-24; may have changed).",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Fukutoshin line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "副都心線",
+      "toLine": "東武線",
+      "viaLabels": [
+        "東武百貨店"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded. One of the two routes the diagram shows for this group carries the printed hours 始発～23:55 (as read on 2026-10-24; may have changed).",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Fukutoshin line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "副都心線",
+      "toLine": "西武線",
+      "viaLabels": [
+        "東武百貨店"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded. One of the two routes the diagram shows for this group carries the printed hours 始発～23:55 (as read on 2026-10-24; may have changed).",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Fukutoshin line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "副都心線",
+      "toLine": "丸ノ内線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The platform diagram shows a separate route to this line with the printed hours 始発～0:05 (as read on 2026-10-24; may have changed) and no direction label. Car positions are not recorded.",
+      "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
+      "locator": "Fukutoshin line page, 池袋 platform diagrams (both directions)"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "丸ノ内線",
+      "toLine": "都営大江戸線",
+      "viaLabels": [
+        "小田急西口ハルク",
+        "京王百貨店"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded. A footnote on the 都営大江戸線 label says the connection is with 新宿西口駅 (Toei E01, a separate station), not with the 都営 新宿駅.",
+      "sourceId": "tokyometro-shinjuku-norikae-figures-2026-10",
+      "locator": "Marunouchi line page, 新宿 platform diagrams, label footnote"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "丸ノ内線",
+      "toLine": "JR線",
+      "viaLabels": [
+        "小田急西口ハルク",
+        "京王百貨店"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded.",
+      "sourceId": "tokyometro-shinjuku-norikae-figures-2026-10",
+      "locator": "Marunouchi line page, 新宿 platform diagrams (both directions)"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "丸ノ内線",
+      "toLine": "小田急線",
+      "viaLabels": [
+        "小田急西口ハルク",
+        "京王百貨店"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded.",
+      "sourceId": "tokyometro-shinjuku-norikae-figures-2026-10",
+      "locator": "Marunouchi line page, 新宿 platform diagrams (both directions)"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "丸ノ内線",
+      "toLine": "京王線",
+      "viaLabels": [
+        "小田急西口ハルク",
+        "京王百貨店"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded.",
+      "sourceId": "tokyometro-shinjuku-norikae-figures-2026-10",
+      "locator": "Marunouchi line page, 新宿 platform diagrams (both directions)"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "丸ノ内線",
+      "toLine": "JR線",
+      "viaLabels": [
+        "歌舞伎町",
+        "バスタ新宿"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded.",
+      "sourceId": "tokyometro-shinjuku-norikae-figures-2026-10",
+      "locator": "Marunouchi line page, 新宿 platform diagrams (both directions)"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "丸ノ内線",
+      "toLine": "西武線",
+      "viaLabels": [
+        "歌舞伎町",
+        "バスタ新宿"
+      ],
+      "viaPoiIds": [],
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded. The label's line mark is the Seibu Shinjuku Line mark; 西武新宿 is a separate station and no connection is modelled.",
+      "sourceId": "tokyometro-shinjuku-norikae-figures-2026-10",
+      "locator": "Marunouchi line page, 新宿 platform diagrams (both directions)"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "都営新宿線",
+      "toLine": "都営大江戸線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station map's transfer guide lists the other Toei line as a transfer from this line's platform. Car positions are not recorded.",
+      "sourceId": "toei-shinjuku-norikae-2026-10",
+      "locator": "Toei station page, 構内図 image, のりかえ・出口案内 part"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "都営大江戸線",
+      "toLine": "都営新宿線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station map's transfer guide lists the other Toei line as a transfer from this line's platform. Car positions are not recorded.",
+      "sourceId": "toei-shinjuku-norikae-2026-10",
+      "locator": "Toei station page, 構内図 image, のりかえ・出口案内 part"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "都営新宿線・都営大江戸線（駅全体）",
+      "toLine": "JR線",
+      "viaLabels": [
+        "南口方面"
+      ],
+      "viaPoiIds": [],
+      "fact": "The station map prints a direction label toward the south exit that names these lines (and a station building). Position and layout are not recorded.",
+      "sourceId": "toei-shinjuku-norikae-2026-10",
+      "locator": "Toei station page, 構内図 image, B1F direction label"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "都営新宿線・都営大江戸線（駅全体）",
+      "toLine": "小田急線",
+      "viaLabels": [
+        "南口方面"
+      ],
+      "viaPoiIds": [],
+      "fact": "The station map prints a direction label toward the south exit that names these lines (and a station building). Position and layout are not recorded.",
+      "sourceId": "toei-shinjuku-norikae-2026-10",
+      "locator": "Toei station page, 構内図 image, B1F direction label"
+    },
+    {
+      "station": "shinjuku",
+      "fromLine": "都営新宿線・都営大江戸線（駅全体）",
+      "toLine": "京王線",
+      "viaLabels": [
+        "京王線新宿駅へ"
+      ],
+      "viaPoiIds": [],
+      "fact": "The station map prints a direction label toward the Keio Line station. Position and layout are not recorded.",
+      "sourceId": "toei-shinjuku-norikae-2026-10",
+      "locator": "Toei station page, 構内図 image, B1F direction label"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "池袋線",
+      "toLine": "JR線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station map shows a direction arrow on its B1F level labelled with these lines. No gate is named; position and layout are not recorded.",
+      "sourceId": "seibu-ikebukuro-norikae-2026-10",
+      "locator": "Seibu station page, station-map image, B1F arrow labels"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "池袋線",
+      "toLine": "有楽町線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station map shows a direction arrow on its B1F level labelled with these lines. No gate is named; position and layout are not recorded.",
+      "sourceId": "seibu-ikebukuro-norikae-2026-10",
+      "locator": "Seibu station page, station-map image, B1F arrow labels"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "池袋線",
+      "toLine": "副都心線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station map shows a direction arrow on its B1F level labelled with these lines. No gate is named; position and layout are not recorded.",
+      "sourceId": "seibu-ikebukuro-norikae-2026-10",
+      "locator": "Seibu station page, station-map image, B1F arrow labels"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "池袋線",
+      "toLine": "東武東上線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station map shows a direction arrow on its B1F level labelled with these lines. No gate is named; position and layout are not recorded.",
+      "sourceId": "seibu-ikebukuro-norikae-2026-10",
+      "locator": "Seibu station page, station-map image, B1F arrow labels"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "池袋線",
+      "toLine": "JR線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station map shows a second direction arrow on its B1F level labelled with these lines. No gate is named; position and layout are not recorded.",
+      "sourceId": "seibu-ikebukuro-norikae-2026-10",
+      "locator": "Seibu station page, station-map image, B1F arrow labels"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "池袋線",
+      "toLine": "丸ノ内線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station map shows a second direction arrow on its B1F level labelled with these lines. No gate is named; position and layout are not recorded.",
+      "sourceId": "seibu-ikebukuro-norikae-2026-10",
+      "locator": "Seibu station page, station-map image, B1F arrow labels"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "池袋線",
+      "toLine": "副都心線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station map shows a second direction arrow on its B1F level labelled with these lines. No gate is named; position and layout are not recorded.",
+      "sourceId": "seibu-ikebukuro-norikae-2026-10",
+      "locator": "Seibu station page, station-map image, B1F arrow labels"
+    },
+    {
+      "station": "ikebukuro",
+      "fromLine": "池袋線",
+      "toLine": "東武東上線",
+      "viaLabels": [],
+      "viaPoiIds": [],
+      "fact": "The station map shows a second direction arrow on its B1F level labelled with these lines. No gate is named; position and layout are not recorded.",
+      "sourceId": "seibu-ikebukuro-norikae-2026-10",
+      "locator": "Seibu station page, station-map image, B1F arrow labels"
+    }
+  ],
+  "notFound": [
+    "Tokyo Metro 池袋 and 新宿: the のりかえ出口案内 pages show transfer gates, passages and exits only inside platform diagrams (figure_platform_m25/y09/f09/m08_a|b.png); no page text names them. The DeepSeek transcription could not read the diagrams; lines-lead then read them with vision (sources *-norikae-figures-2026-10). Facts from images: the direction labels in viaLabels for entries citing those sources, the hours and footnotes in their `fact`, the Toei S01-E27 transfer and direction labels, the Seibu B1F arrow labels and the Seibu platform legend (newPois). All image-derived facts stay UNVERIFIED. No gate name is printed on the Metro diagrams, so no Metro transfer is tied to a gate.",
+    "Seibu 池袋: 駅構内のご案内 is a map image. The only gate names printed in text (1F改札口, B1F改札口) come from the AED notice and are not tied to any transfer line.",
+    "Toei 新宿: the 乗り換え案内 block names lines only, and the 構内図 is an image. The 出入口一覧 prints gate names (マインズタワー方面改札, 京王新線口, 新都心口) but as part of exit entries, not of a transfer statement.",
+    "Walking times between the listed lines: none of the four station pages states one for these stations (the only 移動時間目安 block on the Tokyo Metro pages sits in a commented-out template belonging to another station and was ignored).",
+    "Platform positions and car numbers: they appear only in the Tokyo Metro diagrams and are deliberately not recorded.",
+    "東京メトロ丸ノ内線 at 新宿 (M08) does not appear in the Toei page's 乗り換え案内, and 都営新宿線 does not appear in the Tokyo Metro transfer row for 新宿; neither page states a transfer between those two, so none is recorded."
+  ],
+  "conflicts": [
+    "Asymmetry, not a contradiction: the Tokyo Metro transfer row for 新宿 lists 都営大江戸線 (with the printed note [新宿駅・新宿西口駅]) but not 都営新宿線, while the Toei 乗り換え案内 at the same station lists JR山手線, 中央・総武線（各駅停車）, 中央線快速, 埼京線, 湘南新宿ライン, 京王線 and 小田急線 but no 東京メトロ line. Each page is silent about lines the other one names; both are recorded exactly as printed.",
+    "Naming difference: the Toei page's transfer list prints 京王線, while its own 出入口一覧 labels exits 3, 4 and 5 with the gate name 京王新線口. The two printed names differ and the page does not state in words that this gate serves the 京王線 transfer, so no via label was attached.",
+    "Line naming: the Seibu page prints 池袋線 for its own line and 東京メトロ有楽町線 / 東京メトロ副都心線 / 東京メトロ丸ノ内線 for the Metro lines, while the Tokyo Metro page prints 西武池袋線 for the Seibu line. Each entry keeps the wording of its own source."
+  ],
+  "newPois": [
+    {
+      "id": "seibu-platform-1",
+      "category": "platform",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "西武池袋線 1番ホーム"
+        },
+        {
+          "lang": "en",
+          "text": "Seibu Ikebukuro Line Platform 1"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "1"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-ikebukuro-norikae-2026-10"
+        ],
+        "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Seibu station page, station-map image, platform legend"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "降車専用ホーム（出典の凡例）。2026年8月1日付の構内図による。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Alighting-only platform per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "seibu-platform-2",
+      "category": "platform",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "西武池袋線 2番ホーム"
+        },
+        {
+          "lang": "en",
+          "text": "Seibu Ikebukuro Line Platform 2"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "2"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-ikebukuro-norikae-2026-10"
+        ],
+        "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Seibu station page, station-map image, platform legend"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "所沢・飯能・西武秩父方面の乗り場（出典の凡例）。2026年8月1日付の構内図による。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Departures toward Tokorozawa, Hanno and Seibu-Chichibu per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "seibu-platform-3",
+      "category": "platform",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "西武池袋線 3番ホーム"
+        },
+        {
+          "lang": "en",
+          "text": "Seibu Ikebukuro Line Platform 3"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "3"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-ikebukuro-norikae-2026-10"
+        ],
+        "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Seibu station page, station-map image, platform legend"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "所沢・飯能・西武秩父方面の乗り場（出典の凡例）。2026年8月1日付の構内図による。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Departures toward Tokorozawa, Hanno and Seibu-Chichibu per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "seibu-platform-4",
+      "category": "platform",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "西武池袋線 4番ホーム"
+        },
+        {
+          "lang": "en",
+          "text": "Seibu Ikebukuro Line Platform 4"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "4"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-ikebukuro-norikae-2026-10"
+        ],
+        "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Seibu station page, station-map image, platform legend"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "降車専用ホーム（出典の凡例）。2026年8月1日付の構内図による。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Alighting-only platform per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "seibu-platform-5",
+      "category": "platform",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "西武池袋線 5番ホーム"
+        },
+        {
+          "lang": "en",
+          "text": "Seibu Ikebukuro Line Platform 5"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "5"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-ikebukuro-norikae-2026-10"
+        ],
+        "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Seibu station page, station-map image, platform legend"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "所沢・飯能・西武秩父方面の乗り場（出典の凡例）。2026年8月1日付の構内図による。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Departures toward Tokorozawa, Hanno and Seibu-Chichibu per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "seibu-platform-6",
+      "category": "platform",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "西武池袋線 6番ホーム"
+        },
+        {
+          "lang": "en",
+          "text": "Seibu Ikebukuro Line Platform 6"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "6"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-ikebukuro-norikae-2026-10"
+        ],
+        "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Seibu station page, station-map image, platform legend"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "降車専用ホーム（出典の凡例）。2026年8月1日付の構内図による。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Alighting-only platform per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "seibu-platform-7",
+      "category": "platform",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "西武池袋線 7番ホーム"
+        },
+        {
+          "lang": "en",
+          "text": "Seibu Ikebukuro Line Platform 7"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "7"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-ikebukuro-norikae-2026-10"
+        ],
+        "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Seibu station page, station-map image, platform legend"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "所沢・飯能・西武秩父方面の乗り場（出典の凡例）。2026年8月1日付の構内図による。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Departures toward Tokorozawa, Hanno and Seibu-Chichibu per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    }
+  ]
+}
