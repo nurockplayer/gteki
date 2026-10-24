@@ -1,6 +1,7 @@
-import { parseStationFiles, type StationBundle, type ValidationIssue } from "@gteki/schema";
+import { parseStationFiles, type StationIdentity, type StationBundle, type ValidationIssue } from "@gteki/schema";
 import type { StationSceneModule } from "@gteki/scene-api";
 import { stations as discovered } from "virtual:gteki-stations";
+import { identityNamesOf } from "./ui/identityCard.ts";
 import { createDemoFiles } from "./demo.ts";
 
 /** A station the explorer can open. Everything station-specific comes from its files. */
@@ -8,6 +9,7 @@ export interface StationEntry {
   key: string;
   label: string;
   synthetic: boolean;
+  identity?: StationIdentity;
   load(): Promise<LoadedStation>;
 }
 
@@ -62,6 +64,7 @@ export async function listStations(): Promise<StationEntry[]> {
       key: s.dir,
       label,
       synthetic,
+      identity: identityNamesOf(manifest),
       async load() {
         // The scene module is optional presentation: its failure must never block valid routing data.
         let sceneImportError: string | null = null;

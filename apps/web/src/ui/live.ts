@@ -22,8 +22,9 @@ export function freshnessReason(t: Strings, r: RouteResult): string | null {
  * route is stale or its freshness unknown, or some facts are unknown, it also says so (the same strings the
  * card uses) — a screen-reader user should not hear a route as fully known (#203 B5).
  */
-export function routeLiveMessage(t: Strings, r: RouteResult | RouteFailure): string {
-  if (!r.ok) return t.noRoute;
+export function routeLiveMessage(t: Strings, r: RouteResult | RouteFailure, failureText?: string): string {
+  // A failure may add the card's own explanation (e.g. a shop with no directions), so sight and sound agree.
+  if (!r.ok) return failureText ? joinLive([t.noRoute, failureText], t) : t.noRoute;
   const parts = [t.routeFound(Math.round(r.totalLengthM), Math.max(1, Math.round(r.estimatedSeconds / 60)))];
   if (r.stale === true) parts.push(t.stale);
   else if (r.stale === null) parts.push(t.freshnessUnknown);

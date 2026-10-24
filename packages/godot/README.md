@@ -399,6 +399,30 @@ under `packages/godot/.cache/g5/` (gitignored): each run's `report.json` and its
 `docs/evidence/g5-performance.md` is the one file to commit; every line of it is a report's own, labelled with the
 machine and the GPU slot it was measured in.
 
+## Showcase side-by-side (G-4)
+
+From the workspace root in the lead's GPU slot, render the Lane E GLBs through their own cameras. All file arguments
+are absolute; set `CONCOURSE_GLB` and `VERTICAL_GLB` to the absolute paths of the read-only exports:
+
+```sh
+godot --path packages/godot --rendering-method forward_plus --script res://tools/showcase_compare.gd -- \
+  "$CONCOURSE_GLB" "$PWD/packages/godot/.cache/showcase/" --camera=gates_closed \
+  "--ref=gates_closed=$PWD/docs/assets/img/concourse_gates_closed.jpg"
+godot --path packages/godot --rendering-method forward_plus --script res://tools/showcase_compare.gd -- \
+  "$VERTICAL_GLB" "$PWD/packages/godot/.cache/showcase/" --camera=hero \
+  "--ref=hero=$PWD/docs/assets/img/vertical_hero.jpg"
+```
+
+Each run writes a 1600×900 Godot PNG, a 3200×900 `_side.png` (Blender reference left, Godot right), and a layout-specific
+`_report.json` under `packages/godot/.cache/showcase/` (gitignored). Omit `--camera` to render all imported cameras.
+The Godot lighting is an approximation of Blender's hint area lights: wide downward spots replace disks and short
+rows of spots replace long LEDs, sharing each hint's power. Both use Blender's fixed warm colour and ignore
+`colour_temp_k`. The watt-to-energy factor, cone, range, row spacing and studio sun mapping are documented in
+`tools/showcase_compare.gd` and recorded in the report; AgX and SSAO do not imply identical Blender shading. A headless
+invocation prints `showcase_compare needs a display`, exits zero and writes nothing.
+The argument rules, the sun mapping, the hint-to-spot split and the metadata contract are checked headless by
+`godot --headless --path packages/godot --script res://tests/run_showcase_tests.gd` (no GLB or GPU needed).
+
 ## Search, route and guided walk (G-3 of #164)
 
 `hq.tscn` now has a HUD (left panel, built for 1600x900): search box, results with name (ja/en toggle), category, floor and a
