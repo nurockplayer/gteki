@@ -72,7 +72,7 @@
       "modified": false,
       "retrievedAt": "2026-10-24T09:48:44Z",
       "datasetDate": null,
-      "notes": "3 コインロッカー, 3 ATM and 1 証明写真機 imported. Skipped as out of scope: ファミリーマート (shop), ベビーカーレンタルサービス（ベビカル）, 育児用品自動販売機. Page undated. Distinct from the Open Data CSV id toei-shinjuku-nishiguchi-stores-2026-10 used by PR #418."
+      "notes": "3 コインロッカー, 3 ATM, 1 証明写真機 and ベビーカーレンタルサービス（ベビカル） imported (ベビカル added in the lead review). Skipped as out of scope: ファミリーマート (shop), 育児用品自動販売機. Page undated. Distinct from the Open Data CSV id toei-shinjuku-nishiguchi-stores-2026-10 used by PR #418."
     }
   ],
   "pois": [
