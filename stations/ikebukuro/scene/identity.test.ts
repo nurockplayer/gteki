@@ -4,7 +4,8 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import * as THREE from "three";
 import { afterAll, afterEach, beforeEach, expect, it, vi } from "vitest";
-import { FOV } from "../../../apps/web/src/explorer/followCamera.ts";
+import { buildWorld } from "../pipeline/walker_replay.ts";
+import { edgeBearing, nameVisibility, spawnCamera } from "../pipeline/identity_camera.ts";
 import { buildSigns, identityTypography, IDENTITY_TYPE, LOW_TEXEL_SCALE, type IdentityBoard, type SignSpec } from "./signs.ts";
 import identity from "./identity.json";
 import signage from "./signage.json";
@@ -18,6 +19,7 @@ const nodes = new Map<string, { position: { x: number; y: number; z: number } }>
 const toRenderer = (x: number, y: number, z: number) => new THREE.Vector3(x, z, -y);
 const signs = signage.signs as SignSpec[];
 const evidence: Record<string, unknown> = {};
+const paintedText: { text: string; font: string }[] = [];
 afterAll(() => writeFileSync("/tmp/gteki-identity-evidence.json", JSON.stringify(evidence, null, 2)+"\n"));
 
 function stubDocument() {
@@ -25,6 +27,7 @@ function stubDocument() {
     const state: Record<string, unknown> = { font: "16px sans" };
     const ctx = new Proxy(state, {
       get(t, k: string) {
+        if (k === "fillText") return (text: string) => paintedText.push({ text, font: String(t.font) });
         if (k === "measureText") return (text: string) => ({ width: [...text].reduce((w, ch) => w +
           (ch.charCodeAt(0) > 0x2e7f ? 1 : /\d/.test(ch) ? 0.6 : 0.56), 0) * Number(/([\d.]+)px/.exec(String(t.font))?.[1] ?? 16) });
         return k in t ? t[k] : () => undefined;
@@ -34,7 +37,7 @@ function stubDocument() {
     return { width: 0, height: 0, getContext: () => ctx };
   } };
 }
-beforeEach(() => vi.stubGlobal("document", stubDocument()));
+beforeEach(() => { paintedText.length = 0; vi.stubGlobal("document", stubDocument()); });
 afterEach(() => vi.unstubAllGlobals());
 const build = (extra = boards, tier = LOW_TEXEL_SCALE) => buildSigns(THREE, signs, toRenderer, 1, tier, 4096, undefined, extra);
 
@@ -102,64 +105,96 @@ it("provides a tight name region on metadata-only objects with zero draw calls a
   built.dispose();
 });
 
-function cameraFor(nid: string, w: number, h: number) {
-  const node = nodes.get(nid)!;
-  const heading = Number(new RegExp(`nodeId: "${nid}", headingDeg: (\\d+)`).exec(sceneSource)?.[1]);
-  expect(Number.isFinite(heading)).toBe(true);
-  const camera = new THREE.PerspectiveCamera(FOV.firstPerson, w/h, 0.05, 1000);
-  camera.position.copy(toRenderer(node.position.x, node.position.y, node.position.z+1.62));
-  const yaw = -heading*Math.PI/180, pitch = -0.12;
-  camera.lookAt(camera.position.clone().add(new THREE.Vector3(-Math.sin(yaw)*Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw)*Math.cos(pitch))));
-  camera.updateMatrixWorld(true);
-  return camera;
-}
+it("tracks Explorer's north-facing spawn path, rather than the scene's unused suggested headings", () => {
+  const explorer = readFileSync(new URL("../../../apps/web/src/explorer/explorer.ts", import.meta.url), "utf8");
+  expect(explorer).toContain("headingDeg = 0");
+  expect(explorer).toContain("return this.walkFrom({ x: n.position.x, y: n.position.y, z });");
+  expect(explorer).toContain("private pitch = -0.12;");
+  expect(explorer).toContain("private firstPerson = false;");
+  expect(explorer).not.toContain(".spawnPoints");
+});
 
-it("recognition proxy: name visible and JP >=18 / EN >=12 CSS px at every spawn eye", () => {
+it("rejects cut, offscreen, behind-camera, avatar-covered and undersized names", () => {
+  const corners = (x0: number, y0: number, x1: number, y1: number, z = 0) =>
+    [new THREE.Vector3(x0, y0, z), new THREE.Vector3(x1, y1, z)];
+  expect(nameVisibility(corners(-0.5, 0, 0.5, 0.5), 18, 12).pass).toBe(true);
+  expect(nameVisibility(corners(-0.5, 0, 1.01, 0.5), 18, 12)).toMatchObject({ fullyInFrame: false, pass: false, reasons: ["cut by screen edge"] });
+  expect(nameVisibility(corners(1.1, 0, 1.5, 0.5), 18, 12).reasons).toContain("not in frame");
+  expect(nameVisibility(corners(-0.5, 0, 0.5, 0.5, 2), null, null).pass).toBe(false);
+  expect(nameVisibility(corners(-0.1, -0.6, 0.1, -0.4), 18, 12)).toMatchObject({ fullyInFrame: true, avatarOverlap: true, pass: false });
+  expect(nameVisibility(corners(-0.5, 0, 0.5, 0.5), 17.99, 12).pass).toBe(false);
+  expect(nameVisibility(corners(-0.5, 0, 0.5, 0.5), 18, 11.99).pass).toBe(false);
+});
+
+it("matches spec 13's edge order, verified preference and node-oriented 2 m bearing", () => {
+  const p = (x: number, y: number) => ({ x, y, z: 0 });
+  const local = new Map([["a", { position: p(0, 0) }], ["b", { position: p(0, 10) }]]);
+  const edges = [
+    { id: "draft", from: "a", to: "b", verification: "draft" },
+    { id: "verified", from: "b", to: "a", verification: "verified", geometry: [p(0, 10), p(3, 0), p(0, 0)] },
+  ];
+  expect(edgeBearing("a", local, edges)).toEqual({ heading: 90, edge: "verified" });
+  expect(edgeBearing("a", local, edges.slice(0, 1))).toEqual({ heading: 0, edge: "draft" });
+});
+
+it("reports real third-person opening failures and spec-13 +0 without recentering boards", async () => {
+  const world = await buildWorld();
   const built = build();
   const rows = [];
-  for (const nid of station.spawnNodeIds as string[]) {
+  const poses = [];
+  const openingFailures = [];
+  for (const view of ["opening", "spec13+0"] as const) for (const nid of station.spawnNodeIds as string[]) {
     const b = boards.find((b) => b.anchor.nodeId === nid)!;
     expect(b, nid).toBeDefined();
     const proxy = built.group.getObjectByName(b.id)!;
     proxy.updateMatrixWorld(true);
     const type = identityTypography(b);
-    const row: Record<string, unknown> = { spawn: nid };
+    const edge = edgeBearing(nid, nodes, graph.edges);
+    const heading = view === "opening" ? 0 : edge.heading;
+    const row: Record<string, unknown> = { spawn: nid, view, heading, board: b.id, edge: edge.edge };
     for (const [label, w, h] of [["phone", 390, 844], ["desktop", 1280, 720]] as const) {
-      const camera = cameraFor(nid, w, h);
+      const pose = spawnCamera(world, nodes.get(nid)!.position, w, h, heading);
+      const { camera, ...metrics } = pose;
+      if (label === "phone") {
+        poses.push({ spawn: nid, view, ...metrics, position: camera.position.toArray(), fov: camera.fov });
+        row.distanceM = camera.position.distanceTo(toRenderer(b.position.x, b.position.y, b.position.z));
+      }
       const region = proxy.userData.gteki_identity.regions[0];
       const corners: THREE.Vector3[] = [];
-      for (const x of [region.min[0], region.max[0]]) for (const y of [region.min[1], region.max[1]]) {
-        corners.push(new THREE.Vector3(x, y, region.max[2]).applyMatrix4(proxy.matrixWorld).project(camera));
-      }
-      for (const p of corners as THREE.Vector3[]) {
-        expect.soft(Math.abs(p.x), `${nid} ${label} name horizontal`).toBeLessThanOrEqual(1);
-        expect.soft(Math.abs(p.y), `${nid} ${label} name vertical`).toBeLessThanOrEqual(1);
-        expect(p.z, `${nid} ${label} name in front`).toBeLessThan(1);
+      for (const x of [region.min[0], region.max[0]]) for (const y of [region.min[1], region.max[1]]) for (const z of [region.min[2], region.max[2]]) {
+        corners.push(new THREE.Vector3(x, y, z).applyMatrix4(proxy.matrixWorld).project(camera));
       }
       const projected = (emM: number, centerY: number, x: number) => {
+        if (corners.some((p) => p.z < -1 || p.z > 1)) return null;
         const cap = emM*IDENTITY_TYPE.cap;
-        const points = [-1, 1].map((side) => new THREE.Vector3((x-0.5)*b.widthM, (0.5-centerY)*b.heightM+side*cap/2, 0.042)
-          .applyMatrix4(proxy.matrixWorld).project(camera));
+        const points = [-1, 1].map((side) => new THREE.Vector3((x-0.5)*b.widthM, (0.5-centerY)*b.heightM+side*cap/2, 0.042).applyMatrix4(proxy.matrixWorld));
+        if (points.some((p) => p.clone().applyMatrix4(camera.matrixWorldInverse).z >= -camera.near)) return null;
+        points.forEach((p) => p.project(camera));
         return Math.abs(points[0]!.y-points[1]!.y)*h/2;
       };
       const jp = projected(type.jaM, type.jaY, type.jaX), en = projected(type.enM, type.enY, type.enX);
-      row[label] = `${jp.toFixed(1)} / ${en.toFixed(1)}`;
+      const result = nameVisibility(corners, jp, en);
+      const normal = new THREE.Vector3(0, 0, 1).transformDirection(proxy.matrixWorld);
+      const frontFacing = normal.dot(camera.position.clone().sub(proxy.getWorldPosition(new THREE.Vector3()))) > 0;
+      if (!frontFacing) { result.reasons.push("back face"); result.pass = false; }
+      row[label] = { jp, en, ...result, frontFacing };
+      expect(result.pass).toBe(result.fullyInFrame && !result.avatarOverlap && frontFacing && jp !== null && jp >= 18 && en !== null && en >= 12);
       if (label === "phone") {
-        expect.soft(jp, nid).toBeGreaterThanOrEqual(18); expect.soft(en, nid).toBeGreaterThanOrEqual(12);
+        if (view === "opening" && !result.pass) openingFailures.push(nid);
         const face = built.group.userData.faces.find((f: { id: string }) => f.id === b.id)!;
         const art = built.identityArt.find((a) => a.canvasPx.w === face.canvasPx.w)!;
         const texelCap = type.jaM/type.artScale/art.heightM*art.canvasPx.h*IDENTITY_TYPE.cap;
-        row.jpTexelsPerCssPx = Number((texelCap/jp).toFixed(2));
-        expect.soft(texelCap/jp, `${nid}: JP texels / CSS px`).toBeGreaterThanOrEqual(1);
-        row.transferCapCm = art.transferCapM.map((m) => Number((m*type.artScale*100).toFixed(2)));
+        row.jpTexelsPerCssPx = jp === null ? null : texelCap/jp;
       }
     }
     rows.push(row);
   }
-  console.log("recognition proxy (JP / EN CSS px; spawn eye 1.62 m, 60° FOV, pitch -0.12; conservative 0.7 em cap)", rows);
+  console.log("recognition proxy (actual third-person camera, conservative 0.7 em caps)", JSON.stringify(rows));
   evidence.recognitionProxy = rows;
+  evidence.cameraPoses = poses;
+  expect(openingFailures).toEqual(station.spawnNodeIds);
   built.dispose();
-});
+}, 30_000);
 
 it("isolates identity within 2 MiB low including mipmaps and preserves round-0 shared atlas sizes", () => {
   const rows = [];
@@ -171,6 +206,12 @@ it("isolates identity within 2 MiB low including mipmaps and preserves round-0 s
     expect(before.identityPages).toEqual([]);
     expect(after.identityPages).toHaveLength(1);
     expect(after.identityArt).toHaveLength(3);
+    expect(after.identityArt.flatMap((a) => a.transferCapM)).toHaveLength(tier === "low" ? 0 : 4);
+    if (tier === "high") evidence.transferCaps = boards.filter((b) => b.kind === "station-name").map((b) => {
+      const face = after.group.userData.faces.find((f: { id: string }) => f.id === b.id)!;
+      const art = after.identityArt.find((a) => a.canvasPx.w === face.canvasPx.w)!;
+      return { board: b.id, cm: art.transferCapM.map((m) => m*identityTypography(b).artScale*100) };
+    });
     rows.push({ tier, before: before.pages, after: after.pages, identity: after.identityPages,
       beforeMiB: mib(before.pages), sharedMiB: mib(after.pages), identityMiB: mib(after.identityPages),
       afterMiB: mib(after.pages)+mib(after.identityPages) });
@@ -181,6 +222,29 @@ it("isolates identity within 2 MiB low including mipmaps and preserves round-0 s
   }
   console.log("Atlas delta (CPU estimated glyph widths; RGBA8 + mipmaps MiB)", JSON.stringify(rows));
   evidence.atlas = rows;
+});
+
+it("omits only low-tier transfer text while preserving name fonts, world positions and regions", () => {
+  const low = build();
+  const lowNames = paintedText.filter((r) => ["池袋", "いけぶくろ", "Ikebukuro"].includes(r.text));
+  expect(lowNames).toHaveLength(6);
+  expect(paintedText.some((r) => /Yamanote|Marunouchi/.test(r.text))).toBe(false);
+  paintedText.length = 0;
+  const high = build(boards, 1);
+  expect(paintedText.filter((r) => ["池袋", "いけぶくろ", "Ikebukuro"].includes(r.text))).toEqual(lowNames);
+  expect(paintedText.filter((r) => /Yamanote|Marunouchi/.test(r.text))).toHaveLength(4);
+  for (const b of boards) {
+    const l = low.group.getObjectByName(b.id)!, h = high.group.getObjectByName(b.id)!;
+    expect(l.matrix).toEqual(h.matrix);
+    expect(l.userData.gteki_identity).toEqual(h.userData.gteki_identity);
+  }
+  // The top of each cropped artwork stays fixed, preserving the painted names' world coordinates.
+  for (const [i, art] of low.identityArt.entries()) {
+    const full = high.identityArt[i]!;
+    expect(art.centerY+art.heightM/2).toBeCloseTo(full.heightM/2, 12);
+    expect(art.canvasPx.h/art.heightM).toBeCloseTo(Math.round(full.heightM*art.canvasPx.w/art.widthM)/full.heightM, 10);
+  }
+  low.dispose(); high.dispose();
 });
 
 it("keeps art aspect, painted name bounds and metadata aligned at both tiers, and disposes texture/material", () => {

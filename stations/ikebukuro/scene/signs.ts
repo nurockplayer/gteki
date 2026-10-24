@@ -147,14 +147,15 @@ const THEME_PLACE: Theme = { panel: "#124a68", rule: "#2f7fa6", divider: "#5b93b
 
 /** Original GTEki layout: two name columns above plain JR and Metro transfer rows.
  *  No operator colour, ring, badge, pictogram or copied sign composition. */
-function paintIdentity(board: IdentityBoard, pxPerM: number, nameScale: number) {
+function paintIdentity(board: IdentityBoard, pxPerM: number, nameScale: number, transfers: boolean) {
   const c = document.createElement("canvas");
   c.width = Math.round(board.widthM * pxPerM);
-  c.height = Math.round(board.heightM * pxPerM);
+  const fullHeight = Math.round(board.heightM * pxPerM);
+  c.height = fullHeight;
   const g = c.getContext("2d")!;
   // Paint in physical units, so pixel rounding never changes glyph aspect or metadata bounds.
   const w = board.widthM, h = board.heightM;
-  g.setTransform(c.width/w, 0, 0, c.height/h, 0, 0);
+  g.setTransform(c.width/w, 0, 0, fullHeight/h, 0, 0);
   const type = identityTypography(board, nameScale);
   const bounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
   g.fillStyle = board.kind === "meeting-point" ? THEME_PLACE.panel : "#263d48";
@@ -185,10 +186,12 @@ function paintIdentity(board: IdentityBoard, pxPerM: number, nameScale: number) 
     line(board.text.ja, type.jaX, type.jaY, type.jaM/board.heightM, 700, true);
     line(board.text.kana!, type.enX, type.kanaY, type.kanaM/board.heightM, 500, true);
     line(board.text.en, type.enX, type.enY, type.enM/board.heightM, 600, true);
-    const transfers = board.text.transfer!.split(" · ");
-    // The name em box ends at 0.71 h. Two rows use all remaining height with a small interline gap.
-    transferCapM.push(line(transfers.slice(0, 3).join(" · "), 0.04, 0.78, 0.13));
-    transferCapM.push(line(transfers.slice(3).join(" · "), 0.04, 0.93, 0.13));
+    if (transfers) {
+      const rows = board.text.transfer!.split(" · ");
+      // The name em box ends at 0.71 h. Two rows use all remaining height with a small interline gap.
+      transferCapM.push(line(rows.slice(0, 3).join(" · "), 0.04, 0.78, 0.13));
+      transferCapM.push(line(rows.slice(3).join(" · "), 0.04, 0.93, 0.13));
+    }
   } else {
     line(board.text.ja, 0.04, 0.22, 0.25, 700, true);
     line(board.text.en, 0.38, 0.23, 0.16, 500, true);
@@ -196,7 +199,16 @@ function paintIdentity(board: IdentityBoard, pxPerM: number, nameScale: number) 
     line(board.text.locationEn!, 0.04, 0.68, 0.105);
     line(board.text.status!, 0.04, 0.89, 0.10);
   }
-  return { canvas: c, widthM: board.widthM, h: board.heightM, transferCapM, bg: board.kind === "meeting-point" ? THEME_PLACE.panel : "#263d48",
+  let canvas = c;
+  if (!transfers && board.kind === "station-name") {
+    canvas = document.createElement("canvas");
+    canvas.width = c.width;
+    // Retain every measured name glyph plus one texel; crop only the unused transfer band.
+    canvas.height = Math.min(fullHeight, Math.max(Math.ceil(fullHeight*0.72), Math.ceil(bounds.maxY/h*fullHeight)+1));
+    canvas.getContext("2d")!.drawImage(c, 0, 0);
+  }
+  const croppedH = h*canvas.height/fullHeight;
+  return { canvas, widthM: board.widthM, h: croppedH, centerY: (h-croppedH)/2, transferCapM, bg: board.kind === "meeting-point" ? THEME_PLACE.panel : "#263d48",
     nameRegion: { min: [(bounds.minX/w-0.5)*board.widthM, (0.5-bounds.maxY/h)*board.heightM],
       max: [(bounds.maxX/w-0.5)*board.widthM, (0.5-bounds.minY/h)*board.heightM] } };
 }
@@ -501,7 +513,7 @@ export function buildSigns(
     // Compact boards magnify the same artwork less on screen; reserve density for the nearby wide panel.
     const lowDensity = key === "wide" ? 280 : key === "compact" ? 160 : 140;
     const density = Math.min(lowDensity*(texelScale < 1 ? 1 : 2), (maxTextureSize-2*GUTTER)/IDENTITY_ART.widthM);
-    identityArt.set(key, paintIdentity({ ...b, widthM: IDENTITY_ART.widthM, heightM: IDENTITY_ART.heightM }, density, key === "compact" ? 1.12 : key === "wide" ? 0.8 : 1));
+    identityArt.set(key, paintIdentity({ ...b, widthM: IDENTITY_ART.widthM, heightM: IDENTITY_ART.heightM }, density, key === "compact" ? 1.12 : key === "wide" ? 0.8 : 1, texelScale >= 1));
   }
   const layouts: SignLayout[] = [];
   const boxes: { geo: THREE_NS.BufferGeometry; matrix: THREE_NS.Matrix4 }[] = [];
@@ -564,7 +576,7 @@ export function buildSigns(
     const frontFace: Face = { ...front, id: s.id, side: "front", scale, local: new THREE.Matrix4().makeTranslation(0, 0, faceZ), sign: signM };
     if (art) {
       identityFaces.push({ ...frontFace, solid: true });
-      identityFaces.push({ ...frontFace, widthM: art.widthM*artScale, h: art.h*artScale, local: new THREE.Matrix4().makeTranslation(0, 0, faceZ+0.001) });
+      identityFaces.push({ ...frontFace, widthM: art.widthM*artScale, h: art.h*artScale, local: new THREE.Matrix4().makeTranslation(0, art.centerY*artScale, faceZ+0.001) });
     } else faces.push(frontFace);
     if (back) faces.push({ ...back, id: s.id, side: "back", scale, local: new THREE.Matrix4().makeRotationY(Math.PI).setPosition(0, 0, -faceZ), sign: signM });
   }
@@ -615,7 +627,7 @@ export function buildSigns(
      *  overflow page only when the faces need it. */
     pages: pages.map((p) => ({ w: p.width, h: p.height })),
     identityPages: packedIdentity.pages.map((p) => ({ w: p.width, h: p.height })),
-    identityArt: artList.map((a) => ({ widthM: a.widthM, heightM: a.h, canvasPx: { w: a.canvas.width, h: a.canvas.height }, transferCapM: a.transferCapM })),
+    identityArt: artList.map((a) => ({ widthM: a.widthM, heightM: a.h, centerY: a.centerY, canvasPx: { w: a.canvas.width, h: a.canvas.height }, transferCapM: a.transferCapM })),
     /** Shelf rows used per page, rows each page holds at its cap, and the row pitch / gutter (px): how much budget is left. */
     rows: { used: rowsUsed, perPage: rowsPerPage, rowH, gutter: GUTTER },
     dispose() {

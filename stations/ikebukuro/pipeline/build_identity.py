@@ -21,6 +21,7 @@ OSM = 'osm-ikebukuro-station-refs-2026-10'
 MEETING = 'ikefukuro-location-references-2026-10'
 PLATEAU = 'plateau-ubld-13116'
 TRANSFER = 'JR 山手線 Yamanote JY13 · 埼京線 Saikyo JA12 · 湘南新宿ライン Shonan-Shinjuku JS21 · 丸ノ内線 Marunouchi M25 · 有楽町線 Yurakucho Y09 · 副都心線 Fukutoshin F09'
+# Authored placement directions, matching scene suggestions; Explorer.walkFromNode uses 0 instead.
 SPAWNS = {'c_mid': 100, 'c_e2': 100, 'n_h': 95, 'sp_e': 92, 'w_c': 340, 'sw_h': 110}
 # Three further main-passage junctions (degree >= 3); ten boards including the meeting marker.
 JUNCTIONS = {'c_e1': 100, 'c_n': 95, 'sp_m': 92}
@@ -121,7 +122,7 @@ def direct_place(geom, ceil, segs, grid, distance, width, outer_h, clearance):
 
 
 def hits(sight, geom, board):
-    # Recognition proxy is explicitly measured at the 1.62 m spawn eye.
+    # Placement-only sightline from the 1.62 m eye along the authored board direction.
     # The unconstrained follow envelope can cross walls behind a spawn; runtime
     # boom collision/raising requires a separate rendered acceptance check.
     d = math.dist(tuple(geom[0][k] for k in ('x', 'y')), tuple(board['position'][k] for k in ('x', 'y')))
@@ -135,7 +136,7 @@ def marker_view(board, floor):
 
 
 def in_phone_view(board, node, heading):
-    """Conservative em boxes, same original layout as signs.ts; 390x844, 60 deg.
+    """Placement-only authored view; not Explorer's opening camera. 390x844, 60 deg.
 
     Actual glyph widths remain a renderer acceptance item; the test uses the
     existing atlas CJK/Latin width estimator and checks the projected ink box.
@@ -323,7 +324,7 @@ def check(boards):
         assert all(math.hypot(s['position']['x']-b['position']['x'], s['position']['y']-b['position']['y']) >= 1 for s in signs), b['id']
         if nid in JUNCTIONS:
             assert sum(e['verification'] == 'verified' and nid in (e['from'], e['to']) for e in edges.values()) >= 3, nid
-    print('Identity clearance / full-face spawn-eye sightlines: PASS (fittings excluded; follow camera not certified)')
+    print('Identity clearance / authored-direction eye sightlines: PASS (placement only; opening view is reported separately)')
     print('\n'.join(f"{b['id']} | {b['anchor']} | {b['kind']} | {b['position']} | {b['widthM']} x {b['heightM']} m" for b in boards))
 
 
