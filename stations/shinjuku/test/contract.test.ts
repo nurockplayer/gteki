@@ -24,9 +24,11 @@ describe("Shinjuku gteki/ contract files", () => {
       expect(names.every(Boolean)).toBe(true);
       expect(new Set(names).size).toBe(names.length);
     }
-    const s03Ja = bundle.pois.filter((p) => p.evidence.sourceIds.includes("tokyo-s03-zip")).map((p) => p.names.find((n) => n.lang === "ja")?.text);
+    const s03 = bundle.pois.filter((p) => p.evidence.sourceIds.includes("tokyo-s03-zip"));
+    const s03Ja = s03.map((p) => p.names.find((n) => n.lang === "ja")?.text);
     expect(s03Ja.every(Boolean)).toBe(true);
-    expect(s03Ja.filter((n, i) => s03Ja.indexOf(n) !== i)).toEqual(["京王新線　京王新線口"]);
+    // One S03 name is printed for two gates; asserted by id (S03 names stay out of Apache-2.0 files).
+    expect(s03.filter((p, i) => s03Ja.indexOf(s03Ja[i]) !== s03Ja.lastIndexOf(s03Ja[i])).map((p) => p.id)).toEqual(["poi:keio-gate:1", "poi:keio-gate:2"]);
   });
 
   it("cites the render-only PLATEAU street context under the catalogue licence with the Owner's Option A credit (#161)", () => {

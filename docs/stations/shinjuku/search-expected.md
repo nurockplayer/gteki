@@ -95,4 +95,4 @@ Source: `tokyo-s03-zip`, 「出典：東京都都市整備局「新宿駅周辺�
 - Routing answers `unknown_goal`, so these POIs never produce a route. The guided-walk tests skip them.
 - 「新宿」 and "Shinjuku" still rank the routable Oedo platform (`poi:platform:oedo`) first, although JR platforms 1–4 contain 「湘南新宿ライン」.
 - JR, 山手線, 中央線, 京王, 小田急, 丸ノ内線, 西口, 南口, 東口 and 新宿西口 now return these POIs at score 30 and above (see the negative table). None of them is routable.
-- Two gates share the name 「京王新線　京王新線口」 in the source (`poi:keio-gate:1` and `:2`). The name is kept as printed and is not disambiguated.
+- Two gates, `poi:keio-gate:1` and `:2`, share one name in the source. The name is kept as printed and is not disambiguated.

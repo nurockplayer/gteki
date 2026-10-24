@@ -1148,7 +1148,7 @@ sources.push({
   modified: s03Src.modified,
   retrievedAt: s03Src.retrievedAt,
   datasetDate: s03Src.datasetDate,
-  notes: `${s03Src.changeNotice}. ZIP sha256 ${s03Src.sha256}. ${s03Src.usage}.`,
+  notes: `${s03Src.changeNotice}. ZIP sha256 ${s03Src.sha256}. ${s03Src.usage}. Licence claimed at dataset level by catalogue t000008d0000000037; shipped under LicenseRef-S03 (Owner Q2).`,
 });
 for (const raw of s03.pois) {
   if (raw.floorId !== null || raw.displayPosition !== null || raw.paid !== null) throw new Error(`S03 import: ${raw.id} carries a floor, position or paid value`);

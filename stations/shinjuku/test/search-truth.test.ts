@@ -40,8 +40,10 @@ describe("POI names", () => {
     }
     const s03Ja = pois.filter(isS03).map((p) => text(p, "ja"));
     expect(s03Ja.every(Boolean)).toBe(true);
-    // the source lists two gates under one name (S03 has two entities with this name); kept as printed
-    expect(s03Ja.filter((n, i) => s03Ja.indexOf(n) !== i)).toEqual(["京王新線　京王新線口"]);
+    // the source lists two gates under one name (S03 has two entities with this name); kept as printed.
+    // Asserted by id: S03 names stay out of Apache-2.0 files.
+    const s03 = pois.filter(isS03);
+    expect(s03.filter((p, i) => s03Ja.indexOf(s03Ja[i]) !== s03Ja.lastIndexOf(s03Ja[i])).map((p) => p.id)).toEqual(["poi:keio-gate:1", "poi:keio-gate:2"]);
     for (const lang of ["ja", "en", "zh-Hant"]) {
       const names = e27.map((p) => text(p, lang)).filter(Boolean);
       expect(new Set(names).size, lang).toBe(names.length);
@@ -509,7 +511,8 @@ describe("S03 search-only line POIs (#411)", () => {
     }
   });
 
-  it("finds the JR南口 gate by name", () => {
-    expect(index.search("JR南口", { limit: 10 }).map((h) => h.poi.id)).toContain("poi:jreast-gate:7");
+  it("finds an S03 gate by its own name (read from pois.json, not written here)", () => {
+    const name = text(pois.find((p) => p.id === "poi:jreast-gate:7")!, "ja")!;
+    expect(index.search(name, { limit: 10 }).map((h) => h.poi.id)).toContain("poi:jreast-gate:7");
   });
 });
