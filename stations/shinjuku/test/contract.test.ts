@@ -111,7 +111,12 @@ describe("Shinjuku gteki/ contract files", () => {
     }
     const reuse = gaps.find((g) => g.id === "gap:reuse-after-publication");
     const reuseJa = textOf(reuse?.missingFact, "ja");
-    expect(reuseJa).toContain("「ライセンス根拠は未確認」");
+    expect(reuseJa).toContain("ライセンス根拠は未確認");
+    expect(reuseJa).toContain("オーナー判断により公開");
+    expect(textOf(reuse?.fieldWorkNeeded, "ja")).toContain("ほこナビDP窓口");
     expect(reuseJa).not.toMatch(/PDL\s*1\.0\s*(で|に基づ)/);
+    const heightsJa = textOf(gaps.find((g) => g.id === "gap:heights")?.fieldWorkNeeded, "ja");
+    expect(heightsJa).toContain("推定値");
+    expect(heightsJa).toContain("実測したものではない");
   });
 });
