@@ -18,7 +18,7 @@ Transfers: `poi:jreast-keio-transfer:1`, `poi:jreast-odakyu-transfer:1` and `:2`
 
 Every name is copied exactly as `com-entity.geojson` prints it, including full-width spaces. A check script compared each name with the entity it came from (0 mismatches). Each POI's `s03.entityId` (`$id N`) equals the `id` of exactly one level feature, and that feature lists the entity back. `s03.levels` is that feature's level file (B1F 16, 1F 20, 2F 7, B2F 2; JR and Odakyu platforms are on S03 1F).
 
-**Held, not imported (27 → 14 after review):** 5 Toei gate entities (E27 or E01 unknown; never merged into E27 by name), the M08 station entity, 東京メトロ丸ノ内線ゲート (its linked feature is a hallway point, not a gate), 京王ルミネ口 (a commercial-unit duplicate of a gate name), and 6 shops, ticket offices and department stores. Shops and ticket offices belong to data-research-05.
+**Held, not imported (27 → 14 after review; the data file keeps only each entry's S03 id and reason, no name):** 5 Toei gate entities (E27 or E01 unknown; never merged into E27 by name), the M08 station entity, one M08 entity whose linked feature is a hallway point rather than a gate (`$id 29062555`), one commercial-unit entry that duplicates a Keio gate name (`Unit B1F-551`), and 6 shops, ticket offices and department stores. Shops and ticket offices belong to data-research-05.
 
 ## 2. Field mapping (`Poi`)
 
@@ -52,7 +52,7 @@ Exactly the `sources[0]` object in the data file: id `tokyo-s03-zip`, `rights: R
 
 - `stations/shinjuku/test/guided-walk.test.ts:51` targets every `exit|ticket_gate` POI and expects `res.ok`. Add `&& p.connectorNodeIds.length > 0` in the import PR, or the test fails.
 - Append the new POIs at the **end** of the `pois` array. The empty-query list shows `pois.slice(0, 8)`, and unroutable POIs would otherwise fill it.
-- JR platforms 1–4 contain 「湘南新宿ライン」 as printed, so a bare 「新宿」 query will match them. Add a search test that the top hit for 「新宿」 is still a routable POI. The names stay verbatim.
+- The names of `poi:jreast-platform:1` to `:4` contain the station name inside a line name, as printed, so a bare 「新宿」 query will match them. Add a search test that the top hit for 「新宿」 is still a routable POI. The names stay verbatim.
 - The existing E27 platform POI note says other operators are not modelled, and `docs/stations/shinjuku/search-expected.md` encodes that. Both change in the import PR.
 - The unroutable label stays 「検索のみ（入口未確認）」. No `apps/web` or `packages/search` change.
 
