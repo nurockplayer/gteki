@@ -158,8 +158,13 @@ describe("route on one floor", () => {
     const steps = [step(B1F, B1F), step(B1F, F1, "stairs")];
     expect(routeOnFloor(points, B1F, steps)).toEqual([[{ x: 0, y: 0 }, { x: 10, y: 0 }]]);
     expect(routeOnFloor(points, F1, steps)).toEqual([]);
-    // Without the step evidence the two same-floor vertices would have been joined.
-    expect(routeOnFloor(points, B1F, [])).toEqual([[{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 11, y: 2 }]]);
+    // Losing the step evidence drops the segment instead of assuming it stays on the floor.
+    expect(routeOnFloor(points, B1F, [])).toEqual([]);
+  });
+  it("drops a segment whose ending point has no step at all, rather than assuming a same-floor walk", () => {
+    const points = [point(0, 0, B1F, -1), point(10, 0, B1F, 2)];
+    // The second point claims step 2, but only steps 0 and 1 were supplied.
+    expect(routeOnFloor(points, B1F, [step(B1F, B1F), step(B1F, B1F)])).toEqual([]);
   });
 });
 
@@ -183,13 +188,71 @@ describe("next floor change", () => {
     expect(nextFloorChange([], [], B1F, -1)).toBeNull();
   });
   it("does not point back at a connector already walked past on a revisited floor", () => {
-    expect(routeProgress(zigzag, B1F, 0, 0)).toBe(-1);
-    expect(routeProgress(zigzag, B1F, 20, 10)).toBe(4);
-    expect(routeProgress(zigzag, "missing", 0, 0)).toBe(-1);
+    expect(routeProgress(zigzag, B1F, 0, 0, -1)).toBe(-1);
+    expect(routeProgress(zigzag, B1F, 20, 10, -1)).toBe(4);
+    expect(routeProgress(zigzag, "missing", 0, 0, -1)).toBe(-1);
     // Back on B1F after the up-and-down leg, the next change is the later one at (20, 10).
-    expect(nextFloorChange(zigzag, zigzagSteps, B1F, routeProgress(zigzag, B1F, 20, 10)))
+    expect(nextFloorChange(zigzag, zigzagSteps, B1F, routeProgress(zigzag, B1F, 20, 10, -1)))
       .toEqual({ x: 20, y: 10, mode: "escalator", toFloorId: F1 });
-    expect(nextFloorChange(zigzag, zigzagSteps, B1F, 5)).toBeNull();
+    expect(nextFloorChange(zigzag, zigzagSteps, B1F, 6)).toBeNull();
+  });
+  it("keeps the current cross-floor step selected until the floor actually changes", () => {
+    // progress -1/0: the stairs ahead; progress 1: standing on the stairs step itself.
+    expect(nextFloorChange(zigzag, zigzagSteps, B1F, -1)?.toFloorId).toBe(F1);
+    expect(nextFloorChange(zigzag, zigzagSteps, B1F, 0)?.toFloorId).toBe(F1);
+    expect(nextFloorChange(zigzag, zigzagSteps, B1F, 1)?.toFloorId).toBe(F1);
+    // Past it, the hint moves on to the later escalator rather than disappearing.
+    expect(nextFloorChange(zigzag, zigzagSteps, B1F, 2)?.mode).toBe("escalator");
+  });
+});
+
+describe("route progress", () => {
+  it("stays on the later visit when a route crosses the same coordinates twice", () => {
+    const loop = [
+      point(0, 0, B1F, -1),
+      point(10, 0, B1F, 0),
+      point(10, 0, F1, 1),
+      point(10, 10, F1, 2),
+      point(10, 10, B1F, 3),
+      point(10, 0, B1F, 4), // back over (10, 0), which step 0 also reached
+      point(20, 0, B1F, 5),
+    ];
+    // Without history the tie goes to the later step: the second visit is the real position.
+    expect(routeProgress(loop, B1F, 10, 0, -1)).toBe(4);
+    // Once past the first visit, the earlier point is no longer a candidate at all.
+    expect(routeProgress(loop, B1F, 10, 0, 4)).toBe(4);
+    expect(routeProgress(loop, B1F, 12, 0, 4)).toBe(4);
+  });
+  it("picks the nearer of nearly overlapping points, and the later step on an exact tie", () => {
+    const close = [
+      point(0, 0, B1F, -1),
+      point(0.2, 0, B1F, 0),
+      point(0.25, 0, B1F, 1),
+    ];
+    expect(routeProgress(close, B1F, 0.21, 0, -1)).toBe(0);
+    expect(routeProgress(close, B1F, 0.24, 0, -1)).toBe(1);
+    const tied = [point(0, 0, B1F, 0), point(0, 0, B1F, 1)];
+    expect(routeProgress(tied, B1F, 0, 0, -1)).toBe(1);
+  });
+  it("only jumps backwards after wandering more than 8 m off the still-ahead route", () => {
+    const outAndBack = [
+      point(0, 0, B1F, -1),
+      point(40, 0, B1F, 0),
+      point(100, 0, B1F, 1),
+      point(100, 0, F1, 2),
+      point(40, 0, B1F, 3), // the return leg comes back over (40, 0)
+      point(0, 0, B1F, 4),
+    ];
+    // At the end, the only point still ahead is (0, 0); 40 m away and an earlier point is on the spot.
+    expect(routeProgress(outAndBack, B1F, 40, 0, 4)).toBe(3);
+    // Walking back to the end re-advances to the last step, then the same trip repeats.
+    expect(routeProgress(outAndBack, B1F, 0, 0, 3)).toBe(4);
+    expect(routeProgress(outAndBack, B1F, 40, 0, 4)).toBe(3);
+    // Near the still-ahead route, an even closer earlier point does not pull progress back.
+    const nearMiss = [point(0, 0, B1F, -1), point(2, 0, B1F, 0), point(50, 0, B1F, 1), point(0, 0, B1F, 2)];
+    expect(routeProgress(nearMiss, B1F, 1.9, 0, 2)).toBe(2);
+    // Far from it, the nearest earlier point (step 1 at 50, 0) wins the backward jump.
+    expect(routeProgress(nearMiss, B1F, 40, 0, 2)).toBe(1);
   });
 });
 

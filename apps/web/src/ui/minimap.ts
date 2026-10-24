@@ -72,11 +72,14 @@ export class Minimap {
   private routeDirty = false;
   /** Every floor-changing step, computed once per route; per-tick selection only reads this. */
   private transitions: FloorTransition[] = [];
+  /** Monotonic along route order: the last step reached, also the floor for the next search. */
   private progress = -1;
   private connectorHint: FloorTransition | null = null;
   private connectorDirty = true;
   private labelKey = "";
   private lastPose = "";
+  /** Position without heading: a turn alone cannot change route progress, so it skips the search. */
+  private lastPosition = "";
   private timer: ReturnType<typeof setInterval> | null = null;
   private disposed = false;
   private readonly visibilityChanged = () => {
@@ -148,6 +151,7 @@ export class Minimap {
     this.connectorHint = null;
     this.connectorDirty = true;
     this.labelKey = "";
+    this.lastPosition = "";
     this.graph.replaceChildren();
     this.graph.removeAttribute("transform");
     this.routeGroup.replaceChildren();
@@ -168,20 +172,24 @@ export class Minimap {
 
   /**
    * The computed route (`routePolyline` + `best.steps`) and its destination. Called after every
-   * `computeRoute()`; null/empty clears. Only evidenced geometry is ever drawn: the route's own
-   * polyline on this floor, and the current floor's routable POIs.
+   * `computeRoute()`; null clears. Points and steps only make sense together — a point's stepIndex
+   * is checked against the steps — so they arrive as one object or not at all. Only evidenced
+   * geometry is ever drawn: the route's own polyline on this floor, and the current floor's
+   * routable POIs.
    */
-  setRoute(points: PolylinePoint[] | null, steps: RouteStep[] | null, destination: Poi | null): void {
-    this.route = points && points.length >= 2 ? points : null;
-    this.steps = steps;
+  setRoute(route: { points: PolylinePoint[]; steps: RouteStep[] } | null, destination: Poi | null): void {
+    const points = route && route.points.length >= 2 ? route.points : null;
+    this.route = points;
+    this.steps = points && route ? route.steps : null;
     this.destination = destination;
-    this.transitions = this.route && steps ? floorTransitions(this.route, steps) : [];
+    this.transitions = points && route ? floorTransitions(points, route.steps) : [];
     this.destinationPoint = null;
     this.progress = -1;
     this.connectorDirty = true;
     this.labelKey = "";
     this.routeDirty = true;
     this.lastPose = "";
+    this.lastPosition = "";
     this.refresh();
   }
 
@@ -274,13 +282,19 @@ export class Minimap {
       this.arrow.style.display = floorId === null ? "none" : "";
       this.updateText();
     }
-    // The connector hint is chosen from the precomputed transitions, only when progress or floor moves.
-    const progress = this.route && floorId ? routeProgress(this.route, floorId, pose.east, pose.north) : -1;
-    if (floorChanged || this.connectorDirty || progress !== this.progress) {
+    // The connector hint follows progress, but a turn alone cannot advance it: only a new position,
+    // floor or route re-runs the search. `>=` keeps the current cross-floor step while inside it.
+    const position = `${pose.east},${pose.north},${pose.up}`;
+    const moved = position !== this.lastPosition;
+    this.lastPosition = position;
+    if (floorChanged || this.connectorDirty || moved) {
+      const progress = this.route && floorId ? routeProgress(this.route, floorId, pose.east, pose.north, this.progress) : -1;
+      if (floorChanged || this.connectorDirty || progress !== this.progress) {
+        this.progress = progress;
+        this.connectorHint = floorId ? this.transitions.find((t) => t.fromFloorId === floorId && t.stepIndex >= progress) ?? null : null;
+        this.renderLabel();
+      }
       this.connectorDirty = false;
-      this.progress = progress;
-      this.connectorHint = floorId ? this.transitions.find((t) => t.fromFloorId === floorId && t.stepIndex > progress) ?? null : null;
-      this.renderLabel();
     }
     // Route runs and POIs change only with the route or the floor — never per tick.
     if (floorChanged || this.routeDirty) {

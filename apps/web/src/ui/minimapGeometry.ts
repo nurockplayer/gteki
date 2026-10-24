@@ -67,8 +67,11 @@ export function routeOnFloor(points: readonly PolylinePoint[], floorId: string, 
     if (point.floorId !== floorId) { flush(); continue; }
     const previous = i > 0 ? points[i - 1]! : null;
     const step = point.stepIndex >= 0 ? steps[point.stepIndex] : undefined;
+    // No step for the vertex that ends this segment: it may be a stair, so drop the segment rather
+    // than flatten it onto the floor. Missing evidence is never filled in by a guess.
+    const missingStep = point.stepIndex >= 0 && !step;
     const leavesFloor = !!step && step.fromFloorId !== step.toFloorId;
-    if (!previous || previous.floorId !== floorId || leavesFloor) {
+    if (!previous || previous.floorId !== floorId || missingStep || leavesFloor) {
       flush();
       run = [{ x: point.x, y: point.y }];
       continue;
@@ -112,21 +115,49 @@ export function floorTransitions(points: readonly PolylinePoint[], steps: readon
   return transitions;
 }
 
-/** The step index of the on-floor route point nearest the player: how far along this floor's run they are. */
-export function routeProgress(points: readonly PolylinePoint[], floorId: string, east: number, north: number): number {
-  let best = Infinity, stepIndex = -1;
+/** How far off the still-ahead part of the route the player must be before progress may jump back. */
+export const PROGRESS_BACKTRACK_M = 8;
+
+/**
+ * How far along this floor's run the player is, as a step index. Monotonic along route order:
+ * only on-floor points at or after `lastProgress` are candidates, so a route that crosses the same
+ * coordinates twice cannot drag progress back to the earlier visit. Equal distances prefer the
+ * later step. Progress only moves backwards when the player is more than `PROGRESS_BACKTRACK_M`
+ * from every still-ahead point AND an earlier on-floor point is genuinely closer (they wandered off).
+ */
+export function routeProgress(
+  points: readonly PolylinePoint[],
+  floorId: string,
+  east: number,
+  north: number,
+  lastProgress: number,
+): number {
+  let ahead: { stepIndex: number; distanceSq: number } | null = null;
+  let anywhere: { stepIndex: number; distanceSq: number } | null = null;
   for (const point of points) {
     if (point.floorId !== floorId) continue;
-    const distance = (point.x - east) ** 2 + (point.y - north) ** 2;
-    if (distance < best) { best = distance; stepIndex = point.stepIndex; }
+    const distanceSq = (point.x - east) ** 2 + (point.y - north) ** 2;
+    if (!anywhere || distanceSq < anywhere.distanceSq || (distanceSq === anywhere.distanceSq && point.stepIndex > anywhere.stepIndex)) {
+      anywhere = { stepIndex: point.stepIndex, distanceSq };
+    }
+    if (point.stepIndex < lastProgress) continue;
+    if (!ahead || distanceSq < ahead.distanceSq || (distanceSq === ahead.distanceSq && point.stepIndex > ahead.stepIndex)) {
+      ahead = { stepIndex: point.stepIndex, distanceSq };
+    }
   }
-  return stepIndex;
+  if (!ahead) return lastProgress;
+  // Only an off-route player may move backwards, and only to the nearest earlier point.
+  if (anywhere && ahead.distanceSq > PROGRESS_BACKTRACK_M ** 2 && anywhere.distanceSq < ahead.distanceSq) {
+    return anywhere.stepIndex;
+  }
+  return ahead.stepIndex;
 }
 
 /**
- * The first floor change ahead of the player, and where on this floor it starts. Only steps after
- * `fromStepIndex` count, so a route that revisits a floor does not point back at a connector already
- * walked past. A same-floor stair/escalator is not a floor change.
+ * The first floor change at or after the current step, and where on this floor it starts. Using `>=`
+ * keeps the current cross-floor step selected while the player is inside it (its mid-stair vertices
+ * carry the step's own index), until the floor actually changes. A same-floor stair/escalator is not
+ * a floor change.
  */
 export function nextFloorChange(
   points: readonly PolylinePoint[],
@@ -134,7 +165,7 @@ export function nextFloorChange(
   floorId: string,
   fromStepIndex: number,
 ): { x: number; y: number; mode: RouteStep["mode"]; toFloorId: string } | null {
-  const change = floorTransitions(points, steps).find((t) => t.fromFloorId === floorId && t.stepIndex > fromStepIndex);
+  const change = floorTransitions(points, steps).find((t) => t.fromFloorId === floorId && t.stepIndex >= fromStepIndex);
   return change ? { x: change.x, y: change.y, mode: change.mode, toFloorId: change.toFloorId } : null;
 }
 

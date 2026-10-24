@@ -186,7 +186,7 @@ describe("Minimap route overlay (#220 PR2)", () => {
 
   it("draws only the current floor's run of the route and names the next floor change", () => {
     const map = create();
-    map.setRoute(upRoute, upSteps, poi());
+    map.setRoute({ points: upRoute, steps: upSteps }, poi());
     expect(routeLines(map)).toHaveLength(1);
     expect(map.el.querySelector(".minimap-route-line")!.getAttribute("points")).toBe("0,0 20,0");
     expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
@@ -212,9 +212,9 @@ describe("Minimap route overlay (#220 PR2)", () => {
 
   it("clears the overlay when the route is cleared, but keeps evidenced POI dots", () => {
     const map = create();
-    map.setRoute(upRoute, upSteps, poi());
+    map.setRoute({ points: upRoute, steps: upSteps }, poi());
     expect(routeLines(map)).toHaveLength(1);
-    map.setRoute(null, null, null);
+    map.setRoute(null, null);
     expect(routeLines(map)).toHaveLength(0);
     expect(map.el.querySelector<HTMLElement>(".minimap-route-label")!.hidden).toBe(true);
     expect(display(map, ".minimap-route-end")).toBe("none");
@@ -226,7 +226,7 @@ describe("Minimap route overlay (#220 PR2)", () => {
   it("highlights an evidenced on-floor destination's POI dot, not the route end", () => {
     const map = create();
     const route = [point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)];
-    map.setRoute(route, [step("concourse", "concourse")], poi());
+    map.setRoute({ points: route, steps: [step("concourse", "concourse")] }, poi());
     expect(display(map, ".minimap-destination-rim")).toBe("none");
     const dot = map.el.querySelector(".minimap-poi.is-destination");
     expect(dot).not.toBeNull();
@@ -243,7 +243,7 @@ describe("Minimap route overlay (#220 PR2)", () => {
     farBundle.pois = [farPoi];
     const nearRoute = [point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)];
     const withPoi = create(farBundle);
-    withPoi.setRoute(nearRoute, [step("concourse", "concourse")], farPoi);
+    withPoi.setRoute({ points: nearRoute, steps: [step("concourse", "concourse")] }, farPoi);
     expect(display(withPoi, ".minimap-destination-rim")).toBe("");
     expect(withPoi.el.querySelector(".minimap-destination-rim")!.getAttribute("transform")).toBe("translate(179 95) rotate(90)");
     // The route end is still shown neutrally, inside the circle.
@@ -255,7 +255,7 @@ describe("Minimap route overlay (#220 PR2)", () => {
     const unlocatedBundle = createSyntheticBundle();
     unlocatedBundle.pois = [unevidenced];
     const withoutPoi = create(unlocatedBundle);
-    withoutPoi.setRoute(farRoute, [step("concourse", "concourse")], unevidenced);
+    withoutPoi.setRoute({ points: farRoute, steps: [step("concourse", "concourse")] }, unevidenced);
     expect(withoutPoi.el.querySelector(".minimap-poi.is-destination")).toBeNull();
     expect(display(withoutPoi, ".minimap-destination-rim")).toBe("");
     expect(withoutPoi.el.querySelector(".minimap-destination-rim")!.getAttribute("transform")).toBe("translate(179 95) rotate(90)");
@@ -266,7 +266,7 @@ describe("Minimap route overlay (#220 PR2)", () => {
     const map = create();
     const upperDestination = poi({ id: "upstairs", floorId: "upper" });
     const route = [point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)];
-    map.setRoute(route, [step("concourse", "concourse")], upperDestination);
+    map.setRoute({ points: route, steps: [step("concourse", "concourse")] }, upperDestination);
     expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("Destination floor: 1F");
     expect(map.el.querySelector(".minimap-poi.is-destination")).toBeNull();
     expect(display(map, ".minimap-destination-rim")).toBe("none");
@@ -283,7 +283,7 @@ describe("Minimap route overlay (#220 PR2)", () => {
       const bundle = createSyntheticBundle();
       bundle.pois = [target];
       const map = create(bundle);
-      map.setRoute([point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)], [step("concourse", "concourse")], target);
+      map.setRoute({ points: [point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)], steps: [step("concourse", "concourse")] }, target);
       expect(map.el.querySelectorAll(".minimap-poi"), variant.label).toHaveLength(0);
       // The route's own end is still drawn, but as a neutral endpoint with no POI meaning.
       expect(display(map, ".minimap-route-end"), variant.label).toBe("");
@@ -295,7 +295,7 @@ describe("Minimap route overlay (#220 PR2)", () => {
     const bundle = createSyntheticBundle();
     bundle.pois = [target];
     const map = create(bundle);
-    map.setRoute([point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)], [step("concourse", "concourse")], target);
+    map.setRoute({ points: [point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)], steps: [step("concourse", "concourse")] }, target);
     const dots = map.el.querySelectorAll(".minimap-poi");
     expect(dots).toHaveLength(1);
     expect(dots[0]!.getAttribute("cx")).toBe("100");
@@ -319,7 +319,7 @@ describe("Minimap route overlay (#220 PR2)", () => {
       step("concourse", "concourse"), step("concourse", "upper", "stairs"), step("upper", "upper"),
       step("upper", "concourse", "stairs"), step("concourse", "concourse"), step("concourse", "upper", "escalator"),
     ];
-    map.setRoute(points, steps, null);
+    map.setRoute({ points, steps }, null);
     expect(map.el.querySelector(".minimap-connector-marker")!.getAttribute("transform")).toBe("translate(115 95)");
     expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
 
@@ -328,6 +328,46 @@ describe("Minimap route overlay (#220 PR2)", () => {
     // Back on B1F after the detour, the already-walked stairs are no longer the hint.
     expect(map.el.querySelector(".minimap-connector-marker")!.getAttribute("transform")).toBe("translate(95 95)");
     expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by escalator");
+  });
+
+  it("drops a route segment whose step data is missing rather than drawing it flat", () => {
+    const map = create();
+    // The second point claims step 2; only step 0 was supplied, so the pair is unproven.
+    map.setRoute({ points: [point(0, 0, "concourse", -1), point(10, 0, "concourse", 2)], steps: [step("concourse", "concourse")] }, null);
+    expect(routeLines(map)).toHaveLength(0);
+    // The same points with their own step draw normally.
+    map.setRoute({ points: [point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)], steps: [step("concourse", "concourse")] }, null);
+    expect(routeLines(map)).toHaveLength(1);
+  });
+
+  it("keeps the current stairs hint through the whole cross-floor step, then drops it on the new floor", () => {
+    const map = create();
+    const points = [
+      point(0, 0, "concourse", -1),
+      point(10, 0, "concourse", 0),
+      point(10, 1, "concourse", 1), // mid-stair vertex, tagged with the floor it leaves
+      point(10, 0, "upper", 1),
+      point(20, 0, "upper", 2),
+    ];
+    const steps = [step("concourse", "concourse"), step("concourse", "upper", "stairs"), step("upper", "upper")];
+    map.setRoute({ points, steps }, null);
+    // Entry: at the foot of the stairs. The stair interior is never flattened into the floor line.
+    expect(map.el.querySelector(".minimap-route-line")!.getAttribute("points")).toBe("0,0 20,0");
+    expect(map.el.querySelector(".minimap-connector-marker")!.getAttribute("transform")).toBe("translate(115 95)");
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
+
+    // Middle: standing on the stairs, the step is still the one being walked.
+    pose = { ...pose!, east: 10, north: 1 };
+    tick();
+    expect(map.el.querySelector(".minimap-connector-marker")!.getAttribute("transform")).toBe("translate(95 97)");
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
+
+    // Complete: the floor changed, so the stair hint no longer applies.
+    pose = { ...pose!, east: 10, north: 0, up: 4 };
+    tick();
+    expect(display(map, ".minimap-connector-marker")).toBe("none");
+    expect(display(map, ".minimap-connector-rim")).toBe("none");
+    expect(map.el.querySelector<HTMLElement>(".minimap-route-label")!.hidden).toBe(true);
   });
 
   it("never draws a search-only POI and drops dots when the floor changes", () => {
@@ -349,7 +389,7 @@ describe("Minimap route overlay (#220 PR2)", () => {
 
   it("clears the route and its POIs when the station changes", () => {
     const map = create();
-    map.setRoute(upRoute, upSteps, poi());
+    map.setRoute({ points: upRoute, steps: upSteps }, poi());
     map.setStation(null, "en");
     expect(routeLines(map)).toHaveLength(0);
     expect(map.el.querySelectorAll(".minimap-poi")).toHaveLength(0);
@@ -363,7 +403,7 @@ describe("Minimap route overlay (#220 PR2)", () => {
 
   it("makes no DOM writes for an unchanged pose with a route set", () => {
     const map = create();
-    map.setRoute(upRoute, upSteps, poi());
+    map.setRoute({ points: upRoute, steps: upSteps }, poi());
     const observer = new MutationObserver(() => {});
     observer.observe(map.el, { subtree: true, attributes: true, childList: true, characterData: true });
     tick();
