@@ -1,16 +1,18 @@
 // Lane E station catalog (#94): batch A (the 5 escalators) and batch B (the 21 stair handrails) placed on the surveyed
-// anchors of scene/kit_placements.json. Pins the batches (desktop tier only), the placement maths, the tier and batch
-// filters, disposal, and that the copies, declarations and credits agree with each other and with Lane E's manifest.
+// anchors of scene/kit_placements.json, and batch C (the 61 stair nosing strips, merged into a few cluster meshes that
+// sample one packed AO atlas per tier). Pins the batches (batch C's desktop tier in this change; its phone copies are
+// the stacked follow-up), the placement maths, the tier and batch filters, the merge, disposal, and that the copies,
+// declarations and credits agree with each other and with Lane E's manifest.
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as THREE from "three";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import kitPlacements from "./kit_placements.json";
 import kitCatalog from "./kit_catalog.json";
-import { type CatalogPlacement, CULL_M, catalogUri, catalogVisibility, lazyKitCatalog, loadKitCatalog, piecePose, tierName, tierParts } from "./kit_catalog_loader.ts";
+import { type CatalogPlacement, CULL_M, NOSING_ATLAS, NOSING_CLUSTERS, catalogUri, catalogVisibility, lazyKitCatalog, loadKitCatalog, loadNosingKit, nosingAtlasUri, piecePose, tierName, tierParts } from "./kit_catalog_loader.ts";
 import { applyStationShadows } from "../../../apps/web/src/explorer/shadows.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -24,15 +26,27 @@ const catalog = kitCatalog as { assets: { id: string; generator: string }[] };
 const ESCALATOR_IDS = catalog.assets.filter((a) => a.generator === "escalator_dressing").map((a) => a.id).sort();
 /** The 21 rail ids a `main_route` flight actually draws (the catalog has 57; the rest have empty tiers). */
 const RAILS_IDS = [...new Set(tierParts(stairs, false).map((w) => w.id).filter((id) => id.includes("_rails_")))].sort();
-/** Ids the station ships (batch A + B); every other catalog id is "not in this batch". */
-const SHIPPED = new Set([...ESCALATOR_IDS, ...RAILS_IDS]);
+/** The 61 nosing ids batch C merges (69 placements draw them, on both tiers). */
+const NOSING_IDS = [...new Set(tierParts(stairs, false).map((w) => w.id).filter((id) => id.endsWith("_nosing")))].sort();
+/** Ids the station ships (batch A + B + C); every other catalog id is "not in this batch". */
+const SHIPPED = new Set([...ESCALATOR_IDS, ...RAILS_IDS, ...NOSING_IDS]);
+/** Batch C lands in two stacked changes: this one ships the desktop tier, the phone copies follow. */
+const SHIPPED_TIERS: string[] = ["high"];
 /** The catalog copies the placements need, per tier: the batch plan sync_kit_catalog.py copies. */
 function plannedUris(low: boolean): string[] {
   const tier = tierName(low);
+  if (!SHIPPED_TIERS.includes(tier)) return [];
   const out = new Set<string>();
   for (const p of placements)
     for (const [part, id] of Object.entries(p.ids)) if (SHIPPED.has(id) && (p.tiers[part] ?? []).includes(tier)) out.add(catalogUri(id, low));
   return [...out].sort();
+}
+/** Every catalog file the source record pins (each shipped tier's planned GLBs and its nosing atlas, from gteki/). */
+function shippedRels(): string[] {
+  return [false, true]
+    .filter((low) => SHIPPED_TIERS.includes(tierName(low)))
+    .flatMap((low) => [...plannedUris(low), nosingAtlasUri(low)])
+    .sort();
 }
 const SOURCE_ID = "gteki-ikb-catalog-0-1-0";
 const sha = (p: string) => crypto.createHash("sha256").update(fs.readFileSync(p)).digest("hex");
@@ -61,12 +75,13 @@ describe("the shipped batches on the surveyed anchors", () => {
     expect(tierParts(stairs, true).filter((w) => w.id.includes("_rails_"))).toEqual([]); // rails are high only
   });
 
-  it("ships each shipped id on disk, and no phone copy", () => {
+  it("ships each shipped id on disk with the nosing atlas, and no phone copy yet", () => {
     for (const id of SHIPPED) expect(fs.existsSync(path.join(GTEKI, catalogUri(id, false))), id).toBe(true);
-    expect(fs.existsSync(path.join(GTEKI, "kit/catalog/low"))).toBe(false); // both batches draw nothing on phones
+    expect(fs.existsSync(path.join(GTEKI, nosingAtlasUri(false)))).toBe(true);
+    expect(fs.existsSync(path.join(GTEKI, "kit/catalog/low"))).toBe(false); // batch C's phone copies are the stacked follow-up
   });
 
-  it("copies each id byte for byte, pinned by the source record in both manifests", () => {
+  it("copies each file byte for byte, pinned by the source record in both manifests", () => {
     const station = readManifest("station.json");
     const src = JSON.parse(fs.readFileSync(path.join(STATION, "data/graph.src.json"), "utf8"));
     const a = station.sources.find((s: { id: string }) => s.id === SOURCE_ID);
@@ -77,7 +92,7 @@ describe("the shipped batches on the surveyed anchors", () => {
     expect(a.attribution).toContain("GTEki contributors");
     expect(a.attribution).toContain("PLATEAU");
     expect(a.url).toMatch(/^https?:\/\//);
-    expect(Object.keys(a.sha256).sort()).toEqual([...SHIPPED].map((id) => `kit/catalog/high/${id}.glb`).sort());
+    expect(Object.keys(a.sha256).sort()).toEqual(shippedRels());
     for (const rel of Object.keys(a.sha256) as string[]) expect(a.sha256[rel], rel).toBe(sha(path.join(GTEKI, rel)));
   });
 
@@ -85,19 +100,22 @@ describe("the shipped batches on the surveyed anchors", () => {
     for (const doc of [readManifest("station.json"), JSON.parse(fs.readFileSync(path.join(STATION, "data/graph.src.json"), "utf8"))]) {
       const b1 = doc.assets.find((x: { id: string }) => x.id === "b1");
       expect(b1.sourceIds).toContain(SOURCE_ID);
-      expect(b1.files).toEqual(expect.arrayContaining([...SHIPPED].map((id) => `kit/catalog/high/${id}.glb`)));
+      expect(b1.files).toEqual(expect.arrayContaining(shippedRels()));
     }
   });
 
   it("copies exactly the plan, and the record pins exactly those copies", () => {
+    const walk = (dir: string): string[] =>
+      fs.readdirSync(dir, { withFileTypes: true }).flatMap((d) =>
+        d.isDirectory() ? walk(path.join(dir, d.name)) : [path.join(dir, d.name)]);
     const copies = (...tiers: string[]) =>
       tiers
         .flatMap((t) => {
           const dir = path.join(GTEKI, "kit/catalog", t);
-          return fs.existsSync(dir) ? fs.readdirSync(dir).filter((n) => n.endsWith(".glb")).map((n) => `kit/catalog/${t}/${n}`) : [];
+          return fs.existsSync(dir) ? walk(dir).map((f) => path.relative(GTEKI, f).split(path.sep).join("/")) : [];
         })
         .sort();
-    expect(copies("high", "low")).toEqual([...plannedUris(false), ...plannedUris(true)].sort());
+    expect(copies("high", "low")).toEqual(shippedRels());
     const station = readManifest("station.json");
     const a = station.sources.find((s: { id: string }) => s.id === SOURCE_ID);
     expect(Object.keys(a.sha256).sort()).toEqual(copies("high", "low"));
@@ -164,6 +182,7 @@ describe("loadKitCatalog", () => {
   const host = (files: string[], gltf: (uri: string) => Promise<GLTF> = async () => fakePiece()) => ({
     assetUrl: vi.fn((uri: string) => (files.includes(uri) ? `/blob/${uri}` : null)),
     loadGlb: vi.fn(gltf),
+    loadTexture: vi.fn(async () => new THREE.Texture()),
   });
   const allUris = ESCALATOR_IDS.map((id) => `kit/catalog/high/${id}.glb`);
   const env = new THREE.Texture();
@@ -518,5 +537,206 @@ describe("loadKitCatalog", () => {
     ];
     loaded.dispose();
     expect(spies.every((s) => s.mock.calls.length === 1)).toBe(true);
+  });
+});
+
+/** A stand-in for a batch C nosing GLB: one indexed box carrying uv and the atlas UVs in uv1, one yellow material. */
+function fakeNosing() {
+  const scene = new THREE.Group();
+  const root = new THREE.Group();
+  root.name = "gteki_ik_stair_test_nosing";
+  scene.add(root);
+  const geometry = new THREE.BoxGeometry(1, 0.05, 2);
+  geometry.setAttribute("uv1", geometry.getAttribute("uv").clone());
+  const material = new THREE.MeshStandardMaterial({ name: "gteki_vertical_safety_yellow", color: 0xe86f00, roughness: 0.48, metalness: 0 });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.name = "VIS_nosings";
+  root.add(mesh);
+  return { scene, scenes: [scene] } as unknown as GLTF;
+}
+
+describe("loadNosingKit (batch C)", () => {
+  const env = new THREE.Texture();
+  const nosingUris = NOSING_IDS.map((id) => catalogUri(id, false));
+  const atlasUri = nosingAtlasUri(false);
+  const nosingHost = (files: string[] = [...nosingUris, atlasUri], make: (uri: string) => Promise<GLTF> = async () => fakeNosing(), texture = new THREE.Texture()) => ({
+    assetUrl: vi.fn((uri: string) => (files.includes(uri) ? `/blob/${uri}` : null)),
+    loadGlb: vi.fn(make),
+    loadTexture: vi.fn(async () => texture),
+    texture,
+  });
+  beforeEach(() => {
+    vi.spyOn(console, "info").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  it("loads each of the 61 GLBs once and merges the tier's 69 strips into a few cluster meshes", async () => {
+    const h = nosingHost();
+    const loaded = await loadNosingKit(THREE, h, placements, false);
+    expect(h.loadGlb.mock.calls.map((c) => c[0])).toEqual(nosingUris);
+    expect(loaded.placements.length).toBe(69);
+    expect(new Set(loaded.placements.map((w) => w.id)).size).toBe(61);
+    expect(loaded.skippedIds).toEqual([]);
+    const { group, stats } = loaded.build(THREE, env, toRenderer);
+    expect(stats).toMatchObject({ parts: 69, uniqueGlbs: 61, clusters: group.children.length, drawCalls: group.children.length, triangles: 69 * 12 });
+    expect(group.children.length).toBeGreaterThan(0);
+    expect(group.children.length).toBeLessThanOrEqual(NOSING_CLUSTERS); // 8 draws at most, against 61 instanced ones
+    expect(group.userData.gteki_role).toBe("kit_catalog");
+    expect(new Set(group.children.map((m) => m.material)).size).toBe(1); // one merged material per tier
+    for (const m of group.children as THREE.Mesh[]) {
+      expect(m.frustumCulled).toBe(true);
+      expect(m.castShadow).toBe(false);
+      expect(m.receiveShadow).toBe(false);
+      expect(m.geometry.boundingSphere).not.toBeNull();
+      expect(m.geometry.boundingBox).not.toBeNull();
+    }
+    // Every anchor lands in exactly one cluster.
+    const anchors = group.children.flatMap((m) => m.userData.gteki_anchors as string[]);
+    expect(anchors.sort()).toEqual(loaded.placements.map((w) => w.placement.anchor).sort());
+    loaded.dispose();
+  });
+
+  it("samples the tier's packed AO atlas through TEXCOORD_1, on one shared material", async () => {
+    const texture = new THREE.Texture();
+    const h = nosingHost(undefined, async () => fakeNosing(), texture);
+    const loaded = await loadNosingKit(THREE, h, placements, false);
+    const { group } = loaded.build(THREE, env, toRenderer);
+    expect(h.loadTexture).toHaveBeenCalledTimes(1);
+    expect(h.loadTexture.mock.calls[0]).toEqual([atlasUri, { colorSpace: "linear", flipY: false }]);
+    expect(texture.channel).toBe(1); // three's uv1, where the catalog GLBs put the atlas UVs
+    expect(texture.flipY).toBe(false);
+    expect(texture.colorSpace).toBe(THREE.NoColorSpace);
+    expect(texture.userData).toEqual({ gteki_uri: atlasUri, gteki_atlas_kind: "nosing" });
+    for (const m of group.children as THREE.Mesh[]) {
+      const mat = m.material as THREE.MeshStandardMaterial;
+      expect(mat.aoMap).toBe(texture);
+      expect(mat.envMap).toBe(env);
+      expect(mat.name).toBe("gteki_vertical_safety_yellow"); // the look comes from the GLB material ...
+      expect(mat.color.getHex()).toBe(0xe86f00);
+      expect(mat.roughness).toBeCloseTo(0.48, 6);
+      expect(mat.metalness).toBe(0);
+    }
+    loaded.dispose();
+  });
+
+  it("merges exactly the placed vertices, and every cluster's bounds contain its own pieces", async () => {
+    const h = nosingHost();
+    const loaded = await loadNosingKit(THREE, h, placements, false);
+    const { group } = loaded.build(THREE, env, toRenderer);
+    const perPiece = fakeNosing().scene.children[0]!.children[0]!.geometry.getAttribute("position").count;
+    const verts = (group.children as THREE.Mesh[]).reduce((n, m) => n + m.geometry.getAttribute("position").count, 0);
+    expect(verts).toBe(loaded.placements.length * perPiece);
+    const piece = fakeNosing().scene.children[0]!.children[0] as THREE.Mesh;
+    const vertex = new THREE.Vector3(), matrix = new THREE.Matrix4(), q = new THREE.Quaternion();
+    for (const m of group.children as THREE.Mesh[]) {
+      const mine = new Set(m.userData.gteki_anchors as string[]);
+      const box = m.geometry.boundingBox!.clone().expandByScalar(1e-3); // merged vertices are float32
+      for (const w of loaded.placements.filter((x) => mine.has(x.placement.anchor))) {
+        const pose = piecePose(THREE, w.placement, toRenderer);
+        q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), pose.yaw);
+        matrix.compose(pose.centre, q, new THREE.Vector3(w.placement.mirror ? -1 : 1, 1, 1));
+        const position = piece.geometry.getAttribute("position");
+        for (let i = 0; i < position.count; i++) {
+          vertex.fromBufferAttribute(position, i).applyMatrix4(matrix);
+          expect(box.containsPoint(vertex)).toBe(true);
+        }
+      }
+    }
+    loaded.dispose();
+  });
+
+  it("keeps a mirrored placement's faces facing outwards", async () => {
+    const placement = (mirror: boolean): CatalogPlacement => ({
+      anchor: "hand", kind: "stair", scope: "building", ids: { nosing: NOSING_IDS[0]! },
+      origin: [0, 0, 0], dir: [0, 1], yaw_deg: 30, mirror, tiers: { nosing: ["high"] },
+    });
+    for (const mirror of [false, true]) {
+      const loaded = await loadNosingKit(THREE, nosingHost(), [placement(mirror)], false);
+      const { group } = loaded.build(THREE, env, toRenderer);
+      const g = (group.children[0] as THREE.Mesh).geometry;
+      const position = g.getAttribute("position"), normal = g.getAttribute("normal"), index = g.index!;
+      const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), face = new THREE.Vector3();
+      for (let t = 0; t < index.count; t += 3) {
+        a.fromBufferAttribute(position, index.getX(t));
+        b.fromBufferAttribute(position, index.getX(t + 1));
+        c.fromBufferAttribute(position, index.getX(t + 2));
+        face.crossVectors(b.sub(a), c.sub(a));
+        const vertexNormal = new THREE.Vector3().fromBufferAttribute(normal, index.getX(t));
+        expect(face.normalize().dot(vertexNormal)).toBeGreaterThan(0.5); // winding agrees with the baked normals
+      }
+      loaded.dispose();
+    }
+  });
+
+  it("drops only the strip that fails to load", async () => {
+    const bad = nosingUris[0]!;
+    const h = nosingHost(undefined, async (uri) => {
+      if (uri === bad) throw new Error("404");
+      return fakeNosing();
+    });
+    const loaded = await loadNosingKit(THREE, h, placements, false);
+    const expected = placements.filter((p) => p.ids.nosing === NOSING_IDS[0] && (p.tiers.nosing ?? []).includes("high")).length;
+    expect(loaded.skippedIds).toEqual([NOSING_IDS[0]]);
+    expect(loaded.placements.length).toBe(69 - expected);
+    expect(loaded.build(THREE, env, toRenderer).stats.parts).toBe(69 - expected);
+    loaded.dispose();
+  });
+
+  it("skips the batch when the tier ships no AO atlas", async () => {
+    const h = nosingHost(nosingUris); // every GLB, but no atlas: batch C is not part of this station copy
+    const loaded = await loadNosingKit(THREE, h, placements, false);
+    expect(h.loadGlb).not.toHaveBeenCalled();
+    expect(h.loadTexture).not.toHaveBeenCalled();
+    expect(loaded.placements).toEqual([]);
+    expect(loaded.skippedIds).toEqual(NOSING_IDS);
+    const { group, stats } = loaded.build(THREE, env, toRenderer);
+    expect(group.children).toEqual([]);
+    expect(stats.parts).toBe(0);
+  });
+
+  it("frees the merged geometries, the shared material and the atlas on dispose", async () => {
+    const made: GLTF[] = [];
+    const h = nosingHost(undefined, async () => {
+      const g = fakeNosing();
+      made.push(g);
+      return g;
+    });
+    const loaded = await loadNosingKit(THREE, h, placements, false);
+    const { group } = loaded.build(THREE, env, toRenderer);
+    const texture = h.texture;
+    const spies = [
+      ...(group.children as THREE.Mesh[]).map((m) => vi.spyOn(m.geometry, "dispose")),
+      vi.spyOn((group.children[0] as THREE.Mesh).material as THREE.Material, "dispose"),
+      vi.spyOn(texture, "dispose"),
+      ...made.map((g) => vi.spyOn((g.scene.children[0]!.children[0] as THREE.Mesh).geometry, "dispose")),
+      ...made.map((g) => vi.spyOn((g.scene.children[0]!.children[0] as THREE.Mesh).material as THREE.Material, "dispose")),
+    ];
+    loaded.dispose();
+    expect(spies.every((s) => s.mock.calls.length === 1)).toBe(true);
+  });
+
+  it("attaches the merged nosing group after the instanced batches in the lazy path", async () => {
+    vi.useFakeTimers();
+    const root = new THREE.Group();
+    const h = nosingHost([...nosingUris, atlasUri, catalogUri(ESCALATOR_IDS[0]!, false)]);
+    const lazy = lazyKitCatalog(THREE, h, placements, false, root, env, toRenderer);
+    try {
+      lazy.start();
+      await vi.runOnlyPendingTimersAsync();
+      await vi.runOnlyPendingTimersAsync();
+      expect(root.children.map((g) => g.name)).toEqual(["ikebukuro_kit_catalog", "ikebukuro_kit_catalog_nosing"]);
+      const nosing = root.children[1]!;
+      expect(nosing.children.length).toBeLessThanOrEqual(NOSING_CLUSTERS);
+      const camera = new THREE.PerspectiveCamera();
+      camera.position.set(10_000, 10_000, 10_000);
+      lazy.update(camera);
+      expect(nosing.children.every((m) => !m.visible)).toBe(true);
+      lazy.dispose();
+      expect(root.children).toHaveLength(0);
+    } finally {
+      lazy.dispose();
+      vi.useRealTimers();
+    }
   });
 });
