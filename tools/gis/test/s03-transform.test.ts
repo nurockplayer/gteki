@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { readZip } from '../src/zip.js';
 import {
   applyAffine, assertS03Bytes, checkInternal, classifyNodes, collectS03Strings, compatibleFloors, directionSummary, distanceToPolygonEdge,
-  distanceToSegment, floorMappingSha256, guardS03Receipt, mutualNearest, nearestPointOnSegment, outsideNodeDiagnostic, parseS03Members,
+  distanceToSegment, floorMappingSha256, guardS03Receipt, holeShellRelation, mutualNearest, nearestPointOnSegment, outsideNodeDiagnostic, parseS03Members,
   pointInPolygon, receiptIdentity, residualStats, ringContainsInclusive, selfIntersectionCheck, sourceDefectRecords, transformS03,
-  type Affine, type Polygon2, type S03Link,
+  type Affine, type Point2, type Polygon2, type S03Link,
 } from '../src/s03-transform.js';
 
 const nav: Affine = [2, 0, 0, 2, 10, 20], drawing: Affine = [0.01, 0, 0, 0.01, 0, 0];
@@ -175,6 +175,8 @@ describe('S03 unclosed source rings: exclude, never repair', () => {
 describe('S03 hole outside its shell: exclude, never repair', () => {
   const outsideHole: Polygon2 = [square[0]!, [[2, 2], [3, 2], [3, 3], [2, 3], [2, 2]]];
   it('excludes the whole feature, records the ring and the ENU offset, and keeps the other features', () => {
+    // A hole with no position inside its shell is the exclusion ruling, not an excursion that leaves the shell.
+    expect(holeShellRelation(outsideHole[1]!, square[0]!)).toEqual({ cross: false, overlap: false, leaves: false, touch: false });
     const inputs = parseS03Members(withLevelFeatures([polygonFeature(outsideHole), polygonFeature(square)]));
     // The feature is gone from Check A, and no ring was clipped, moved or dropped.
     expect(inputs.levels[0]).toMatchObject({ featuresTotal: 2, featuresUsed: 1, featuresExcludedUnclosedRing: 0, featuresExcludedHoleOutsideShell: 1 });
@@ -195,6 +197,16 @@ describe('S03 hole outside its shell: exclude, never repair', () => {
     expect(sourceDefectRecords(inputs, project)[0]).toMatchObject({ kind: 'SOURCE_DEFECT_HOLE_OUTSIDE_SHELL', feature_index: 0, polygon_index: 1, ring_index: 1 });
     expect(inputs.levels[0]).toMatchObject({ featuresTotal: 2, featuresUsed: 1, featuresExcludedHoleOutsideShell: 1 });
     expect(checkInternal(inputs, project).status).toBe('PASS');
+  });
+  it('excludes a hole that only touches its shell and lies outside it, instead of failing closed', () => {
+    // A hole contact is not an excursion: with no piece inside the shell this is the director's wholly-outside case.
+    const touching: Point2[] = [[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]];
+    expect(holeShellRelation(touching, square[0]!)).toEqual({ cross: false, overlap: false, leaves: false, touch: true });
+    const inputs = parseS03Members(withLevelFeatures([polygonFeature([square[0]!, touching]), polygonFeature(square)]));
+    expect(inputs.levels[0]).toMatchObject({ featuresUsed: 1, featuresExcludedHoleOutsideShell: 1 });
+    const [defect] = sourceDefectRecords(inputs, project);
+    expect(defect).toMatchObject({ kind: 'SOURCE_DEFECT_HOLE_OUTSIDE_SHELL', level_id: 11, feature_index: 0, polygon_index: 0, ring_index: 1 });
+    expect((defect as { max_offset_m: number }).max_offset_m).toBeCloseTo(Math.SQRT2, 12);
   });
   it('keeps the complete shell and hole tuples of an excluded hole, third value included', () => {
     const shell3d = [[0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1], [0, 0, 1]];
@@ -247,15 +259,44 @@ describe('S03 polygon topology (fail closed)', () => {
   it('fails closed when a hole edge crosses a concave shell whose vertices are all inside', () => {
     // An L-shaped shell: the notch x > 1, y > 1 is outside. Every vertex of this hole is inside the L, yet the edge
     // from the bottom arm to the left arm passes through the notch.
-    const ell = [[0, 0], [4, 0], [4, 1], [1, 1], [1, 4], [0, 4], [0, 0]];
-    const hole = [[2, 0.5], [0.5, 2], [0.5, 0.5], [2, 0.5]];
-    expect(hole.slice(0, -1).every(([x, y]) => ringContainsInclusive([x!, y!], ell))).toBe(true);
+    const ell: Point2[] = [[0, 0], [4, 0], [4, 1], [1, 1], [1, 4], [0, 4], [0, 0]];
+    const hole: Point2[] = [[2, 0.5], [0.5, 2], [0.5, 0.5], [2, 0.5]];
+    expect(hole.slice(0, -1).every(vertex => ringContainsInclusive(vertex, ell))).toBe(true);
     expect(() => parseS03Members(withLevelFeatures([polygonFeature([ell, hole])]))).toThrow(/ring 1 cuts through its shell/);
   });
   it('fails closed when a hole edge runs along its shell', () => {
     // Sharing a stretch of boundary is not the director's exclusion, which covers only a hole wholly outside its shell.
     const alongShell = [[0, 0], [0.5, 0], [0.5, 0.5], [0, 0]];
     expect(() => parseS03Members(withLevelFeatures([polygonFeature([square[0]!, alongShell])]))).toThrow(/ring 1 runs along its shell/);
+  });
+  it('fails closed when a hole edge leaves a concave shell through two shared positions', () => {
+    // A U-shaped shell; its notch x in (1,4), y in (1,5) is outside. The hole edge from shell position (1,1) to shell
+    // position (4,5) crosses the notch, yet each contact is a single point, so no edge relation sees the excursion.
+    const shell: Point2[] = [[0, 0], [5, 0], [5, 5], [4, 5], [4, 1], [1, 1], [1, 5], [0, 5], [0, 0]];
+    const hole: Point2[] = [[1, 1], [4, 5], [4.5, 0.5], [0.5, 0.5], [1, 1]];
+    expect(holeShellRelation(hole, shell)).toEqual({ cross: false, overlap: false, leaves: true, touch: true });
+    // Every hole vertex is inside or on the shell, so only the split-midpoint test can reject it.
+    expect(hole.slice(0, -1).every(vertex => ringContainsInclusive(vertex, shell))).toBe(true);
+    expect(() => parseS03Members(withLevelFeatures([polygonFeature([shell, hole])]))).toThrow(/ring 1 leaves its shell/);
+  });
+  it('accepts a hole sharing one position with its shell while every piece stays inside', () => {
+    const hole: Point2[] = [[0, 0], [0.5, 0.2], [0.2, 0.5], [0, 0]];
+    expect(holeShellRelation(hole, square[0]!)).toEqual({ cross: false, overlap: false, leaves: false, touch: true });
+    expect(parseS03Members(withLevelFeatures([polygonFeature([square[0]!, hole])])).topology)
+      .toEqual({ rings_checked: 2, rings_skipped_large: 0, hole_shell_touches: 1 });
+  });
+  it('skips the hole/shell test above the vertex cap and counts the ring as skipped', () => {
+    // The same excursion as above, with an inside edge subdivided past the cap: the hole/shell test is skipped, so the
+    // command accepts the feature, and the oversized hole ring is the one counted in rings_skipped_large.
+    const shell: Point2[] = [[0, 0], [5, 0], [5, 5], [4, 5], [4, 1], [1, 1], [1, 5], [0, 5], [0, 0]];
+    const subdivided = Array.from({ length: 2001 }, (_, index): Point2 => [4.5 - 4 * (index + 1) / 2002, 0.5]);
+    const hole: Point2[] = [[1, 1], [4, 5], [4.5, 0.5], ...subdivided, [0.5, 0.5], [1, 1]];
+    expect(hole.length - 1).toBeGreaterThan(2000);
+    // Called directly, the hole test does see the excursion; the command skips it above the cap instead.
+    expect(holeShellRelation(hole, shell).leaves).toBe(true);
+    const inputs = parseS03Members(withLevelFeatures([polygonFeature([shell, hole])]));
+    expect(inputs.levels[0]!.polygons).toHaveLength(1);
+    expect(inputs.topology).toEqual({ rings_checked: 1, rings_skipped_large: 1, hole_shell_touches: 0 });
   });
   it('fails closed on a self-intersecting ring and never reports an unchecked large ring as clean', () => {
     const bowtie = [[0, 0], [1, 1], [1, 0], [0, 1], [0, 0]];

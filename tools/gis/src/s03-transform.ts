@@ -150,6 +150,47 @@ export function segmentRelation(a: Point2, b: Point2, c: Point2, d: Point2): Seg
   const endpoints: Array<[Point2, Point2, Point2, number]> = [[a, c, d, sides[0]], [b, c, d, sides[1]], [c, a, b, sides[2]], [d, a, b, sides[3]]];
   return endpoints.some(([point, from, to, side]) => side === 0 && distanceToSegment(point, from, to) <= GEOMETRY_EPS) ? 'touch' : 'none';
 }
+/** Position of a point along a segment, clamped to [0, 1]; a zero-length segment has no interior. */
+const segmentParameter = (point: Point2, a: Point2, b: Point2): number => {
+  const dx = b[0] - a[0], dy = b[1] - a[1], length2 = dx * dx + dy * dy;
+  return length2 === 0 ? 0 : Math.max(0, Math.min(1, ((point[0] - a[0]) * dx + (point[1] - a[1]) * dy) / length2));
+};
+const onSegment = (point: Point2, a: Point2, b: Point2): boolean => distanceToSegment(point, a, b) <= GEOMETRY_EPS;
+export interface HoleShellRelation { cross: boolean; overlap: boolean; leaves: boolean; touch: boolean }
+/**
+ * What one hole ring does to its shell, edge by edge. A crossing and a collinear run along the shell are visible in the
+ * edge relation, and a single shared position is a legitimate boundary touch. An excursion a concave shell allows is
+ * not: a hole edge can leave the shell through one shell position and come back through another, and both contacts read
+ * as single points. Every hole edge is therefore split at each contact position and the middle of each piece is tested
+ * against the shell, so a hole with pieces on both sides of the boundary is reported as `leaves`. A hole with no piece
+ * inside is not an excursion: that is the wholly-outside case the director ruling excludes, and failing it closed would
+ * turn an exclusion into a stopped run.
+ */
+export function holeShellRelation(hole: readonly Point2[], shell: readonly Point2[]): HoleShellRelation {
+  let cross = false, overlap = false, touch = false, insidePiece = false, outsidePiece = false;
+  for (let i = 0; i + 1 < hole.length; i++) {
+    const a = hole[i]!, b = hole[i + 1]!, parameters = [0, 1];
+    for (let j = 0; j + 1 < shell.length; j++) {
+      const c = shell[j]!, d = shell[j + 1]!, relation = segmentRelation(a, b, c, d);
+      if (relation === 'none') continue;
+      if (relation === 'cross') cross = true;
+      else if (relation === 'overlap') overlap = true;
+      else touch = true;
+      // Every shared position on either side splits this hole edge, so no piece straddles the shell boundary.
+      for (const point of [a, b]) if (onSegment(point, c, d)) parameters.push(segmentParameter(point, a, b));
+      for (const point of [c, d]) if (onSegment(point, a, b)) parameters.push(segmentParameter(point, a, b));
+    }
+    parameters.sort((first, second) => first - second);
+    for (let k = 0; k + 1 < parameters.length; k++) {
+      const from = parameters[k]!, to = parameters[k + 1]!;
+      if (to - from <= GEOMETRY_EPS) continue;
+      const middle = (from + to) / 2;
+      if (ringContainsInclusive([a[0] + (b[0] - a[0]) * middle, a[1] + (b[1] - a[1]) * middle], shell)) insidePiece = true;
+      else outsidePiece = true;
+    }
+  }
+  return { cross, overlap, leaves: insidePiece && outsidePiece, touch };
+}
 export type SelfIntersectionVerdict = 'CLEAN' | 'SELF_INTERSECTING' | 'DEGENERATE_RING' | 'NOT_CHECKED_TOO_MANY_VERTICES';
 const coincident = (a: Point2, b: Point2): boolean => Math.abs(a[0] - b[0]) <= GEOMETRY_EPS && Math.abs(a[1] - b[1]) <= GEOMETRY_EPS;
 /**
@@ -324,19 +365,22 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
       if (crossing) fail(member, `ring ${crossing.ringIndex} self-intersects (level ${level.id}, feature ${featureIndex}, polygon ${crossing.polygonIndex})`);
       const degenerate = verdicts.find(({ verdict }) => verdict === 'DEGENERATE_RING');
       if (degenerate) fail(member, `ring ${degenerate.ringIndex} has fewer than three distinct positions (level ${level.id}, feature ${featureIndex}, polygon ${degenerate.polygonIndex})`);
-      // A hole edge that crosses its shell, or runs collinearly along it, fails closed: vertex containment alone misses a
-      // concave shell where every hole vertex is inside while an edge between two of them leaves it. A single shared
-      // position is a legitimate boundary touch, counted, not a defect: the director's exclusion covers only a hole
-      // wholly outside its shell, which by definition has no crossing edge.
+      // A hole edge that crosses its shell, runs along it, or leaves it and comes back through two shared positions fails
+      // closed: vertex containment alone misses a concave shell where every hole vertex is inside while an edge between
+      // two of them leaves it. A single shared position is a legitimate boundary touch, counted, not a defect: the
+      // director's exclusion covers only a hole wholly outside its shell, which by definition never crosses or leaves it.
+      // The same vertex bound as the ring test applies; a larger hole or shell is skipped here and already counted in
+      // rings_skipped_large by its own ring verdict.
       let holeShellTouches = 0;
       for (const { polygonIndex, rings } of parsed) {
         const shell = horizontal(rings[0]!);
         for (let ringIndex = 1; ringIndex < rings.length; ringIndex++) {
-          const hole = horizontal(rings[ringIndex]!), relations = new Set<SegmentRelation>();
-          for (let i = 0; i + 1 < hole.length; i++) for (let j = 0; j + 1 < shell.length; j++) relations.add(segmentRelation(hole[i]!, hole[i + 1]!, shell[j]!, shell[j + 1]!));
-          if (relations.has('cross')) fail(member, `ring ${ringIndex} cuts through its shell (level ${level.id}, feature ${featureIndex}, polygon ${polygonIndex})`);
-          if (relations.has('overlap')) fail(member, `ring ${ringIndex} runs along its shell (level ${level.id}, feature ${featureIndex}, polygon ${polygonIndex})`);
-          if (relations.has('touch')) holeShellTouches++;
+          if (rings[0]!.length - 1 > SELF_INTERSECTION_MAX_VERTICES || rings[ringIndex]!.length - 1 > SELF_INTERSECTION_MAX_VERTICES) continue;
+          const relation = holeShellRelation(horizontal(rings[ringIndex]!), shell);
+          if (relation.cross) fail(member, `ring ${ringIndex} cuts through its shell (level ${level.id}, feature ${featureIndex}, polygon ${polygonIndex})`);
+          if (relation.overlap) fail(member, `ring ${ringIndex} runs along its shell (level ${level.id}, feature ${featureIndex}, polygon ${polygonIndex})`);
+          if (relation.leaves) fail(member, `ring ${ringIndex} leaves its shell (level ${level.id}, feature ${featureIndex}, polygon ${polygonIndex})`);
+          if (relation.touch) holeShellTouches++;
         }
       }
       // Two director rulings exclude a whole feature: an unclosed ring, and a hole wholly outside its shell. Neither
@@ -767,16 +811,16 @@ export async function s03TransformCheck() {
       order: 'nav affine, then drawing affine, then horizontal ENU; no fitted correction', level_member_sha256: Object.fromEntries(inputs.levels.map(l => [l.id, l.memberSha256])) },
     source_defects: { count: excludedTotal, kinds: Object.entries(excludedByKind).filter(([, count]) => count > 0).map(([kind]) => kind),
       by_kind: excludedByKind,
-      rule: 'A polygon feature is excluded from Check A, whole, on either of two director rulings: any of its rings has a first position different from its last, comparing the complete positions including an optional third value; or one of its hole rings lies wholly outside its shell, that is at least one hole vertex is outside while no hole edge crosses or runs along the shell. Rings are never closed, clipped, repaired, dropped or otherwise modified, and no vertex is moved.',
+      rule: 'A polygon feature is excluded from Check A, whole, on either of two director rulings: any of its rings has a first position different from its last, comparing the complete positions including an optional third value; or one of its hole rings lies wholly outside its shell, that is at least one hole vertex is outside while no hole edge crosses the shell, runs along it or leaves it. Rings are never closed, clipped, repaired, dropped or otherwise modified, and no vertex is moved.',
       endpoint_gap_rule: 'Horizontal ENU distance between the first and last ring positions, using the same station projector as Check A.',
       hole_offset_rule: 'Horizontal ENU distance from the worst offending hole vertex to the nearest point of its shell, using the same station projector as Check A.',
       topology: { rings_checked: inputs.topology.rings_checked, rings_skipped_large: inputs.topology.rings_skipped_large, hole_shell_touches: inputs.topology.hole_shell_touches,
         max_vertices: SELF_INTERSECTION_MAX_VERTICES,
-        rule: `Every ring of every feature is checked before any exclusion decision, up to ${SELF_INTERSECTION_MAX_VERTICES} vertices: a proper segment crossing, a collinear overlap, or any contact between two non-adjacent edges makes the ring non-simple and fails the whole run closed, on an excluded feature too. Larger rings are counted in rings_skipped_large and not checked. Hole edges are tested against their shell edge by edge: a crossing or a collinear overlap fails closed, while a single shared position is a valid boundary touch, counted per hole ring in hole_shell_touches for used features only. rings_checked and rings_skipped_large likewise describe used features only.` },
+        rule: `Every ring of every feature is checked before any exclusion decision, up to ${SELF_INTERSECTION_MAX_VERTICES} vertices: a proper segment crossing, a collinear overlap, or any contact between two non-adjacent edges makes the ring non-simple and fails the whole run closed, on an excluded feature too. Larger rings are counted in rings_skipped_large and not checked. Hole rings are tested against their shell edge by edge, within the same vertex bound: a crossing or a collinear overlap fails closed, and each hole edge is split at every shared position so that the middle of every piece is tested against the shell, because a hole edge can leave a concave shell and come back through two shared positions that both read as single points; a piece outside the shell fails closed too. A single shared position that stays inside is a valid boundary touch, counted per hole ring in hole_shell_touches. A hole or shell above the vertex bound skips this test and is counted in rings_skipped_large by its own ring verdict. rings_checked, rings_skipped_large and hole_shell_touches describe used features only.` },
       items: sourceDefects },
     internal: { as_is: asIs, swapped_order: swapped, coverage, negative_control_detected: true, invalid_coordinate_rule: 'Invalid geographic outputs count as outside and unprojectable; no edge distance is asserted for them.',
       containment_rule: 'Union of own-level polygon surfaces in horizontal ENU, including boundaries and excluding hole interiors; Point and LineString features excluded.',
-      feature_exclusion_rule: 'Features with an unclosed ring, or with a hole ring wholly outside its shell, are excluded from containment entirely (no implicit closure, no clipping). A hole edge crossing or running along its shell is not excluded: it fails the run closed. A level left without usable polygons keeps null inside metrics and is not assessed.',
+      feature_exclusion_rule: 'Features with an unclosed ring, or with a hole ring wholly outside its shell, are excluded from containment entirely (no implicit closure, no clipping). A hole edge crossing its shell, running along it or leaving it is not excluded: it fails the run closed. A level left without usable polygons keeps null inside metrics and is not assessed.',
       status_rule: 'PASS needs overwhelming containment on every assessed level and overall. INCOMPLETE means the assessed part would pass but nodes remain on levels without usable polygons; FAIL means the assessed part already fails.' },
     internal_outside_diagnostic: outsideDiagnostic,
     external: { e27_node_count: e27.length, s03_node_count: nodes.length, floor_rule: 'Label-derived comparison ordinals equal, or E27 ordinal 0 with S03 ordinal 1; no source zlevel or measured elevation is used.',
