@@ -183,3 +183,15 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        a 700 m disc around the station origin, projected to the station-local
        ENU frame, clipped to that disc and drawn as flat ribbons (railway 1.5 m,
        station 3 m); no source name, code or other attribute is copied.
+
+5. NOTO SANS JP - SIL Open Font License 1.1 (OFL-1.1)
+   © 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'.
+   Upstream: https://github.com/notofonts/noto-cjk/tree/Sans2.004
+   Pinned release tag: Sans2.004 (already cited by our art pipeline).
+   Font: Sans/Variable/TTF/Subset/NotoSansJP-VF.ttf, version 2.004.
+   Noto Sans JP subset and converted to WOFF2 by GTEki (modified).
+   Family/registration alias: GTEki Sign JP; PostScript name: GTEkiSignJP.
+   The pinned upstream LICENSE is copied verbatim to
+   assets/fonts/noto-sans-jp/OFL.txt; the font's name-table copyright notice
+   above is retained in the subset. See source.json for URL, size and SHA-256,
+   and LICENSES/OFL-1.1.txt for the licence text.

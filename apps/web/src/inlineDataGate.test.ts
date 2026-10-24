@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { createSyntheticBundle } from "../../../packages/navigation/src/fixtures.ts";
-import { declaredStationFiles, discoverStations, factsOnlyDataLines, inlineDataGateMode, undeclaredInlinedData, type DeclaredStationFiles } from "../stations-plugin.ts";
+import { declaredStationFiles, discoverStations, factsOnlyDataLines, inlineDataGateMode, isInlineDataCode, outsideStationData, stationCodeSources, undeclaredInlinedData, wrappedStationData, type DeclaredStationFiles, type DiscoveredStation } from "../stations-plugin.ts";
 
 const folder = path.join(path.sep, "repo", "stations", "alpha");
 const at = (rel: string) => path.join(folder, rel);
@@ -13,6 +13,135 @@ const alpha: DeclaredStationFiles = {
   declared: new Set([at("scene/signage.json"), at("gteki/assets/b1.meta.json")]),
   escapes: new Map(),
 };
+const alphaStation: DiscoveredStation = { dir: "alpha", folder, gtekiDir: path.join(folder, "gteki"), scene: at("scene/scene.ts"), assets: [] };
+
+describe("outsideStationData", () => {
+  const outsideJson = path.join(path.sep, "repo", "assets", "shared.json");
+  const scene = at("scene/scene.ts");
+
+  it("flags outside-folder data reached from a station scene, not app-only data", () => {
+    expect(outsideStationData(new Map([
+      [scene, [outsideJson]],
+      [path.join(path.sep, "repo", "apps", "web", "src", "main.ts"), [outsideJson]],
+      [outsideJson, []],
+    ]), new Map([["alpha", scene]]), [alphaStation])).toEqual([`alpha: ${outsideJson}`]);
+    expect(outsideStationData(new Map([
+      [path.join(path.sep, "repo", "apps", "web", "src", "main.ts"), [outsideJson]],
+      [outsideJson, []],
+    ]), new Map([["alpha", scene]]), [alphaStation])).toEqual([]);
+  });
+
+  it("ignores dependencies and virtual modules", () => {
+    const dependency = path.join(path.sep, "repo", "node_modules", "pkg", "data.json");
+    expect(outsideStationData(new Map([
+      [scene, [dependency, "\0virtual:data"]],
+      [dependency, []],
+      ["\0virtual:data", [outsideJson]],
+    ]), new Map([["alpha", scene]]), [alphaStation])).toEqual([]);
+  });
+
+  it("keeps full query-bearing graph ids distinct when traversing a ?raw sibling", () => {
+    const bridge = at("scene/bridge.ts");
+    const bridgeRaw = `${bridge}?raw`;
+    expect(outsideStationData(new Map([
+      [scene, [bridge, bridgeRaw]],
+      [bridge, [outsideJson]],
+      [bridgeRaw, []],
+      [outsideJson, []],
+    ]), new Map([["alpha", scene]]), [alphaStation])).toEqual([`alpha: ${outsideJson}`]);
+  });
+});
+
+describe("wrappedStationData", () => {
+  const codeId = at("scene/data.ts");
+  const literalOnly = `export default [${Array.from({ length: 5000 }, (_, i) => `{"name":"item-${i}","value":${i}}`).join(",")}]`;
+  const normalCode = `export function calculate(input: number) {\n${Array.from({ length: 7000 }, (_, i) => `  const result${i} = input + ${i};`).join("\n")}\n  return input;\n}`;
+
+  it("flags ?raw code imports and large literal-only TypeScript, but passes normal large code", () => {
+    expect(isInlineDataCode(`${codeId}?raw`, "export default 'raw source';")).toBe(true);
+    expect(isInlineDataCode(codeId, literalOnly)).toBe(true);
+    expect(isInlineDataCode(codeId, normalCode)).toBe(false);
+    expect(wrappedStationData(new Map([
+      [`${codeId}?raw`, "export default 'raw source';"],
+      [at("scene/literal.ts"), literalOnly],
+      [at("scene/normal.ts"), normalCode],
+    ]), [alphaStation])).toEqual([
+      "alpha: scene/data.ts (?raw import)",
+      "alpha: scene/literal.ts (large literal-heavy module)",
+    ]);
+    expect(isInlineDataCode(`${at("scene/styles.css")}?raw`, "export default 'css source';")).toBe(false);
+    expect(wrappedStationData(new Map([[`${at("scene/styles.css")}?raw`, "export default 'css source';"]]), [alphaStation])).toEqual([]);
+  });
+
+  it("measures original on-disk source instead of transformed module code", () => {
+    const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "gteki-original-source-")));
+    const stationFolder = path.join(root, "alpha");
+    const gtekiDir = path.join(stationFolder, "gteki");
+    const sourceId = path.join(stationFolder, "scene", "literal.ts");
+    fs.mkdirSync(path.dirname(sourceId), { recursive: true });
+    fs.mkdirSync(gtekiDir, { recursive: true });
+    const original = `export default [${Array.from({ length: 6000 }, (_, i) => `{"name":"row-${i}","value":${i}}`).join(",")}]`;
+    const transformed = `export default rows.map((row) => ({name: row.name, value: Number(row.value)}));\n${"// transform output formatting\n".repeat(5000)}`;
+    fs.writeFileSync(sourceId, original);
+    const station: DiscoveredStation = { dir: "alpha", folder: stationFolder, gtekiDir, scene: null, assets: [] };
+    const sources = stationCodeSources([sourceId], [station]);
+    expect(sources.get(sourceId)).toBe(original);
+    expect(isInlineDataCode(sourceId, transformed)).toBe(false);
+    expect(wrappedStationData(sources, [station])).toEqual(["alpha: scene/literal.ts (large literal-heavy module)"]);
+  });
+});
+
+describe("canonical station paths", () => {
+  it("recognizes station data and code through a symlinked station root", () => {
+    const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "gteki-symlink-root-")));
+    const realRoot = path.join(root, "real-stations");
+    const linkedRoot = path.join(root, "stations-link");
+    const stationFolder = path.join(realRoot, "alpha");
+    const gtekiDir = path.join(stationFolder, "gteki");
+    const scene = path.join(gtekiDir, "scene.ts");
+    const wrapped = path.join(stationFolder, "scene", "wrapped.ts");
+    const data = path.join(root, "shared.json");
+    fs.mkdirSync(path.dirname(wrapped), { recursive: true });
+    fs.mkdirSync(gtekiDir, { recursive: true });
+    fs.writeFileSync(path.join(gtekiDir, "station.json"), "{}");
+    fs.writeFileSync(scene, "export {};");
+    fs.writeFileSync(wrapped, `export default [${Array.from({ length: 6000 }, (_, i) => `{"key":"value-${i}","n":${i}}`).join(",")}]`);
+    fs.writeFileSync(data, "{}");
+    fs.symlinkSync(realRoot, linkedRoot, "dir");
+
+    const [station] = discoverStations([linkedRoot]);
+    expect(station!.folder).toBe(fs.realpathSync(stationFolder));
+    expect(station!.gtekiDir).toBe(path.join(linkedRoot, "alpha", "gteki"));
+    expect(station!.scene).toBe(path.join(linkedRoot, "alpha", "gteki", "scene.ts"));
+    const realScene = fs.realpathSync(station!.scene!);
+    expect(outsideStationData(new Map([[realScene, [data]], [data, []]]), new Map([["alpha", realScene]]), [station!])).toEqual([`alpha: ${data}`]);
+    expect(wrappedStationData(stationCodeSources([wrapped], [station!]), [station!])).toEqual(["alpha: scene/wrapped.ts (large literal-heavy module)"]);
+  });
+
+  it("keeps the station folder fence when gteki/ is a symlink to an outside kit", () => {
+    const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "gteki-symlink-gteki-")));
+    const stationsRoot = path.join(root, "stations");
+    const stationFolder = path.join(stationsRoot, "alpha");
+    const kitGteki = path.join(root, "outside-kit", "gteki");
+    const stationData = path.join(stationFolder, "data", "allowed.json");
+    const stationUndeclared = path.join(stationFolder, "data", "undeclared.json");
+    fs.mkdirSync(path.dirname(stationData), { recursive: true });
+    fs.mkdirSync(kitGteki, { recursive: true });
+    fs.writeFileSync(path.join(kitGteki, "station.json"), JSON.stringify({ dataFiles: [{ path: "data/allowed.json" }] }));
+    fs.writeFileSync(stationData, "{}");
+    fs.writeFileSync(stationUndeclared, "{}");
+    fs.symlinkSync(kitGteki, path.join(stationFolder, "gteki"), "dir");
+
+    const [station] = discoverStations([stationsRoot]);
+    expect(station!.folder).toBe(fs.realpathSync(stationFolder));
+    expect(station!.gtekiDir).toBe(path.join(stationFolder, "gteki"));
+    const [declared] = declaredStationFiles([station!]);
+    expect(declared!.folder).toBe(fs.realpathSync(stationFolder));
+    expect(declared!.declared.has(fs.realpathSync(stationData))).toBe(true);
+    expect(declared!.escapes.get(fs.realpathSync(kitGteki))).toBe("gteki");
+    expect(undeclaredInlinedData([stationData, stationUndeclared], [declared!])).toEqual(["alpha: data/undeclared.json"]);
+  });
+});
 
 describe("undeclaredInlinedData", () => {
   it("passes a declared inline and refuses an undeclared one", () => {

@@ -84,6 +84,13 @@ SPDX-License-Identifier = "CC0-1.0"
 # holder (GIS open item 11); "modified by GTEki contributors" is added where the data was modified.
 # GIS re-ran the list for PRs #110, #115, #117, #127 and #61 (Issue #161).
 
+# --- 4fonts. Noto Sans JP, pinned Sans2.004; modified subset under our own alias ------------
+[[annotations]]
+path = ["assets/fonts/**", "apps/web/src/fonts/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "© 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+SPDX-License-Identifier = "OFL-1.1"
+
 # --- 4a. MLIT Project PLATEAU ubld 53394576 (Ikebukuro) and files derived from it -------------
 # Credit (Ikebukuro): 「出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成」
 # Shinjuku context (only where building bases are flattened, Owner option A, #39 comment
