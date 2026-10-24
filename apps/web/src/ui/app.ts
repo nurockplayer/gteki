@@ -21,6 +21,7 @@ import { LiveRegion, freshnessReason, routeLiveMessage, searchLiveMessage, unkno
 import { MascotSlot, type MascotEvent } from "./mascot.ts";
 import { watchReducedMotion } from "./motion.ts";
 import { railDemoLink } from "./railTravel.ts";
+import { spawnHeading } from "./spawnHeading.ts";
 import { StationIdentityView } from "./identityCard.ts";
 import { RailRideDemo } from "./railRideDemo.ts";
 import { shouldHandleGuideKey } from "./railKeyGuard.ts";
@@ -326,7 +327,7 @@ export class App {
           if (!this.stationReady || this.s.entry?.key !== destination.key || !this.s.loaded) return false;
           // Arrive at a known playable station spawn, NOT at an invented JR platform coordinate.
           const node = this.s.loaded.bundle.spawnNodeIds?.[0];
-          if (node) this.explorer.walkFromNode(this.s.loaded.bundle, node);
+          if (node) this.explorer.walkFromNode(this.s.loaded.bundle, node, spawnHeading(this.s.loaded.bundle, { kind: "node", nodeId: node }, []));
           return true;
         },
         () => { this.railRide = null; },
@@ -734,7 +735,7 @@ export class App {
     const walk = el("button", undefined, t.walk);
     walk.addEventListener("click", () => {
       const first = this.s.polyline[0];
-      if (first) this.explorer.walkFrom(first);
+      if (first) this.explorer.walkFrom(first, spawnHeading(this.s.loaded?.bundle ?? null, this.s.origin, this.s.polyline));
     });
     const overview = el("button", "ghost", t.overview);
     overview.addEventListener("click", () => this.explorer.focusPoints(this.s.polyline));
@@ -1246,7 +1247,11 @@ export class App {
       signFaces: () => this.explorer.signFaces(),
       phase: () => this.explorer.phase,
       audio: () => this.explorer.audioInfo(),
-      walkFromNode: (nodeId: string) => (this.s.loaded ? this.explorer.walkFromNode(this.s.loaded.bundle, nodeId) : false),
+      walkFromNode: (nodeId: string) => (this.s.loaded ? this.explorer.walkFromNode(
+        this.s.loaded.bundle,
+        nodeId,
+        spawnHeading(this.s.loaded.bundle, { kind: "node", nodeId }, []),
+      ) : false),
       simulate: (seconds: number, keys: string[] = []) => this.explorer.simulate(seconds, keys),
     };
   }
