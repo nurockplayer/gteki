@@ -3207,6 +3207,3901 @@
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
    ]
+  },
+  {
+   "id": "shop-ikb-isp-000056",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "アエナ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000045",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ビースリー"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000046",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "パントリー"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000049",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "フィットフィット"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000039",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "芥川製菓"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000078",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "F&V池栄"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000044",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "柿安 口福堂"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000066",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "カフェカルディーノ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000036",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "京都・六角　蕪村菴"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000068",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "銀座　花菱"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000069",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "銀座コージーコーナー"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000041",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "久世福商店"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000073",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "クリスピー・クリーム・ドーナツ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000062",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "こだわりや"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000082",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "新宿さぼてん"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000054",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "J・マーケット"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000077",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ジャネット"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000048",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "タカギフーズ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000035",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "武田ハム"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000086",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "築地中島水産"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000081",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "鶏むら"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000092",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "はなまるダイニングセレクト"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000087",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "パールレディ 茶BAR"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000084",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ビアードパパ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000089",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "フロ・プレステージュ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000072",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ポンパドウル"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000085",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "明洞デリ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000080",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "焼魚専門店 二代目魚日出"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000076",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "横浜 昇龍園"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000063",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ラフィネ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000037",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ル・コリエ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000040",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "スリーコインズ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000070",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "アメリカンホリック"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000051",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "アストリア"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000053",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ブルーブルーエ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000052",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "コグマ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000038",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ラティス"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000079",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ペットパラダイス"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000034",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "テチチ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000075",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ゾフ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000059",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "スタディオクリップ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000057",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "アシックスウォーキング"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000083",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "カルディコーヒーファーム"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000061",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "コスメティックス P.D.C"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000043",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "サマンサ モスモス"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000042",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ジュエリーツツミ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000065",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "スターバックス コーヒー 北館店"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000071",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "チュチュアンナ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000055",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "DHC"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000047",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "北海道どさんこプラザ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000058",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "メーカーズシャツ鎌倉"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000050",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "おむすび権米衛"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク レンガ通り。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, Brick Street. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp-000067",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "宝くじチャンスセンター"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク レンガ通り。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, Brick Street. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-001",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "青山フラワーマーケット"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-002",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "イタリアンダイニング DONA"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-003",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "エリアス"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-004",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "OSドラッグ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-005",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "オスロコーヒー"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-006",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "OSEWAYA"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-007",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "さくら寿司"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-008",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "C・マーケット"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-009",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "J・マーケット"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-010",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "しぶそば"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-011",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "宝くじ売場1号店"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-012",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "宝くじ売場2号店"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-013",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ティカル"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-014",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "TOKYO UNDERGROUND RAMEN 頑者"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-015",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "とんかつ　大吉"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-016",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ナチュラルポケット"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-017",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "パサージュミニョン"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-018",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ブルーブルーエ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-019",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "星乃珈琲店"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-020",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "マノンレスコォ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-021",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ミスターミニット"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-022",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ムラ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-023",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "リサマリ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター サウスゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-024",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "アインズ＆トルペ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター センターゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-025",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "アンドア"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター センターゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-026",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "1999-ソシエティ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター センターゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-027",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ヴィ・ド・フランス"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター センターゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-028",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "グレイスター"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター センターゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-029",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ゴンチャ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター センターゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-030",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ジュエリー ツツミ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター センターゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-031",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "スペッチオ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター センターゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-032",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "セルト"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター センターゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-033",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "タビ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター センターゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-034",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ナチュラルボディ 東武ホープセンター店"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター センターゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-035",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "プロローグ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター センターゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-036",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "iPhone修理 救急便"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター ノースゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, North Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-037",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "KEYUCA"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター ノースゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, North Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-038",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "チヨダ HAKI-GOKOCHI"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター ノースゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, North Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-039",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "東京池袋矯正歯科（Oh my teeth 池袋）"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター ノースゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, North Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-040",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ほけんの窓口"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター ノースゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, North Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-041",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "なんぼや"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター ノースゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, North Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-042",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ミルフローラ・ドゥ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター ノースゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, North Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-hope-043",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "山本式整体 Refresh"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-hopecenter-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター ノースゾーン。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Hope Center, North Zone. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1129",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "iCure鍼灸接骨院"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "アイキュア シンキュウ セッコツイン"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1102",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ACCESSORIES BLOSSOM"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "アクセサリーズブロッサム"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1105",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "atelier haruka"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "アトリエはるか"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1094",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "一等米おにぎり専門店　ぼんたぼんた"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1093",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "梅丘寿司の美登利"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1107",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "開運館E&E"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1085",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "QBハウス"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1095",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "KINTAN IN THE HOUSE"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "キンタンインザハウス"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1090",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "銀座 篝"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ギンザ　カガリ"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1091",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "クリスピー・クリーム・ドーナツ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1089",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "スターバックスコーヒー"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1098",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "成城石井"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1100",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "SENSE OF PLACE by URBAN RESEARCH"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "センス オブ プレイス バイ アーバンリサーチ"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1092",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "立喰美登利"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "タチグイミドリ"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1087",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "はなまるうどん"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1108",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "マツモトキヨシ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1096",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "MR.waffle"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ミスターワッフル"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1086",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "Raffine"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ラフィネ"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1101",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "RANDA CLEPORTE"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ランダ　クレボルト"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1104",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "リンツ ショコラ ブティック"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1106",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "レインボースペクトラム"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-echika-1109",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ローソン"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "echika-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-metro-001",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "LAWSON METRO'S"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only directory listing (#26), UNVERIFIED, SEARCH_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ池袋駅 池袋南西口店。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 池袋南西口店. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-metro-002",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "Wrapped Crepe Korot"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ラップドクレープコロット"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only directory listing (#26), UNVERIFIED, SEARCH_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ池袋駅。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
   }
  ]
 }

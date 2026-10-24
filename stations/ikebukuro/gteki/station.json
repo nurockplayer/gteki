@@ -507,6 +507,36 @@
    "retrievedAt": "2026-10-24T00:40:00Z",
    "datasetDate": null,
    "notes": "Shop names and the zone label (南館) only, under OD-23/OD-31: POI attributes only, never route evidence (#211 DR-MR-04). Page undated."
+  },
+  {
+   "id": "echika-ikebukuro-2026-10",
+   "title": "エチカ池袋 フロアガイド・ショップ一覧",
+   "publisher": "株式会社メトロプロパティーズ",
+   "url": "https://www.metropro-sc.jp/echika-ikebukuro/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/360#issuecomment-6377632614", "date": "2026-10-24" },
+   "attribution": "エチカ池袋 フロアガイド・ショップ一覧 (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T02:56:55Z",
+   "datasetDate": null,
+   "notes": "Shop names and the printed zone label (改札外) only; descriptions and visual material not reproduced. Pages undated."
+  },
+  {
+   "id": "tobu-hopecenter-floorguide-2026-10",
+   "title": "東武ホープセンター フロアガイド",
+   "publisher": "東武ホープセンター",
+   "url": "https://tobuhopecenter.jp/floorguide/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311", "date": "2026-10-24" },
+   "attribution": "東武ホープセンター フロアガイド (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T02:56:55Z",
+   "datasetDate": null,
+   "notes": "Shop names and printed zone labels only; descriptions and visual material not reproduced. Pages undated."
   }
  ],
  "floors": [
