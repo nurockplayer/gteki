@@ -505,6 +505,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     trainWindow: track(new THREE.MeshStandardMaterial({ color: "#1c232a", roughness: 0.08, metalness: 0.2, emissive: "#fff2d6", emissiveIntensity: 0.35 })),
     trainDoor: track(new THREE.MeshStandardMaterial({ color: "#b8bdc1", roughness: 0.25, metalness: 0.8 })),
   };
+  for (const [key, m] of Object.entries(mat)) m.name = `mat.${key}`;
   for (const m of [mat.floor, mat.floorPaid, mat.floorPlatform, mat.wall, mat.ceiling]) guardBumpNormals(m);
   for (const m of [mat.floor, mat.floorPaid, mat.floorPlatform]) {
     m.map!.repeat.set(1, 1);
