@@ -261,8 +261,8 @@ class AtlasTests(unittest.TestCase):
     def test_readme_sampling_guarantee(self):
         readme = Path(atlas.__file__).with_name("README.md").read_text()
         self.assertIn("UV1 stays at least half a texel inside its cell", readme)
-        self.assertIn("coarse mips blend only within a cell", readme)
-        self.assertIn("cells are aligned to their own size", readme)
+        self.assertIn("max_isolated_mip", readme)
+        self.assertIn("Cells are aligned to\ntheir own size", readme)
 
     def test_non_float_sparse_and_shared_failures(self):
         for change, message in (
@@ -356,6 +356,8 @@ class AtlasTests(unittest.TestCase):
                 self.assertEqual((processed["sha256"], processed["bytes"]), (atlas.digest(data), len(data)))
                 self.assertEqual(processed["ao_atlas"]["kind"], "nosing")
                 self.assertIn("synthetic/0.1", m["atlases"]["nosing"]["provenance"])
+                side = processed["ao_atlas"]["cell"][2]  # the only processed id: log2 of its cell
+                self.assertEqual(m["atlases"]["nosing"]["max_isolated_mip"], side.bit_length() - 1)
 
     def test_cli_determinism_and_ids(self):
         with tempfile.TemporaryDirectory() as directory:

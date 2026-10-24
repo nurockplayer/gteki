@@ -437,7 +437,7 @@ def pack_cells(sizes):
                         bottom = max(bottom, y + side)
                         break
                 y += side
-        height = (bottom + unit - 1) // unit * unit  # cells stay aligned to their own size, so mips never mix them
+        height = (bottom + unit - 1) // unit * unit  # cells stay aligned to their own size (see max_isolated_mip)
         if height <= 2048:
             candidates.append((width * height, width, height, cells))
     if not candidates:
@@ -518,7 +518,11 @@ def build(in_dir, out_dir, kinds, half=False, ids=None):
         atlas_files[path] = raw
         provenance = (f"derived: packed from the per-id Cycles AO bakes of {manifest.get('catalog', '')}/{manifest.get('kit_version', '')} "
                       "by tools/blender/ao_atlas.py; GTEki contributors")
-        manifest["atlases"][kind] = dict(path=path, sha256=digest(raw), size_px=list(size), bytes=len(raw), provenance=provenance)
+        # aligned cells stay separate through mip level log2(smallest cell); a coarser level averages
+        # neighbouring cells, so a loader that must never mix them clamps its max mip level here
+        max_isolated_mip = min(side for side, _ in maps.values()).bit_length() - 1
+        manifest["atlases"][kind] = dict(path=path, sha256=digest(raw), size_px=list(size), bytes=len(raw),
+                                         max_isolated_mip=max_isolated_mip, provenance=provenance)
         stats[kind] = dict(size_px=list(size), fill_ratio=sum(side * side for side, _ in maps.values()) / (width * height),
                            bytes=len(raw), ids=len(maps))
     # Preflight every selected asset before creating output, including later assets.

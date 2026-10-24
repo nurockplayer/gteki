@@ -43,7 +43,10 @@ Repeat `--kind` for additional groups (for example, `'escalator=gteki_ik_escalat
 overlapping globs fail. `--ids <file>` restricts processing to one id per line.
 Full cells retain every source texel; `--half` averages each 2×2 block with half-up
 rounding before packing. The manifest records atlas hashes, dimensions and cells.
-UV1 stays at least half a texel inside its cell, and coarse mips blend only within a cell, because cells are aligned to their own size.
+UV1 stays at least half a texel inside its cell, so bilinear sampling never reads a neighbour. Cells are aligned to
+their own size, so mip levels up to `atlases.<kind>.max_isolated_mip` (log2 of the smallest cell: 7 for 128 px)
+never mix cells; coarser levels average neighbours, which is only reached when a whole cell covers less than
+one screen pixel. A loader that must rule that out clamps the texture's max mip level to that value.
 The client assigns the external AO map on channel 1 before merging geometry.
 `--manifest` checks atlas and GLB hashes/byte counts and reachable UV cells; without it, validation is unchanged.
 
