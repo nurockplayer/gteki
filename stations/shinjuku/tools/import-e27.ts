@@ -980,7 +980,7 @@ shafts.forEach((s, i) => {
         text: enNote,
       },
     ],
-    evidence: vEv(`NWD route_type=4 links (elevator code 5: wheelchair + visually-impaired accessible) grouped ≤4 m; cross-checked against GSI F012 within 4 m; ${jaCheck} ${enCheck}`),
+    evidence: vEv(`NWD route_type=4 links (elevator code 5: wheelchair + visually-impaired accessible) grouped ≤4 m; cross-checked against GSI F012 within 4 m; ${jaCheck} / ${enCheck}`),
   });
 });
 const unmatchedLifts = liftPoints.filter((f) => !claimedLifts.has(f)).map((f) => `${f.level.label} ${f.p.x},${f.p.y}`);
