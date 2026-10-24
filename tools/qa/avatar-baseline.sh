@@ -38,7 +38,9 @@ for p in $projects; do
   # shellcheck disable=SC2086
   GTEKI_AVATAR_BASELINE=1 QA_REUSE=$reuse QA_UNIT=0 locked sh "$here/tools/qa/run-candidate.sh" "$work" "$base" $merges -- \
     specs/19-avatar-baseline.spec.ts --project="$p" --trace=off || status=$?
-  rm -rf "${out:?}/$p"; mv "$here/tests/e2e/artifacts" "$out/$p"
+  # A run that failed before Playwright leaves no artifacts: don't abort, and don't move stale ones.
+  rm -rf "${out:?}/$p"
+  if [ -d "$here/tests/e2e/artifacts" ]; then mv "$here/tests/e2e/artifacts" "$out/$p"; else echo "no artifacts for $p" >&2; fi
   reuse=1
 done
 

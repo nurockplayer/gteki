@@ -86,7 +86,8 @@ function close(c: StancePhase & { start: P3; last: P3 }, truncatedEnd: boolean):
 
 /**
  * Stance phases around scripted events (start, stop, turn): a phase overlapping [t, t + windowS) of an
- * event belongs to it. `cycles` then counts the events that had at least one stance in their window.
+ * event belongs to it, with its whole slide (not just the part inside the window). `cycles` here counts
+ * events that had at least one stance in their window, not gait cycles.
  */
 export function byEvent(phases: StancePhase[], windows: { event: string; t: number }[], windowS: number): Record<string, SlideSummary> {
   const out: Record<string, SlideSummary> = {};

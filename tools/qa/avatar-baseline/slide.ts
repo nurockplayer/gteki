@@ -111,11 +111,12 @@ fs.writeFileSync(path.join(out, `slide-${quality}.json`), JSON.stringify({ meta,
 const f = (x: number | null) => (x === null ? "–" : x.toFixed(2));
 const rows = results.flatMap((r) => {
   const line = (name: string, s: Result["summary"]) => `| ${name} | ${s.cycles} | ${s.phases} | ${f(s.p50Cm)} | ${f(s.p95Cm)} | ${f(s.maxCm)} | ${r.gate ?? ""} |`;
-  return r.byEvent ? Object.entries(r.byEvent).map(([ev, s]) => line(`${r.label}: ${ev} (stances within ${WINDOW_S} s)`, s)) : [line(r.label, r.summary)];
+  return r.byEvent ? Object.entries(r.byEvent).map(([ev, s]) => line(`${r.label}: ${ev} (events with a stance within ${WINDOW_S} s)`, s)) : [line(r.label, r.summary)];
 });
 const md = [
   `Foot slide per stance phase, ${adapter.name}, quality=${quality}, ${tris} triangles.`,
   `Fixed ${Math.round(1 / DT)} fps step; stance = sole probe < ${STANCE.heightM * 100} cm above ground and |vertical speed| < ${STANCE.vSpeedMps * 100} cm/s; slide = horizontal path of the planted probe (heel or toe, whichever moves less).`,
+  "Measurement only: the #339 gate column is the target a reviewer compares against; nothing here passes or fails. For event rows, cycles = events.",
   "",
   "| scenario | cycles | stances | p50 cm | p95 cm | max cm | #339 gate |",
   "|---|---|---|---|---|---|---|",

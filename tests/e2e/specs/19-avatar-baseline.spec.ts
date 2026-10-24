@@ -61,7 +61,9 @@ const PAGE_HELPERS = (probeNames: { L: string[]; R: string[] }) => {
   // The avatar group is the foot's ancestor that sits directly under the scene.
   let group = feet[0]?.[0]?.o ?? null;
   while (group?.parent && !group.parent.isScene) group = group.parent;
+  // Refresh the chain first: a probe read right after a simulate step must not see last frame's matrices.
   const world = (o: any, p: number[]) => {
+    o.updateWorldMatrix(true, false);
     const m = o.matrixWorld.elements;
     return { x: m[0] * p[0] + m[4] * p[1] + m[8] * p[2] + m[12], y: m[1] * p[0] + m[5] * p[1] + m[9] * p[2] + m[13], z: m[2] * p[0] + m[6] * p[1] + m[10] * p[2] + m[14] };
   };
@@ -256,6 +258,8 @@ for (const key of enabled ? STATIONS_UNDER_TEST : []) test(`${key}: avatar basel
     slide, shots: shots.map((p) => p.split("/").pop()),
   };
   save(testInfo, `${key}-avatar-baseline.json`, result);
+  // Measurement, not a gate: the run only has to produce usable samples. Slide is judged against #339 by the reviewer.
+  for (const [name, r] of Object.entries(slide) as [string, { steady?: { phases: number } }][]) expect.soft(r.steady?.phases ?? 0, `${name}: steady stances measured`).toBeGreaterThan(0);
   expect(fs.existsSync(shots[0]!)).toBe(true);
   expect(idleShown.gpuValid, `renderer ${idleShown.gl?.renderer}: software rendering invalidates frame times`).toBe(true);
 });
