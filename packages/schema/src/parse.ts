@@ -24,7 +24,8 @@ const SPECS = {
   position: { x: "number", y: "number", z: "number|null" },
   edge: { id: "string", from: "string", to: "string", direction: "string", mode: "string", lengthM: "number|null", paid: "tri", crossesFareBoundary: "tri", wheelchair: "tri", steps: "tri", hours: "object|null", closed: "boolean", verification: "string", geometryEvidence: "object", accessEvidence: "object|null", geometry: "array?", geometryZ: "string?", attributes: "object?" },
   evidence: { sourceIds: "array", method: "string", checkedDate: "string", note: "string?" },
-  poi: { id: "string", category: "string", names: "array", aliases: "array", floorId: "string|null", displayPosition: "object|null", connectorNodeIds: "array", paid: "tri", evidence: "object", notes: "array?" },
+  poi: { id: "string", category: "string", names: "array", aliases: "array", floorId: "string|null", displayPosition: "object|null", approximatePosition: "object?", connectorNodeIds: "array", paid: "tri", evidence: "object", notes: "array?" },
+  approximatePosition: { east: "number", north: "number", uncertaintyM: "number", method: "string", navigationUse: "string", floor: "string" },
   text: { lang: "string", text: "string" },
   operator: { id: "string", names: "array" },
   code: { operatorId: "string", code: "string" },
@@ -115,6 +116,20 @@ class ShapeChecker {
 
   evidence(value: unknown, where: string): void {
     if (this.check(value, SPECS.evidence, where)) this.strings((value as Record<string, unknown>).sourceIds, `${where}.sourceIds`);
+  }
+
+  /** Search-display-only approximation: a positive ± radius, a stated method, and the two fixed markers. */
+  approximatePosition(value: unknown, where: string): void {
+    if (!this.check(value, SPECS.approximatePosition, where)) return;
+    const a = value as Record<string, unknown>;
+    if (typeof a.uncertaintyM === "number" && !(a.uncertaintyM > 0))
+      this.issues.push({ level: "error", code: "shape.type", message: `${where}.uncertaintyM: expected a number > 0, got ${String(a.uncertaintyM)}`, ref: where });
+    if (typeof a.method === "string" && a.method.trim() === "")
+      this.issues.push({ level: "error", code: "shape.type", message: `${where}.method: expected a non-empty string`, ref: where });
+    if (a.navigationUse !== "NOT_FOR_ROUTING")
+      this.issues.push({ level: "error", code: "shape.type", message: `${where}.navigationUse: expected "NOT_FOR_ROUTING", got ${JSON.stringify(a.navigationUse)}`, ref: where });
+    if (a.floor !== "UNVERIFIED")
+      this.issues.push({ level: "error", code: "shape.type", message: `${where}.floor: expected "UNVERIFIED", got ${JSON.stringify(a.floor)}`, ref: where });
   }
 
   /** `hours` is a discriminated union: an unrecognised or incomplete object is an error, never "open". */
@@ -238,6 +253,7 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown, ten
       c.texts(poi.notes, `${where}.notes`);
       c.strings(poi.connectorNodeIds, `${where}.connectorNodeIds`);
       if (poi.displayPosition !== null) c.check(poi.displayPosition, SPECS.position, `${where}.displayPosition`);
+      if (poi.approximatePosition !== undefined) c.approximatePosition(poi.approximatePosition, `${where}.approximatePosition`);
     });
   }
   if (tenants !== undefined && c.check(tenants, { schema: "string", tenants: "array" }, "tenants.json")) {

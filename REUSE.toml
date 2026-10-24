@@ -364,3 +364,11 @@ path = [
 precedence = "override"
 SPDX-FileCopyrightText = "No licence granted: facts-only sources (東京地下鉄, 東京都交通局, 西武鉄道); compiled by GTEki contributors"
 SPDX-License-Identifier = "LicenseRef-facts-only-no-licence"
+
+# --- 4r. S03 approximate gate/transfer points for Shinjuku (GIS #463, schema #464) ---
+# Derived from the S03 level geometry; search display only, not for routing. Credit and change notice: NOTICE 4.7.
+[[annotations]]
+path = "stations/shinjuku/sources/s03-approx-positions.json"
+precedence = "override"
+SPDX-FileCopyrightText = "東京都都市整備局; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-S03"

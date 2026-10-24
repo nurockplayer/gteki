@@ -1,17 +1,20 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Poi } from "@gteki/schema";
+import { createSearchIndex } from "@gteki/search";
 import { createSyntheticBundle } from "../../../../packages/navigation/src/fixtures.ts";
-import type { Lang } from "../i18n.ts";
+import { strings, type Lang } from "../i18n.ts";
 
 vi.mock("../explorer/explorer.ts", () => ({ Explorer: class {} }));
 vi.mock("../registry.ts", () => ({ listStations: vi.fn(), StationLoadError: class extends Error {} }));
 import { App } from "./app.ts";
 
 type Harness = {
-  s: { lang: Lang; loaded: unknown; route: unknown; noPath: null; origin: unknown; destination: Poi | null };
+  s: { lang: Lang; loaded: unknown; route: unknown; noPath: null; origin: unknown; destination: Poi | null; search?: unknown };
   ui: { sheet: HTMLElement; fromNote: HTMLElement; toNote: HTMLElement; fromInput: HTMLInputElement; toInput: HTMLInputElement; fromResults: HTMLElement; toResults: HTMLElement };
+  stationReady: boolean;
   renderEndpointNote: (box: HTMLElement, poi: Poi | null) => void;
+  renderResults: (which: "from" | "to") => void;
   renderSheet: () => void;
   releaseMascot: () => void;
   mascotSay: () => void;
@@ -100,5 +103,83 @@ describe("search-only POI notes outside a route", () => {
     a.s.route = { ok: false, reason: "no_path", message: "" };
     a.renderSheet();
     expect(a.ui.sheet.textContent).not.toContain(NOTE_JA);
+  });
+});
+
+describe("approximate positions are search display only (#463)", () => {
+  const approximate = { east: 12, north: -4, uncertaintyM: 24.2, method: "area_weighted_centroid", navigationUse: "NOT_FOR_ROUTING", floor: "UNVERIFIED" } as const;
+
+  it("shows the ± radius rounded up, in the UI language, under a picked endpoint", () => {
+    const a = app("en");
+    a.renderEndpointNote(a.ui.toNote, { ...poi("p1", false, []), approximatePosition: approximate });
+    expect(a.ui.toNote.hidden).toBe(false);
+    expect(a.ui.toNote.textContent).toBe("Approximate position (±25 m) · not used for directions");
+
+    const ja = app("ja");
+    ja.renderEndpointNote(ja.ui.fromNote, { ...poi("p2", false, []), approximatePosition: approximate });
+    expect(ja.ui.fromNote.textContent).toBe("おおよその位置（±25 m）・経路案内には使いません");
+  });
+
+  it("keeps the station note and the approximate line together", () => {
+    const a = app();
+    a.renderEndpointNote(a.ui.fromNote, { ...poi("p3", false), approximatePosition: approximate });
+    expect(a.ui.fromNote.textContent).toBe(`${NOTE_JA} · おおよその位置（±25 m）・経路案内には使いません`);
+  });
+
+  it("names the approximate radius the same way in both languages", () => {
+    expect(strings("ja").approximatePosition(25)).toBe("おおよその位置（±25 m）・経路案内には使いません");
+    expect(strings("en").approximatePosition(25)).toBe("Approximate position (±25 m) · not used for directions");
+  });
+});
+
+describe("approximate positions in search results (#463)", () => {
+  const approximate = { east: 12, north: -4, uncertaintyM: 24.2, method: "area_weighted_centroid", navigationUse: "NOT_FOR_ROUTING", floor: "UNVERIFIED" } as const;
+  const LINE = "おおよその位置（±25 m）・経路案内には使いません";
+
+  /** The synthetic bundle plus one searchable POI that has only an approximate, search-display point. */
+  function searchable() {
+    const bundle = createSyntheticBundle();
+    bundle.pois.push({
+      id: "approx-shop", category: "shop",
+      names: [{ lang: "ja", text: "おおよそ商店" }, { lang: "en", text: "Approximate Shop" }],
+      aliases: [], floorId: "concourse", displayPosition: null, approximatePosition: approximate,
+      connectorNodeIds: [], paid: null,
+      evidence: { sourceIds: ["fixture-geometry"], method: "synthetic-fixture", checkedDate: "2026-10-20" },
+    });
+    return bundle;
+  }
+
+  it("shows the approximate line and the unverified floor in the row and its accessible name", () => {
+    const a = app();
+    const bundle = searchable();
+    a.s.loaded = { bundle };
+    a.s.search = createSearchIndex(bundle);
+    a.ui.toInput.value = "おおよそ";
+    a.renderResults("to");
+    const option = a.ui.toResults.querySelector('[role="option"]')!;
+    expect(option.querySelector(".result-approx")?.textContent).toBe(LINE);
+    expect(option.querySelector(".result-meta")?.textContent).toContain("B1（階は未確認）");
+    const label = option.getAttribute("aria-label") ?? "";
+    expect(label).toContain(LINE);
+    expect(label).toContain("B1（階は未確認）");
+  });
+
+  it("keeps the warning under the picked endpoint's field", () => {
+    const a = app();
+    const bundle = searchable();
+    a.s.loaded = { bundle };
+    a.s.search = createSearchIndex(bundle);
+    a.stationReady = true;
+    a.explorer = { showPois: vi.fn() };
+    // Only the parts the pick triggers after the field note are stubbed; renderEndpointNote runs for real.
+    for (const name of ["updatePanelCollapse", "renderIdentity", "renderCredit", "renderBanner", "renderSpawnChips", "renderProfile", "computeRoute", "syncPanelMascot"] as const)
+      vi.spyOn(a as unknown as Record<string, () => void>, name).mockImplementation(() => {});
+    a.ui.toInput.value = "おおよそ";
+    a.renderResults("to");
+    (a.ui.toResults.querySelector('[role="option"]') as HTMLElement).click();
+    expect(a.s.destination?.id).toBe("approx-shop");
+    expect(a.ui.toNote.hidden).toBe(false);
+    expect(a.ui.toNote.textContent).toContain("B1（階は未確認）");
+    expect(a.ui.toNote.textContent).toContain(LINE);
   });
 });

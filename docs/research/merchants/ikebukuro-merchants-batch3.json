@@ -1,0 +1,77 @@
+{
+  "schema": "gteki.station/0.1",
+  "note": "Ikebukuro batch 3 facts-only merchant transcription (Tokyo Metro station shops). Entries are unverified directory listings; locations and entrances are not route evidence.",
+  "sources": [],
+  "pois": [
+    {
+      "id": "shop-ikb-metro-001",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "LAWSON METRO'S"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-shops-2026-10"
+        ],
+        "method": "facts-only directory listing (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ池袋駅 池袋南西口店。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Ikebukuro Station, 池袋南西口店. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-ikb-metro-002",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "Wrapped Crepe Korot"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ラップドクレープコロット"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-shops-2026-10"
+        ],
+        "method": "facts-only directory listing (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ池袋駅。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Ikebukuro Station. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    }
+  ],
+  "removed": []
+}

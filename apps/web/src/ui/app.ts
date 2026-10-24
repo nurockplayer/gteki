@@ -457,8 +457,24 @@ export class App {
   /** A picked endpoint that is search-only shows its note (e.g. "as of 2020; current status unknown") under the field. */
   private renderEndpointNote(box: HTMLParagraphElement, poi: Poi | null): void {
     const note = poi && poi.connectorNodeIds.length === 0 ? poiNoteText(poi, this.s.lang) : null;
-    box.textContent = note ?? "";
-    box.hidden = !note;
+    // An approximate point says so beside the note: its floor is unverified and the ± radius is not for directions (#463).
+    const floor = poi?.approximatePosition ? this.floorLabel(poi) : null;
+    const approximate = poi ? this.approximateText(poi) : null;
+    const text = [floor, note, approximate].filter(Boolean).join(" · ");
+    box.textContent = text;
+    box.hidden = text === "";
+  }
+
+  /** The floor label for display; an approximate POI's floor is a label match, not a surveyed floor (#463). */
+  private floorLabel(poi: Poi): string | null {
+    if (!poi.floorId) return null;
+    const label = floorDisplayName(this.s.loaded?.bundle.floors.find((f) => f.id === poi.floorId), this.s.lang);
+    return poi.approximatePosition ? this.t.floorUnverified(label) : label;
+  }
+
+  /** The search-display line for an approximate position, its ± radius rounded up to a whole metre (#463). */
+  private approximateText(poi: Poi): string | null {
+    return poi.approximatePosition ? this.t.approximatePosition(Math.ceil(poi.approximatePosition.uncertaintyM)) : null;
   }
 
   private originLabel(): string {
@@ -497,14 +513,13 @@ export class App {
       this.setCombo(which, { open: true, count: 0, active: -1 });
       return;
     }
-    const floors = new Map(this.s.loaded.bundle.floors.map((f) => [f.id, f]));
     hits.forEach((h, i) => {
       const b = el("button", `result cat-${h.poi.category}${h.routable ? "" : " disabled"}`);
       const dot = el("span", "dot");
       dot.setAttribute("aria-hidden", "true");
       const name = el("span", "result-name", this.poiName(h.poi));
       const meta = el("span", "result-meta");
-      const floor = h.poi.floorId ? floorDisplayName(floors.get(h.poi.floorId), this.s.lang) : null;
+      const floor = this.floorLabel(h.poi);
       const searchOnly = isUnlocatedShop(h.poi) ? this.t.shopSearchOnly : this.t.searchOnly;
       // A brand from the store's own directory (#419) replaces the store floor: the printed floor is the useful one.
       const tags = h.tenant
@@ -520,8 +535,11 @@ export class App {
       // A search-only POI's note (e.g. a 2020 status word in the copied name) is shown beside it, not only in routes.
       const note = h.routable ? null : poiNoteText(h.poi, this.s.lang);
       if (note) b.append(el("span", "result-note", note));
-      // The accessible name carries the visible tags, the as-of line and the note, so "search only" is heard too.
-      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...tags, ...(asOf ? [asOf] : []), ...(note ? [note] : [])].join(", ")));
+      // An approximate point is search display only: show the ± radius and that it is not used for directions (#463).
+      const approximate = this.approximateText(h.poi);
+      if (approximate) b.append(el("span", "result-approx", approximate));
+      // The accessible name carries the visible tags, the as-of line, the note and the approximate warning.
+      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...tags, ...(asOf ? [asOf] : []), ...(note ? [note] : []), ...(approximate ? [approximate] : [])].join(", ")));
       b.addEventListener("mousedown", (e) => e.preventDefault());
       b.addEventListener("click", () => {
         this.closeResults(which);

@@ -1,0 +1,332 @@
+{
+  "contract": "docs/gis/s03/positions-import-contract.md",
+  "sourceId": "tokyo-s03-zip",
+  "inputDigest": "72064c6f90491078097f",
+  "positions": [
+    {
+      "poiId": "poi:jreast-gate:1",
+      "east": 38.48,
+      "north": 378.26,
+      "uncertaintyM": 5,
+      "method": "largest_part_closest_point",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:jreast-gate:10",
+      "east": 28.19,
+      "north": 472.0,
+      "uncertaintyM": 13,
+      "method": "largest_part_closest_point",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:jreast-gate:2",
+      "east": 135.96,
+      "north": 154.22,
+      "uncertaintyM": 6.4,
+      "method": "largest_part_closest_point",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:jreast-gate:3",
+      "east": 186.33,
+      "north": 186.64,
+      "uncertaintyM": 5,
+      "method": "area_weighted_centroid",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:jreast-gate:4",
+      "east": 126.89,
+      "north": 199.7,
+      "uncertaintyM": 5.2,
+      "method": "largest_part_closest_point",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:jreast-gate:5",
+      "east": 148.36,
+      "north": 420.61,
+      "uncertaintyM": 10.1,
+      "method": "largest_part_closest_point",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:jreast-gate:6",
+      "east": -19.08,
+      "north": 347.76,
+      "uncertaintyM": 5.2,
+      "method": "largest_part_closest_point",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:jreast-gate:7",
+      "east": 73.89,
+      "north": 268.8,
+      "uncertaintyM": 10.3,
+      "method": "largest_part_closest_point",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:jreast-gate:8",
+      "east": 177.62,
+      "north": 293.62,
+      "uncertaintyM": 5,
+      "method": "area_weighted_centroid",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:jreast-gate:9",
+      "east": 137.58,
+      "north": 486.81,
+      "uncertaintyM": 10.5,
+      "method": "largest_part_closest_point",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:jreast-keio-transfer:1",
+      "east": -19.24,
+      "north": 355.99,
+      "uncertaintyM": 6.6,
+      "method": "largest_part_closest_point",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:jreast-odakyu-transfer:1",
+      "east": 34.33,
+      "north": 348.88,
+      "uncertaintyM": 5,
+      "method": "largest_part_closest_point",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:jreast-odakyu-transfer:2",
+      "east": 58.84,
+      "north": 292.62,
+      "uncertaintyM": 5,
+      "method": "largest_part_closest_point",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:keio-gate:2",
+      "east": -43.87,
+      "north": 178.57,
+      "uncertaintyM": 5,
+      "method": "area_weighted_centroid",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:keio-gate:3",
+      "east": -234.26,
+      "north": 71.28,
+      "uncertaintyM": 5,
+      "method": "area_weighted_centroid",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:keio-gate:4",
+      "east": 5.15,
+      "north": 258.88,
+      "uncertaintyM": 5,
+      "method": "area_weighted_centroid",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:keio-gate:5",
+      "east": -30.45,
+      "north": 357.72,
+      "uncertaintyM": 5,
+      "method": "largest_part_closest_point",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:keio-gate:6",
+      "east": -33.89,
+      "north": 394.78,
+      "uncertaintyM": 14.1,
+      "method": "largest_part_closest_point",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:keio-gate:7",
+      "east": -20.78,
+      "north": 435.84,
+      "uncertaintyM": 5,
+      "method": "area_weighted_centroid",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:keio-gate:8",
+      "east": -19.72,
+      "north": 412.74,
+      "uncertaintyM": 5,
+      "method": "area_weighted_centroid",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:odakyu-gate:1",
+      "east": 37.36,
+      "north": 272.54,
+      "uncertaintyM": 5,
+      "method": "largest_part_closest_point",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:odakyu-gate:2",
+      "east": 14.32,
+      "north": 423.88,
+      "uncertaintyM": 5,
+      "method": "area_weighted_centroid",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:odakyu-gate:3",
+      "east": 17.2,
+      "north": 383.4,
+      "uncertaintyM": 5,
+      "method": "area_weighted_centroid",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:tokyometro-gate:1",
+      "east": 167.57,
+      "north": 581.78,
+      "uncertaintyM": 5,
+      "method": "area_weighted_centroid",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    },
+    {
+      "poiId": "poi:tokyometro-gate:2",
+      "east": 15.93,
+      "north": 569.7,
+      "uncertaintyM": 5,
+      "method": "area_weighted_centroid",
+      "labels": {
+        "position": "approximate (±max(5 m, polygon radius))",
+        "navigation_use": "NOT_FOR_ROUTING",
+        "gteki_role": "context",
+        "floor": "UNVERIFIED"
+      }
+    }
+  ]
+}
