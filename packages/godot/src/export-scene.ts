@@ -18,7 +18,7 @@ import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.j
 import { enuToRenderer } from "@gteki/geo";
 import { parseStationFiles } from "@gteki/schema";
 import { glbPrimitivePlugin, type SceneContext, type StationScene, type StationSceneModule } from "@gteki/scene-api";
-import { headlessThree, installHeadlessDom, newShimUsage, stubRenderer, type ShimUsage } from "./headless-dom.ts";
+import { headlessGltfTextures, headlessThree, installHeadlessDom, newShimUsage, stubRenderer, type ShimUsage } from "./headless-dom.ts";
 import { bakeInstancedMeshes, categoryOf, dropDynamicObjects, stripTextures, tagLightmaps, tagSceneRoles, type LightmapInfo, type RoleSummary } from "./scene-roles.ts";
 
 export const SIDECAR_SCHEMA = "gteki.godot-scene/0.1" as const;
@@ -133,11 +133,12 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
     bundle: parsed.bundle,
     enuToRenderer: (p) => enuToRenderer(p),
     assetUrl: (uri) => pathToFileURL(inStation(uri)).href,
-    // Same loader set-up as the explorer's (Meshopt, glbPrimitivePlugin), minus the browser fetch.
+    // Same loader set-up as the explorer's (Meshopt, glbPrimitivePlugin), minus the browser fetch and image decoding
+    // (headlessGltfTextures: embedded images become blank placeholders, as the snapshot strips textures anyway).
     loadGlb: async (uri): Promise<GLTF> => {
       const buf = await readFile(inStation(uri));
       const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
-      const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).register(glbPrimitivePlugin);
+      const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).register(glbPrimitivePlugin).register(headlessGltfTextures(usage));
       return new Promise<GLTF>((ok, fail) => loader.parse(ab, "", ok, fail));
     },
     // Image decoding needs a browser: a blank texture stands in (the file must still exist). The URI is kept on the
@@ -178,6 +179,7 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
   if (usage.canvases > 0) warnings.push(`${usage.canvases} canvas(es) were no-op 2D contexts (blank): procedural textures and sign faces are placeholders, and ${usage.measuredTexts} measureText call(s) used an em-width estimate that may size signs differently from the browser`);
   if (usage.imageDataReads > 0) warnings.push(`${usage.imageDataReads} canvas getImageData read(s) returned zeros`);
   if (usage.pmremEnvironments > 0) warnings.push(`${usage.pmremEnvironments} PMREM environment map(s) stubbed (no GPU): reflections absent`);
+  if (usage.glbEmbeddedImages + usage.glbExternalImages > 0) warnings.push(`GLB images loaded via ctx.loadGlb were blank placeholders, not decoded (Node has no image decoder): ${usage.glbEmbeddedImages} embedded, ${usage.glbExternalImages} external URI image source(s)`);
   if (usage.placeholderTextures.length > 0) warnings.push(`textures loaded via ctx.loadTexture are blank placeholders, not decoded: ${usage.placeholderTextures.join(", ")}`);
   warnings.push("ctx.audio undefined: no station audio");
   if (roles.replacedByCollision > 0) warnings.push(`${roles.replacedByCollision} drawn mesh(es) carry walkable/collider roles in the source but the scene collides through its own proxies; exported as role "visual" (original in extras.gteki_source_role)`);
