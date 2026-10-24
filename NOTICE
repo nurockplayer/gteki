@@ -199,6 +199,25 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        ENU frame, clipped to that disc and drawn as flat ribbons (railway 1.5 m,
        station 3 m); no source name, code or other attribute is copied.
 
+   4.12 Facts-only line POIs for Shinjuku - LicenseRef-facts-only-no-licence
+       docs/research/lines/shinjuku-line-pois-wp4.json and its notes file
+       (lines-lead WP4, 2026-10-24): exit codes, gate names and lift and
+       escalator end-pair labels as printed on the Tokyo Metro 新宿駅 pages
+       (#26) and the Toei 新宿駅 station page (OD-01 A). Evidence is a page
+       locator in GTEki's own words; no other page text, map, image or the
+       Toei per-exit coordinate feed is copied. Credit as recorded:
+       「東京メトロ 新宿駅 (facts only; not reproduced)」 and
+       「都営地下鉄 新宿駅 (facts only; not reproduced)」.
+
+   4.13 Facts-only transfer facts - LicenseRef-facts-only-no-licence
+       docs/research/lines/transfer-facts-wp11.json and its notes file
+       (lines-lead WP11, 2026-10-24): transfer lines, direction labels,
+       posted hours and the Seibu platform legend as printed on Tokyo Metro
+       (#26), Toei (OD-01 A, OD-34) and Seibu Railway (OD-25) pages and their
+       station diagrams. Facts are stated in GTEki's own words; no diagram,
+       image, layout or car position is reproduced. Credit as recorded per
+       source (facts only; not reproduced).
+
 5. NOTO SANS JP - SIL Open Font License 1.1 (OFL-1.1)
    © 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'.
    Upstream: https://github.com/notofonts/noto-cjk/tree/Sans2.004
