@@ -72,8 +72,9 @@ export interface ExportResult {
   seconds: number;
 }
 
-/** How long export waits for a station's background loads (`StationScene.settled`) before failing. */
-export const SETTLE_TIMEOUT_MS = 30_000;
+/** How long export waits for a station's background loads (`StationScene.settled`) before failing. Generous on purpose:
+ * the guard is against a hang, and Ikebukuro loads ~87 catalog GLBs serially on a shared, busy host. */
+export const SETTLE_TIMEOUT_MS = 120_000;
 
 /**
  * Awaits the station's optional `settled()` (the scene-api field lands with #352; typed locally until then), bounded by
