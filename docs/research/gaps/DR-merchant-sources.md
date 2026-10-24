@@ -93,9 +93,9 @@ For every candidate: record checked date and exact sign text in private field no
 
 ## 6 Gaps and Owner questions
 
-- New rights questions (added by the lead's review; the worker reported none):
-  1. **Commercial-facility and chain-store directories** (Echika / Metro Properties DR-MR-02, Shinjuku Subnade DR-MR-10, Sogo & Seibu DR-MR-05, Starbucks / ORIHICA / DAISO store locators DR-MR-11, 13, 14): rights UNKNOWN. Do they get the OD-23 treatment (facts-only, UNVERIFIED, POI attributes only, never route evidence)? Until decided, rows from them are research leads only and must not be imported. Rec: yes, same as OD-23.
-  2. **Hours from any merchant source** are source-dated facts, not current status; confirm they may be shown with a "source date, may be stale" label or must stay null until field-checked. Rec: keep null in product data until field-checked; keep them here as leads.
+- Decided 2026-10-24 (director under the Owner's delegation, recorded in `owner-decisions-pending.md`):
+  1. **OD-31**: commercial-facility and chain-store directories (DR-MR-02, 05, 10, 11, 13, 14) get OD-23 treatment: facts only, UNVERIFIED, POI attributes only, never route evidence; rows may be imported with source id and retrieval date.
+  2. **OD-32**: hours may be shown only from first-party sources, with the source date and a "may have changed" label; null if the source date is older than 180 days or the source is an aggregator. `current_status` stays UNKNOWN. In the sample above every source date is "not stated", so the age test cannot be applied: those hours stay leads here and must be imported as null until a dated first-party source or a field check gives them a date.
 - Covered by existing decisions: OD-01, OD-02, OD-18, OD-23, OD-24, OD-25 and the S10 rights record.
 - Follow-up work, not new Owner questions: verify current access to Keio Mall/Odakyu Ace official directories; locate their current terms pages; register the sources through the research/GIS process if needed.
 - Unknown or unassessed commercial directory terms remain UNKNOWN; this sample does not authorize reuse of directory copy, branding, imagery, maps, or layouts.
