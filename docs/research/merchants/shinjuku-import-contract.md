@@ -18,7 +18,7 @@ File: [`shinjuku-merchants-batch1.json`](shinjuku-merchants-batch1.json), 78 POI
 
 All five sources: `REFERENCE_ONLY`, `usage: "facts-only"`, decision OD-33 ([#377 comment 6378920311](https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311); the director's 2026-10-24 ruling extends OD-23/OD-31 to all commercial and station directories). Facilities on these pages (ATMs, lockers, photo booths, rental machines) are excluded here and belong to a later facilities batch. Unnamed 期間限定ショップ slots are not imported.
 
-Every POI: `floorId`, `displayPosition`, `paid` null; `connectorNodeIds` `[]`; `AREA_ONLY` when the source prints an area (hall, zone, floor or exit label, kept in notes as printed), otherwise `SEARCH_ONLY`. Printed 改札外 stays text in notes and is not mapped to `paid`.
+Every POI: `floorId`, `displayPosition`, `paid` null; `connectorNodeIds` `[]`; `AREA_ONLY` when the source prints an area (hall, zone, floor or exit label, or which of two sub-malls such as 京王モール / 京王モールアネックス, kept in notes as printed), otherwise `SEARCH_ONLY`. Printed 改札外 stays text in notes and is not mapped to `paid`.
 
 ## 2. Acceptance check (run 2026-10-24)
 
