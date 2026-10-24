@@ -422,6 +422,13 @@ rows of spots replace long LEDs, sharing each hint's power. Both use Blender's f
 `colour_temp_k`. The watt-to-energy factor, cone, range, row spacing and studio sun mapping are documented in
 `tools/showcase_compare.gd` and recorded in the report; AgX and SSAO do not imply identical Blender shading. A headless
 invocation prints `showcase_compare needs a display`, exits zero and writes nothing.
+The showcase pass generates missing texture mipmaps once per shared texture (normal maps renormalised; colour mips
+average stored sRGB values, as Godot's own importer does) and uses anisotropic mipmapped filtering; a uniform sky
+preserves the world's colour/strength for ambient and metal reflections, with one room probe in interior layouts. The
+probe keeps the sky (not `interior`) and is the visible bounds (excluding `-colonly`) grown by its 1 m blend distance. Studio sun energy is `3 / PI` to account for Godot's nonphysical light
+normalisation; AgX contrast 1.5 provisionally approximates Blender's Medium High Contrast. Spots use bias 0.06 / normal
+bias 1.5 and an 8192 shadow atlas with four 64-map quadrants (256 slots at 512 px) to reduce wall/column acne. These
+choices and texture/probe counts are recorded in the JSON report; their visual result still needs the lead's GPU slot.
 The argument rules, the sun mapping, the hint-to-spot split and the metadata contract are checked headless by
 `godot --headless --path packages/godot --script res://tests/run_showcase_tests.gd` (no GLB or GPU needed).
 

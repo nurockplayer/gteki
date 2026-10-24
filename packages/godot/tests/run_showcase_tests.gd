@@ -25,6 +25,8 @@ func run() -> void:
 	check_arguments()
 	check_sun()
 	check_background()
+	check_textures()
+	check_reflections_and_shadows()
 	check_hints()
 	check_metadata()
 	check(DisplayServer.get_name() == "headless", "suite runs without a display")
@@ -69,6 +71,12 @@ func check_sun() -> void:
 	check(is_equal_approx(basis.determinant(), 1.0), "sun conversion preserves handedness")
 	check(basis.is_equal_approx(basis.orthonormalized()), "sun basis is orthonormal")
 	check((-Compare.sun_basis(Vector3.ZERO).z).is_equal_approx(Vector3.DOWN), "unrotated Blender sun shines down in Godot")
+	check(is_equal_approx(Compare.APPROXIMATION.sun_energy_factor, 1.0 / PI), "nonphysical sun cancels Godot's PI energy multiplier")
+	var scene := Node3D.new()
+	Compare.add_studio_lights(scene, false)
+	var sun: DirectionalLight3D = scene.get_child(0)
+	check(is_equal_approx(sun.light_energy, 3.0 / PI), "studio sun uses Blender irradiance 3 / PI")
+	scene.free()
 
 
 ## Independent IEC sRGB transfer, rather than expecting the helper's own Color conversion result.
@@ -85,6 +93,89 @@ func check_background() -> void:
 		check(absf(colour.g - encode_srgb(linear[1])) < 0.000001, "%s world green linear -> sRGB" % mode)
 		check(absf(colour.b - encode_srgb(linear[2])) < 0.000001, "%s world blue linear -> sRGB" % mode)
 		check(is_equal_approx(bg.strength, 0.9 if mode == "studio" else 1.0), "%s world strength is separate from colour" % mode)
+		var scene := Node3D.new()
+		var env := Compare.configure_environment(scene, mode, 0.5)
+		var sky_material: ShaderMaterial = env.sky.sky_material
+		check(sky_material.get_shader_parameter("colour") == colour, "%s uniform sky equals background colour" % mode)
+		check("COLOR = colour.rgb;" in sky_material.shader.code and "source_color" in sky_material.shader.code, "%s sky is uniform and decodes its sRGB colour" % mode)
+		check(env.background_mode == Environment.BG_SKY and is_equal_approx(env.background_energy_multiplier, bg.strength), "%s sky retains background strength" % mode)
+		check(env.ambient_light_source == Environment.AMBIENT_SOURCE_SKY and env.reflected_light_source == Environment.REFLECTION_SOURCE_SKY and is_equal_approx(env.ambient_light_sky_contribution, 1.0), "%s sky supplies ambient and reflections" % mode)
+		check(is_equal_approx(env.tonemap_agx_contrast, 1.5) and is_equal_approx(env.tonemap_exposure, sqrt(2.0)), "%s AgX contrast approximation retains layout exposure" % mode)
+		scene.free()
+
+
+func check_textures() -> void:
+	var scene := Node3D.new()
+	var image := Image.create(8, 8, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0.2, 0.4, 0.6))
+	var shared := ImageTexture.create_from_image(image)
+	check(not shared.get_image().has_mipmaps(), "synthetic shared texture starts without mipmaps")
+	image.generate_mipmaps()
+	var ready := ImageTexture.create_from_image(image)
+	var materials: Array[StandardMaterial3D] = []
+	for index in 4:
+		var material := StandardMaterial3D.new()
+		material.albedo_texture = shared
+		materials.append(material)
+	materials[0].normal_texture = shared
+	materials[1].roughness_texture = ready
+	var mesh := BoxMesh.new()
+	mesh.material = materials[0]
+	var node := MeshInstance3D.new()
+	node.mesh = mesh
+	node.set_surface_override_material(0, materials[1])
+	node.material_override = materials[2]
+	node.material_overlay = materials[3]
+	scene.add_child(node)
+	var report := Compare.prepare_textures(scene)
+	check(report.textures_processed == 3 and report.mipmaps_generated == 2 and report.mipmap_failures == 0, "shared texture is processed once per mip kind (colour, normal) across slots and overrides")
+	var replacement: Texture2D = materials[0].albedo_texture
+	check(replacement != shared and replacement.get_image().has_mipmaps(), "missing mipmaps are generated in a rebuilt texture")
+	check(replacement.get_image().get_pixel(0, 0).is_equal_approx(shared.get_image().get_pixel(0, 0)), "mipmap generation preserves base-level pixels")
+	for material in materials:
+		check(material.albedo_texture == replacement and material.texture_filter == BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, "mesh, surface override, global override and overlay share the filtered replacement")
+	var normal_replacement: Texture2D = materials[0].normal_texture
+	check(normal_replacement != shared and normal_replacement != replacement and normal_replacement.get_image().has_mipmaps(), "a texture used as a normal map gets its own renormalised mip chain")
+	check(materials[1].roughness_texture == ready, "all slots are visited and existing mipmapped textures retained")
+	check(Compare.prepare_textures(scene).mipmaps_generated == 0, "second texture pass rebuilds nothing")
+	scene.free()
+
+
+func check_reflections_and_shadows() -> void:
+	var scene := Node3D.new()
+	root.add_child(scene)
+	scene.position = Vector3(10, 1, -5)
+	var node := MeshInstance3D.new()
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(4, 2, 6)
+	node.mesh = mesh
+	scene.add_child(node)
+	var proxy := MeshInstance3D.new()
+	proxy.name = "room-colonly"
+	proxy.mesh = mesh
+	proxy.position = Vector3(100, 100, 100)
+	scene.add_child(proxy)
+	var hidden := Node3D.new()
+	hidden.visible = false
+	scene.add_child(hidden)
+	var hidden_mesh := MeshInstance3D.new()
+	hidden_mesh.mesh = mesh
+	hidden_mesh.position = Vector3(-100, -100, -100)
+	hidden.add_child(hidden_mesh)
+	var bounds := Compare.visual_bounds(scene)
+	check(bounds.size.is_equal_approx(mesh.size) and bounds.get_center().is_equal_approx(scene.position), "visual bounds exclude collision proxies and hidden subtrees")
+	var probe := Compare.add_interior_probe(scene)
+	var blend: float = Compare.APPROXIMATION.reflection_probe_blend_distance_m
+	check(probe != null and probe.size.is_equal_approx(bounds.size + Vector3.ONE * 2.0 * blend) and probe.global_position.is_equal_approx(bounds.get_center()), "room probe is the visible global AABB grown by its blend distance")
+	check(is_equal_approx(probe.blend_distance, blend), "room probe blend distance comes from APPROXIMATION")
+	check(probe.update_mode == ReflectionProbe.UPDATE_ONCE and not probe.interior and probe.box_projection and probe.ambient_mode == ReflectionProbe.AMBIENT_DISABLED, "room probe captures once with box projection, keeps the sky in reflections and preserves sky ambient")
+	Compare.configure_shadow_atlas(root)
+	check(root.positional_shadow_atlas_size == 8192, "shadow atlas is explicitly 8192 pixels")
+	for quadrant in 4:
+		check(root.get_positional_shadow_atlas_quadrant_subdiv(quadrant) == Viewport.SHADOW_ATLAS_QUADRANT_SUBDIV_64, "each atlas quadrant reserves 64 shadow maps (256 total, 512 px each)")
+	var spot := Compare.add_hint_spot(scene, Compare.hint_light_specs({"kind": "panel"}, Transform3D.IDENTITY, 1.0)[0])
+	check(spot.shadow_enabled and is_equal_approx(spot.shadow_bias, 0.06) and is_equal_approx(spot.shadow_normal_bias, 1.5), "spots use raised depth and normal biases")
+	scene.free()
 
 
 func check_hints() -> void:

@@ -13,7 +13,17 @@ const HEADLESS_MESSAGE := "showcase_compare needs a display"
 ## Approximation constants, not a physical match: Godot's non-physical energy has no Blender-watt equivalence.
 ## 0.02 gives a 1 m LED energy 1.1; 1.5 m spacing bounds the number of shadowed spots. A wide 75 degree half-cone
 ## and 8 m reach spread light over a concourse bay. Split watts equally so a longer row never multiplies its power.
-## The sun keeps Blender's numeric energy 3 at a 1:1 factor, also without claiming radiometric equivalence.
+## Godot 4.7.2 storage_rd/light_storage.cpp multiplies nonphysical sun energy by PI; scene_forward_lights_inc.glsl
+## divides diffuse by PI. Use 1/PI for Blender's irradiance scale, not a full BRDF/renderer match. Uniform sky L
+## gives diffuse albedo * L (scene_forward_clustered.glsl; storage_rd/render_scene_data_rd.cpp carries the BG
+## multiplier into sky ambient), so world strength stays 0.9, without another PI.
+## doc/classes/Environment.xml exposes tonemap_agx_contrast: 1.5 raises the 1.25 default towards Medium High
+## Contrast, provisionally, not Blender's exact look. Sources: github.com/godotengine/godot/tree/4.7.2-stable.
+## Bias 0.06 / normal bias 1.5 raise the spot defaults (0.03 / 1.0) against acne; check detachment in the GPU slot.
+## 8192 atlas, four 64-slot quadrants = 256 spots at 512 px each, leaving room beyond the observed 121 lights.
+## The uniform sky has no gradient/sun disk. The once-updated room probe is not `interior` (an interior probe drops the
+## sky, so directions without geometry would reflect black) and its box is the visible bounds grown by its blend
+## distance, so surfaces on the bounds still get full probe weight.
 const APPROXIMATION := {
 	"watts_to_energy": 0.02,
 	"linear_led_watts_per_m": 55.0,
@@ -27,9 +37,25 @@ const APPROXIMATION := {
 	"spot_range_m": 8.0,
 	"spot_attenuation": 1.0,
 	"spot_angle_attenuation": 1.0,
+	"spot_shadow_bias": 0.06,
+	"spot_shadow_normal_bias": 1.5,
+	"positional_shadow_atlas_size": 8192,
+	"positional_shadow_atlas_quadrant_subdiv": Viewport.SHADOW_ATLAS_QUADRANT_SUBDIV_64,
+	"texture_filter": BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC,
+	"background_mode": Environment.BG_SKY,
+	"ambient_light_source": Environment.AMBIENT_SOURCE_SKY,
+	"reflected_light_source": Environment.REFLECTION_SOURCE_SKY,
+	"ambient_light_sky_contribution": 1.0,
+	"sky_shader": "shader_type sky;\nuniform vec4 colour : source_color;\nvoid sky() { COLOR = colour.rgb; }\n",
+	"reflection_probe_update_mode": ReflectionProbe.UPDATE_ONCE,
+	"reflection_probe_interior": false,
+	"reflection_probe_blend_distance_m": 1.0,
+	"reflection_probe_box_projection": true,
+	"reflection_probe_ambient_mode": ReflectionProbe.AMBIENT_DISABLED,
+	"agx_contrast": 1.5,
 	"colour_linear": [1.0, 0.96, 0.9],
 	"sun_blender_energy": 3.0,
-	"sun_energy_factor": 1.0,
+	"sun_energy_factor": 1.0 / PI,
 	"sun_angular_distance_deg": 3.0,
 }
 
@@ -99,6 +125,115 @@ static func sun_basis(euler_degrees: Vector3 = Vector3(50.0, 10.0, 35.0)) -> Bas
 static func background(mode: String) -> Dictionary:
 	var linear := Color(0.55, 0.58, 0.62) if mode == "studio" else Color(0.02, 0.022, 0.025)
 	return {"colour": linear.linear_to_srgb(), "strength": 0.9 if mode == "studio" else 1.0}
+
+
+## ClassDB on 4.7.2 has no global GLTFState/GLTFDocument mipmap/filter switch; BasisU also changes compression.
+## Visit original mesh materials AND overrides, retaining shared textures via one replacement cache per texture and
+## mip kind. Normal maps are renormalised per level. Colour mips average the stored sRGB values, as Godot's own texture
+## importer does (Image.srgb_to_linear only takes 8-bit formats), so distant high-contrast albedo is slightly darker.
+const NORMAL_SLOTS := [BaseMaterial3D.TEXTURE_NORMAL, BaseMaterial3D.TEXTURE_DETAIL_NORMAL]
+
+
+static func prepare_textures(scene: Node) -> Dictionary:
+	var textures := {}
+	var materials := {}
+	var generated := 0
+	var unavailable := 0
+	var stack: Array[Node] = [scene]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		stack.append_array(node.get_children())
+		if not node is MeshInstance3D:
+			continue
+		var candidates: Array[Material] = [node.material_override, node.material_overlay]
+		if node.mesh != null:
+			for surface in node.mesh.get_surface_count():
+				candidates.append(node.mesh.surface_get_material(surface))
+				candidates.append(node.get_surface_override_material(surface))
+		for material in candidates:
+			if not material is BaseMaterial3D or materials.has(material):
+				continue
+			materials[material] = true
+			material.texture_filter = APPROXIMATION.texture_filter
+			for slot in BaseMaterial3D.TEXTURE_MAX:
+				var texture: Texture2D = material.get_texture(slot)
+				if texture == null:
+					continue
+				var normal := slot in NORMAL_SLOTS
+				var key := [texture, normal]
+				if not textures.has(key):
+					textures[key] = texture
+					# A copy: ImageTexture.get_image() can hand back the texture's own Image, which mipmapping would mutate.
+					var source := texture.get_image()
+					var image: Image = source.duplicate() if source != null else null
+					if image == null or image.is_empty():
+						unavailable += 1
+					elif not image.has_mipmaps():
+						var error := image.decompress() if image.is_compressed() else OK
+						if error == OK:
+							error = image.generate_mipmaps(normal)
+						if error == OK:
+							textures[key] = ImageTexture.create_from_image(image)
+							generated += 1
+						else:
+							unavailable += 1
+				material.set_texture(slot, textures[key])
+	return {"textures_processed": textures.size(), "mipmaps_generated": generated, "mipmap_failures": unavailable}
+
+
+## Sky shader colours are sRGB uniforms, linearised once by source_color; strength stays on the Environment.
+static func uniform_sky(mode: String) -> Sky:
+	var shader := Shader.new()
+	shader.code = APPROXIMATION.sky_shader
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	material.set_shader_parameter("colour", background(mode).colour)
+	var sky := Sky.new()
+	sky.sky_material = material
+	return sky
+
+
+## Global visual AABB, pruning hidden subtrees and runtime-imported collision proxies before merging meshes.
+static func visual_bounds(scene: Node) -> AABB:
+	var bounds := AABB()
+	var found := false
+	var stack: Array[Node] = [scene]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		if node is Node3D and (not node.visible or "-colonly" in str(node.name)):
+			continue
+		stack.append_array(node.get_children())
+		if node is MeshInstance3D and node.mesh != null:
+			var box: AABB = node.global_transform * node.get_aabb()
+			bounds = bounds.merge(box) if found else box
+			found = true
+	return bounds
+
+
+## Preserve sky ambient separately; the probe supplies box-projected room reflections, without ambient override.
+## Grown by the blend distance so the weight is still 1 on the room's own floor and walls.
+static func add_interior_probe(parent: Node3D) -> ReflectionProbe:
+	var bounds := visual_bounds(parent)
+	if not bounds.has_volume():
+		return null
+	bounds = bounds.grow(APPROXIMATION.reflection_probe_blend_distance_m)
+	var probe := ReflectionProbe.new()
+	probe.size = bounds.size
+	probe.blend_distance = APPROXIMATION.reflection_probe_blend_distance_m
+	probe.update_mode = APPROXIMATION.reflection_probe_update_mode
+	probe.interior = APPROXIMATION.reflection_probe_interior
+	probe.box_projection = APPROXIMATION.reflection_probe_box_projection
+	probe.ambient_mode = APPROXIMATION.reflection_probe_ambient_mode
+	parent.add_child(probe)
+	probe.global_transform = Transform3D(Basis.IDENTITY, bounds.get_center())
+	return probe
+
+
+## All four quadrants use the same subdivision, so many small spots cannot exhaust a tiny-light quadrant.
+static func configure_shadow_atlas(viewport: Viewport) -> void:
+	viewport.positional_shadow_atlas_size = APPROXIMATION.positional_shadow_atlas_size
+	for quadrant in 4:
+		viewport.set_positional_shadow_atlas_quadrant_subdiv(quadrant, APPROXIMATION.positional_shadow_atlas_quadrant_subdiv)
 
 
 ## One disk becomes one spot; a linear hint becomes evenly spaced spots following the imported hint's yaw.
@@ -205,6 +340,7 @@ func run() -> void:
 	if scene == null:
 		fail("Cannot generate scene from GLB: %s" % args.glb)
 		return
+	var texture_report := prepare_textures(scene)
 	root.add_child(scene)
 	var info := inspect_scene(scene)
 	if not info.errors.is_empty():
@@ -258,12 +394,14 @@ func run() -> void:
 			for spec in hint_light_specs(extras, hint.global_transform, float(settings.get("hint_power", 1.0))):
 				add_hint_spot(scene, spec)
 				spot_count += 1
+	var probe := add_interior_probe(scene) if mode == "interior" else null
 	if DirAccess.make_dir_recursive_absolute(args.out_dir) != OK:
 		fail("Cannot create output directory: %s" % args.out_dir)
 		return
 	root.size = Vector2i(WIDTH, HEIGHT)
 	root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
 	root.scaling_3d_scale = 1.0
+	configure_shadow_atlas(root)
 	var rendered: Array[String] = []
 	var refs_used := {}
 	var names := cameras.keys()
@@ -309,6 +447,10 @@ func run() -> void:
 		"resolution": [WIDTH, HEIGHT], "hint_light_counts": counts,
 		"hint_lights_enabled": hints_enabled, "spot_count": spot_count,
 		"collision_only_hidden": info.collision_only.size(),
+		"textures": texture_report,
+		"reflection_probe_count": 1 if probe != null else 0,
+		"reflection_probe_size_m": [probe.size.x, probe.size.y, probe.size.z] if probe != null else [],
+		"reflection_probe_position_m": [probe.global_position.x, probe.global_position.y, probe.global_position.z] if probe != null else [],
 		"approximation": APPROXIMATION, "settle_render_frames": SETTLE_RENDER_FRAMES,
 	}
 	var report_path := str(args.out_dir).path_join(layout + "_report.json")
@@ -321,22 +463,27 @@ func run() -> void:
 	quit(0)
 
 
-func configure_environment(parent: Node3D, mode: String, exposure: float) -> void:
+static func configure_environment(parent: Node3D, mode: String, exposure: float) -> Environment:
 	var world := WorldEnvironment.new()
 	var environment := Environment.new()
 	var bg := background(mode)
-	environment.background_mode = Environment.BG_COLOR
+	environment.background_mode = APPROXIMATION.background_mode
 	environment.background_color = bg.colour
 	environment.background_energy_multiplier = bg.strength
-	environment.ambient_light_source = Environment.AMBIENT_SOURCE_BG
+	environment.sky = uniform_sky(mode)
+	environment.ambient_light_source = APPROXIMATION.ambient_light_source
+	environment.ambient_light_sky_contribution = APPROXIMATION.ambient_light_sky_contribution
+	environment.reflected_light_source = APPROXIMATION.reflected_light_source
 	environment.tonemap_mode = Environment.TONE_MAPPER_AGX
+	environment.tonemap_agx_contrast = APPROXIMATION.agx_contrast
 	environment.tonemap_exposure = pow(2.0, exposure)
 	environment.ssao_enabled = true
 	world.environment = environment
 	parent.add_child(world)
+	return environment
 
 
-func add_studio_lights(parent: Node3D, ground: bool) -> void:
+static func add_studio_lights(parent: Node3D, ground: bool) -> void:
 	var sun := DirectionalLight3D.new()
 	sun.basis = sun_basis()
 	sun.light_energy = APPROXIMATION.sun_blender_energy * APPROXIMATION.sun_energy_factor
@@ -356,7 +503,7 @@ func add_studio_lights(parent: Node3D, ground: bool) -> void:
 		parent.add_child(floor_node)
 
 
-func add_hint_spot(parent: Node3D, spec: Dictionary) -> void:
+static func add_hint_spot(parent: Node3D, spec: Dictionary) -> SpotLight3D:
 	var light := SpotLight3D.new()
 	parent.add_child(light)
 	light.global_position = spec.position
@@ -370,3 +517,6 @@ func add_hint_spot(parent: Node3D, spec: Dictionary) -> void:
 	light.spot_attenuation = APPROXIMATION.spot_attenuation
 	light.spot_angle_attenuation = APPROXIMATION.spot_angle_attenuation
 	light.shadow_enabled = true
+	light.shadow_bias = APPROXIMATION.spot_shadow_bias
+	light.shadow_normal_bias = APPROXIMATION.spot_shadow_normal_bias
+	return light
