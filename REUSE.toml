@@ -176,6 +176,14 @@ precedence = "override"
 SPDX-FileCopyrightText = "国土交通省（ほこナビDP）; modified by GTEki contributors"
 SPDX-License-Identifier = "LicenseRef-Hokonavi-E27-Owner-override"
 
+# The baked street layer (#121) is derived from surface.json (PLATEAU, 4a) and the E27 plan and
+# bundle (above), so it carries both markers. Before #121 it shipped as surface-baked.ts at the default.
+[[annotations]]
+path = "stations/shinjuku/data/surface-baked.json"
+precedence = "override"
+SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; 国土交通省（ほこナビDP）; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-PLATEAU-site-policy AND LicenseRef-Hokonavi-E27-Owner-override"
+
 # --- 4d. Ikebukuro Hokonavi walking network (historic, not used, nothing ships) ---------------
 # Only inventories are committed. CSV entries cite the digital.go.jp PDL 1.0 URL; GeoJSON
 # entries cite https://www.mlit.go.jp/link.html.

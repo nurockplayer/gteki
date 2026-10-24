@@ -52,6 +52,8 @@ const EXPECTED: Record<string, { script: string; sources: () => string[] }> = {
   "data/plan.json": { script: "tools/import-e27.ts", sources: () => [NWD, MAP] },
   "data/surface.json": { script: "tools/import-surface.ts", sources: () => [PLATEAU, ...surfaceExits()] },
   "scene/fare-restricted.generated.json": { script: "test/helpers/generate-restricted-fences.ts", sources: () => [...planPolygons(), ...verifiedEdges()] },
+  // #121: derived from surface.json, the bundle and the plan together.
+  "data/surface-baked.json": { script: "tools/bake-surface.ts", sources: () => [PLATEAU, ...surfaceExits(), NWD, MAP] },
 };
 
 const declared: DataFile[] = station.dataFiles;

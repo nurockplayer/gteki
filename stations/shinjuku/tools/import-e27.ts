@@ -1152,6 +1152,13 @@ const dataFiles: DataFile[] = [
     derivation: "tools/import-surface.ts: LOD1 building footprints/heights and road polygons from the PLATEAU bldg/tran CityGML around the E27 exits, simplified and flattened to the symbolic street level; gteki/graph.json only supplies the street-level exit node positions that bound the selection radius. Render-only context, not routing.",
   },
   {
+    id: "surface-baked",
+    path: "data/surface-baked.json",
+    sourceIds: [...new Set([SRC_NWD, SRC_MAP, "plateau-13104-shinjuku-ku-2025"])].sort(),
+    modified: true,
+    derivation: "tools/bake-surface.ts (bake:surface): generated street-layer polygon derivations (streets, paving, kerbs, lamp rails, building footprints, pad/canopy walls, columns) for exactly this surface.json + bundle + plan, used only when inputKey matches, otherwise the same functions run at load; render-only, not routing.",
+  },
+  {
     id: "fare-restricted",
     path: "scene/fare-restricted.generated.json",
     sourceIds: [SRC_NWD, SRC_MAP].sort(),
