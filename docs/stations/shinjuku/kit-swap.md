@@ -24,13 +24,22 @@ Code: `stations/shinjuku/scene/kit/*`, hook in `scene/build.ts` (`BuildOptions.k
 ## 1. Switch and tiers
 
 - `KIT_SWAP_DEFAULT = false` in `scene/kit/config.ts`. QA opts in per page with `?kit=1` (or `on`,
-  `mobile`, `full`); `?kit=0` is off.
+  `mobile`, `full`); `?kit=0` is off. In production this opt-in is still gated by
+  `publishableAssets` in `apps/web/stations-plugin.ts`: when generating the station asset map it
+  refuses invalid station files, publication-rights/source errors (also for synthetic stations), missing
+  declared files, and discovered asset files absent from `assets[].uri`, `uriMobile` or `files`.
+  Only declared files enter that production map; `ctx.loadGlb` rejects a URI absent from it. Thus
+  `?kit=1` cannot bypass publication checks or load an undeclared kit bundle. Development skips
+  `publishableAssets` and maps the discovered station assets.
 - If the manifest or the kit bundle fails to load, the swap is skipped, one line is logged, and the
   placeholders stay. A build that ships no kit files is therefore safe with the flag on.
 - Tier: both `low` and `high` use the **mobile** tier until the loader decodes KTX2
-  (`kitTierFor(quality, {ktx2})`). The full-tier lift portal alone is 854 KB of geometry and JPEG maps
-  that upload as RGBA8; a few portals exceed the 8 MB GPU texture budget. The mobile tier has the same
-  ids, sockets and params (tested on the real manifests).
+  (`kitTierFor(quality, {ktx2})`). One full-tier `gteki_lift_portal_w1000` requires **53,127,851 estimated
+  GPU texture bytes without KTX2**, already over the 8,000,000-byte cap. This is the real-manifest
+  `totalsFor` retained-map estimate (RGBA8 + mipmaps, AO excluded), checked in `kit-swap.test.ts`;
+  shared textures are counted once across portals. The later 19,573,419-byte figure is for the first
+  full-tier gate, a different piece. The mobile tier has the same ids, sockets and params (tested on
+  the real manifests).
 
 ## 2. Loading hook
 
@@ -63,7 +72,7 @@ output. The coordinator will do this.
 `planKitPlacements` sorts placements by (role rank, anchor key) and keeps the longest prefix inside every
 cap; the rest are dropped, logged as `kit swap: dropped ...`, and listed in `report.dropped`.
 Draws are counted as distinct (level, material) batches; material keys strip the `~<asset_id>` suffix of
-AO-baked clones (`extras.gteki_name`, falling back to the material name). Runtime batching merges those clones per floor and clears
+AO-baked clones (`extras.gteki_name`, falling back to the material name). Runtime batching merges those clones per floor only when their retained texture identities match and clears
 `aoMap`; the GPU texture estimate excludes the manifest's `occlusion` maps and counts only retained maps, taking the largest
 estimate per shared material across assets and floors. Geometry is estimated at 70 B per triangle. The report also carries `measured`
 figures counted from the built meshes; its GPU texture bytes remain a manifest estimate, not a device measurement.
@@ -191,14 +200,19 @@ triangles). Five of the nine lift portals fit; the other four are dropped, in ra
    placement classes (ENU to renderer: (x, y, z) to (x, z, -y)).
 3. `build.ts` records, read-only, which triangles of the merged gate-machine, lift-portal and stair-nosing meshes belong
    to which anchor (`PlaceholderLedger`). With the flag off no ledger exists.
-4. `swap.ts` batches the placed pieces into one mesh per (level, material), using only visual nodes
-   (`COL_`, `SOCKET_`, `LIGHTHINT_`, `-colonly` are never drawn; contract names come from
+4. `swap.ts` batches the placed pieces into one mesh per (level, material, retained texture identities), using only visible visual nodes
+   (`visible=false` subtrees, `COL_`, `SOCKET_`, `LIGHTHINT_`, `-colonly` are never drawn; contract names come from
    `extras.gteki_name`), tints the `line_accent` slot to `OEDO_MAGENTA` (#b6007a) on a cloned material,
    hides exactly the replaced placeholder triangles, and adds a `kit-swap` group before the finish merges.
-   A placement hides its placeholder only if it put at least one triangle into a merged mesh (a piece with only collision, socket
-   or hint nodes, or a multi-material mesh without geometry groups, is reported as not drawn and its placeholder stays; a
-   multi-material mesh with groups is split per material). Every batched material is a clone owned by the station build
-   (textures included), so nothing from the loaded GLB is left undisposed.
+   A placement hides its placeholder only if it contributes triangles and **all** its batches merge successfully.
+   If any batch fails, all pieces contributing to that failed batch are removed from every batch; successful
+   shared batches are rebuilt without them, so their placeholders stay with none of their kit geometry drawn.
+   A piece with only hidden, collision, socket or hint nodes, or a multi-material mesh without geometry groups,
+   is also reported as not drawn and keeps its placeholder; a multi-material mesh with groups is split per material.
+   Every batched material and merged geometry is a copy owned by the station build. The retained textures are
+   disposed with the station too: `ctx.loadGlb` parses a fresh, uncached GLTF on every call
+   (`apps/web/src/explorer/explorer.ts`), so the build is their only user. A future GLB cache would have to take
+   over that ownership.
    `apply()` is all-or-nothing: it is wrapped in try/catch; every hide is first prepared without touching a mesh, and the
    commits (plain assignments) run only after the kit meshes were built and added. On any error it logs
    `kit swap off: <message>; placeholders stay`, returns no report and leaves the scene as flag-off (tested).

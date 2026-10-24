@@ -144,7 +144,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         expect([role, selectAssets(full, ROLE_SELECTORS[role]).map((a) => a.id)]).toEqual([role, ids[role]]);
       }
     });
-    it("the real lift portal fits the budget on the mobile tier, but not on the full tier even with KTX2", () => {
+    it("the real lift portal fits the budget on the mobile tier, but not on the full tier without KTX2", () => {
       const lift = (m: typeof mobile) => {
         const anchors = Array.from({ length: 15 }, (_, i) => ({ role: "lift" as const, key: String(i), nodeIds: [], wallPoint: { x: i * 10, y: 0 }, z: -7.8, u: { x: 1, y: 0 }, normal: { x: 0, y: 1 }, floorId: "f" }));
         const empty: KitAnchors = { gates: [], lifts: anchors, runs: [], toilets: [], exits: [] };
@@ -155,6 +155,8 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       expect(onMobile.dropped).toEqual([]);
       expect(onMobile.totals.triangles).toBeLessThan(KIT_BUDGET.maxTriangles);
       expect(onMobile.totals.gpuTextureBytes).toBeLessThan(KIT_BUDGET.maxGpuTextureBytes);
+      // Same retained-map/mipmap estimate as the planner, for one full-tier portal (AO excluded).
+      expect(totalsFor([{ ...onMobile.placed[0]!, assetId: "gteki_lift_portal_w1000" }], full, { ktx2: false }).gpuTextureBytes).toBe(53_127_851);
       const onFull = lift(full);
       expect(onFull.placed.length).toBeLessThan(15);
       expect(onFull.dropped.some((d) => /GPU textures/.test(d.reason))).toBe(true);
@@ -424,6 +426,65 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         expect(out.group.children.every((c) => (c as THREE.Mesh).isMesh)).toBe(true);
       }
     });
+    it.each(["root", "mesh", "parent"])("skips an invisible %s and its entire subtree", (hidden) => {
+      const manifest = parseKitManifest(stubManifestJson(), "mobile");
+      const stub = stubProvider();
+      const p: KitPlacement = { role: "lift", anchorKey: "1", assetId: "stub_lift_portal", rank: 5, floorId: "L", position: [0, 0, 0], yaw: 0, replaces: "lift-portals" };
+      const out = batchKitPlacements({
+        placed: [p], manifest, tint: [], track: (x) => x,
+        provider: { instantiate: (a) => {
+          const root = stub.instantiate(a)!;
+          const body = root.getObjectByName("VIS_body_1") as THREE.Mesh;
+          if (hidden === "root") root.visible = false;
+          else if (hidden === "mesh") {
+            body.visible = false;
+            body.add(new THREE.Mesh(new THREE.BoxGeometry(), stub.materials.get("stub_palette")!));
+          } else {
+            const parent = new THREE.Group();
+            parent.visible = false;
+            parent.add(root.getObjectByName("VIS_stripe")!);
+            root.add(parent);
+          }
+          return root;
+        } },
+      });
+      expect(out.triangles).toBe(hidden === "root" ? 0 : 12);
+      expect(out.drawn.has(p)).toBe(hidden !== "root");
+      expect(out.meshes.map((m) => m.name)).toEqual(hidden === "root" ? [] : [hidden === "mesh" ? "kit:L:gteki_line_accent" : "kit:L:stub_palette"]);
+    });
+    it.each([
+      "map", "normalMap", "roughnessMap", "metalnessMap", "emissiveMap", "alphaMap", "bumpMap",
+      "displacementMap", "lightMap", "envMap", "clearcoatMap", "clearcoatNormalMap", "transmissionMap",
+    ] as const)("separates clones with different %s identities while batching shared textures", (slot) => {
+      const manifest = parseKitManifest(stubManifestJson(), "mobile");
+      const stub = stubProvider();
+      const textures = [new THREE.Texture(), new THREE.Texture()];
+      const placed: KitPlacement[] = [0, 1, 2].map((i) => ({ role: "lift", anchorKey: String(i), assetId: "stub_lift_portal", rank: 5, floorId: "L", position: [i * 3, 0, 0], yaw: 0, replaces: "lift-portals" }));
+      let n = 0;
+      const out = batchKitPlacements({
+        placed, manifest, tint: [], track: (x) => x,
+        provider: { instantiate: (a) => {
+          const root = stub.instantiate(a)!;
+          root.getObjectByName("VIS_stripe")!.visible = false;
+          const body = root.getObjectByName("VIS_body_1") as THREE.Mesh;
+          const material = new THREE.MeshPhysicalMaterial();
+          material.name = `stub_palette~clone${n}`;
+          material[slot] = textures[n++ % 2]!;
+          material.aoMap = new THREE.Texture(); // unique AO must not split otherwise shared textures
+          body.material = material;
+          return root;
+        } },
+      });
+      expect(out.meshes).toHaveLength(2);
+      expect(out.drawn.size).toBe(3);
+      expect(out.triangles).toBe(36);
+      for (const [i, texture] of textures.entries()) {
+        const mesh = out.meshes.find((m) => (m.material as THREE.MeshPhysicalMaterial)[slot] === texture)!;
+        expect(mesh).toBeDefined();
+        expect(mesh.geometry.index!.count / 3).toBe(i === 0 ? 24 : 12);
+        expect((mesh.material as THREE.MeshPhysicalMaterial).aoMap).toBeNull();
+      }
+    });
     it("reads gteki_name for AO-baked clones and drops the per-asset AO map from the shared material", () => {
       const manifest = parseKitManifest(stubManifestJson(), "mobile");
       const provider = stubProvider();
@@ -591,23 +652,46 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       });
       expect(roles).toEqual([]);
     });
-    it("owns every material it batches: shared GLB materials are cloned, tracked, and their textures released", () => {
+    it("owns its material/geometry copies and the retained textures, never the source material, geometry or dropped AO", () => {
+      // ctx.loadGlb parses a fresh GLTF per call (no cache), so the station build is the only user of its textures.
       const manifest = parseKitManifest(stubManifestJson(), "mobile");
-      const provider = stubProvider();
+      const stub = stubProvider();
       const map = new THREE.Texture();
-      provider.materials.get("stub_palette")!.map = map;
-      const tracked: { dispose(): void }[] = [];
-      const placed = planKitPlacements({ anchors: { gates: [], lifts: [1, 2].map((i) => ({ role: "lift" as const, key: String(i), nodeIds: [], wallPoint: { x: i * 3, y: 0 }, z: 0, u: { x: 1, y: 0 }, normal: { x: 0, y: 1 }, floorId: "L" })), runs: [], toilets: [], exits: [] }, manifest, budget: KIT_BUDGET, caps: { ktx2: false } }).placed;
-      const out = batchKitPlacements({ placed, manifest, provider, tint: tintSlots(OEDO_MAGENTA), track: (x) => (tracked.push(x), x) });
-      const source = new Set<THREE.Material>(provider.materials.values());
-      for (const m of out.meshes) {
-        expect(source.has(m.material as THREE.Material)).toBe(false);
-        expect(tracked).toContain(m.material);
-        expect(tracked).toContain(m.geometry);
+      const ao = new THREE.Texture();
+      const source = stub.materials.get("stub_palette")!;
+      source.map = map;
+      source.aoMap = ao;
+      const holder = new THREE.Group();
+      const loaded = stub.instantiate(manifest.byId.get("stub_lift_portal")!)!;
+      holder.add(loaded);
+      const provider = bundleProvider(holder);
+      const sourceGeometry = (loaded.getObjectByName("VIS_body_1") as THREE.Mesh).geometry;
+      const untouched = [ao, source, sourceGeometry];
+      const disposals = untouched.map((resource) => vi.spyOn(resource, "dispose"));
+      const mapDispose = vi.spyOn(map, "dispose");
+      const placed: KitPlacement[] = [{ role: "lift", anchorKey: "1", assetId: "stub_lift_portal", rank: 5, floorId: "L", position: [0, 0, 0], yaw: 0, replaces: "lift-portals" }];
+      try {
+        const tracked = new Set<{ dispose(): void }>();
+        const out = batchKitPlacements({ placed, manifest, provider, tint: tintSlots(OEDO_MAGENTA), track: (x) => (tracked.add(x), x) });
+        expect(out.drawn.size).toBe(1);
+        for (const mesh of out.meshes) {
+          expect([...stub.materials.values()]).not.toContain(mesh.material);
+          expect(tracked.has(mesh.material as THREE.Material)).toBe(true);
+          expect(tracked.has(mesh.geometry)).toBe(true);
+        }
+        const material = out.meshes.find((m) => m.name === "kit:L:stub_palette")!.material as THREE.MeshStandardMaterial;
+        expect(material.map).toBe(map);
+        expect(material.aoMap).toBeNull();
+        expect(tracked.has(map)).toBe(true);
+        for (const resource of untouched) expect(tracked.has(resource)).toBe(false);
+        for (const resource of tracked) resource.dispose();
+        expect(mapDispose).toHaveBeenCalled();
+        for (const dispose of disposals) expect(dispose).not.toHaveBeenCalled();
+        expect(source.aoMap).toBe(ao);
+      } finally {
+        for (const dispose of disposals) dispose.mockRestore();
+        mapDispose.mockRestore();
       }
-      expect(tracked).toContain(map);
-      // Disposing what was tracked leaves the untouched source material usable (its own dispose is not ours to call).
-      expect(source.size).toBe(2);
     });
     it("reads asset roots from a kit bundle, using gteki_name for renamed nodes", () => {
       const holder = new THREE.Group();
@@ -787,6 +871,9 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       const unchanged = (scene: StationScene) => {
         expect(scene.root.userData.kitSwap).toBeUndefined();
         expect(scene.root.children.some((c) => c.name === "kit-swap")).toBe(false);
+        // Check failure rollback against this tree's ordinary scene before the historical main fixture.
+        expect(digestStation(scene.root, isStationProxy)).toEqual(digestStation(off.root, isStationProxy));
+        expect(digestSceneLists(scene)).toEqual(digestSceneLists(off));
         expect(digestStation(scene.root, isStationProxy)).toEqual(MAIN_BASELINE.station);
         expect(digestSceneLists(scene)).toEqual(MAIN_BASELINE.lists);
       };
@@ -816,6 +903,40 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         scene.dispose();
       });
 
+      it("a failed batch removes the entire affected pieces from shared batches and keeps their placeholders", () => {
+        const stub = stubProvider();
+        let broken = false;
+        const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+        const { scene, result } = run({ instantiate: (a) => {
+          const root = stub.instantiate(a)!;
+          if (/lift/.test(a.id) && !broken) {
+            broken = true;
+            // A real mergeGeometries failure: this stripe cannot merge with the other lifts' vec2 UVs.
+            const stripe = root.getObjectByName("VIS_stripe") as THREE.Mesh;
+            stripe.geometry.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(stripe.geometry.attributes.position!.count * 3), 3));
+          }
+          return root;
+        } });
+        try {
+          expect(consoleError).toHaveBeenCalled();
+          expect(result).not.toBeNull();
+          const failedFloor = report.placed.find((p) => p.role === "lift")!.floorId;
+          const failedLifts = report.placed.filter((p) => p.role === "lift" && p.floorId === failedFloor);
+          const survivingLifts = report.placed.filter((p) => p.role === "lift" && p.floorId !== failedFloor);
+          expect(failedLifts.length).toBeGreaterThan(1); // incompatible stripe shares a batch with other lifts
+          expect(result!.placed.filter((p) => p.role === "lift")).toEqual(survivingLifts);
+          for (const p of failedLifts) expect(result!.dropped.some((d) => d.role === "lift" && d.anchorKey === p.anchorKey && /no drawable visual mesh/.test(d.reason))).toBe(true);
+          expect(result!.hidden["lift-portals"] ?? 0).toBe(survivingLifts.length * 192);
+          expect(result!.dropped.filter((d) => d.role === "lift")).toHaveLength(4 + failedLifts.length);
+          expect(result!.hidden["gate-machines"]).toBe(96 * 4);
+          const kit = scene.root.getObjectByName("kit-swap")!;
+          // Lift bodies shared stub_palette with every other piece: they must be removed from that successful batch too.
+          expect(triangles(kit)).toBe((result!.placed.length + survivingLifts.length) * 12);
+          expect(result!.measured.triangles).toBe(triangles(kit));
+          const placeholders = (root: THREE.Object3D) => triangles(root, (o) => isStationProxy(o) || o.name === "kit-swap");
+          expect(placeholders(off.root) - placeholders(scene.root)).toBe(Object.values(result!.hidden).reduce((n, count) => n + count, 0));
+        } finally { consoleError.mockRestore(); scene.dispose(); }
+      });
       it("a placement that draws nothing keeps its placeholder: no triangles are hidden for it, and it is reported", () => {
         const stub = stubProvider();
         const { scene, result } = run({

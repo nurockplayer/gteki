@@ -1,17 +1,17 @@
 /**
- * Turns kit placements into as few draws as the materials allow: one merged mesh per (level, material).
+ * Turns kit placements into as few draws as the materials allow: one merged mesh per (level, material, retained textures).
  *
  * - Only visual nodes are used. `COL_*`, `*-colonly`, `SOCKET_*` and `LIGHTHINT_*` never reach the scene:
  *   kit pieces are visual-only here, and collision stays the station's own merged wall collider.
  * - Materials are keyed by `extras.gteki_name`, falling back to the material name, so AO-baked clones
  *   (`<material>~<asset_id>`) still batch together. Per-asset AO maps cannot survive that merge, so they are
  *   dropped from the shared material (the station has GTAO on high).
- * - Every batched material is a clone owned (tracked) by the station, so nothing from the loaded GLB is left
- *   undisposed; slots that match a tint rule (`line_accent`) are tinted to the line colour on that clone.
+ * - Every batched material is a clone owned (tracked) by the station, together with the textures it keeps
+ *   (ctx.loadGlb returns a fresh, uncached GLTF per call). Slots that match a tint rule (`line_accent`) are tinted to the line colour on that clone.
  * - A mesh with an array of materials is split by its geometry groups, one slice per material. A multi-material
  *   mesh without groups draws nothing in three.js and is treated as not drawn.
- * - `drawn` lists the placements that contributed at least one triangle to a merged mesh; only those may hide a
- *   placeholder.
+ * - `drawn` lists only complete placements: if any batch fails to merge, all geometry belonging to its
+ *   placements is removed from every batch before drawing. Only complete placements may hide a placeholder.
  */
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
@@ -28,7 +28,7 @@ export interface BatchResult {
   geometryBytes: number;
   /** Placements the provider could not instantiate. */
   missing: string[];
-  /** Placements that put at least one triangle into a merged mesh. */
+  /** Placements with drawable triangles and no failed batches. */
   drawn: Set<KitPlacement>;
 }
 
@@ -62,7 +62,7 @@ export function batchKitPlacements(args: {
   track: <T extends { dispose(): void }>(x: T) => T;
 }): BatchResult {
   const { placed, manifest, provider, tint, track } = args;
-  const batches = new Map<string, { floorId: string; key: string; material: THREE.Material; geos: THREE.BufferGeometry[]; by: Set<KitPlacement> }>();
+  const batches = new Map<string, { floorId: string; key: string; material: THREE.Material; parts: { geo: THREE.BufferGeometry; placement: KitPlacement }[] }>();
   const sharedMaterials = new Map<THREE.Material, THREE.Material>();
   const tinted = new Set<string>();
   const missing: string[] = [];
@@ -83,7 +83,10 @@ export function batchKitPlacements(args: {
         tinted.add(key);
       }
       track(out);
-      // Textures came from the loaded GLB, which nothing else owns: release them with the station.
+      // Material.clone() shares the GLB's textures. The explorer's ctx.loadGlb parses a fresh GLTF on every
+      // call (no cache), so this station build is their only user: release the retained ones with it. The
+      // discarded aoMap is never drawn, so it never reaches the GPU. If a GLB cache is ever added, ownership
+      // must move to that cache instead.
       for (const v of Object.values(out)) if (v && (v as THREE.Texture).isTexture) track(v as THREE.Texture);
       sharedMaterials.set(m, out);
     }
@@ -103,14 +106,19 @@ export function batchKitPlacements(args: {
       if (!geo.index) geo.setIndex([...Array(geo.attributes.position!.count).keys()]);
       if (!geo.attributes.normal) geo.computeVertexNormals();
       if (!geo.attributes.uv) geo.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(geo.attributes.position!.count * 2), 2));
-      const id = `${p.floorId}|${key}`;
-      const batch = batches.get(id) ?? { floorId: p.floorId, key, material: resolveMaterial(material, key), geos: [], by: new Set<KitPlacement>() };
-      batch.geos.push(geo);
-      batch.by.add(p);
+      if (geo.index!.count < 3) { geo.dispose(); return; }
+      // AO is discarded; every retained texture slot must reference the same texture to share a draw.
+      const textures = Object.entries(material)
+        .filter(([slot, value]) => slot !== "aoMap" && (value as THREE.Texture | null)?.isTexture)
+        .map(([slot, value]) => [slot, (value as THREE.Texture).uuid])
+        .sort(([a], [b]) => a!.localeCompare(b!));
+      const id = JSON.stringify([p.floorId, key, textures]);
+      const batch = batches.get(id) ?? { floorId: p.floorId, key, material: resolveMaterial(material, key), parts: [] };
+      batch.parts.push({ geo, placement: p });
       batches.set(id, batch);
     };
     const visit = (o: THREE.Object3D) => {
-      if (NON_VISUAL.test(contractName(o))) return;
+      if (!o.visible || NON_VISUAL.test(contractName(o))) return;
       const mesh = o as THREE.Mesh;
       if (mesh.isMesh && mesh.geometry && mesh.material) {
         const plain = plainGeometry(mesh.geometry);
@@ -138,11 +146,27 @@ export function batchKitPlacements(args: {
   const drawn = new Set<KitPlacement>();
   let triangles = 0;
   let geometryBytes = 0;
-  for (const [, b] of [...batches].sort(([x], [y]) => x.localeCompare(y))) {
-    const geo = mergeGeometries(b.geos, false);
-    for (const g of b.geos) g.dispose();
-    if (!geo) continue;
-    for (const p of b.by) drawn.add(p);
+  const ordered = [...batches].sort(([x], [y]) => x.localeCompare(y)).map(([, b]) => b);
+  const failed = new Set<KitPlacement>();
+  let merged: { batch: (typeof ordered)[number]; geo: THREE.BufferGeometry }[];
+  // A failed piece may also contribute to a successful shared batch. Rebuild without it so no partial
+  // piece survives beside its placeholder. Each retry removes placements, so this loop is bounded.
+  for (;;) {
+    merged = [];
+    const before = failed.size;
+    for (const batch of ordered) {
+      const parts = batch.parts.filter((part) => !failed.has(part.placement));
+      if (!parts.length) continue;
+      const geo = mergeGeometries(parts.map((part) => part.geo), false);
+      if (geo) merged.push({ batch, geo });
+      else for (const part of parts) failed.add(part.placement);
+    }
+    if (failed.size === before) break;
+    for (const { geo } of merged) geo.dispose();
+  }
+  for (const batch of ordered) for (const part of batch.parts) part.geo.dispose();
+  for (const { batch: b, geo } of merged) {
+    for (const part of b.parts) if (!failed.has(part.placement)) drawn.add(part.placement);
     geo.computeBoundingBox();
     geo.computeBoundingSphere();
     track(geo);

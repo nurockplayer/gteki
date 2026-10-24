@@ -35,7 +35,7 @@ export function createKitSwap(opts: KitSwapOptions): KitSwap {
         const batch = batchKitPlacements({ placed: plan.placed, manifest: opts.manifest, provider: opts.provider, tint: opts.tint, track: ctx.track });
         group = batch.group;
 
-        // A placement hides its placeholder only if it put at least one triangle into a merged mesh.
+        // A placement hides its placeholder only when all of its drawable batches merged successfully.
         const drawn = plan.placed.filter((p) => batch.drawn.has(p));
         const missing = new Set(batch.missing);
         const undrawn: KitDrop[] = plan.placed.filter((p) => !batch.drawn.has(p)).map((p) => ({
