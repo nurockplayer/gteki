@@ -134,7 +134,13 @@ for (const key of enabled ? STATIONS : []) test(`${key}: recognition proxy captu
   const last = route.steps.at(-1) as { fromNodeId: string; toNodeId: string };
   // The last two distinct route points: a final step with only two geometry points emits just its endpoint under
   // its own step index (its start was emitted with the step before), so filtering by step would leave one point.
-  const exitWps = wps.filter((w, i) => i === 0 || Math.hypot(w.p.x - wps[i - 1]!.p.x, w.p.y - wps[i - 1]!.p.y) > 0.05).slice(-2);
+  // Each point is compared with the last one kept, so a run of closely spaced points still yields a direction.
+  const distinct: typeof wps = [];
+  for (const w of wps) {
+    const k = distinct.at(-1);
+    if (!k || Math.hypot(w.p.x - k.p.x, w.p.y - k.p.y) > 0.05) distinct.push(w);
+  }
+  const exitWps = distinct.slice(-2);
 
   type View = { id: string; node: string; facing?: { from: Vec3; to: Vec3 }; keys: string[]; note: string };
   const views: View[] = [
