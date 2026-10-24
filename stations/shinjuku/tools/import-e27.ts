@@ -980,7 +980,7 @@ shafts.forEach((s, i) => {
         text: enNote,
       },
     ],
-    evidence: vEv(`NWD route_type=4 links (elevator code 5: wheelchair + visually-impaired accessible) grouped ≤4 m; cross-checked against GSI F012 within 4 m; ${jaCheck} ${enCheck}`),
+    evidence: vEv(`NWD route_type=4 links (elevator code 5: wheelchair + visually-impaired accessible) grouped ≤4 m; cross-checked against GSI F012 within 4 m; ${jaCheck} / ${enCheck}`),
   });
 });
 const unmatchedLifts = liftPoints.filter((f) => !claimedLifts.has(f)).map((f) => `${f.level.label} ${f.p.x},${f.p.y}`);
@@ -1108,14 +1108,14 @@ const areas: CoverageArea[] = mapLevels.flatMap((ml) => {
     }));
 });
 const gaps: CoverageGap[] = [
-  { id: "gap:transfers", floorId: null, zone: "Connections to JR, Keio/Keio New Line, Odakyu, Toei Shinjuku Line (S01), Tokyo Metro (M08), Shinjuku-nishiguchi (E01)", missingFact: "Verified public passages beyond the E27 dataset boundary; operator-specific floor labels", approximateExtent: "north/east edges of the dataset", sourceDate: null, fieldWorkNeeded: "Obtain open network data per operator (e.g. MLIT 新宿 R2 indoor map rights check) or permitted survey of each boundary" },
-  { id: "gap:heights", floorId: null, zone: "All levels", missingFact: "Measured floor elevations (source has no z)", sourceDate: "2025-09-19", fieldWorkNeeded: "Permitted survey or a licensed BIM/CityGML source covering E27; current heights are SYMBOLIC estimates from run lengths and generic 2.3 m overhead-clearance constraints, never measured" },
-  { id: "gap:exit-numbers", floorId: null, zone: "Exits", missingFact: "Official exit numbers/names (A1, 3, 4 …) are not in the dataset", sourceDate: null, fieldWorkNeeded: "Operator confirmation or field check; OSM labels used only as flagged cross-check" },
-  { id: "gap:hours", floorId: null, zone: "All links", missingFact: "Operating hours (start_time/end_time) not published", sourceDate: null, fieldWorkNeeded: "Operator hours per exit/passage" },
-  { id: "gap:escalator-direction", floorId: null, zone: "Escalators", missingFact: "Escalator directions are a 2025-09 snapshot; time-of-day reversals unknown", sourceDate: "2025-09-19", fieldWorkNeeded: "Field check at peak/off-peak" },
-  { id: "gap:platform-sides", floorId: floorId(-6), zone: "Platform (地下6階)", missingFact: "Which side serves which direction (都庁前 / 両国・六本木)", sourceDate: null, fieldWorkNeeded: "Field check or licensed operator data" },
-  { id: "gap:reuse-after-publication", floorId: null, zone: "All E27-derived data (graph, geometry, POIs)", missingFact: `Provider confirmation that GTEki's derived Web 3D data may still be reused/distributed (incl. commercially) after the publication period ends ${PUBLICATION_PERIOD_END}. The licence basis for the E27 resources is unconfirmed (published under the Owner's override at #16; PDL 1.0 is not treated as covering them, #39 Q11 = No).`, sourceDate: "2026-09-17", fieldWorkNeeded: "Written answer from MLIT ほこナビDP窓口; E27 itself ships under the Owner's #16 override; any other public release relying on it stays HOLD until confirmed" },
-  { id: "gap:closures", floorId: null, zone: "Construction areas around 新宿駅西口・南口", missingFact: "Current closures (e.g. OSM notes exit 2 closed since 2024-03-30 for building demolition — outside E27 data)", sourceDate: null, fieldWorkNeeded: "Operator notices + field check before any real-world guidance" },
+  { id: "gap:transfers", floorId: null, zone: [{ lang: "en", text: "Connections to JR, Keio/Keio New Line, Odakyu, Toei Shinjuku Line (S01), Tokyo Metro (M08), Shinjuku-nishiguchi (E01)" }, { lang: "ja", text: "JR・京王線／京王新線・小田急線・都営新宿線（S01）・東京メトロ（M08）・新宿西口（E01）への接続" }], missingFact: [{ lang: "en", text: "Verified public passages beyond the E27 dataset boundary; operator-specific floor labels" }, { lang: "ja", text: "E27 のデータ範囲の外にある、一般の人が通れる通路について確認された情報と、事業者ごとの階数表記" }], approximateExtent: [{ lang: "en", text: "north/east edges of the dataset" }, { lang: "ja", text: "データ範囲の北側・東側の端" }], sourceDate: null, fieldWorkNeeded: [{ lang: "en", text: "Obtain open network data per operator (e.g. MLIT 新宿 R2 indoor map rights check) or permitted survey of each boundary" }, { lang: "ja", text: "事業者ごとの公開ネットワークデータを入手する（例: MLIT 新宿 R2 屋内地図の権利確認）、または各境界の許可を得た現地調査" }] },
+  { id: "gap:heights", floorId: null, zone: [{ lang: "en", text: "All levels" }, { lang: "ja", text: "全階層" }], missingFact: [{ lang: "en", text: "Measured floor elevations (source has no z)" }, { lang: "ja", text: "実測の階の高さ（元データに z 座標がない）" }], sourceDate: "2025-09-19", fieldWorkNeeded: [{ lang: "en", text: "Permitted survey or a licensed BIM/CityGML source covering E27; current heights are SYMBOLIC estimates from run lengths and generic 2.3 m overhead-clearance constraints, never measured" }, { lang: "ja", text: "許可を得た現地測量、または E27 を対象とする利用許諾のある BIM/CityGML データ。現在の高さは、通路の長さと一般的な頭上の有効高さ 2.3 m という制約から求めた推定値で、実測したものではない。" }] },
+  { id: "gap:exit-numbers", floorId: null, zone: [{ lang: "en", text: "Exits" }, { lang: "ja", text: "出口" }], missingFact: [{ lang: "en", text: "Official exit numbers/names (A1, 3, 4 …) are not in the dataset" }, { lang: "ja", text: "正式な出口番号・名称（A1、3、4 など）はデータセットに含まれていない" }], sourceDate: null, fieldWorkNeeded: [{ lang: "en", text: "Operator confirmation or field check; OSM labels used only as flagged cross-check" }, { lang: "ja", text: "事業者による確認または現地確認。OSM のラベルは照合の参考にのみ使い、その旨を明示する" }] },
+  { id: "gap:hours", floorId: null, zone: [{ lang: "en", text: "All links" }, { lang: "ja", text: "すべての経路" }], missingFact: [{ lang: "en", text: "Operating hours (start_time/end_time) not published" }, { lang: "ja", text: "出口・通路ごとの利用できる時間（開始・終了時刻）は公開されていない" }], sourceDate: null, fieldWorkNeeded: [{ lang: "en", text: "Operator hours per exit/passage" }, { lang: "ja", text: "事業者による、出口・通路ごとの利用できる時間" }] },
+  { id: "gap:escalator-direction", floorId: null, zone: [{ lang: "en", text: "Escalators" }, { lang: "ja", text: "エスカレーター" }], missingFact: [{ lang: "en", text: "Escalator directions are a 2025-09 snapshot; time-of-day reversals unknown" }, { lang: "ja", text: "エスカレーターの運転方向（上り・下り）は 2025 年 9 月時点の情報で、時間帯によって切り替わるかどうかは不明" }], sourceDate: "2025-09-19", fieldWorkNeeded: [{ lang: "en", text: "Field check at peak/off-peak" }, { lang: "ja", text: "ピーク時と閑散時の現地確認" }] },
+  { id: "gap:platform-sides", floorId: floorId(-6), zone: [{ lang: "en", text: "Platform (地下6階)" }, { lang: "ja", text: "ホーム（地下6階）" }], missingFact: [{ lang: "en", text: "Which side serves which direction (都庁前 / 両国・六本木)" }, { lang: "ja", text: "どちら側のホームがどの方面か（都庁前 / 両国・六本木）" }], sourceDate: null, fieldWorkNeeded: [{ lang: "en", text: "Field check or licensed operator data" }, { lang: "ja", text: "現地確認、またはライセンスのある事業者データ" }] },
+  { id: "gap:reuse-after-publication", floorId: null, zone: [{ lang: "en", text: "All E27-derived data (graph, geometry, POIs)" }, { lang: "ja", text: "E27 由来の全データ（経路網、形状、施設情報）" }], missingFact: [{ lang: "en", text: `Provider confirmation that GTEki's derived Web 3D data may still be reused/distributed (incl. commercially) after the publication period ends ${PUBLICATION_PERIOD_END}. The licence basis for the E27 resources is unconfirmed (published under the Owner's override at #16; PDL 1.0 is not treated as covering them, #39 Q11 = No).` }, { lang: "ja", text: `公開提供期限（${PUBLICATION_PERIOD_END}）の経過後も GTEki の派生 Web 3D データを再利用・配布（商用を含む）してよいかは、提供者の確認待ち。E27 資料のライセンス根拠は未確認で、オーナー判断により公開している。PDL 1.0 の対象とはみなしていない。` }], sourceDate: "2026-09-17", fieldWorkNeeded: [{ lang: "en", text: "Written answer from MLIT ほこナビDP窓口; E27 itself ships under the Owner's #16 override; any other public release relying on it stays HOLD until confirmed" }, { lang: "ja", text: "MLIT ほこナビDP窓口からの書面での回答。E27 自体はオーナー判断により公開している。確認が取れるまで、これに依拠する他の公開は保留。" }] },
+  { id: "gap:closures", floorId: null, zone: [{ lang: "en", text: "Construction areas around 新宿駅西口・南口" }, { lang: "ja", text: "新宿駅西口・南口周辺の工事区域" }], missingFact: [{ lang: "en", text: "Current closures (e.g. OSM notes exit 2 closed since 2024-03-30 for building demolition — outside E27 data)" }, { lang: "ja", text: "現在の通行止め（例: OSM のメモによると出口 2 は 2024-03-30 から建物解体のため閉鎖、E27 データの範囲外）" }], sourceDate: null, fieldWorkNeeded: [{ lang: "en", text: "Operator notices + field check before any real-world guidance" }, { lang: "ja", text: "実際の案内を出す前に、事業者からの告知の確認と現地確認" }] },
 ];
 const coverage = {
   summary: [
@@ -1164,6 +1164,11 @@ const bundle: StationBundle = {
   schema: SCHEMA_VERSION,
   station: {
     id: "shinjuku",
+    identity: { names: [
+      { lang: "ja", text: "新宿" },
+      { lang: "ja-Hrkt", text: "しんじゅく" },
+      { lang: "en", text: "Shinjuku" },
+    ] },
     names: [
       { lang: "ja", text: "新宿駅（都営大江戸線）" },
       { lang: "en", text: "Shinjuku Station (Toei Oedo Line)" },

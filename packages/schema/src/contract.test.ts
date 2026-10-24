@@ -586,6 +586,40 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     expect(errors(b)).toContain("source.url");
   });
 
+  it("accepts plain and localized licence names and rejects empty names", () => {
+    const b = asRealStation(createSyntheticBundle());
+    b.edges = [];
+    const src = b.sources.find((s) => s.id === "fixture-access")!;
+    src.license = { name: "Legacy licence", url: "https://example.org/licence" };
+    expect(errors(b)).not.toContain("source.license");
+    src.license = { name: [{ lang: "ja", text: "日本語のライセンス" }, { lang: "en", text: "English licence" }], url: "https://example.org/licence" };
+    expect(errors(b)).not.toContain("source.license");
+    for (const name of ["", "  ", [], [{ lang: "ja", text: "" }], [{ lang: " ", text: "Licence" }]]) {
+      src.license = { name: name as string | import("./index.ts").LocalizedText[], url: "https://example.org/licence" };
+      expect(errors(b), JSON.stringify(name)).toContain("source.license");
+    }
+  });
+
+  it("requires a full derivation record whenever an asset has a summary", () => {
+    const b = createSyntheticBundle();
+    b.assets = [{
+      id: "summary-only", uri: "assets/summary-only.glb", format: "glb", floorIds: [], role: "visual",
+      sourceIds: ["fixture-access"], derivationSummary: [{ lang: "en", text: "Model simplified for display" }],
+    }];
+    const [manifest, graph, pois] = split(b);
+    manifest.assets = b.assets;
+    const missing = parseStationFiles(manifest, graph, pois);
+    expect(missing.ok).toBe(false);
+    expect(missing.issues.map((issue) => issue.code)).toContain("asset.derivationSummary");
+
+    for (const derivation of ["", "  "]) {
+      manifest.assets![0]!.derivation = derivation;
+      const parsed = parseStationFiles(manifest, graph, pois);
+      expect(parsed.ok, JSON.stringify(derivation)).toBe(false);
+      expect(parsed.issues.map((issue) => issue.code), JSON.stringify(derivation)).toContain("asset.derivationSummary");
+    }
+  });
+
   it("requires the #26 decision reference on a real facts-only source", () => {
     const b = asRealStation(createSyntheticBundle());
     b.edges = [];
