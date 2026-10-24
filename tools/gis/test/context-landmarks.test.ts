@@ -5,8 +5,8 @@ import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 import * as common from '../src/common.js';
 import { assertNoSourceValues } from '../src/context-overlay.js';
 import {
-  assertLandmarksConfig, collectSourceValues, contextLandmarks, maskCreditText, maskShippedFieldValues, LANDMARK_CRS, LANDMARKS_POLICY_VERSION, LANDMARK_PROPERTY_KEYS,
-  landmarksGeoJson, parseLandmarksCsv, type LandmarksConfig,
+  assertLandmarkFeatureProperties, assertLandmarksConfig, collectSourceValues, contextLandmarks, landmarkScanText, maskCreditText, LANDMARK_CRS,
+  LANDMARK_POLICIES, LANDMARKS_POLICY_VERSION, LANDMARK_PROPERTY_KEYS, landmarksGeoJson, parseLandmarksCsv, type LandmarksConfig,
 } from '../src/context-landmarks.js';
 import { stationEnuProjector } from '../src/station-enu.js';
 import { loadSources } from '../src/acquire.js';
@@ -64,7 +64,7 @@ async function setup(options: { gate?: string; csv?: string; stationHeight?: num
     record: { source_id: manifest.source_id, resolved_url: manifest.expected_url, bytes: bytes.length, sha256: sha(bytes), store_path: 'raw/synthetic/source.csv', size_check: 'MATCH', http_status: 200, requested_at: '2026-10-24T00:00:00Z', completed_at: '2026-10-24T00:00:01Z' },
   } as unknown as Awaited<ReturnType<typeof common.getStoredSource>>);
   const run = (runOptions: { radiusM?: number } = {}) => contextLandmarks('shinjuku', { receiptDir: join(common.repoRoot, 'receipts'), ...runOptions });
-  return { station, stationPath, storeRoot, bytes, run };
+  return { station, stationPath, storeRoot, bytes, csvPath, run };
 }
 
 describe('context-landmarks: gate and source reading', () => {
@@ -101,6 +101,34 @@ describe('context-landmarks: gate and source reading', () => {
   it('fails when station.json no longer carries the configured z', async () => {
     const { run } = await setup({ stationHeight: 5 });
     await expect(run()).rejects.toThrow(/z basis no longer matches/);
+  });
+});
+
+describe('context-landmarks: source integrity and shape', () => {
+  it('refuses a mixed file even when 90% of the positions read correctly', async () => {
+    const inJapan = Array.from({ length: 9 }, (_, i) => [String(i + 1), `架空の点${i + 1}`, '記念物', `東京都新宿区架空${i + 1}丁目`, String(latAtNorth(100 + i)), String(ORIGIN.lon), '新宿区', `テスト説明文${i}`, '', '']);
+    const swapped = ['10', '架空の入れ替わり', '記念物', '東京都新宿区架空十丁目', String(ORIGIN.lon), String(latAtNorth(200)), '新宿区', 'テスト説明文十', '', ''];
+    const { run } = await setup({ csv: csvText([...inJapan, swapped]) });
+    await expect(run()).rejects.toThrow(/1 of 10 located positions lie outside the Japan ranges/);
+  });
+
+  it('refuses bytes that no longer hash to the acquisition record', async () => {
+    const { run, csvPath, bytes } = await setup();
+    await writeFile(csvPath, Buffer.concat([bytes, Buffer.from('\r\n')]));
+    await expect(run()).rejects.toThrow(/does not hash to the acquisition record/);
+  });
+
+  it('refuses a ragged row, naming its 1-based row and line but never a cell value', async () => {
+    const ragged = [...ROWS.slice(0, 2), ROWS[2]!.slice(1)];
+    const { run } = await setup({ csv: csvText(ragged) });
+    await expect(run()).rejects.toThrow(/data row 3 \(line 4\) has 9 cells where the header has 10; refusing to read a ragged file/u);
+  });
+
+  it('refuses a repeated header name', async () => {
+    const header = [...HEADER];
+    header[5] = '緯度';
+    const { run } = await setup({ csv: csvText(ROWS, header) });
+    await expect(run()).rejects.toThrow(/repeats the column name "緯度"/);
   });
 });
 
@@ -219,16 +247,25 @@ describe('context-landmarks: shipped-field masking', () => {
     expect(geojson.features[0]!.properties.name).toBe('架空寺本堂');
   });
 
-  it('still trips when the same owner value sits outside the shipped fields', () => {
+  it('masks only the shipped name/class positions, so the same owner value elsewhere still trips', () => {
     const guard = collectSourceValues(TEMPLE, new Set([1, 2]));
     expect(guard.has('架空寺')).toBe(true);
-    const geojson = landmarksGeoJson([POINT], META);
-    const masked = maskShippedFieldValues(maskCreditText(geojson, META.credit).text, [POINT.name, POINT.class]);
-    expect(masked.occurrences).toBe(2);
-    expect(() => assertNoSourceValues(masked.text, guard, 'The landmark GeoJSON')).not.toThrow();
-    const injected = geojson.replace('"row_hash"', '"所有者":"架空寺","row_hash"');
-    const injectedMasked = maskShippedFieldValues(maskCreditText(injected, META.credit).text, [POINT.name, POINT.class]);
-    expect(() => assertNoSourceValues(injectedMasked.text, guard, 'The landmark GeoJSON')).toThrow(/source property value/);
+    const collection = JSON.parse(landmarksGeoJson([POINT], META)) as Record<string, any>;
+    const clean = landmarkScanText(collection, META.credit);
+    expect(clean.shippedFieldValuesMasked).toBe(2);
+    expect(() => assertNoSourceValues(clean.text, guard, 'The landmark GeoJSON')).not.toThrow();
+    // An extra position holding the same value is NOT masked: masking is by property position, not by value.
+    collection.features[0].properties.owner = '架空寺';
+    expect(() => assertNoSourceValues(landmarkScanText(collection, META.credit).text, guard, 'The landmark GeoJSON')).toThrow(/source property value/);
+  });
+
+  it('refuses a feature that carries an extra property, even one equal to its own name', () => {
+    const collection = JSON.parse(landmarksGeoJson([POINT], META)) as Record<string, any>;
+    collection.features[0].properties.note = POINT.name;
+    expect(() => assertLandmarkFeatureProperties(collection)).toThrow(/carries the property "note", which is not in LANDMARK_PROPERTY_KEYS/);
+    delete collection.features[0].properties.note;
+    delete collection.features[0].properties.class;
+    expect(() => assertLandmarkFeatureProperties(collection)).toThrow(/is missing the property "class"/);
   });
 
   it('passes in the GeoJSON when an owner cell equals a shipped name, but the receipt still forbids it', async () => {
@@ -250,7 +287,7 @@ describe('context-landmarks: strict config', () => {
     z: { mode: 'constant', z_m: 0, basis: 'symbolic street z = 0', datum_asserted: false, check: { path: 'stations/shinjuku/gteki/station.json', floor_ordinal: 0, field: 'renderElevationM' } },
     window: { kind: 'origin_disc', radius_m: 700 },
     fields: { lat: '緯度', lon: '経度', name: '名称', class: '文化財分類' },
-    credit: { ja: '出典：新宿区（CC BY 4.0）', en: 'Source: Shinjuku City (CC BY 4.0).' },
+    credit: { ...LANDMARK_POLICIES.shinjuku!.credit },
   });
   it('accepts the configured shape and rejects an absent section', () => {
     expect((assertLandmarksConfig('shinjuku', valid()) as LandmarksConfig).window.radius_m).toBe(700);
@@ -262,5 +299,21 @@ describe('context-landmarks: strict config', () => {
     expect(() => assertLandmarksConfig('shinjuku', { ...valid(), window: { kind: 'origin_disc', radius_m: -1 } })).toThrow(/window\.radius_m must be a positive number/);
     const missing = valid(); delete missing.credit;
     expect(() => assertLandmarksConfig('shinjuku', missing)).toThrow(/missing "credit"/);
+  });
+  it('pins the ruling: a renamed column, a reworded credit, another source or an unpinned station is refused', () => {
+    const renamed = { ...valid(), fields: { ...(valid().fields as Record<string, string>), name: '説明' } };
+    expect(() => assertLandmarksConfig('shinjuku', renamed)).toThrow(/fields\.name is "説明" but the pinned policy for shinjuku names "名称"/);
+    const reworded = { ...valid(), credit: { ...LANDMARK_POLICIES.shinjuku!.credit, ja: '出典：新宿区' } };
+    expect(() => assertLandmarksConfig('shinjuku', reworded)).toThrow(/credit does not match the pinned director text/);
+    expect(() => assertLandmarksConfig('shinjuku', { ...valid(), source_id: 'ksj-n02-2025' })).toThrow(/but the pinned policy for shinjuku is "tokyo-muni-shinjuku-cultural-properties-csv"/);
+    expect(() => assertLandmarksConfig('ikebukuro', valid())).toThrow(/no pinned landmark policy/);
+  });
+  it('the committed Shinjuku config matches the pinned policy', async () => {
+    const { loadContextConfig } = await import('../src/context.js');
+    const config = (await loadContextConfig('shinjuku')) as unknown as Record<string, unknown>;
+    const landmarks = assertLandmarksConfig('shinjuku', config.landmarks);
+    expect(landmarks.source_id).toBe(LANDMARK_POLICIES.shinjuku!.source_id);
+    expect(landmarks.fields).toEqual(LANDMARK_POLICIES.shinjuku!.fields);
+    expect(landmarks.credit).toEqual(LANDMARK_POLICIES.shinjuku!.credit);
   });
 });

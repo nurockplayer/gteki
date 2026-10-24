@@ -3,7 +3,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parse } from 'csv-parse/sync';
 import { docsRoot, getStoreRoot, getStoredSource, writeJson, TOOL_VERSION } from './common.js';
-import { axisSwapCheck, decodeCsvBytes } from './csv-profile.js';
+import { axisSwapCheck, decodeCsvBytes, JAPAN_BOX } from './csv-profile.js';
 import { CONTEXT_ROLE, loadContextConfig, type StationContextConfig } from './context.js';
 import { assertNoSourceValues, resolveConstantZ, resolveStationFrame, type OverlayFrameConfig, type OverlayZConfig } from './context-overlay.js';
 import { toolFingerprint } from './provenance.js';
@@ -35,6 +35,24 @@ export const LANDMARK_FIELDS = ['class', 'lat', 'lon', 'name'] as const;
 
 export interface LandmarksFields { lat: string; lon: string; name: string; class: string }
 export interface LandmarksCredit { ja: string; en: string }
+/** What the director ruling pins per station: the source, the four columns and the exact credit a config must carry. */
+export interface LandmarksPolicy { source_id: string; fields: LandmarksFields; credit: LandmarksCredit }
+
+/**
+ * The pinned policy, in code, so a config edit cannot widen the ruling: a station is convertible only when its `landmarks` section
+ * matches this exactly, and a station with no entry here is refused. The director ruling of 2026-10-23 names these four columns, this
+ * source and this credit (新宿区 only); changing any of them is a new ruling, not a config change.
+ */
+export const LANDMARK_POLICIES: Readonly<Record<string, LandmarksPolicy>> = {
+  shinjuku: {
+    source_id: 'tokyo-muni-shinjuku-cultural-properties-csv',
+    fields: { lat: '緯度', lon: '経度', name: '名称', class: '文化財分類' },
+    credit: {
+      ja: '出典：新宿区『文化財一覧（自治体標準データセット）』（CC BY 4.0、東京都オープンデータカタログサイト経由）。GTEki が加工して作成',
+      en: 'Source: Shinjuku City, "文化財一覧（自治体標準データセット）" (CC BY 4.0, via the Tokyo Open Data Catalog). Modified by GTEki.',
+    },
+  },
+};
 export interface LandmarksWindow { kind: 'origin_disc'; radius_m: number }
 export interface LandmarksConfig {
   source_id: string;
@@ -106,6 +124,14 @@ export function assertLandmarksConfig(station: string, value: unknown): Landmark
   checkKeys(credit, ['ja', 'en'], [], `${where}: credit`);
   for (const key of ['ja', 'en'] as const) if (typeof credit[key] !== 'string' || !credit[key].trim()) throw new Error(`${where}: credit.${key} must be a non-empty string`);
   if (value.notes !== undefined && typeof value.notes !== 'string') throw new Error(`${where}: notes must be a string`);
+  // The director ruling is pinned in code: the config may not rename a column, swap the source or reword the credit.
+  const policy = LANDMARK_POLICIES[station];
+  if (!policy) throw new Error(`Context config for ${station} has no pinned landmark policy in context-landmarks.ts; refusing to convert it`);
+  if (value.source_id !== policy.source_id) throw new Error(`${where}: source_id is ${JSON.stringify(value.source_id)} but the pinned policy for ${station} is ${JSON.stringify(policy.source_id)}; refusing to convert`);
+  for (const key of LANDMARK_FIELDS) {
+    if ((fields[key] as string).trim() !== policy.fields[key]) throw new Error(`${where}: fields.${key} is ${JSON.stringify(fields[key])} but the pinned policy for ${station} names ${JSON.stringify(policy.fields[key])}; refusing to convert`);
+  }
+  if (credit.ja !== policy.credit.ja || credit.en !== policy.credit.en) throw new Error(`${where}: credit does not match the pinned director text for ${station}; refusing to convert`);
   return value as unknown as LandmarksConfig;
 }
 
@@ -146,26 +172,8 @@ export function maskCreditText(text: string, credit: LandmarksCredit, placeholde
   return { text: masked, occurrences };
 }
 
-/** What a shipped name or class token is replaced by before the store scan. */
+/** What a shipped name or class position is replaced by in the scanned copy of the store GeoJSON. */
 export const SHIPPED_FIELD_PLACEHOLDER = '<shipped-field>';
-
-/**
- * The GeoJSON ships `name` and `class` by design, and a shipped string may contain another column's cell as a substring (a temple name
- * contains its owner's name), which the non-ASCII substring match would read as a leak. Before the store scan, each exact JSON string
- * token (`JSON.stringify(value)`, quotes included) of the shipped values is replaced in a copy; raw substrings are never masked, so
- * the same value still fails anywhere it is not shipped as a whole string. The receipt is never masked this way.
- */
-export function maskShippedFieldValues(text: string, values: ReadonlyArray<string | null>, placeholder: string = SHIPPED_FIELD_PLACEHOLDER): { text: string; occurrences: number } {
-  const forms = [...new Set(values.filter((value): value is string => typeof value === 'string' && value !== '').map((value) => JSON.stringify(value)))]
-    .sort((a, b) => b.length - a.length);
-  let masked = text, occurrences = 0;
-  for (const form of forms) {
-    const parts = masked.split(form);
-    occurrences += parts.length - 1;
-    masked = parts.join(placeholder);
-  }
-  return { text: masked, occurrences };
-}
 
 export interface LandmarkPoint {
   row_index: number;
@@ -190,9 +198,22 @@ export interface LandmarksMeta {
 
 const NOTE_CRS = 'station-enu frame: coordinates are [x east, y north, z up] metres, not lon/lat';
 
+/** Every feature's property keys must be exactly the ruled set: an extra or missing key fails before anything is written. */
+export function assertLandmarkFeatureProperties(collection: unknown, where = 'The landmark GeoJSON'): void {
+  const features = isRecord(collection) ? collection.features : undefined;
+  if (!Array.isArray(features)) throw new Error(`${where} has no features array`);
+  const allowed = new Set<string>(LANDMARK_PROPERTY_KEYS);
+  features.forEach((feature, index) => {
+    const properties = isRecord(feature) ? feature.properties : undefined;
+    if (!isRecord(properties)) throw new Error(`${where}: feature ${index + 1} has no properties object`);
+    for (const key of Object.keys(properties)) if (!allowed.has(key)) throw new Error(`${where}: feature ${index + 1} carries the property ${JSON.stringify(key)}, which is not in LANDMARK_PROPERTY_KEYS`);
+    for (const key of allowed) if (!Object.hasOwn(properties, key)) throw new Error(`${where}: feature ${index + 1} is missing the property ${JSON.stringify(key)}`);
+  });
+}
+
 /** Station-frame Point features; every feature carries the credit and the context tags, and nothing else from the source. */
-export function landmarksGeoJson(points: readonly LandmarkPoint[], meta: LandmarksMeta): string {
-  return JSON.stringify({
+export function landmarkFeatureCollection(points: readonly LandmarkPoint[], meta: LandmarksMeta): Record<string, unknown> {
+  const collection: Record<string, unknown> = {
     type: 'FeatureCollection', crs_note: NOTE_CRS, gteki_role: CONTEXT_ROLE, navigation_use: 'NOT_FOR_ROUTING', visual_only: true,
     station_id: meta.station_id, frame: meta.frame_label, z_basis: meta.z_basis, z_m: meta.z_m, window: meta.window_label,
     crs: LANDMARK_CRS, credit: meta.credit, policy_version: LANDMARKS_POLICY_VERSION,
@@ -204,7 +225,39 @@ export function landmarksGeoJson(points: readonly LandmarkPoint[], meta: Landmar
       },
       geometry: { type: 'Point', coordinates: [p.x, p.y, p.z] },
     })),
-  });
+  };
+  assertLandmarkFeatureProperties(collection);
+  return collection;
+}
+
+export function landmarksGeoJson(points: readonly LandmarkPoint[], meta: LandmarksMeta): string {
+  return JSON.stringify(landmarkFeatureCollection(points, meta));
+}
+
+/**
+ * The text the store leak guard scans. The GeoJSON ships `name` and `class` by design, and a shipped string may contain another
+ * column's cell as a substring (a temple name holds its owner's name), which the non-ASCII substring match would read as a leak. So the
+ * scan copy is built from the feature objects with those two property POSITIONS set to the placeholder (an equal value anywhere else is
+ * untouched and still fails), then the mandated credit is masked in the serialised copy.
+ */
+export function landmarkScanText(collection: Record<string, unknown>, credit: LandmarksCredit): { text: string; creditOccurrences: number; shippedFieldValuesMasked: number } {
+  const features = collection.features;
+  if (!Array.isArray(features)) throw new Error('The landmark GeoJSON has no features array');
+  let shippedFieldValuesMasked = 0;
+  const masked = {
+    ...collection,
+    features: features.map((feature) => {
+      const properties = { ...(isRecord(feature) && isRecord(feature.properties) ? feature.properties : {}) };
+      for (const key of ['name', 'class'] as const) {
+        if (properties[key] === null || properties[key] === undefined) continue;
+        properties[key] = SHIPPED_FIELD_PLACEHOLDER;
+        shippedFieldValuesMasked++;
+      }
+      return { ...(isRecord(feature) ? feature : {}), properties };
+    }),
+  };
+  const creditMasked = maskCreditText(JSON.stringify(masked), credit);
+  return { text: creditMasked.text, creditOccurrences: creditMasked.occurrences, shippedFieldValuesMasked };
 }
 
 export function landmarksBBox(points: readonly LandmarkPoint[]): { min: [number, number, number]; max: [number, number, number] } | null {
@@ -223,7 +276,18 @@ export function parseLandmarksCsv(bytes: Buffer): { header: string[]; rows: stri
   const delimiter = (firstLine.match(/\t/gu)?.length ?? 0) > (firstLine.match(/,/gu)?.length ?? 0) ? '\t' : ',';
   const records = parse(text, { relax_column_count: true, relax_quotes: true, skip_empty_lines: true, delimiter }) as string[][];
   if (!records.length) throw new Error('the CSV has no header row');
-  return { header: records[0]!.map((h) => h.replace(/^﻿/u, '')), rows: records.slice(1) };
+  const header = records[0]!.map((h) => h.replace(/^﻿/u, ''));
+  // A repeated header name would make a column ambiguous; a ragged row would shift every cell after the gap. Both fail, and the
+  // message never carries a cell value.
+  const seen = new Set<string>();
+  for (const name of header) {
+    if (seen.has(name)) throw new Error(`the CSV header repeats the column name ${JSON.stringify(name)}; refusing to read it`);
+    seen.add(name);
+  }
+  records.slice(1).forEach((row, index) => {
+    if (row.length !== header.length) throw new Error(`the CSV data row ${index + 1} (line ${index + 2}) has ${row.length} cells where the header has ${header.length}; refusing to read a ragged file`);
+  });
+  return { header, rows: records.slice(1) };
 }
 
 export interface LandmarksRunOptions { radiusM?: number; receiptDir?: string }
@@ -246,6 +310,8 @@ export async function contextLandmarks(station: string, options: LandmarksRunOpt
   }
   if (!stored.source.station_ids.includes(station)) throw new Error(`${landmarks.source_id} is not declared for station ${station}`);
   const bytes = await readFile(stored.path);
+  // Hash the exact bytes that will be parsed, not just the record's claim: a copy altered after acquisition never reaches the parser.
+  if (sha256(bytes) !== stored.record.sha256) throw new Error(`${stored.path} does not hash to the acquisition record (${stored.record.sha256}); refusing to parse it`);
 
   const { projection, frameFacts, frameLabel } = await resolveStationFrame(station, landmarks.frame);
   const { z, zFacts } = await resolveConstantZ(landmarks.z);
@@ -274,6 +340,10 @@ export async function contextLandmarks(station: string, options: LandmarksRunOpt
   if (axis.verdict !== 'NOT_SWAPPED') {
     throw new Error(`${landmarks.source_id}: the axis check is ${axis.verdict} (${axis.as_is_in_japan} positions read as latitude/longitude lie inside the Japan ranges, ${axis.swapped_in_japan} only after swapping); refusing to guess the axis order`);
   }
+  // The 90% verdict above still admits a minority of bad pairs, which would project kilometres away as if they were real. Every
+  // located point must be inside the Japan box as labelled; the profile's 90% report threshold is left as it is.
+  const outsideJapan = located.filter((p) => p.lat < JAPAN_BOX.latMin || p.lat > JAPAN_BOX.latMax || p.lon < JAPAN_BOX.lonMin || p.lon > JAPAN_BOX.lonMax);
+  if (outsideJapan.length) throw new Error(`${landmarks.source_id}: ${outsideJapan.length} of ${located.length} located positions lie outside the Japan ranges read as latitude/longitude; refusing to convert a mixed or out-of-range file`);
 
   // Selection: a closed origin disc in station-frame XY metres, at the configured constant z.
   const points: LandmarkPoint[] = [];
@@ -307,27 +377,25 @@ export async function contextLandmarks(station: string, options: LandmarksRunOpt
     credit: landmarks.credit, source_id: landmarks.source_id, source_sha256: stored.record.sha256, window_label: windowLabel,
   };
 
-  // Leak guards, before anything is written. The store outputs may ship 名称 and 文化財分類 only; the receipt may ship no row value at all.
-  // No value is exempted: the mandated credit strings are masked in a copy of each text, and the GeoJSON's shipped name/class tokens
-  // too; each copy is scanned against the full value set and the written text stays unmasked.
+  // Leak guards, entirely in memory: the three files are built and every guard runs before anything is written. The store outputs may
+  // ship 名称 and 文化財分類 only; the receipt may ship no row value at all. No value is exempted: the mandated credit strings are
+  // masked in a copy of each text, and the GeoJSON's shipped name/class positions too; each copy is scanned against the full value set
+  // and the written text stays unmasked.
   const storeGuard = collectSourceValues(rows, new Set([nameColumn, classColumn]));
   const receiptGuard = collectSourceValues(rows);
   const maskedCredits: Record<string, number> = {};
   let shippedFieldValuesMasked = 0;
-  const store = join(getStoreRoot(), 'out');
-  await mkdir(store, { recursive: true });
   const outputs: Record<string, unknown> = {};
-  let provenanceRel: string | null = null;
+  let geojsonText: string | null = null, provenanceText: string | null = null;
   if (points.length) {
-    const geojson = landmarksGeoJson(points, meta);
-    const maskedGeoJson = maskCreditText(geojson, landmarks.credit);
-    maskedCredits.store_geojson = maskedGeoJson.occurrences;
-    const maskedShipped = maskShippedFieldValues(maskedGeoJson.text, points.flatMap((point) => [point.name, point.class]));
-    shippedFieldValuesMasked = maskedShipped.occurrences;
-    assertNoSourceValues(maskedShipped.text, storeGuard, 'The landmark GeoJSON');
-    const geojsonRel = `out/${runId}.geojson`;
-    await writeFile(join(getStoreRoot(), geojsonRel), geojson);
-    outputs.geojson = { store_path: geojsonRel, sha256: sha256(geojson), bytes: Buffer.byteLength(geojson) };
+    const geojsonRel = `out/${runId}.geojson`, provenanceRel = `out/${runId}.provenance.json`;
+    const collection = landmarkFeatureCollection(points, meta);
+    const scan = landmarkScanText(collection, landmarks.credit);
+    maskedCredits.store_geojson = scan.creditOccurrences;
+    shippedFieldValuesMasked = scan.shippedFieldValuesMasked;
+    assertNoSourceValues(scan.text, storeGuard, 'The landmark GeoJSON');
+    geojsonText = JSON.stringify(collection);
+    outputs.geojson = { store_path: geojsonRel, sha256: sha256(geojsonText), bytes: Buffer.byteLength(geojsonText) };
     const provenance = {
       run_id: runId, command: 'context-landmarks', policy_version: LANDMARKS_POLICY_VERSION, station_id: station,
       gteki_role: CONTEXT_ROLE, navigation_use: 'NOT_FOR_ROUTING', visual_only: true, verification: 'UNVERIFIED',
@@ -338,12 +406,10 @@ export async function contextLandmarks(station: string, options: LandmarksRunOpt
       feature_table: { columns: ['row_index', 'row_hash', 'x_m', 'y_m', 'z_m', 'name_null', 'class_null'], rows: points.map((p) => [p.row_index, p.row_hash, p.x, p.y, p.z, p.name === null, p.class === null]) },
       elapsed_ms: Math.round(performance.now() - started), peak_rss_bytes: process.resourceUsage().maxRSS * 1024,
     };
-    const provenanceText = `${JSON.stringify(provenance, null, 2)}\n`;
+    provenanceText = `${JSON.stringify(provenance, null, 2)}\n`;
     const maskedProvenance = maskCreditText(provenanceText, landmarks.credit);
     maskedCredits.store_provenance = maskedProvenance.occurrences;
     assertNoSourceValues(maskedProvenance.text, storeGuard, 'The landmark provenance');
-    provenanceRel = `out/${runId}.provenance.json`;
-    await writeFile(join(getStoreRoot(), provenanceRel), provenanceText);
     outputs.provenance = { store_path: provenanceRel, sha256: sha256(provenanceText), bytes: Buffer.byteLength(provenanceText) };
   }
 
@@ -392,7 +458,14 @@ export async function contextLandmarks(station: string, options: LandmarksRunOpt
   // count differs only in digits, never in the credit occurrences, so one measurement is enough).
   receipt.leak_guard.credit_occurrences_masked.receipt = maskCreditText(JSON.stringify(receipt), landmarks.credit).occurrences;
   assertNoSourceValues(maskCreditText(JSON.stringify(receipt), landmarks.credit).text, receiptGuard, 'The public landmark receipt');
+
+  // Every guard has passed: write the three files now, nothing earlier.
+  if (geojsonText !== null && provenanceText !== null) {
+    await mkdir(join(getStoreRoot(), 'out'), { recursive: true });
+    await writeFile(join(getStoreRoot(), (outputs.geojson as { store_path: string }).store_path), geojsonText);
+    await writeFile(join(getStoreRoot(), (outputs.provenance as { store_path: string }).store_path), provenanceText);
+  }
   const receiptDir = options.receiptDir ?? join(docsRoot, 'gis', 'context');
   await writeJson(join(receiptDir, `${runId}.json`), receipt);
-  return { ...receipt, store_paths: { geojson: outputs.geojson ?? null, provenance: provenanceRel }, receipt_path: `docs/gis/context/${runId}.json` };
+  return { ...receipt, store_paths: { geojson: outputs.geojson ?? null, provenance: outputs.provenance ?? null }, receipt_path: `docs/gis/context/${runId}.json` };
 }
