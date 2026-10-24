@@ -516,6 +516,22 @@ class ManifestValidatorTests(unittest.TestCase):
                 doc["nodes"][0]["children"].append(len(doc["nodes"]) - 1)
                 self.assert_failure(self.check(atlas.encode_glb(doc, binary)), "outside cell")
 
+    def test_squashed_uv1_sliver_in_atlas_cell_warns_without_failing(self):
+        doc, binary = atlas.read_glb(self.data)
+        (x0, y0), _, (x2, y2) = read_uvs(doc, binary)
+        self.assertEqual(self.check(self.data)["status"], "PASS")
+        # same triangle with its second corner 1e-6 cell units away: a sliver, visible in 3D
+        sliver = struct.pack("<6f", x0, y0, x0 + 1e-6, y0, x2, y2)
+        pad = -len(binary) % 4
+        data = binary + b"\0" * pad + sliver
+        doc["bufferViews"].append(dict(buffer=0, byteOffset=len(binary) + pad, byteLength=len(sliver)))
+        doc["accessors"].append(dict(bufferView=len(doc["bufferViews"]) - 1, componentType=5126, count=3, type="VEC2"))
+        doc["meshes"][0]["primitives"][0]["attributes"]["TEXCOORD_1"] = len(doc["accessors"]) - 1
+        doc["buffers"][0]["byteLength"] = len(data)
+        result = self.check(atlas.encode_glb(doc, data))
+        self.assertEqual(result["status"], "WARN", result)
+        self.assertTrue(any("stretched over 10x more in one direction" in m["message"] for m in result["messages"]), result)
+
     def test_leftover_occlusion_texture(self):
         doc, binary = atlas.read_glb(self.data)
         doc["materials"][0]["occlusionTexture"] = dict(index=0, texCoord=1)
@@ -543,7 +559,10 @@ class ManifestValidatorTests(unittest.TestCase):
         self.assert_failure(self.check(), "8-bit grayscale")
 
     def test_missing_uv_and_no_manifest_behavior(self):
-        self.assertEqual(validator.Validator("n_a.glb", self.data).check()["status"], "PASS")
+        # without a manifest the atlas cell is read as raw UV1, which is squashed there: diagnostic WARN only
+        raw = validator.Validator("n_a.glb", self.data).check()
+        self.assertEqual([m["level"] for m in raw["messages"]], ["WARN"], raw)
+        self.assertIn("stretched over 10x more in one direction", raw["messages"][0]["message"])
         self.assert_failure(validator.Validator("n_a.glb", self.data, require_occlusion=True).check(), "without occlusionTexture")
         doc, binary = atlas.read_glb(self.data)
         del doc["meshes"][0]["primitives"][0]["attributes"]["TEXCOORD_1"]

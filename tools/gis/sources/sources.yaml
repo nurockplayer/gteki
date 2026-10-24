@@ -1830,3 +1830,109 @@
       url: https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2026.html
     - id: ksj-terms
       url: https://nlftp.mlit.go.jp/ksj/other/agreement.html
+- source_id: tokyo-toei-barrierfree-oedo-csv
+  title: "Toei Oedo line barrier-free facilities CSV (CKAN t000018d0000000028)"
+  station_ids: [shinjuku]
+  publisher: "東京都交通局"
+  official_url: https://catalog.data.metro.tokyo.lg.jp/dataset/t000018d0000000028
+  resolution: { kind: direct }
+  expected_url: https://www.opendata.metro.tokyo.lg.jp/kotsu/subway_barrierfree_oedo.csv
+  expected_bytes: null
+  license_name: "CC BY 4.0"
+  license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
+  content_year: null
+  availability_deadline: null
+  notes: "Evidence-only (lines-lead WP6, DR-NS-16; gate HOLD). Nothing is converted, placed or shipped from this source. The CKAN dataset record states CC BY 4.0 at dataset level; that is recorded in the hashed package_show snapshot, not interpreted as a rights finding. Per-station facility yes/no table; no coordinates or floors per the research note. No row value is committed."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: package-show
+      url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000018d0000000028
+    - id: portal-terms
+      url: https://portal.data.metro.tokyo.lg.jp/terms/
+      capture_http_errors: true
+    - id: cc-by-4-deed-ja
+      url: https://creativecommons.org/licenses/by/4.0/deed.ja
+- source_id: tokyo-toei-barrierfree-shinjuku-line-csv
+  title: "Toei Shinjuku line barrier-free facilities CSV (CKAN t000018d0000000028)"
+  station_ids: [shinjuku]
+  publisher: "東京都交通局"
+  official_url: https://catalog.data.metro.tokyo.lg.jp/dataset/t000018d0000000028
+  resolution: { kind: direct }
+  expected_url: https://www.opendata.metro.tokyo.lg.jp/kotsu/subway_barrierfree_shinjyuku.csv
+  expected_bytes: null
+  license_name: "CC BY 4.0"
+  license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
+  content_year: null
+  availability_deadline: null
+  notes: "Evidence-only (lines-lead WP6, DR-NS-16; gate HOLD). Nothing is converted, placed or shipped from this source. The CKAN dataset record states CC BY 4.0 at dataset level; that is recorded in the hashed package_show snapshot, not interpreted as a rights finding. Per-station facility yes/no table; no coordinates or floors per the research note. No row value is committed."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: package-show
+      url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000018d0000000028
+    - id: portal-terms
+      url: https://portal.data.metro.tokyo.lg.jp/terms/
+      capture_http_errors: true
+    - id: cc-by-4-deed-ja
+      url: https://creativecommons.org/licenses/by/4.0/deed.ja
+- source_id: keio-site-terms
+  title: "Keio Corporation website terms (terms page snapshot)"
+  station_ids: [shinjuku]
+  publisher: "京王電鉄"
+  official_url: https://www.keio.co.jp/contact/site/
+  resolution: { kind: direct }
+  expected_url: https://www.keio.co.jp/contact/site/
+  expected_bytes: null
+  license_name: "unknown"
+  license_url: null
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
+  content_year: null
+  availability_deadline: null
+  notes: "Evidence-only terms snapshot for lines-lead WP6 (gate HOLD). Nothing is converted or shipped. The page content is whatever the hash holds; its reading is in docs/gis/research/2026-10-24-lines-wp6-terms.md."
+  publish_gate: HOLD
+- source_id: odakyu-site-policy
+  title: "Odakyu Electric Railway website policy (policy page snapshot)"
+  station_ids: [shinjuku]
+  publisher: "小田急電鉄"
+  official_url: https://www.odakyu.jp/policy/
+  resolution: { kind: direct }
+  expected_url: https://www.odakyu.jp/policy/
+  expected_bytes: null
+  license_name: "unknown"
+  license_url: null
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
+  content_year: null
+  availability_deadline: null
+  notes: "Evidence-only policy snapshot for lines-lead WP6 (gate HOLD). Nothing is converted or shipped. The page content is whatever the hash holds; its reading is in docs/gis/research/2026-10-24-lines-wp6-terms.md."
+  publish_gate: HOLD
+- source_id: daredemo-tokyo-site
+  title: "だれでも東京 portal top page (snapshot; terms page not located)"
+  station_ids: [shinjuku]
+  publisher: "東京都"
+  official_url: https://www.daredemo-tokyo.metro.tokyo.lg.jp/
+  resolution: { kind: direct }
+  expected_url: https://www.daredemo-tokyo.metro.tokyo.lg.jp/
+  expected_bytes: null
+  license_name: "unknown"
+  license_url: null
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
+  content_year: null
+  availability_deadline: null
+  notes: "Evidence-only for lines-lead WP6 (OD-26; gate HOLD). On 2026-10-24 the site served a maintenance notice and no terms page URL was found, so the terms stay UNKNOWN. The snapshot holds whatever the site served."
+  publish_gate: HOLD
