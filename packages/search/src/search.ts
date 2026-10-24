@@ -1,5 +1,5 @@
-import type { Poi, StationBundle } from "@gteki/schema";
-import type { SearchHit, SearchIndex } from "./index.ts";
+import type { LocalizedText, Poi, StationBundle, Tenant } from "@gteki/schema";
+import type { SearchHit, SearchIndex, TenantMatch } from "./index.ts";
 
 /** Fold scripts and formatting only; readings and translations come from aliases. */
 export function normalizeJa(s: string): string {
@@ -17,10 +17,18 @@ export function searchKey(s: string): string {
   return normalizeJa(s).replace(/(\d)[号號](?=出|口|でぐち|$)/g, "$1番");
 }
 
+/** One searchable text: a POI name/alias, or a brand printed in that POI's tenant directory. */
+interface IndexedText {
+  original: string;
+  normalized: string;
+  /** Set for brand texts; the store POI itself stays the hit. */
+  tenant?: Tenant;
+}
+
 interface IndexedPoi {
   poi: Poi;
   routable: boolean;
-  texts: { original: string; normalized: string }[];
+  texts: IndexedText[];
 }
 
 /** One query form to score: the typed query, or what is left after dropping the station's own name. */
@@ -42,6 +50,11 @@ const MIN_FUZZY_CHARS = 4;
 /** Station-name stripping needs at least this many characters left to search. */
 const MIN_REMAINDER_CHARS = 2;
 const STRIPPED_PENALTY = 2;
+/**
+ * A brand in a store's directory scores this much below the same match on the store's own name/alias,
+ * so 「東武」 still finds 東武百貨店 itself before a store that merely lists 東武ストア (#419).
+ */
+const TENANT_PENALTY = 25;
 const STATION_WORD = /^(?:駅|站|えき|station|eki)/;
 
 /**
@@ -174,12 +187,48 @@ function compareQuality(a: Quality, b: Quality): number {
   return b.rank - a.rank || a.length - b.length;
 }
 
+/** The requested language, then ja, then the first entry (a brand is never translated). */
+function pickText(texts: LocalizedText[], lang: string | undefined): string {
+  return (texts.find((t) => lang !== undefined && t.lang === lang) ?? texts.find((t) => t.lang === "ja") ?? texts[0])?.text ?? "";
+}
+
+/** The tenant fields a hit exposes, picked in the reader's language. */
+function tenantMatch(tenant: Tenant, lang: string | undefined): TenantMatch {
+  const match: TenantMatch = { id: tenant.id, name: pickText(tenant.names, lang), floorLabel: pickText(tenant.floorLabel, lang) };
+  if (tenant.category && tenant.category.length > 0) match.category = pickText(tenant.category, lang);
+  return match;
+}
+
+interface BestText {
+  score: number;
+  matched: string;
+  quality: Quality;
+}
+
+const EMPTY_BEST: BestText = { score: 0, matched: "", quality: { rank: 0, length: 0 } };
+
+/** Keep whichever scored text matches better (score, then match quality). */
+function betterText(current: BestText, score: number, matched: string, quality: Quality): BestText {
+  if (score > current.score || (score === current.score && compareQuality(quality, current.quality) < 0))
+    return { score, matched, quality };
+  return current;
+}
+
 export function createSearchIndex(bundle: StationBundle): SearchIndex {
-  const entries: IndexedPoi[] = bundle.pois.map((poi) => ({
-    poi,
-    routable: poi.connectorNodeIds.length > 0,
-    texts: [...poi.names, ...poi.aliases].map(({ text }) => ({ original: text, normalized: searchKey(text) })),
-  }));
+  const tenantsByPoi = new Map<string, Tenant[]>();
+  for (const tenant of bundle.tenants ?? []) {
+    const list = tenantsByPoi.get(tenant.poiId);
+    if (list) list.push(tenant);
+    else tenantsByPoi.set(tenant.poiId, [tenant]);
+  }
+  const entries: IndexedPoi[] = bundle.pois.map((poi) => {
+    const texts: IndexedText[] = [...poi.names, ...poi.aliases].map(({ text }) => ({ original: text, normalized: searchKey(text) }));
+    // A store's directory only adds texts to the store itself: one card per store, never one per brand.
+    for (const tenant of tenantsByPoi.get(poi.id) ?? [])
+      for (const { text } of [...tenant.names, ...tenant.aliases])
+        texts.push({ original: text, normalized: searchKey(text), tenant });
+    return { poi, routable: poi.connectorNodeIds.length > 0, texts };
+  });
   const prefixes = stationPrefixes(bundle.station.names.map(({ text }) => text));
 
   return {
@@ -199,26 +248,40 @@ export function createSearchIndex(bundle: StationBundle): SearchIndex {
       for (const entry of entries) {
         if (categories && !categories.has(entry.poi.category)) continue;
         if (floors && (entry.poi.floorId === null || !floors.has(entry.poi.floorId))) continue;
-        let score = 0;
-        let matched = "";
-        let quality: Quality = { rank: 0, length: 0 };
+        let direct = EMPTY_BEST;
+        let viaTenant: (BestText & { tenant: Tenant }) | null = null;
+        const matchedTenants = new Set<string>();
         for (const text of entry.texts) {
           for (const form of forms) {
             const raw = scoreText(form, text.normalized);
-            const candidateScore = raw > 0 ? raw - form.penalty : 0;
-            if (candidateScore <= 0) continue;
-            const candidateQuality = qualityOf(text.normalized, form);
-            if (candidateScore > score || (candidateScore === score && compareQuality(candidateQuality, quality) < 0)) {
-              score = candidateScore;
-              matched = text.original;
-              quality = candidateQuality;
+            if (raw <= 0) continue;
+            const score = raw - form.penalty;
+            if (score <= 0) continue;
+            // The tenant penalty ranks a brand below direct matches but never drops it: a typo'd brand (fuzzy, at most 20)
+            // still finds its store, last.
+            const candidateScore = text.tenant ? Math.max(1, score - TENANT_PENALTY) : score;
+            const quality = qualityOf(text.normalized, form);
+            if (text.tenant) {
+              matchedTenants.add(text.tenant.id);
+              const current: BestText & { tenant: Tenant } = viaTenant ?? { ...EMPTY_BEST, tenant: text.tenant };
+              const next = betterText(current, candidateScore, text.original, quality);
+              viaTenant = next === current ? current : { ...next, tenant: text.tenant };
+            } else {
+              direct = betterText(direct, candidateScore, text.original, quality);
             }
           }
         }
-        if (score > 0) hits.push({
-          hit: { poi: entry.poi, score: score + (entry.routable ? 5 : 0), matched, routable: entry.routable },
-          quality,
-        });
+        // A brand listed by the store only wins when the store itself matched nothing better.
+        const useTenant = viaTenant !== null &&
+          (viaTenant.score > direct.score || (viaTenant.score === direct.score && compareQuality(viaTenant.quality, direct.quality) < 0));
+        const best = useTenant ? viaTenant! : direct;
+        if (best.score <= 0) continue;
+        const hit: SearchHit = { poi: entry.poi, score: best.score + (entry.routable ? 5 : 0), matched: best.matched, routable: entry.routable };
+        if (useTenant) {
+          hit.tenant = tenantMatch(viaTenant!.tenant, opts.lang);
+          if (matchedTenants.size > 1) hit.moreTenants = matchedTenants.size - 1;
+        }
+        hits.push({ hit, quality: best.quality });
       }
       // Ties: better match quality, then the shorter matched name, then id (stable regardless of bundle order).
       hits.sort((a, b) => b.hit.score - a.hit.score || compareQuality(a.quality, b.quality) || compareText(a.hit.poi.id, b.hit.poi.id));

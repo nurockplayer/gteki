@@ -2,7 +2,7 @@
 
 Status: research hand-off, 2026-10-24. Single writer: sjk-search-78 (`stations/shinjuku`). This file changes no station data.
 
-The field mapping (§2), reject rules (§4) and batch 2 additions (§6: code-based ids, `removed` list, closed shops not imported) of the [Ikebukuro contract](ikebukuro-import-contract.md) apply unchanged, with `shop-sjk-` ids. Floors are never equated by label: an Odakyu Ace 北館 or a Toei B3階 is not a GTEki floor id, so `floorId` stays `null`.
+The field mapping (§2), reject rules (§4) and batch 2 additions (§6: code-based ids, `removed` list, closed shops not imported) of the [Ikebukuro contract](ikebukuro-import-contract.md) apply unchanged, with `shop-sjk-` ids. Floors are never equated by label: a Toei B3階 is not a GTEki floor id, so `floorId` stays `null`.
 
 ## 1. This batch
 
@@ -19,7 +19,7 @@ Sources, by rights class:
 - `toei-shinjuku-nishiguchi-stores-2026-10`: one row of the Toei open-data CSV `other_stores_shinjuku-nishiguchi.csv` (catalogue `t000018d0000000039` 「駅構内のお店」), licence CC BY 4.0, `REUSABLE_WITH_CONDITIONS`, attribution 「出典：東京都交通局「駅構内のお店」」, `modified: true` with the change notice in its notes; shipped under `LicenseRef-Toei-S10` (NOTICE 4.6, REUSE block in #450).
 Facilities on these pages (ATMs, lockers, photo booths, rental machines) are excluded here and belong to a later facilities batch. Unnamed 期間限定ショップ slots are not imported.
 
-Every POI: `floorId`, `displayPosition`, `paid` null; `connectorNodeIds` `[]`; `AREA_ONLY` when the source prints an area (hall, zone, floor or exit label, or which of two sub-malls such as 京王モール / 京王モールアネックス, kept in notes as printed), otherwise `SEARCH_ONLY`. Printed 改札外 stays text in notes and is not mapped to `paid`.
+Every one of the 6 POIs: `floorId`, `displayPosition`, `paid` null; `connectorNodeIds` `[]`; `AREA_ONLY` when its source prints an area (concourse, floor or exit label, kept in notes as printed), otherwise `SEARCH_ONLY`. Printed 改札外 stays text in notes and is not mapped to `paid`.
 
 Removed before import (OD-34, 2026-10-24): Odakyu Ace (43) and Keio Mall (29). Their sites' terms refuse every use of their content data, with no legal exception, so they get OD-02 A treatment. Their shops may be added later only from each chain's own store pages, with that page as the source.
 

@@ -1,6 +1,6 @@
 import { createRouter, describeRoute, explainNoPathBetween, floorDisplayName, instructionPoints, routeBetween, routePolyline, ROUTE_PACE } from "@gteki/navigation";
 import type { Instruction, NoPathCause, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
-import type { Poi, Source, StationBundle } from "@gteki/schema";
+import type { Poi, Source, StationBundle, Tenant } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
@@ -17,6 +17,7 @@ import { assetDerivationPresentation, dataFileCredits, dataFileRowText, factsOnl
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { nodeLabel, poiLabel } from "./labels.ts";
+import { tenantAsOfNote, tenantCheckedDate, tenantDestinationTitle, tenantLabel, tenantResultTags } from "./tenantDisplay.ts";
 import { LiveRegion, freshnessReason, routeLiveMessage, searchLiveMessage, unknownLabel } from "./live.ts";
 import { MascotSlot, type MascotEvent } from "./mascot.ts";
 import { watchReducedMotion } from "./motion.ts";
@@ -40,6 +41,8 @@ interface State {
   search: SearchIndex | null;
   origin: Origin | null;
   destination: Poi | null;
+  /** Set when the destination was picked through a store's brand directory (#419); routing still goes to the store. */
+  destinationTenant: Tenant | null;
   profile: { stepFree: boolean; unpaidOnly: boolean; strictHours: boolean };
   route: RouteResult | RouteFailure | null;
   /** Which enabled option made the last `no_path` refuse (null = not a no_path). */
@@ -73,7 +76,7 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: 
 export class App {
   private readonly s: State = {
     lang: initialLang(), entries: [], entry: null, loaded: null, router: null, search: null,
-    origin: null, destination: null, profile: { stepFree: false, unpaidOnly: false, strictHours: false },
+    origin: null, destination: null, destinationTenant: null, profile: { stepFree: false, unpaidOnly: false, strictHours: false },
     route: null, noPath: null, polyline: [], instructions: [], activeInstruction: 0,
   };
   private explorer!: Explorer;
@@ -270,6 +273,7 @@ export class App {
     this.s.search = null;
     this.s.origin = null;
     this.s.destination = null;
+    this.s.destinationTenant = null;
     this.s.route = null;
     this.s.polyline = [];
     this.s.instructions = [];
@@ -383,7 +387,7 @@ export class App {
     this.closeResults("from");
     this.closeResults("to");
     this.ui.fromInput.value = this.originLabel();
-    this.ui.toInput.value = this.s.destination ? this.poiName(this.s.destination) : "";
+    this.ui.toInput.value = this.destinationLabel();
     this.renderEndpointNote(this.ui.fromNote, this.s.origin?.kind === "poi" ? this.s.origin.poi : null);
     this.renderEndpointNote(this.ui.toNote, this.s.destination);
     if (b) this.explorer.showPois(b, (p) => poiLabel(b, p, this.s.lang, this.t), [this.s.destination?.id, this.s.origin?.kind === "poi" ? this.s.origin.poi.id : undefined].filter(Boolean) as string[]);
@@ -463,13 +467,26 @@ export class App {
     return o.kind === "poi" ? this.poiName(o.poi) : o.label;
   }
 
+  /** The destination field and route-card title: the store, or "store — brand（floor）" after a tenant pick. */
+  private destinationLabel(): string {
+    const d = this.s.destination;
+    if (!d) return "";
+    const tenant = this.s.destinationTenant;
+    return tenant ? tenantDestinationTitle(this.poiName(d), tenantLabel(tenant, this.s.lang), this.s.lang, this.t) : this.poiName(d);
+  }
+
+  /** A tenant of the loaded bundle by id (the result list may outlive a station switch). */
+  private findTenant(id: string): Tenant | null {
+    return this.s.loaded?.bundle.tenants?.find((t) => t.id === id) ?? null;
+  }
+
   private renderResults(which: "from" | "to"): void {
     const input = which === "from" ? this.ui.fromInput : this.ui.toInput;
     const box = which === "from" ? this.ui.fromResults : this.ui.toResults;
     this.closeResults(which);
     if (!this.s.search || !this.s.loaded) return;
     const q = input.value.trim();
-    const hits: SearchHit[] = q ? this.s.search.search(q, { limit: 8 }) : this.s.loaded.bundle.pois.slice(0, 8).map((poi) => ({ poi, score: 0, matched: "", routable: poi.connectorNodeIds.length > 0 }));
+    const hits: SearchHit[] = q ? this.s.search.search(q, { limit: 8, lang: this.s.lang }) : this.s.loaded.bundle.pois.slice(0, 8).map((poi) => ({ poi, score: 0, matched: "", routable: poi.connectorNodeIds.length > 0 }));
     this.ui.live.announce(searchLiveMessage(this.t, hits.length));
     if (hits.length === 0) {
       const none = el("div", "result empty", this.t.noResults);
@@ -489,20 +506,29 @@ export class App {
       const meta = el("span", "result-meta");
       const floor = h.poi.floorId ? floorDisplayName(floors.get(h.poi.floorId), this.s.lang) : null;
       const searchOnly = isUnlocatedShop(h.poi) ? this.t.shopSearchOnly : this.t.searchOnly;
-      const tags = [floor, h.matched && h.matched !== this.poiName(h.poi) ? `“${h.matched}”` : null, h.routable ? null : searchOnly].filter(Boolean) as string[];
+      // A brand from the store's own directory (#419) replaces the store floor: the printed floor is the useful one.
+      const tags = h.tenant
+        ? tenantResultTags(h, this.s.lang, this.t)
+        : [floor, h.matched && h.matched !== this.poiName(h.poi) ? `“${h.matched}”` : null].filter(Boolean) as string[];
+      if (!h.routable) tags.push(searchOnly);
       meta.textContent = tags.join(" · ");
+      // The directory is unverified: say since when it was checked, as a second line.
+      const checkedDate = h.tenant ? tenantCheckedDate(this.s.loaded?.bundle.tenants, h.tenant.id) : null;
+      const asOf = h.tenant && checkedDate ? this.t.tenantAsOf(checkedDate) : null;
       b.append(dot, name, meta);
+      if (asOf) b.append(el("span", "result-asof", asOf));
       // A search-only POI's note (e.g. a 2020 status word in the copied name) is shown beside it, not only in routes.
       const note = h.routable ? null : poiNoteText(h.poi, this.s.lang);
       if (note) b.append(el("span", "result-note", note));
-      // The accessible name carries the visible tags (and the note), so "search only" is heard too.
-      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...tags, ...(note ? [note] : [])].join(", ")));
+      // The accessible name carries the visible tags, the as-of line and the note, so "search only" is heard too.
+      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...tags, ...(asOf ? [asOf] : []), ...(note ? [note] : [])].join(", ")));
       b.addEventListener("mousedown", (e) => e.preventDefault());
       b.addEventListener("click", () => {
         this.closeResults(which);
         input.blur();
+        // A brand is not a destination of its own: the store carries the route (#419).
         if (which === "from") this.setOrigin({ kind: "poi", poi: h.poi });
-        else this.setDestination(h.poi);
+        else this.setDestination(h.poi, h.tenant ? this.findTenant(h.tenant.id) : null);
       });
       box.append(b);
     });
@@ -569,9 +595,11 @@ export class App {
     this.updateUrl();
   }
 
-  private setDestination(p: Poi): void {
+  /** `tenant` is set only when the destination was picked through a store's brand directory (#419). */
+  private setDestination(p: Poi, tenant: Tenant | null = null): void {
     if (!this.ownsPoi(p)) return;
     this.s.destination = p;
+    this.s.destinationTenant = tenant;
     this.refreshAll();
     this.updateUrl();
   }
@@ -580,6 +608,8 @@ export class App {
     const o = this.s.origin;
     const d = this.s.destination;
     this.s.destination = o?.kind === "poi" ? o.poi : null;
+    // The previous destination's brand does not describe the new one.
+    this.s.destinationTenant = null;
     this.s.origin = d ? { kind: "poi", poi: d } : null;
     this.refreshAll();
     this.updateUrl();
@@ -600,6 +630,7 @@ export class App {
     this.leaveGuide();
     this.s.origin = { kind: "poi", poi: to };
     this.s.destination = from;
+    this.s.destinationTenant = null;
     this.refreshAll();
     this.updateUrl();
   }
@@ -694,6 +725,9 @@ export class App {
       const card = el("div", "card no-route");
       const view = r.reason === "no_path" && this.s.noPath ? noPathView(t, this.s.noPath) : null;
       card.append(el("h2", undefined, t.noRoute), el("p", undefined, view?.text ?? noRouteText(t, r, this.s.destination)));
+      // The picked brand came from an unverified directory (#419): the failed card says when it was checked.
+      const asOf = tenantAsOfNote(this.s.destinationTenant, t);
+      if (asOf) card.append(el("p", "muted tenant-asof", asOf));
       const origin = this.s.origin?.kind === "poi" ? this.s.origin.poi : null;
       const endpointNote = r.reason === "unknown_goal" ? poiNoteText(this.s.destination, this.s.lang)
         : r.reason === "unknown_start" ? poiNoteText(origin, this.s.lang) : null;
@@ -720,6 +754,9 @@ export class App {
       return;
     }
     const card = el("div", "card route");
+    const destTenant = this.s.destinationTenant;
+    // A tenant destination names the brand on the store's card; the route still ends at the store's entrances.
+    if (destTenant) card.append(el("h2", "route-title", this.destinationLabel()));
     const head = el("div", "route-head");
     head.append(
       el("strong", "big", t.minutes(Math.max(1, Math.round(r.estimatedSeconds / 60)))),
@@ -731,6 +768,12 @@ export class App {
     card.append(el("p", "muted pace-note", t.paceNote(ROUTE_PACE.walkMps, ROUTE_PACE.stairsMps)));
     // No station records an on-site check, so a real station's route is always said to be desk-checked only (synthetic data says so itself).
     if (!r.synthetic) card.append(el("p", "desk-check", t.deskChecked));
+    // Store floors above ground are not modelled: the guide stops at the store, never at the brand's floor.
+    // The brand came from an unverified directory (#419), so the card repeats when it was checked.
+    if (destTenant) {
+      const asOf = tenantAsOfNote(destTenant, t);
+      card.append(el("p", "muted tenant-floors", asOf ? `${t.tenantFloorsNotGuided} · ${asOf}` : t.tenantFloorsNotGuided));
+    }
 
     const badges = el("div", "badges");
     const badge = (text: string, cls: string, title?: string) => { const x = el("span", `badge ${cls}`, text); if (title) x.title = title; badges.append(x); };
