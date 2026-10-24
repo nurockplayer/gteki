@@ -14,7 +14,9 @@ type Kind = "string" | "number" | "boolean" | "array" | "object" | "tri" | "stri
 type Spec = Record<string, Kind | `${Kind}?`>;
 
 const SPECS = {
-  station: { id: "string", names: "array", codes: "array?", operators: "array", origin: "object", frame: "string", datasetVersion: "string", generatedAt: "string", synthetic: "boolean" },
+  station: { id: "string", names: "array", identity: "object?", codes: "array?", operators: "array", origin: "object", frame: "string", datasetVersion: "string", generatedAt: "string", synthetic: "boolean" },
+  identity: { names: "array", sides: "array?" },
+  identitySide: { side: "string", exit: "array", landmark: "array", evidence: "object", verification: "string" },
   origin: { lat: "number", lon: "number", hM: "number|null", datum: "string", crs: "string" },
   source: { id: "string", title: "string", publisher: "string", url: "string", license: "object|null", rights: "string", attribution: "string", modified: "boolean", retrievedAt: "string|null", datasetDate: "string|null", downloadUrls: "array?", usage: "string?", decision: "object?", override: "object?", sha256: "object?", validUntil: "string|null?", notes: "string?" },
   floor: { id: "string", operatorId: "string", sourceLabels: "array", ordinal: "number|null", intermediate: "boolean", elevationM: "number|null", elevationSource: "string", renderElevationM: "number", displayNames: "array?" },
@@ -26,7 +28,7 @@ const SPECS = {
   text: { lang: "string", text: "string" },
   operator: { id: "string", names: "array" },
   code: { operatorId: "string", code: "string" },
-  license: { name: "string", url: "string" },
+  license: { name: "string|texts", url: "string" },
   decision: { url: "string", date: "string" },
   override: { decision: "string", date: "string" },
   sourceLabel: { operatorId: "string", label: "string", sourceId: "string" },
@@ -37,7 +39,7 @@ const SPECS = {
   gap: { id: "string", floorId: "string|null", zone: "string|texts", missingFact: "string|texts", fieldWorkNeeded: "string|texts", approximateExtent: "string|texts?", sourceDate: "string|null?" },
   point2: { x: "number", y: "number" },
   coverage: { summary: "array", areas: "array", gaps: "array", freshness: "string|null" },
-  asset: { id: "string", uri: "string", uriMobile: "string?", format: "string", floorIds: "array", role: "string", sourceIds: "array", transform: "array?", derivation: "string?", files: "array?" },
+  asset: { id: "string", uri: "string", uriMobile: "string?", format: "string", floorIds: "array", role: "string", sourceIds: "array", transform: "array?", derivation: "string?", derivationSummary: "array?", files: "array?" },
   dataFile: { id: "string", path: "string", sourceIds: "array", modified: "boolean", authored: "boolean?", derivation: "string?" },
 } satisfies Record<string, Spec>;
 
@@ -153,11 +155,21 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
       const st = m.station as Record<string, unknown>;
       c.check(st.origin, SPECS.origin, "station.json.station.origin");
       c.texts(st.names, "station.names");
+      if (st.identity !== undefined && c.check(st.identity, SPECS.identity, "station.identity")) {
+        const identity = st.identity as Record<string, unknown>;
+        c.texts(identity.names, "station.identity.names");
+        c.each(identity.sides, SPECS.identitySide, "station.identity.sides", (side, where) => {
+          c.texts(side.exit, `${where}.exit`);
+          c.texts(side.landmark, `${where}.landmark`);
+          c.evidence(side.evidence, `${where}.evidence`);
+        });
+      }
       c.each(st.operators, SPECS.operator, "station.operators", (op, where) => c.texts(op.names, `${where}.names`));
       c.each(st.codes, SPECS.code, "station.codes");
     }
     c.each(m.sources, SPECS.source, "sources", (src, where) => {
-      if (src.license !== null) c.check(src.license, SPECS.license, `${where}.license`);
+      if (src.license !== null && c.check(src.license, SPECS.license, `${where}.license`))
+        c.textOrTexts(src.license.name, `${where}.license.name`);
       if (src.decision !== undefined) c.check(src.decision, SPECS.decision, `${where}.decision`);
       if (src.override !== undefined) c.check(src.override, SPECS.override, `${where}.override`);
       c.strings(src.downloadUrls, `${where}.downloadUrls`);
@@ -185,6 +197,7 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
     c.strings(m.spawnNodeIds, "spawnNodeIds");
     c.each(m.dataFiles, SPECS.dataFile, "dataFiles", (file, where) => c.strings(file.sourceIds, `${where}.sourceIds`));
     c.each(m.assets, SPECS.asset, "assets", (asset, where) => {
+      c.texts(asset.derivationSummary, `${where}.derivationSummary`);
       c.strings(asset.floorIds, `${where}.floorIds`);
       c.strings(asset.sourceIds, `${where}.sourceIds`);
       c.strings(asset.files, `${where}.files`);

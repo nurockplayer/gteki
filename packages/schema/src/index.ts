@@ -38,7 +38,11 @@ export interface Source {
   url: string;
   /** Exact resource URL(s) that were downloaded, if any. */
   downloadUrls?: string[];
-  license: { name: string; url: string } | null;
+  /**
+   * Licence label, either a legacy plain string or localized text. Every localized entry must state the same
+   * licence/status; the UI's controlled rights label is authoritative for the source's rights status.
+   */
+  license: { name: string | LocalizedText[]; url: string } | null;
   rights: RightsStatus;
   /**
    * How GTEki uses the source. "facts-only": cited only as evidence for facts (a passage is
@@ -97,9 +101,24 @@ export interface Operator {
   names: LocalizedText[];
 }
 
+export interface StationIdentity {
+  /** Short place name without 駅 or a line qualifier. Requires ja and en; ja-Hrkt recommended. */
+  names: LocalizedText[];
+  /** Plain orientation facts, shown together only when every side has evidence. */
+  sides?: {
+    side: "east" | "west" | "north" | "south";
+    exit: LocalizedText[];
+    landmark: LocalizedText[];
+    evidence: EvidenceRef;
+    /** Confirmed requires at least two independent source publishers. */
+    verification: "confirmed" | "unverified";
+  }[];
+}
+
 export interface Station {
   id: string;
   names: LocalizedText[];
+  identity?: StationIdentity;
   /** Station codes such as "E27"; operator-scoped. */
   codes?: { operatorId: string; code: string }[];
   operators: Operator[];
@@ -323,6 +342,8 @@ export interface Asset {
   files?: string[];
   /** e.g. "Blender build from PLATEAU ubld 53394576, 0.5 m grid"; disclosure of modification. */
   derivation?: string;
+  /** Plain-word, user-facing summary; `derivation` remains the full provenance record (#26). */
+  derivationSummary?: LocalizedText[];
 }
 
 /**
