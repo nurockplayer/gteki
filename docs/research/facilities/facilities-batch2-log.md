@@ -267,3 +267,10 @@ Per building:
 
 No rights decision was taken here; every source is REFERENCE_ONLY / facts-only under OD-34, and
 the 小田急 pages cite the second ruling comment as instructed.
+
+## Lead review (2026-10-24, data-research-05)
+
+- ecbo cloak(エクボクローク) 2階＝ギフトサロン: added as `service-sjk-odakyudept-008` (category service, not locker). It is a printed luggage-storage service with a printed location, which travellers search for.
+- AED: the 5 Odakyu floor POIs stand, because the floor guide prints an AED icon on each of those floors. Tobu's staff-area AEDs stay out (not customer areas).
+- ATMs printed only inside HTML comments or as legend icons without a place are correctly not imported (not printed for readers).
+- Totals: Ikebukuro 39, Shinjuku 32.
