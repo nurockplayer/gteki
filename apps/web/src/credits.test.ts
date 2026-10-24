@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Source } from "@gteki/schema";
-import { assetDerivationPresentation, factsOnlyCredit, overrideCredits, rightsLabel, safeHref, sourceCredit } from "./credits.ts";
+import type { DataFile } from "@gteki/schema";
+import { assetDerivationPresentation, dataFileCredits, factsOnlyCredit, overrideCredits, rightsLabel, safeHref, sourceCredit } from "./credits.ts";
 import { entryRightsLabels } from "./creditLine.ts";
 import { strings } from "./i18n.ts";
 
@@ -176,5 +177,48 @@ describe("owner override credit (#249)", () => {
   it("omits the decision when absent and returns null for other rights", () => {
     expect(overrideCredits([{ ...ownerOverride, override: undefined } as Source], strings("en"))?.decisions).toEqual([]);
     expect(overrideCredits([glbSource], strings("en"))).toBeNull();
+  });
+});
+
+describe("data file credits (#121)", () => {
+  const plateau: Source = { ...glbSource, id: "plateau-lod2", title: "PLATEAU LOD2 buildings" } as Source;
+  const guide: Source = { ...glbSource, id: "guide-2022", title: "Station guide 2022" } as Source;
+  const file = (over: Partial<DataFile>): DataFile => ({ id: "f", path: "data/f.json", sourceIds: [], modified: false, ...over });
+
+  it("excludes authored files even when they carry a derivation", () => {
+    const rows = dataFileCredits([
+      file({ id: "config", path: "data/config.json", authored: true, derivation: "written by hand" }),
+      file({ id: "built", path: "data/built.json", sourceIds: ["plateau-lod2"], modified: true, derivation: "tools/build.ts" }),
+    ], [plateau]);
+    expect(rows.map((r) => r.id)).toEqual(["built"]);
+  });
+
+  it("excludes files without a derivation", () => {
+    expect(dataFileCredits([
+      file({ id: "none", sourceIds: ["plateau-lod2"] }),
+      file({ id: "empty", sourceIds: ["plateau-lod2"], derivation: "" }),
+    ], [plateau])).toEqual([]);
+  });
+
+  it("looks up source titles and falls back to the id when the source is missing", () => {
+    expect(dataFileCredits([
+      file({ id: "mixed", path: "data/mixed.json", sourceIds: ["plateau-lod2", "unknown-src"], modified: true, derivation: "tools/mix.ts" }),
+    ], [plateau, guide])).toEqual([
+      { id: "mixed", path: "data/mixed.json", derivation: "tools/mix.ts", sourceTitles: ["PLATEAU LOD2 buildings", "unknown-src"] },
+    ]);
+  });
+
+  it("keeps manifest order", () => {
+    const rows = dataFileCredits([
+      file({ id: "b", derivation: "d-b", modified: true, sourceIds: ["guide-2022"] }),
+      file({ id: "a", derivation: "d-a", modified: true, sourceIds: ["plateau-lod2"] }),
+      file({ id: "c", derivation: "d-c", modified: true, sourceIds: [] }),
+    ], [plateau, guide]);
+    expect(rows.map((r) => r.id)).toEqual(["b", "a", "c"]);
+    expect(rows[2]!.sourceTitles).toEqual([]);
+  });
+
+  it("returns an empty list when dataFiles is undefined", () => {
+    expect(dataFileCredits(undefined, [plateau])).toEqual([]);
   });
 });

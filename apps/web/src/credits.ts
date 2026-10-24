@@ -1,4 +1,4 @@
-import type { LocalizedText, Source } from "@gteki/schema";
+import type { DataFile, LocalizedText, Source } from "@gteki/schema";
 import type { Strings } from "./i18n.ts";
 import { coverageText, type Lang } from "./i18n.ts";
 
@@ -42,6 +42,27 @@ export function assetDerivationPresentation(
 ): { text: string; details: string | null; detailsLabel: string | null } {
   if (!summary?.length) return { text: derivation, details: null, detailsLabel: null };
   return { text: coverageText(summary, lang), details: derivation, detailsLabel };
+}
+
+/** A declared data file credit row (#121): derivation and the titles of the sources it was made from. */
+export interface DataFileCredit {
+  id: string;
+  path: string;
+  derivation: string;
+  sourceTitles: string[];
+}
+
+/** Rows for the data files GTEki did not author and that name a derivation; manifest order is kept. */
+export function dataFileCredits(dataFiles: readonly DataFile[] | undefined, sources: readonly Source[]): DataFileCredit[] {
+  if (!dataFiles?.length) return [];
+  return dataFiles
+    .filter((f) => !f.authored && f.derivation)
+    .map((f) => ({
+      id: f.id,
+      path: f.path,
+      derivation: f.derivation!,
+      sourceTitles: f.sourceIds.map((id) => sources.find((s) => s.id === id)?.title ?? id),
+    }));
 }
 
 /** The extra line a facts-only source carries instead of a licence: the #26 wording and, when safe, the decision link. */
