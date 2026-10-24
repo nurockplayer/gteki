@@ -13,6 +13,7 @@
  *
  * File layout (station-owned; shared core only reads): stations/<id>/gteki/
  *   station.json → StationManifestFile, graph.json → GraphFile, pois.json → PoiFile,
+ *   optional tenants.json → TenantFile (a store's own brand directory; #419),
  *   optional scene.ts (see @gteki/scene-api). `composeBundle` joins them into a StationBundle.
  */
 
@@ -101,9 +102,24 @@ export interface Operator {
   names: LocalizedText[];
 }
 
+export interface StationIdentity {
+  /** Short place name without 駅 or a line qualifier. Requires ja and en; ja-Hrkt recommended. */
+  names: LocalizedText[];
+  /** Plain orientation facts, shown together only when every side has evidence. */
+  sides?: {
+    side: "east" | "west" | "north" | "south";
+    exit: LocalizedText[];
+    landmark: LocalizedText[];
+    evidence: EvidenceRef;
+    /** Confirmed requires at least two independent source publishers. */
+    verification: "confirmed" | "unverified";
+  }[];
+}
+
 export interface Station {
   id: string;
   names: LocalizedText[];
+  identity?: StationIdentity;
   /** Station codes such as "E27"; operator-scoped. */
   codes?: { operatorId: string; code: string }[];
   operators: Operator[];
@@ -370,6 +386,8 @@ export interface StationBundle {
   spawnNodeIds?: string[];
   assets?: Asset[];
   dataFiles?: DataFile[];
+  /** Brands listed by stores' own directories (optional `gteki/tenants.json`). Facts only, never routing targets. */
+  tenants?: Tenant[];
 }
 
 /** stations/<id>/gteki/station.json */
@@ -397,6 +415,39 @@ export interface PoiFile {
   schema: typeof SCHEMA_VERSION;
   stationId: string;
   pois: Poi[];
+}
+
+/** stations/<id>/gteki/tenants.json (optional, #419). */
+export const TENANTS_SCHEMA_VERSION = "gteki.tenants/0.1" as const;
+
+/**
+ * A brand listed by a store's own directory. Facts only: never a routing target, never positioned.
+ * Everything the directory states beyond name, floor and category (hours, "open now", logos, layouts) is left out.
+ */
+export interface Tenant {
+  /** `tenant-<store>-<n>`, stable, never reused. */
+  id: string;
+  /** The store POI that lists it (an existing POI in this bundle, category "shop"). */
+  poiId: string;
+  /** Brand name exactly as printed (`ja`, whatever the script). No invented translation. */
+  names: LocalizedText[];
+  /** Only variants the source itself prints (e.g. its kana). */
+  aliases: LocalizedText[];
+  /**
+   * The store's own floor label as printed ("8F", "B1", "本館 2F"). Free text, NOT a station `floorId`:
+   * store floors are never equated with station floors (docs/core/contract.md).
+   */
+  floorLabel: LocalizedText[];
+  /** The directory's category as printed, if any (婦人服, レストラン …). Display/filter only. */
+  category?: LocalizedText[];
+  /** The directory that prints this listing; `facts-only` sources only (the UI marks it unverified). */
+  evidence: EvidenceRef;
+}
+
+/** stations/<id>/gteki/tenants.json */
+export interface TenantFile {
+  schema: typeof TENANTS_SCHEMA_VERSION;
+  tenants: Tenant[];
 }
 
 export { ASSET_FILE_EXT, DATA_FILE_EXT, dataFileFactsOnlySources, isCanonicalAssetPath, validateBundle, type ValidationIssue } from "./validate.ts";

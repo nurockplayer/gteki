@@ -13,7 +13,7 @@ const alpha: DeclaredStationFiles = {
   declared: new Set([at("scene/signage.json"), at("gteki/assets/b1.meta.json")]),
   escapes: new Map(),
 };
-const alphaStation: DiscoveredStation = { dir: "alpha", folder, gtekiDir: path.join(folder, "gteki"), scene: at("scene/scene.ts"), assets: [] };
+const alphaStation: DiscoveredStation = { dir: "alpha", folder, gtekiDir: path.join(folder, "gteki"), scene: at("scene/scene.ts"), tenants: null, assets: [] };
 
 describe("outsideStationData", () => {
   const outsideJson = path.join(path.sep, "repo", "assets", "shared.json");
@@ -83,7 +83,7 @@ describe("wrappedStationData", () => {
     const original = `export default [${Array.from({ length: 6000 }, (_, i) => `{"name":"row-${i}","value":${i}}`).join(",")}]`;
     const transformed = `export default rows.map((row) => ({name: row.name, value: Number(row.value)}));\n${"// transform output formatting\n".repeat(5000)}`;
     fs.writeFileSync(sourceId, original);
-    const station: DiscoveredStation = { dir: "alpha", folder: stationFolder, gtekiDir, scene: null, assets: [] };
+    const station: DiscoveredStation = { dir: "alpha", folder: stationFolder, gtekiDir, scene: null, tenants: null, assets: [] };
     const sources = stationCodeSources([sourceId], [station]);
     expect(sources.get(sourceId)).toBe(original);
     expect(isInlineDataCode(sourceId, transformed)).toBe(false);

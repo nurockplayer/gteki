@@ -98,7 +98,7 @@
   "stations": {
     "shinjuku": {
       "materials": {
-        "material_0": {
+        "mat.floor": {
           "style": "floor_terrazzo",
           "from": {
             "color": "#ffffff",
@@ -116,7 +116,7 @@
             "evidence": "source mat.floor (concourseTiles texture, stripped from the snapshot, so it reads #ffffff), roughness 0.72; the merged concourse floor meshes walkable/walkable2/walkable4"
           }
         },
-        "material_1": {
+        "mat.ceiling": {
           "style": "ceiling_spandrel",
           "from": {
             "color": "#c0c2bd",
@@ -132,7 +132,7 @@
             "evidence": "source mat.ceiling (#c0c2bd, roughness 0.96); the merged ceiling slabs, one of them the lift interior hood"
           }
         },
-        "material_2": {
+        "mat.wall": {
           "style": "steel_painted_light",
           "from": {
             "color": "#d3cec4",
@@ -146,7 +146,7 @@
           },
           "provisional": "OD-30 via R10 (#234): second-hand description of grey panels; not E27 fact"
         },
-        "material_3": {
+        "mat.floorPaid": {
           "style": "floor_terrazzo",
           "from": {
             "color": "#ffffff",
@@ -164,7 +164,7 @@
             "evidence": "source mat.floorPaid (paidTiles texture, stripped), roughness 0.68; the merged paid-area floor meshes walkable3/walkable5/walkable6"
           }
         },
-        "material_5": {
+        "mat.floorPlatform": {
           "style": "floor_terrazzo",
           "from": {
             "color": "#ffffff",
@@ -180,7 +180,7 @@
             "evidence": "source mat.floorPlatform (platformTiles texture, stripped), roughness 0.82; the one platform floor mesh walkable8"
           }
         },
-        "material_11": {
+        "mat.accent": {
           "style": "oedo_accent",
           "from": {
             "color": "#b0186f",
@@ -193,7 +193,7 @@
             "evidence": "source mat.accent (OEDO_MAGENTA #b0186f, the GTEki-chosen value since #264 / OD-29 (was #b6007a), roughness 0.4, faint emission): the 40 mm identity bands along the walls. The train stripe primitives share this source material and are repainted with it. Kept as the station-identity cue; the override is a duplicate, so the source's emission survives"
           }
         },
-        "material_34": {
+        "mat.lightHousing": {
           "style": "aluminium_anodised",
           "from": {
             "color": "#9a9ea2",
@@ -206,7 +206,7 @@
             "evidence": "source mat.lightHousing (#9a9ea2, metal 0.6, roughness 0.35); the merged light-fixture housings"
           }
         },
-        "material_35": {
+        "mat.tactile": {
           "style": "tactile_dots",
           "from": {
             "color": "#ffffff",
@@ -219,7 +219,7 @@
             "evidence": "source mat.tactile (tactile texture, stripped, so it reads #ffffff), roughness 0.6; the one merged tactile-paving mesh"
           }
         },
-        "material_37": {
+        "mat.nosing": {
           "style": "vertical_safety_yellow",
           "from": {
             "color": "#303532",
@@ -233,7 +233,7 @@
           },
           "provisional": "representative finish from the style bible; not verified for E27 (R10 found no source)"
         },
-        "material_38": {
+        "mat.rubber": {
           "style": "rubber_black",
           "from": {
             "color": "#121314",
@@ -246,7 +246,7 @@
             "evidence": "source mat.rubber (#121314, roughness 0.55); the merged handrail surfaces"
           }
         },
-        "material_40": {
+        "mat.gateBody": {
           "style": "gate_body",
           "from": {
             "color": "#e9ebec",
@@ -259,7 +259,7 @@
             "evidence": "source mat.gateBody (#e9ebec, metal 0.15, roughness 0.35); the merged gate cabinets"
           }
         },
-        "material_41": {
+        "mat.gateTop": {
           "style": "gate_top",
           "from": {
             "color": "#303634",
@@ -272,7 +272,7 @@
             "evidence": "source mat.gateTop (#303634, metal 0.15, roughness 0.58); the merged gate caps"
           }
         },
-        "material_52": {
+        "mat.steel": {
           "style": "steel_brushed",
           "from": {
             "color": "#aab2b5",
@@ -302,9 +302,9 @@
         },
         {
           "materials": [
-            "material_28",
-            "material_31",
-            "material_29"
+            "mat.trainBody",
+            "mat.trainDoor",
+            "mat.trainWindow"
           ],
           "color": "#d9dcde",
           "metal": 0.75,
@@ -314,7 +314,7 @@
         },
         {
           "materials": [
-            "material_30"
+            "mat.darkSteel"
           ],
           "color": "#3b3f44",
           "metal": 0.6,
@@ -324,7 +324,7 @@
         },
         {
           "materials": [
-            "material_4"
+            "mat.psdLeaf"
           ],
           "color": "#c9d6dd",
           "metal": 0.4,
@@ -334,7 +334,7 @@
         },
         {
           "materials": [
-            "material_53"
+            "mat.glass"
           ],
           "color": "#b4ccd1",
           "metal": 0.08,
@@ -344,7 +344,7 @@
         },
         {
           "materials": [
-            "material_39"
+            "mat.flap"
           ],
           "color": "#e64060",
           "metal": 0.0,
@@ -354,7 +354,7 @@
         },
         {
           "materials": [
-            "material_10"
+            "mat.psd"
           ],
           "color": "#d4d8dc",
           "metal": 0.5,
@@ -364,7 +364,7 @@
         },
         {
           "materials": [
-            "material_9"
+            "mat.light"
           ],
           "color": "#ffffff",
           "metal": 0.0,
@@ -384,7 +384,7 @@
         },
         {
           "materials": [
-            "material_6"
+            "mat.trackBed"
           ],
           "color": "#2a2826",
           "metal": 0.0,
@@ -394,7 +394,7 @@
         },
         {
           "materials": [
-            "material_7"
+            "mat.rail"
           ],
           "color": "#8d8f92",
           "metal": 0.9,
@@ -404,7 +404,7 @@
         },
         {
           "materials": [
-            "material_8"
+            "mat.tunnel"
           ],
           "color": "#3a3b3d",
           "metal": 0.0,
@@ -414,7 +414,7 @@
         },
         {
           "materials": [
-            "material_33"
+            "mat.escStep"
           ],
           "color": "#6d7177",
           "metal": 0.7,
@@ -424,7 +424,7 @@
         },
         {
           "materials": [
-            "material_36"
+            "mat.stair"
           ],
           "color": "#8d887d",
           "metal": 0.0,
@@ -434,8 +434,8 @@
         },
         {
           "materials": [
-            "material_42",
-            "material_54"
+            "mat.gateIc",
+            "mat.gateOk"
           ],
           "color": "#1a507e",
           "metal": 0.0,
@@ -460,7 +460,7 @@
             "material_24",
             "material_25",
             "material_26",
-            "material_47",
+            "mat.sidewalk",
             "(unnamed)"
           ],
           "color": "#f2eee5",
@@ -486,7 +486,7 @@
         },
         {
           "materials": [
-            "material_45"
+            "mat.portal"
           ],
           "color": "#7fd3ff",
           "metal": 0.0,
@@ -515,14 +515,14 @@
             "material_22",
             "material_20",
             "material_21",
-            "material_11",
+            "mat.accent",
             "material_18",
             "material_17",
             "material_15",
             "material_14",
             "material_13",
             "material_12",
-            "material_5"
+            "mat.floorPlatform"
           ],
           "color": "#ffffff",
           "metal": 0.0,
@@ -542,7 +542,7 @@
         },
         {
           "materials": [
-            "material_8"
+            "mat.tunnel"
           ],
           "color": "#9aa0a7",
           "metal": 0.35,
@@ -552,7 +552,7 @@
         },
         {
           "materials": [
-            "material_4"
+            "mat.psdLeaf"
           ],
           "color": "#9b958c",
           "metal": 0.0,
@@ -562,7 +562,7 @@
         },
         {
           "materials": [
-            "material_0"
+            "mat.floor"
           ],
           "color": "#c6cacf",
           "metal": 0.0,
@@ -572,7 +572,7 @@
         },
         {
           "materials": [
-            "material_9"
+            "mat.light"
           ],
           "color": "#dedee0",
           "metal": 0.0,
@@ -592,7 +592,7 @@
         },
         {
           "materials": [
-            "material_10"
+            "mat.psd"
           ],
           "color": "#ffffff",
           "metal": 0.0,
@@ -602,7 +602,7 @@
         },
         {
           "materials": [
-            "material_2"
+            "mat.wall"
           ],
           "color": "#ffffff",
           "metal": 0.0,
@@ -612,7 +612,7 @@
         },
         {
           "materials": [
-            "material_7"
+            "mat.rail"
           ],
           "color": "#ffffff",
           "metal": 0.0,
@@ -622,7 +622,7 @@
         },
         {
           "materials": [
-            "material_1"
+            "mat.ceiling"
           ],
           "color": "#ffffff",
           "metal": 0.0,
@@ -632,7 +632,7 @@
         },
         {
           "materials": [
-            "material_3"
+            "mat.floorPaid"
           ],
           "color": "#ffffff",
           "metal": 0.0,

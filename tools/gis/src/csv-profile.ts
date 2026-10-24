@@ -44,7 +44,26 @@ const MAX_NAME = 40;
 const MAX_CRS_VALUES = 8;
 const MAX_CRS_VALUE_LENGTH = 60;
 export const TOKYO_BOX = { latMin: 35.4, latMax: 35.95, lonMin: 138.9, lonMax: 140.0 };
-const JAPAN_BOX = { latMin: 20, latMax: 46, lonMin: 122, lonMax: 154 };
+export const JAPAN_BOX = { latMin: 20, latMax: 46, lonMin: 122, lonMax: 154 };
+
+/**
+ * The Japan-range axis check: (latitude, longitude) pairs as labelled are inside the Japan box in 122-154 / 24-46 unless the columns
+ * are swapped (the two ranges are disjoint). Only a file whose positions are inside as labelled is read as `lat, lon`; anything
+ * ambiguous is INDETERMINATE and calls refuse it rather than guess.
+ */
+export type AxisSwap = { verdict: 'NO_COORDINATES' | 'NOT_SWAPPED' | 'SWAPPED' | 'MIXED' | 'INDETERMINATE'; as_is_in_japan: number; swapped_in_japan: number; as_is_in_tokyo_box: number };
+export function axisSwapCheck(points: ReadonlyArray<readonly [number, number]>): AxisSwap {
+  const asIs = points.filter(([lat, lon]) => inBox(lat, lon, JAPAN_BOX)).length;
+  const swapped = points.filter(([lat, lon]) => !inBox(lat, lon, JAPAN_BOX) && inBox(lon, lat, JAPAN_BOX)).length;
+  const tokyo = points.filter(([lat, lon]) => inBox(lat, lon, TOKYO_BOX)).length;
+  let verdict: AxisSwap['verdict'];
+  if (points.length === 0) verdict = 'NO_COORDINATES';
+  else if (asIs / points.length >= 0.9) verdict = 'NOT_SWAPPED';
+  else if (swapped / points.length >= 0.9) verdict = 'SWAPPED';
+  else if (asIs > 0 && swapped > 0) verdict = 'MIXED';
+  else verdict = 'INDETERMINATE';
+  return { verdict, as_is_in_japan: asIs, swapped_in_japan: swapped, as_is_in_tokyo_box: tokyo };
+}
 
 export function decodeCsvBytes(buffer: Buffer): { text: string; encoding: CsvProfile['encoding'] } {
   const bom = buffer.length >= 3 && buffer[0] === 0xef && buffer[1] === 0xbb && buffer[2] === 0xbf;
@@ -181,21 +200,12 @@ export function profileTable(records: string[][], encoding: CsvProfile['encoding
     maxLon = Math.max(maxLon, lon); maxLat = Math.max(maxLat, lat);
   }
   const bbox = points.length ? { lon_min: minLon, lat_min: minLat, lon_max: maxLon, lat_max: maxLat } : null;
-  const asIs = points.filter(([lat, lon]) => inBox(lat, lon, JAPAN_BOX)).length;
-  const swapped = points.filter(([lat, lon]) => !inBox(lat, lon, JAPAN_BOX) && inBox(lon, lat, JAPAN_BOX)).length;
-  const tokyo = points.filter(([lat, lon]) => inBox(lat, lon, TOKYO_BOX)).length;
-  let verdict: CsvProfile['axis_swap']['verdict'];
-  if (points.length === 0) verdict = 'NO_COORDINATES';
-  else if (asIs / points.length >= 0.9) verdict = 'NOT_SWAPPED';
-  else if (swapped / points.length >= 0.9) verdict = 'SWAPPED';
-  else if (asIs > 0 && swapped > 0) verdict = 'MIXED';
-  else verdict = 'INDETERMINATE';
   // Window counts use the as-is order unless the whole file is swapped; the swapped count is always reported next to it.
   return {
     kind: 'csv', encoding, delimiter, rows: data.length, ragged_rows: data.filter((r) => (delimiter === 'n/a' ? r.length > header.length : r.length !== header.length)).length, columns,
     lat_columns: latIdx.map((i) => columns[i]), lon_columns: lonIdx.map((i) => columns[i]), crs_columns: crsIdx.map((i) => columns[i]), crs_values: crsValues,
     coordinates: { used_lat: li === undefined ? null : columns[li], used_lon: oi === undefined ? null : columns[oi], valid_rows: points.length, blank_rows: blank, invalid_rows: invalid, bbox },
-    axis_swap: { verdict, as_is_in_japan: asIs, swapped_in_japan: swapped, as_is_in_tokyo_box: tokyo },
+    axis_swap: axisSwapCheck(points),
     windows: windowCounts(points, windows),
   };
 }

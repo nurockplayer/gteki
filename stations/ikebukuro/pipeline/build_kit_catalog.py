@@ -8,6 +8,9 @@ Reads scene/dressing_anchors.json (and the committed base GLB for wall proximity
     scene/kit_catalog.json     Lane E catalog (tools/blender/catalog schema): `CATALOG=<path>` builds the GLBs
     scene/kit_placements.json  per anchor flight / lane: catalog ids plus the ENU transform of the piece origin
 
+Stairs keep whole-millimetre risers when their surveyed nosings fit the built strips; a failing flight retries at
+0.1 mm precision before it is skipped.
+
 Stdlib only, deterministic: same inputs, same bytes. Nothing here changes the lit GLB, the bake or the graph.
 
 Generator conventions (tools/blender/gteki_assets/families/dressing.py, PR #143):
@@ -57,7 +60,7 @@ PLACEMENTS_SCHEMA = "gteki.ikebukuro.kit-placements/0"
 SOURCE_ID = "plateau-ubld-13116"
 ID_PREFIX = "gteki_ik_"
 
-QUANT_MM = 1                  # whole mm: flights are nearly all unique anyway, and coarser snapping accumulates over a flight
+QUANT_MM = 1                  # prefer whole mm; retry a stair at 0.1 mm only when whole-mm nosings exceed the strip
 RISER_MM = (100, 220)         # a plausible stair riser, on the unquantised value
 MIN_TREAD_MM = 200
 # The generator spaces nosings by one uniform riser, and its nosing strip is 6 mm high (dressing.py _nosings): a
@@ -107,6 +110,12 @@ def sha256_file(path):
 def quant(mm):
     """Snap to QUANT_MM, halves up (not Python's banker's rounding), so the result never depends on float noise."""
     return int(math.floor(mm / QUANT_MM + 0.5)) * QUANT_MM
+
+
+def riser_token(mm):
+    """Encode whole-mm risers as-is and one-decimal risers in tenths of a millimetre, without a dot."""
+    value = float(mm)
+    return str(int(value)) if value.is_integer() else str(int(round(value * 10)))
 
 
 def median(values):
@@ -275,15 +284,25 @@ def plan_stair(flight, walls):
         return None, f"implausible riser {riser:.0f} mm ({n} steps, rise {flight['rise_m']} m); outside {RISER_MM[0]}-{RISER_MM[1]} mm", None
     if tread < MIN_TREAD_MM:
         return None, f"implausible tread {tread:.0f} mm (run {flight['run_m']} m per step); under {MIN_TREAD_MM} mm", None
-    # Each surveyed nosing (not every step has one) against the strip the generator will actually build for that step:
-    # the step index comes from the survey's own spacing, the height from the whole-millimetre riser the catalog ships,
-    # stacked from the placement origin (the bottom nosing), so rounding drift over a long flight counts too.
-    z0, step, built = flight["bottom"]["position"][2], flight["rise_m"] / (n - 1), quant(riser) / 1000.0
-    dev = max((abs((r[4] - z0) - round((r[4] - z0) / step) * built) for r in flight["nosings"]), default=0.0) * 1000.0
+    # Check every surveyed nosing against the strip the generator will build. The survey supplies the step index;
+    # built height is stacked from the bottom nosing, so rounding drift over a long flight counts too.
+    z0, step = flight["bottom"]["position"][2], flight["rise_m"] / (n - 1)
+
+    def nosing_deviation(built_riser_mm):
+        built = built_riser_mm / 1000.0
+        return max((abs((r[4] - z0) - round((r[4] - z0) / step) * built) for r in flight["nosings"]), default=0.0) * 1000.0
+
+    shipped_riser = quant(riser)
+    dev = nosing_deviation(shipped_riser)
     if round(dev, 1) > MAX_NOSING_DEV_MM:  # at 0.1 mm, so float noise never decides a flight sitting on the limit
-        return None, f"nosing mismatch: a surveyed nosing is {dev:.1f} mm off the generated strip (uneven risers or riser rounding; strip is {MAX_NOSING_DEV_MM:g} mm high)", None
+        fallback_riser = round(riser, 1)
+        fallback_dev = nosing_deviation(fallback_riser)
+        if round(fallback_dev, 1) > MAX_NOSING_DEV_MM:
+            return None, (f"nosing mismatch: a surveyed nosing is {dev:.1f} mm off the whole-mm strip and "
+                          f"{fallback_dev:.1f} mm off the 0.1-mm strip (both tried; strip is {MAX_NOSING_DEV_MM:g} mm high)"), None
+        shipped_riser, dev = fallback_riser, fallback_dev
     width = median([math.hypot(r[2] - r[0], r[3] - r[1]) for r in flight["nosings"]]) * 1000.0
-    params = {"step_count": n, "riser_mm": quant(riser), "tread_mm": quant(tread), "width_mm": quant(width)}
+    params = {"step_count": n, "riser_mm": shipped_riser, "tread_mm": quant(tread), "width_mm": quant(width)}
     err = {
         "riser_mm": round(abs(params["riser_mm"] - riser), 3),
         "tread_mm": round(abs(params["tread_mm"] - tread), 3),
@@ -407,7 +426,9 @@ def main(argv=None):
     rails_key_flights = {}
     for key in sorted(stair_groups):
         n, r, t, w = key
-        base = f"{ID_PREFIX}stair_n{n}_r{r}_t{t}_w{w}"
+        base = f"{ID_PREFIX}stair_n{n}_r{riser_token(r)}_t{t}_w{w}"
+        riser_snap = (f"riser snapped to 0.1 mm; tread and width to {QUANT_MM} mm"
+                      if not float(r).is_integer() else f"each snapped to {QUANT_MM} mm")
         flights = sorted(f["id"] for f, *_ in stair_groups[key])
         nosing_id = f"{base}_nosing"
         entries[nosing_id] = {
@@ -416,7 +437,8 @@ def main(argv=None):
             "dimension_basis": "station-verified",
             "notes": (f"Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: {cite}. "
                       f"Flights: {', '.join(flights)} (step_count = surveyed nosing lines; riser = rise / (steps - 1); "
-                      f"tread = mean nosing-to-nosing run; width = median nosing line; each snapped to {QUANT_MM} mm)."),
+                      f"tread = mean nosing-to-nosing run; width = median nosing line; "
+                      f"{riser_snap})."),
             "tags": ["dressing", "stair", "ikebukuro", "nosing"],
         }
         for flight, params, err, extra in stair_groups[key]:
