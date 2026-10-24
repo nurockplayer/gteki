@@ -8,6 +8,8 @@
  * scene relied on, and everything dropped or degraded, is listed in the sidecar `warnings`.
  */
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -19,7 +21,7 @@ import { enuToRenderer } from "@gteki/geo";
 import { parseStationFiles } from "@gteki/schema";
 import { glbPrimitivePlugin, type SceneContext, type StationScene, type StationSceneModule } from "@gteki/scene-api";
 import { headlessGltfTextures, headlessThree, installHeadlessDom, newShimUsage, stubRenderer, type ShimUsage } from "./headless-dom.ts";
-import { bakeInstancedMeshes, categoryOf, dropDynamicObjects, stripTextures, tagLightmaps, tagSceneRoles, type LightmapInfo, type RoleSummary } from "./scene-roles.ts";
+import { bakeInstancedMeshes, categoryOf, dropDynamicObjects, stripTextures, tagAoAtlases, tagLightmaps, tagSceneRoles, type AoAtlasBinding, type LightmapInfo, type RoleSummary } from "./scene-roles.ts";
 
 export const SIDECAR_SCHEMA = "gteki.godot-scene/0.1" as const;
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -49,6 +51,8 @@ export interface SceneSidecar {
   };
   /** The scene's baked lightmap, when it has one (three material state recorded before textures are stripped). */
   lightmap?: LightmapInfo;
+  /** The kit's shared AO atlases by kind, when the scene uses any (recorded before textures are stripped). */
+  ao_atlas_bindings?: Record<string, AoAtlasBinding>;
   /** Everything a shim degraded or the exporter dropped. Empty only if nothing was. */
   warnings: string[];
 }
@@ -68,6 +72,29 @@ export interface ExportResult {
   sidecar: SceneSidecar;
   glb: Uint8Array;
   seconds: number;
+}
+
+/** How long export waits for a station's background loads (`StationScene.settled`) before failing. Generous on purpose:
+ * the guard is against a hang, and Ikebukuro loads ~87 catalog GLBs serially on a shared, busy host. */
+export const SETTLE_TIMEOUT_MS = 120_000;
+
+/**
+ * Awaits the station's optional `settled()` (the scene-api field lands with #352; typed locally until then), bounded by
+ * `timeoutMs`. Resolves at once when the station has none. scene-api's contract is that settled() never hangs or
+ * rejects (it resolves once every load has finished, failures included); the timeout is export's own guard, and on
+ * it the export fails with the station id rather than writing a scene whose background content never arrived.
+ */
+export async function settleScene(scene: StationScene & { settled?: () => Promise<void> }, stationId: string, timeoutMs: number): Promise<void> {
+  if (typeof scene.settled !== "function") return;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, fail) => {
+    timer = setTimeout(() => fail(new Error(`station ${stationId}: scene did not settle within ${timeoutMs} ms (background loads still pending); not exporting a partial snapshot`)), timeoutMs);
+  });
+  try {
+    await Promise.race([scene.settled(), timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /** Read the canonical material order and names back from GLB's JSON chunk. */
@@ -165,6 +192,10 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
   const warnings: string[] = [];
   // Dynamic state (escalator steps, doors, crowd) is posed by update(); run it once so the snapshot is the t=0 pose.
   scene.update?.(0, 0);
+  // Content a station loads in the background (Ikebukuro's kit catalog) is only in the snapshot once it has settled;
+  // a station without `settled` is exported as today. A timeout fails the export rather than writing a partial scene.
+  await settleScene(scene, stationId, SETTLE_TIMEOUT_MS);
+  scene.update?.(0, 0);
   scene.root.updateMatrixWorld(true);
   const dropped = dropDynamicObjects(scene.root);
   if (dropped.length > 0) warnings.push(`ambient/skinned objects not exported (animated content, no static meaning): ${[...new Set(dropped)].join(", ")}`);
@@ -172,10 +203,16 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
   if (baked > 0) warnings.push(`${baked} InstancedMesh object(s) (escalator steps, platform-door leaves) baked into static merged meshes at their update(0, 0) pose; Godot 4.7 has no EXT_mesh_gpu_instancing import, per-instance colours and per-frame animation are not exported`);
   const roles = tagSceneRoles(scene);
   warnings.push(...roles.warnings);
-  // Before stripTextures: the lightmap lives on the material and would otherwise vanish with every other texture.
+  // Before stripTextures: the lightmap and kit AO atlases live on the material and would otherwise vanish with every
+  // other texture. The hash pins the exact station file, so the Godot side can refuse a stale atlas.
   const lightmap = tagLightmaps(scene.root);
+  const aoAtlases = tagAoAtlases(scene.root);
+  const aoAtlasBindings: Record<string, AoAtlasBinding> = {};
+  for (const [kind, atlas] of Object.entries(aoAtlases.bindings)) aoAtlasBindings[kind] = { ...atlas, sha256: createHash("sha256").update(readFileSync(inStation(atlas.uri))).digest("hex") };
+  warnings.push(...aoAtlases.warnings);
+  const atlasKinds = Object.keys(aoAtlasBindings).length;
   const stripped = stripTextures(scene.root);
-  warnings.push(`all material textures omitted (${stripped} slot(s)); only base colours, names and UVs (incl. TEXCOORD_1) are kept, so the snapshot is untextured and unlit${lightmap === null ? "" : "; the baked lightmap is described in the lightmap block and re-applied by the Godot client (G-4a)"}`);
+  warnings.push(`all material textures omitted (${stripped} slot(s)); only base colours, names and UVs (incl. TEXCOORD_1) are kept, so the snapshot is untextured and unlit${lightmap === null ? "" : "; the baked lightmap is described in the lightmap block and re-applied by the Godot client (G-4a)"}${atlasKinds === 0 ? "" : `; ${atlasKinds} kit AO atlas kind(s) are described in ao_atlas_bindings and re-applied by the Godot client (Lane E #391)`}`);
   if (usage.canvases > 0) warnings.push(`${usage.canvases} canvas(es) were no-op 2D contexts (blank): procedural textures and sign faces are placeholders, and ${usage.measuredTexts} measureText call(s) used an em-width estimate that may size signs differently from the browser`);
   if (usage.imageDataReads > 0) warnings.push(`${usage.imageDataReads} canvas getImageData read(s) returned zeros`);
   if (usage.pmremEnvironments > 0) warnings.push(`${usage.pmremEnvironments} PMREM environment map(s) stubbed (no GPU): reflections absent`);
@@ -212,6 +249,7 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
     counts,
     materials: glbMaterials.materials,
     ...(lightmap === null ? {} : { lightmap }),
+    ...(atlasKinds === 0 ? {} : { ao_atlas_bindings: aoAtlasBindings }),
     reference: {
       spawnPointsRenderer: spawns.map((p) => enuToRenderer(p)),
       wallSamplesRenderer: wallSamples,
