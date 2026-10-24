@@ -2,7 +2,7 @@
   "schema": "gteki.gis.osm-coverage/0.1",
   "command": "osm-coverage",
   "policy_version": "osm-coverage-v1",
-  "run_id": "osm-coverage-ikebukuro-f9d4314e1b4d1aa4236c",
+  "run_id": "osm-coverage-ikebukuro-fedef8a656a9da980fdb",
   "station_id": "ikebukuro",
   "gteki_role": "evidence",
   "navigation_use": "NOT_FOR_ROUTING",
@@ -418,5 +418,9 @@
       }
     ]
   },
-  "tool_version": "0.1.0"
+  "tool_version": "0.1.0",
+  "identity": {
+    "tool_input_sha256": "473de765510e44ca6959d54064e45859d766bd9a94de7bf9b4f3473f4477d7fa",
+    "comparison_sha256": "dca1f59937e410e2f6d7d8c03ef92ed8b7ed8bb9cf9ec7532c73c536a7199626"
+  }
 }

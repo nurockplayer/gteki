@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 import { docsRoot, getStoreRoot, getStoredSource, readJson, repoRoot, writeJson, TOOL_VERSION } from './common.js';
 import { assertNoSourceValues } from './context-overlay.js';
 import { stationEnuProjector } from './station-enu.js';
+import { toolFingerprint } from './provenance.js';
 
 /**
  * Offline OpenStreetMap coverage evidence for #437 (GIS Lane D).
@@ -1073,7 +1074,11 @@ export async function osmCoverage(station: string, options: { receiptDir?: strin
   }
 
   const query = { sha256: querySha256(stored.source.expected_url), radius_m: OSM_RADIUS_M, origin };
-  const digest = sha256(JSON.stringify({ policy: OSM_COVERAGE_POLICY_VERSION, station, source: stored.record.sha256, query: query.sha256 })).slice(0, 20);
+  // The run identity covers the tool itself and the comparison lists read from git (via their match tables), so a code
+  // or list change can never overwrite an earlier receipt under the same name.
+  const fingerprint = await toolFingerprint();
+  const comparisonSha256 = sha256(JSON.stringify(details));
+  const digest = sha256(JSON.stringify({ policy: OSM_COVERAGE_POLICY_VERSION, fingerprint, station, source: stored.record.sha256, query: query.sha256, comparison: comparisonSha256 })).slice(0, 20);
   const runId = `osm-coverage-${station}-${digest}`;
   const sourceValues = tagValueSet(elements);
   const keyCount = tagKeySet(elements).size;
@@ -1096,6 +1101,7 @@ export async function osmCoverage(station: string, options: { receiptDir?: strin
     run_id: runId,
     leak_guard: audit,
   }, sourceValues);
+  receipt.identity = { tool_input_sha256: fingerprint, comparison_sha256: comparisonSha256 };
   const receiptAudit = auditSourceValues([{ path: 'receipt', text: JSON.stringify(receipt) }], sourceValues, { priorText });
   if (receiptAudit.leaks.length) throw new Error(`Receipt audit failed (${receiptAudit.leaks.map((leak) => `${leak.path}: ${leak.count}`).join(', ')}); nothing written`);
 

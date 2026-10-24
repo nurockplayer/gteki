@@ -2,7 +2,7 @@
   "schema": "gteki.gis.osm-coverage/0.1",
   "command": "osm-coverage",
   "policy_version": "osm-coverage-v1",
-  "run_id": "osm-coverage-shinjuku-ce2c63247f14080f5055",
+  "run_id": "osm-coverage-shinjuku-9de4f5400b9e4c78441f",
   "station_id": "shinjuku",
   "gteki_role": "evidence",
   "navigation_use": "NOT_FOR_ROUTING",
@@ -408,5 +408,9 @@
       }
     ]
   },
-  "tool_version": "0.1.0"
+  "tool_version": "0.1.0",
+  "identity": {
+    "tool_input_sha256": "473de765510e44ca6959d54064e45859d766bd9a94de7bf9b4f3473f4477d7fa",
+    "comparison_sha256": "6436dcb3c20542c3fa5b7d2bf597339559103b226561a0f2e8e238a1246149cf"
+  }
 }
