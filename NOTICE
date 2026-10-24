@@ -210,6 +210,11 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        JSON files record their sources in sources[]; Markdown notes and logs
        cite them inline by URL. No page text, map, image, layout or logo is
        copied.
+       Line POI data (lines-lead WP2/WP3, 2026-10-24):
+       docs/research/lines/ikebukuro-line-pois.json and its contract. Gate,
+       lift, escalator and exit names and end pairs as printed on Tokyo Metro
+       pages (#26) and the Seibu Railway station page (OD-25), with short
+       verbatim quotes as evidence. No text block, map or image is copied.
 
    4.10 OpenStreetMap - evidence only; no OSM objects or attributes ship
        Shipped station data contains no OSM-derived objects or attributes.
