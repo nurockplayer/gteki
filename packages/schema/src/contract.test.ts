@@ -11,7 +11,11 @@ const warnings = (b: StationBundle) => validateBundle(b).filter((i) => i.level =
 function split(b: StationBundle): [StationManifestFile, GraphFile, PoiFile] {
   const { nodes, edges, pois, ...rest } = b;
   return [
-    { schema: rest.schema, station: rest.station, sources: rest.sources, floors: rest.floors, coverage: rest.coverage },
+    {
+      schema: rest.schema, station: rest.station, sources: rest.sources, floors: rest.floors, coverage: rest.coverage,
+      ...(rest.spawnNodeIds ? { spawnNodeIds: rest.spawnNodeIds } : {}),
+      ...(rest.spawnHeadings ? { spawnHeadings: rest.spawnHeadings } : {}),
+    },
     { schema: b.schema, stationId: b.station.id, nodes, edges },
     { schema: b.schema, stationId: b.station.id, pois },
   ];
@@ -134,6 +138,28 @@ describe("parseStationFiles (fail-closed JSON loading)", () => {
     const parsed = parseStationFiles(...split(createSyntheticBundle()));
     expect(parsed.ok).toBe(true);
     expect(parsed.bundle?.edges).toHaveLength(3);
+  });
+
+  it("parses optional spawn headings and validates their spawn-node keys", () => {
+    const b = createSyntheticBundle();
+    b.spawnNodeIds = ["start"];
+    b.spawnHeadings = { start: 90 };
+    const parsed = parseStationFiles(...split(b));
+    expect(parsed.ok).toBe(true);
+    expect(parsed.bundle?.spawnHeadings).toEqual({ start: 90 });
+
+    b.spawnHeadings = { missing: 90 };
+    expect(parseStationFiles(...split(b)).issues.map((issue) => issue.code)).toContain("spawn.heading.node");
+  });
+
+  it("rejects non-number spawn headings and leaves absent headings absent", () => {
+    const b = createSyntheticBundle();
+    const [manifest, graph, pois] = split(b);
+    const parsed = parseStationFiles(manifest, graph, pois);
+    expect(parsed.ok).toBe(true);
+    expect(parsed.bundle).not.toHaveProperty("spawnHeadings");
+    (manifest as unknown as { spawnHeadings: unknown }).spawnHeadings = { start: "east" };
+    expect(parseStationFiles(manifest, graph, pois).issues.map((issue) => issue.code)).toContain("shape.type");
   });
 
   it("refuses a missing tri-state instead of defaulting it", () => {

@@ -15,7 +15,7 @@ Station leads request contract changes via Issue/PR or a message to Lane C; they
 
 ```text
 stations/<id>/gteki/
-  station.json   StationManifestFile  {schema, station, sources, floors, coverage, spawnNodeIds?, assets?}
+  station.json   StationManifestFile  {schema, station, sources, floors, coverage, spawnNodeIds?, spawnHeadings?, assets?}
   graph.json     GraphFile            {schema, stationId, nodes, edges}
   pois.json      PoiFile              {schema, stationId, pois}
   scene.ts       optional — exports buildScene(ctx) (@gteki/scene-api)
@@ -23,6 +23,8 @@ stations/<id>/gteki/
 ```
 
 `parseStationFiles(station, graph, pois)` must return `ok: true`. It is **fail-closed**: a structural error (missing field, wrong type, NaN) or any truth-rule error yields no bundle and the explorer refuses the station.
+
+`spawnHeadings` is optional and maps spawn node IDs to compass headings in degrees (0 = north, 90 = east, clockwise); stations use it to face their station-identity board at spawn. Values must be finite and within [-360, 360]. Without it, walk entry faces along the route.
 
 ## Frames
 

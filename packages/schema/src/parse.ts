@@ -98,6 +98,14 @@ class ShapeChecker {
     });
   }
 
+  finiteNumberRecord(value: unknown, where: string): void {
+    if (kindOf(value) !== "object") return;
+    for (const [key, number] of Object.entries(value as Record<string, unknown>)) {
+      if (typeof number !== "number" || !Number.isFinite(number))
+        this.issues.push({ level: "error", code: "shape.type", message: `${where}.${key}: expected finite number, got ${kindOf(number)}`, ref: where });
+    }
+  }
+
   texts(list: unknown, where: string): void {
     this.each(list, SPECS.text, where);
   }
@@ -149,8 +157,9 @@ function idOf(item: unknown): string {
 /** Structural check of the three station files. Returns issues; empty = shape-valid. */
 export function checkShape(manifest: unknown, graph: unknown, pois: unknown): ValidationIssue[] {
   const c = new ShapeChecker();
-  if (c.check(manifest, { schema: "string", station: "object", sources: "array", floors: "array", coverage: "object", spawnNodeIds: "array?", assets: "array?", dataFiles: "array?" }, "station.json")) {
+  if (c.check(manifest, { schema: "string", station: "object", sources: "array", floors: "array", coverage: "object", spawnNodeIds: "array?", spawnHeadings: "object?", assets: "array?", dataFiles: "array?" }, "station.json")) {
     const m = manifest as Record<string, unknown>;
+    c.finiteNumberRecord(m.spawnHeadings, "spawnHeadings");
     if (c.check(m.station, SPECS.station, "station.json.station")) {
       const st = m.station as Record<string, unknown>;
       c.check(st.origin, SPECS.origin, "station.json.station.origin");
@@ -250,6 +259,7 @@ export function composeBundle(manifest: StationManifestFile, graph: GraphFile, p
     coverage: manifest.coverage,
   };
   if (manifest.spawnNodeIds) bundle.spawnNodeIds = manifest.spawnNodeIds;
+  if (manifest.spawnHeadings) bundle.spawnHeadings = manifest.spawnHeadings;
   if (manifest.assets) bundle.assets = manifest.assets;
   if (manifest.dataFiles) bundle.dataFiles = manifest.dataFiles;
   return bundle;
