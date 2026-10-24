@@ -94,6 +94,10 @@ describe("@gteki/cli route on the real stations", { timeout: 30_000 }, () => {
     ["ikebukuro", ["toilet-ikb-metro-001", "jr-central-gate-2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only facility as origin (#431)
     ["ikebukuro", ["atm-ikb-metro-001", "jr-central-gate-2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only facility as origin (#431)
     ["ikebukuro", ["locker-ikb-metro-001", "jr-central-gate-2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only facility as origin (#431)
+    ["ikebukuro", ["jr-central-gate-2", "toilet-ikb-esola-001", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only facility (#453)
+    ["ikebukuro", ["jr-central-gate-2", "locker-ikb-tobudept-001", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only facility (#453)
+    ["ikebukuro", ["jr-central-gate-2", "service-ikb-seibu-003", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only facility (#455)
+    ["ikebukuro", ["toilet-ikb-lumine-001", "jr-central-gate-2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only facility as origin (#453)
     ["ikebukuro", ["g_jr_c2", "no-such-node"], "unknown_goal"],
     ["shinjuku", ["poi:platform:oedo", "poi:nope", "--from-poi", "--goal-poi"], "unknown_goal"],
     ["shinjuku", ["poi:nope", "poi:exit:1", "--from-poi", "--goal-poi"], "unknown_start"],
