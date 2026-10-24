@@ -521,8 +521,13 @@
     evidence: docs/gis/rights/tokyo-s03-zip.json
   content_year: 2020
   availability_deadline: null
-  notes: Bounded Lane D evidence; reuse and navigability are separate. No graph conversion.
-  publish_gate: HOLD
+  notes: >-
+    Bounded Lane D evidence; reuse and navigability are separate. No graph conversion. The publish gate is
+    CONDITIONAL (gteki-1b R-1/R-2, 2026-10-24, under Owner Q2/Q3): only plain gate and platform names ship,
+    search only (AREA_ONLY), with no position, floor, connector or route, the credit
+    出典：東京都都市整備局「新宿駅周辺の施設情報等」 and the NOTICE 4.7 change notice. CRS stays UNKNOWN.
+    Not a rights PASS; geometry and positions stay unshipped until a separate ruling.
+  publish_gate: CONDITIONAL
 - source_id: tokyo-s03-spec
   title: S03 仕様書 PDF
   station_ids:
