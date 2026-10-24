@@ -155,6 +155,33 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
       warn("source.rights", `source rights ${s.rights}; must not feed published geometry/data (mark usage:"facts-only" if only cited as evidence)`, s.id);
   }
 
+  const identity = b.station.identity;
+  if (identity) {
+    const texts = (values: typeof identity.names, ref: string) => {
+      if (values.length === 0 || values.some((v) => !v.text.trim())) err("identity.text", "identity text must not be empty", ref);
+    };
+    texts(identity.names, "station.identity.names");
+    for (const lang of ["ja", "en"]) {
+      if (!identity.names.some((n) => n.lang === lang && n.text.trim())) err("identity.names", `identity needs ${lang}`, "station.identity.names");
+    }
+    const seen = new Set<string>();
+    for (const side of identity.sides ?? []) {
+      const ref = `station.identity.sides.${side.side}`;
+      if (!["east", "west", "north", "south"].includes(side.side)) err("identity.side", "unknown compass side", ref);
+      if (seen.has(side.side)) err("identity.side.dup", "duplicate identity side", ref);
+      seen.add(side.side);
+      texts(side.exit, ref);
+      texts(side.landmark, ref);
+      const ids = side.evidence.sourceIds;
+      if (!ids.length || ids.some((id) => !sourceIds.has(id))) err("identity.evidence", "identity side needs registered sources", ref);
+      if (!isIsoDate(side.evidence.checkedDate)) err("identity.evidence.date", "identity evidence needs a YYYY-MM-DD date", ref);
+      if (!["confirmed", "unverified"].includes(side.verification)) err("identity.verification", "unknown verification", ref);
+      // Different URLs or IDs from the same publisher are not independent confirmation.
+      const publishers = new Set(ids.map((id) => b.sources.find((s) => s.id === id)?.publisher.trim().toLowerCase()).filter(Boolean));
+      if (side.verification === "confirmed" && publishers.size < 2) err("identity.verification", "confirmed identity side needs two independent publishers", ref);
+    }
+  }
+
   const operatorIds = new Set(b.station.operators.map((o) => o.id));
   const floorIds = new Set<string>();
   for (const f of b.floors) {

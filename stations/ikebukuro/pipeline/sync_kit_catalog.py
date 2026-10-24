@@ -41,7 +41,7 @@ STATION_JSON = os.path.join(STATION, "gteki", "station.json")
 DEST_REL = os.path.join("kit", "catalog")
 
 SOURCE_ID = "gteki-ikb-catalog-0-1-0"
-LANE_E = ("/Users/tachikoma/Developer/gteki/.claude/worktrees/gteki-lane-e-int/tools/blender/.cache/ike_7258e6b")
+LANE_E = ("/Users/tachikoma/Developer/gteki/.claude/worktrees/gteki-lane-e-int/tools/blender/.cache/ike_cb3b29b")
 # tier -> (default source folder, manifest file name, destination folder under gteki/kit/catalog/)
 TIERS = {
     "high": (os.path.join(LANE_E, "ike_full"), "manifest.json", "high"),

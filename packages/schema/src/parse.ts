@@ -14,7 +14,9 @@ type Kind = "string" | "number" | "boolean" | "array" | "object" | "tri" | "stri
 type Spec = Record<string, Kind | `${Kind}?`>;
 
 const SPECS = {
-  station: { id: "string", names: "array", codes: "array?", operators: "array", origin: "object", frame: "string", datasetVersion: "string", generatedAt: "string", synthetic: "boolean" },
+  station: { id: "string", names: "array", identity: "object?", codes: "array?", operators: "array", origin: "object", frame: "string", datasetVersion: "string", generatedAt: "string", synthetic: "boolean" },
+  identity: { names: "array", sides: "array?" },
+  identitySide: { side: "string", exit: "array", landmark: "array", evidence: "object", verification: "string" },
   origin: { lat: "number", lon: "number", hM: "number|null", datum: "string", crs: "string" },
   source: { id: "string", title: "string", publisher: "string", url: "string", license: "object|null", rights: "string", attribution: "string", modified: "boolean", retrievedAt: "string|null", datasetDate: "string|null", downloadUrls: "array?", usage: "string?", decision: "object?", override: "object?", sha256: "object?", validUntil: "string|null?", notes: "string?" },
   floor: { id: "string", operatorId: "string", sourceLabels: "array", ordinal: "number|null", intermediate: "boolean", elevationM: "number|null", elevationSource: "string", renderElevationM: "number", displayNames: "array?" },
@@ -153,6 +155,15 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
       const st = m.station as Record<string, unknown>;
       c.check(st.origin, SPECS.origin, "station.json.station.origin");
       c.texts(st.names, "station.names");
+      if (st.identity !== undefined && c.check(st.identity, SPECS.identity, "station.identity")) {
+        const identity = st.identity as Record<string, unknown>;
+        c.texts(identity.names, "station.identity.names");
+        c.each(identity.sides, SPECS.identitySide, "station.identity.sides", (side, where) => {
+          c.texts(side.exit, `${where}.exit`);
+          c.texts(side.landmark, `${where}.landmark`);
+          c.evidence(side.evidence, `${where}.evidence`);
+        });
+      }
       c.each(st.operators, SPECS.operator, "station.operators", (op, where) => c.texts(op.names, `${where}.names`));
       c.each(st.codes, SPECS.code, "station.codes");
     }
