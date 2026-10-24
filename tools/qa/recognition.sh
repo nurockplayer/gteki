@@ -49,8 +49,9 @@ for p in $projects; do
   find "$out/$p" -path '*/anon/*.png' -exec cp {} "$out/anon/" \;
   if command -v ffmpeg >/dev/null 2>&1; then
     for st in ikebukuro shinjuku; do
+      # One ls per view: a single ls would sort all three globs together (exit, junction, spawn).
       # shellcheck disable=SC2046
-      set -- $(ls "$out/$p"/evidence/*/rec-"$st"-spawn-*.png "$out/$p"/evidence/*/rec-"$st"-junction-*.png "$out/$p"/evidence/*/rec-"$st"-exit-*.png 2>/dev/null)
+      set -- $(for v in spawn junction exit; do ls "$out/$p"/evidence/*/rec-"$st"-"$v"-*.png 2>/dev/null; done)
       [ $# -gt 0 ] && sh "$here/tools/qa/contact-sheet.sh" "$out/sheet-$st-$p.jpg" 10 "$@" || true
     done
   fi
