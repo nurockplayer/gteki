@@ -123,19 +123,27 @@ export function collectSourceValues(records: readonly (readonly string[])[], exc
   return values;
 }
 
+/** What a mandated credit string is replaced by before a leak scan (ASCII, so it cannot hold a source value). */
+export const CREDIT_PLACEHOLDER = '<attribution-credit>';
+
 /**
- * The mandated credit is fixed attribution text, not row content. A source cell equal to a ward or prefecture name inside it (the
- * publisher's own name) would otherwise be indistinguishable from a leak, so those coincidences are exempted and counted; every other
- * row value is still scanned. Nothing else is ever exempted.
+ * The mandated credit is fixed attribution text, not row content, but its wording contains source cells (the publisher's own ward and
+ * prefecture names). Before a leak scan, every exact occurrence of `credit.ja` and `credit.en` is replaced by a fixed placeholder, in
+ * the raw form (the GeoJSON is not re-encoded) and the JSON form (the provenance is pretty-printed and the receipt is JSON, so their
+ * escapes differ). No source value is exempted: the FULL value set is scanned against the masked text, so the same value still trips
+ * the guard anywhere outside the credit. Returns the masked text and how many occurrences were masked.
  */
-export function withoutCreditCoincidences(values: ReadonlySet<string>, credit: LandmarksCredit): { values: Set<string>; exempted: number } {
-  const kept = new Set<string>();
-  let exempted = 0;
-  for (const value of values) {
-    if (credit.ja.includes(value) || credit.en.includes(value)) exempted++;
-    else kept.add(value);
+export function maskCreditText(text: string, credit: LandmarksCredit, placeholder: string = CREDIT_PLACEHOLDER): { text: string; occurrences: number } {
+  const forms = [...new Set([credit.ja, credit.en].flatMap((value) => [value, JSON.stringify(value).slice(1, -1)]))]
+    .filter((form) => form !== '')
+    .sort((a, b) => b.length - a.length);
+  let masked = text, occurrences = 0;
+  for (const form of forms) {
+    const parts = masked.split(form);
+    occurrences += parts.length - 1;
+    masked = parts.join(placeholder);
   }
-  return { values: kept, exempted };
+  return { text: masked, occurrences };
 }
 
 export interface LandmarkPoint {
@@ -279,15 +287,19 @@ export async function contextLandmarks(station: string, options: LandmarksRunOpt
   };
 
   // Leak guards, before anything is written. The store outputs may ship 名称 and 文化財分類 only; the receipt may ship no row value at all.
-  const storeGuard = withoutCreditCoincidences(collectSourceValues(rows, new Set([nameColumn, classColumn])), landmarks.credit);
-  const receiptGuard = withoutCreditCoincidences(collectSourceValues(rows), landmarks.credit);
+  // No value is exempted: the mandated credit strings are masked in a copy of each text, and that copy is scanned against every value.
+  const storeGuard = collectSourceValues(rows, new Set([nameColumn, classColumn]));
+  const receiptGuard = collectSourceValues(rows);
+  const maskedCredits: Record<string, number> = {};
   const store = join(getStoreRoot(), 'out');
   await mkdir(store, { recursive: true });
   const outputs: Record<string, unknown> = {};
   let provenanceRel: string | null = null;
   if (points.length) {
     const geojson = landmarksGeoJson(points, meta);
-    assertNoSourceValues(geojson, storeGuard.values, 'The landmark GeoJSON');
+    const maskedGeoJson = maskCreditText(geojson, landmarks.credit);
+    maskedCredits.store_geojson = maskedGeoJson.occurrences;
+    assertNoSourceValues(maskedGeoJson.text, storeGuard, 'The landmark GeoJSON');
     const geojsonRel = `out/${runId}.geojson`;
     await writeFile(join(getStoreRoot(), geojsonRel), geojson);
     outputs.geojson = { store_path: geojsonRel, sha256: sha256(geojson), bytes: Buffer.byteLength(geojson) };
@@ -302,7 +314,9 @@ export async function contextLandmarks(station: string, options: LandmarksRunOpt
       elapsed_ms: Math.round(performance.now() - started), peak_rss_bytes: process.resourceUsage().maxRSS * 1024,
     };
     const provenanceText = `${JSON.stringify(provenance, null, 2)}\n`;
-    assertNoSourceValues(provenanceText, storeGuard.values, 'The landmark provenance');
+    const maskedProvenance = maskCreditText(provenanceText, landmarks.credit);
+    maskedCredits.store_provenance = maskedProvenance.occurrences;
+    assertNoSourceValues(maskedProvenance.text, storeGuard, 'The landmark provenance');
     provenanceRel = `out/${runId}.provenance.json`;
     await writeFile(join(getStoreRoot(), provenanceRel), provenanceText);
     outputs.provenance = { store_path: provenanceRel, sha256: sha256(provenanceText), bytes: Buffer.byteLength(provenanceText) };
@@ -339,16 +353,19 @@ export async function contextLandmarks(station: string, options: LandmarksRunOpt
     },
     leak_guard: {
       scope: 'row-derived content of the store GeoJSON, the provenance and this receipt; every column value except name and class, and every column value here',
-      row_values_scanned_in_store_outputs: storeGuard.values.size,
-      row_values_scanned_in_receipt: receiptGuard.values.size,
-      exempted_as_credit_substring: Math.max(storeGuard.exempted, receiptGuard.exempted),
-      exempted_reason: 'a source cell equal to part of the mandated attribution text (a ward or prefecture name) is fixed credit text, not a leaked cell',
+      row_values_scanned_in_store_outputs: storeGuard.size,
+      row_values_scanned_in_receipt: receiptGuard.size,
+      credit_occurrences_masked: { store_geojson: maskedCredits.store_geojson ?? 0, store_provenance: maskedCredits.store_provenance ?? 0, receipt: 0 },
+      credit_masking: 'the mandated credit strings are masked before scanning; no source value is exempted',
     },
     outputs,
     tool_input_sha256: fingerprint,
     tool_version: TOOL_VERSION,
   };
-  assertNoSourceValues(JSON.stringify(receipt), receiptGuard.values, 'The public landmark receipt');
+  // The receipt carries the credit by design; measure its masked occurrences on the assembled text, then scan the final text (the
+  // count differs only in digits, never in the credit occurrences, so one measurement is enough).
+  receipt.leak_guard.credit_occurrences_masked.receipt = maskCreditText(JSON.stringify(receipt), landmarks.credit).occurrences;
+  assertNoSourceValues(maskCreditText(JSON.stringify(receipt), landmarks.credit).text, receiptGuard, 'The public landmark receipt');
   const receiptDir = options.receiptDir ?? join(docsRoot, 'gis', 'context');
   await writeJson(join(receiptDir, `${runId}.json`), receipt);
   return { ...receipt, store_paths: { geojson: outputs.geojson ?? null, provenance: provenanceRel }, receipt_path: `docs/gis/context/${runId}.json` };

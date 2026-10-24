@@ -5,8 +5,8 @@ import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 import * as common from '../src/common.js';
 import { assertNoSourceValues } from '../src/context-overlay.js';
 import {
-  assertLandmarksConfig, collectSourceValues, contextLandmarks, LANDMARK_CRS, LANDMARKS_POLICY_VERSION, LANDMARK_PROPERTY_KEYS,
-  landmarksGeoJson, parseLandmarksCsv, withoutCreditCoincidences, type LandmarksConfig,
+  assertLandmarksConfig, collectSourceValues, contextLandmarks, maskCreditText, LANDMARK_CRS, LANDMARKS_POLICY_VERSION, LANDMARK_PROPERTY_KEYS,
+  landmarksGeoJson, parseLandmarksCsv, type LandmarksConfig,
 } from '../src/context-landmarks.js';
 import { stationEnuProjector } from '../src/station-enu.js';
 import { loadSources } from '../src/acquire.js';
@@ -139,23 +139,37 @@ describe('context-landmarks: shipped fields and leak guards', () => {
     for (const text of [geojsonText, provenanceText, receiptText]) {
       for (const marker of ['テスト説明文甲', 'テスト所有者別', '架空一丁目1番']) expect(text).not.toContain(marker);
     }
-    expect(receipt.leak_guard.exempted_as_credit_substring).toBeGreaterThanOrEqual(1);
+    expect(receipt.leak_guard.exempted_as_credit_substring).toBeUndefined();
+    expect(receipt.leak_guard.credit_occurrences_masked).toMatchObject({ store_geojson: expect.any(Number), store_provenance: expect.any(Number), receipt: 2 });
+    expect(receipt.leak_guard.credit_masking).toMatch(/no source value is exempted/u);
+  });
+
+  it('masks the mandated credit instead of exempting its substrings, so the same value still trips outside it', async () => {
+    const { bytes, run } = await setup();
+    const { header, rows } = parseLandmarksCsv(bytes);
+    const guard = collectSourceValues(rows, new Set([header.indexOf('名称'), header.indexOf('文化財分類')]));
+    expect(guard.has('新宿区')).toBe(true);
+    const credit = { ja: '出典：新宿区（CC BY 4.0）', en: 'Source: Shinjuku City (CC BY 4.0).' };
+    const inside = maskCreditText(JSON.stringify({ credit }), credit);
+    expect(inside.occurrences).toBe(2);
+    expect(inside.text).not.toContain('新宿区');
+    expect(() => assertNoSourceValues(inside.text, guard, 'The landmark GeoJSON')).not.toThrow();
+    const outside = maskCreditText(JSON.stringify({ credit, owner: '新宿区' }), credit).text;
+    expect(() => assertNoSourceValues(outside, guard, 'The landmark GeoJSON')).toThrow(/source property value/);
+    const receipt = (await run()) as Record<string, any>;
+    expect(receipt.leak_guard.credit_occurrences_masked).toMatchObject({ receipt: 2 });
   });
 
   it('trips the store leak guard when a description value is injected into the GeoJSON', async () => {
     const { bytes } = await setup();
     const { header, rows } = parseLandmarksCsv(bytes);
-    const nameColumn = header.indexOf('名称'), classColumn = header.indexOf('文化財分類');
-    const guard = withoutCreditCoincidences(collectSourceValues(rows, new Set([nameColumn, classColumn])), {
-      ja: '出典：新宿区『文化財一覧（自治体標準データセット）』（CC BY 4.0、東京都オープンデータカタログサイト経由）。GTEki が加工して作成',
-      en: 'Source: Shinjuku City, "文化財一覧（自治体標準データセット）" (CC BY 4.0, via the Tokyo Open Data Catalog). Modified by GTEki.',
-    });
-    expect(guard.values.has('テスト説明文甲')).toBe(true);
-    expect(guard.values.has('新宿区')).toBe(false);
+    const guard = collectSourceValues(rows, new Set([header.indexOf('名称'), header.indexOf('文化財分類')]));
+    expect(guard.has('テスト説明文甲')).toBe(true);
+    const credit = { ja: 'c', en: 'd' };
     const injected = landmarksGeoJson([{ row_index: 0, x: 0, y: 0, z: 0, name: '架空の戦跡甲', class: '記念物', row_hash: 'a'.repeat(64) }], {
-      station_id: 'shinjuku', frame_label: 'origin-only', z_m: 0, z_basis: 'symbolic street z = 0', source_id: 'synthetic', source_sha256: 'b'.repeat(64), window_label: 'origin_disc 700 m', credit: { ja: 'c', en: 'd' },
+      station_id: 'shinjuku', frame_label: 'origin-only', z_m: 0, z_basis: 'symbolic street z = 0', source_id: 'synthetic', source_sha256: 'b'.repeat(64), window_label: 'origin_disc 700 m', credit,
     }).replace('"row_hash"', '"説明":"テスト説明文甲","row_hash"');
-    expect(() => assertNoSourceValues(injected, guard.values, 'The landmark GeoJSON')).toThrow(/source property value/);
+    expect(() => assertNoSourceValues(maskCreditText(injected, credit).text, guard, 'The landmark GeoJSON')).toThrow(/source property value/);
   });
 
   it('keeps the receipt literal-free: hashed class histogram, UNKNOWN CRS, NOT_FOR_ROUTING', async () => {
