@@ -206,7 +206,8 @@ export function followBoom(
     const cos = Math.sqrt(1 - sin * sin);
     const candidate = new THREE.Vector3((back.x / flat) * cos, sin, (back.z / flat) * cos);
     const distance = followDistance(wanted, cast(candidate));
-    if (distance >= FOLLOW.boomKeep * wanted) return { back: candidate, distance };
+    // Good enough to stop early, but only when it actually beats the unlowered boom (a wall may limit both).
+    if (distance >= FOLLOW.boomKeep * wanted && distance >= d0 + FOLLOW.boomGain) return { back: candidate, distance };
     if (!best || distance > best.distance) best = { back: candidate, distance };
   }
   return best && best.distance >= d0 + FOLLOW.boomGain ? best : unchanged;

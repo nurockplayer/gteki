@@ -70,12 +70,25 @@ describe("followBoom", () => {
     // Shinjuku 056410 facing uphill at z -1.68: street surface 0.19 m up the boom, a wall 0.31 m, both clear below 0.05.
     const b = back(0.25);
     const cast = (c: THREE.Vector3): Hit[] => c.y > 0.05
-      ? [{ distance: 0.06 / c.y, cameraOnly: true }, { distance: 0.31, cameraOnly: false }]
+      ? [{ distance: 0.06 / c.y, cameraOnly: true }, { distance: 0.31, cameraOnly: false }].sort((p, q) => p.distance - q.distance)
       : [];
     expect(followDistance(wanted, cast(b))).toBe(0);
     const out = followBoom(wanted, b, cast);
     expect(out.distance).toBeGreaterThanOrEqual(FOLLOW.comfortDistance);
     expect(out.back.y).toBeLessThan(b.y);
+  });
+
+  it("keeps the unlowered boom when a wall limits a lowered one to no better than it (near-equal blocker and wall)", () => {
+    // Blocker 3.40 m, wall 3.42 m on the nominal boom; every lowered boom meets a wall at 2.95 m (>= boomKeep * wanted).
+    const b = back(0.25);
+    const cast = (c: THREE.Vector3): Hit[] => c.y >= b.y - 1e-9
+      ? [{ distance: 3.4, cameraOnly: true }, { distance: 3.42, cameraOnly: false }]
+      : [{ distance: 2.95, cameraOnly: false }];
+    const d0 = followDistance(wanted, cast(b));
+    expect(2.95).toBeGreaterThanOrEqual(FOLLOW.boomKeep * wanted);
+    const out = followBoom(wanted, b, cast);
+    expect(out.back).toBe(b);
+    expect(out.distance).toBe(d0);
   });
 
   it("slides under a hanging blocker instead of pulling the camera in", () => {
