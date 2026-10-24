@@ -99,6 +99,46 @@ describe("groupByAttribution", () => {
       { name: "PDL 1.0", href: null },
     ]);
   });
+
+  it("dedupes legacy and localized names by safe URL and rights in both languages", () => {
+    const legacy = src("legacy", PLATEAU, { license: { name: "Legacy licence", url: "https://example.org/licence" } });
+    const localized = src("localized", PLATEAU, {
+      license: {
+        name: [{ lang: "ja", text: "日本語ライセンス" }, { lang: "en", text: "Localized licence" }],
+        url: "https://example.org/licence",
+      },
+    });
+
+    expect(groupLicenses([legacy, localized], "ja")).toEqual([{ name: "Legacy licence", href: "https://example.org/licence" }]);
+    expect(groupLicenses([legacy, localized], "en")).toEqual([{ name: "Legacy licence", href: "https://example.org/licence" }]);
+  });
+
+  it("keeps the same URL separate when sources have different rights", () => {
+    const reusable = src("reusable", PLATEAU);
+    const reference = src("reference", PLATEAU, { rights: "REFERENCE_ONLY" });
+
+    expect(groupLicenses([reusable, reference])).toEqual([
+      { name: "CC BY 4.0", href: "https://creativecommons.org/licenses/by/4.0/" },
+      { name: "CC BY 4.0", href: "https://creativecommons.org/licenses/by/4.0/" },
+    ]);
+  });
+
+  it("keeps genuinely different licences in first appearance order", () => {
+    const first = src("first", PLATEAU, { license: { name: "First", url: "https://example.org/first" } });
+    const second = src("second", PLATEAU, { license: { name: "Second", url: "https://example.org/second" } });
+
+    expect(groupLicenses([first, second])).toEqual([
+      { name: "First", href: "https://example.org/first" },
+      { name: "Second", href: "https://example.org/second" },
+    ]);
+  });
+
+  it("dedupes unlinked licences by resolved name and rights", () => {
+    const sameName = src("same", PLATEAU, { license: { name: "Unlinked licence", url: "" } });
+    const sameNameAgain = src("same-again", PLATEAU, { license: { name: "Unlinked licence", url: "javascript:alert(1)" } });
+
+    expect(groupLicenses([sameName, sameNameAgain])).toEqual([{ name: "Unlinked licence", href: null }]);
+  });
 });
 
 describe("creditEntries (the credits dialog)", () => {
