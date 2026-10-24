@@ -9,6 +9,13 @@ type AvatarAsset = Pick<GLTF, "scene" | "animations"> & Partial<Pick<GLTF, "scen
 /** Like GLTFLoader, an injected loader transfers ownership of the asset's resources to the rig. */
 export interface AvatarGlbLoader { loadAsync(url: string): Promise<AvatarAsset> }
 
+/** Every primitive that carries geometry and materials: meshes plus the Line/Points a GLB may also contain. */
+type Drawable = THREE.Mesh | THREE.Line | THREE.Points;
+
+function isDrawable(object: THREE.Object3D): object is Drawable {
+  return object instanceof THREE.Mesh || object instanceof THREE.Line || object instanceof THREE.Points;
+}
+
 export async function loadGlbAvatar(url: string, opts: { quality: "low" | "high"; loader?: AvatarGlbLoader }): Promise<AvatarRig> {
   // Both quality tiers use the supplied URL for now; Lane E supplies the tiered assets later.
   const loader = opts.loader ?? new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
@@ -25,7 +32,7 @@ export async function loadGlbAvatar(url: string, opts: { quality: "low" | "high"
 
   // Include unused glTF scenes too. Original materials remain unpatched, but are owned by this load.
   for (const scene of new Set([gltf.scene, ...(gltf.scenes ?? [])])) scene.traverse((object) => {
-    if (!(object instanceof THREE.Mesh)) return;
+    if (!isDrawable(object)) return;
     geometries.add(object.geometry);
     for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
       materials.add(material);
@@ -47,7 +54,16 @@ export async function loadGlbAvatar(url: string, opts: { quality: "low" | "high"
     }
     for (const geometry of geometries) geometry.dispose();
     for (const material of materials) material.dispose();
-    for (const texture of textures) texture.dispose();
+    // GLTFLoader decodes images through ImageBitmapLoader, and Texture.dispose() does not close the decoded
+    // bitmap. One image can back several textures, so close each owned bitmap once, by identity.
+    const bitmaps = new Set<ImageBitmap>();
+    for (const texture of textures) {
+      for (const image of Array.isArray(texture.image) ? texture.image : [texture.image]) {
+        if (typeof ImageBitmap !== "undefined" && image instanceof ImageBitmap) bitmaps.add(image);
+      }
+      texture.dispose();
+    }
+    for (const bitmap of bitmaps) bitmap.close();
   };
 
   try {
@@ -69,7 +85,7 @@ export async function loadGlbAvatar(url: string, opts: { quality: "low" | "high"
     normalized.add(gltf.scene);
     root.add(normalized);
     gltf.scene.traverse((object) => {
-      if (!(object instanceof THREE.Mesh)) return;
+      if (!isDrawable(object)) return;
       object.castShadow = true;
       if (object instanceof THREE.SkinnedMesh) object.frustumCulled = false;
       const clone = (source: THREE.Material): THREE.Material => {
@@ -92,10 +108,11 @@ export async function loadGlbAvatar(url: string, opts: { quality: "low" | "high"
       setFade(opacity) { fade.value = sanitizeAvatarFade(opacity); },
       setEnvMap(env, intensity = 0.6) {
         for (const material of clones.values()) {
-          if ("envMap" in material) {
-            const lit = material as THREE.MeshStandardMaterial;
-            if (lit.envMap !== env) { lit.envMap = env; lit.needsUpdate = true; }
-            lit.envMapIntensity = intensity;
+          // `"envMap" in material` also matches unlit materials (MeshBasicMaterial, KHR_materials_unlit):
+          // only the PBR classes may take the station's probe. MeshPhysicalMaterial extends MeshStandardMaterial.
+          if (material instanceof THREE.MeshStandardMaterial) {
+            if (material.envMap !== env) { material.envMap = env; material.needsUpdate = true; }
+            material.envMapIntensity = intensity;
           }
         }
       },
