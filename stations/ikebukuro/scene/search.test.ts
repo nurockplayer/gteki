@@ -107,10 +107,14 @@ const GOLDEN: Record<string, Row[]> = {
     { q: "青山フラワーマーケット", top1: "shop-ikb-hope-001" },
     { q: "リンツ ショコラ ブティック", top1: "shop-ikb-echika-1104" },
   ],
-  "search-only line POIs (#414)": [
+  "search-only line POIs (#414, #420)": [
     { q: "C1番出口", top1: "exit-c1" },
     { q: "副都心線 西通路東改札", top1: "metro-f-west-east-gate" },
     { q: "西武池袋線 1F改札口", top1: "seibu-1f-gate" },
+    { q: "北改札", top: ["jr-north-gate", "tobu-north-gate"] }, // printed for both JR and Tobu on the ward guide
+    { q: "JR 北改札", top1: "jr-north-gate" },
+    { q: "東武東上線 北改札", top1: "tobu-north-gate" },
+    { q: "地下改札", top1: "seibu-b1f-gate" },
   ],
 };
 
