@@ -87,6 +87,8 @@ button.on { border-color: var(--accent); color: var(--accent); }
 /* A store's brand directory is unverified: the as-of line sits under the meta line (#419). */
 .result .result-asof { grid-column: 2; font-size: 11px; color: var(--muted); opacity: 0.85; }
 .result-note { grid-column: 2; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
+/* An approximate, search-display-only position says its ± radius under the note (#463). */
+.result .result-approx { grid-column: 2; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
 .field-note { grid-column: 2 / -1; margin: 0; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
 .field-note[hidden] { display: none; }
 .result.disabled .result-name { color: var(--muted); }
