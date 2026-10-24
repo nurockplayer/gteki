@@ -1,0 +1,5418 @@
+{
+ "schema": "gteki.research.hours/0.1",
+ "note": "shinjuku shop hours (OD-32): dated official pages only; text as printed; current status never asserted.",
+ "entries": [
+  {
+   "poiId": "shop-sjk-toei-001",
+   "sourceId": "toei-shinjuku-stores-2026-10",
+   "url": "https://www.kotsu.metro.tokyo.jp/other/kanren/stores/shinjuku.html",
+   "retrievedAt": "2026-10-24T11:36:19Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "page unreadable (200 bot challenge)"
+  },
+  {
+   "poiId": "shop-sjk-toeinishi-001",
+   "sourceId": "toei-shinjuku-nishiguchi-stores-2026-10",
+   "url": "https://www.opendata.metro.tokyo.lg.jp/kotsu/other/other_stores_shinjuku-nishiguchi.csv",
+   "retrievedAt": "2026-10-24T11:36:20Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-metro-001",
+   "sourceId": "tokyometro-shinjuku-shops-2026-10",
+   "url": "https://www.tokyometro.jp/station/shinjuku/shop/index.html",
+   "retrievedAt": "2026-10-24T11:40:00Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-metro-002",
+   "sourceId": "tokyometro-shinjuku-shops-2026-10",
+   "url": "https://www.tokyometro.jp/station/shinjuku/shop/index.html",
+   "retrievedAt": "2026-10-24T11:40:00Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-metro-003",
+   "sourceId": "tokyometro-shinjuku-shops-2026-10",
+   "url": "https://www.tokyometro.jp/station/shinjuku/shop/index.html",
+   "retrievedAt": "2026-10-24T11:40:00Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-metro-004",
+   "sourceId": "tokyometro-shinjuku-shops-2026-10",
+   "url": "https://www.tokyometro.jp/station/shinjuku/shop/index.html",
+   "retrievedAt": "2026-10-24T11:40:00Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002234",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002234",
+   "retrievedAt": "2026-10-24T11:39:25Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002098",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003135",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003260",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002112",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002193",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002081",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002194",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002090",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002097",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002532",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002063",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002202",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002549",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002371",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002125",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002061",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003298",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002161",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003089",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003075",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003075",
+   "retrievedAt": "2026-10-24T11:39:26Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003192",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002058",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002326",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003069",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002100",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003068",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003067",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002116",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002105",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002042",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002149",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002233",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002167",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002205",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002110",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002250",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002168",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002066",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002192",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002190",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002190",
+   "retrievedAt": "2026-10-24T11:39:27Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003129",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002239",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003325",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002139",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003117",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003130",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002690",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002165",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003077",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002363",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002232",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003071",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003105",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002329",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002171",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003494",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003496",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002174",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002150",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003450",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003450",
+   "retrievedAt": "2026-10-24T11:39:28Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002145",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002088",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002365",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003321",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002133",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003313",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002196",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002080",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002122",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002103",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002249",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003493",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003451",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002109",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002070",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002238",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002364",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003249",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002178",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002253",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002253",
+   "retrievedAt": "2026-10-24T11:39:29Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003490",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002101",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002175",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003107",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002162",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003106",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002092",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002137",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002129",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003134",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002158",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002130",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002323",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002520",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002228",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003491",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002140",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002117",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002071",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002108",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002108",
+   "retrievedAt": "2026-10-24T11:39:30Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002200",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002521",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002134",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002136",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002051",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002059",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002056",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002243",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002076",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002044",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002075",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002210",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002091",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002221",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002119",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003284",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002321",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002083",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002534",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002248",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002248",
+   "retrievedAt": "2026-10-24T11:39:31Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002536",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002115",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003131",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002163",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003090",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002072",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003495",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002085",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002535",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002484",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002184",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002151",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002335",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002188",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003297",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002141",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002199",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002054",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002372",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002040",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002040",
+   "retrievedAt": "2026-10-24T11:39:32Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002166",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003076",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002551",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002093",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002132",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002226",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002212",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002180",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002251",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003086",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003299",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003497",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002244",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002522",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002537",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003437",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002169",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002173",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003125",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002185",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002185",
+   "retrievedAt": "2026-10-24T11:39:33Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003492",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003261",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002089",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003452",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003328",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002146",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002107",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002187",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003073",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002368",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002483",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002328",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003456",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003453",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002217",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002322",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002208",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002325",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002197",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003285",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003285",
+   "retrievedAt": "2026-10-24T11:39:34Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002219",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002336",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002131",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002077",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002068",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002201",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002332",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002152",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002121",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003088",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002229",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002126",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003070",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002183",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002135",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003132",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002106",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002048",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002211",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002373",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002373",
+   "retrievedAt": "2026-10-24T11:39:35Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002214",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002172",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002060",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003133",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002333",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003149",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002330",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002046",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002553",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003074",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002237",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002096",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002198",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002230",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003216",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002084",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002413",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002241",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002412",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002216",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002216",
+   "retrievedAt": "2026-10-24T11:39:36Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002252",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002222",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002482",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002225",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003176",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002246",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002247",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002254",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002223",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003143",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002423",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002432",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003553",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002242",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002240",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002420",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002148",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002213",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002416",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002236",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003161",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002227",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-002155",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumineest-003222",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:22Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003436",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/detail/?scd=003436",
+   "retrievedAt": "2026-10-24T11:39:37Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002374",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002674",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000356",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000361",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000354",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000364",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002713",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000357",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000359",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000365",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003225",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000355",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000362",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002706",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000358",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000360",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000350",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002348",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000352",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/detail/?scd=000352",
+   "retrievedAt": "2026-10-24T11:39:38Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000388",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000346",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000348",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000351",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000349",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000187",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000186",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000183",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000185",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000182",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000184",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002675",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002665",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000233",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000243",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000235",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000247",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000246",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000249",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/detail/?scd=000249",
+   "retrievedAt": "2026-10-24T11:39:39Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000242",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000248",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002344",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002375",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002345",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000250",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000244",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000272",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003435",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000255",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002561",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000223",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000267",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000263",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003202",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000268",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002612",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000392",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000259",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/detail/?scd=000259",
+   "retrievedAt": "2026-10-24T11:39:40Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000262",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000258",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000269",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000290",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003438",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000291",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000292",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003124",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000275",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000287",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000289",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003434",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000369",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000285",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000370",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002376",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000273",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000390",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002346",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/detail/?scd=002346",
+   "retrievedAt": "2026-10-24T11:39:41Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000294",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000298",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000314",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000371",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000307",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000305",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002613",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000297",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000296",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002349",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000308",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000303",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000299",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000300",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000301",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000304",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000315",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000321",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000320",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/detail/?scd=000320",
+   "retrievedAt": "2026-10-24T11:39:43Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000329",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000319",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000318",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002387",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000326",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000323",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000327",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000317",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000333",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000334",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000335",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000337",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000336",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000331",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000332",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000330",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003175",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002645",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000345",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/detail/?scd=000345",
+   "retrievedAt": "2026-10-24T11:39:44Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003226",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003367",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000343",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000338",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000373",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000372",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000344",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000342",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000341",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000179",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000175",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003085",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000176",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000171",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000172",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000180",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000173",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000375",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000178",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/detail/?scd=000178",
+   "retrievedAt": "2026-10-24T11:39:45Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000170",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003152",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000379",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000181",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000394",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003096",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000237",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003095",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000234",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000222",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002527",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003118",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000229",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003432",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002342",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000201",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000213",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002617",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002663",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/detail/?scd=002663",
+   "retrievedAt": "2026-10-24T11:39:46Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000239",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000212",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000245",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000215",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000220",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003092",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003116",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000376",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000226",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000393",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000203",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000204",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000228",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003153",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003091",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002602",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000218",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000192",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000197",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/detail/?scd=000197",
+   "retrievedAt": "2026-10-24T11:39:47Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000206",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000214",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000194",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000236",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003097",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000205",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003433",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000217",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003430",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000227",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000240",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000193",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003093",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002341",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000195",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000198",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000199",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000230",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003227",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/detail/?scd=003227",
+   "retrievedAt": "2026-10-24T11:39:48Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000216",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000202",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002369",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000209",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000191",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000238",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000241",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000219",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002340",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003228",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000266",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000265",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000252",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000253",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000271",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000251",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-003229",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000277",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000279",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/detail/?scd=000279",
+   "retrievedAt": "2026-10-24T11:39:49Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000280",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000281",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000282",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000274",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000276",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000283",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000391",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000306",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000309",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000313",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000295",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000311",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000302",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000310",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000389",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000324",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002695",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-000322",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002379",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-lumine-002380",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:23Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-003262",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/detail/?scd=003262",
+   "retrievedAt": "2026-10-24T11:39:50Z",
+   "pageDate": "2026-10-24",
+   "status": "OK",
+   "hoursText": "11:00～23:00 ※THE ALLEYは12:00～22:00までの営業"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001866",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001864",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001868",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001870",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001861",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001865",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001863",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001869",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/detail/?scd=001869",
+   "retrievedAt": "2026-10-24T11:39:51Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001860",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-003471",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001867",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001858",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001851",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001857",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-003449",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001856",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/detail/?scd=001856",
+   "retrievedAt": "2026-10-24T11:39:53Z",
+   "pageDate": "2026-10-17",
+   "status": "OK",
+   "hoursText": "月～土 11:00～20:30 日・祝日 11:00～20:00"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001853",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001859",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001854",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001855",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-003231",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001850",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001842",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001844",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/detail/?scd=001844",
+   "retrievedAt": "2026-10-24T11:39:54Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001841",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-003463",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001829",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001848",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001845",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001847",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001843",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001846",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/detail/?scd=001846",
+   "retrievedAt": "2026-10-24T11:39:55Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001831",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-002428",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001836",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001834",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-003464",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001835",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001840",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001839",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/detail/?scd=001839",
+   "retrievedAt": "2026-10-24T11:39:56Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001833",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-002512",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001838",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001830",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001832",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001828",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001827",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001825",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/detail/?scd=001825",
+   "retrievedAt": "2026-10-24T11:39:58Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001824",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001823",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001826",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-003162",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001816",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001817",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-002491",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001814",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/detail/?scd=001814",
+   "retrievedAt": "2026-10-24T11:39:59Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001822",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001815",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001813",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001821",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001820",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001811",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001812",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001819",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/detail/?scd=001819",
+   "retrievedAt": "2026-10-24T11:40:00Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001800",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001797",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001785",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001796",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-002640",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001795",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001779",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001805",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/detail/?scd=001805",
+   "retrievedAt": "2026-10-24T11:40:02Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001782",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001786",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001809",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-003383",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001780",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001806",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001778",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001807",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/detail/?scd=001807",
+   "retrievedAt": "2026-10-24T11:40:04Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001781",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-003384",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001802",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001788",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001808",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001784",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001804",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001801",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/detail/?scd=001801",
+   "retrievedAt": "2026-10-24T11:40:06Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001790",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001789",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001791",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-003223",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001792",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001793",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001798",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001776",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001773",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001774",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001775",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-newoman-001777",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/floorguide/",
+   "retrievedAt": "2026-10-24T11:36:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-odakyudept",
+   "sourceId": "odakyu-dept-shinjuku-2026-10",
+   "url": "https://www.odakyu-dept.co.jp/shinjuku/hour_acces/",
+   "retrievedAt": "2026-10-24T11:37:56Z",
+   "pageDate": "2025-01-15",
+   "status": "UNKNOWN",
+   "reason": "date older than 2026-04-27"
+  },
+  {
+   "poiId": "shop-sjk-rec-001",
+   "sourceId": "chain-zetteria-ace-sjk-2026-10",
+   "url": "https://maps.zetteria.jp/shop/shop2312.html",
+   "retrievedAt": "2026-10-24T11:36:26Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-rec-002",
+   "sourceId": "chain-hakonesoba-ace-north-sjk-2026-10",
+   "url": "https://www.odakyu-restaurant.jp/shop/hakonesoba/hakonesoba-honjin/ace-north.html",
+   "retrievedAt": "2026-10-24T11:36:27Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-rec-003",
+   "sourceId": "chain-hakonesoba-ace-south-sjk-2026-10",
+   "url": "https://www.odakyu-restaurant.jp/shop/hakonesoba/hakonesoba-honjin/ace-south.html",
+   "retrievedAt": "2026-10-24T11:36:28Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-rec-004",
+   "sourceId": "chain-yoshinoya-keiomall-sjk-2026-10",
+   "url": "https://stores.yoshinoya.com/yoshinoya/spot/detail?code=ysn_061476",
+   "retrievedAt": "2026-10-24T11:36:29Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-rec-005",
+   "sourceId": "chain-daiso-keiomall-annex-sjk-2026-10",
+   "url": "https://www.daiso-sangyo.co.jp/shop/detail/002645",
+   "retrievedAt": "2026-10-24T11:36:30Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-rec-006",
+   "sourceId": "chain-karadafactory-keiomall-annex-sjk-2026-10",
+   "url": "https://salon.karada39.com/detail/942/",
+   "retrievedAt": "2026-10-24T11:36:31Z",
+   "pageDate": "2026-02-05",
+   "status": "UNKNOWN",
+   "reason": "date older than 2026-04-27"
+  },
+  {
+   "poiId": "shop-sjk-rec-007",
+   "sourceId": "chain-haruka-keiomall-annex-sjk-2026-10",
+   "url": "https://www.haruka.co.jp/salon/082/",
+   "retrievedAt": "2026-10-24T11:36:33Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-rec-008",
+   "sourceId": "chain-krispykreme-ace-north-sjk-2026-10",
+   "url": "https://krispykreme.jp/store/tokyo/odakyuace.html",
+   "retrievedAt": "2026-10-24T11:36:34Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-rec-009",
+   "sourceId": "chain-pressbuttersand-ace-sjk-2026-10",
+   "url": "https://bake.take-eats.jp/select-shop-info/3549",
+   "retrievedAt": "2026-10-24T11:36:36Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
+  },
+  {
+   "poiId": "shop-sjk-rec-010",
+   "sourceId": "chain-renoir-keiomall-sjk-2026-10",
+   "url": "https://www.ginza-renoir.co.jp/shopsearch/shops/tokyo/shinjuku-ku/caferenoir-shinjuku-keio-mall.html",
+   "retrievedAt": "2026-10-24T11:36:36Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-rec-011",
+   "sourceId": "chain-mignon-ace-south-sjk-2026-10",
+   "url": "https://mignon-mini-croissant.com/open-shinjuku-2022/",
+   "retrievedAt": "2026-10-24T11:36:37Z",
+   "pageDate": "2022-12-03",
+   "status": "UNKNOWN",
+   "reason": "date older than 2026-04-27"
+  },
+  {
+   "poiId": "shop-sjk-rec-012",
+   "sourceId": "chain-familymart-ace-sjk-2026-10",
+   "url": "https://store.family.co.jp/points/21520",
+   "retrievedAt": "2026-10-24T11:36:38Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-rec-013",
+   "sourceId": "chain-sagatani-keiomall-sjk-2026-10",
+   "url": "http://foryou-group.co.jp/brandfc/kantou/entry-86.html",
+   "retrievedAt": "2026-10-24T11:36:39Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": "shop-sjk-rec-014",
+   "sourceId": "chain-tsutsumi-keiomall-sjk-2026-10",
+   "url": "https://www.tsutsumi.co.jp/shop/detail/tokyo/1624.html",
+   "retrievedAt": "2026-10-24T11:36:40Z",
+   "pageDate": "2021-06-21",
+   "status": "UNKNOWN",
+   "reason": "date older than 2026-04-27"
+  },
+  {
+   "poiId": "shop-sjk-rec-015",
+   "sourceId": "chain-hibiyakadan-ace-sjk-2026-10",
+   "url": "https://shop.hibiyakadan.com/detail/80640/",
+   "retrievedAt": "2026-10-24T11:36:41Z",
+   "pageDate": "2026-10-20",
+   "status": "OK",
+   "hoursText": "月〜日 10:00〜21:00"
+  },
+  {
+   "poiId": null,
+   "building": "ルミネエスト新宿",
+   "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/est/information/hours/",
+   "retrievedAt": "2026-10-24T11:37:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": null,
+   "building": "ルミネ新宿",
+   "sourceId": "lumine-shinjuku-floorguide-2026-10",
+   "url": "https://www.lumine.ne.jp/shinjuku/information/hours/",
+   "retrievedAt": "2026-10-24T11:37:24Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  },
+  {
+   "poiId": null,
+   "building": "ニュウマン新宿",
+   "sourceId": "newoman-shinjuku-floorguide-2026-10",
+   "url": "https://www.newoman.jp/shinjuku/information/hours/",
+   "retrievedAt": "2026-10-24T11:37:26Z",
+   "pageDate": null,
+   "status": "UNKNOWN",
+   "reason": "no date"
+  }
+ ]
+}
