@@ -2,7 +2,7 @@
 
 - Tracking: #438. Related: #212 (Ikebukuro merchant import contract), #419/#425 (tenant directory), #26 (per-source clearance), OD-31 (facts only, no directory copy), OD-32 (dated hours, current status unknown).
 - Status: **spec only — no code, no outreach.** Nothing here authorises contacting a shop. The Owner decides whether Phase 2 starts.
-- Owner: data-research-05. Schema fit: core-search-6a. Rights and consent text: core-rights-a9. **§4 is a DRAFT — needs core-rights-a9 review.**
+- Owner: data-research-05. Schema fit: core-search-6a (reviewed, #440). Rights and consent text: core-rights-a9 (reviewed, #440 issuecomment-6382909140; P1 points applied). **§4 stays a DRAFT until core-rights-a9 signs off the final wording.**
 - Schema baseline: `gteki.station/0.1` as in `packages/schema/src/index.ts`; contract rules in [`docs/core/contract.md`](../../core/contract.md). Tenant shape follows #425 (`gteki.tenants/0.1`), which was not yet on `main` when this was written.
 
 ## 1. Goal and non-goals
@@ -41,7 +41,7 @@
 | Floor | yes | picked from the station's own floor list, showing `Floor.displayNames`; stores `Floor.id` | `Poi.floorId` |
 | Position — option A: tap | optional | tap on our own schematic floor plan → station-frame `x, y` on that floor | `Poi.displayPosition` (`z` from `Floor.elevationM`, else `null`) |
 | Position — option B: anchor | optional | pick a nearby `exit` / `ticket_gate` POI + free-text entrance wording | `Poi.notes` only (`「〇〇改札付近（店舗申告）」`); **never** converted to `displayPosition` |
-| Inside / outside fare gates | yes | inside / outside / not sure | `Poi.paid` (`true` / `false` / `null`) — declared, UNVERIFIED |
+| Inside / outside fare gates | yes | inside / outside / not sure | `Poi.notes` as the shop's declaration (「改札内（店舗申告）」); `Poi.paid` stays `null` (core-search-6a) |
 | Hours | optional | text + "as of" date | `Poi.notes` with the OD-32 wording (§6) |
 | Official URL | optional | http(s) | `Source.url` (the shop's page) |
 | Photo | **not in Phase 1** | — | — |
@@ -116,7 +116,7 @@ Rules:
 | `floorId` | the picked `Floor.id`, else `null` |
 | `displayPosition` | option A only (`x, y, z`); `null` for option B or no licence |
 | `connectorNodeIds` | `[]` until entrance evidence is GIS-aligned |
-| `paid` | `true`/`false` if the shop declared it, else `null`; whether a declaration alone is evidence is a Lead decision |
+| `paid` | `null`; the shop's declaration goes in `notes` (core-search-6a). A field check may set it later |
 | `evidence.sourceIds` | the submission `Source.id` |
 | `evidence.method` | `merchant-submitted (<submission id>, <date>), UNVERIFIED` (exact prefix; the UI keys its label on it) |
 | `evidence.checkedDate` | date of the reviewer's check |
@@ -124,7 +124,7 @@ Rules:
 
 **Hours.** `Poi` has no hours field; hours go in `notes` as text with the submission date and the OD-32 wording 「出典日時点の情報です。変更されている場合があります」 / "As of the source date; may have changed". The ≤180-day rule applies: a submission date older than 180 days drops the hours. Hours never imply current status.
 
-**Tenants.** For a department store, the brand listing stays out of `pois.json` (#419): brands go to the station's tenant file with `poiId` = the store POI (research files call it `storePoiId`), `floorLabel` in the shop's own wording and no conversion. English names only if the shop supplies them.
+**Tenants.** For a department store, the brand listing stays out of `pois.json` (#419): brands go to the station's tenant file with `poiId` = the store POI (research files call it `storePoiId`), `floorLabel` in the shop's own wording and no conversion. English names only if the shop supplies them. **Known blocker:** #425's `tenant.evidence` rule requires a facts-only source with a decision, but a merchant-submission Source has `usage: "data"`, so such tenant rows would fail CI. core-search-6a will relax that rule in a follow-up after #425 merges; until then merchant-submitted brands are not written to tenant files.
 
 ### IMDF mapping (structure, from gteki-1b)
 
@@ -163,7 +163,7 @@ The shop and its position are separate records, so a move only updates the ancho
 **Owner**
 
 1. Approve Phase 2 at all, and if so which surface (§8 A vs B) and how many pilot shops.
-2. Does a shop's self-declaration set `paid`, or does it stay `null` until a field check?
+2. ~~Does a self-declaration set `paid`?~~ — default per core-search-6a: no, `paid` stays `null` and the declaration is a note; the Owner may decide otherwise.
 3. May a merchant submission ever replace field-verified facts on an existing POI?
 
 **core-rights-a9**
@@ -174,9 +174,9 @@ The shop and its position are separate records, so a move only updates the ancho
 
 **core-search-6a**
 
-7. Is `merchant-submitted (<submission id>, <date>), UNVERIFIED` enough for the UI label, or should `Poi` gain an explicit provenance/verification field (Phase 2 proposal, not Phase 1)?
-8. Photos have no schema slot today: `Asset.format` is `"glb"` only and `dataFiles` excludes image extensions. Which slot should a later phase use?
-9. Tenant files are #425's `gteki.tenants/0.1`; confirm that merchant submissions feed `poiId` + `floorLabel` the same way the research files' `storePoiId` does.
+7. ~~Is the method prefix enough?~~ — core-search-6a: yes for Phase 1; Phase 2 should record the source type on the Source (e.g. `Source.kind`).
+8. ~~Photo slot~~ — core-search-6a: a separate images schema proposal, not `Asset`.
+9. ~~Tenant mapping~~ — confirmed by core-search-6a (`storePoiId` → `poiId`, `floorLabel` as worded); see the known blocker in §6.
 
 **data-research-05**
 
