@@ -1,0 +1,387 @@
+{
+  "schema": "gteki.gis.osm-coverage/0.1",
+  "command": "osm-coverage",
+  "policy_version": "osm-coverage-v1",
+  "run_id": "osm-coverage-ikebukuro-f9d4314e1b4d1aa4236c",
+  "station_id": "ikebukuro",
+  "gteki_role": "evidence",
+  "navigation_use": "NOT_FOR_ROUTING",
+  "verification": "UNVERIFIED",
+  "note": "Coverage evidence for #437 only. Counts, shares, histograms, OSM tag keys and derived categories; no OSM name, tag value or contributor identity is copied. The extract stays in the private store. Nothing here is a source for the graph, a route or a shipping POI list; the ODbL share-alike question is open (docs/gis/research/2026-10-24-osm-coverage-odbl.md).",
+  "extract": {
+    "elements": 2502,
+    "rejected": 0,
+    "tag_keys": 428
+  },
+  "source": {
+    "source_id": "osm-overpass-ikebukuro",
+    "sha256": "2b8a9e795e11eb5277cfa6a591b19fd06fa669115fceb7a4718df5a20ccfb182",
+    "bytes": 1659849,
+    "acquired_at": "2026-10-24T10:13:02.966Z"
+  },
+  "query": {
+    "kind": "overpass-ql-get",
+    "sha256": "f4695d8e22f5350d36e07117a49631a6558717414f3f20d15cdabaf49874d0f4",
+    "radius_m": 900,
+    "origin": {
+      "lat": 35.7297,
+      "lon": 139.7114
+    }
+  },
+  "coverage": {
+    "kinds": {
+      "kind:shop": 461,
+      "kind:amenity": 1352,
+      "kind:indoor": 36,
+      "kind:has_level": 693,
+      "kind:station_building": 3,
+      "kind:entrance": 100
+    },
+    "categories_top15": [
+      {
+        "category": "cat:food_and_drink",
+        "count": 524
+      },
+      {
+        "category": "cat:retail",
+        "count": 356
+      },
+      {
+        "category": "cat:other",
+        "count": 300
+      },
+      {
+        "category": "cat:transport",
+        "count": 217
+      },
+      {
+        "category": "cat:street_furniture",
+        "count": 164
+      },
+      {
+        "category": "cat:health",
+        "count": 60
+      },
+      {
+        "category": "cat:education",
+        "count": 51
+      },
+      {
+        "category": "cat:public_service",
+        "count": 49
+      },
+      {
+        "category": "cat:culture",
+        "count": 42
+      },
+      {
+        "category": "cat:money",
+        "count": 37
+      },
+      {
+        "category": "cat:office",
+        "count": 1
+      }
+    ],
+    "level_histogram": [
+      {
+        "ordinal": -4,
+        "count": 2
+      },
+      {
+        "ordinal": -3,
+        "count": 2
+      },
+      {
+        "ordinal": -2,
+        "count": 44
+      },
+      {
+        "ordinal": -1.5,
+        "count": 1
+      },
+      {
+        "ordinal": -1,
+        "count": 231
+      },
+      {
+        "ordinal": 0,
+        "count": 165
+      },
+      {
+        "ordinal": 1,
+        "count": 124
+      },
+      {
+        "ordinal": 2,
+        "count": 64
+      },
+      {
+        "ordinal": 3,
+        "count": 33
+      },
+      {
+        "ordinal": 4,
+        "count": 29
+      },
+      {
+        "ordinal": 5,
+        "count": 23
+      },
+      {
+        "ordinal": 6,
+        "count": 18
+      },
+      {
+        "ordinal": 7,
+        "count": 10
+      },
+      {
+        "ordinal": 8,
+        "count": 14
+      },
+      {
+        "ordinal": 10,
+        "count": 3
+      },
+      {
+        "ordinal": 11,
+        "count": 3
+      },
+      {
+        "ordinal": 12,
+        "count": 1
+      },
+      {
+        "ordinal": 13,
+        "count": 1
+      },
+      {
+        "ordinal": 14,
+        "count": 1
+      },
+      {
+        "ordinal": 15,
+        "count": 1
+      },
+      {
+        "ordinal": 26,
+        "count": 1
+      },
+      {
+        "ordinal": 27,
+        "count": 1
+      },
+      {
+        "ordinal": 60,
+        "count": 2
+      }
+    ],
+    "level_objects": 691,
+    "level_unparsed": 4,
+    "shop_amenity_with_level": {
+      "total": 1803,
+      "count": 446,
+      "share": 0.2474
+    },
+    "inside_station_building": {
+      "total": 1803,
+      "count": 59,
+      "share": 0.0327,
+      "station_building_polygons": 3
+    },
+    "name": {
+      "total": 2502,
+      "count": 1877,
+      "share": 0.7502
+    },
+    "brand": {
+      "total": 2502,
+      "count": 521,
+      "share": 0.2082
+    },
+    "opening_hours": {
+      "total": 2502,
+      "count": 336,
+      "share": 0.1343
+    },
+    "has_indoor": {
+      "total": 2502,
+      "count": 36,
+      "share": 0.0144
+    }
+  },
+  "quality": {
+    "objects_with_last_edit": 2502,
+    "last_edit_year_histogram": [
+      {
+        "year": 2011,
+        "count": 8
+      },
+      {
+        "year": 2012,
+        "count": 32
+      },
+      {
+        "year": 2013,
+        "count": 22
+      },
+      {
+        "year": 2014,
+        "count": 9
+      },
+      {
+        "year": 2015,
+        "count": 22
+      },
+      {
+        "year": 2016,
+        "count": 34
+      },
+      {
+        "year": 2017,
+        "count": 30
+      },
+      {
+        "year": 2018,
+        "count": 78
+      },
+      {
+        "year": 2019,
+        "count": 195
+      },
+      {
+        "year": 2020,
+        "count": 83
+      },
+      {
+        "year": 2021,
+        "count": 138
+      },
+      {
+        "year": 2022,
+        "count": 86
+      },
+      {
+        "year": 2023,
+        "count": 231
+      },
+      {
+        "year": 2024,
+        "count": 261
+      },
+      {
+        "year": 2025,
+        "count": 771
+      },
+      {
+        "year": 2026,
+        "count": 502
+      }
+    ],
+    "edited_before_2021": {
+      "total": 2502,
+      "count": 513,
+      "share": 0.205
+    },
+    "objects_with_source_tag": 622,
+    "source_class_objects": {
+      "srcclass:survey": 77,
+      "srcclass:gsi": 26,
+      "srcclass:possibly_non_free": 325,
+      "srcclass:other": 194
+    },
+    "fixme_objects": 10,
+    "note_objects": 84
+  },
+  "comparison": {
+    "lists": [
+      {
+        "list_id": "main-pois",
+        "source": "main:stations/ikebukuro/gteki/pois.json",
+        "entries": 58,
+        "distinct_names": 121,
+        "matched": 1,
+        "strict_matched": 0,
+        "strict_name_only": 1,
+        "ours_only": 57,
+        "osm_only": 1873,
+        "floor_agreement": {
+          "comparable": 0,
+          "agree": 0,
+          "rate": null
+        },
+        "status": "compared"
+      },
+      {
+        "list_id": "merchants-batch2",
+        "source": "claude/data-research-ikb-merchants-batch2:docs/research/merchants/ikebukuro-merchants-batch2.json",
+        "entries": 118,
+        "distinct_names": 114,
+        "matched": 14,
+        "strict_matched": 0,
+        "strict_name_only": 14,
+        "ours_only": 104,
+        "osm_only": 1845,
+        "floor_agreement": {
+          "comparable": 0,
+          "agree": 0,
+          "rate": null
+        },
+        "status": "compared"
+      },
+      {
+        "list_id": "merchants-batch3",
+        "source": "claude/data-research-ikb-merchants-batch2:docs/research/merchants/ikebukuro-merchants-batch3.json",
+        "entries": 2,
+        "distinct_names": 2,
+        "matched": 0,
+        "strict_matched": 0,
+        "strict_name_only": 0,
+        "ours_only": 2,
+        "osm_only": 1877,
+        "floor_agreement": {
+          "comparable": 0,
+          "agree": 0,
+          "rate": null
+        },
+        "status": "compared"
+      },
+      {
+        "list_id": "merchants-batch4",
+        "source": "claude/data-research-ikb-merchants-batch4:docs/research/merchants/ikebukuro-merchants-batch4.json",
+        "entries": 210,
+        "distinct_names": 209,
+        "matched": 3,
+        "strict_matched": 0,
+        "strict_name_only": 3,
+        "ours_only": 207,
+        "osm_only": 1870,
+        "floor_agreement": {
+          "comparable": 0,
+          "agree": 0,
+          "rate": null
+        },
+        "status": "compared"
+      },
+      {
+        "list_id": "tobu-dept-tenants",
+        "source": "claude/data-research-ikb-merchants-batch4:docs/research/merchants/ikebukuro-tobu-dept-tenants.json",
+        "entries": 864,
+        "distinct_names": 842,
+        "matched": 8,
+        "strict_matched": 0,
+        "strict_name_only": 8,
+        "ours_only": 856,
+        "osm_only": 1867,
+        "floor_agreement": {
+          "comparable": 7,
+          "agree": 0,
+          "rate": 0
+        },
+        "status": "compared"
+      }
+    ]
+  },
+  "tool_version": "0.1.0"
+}

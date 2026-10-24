@@ -1,0 +1,378 @@
+{
+  "schema": "gteki.gis.osm-coverage/0.1",
+  "command": "osm-coverage",
+  "policy_version": "osm-coverage-v1",
+  "run_id": "osm-coverage-shinjuku-ce2c63247f14080f5055",
+  "station_id": "shinjuku",
+  "gteki_role": "evidence",
+  "navigation_use": "NOT_FOR_ROUTING",
+  "verification": "UNVERIFIED",
+  "note": "Coverage evidence for #437 only. Counts, shares, histograms, OSM tag keys and derived categories; no OSM name, tag value or contributor identity is copied. The extract stays in the private store. Nothing here is a source for the graph, a route or a shipping POI list; the ODbL share-alike question is open (docs/gis/research/2026-10-24-osm-coverage-odbl.md).",
+  "extract": {
+    "elements": 7695,
+    "rejected": 0,
+    "tag_keys": 538
+  },
+  "source": {
+    "source_id": "osm-overpass-shinjuku",
+    "sha256": "06fc414e4ff564c7ae65a037b185cca3c62e2a2a760665df5898e2bf7e6e9322",
+    "bytes": 6616532,
+    "acquired_at": "2026-10-24T10:12:15.144Z"
+  },
+  "query": {
+    "kind": "overpass-ql-get",
+    "sha256": "5307d1232b3cdcfe2d1c641608236c3f7e2d4665fb455afa58a762dfdd39534a",
+    "radius_m": 900,
+    "origin": {
+      "lat": 35.687,
+      "lon": 139.6994
+    }
+  },
+  "coverage": {
+    "kinds": {
+      "kind:shop": 571,
+      "kind:amenity": 1998,
+      "kind:indoor": 3255,
+      "kind:has_level": 4986,
+      "kind:station_building": 2,
+      "kind:entrance": 244
+    },
+    "categories_top15": [
+      {
+        "category": "cat:food_and_drink",
+        "count": 904
+      },
+      {
+        "category": "cat:retail",
+        "count": 481
+      },
+      {
+        "category": "cat:street_furniture",
+        "count": 392
+      },
+      {
+        "category": "cat:other",
+        "count": 330
+      },
+      {
+        "category": "cat:transport",
+        "count": 201
+      },
+      {
+        "category": "cat:health",
+        "count": 68
+      },
+      {
+        "category": "cat:money",
+        "count": 50
+      },
+      {
+        "category": "cat:culture",
+        "count": 43
+      },
+      {
+        "category": "cat:public_service",
+        "count": 41
+      },
+      {
+        "category": "cat:education",
+        "count": 18
+      }
+    ],
+    "level_histogram": [
+      {
+        "ordinal": -7,
+        "count": 7
+      },
+      {
+        "ordinal": -5,
+        "count": 14
+      },
+      {
+        "ordinal": -4,
+        "count": 25
+      },
+      {
+        "ordinal": -3,
+        "count": 154
+      },
+      {
+        "ordinal": -2,
+        "count": 577
+      },
+      {
+        "ordinal": -1,
+        "count": 2518
+      },
+      {
+        "ordinal": -0.5,
+        "count": 3
+      },
+      {
+        "ordinal": -0.25,
+        "count": 4
+      },
+      {
+        "ordinal": 0,
+        "count": 1517
+      },
+      {
+        "ordinal": 0.25,
+        "count": 10
+      },
+      {
+        "ordinal": 0.5,
+        "count": 49
+      },
+      {
+        "ordinal": 1,
+        "count": 408
+      },
+      {
+        "ordinal": 2,
+        "count": 129
+      },
+      {
+        "ordinal": 3,
+        "count": 81
+      },
+      {
+        "ordinal": 4,
+        "count": 21
+      },
+      {
+        "ordinal": 5,
+        "count": 18
+      },
+      {
+        "ordinal": 6,
+        "count": 19
+      },
+      {
+        "ordinal": 7,
+        "count": 95
+      },
+      {
+        "ordinal": 8,
+        "count": 25
+      },
+      {
+        "ordinal": 9,
+        "count": 10
+      },
+      {
+        "ordinal": 10,
+        "count": 2
+      },
+      {
+        "ordinal": 12,
+        "count": 1
+      },
+      {
+        "ordinal": 13,
+        "count": 1
+      },
+      {
+        "ordinal": 14,
+        "count": 1
+      },
+      {
+        "ordinal": 18,
+        "count": 1
+      },
+      {
+        "ordinal": 32,
+        "count": 1
+      },
+      {
+        "ordinal": 44,
+        "count": 1
+      },
+      {
+        "ordinal": 45,
+        "count": 3
+      },
+      {
+        "ordinal": 51,
+        "count": 1
+      }
+    ],
+    "level_objects": 4965,
+    "level_unparsed": 68,
+    "shop_amenity_with_level": {
+      "total": 2543,
+      "count": 625,
+      "share": 0.2458
+    },
+    "inside_station_building": {
+      "total": 2543,
+      "count": 16,
+      "share": 0.0063,
+      "station_building_polygons": 2
+    },
+    "name": {
+      "total": 7695,
+      "count": 3149,
+      "share": 0.4092
+    },
+    "brand": {
+      "total": 7695,
+      "count": 562,
+      "share": 0.073
+    },
+    "opening_hours": {
+      "total": 7695,
+      "count": 473,
+      "share": 0.0615
+    },
+    "has_indoor": {
+      "total": 7695,
+      "count": 3255,
+      "share": 0.423
+    }
+  },
+  "quality": {
+    "objects_with_last_edit": 7695,
+    "last_edit_year_histogram": [
+      {
+        "year": 2009,
+        "count": 3
+      },
+      {
+        "year": 2011,
+        "count": 3
+      },
+      {
+        "year": 2012,
+        "count": 32
+      },
+      {
+        "year": 2013,
+        "count": 164
+      },
+      {
+        "year": 2014,
+        "count": 30
+      },
+      {
+        "year": 2015,
+        "count": 16
+      },
+      {
+        "year": 2016,
+        "count": 50
+      },
+      {
+        "year": 2017,
+        "count": 333
+      },
+      {
+        "year": 2018,
+        "count": 274
+      },
+      {
+        "year": 2019,
+        "count": 357
+      },
+      {
+        "year": 2020,
+        "count": 232
+      },
+      {
+        "year": 2021,
+        "count": 81
+      },
+      {
+        "year": 2022,
+        "count": 85
+      },
+      {
+        "year": 2023,
+        "count": 1867
+      },
+      {
+        "year": 2024,
+        "count": 1976
+      },
+      {
+        "year": 2025,
+        "count": 1067
+      },
+      {
+        "year": 2026,
+        "count": 1125
+      }
+    ],
+    "edited_before_2021": {
+      "total": 7695,
+      "count": 1494,
+      "share": 0.1942
+    },
+    "objects_with_source_tag": 882,
+    "source_class_objects": {
+      "srcclass:survey": 78,
+      "srcclass:gsi": 3,
+      "srcclass:aerial_imagery": 3,
+      "srcclass:possibly_non_free": 650,
+      "srcclass:other": 205
+    },
+    "fixme_objects": 2,
+    "note_objects": 50
+  },
+  "comparison": {
+    "lists": [
+      {
+        "list_id": "main-pois",
+        "source": "main:stations/shinjuku/gteki/pois.json",
+        "entries": 16,
+        "distinct_names": 32,
+        "matched": 0,
+        "strict_matched": 0,
+        "strict_name_only": 0,
+        "ours_only": 16,
+        "osm_only": 3149,
+        "floor_agreement": {
+          "comparable": 0,
+          "agree": 0,
+          "rate": null
+        },
+        "status": "compared"
+      },
+      {
+        "list_id": "merchants-batch1",
+        "source": "claude/data-research-sjk-merchants-batch1:docs/research/merchants/shinjuku-merchants-batch1.json",
+        "entries": 6,
+        "distinct_names": 6,
+        "matched": 0,
+        "strict_matched": 0,
+        "strict_name_only": 0,
+        "ours_only": 6,
+        "osm_only": 3149,
+        "floor_agreement": {
+          "comparable": 0,
+          "agree": 0,
+          "rate": null
+        },
+        "status": "compared"
+      },
+      {
+        "list_id": "merchants-batch2",
+        "source": "claude/data-research-sjk-merchants-batch2:docs/research/merchants/shinjuku-merchants-batch2.json",
+        "entries": 576,
+        "distinct_names": 562,
+        "matched": 24,
+        "strict_matched": 0,
+        "strict_name_only": 24,
+        "ours_only": 552,
+        "osm_only": 3114,
+        "floor_agreement": {
+          "comparable": 0,
+          "agree": 0,
+          "rate": null
+        },
+        "status": "compared"
+      }
+    ]
+  },
+  "tool_version": "0.1.0"
+}
