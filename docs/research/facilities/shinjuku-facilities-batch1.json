@@ -1,0 +1,849 @@
+{
+  "schema": "gteki.station/0.1",
+  "note": "Station facilities batch 1 (Tokyo Metro / Toei), facts only. UNVERIFIED; locations are the operator's wording, not route evidence.",
+  "sources": [
+    {
+      "id": "tokyometro-shinjuku-accessibility-2026-10",
+      "title": "バリアフリー設備 | 新宿駅/M08 | 東京メトロ",
+      "publisher": "東京地下鉄",
+      "url": "https://www.tokyometro.jp/station/shinjuku/accessibility/index.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311",
+        "date": "2026-10-24"
+      },
+      "attribution": "バリアフリー設備 | 新宿駅/M08 | 東京メトロ (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T09:48:44Z",
+      "datasetDate": null,
+      "notes": "トイレ設備 rows only (車いす対応トイレ / 乳幼児用設備 / オストメイト); rows printed なし skipped. Facility labels and 設置場所 read as facts (OD-31/OD-33). No text, images or layout reproduced. Page undated."
+    },
+    {
+      "id": "toei-shinjuku-station-2026-10",
+      "title": "新宿 ｜ 東京都交通局",
+      "publisher": "東京都交通局",
+      "url": "https://www.kotsu.metro.tokyo.jp/subway/stations/shinjuku.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311",
+        "date": "2026-10-24"
+      },
+      "attribution": "新宿 ｜ 東京都交通局 (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T09:48:44Z",
+      "datasetDate": null,
+      "notes": "バリアフリー設備 section prints バリアフリートイレ（車椅子使用者対応トイレ）: あり for 新宿線 and 大江戸線 with no location; no POI imported from this page. Page undated."
+    },
+    {
+      "id": "toei-shinjuku-nishiguchi-station-2026-10",
+      "title": "新宿西口 ｜ 東京都交通局",
+      "publisher": "東京都交通局",
+      "url": "https://www.kotsu.metro.tokyo.jp/subway/stations/shinjuku-nishiguchi.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311",
+        "date": "2026-10-24"
+      },
+      "attribution": "新宿西口 ｜ 東京都交通局 (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T09:48:44Z",
+      "datasetDate": null,
+      "notes": "バリアフリー設備 section prints バリアフリートイレ（車椅子使用者対応トイレ）: あり with no location; no POI imported from this page. Page undated."
+    },
+    {
+      "id": "toei-shinjuku-nishiguchi-stores-page-2026-10",
+      "title": "大江戸線 新宿西口駅 ｜ 東京都交通局",
+      "publisher": "東京都交通局",
+      "url": "https://www.kotsu.metro.tokyo.jp/other/kanren/stores/shinjuku-nishiguchi.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311",
+        "date": "2026-10-24"
+      },
+      "attribution": "大江戸線 新宿西口駅 ｜ 東京都交通局 (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T09:48:44Z",
+      "datasetDate": null,
+      "notes": "3 コインロッカー, 3 ATM and 1 証明写真機 imported. Skipped as out of scope: ファミリーマート (shop), ベビーカーレンタルサービス（ベビカル）, 育児用品自動販売機. Page undated. Distinct from the Open Data CSV id toei-shinjuku-nishiguchi-stores-2026-10 used by PR #418."
+    }
+  ],
+  "pois": [
+    {
+      "id": "service-sjk-metro-001",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "証明写真"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-shops-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ 新宿駅 A8出入口付近。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Shinjuku Station, A8出入口付近. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-metro-002",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "証明写真"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-shops-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ 新宿駅 B13出入口付近。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Shinjuku Station, B13出入口付近. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-metro-003",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "証明写真"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-shops-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ 新宿駅 B17出入口付近。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Shinjuku Station, B17出入口付近. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "atm-sjk-metro-001",
+      "category": "atm",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ATM・りそな銀行"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-shops-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ 新宿駅 東口きっぷうりば。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Shinjuku Station, 東口きっぷうりば. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "atm-sjk-metro-002",
+      "category": "atm",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ATM・セブン銀行"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-shops-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ 新宿駅 東口改札付近。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Shinjuku Station, 東口改札付近. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "atm-sjk-metro-003",
+      "category": "atm",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ATM・みずほ銀行"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-shops-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ 新宿駅 東口改札付近。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Shinjuku Station, 東口改札付近. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "locker-sjk-metro-001",
+      "category": "locker",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "コインロッカー"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-shops-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ 新宿駅 以下の路線周辺にコインロッカーがあります ・丸ノ内線。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Shinjuku Station, 以下の路線周辺にコインロッカーがあります ・丸ノ内線. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "locker-sjk-metro-002",
+      "category": "locker",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "東京メトロッカー＋（Tokyo Metlocker PLUS）"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-shops-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ 新宿駅 A9出入口付近。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Shinjuku Station, A9出入口付近. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-metro-004",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "モバイルバッテリーレンタル機"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-shops-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ 新宿駅 B17出入口付近。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Shinjuku Station, B17出入口付近. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-metro-005",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "モバイルWi-fiレンタル機"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-shops-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ 新宿駅 A8出入口付近。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Shinjuku Station, A8出入口付近. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-metro-001",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "車いす対応トイレ（改札外）"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-accessibility-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ 新宿駅 丸ノ内線 東改札外広場。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Shinjuku Station, 丸ノ内線 東改札外広場. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-metro-002",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "乳幼児用設備（改札外）"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-accessibility-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ 新宿駅 丸ノ内線 東改札外広場。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Shinjuku Station, 丸ノ内線 東改札外広場. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-metro-003",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "オストメイト（改札外）"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-accessibility-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ 新宿駅 丸ノ内線 東改札外広場。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Shinjuku Station, 丸ノ内線 東改札外広場. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "locker-sjk-toei-001",
+      "category": "locker",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "コインロッカー"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-stores-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "都営 新宿駅 B1階改札外コンコース（4出口付近）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Toei Shinjuku Station, B1階改札外コンコース（4出口付近）. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "locker-sjk-toei-002",
+      "category": "locker",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "コインロッカー"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-stores-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "都営 新宿駅 B2階改札内コンコース（A1出口方駅務室横）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Toei Shinjuku Station, B2階改札内コンコース（A1出口方駅務室横）. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-toei-001",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "証明写真機"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-stores-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "都営 新宿駅 B2階改札外コンコース（A1出口方改札付近）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Toei Shinjuku Station, B2階改札外コンコース（A1出口方改札付近）. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "atm-sjk-toei-001",
+      "category": "atm",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ATM（みずほ銀行）"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-stores-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "都営 新宿駅 B1階改札外コンコース（4出口付近）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Toei Shinjuku Station, B1階改札外コンコース（4出口付近）. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "locker-sjk-toeinishi-001",
+      "category": "locker",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "コインロッカー"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-nishiguchi-stores-page-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "都営 新宿西口駅 B1階改札外コンコース（D2出口付近）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Toei Shinjuku-nishiguchi Station, B1階改札外コンコース（D2出口付近）. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "locker-sjk-toeinishi-002",
+      "category": "locker",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "コインロッカー"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-nishiguchi-stores-page-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "都営 新宿西口駅 B3階改札外コンコース（駅務室横）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Toei Shinjuku-nishiguchi Station, B3階改札外コンコース（駅務室横）. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "locker-sjk-toeinishi-003",
+      "category": "locker",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "コインロッカー"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-nishiguchi-stores-page-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "都営 新宿西口駅 B3階改札外コンコース（D5出口方）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Toei Shinjuku-nishiguchi Station, B3階改札外コンコース（D5出口方）. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-toeinishi-001",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "証明写真機"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-nishiguchi-stores-page-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "都営 新宿西口駅 B1階改札外コンコース（D1出口付近）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Toei Shinjuku-nishiguchi Station, B1階改札外コンコース（D1出口付近）. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "atm-sjk-toeinishi-001",
+      "category": "atm",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ATM（みずほ銀行）"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-nishiguchi-stores-page-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "都営 新宿西口駅 B1階改札外コンコース（D1出口付近）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Toei Shinjuku-nishiguchi Station, B1階改札外コンコース（D1出口付近）. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "atm-sjk-toeinishi-002",
+      "category": "atm",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ATM（ゆうちょ銀行）"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-nishiguchi-stores-page-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "都営 新宿西口駅 B1階改札外コンコース（D1出口付近）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Toei Shinjuku-nishiguchi Station, B1階改札外コンコース（D1出口付近）. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "atm-sjk-toeinishi-003",
+      "category": "atm",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ATM（セブン銀行）"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-nishiguchi-stores-page-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "都営 新宿西口駅 B1階改札外コンコース（D1出口付近）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Toei Shinjuku-nishiguchi Station, B1階改札外コンコース（D1出口付近）. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    }
+  ],
+  "removed": []
+}
