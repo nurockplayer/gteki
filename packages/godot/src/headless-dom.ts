@@ -7,6 +7,7 @@
  * through them is presented as faithful. No canvas library is used.
  */
 import * as THREE from "three";
+import type { GLTFLoaderPlugin, GLTFParser } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 /** What the station scenes asked of the shims; the exporter turns this into sidecar warnings. */
 export interface ShimUsage {
@@ -15,10 +16,61 @@ export interface ShimUsage {
   imageDataReads: number;
   pmremEnvironments: number;
   placeholderTextures: string[];
+  /** Distinct image sources in GLBs loaded through `ctx.loadGlb`, replaced by blank placeholders (not decoded). */
+  glbEmbeddedImages: number;
+  glbExternalImages: number;
 }
 
 export function newShimUsage(): ShimUsage {
-  return { canvases: 0, measuredTexts: 0, imageDataReads: 0, pmremEnvironments: 0, placeholderTextures: [] };
+  return { canvases: 0, measuredTexts: 0, imageDataReads: 0, pmremEnvironments: 0, placeholderTextures: [], glbEmbeddedImages: 0, glbExternalImages: 0 };
+}
+
+/**
+ * GLTFLoader plugin that never decodes an image: every glTF image source becomes a blank `THREE.Texture`. Decoding
+ * needs a browser (`self.URL`, `createImageBitmap` or an `<img>`); without this, a GLB with an image fails to load at
+ * all under Node and the station falls back or skips the piece. The snapshot strips every texture anyway, so only the
+ * slot and its sampling state matter.
+ *
+ * It replaces `parser.loadImageSource`, the one step every texture path shares: the core path and the built-in
+ * EXT_texture_webp / EXT_texture_avif / KHR_texture_basisu handlers (which run before registered plugins) all go
+ * through `loadTextureImage`, which still sets flipY, name and sampler, and `assignTexture` still sets channel and
+ * colour space. A stub `ktx2Loader` keeps a required KHR_texture_basisu on that path instead of throwing. Each image
+ * source is counted once, split into embedded (bufferView or data URI) and external URIs.
+ */
+/** GLTFLoader's (unexported) `getImageURIMimeType`, r186. */
+function imageUriMimeType(uri: string): string {
+  if (uri.search(/\.jpe?g($|\?)/i) > 0 || uri.search(/^data:image\/jpeg/) === 0) return "image/jpeg";
+  if (uri.search(/\.webp($|\?)/i) > 0 || uri.search(/^data:image\/webp/) === 0) return "image/webp";
+  if (uri.search(/\.ktx2($|\?)/i) > 0 || uri.search(/^data:image\/ktx2/) === 0) return "image/ktx2";
+  return "image/png";
+}
+
+export function headlessGltfTextures(usage: ShimUsage): (parser: GLTFParser) => GLTFLoaderPlugin {
+  return (parser) => {
+    const p = parser as unknown as {
+      json: { images?: { uri?: string; bufferView?: number; mimeType?: string; extras?: Record<string, unknown> }[] };
+      options: { ktx2Loader?: unknown };
+      loadImageSource: (sourceIndex: number, loader: unknown) => Promise<THREE.Texture>;
+    };
+    const counted = new Set<number>();
+    p.options.ktx2Loader ??= { gteki_headless_stub: true };
+    p.loadImageSource = (sourceIndex) => {
+      if (!counted.has(sourceIndex)) {
+        counted.add(sourceIndex);
+        const uri = p.json.images?.[sourceIndex]?.uri;
+        if (typeof uri === "string" && !/^data:/i.test(uri)) usage.glbExternalImages += 1;
+        else usage.glbEmbeddedImages += 1;
+      }
+      // Image-level metadata as GLTFLoader's own loadImageSource keeps it (extras, then mimeType).
+      const sourceDef = p.json.images?.[sourceIndex] ?? {};
+      const texture = new THREE.Texture();
+      if (sourceDef.extras && typeof sourceDef.extras === "object") Object.assign(texture.userData, sourceDef.extras);
+      texture.userData.mimeType = sourceDef.mimeType || imageUriMimeType(sourceDef.uri ?? "");
+      texture.userData.gteki_glb_placeholder = true;
+      return Promise.resolve(texture);
+    };
+    return { name: "gteki_headless_textures" };
+  };
 }
 
 /**
