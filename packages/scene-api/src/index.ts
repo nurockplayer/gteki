@@ -89,8 +89,8 @@ export interface StationScene {
      */
     envIntensity?: number;
   };
-  /** Per-frame hook (animated signage, ambient props). */
-  update?(dtSeconds: number, elapsedSeconds: number): void;
+  /** Per-frame hook after camera placement, before all render passes. Hosts may supply the active camera for culling. */
+  update?(dtSeconds: number, elapsedSeconds: number, camera?: THREE.Camera): void;
   dispose(): void;
 }
 

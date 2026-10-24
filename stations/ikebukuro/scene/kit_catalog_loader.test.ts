@@ -10,7 +10,7 @@ import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { describe, expect, it, vi } from "vitest";
 import kitPlacements from "./kit_placements.json";
 import kitCatalog from "./kit_catalog.json";
-import { type CatalogPlacement, catalogUri, lazyKitCatalog, loadKitCatalog, piecePose, tierName, tierParts } from "./kit_catalog_loader.ts";
+import { type CatalogPlacement, CULL_M, catalogUri, catalogVisibility, lazyKitCatalog, loadKitCatalog, piecePose, tierName, tierParts } from "./kit_catalog_loader.ts";
 import { applyStationShadows } from "../../../apps/web/src/explorer/shadows.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -343,12 +343,62 @@ describe("loadKitCatalog", () => {
         expect(root.children).toHaveLength(i + 1);
       }
       expect(h.loadGlb.mock.calls.map((c) => c[0])).toEqual(allUris);
+      const camera = new THREE.PerspectiveCamera();
+      camera.position.set(10_000, 10_000, 10_000);
+      lazy.update(camera);
+      expect(root.children.every((g) => g.children.every((m) => !m.visible))).toBe(true);
       lazy.dispose();
       expect(root.children).toHaveLength(0);
     } finally {
       lazy.dispose();
       vi.useRealTimers();
     }
+  });
+
+  it("culls by sphere surface distance, restores visibility and reuses its scratch objects", async () => {
+    const loaded = await loadKitCatalog(THREE, host(allUris), escalators.slice(0, 1), false);
+    const { group } = loaded.build(THREE, env, toRenderer);
+    const root = new THREE.Group();
+    root.position.set(7, -3, 11);
+    root.scale.setScalar(2);
+    root.add(group);
+    const camera = new THREE.PerspectiveCamera();
+    const rig = new THREE.Group();
+    rig.position.set(-4, 2, 6);
+    rig.add(camera);
+    const visibility = catalogVisibility(THREE);
+    visibility.add(group);
+    const mesh = group.children[0] as THREE.InstancedMesh;
+    root.updateMatrixWorld(true);
+    const bounds = mesh.boundingSphere!.clone().applyMatrix4(mesh.matrixWorld);
+    const localBounds = mesh.boundingSphere!.clone();
+    const place = (surfaceM: number) => camera.position.copy(bounds.center).sub(rig.position).addScaledVector(new THREE.Vector3(1, 0, 0), bounds.radius + surfaceM);
+    place(CULL_M + 0.01);
+    visibility.update(camera);
+    expect(group.children.every((m) => !m.visible)).toBe(true);
+    place(CULL_M);
+    visibility.update(camera);
+    expect(mesh.visible).toBe(true); // inclusive surface threshold, even though the centre is farther away
+    place(CULL_M - 0.01);
+    visibility.update(camera);
+    expect(group.children.every((m) => m.visible)).toBe(true);
+    camera.position.copy(bounds.center).sub(rig.position);
+    visibility.update(camera);
+    expect(mesh.visible).toBe(true); // inside the sphere
+    expect(mesh.boundingSphere).toEqual(localBounds); // world transforms never mutate the stored bound
+
+    const vectorCtor = vi.fn(function () { return new THREE.Vector3(); });
+    const sphereCtor = vi.fn(function () { return new THREE.Sphere(); });
+    const guarded = catalogVisibility({ ...THREE, Vector3: vectorCtor, Sphere: sphereCtor } as unknown as typeof THREE);
+    guarded.add(group);
+    expect(vectorCtor).toHaveBeenCalledTimes(1);
+    expect(sphereCtor).toHaveBeenCalledTimes(1);
+    vectorCtor.mockClear();
+    sphereCtor.mockClear();
+    for (let frame = 0; frame < 120; frame++) guarded.update(camera);
+    expect(vectorCtor).not.toHaveBeenCalled();
+    expect(sphereCtor).not.toHaveBeenCalled();
+    loaded.dispose();
   });
 
   it("cancels a scheduled catalog load and frees an in-flight GLB after scene teardown", async () => {
