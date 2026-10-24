@@ -249,7 +249,7 @@ export class App {
     // A later selection supersedes this one: never let a slow station overwrite the one now selected.
     const generation = ++this.openGeneration;
     const current = () => generation === this.openGeneration;
-    this.explorer.cancelPendingLoad();
+    this.explorer.cancelPendingLoad(entry.key);
     this.s.entry = entry;
     this.ui.stationSelect.value = entry.key;
     // Drop the previous station's services now, not after the await: nothing may search or route

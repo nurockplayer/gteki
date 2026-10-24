@@ -663,8 +663,9 @@ export class Explorer {
    * Abandon any in-flight load and show nothing: called as soon as another station is selected, so a
    * slow previous station can never appear under the new selection (even if the new one fails to load).
    */
-  cancelPendingLoad(): void {
+  cancelPendingLoad(nextId: string): void {
     this.loadGeneration++;
+    this.releaseStationCaches(nextId);
     this.clearStation();
     this.station = null;
     this.phase = "idle";
