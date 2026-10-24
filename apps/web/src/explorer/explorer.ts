@@ -1497,6 +1497,9 @@ export class Explorer {
       const ring = g.userData.pulse as THREE.Mesh | undefined;
       if (ring) ring.scale.setScalar(this.reducedMotion ? 1 : 1 + 0.25 * Math.sin(t * 3));
     }
+    // The camera still holds last frame's pose here (fine for distance culling; see the scene hook contract).
+    this.stationScene?.update?.(dt, t, this.camera);
+
     if (this.mode === "walk") this.stepWalk(dt);
     else if (this.mode === "guide") this.stepGuide(dt);
     else this.orbit.update();
@@ -1513,7 +1516,6 @@ export class Explorer {
     }
     // Signs between the follow camera and the avatar (or inside its near distance) are cut, never collided with.
     this.camera.updateMatrixWorld();
-    this.stationScene?.update?.(dt, t, this.camera);
     this.cameraCut.update(this.camera, this.pos.clone().add(new THREE.Vector3(0, EYE, 0)), this.mode !== "overview");
     const motion = avatarMotion(this.lastAvatarPos, this.pos, dt, this.bodyYaw, this.yaw);
     this.bodyYaw = motion.yaw;

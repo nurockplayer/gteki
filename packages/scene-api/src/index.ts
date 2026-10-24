@@ -81,7 +81,7 @@ export interface StationScene {
      */
     envIntensity?: number;
   };
-  /** Per-frame hook after camera placement, before all render passes. Hosts may supply the active camera for culling. */
+  /** Per-frame hook, before the camera is stepped; `camera` (optional) holds the previous frame's pose, e.g. for distance culling. */
   update?(dtSeconds: number, elapsedSeconds: number, camera?: THREE.Camera): void;
   dispose(): void;
 }

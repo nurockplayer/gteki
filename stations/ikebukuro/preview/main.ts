@@ -193,6 +193,7 @@ function frame() {
 let elapsed = 0;
 function step(dt: number, render = true) {
   elapsed += dt;
+  station.update?.(dt, elapsed, camera);
   // move intent in camera space
   let f = 0, s = 0;
   if (keys.has("KeyW") || keys.has("ArrowUp")) f += 1;
@@ -232,7 +233,6 @@ function step(dt: number, render = true) {
   camPos.copy(head).addScaledVector(back, d);
   camera.position.lerp(camPos, Math.min(1, dt * 12));
   camera.lookAt(head.x, head.y - 0.1, head.z);
-  station.update?.(dt, elapsed, camera);
 
   if (render) mobile ? renderer.render(scene, camera) : composer.render(dt);
   fpsAcc += dt; fpsN++;
