@@ -61,7 +61,7 @@ Checked date for every row: 2026-10-24. `current_status` is UNKNOWN throughout. 
 
 | stable id | station | name_ja | name_en | category | floor | area | possible_entrance | source_id + URL | source date | checked date | hours | current_status | location_confidence |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| ikb-mr-001 | Ikebukuro | Soup Stock Tokyo | Soup Stock Tokyo | restaurant | null | Echika Ikebukuro (Tokyo Metro page) | null | DR-MR-01 — https://www.tokyometro.jp/station/ikebukuro/shop/index.html | not stated | 2026-10-24 | 7:30–23:00 (source page; verify current) | UNKNOWN | AREA_ONLY |
+| ikb-mr-001 | Ikebukuro | Soup Stock Tokyo | Soup Stock Tokyo | restaurant | null | not stated (listed on the Tokyo Metro shop page without a facility label; corrected 2026-10-24 on re-read) | null | DR-MR-01 — https://www.tokyometro.jp/station/ikebukuro/shop/index.html | not stated | 2026-10-24 | 7:30–23:00 (source page; verify current) | UNKNOWN | SEARCH_ONLY |
 | ikb-mr-002 | Ikebukuro | Patio de METRO | Patio de METRO | cafe | null | Echika Ikebukuro | null | DR-MR-01 — https://www.tokyometro.jp/station/ikebukuro/shop/index.html | not stated | 2026-10-24 | 9:00–21:30 (source page; verify current) | UNKNOWN | AREA_ONLY |
 | ikb-mr-003 | Ikebukuro | Tabio | Tabio | retail | null | Echika Ikebukuro | null | DR-MR-01 — https://www.tokyometro.jp/station/ikebukuro/shop/index.html | not stated | 2026-10-24 | 10:00–21:00 (source page; verify current) | UNKNOWN | AREA_ONLY |
 | ikb-mr-004 | Ikebukuro | マツモトキヨシ | Matsumoto Kiyoshi | drugstore | null | ISP South Hall | null | DR-MR-04 — https://www.web-isp.co.jp/floorguide/ | not stated | 2026-10-24 | null | UNKNOWN | AREA_ONLY |
