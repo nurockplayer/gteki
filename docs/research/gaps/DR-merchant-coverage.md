@@ -12,7 +12,7 @@
 - **Ikebukuro: 70% met on listed entries.** With OD-33 (Tobu Hope Center gets OD-31 treatment), all four directories are importable facts-only: 153 of 153 raw (about 127 of 127 de-duplicated) = 100% of listed entries. Before OD-33 it was 110/153 = 72% raw, about 66% de-duplicated.
 - **Shinjuku: 100% of the directories read today, but only about 44% of the estimated listed total, because Subnade (about 100, estimate) could not be read.** Read and counted: Toei 1, S10 新宿西口 1, Metro 6, Odakyu Ace 43 (importable since OD-33), Keio Mall + Annex 29 (DR-MR-21: https://ekishop.keio-sc.jp/keiomall-keiomallannex/, read 2026-10-24T02:49:33Z, exact; the old keio-mall.jp host no longer resolves). Keio Mall gets OD-31 treatment (added to OD-33 the same day), so all five read directories are importable: searchable now 80 of 80 = **100% of the directories read** (51 of 80 = 64% before that ruling). Shinjuku Subnade's official site refused connections on 2026-10-24 (plain request, ego-lite read-only at about 02:55Z, and curl all failed); public secondary pages give "about 100" / 97 shops (2020) — **estimate**, secondary, not an official count. Counting Subnade's estimated about 100 in the denominator but not as searchable (nothing is imported from second-hand pages; re-read when the official site is back): about 80 of about 180 = **about 44% (estimate)**; once Subnade's official list is read, 100% of listed entries.
 
-> **Update (OD-34, 2026-10-24, later the same day):** Odakyu Ace (43) and Keio Mall (29) are no longer importable: their site terms refuse every use of content data, so they get OD-02 A treatment. Their shops may come back only from each chain's own store pages. Directly importable Shinjuku directory entries read today are therefore 8 (Toei 1, S10 新宿西口 1, Metro 6), and the Shinjuku figures above overstate what is searchable. The station-building directories LUMINE, LUMINE EST and NEWoMan (facts-only OK under OD-34) are counted in [`DR-shop-facility-inventory.md`](DR-shop-facility-inventory.md) (#415).
+> **Update (OD-34, 2026-10-24, later the same day):** Odakyu Ace (43) and Keio Mall (29) are no longer importable: their site terms refuse every use of content data, so they get OD-02 A treatment. Their shops may come back only from each chain's own store pages. Directly importable Shinjuku directory entries read today are therefore 8 (Toei 1, S10 新宿西口 1, Metro 6), and the Shinjuku figures above overstate what is searchable. **Recomputed under OD-34:** the 72 excluded entries stay in the denominator (they are listed shops; only the source is unusable). Read directories: 8 searchable of 80 = **10%**. With Subnade's estimated about 100 counted in the denominator: 8 of about 180 = **about 4% (estimate)** now, and at most about 108 of about 180 = **about 60% (estimate)** once Subnade's official list is read. So Subnade alone no longer reaches 70%: about 126 of about 180 are needed, so at least about 18 of the 72 Odakyu Ace / Keio Mall shops must be recovered from each shop's or chain's own store page (OSM lead list #437; never the SC directories), or the Owner accepts a lower target for Shinjuku. The station-building directories LUMINE, LUMINE EST and NEWoMan (facts-only OK under OD-34) are counted in [`DR-shop-facility-inventory.md`](DR-shop-facility-inventory.md) (#415).
 
 - **Positions:** about 18% of listed shops (36 of 200 by name match in the station box, estimate) have an OpenStreetMap point; Ikebukuro about 17%, Shinjuku about 21%. The E27-scope list has one shop, matched by name (1 of 1, estimate). Name matching does not prove the point is inside the station.
 - **JR East in-station denominator:** GAP (no counts in public search summaries), so "including JR" coverage cannot be computed.
@@ -52,22 +52,24 @@ Coverage (Ikebukuro):
 | DR-MR-09 (dataset f0609135) | S10 CSV, 新宿 | Tokyo Open Data catalog, resource other_stores_shinjuku.csv | same as DR-MR-08 | 5 records (duplicate of DR-MR-08; not added twice) | 2026-10-24 | curl to stdout, parsed in memory, not saved | exact |
 | DR-MR-09 (dataset 327d3a06) | S10 CSV, 新宿西口 | other_stores_shinjuku-nishiguchi.csv | (a) station | 10 records, 1 shop, 9 facilities (18 CSV records, 8 blank) | 2026-10-24 | curl to stdout, parsed in memory, not saved | exact |
 | DR-MR-15 / DR-MR-20 | Tokyo Metro Shinjuku station shops | https://www.tokyometro.jp/station/shinjuku/shop/index.html | (a) station passages | 6 shop-type entries (4 named, 2 limited-time slots); facilities excluded. Page did not show メトロプロムナード. | 2026-10-24 | WebFetch | exact per read |
-| DR-MR-17 (redirects to odakyu-sc.com) | Odakyu Ace shop search category | https://www.odakyu-sc.com/odakyu-ace/shopsearch/category/ | (a) underground facility | 43 listed | 2026-10-24 | WebFetch | estimate (category listing may be partial) |
+| DR-MR-17 (redirects to odakyu-sc.com) | Odakyu Ace shop search category | https://www.odakyu-sc.com/odakyu-ace/shopsearch/category/ | (a) underground facility | 43 listed | 2026-10-24 | WebFetch | estimate (category listing may be partial); not importable (OD-34) |
 | DR-MR-10 | Shinjuku Subnade | https://www.subnade.co.jp/shop/ | (a) underground facility | GAP (connection refused) | attempted 2026-10-24 | WebFetch | GAP |
-| DR-MR-16 | Keio Mall | https://www.keio-mall.jp/ | (a) underground facility | GAP (host did not resolve) | attempted 2026-10-24 | WebFetch | GAP |
+| DR-MR-16 | Keio Mall (old host) | https://www.keio-mall.jp/ | (a) underground facility | GAP (host did not resolve) | attempted 2026-10-24 | WebFetch | GAP |
+| DR-MR-21 | Keio Mall + Annex | https://ekishop.keio-sc.jp/keiomall-keiomallannex/ | (a) underground facility | 29 listed | 2026-10-24T02:49:33Z | WebFetch | exact; not importable (OD-34) |
 | (Lumine) | Lumine Shinjuku | not read | (b) above-ground building (classification only) | GAP | not read | none | GAP |
 
-Denominator, (a) scope, known sources: 1 + 1 + 6 + 43 = **51** (Subnade and Keio Mall not included; they are GAPs, so the denominator is understated).
+Denominator, (a) scope, known sources: 1 + 1 + 6 + 43 + 29 = **80** (Subnade not included; it is a GAP, so the denominator is understated, by about 100 on the secondary estimate).
 
 Coverage (Shinjuku):
 
 | Measure | Searchable | Denominator | Coverage |
 |---|---|---|---|
-| Excluding JR estimate | 8 (Toei 1, S10 西口 1, Metro 6) | 51 | **16%** |
-| Odakyu Ace treated as searchable (if terms clear) | 51 | 51 | 100% of known, but Subnade and Keio GAPs keep it unreliable |
+| Excluding JR, read directories (OD-34) | 8 (Toei 1, S10 西口 1, Metro 6) | 80 | **10%** |
+| Excluding JR, with Subnade estimate, Subnade not yet read | 8 | about 180 | **about 4% (estimate)** |
+| Excluding JR, after Subnade's official list is read | about 108 | about 180 | **about 60% (estimate)**; 70% needs at least about 18 of the 72 recovered from shops' own pages |
 | Including JR estimate | 8 | GAP | GAP |
 
-Odakyu Ace terms are UNKNOWN (pending terms). Its 43 entries are not searchable until terms are confirmed.
+Odakyu Ace (43) and Keio Mall (29) refuse every use of content data in their site terms (OD-34, OD-02 A treatment); they stay in the denominator but are never searchable from those directories.
 
 E27 scope: the Toei list has 1 shop, and the page does not split S01 from E27. The E27-scope share is 1 of 1 by name match.
 
