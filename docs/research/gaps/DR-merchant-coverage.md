@@ -10,10 +10,10 @@
 
 - **Denominator:** only shops listed in the official directories we could read (station passages plus directly connected underground malls). Unlisted shops and JR East in-station shops (GAP; OD-02, denominator only) are not in it, so every figure is an upper bound on true coverage.
 - **Ikebukuro: 70% met on listed entries.** With OD-33 (Tobu Hope Center gets OD-31 treatment), all four directories are importable facts-only: 153 of 153 raw (about 127 of 127 de-duplicated) = 100% of listed entries. Before OD-33 it was 110/153 = 72% raw, about 66% de-duplicated.
-- **Shinjuku: 64% of the directories read today; about 84% if Subnade is counted.** Read and counted: Toei 1, S10 新宿西口 1, Metro 6, Odakyu Ace 43 (importable since OD-33), Keio Mall + Annex 29 (DR-MR-21: https://ekishop.keio-sc.jp/keiomall-keiomallannex/, read 2026-10-24T02:49:33Z, exact; the old keio-mall.jp host no longer resolves). Keio Mall's terms are not yet ruled, so it is pending. Searchable now: 51 of 80 = **64%**. Shinjuku Subnade's official site refused connections on 2026-10-24 (plain request, ego-lite read-only at about 02:55Z, and curl all failed); public secondary pages give "about 100" / 97 shops (2020) — **estimate**, secondary, not an official count. Counting Subnade (OD-31, importable once its list can be read) at about 100: about 151 of about 180 = **about 84% (estimate)**; with Keio Mall cleared too, 100% of listed entries.
+- **Shinjuku: 100% of the directories read today, but only about 44% of the estimated listed total, because Subnade (about 100, estimate) could not be read.** Read and counted: Toei 1, S10 新宿西口 1, Metro 6, Odakyu Ace 43 (importable since OD-33), Keio Mall + Annex 29 (DR-MR-21: https://ekishop.keio-sc.jp/keiomall-keiomallannex/, read 2026-10-24T02:49:33Z, exact; the old keio-mall.jp host no longer resolves). Keio Mall gets OD-31 treatment (added to OD-33 the same day), so all five read directories are importable: searchable now 80 of 80 = **100% of the directories read** (51 of 80 = 64% before that ruling). Shinjuku Subnade's official site refused connections on 2026-10-24 (plain request, ego-lite read-only at about 02:55Z, and curl all failed); public secondary pages give "about 100" / 97 shops (2020) — **estimate**, secondary, not an official count. Counting Subnade's estimated about 100 in the denominator but not as searchable (nothing is imported from second-hand pages; re-read when the official site is back): about 80 of about 180 = **about 44% (estimate)**; once Subnade's official list is read, 100% of listed entries.
 - **Positions:** about 18% of listed shops (36 of 200 by name match in the station box, estimate) have an OpenStreetMap point; Ikebukuro about 17%, Shinjuku about 21%. The E27-scope list has one shop, matched by name (1 of 1, estimate). Name matching does not prove the point is inside the station.
 - **JR East in-station denominator:** GAP (no counts in public search summaries), so "including JR" coverage cannot be computed.
-- **Open items:** Keio Mall terms (ruling needed); Subnade official list (site down; retry later).
+- **Open items:** Subnade official list (site down on 2026-10-24; re-read later). Shinjuku reaches 70% of the estimated listed total only after Subnade is read.
 
 ## 2. Per-station source tables
 
@@ -160,7 +160,7 @@ GAPs:
 - G5: Seibu Ikebukuro floor counts not read. Classed (b), so not in the denominator anyway.
 - G6: Odakyu Ace and Keio Mall terms (pending terms). Odakyu Ace is excluded from searchable.
 - G9: Tobu Hope Center directory rights: decided by OD-33 (OD-31 treatment). Ikebukuro is now 100% of listed entries.
-- G10: Keio Mall directory terms not yet ruled (29 shops pending).
+- G10: Keio Mall directory terms: decided (OD-33 addendum, OD-31 treatment).
 - G11: Shinjuku Subnade official site refused connections on 2026-10-24 (plain, ego-lite, curl); count is a secondary estimate (about 100).
 - G7: Metro Shinjuku page does not mention メトロプロムナード; no separate count for it.
 - G8: Exact retrieval time of the first successful Q1 response is not logged.
