@@ -22,7 +22,7 @@ Read time recorded in UTC: 2026-10-24T08:54:54Z. Directory pages are undated unl
 
 ## 4. Odakyu Ace
 - Pages read: https://www.odakyu-sc.com/odakyu-ace/shopsearch/category/ (all results, 44 items), plus category views https://www.odakyu-sc.com/odakyu-ace/shopsearch/category/101, /103, /104, /105, /102 — 2026-10-24T08:54:54Z; individual shop detail URLs use `https://www.odakyu-sc.com/odakyu-ace/shop/detail/<code>?tenant_cd=<code>` and were opened one at a time. Codes in page order: 100021, 100071, 100145, 100311, 100330, 1003321, 100350, 100400, 100811, 101504, 101822, 101960, 103050, 103314, 103315, 103316, 103317, 103319, 103320, 103322, 103323, 103324, 103325, 103326, 103327, 103329, 103330, 103331, 103332, 103334, 103336, 103337, 103338, 103339, 103340, 103341, 103342, 103344, 103345, 103347, 103348, 103349, 103350, 103351. Details were read sequentially; exact per-page retrieval instants were not separately captured.
-- Counts: listed 44; imported 44; skipped 0; excluded 0. Category views deduplicated against the all-results list. No category icons/markers removed.
+- Counts (first transcription, superseded by the lead review below): listed 44; imported 44; skipped 0; excluded 0. Final: 43. Category views deduplicated against the all-results list. No category icons/markers removed.
 - Uncertain name: all-results listing prints デリパのひろば for code 103325 while its detail page title prints デリパのちか弁; the listing text was imported as the requested directory-list transcription. The ライフスタイル category view (`/102`) returned a reader cache miss; shop names were checked against the all-results list, which reports 44 total.
 - ID rule: use each numeric shop code from its detail URL, e.g. `shop-sjk-odakyuace-100021`.
 
@@ -43,3 +43,4 @@ Odakyu Ace and Keio Mall names were re-extracted from the raw directory HTML (Od
 - 粥餐庁 is printed 粥餐庁(かゆさんちん); the reading in parentheses is the alias.
 - Every Odakyu Ace and Keio Mall detail page was re-read for closure notices: none is closed. Odakyu Ace `100350` prints 【臨時休業】設備不良のため、現在休業中です (temporarily closed); it is kept, and its notes already say current status is unknown, as for every entry. Neither site prints readings other than the 粥餐庁 one.
 - Result: 78 POIs (Toei 1, Toei Shinjuku-nishiguchi 1, Tokyo Metro 4, Odakyu Ace 43, Keio Mall 29).
+- oracle-ego (GPT-6) review: Keio Mall entries name 京王モール or 京王モールアネックス in notes, so their method is AREA_ONLY (was SEARCH_ONLY); the Odakyu Ace source note now gives the final 43.
