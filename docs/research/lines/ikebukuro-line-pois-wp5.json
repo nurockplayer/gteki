@@ -1,0 +1,107 @@
+{
+  "schema": "gteki.lines-pois/0.1-draft",
+  "stationId": "ikebukuro",
+  "generatedAt": "2026-10-24",
+  "generatedBy": "WP5 transcription (Codex gpt-6-luna), lines-lead review pending",
+  "sources": [],
+  "sourceNote": "The source already exists in stations/ikebukuro/gteki/station.json as toshima-underground-guide-2022.",
+  "pois": [
+    {
+      "id": "jr-north-gate",
+      "category": "ticket_gate",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "JR 北改札"
+        },
+        {
+          "lang": "en",
+          "text": "JR North Gate"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "北改札"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toshima-underground-guide-2022"
+        ],
+        "method": "facts-only ward guide (#26; JR names under R-1), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Toshima underground guide 2022-01, map page, JR gate label"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2022年1月の案内図に基づく情報で、変更されている可能性があります。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The guide is dated 2022-01 and may have changed. Location and entrance are unverified (search only, no route); current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "tobu-north-gate",
+      "category": "ticket_gate",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "東武東上線 北改札"
+        },
+        {
+          "lang": "en",
+          "text": "Tobu Tojo Line North Gate"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "北改札"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toshima-underground-guide-2022"
+        ],
+        "method": "facts-only ward guide (#26; JR names under R-1), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Toshima underground guide 2022-01, map page, Tobu gate label"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2022年1月の案内図に基づく情報で、変更されている可能性があります。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The guide is dated 2022-01 and may have changed. Location and entrance are unverified (search only, no route); current status unknown."
+        }
+      ]
+    }
+  ],
+  "factsForExisting": [
+    {
+      "poiId": "seibu-b1f-gate",
+      "fact": "Printed name variant: ja 地下改札; en B1F Gate",
+      "sourceId": "toshima-underground-guide-2022",
+      "locator": "Toshima underground guide 2022-01, map page, Seibu gate label"
+    }
+  ],
+  "notFound": [
+    "JR platform numbers: not printed in the guide.",
+    "Tobu Tojo platform numbers: not printed in the guide."
+  ],
+  "conflicts": []
+}
