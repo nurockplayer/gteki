@@ -4,8 +4,8 @@ Facts only (OD-31 / OD-33). Facility names and locations are transcribed as prin
 operator; nothing was deduced and no route, floor or exit was inferred. No images or PDFs were
 read. No text, logo, photo or layout was reproduced.
 
-Output files: `ikebukuro-facilities-batch1.json` (37 POIs), `shinjuku-facilities-batch1.json`
-(24 POIs).
+Output files: `ikebukuro-facilities-batch1.json` (31 POIs), `shinjuku-facilities-batch1.json`
+(23 POIs) after the lead review (see the end).
 
 All reads happened in one session on 2026-10-24 (UTC 09:2x–09:49Z). `retrievedAt` in the new
 source objects is the timestamp of the generation step (2026-10-24T09:48:44Z); the per-page
@@ -57,7 +57,7 @@ clock (`運行情報[18:47現在]`, `[18:48現在]` JST = 09:47Z, 09:48Z).
 
 ### 6. 都営 新宿西口駅 店舗・コインロッカー・ATM等 — https://www.kotsu.metro.tokyo.jp/other/kanren/stores/shinjuku-nishiguchi.html
 - Time: 2026-10-24T09:48Z (site clock 18:48 JST). Method: ego-lite, read-only, same space.
-- Imported: locker 3 (B / C / D), service 1 (証明写真機 E), atm 3 (F / G / H).
+- Imported: locker 3 (B / C / D), service 2 (証明写真機 E; ベビーカーレンタルサービス（ベビカル） I, added in the lead review), atm 3 (F / G / H).
 - Skipped as out of scope: 3 (ファミリーマート, ベビーカーレンタルサービス（ベビカル）,
   育児用品自動販売機).
 
@@ -80,11 +80,11 @@ Two index pages were opened only to find URLs (no data used):
 
 | File | atm | locker | toilet | service | total |
 |---|---|---|---|---|---|
-| ikebukuro-facilities-batch1.json | 12 | 2 | 9 | 14 | 37 |
-| shinjuku-facilities-batch1.json | 7 | 7 | 3 | 7 | 24 |
+| ikebukuro-facilities-batch1.json | 12 | 2 | 3 | 14 | 31 |
+| shinjuku-facilities-batch1.json | 7 | 7 | 1 | 8 | 23 |
 
-`shinjuku` breaks down as 東京メトロ 13 (atm 3, locker 2, toilet 3, service 5),
-都営 新宿 4 (atm 1, locker 2, service 1), 都営 新宿西口 7 (atm 3, locker 3, service 1).
+`shinjuku` breaks down as 東京メトロ 11 (atm 3, locker 2, toilet 1, service 5),
+都営 新宿 4 (atm 1, locker 2, service 1), 都営 新宿西口 8 (atm 3, locker 3, service 2).
 
 Skipped as out of scope, totals across all pages: ticket gates / platforms / exits / transfers /
 lifts / escalators — 0 listed on any facility page; the accessibility pages' エレベーター・
@@ -156,4 +156,11 @@ This batch reads the HTML page at a different URL, so it uses the distinct id
 - Toilets: the Metro accessibility pages list 車いす対応トイレ, 乳幼児用設備 and オストメイト as separate rows at the same place. They are now one `toilet` POI per place, named 車いす対応トイレ, with the other two as facilities in notes (operator wording). The 改札内/改札外 label stays text in notes. Result: Ikebukuro 3 toilets (was 9), Shinjuku 1 (was 3). Ids are renumbered within this unmerged batch.
 - Coin lockers: the Metro sentence 「以下の路線周辺にコインロッカーがあります」 is not copied. Notes give only the line names (e.g. 丸ノ内線・有楽町線・副都心線周辺).
 - Merge order: the Shinjuku file reuses `tokyometro-shinjuku-shops-2026-10` and `toei-shinjuku-stores-2026-10`, which are defined in #418, so it merges after #418. The Ikebukuro file reuses source ids that are already in station data.
-- Totals: Ikebukuro 31 POIs, Shinjuku 22.
+- Totals: Ikebukuro 31 POIs, Shinjuku 23.
+
+## Lead review, second pass (2026-10-24, after the oracle review)
+
+- Toilet names now keep the printed suffix: 車いす対応トイレ（改札外） / 車いす対応トイレ（改札内）.
+- Metro coin lockers (locker-ikb-metro-001, locker-sjk-metro-001): the operator names only lines for the whole station, not an installation place. Notes now say this is area-level information, not one location.
+- Added service-sjk-toeinishi-002 ベビーカーレンタルサービス（ベビカル）, B3階改札外コンコース（駅務室横）, Toei location I: it is a named service with a printed location, so it is in scope (it was skipped before).
+- Summary and category counts above are synced with the JSON (Ikebukuro 31, Shinjuku 23).
