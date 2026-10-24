@@ -15,6 +15,8 @@ type Harness = {
   renderSheet: () => void;
   releaseMascot: () => void;
   mascotSay: () => void;
+  openStation: (e: { key: string; label: string; synthetic: boolean; load: () => Promise<never> }) => Promise<void>;
+  explorer: unknown;
   field: (which: "from" | "to", input: HTMLInputElement, results: HTMLElement, note: HTMLElement) => HTMLElement;
 };
 
@@ -76,6 +78,20 @@ describe("search-only POI notes outside a route", () => {
     a.renderSheet();
     const card = a.ui.sheet.querySelector(".no-route");
     expect(card?.textContent).toContain(NOTE_JA);
+  });
+
+  it("clears a previous station's endpoint notes as soon as another station starts loading, even if it fails", async () => {
+    const a = app();
+    a.explorer = { currentMode: "overview", sceneError: null, cancelPendingLoad: vi.fn(), loadStation: vi.fn(async () => true) };
+    for (const name of ["renderCredit", "renderSpawnChips", "renderHud", "updateUrl"] as const)
+      vi.spyOn(a as unknown as Record<string, () => void>, name).mockImplementation(() => {});
+    a.renderEndpointNote(a.ui.fromNote, poi("p1", false));
+    a.renderEndpointNote(a.ui.toNote, poi("p2", false));
+    const opening = a.openStation({ key: "next", label: "next", synthetic: true, load: () => Promise.reject(new Error("missing station")) });
+    expect(a.ui.fromNote.hidden).toBe(true);
+    expect(a.ui.toNote.hidden).toBe(true);
+    await opening;
+    expect(a.ui.toNote.textContent).toBe("");
   });
 
   it("adds no note for other failures", () => {

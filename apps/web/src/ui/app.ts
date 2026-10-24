@@ -276,6 +276,8 @@ export class App {
     this.renderCredit();
     this.ui.fromInput.value = "";
     this.ui.toInput.value = "";
+    this.renderEndpointNote(this.ui.fromNote, null);
+    this.renderEndpointNote(this.ui.toNote, null);
     this.closeResults("from");
     this.closeResults("to");
     this.ui.mascot.clear();
