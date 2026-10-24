@@ -530,6 +530,9 @@ describe("S03 search-only line POIs (#411)", () => {
     // The ids come from the derived input, never from literals: this file is Apache-2.0 and the points are
     // S03-derived (NOTICE 4.7). Search display only: no connector, no displayPosition, no floor, no routing.
     const approxPois = pois.filter((p) => p.approximatePosition !== undefined);
+    expect(approxPois.length).toBe(25);
+    expect(approxPois.filter((p) => p.category === "ticket_gate").length).toBe(22);
+    expect(approxPois.filter((p) => p.category === "transfer").length).toBe(3);
     const derivedIds = approxPositions.positions.map((r) => r.poiId);
     expect(approxPois.map((p) => p.id).sort()).toEqual([...derivedIds].sort());
     for (const p of approxPois) {

@@ -1175,7 +1175,8 @@ for (const entry of s03Approx.positions) {
   if (entryKeys.length !== approxLabelKeys.length || entryKeys.some((k, i) => k !== approxLabelKeys[i]) || approxLabelKeys.some((k) => entry.labels[k] !== S03_APPROX_LABELS[k]))
     throw new Error(`S03 positions: ${entry.poiId} labels differ from the contract`);
   if (!Number.isFinite(entry.east) || !Number.isFinite(entry.north)) throw new Error(`S03 positions: ${entry.poiId} has a non-finite coordinate`);
-  if (!(entry.uncertaintyM > 0)) throw new Error(`S03 positions: ${entry.poiId} has uncertainty ${entry.uncertaintyM}`);
+  if (typeof entry.uncertaintyM !== "number" || !Number.isFinite(entry.uncertaintyM) || entry.uncertaintyM < 5)
+    throw new Error(`S03 positions: ${entry.poiId} has uncertainty ${entry.uncertaintyM}; the contract's label is max(5 m, radius)`);
   if (!S03_APPROX_METHODS.has(entry.method)) throw new Error(`S03 positions: ${entry.poiId} has unknown method ${entry.method}`);
   s03ApproxById.set(entry.poiId, entry);
 }

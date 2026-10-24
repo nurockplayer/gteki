@@ -164,8 +164,9 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        Plain gate and platform names only, from com-entity.geojson in the ZIP
        with sha256 fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31.
        Change notice: GTEki が名称のみを抽出し、検索用に再構成（位置・形状は
-       使用していません）. No geometry, position or promotional text is taken;
-       the names describe March 2020 data and are not route evidence.
+       使用していません）. No geometry, position or promotional text is taken
+       for that names file; the names describe March 2020 data and are not
+       route evidence.
        Derived position data (GIS #463): stations/shinjuku/sources/
        s03-approx-positions.json holds 25 approximate representative points
        derived by GTEki from the level geometry in the same ZIP (area-weighted
