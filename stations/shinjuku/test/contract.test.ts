@@ -96,7 +96,9 @@ describe("Shinjuku gteki/ contract files", () => {
     for (const g of gaps) {
       for (const key of ["zone", "missingFact", "approximateExtent", "fieldWorkNeeded"] as const) {
         const v = g[key];
-        if (v === undefined) continue;
+        // approximateExtent is optional in the schema; the other three are required and must not vanish
+        if (key === "approximateExtent" && v === undefined) continue;
+        expect(v, `${g.id}.${key}`).toBeDefined();
         expect(Array.isArray(v), `${g.id}.${key}`).toBe(true);
         if (!Array.isArray(v)) continue;
         expect(v.length, `${g.id}.${key}`).toBe(2);
@@ -114,7 +116,20 @@ describe("Shinjuku gteki/ contract files", () => {
     expect(reuseJa).toContain("ライセンス根拠は未確認");
     expect(reuseJa).toContain("オーナー判断により公開");
     expect(textOf(reuse?.fieldWorkNeeded, "ja")).toContain("ほこナビDP窓口");
-    expect(reuseJa).not.toMatch(/PDL\s*1\.0\s*(で|に基づ)/);
+    expect(reuseJa).not.toMatch(/PDL\s*1\.0\s*(で|に基づ|に準拠|が適用)/);
+    // the post-period reuse question stays open with the provider, commercial use included
+    expect(reuseJa).toContain("2027-03-12");
+    expect(reuseJa).toContain("提供者の確認待ち");
+    expect(reuseJa).toContain("商用を含む");
+    expect(reuseJa).toContain("PDL 1.0 の対象とはみなしていない");
+    const reuseWorkJa = textOf(reuse?.fieldWorkNeeded, "ja");
+    expect(reuseWorkJa).toContain("確認が取れるまで、これに依拠する他の公開は保留");
+    // no Japanese gap text may claim a licence was obtained or granted
+    for (const g of gaps) for (const key of ["missingFact", "fieldWorkNeeded"] as const) {
+      expect(textOf(g[key], "ja"), `${g.id}.${key} ja`).not.toMatch(/(許諾|ライセンス)(を)?(取得|付与)|許諾済|取得済み/);
+    }
+    // a missing fact is not yet known: the transfers gap must not call the passages confirmed
+    expect(textOf(gaps.find((g) => g.id === "gap:transfers")?.missingFact, "ja")).not.toContain("確認済");
     const heightsJa = textOf(gaps.find((g) => g.id === "gap:heights")?.fieldWorkNeeded, "ja");
     expect(heightsJa).toContain("推定値");
     expect(heightsJa).toContain("実測したものではない");
