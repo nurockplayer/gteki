@@ -3,10 +3,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
-  buildLeadList, classifySourceTag, compareList, computeCoverage, computeQuality, containmentShare, deriveCategory,
-  namedOsmObjects, normaliseLevel, normaliseName, parseLevels, parseOurList, parseOverpassJson, pointInPolygon,
-  publicCoverageReceipt, querySha256, stationProjector, tagValueSet, writeCoverageOutputs,
-  type CoverageFacts, type OurList, type QualityFacts,
+  assembleRings, auditSourceValues, buildLeadList, classifySourceTag, compareList, computeCoverage, computeQuality,
+  deriveCategory, footprintOverlap, namedOsmObjects, normaliseLevel, normaliseName, parseLevels, parseOurList,
+  parseOverpassJson, pointInPolygon, publicCoverageReceipt, querySha256, readPolygon, stationProjector, tagValueSet,
+  writeCoverageOutputs, type CoverageFacts, type OurList, type QualityFacts,
 } from '../src/osm-coverage.js';
 
 const tempDirs: string[] = [];
@@ -64,6 +64,17 @@ describe('OSM name matching', () => {
     expect(normaliseName('店舗併設カフェ')).toBe('店舗併設カフェ');
     expect(normaliseName('   ')).toBe('');
   });
+
+  it('strips 店 only as a branch suffix, never from a word that ends in it', () => {
+    // A space makes it a branch name.
+    expect(normaliseName('合成ストア 池袋店')).toBe('合成ストア池袋');
+    expect(normaliseName('合成ストア 池袋店舗')).toBe('合成ストア池袋');
+    // A branch ending (〜駅前店, 〜西口店) is stripped even without the space.
+    expect(normaliseName('合成ストア 西口店')).toBe(normaliseName('合成ストア 西口'));
+    expect(normaliseName('合成ストア西口店')).toBe(normaliseName('合成ストア西口'));
+    // A compound noun that merely ends in 店 is not a branch suffix.
+    for (const kept of ['百貨店', '書店', '商店', '売店', '本店', '支店', '喫茶店', '専門店', '商店街']) expect(normaliseName(kept)).toBe(kept);
+  });
 });
 
 describe('OSM level normalisation', () => {
@@ -81,20 +92,37 @@ describe('OSM level normalisation', () => {
     expect(parseLevels('B1, -2')).toEqual([-2, -1]);
     expect(parseLevels(undefined)).toEqual([]);
   });
+
+  it('expands Simple Indoor Tagging ranges, both ends inclusive and either direction', () => {
+    expect(parseLevels('0-2')).toEqual([0, 1, 2]);
+    expect(parseLevels('-4--2')).toEqual([-4, -3, -2]);
+    expect(parseLevels('B3-B1')).toEqual([-3, -2, -1]);
+    expect(parseLevels('2-0')).toEqual([0, 1, 2]);
+    expect(parseLevels('1–3')).toEqual([1, 2, 3]);
+    // A range and a plain level in one list, de-duplicated.
+    expect(parseLevels('1;3-4')).toEqual([1, 3, 4]);
+    expect(parseLevels('-0.5-0.5')).toEqual([-0.5, 0, 0.5]);
+    // Too long to be a floor stack is a malformed value, not a 500-storey building.
+    expect(parseLevels('0-500')).toEqual([]);
+  });
 });
 
 describe('OSM source-tag classification', () => {
-  it('puts a website or a vendor before every other class', () => {
-    expect(classifySourceTag('survey')).toBe('srcclass:survey');
-    expect(classifySourceTag('現地調査')).toBe('srcclass:survey');
-    expect(classifySourceTag('GSI')).toBe('srcclass:gsi');
-    expect(classifySourceTag('国土地理院')).toBe('srcclass:gsi');
-    expect(classifySourceTag('aerial imagery')).toBe('srcclass:aerial_imagery');
-    expect(classifySourceTag('Google')).toBe('srcclass:possibly_non_free');
-    expect(classifySourceTag('zenrin')).toBe('srcclass:possibly_non_free');
-    expect(classifySourceTag('https://example.invalid/directory')).toBe('srcclass:possibly_non_free');
-    expect(classifySourceTag('Bing aerial')).toBe('srcclass:possibly_non_free');
-    expect(classifySourceTag('local knowledge')).toBe('srcclass:other');
+  it('separates permitted tracing, known-restricted vendors and the unresolved rest', () => {
+    expect(classifySourceTag('survey')).toBe('srcclass:permitted_tracing');
+    expect(classifySourceTag('現地調査')).toBe('srcclass:permitted_tracing');
+    expect(classifySourceTag('GSI')).toBe('srcclass:permitted_tracing');
+    expect(classifySourceTag('国土地理院')).toBe('srcclass:permitted_tracing');
+    expect(classifySourceTag('aerial imagery')).toBe('srcclass:permitted_tracing');
+    // Bing counts only for its aerial imagery wording, never as a bare vendor mention.
+    expect(classifySourceTag('Bing aerial')).toBe('srcclass:permitted_tracing');
+    expect(classifySourceTag('Bing')).toBe('srcclass:unresolved');
+    for (const restricted of ['Google', 'zenrin', 'ゼンリン', 'Yahoo', 'MapFan', 'Apple Maps', 'Tabelog', '食べログ', 'ホットペッパー']) {
+      expect(classifySourceTag(restricted)).toBe('srcclass:known_restricted');
+    }
+    // A URL is a reference we cannot place; a bare vendor name we do not know is not a permission either.
+    expect(classifySourceTag('https://example.invalid/directory')).toBe('srcclass:unresolved');
+    expect(classifySourceTag('local knowledge')).toBe('srcclass:unresolved');
   });
   it('derives our own category rather than keeping the OSM value', () => {
     expect(deriveCategory('convenience')).toBe('retail');
@@ -128,15 +156,36 @@ describe('coverage facts', () => {
   it('counts kinds, levels, categories and the level share without keeping any OSM value', () => {
     const { elements } = parseOverpassJson(fixturePayload());
     const facts = computeCoverage(elements);
-    expect(facts.kinds).toEqual({ 'kind:shop': 1, 'kind:amenity': 1, 'kind:indoor': 0, 'kind:has_level': 2, 'kind:station_building': 1, 'kind:entrance': 1 });
-    expect(facts.shop_amenity_with_level).toEqual({ total: 2, count: 2, share: 1 });
+    expect(facts.kinds).toEqual({ 'kind:shop': 1, 'kind:amenity': 1, 'kind:indoor': 0, 'kind:has_level_tag': 2, 'kind:station_building': 1, 'kind:entrance': 1 });
+    expect(facts.shop_amenity_with_level_key).toEqual({ total: 2, count: 2, share: 1 });
+    expect(facts.shop_amenity_with_level_parsed).toEqual({ total: 2, count: 2, share: 1 });
     expect(facts.level_histogram).toEqual([{ ordinal: -1, count: 1 }, { ordinal: 1, count: 1 }, { ordinal: 2, count: 1 }]);
+    expect(facts.level_key_objects).toBe(2);
     expect(facts.level_objects).toBe(2);
     expect(facts.level_unparsed).toBe(0);
     expect(facts.categories_top15).toEqual([{ category: 'cat:food_and_drink', count: 1 }, { category: 'cat:retail', count: 1 }]);
     expect(facts.has_indoor).toEqual({ total: 5, count: 0, share: 0 });
     expect(JSON.stringify(facts)).not.toContain('合成');
     expect(JSON.stringify(facts)).not.toContain('convenience');
+  });
+
+  it('counts key presence and successful parses apart, for all three level keys', () => {
+    const { elements } = parseOverpassJson({ elements: [
+      { type: 'node', id: 1, lat: ORIGIN.lat, lon: ORIGIN.lon, tags: { shop: 'books', level: 'M2' } },
+      { type: 'node', id: 2, lat: ORIGIN.lat, lon: ORIGIN.lon, tags: { shop: 'books', repeat_on: 'B1' } },
+      { type: 'node', id: 3, lat: ORIGIN.lat, lon: ORIGIN.lon, tags: { shop: 'books', 'level:ref': '2' } },
+      { type: 'node', id: 4, lat: ORIGIN.lat, lon: ORIGIN.lon, tags: { shop: 'books', level: '1-2' } },
+    ] });
+    const facts = computeCoverage(elements);
+    // `level`, `level:ref` and `repeat_on` all carry a level statement.
+    expect(facts.kinds['kind:has_level_tag']).toBe(4);
+    // Only the `level` key feeds the histogram, and a mezzanine label does not parse.
+    expect(facts.level_key_objects).toBe(2);
+    expect(facts.level_objects).toBe(1);
+    expect(facts.level_unparsed).toBe(1);
+    expect(facts.level_histogram).toEqual([{ ordinal: 1, count: 1 }, { ordinal: 2, count: 1 }]);
+    expect(facts.shop_amenity_with_level_key).toEqual({ total: 4, count: 2, share: 0.5 });
+    expect(facts.shop_amenity_with_level_parsed).toEqual({ total: 4, count: 1, share: 0.25 });
   });
 
   it('computes the last-edit histogram, the pre-2021 share and the source classes', () => {
@@ -146,31 +195,85 @@ describe('coverage facts', () => {
     expect(quality.last_edit_year_histogram).toEqual([{ year: 2019, count: 1 }, { year: 2020, count: 1 }, { year: 2022, count: 1 }, { year: 2023, count: 1 }, { year: 2024, count: 1 }]);
     expect(quality.edited_before_2021).toEqual({ total: 5, count: 2, share: 0.4 });
     expect(quality.objects_with_source_tag).toBe(3);
-    expect(quality.source_class_objects).toEqual({ 'srcclass:gsi': 1, 'srcclass:survey': 1, 'srcclass:possibly_non_free': 2 });
+    // Overlapping: node 101 names both a survey and a URL, so the counts do not sum to objects_with_source_tag.
+    expect(quality.source_class_objects).toEqual({ 'srcclass:permitted_tracing': 2, 'srcclass:known_restricted': 1, 'srcclass:unresolved': 1 });
+    // Exclusive: one object names a restricted source; two only a permitted-tracing one.
+    expect(quality.source_class_exclusive).toEqual({ objects_with_known_restricted: 1, objects_with_permitted_tracing_only: 2 });
     expect(quality.fixme_objects).toBe(1);
     expect(quality.note_objects).toBe(1);
   });
 
-  it('counts shop and amenity objects inside a station-building polygon of the same extract', () => {
+  it('measures 2D footprint overlap and leaves floor-aware containment UNKNOWN without levels', () => {
     const { elements } = parseOverpassJson(fixturePayload());
     const project = stationProjector(ORIGIN);
     // Node 101 sits inside way 201 (the train station); node 102 sits in relation 301, which is not a station building.
-    expect(containmentShare(elements, project)).toEqual({ total: 2, count: 1, share: 0.5, station_building_polygons: 1 });
+    const result = footprintOverlap(elements, project);
+    expect(result.footprint).toEqual({ total: 2, count: 1, share: 0.5, station_building_polygons: 1, unassembled_polygons: 0 });
+    // The building carries no level, so the overlap says nothing about floors: UNKNOWN, not zero agreement.
+    expect(result.floorAware).toEqual({ total: 1, count: 0, share: 0, comparable: 0, status: 'UNKNOWN' });
+    expect(result.overlapping.map((element) => element.id)).toEqual([101]);
   });
 
-  it('tests containment with holes, not just the outer ring', () => {
+  it('compares floors only where both the object and the building have one', () => {
+    const building = (id: number, level: string | undefined) => ({ type: 'way', id, tags: { building: 'train_station', ...(level ? { level } : {}) }, geometry: [
+      { lat: ORIGIN.lat, lon: ORIGIN.lon }, { lat: ORIGIN.lat, lon: ORIGIN.lon + 0.002 },
+      { lat: ORIGIN.lat + 0.002, lon: ORIGIN.lon + 0.002 }, { lat: ORIGIN.lat + 0.002, lon: ORIGIN.lon },
+      { lat: ORIGIN.lat, lon: ORIGIN.lon },
+    ] });
+    const shop = (id: number, level: string) => ({ type: 'node', id, lat: ORIGIN.lat + 0.001, lon: ORIGIN.lon + 0.001, tags: { shop: 'books', level } });
+    const { elements } = parseOverpassJson({ elements: [building(701, '0'), shop(801, '0'), shop(802, '2'), shop(803, 'M2')] });
+    const result = footprintOverlap(elements, stationProjector(ORIGIN));
+    expect(result.footprint).toMatchObject({ total: 3, count: 3, share: 1, station_building_polygons: 1 });
+    // 801 agrees, 802 does not, 803 has no parseable level and is not comparable.
+    expect(result.floorAware).toEqual({ total: 3, count: 1, share: 0.3333, comparable: 2, status: 'KNOWN' });
+  });
+
+  it('tests containment with holes, and counts a point on a boundary as inside', () => {
     const outer: Array<[number, number]> = [[0, 0], [10, 0], [10, 10], [0, 10]];
     const inner: Array<[number, number]> = [[3, 3], [7, 3], [7, 7], [3, 7]];
     expect(pointInPolygon(1, 1, { outers: [outer], inners: [] })).toBe(true);
     expect(pointInPolygon(5, 5, { outers: [outer], inners: [inner] })).toBe(false);
     expect(pointInPolygon(11, 5, { outers: [outer], inners: [] })).toBe(false);
+    // A shared wall or a vertex on the outline is inside, not outside: tenants touch the boundary.
+    expect(pointInPolygon(10, 5, { outers: [outer], inners: [] })).toBe(true);
+    expect(pointInPolygon(0, 0, { outers: [outer], inners: [] })).toBe(true);
+    expect(pointInPolygon(3, 5, { outers: [outer], inners: [inner] })).toBe(true);
+  });
+});
+
+describe('multipolygon ring assembly', () => {
+  it('joins member ways by shared endpoints and reports the ones that do not close', () => {
+    const p = (lat: number, lon: number) => ({ lat, lon });
+    const a = [p(0, 0), p(0, 1), p(1, 1)];
+    const b = [p(1, 1), p(1, 0), p(0, 0)];
+    expect(assembleRings([a, b])).toEqual({ rings: [[p(0, 0), p(0, 1), p(1, 1), p(1, 0), p(0, 0)]], unassembled: 0 });
+    // Two open segments that never meet are two chains that did not close: no ring is guessed.
+    expect(assembleRings([[p(0, 0), p(0, 1)], [p(5, 5), p(5, 6)]])).toEqual({ rings: [], unassembled: 2 });
+    // A member is free to be drawn in the other direction: the join is by point, not by order.
+    const reversed = [p(1, 1), p(0, 1), p(0, 0)];
+    expect(assembleRings([a, reversed]).rings).toHaveLength(1);
+  });
+
+  it('reads a relation from its members and leaves the unassemblable ones out', () => {
+    const members = [
+      { type: 'way', ref: 911, role: 'outer', geometry: [{ lat: ORIGIN.lat, lon: ORIGIN.lon }, { lat: ORIGIN.lat, lon: ORIGIN.lon + 0.001 }, { lat: ORIGIN.lat + 0.001, lon: ORIGIN.lon + 0.001 }] },
+      { type: 'way', ref: 912, role: 'outer', geometry: [{ lat: ORIGIN.lat + 0.001, lon: ORIGIN.lon + 0.001 }, { lat: ORIGIN.lat + 0.001, lon: ORIGIN.lon }, { lat: ORIGIN.lat, lon: ORIGIN.lon }] },
+    ];
+    const { elements } = parseOverpassJson({ elements: [{ type: 'relation', id: 921, tags: { type: 'multipolygon', building: 'yes', level: '0' }, members }] });
+    const read = readPolygon(elements[0]!, stationProjector(ORIGIN));
+    expect(read.unassembled).toBe(0);
+    expect(read.polygon!.outers).toHaveLength(1);
+    expect(pointInPolygon(...stationProjector(ORIGIN)(ORIGIN.lat + 0.0005, ORIGIN.lon + 0.0005), read.polygon!)).toBe(true);
+    // One open member only: no ring, and the relation counts as unassembled rather than as no polygon at all.
+    const broken = parseOverpassJson({ elements: [{ type: 'relation', id: 922, tags: { type: 'multipolygon', building: 'yes' }, members: [members[0]!] }] }).elements;
+    expect(readPolygon(broken[0]!, stationProjector(ORIGIN))).toEqual({ polygon: null, unassembled: 1 });
   });
 });
 
 describe('comparison with our own lists', () => {
   const elementsOf = () => parseOverpassJson(fixturePayload()).elements;
 
-  it('applies the 150 m stricter radius and reports name-only matches separately', () => {
+  it('applies the 150 m stricter radius and reports name-only and distant matches separately', () => {
     const elements = elementsOf();
     const project = stationProjector(ORIGIN);
     const osm = namedOsmObjects(elements, project);
@@ -186,17 +289,37 @@ describe('comparison with our own lists', () => {
     const result = compareList(list, osm);
     expect(result.matched).toBe(3);
     expect(result.strict_matched).toBe(1);
-    expect(result.strict_name_only).toBe(1);
+    expect(result.name_match_only).toBe(1);
+    expect(result.name_match_distant).toBe(1);
     expect(result.ours_only).toBe(1);
     // The three entries all hit the same OSM object, which is therefore not OSM-only.
     expect(result.pairs.filter((pair) => pair.osm_id === 101).map((pair) => pair.strict)).toEqual([true, false, false]);
+    expect(result.pairs.map((pair) => pair.match)).toEqual(['strict', 'distant', 'name_only']);
     expect(result.unmatched_ours).toEqual(['ours-missing']);
     // Floor agreement is only counted where both sides have a floor: -1 agrees, 2 does not.
-    expect(result.floor_agreement).toEqual({ comparable: 2, agree: 1, rate: 0.5 });
+    expect(result.floor_agreement).toEqual({ comparable: 2, agree: 1, rate: 0.5, ambiguous_excluded: 0 });
     // OSM-only counts the named objects no entry matched: the restaurant node, the entrance node and the two
     // building polygons (only the shop node is matched).
     expect(result.osm_only).toBe(4);
     expect(result.unmatched_osm.map((object) => object.osm_id)).toEqual([102, 103, 201, 301]);
+  });
+
+  it('ranks candidates deterministically and excludes ambiguous pairs from floor agreement', () => {
+    const named = (id: number, x: number, level: string) => ({
+      element: { type: 'node' as const, id, tags: { name: '合成カフェ', level }, timestamp: '', version: 1, lat: null, lon: null, geometry: [], members: [] },
+      key: normaliseName('合成カフェ'), x, y: 0, levels: parseLevels(level),
+    });
+    // Two OSM objects of the same name: one 20 m away, one 100 m away.
+    const list: OurList = { list_id: 'fixture', source: 'fixture', entries: [{ id: 'ours', names: ['合成カフェ'], floor_ordinal: 1, x: 0, y: 0 }] };
+    const result = compareList(list, [named(112, 100, '1'), named(111, 20, '2')]);
+    // Nearest first, whatever order the extract held them in.
+    expect(result.pairs.map((pair) => pair.osm_id)).toEqual([111, 112]);
+    expect(result.strict_matched).toBe(1);
+    // Two carriers of the name: the floor comparison is ambiguous, excluded, and never voted.
+    expect(result.floor_agreement).toEqual({ comparable: 0, agree: 0, rate: null, ambiguous_excluded: 1 });
+    // Equal distance falls back to the OSM id, so the pair list is stable.
+    const tied = compareList(list, [named(112, 20, '1'), named(111, 20, '1')]);
+    expect(tied.pairs.map((pair) => pair.osm_id)).toEqual([111, 112]);
   });
 
   it('reads our POI and tenant shapes, keeping an unknown floor or position as null', () => {
@@ -247,7 +370,9 @@ describe('receipt guard and write order', () => {
   const facts = (): { coverage: CoverageFacts; quality: QualityFacts } => {
     const { elements } = parseOverpassJson(fixturePayload());
     const coverage = computeCoverage(elements);
-    coverage.inside_station_building = containmentShare(elements, stationProjector(ORIGIN));
+    const footprint = footprintOverlap(elements, stationProjector(ORIGIN));
+    coverage.footprint_overlap_2d = footprint.footprint;
+    coverage.floor_aware_overlap = footprint.floorAware;
     return { coverage, quality: computeQuality(elements) };
   };
   const input = () => ({
@@ -257,6 +382,7 @@ describe('receipt guard and write order', () => {
     extract: { elements: 5, rejected: 0, tag_keys: 12 },
     comparisons: [],
     run_id: 'osm-coverage-shinjuku-fixture',
+    leak_guard: { files_checked: 4, values_scanned: 0, namespaced_hits: 0, allowlisted_hits: 0, pre_existing_hits: 0, leaks: 0 },
     ...facts(),
   });
 
@@ -276,6 +402,25 @@ describe('receipt guard and write order', () => {
     // the exact quoted token, not a plain substring.
     for (const value of tagValueSet(parseOverpassJson(fixturePayload()).elements)) expect(text).not.toContain(JSON.stringify(value));
     expect(receipt).toMatchObject({ gteki_role: 'evidence', navigation_use: 'NOT_FOR_ROUTING' });
+  });
+
+  it('audits committed text against the extract, exempting only namespaced, allowlisted or pre-existing values', () => {
+    const values = new Set(['合成コンビニ', 'convenience', 'evidence', 'yes']);
+    const files = [
+      { path: 'note', text: 'a shop called 合成コンビニ' },
+      { path: 'receipt', text: '{"categories_top15":[{"category":"cat:convenience","count":1}]}' },
+      { path: 'manifest', text: 'evidence' },
+      { path: 'table', text: 'a cell reading yes' },
+    ];
+    const result = auditSourceValues(files, values, { priorText: 'evidence' });
+    // The name is a leak; `convenience` survives only inside our `cat:` identifier; `evidence` is pre-existing text;
+    // `yes` is too short to be evidence either way.
+    expect(result.leaks).toEqual([{ path: 'note', count: 1 }]);
+    expect(result.namespaced_hits).toBe(1);
+    expect(result.pre_existing_hits).toBe(1);
+    expect(result.values_scanned).toBe(3);
+    // A second bare use of the same value is enough to trip it.
+    expect(auditSourceValues([{ path: 'mixed', text: 'cat:合成コンビニ and 合成コンビニ' }], values).leaks).toEqual([{ path: 'mixed', count: 1 }]);
   });
 
   it('writes nothing when the guard trips, and writes all three files after it passes', async () => {

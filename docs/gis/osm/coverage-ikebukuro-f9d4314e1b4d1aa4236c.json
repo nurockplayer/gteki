@@ -7,7 +7,16 @@
   "gteki_role": "evidence",
   "navigation_use": "NOT_FOR_ROUTING",
   "verification": "UNVERIFIED",
-  "note": "Coverage evidence for #437 only. Counts, shares, histograms, OSM tag keys and derived categories; no OSM name, tag value or contributor identity is copied. The extract stays in the private store. Nothing here is a source for the graph, a route or a shipping POI list; the ODbL share-alike question is open (docs/gis/research/2026-10-24-osm-coverage-odbl.md).",
+  "note": "Coverage evidence for #437 only: counts, shares, histograms, OSM tag keys and our derived categories. No OSM name, free-text tag value or contributor identity is copied; the committed-text audit scanned this receipt, the research note, the test file and the manifest against every tag value of the extract (see leak_guard). The extract stays in the private store. Nothing here is a source for the graph, a route or a shipping POI list, and it may itself raise ODbL Produced Work or attribution questions, open for gteki-1b (docs/gis/research/2026-10-24-osm-coverage-odbl.md).",
+  "leak_guard": {
+    "files_checked": 4,
+    "values_scanned": 4669,
+    "namespaced_hits": 1,
+    "allowlisted_hits": 36,
+    "pre_existing_hits": 37,
+    "leaks": 0,
+    "note": "This receipt, the research note, the test file and the manifest were scanned against every tag value of the extract. Values are exempt only as namespaced identifiers, allowlisted vocabulary or text already on origin/main; a leak stops the run before anything is written."
+  },
   "extract": {
     "elements": 2502,
     "rejected": 0,
@@ -33,7 +42,7 @@
       "kind:shop": 461,
       "kind:amenity": 1352,
       "kind:indoor": 36,
-      "kind:has_level": 693,
+      "kind:has_level_tag": 693,
       "kind:station_building": 3,
       "kind:entrance": 100
     },
@@ -106,19 +115,19 @@
       },
       {
         "ordinal": 0,
-        "count": 165
+        "count": 167
       },
       {
         "ordinal": 1,
-        "count": 124
+        "count": 128
       },
       {
         "ordinal": 2,
-        "count": 64
+        "count": 66
       },
       {
         "ordinal": 3,
-        "count": 33
+        "count": 34
       },
       {
         "ordinal": 4,
@@ -177,18 +186,32 @@
         "count": 2
       }
     ],
+    "level_key_objects": 691,
     "level_objects": 691,
-    "level_unparsed": 4,
-    "shop_amenity_with_level": {
+    "level_unparsed": 0,
+    "shop_amenity_with_level_key": {
       "total": 1803,
       "count": 446,
       "share": 0.2474
     },
-    "inside_station_building": {
+    "shop_amenity_with_level_parsed": {
+      "total": 1803,
+      "count": 446,
+      "share": 0.2474
+    },
+    "footprint_overlap_2d": {
       "total": 1803,
       "count": 59,
       "share": 0.0327,
-      "station_building_polygons": 3
+      "station_building_polygons": 3,
+      "unassembled_polygons": 0
+    },
+    "floor_aware_overlap": {
+      "total": 59,
+      "count": 0,
+      "share": 0,
+      "comparable": 0,
+      "status": "UNKNOWN"
     },
     "name": {
       "total": 2502,
@@ -286,10 +309,12 @@
     },
     "objects_with_source_tag": 622,
     "source_class_objects": {
-      "srcclass:survey": 77,
-      "srcclass:gsi": 26,
-      "srcclass:possibly_non_free": 325,
-      "srcclass:other": 194
+      "srcclass:permitted_tracing": 103,
+      "srcclass:unresolved": 519
+    },
+    "source_class_exclusive": {
+      "objects_with_known_restricted": 0,
+      "objects_with_permitted_tracing_only": 103
     },
     "fixme_objects": 10,
     "note_objects": 84
@@ -303,13 +328,15 @@
         "distinct_names": 121,
         "matched": 1,
         "strict_matched": 0,
-        "strict_name_only": 1,
+        "name_match_only": 1,
+        "name_match_distant": 0,
         "ours_only": 57,
         "osm_only": 1873,
         "floor_agreement": {
           "comparable": 0,
           "agree": 0,
-          "rate": null
+          "rate": null,
+          "ambiguous_excluded": 0
         },
         "status": "compared"
       },
@@ -320,13 +347,15 @@
         "distinct_names": 114,
         "matched": 14,
         "strict_matched": 0,
-        "strict_name_only": 14,
+        "name_match_only": 14,
+        "name_match_distant": 0,
         "ours_only": 104,
         "osm_only": 1845,
         "floor_agreement": {
           "comparable": 0,
           "agree": 0,
-          "rate": null
+          "rate": null,
+          "ambiguous_excluded": 0
         },
         "status": "compared"
       },
@@ -337,13 +366,15 @@
         "distinct_names": 2,
         "matched": 0,
         "strict_matched": 0,
-        "strict_name_only": 0,
+        "name_match_only": 0,
+        "name_match_distant": 0,
         "ours_only": 2,
         "osm_only": 1877,
         "floor_agreement": {
           "comparable": 0,
           "agree": 0,
-          "rate": null
+          "rate": null,
+          "ambiguous_excluded": 0
         },
         "status": "compared"
       },
@@ -354,13 +385,15 @@
         "distinct_names": 209,
         "matched": 3,
         "strict_matched": 0,
-        "strict_name_only": 3,
+        "name_match_only": 3,
+        "name_match_distant": 0,
         "ours_only": 207,
         "osm_only": 1870,
         "floor_agreement": {
           "comparable": 0,
           "agree": 0,
-          "rate": null
+          "rate": null,
+          "ambiguous_excluded": 0
         },
         "status": "compared"
       },
@@ -371,13 +404,15 @@
         "distinct_names": 842,
         "matched": 8,
         "strict_matched": 0,
-        "strict_name_only": 8,
+        "name_match_only": 8,
+        "name_match_distant": 0,
         "ours_only": 856,
         "osm_only": 1867,
         "floor_agreement": {
-          "comparable": 7,
+          "comparable": 6,
           "agree": 0,
-          "rate": 0
+          "rate": 0,
+          "ambiguous_excluded": 1
         },
         "status": "compared"
       }

@@ -7,7 +7,16 @@
   "gteki_role": "evidence",
   "navigation_use": "NOT_FOR_ROUTING",
   "verification": "UNVERIFIED",
-  "note": "Coverage evidence for #437 only. Counts, shares, histograms, OSM tag keys and derived categories; no OSM name, tag value or contributor identity is copied. The extract stays in the private store. Nothing here is a source for the graph, a route or a shipping POI list; the ODbL share-alike question is open (docs/gis/research/2026-10-24-osm-coverage-odbl.md).",
+  "note": "Coverage evidence for #437 only: counts, shares, histograms, OSM tag keys and our derived categories. No OSM name, free-text tag value or contributor identity is copied; the committed-text audit scanned this receipt, the research note, the test file and the manifest against every tag value of the extract (see leak_guard). The extract stays in the private store. Nothing here is a source for the graph, a route or a shipping POI list, and it may itself raise ODbL Produced Work or attribution questions, open for gteki-1b (docs/gis/research/2026-10-24-osm-coverage-odbl.md).",
+  "leak_guard": {
+    "files_checked": 4,
+    "values_scanned": 6790,
+    "namespaced_hits": 1,
+    "allowlisted_hits": 57,
+    "pre_existing_hits": 67,
+    "leaks": 0,
+    "note": "This receipt, the research note, the test file and the manifest were scanned against every tag value of the extract. Values are exempt only as namespaced identifiers, allowlisted vocabulary or text already on origin/main; a leak stops the run before anything is written."
+  },
   "extract": {
     "elements": 7695,
     "rejected": 0,
@@ -33,7 +42,7 @@
       "kind:shop": 571,
       "kind:amenity": 1998,
       "kind:indoor": 3255,
-      "kind:has_level": 4986,
+      "kind:has_level_tag": 4986,
       "kind:station_building": 2,
       "kind:entrance": 244
     },
@@ -94,15 +103,15 @@
       },
       {
         "ordinal": -3,
-        "count": 154
+        "count": 157
       },
       {
         "ordinal": -2,
-        "count": 577
+        "count": 588
       },
       {
         "ordinal": -1,
-        "count": 2518
+        "count": 2553
       },
       {
         "ordinal": -0.5,
@@ -114,7 +123,7 @@
       },
       {
         "ordinal": 0,
-        "count": 1517
+        "count": 1574
       },
       {
         "ordinal": 0.25,
@@ -126,42 +135,46 @@
       },
       {
         "ordinal": 1,
-        "count": 408
+        "count": 467
       },
       {
         "ordinal": 2,
-        "count": 129
+        "count": 187
       },
       {
         "ordinal": 3,
-        "count": 81
+        "count": 133
       },
       {
         "ordinal": 4,
-        "count": 21
+        "count": 68
       },
       {
         "ordinal": 5,
-        "count": 18
+        "count": 60
       },
       {
         "ordinal": 6,
-        "count": 19
+        "count": 60
       },
       {
         "ordinal": 7,
-        "count": 95
+        "count": 128
       },
       {
         "ordinal": 8,
-        "count": 25
+        "count": 44
       },
       {
         "ordinal": 9,
-        "count": 10
+        "count": 20
       },
       {
         "ordinal": 10,
+        "count": 5
+      },
+      {
+        "ordinal": 11,
         "count": 2
       },
       {
@@ -197,18 +210,32 @@
         "count": 1
       }
     ],
-    "level_objects": 4965,
-    "level_unparsed": 68,
-    "shop_amenity_with_level": {
+    "level_key_objects": 4965,
+    "level_objects": 4963,
+    "level_unparsed": 2,
+    "shop_amenity_with_level_key": {
       "total": 2543,
       "count": 625,
       "share": 0.2458
     },
-    "inside_station_building": {
+    "shop_amenity_with_level_parsed": {
       "total": 2543,
-      "count": 16,
-      "share": 0.0063,
-      "station_building_polygons": 2
+      "count": 624,
+      "share": 0.2454
+    },
+    "footprint_overlap_2d": {
+      "total": 2543,
+      "count": 17,
+      "share": 0.0067,
+      "station_building_polygons": 2,
+      "unassembled_polygons": 0
+    },
+    "floor_aware_overlap": {
+      "total": 17,
+      "count": 0,
+      "share": 0,
+      "comparable": 0,
+      "status": "UNKNOWN"
     },
     "name": {
       "total": 7695,
@@ -310,11 +337,12 @@
     },
     "objects_with_source_tag": 882,
     "source_class_objects": {
-      "srcclass:survey": 78,
-      "srcclass:gsi": 3,
-      "srcclass:aerial_imagery": 3,
-      "srcclass:possibly_non_free": 650,
-      "srcclass:other": 205
+      "srcclass:permitted_tracing": 84,
+      "srcclass:unresolved": 804
+    },
+    "source_class_exclusive": {
+      "objects_with_known_restricted": 0,
+      "objects_with_permitted_tracing_only": 84
     },
     "fixme_objects": 2,
     "note_objects": 50
@@ -328,13 +356,15 @@
         "distinct_names": 32,
         "matched": 0,
         "strict_matched": 0,
-        "strict_name_only": 0,
+        "name_match_only": 0,
+        "name_match_distant": 0,
         "ours_only": 16,
         "osm_only": 3149,
         "floor_agreement": {
           "comparable": 0,
           "agree": 0,
-          "rate": null
+          "rate": null,
+          "ambiguous_excluded": 0
         },
         "status": "compared"
       },
@@ -345,13 +375,15 @@
         "distinct_names": 6,
         "matched": 0,
         "strict_matched": 0,
-        "strict_name_only": 0,
+        "name_match_only": 0,
+        "name_match_distant": 0,
         "ours_only": 6,
         "osm_only": 3149,
         "floor_agreement": {
           "comparable": 0,
           "agree": 0,
-          "rate": null
+          "rate": null,
+          "ambiguous_excluded": 0
         },
         "status": "compared"
       },
@@ -359,16 +391,18 @@
         "list_id": "merchants-batch2",
         "source": "claude/data-research-sjk-merchants-batch2:docs/research/merchants/shinjuku-merchants-batch2.json",
         "entries": 576,
-        "distinct_names": 562,
+        "distinct_names": 563,
         "matched": 24,
         "strict_matched": 0,
-        "strict_name_only": 24,
+        "name_match_only": 24,
+        "name_match_distant": 0,
         "ours_only": 552,
         "osm_only": 3114,
         "floor_agreement": {
           "comparable": 0,
           "agree": 0,
-          "rate": null
+          "rate": null,
+          "ambiguous_excluded": 0
         },
         "status": "compared"
       }
