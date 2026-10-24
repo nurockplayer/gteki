@@ -12,9 +12,17 @@ the repo. Only the (id, tier) pairs some placement actually loads are copied:
 
 Batch A is `--kinds escalator`: the 5 escalator ids, high tier only, because every escalator placement lists `high`
 alone. Batch B adds `rails` (the 21 stair handrails, also high only: rails are drawn on `main_route` flights only and
-that tier filter keeps them off phones); BATCH_KINDS is the union the station ships, so plain `--check` covers both.
-Later batches add `nosing` by extending BATCH_KINDS. A kind is read from the catalog entry's generator
-(`escalator_dressing`) or the id's maker suffix (`_nosing`, `_rails_...`).
+that tier filter keeps them off phones); batch C adds `nosing` (the 61 nosing strips, drawn on low and high).
+BATCH_KINDS is the union the station ships, so plain `--check` covers all three. A kind is read from the catalog
+entry's generator (`escalator_dressing`) or the id's maker suffix (`_nosing`, `_rails_...`).
+
+Batch C's nosings carry no per-id AO image: Lane E's C3 build packs all 61 strips' AO into one atlas per tier, which
+is copied next to the tier's GLBs:
+
+    <src-full>/atlas/nosing_ao.png   -> gteki/kit/catalog/high/atlas/nosing_ao.png
+    <src-mobile>/atlas/nosing_ao.png -> gteki/kit/catalog/low/atlas/nosing_ao.png
+
+The atlas is checked against `manifest.atlases.nosing` the same way each GLB is checked against its own entry.
 
 Each source must match the sha256 and size its tier's manifest.json records. --check changes nothing and exits
 non-zero when a copy is missing or stale (byte-compared with the source manifest when the Lane E tree is present,
@@ -41,14 +49,23 @@ STATION_JSON = os.path.join(STATION, "gteki", "station.json")
 DEST_REL = os.path.join("kit", "catalog")
 
 SOURCE_ID = "gteki-ikb-catalog-0-1-0"
-LANE_E = ("/Users/tachikoma/Developer/gteki/.claude/worktrees/gteki-lane-e-int/tools/blender/.cache/ike_cb3b29b")
+# Lane E's C3 sample build (draft PR #391): the 61 nosing strips with no per-id AO image, plus the shared nosing AO
+# atlas. Its escalator and handrail GLBs are byte-identical to the ike_cb3b29b tree batches A and B came from; Lane
+# E's final C3 build replaces this constant (and the pins) when it lands.
+LANE_E = ("/Users/tachikoma/Developer/gteki/.claude/worktrees/gteki-lane-e-int/tools/blender/.cache/c3_sample_cb3b29b")
 # tier -> (default source folder, manifest file name, destination folder under gteki/kit/catalog/)
 TIERS = {
     "high": (os.path.join(LANE_E, "ike_full"), "manifest.json", "high"),
     "low": (os.path.join(LANE_E, "ike_mobile"), "manifest.json", "low"),
 }
-BATCH_KINDS = ("escalator", "rails")  # batch A + B; "nosing" joins with a later batch
+# The nosing batch's shared AO atlas: one PNG per tier, its path as the manifest records it.
+ATLAS_KIND = "nosing"
+ATLAS_PATH = "atlas/nosing_ao.png"
+BATCH_KINDS = ("escalator", "rails", "nosing")  # batch A + B + C
 KINDS = ("escalator", "rails", "nosing")
+# Batch C lands in two stacked PRs to keep each under the 100-file review limit: the desktop tier first, the phone
+# copies in the follow-up. The follow-up widens this to both tiers and deletes it.
+SHIPPED_TIERS = ("high",)
 
 
 def sha256_of(path):
@@ -67,8 +84,8 @@ def kind_of(entry):
     raise SystemExit(f"sync_kit_catalog: {entry['id']}: unknown generator {entry['generator']!r}")
 
 
-def plan(catalog, placements, kinds):
-    """(tier, id) -> anchors that load it on that tier, for the selected kinds."""
+def plan(catalog, placements, kinds, tiers=SHIPPED_TIERS):
+    """(tier, id) -> anchors that load it on that tier, for the selected kinds and shipped tiers."""
     kinds_of = {a["id"]: kind_of(a) for a in catalog["assets"]}
     out = {}
     for p in placements["placements"]:
@@ -80,6 +97,8 @@ def plan(catalog, placements, kinds):
             for tier in p["tiers"].get(part, []):
                 if tier not in TIERS:
                     sys.exit(f"sync_kit_catalog: placement {p['anchor']} has unknown tier {tier!r}")
+                if tier not in tiers:
+                    continue
                 out.setdefault((tier, pid), []).append(p["anchor"])
     return {k: sorted(v) for k, v in out.items()}
 
@@ -113,40 +132,39 @@ def main(argv):
     if os.path.isfile(args.station):
         record = next((s for s in read_json(args.station)["sources"] if s["id"] == SOURCE_ID), None)
         pins = record.get("sha256", {}) if record else {}
-    manifests = {}
+    manifest_docs, manifests = {}, {}
     for tier, (src, manifest, _dst) in TIERS.items():
         path = os.path.join(src, manifest)
         if os.path.isfile(path):
-            manifests[tier] = {a["id"]: a for a in read_json(path)["assets"]}
+            manifest_docs[tier] = read_json(path)
+            manifests[tier] = {a["id"]: a for a in manifest_docs[tier]["assets"]}
 
     problems, declare, record = [], [], {}
-    for tier, pid in sorted(pairs):
-        rel = f"{DEST_REL}/{TIERS[tier][2]}/{pid}.glb"
-        dst = os.path.join(args.dest, TIERS[tier][2], f"{pid}.glb")
-        entry = manifests.get(tier, {}).get(pid)
-        declare.append(rel)
-        if args.check:
-            if not os.path.isfile(dst):
-                problems.append(f"gteki/{rel} is missing (run without --check)")
-                continue
-            digest = sha256_of(dst)
-            if rel not in pins:
-                problems.append(f"gteki/{rel} is not pinned by {SOURCE_ID}")
-            elif pins[rel] != digest:
-                problems.append(f"gteki/{rel} differs from the {SOURCE_ID} pin in {os.path.relpath(args.station, REPO)}")
-            if entry is not None and (digest != entry["sha256"] or os.path.getsize(dst) != entry["bytes"]):
-                problems.append(f"gteki/{rel} differs from the {tier} manifest (stale copy or a rebuilt kit)")
-            continue
+
+    def check_copy(tier, rel, entry, dst):
+        """--check one shipped file against its manifest entry and the source record's pin."""
+        if not os.path.isfile(dst):
+            problems.append(f"gteki/{rel} is missing (run without --check)")
+            return
+        digest = sha256_of(dst)
+        if rel not in pins:
+            problems.append(f"gteki/{rel} is not pinned by {SOURCE_ID}")
+        elif pins[rel] != digest:
+            problems.append(f"gteki/{rel} differs from the {SOURCE_ID} pin in {os.path.relpath(args.station, REPO)}")
+        if entry is not None and (digest != entry["sha256"] or os.path.getsize(dst) != entry["bytes"]):
+            problems.append(f"gteki/{rel} differs from the {tier} manifest (stale copy or a rebuilt kit)")
+
+    def copy_verified(tier, rel, entry, src, dst, label):
+        """Copy one source file after verifying it against its manifest entry; record its sha256."""
         if entry is None:
-            problems.append(f"{tier}: {pid} is not in the manifest of --src-{'full' if tier == 'high' else 'mobile'}")
-            continue
-        src = os.path.join(srcs[tier], entry["file"])
+            problems.append(f"{tier}: {label} is not in the manifest of --src-{'full' if tier == 'high' else 'mobile'}")
+            return
         if not os.path.isfile(src):
             problems.append(f"{tier}: {src} is missing")
-            continue
+            return
         if sha256_of(src) != entry["sha256"] or os.path.getsize(src) != entry["bytes"]:
             problems.append(f"{tier}: {src} differs from its manifest entry (sha256 or bytes)")
-            continue
+            return
         same = os.path.isfile(dst) and open(src, "rb").read() == open(dst, "rb").read()
         if not same:
             os.makedirs(os.path.dirname(dst), exist_ok=True)
@@ -154,14 +172,44 @@ def main(argv):
             print(f"copied {tier}/{os.path.basename(src)} -> {dst}")
         record[rel] = entry["sha256"]
 
+    for tier, pid in sorted(pairs):
+        rel = f"{DEST_REL}/{TIERS[tier][2]}/{pid}.glb"
+        dst = os.path.join(args.dest, TIERS[tier][2], f"{pid}.glb")
+        entry = manifests.get(tier, {}).get(pid)
+        declare.append(rel)
+        if args.check:
+            check_copy(tier, rel, entry, dst)
+        else:
+            copy_verified(tier, rel, entry, os.path.join(srcs[tier], (entry or {}).get("file", "")), dst, pid)
+
+    # The nosing batch draws on both tiers: each tier that ships a nosing also ships the shared AO atlas.
+    nosing_ids = {a["id"] for a in catalog["assets"] if kind_of(a) == "nosing"}
+    atlas_tiers = {tier for tier, pid in pairs if pid in nosing_ids}
+    for tier in sorted(atlas_tiers):
+        rel = f"{DEST_REL}/{TIERS[tier][2]}/{ATLAS_PATH}"
+        dst = os.path.join(args.dest, TIERS[tier][2], ATLAS_PATH)
+        entry = (manifest_docs.get(tier, {}).get("atlases") or {}).get(ATLAS_KIND)
+        declare.append(rel)
+        if args.check:
+            check_copy(tier, rel, entry, dst)
+        else:
+            copy_verified(tier, rel, entry, os.path.join(srcs[tier], ATLAS_PATH), dst, f"atlas {ATLAS_KIND}")
+
     if args.check:
         # A copy no placement loads any more is stale, and so is a pin that no copy backs.
         for tier, (_src, _manifest, dst_dir) in TIERS.items():
             folder = os.path.join(args.dest, dst_dir)
             planned = {pid for t, pid in pairs if t == tier}
             for name in sorted(os.listdir(folder)) if os.path.isdir(folder) else []:
+                path = os.path.join(folder, name)
+                if os.path.isdir(path):
+                    # Only the nosing batch's atlas/ folder is a planned subdirectory.
+                    for inner in sorted(os.listdir(path)):
+                        if tier not in atlas_tiers or os.path.join(name, inner).replace(os.sep, "/") != ATLAS_PATH:
+                            problems.append(f"{os.path.join(args.dest, dst_dir, name, inner)} is not a catalog copy any placement loads")
+                    continue
                 if not name.endswith(".glb") or name[:-4] not in planned:
-                    problems.append(f"{os.path.join(args.dest, dst_dir, name)} is not a catalog copy any placement loads")
+                    problems.append(f"{path} is not a catalog copy any placement loads")
         for rel in sorted(pins):
             if rel not in declare:
                 problems.append(f"{SOURCE_ID} pins {rel}, but no placement loads it for kinds {','.join(kinds)}")
