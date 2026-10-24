@@ -718,11 +718,11 @@
       "notes": [
         {
           "lang": "ja",
-          "text": "東京メトロ 池袋駅 丸ノ内線・有楽町線・副都心線周辺。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+          "text": "東京メトロ 池袋駅。事業者は駅全体として路線名（丸ノ内線・有楽町線・副都心線）のみを挙げており、個別の設置場所は記載なし（エリア単位の情報、1か所を示すものではない）。未確認、案内ルートなし。"
         },
         {
           "lang": "en",
-          "text": "Tokyo Metro Ikebukuro Station, near the 丸ノ内線・有楽町線・副都心線 lines. Location is the operator's wording only (unverified, no route)."
+          "text": "Tokyo Metro Ikebukuro Station. The operator lists only line names (丸ノ内線・有楽町線・副都心線) for the station as a whole and prints no installation place (area-level information, not one location). Unverified, no route."
         }
       ]
     },
@@ -924,7 +924,7 @@
       "names": [
         {
           "lang": "ja",
-          "text": "車いす対応トイレ"
+          "text": "車いす対応トイレ（改札外）"
         }
       ],
       "aliases": [],
@@ -956,7 +956,7 @@
       "names": [
         {
           "lang": "ja",
-          "text": "車いす対応トイレ"
+          "text": "車いす対応トイレ（改札内）"
         }
       ],
       "aliases": [],
@@ -988,7 +988,7 @@
       "names": [
         {
           "lang": "ja",
-          "text": "車いす対応トイレ"
+          "text": "車いす対応トイレ（改札内）"
         }
       ],
       "aliases": [],
