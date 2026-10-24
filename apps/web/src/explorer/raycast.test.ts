@@ -166,15 +166,15 @@ describe("camera-only blockers", () => {
     const t = explorerTargets([], [], [slab]);
     const hit = castAll(new THREE.Raycaster(pose.pivot, pose.back, 0, FOLLOW.defaultDistance + FOLLOW.clearance), t.camera)[0]!;
     expect(hit.distance).toBeLessThan(FOLLOW.minDistance + FOLLOW.clearance);
-    const dist = clampDistance(FOLLOW.defaultDistance, hit.distance, t.blockers.has(hit.object));
+    const dist = clampDistance(FOLLOW.defaultDistance, hit.distance);
     expect(pose.pivot.clone().addScaledVector(pose.back, dist).y).toBeLessThan(2.0);
-    // Walls keep the usual minimum.
-    expect(clampDistance(FOLLOW.defaultDistance, hit.distance, false)).toBe(FOLLOW.minDistance);
+    // Walls also allow a closer fallback instead of forcing the camera past a hit.
+    expect(dist).toBeLessThan(FOLLOW.minDistance);
   });
 
   it("bound the camera even behind a nearer wall", () => {
     // Pitch -0.7, a wall 0.32 m behind the walker and a ceiling at 2.0 m: the wall is hit first, and its
-    // usual minimum alone would hold the camera above the ceiling.
+    // preferred minimum would hold the camera above the ceiling if it overrode collision safety.
     const head = new THREE.Vector3(0, 1.6, 0);
     const pose = followPose(head, 0, -0.7);
     const wall = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
@@ -186,7 +186,7 @@ describe("camera-only blockers", () => {
     expect(hits.map((h) => h.object)).toEqual([wall, slab]);
     const dist = followDistance(FOLLOW.defaultDistance, hits.map((h) => ({ distance: h.distance, cameraOnly: t.blockers.has(h.object) })));
     expect(pose.pivot.clone().addScaledVector(pose.back, dist).y).toBeLessThan(2.0);
-    // Without a blocker the wall clamp is unchanged.
+    // The nearer wall alone bounds the camera too.
     expect(followDistance(FOLLOW.defaultDistance, [{ distance: hits[0]!.distance, cameraOnly: false }])).toBe(clampDistance(FOLLOW.defaultDistance, hits[0]!.distance));
     expect(followDistance(2, [])).toBe(2);
   });

@@ -161,9 +161,10 @@ export const intersectsRect = (a: ScreenRect, b: ScreenRect): boolean => a.x0 < 
  * One pass per chip over regions sorted by y0 (the caller sorts once per label re-check).
  * Merge forbidden vertical intervals for this chip's horizontal span; choose the nearest clear
  * position above, otherwise below. Disjoint boards must not push an endpoint past the viewport.
- * Offsets are absolute from the original anchor, so repeated passes never accumulate them.
+ * Offsets are absolute from the original anchor, so repeated passes never accumulate them. The final
+ * offset is clamped so a selected chip stays inside the viewport even when the boards leave no room.
  */
-export function protectIdentityChip(chip: ScreenRect, selected: boolean, regionsByTop: readonly ScreenRect[]): { hidden: boolean; offsetY: number } {
+export function protectIdentityChip(chip: ScreenRect, selected: boolean, regionsByTop: readonly ScreenRect[], viewportHeight: number): { hidden: boolean; offsetY: number } {
   if (!regionsByTop.some((r) => intersectsRect(chip, r))) return { hidden: false, offsetY: 0 };
   if (!selected) return { hidden: true, offsetY: 0 };
   const height = chip.y1 - chip.y0;
@@ -176,5 +177,7 @@ export function protectIdentityChip(chip: ScreenRect, selected: boolean, regions
       start = lo; end = hi;
     } else end = Math.max(end, hi);
   }
-  return { hidden: false, offsetY: (start >= 0 ? start : end) - chip.y0 };
+  const offsetY = (start >= 0 ? start : end) - chip.y0;
+  // Boards that leave no clear span must not push a selected chip past a viewport edge.
+  return { hidden: false, offsetY: Math.max(-chip.y0, Math.min(offsetY, viewportHeight - chip.y1)) };
 }

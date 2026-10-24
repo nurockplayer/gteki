@@ -4,7 +4,8 @@ extends RefCounted
 ## Windowed only: a headless display has nothing to render, so it has no picture and no frame time that would mean
 ## anything (the client refuses `--perf` on a headless display instead of making a number up).
 ## Run:  godot --path packages/godot --rendering-method forward_plus res://hq/hq.tscn -- --station=<id> --capture=<outDir>
-##         [--poses=<file>] [--look=baseline|hq] [--gi=off|sdfgi] [--perf=<seconds>]
+##         [--poses=<file>] [--look=baseline|hq] [--gi=off|sdfgi] [--ao=on|off] [--ao-light-affect=<0..1>]
+##         [--perf=<seconds>]
 ## Poses file: JSON array of {name, position:[x,y,z] (Godot frame, near the ground), yaw_deg (walker yaw, 0 faces -Z,
 ## positive turns left), pitch?, distance?}. Default poses: each spawn point x 4 yaws; Ikebukuro adds the
 ## g_jr_c2 -> x35 route every 15 m and the #227 stall area (.cache/routes/ikebukuro.route.json, written by run-walk.sh;
@@ -12,7 +13,8 @@ extends RefCounted
 ## quietly shorter pose list), Shinjuku its inverted-band walls; then the G-5 evidence poses — the start, the mid-stair
 ## point and the goal of every route the evidence walk covers, plus each lift's landing (the one shaft in the goldens is
 ## Shinjuku S4's) — asked from the router through gteki_bridge.gd, the same call the evidence walk makes.
-## Writes <outDir>/report.json (`gteki.capture/0.1`): station, look, GI, the renderer the run actually used, the project
+## Writes <outDir>/report.json (`gteki.capture/0.1`): station, look, GI, the kit AO state (`ao`, `ao_light_affect` and
+## `ao_light_affect_requested`), the renderer the run actually used, the project
 ## renderer setting, driver, GPU, window, machine and, per
 ## pose, the PNG, the camera, RenderingServer stats and (with --perf) the frame-interval and renderer-setup percentiles.
 
@@ -49,7 +51,10 @@ var pose_problems: Array[String] = []
 var route_file_missing := false
 
 
-func run(hq: Node3D, out_dir: String, poses_file: String, look: String, gi: String, perf_seconds: float) -> int:
+## `ao` / `ao_light_affect` are what the client loaded the station with (`hq.gd`): recorded so the report states the AO
+## state the pictures were taken with. `ao_light_affect` is null when AO was off or Godot's default was kept;
+## `ao_light_affect_requested` keeps the value the run asked for, whether or not AO was applied.
+func run(hq: Node3D, out_dir: String, poses_file: String, look: String, gi: String, perf_seconds: float, ao := true, ao_light_affect := -1.0) -> int:
 	var started := Time.get_ticks_msec()
 	var dir := out_dir if out_dir.is_absolute_path() else ProjectSettings.globalize_path("res://").path_join(out_dir)
 	if DirAccess.make_dir_recursive_absolute(dir) != OK:
@@ -85,6 +90,11 @@ func run(hq: Node3D, out_dir: String, poses_file: String, look: String, gi: Stri
 		"station": station,
 		"look": look,
 		"gi": gi,
+		"ao": ao,
+		# What the AO copies actually carry (null with AO off, or when Godot's default was kept), and what the run asked
+		# for, kept apart so `--ao=off --ao-light-affect=0.5` does not read as AO applied at 0.5.
+		"ao_light_affect": null if (not ao or ao_light_affect < 0.0) else ao_light_affect,
+		"ao_light_affect_requested": null if ao_light_affect < 0.0 else ao_light_affect,
 		"perf_seconds": perf_seconds,
 		"machine": machine(),
 		# What this run rendered with. The project setting is `gl_compatibility` and the runbook asks for Forward+ on the

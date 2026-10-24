@@ -18,13 +18,13 @@ import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
-import { castAll, castCamera, cuttableSigns, explorerTargets, keepBelowBlockers } from "./raycast.ts";
+import { castAll, castCamera, cuttableSigns, explorerTargets } from "./raycast.ts";
 import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
-import { PostFx } from "./postfx.ts";
+import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
-import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachFov, avatarFade, boomSqueezed, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack, stepSlope, targetFov, type SlopeState } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -36,9 +36,10 @@ import { createAvatarRig, type AvatarSelection } from "./avatarSelection.ts";
 import { avatarMotion } from "./avatarMotion.ts";
 import { contactShadow } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
-import { CAST_RETUNE_M, SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, setCasters, shadowYRange, type ShadowCandidate } from "./shadows.ts";
+import { SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, needsCasterRetune, setCasters, shadowFitRange, type ShadowCandidate } from "./shadows.ts";
 import { buildGraphView, type GraphView } from "./graphView.ts";
 import { Input } from "./input.ts";
+import { headingFromYaw } from "./pose.ts";
 import { DEFAULT_GROUND, acceptGround, angleDelta, cumulativeLengths, resolveWalls, samplePolyline, wallToRenderer, type Segment2 } from "./walker.ts";
 import { OcclusionSweep, SIGN_BACKDROP_M, labelState, onFocusFloor, type LabelOcclusion, type LabelState } from "./labelVisibility.ts";
 import { TriangleBvh, segmentHitsBox, type Cull } from "./triangleBvh.ts";
@@ -47,6 +48,8 @@ import { occludedLineStyle, type OccludedLineStyle } from "./occludedLine.ts";
 import { BLOOM_HEADROOM, OVERLAY_INPUT_MIN, compensate, linearToSrgb, type Vec3 } from "./toneComp.ts";
 
 export type ExplorerMode = "overview" | "walk" | "guide";
+
+export interface ExplorerPose { east: number; north: number; up: number; headingDeg: number; mode: ExplorerMode }
 
 export interface ExplorerOptions { avatarGlbUrl?: string }
 
@@ -191,10 +194,8 @@ export class Explorer {
   private readonly street = new StreetBackdrop();
   /** Render height of the station's street floor when it is an underground (scene-lit) station, else null. */
   private streetY: number | null = null;
-  /** Set by each discrete placement (walkFrom, startGuide); consumed by the next frame outside overview. */
+  /** Set by each discrete placement (walkFrom, startGuide, seekGuide); consumed by the next frame outside overview. */
   private teleported = false;
-  /** A teleport made while already walking/guiding: the follow camera jumps with the walker instead of gliding. */
-  private snapCamera = false;
   /** prefers-reduced-motion: the follow camera and orbit damping cut instead of gliding, and decorative route motion stops. */
   private reducedMotion = false;
   private readonly streetProbe = { at: new THREE.Vector3(Infinity, 0, 0), wait: 0, outdoors: false, level: true };
@@ -208,6 +209,12 @@ export class Explorer {
   private readonly timer = new THREE.Timer();
   private readonly input: Input;
   private readonly ray = new THREE.Raycaster();
+  private readonly qaSignBounds = new THREE.Box3();
+  private readonly qaSignExpanded = new THREE.Box3();
+  private qaSignCount = 0;
+  private qaSignInside = false;
+  private qaSignNearestName = "";
+  private qaSignNearestGap = Infinity;
 
   private station: LoadedStation | null = null;
   private stationScene: StationScene | null = null;
@@ -221,6 +228,8 @@ export class Explorer {
   private groundTargets: THREE.Object3D[] = [];
   private colliderTargets: THREE.Object3D[] = [];
   private cameraTargets: THREE.Object3D[] = [];
+  /** All camera surfaces collide from both sides, independent of source winding. Rebuilt with the targets. */
+  private cameraSides: ReadonlySet<THREE.Object3D> = new Set();
   /** Walls and floors only: the street probe's sky test (camera-only blockers such as signs never hide the sky). */
   private skyTargets: THREE.Object3D[] = [];
   private blockerTargets: ReadonlySet<THREE.Object3D> = new Set();
@@ -284,8 +293,14 @@ export class Explorer {
   private camDistance: number = FOLLOW.defaultDistance;
   /** Smoothed extra boom elevation (radians) raised over a wall/slab squeeze; see constrainedPitch. */
   private boomRaise = 0;
-  private readonly raiseScratch = new THREE.Vector3();
-  private readonly raisedBoom = new THREE.Vector3();
+  private boomActual = 0;
+  private cameraFade = 1;
+  /** Set when the follow camera resumes after the overview: the fade left from before it is stale, so it snaps once. */
+  private fadeStale = false;
+  /** Empty/null until the QA hooks are explicitly called. */
+  private qaCamera: CameraHold = {};
+  private qaCameraSnap = false;
+  private qaAvatarFade: number | null = null;
   private firstPerson = false;
   private mode: ExplorerMode = "overview";
   private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
@@ -340,6 +355,7 @@ export class Explorer {
   private panelEl: HTMLElement | null = null;
   /** The persistent credit line along the canvas bottom; the overview keeps clear of it too. */
   private creditEl: HTMLElement | null = null;
+  private minimapEl: HTMLElement | null = null;
   /** Refits the overview when an occluder's size changes: the panel collapsing, the credit line wrapping. */
   private occluderResize: ResizeObserver | null = null;
   private quality: "low" | "high";
@@ -384,6 +400,35 @@ export class Explorer {
 
   get currentMode(): ExplorerMode {
     return this.mode;
+  }
+
+  /** Follow-camera diagnostics for the QA hook. Angles are radians, distances metres. */
+  cameraInfo(): { fov: number; far: number; slopeOn: boolean; boomWanted: number; boomActual: number; raise: number; pitch: number; yaw: number; avatarFade: number; reflections: boolean; mode: ExplorerMode } {
+    return {
+      fov: this.camera.fov, far: this.camera.far, slopeOn: this.slope.on,
+      boomWanted: this.camDistance, boomActual: this.boomActual, raise: this.boomRaise,
+      pitch: this.pitch, yaw: this.yaw, avatarFade: this.cameraFade,
+      reflections: this.composer?.settings.reflections ?? false, mode: this.mode,
+    };
+  }
+
+  /** QA-only: hold supplied controls across guide steering/input; null releases all held controls. */
+  setCamera(patch: CameraHold | null): void {
+    this.qaCamera = patchCameraHold(this.qaCamera, patch);
+    this.qaCameraSnap = patch !== null;
+  }
+
+  /** QA-only: hold the shared body/postprocessing fade; null restores the automatic value. */
+  holdAvatarFade(value: number | null): void {
+    this.qaAvatarFade = fadeHold(value);
+    this.applyAvatarFade(0, true);
+  }
+
+  private applyAvatarFade(dt: number, snap: boolean): void {
+    this.cameraFade = this.qaAvatarFade ?? stepAvatarFade(this.cameraFade, avatarFade(this.boomActual), dt, snap || this.fadeStale || this.reducedMotion);
+    this.fadeStale = false;
+    this.avatarRig?.setFade(this.cameraFade);
+    this.composer?.setAvatarFade(this.avatarRig?.root ?? null, this.cameraFade);
   }
 
   get qualityLevel(): "low" | "high" {
@@ -481,6 +526,14 @@ export class Explorer {
     return corners.includes("geometry") ? "geometry" : "sign";
   }
 
+  /**
+   * Whether the camera actually sees the board's name face. Only a visible board reserves room on screen;
+   * one behind a wall must not displace POI chips that the user can read (#342).
+   */
+  private identityBoardVisible(board: IdentityBoard): boolean {
+    return this.identityOccluded(identityNameSamples(board, this.camera.getWorldPosition(new THREE.Vector3())), identityBoardObjects(board, this.identityBoards)) === "none";
+  }
+
   /** POI label states for automated visual checks. */
   labelInfo(): { shown: number; faded: number; hidden: number; decluttered: number } {
     const n = { shown: 0, faded: 0, hidden: 0, decluttered: 0 };
@@ -522,6 +575,13 @@ export class Explorer {
     return { x: this.pos.x, y: -this.pos.z, z: this.pos.y };
   }
 
+  /** Read-only walker pose for 2D HUD overlays (ENU metres, body heading clockwise from north). Null before a station loads. */
+  getPose(): ExplorerPose | null {
+    if (!this.station) return null;
+    const { x, y, z } = this.avatarEnu;
+    return { east: x, north: y, up: z, headingDeg: headingFromYaw(this.bodyYaw), mode: this.mode };
+  }
+
   private defaultEnvironment(): void {
     this.scene.background = new THREE.Color(0x0b1018);
     this.scene.fog = new THREE.Fog(0x0b1018, 60, 420);
@@ -557,9 +617,13 @@ export class Explorer {
    */
   private attachShadows(root: THREE.Object3D, focus: THREE.Vector3 | null = null, halfExtentM = SHADOW_HALF_EXTENT_M, floorY: number | null = focus ? focus.y : null): { casters: number; receivers: number } {
     this.shadowFit = null;
-    const r = applyStationShadows(root, this.quality, this.lighting);
-    if (r.bounds.isEmpty()) return r;
-    this.shadowFit = { yRange: shadowYRange(r.bounds), candidates: r.candidates, tallCandidates: r.tallCandidates, casters: 0, castFloorY: NaN, receivers: r.receivers, fitted: null, walkHalf: halfExtentM, focus, floorY };
+    // The caster mask is applied at attach (shadows.ts), with the walker's feet: no frame has the ceilings casting.
+    const feetY = floorY ?? this.pos.y;
+    const r = applyStationShadows(root, this.quality, this.lighting, feetY);
+    const yRange = shadowFitRange(r.bounds);
+    // Nothing to fit (no drawn geometry), or a non-finite box (a mesh with NaN positions): following it would throw every frame.
+    if (!yRange) return r;
+    this.shadowFit = { yRange, candidates: r.candidates, tallCandidates: r.tallCandidates, casters: r.casters, castFloorY: feetY, receivers: r.receivers, fitted: null, walkHalf: halfExtentM, focus, floorY };
     return r;
   }
 
@@ -588,7 +652,9 @@ export class Explorer {
     }
     // Only geometry starting below the walker's head casts (shadows.ts). Recomputed on a floor change, not per frame.
     const floorY = f.floorY ?? this.pos.y; // pos is the feet
-    if (!(Math.abs(floorY - f.castFloorY) <= CAST_RETUNE_M)) { f.castFloorY = floorY; f.casters = setCasters(f.candidates, floorY); }
+    // A non-finite feet Y would retune the mask to "nothing casts" every frame; skip the frame instead.
+    if (!Number.isFinite(floorY)) return;
+    if (needsCasterRetune(floorY, f.castFloorY)) { f.castFloorY = floorY; f.casters = setCasters(f.candidates, floorY); }
     f.fitted = "follow";
     const at = f.focus ?? this.pos;
     // followShadow throws on a non-finite target; skip the frame rather than throw every frame.
@@ -704,7 +770,7 @@ export class Explorer {
   /** Built once: the composer only references this explorer's scene and camera, so stations reuse it. */
   private setupComposer(): void {
     if (this.composer || this.quality !== "high") return;
-    this.composer = new PostFx(this.renderer, this.scene, this.camera);
+    this.composer = new PostFx(this.renderer, this.scene, this.camera, qaPostFxSettings(location.search));
     this.composer.setBloomThreshold(this.bloomThreshold);
     this.applyOverlayTone();
   }
@@ -843,6 +909,7 @@ export class Explorer {
     this.colliderTargets = targets.collider;
     this.skyTargets = targets.sky;
     this.cameraTargets = targets.camera;
+    this.cameraSides = new Set(targets.camera);
     this.blockerTargets = targets.blockers;
     // Every ray target is in the camera set (walls, floors, blockers); trees are built here, never mid-frame.
     this.rayTrees = prepareRayTrees(targets.camera);
@@ -903,6 +970,7 @@ export class Explorer {
     this.groundTargets = [];
     this.colliderTargets = [];
     this.cameraTargets = [];
+    this.cameraSides = new Set();
     this.skyTargets = [];
     this.blockerTargets = new Set();
     this.rayTrees = { trees: 0, triangles: 0, bytes: 0, buildMs: 0 };
@@ -969,11 +1037,18 @@ export class Explorer {
     this.refitOverview();
   }
 
-  /** Observe both occluders on one observer, so a size change of either refits through the same path. */
+  /** Name the top-right minimap occluder; hidden maps leave the canvas free. */
+  setMinimap(el: HTMLElement | null): void {
+    this.minimapEl = el;
+    this.watchOccluders();
+    this.refitOverview();
+  }
+
+  /** Observe the occluders on one observer, so size changes refit through the same path. */
   private watchOccluders(): void {
     this.occluderResize?.disconnect();
     this.occluderResize = null;
-    const els = [this.panelEl, this.creditEl].filter((e): e is HTMLElement => e !== null);
+    const els = [this.panelEl, this.creditEl, this.minimapEl].filter((e): e is HTMLElement => e !== null);
     if (els.length === 0 || typeof ResizeObserver === "undefined") return;
     this.occluderResize = new ResizeObserver(() => this.refitOverview());
     for (const e of els) this.occluderResize.observe(e);
@@ -985,7 +1060,7 @@ export class Explorer {
   }
 
   /**
-   * The canvas area no UI covers (CSS px, canvas-relative): neither the panel nor the credit line. Both page
+   * The canvas area no UI covers (CSS px, canvas-relative): panel, credit line and minimap. Their page
    * rects are measured here, on a resize or an occluder change — never per frame.
    */
   private freeRect(): ViewRect {
@@ -993,9 +1068,11 @@ export class Explorer {
     const el = this.panelEl;
     // display:none (walk/guide on a phone), a collapsed element or none at all leaves the canvas free.
     const measured = el && el.getClientRects().length > 0 ? el.getBoundingClientRect() : null;
-    const host = (measured || this.creditEl) ? this.host.getBoundingClientRect() : null;
+    const cornerRect = this.minimapEl && this.minimapEl.getClientRects().length > 0 ? this.minimapEl.getBoundingClientRect() : null;
+    const host = (measured || this.creditEl || cornerRect) ? this.host.getBoundingClientRect() : null;
     const panel = measured && host ? { x: measured.left - host.left, y: measured.top - host.top, w: measured.width, h: measured.height } : null;
-    return freeArea({ w, h }, panel, this.creditInset(host));
+    const corner = cornerRect && host ? { x: cornerRect.left - host.left, y: cornerRect.top - host.top, w: cornerRect.width, h: cornerRect.height } : null;
+    return freeArea({ w, h }, panel, this.creditInset(host), corner);
   }
 
   /** The canvas-bottom band the credit line blocks (CSS px): it spans the width, so only its top edge counts. */
@@ -1028,6 +1105,7 @@ export class Explorer {
   setMode(mode: ExplorerMode): void {
     if (this.mode === mode) return;
     this.guideIdentityHoldS = 0;
+    if (this.mode === "overview") this.fadeStale = true;
     this.mode = mode;
     this.labelSweepDoneAt = -Infinity;
     // The overview may have deepened the far plane for its pose; the walking camera keeps its own.
@@ -1040,7 +1118,7 @@ export class Explorer {
     if (xray) xray.visible = mode === "overview";
     this.routeLines?.setXray(mode === "overview");
     this.graph?.setXray(mode === "overview");
-    if (mode === "overview") { this.street.restore(this.scene); this.snapCamera = false; this.setFov(FOV.overview, true); }
+    if (mode === "overview") { this.street.restore(this.scene); this.setFov(FOV.overview, true); }
     this.overviewLook.set(this.scene, this.world, mode === "overview");
     this.events.onMode?.(mode);
   }
@@ -1083,7 +1161,8 @@ export class Explorer {
     if (!look) return false;
     this.yaw = look.yaw;
     this.pitch = look.pitch;
-    this.snapCamera = true;
+    // The framed look lands as a snap on the next frame: the camera and slope must not pan from the old pose.
+    this.teleported = true;
     const toward = look.centre.clone().sub(head);
     this.guideIdentityCentre.copy(look.centre);
     this.guideIdentityOffset.yaw = angleDelta(Math.atan2(-toward.x, -toward.z), look.yaw);
@@ -1098,7 +1177,6 @@ export class Explorer {
     if (ground === null) return false;
     this.pos.set(p.x, ground, p.z);
     this.teleported = true;
-    this.snapCamera = this.mode !== "overview";
     this.yaw = (-headingDeg * Math.PI) / 180;
     // The avatar appears at the new spot facing the new heading (no run blend from the old one).
     this.lastAvatarPos.copy(this.pos);
@@ -1109,11 +1187,11 @@ export class Explorer {
     return true;
   }
 
-  walkFromNode(bundle: StationBundle, nodeId: string): boolean {
+  walkFromNode(bundle: StationBundle, nodeId: string, headingDeg: number): boolean {
     const n = bundle.nodes.find((x) => x.id === nodeId);
     if (!n) return false;
     const z = nodeDisplayZ(n, bundle.floors.find((f) => f.id === n.floorId)).z;
-    return this.walkFrom({ x: n.position.x, y: n.position.y, z });
+    return this.walkFrom({ x: n.position.x, y: n.position.y, z }, headingDeg);
   }
 
   private groundAt(x: number, fromY: number, z: number, maxDrop: number): number | null {
@@ -1365,12 +1443,16 @@ export class Explorer {
     const { w, h } = this.viewSize;
     this.camera.updateMatrixWorld();
     const regions: ScreenRect[] = [];
-    if (this.mode !== "overview") for (const board of this.identityBoards) {
-      if (!inScene(board.object, this.scene) || !objectVisible(board.object)) continue;
-      board.object.updateWorldMatrix(true, false);
-      for (const region of board.regions) {
-        const rect = identityRegionRect(region.box, board.object, this.camera, w, h);
-        if (rect) regions.push(rect);
+    if (this.mode !== "overview" && this.identityBoards.length) {
+      // Visibility rays read occluder bounds: bring them current even when no POI sweep is pending.
+      this.refreshOccluders();
+      for (const board of this.identityBoards) {
+        if (!inScene(board.object, this.scene) || !objectVisible(board.object)) continue;
+        board.object.updateWorldMatrix(true, false);
+        const rects = board.regions.map((region) => identityRegionRect(region.box, board.object, this.camera, w, h)).filter((r): r is ScreenRect => r !== null);
+        // A board no ray reaches still projects a rect, but it protects empty screen: skip it (#342).
+        if (!rects.length || !this.identityBoardVisible(board)) continue;
+        regions.push(...rects);
       }
     }
     regions.sort((a, b) => a.y0 - b.y0);
@@ -1393,7 +1475,7 @@ export class Explorer {
       const p = l.obj.getWorldPosition(new THREE.Vector3()).project(this.camera);
       const x = (p.x + 1) * w / 2, y = (1 - p.y) * h / 2;
       const chip = { x0: x - size.w / 2, x1: x + size.w / 2, y0: y - size.h / 2, y1: y + size.h / 2 };
-      const result = Math.abs(p.z) <= 1 ? protectIdentityChip(chip, l.selected, regions) : { hidden: false, offsetY: 0 };
+      const result = Math.abs(p.z) <= 1 ? protectIdentityChip(chip, l.selected, regions, h) : { hidden: false, offsetY: 0 };
       if (l.identityHidden !== result.hidden) l.identityHidden = result.hidden;
       if (l.identityOffsetY !== result.offsetY) {
         l.identityOffsetY = result.offsetY;
@@ -1555,7 +1637,6 @@ export class Explorer {
     const first = samplePolyline(pts, this.guide.cum, fromS);
     this.pos.set(first.x, first.y, first.z);
     this.teleported = true;
-    this.snapCamera = this.mode !== "overview";
     if (first.tx || first.tz) this.yaw = Math.atan2(-first.tx, -first.tz);
     this.lastAvatarPos.copy(this.pos);
     this.bodyYaw = this.yaw;
@@ -1577,7 +1658,6 @@ export class Explorer {
     const p = samplePolyline(g.pts, g.cum, g.s);
     this.pos.set(p.x, p.y, p.z);
     this.teleported = true;
-    this.snapCamera = true;
     if (p.tx || p.tz) this.yaw = Math.atan2(-p.tx, -p.tz);
     this.lastAvatarPos.copy(this.pos);
     this.bodyYaw = this.yaw;
@@ -1655,6 +1735,109 @@ export class Explorer {
     return this.avatarEnu;
   }
 
+  /**
+   * Walk renderer-space points (x/z, optional y in metres) in the explorer world frame, through normal walk input.
+   * A point is reached when its horizontal distance is within 0.35 m and, if it carries `y`, the feet are within 0.6 m of it vertically.
+   * stuck: no waypoint advanced and under 0.1 m of 3D displacement over the last second. timedOut: maxSeconds ran out while still moving.
+   */
+  walkPath(
+    points: { x: number; z: number; y?: number }[],
+    opts: { speed?: "walk" | "run"; dt?: number; maxSeconds?: number; onStep?: (i: number) => void } = {},
+  ): { done: boolean; stuck: boolean; timedOut: boolean; steps: number } {
+    if (this.mode !== "walk") return { done: false, stuck: false, timedOut: false, steps: 0 };
+    const dt = opts.dt ?? 1 / 60;
+    const maxSeconds = opts.maxSeconds ?? 60;
+    if (!(dt > 0) || !Number.isFinite(dt) || !(maxSeconds >= 0) || !Number.isFinite(maxSeconds)) {
+      throw new RangeError("walkPath dt must be positive and maxSeconds must be non-negative");
+    }
+    if (points.length === 0) return { done: true, stuck: false, timedOut: false, steps: 0 };
+    this.input.virtualKeys.clear();
+    const reached = (p: { x: number; z: number; y?: number }): boolean =>
+      Math.hypot(p.x - this.pos.x, p.z - this.pos.z) <= 0.35 && (p.y === undefined || Math.abs(this.pos.y - p.y) <= 0.6);
+    const checkpointPos = this.pos.clone();
+    let point = 0;
+    let steps = 0;
+    let elapsed = 0;
+    let checkpointT = 0;
+    let done = false;
+    let stuck = false;
+    let timedOut = false;
+    const maxSteps = Math.floor(maxSeconds / dt + 1e-9);
+    const t0 = this.timer.getElapsed();
+    // Moves past every waypoint already reached; true once the last one is reached.
+    const advance = (): boolean => {
+      while (reached(points[point]!)) {
+        if (point === points.length - 1) return true;
+        point++;
+        checkpointT = elapsed;
+        checkpointPos.copy(this.pos);
+      }
+      return false;
+    };
+    try {
+      for (;;) {
+        if (advance()) { done = true; break; }
+        if (elapsed - checkpointT >= 1 - 1e-9) {
+          if (this.pos.distanceTo(checkpointPos) < 0.1) { stuck = true; break; }
+          checkpointT = elapsed;
+          checkpointPos.copy(this.pos);
+        }
+        if (steps >= maxSteps) { timedOut = true; break; }
+        const target = points[point]!;
+        const dx = target.x - this.pos.x;
+        const dz = target.z - this.pos.z;
+        this.yaw = Math.atan2(-dx, -dz);
+        this.input.virtualKeys.add("KeyW");
+        if (opts.speed === "run") this.input.virtualKeys.add("ShiftLeft");
+        this.step(dt, t0 + elapsed);
+        steps++;
+        elapsed += dt;
+        opts.onStep?.(steps - 1);
+      }
+    } finally {
+      this.input.virtualKeys.clear();
+    }
+    this.render(dt);
+    return { done, stuck, timedOut, steps };
+  }
+
+  /**
+   * QA sign clearance around the camera, by box distance (not a frustum test). Counts camera blockers and cuttable sign boxes
+   * within radiusM horizontally whose top reaches 0.3 m below the camera or higher (hanging signs; floor props are ignored).
+   * gapM = box bottom minus camera Y (positive means above the camera). inside = camera within the box grown by near plane + 0.05 m.
+   */
+  signClearance(radiusM = 6): { nearest: { name: string; gapM: number } | null; inside: boolean; count: number } {
+    this.qaSignCount = 0;
+    this.qaSignInside = false;
+    this.qaSignNearestName = "";
+    this.qaSignNearestGap = Infinity;
+    const camera = this.camera.position;
+    for (const mesh of this.blockerTargets) this.measureSignClearance(mesh, camera, radiusM);
+    for (const mesh of this.signMeshes) if (!this.blockerTargets.has(mesh)) this.measureSignClearance(mesh, camera, radiusM);
+    return {
+      nearest: this.qaSignCount ? { name: this.qaSignNearestName, gapM: this.qaSignNearestGap } : null,
+      inside: this.qaSignInside,
+      count: this.qaSignCount,
+    };
+  }
+
+  private measureSignClearance(mesh: THREE.Object3D, camera: THREE.Vector3, radiusM: number): void {
+    this.qaSignBounds.setFromObject(mesh);
+    const dx = Math.max(this.qaSignBounds.min.x - camera.x, 0, camera.x - this.qaSignBounds.max.x);
+    const dz = Math.max(this.qaSignBounds.min.z - camera.z, 0, camera.z - this.qaSignBounds.max.z);
+    // Only boxes reaching into the band the near plane can touch when pitched down are clearance; floor-standing props are not.
+    if (Math.hypot(dx, dz) > radiusM || this.qaSignBounds.max.y <= camera.y - 0.3) return;
+    this.qaSignCount++;
+    if (!this.qaSignInside) {
+      this.qaSignInside = this.qaSignExpanded.copy(this.qaSignBounds).expandByScalar(this.camera.near + 0.05).containsPoint(camera);
+    }
+    const gapM = this.qaSignBounds.min.y - camera.y;
+    if (gapM < this.qaSignNearestGap) {
+      this.qaSignNearestName = mesh.name;
+      this.qaSignNearestGap = gapM;
+    }
+  }
+
   private frame(): void {
     if (this.disposed) return;
     this.timer.update();
@@ -1683,8 +1866,7 @@ export class Explorer {
     else this.orbit.update();
 
     if (this.mode !== "overview") {
-      this.placeCamera(dt, this.snapCamera);
-      this.snapCamera = false;
+      this.placeCamera(dt, this.teleported);
       // A teleport re-probes at once and snaps the backdrop to its target (no daylight carried underground).
       const snap = this.teleported;
       this.teleported = false;
@@ -1836,6 +2018,11 @@ export class Explorer {
   }
 
   private placeCamera(dt: number, snap = false): void {
+    if (this.qaCamera.yaw !== undefined) this.yaw = this.qaCamera.yaw;
+    if (this.qaCamera.pitch !== undefined) this.pitch = this.qaCamera.pitch;
+    if (this.qaCamera.distance !== undefined) this.camDistance = this.qaCamera.distance;
+    snap ||= this.qaCameraSnap;
+    this.qaCameraSnap = false;
     // The slope state follows the walker's height; a large one-frame jump, snap, or stopped clock restarts it instead of reading a teleport as a climb.
     this.slope = snap || dt <= 0 || Math.abs(this.pos.y - this.slopeY) > SLOPE.jump
       ? NO_SLOPE
@@ -1844,6 +2031,9 @@ export class Explorer {
     const head = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const dir = new THREE.Vector3(-Math.sin(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), -Math.cos(this.yaw) * Math.cos(this.pitch));
     if (this.firstPerson) {
+      this.boomActual = 0;
+      this.boomRaise = 0;
+      this.applyAvatarFade(dt, snap);
       this.camera.position.copy(head);
       this.camera.lookAt(head.clone().add(dir));
       this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
@@ -1851,46 +2041,57 @@ export class Explorer {
     }
     // Over-the-shoulder framing; the pivot itself is pulled in if a wall is closer than the shoulder offset.
     // Signs (visual-only) are never camera targets and never pull the camera in; cameraCut sees through them instead.
+    const cameraSides = this.cameraSides;
     let shoulder: number = FOLLOW.shoulder;
     if (this.cameraTargets.length) {
       this.ray.set(head, new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw)));
       this.ray.far = FOLLOW.shoulder + 0.25;
-      const side = castCamera(this.ray, this.cameraTargets, this.blockerTargets)[0];
+      const side = castCamera(this.ray, this.cameraTargets, cameraSides)[0];
       if (side) shoulder = Math.max(0, side.distance - 0.25);
     }
     const pose = followPose(head, this.yaw, this.pitch, shoulder);
     let back = pose.back;
     let dist = this.camDistance;
+    let raisedClear = false;
+    if (!this.cameraTargets.length) this.boomRaise = 0;
+    const cast = (b: THREE.Vector3, length = this.camDistance) => {
+      this.ray.set(pose.pivot, b);
+      this.ray.far = length + FOLLOW.clearance;
+      return castCamera(this.ray, this.cameraTargets, cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
+    };
     if (this.cameraTargets.length) {
-      const cast = (b: THREE.Vector3) => {
-        this.ray.set(pose.pivot, b);
-        this.ray.far = this.camDistance + FOLLOW.clearance;
-        return castCamera(this.ray, this.cameraTargets, this.blockerTargets).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
-      };
-      // Under a camera-only blocker (a hanging sign box, a low cap) the boom slides lower before the camera is pulled in.
-      ({ back, distance: dist } = this.blockerTargets.size ? followBoom(this.camDistance, pose.back, cast) : { back: pose.back, distance: followDistance(this.camDistance, cast(pose.back)) });
-      // Squeezed under the comfortable distance (a shaft wall behind, a slab above): look over the shoulder from
-      // higher up if some raised boom clears it (at most FOLLOW.raiseSteps raise casts + 1 recast = 6 extra rays, none when open).
-      const wantedRaise = constrainedPitch(this.camDistance, back, dist, cast, this.raiseScratch);
-      this.boomRaise = easeRaise(this.boomRaise, wantedRaise, dt, snap);
-      if (this.boomRaise > 0) {
-        back = raisedBack(back, this.boomRaise, this.raisedBoom);
-        dist = followDistance(this.camDistance, cast(back));
-      }
+      const solved = solveRaisedBoom(this.camDistance, pose.back, cast, this.boomRaise, dt, snap || this.reducedMotion);
+      // A lip-clearing raise also needs to move the camera now; interpolating from below the slab
+      // would recreate the same obstruction even though the target boom has already cleared it.
+      raisedClear = solved.raise > this.boomRaise && solved.distance >= Math.min(FOLLOW.comfortDistance, this.camDistance);
+      back = solved.back;
+      dist = solved.distance;
+      this.boomRaise = solved.raise;
     }
     this.squeezed = this.cameraTargets.length
       ? (snap ? dist < FOLLOW.comfortDistance : boomSqueezed(this.squeezed, dist))
       : false;
     this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
+    // Use the last frame's actual boom, measured against its own pivot. Measuring the old
+    // camera against the new pivot would rate-limit the walker's movement as contraction.
+    const previousDistance = this.boomActual;
     const desired = pose.pivot.clone().addScaledVector(back, dist);
-    this.camera.position.lerp(desired, snap || this.reducedMotion ? 1 : 1 - Math.exp(-dt * 10));
-    // The smoothed position, not only the target, stays below camera-only blockers.
-    if (this.blockerTargets.size) keepBelowBlockers(pose.pivot, this.camera.position, [...this.blockerTargets], FOLLOW.clearance, this.ray);
+    this.camera.position.lerp(desired, snap || this.reducedMotion || raisedClear ? 1 : 1 - Math.exp(-dt * 10));
+    // Preserve angular/extension damping, but control contraction separately. Cast the actual interpolated
+    // direction as well: a yaw change can sweep a different wall from the solved boom's ray.
+    const offset = this.camera.position.clone().sub(pose.pivot);
+    const length = offset.length();
+    if (length > 1e-9) {
+      offset.divideScalar(length);
+      const hits = this.cameraTargets.length ? cast(offset, Math.max(length, this.camDistance)) : [];
+      const target = Math.min(length, dist, followDistance(this.camDistance, hits));
+      const actual = approachBoom(previousDistance, target, hits[0]?.distance ?? null, this.camera.near, dt, snap || this.reducedMotion);
+      this.camera.position.copy(pose.pivot).addScaledVector(offset, actual);
+    }
     this.camera.lookAt(pose.target);
     // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
-    const fade = avatarFade(this.camera.position.distanceTo(pose.pivot));
-    this.avatarRig?.setFade(fade);
-    this.composer?.setAvatarFade(this.avatarRig?.root ?? null, fade);
+    this.boomActual = this.camera.position.distanceTo(pose.pivot);
+    this.applyAvatarFade(dt, snap);
   }
 
   private ensureAudio(): boolean {

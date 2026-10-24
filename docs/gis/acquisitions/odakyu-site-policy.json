@@ -1,0 +1,24 @@
+{
+  "source_id": "odakyu-site-policy",
+  "resolved_url": "https://www.odakyu.jp/policy/",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-24T08:58:04.611Z",
+  "completed_at": "2026-10-24T08:58:04.688Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "text/html; charset=UTF-8",
+    "content-length": null,
+    "etag": null,
+    "last-modified": null,
+    "date": "Sat, 24 Oct 2026 08:53:16 GMT"
+  },
+  "bytes": 19544,
+  "sha256": "f2532d9c677c3a018b3f218904db01a451784d48d8b809545b961e246609fb8d",
+  "store_path": "raw/f2532d9c677c3a018b3f218904db01a451784d48d8b809545b961e246609fb8d/policy",
+  "tool_version": "0.1.0",
+  "git_commit": "724459b8feb165e20d9fb2e7127c656c09099578",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online"
+}
