@@ -8,6 +8,9 @@ coverage/
 .claude/
 .serena/
 /.qa/
+
+# Pinned upstream fonts (verified by tools/fonts/subset-sign-font.mjs).
+/.cache/fonts/
 data-cache/
 stations/*/build/
 __pycache__/

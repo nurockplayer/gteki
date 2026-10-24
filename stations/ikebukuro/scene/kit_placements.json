@@ -21,14 +21,14 @@
   "mirror": "false everywhere: rails are on both sides, escalators are symmetric"
  },
  "summary": {
-  "unique_ids": 119,
-  "stair_nosing_ids": 57,
-  "stair_rails_ids": 57,
+  "unique_ids": 127,
+  "stair_nosing_ids": 61,
+  "stair_rails_ids": 61,
   "escalator_ids": 5,
   "stair_flights": {
    "total": 71,
-   "covered": 65,
-   "skipped": 6
+   "covered": 69,
+   "skipped": 2
   },
   "escalator_lanes": {
    "total": 5,
@@ -36,8 +36,8 @@
    "skipped": 0
   },
   "rail_mount": {
-   "post": 8,
-   "wall": 57
+   "post": 9,
+   "wall": 60
   },
   "quantisation_max": {
    "riser_mm": {
@@ -50,7 +50,7 @@
    },
    "width_mm": {
     "mm": 0.499,
-    "anchor": "stair052"
+    "anchor": "stair011"
    },
    "top_height_mm": {
     "mm": 6.0,
@@ -160,15 +160,15 @@
    },
    "tiers": {
     "low": {
-     "nosing_ids": 57,
+     "nosing_ids": 61,
      "rails_ids": 0,
      "escalator_ids": 0
     },
     "high": {
-     "nosing_ids": 57,
+     "nosing_ids": 61,
      "rails_ids": 21,
      "escalator_ids": 5,
-     "rails_placements_dropped_vs_all": 44
+     "rails_placements_dropped_vs_all": 48
     }
    },
    "triangle_estimate": {
@@ -180,36 +180,16 @@
     "high": {
      "nosing_mobile": 7200,
      "escalators_mobile": 20300,
-     "rails_full": 56368,
+     "rails_full": 52672,
      "rails_full_if_all_61": 153000
     }
    }
   },
   "skipped": [
    {
-    "anchor": "stair011",
-    "kind": "stair",
-    "reason": "nosing mismatch: a surveyed nosing is 7.0 mm off the generated strip (uneven risers or riser rounding; strip is 6 mm high)"
-   },
-   {
-    "anchor": "stair012",
-    "kind": "stair",
-    "reason": "nosing mismatch: a surveyed nosing is 7.0 mm off the generated strip (uneven risers or riser rounding; strip is 6 mm high)"
-   },
-   {
     "anchor": "stair013",
     "kind": "stair",
-    "reason": "nosing mismatch: a surveyed nosing is 21.0 mm off the generated strip (uneven risers or riser rounding; strip is 6 mm high)"
-   },
-   {
-    "anchor": "stair014",
-    "kind": "stair",
-    "reason": "nosing mismatch: a surveyed nosing is 9.0 mm off the generated strip (uneven risers or riser rounding; strip is 6 mm high)"
-   },
-   {
-    "anchor": "stair027",
-    "kind": "stair",
-    "reason": "nosing mismatch: a surveyed nosing is 7.0 mm off the generated strip (uneven risers or riser rounding; strip is 6 mm high)"
+    "reason": "nosing mismatch: a surveyed nosing is 21.0 mm off the whole-mm strip and 20.4 mm off the 0.1-mm strip (both tried; strip is 6 mm high)"
    },
    {
     "anchor": "stair068",
@@ -778,6 +758,126 @@
    }
   },
   {
+   "anchor": "stair011",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n17_r1756_t301_w3054_nosing",
+    "rails": "gteki_ik_stair_n17_r1756_t301_w3054_rails_wall"
+   },
+   "origin": [
+    110.082,
+    111.495,
+    26.24
+   ],
+   "dir": [
+    0.2309,
+    0.973
+   ],
+   "yaw_deg": -13.35,
+   "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.037,
+    "tread_mm": 0.0,
+    "width_mm": 0.499,
+    "top_height_mm": 0.6,
+    "top_run_mm": 0.0
+   }
+  },
+  {
+   "anchor": "stair012",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n17_r1756_t301_w1515_nosing",
+    "rails": "gteki_ik_stair_n17_r1756_t301_w1515_rails_post"
+   },
+   "origin": [
+    151.928,
+    83.281,
+    26.24
+   ],
+   "dir": [
+    -0.3775,
+    -0.926
+   ],
+   "yaw_deg": 157.821,
+   "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
+   "rail_mount": "post",
+   "wall_share": {
+    "left": 0.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.037,
+    "tread_mm": 0.0,
+    "width_mm": 0.121,
+    "top_height_mm": 0.6,
+    "top_run_mm": 0.0
+   }
+  },
+  {
+   "anchor": "stair014",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n20_r1415_t299_w3055_nosing",
+    "rails": "gteki_ik_stair_n20_r1415_t299_w3055_rails_wall"
+   },
+   "origin": [
+    160.075,
+    102.507,
+    26.614
+   ],
+   "dir": [
+    -0.1479,
+    0.989
+   ],
+   "yaw_deg": 8.505,
+   "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.026,
+    "tread_mm": 0.0,
+    "width_mm": 0.447,
+    "top_height_mm": 0.5,
+    "top_run_mm": 0.0
+   }
+  },
+  {
    "anchor": "stair015",
    "kind": "stair",
    "scope": "room1",
@@ -1262,6 +1362,46 @@
     "tread_mm": 0.0,
     "width_mm": 0.116,
     "top_height_mm": 0.0,
+    "top_run_mm": 0.0
+   }
+  },
+  {
+   "anchor": "stair027",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n16_r1555_t331_w3868_nosing",
+    "rails": "gteki_ik_stair_n16_r1555_t331_w3868_rails_wall"
+   },
+   "origin": [
+    -35.52,
+    174.336,
+    27.91
+   ],
+   "dir": [
+    0.5196,
+    0.8544
+   ],
+   "yaw_deg": -31.306,
+   "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.033,
+    "tread_mm": 0.0,
+    "width_mm": 0.22,
+    "top_height_mm": 0.5,
     "top_run_mm": 0.0
    }
   },

@@ -1,5 +1,6 @@
 import type { Asset, Coverage, Edge, Node, Poi, Source } from "@gteki/schema";
 import { rightsLabel, sourceCredit, type SourceCredit } from "./credits.ts";
+import type { Lang } from "./i18n.ts";
 
 /** The part of a station bundle the credit line reads. */
 export interface CreditBundle {
@@ -88,14 +89,14 @@ export function entryRightsLabels(sources: readonly Source[], t: Parameters<type
   return [...new Set(sources.filter((s) => s.usage !== "facts-only").map((s) => rightsLabel(s.rights, t)))];
 }
 
-/** Distinct licences of a group (by name and link), in order. */
-export function groupLicenses(sources: readonly Source[]): NonNullable<SourceCredit["license"]>[] {
+/** Distinct rendered licence name/link pairs in first appearance order; rights are shown separately. */
+export function groupLicenses(sources: readonly Source[], lang: Lang = "ja"): NonNullable<SourceCredit["license"]>[] {
   const seen = new Set<string>();
   const out: NonNullable<SourceCredit["license"]>[] = [];
   for (const s of sources) {
-    const l = sourceCredit(s).license;
+    const l = sourceCredit(s, lang).license;
     if (!l) continue;
-    const key = `${l.name}\n${l.href ?? ""}`;
+    const key = JSON.stringify([l.name, l.href]);
     if (seen.has(key)) continue;
     seen.add(key);
     out.push(l);
