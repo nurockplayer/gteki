@@ -11,7 +11,7 @@ import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGu
 import { coverageText, initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
-import { isUnlocatedShop, noRouteText } from "./noRouteText.ts";
+import { isUnlocatedShop, noRouteText, poiNoteText } from "./noRouteText.ts";
 import { stationClock } from "../stationClock.ts";
 import { assetDerivationPresentation, factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
@@ -475,8 +475,11 @@ export class App {
       const tags = [floor, h.matched && h.matched !== this.poiName(h.poi) ? `“${h.matched}”` : null, h.routable ? null : searchOnly].filter(Boolean) as string[];
       meta.textContent = tags.join(" · ");
       b.append(dot, name, meta);
-      // The accessible name carries the visible tags, so "search only" is heard too.
-      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...tags].join(", ")));
+      // A search-only POI's note (e.g. a 2020 status word in the copied name) is shown beside it, not only in routes.
+      const note = h.routable ? null : poiNoteText(h.poi, this.s.lang);
+      if (note) b.append(el("span", "result-note", note));
+      // The accessible name carries the visible tags (and the note), so "search only" is heard too.
+      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...tags, ...(note ? [note] : [])].join(", ")));
       b.addEventListener("mousedown", (e) => e.preventDefault());
       b.addEventListener("click", () => {
         this.closeResults(which);
@@ -674,6 +677,8 @@ export class App {
       const card = el("div", "card no-route");
       const view = r.reason === "no_path" && this.s.noPath ? noPathView(t, this.s.noPath) : null;
       card.append(el("h2", undefined, t.noRoute), el("p", undefined, view?.text ?? noRouteText(t, r, this.s.destination)));
+      const destNote = r.reason === "unknown_goal" ? poiNoteText(this.s.destination, this.s.lang) : null;
+      if (destNote) card.append(el("p", "muted", destNote));
       if (view && view.relax.length > 0) {
         const relax = el("div", "actions");
         const relaxOff = (keys: typeof view.relax) => { for (const k of keys) this.s.profile[k] = false; this.renderProfile(); this.computeRoute(); };
