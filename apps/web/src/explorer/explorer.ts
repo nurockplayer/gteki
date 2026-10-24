@@ -27,7 +27,7 @@ import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachFov, avatarFade, boomSqueezed, co
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
-import { collectIdentityBoards, identityFront, identityNameCentre, identityRegionRect, intersectsRect, protectIdentityChip, withinObject, type IdentityBoard, type ScreenRect } from "./identityBoards.ts";
+import { collectIdentityBoards, identityBoardObjects, identityFront, identityNameCentre, identityNameCorners, identityRegionRect, intersectsRect, protectIdentityChip, withinObject, type IdentityBoard, type ScreenRect } from "./identityBoards.ts";
 import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming } from "./identityFraming.ts";
 import { StationCaches } from "./stationCaches.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
@@ -448,7 +448,7 @@ export class Explorer {
         inFrame: names.length === visibleNames.length && name !== null && name.x0 >= 0 && name.y0 >= 0 && name.x1 <= w && name.y1 <= h,
         frontFacing: facing > 0.2, facingDeg: THREE.MathUtils.radToDeg(Math.acos(facing)),
         nameRect: name ? pageRect(name) : null, nameHeightPx: name ? name.y1 - name.y0 : 0, coveredByChip,
-        occluded: this.labelOccluded({ obj: { getWorldPosition: (target) => target.copy(centre) }, occluded: "none" }, board.object),
+        occluded: this.labelOccluded({ obj: { getWorldPosition: (target) => target.copy(centre) }, occluded: "none" }, { ignore: identityBoardObjects(board, this.identityBoards), segmentOnly: true }),
       };
     });
   }
@@ -1037,14 +1037,20 @@ export class Explorer {
     const boards = this.identityBoards.filter((b) => inScene(b.object, this.scene) && objectVisible(b.object)).map((board) => {
       board.object.updateWorldMatrix(true, false);
       const centre = identityNameCentre(board);
-      const direction = centre.clone().sub(head);
-      this.ray.set(head, direction.clone().normalize());
-      this.ray.near = 0;
-      this.ray.far = Math.max(0, direction.length() - 0.05);
       const targets = this.cameraTargets.filter((o) => !signs.has(o) && !withinObject(o, board.object));
-      return { centre, front: identityFront(board), blocked: direction.length() > IDENTITY_RANGE_M || castAll(this.ray, targets).length > 0 };
+      const visible = (from: THREE.Vector3, to: THREE.Vector3): boolean => {
+        const direction = to.clone().sub(from);
+        this.ray.set(from, direction.clone().normalize());
+        this.ray.near = 0;
+        this.ray.far = Math.max(0, direction.length() - 0.05);
+        return castAll(this.ray, targets).length === 0;
+      };
+      return { centre, front: identityFront(board), nameCorners: identityNameCorners(board), blocked: head.distanceTo(centre) > IDENTITY_RANGE_M || !visible(head, centre), visible };
     });
-    const look = identityFraming(head, this.yaw, this.pitch, boards, this.camera.aspect, FOV.follow, guideHeading);
+    const { w, h } = this.viewSize;
+    const free = this.freeRect();
+    const ndcFree = { x0: 2 * free.x / w - 1, x1: 2 * (free.x + free.w) / w - 1, y0: 1 - 2 * (free.y + free.h) / h, y1: 1 - 2 * free.y / h };
+    const look = identityFraming(head, this.yaw, this.pitch, boards, this.camera.aspect, FOV.follow, guideHeading, ndcFree);
     if (!look) return false;
     this.yaw = look.yaw;
     this.pitch = look.pitch;
@@ -1409,9 +1415,9 @@ export class Explorer {
   /**
    * What blocks the camera's view of `label`: "geometry" when any non-sign occluder does, "sign" when only
    * signs do, including a backdrop within SIGN_BACKDROP_M behind the anchor or inside its 0.3 m margin,
-   * else "none". Signs are tested last, with the segment extended through and past the anchor.
+   * else "none". Identity uses only the camera-to-name segment, ignoring all faces of the same board.
    */
-  private labelOccluded(label: { obj: Pick<THREE.Object3D, "getWorldPosition">; occluded: LabelOcclusion }, ignore?: THREE.Object3D): LabelOcclusion {
+  private labelOccluded(label: { obj: Pick<THREE.Object3D, "getWorldPosition">; occluded: LabelOcclusion }, options: { ignore?: readonly THREE.Object3D[]; segmentOnly?: boolean } = {}): LabelOcclusion {
     if (this.occluders.length === 0) return "none";
     const at = label.obj.getWorldPosition(new THREE.Vector3());
     // Labels behind the camera or past its far plane are hidden by the CSS2D renderer; keep their last
@@ -1419,11 +1425,12 @@ export class Explorer {
     if (Math.abs(at.clone().project(this.camera).z) > 1) return label.occluded;
     const from = this.camera.getWorldPosition(new THREE.Vector3());
     const dist = from.distanceTo(at);
-    if (dist < 0.5) return "none";
-    // Geometry ends just short of the label, so the surface right at its anchor does not count.
-    const to = at.lerp(from, 0.3 / dist);
+    if (dist < (options.segmentOnly ? 1e-6 : 0.5)) return "none";
+    // POI geometry stops short of its anchor; identity probes the full camera-to-name segment.
+    const margin = options.segmentOnly ? 0 : 0.3;
+    const to = at.lerp(from, margin / dist);
     const ray = new THREE.Ray(from, to.clone().sub(from).normalize());
-    let far = dist - 0.3;
+    let far = dist - margin;
     const entry = new THREE.Vector3();
     const toLocal = new THREE.Matrix4();
     const instance = new THREE.Matrix4();
@@ -1447,13 +1454,13 @@ export class Explorer {
     for (let pass = 0; pass < 2; pass++) {
       if (pass === 1 && this.signMeshes.size === 0) break;
       if (pass === 1) {
-        // Same ray direction, extended through the anchor to include its sign backdrop.
-        far = dist + SIGN_BACKDROP_M;
+        // POI signs include the backdrop; identity signs stop exactly at the name.
+        far = dist + (options.segmentOnly ? 0 : SIGN_BACKDROP_M);
         to.copy(from).addScaledVector(ray.direction, far);
         drawn = this.cameraCut.drawnSpans(from, to);
       }
       for (const o of this.occluders) {
-        if (ignore && withinObject(o.mesh, ignore)) continue;
+        if (options.ignore?.some((root) => withinObject(o.mesh, root))) continue;
         if (this.signMeshes.has(o.mesh) !== (pass === 1)) continue;
         // World-box prefilter: skip meshes the segment does not reach.
         if (!o.box.containsPoint(from) && !(ray.intersectBox(o.box, entry) && entry.distanceTo(from) <= far)) continue;

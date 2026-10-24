@@ -1,9 +1,10 @@
 import * as THREE from "three";
 import { describe, expect, it, vi } from "vitest";
 import { Explorer } from "./explorer.ts";
-import { collectIdentityBoards, intersectsRect } from "./identityBoards.ts";
+import { collectIdentityBoards, identityNameCentre, intersectsRect } from "./identityBoards.ts";
 import { OcclusionSweep } from "./labelVisibility.ts";
 import { CameraCut } from "./cameraCut.ts";
+import { FOLLOW, followPose } from "./followCamera.ts";
 
 /** Exercise actual placement/occlusion methods on a CPU-only stand-in, never construct a renderer. */
 function runtime(boardZ = -10) {
@@ -101,6 +102,37 @@ describe("initial identity placement", () => {
     e.startGuide([{ x: 0, y: 0, z: 0, stepIndex: 0 }, { x: 0, y: 15, z: 0, stepIndex: 0 }]);
     expect(e.yaw).toBeCloseTo(0); expect(e.bodyYaw).toBeCloseTo(0);
   });
+  it("rejects geometry blocking only the modelled camera-to-name sight", () => {
+    const { e, root } = runtime();
+    const blocker = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    // Behind the head, but between the default follow camera and the name.
+    blocker.position.set(0, 2, 1); root.add(blocker); root.updateMatrixWorld(true);
+    e.cameraTargets = [blocker];
+    e.walkFrom({ x: 0, y: 0, z: 0 });
+    expect(e.yaw).toBeCloseTo(0);
+  });
+
+  it.each([{ w: 1280, h: 720, panelW: 415, panelH: 720 }, { w: 390, h: 845, panelW: 390, panelH: 300 }])("uses the canvas free area for walk and guide at $w x $h", ({ w, h, panelW, panelH }) => {
+    for (const mode of ["walk", "guide"]) {
+      const { e } = runtime();
+      e.viewSize = { w, h }; e.camera.aspect = w / h; e.camera.updateProjectionMatrix();
+      e.panelEl = { getClientRects: () => [{}], getBoundingClientRect: () => ({ left: 10, top: 20, width: panelW, height: panelH }) };
+      if (mode === "walk") e.walkFrom({ x: 0, y: 0, z: 0 });
+      else e.startGuide([{ x: 0, y: 0, z: 0, stepIndex: 0 }, { x: 0, y: 15, z: 0, stepIndex: 0 }]);
+      expect(e.yaw).not.toBe(0);
+      const pose = followPose(new THREE.Vector3(0, 1.62, 0), e.yaw, e.pitch);
+      e.camera.position.copy(pose.pivot).addScaledVector(pose.back, FOLLOW.defaultDistance);
+      e.camera.lookAt(pose.target); e.camera.updateMatrixWorld(true);
+      const p = identityNameCentre(e.identityBoards[0]).project(e.camera);
+      const free = e.freeRect();
+      const x = (p.x + 1) * w / 2, y = (1 - p.y) * h / 2;
+      expect(x).toBeGreaterThanOrEqual(free.x + free.w * 0.2);
+      expect(x).toBeLessThanOrEqual(free.x + free.w * 0.8);
+      expect(y).toBeGreaterThanOrEqual(free.y);
+      expect(y).toBeLessThanOrEqual(free.y + free.h);
+    }
+  });
+
   it("head sight is blocked by geometry but never by sign-role targets", () => {
     for (const role of ["wall", "sign"]) {
       const { e, root } = runtime();
@@ -267,6 +299,34 @@ describe("identity QA and chip integration", () => {
     e.signMeshes.add(blocker);
     expect(e.identity()[0].occluded).toBe("sign");
   });
+  it.each(["overlap", "sibling-back"])("ignores the other tagged face of a physical board (%s)", (kind) => {
+    const { e, board, root } = runtime();
+    board.name = "identity:fixture";
+    const back = board.clone(); back.name = kind === "sibling-back" ? "identity:fixture:back" : "other-face";
+    // A separated face plane uses the sibling naming fallback; overlapping boxes use structure alone.
+    if (kind === "sibling-back") back.position.z += 0.02;
+    else { back.geometry = new THREE.BoxGeometry(4, 1, 0.04); }
+    root.add(back); root.updateMatrixWorld(true);
+    e.identityBoards = collectIdentityBoards(root);
+    e.signMeshes = new Set([board, back]);
+    e.camera.position.set(-2, 3, 0); e.camera.lookAt(board.position); e.camera.updateMatrixWorld(true);
+    e.buildOccluders(root);
+    expect(e.identity().map((b: { occluded: string }) => b.occluded)).toEqual(["none", "none"]);
+  });
+
+  it.each([[0.1, "sign"], [5, "sign"], [-0.1, "none"]])("identity sign %s m toward the camera reports %s", (offset, expected) => {
+    const { e, board, root } = runtime();
+    e.camera.position.set(-2, 3, 0); e.camera.lookAt(board.position); e.camera.updateMatrixWorld(true);
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(4, 1), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    sign.position.copy(board.position); sign.position.z += Number(offset);
+    root.add(sign); root.updateMatrixWorld(true); e.signMeshes.add(sign); e.buildOccluders(root);
+    expect(e.identity()[0].occluded).toBe(expected);
+    if (Number(offset) < 0) {
+      // Ordinary POI labels retain their backdrop behavior.
+      expect(e.labelOccluded({ obj: board, occluded: "none" })).toBe("sign");
+    }
+  });
+
   it("hides unselected overlap in labelInfo, offsets endpoints and resets on overview", () => {
     const { e, board } = runtime();
     e.mode = "walk";

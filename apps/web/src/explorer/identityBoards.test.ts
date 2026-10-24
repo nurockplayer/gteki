@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import { collectIdentityBoards, identityFront, identityNameCentre, identityRegionRect, intersectsRect, parseIdentityBoard, protectIdentityChip } from "./identityBoards.ts";
+import { collectIdentityBoards, identityFront, identityNameCentre, identityNameCorners, identityRegionRect, intersectsRect, parseIdentityBoard, protectIdentityChip } from "./identityBoards.ts";
 
 const mesh = () => new THREE.Mesh(new THREE.BoxGeometry(4, 2, 0.2), new THREE.MeshBasicMaterial());
 describe("identity tags", () => {
@@ -27,6 +27,21 @@ describe("identity tags", () => {
     expect(b.regions[0]!.box.getCenter(new THREE.Vector3()).distanceTo(new THREE.Vector3(3, 0, 0))).toBeLessThan(1e-6);
     expect(identityNameCentre(b).distanceTo(new THREE.Vector3(10, 5, -6))).toBeLessThan(1e-6);
     expect(identityFront(b).distanceTo(new THREE.Vector3(1, 0, 0))).toBeLessThan(1e-6);
+  });
+  it("transforms all name-box corners without including arrow regions", () => {
+    const o = mesh(); o.position.set(10, 5, -2); o.rotation.y = Math.PI / 3; o.scale.set(2, 3, 1);
+    o.userData.gteki_identity = { regions: [
+      { kind: "name", min: [-1, -0.5, -0.1], max: [1, 0.5, 0.1] },
+      { kind: "arrow", min: [20, 20, 20], max: [30, 30, 30] },
+    ] };
+    o.updateMatrixWorld(true);
+    const b = parseIdentityBoard(o)!;
+    const corners = identityNameCorners(b);
+    expect(corners).toHaveLength(8);
+    const inverse = o.matrixWorld.clone().invert();
+    const local = new THREE.Box3().setFromPoints(corners.map((p) => p.clone().applyMatrix4(inverse)));
+    expect(local.min.distanceTo(b.regions[0]!.box.min)).toBeLessThan(1e-8);
+    expect(local.max.distanceTo(b.regions[0]!.box.max)).toBeLessThan(1e-8);
   });
   it("accepts explicit name/arrow regions without including the rest of the board", () => {
     const o = mesh();

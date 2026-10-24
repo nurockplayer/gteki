@@ -56,6 +56,24 @@ export function withinObject(object: THREE.Object3D, root: THREE.Object3D): bool
   return false;
 }
 
+/** Same physical board: overlapping world bounds, or sibling faces named <id> and <id>:back. */
+export function identityBoardObjects(board: IdentityBoard, boards: readonly IdentityBoard[]): THREE.Object3D[] {
+  const bounds = new THREE.Box3().setFromObject(board.object);
+  const faceId = (o: THREE.Object3D) => o.name.replace(/:back$/, "");
+  return boards.filter((b) => b === board || bounds.intersectsBox(new THREE.Box3().setFromObject(b.object)) ||
+    (board.object.parent !== null && b.object.parent === board.object.parent && b.object.name !== board.object.name && !!faceId(board.object) && faceId(b.object) === faceId(board.object)))
+    .map((b) => b.object);
+}
+
+/** World-space corners of every name region; arrows do not affect framing size. */
+export function identityNameCorners(board: IdentityBoard): THREE.Vector3[] {
+  return board.regions.filter((r) => r.kind === "name").flatMap(({ box }) => {
+    const corners: THREE.Vector3[] = [];
+    for (let i = 0; i < 8; i++) corners.push(new THREE.Vector3(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z).applyMatrix4(board.object.matrixWorld));
+    return corners;
+  });
+}
+
 export function identityNameCentre(board: IdentityBoard): THREE.Vector3 {
   const bounds = new THREE.Box3();
   for (const r of board.regions) if (r.kind === "name") bounds.union(r.box);

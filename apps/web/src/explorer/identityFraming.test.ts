@@ -1,12 +1,12 @@
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import { FOLLOW, followPose } from "./followCamera.ts";
-import { identityFraming, LOOK_PITCH, type FramingBoard } from "./identityFraming.ts";
+import { identityFraming, LOOK_PITCH, MAX_NAME_HEIGHT_NDC, type FramingBoard } from "./identityFraming.ts";
 
 const head = new THREE.Vector3(0, 1.62, 0);
 const board = (x: number, y: number, z: number): FramingBoard => {
   const centre = new THREE.Vector3(x, y, z);
-  return { centre, front: head.clone().sub(centre).normalize(), blocked: false };
+  return { centre, front: head.clone().sub(centre).normalize(), blocked: false, nameCorners: [centre.clone().add(new THREE.Vector3(-2, -0.5, 0)), centre.clone().add(new THREE.Vector3(2, 0.5, 0))] };
 };
 
 describe("identityFraming", () => {
@@ -54,5 +54,62 @@ describe("identityFraming", () => {
   it("returns null without boards or when pitch limits cannot frame a name", () => {
     expect(identityFraming(head, 0, 0, [], 1, 50)).toBeNull();
     expect(identityFraming(head, 0, 0, [board(0, 29, -0.1)], 1, 50)).toBeNull();
+  });
+});
+
+function cameraAt(look: { yaw: number; pitch: number }, aspect: number) {
+  const camera = new THREE.PerspectiveCamera(50, aspect, 0.05, 100);
+  const pose = followPose(head, look.yaw, look.pitch);
+  camera.position.copy(pose.pivot).addScaledVector(pose.back, FOLLOW.defaultDistance);
+  camera.lookAt(pose.target); camera.updateMatrixWorld(true);
+  return camera;
+}
+
+describe("identity framing safeguards", () => {
+  it("skips an oversized close name and chooses the next farther board", () => {
+    const near = board(0, 3, -1), far = board(0, 3, -12);
+    const smallLook = identityFraming(head, 0, 0, [near], 16 / 9, 50)!;
+    expect(smallLook).not.toBeNull();
+    for (const b of [near, far]) b.nameCorners = [b.centre.clone().add(new THREE.Vector3(-2, -2, 0)), b.centre.clone().add(new THREE.Vector3(2, 2, 0))];
+    const camera = cameraAt(smallLook, 16 / 9);
+    const ys = near.nameCorners.map((p) => p.clone().project(camera).y);
+    expect(Math.max(...ys) - Math.min(...ys)).toBeGreaterThan(MAX_NAME_HEIGHT_NDC);
+    expect(identityFraming(head, 0, 0, [near], 16 / 9, 50)).toBeNull();
+    expect(identityFraming(head, 0, 0, [near, far], 16 / 9, 50)).toEqual(identityFraming(head, 0, 0, [far], 16 / 9, 50));
+    expect(identityFraming(head, 0, 0, [far], 16 / 9, 50)).not.toBeNull();
+  });
+
+  it("tests sight from the modelled camera and skips a blocked candidate", () => {
+    const near = board(-2, 3, -8), far = board(4, 3, -12);
+    const nearLook = identityFraming(head, 0, 0, [near], 16 / 9, 50)!;
+    let checked = false;
+    near.visible = (from, centre) => {
+      checked = true;
+      expect(from.distanceTo(cameraAt(nearLook, 16 / 9).position)).toBeLessThan(1e-8);
+      expect(from.distanceTo(head)).toBeGreaterThan(3);
+      expect(centre).toEqual(near.centre);
+      return false;
+    };
+    const result = identityFraming(head, 0, 0, [near, far], 16 / 9, 50);
+    expect(checked).toBe(true);
+    expect(result).toEqual(identityFraming(head, 0, 0, [far], 16 / 9, 50));
+    expect(result).not.toBeNull();
+  });
+
+  it.each([16 / 9, 9 / 19.5])("frames inside the central 60 percent of a free area at aspect %s", (aspect) => {
+    const b = board(-3, 3, -10);
+    // Exclude the left third and a top strip, as with desktop search and phone HUD.
+    const free = { x0: -1 / 3, x1: 1, y0: -0.9, y1: 0.1 };
+    const look = identityFraming(head, 0, 0, [b], aspect, 50, undefined, free);
+    expect(look).not.toBeNull();
+    const p = b.centre.clone().project(cameraAt(look!, aspect));
+    expect(p.x).toBeGreaterThanOrEqual(free.x0 + (free.x1 - free.x0) * 0.2);
+    expect(p.x).toBeLessThanOrEqual(free.x1 - (free.x1 - free.x0) * 0.2);
+    expect(p.y).toBeGreaterThanOrEqual(-0.4);
+    expect(p.y).toBeLessThanOrEqual(free.y1);
+  });
+
+  it("returns null when the free area misses the vertical band", () => {
+    expect(identityFraming(head, 0, 0, [board(0, 3, -10)], 1, 50, undefined, { x0: -1, x1: 1, y0: 0.8, y1: 1 })).toBeNull();
   });
 });
