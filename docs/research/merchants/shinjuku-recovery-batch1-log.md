@@ -112,7 +112,7 @@ the three to look at first.
 
 ## Leads and outcomes
 
-Accepted (18) and the exact location wording each store page prints:
+Confirmed on the shop's own page (18) and the exact location wording each page prints. After the lead review, 15 are in the JSON; rows 5, 6 and 15 (ドトール ×2, 眼鏡市場) are not used under the OD-34 ruling and sit in `removed[]` (see the end):
 
 | # | printed shop name | own page (URL) | UTC | exact location words on the page |
 |---|---|---|---|---|
@@ -120,8 +120,8 @@ Accepted (18) and the exact location wording each store page prints:
 | 2 | 箱根そば本陣　小田急エース北館店 | https://www.odakyu-restaurant.jp/shop/hakonesoba/hakonesoba-honjin/ace-north.html | 10:51 | 住所 「東京都新宿区西新宿一丁目西口地下街1号 小田急エース北館」; 「各路線新宿駅から地下道直結」 |
 | 3 | 箱根そば本陣　小田急エース南館店 | https://www.odakyu-restaurant.jp/shop/hakonesoba/hakonesoba-honjin/ace-south.html | 10:53 | 住所 「東京都新宿区西新宿一丁目西口地下街1号 小田急エース南館」 |
 | 4 | 吉野家 新宿京王モール店 | https://stores.yoshinoya.com/yoshinoya/spot/detail?code=ysn_061476 | 10:52 | 店名に「京王モール」; 住所 「〒160-0023 東京都新宿区西新宿１丁目１南口地下街」 — no block/floor |
-| 5 | ドトールコーヒーショップ 新宿京王モール店 | https://shop.doutor.co.jp/doutor/spot/detail?code=1012430 | 10:56 | 住所 「〒160-0023 東京都新宿区 西新宿 １‐１ 京王モール Ｂ１Ｆ　第Ｄ‐４号区画」 |
-| 6 | 新宿京王モール店 (眼鏡市場) | https://shop.meganeichiba.jp/meganeichiba/spot/detail?code=00896 | 10:56 | 店名・住所「〒160-0023 東京都新宿区西新宿１－１ 京王モールＢ１Ｆ」 |
+| 5 | ドトールコーヒーショップ 新宿京王モール店 **[not used, OD-34]** | https://shop.doutor.co.jp/doutor/spot/detail?code=1012430 | 10:56 | 住所 「〒160-0023 東京都新宿区 西新宿 １‐１ 京王モール Ｂ１Ｆ　第Ｄ‐４号区画」 |
+| 6 | 新宿京王モール店 (眼鏡市場) **[not used, OD-34]** | https://shop.meganeichiba.jp/meganeichiba/spot/detail?code=00896 | 10:56 | 店名・住所「〒160-0023 東京都新宿区西新宿１－１ 京王モールＢ１Ｆ」 |
 | 7 | DAISO 京王モールアネックス店 | https://www.daiso-sangyo.co.jp/shop/detail/002645 | 10:57 | 所在地 「東京都新宿区西新宿1丁目19番地京王モールアネックス内」 |
 | 8 | カラダファクトリー 新宿京王モールアネックス店 | https://salon.karada39.com/detail/942/ | 10:57 | 所在地 「〒160-0023 東京都新宿区西新宿1丁目19 京王モールアネックスB1F」; 本文「京王モールアネックス地下街（B1F）にございます。」 |
 | 9 | アトリエはるか 新宿京王モール アネックス店 | https://www.haruka.co.jp/salon/082/ | 10:58 | 住所 「〒160-0023 東京都新宿区西新宿1-19 京王モール アネックス」; 注記「※京王モールと京王モールアネックスは別の通りとなります」 |
@@ -130,7 +130,7 @@ Accepted (18) and the exact location wording each store page prints:
 | 12 | Cafeルノアール 新宿京王モール店 | https://www.ginza-renoir.co.jp/shopsearch/shops/tokyo/shinjuku-ku/caferenoir-shinjuku-keio-mall.html | 10:59 | 住所 「〒160-0023 東京都新宿区西新宿1-南口地下街1 京王モール第A-5区画」 |
 | 13 | 新宿小田急エース店 (MIGNON) | https://mignon-mini-croissant.com/open-shinjuku-2022/ | 10:59 | 「〒160-0023 東京都新宿区西新宿1丁目西口地下街1号 小田急エース南館」 — also the official shop list on the site root |
 | 14 | 小田急エース店 (ファミリーマート) | https://store.family.co.jp/points/21520 | 10:59 | 店名「小田急エース店」; 住所 「東京都新宿区西新宿１丁目 西口地下街１号」 — no 北館/南館 |
-| 15 | ドトールコーヒーショップ 新宿京王モールアネックス店 | https://shop.doutor.co.jp/doutor/spot/detail?code=1012046 | 10:59 | 店名に「新宿京王モールアネックス店」; 住所 「〒160-0023 東京都新宿区 西新宿 １‐１９」 |
+| 15 | ドトールコーヒーショップ 新宿京王モールアネックス店 **[not used, OD-34]** | https://shop.doutor.co.jp/doutor/spot/detail?code=1012046 | 10:59 | 店名に「新宿京王モールアネックス店」; 住所 「〒160-0023 東京都新宿区 西新宿 １‐１９」 |
 | 16 | 十割蕎麦 さがたに 新宿京王モール店 | http://foryou-group.co.jp/brandfc/kantou/entry-86.html | 10:59 | 住所 「東京都新宿区西新宿1-1　京王モールB-4区画」 |
 | 17 | 新宿京王モール店 (TSUTSUMI) | https://www.tsutsumi.co.jp/shop/detail/tokyo/1624.html | 10:59 | 住所 「東京都新宿区西新宿1-1 京王モールB1F」 |
 | 18 | 日比谷花壇 新宿小田急エース店 | https://shop.hibiyakadan.com/detail/80640/ | 11:00 | 住所 「〒160-0023 東京都新宿区西新宿１丁目１ 小田急エース」; アクセス欄「小田急エース南館 ロッテリアさん向かい」 |
@@ -175,18 +175,19 @@ Terms-ban rejections: none. No site used stated 「一切お断り」.
 
 ## Totals
 
-- Accepted shops: **18** (13 on 京王モール / 京王モールアネックス, 5 on 小田急エース)
-  - 京王モール: 吉野家, ドトール(京王モール), 眼鏡市場, Cafeルノアール, さがたに, TSUTSUMI — 6
-  - 京王モールアネックス: DAISO, カラダファクトリー, アトリエはるか, ドトール(アネックス) — 4
+- Final (after the lead review): **15 POIs** in the JSON, 15 sources, 3 in `removed[]` (ドトール ×2, 眼鏡市場: terms ban reuse; OD-34 ruling).
+  - 京王モール: 吉野家, Cafeルノアール, さがたに, TSUTSUMI — 4
+  - 京王モールアネックス: DAISO, カラダファクトリー, アトリエはるか — 3
   - 小田急エース北館: 箱根そば本陣(北館), クリスピー・クリーム・ドーナツ, PRESS BUTTER SAND — 3
   - 小田急エース南館: 箱根そば本陣(南館), MIGNON, 日比谷花壇 — 3
   - 小田急エース (wing not printed): ゼッテリア, ファミリーマート — 2
-- Sources: 18 (one per accepted store page). `removed`: empty — rejections are recorded in this log only.
+  - So 7 on 京王モール / アネックス and 8 on 小田急エース.
+- First pass (worker): 18 confirmed (10 京王モール / アネックス, 8 小田急エース), 18 sources, `removed` empty.
 - Leads examined: 46 (18 accepted + 28 not accepted).
 
-## Open questions for the Lead
+## Open questions for the Lead (first pass; answered in the lead review below)
 
-1. Six accepted POIs print only the branch name (眼鏡市場, クリスピー・クリーム・ドーナツ, MIGNON,
+1. Six accepted POIs print only the branch name (ゼッテリア, 眼鏡市場, クリスピー・クリーム・ドーナツ, MIGNON,
    ファミリーマート, TSUTSUMI) — kept verbatim per the brief, so the POI name alone does not identify the chain.
    If the renderer needs a chain-qualified name, that is a Lead decision.
 2. ゼッテリア, ファミリーマート print 小田急エース without 北館/南館. Accepted on the facility name alone;
