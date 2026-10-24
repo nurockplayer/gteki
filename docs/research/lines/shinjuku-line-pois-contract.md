@@ -64,3 +64,15 @@ Reject an entry if any of these holds:
 - it is a Toei gate assigned to E27 by name;
 - it states the gate or platform is open or currently in use;
 - it carries anything other than a plain name (e.g. promotional or linked text).
+
+## 7. Rights review record
+
+GIS Lane D (Claude Opus 5.5) reviewed head `28cda53b` on 2026-10-24, sent the review to lines-lead by message, and found **one P1 and two P2**:
+
+- **Checked against** Owner Q2/Q3/Q4 and `docs/gis/rights/tokyo-s03-zip.json`.
+- **Found in order:** factual names only; null positions and floors; nothing routable; no Q4 material; the credit verbatim; the source sha256 matching the acquisition receipt; REUSE 4k exact-path; `reuse lint` 1715/1715.
+- **P1:** this contract quoted S03 names while it resolves to Apache-2.0.
+- **P2-1:** `held[]` carried names that do not ship.
+- **P2-2:** `retrievedAt` must be the receipt's `requested_at`.
+
+All three were fixed in `4e2102ce`: the contract uses ids, `held[]` keeps only `entityId` and `reason`, and `retrievedAt` is `2026-10-21T00:13:55.097Z`, with the receipt path and the resolved URL added. GIS notes this is the record's reading under Q2/Q3 and R-1/R-2, **not a rights PASS**.
