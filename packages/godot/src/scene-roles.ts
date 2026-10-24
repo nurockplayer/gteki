@@ -76,6 +76,18 @@ function materialsOf(mesh: THREE.Mesh): THREE.Material[] {
   return Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 }
 
+/**
+ * The material of each glTF primitive GLTFExporter writes for `mesh`, in primitive order (= Godot surface index): one
+ * per geometry group for a material array (group order, `materialIndex` lookup, so repeated, reordered or unused slots
+ * follow the groups), else the single material. Mirrors three's GLTFExporter.processMeshAsync. A missing material
+ * (index out of range) stays undefined, as the exporter then writes a primitive without one.
+ */
+export function exportedSurfaceMaterials(mesh: THREE.Mesh): (THREE.Material | undefined)[] {
+  if (!Array.isArray(mesh.material)) return [mesh.material];
+  const materials = mesh.material;
+  return mesh.geometry.groups.map((group) => materials[group.materialIndex ?? 0]);
+}
+
 function isDrawn(mesh: THREE.Mesh): boolean {
   for (let o: THREE.Object3D | null = mesh; o; o = o.parent) if (!o.visible) return false;
   return materialsOf(mesh).some((m) => m.visible);
@@ -447,8 +459,8 @@ export function tagAoAtlases(root: THREE.Object3D): AoAtlasInfo {
   root.traverse((object) => {
     if (!isMesh(object)) return;
     const surfaces: Record<string, string> = {};
-    materialsOf(object).forEach((material, index) => {
-      const map = (material as THREE.MeshStandardMaterial).aoMap ?? null;
+    exportedSurfaceMaterials(object).forEach((material, index) => {
+      const map = (material as THREE.MeshStandardMaterial | undefined)?.aoMap ?? null;
       if (map === null) return;
       const kind = map.userData?.gteki_atlas_kind;
       const uri = map.userData?.gteki_uri;
@@ -458,6 +470,8 @@ export function tagAoAtlases(root: THREE.Object3D): AoAtlasInfo {
       }
       if (typeof uri !== "string" || uri.length === 0) throw new Error(`AO atlas for kind "${kind}" has no recorded source URI (ctx.loadTexture must record it)`);
       if (map.channel !== 1) throw new Error(`AO atlas for kind "${kind}" uses channel ${map.channel}; only channel 1 (TEXCOORD_1 → UV2) can be applied`);
+      // Godot reads the PNG raw and unflipped; any other sampling could not be reproduced there.
+      if (map.flipY !== false || map.colorSpace !== THREE.NoColorSpace) throw new Error(`AO atlas for kind "${kind}" has flipY ${map.flipY} / colorSpace "${map.colorSpace}"; the contract is flipY false and NoColorSpace (linear data)`);
       const known = atlases.get(kind);
       if (known === undefined) atlases.set(kind, { uri, channel: map.channel, color_space: map.colorSpace, flip_y: map.flipY, meshes: 0, surfaces: 0 });
       else if (known.uri !== uri) throw new Error(`AO atlas kind "${kind}" maps to two URIs (${known.uri}, ${uri}); the snapshot records one per kind (not guessed)`);

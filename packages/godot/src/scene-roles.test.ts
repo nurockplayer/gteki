@@ -367,6 +367,33 @@ describe("tagAoAtlases", () => {
     expect(info.warnings[0]).toMatch(/1 aoMap slot\(s\) are not kit atlases/);
   });
 
+  it("indexes surfaces by exported primitive (geometry group order), not by material-array slot", () => {
+    // GLTFExporter writes one primitive per group, in group order; Godot imports primitive i as surface i.
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(new Array(18).fill(0), 3));
+    geometry.setIndex([0, 1, 2, 3, 4, 5]);
+    geometry.addGroup(0, 3, 2); // slot 2: the atlas material, first primitive
+    geometry.addGroup(3, 3, 0); // slot 0: plain; slot 1 is unused
+    const reordered = new THREE.Mesh(geometry, [new THREE.MeshBasicMaterial(), new THREE.MeshBasicMaterial(), new THREE.MeshStandardMaterial({ aoMap: atlas("nosing") })]);
+    const root = new THREE.Group();
+    root.add(reordered);
+    tagAoAtlases(root);
+    expect(reordered.userData.gteki_ao_atlas_surfaces).toEqual({ 0: "nosing" });
+  });
+
+  it("rejects an atlas sampled flipped or as colour", () => {
+    const flipped = atlas("nosing");
+    flipped.flipY = true;
+    const root = new THREE.Group();
+    root.add(withAo(flipped));
+    expect(() => tagAoAtlases(root)).toThrow(/flipY true/);
+    const srgb = atlas("nosing");
+    srgb.colorSpace = THREE.SRGBColorSpace;
+    const colour = new THREE.Group();
+    colour.add(withAo(srgb));
+    expect(() => tagAoAtlases(colour)).toThrow(/colorSpace "srgb"/);
+  });
+
   it("returns no bindings, but still warns, when no material carries an atlas", () => {
     const root = new THREE.Group();
     root.add(withAo(new THREE.Texture()), named("none"));

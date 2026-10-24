@@ -67,6 +67,11 @@ func apply(root: Node3D, block: Dictionary, station_id: String, station_dir := "
 			issues.append("AO atlas %s uses channel %s; only channel 1 (TEXCOORD_1 → UV2) can be applied" % [name, str(entry.get("channel"))])
 			missing[name] = true
 			continue
+		# The PNG is read raw and unflipped, so only the contract's sampling can be reproduced here.
+		if entry.get("flip_y", null) != false or str(entry.get("color_space", "?")) != "":
+			issues.append("AO atlas %s has flip_y %s / color_space \"%s\"; only flipY false with NoColorSpace can be applied" % [name, str(entry.get("flip_y")), str(entry.get("color_space"))])
+			missing[name] = true
+			continue
 		if uri.is_empty() or want_sha.is_empty():
 			issues.append("AO atlas %s lacks a texture URI or a sha256" % name)
 			missing[name] = true
