@@ -2,14 +2,15 @@ import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { readZip } from '../src/zip.js';
 import {
-  applyAffine, assertS03Bytes, checkInternal, collectS03Strings, compatibleFloors, distanceToPolygonEdge, distanceToSegment,
-  guardS03Receipt, mutualNearest, parseS03Members, pointInPolygon, residualStats, sourceDefectRecords, transformS03, type Affine, type Polygon2,
+  applyAffine, assertS03Bytes, checkInternal, classifyNodes, collectS03Strings, compatibleFloors, directionSummary, distanceToPolygonEdge,
+  distanceToSegment, guardS03Receipt, mutualNearest, nearestPointOnSegment, outsideNodeDiagnostic, parseS03Members, pointInPolygon, residualStats,
+  sourceDefectRecords, transformS03, type Affine, type Polygon2, type S03Link,
 } from '../src/s03-transform.js';
 
 const nav: Affine = [2, 0, 0, 2, 10, 20], drawing: Affine = [0.01, 0, 0, 0.01, 0, 0];
 const square: Polygon2 = [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]];
 const fixtureMembers = () => [
-  { name: 'nested/v5_nav.json', value: { d: [{ id: 7, t: nav, l: [{ id: 11 }] }], n: [{ id: 101, mx: 2, my: 3, l: [{ lid: 11 }] }] } },
+  { name: 'nested/v5_nav.json', value: { d: [{ id: 7, t: nav, l: [{ id: 11 }] }], n: [{ id: 101, mx: 2, my: 3, l: [{ lid: 11 }] }], l: [] } },
   { name: 'nested/com-map.geojson', value: { drawings: [{ id: 7, ref_frame: { transform: drawing }, levels: [{ id: 11, properties: { name: 'B1F' } }] }] } },
   { name: 'nested/geojson-level-geom-B1F.geojson', value: { type: 'FeatureCollection', id: 11, drawing_id: 7, features: [{ type: 'Feature', properties: { name: 'SYNTH-S03-private-shop' }, geometry: { type: 'Polygon', coordinates: square } }] } },
   { name: 'nested/com-entity.geojson', value: { entities: [{ properties: { description: 'SYNTH-private-description', translated: { text: 'SYNTH-private-localized' } } }] } },
@@ -135,6 +136,44 @@ describe('S03 unclosed source rings: exclude, never repair', () => {
   it('still fails closed when an unclosed feature also carries a structural malformation', () => {
     const entries = withLevelFeatures([polygonFeature([openRing]), polygonFeature([[[0, 0], [1, 0], [1, 1], [200, 0]]])]);
     expect(() => parseS03Members(entries)).toThrow(/invalid geographic coordinate/);
+  });
+});
+
+describe('S03 outside-node diagnostic (diagnostic only)', () => {
+  it('classifies floor-transition ends from direction codes and cross-level edge structure', () => {
+    const nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(sourceId => ({ sourceId, levelId: sourceId % 2 ? 11 : 12 }));
+    nodes[6]!.levelId = 11; nodes[7]!.levelId = 11; // 7 and 8 share a level
+    nodes[10]!.levelId = 11; nodes[11]!.levelId = 11;
+    const link = (sourceId: number, n1: number, n2: number, direction: number, dz: number | null): S03Link => ({ sourceId, n1, n2, direction, dz });
+    const links = [link(1, 1, 2, 1, -1), link(2, 3, 4, 2, 1), link(3, 5, 6, 3, 2), link(4, 7, 8, 3, null),
+      link(5, 9, 10, 1, -1), link(6, 9, 10, 3, 1), link(7, 11, 12, 3, 1)];
+    const classes = classifyNodes(nodes, links);
+    expect([...classes.values()]).toEqual([1, 1, 2, 2, 3, 3, 0, 0, 4, 4, 3, 3]);
+  });
+  it('summarises edge direction as a mean unit vector, resultant length and 8 sectors', () => {
+    expect(directionSummary([[0, 0], [0, 0], [0, 0], [0, 0]], [[1, 0], [0, 1], [-1, 0], [0, -1]]))
+      .toMatchObject({ count: 4, mean_vector_east: 0, mean_vector_north: 0, mean_resultant_length: 0, sectors: [1, 0, 1, 0, 1, 0, 1, 0] });
+    expect(directionSummary([[0, 0], [0, 0], [0, 0]], [[2, 0], [5, 0], [0, 0]]))
+      .toMatchObject({ count: 2, mean_vector_east: 1, mean_vector_north: 0, mean_resultant_length: 1, sectors: [2, 0, 0, 0, 0, 0, 0, 0] });
+    expect(directionSummary([], [])).toMatchObject({ count: 0, mean_vector_east: null, mean_resultant_length: null });
+    expect(nearestPointOnSegment([2, 1], [0, 0], [2, 0])).toEqual([2, 0]);
+    expect(nearestPointOnSegment([-1, 0], [0, 0], [0, 0])).toEqual([0, 0]);
+  });
+  it('explains outside nodes without changing the main Check A result', () => {
+    const inputs = parseS03Members(encode());
+    inputs.levels[0]!.polygons = [[[[2, 2], [3, 2], [3, 3], [2, 3], [2, 2]]]];
+    const before = checkInternal(inputs, project);
+    expect(before.levels['11']!.outside_count).toBe(1);
+    const diagnostic = outsideNodeDiagnostic(inputs, project, { east: -2, north: -2 });
+    const after = checkInternal(inputs, project);
+    expect(after).toEqual(before);
+    expect(diagnostic).toMatchObject({ diagnostic_only: true, main_check_a_modified: false, offset_diagnostic: { diagnostic_offset_applied: true, adopted: false, main_check_a_modified: false } });
+    expect(diagnostic.levels['11']).toMatchObject({ node_count: 1, outside_node_count: 1, classes_baseline: [1, 0, 0, 0, 0], classes_outside: [1, 0, 0, 0, 0],
+      directions: { count: 1, distinct_nearest_polygons: 1 } });
+    expect(diagnostic.levels['11']!.position_enu.mean_east_m).toBeCloseTo(0.14, 12);
+    expect(diagnostic.levels['11']!.position_enu.mean_north_m).toBeCloseTo(0.26, 12);
+    expect(diagnostic.offset_diagnostic.overall).toMatchObject({ node_count: 1, inside_count: 1, inside_share: 1 });
+    expect(before.levels['11']!.inside_count).toBe(0);
   });
 });
 

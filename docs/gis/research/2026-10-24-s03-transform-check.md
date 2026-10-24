@@ -14,7 +14,7 @@ Check B independently selects reciprocal nearest nodes over all compatible floor
 
 ## Observed results
 
-The run uses the ZIP with SHA-256 `fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31`; the receipt is `transform-check-c0d0db11543a0621e49a.json` under policy `s03-transform-check-v2`.
+The run uses the ZIP with SHA-256 `fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31`; the receipt is `transform-check-a7ccdb9007422f33546f.json` under policy `s03-transform-check-v2`.
 
 ### Source defects
 
@@ -79,6 +79,51 @@ The reversed affine composition puts **0 of 2506** nodes inside (inside share 0)
 For the 15 pairs within 5 m: **min 0.145701610 m, median 1.853869309 m, p90 3.366510600 m, max 3.418081058 m**. The mean S03-minus-E27 vector is **east +0.934294041 m, north +0.127433023 m**, length **0.942944606 m**; it was not applied. There are 22 reciprocal compatible-floor pairs before thresholding. The counts and median reproduce the note, including its 1.85 m rounded median (receipt `research_comparison.reproduced: true`); this selected overlap is not all-station accuracy or a set of accepted joins.
 
 The current E27 graph hash is `06d6193124f0dc6d44a663c5a1bfdff224bcd0d71114fc303c154501555863be`, whereas the note recorded `37a24b303828755fbdbdb76f59d1b1a529e535cc16e9e3c19424468771cf928b`. The note's exact historical graph was found in local commit `0bdf68cd`: comparison confirms all 233 horizontal node positions and floor IDs are unchanged; nonhorizontal node data differ. The residuals have no numerical discrepancy to explain. The transform run now completes; the as-is Check A verdict above is still FAIL at the fixed per-level threshold.
+
+## Outside-node diagnosis (64677, 64678)
+
+This section is a diagnostic only. It recomputes the Check A containment rule independently and is stored as receipt field `internal_outside_diagnostic` with `diagnostic_only: true` and `main_check_a_modified: false`. It changes no main Check A result, status or threshold: the as-is run above stays **2463 of 2506 inside (0.982841), FAIL**, and the gate stays **HOLD**.
+
+**Classification field.** The source navigation members have no stair, lift or escalator attribute (device type **UNKNOWN**). What they do have is the link tuple: `l[].d` is the direction (**1** forward, **2** reverse, **3** both), and `l[].dz` is present only when the two endpoints sit on different levels. Floor-transition ends are therefore identified structurally: a node is one when it is an endpoint of a link whose endpoints are on different levels or which carries `dz`. Class codes: **0** corridor (no incident cross-level link), **1** floor-transition end with one forward-only link, **2** one reverse-only link, **3** one bidirectional link, **4** mixed directions. No source node property on these levels was used, because none names a device.
+
+### (a) Outside nodes by class
+
+| Numeric level ID | Nodes | Outside | Class 0 outside / all | Class 1 outside / all | Class 2 outside / all | Class 3 outside / all | Class 4 outside / all |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 64677 | 363 | 30 | 30 / 224 | 0 / 2 | 0 / 7 | 0 / 130 | 0 / 0 |
+| 64678 | 295 | 13 | 13 / 231 | 0 / 3 | 0 / 5 | 0 / 56 | 0 / 0 |
+
+Every outside node on both levels is a plain corridor node; none is an end of a cross-level link. The 139 floor-transition nodes on 64677 and the 64 on 64678 are all inside. The outside population is therefore not a stair/lift/escalator artefact as far as the available fields can tell.
+
+### (b) Spread and direction
+
+Positions are horizontal station ENU. The direction of each outside node is the unit vector from the node to its nearest polygon edge point; bearing is measured clockwise from east, and the circular spread is `sqrt(-2 ln R)` of the mean resultant length `R`.
+
+| Numeric level ID | Outside nodes | Mean ENU east / north (m) | SD east / north (m) | RMS radius (m) | Mean unit vector east / north | Mean bearing | `R` | Circular spread | Distinct nearest polygons |
+| ---: | ---: | --- | --- | ---: | --- | ---: | ---: | ---: | ---: |
+| 64677 | 30 | 89.879778 / 480.542657 | 140.444466 / 193.412358 | 239.025079 | −0.492127 / −0.032757 | 183.808° | 0.493216 | 68.122° | 20 |
+| 64678 | 13 | 115.686253 / 212.452242 | 72.327988 / 31.113925 | 78.736358 | 0.171179 / 0.338928 | 63.204° | 0.379703 | 79.737° | 6 |
+
+8-sector histogram of the nearest-edge direction, sector order `0:east, 1:north-east, 2:north, 3:north-west, 4:west, 5:south-west, 6:south, 7:south-east`:
+
+| Numeric level ID | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 64677 | 2 | 1 | 5 | 1 | 13 | 5 | 2 | 1 |
+| 64678 | 3 | 1 | 5 | 1 | 0 | 1 | 1 | 1 |
+
+The outside nodes are spread over hundreds of metres (SD 140.444466 m east and 193.412358 m north on 64677; 72.327988 m and 31.113925 m on 64678), the resultant length is low (0.493216 and 0.379703), the mean directions of the two levels differ (183.808° and 63.204°), and the nodes touch 20 and 6 distinct nearest polygons. These numbers **do not support one systematic offset**; they are consistent with local polygon gaps and coverage differences that hit scattered corridor nodes. The offset size under discussion (0.94 m) is two orders of magnitude smaller than this spread.
+
+### (c) Diagnostic offset (not adopted)
+
+For this diagnostic only, the Check B mean S03-minus-E27 vector (**east −0.934294041 m, north −0.127433023 m**, exact receipt values, i.e. subtracting the recorded +0.934294041 / +0.127433023 m) was subtracted from every projected node and containment was re-evaluated. Flagged `diagnostic_offset_applied: true, adopted: false`; the main Check A result is untouched.
+
+| Numeric level ID | Nodes | Inside, as-is | Inside share, as-is | Inside, offset applied | Inside share, offset applied |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 64677 | 363 | 333 | 0.917355 | 283 | 0.779614 |
+| 64678 | 295 | 282 | 0.955932 | 280 | 0.949153 |
+| **All** | **2506** | **2463** | **0.982841** | **2396** | **0.956105** |
+
+The offset moves the inside rate **down**, on both target levels and overall (64674, 64676, 64688 and 64689 also lose nodes). A uniform shift in the Check B direction therefore does not explain the outside nodes, which matches the spread and direction evidence in (b). Nothing was adopted, no threshold was changed, and the as-is **FAIL** label stands.
 
 ## Datum assumption
 

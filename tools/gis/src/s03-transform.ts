@@ -84,13 +84,15 @@ export function residualStats(values: readonly number[]) {
 }
 
 interface S03Node { index: number; sourceId: number; levelId: number; native: Point2 }
+/** Nav link: `direction` is the source's `d` (1 forward, 2 reverse, 3 both); `dz` is present only when the link changes level. */
+export interface S03Link { sourceId: number; n1: number; n2: number; direction: number; dz: number | null }
 interface S03Level {
   id: number; ordinal: number; polygons: Polygon2[]; nonPolygonFeatures: number; memberSha256: string;
   featuresTotal: number; featuresUsed: number; featuresExcludedUnclosedRing: number;
 }
 export interface S03Inputs {
   navTransform: Affine; drawingTransform: Affine; drawingId: number;
-  nodes: S03Node[]; levels: S03Level[]; sourceValues: Set<string>; sourceDefects: S03SourceDefect[];
+  nodes: S03Node[]; levels: S03Level[]; links: S03Link[]; sourceValues: Set<string>; sourceDefects: S03SourceDefect[];
   navSha256: string; mapSha256: string;
 }
 // Comparison labels from the note, never physical elevations; source zlevel is deliberately unused.
@@ -231,7 +233,18 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
     nodeIds.add(node.id);
     return { index, sourceId: node.id, levelId: node.l[0]!.lid, native: [node.mx, node.my] };
   });
-  return { navTransform, drawingTransform, drawingId, nodes, levels, sourceValues, sourceDefects, navSha256: sha256(members.get(navName)!.data), mapSha256: sha256(members.get(mapName)!.data) };
+  // Links carry the source's direction code (1 forward, 2 reverse, 3 both) and dz only when they change level.
+  if (!Array.isArray(nav.l)) fail(navName, 'missing links');
+  const linkIds = new Set<number>();
+  const links: S03Link[] = (nav.l as unknown[]).map((raw, index) => {
+    if (!record(raw) || !id(raw.id) || !finite(raw.n1) || !finite(raw.n2) || ![1, 2, 3].includes(raw.d as number) || raw.dz !== undefined && !finite(raw.dz)) fail(navName, `invalid link at index ${index}`);
+    const link = raw as { id: number; n1: number; n2: number; d: number; dz?: number };
+    if (linkIds.has(link.id)) fail(navName, `duplicate link id at index ${index}`);
+    linkIds.add(link.id);
+    if (!Number.isSafeInteger(link.n1) || !Number.isSafeInteger(link.n2) || !nodeIds.has(link.n1) || !nodeIds.has(link.n2)) fail(navName, `link endpoints at index ${index} are not nodes`);
+    return { sourceId: link.id, n1: link.n1, n2: link.n2, direction: link.d, dz: typeof link.dz === 'number' ? link.dz : null };
+  });
+  return { navTransform, drawingTransform, drawingId, nodes, levels, links, sourceValues, sourceDefects, navSha256: sha256(members.get(navName)!.data), mapSha256: sha256(members.get(mapName)!.data) };
 }
 
 /** ENU endpoint gap from the first and last positions, using the same station projector Check A uses. Nothing is closed or moved. */
@@ -294,6 +307,143 @@ export function checkInternal(inputs: S03Inputs, project: Project, swapped = fal
     reason: overwhelming ? 'Overwhelmingly inside at the fixed threshold on every assessed level and overall.'
       : unassessed.length ? `${failed} Levels in levels_without_usable_polygons were not assessed.` : failed,
     levels: Object.fromEntries(perLevel) };
+}
+
+export function nearestPointOnSegment(point: Point2, a: Point2, b: Point2): Point2 {
+  const dx = b[0] - a[0], dy = b[1] - a[1], length2 = dx * dx + dy * dy;
+  const t = length2 === 0 ? 0 : Math.max(0, Math.min(1, ((point[0] - a[0]) * dx + (point[1] - a[1]) * dy) / length2));
+  return [a[0] + t * dx, a[1] + t * dy];
+}
+
+/** Node classes for the outside-node diagnostic. 0 is a plain corridor node; 1/2/3 are the single direction code of a cross-level link; 4 mixes codes. */
+export const NODE_CLASS = { CORRIDOR: 0, FLOOR_TRANSITION_FORWARD_ONLY: 1, FLOOR_TRANSITION_REVERSE_ONLY: 2, FLOOR_TRANSITION_BIDIRECTIONAL: 3, FLOOR_TRANSITION_MIXED: 4 } as const;
+
+/**
+ * Classify nodes by edge structure only: a node is a floor-transition end when it is incident to a link whose endpoints sit
+ * on different levels (or whose dz is present). The source's `d` is a direction (1 forward, 2 reverse, 3 both), not a device
+ * type; v5_nav.json carries no stair/lift/escalator field, so the device stays UNKNOWN.
+ */
+export function classifyNodes(nodes: readonly { sourceId: number; levelId: number }[], links: readonly S03Link[]): Map<number, number> {
+  const levelOf = new Map(nodes.map(node => [node.sourceId, node.levelId])), directions = new Map<number, Set<number>>();
+  for (const link of links) {
+    const from = levelOf.get(link.n1), to = levelOf.get(link.n2);
+    if (from === undefined || to === undefined || from === to && link.dz === null) continue;
+    for (const id of [link.n1, link.n2]) directions.set(id, (directions.get(id) ?? new Set<number>()).add(link.direction));
+  }
+  const classes = new Map<number, number>();
+  for (const node of nodes) {
+    const codes = directions.get(node.sourceId);
+    classes.set(node.sourceId, !codes || codes.size === 0 ? NODE_CLASS.CORRIDOR : codes.size > 1 ? NODE_CLASS.FLOOR_TRANSITION_MIXED : [...codes][0]!);
+  }
+  return classes;
+}
+
+/** Unit directions from each node to its nearest edge point: mean vector, resultant length in [0,1] and an 8-sector histogram (0 E, 1 NE, 2 N, 3 NW, 4 W, 5 SW, 6 S, 7 SE). */
+export function directionSummary(from: readonly Point2[], to: readonly Point2[]) {
+  let east = 0, north = 0, count = 0;
+  const sectors = [0, 0, 0, 0, 0, 0, 0, 0];
+  for (let i = 0; i < from.length; i++) {
+    const dx = to[i]![0] - from[i]![0], dy = to[i]![1] - from[i]![1], length = Math.hypot(dx, dy);
+    if (length === 0) continue;
+    east += dx / length; north += dy / length; count++;
+    sectors[Math.round((Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360 / 45) % 8]!++;
+  }
+  const meanEast = count ? east / count : null, meanNorth = count ? north / count : null;
+  return { count, mean_vector_east: meanEast, mean_vector_north: meanNorth, mean_resultant_length: meanEast === null || meanNorth === null ? null : Math.hypot(meanEast, meanNorth), sectors };
+}
+
+/** Mean, population SD and RMS radius of ENU points. Empty input yields nulls, never a fabricated value. */
+function positionStats(points: readonly Point2[]) {
+  if (!points.length) return { count: 0, mean_east_m: null, mean_north_m: null, sd_east_m: null, sd_north_m: null, rms_radius_m: null };
+  const meanEast = points.reduce((sum, p) => sum + p[0], 0) / points.length, meanNorth = points.reduce((sum, p) => sum + p[1], 0) / points.length;
+  const sdEast = Math.sqrt(points.reduce((sum, p) => sum + (p[0] - meanEast) ** 2, 0) / points.length);
+  const sdNorth = Math.sqrt(points.reduce((sum, p) => sum + (p[1] - meanNorth) ** 2, 0) / points.length);
+  return { count: points.length, mean_east_m: meanEast, mean_north_m: meanNorth, sd_east_m: sdEast, sd_north_m: sdNorth, rms_radius_m: Math.hypot(sdEast, sdNorth) };
+}
+
+/**
+ * Diagnostic only: explains the nodes that fall outside their level's polygons. Mirrors Check A's containment rule but never
+ * feeds back into it. The offset variant subtracts Check B's mean S03-minus-E27 vector from every projected node and is
+ * labelled as not adopted.
+ */
+export interface OutsideNodeLevelDiagnostic {
+  node_count: number; outside_node_count: number; classes_baseline: number[]; classes_outside: number[];
+  position_enu: { count: number; mean_east_m: number | null; mean_north_m: number | null; sd_east_m: number | null; sd_north_m: number | null; rms_radius_m: number | null };
+  directions: { count: number; mean_vector_east: number | null; mean_vector_north: number | null; mean_resultant_length: number | null; sectors: number[]; distinct_nearest_polygons: number };
+}
+export function outsideNodeDiagnostic(inputs: S03Inputs, project: Project, offset: { east: number; north: number } | null = null) {
+  const classes = classifyNodes(inputs.nodes, inputs.links);
+  const levels: Record<string, OutsideNodeLevelDiagnostic> = {}, offsetLevels: Record<string, { node_count: number; inside_count: number; inside_share: number | null }> = {};
+  let offsetNodes = 0, offsetInside = 0;
+  for (const level of inputs.levels) {
+    const polygons = level.polygons.map(poly => poly.map(ring => ring.map(([lon, lat]) => project(lat, lon))));
+    if (!polygons.length) continue;
+    const bounds = polygons.map(poly => {
+      const outer = poly[0]!;
+      return [Math.min(...outer.map(p => p[0])), Math.min(...outer.map(p => p[1])), Math.max(...outer.map(p => p[0])), Math.max(...outer.map(p => p[1]))];
+    });
+    const contained = (xy: Point2): boolean => polygons.some((poly, i) => {
+      const b = bounds[i]!;
+      return xy[0] >= b[0]! - 1e-9 && xy[0] <= b[2]! + 1e-9 && xy[1] >= b[1]! - 1e-9 && xy[1] <= b[3]! + 1e-9 && pointInPolygon(xy, poly);
+    });
+    const nodes = inputs.nodes.filter(node => node.levelId === level.id);
+    const baseline = [0, 0, 0, 0, 0], outsideClasses = [0, 0, 0, 0, 0];
+    const outside: Array<{ xy: Point2; nearestPoint: Point2; polygonIndex: number }> = [];
+    let levelOffsetNodes = 0, levelOffsetInside = 0;
+    for (const node of nodes) {
+      const ll = transformS03(node.native, inputs.navTransform, inputs.drawingTransform);
+      // Unprojectable nodes have no ENU position; Check A counts them outside without an edge distance, and so does this diagnostic.
+      if (!lonLat(ll)) continue;
+      const xy = project(ll[1], ll[0]);
+      baseline[classes.get(node.sourceId) ?? NODE_CLASS.CORRIDOR]!++;
+      const inside = contained(xy);
+      if (offset) {
+        levelOffsetNodes++;
+        if (contained([xy[0] - offset.east, xy[1] - offset.north])) levelOffsetInside++;
+      }
+      if (inside) continue;
+      outsideClasses[classes.get(node.sourceId) ?? NODE_CLASS.CORRIDOR]!++;
+      let nearest = { distance: Infinity, point: [Number.NaN, Number.NaN] as Point2, polygonIndex: -1 };
+      for (let i = 0; i < polygons.length; i++) for (const ring of polygons[i]!) for (let j = 0; j + 1 < ring.length; j++) {
+        const point = nearestPointOnSegment(xy, ring[j]!, ring[j + 1]!);
+        const distance = Math.hypot(point[0] - xy[0], point[1] - xy[1]);
+        if (distance < nearest.distance) nearest = { distance, point, polygonIndex: i };
+      }
+      outside.push({ xy, nearestPoint: nearest.point, polygonIndex: nearest.polygonIndex });
+    }
+    if (offset) {
+      offsetNodes += levelOffsetNodes;
+      offsetInside += levelOffsetInside;
+      offsetLevels[level.id] = { node_count: levelOffsetNodes, inside_count: levelOffsetInside, inside_share: levelOffsetNodes ? levelOffsetInside / levelOffsetNodes : null };
+    }
+    if (!outside.length) continue;
+    levels[level.id] = {
+      node_count: nodes.length,
+      outside_node_count: outside.length,
+      classes_baseline: baseline,
+      classes_outside: outsideClasses,
+      position_enu: positionStats(outside.map(entry => entry.xy)),
+      directions: { ...directionSummary(outside.map(entry => entry.xy), outside.map(entry => entry.nearestPoint)),
+        distinct_nearest_polygons: new Set(outside.map(entry => entry.polygonIndex)).size },
+    };
+  }
+  return {
+    diagnostic_only: true,
+    main_check_a_modified: false,
+    classification_field: 'v5_nav.json l[].d is the direction (1 forward, 2 reverse, 3 both); floor-transition ends come from links whose n1/n2 sit on different levels or whose dz is present',
+    device_type: 'UNKNOWN: v5_nav.json has no stair, lift or escalator field; the source specification defines d as direction only',
+    class_codes: ['corridor: no incident cross-level link', 'floor-transition end: single forward-only link', 'floor-transition end: single reverse-only link', 'floor-transition end: single bidirectional link', 'floor-transition end: mixed directions'],
+    // Sector labels are indexed: bare compass letters equal short source codelist values and would trip the leak guard.
+    sector_codes: ['0:east', '1:north-east', '2:north', '3:north-west', '4:west', '5:south-west', '6:south', '7:south-east'],
+    levels,
+    offset_diagnostic: {
+      diagnostic_offset_applied: offset !== null, adopted: false, main_check_a_modified: false,
+      basis: 'Check B mean S03 minus E27 offset over reciprocal pairs within 5 m, subtracted from every projected node (east then north)',
+      offset_east_m: offset?.east ?? null, offset_north_m: offset?.north ?? null,
+      levels: offsetLevels, overall: offset === null ? null : { node_count: offsetNodes, inside_count: offsetInside, inside_share: offsetNodes ? offsetInside / offsetNodes : null },
+      reason: offset === null ? 'No Check B mean offset available; nothing was subtracted.' : null,
+    },
+  };
 }
 
 export interface E27Point { id: string; xy: Point2; ordinal: number }
@@ -368,6 +518,9 @@ export async function s03TransformCheck() {
   const external = mutualNearest(e27, nodes), fingerprint = await toolFingerprint();
   // E27 node ids are source-derived literals: the per-pair list stays in the private provenance, never in the public receipt.
   const { pairs: externalPairs, ...externalSummary } = external;
+  // Diagnostic only: it never feeds back into Check A, its status or any other receipt field.
+  const meanDelta = external.mean_delta_within_5m;
+  const outsideDiagnostic = outsideNodeDiagnostic(inputs, project, meanDelta.d_east_m === null || meanDelta.d_north_m === null ? null : { east: meanDelta.d_east_m, north: meanDelta.d_north_m });
   const stationSha = stationOriginSha256(origin), graphSha = sha256(graphBytes);
   const digestInputs = { policy_version: S03_TRANSFORM_POLICY, tool_input_sha256: fingerprint, zip_sha256: stored.record.sha256, station_origin_sha256: stationSha, e27_graph_sha256: graphSha };
   const digest = sha256(JSON.stringify(digestInputs)).slice(0, 20), runId = `transform-check-${digest}`;
@@ -390,6 +543,7 @@ export async function s03TransformCheck() {
     internal: { as_is: asIs, swapped_order: swapped, coverage, negative_control_detected: true, invalid_coordinate_rule: 'Invalid geographic outputs count as outside and unprojectable; no edge distance is asserted for them.',
       containment_rule: 'Union of own-level polygon surfaces in horizontal ENU, including boundaries and excluding hole interiors; Point and LineString features excluded.',
       unclosed_ring_rule: 'Features with an unclosed ring are excluded from containment entirely (no implicit closure). A level left without usable polygons keeps null inside metrics and is not assessed.' },
+    internal_outside_diagnostic: outsideDiagnostic,
     external: { e27_node_count: e27.length, s03_node_count: nodes.length, floor_rule: 'Label-derived comparison ordinals equal, or E27 ordinal 0 with S03 ordinal 1; no source zlevel or measured elevation is used.',
       selection_rule: 'Reciprocal nearest across all compatible-floor nodes, then threshold <= 1, 2, 3, 5 m. Equal distances break by numeric S03 source id and lexicographic E27 id.', delta_direction: 'S03 minus E27', node_index_basis: 'zero-based position in v5_nav.json n array',
       pair_list_rule: 'The per-pair list, which names E27 node ids, stays in the private provenance; this receipt reports counts, residuals and the unapplied mean offset only.', ...externalSummary,

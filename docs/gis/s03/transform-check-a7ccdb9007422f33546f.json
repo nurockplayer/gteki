@@ -1,10 +1,10 @@
 {
   "policy_version": "s03-transform-check-v2",
-  "tool_input_sha256": "7eea37a002750f91015454b326d734067cb0d5faa04820502dce13c3c7eaa8cb",
+  "tool_input_sha256": "eb76a34202c6009463a37ff725f4d42f4054f3ee5e21b4b9022f1ba42bbff17a",
   "zip_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
   "station_origin_sha256": "816473fd5c95a86b868f06faad0b32d84d4d61fb82e90e996f0b0c6462a5ade7",
   "e27_graph_sha256": "06d6193124f0dc6d44a663c5a1bfdff224bcd0d71114fc303c154501555863be",
-  "run_id": "transform-check-c0d0db11543a0621e49a",
+  "run_id": "transform-check-a7ccdb9007422f33546f",
   "source_id": "tokyo-s03-zip",
   "source_bytes": 2317035,
   "publish_gate": "HOLD",
@@ -568,6 +568,188 @@
     "containment_rule": "Union of own-level polygon surfaces in horizontal ENU, including boundaries and excluding hole interiors; Point and LineString features excluded.",
     "unclosed_ring_rule": "Features with an unclosed ring are excluded from containment entirely (no implicit closure). A level left without usable polygons keeps null inside metrics and is not assessed."
   },
+  "internal_outside_diagnostic": {
+    "diagnostic_only": true,
+    "main_check_a_modified": false,
+    "classification_field": "v5_nav.json l[].d is the direction (1 forward, 2 reverse, 3 both); floor-transition ends come from links whose n1/n2 sit on different levels or whose dz is present",
+    "device_type": "UNKNOWN: v5_nav.json has no stair, lift or escalator field; the source specification defines d as direction only",
+    "class_codes": [
+      "corridor: no incident cross-level link",
+      "floor-transition end: single forward-only link",
+      "floor-transition end: single reverse-only link",
+      "floor-transition end: single bidirectional link",
+      "floor-transition end: mixed directions"
+    ],
+    "sector_codes": [
+      "0:east",
+      "1:north-east",
+      "2:north",
+      "3:north-west",
+      "4:west",
+      "5:south-west",
+      "6:south",
+      "7:south-east"
+    ],
+    "levels": {
+      "64677": {
+        "node_count": 363,
+        "outside_node_count": 30,
+        "classes_baseline": [
+          224,
+          2,
+          7,
+          130,
+          0
+        ],
+        "classes_outside": [
+          30,
+          0,
+          0,
+          0,
+          0
+        ],
+        "position_enu": {
+          "count": 30,
+          "mean_east_m": 89.87977828932894,
+          "mean_north_m": 480.5426574031379,
+          "sd_east_m": 140.44446627958385,
+          "sd_north_m": 193.41235775134328,
+          "rms_radius_m": 239.02507868315985
+        },
+        "directions": {
+          "count": 30,
+          "mean_vector_east": -0.492126819392045,
+          "mean_vector_north": -0.03275721384707022,
+          "mean_resultant_length": 0.4932158162751406,
+          "sectors": [
+            2,
+            1,
+            5,
+            1,
+            13,
+            5,
+            2,
+            1
+          ],
+          "distinct_nearest_polygons": 20
+        }
+      },
+      "64678": {
+        "node_count": 295,
+        "outside_node_count": 13,
+        "classes_baseline": [
+          231,
+          3,
+          5,
+          56,
+          0
+        ],
+        "classes_outside": [
+          13,
+          0,
+          0,
+          0,
+          0
+        ],
+        "position_enu": {
+          "count": 13,
+          "mean_east_m": 115.6862525707458,
+          "mean_north_m": 212.45224157998427,
+          "sd_east_m": 72.32798769640732,
+          "sd_north_m": 31.11392511737505,
+          "rms_radius_m": 78.73635844018487
+        },
+        "directions": {
+          "count": 13,
+          "mean_vector_east": 0.17117865318351033,
+          "mean_vector_north": 0.3389282085508567,
+          "mean_resultant_length": 0.3797031233176961,
+          "sectors": [
+            3,
+            1,
+            5,
+            1,
+            0,
+            1,
+            1,
+            1
+          ],
+          "distinct_nearest_polygons": 6
+        }
+      }
+    },
+    "offset_diagnostic": {
+      "diagnostic_offset_applied": true,
+      "adopted": false,
+      "main_check_a_modified": false,
+      "basis": "Check B mean S03 minus E27 offset over reciprocal pairs within 5 m, subtracted from every projected node (east then north)",
+      "offset_east_m": 0.9342940405920708,
+      "offset_north_m": 0.12743302328363862,
+      "levels": {
+        "64672": {
+          "node_count": 27,
+          "inside_count": 27,
+          "inside_share": 1
+        },
+        "64673": {
+          "node_count": 50,
+          "inside_count": 50,
+          "inside_share": 1
+        },
+        "64674": {
+          "node_count": 420,
+          "inside_count": 413,
+          "inside_share": 0.9833333333333333
+        },
+        "64675": {
+          "node_count": 278,
+          "inside_count": 278,
+          "inside_share": 1
+        },
+        "64676": {
+          "node_count": 710,
+          "inside_count": 709,
+          "inside_share": 0.9985915492957746
+        },
+        "64677": {
+          "node_count": 363,
+          "inside_count": 283,
+          "inside_share": 0.7796143250688705
+        },
+        "64678": {
+          "node_count": 295,
+          "inside_count": 280,
+          "inside_share": 0.9491525423728814
+        },
+        "64679": {
+          "node_count": 96,
+          "inside_count": 96,
+          "inside_share": 1
+        },
+        "64680": {
+          "node_count": 118,
+          "inside_count": 118,
+          "inside_share": 1
+        },
+        "64688": {
+          "node_count": 52,
+          "inside_count": 49,
+          "inside_share": 0.9423076923076923
+        },
+        "64689": {
+          "node_count": 97,
+          "inside_count": 93,
+          "inside_share": 0.9587628865979382
+        }
+      },
+      "overall": {
+        "node_count": 2506,
+        "inside_count": 2396,
+        "inside_share": 0.9561053471667997
+      },
+      "reason": null
+    }
+  },
   "external": {
     "e27_node_count": 233,
     "s03_node_count": 2506,
@@ -637,12 +819,12 @@
   },
   "outputs": {
     "geojson": {
-      "store_path": "out/s03-transform-check-c0d0db11543a0621e49a.geojson",
+      "store_path": "out/s03-transform-check-a7ccdb9007422f33546f.geojson",
       "sha256": "30ad44b1b86674647b4fbddadd1f14ebcb4da492719220ddf0b7ae2cd01165b2",
       "bytes": 588090
     },
     "provenance": {
-      "store_path": "out/s03-transform-check-c0d0db11543a0621e49a.provenance.json"
+      "store_path": "out/s03-transform-check-a7ccdb9007422f33546f.provenance.json"
     }
   }
 }
