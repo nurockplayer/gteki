@@ -12,6 +12,14 @@ describe("spawnHeading", () => {
     expect(spawnHeading({ spawnHeadings: {} }, { kind: "node", nodeId: "gate" }, [point(0, 0), point(1, 0)])).toBe(90);
   });
 
+  it.each(["constructor", "__proto__", "hasOwnProperty"])("ignores inherited object keys for node id %s", (nodeId) => {
+    expect(spawnHeading({ spawnHeadings: {} }, { kind: "node", nodeId }, [point(0, 0), point(1, 0)])).toBe(90);
+  });
+
+  it("uses an own heading even when the node id names a prototype key", () => {
+    expect(spawnHeading({ spawnHeadings: { constructor: 42 } }, { kind: "node", nodeId: "constructor" }, [point(0, 0), point(1, 0)])).toBe(42);
+  });
+
   it.each([
     [0, 1, 0],
     [1, 0, 90],

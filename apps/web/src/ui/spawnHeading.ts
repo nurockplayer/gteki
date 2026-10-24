@@ -10,8 +10,9 @@ export function spawnHeading(
   polyline: readonly Pick<PolylinePoint, "x" | "y">[],
 ): number {
   if (origin?.kind === "node") {
-    const heading = bundle?.spawnHeadings?.[origin.nodeId];
-    if (heading !== undefined) return heading;
+    // Own keys only: a node id such as "constructor" would otherwise resolve on Object.prototype.
+    const headings = bundle?.spawnHeadings;
+    if (headings && Object.hasOwn(headings, origin.nodeId)) return headings[origin.nodeId]!;
   }
 
   for (let i = 1; i < polyline.length; i++) {
