@@ -21,8 +21,8 @@
       "notes": "Shop names, printed floor/category labels, store codes, and printed readings only; listings are unverified and not route evidence."
     },
     {
-      "id": "esola-ikebukuro-floorguide-2026-10",
-      "title": "フロアガイドB1｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル",
+      "id": "esola-ikebukuro-floorguide-2026-10-b1",
+      "title": "フロアガイド（B1）｜エソラ池袋",
       "publisher": "株式会社メトロプロパティーズ",
       "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=b1",
       "license": null,
@@ -32,7 +32,151 @@
         "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
         "date": "2026-10-24"
       },
-      "attribution": "フロアガイドB1｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル (facts only, UNVERIFIED; not reproduced)",
+      "attribution": "エソラ池袋 フロアガイド（B1） (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T09:18:40Z",
+      "datasetDate": null,
+      "notes": "Shop names, printed floor/category labels, store codes, and printed kana readings only; listings are unverified and not route evidence."
+    },
+    {
+      "id": "esola-ikebukuro-floorguide-2026-10-1f",
+      "title": "フロアガイド（1F）｜エソラ池袋",
+      "publisher": "株式会社メトロプロパティーズ",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=1f",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "エソラ池袋 フロアガイド（1F） (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T09:18:40Z",
+      "datasetDate": null,
+      "notes": "Shop names, printed floor/category labels, store codes, and printed kana readings only; listings are unverified and not route evidence."
+    },
+    {
+      "id": "esola-ikebukuro-floorguide-2026-10-2f",
+      "title": "フロアガイド（2F）｜エソラ池袋",
+      "publisher": "株式会社メトロプロパティーズ",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=2f",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "エソラ池袋 フロアガイド（2F） (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T09:18:40Z",
+      "datasetDate": null,
+      "notes": "Shop names, printed floor/category labels, store codes, and printed kana readings only; listings are unverified and not route evidence."
+    },
+    {
+      "id": "esola-ikebukuro-floorguide-2026-10-3f",
+      "title": "フロアガイド（3F）｜エソラ池袋",
+      "publisher": "株式会社メトロプロパティーズ",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=3f",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "エソラ池袋 フロアガイド（3F） (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T09:18:40Z",
+      "datasetDate": null,
+      "notes": "Shop names, printed floor/category labels, store codes, and printed kana readings only; listings are unverified and not route evidence."
+    },
+    {
+      "id": "esola-ikebukuro-floorguide-2026-10-4f",
+      "title": "フロアガイド（4F）｜エソラ池袋",
+      "publisher": "株式会社メトロプロパティーズ",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=4f",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "エソラ池袋 フロアガイド（4F） (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T09:18:40Z",
+      "datasetDate": null,
+      "notes": "Shop names, printed floor/category labels, store codes, and printed kana readings only; listings are unverified and not route evidence."
+    },
+    {
+      "id": "esola-ikebukuro-floorguide-2026-10-5f",
+      "title": "フロアガイド（5F）｜エソラ池袋",
+      "publisher": "株式会社メトロプロパティーズ",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=5f",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "エソラ池袋 フロアガイド（5F） (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T09:18:40Z",
+      "datasetDate": null,
+      "notes": "Shop names, printed floor/category labels, store codes, and printed kana readings only; listings are unverified and not route evidence."
+    },
+    {
+      "id": "esola-ikebukuro-floorguide-2026-10-6f",
+      "title": "フロアガイド（6F）｜エソラ池袋",
+      "publisher": "株式会社メトロプロパティーズ",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=6f",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "エソラ池袋 フロアガイド（6F） (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T09:18:40Z",
+      "datasetDate": null,
+      "notes": "Shop names, printed floor/category labels, store codes, and printed kana readings only; listings are unverified and not route evidence."
+    },
+    {
+      "id": "esola-ikebukuro-floorguide-2026-10-7f",
+      "title": "フロアガイド（7F）｜エソラ池袋",
+      "publisher": "株式会社メトロプロパティーズ",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=7f",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "エソラ池袋 フロアガイド（7F） (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T09:18:40Z",
+      "datasetDate": null,
+      "notes": "Shop names, printed floor/category labels, store codes, and printed kana readings only; listings are unverified and not route evidence."
+    },
+    {
+      "id": "esola-ikebukuro-floorguide-2026-10-8f",
+      "title": "フロアガイド（8F）｜エソラ池袋",
+      "publisher": "株式会社メトロプロパティーズ",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=8f",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "エソラ池袋 フロアガイド（8F） (facts only, UNVERIFIED; not reproduced)",
       "modified": false,
       "retrievedAt": "2026-10-24T09:18:40Z",
       "datasetDate": null,
@@ -6586,7 +6730,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-b1"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -6618,7 +6762,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-b1"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -6655,7 +6799,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-b1"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -6692,7 +6836,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-b1"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -6729,7 +6873,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-b1"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -6761,7 +6905,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-b1"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -6798,7 +6942,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-b1"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -6835,7 +6979,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-1f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -6867,7 +7011,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-1f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -6904,7 +7048,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-1f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -6936,7 +7080,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-2f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -6973,7 +7117,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-2f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7005,7 +7149,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-2f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7042,7 +7186,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-3f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7079,7 +7223,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-4f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7116,7 +7260,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-4f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7153,7 +7297,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-5f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7185,7 +7329,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-5f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7217,7 +7361,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-5f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7254,7 +7398,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-5f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7286,7 +7430,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-5f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7318,7 +7462,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-6f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7350,7 +7494,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-6f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7382,7 +7526,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-6f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7419,7 +7563,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-6f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7451,7 +7595,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-6f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7483,7 +7627,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-6f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7515,7 +7659,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-7f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7547,7 +7691,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-7f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7579,7 +7723,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-7f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7611,7 +7755,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-8f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7648,7 +7792,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-8f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7685,7 +7829,7 @@
       "paid": null,
       "evidence": {
         "sourceIds": [
-          "esola-ikebukuro-floorguide-2026-10"
+          "esola-ikebukuro-floorguide-2026-10-8f"
         ],
         "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
@@ -7725,11 +7869,11 @@
       "notes": [
         {
           "lang": "ja",
-          "text": "池袋駅西口 直結。位置・入口は未確認（案内ルートなし）。現在の営業状況は未確認。"
+          "text": "位置・入口は未確認（案内ルートなし）。現在の営業状況は未確認。"
         },
         {
           "lang": "en",
-          "text": "Direct connection to Ikebukuro Station West Exit (store wording: 池袋駅西口 直結). Location and entrance not verified for routing. Current status unknown."
+          "text": "Location and entrance not verified for routing. Current status unknown."
         }
       ]
     }

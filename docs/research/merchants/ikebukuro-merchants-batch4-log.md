@@ -96,7 +96,11 @@ Method: `curl -sL <URL> | python3 -I` parsed raw HTML directly from stdin; no so
 - UTC retrieval time: 2026-10-24 09:18:40Z.
 - Listed: 2 records. Imported: 1 shops. Excluded: セブン銀行＜ATM＞ (ATM; no shop ID).
 - Printed readings (ja-Hrkt aliases): HMV → エイチ エム ヴィ
-- Closed listings: none found (no 営業終了, dated 閉店, or 閉館 notice on checked listings/details). Temporary closures: none found.
+- Closed listings: none found (no 営業終了, dated 閉店, or 閉館 notice on checked listings/details).
+- Temporary closure: HMV is closed 2026年10月12日 ～ 10月27日 for 設備工事, per the operator's
+  notice 「設備工事に伴う一部店舗休業のお知らせ（3F）」 (posted 2026-10-12):
+  https://www.metropro-sc.jp/esola-ikebukuro/event/item_eventnews.jsp?id=172 (read 2026-10-25).
+  The earlier line "Temporary closures: none found" in this section was wrong and is corrected here.
 - Uncertain names: none.
 ### 4F — https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=4f
 - UTC retrieval time: 2026-10-24 09:18:40Z.
@@ -222,13 +226,40 @@ Method: `curl -sL <URL> | python3 -I` parsed raw HTML directly from stdin; no so
 ## Store POI source review
 
 - URL: https://www.tobu-dept.jp/ikebukuro/ — page title: `東武百貨店 池袋店トップ`; official store label in page header image alt: `東武百貨店　池袋店` (full-width space).
-- URL: https://www.tobu-dept.jp/ikebukuro/access/ — access label copied as printed: `池袋駅西口 直結`.
+- URL: https://www.tobu-dept.jp/ikebukuro/access/ — access label printed on the page: `池袋駅西口 直結`. It is not carried into the store POI's notes: a station-connection claim is outside the shop/floor facts this batch records.
 - Tenant service counters excluded and listed in `removed`: お誂え承り所 (4F, 106151101), お渡しカウンター (5F, 107159601). No ATM/toilet/lounge/information/parking facilities appeared in parsed floor shop records.
 - No closure notices found on checked Tobu floor listings. Uncertain names: none.
 
 ## Lead review (2026-10-24)
 
 oracle-ego (GPT-6) review, 3 findings, all fixed:
-- Esola HMV (`shop-ikb-esola-1049`, 3F): Esola's own notice says it is temporarily closed from 2026-10-12 to 2026-10-27 for construction. It is kept (temporary closure), and its notes already say current status is unknown. The earlier line "Temporary closures: none found" is wrong for this shop.
+- Esola HMV (`shop-ikb-esola-1049`, 3F): Esola's own notice (https://www.metropro-sc.jp/esola-ikebukuro/event/item_eventnews.jsp?id=172, posted 2026-10-12) says it is temporarily closed from 2026-10-12 to 2026-10-27 for construction. It is kept (temporary closure), and its notes already say current status is unknown. The 3F section above now records this closure and cites the notice.
 - LUMINE POPUP SQUARE (`shop-ikb-lumine-003388`, 8F) is a space for rotating limited-time shops, not a shop, so it is not imported. LUMINE Ikebukuro is now 176.
 - Tobu tenant dataset: event spaces, service counters and an event are not brands, so they are left out (12): スイーツイベントスペース (B1F, `tenant-ikb-tobudept-102452301`); イベントスペース (1F, `tenant-ikb-tobudept-103126401`); イベントスペース (2F, `tenant-ikb-tobudept-104126402`); イベントスペース (4F, `tenant-ikb-tobudept-106126402`); イベントスペース［ステージT-4］ (4F, `tenant-ikb-tobudept-106126403`); イベントスペース (5F, `tenant-ikb-tobudept-107126401`); オーダーメイドコーナー (5F, `tenant-ikb-tobudept-107154101`); イベントスペース (6F, `tenant-ikb-tobudept-108126401`); 商品券売場 (6F, `tenant-ikb-tobudept-108328502`); 時計修理・ベルトコーナー (6F, `tenant-ikb-tobudept-108452402`); イベントスペース (7F, `tenant-ikb-tobudept-109126401`); Oktober Festa2026 ～芝生のビアガーデンBBQ～ (8F, `tenant-ikb-tobudept-110621101`).
+
+## Second review (2026-10-25)
+
+oracle review findings on #432, fixed:
+- Store POI connection claim: `shop-ikb-tobudept` no longer carries 「池袋駅西口 直結」 or the
+  English direct-connection wording. The notes now state only that location and entrance are
+  unverified and current status is unknown. The contract (§3) no longer asks for the claim.
+- Esola floor-specific sources: the single `fid=b1` source is replaced by nine floor sources
+  (`…/shop/floor.jsp?fid=b1,1f,…,8f`, ids `esola-ikebukuro-floorguide-2026-10-<fid>`), and each
+  of the 33 Esola POIs points at the floor page its listing was read from. `fid=3f` was re-read
+  on 2026-10-25 and lists HMV as before.
+- Tobu tenants: `ikebukuro-tobu-dept-tenants.json` now carries a `sources` array of the 17 floor
+  directory pages (`https://www.tobu-dept.jp/ikebukuro/floormap/detail/<floor>`, B2F–15F) and
+  every tenant has a `sourceId` for its own floor instead of inheriting the store homepage.
+  `floormap/detail/B2F` was re-read on 2026-10-25 and lists the same 97 shops as the B2F count.
+- HMV closure: the 3F section now records the temporary closure (2026-10-12 ～ 10-27) and cites
+  Esola's notice `item_eventnews.jsp?id=172`. The contradiction with the old "none found" line is
+  resolved.
+- Non-brand facilities left out of the tenant dataset and moved to `removed` (3):
+  アートギャラリー (6F, `tenant-ikb-tobudept-108114502`), ギフトサロン (6F,
+  `tenant-ikb-tobudept-108226301`), 東武バンケットホール(宴会場・貸切会議室) (14F,
+  `tenant-ikb-tobudept-116619701`). The tenant list is now 861 entries.
+- Counts after this pass: 210 POIs, 11 sources (LUMINE 1, Esola 9 floor pages, Tobu 1), 861
+  tenants, 5 `removed` tenants.
+- Reading method for this pass: plain `curl`, default UA, ≥0.6 s apart; 5 pages read (Esola top,
+  HMV detail, the closure notice, `fid=3f`, Tobu B2F). Pages were parsed in a temporary directory
+  and not committed; no text is reproduced beyond the quoted notice title and dates.
