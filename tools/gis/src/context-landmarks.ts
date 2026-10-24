@@ -65,6 +65,14 @@ export interface LandmarksConfig {
 }
 
 const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+
+/**
+ * A coordinate cell is read only when the trimmed text is a plain signed decimal. `Number()` alone would also accept `0x23`,
+ * `0b100011`, `0o43`, `1e1` and `Infinity`, silently projecting a cell the source never wrote as a coordinate; those are
+ * counted as invalid instead. The caller trims the cell; a decimal too long for a double still fails the finite check.
+ */
+const PLAIN_DECIMAL = /^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$/u;
+export const parseLandmarkCoordinate = (raw: string): number => (PLAIN_DECIMAL.test(raw) ? Number(raw) : NaN);
 const sha256 = (data: string | Buffer): string => createHash('sha256').update(data).digest('hex');
 const round3 = (v: number): number => Math.round(v * 1000) / 1000;
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -339,11 +347,10 @@ export async function contextLandmarks(station: string, options: LandmarksRunOpt
   const latColumn = columnIndex(landmarks.fields.lat), lonColumn = columnIndex(landmarks.fields.lon);
   const nameColumn = columnIndex(landmarks.fields.name), classColumn = columnIndex(landmarks.fields.class);
 
-  // Coordinates: a blank or invalid pair is skipped and counted, never guessed or filled in.
+  // Coordinates: only a plain signed decimal is read; a blank, non-decimal or invalid pair is skipped and counted, never guessed.
   const located: Array<{ row_index: number; lat: number; lon: number }> = [];
   rows.forEach((row, rowIndex) => {
-    const rawLat = (row[latColumn] ?? '').trim(), rawLon = (row[lonColumn] ?? '').trim();
-    const lat = rawLat === '' ? NaN : Number(rawLat), lon = rawLon === '' ? NaN : Number(rawLon);
+    const lat = parseLandmarkCoordinate((row[latColumn] ?? '').trim()), lon = parseLandmarkCoordinate((row[lonColumn] ?? '').trim());
     if (!Number.isFinite(lat) || !Number.isFinite(lon) || (lat === 0 && lon === 0)) return;
     located.push({ row_index: rowIndex, lat, lon });
   });
