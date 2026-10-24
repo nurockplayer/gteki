@@ -304,7 +304,7 @@ precedence = "override"
 SPDX-FileCopyrightText = "東京都都市整備局; 国土交通省（ほこナビDP）; modified by GTEki contributors"
 SPDX-License-Identifier = "LicenseRef-S03 AND LicenseRef-Hokonavi-E27-Owner-override"
 
-# --- 4p. Facts-only transfer facts (lines-lead WP11; #26 Tokyo Metro, OD-01 A / OD-34 Toei, OD-25 Seibu) ---
+# --- 4q. Facts-only transfer facts (lines-lead WP11; #26 Tokyo Metro, OD-01 A / OD-34 Toei, OD-25 Seibu) ---
 [[annotations]]
 path = [
   "docs/research/lines/transfer-facts-wp11.json",

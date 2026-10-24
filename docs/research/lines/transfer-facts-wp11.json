@@ -32,11 +32,11 @@
       "modified": false,
       "retrievedAt": "2026-10-24T20:00:00+09:00",
       "datasetDate": null,
-      "notes": "ライセンスなし・事実のみ参照（複製なし）。Read the 乗り換え案内 block of 基本情報 (one list for the station, not split between the two Toei lines) and the 出入口一覧. The 構内図 is an image only. lines-lead also read the page's 構内図 image (新宿駅構内立体図 with its のりかえ・出口案内 part) for printed transfer labels, direction labels and gate hours only; nothing from the image is reproduced and no position or layout is taken (OD-03). Distinct id from toei-shinjuku-station-2026-10 (#421), which records the same page for exits.",
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。Read the 乗り換え案内 block of 基本情報 (one list for the station, not split between the two Toei lines) and the 出入口一覧. The 構内図 is an image only. lines-lead also read the page's 構内図 image (新宿駅構内立体図 with its のりかえ・出口案内 part) for printed transfer labels, direction labels and gate hours only; nothing from the image is reproduced and no position or layout is taken (OD-03). Distinct id from toei-shinjuku-station-2026-10 (#421), which records the same page for exits. Earlier ruling OD-01 A (PR #178, 2026-10-22) also covers Toei station-page facts.",
       "usage": "facts-only",
       "decision": {
-        "url": "https://github.com/nurockplayer/gteki/pull/178",
-        "date": "2026-10-22"
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896",
+        "date": "2026-10-24"
       }
     },
     {
@@ -50,11 +50,11 @@
       "modified": false,
       "retrievedAt": "2026-10-24T20:00:00+09:00",
       "datasetDate": "2026-08",
-      "notes": "ライセンスなし・事実のみ参照（複製なし）。Read the 他社乗換路線 list. Gate and exit wording appears only in the AED notice (1F改札口, B1F改札口) and the station map is an image; neither ties a gate to a transfer. lines-lead also read the station-map image (dated 2026.8.1 on the image) for printed direction-arrow labels and the platform legend only; no position or layout is taken (OD-03). Distinct id from seibu-ikebukuro-station-2026-10 (#414).",
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。Read the 他社乗換路線 list. Gate and exit wording appears only in the AED notice (1F改札口, B1F改札口) and the station map is an image; neither ties a gate to a transfer. lines-lead also read the station-map image (dated 2026.8.1 on the image) for printed direction-arrow labels and the platform legend only; no position or layout is taken (OD-03). Distinct id from seibu-ikebukuro-station-2026-10 (#414). Rights class: OD-25 (Seibu terms read as the Tokyo Metro class under #26).",
       "usage": "facts-only",
       "decision": {
-        "url": "https://github.com/nurockplayer/gteki/pull/222",
-        "date": "2026-10-22"
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
       }
     },
     {
@@ -897,7 +897,7 @@
     }
   ],
   "notFound": [
-    "Tokyo Metro 池袋 and 新宿: the のりかえ出口案内 tab and the per-line 路線ごとののりかえ出口案内 page (line_marunouchi/line_yurakucho/line_fukutoshin position.html?station=ikebukuro) show the transfer gates, passages and exits only inside direction diagrams (figure_platform_m25/y09/f09_a|b.png). No text on either page names them, and diagram images were not read, so every viaLabels and viaPoiIds here is empty.",
+    "Tokyo Metro 池袋 and 新宿: the のりかえ出口案内 pages show transfer gates, passages and exits only inside platform diagrams (figure_platform_m25/y09/f09/m08_a|b.png); no page text names them. The DeepSeek transcription could not read the diagrams; lines-lead then read them with vision (sources *-norikae-figures-2026-10). Facts from images: the direction labels in viaLabels for entries citing those sources, the hours and footnotes in their `fact`, the Toei S01-E27 transfer and direction labels, the Seibu B1F arrow labels and the Seibu platform legend (newPois). All image-derived facts stay UNVERIFIED. No gate name is printed on the Metro diagrams, so no Metro transfer is tied to a gate.",
     "Seibu 池袋: 駅構内のご案内 is a map image. The only gate names printed in text (1F改札口, B1F改札口) come from the AED notice and are not tied to any transfer line.",
     "Toei 新宿: the 乗り換え案内 block names lines only, and the 構内図 is an image. The 出入口一覧 prints gate names (マインズタワー方面改札, 京王新線口, 新都心口) but as part of exit entries, not of a transfer statement.",
     "Walking times between the listed lines: none of the four station pages states one for these stations (the only 移動時間目安 block on the Tokyo Metro pages sits in a commented-out template belonging to another station and was ignored).",
