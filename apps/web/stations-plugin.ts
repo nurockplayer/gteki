@@ -58,11 +58,14 @@ export function discoverStations(roots: string[]): DiscoveredStation[] {
   for (const root of roots) {
     if (!fs.existsSync(root)) continue;
     for (const dir of fs.readdirSync(root).sort()) {
-      const gtekiDir = path.join(root, dir, "gteki");
-      if (seen.has(dir) || !fs.existsSync(path.join(gtekiDir, "station.json"))) continue;
+      const stationPath = path.join(root, dir);
+      if (seen.has(dir) || !fs.existsSync(path.join(stationPath, "gteki", "station.json"))) continue;
+      const stationFolder = fs.realpathSync(stationPath);
+      const gtekiDir = fs.realpathSync(path.join(stationFolder, "gteki"));
       seen.add(dir);
-      const scene = ["scene.ts", "scene.js"].map((f) => path.join(gtekiDir, f)).find((f) => fs.existsSync(f)) ?? null;
-      found.push({ dir, gtekiDir, scene, assets: walk(gtekiDir, fs.realpathSync(path.join(root, dir))) });
+      const realGtekiDir = fs.realpathSync(gtekiDir);
+      const scene = ["scene.ts", "scene.js"].map((f) => path.join(realGtekiDir, f)).find((f) => fs.existsSync(f)) ?? null;
+      found.push({ dir, gtekiDir: realGtekiDir, scene: scene ? fs.realpathSync(scene) : null, assets: walk(realGtekiDir, stationFolder) });
     }
   }
   return found;
@@ -206,6 +209,7 @@ export function undeclaredInlinedData(moduleIds: Iterable<string>, stations: rea
 
 const modulePath = (id: string) => id.startsWith("\0") ? id : id.replace(VITE_QUERY, "");
 const hasNodeModulesSegment = (id: string) => id.split(/[\\/]/).includes("node_modules");
+const JS_CODE_EXT = /\.[cm]?[jt]sx?$/i;
 
 /**
  * Finds non-code modules reachable from each station scene that live outside every station folder.
@@ -217,20 +221,20 @@ export function outsideStationData(
   stationEntries: ReadonlyMap<string, string>,
   stations: readonly DiscoveredStation[],
 ): string[] {
-  const byId = new Map<string, readonly string[]>();
-  for (const [id, imports] of graph) byId.set(modulePath(id), imports.map(modulePath));
-  const folders = stations.map((s) => ({ dir: s.dir, folder: path.resolve(path.dirname(s.gtekiDir)) }));
+  const byId = new Map<string, readonly string[]>(graph);
+  const folders = stations.map((s) => ({ dir: s.dir, folder: path.dirname(s.gtekiDir) }));
   const findings = new Set<string>();
   for (const [stationName, entry] of stationEntries) {
     const visited = new Set<string>();
-    const pending = [modulePath(entry)];
+    const pending = [entry];
     while (pending.length) {
       const id = pending.pop()!;
       if (visited.has(id) || id.startsWith("\0")) continue;
       visited.add(id);
-      if (!hasNodeModulesSegment(id) && !CODE_EXT.test(id) && path.isAbsolute(id)) {
+      const fileId = modulePath(id);
+      if (!hasNodeModulesSegment(fileId) && !CODE_EXT.test(fileId) && path.isAbsolute(fileId)) {
         const insideStation = folders.some(({ folder }) => id === folder || id.startsWith(folder + path.sep));
-        if (!insideStation) findings.add(`${stationName}: ${id}`);
+        if (!insideStation) findings.add(`${stationName}: ${fileId}`);
       }
       pending.push(...(byId.get(id) ?? []));
     }
@@ -245,7 +249,7 @@ export function outsideStationData(
  */
 export function isInlineDataCode(id: string, code: string): boolean {
   const normalized = modulePath(id);
-  if (!CODE_EXT.test(normalized)) return false;
+  if (!JS_CODE_EXT.test(normalized)) return false;
   const queryAt = id.indexOf("?");
   if (queryAt >= 0 && /(?:^|&)raw(?:&|$)/.test(id.slice(queryAt + 1))) return true;
   const bytes = Buffer.byteLength(code, "utf8");
@@ -256,13 +260,26 @@ export function isInlineDataCode(id: string, code: string): boolean {
   return covered / bytes >= 0.8;
 }
 
+/** Read original station-owned JavaScript/TypeScript source for the data-shape heuristic. */
+export function stationCodeSources(moduleIds: Iterable<string>, stations: readonly DiscoveredStation[]): Map<string, string> {
+  const folders = stations.map((s) => ({ folder: path.dirname(s.gtekiDir) }));
+  const sources = new Map<string, string>();
+  for (const id of moduleIds) {
+    const file = modulePath(id);
+    if (id.startsWith("\0") || !path.isAbsolute(file) || !JS_CODE_EXT.test(file) || hasNodeModulesSegment(file)) continue;
+    if (!folders.some(({ folder }) => file.startsWith(folder + path.sep))) continue;
+    try { sources.set(id, fs.readFileSync(file, "utf8")); } catch { /* module may be virtualized or removed during the build */ }
+  }
+  return sources;
+}
+
 /** Station-owned source modules for which the data-shape heuristic raised a warning. */
 export function wrappedStationData(
   modules: ReadonlyMap<string, string>,
   stations: readonly DiscoveredStation[],
 ): string[] {
   const findings = new Set<string>();
-  const folders = stations.map((s) => ({ dir: s.dir, folder: path.resolve(path.dirname(s.gtekiDir)) }));
+  const folders = stations.map((s) => ({ dir: s.dir, folder: path.dirname(s.gtekiDir) }));
   for (const [rawId, code] of modules) {
     const id = modulePath(rawId);
     if (id.startsWith("\0") || !path.isAbsolute(id) || hasNodeModulesSegment(id) || !isInlineDataCode(rawId, code)) continue;
@@ -310,9 +327,6 @@ export function gtekiStations(roots: string[]): Plugin {
   let info: (message: string) => void = () => {};
   /** Real paths a production build may emit from station folders (filled when the virtual module loads). */
   let declaredReal = new Set<string>();
-  let buildStations: DiscoveredStation[] = [];
-  /** Source for station-owned modules only, used by the warning-only wrapped-data heuristic. */
-  const stationCode = new Map<string, string>();
   /**
    * Dev: a direct /@fs URL of the file's current real path, recomputed on every load, so assets that
    * move (e.g. symlink → real folder) never resolve through a stale cached `?url` module.
@@ -332,16 +346,7 @@ export function gtekiStations(roots: string[]): Plugin {
     /** Audit trail: which declared data files cite facts-only sources, once per build. */
     buildStart() {
       if (serve) return;
-      stationCode.clear();
-      buildStations = discoverStations(roots);
-      for (const line of factsOnlyDataLines(buildStations)) info(line);
-    },
-    moduleParsed(module) {
-      if (serve || typeof module.code !== "string") return;
-      const id = modulePath(module.id);
-      if (id.startsWith("\0") || !path.isAbsolute(id) || hasNodeModulesSegment(id)) return;
-      const owned = buildStations.some((s) => id.startsWith(path.resolve(path.dirname(s.gtekiDir)) + path.sep));
-      if (owned) stationCode.set(module.id, module.code);
+      for (const line of factsOnlyDataLines(discoverStations(roots))) info(line);
     },
     resolveId(id) {
       return id === VIRTUAL ? RESOLVED : null;
@@ -390,7 +395,7 @@ export function gtekiStations(roots: string[]): Plugin {
       for (const finding of outsideStationData(graph, entries, stations)) {
         this.warn(`gteki-stations: station scene reaches data outside every station folder (${finding}); move the data into that station folder and declare it in dataFiles[].`);
       }
-      for (const finding of wrappedStationData(stationCode, stations)) {
+      for (const finding of wrappedStationData(stationCodeSources(ids, stations), stations)) {
         this.warn(`gteki-stations: station code may wrap inline data (${finding}); declare it as JSON in dataFiles[] instead of wrapping it in code.`);
       }
       const undeclared = undeclaredInlinedData(ids, declaredStationFiles(stations));
