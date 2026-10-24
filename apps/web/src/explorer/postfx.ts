@@ -32,6 +32,12 @@ export const POSTFX_HIGH: PostFxSettings = {
   reflections: true,
 };
 
+/** QA-only URL override; every value except 0/off/false preserves the selected tier's setting. */
+export function qaPostFxSettings(search: string, base: PostFxSettings = POSTFX_HIGH): PostFxSettings {
+  const value = new URLSearchParams(search).get("qaReflections")?.toLowerCase();
+  return { ...base, reflections: value === "0" || value === "off" || value === "false" ? false : base.reflections };
+}
+
 /** Display-referred grade, after OutputPass (tone mapping + sRGB). */
 export const GradeShader = {
   name: "GtekiGradeShader",
