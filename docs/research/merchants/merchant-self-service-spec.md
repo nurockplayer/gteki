@@ -2,7 +2,7 @@
 
 - Tracking: #438. Related: #212 (Ikebukuro merchant import contract), #419/#425 (tenant directory), #26 (per-source clearance), OD-31 (facts only, no directory copy), OD-32 (dated hours, current status unknown).
 - Status: **spec only — no code, no outreach.** Nothing here authorises contacting a shop. The Owner decides whether Phase 2 starts.
-- Owner: data-research-05. Schema fit: core-search-6a (reviewed, #440). Rights and consent text: core-rights-a9 (reviewed, #440 issuecomment-6382909140; P1 points applied). **§4 stays a DRAFT until core-rights-a9 signs off the final wording.**
+- Owner: data-research-05. Schema fit: core-search-6a (reviewed, #440). Rights and consent text: core-rights-a9 (reviewed, #440 issuecomment-6382909140; P1 points applied). §4 signed off by core-rights-a9 (de4ecce).
 - Schema baseline: `gteki.station/0.1` as in `packages/schema/src/index.ts`; contract rules in [`docs/core/contract.md`](../../core/contract.md). Tenant shape follows #425 (`gteki.tenants/0.1`), which was not yet on `main` when this was written.
 
 ## 1. Goal and non-goals
@@ -56,17 +56,18 @@ Position rules that follow from the schema and validator:
 - Lat/lon is derivable through `station.origin` (`StationFrame.toGeodetic`) but is not a POI field; nothing extra is stored.
 - Floors are operator-scoped: the picker shows `displayNames` but never equates floors across operators, and the submission's floor is stored as our `Floor.id` only.
 
-## 4. Consent and licence — **DRAFT — needs core-rights-a9 review**
+## 4. Consent and licence (reviewed by core-rights-a9, #440)
 
-The submitter ticks a versioned consent with these effects (wording to be finalised by core-rights-a9):
+The submitter ticks a versioned consent with these effects:
 
 1. **Grant (facts).** A worldwide, non-exclusive, royalty-free, irrevocable licence to GTEki and its users to include, modify, publish and sublicense the submitted facts (name, category, facility, floor, position, entrance wording, hours, official URL), for any purpose including commercial use, in any medium. The licence itself cannot be revoked. Withdrawal (item 5) is a separate promise by GTEki to drop the entry from future releases; it does not end the licence for copies already distributed.
-2. **Licence name.** Registered in `REUSE`/`NOTICE` as `LicenseRef-GTEki-merchant-grant`. It is never resolved to Apache-2.0, CC BY 4.0 or CC0.
+2. **Licence name and text.** `LicenseRef-GTEki-merchant-grant`, full text in `LICENSES/LicenseRef-GTEki-merchant-grant.txt` (Japanese authoritative, English translation, version number and effective date). The `REUSE`/`NOTICE` entry is added only when the first submission ships. It is never resolved to Apache-2.0, CC BY 4.0 or CC0.
 3. **Authority and warranty.** The submitter declares they are authorised to act for the shop, that the submitted facts are accurate to their knowledge, and that nothing submitted copies third-party text, images or floor plans. Recorded: role, a keyed HMAC of the contact (never a plain hash in any public record; the key and the contact stay in the private queue), timestamp, terms version.
 4. **Display.** Facts display with the label 「店舗提供」 / "merchant-submitted" and the submission date, never as verified.
 5. **Withdrawal.** On request GTEki commits to remove the entry from the next public release. Already-distributed releases and caches cannot be recalled; the form and spec say so. Withdrawals are logged.
 6. **Photos (later).** If collected in a later phase: the shop's own copyright, credited to photographer and rights holder, no people and no third-party marks or works, project grant or CC BY 4.0 with an attribution string, no AI-generated images, nothing taken from the web.
-7. **Not accepted.** CC0, GPL/SA-type licences, "automatic consent", shop-authored licence text. Rights labels in the UI come from i18n only.
+7. **Privacy notice.** Next to the consent box, one line under the Act on the Protection of Personal Information: purpose (verifying the submission), retention (§2: while open plus 90 days), who keeps it (the GTEki project), and how to ask for deletion.
+8. **Not accepted.** CC0, GPL/SA-type licences, "automatic consent", shop-authored licence text. Rights labels in the UI come from i18n only.
 
 ## 5. Verification flow and states
 
