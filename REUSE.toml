@@ -91,6 +91,16 @@ precedence = "override"
 SPDX-FileCopyrightText = "© 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
 SPDX-License-Identifier = "OFL-1.1"
 
+# --- 4-research. Fallback for research data folders (gteki-1b written ruling, 2026-10-24) -------
+# Facts-only research data with a recorded source gets an explicit annotation and never falls
+# through to the Apache-2.0 default above. Datasets with their own licence get exact-path blocks
+# later in this file, which override this fallback (later annotations win).
+[[annotations]]
+path = ["docs/research/merchants/**", "docs/research/lines/**", "docs/research/facilities/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "No licence granted: facts-only sources (operator and venue pages); compiled by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-facts-only-no-licence"
+
 # --- 4a. MLIT Project PLATEAU ubld 53394576 (Ikebukuro) and files derived from it -------------
 # Credit (Ikebukuro): 「出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成」
 # Shinjuku context (only where building bases are flattened, Owner option A, #39 comment
@@ -303,3 +313,15 @@ path = [
 precedence = "override"
 SPDX-FileCopyrightText = "東京都都市整備局; 国土交通省（ほこナビDP）; modified by GTEki contributors"
 SPDX-License-Identifier = "LicenseRef-S03 AND LicenseRef-Hokonavi-E27-Owner-override"
+
+# --- 4p. Toei S10 「駅構内のお店」 row in the Shinjuku merchant batch (#418; NOTICE 4.6) -----------
+# One row (shop name and location text) of the 新宿西口 CSV, CC BY 4.0 at dataset level, plus the
+# facts-only references in the same files (NOTICE 4.9). The log quotes the same two values.
+[[annotations]]
+path = [
+  "docs/research/merchants/shinjuku-merchants-batch1.json",
+  "docs/research/merchants/shinjuku-merchants-batch1-log.md",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "東京都交通局; facts-only sources; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-Toei-S10 AND LicenseRef-facts-only-no-licence"

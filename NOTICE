@@ -124,15 +124,19 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        basis: PDL 1.0 under https://www.mlit.go.jp/link.html; applicability
        UNKNOWN. Credit: 「出典：国土交通省／加工して作成」. Not relicensed.
 
-   4.6 Tokyo Metropolitan Bureau of Transportation, S10 「駅構内のお店」
-       Nothing ships in station data; literal values sit in docs/gis/poi/ and
-       are marked "no licence grant" until #124 is applied (GIS PR #128).
+   4.6 Tokyo Metropolitan Bureau of Transportation, S10 「駅構内のお店」 - LicenseRef-Toei-S10
        Recorded licence: CC BY 4.0 at dataset level
        (https://creativecommons.org/licenses/by/4.0/legalcode.ja). Owner credit
        (#39 comment 6324726321): 出典：東京都交通局「駅構内のお店」. Plain names,
        times and locations only; no logos, photos, trademarks or promotional
-       prose. The modification notice text is a placeholder in the records
-       (「GTEki が［実際の編集・加工内容］」): UNKNOWN until written.
+       prose.
+       Committed: docs/research/merchants/shinjuku-merchants-batch1.json and its
+       log (#418): one row of the 新宿西口 CSV (sha256 71930f167c2fa181…
+       c547a6, docs/gis/acquisitions/tokyo-s10-shinjuku-nishiguchi-csv.json),
+       shop name and location text. Change notice: GTEki が店名と場所の記述を
+       抽出し、検索用に再構成（「未確認・経路なし」の注記を追加）. The other
+       entries in those files are facts-only references (4.9). Literal values in
+       docs/gis/poi/ stay "no licence grant" (REUSE 4g) until #124 is applied.
 
    4.7 Tokyo Bureau of Urban Development, S03 「新宿駅周辺の施設情報等」 - LicenseRef-S03
        Nothing ships in station data; same status as 4.6. Recorded licence: CC BY
@@ -164,10 +168,20 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        layout, tracing, pictogram or logo is copied. Credit as recorded:
        「豊島区「池袋駅地下空間案内図」(facts only; not reproduced)」 and
        「東京メトロ 池袋駅構内図 (facts only; not reproduced)」.
+       Research data (gteki-1b ruling 2026-10-24): every file under
+       docs/research/merchants/, docs/research/lines/ and
+       docs/research/facilities/ carries this identifier unless a later REUSE
+       block names a dataset licence. Those files restate facts (names, floors,
+       exits, gate and facility labels) from operator and venue pages in
+       GTEki's own words, with the page URL and retrieval time as evidence.
+       Each file's sources[] records its sources; no page text, map, image,
+       layout or logo is copied.
 
-   4.10 OpenStreetMap - nothing committed or shipped
-       Cross-check only. No ODbL entry. If OSM-derived data is ever committed,
-       an ODbL entry and a share-alike assessment are required first.
+   4.10 OpenStreetMap - cited facts-only; nothing derived ships
+       Used for evidence only: committed GIS receipts hold counts and tag keys,
+       never OSM values (#437). Nothing derived from OSM ships in station data.
+       If OSM-derived data is ever committed, an ODbL entry and a share-alike
+       assessment are required first.
 
    4.11 MLIT 国土数値情報 N02-2025 (鉄道) - LicenseRef-KSJ
        Ships: stations/ikebukuro/gteki/context/ksj_n02_2025_r700.glb, the
