@@ -48,7 +48,8 @@ function walk(fromPoi: string, toPoi: string, stepFree = false, speed = 1, run =
 
 describe("guided walk over the E27 walk world", () => {
   const platform = "poi:platform:oedo";
-  const targets = bundle.pois.filter((p) => p.category === "exit" || p.category === "ticket_gate").map((p) => p.id);
+  // Search-only POIs (#411, connectorNodeIds []) are not routable and are excluded from the walk targets.
+  const targets = bundle.pois.filter((p) => (p.category === "exit" || p.category === "ticket_gate") && p.connectorNodeIds.length > 0).map((p) => p.id);
 
   it.each(targets)("platform → %s arrives", (to) => {
     const res = walk(platform, to);
@@ -78,7 +79,7 @@ describe("guided walk over the E27 walk world", () => {
     const stuck: string[] = [];
     for (const a of bundle.pois)
       for (const b of bundle.pois) {
-        if (a === b) continue;
+        if (a === b || !a.connectorNodeIds.length || !b.connectorNodeIds.length) continue; // search-only POIs (#411) have no route
         const res = walk(a.id, b.id, false, 4, true, fps);
         if (res.ok && !res.arrived) stuck.push(`${a.id} → ${b.id} ${JSON.stringify(res.stuckAt)}`);
       }

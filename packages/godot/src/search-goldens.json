@@ -560,6 +560,10 @@
           {
             "poiId": "poi:platform:oedo",
             "score": 75
+          },
+          {
+            "poiId": "poi:odakyu-platform:6",
+            "score": 70
           }
         ]
       },

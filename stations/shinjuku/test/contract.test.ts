@@ -17,11 +17,16 @@ describe("Shinjuku gteki/ contract files", () => {
   });
 
   it("gives every POI a distinct display name in each language (search results stay distinguishable)", () => {
+    // #411: S03 search-only POIs have ja names only, and one source name is printed twice (kept as printed).
+    const e27 = bundle.pois.filter((p) => !p.evidence.sourceIds.includes("tokyo-s03-zip"));
     for (const lang of ["ja", "en"]) {
-      const names = bundle.pois.map((p) => p.names.find((n) => n.lang === lang)?.text);
+      const names = e27.map((p) => p.names.find((n) => n.lang === lang)?.text);
       expect(names.every(Boolean)).toBe(true);
       expect(new Set(names).size).toBe(names.length);
     }
+    const s03Ja = bundle.pois.filter((p) => p.evidence.sourceIds.includes("tokyo-s03-zip")).map((p) => p.names.find((n) => n.lang === "ja")?.text);
+    expect(s03Ja.every(Boolean)).toBe(true);
+    expect(s03Ja.filter((n, i) => s03Ja.indexOf(n) !== i)).toEqual(["京王新線　京王新線口"]);
   });
 
   it("cites the render-only PLATEAU street context under the catalogue licence with the Owner's Option A credit (#161)", () => {
