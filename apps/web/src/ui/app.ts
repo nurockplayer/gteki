@@ -768,14 +768,20 @@ export class App {
 
   private renderHud(): void {
     const hud = this.ui.hud;
+    // The ride button is its own HUD row (#375), above the mode row; `hidden` alone decides whether it shows,
+    // since openStation sets it after the HUD may already have rendered. Clearing the HUD detaches it, so a
+    // keyboard user who had focused it gets the focus back.
+    const rideFocused = document.activeElement === this.ui.railBtn;
+    const placeRide = (): void => {
+      hud.append(this.ui.railBtn);
+      if (rideFocused && !this.ui.railBtn.hidden) this.ui.railBtn.focus({ preventScroll: true });
+    };
     this.releaseMascot(hud);
     hud.innerHTML = "";
     const mode = this.explorer.currentMode;
     this.announceInstruction();
-    // The ride button is its own HUD row (#375), above the mode row; \`hidden\` alone decides whether it shows,
-    // since openStation sets it after the HUD may already have rendered.
     if (mode === "overview") {
-      hud.append(this.ui.railBtn);
+      placeRide();
       this.trackInstruction();
       return;
     }
@@ -785,7 +791,7 @@ export class App {
       this.ui.mascot.clear();
       hud.append(this.guideBox(ins.text));
     }
-    hud.append(this.ui.railBtn);
+    placeRide();
     const row = el("div", "hud-row");
     if (mode === "guide") {
       // Built from the explorer's state; instruction changes then go through updateGuideHud, so the controls stay put under the pointer.
