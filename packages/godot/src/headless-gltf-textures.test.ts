@@ -26,7 +26,7 @@ function glbWithEmbeddedImage(extension?: string, required = false): ArrayBuffer
     meshes: [{ primitives: [{ attributes: { POSITION: 0, TEXCOORD_0: 1, TEXCOORD_1: 2 }, material: 0 }] }],
     materials: [{ name: "strip", occlusionTexture: { index: 0, texCoord: 1 }, pbrMetallicRoughness: { baseColorTexture: { index: 1 } } }],
     textures: [0, 1].map((): TextureDef => (extension ? { extensions: { [extension]: { source: 0 } } } : { source: 0 })),
-    images: [{ name: "nosing_ao", bufferView: 3, mimeType: "image/png" }],
+    images: [{ name: "nosing_ao", bufferView: 3, mimeType: "image/png", extras: { gteki_kind: "nosing" } }],
     ...(extension ? { extensionsUsed: [extension], ...(required ? { extensionsRequired: [extension] } : {}) } : {}),
     buffers: [{ byteLength: bin.length }],
     bufferViews: [
@@ -75,6 +75,7 @@ describe("headlessGltfTextures (GLB images under Node)", () => {
     expect(ao.channel).toBe(1);
     expect(ao.flipY).toBe(false);
     expect(ao.name).toBe("nosing_ao");
+    expect(ao.userData).toMatchObject({ gteki_kind: "nosing", mimeType: "image/png" });
     expect(material!.map!.userData.gteki_glb_placeholder).toBe(true);
     expect(material!.map!.colorSpace).toBe(THREE.SRGBColorSpace);
     // Two glTF textures, one image source: counted once.

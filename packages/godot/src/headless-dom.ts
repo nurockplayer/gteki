@@ -37,10 +37,18 @@ export function newShimUsage(): ShimUsage {
  * colour space. A stub `ktx2Loader` keeps a required KHR_texture_basisu on that path instead of throwing. Each image
  * source is counted once, split into embedded (bufferView or data URI) and external URIs.
  */
+/** GLTFLoader's (unexported) `getImageURIMimeType`, r186. */
+function imageUriMimeType(uri: string): string {
+  if (uri.search(/\.jpe?g($|\?)/i) > 0 || uri.search(/^data:image\/jpeg/) === 0) return "image/jpeg";
+  if (uri.search(/\.webp($|\?)/i) > 0 || uri.search(/^data:image\/webp/) === 0) return "image/webp";
+  if (uri.search(/\.ktx2($|\?)/i) > 0 || uri.search(/^data:image\/ktx2/) === 0) return "image/ktx2";
+  return "image/png";
+}
+
 export function headlessGltfTextures(usage: ShimUsage): (parser: GLTFParser) => GLTFLoaderPlugin {
   return (parser) => {
     const p = parser as unknown as {
-      json: { images?: { uri?: string; bufferView?: number }[] };
+      json: { images?: { uri?: string; bufferView?: number; mimeType?: string; extras?: Record<string, unknown> }[] };
       options: { ktx2Loader?: unknown };
       loadImageSource: (sourceIndex: number, loader: unknown) => Promise<THREE.Texture>;
     };
@@ -50,10 +58,14 @@ export function headlessGltfTextures(usage: ShimUsage): (parser: GLTFParser) => 
       if (!counted.has(sourceIndex)) {
         counted.add(sourceIndex);
         const uri = p.json.images?.[sourceIndex]?.uri;
-        if (typeof uri === "string" && !uri.startsWith("data:")) usage.glbExternalImages += 1;
+        if (typeof uri === "string" && !/^data:/i.test(uri)) usage.glbExternalImages += 1;
         else usage.glbEmbeddedImages += 1;
       }
+      // Image-level metadata as GLTFLoader's own loadImageSource keeps it (extras, then mimeType).
+      const sourceDef = p.json.images?.[sourceIndex] ?? {};
       const texture = new THREE.Texture();
+      if (sourceDef.extras && typeof sourceDef.extras === "object") Object.assign(texture.userData, sourceDef.extras);
+      texture.userData.mimeType = sourceDef.mimeType || imageUriMimeType(sourceDef.uri ?? "");
       texture.userData.gteki_glb_placeholder = true;
       return Promise.resolve(texture);
     };
