@@ -44,3 +44,7 @@ Odakyu Ace and Keio Mall names were re-extracted from the raw directory HTML (Od
 - Every Odakyu Ace and Keio Mall detail page was re-read for closure notices: none is closed. Odakyu Ace `100350` prints 【臨時休業】設備不良のため、現在休業中です (temporarily closed); it is kept, and its notes already say current status is unknown, as for every entry. Neither site prints readings other than the 粥餐庁 one.
 - Result: 78 POIs (Toei 1, Toei Shinjuku-nishiguchi 1, Tokyo Metro 4, Odakyu Ace 43, Keio Mall 29).
 - oracle-ego (GPT-6) review: Keio Mall entries name 京王モール or 京王モールアネックス in notes, so their method is AREA_ONLY (was SEARCH_ONLY); the Odakyu Ace source note now gives the final 43.
+
+## OD-34 removal (2026-10-24)
+
+The terms of the Odakyu SC portal (https://www.odakyu-sc.com/sitepolicy/) and Keio SC (https://www.keiosc.co.jp/sitepolicy/), read 2026-10-24T09:42Z, refuse every use of the sites' content data with no legal exception (「…全ての行為も含め、一切お断りいたします。」). The director ruled (OD-34) that they get OD-02 A treatment, overturning the earlier OD-33 facts-only ruling for these two sites. Sections 4 and 5 above are kept as a record only: none of their 72 entries is in the JSON, and the SC directories may not be used as a source or a cross-check. The same shops may come in later from each chain's own store page. The batch is now 6 POIs (Toei 1, Toei Shinjuku-nishiguchi 1, Tokyo Metro 4).
