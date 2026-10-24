@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Poi } from "@gteki/schema";
 import { createSyntheticBundle } from "../../../../packages/navigation/src/fixtures.ts";
-import type { Lang } from "../i18n.ts";
+import { strings, type Lang } from "../i18n.ts";
 
 vi.mock("../explorer/explorer.ts", () => ({ Explorer: class {} }));
 vi.mock("../registry.ts", () => ({ listStations: vi.fn(), StationLoadError: class extends Error {} }));
@@ -100,5 +100,31 @@ describe("search-only POI notes outside a route", () => {
     a.s.route = { ok: false, reason: "no_path", message: "" };
     a.renderSheet();
     expect(a.ui.sheet.textContent).not.toContain(NOTE_JA);
+  });
+});
+
+describe("approximate positions are search display only (#463)", () => {
+  const approximate = { east: 12, north: -4, uncertaintyM: 24.2, method: "area_weighted_centroid", navigationUse: "NOT_FOR_ROUTING", floor: "UNVERIFIED" } as const;
+
+  it("shows the ± radius rounded up, in the UI language, under a picked endpoint", () => {
+    const a = app("en");
+    a.renderEndpointNote(a.ui.toNote, { ...poi("p1", false, []), approximatePosition: approximate });
+    expect(a.ui.toNote.hidden).toBe(false);
+    expect(a.ui.toNote.textContent).toBe("Approximate position (±25 m) · not used for directions");
+
+    const ja = app("ja");
+    ja.renderEndpointNote(ja.ui.fromNote, { ...poi("p2", false, []), approximatePosition: approximate });
+    expect(ja.ui.fromNote.textContent).toBe("おおよその位置（±25 m）・経路案内には使いません");
+  });
+
+  it("keeps the station note and the approximate line together", () => {
+    const a = app();
+    a.renderEndpointNote(a.ui.fromNote, { ...poi("p3", false), approximatePosition: approximate });
+    expect(a.ui.fromNote.textContent).toBe(`${NOTE_JA} · おおよその位置（±25 m）・経路案内には使いません`);
+  });
+
+  it("names the approximate radius the same way in both languages", () => {
+    expect(strings("ja").approximatePosition(25)).toBe("おおよその位置（±25 m）・経路案内には使いません");
+    expect(strings("en").approximatePosition(25)).toBe("Approximate position (±25 m) · not used for directions");
   });
 });

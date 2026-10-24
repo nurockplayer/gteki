@@ -260,6 +260,20 @@ export type PoiCategory =
   | "transfer"
   | "other";
 
+/**
+ * An approximate representative point (e.g. the area-weighted centroid of the source polygon that names the
+ * POI). It exists so search can show roughly where a place is when no surveyed position is available; it is
+ * never a routing target and never shown as a precise pin.
+ */
+export interface ApproximatePosition {
+  east: number;           // metres, station frame x
+  north: number;          // metres, station frame y
+  uncertaintyM: number;   // > 0, the ± radius shown to users
+  method: string;         // how it was derived, e.g. "area_weighted_centroid"
+  navigationUse: "NOT_FOR_ROUTING";
+  floor: "UNVERIFIED";    // the POI's floorId is a label match, not surveyed
+}
+
 export interface Poi {
   id: string;
   category: PoiCategory;
@@ -269,6 +283,12 @@ export interface Poi {
   floorId: string | null;
   /** Display location (may be a centroid); NOT a routing target. */
   displayPosition: Vec3N | null;
+  /**
+   * Approximate representative point for search display only (e.g. a centroid of a source polygon): station
+   * frame metres, east/north on the ENU plane, no height. NOT a routing target, never a connector, never a
+   * displayPosition, never drawn as a precise pin.
+   */
+  approximatePosition?: ApproximatePosition;
   /** Verified graph nodes that physically give access to the POI. Empty => not routable. */
   connectorNodeIds: string[];
   /** Whether this POI is inside the fare-paid area. */

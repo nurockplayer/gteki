@@ -457,8 +457,16 @@ export class App {
   /** A picked endpoint that is search-only shows its note (e.g. "as of 2020; current status unknown") under the field. */
   private renderEndpointNote(box: HTMLParagraphElement, poi: Poi | null): void {
     const note = poi && poi.connectorNodeIds.length === 0 ? poiNoteText(poi, this.s.lang) : null;
-    box.textContent = note ?? "";
-    box.hidden = !note;
+    // An approximate point says so beside the note: a ± radius and that it is not used for directions (#463).
+    const approximate = poi ? this.approximateText(poi) : null;
+    const text = [note, approximate].filter(Boolean).join(" · ");
+    box.textContent = text;
+    box.hidden = text === "";
+  }
+
+  /** The search-display line for an approximate position, its ± radius rounded up to a whole metre (#463). */
+  private approximateText(poi: Poi): string | null {
+    return poi.approximatePosition ? this.t.approximatePosition(Math.ceil(poi.approximatePosition.uncertaintyM)) : null;
   }
 
   private originLabel(): string {
@@ -520,8 +528,11 @@ export class App {
       // A search-only POI's note (e.g. a 2020 status word in the copied name) is shown beside it, not only in routes.
       const note = h.routable ? null : poiNoteText(h.poi, this.s.lang);
       if (note) b.append(el("span", "result-note", note));
-      // The accessible name carries the visible tags, the as-of line and the note, so "search only" is heard too.
-      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...tags, ...(asOf ? [asOf] : []), ...(note ? [note] : [])].join(", ")));
+      // An approximate point is search display only: show the ± radius and that it is not used for directions (#463).
+      const approximate = this.approximateText(h.poi);
+      if (approximate) b.append(el("span", "result-approx", approximate));
+      // The accessible name carries the visible tags, the as-of line, the note and the approximate warning.
+      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...tags, ...(asOf ? [asOf] : []), ...(note ? [note] : []), ...(approximate ? [approximate] : [])].join(", ")));
       b.addEventListener("mousedown", (e) => e.preventDefault());
       b.addEventListener("click", () => {
         this.closeResults(which);

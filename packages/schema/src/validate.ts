@@ -394,6 +394,14 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     // A drawn position needs a reusable geometric basis among its sources (others may still evidence facts).
     if (p.displayPosition !== null && !b.station.synthetic && !p.evidence.sourceIds.some(reusableData))
       err("poi.position.rights", "displayPosition needs at least one REUSABLE_WITH_CONDITIONS or PUBLISHED_UNDER_OWNER_OVERRIDE data source in its evidence", p.id);
+    // An approximate point is search display only (#463): it is never a routing target and never drawn as a
+    // precise pin, so the POI must have no connectors, no displayPosition, and a reusable geometric basis.
+    if (p.approximatePosition) {
+      if (p.connectorNodeIds.length > 0) err("poi.approximate.routing", "a POI with approximatePosition must have connectorNodeIds: []", p.id);
+      if (p.displayPosition !== null) err("poi.approximate.display", "a POI with approximatePosition must have displayPosition: null", p.id);
+      if (!b.station.synthetic && !p.evidence.sourceIds.some(reusableData))
+        err("poi.approximate.rights", "approximatePosition needs at least one REUSABLE_WITH_CONDITIONS or PUBLISHED_UNDER_OWNER_OVERRIDE data source in its evidence", p.id);
+    }
     if (p.connectorNodeIds.length === 0) warn("poi.unroutable", "POI has no verified connector; search-only", p.id);
   }
 
