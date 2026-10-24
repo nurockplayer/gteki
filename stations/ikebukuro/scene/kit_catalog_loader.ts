@@ -78,7 +78,7 @@ export interface CatalogStats {
   /** Placements with at least one part drawn, per placement kind. */
   byKind: Record<string, number>;
   uniqueGlbs: number;
-  /** One draw per part per GLB: every placement of an id shares its InstancedMesh. */
+  /** One draw per visible GLB mesh per placement, before frustum culling and extra render passes. */
   drawCalls: number;
   triangles: number;
 }
@@ -165,23 +165,29 @@ export async function loadKitCatalog(
         const mine = drawn.filter((w) => w.id === id);
         if (!mine.length) continue;
         stats.parts += mine.length;
-        assets.get(id)!.forEach((part, k) => {
-          const im = new THREE.InstancedMesh(part.geometry, litOf(part.material), mine.length);
+        // Catalog flights are sparse (today each shipped id has one placement). Keep bounds local to a flight,
+        // even if a future catalog reuses an id at opposite ends of the station. Geometry/materials stay shared.
+        for (const w of mine) assets.get(id)!.forEach((part, k) => {
+          const im = new THREE.InstancedMesh(part.geometry, litOf(part.material), 1);
           owned.push(im); // its instance-matrix buffer is freed only by its own dispose()
-          im.name = `kit_catalog:${id}:${k}`;
-          im.userData = { gteki_role: "kit_catalog", gteki_anchors: mine.map((w) => w.placement.anchor) };
-          mine.forEach((w, i) => {
-            const pose = piecePose(THREE, w.placement, toRenderer);
-            q.setFromAxisAngle(up, pose.yaw);
-            s.set(w.placement.mirror ? -1 : 1, 1, 1);
-            base.compose(pose.centre, q, s).multiply(part.matrix);
-            im.setMatrixAt(i, base);
-          });
+          im.name = `kit_catalog:${id}:${w.placement.anchor}:${k}`;
+          im.userData = { gteki_role: "kit_catalog", gteki_anchors: [w.placement.anchor], gteki_shadow: "none" };
+          im.frustumCulled = true;
+          // Like the other kits, thin dressing starts with no shadows. The opt-out also survives the explorer's
+          // default-lighting fallback, which would otherwise turn opaque meshes into sun-shadow casters.
+          im.castShadow = false;
+          im.receiveShadow = false;
+          const pose = piecePose(THREE, w.placement, toRenderer);
+          q.setFromAxisAngle(up, pose.yaw);
+          s.set(w.placement.mirror ? -1 : 1, 1, 1);
+          base.compose(pose.centre, q, s).multiply(part.matrix);
+          im.setMatrixAt(0, base);
           im.instanceMatrix.needsUpdate = true;
+          im.computeBoundingBox();
           im.computeBoundingSphere();
           group.add(im);
           stats.drawCalls++;
-          stats.triangles += triOf(part.geometry) * mine.length;
+          stats.triangles += triOf(part.geometry);
         });
       }
       return { group, stats };
@@ -197,6 +203,60 @@ export async function loadKitCatalog(
           for (const t of [mat.map, mat.normalMap, mat.roughnessMap, mat.metalnessMap, mat.emissiveMap, mat.aoMap]) t?.dispose();
           mat.dispose();
         });
+    },
+  };
+}
+
+/** Start from the attached scene's first update. The next task runs after that frame has rendered; GLBs then
+ * load serially (one in flight) and attach individually, without holding up buildScene or the explorer's ready. */
+export function lazyKitCatalog(
+  THREE: ThreeNS,
+  host: Host,
+  placements: readonly CatalogPlacement[],
+  low: boolean,
+  root: THREE_NS.Object3D,
+  env: THREE_NS.Texture,
+  toRenderer: (x: number, y: number, z: number) => THREE_NS.Vector3,
+) {
+  const wanted = tierParts(placements, low);
+  const ids = [...new Set(wanted.map((w) => w.id))].sort();
+  const loaded: LoadedCatalogKit[] = [];
+  const groups: THREE_NS.Group[] = [];
+  let disposed = false;
+  let started = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const load = async () => {
+    for (const id of ids) {
+      if (disposed) return;
+      if (host.assetUrl(catalogUri(id, low)) === null) continue;
+      const selected = wanted.filter((w) => w.id === id).map((w) => ({
+        ...w.placement, ids: { [w.part]: id },
+      }));
+      const kit = await loadKitCatalog(THREE, host, selected, low);
+      if (disposed) { kit.dispose(); return; }
+      loaded.push(kit);
+      const { group } = kit.build(THREE, env, toRenderer);
+      if (group.children.length) {
+        groups.push(group);
+        root.add(group);
+      }
+    }
+  };
+  return {
+    start() {
+      if (started || disposed || !ids.length) return;
+      started = true;
+      timer = setTimeout(() => {
+        timer = undefined;
+        void load().catch((err) => console.warn("[ikebukuro] kit catalog: background build failed; skipping remaining pieces", err));
+      }, 0);
+    },
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      clearTimeout(timer);
+      for (const group of groups) group.removeFromParent();
+      for (const kit of loaded) kit.dispose();
     },
   };
 }
