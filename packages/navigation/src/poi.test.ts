@@ -88,4 +88,21 @@ describe("routeBetween applies the fare policy to the POIs themselves", () => {
     expect(node.sourceIds).toContain("destination-poi-source");
     expect(node.sourceIds).not.toContain("origin-poi-source");
   });
+
+  it("keeps a POI with only an approximate display point unroutable: no connectors means unknown_goal", () => {
+    const b = createSyntheticBundle();
+    const router = createRouter(b);
+    const exit = b.pois.find((p) => p.id === "exit-a1")!;
+    // The approximate point is search display only (#463); it never becomes a routing target.
+    const approximate = {
+      ...b.pois.find((p) => p.id === "shop")!,
+      approximatePosition: {
+        east: 10, north: 0, uncertaintyM: 25, method: "area_weighted_centroid",
+        navigationUse: "NOT_FOR_ROUTING" as const, floor: "UNVERIFIED" as const,
+      },
+    };
+    expect(approximate.connectorNodeIds).toEqual([]);
+    expect(routeBetween(router, { kind: "poi", poi: exit }, approximate, unpaid)).toMatchObject({ ok: false, reason: "unknown_goal" });
+    expect(routeBetween(router, { kind: "poi", poi: approximate }, exit, unpaid)).toMatchObject({ ok: false, reason: "unknown_start" });
+  });
 });

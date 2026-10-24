@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
 import surfaceJson from "../data/surface.json" with { type: "json" };
-import baked from "../data/surface-baked.ts";
+import baked from "../data/surface-baked.json" with { type: "json" };
 import { buildLayout, type Plan } from "../scene/layout.ts";
 import { protectFareAndAccess } from "../scene/fare-fence.ts";
 import { deriveSurface, surfaceInputKey, surfaceSeed, unpackValues } from "../scene/surface-bake.ts";
@@ -30,7 +30,7 @@ describe("baked street-layer table (#72)", () => {
   it("equals a fresh derivation exactly (-0, key order and all) and the file is what bake:surface writes", () => {
     const fresh = deriveSurface(surface, builtLayout(), bundle);
     expect(unpackValues(baked.valuesJson)).toStrictEqual(fresh);
-    expect(bakedText()).toBe(readFileSync(fileURLToPath(new URL("../data/surface-baked.ts", import.meta.url)), "utf8"));
+    expect(bakedText()).toBe(readFileSync(fileURLToPath(new URL("../data/surface-baked.json", import.meta.url)), "utf8"));
   }, 60_000);
 
   it("fails when any derivation source changed without a rebake (the code cannot be hashed at load)", () => {

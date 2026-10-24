@@ -34,9 +34,20 @@ afterEach(async () => {
 });
 
 describe('source acquisition', () => {
-  it('loads exactly the bounded 63-source manifest with explicit unknown rights', () => {
+  it('loads exactly the bounded source manifest with explicit unknown rights', () => {
     const sources = loadSources();
-    expect(sources).toHaveLength(79);
+    expect(sources).toHaveLength(88);
+    // #437 evidence sources: two fixed Overpass GETs and two licence-text snapshots, all gate HOLD with unknown rights.
+    for (const station of ['shinjuku', 'ikebukuro']) {
+      const overpass = sources.find((source) => source.source_id === `osm-overpass-${station}`)!;
+      expect(overpass).toMatchObject({ resolution: { kind: 'direct' }, expected_bytes: null, license_name: 'unknown', publish_gate: 'HOLD', station_ids: [station] });
+      expect(overpass.expected_url.startsWith('https://overpass-api.de/api/interpreter?data=')).toBe(true);
+      expect(Buffer.byteLength(overpass.expected_url)).toBeLessThan(8192);
+    }
+    for (const id of ['osm-copyright-page', 'odbl-1-0-text']) {
+      const terms = sources.find((source) => source.source_id === id)!;
+      expect(terms).toMatchObject({ expected_bytes: null, license_name: 'unknown', publish_gate: 'HOLD', station_ids: ['ikebukuro', 'shinjuku'] });
+    }
     for (const id of ['tokyo-s03-zip', 'tokyo-s03-spec', 'tokyo-s03-reference']) {
       const moved = sources.find(source => source.source_id === id)!;
       expect(moved.expected_url).toContain('/documents/d/toshiseibi/');

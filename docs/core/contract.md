@@ -67,6 +67,7 @@ stations/<id>/gteki/
 | The station clock keeps seconds (fractional minutes) when checking hours | web |
 | "Go straight" / 直進 only when every heading along the walked plan polyline lies within one 35° range (the instruction's own walk, not short legs folded into it); otherwise "Continue" / 進む | navigation |
 | Real-station nodes cite position sources; POI `displayPosition` and coverage polygons need ≥1 reusable data source | validate |
+| `Poi.approximatePosition` is search display only (#463): it needs `connectorNodeIds: []` and `displayPosition: null`, and (real stations) ≥1 reusable data source; it is never a routing target, connector or precise pin | validate + web |
 | `elevationSource` is one of measured / source-derived / symbolic / unknown; symbolic and unknown keep `elevationM` null | validate |
 | Without `accessEvidence`, an edge's paid / fare-boundary / wheelchair / steps flags are UNKNOWN to the router | router |
 | A production build refuses any discovered station that fails `parseStationFiles` | web build |

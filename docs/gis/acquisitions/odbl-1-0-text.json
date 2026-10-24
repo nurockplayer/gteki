@@ -1,0 +1,24 @@
+{
+  "source_id": "odbl-1-0-text",
+  "resolved_url": "https://opendatacommons.org/licenses/odbl/1-0/",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-24T10:14:14.895Z",
+  "completed_at": "2026-10-24T10:14:15.052Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "text/html; charset=utf-8",
+    "content-length": null,
+    "etag": null,
+    "last-modified": "Tue, 04 Aug 2026 19:17:58 GMT",
+    "date": "Sat, 24 Oct 2026 10:14:15 GMT"
+  },
+  "bytes": 51176,
+  "sha256": "b8d8aebb21bf405f93f6e21bbf0d8f0a749844f9812ec58692f189add6402b47",
+  "store_path": "raw/b8d8aebb21bf405f93f6e21bbf0d8f0a749844f9812ec58692f189add6402b47/1-0",
+  "tool_version": "0.1.0",
+  "git_commit": "00420763bb2965e9fbcd82147c7e39bdb5e6df36",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online"
+}

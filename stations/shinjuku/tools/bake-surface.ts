@@ -1,4 +1,4 @@
-/** Bake the street-layer derivations into data/surface-baked.ts (#72).
+/** Bake the street-layer derivations into data/surface-baked.json (#72).
  *
  *   pnpm --filter ./stations/shinjuku bake:surface            # write
  *   pnpm --filter ./stations/shinjuku bake:surface -- --check # fail if the file would change
@@ -13,11 +13,11 @@ import { loadShinjukuBundle } from "../data/bundle.ts";
 import { buildLayout, type Plan } from "../scene/layout.ts";
 import { protectFareAndAccess } from "../scene/fare-fence.ts";
 import { contentKey } from "../scene/content-key.ts";
-import { bakeSurface, bakedModuleSource } from "../scene/surface-bake.ts";
+import { bakeSurface, bakedFileText } from "../scene/surface-bake.ts";
 import type { SurfaceData } from "../scene/surface-data.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
-export const BAKED_PATH = join(here, "../data/surface-baked.ts");
+export const BAKED_PATH = join(here, "../data/surface-baked.json");
 
 /** Hash of everything the baked values are computed by: the derivation sources (including the layout and the
  * fare/access pad trim the layout passes through) and the polygon-clipping version. Not checkable at load, so
@@ -37,14 +37,14 @@ export function bakedText(): string {
   // buildStation derives the street layer from the layout after the fare/access trim of its pads.
   const layout = buildLayout(bundle, plan);
   protectFareAndAccess(layout, plan, bundle);
-  return bakedModuleSource(bakeSurface(surface, layout, bundle, plan), derivationSourceKey());
+  return bakedFileText(bakeSurface(surface, layout, bundle, plan), derivationSourceKey());
 }
 
 export function bakeSurfaceFile(check = false) {
   const text = bakedText();
   if (check) {
-    if (readFileSync(BAKED_PATH, "utf8") !== text) throw new Error("surface-baked.ts is stale; run bake:surface");
+    if (readFileSync(BAKED_PATH, "utf8") !== text) throw new Error("surface-baked.json is stale; run bake:surface");
   } else writeFileSync(BAKED_PATH, text);
-  console.log(`${check ? "Checked" : "Wrote"} surface-baked.ts, ${Buffer.byteLength(text)} bytes`);
+  console.log(`${check ? "Checked" : "Wrote"} surface-baked.json, ${Buffer.byteLength(text)} bytes`);
 }
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) bakeSurfaceFile(process.argv.includes("--check"));
