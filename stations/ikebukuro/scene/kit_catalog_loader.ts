@@ -254,6 +254,9 @@ export function lazyKitCatalog(
   let disposed = false;
   let started = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let finish!: () => void;
+  // Resolves once the background build has ended (finished, failed or disposed); never rejects.
+  const done = new Promise<void>((resolve) => (finish = resolve));
   const load = async () => {
     for (const id of ids) {
       if (disposed) return;
@@ -275,17 +278,26 @@ export function lazyKitCatalog(
   return {
     update: visibility.update,
     start() {
-      if (started || disposed || !ids.length) return;
+      if (started || disposed) return;
       started = true;
+      if (!ids.length) return finish();
       timer = setTimeout(() => {
         timer = undefined;
-        void load().catch((err) => console.warn("[ikebukuro] kit catalog: background build failed; skipping remaining pieces", err));
+        void load()
+          .catch((err) => console.warn("[ikebukuro] kit catalog: background build failed; skipping remaining pieces", err))
+          .finally(finish);
       }, 0);
+    },
+    /** Starts the build if needed and resolves when it has ended: for hosts that export rather than render. */
+    settled() {
+      this.start();
+      return done;
     },
     dispose() {
       if (disposed) return;
       disposed = true;
       clearTimeout(timer);
+      finish();
       for (const group of groups) group.removeFromParent();
       for (const kit of loaded) kit.dispose();
       loaded.length = 0;
