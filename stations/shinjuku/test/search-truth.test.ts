@@ -30,7 +30,7 @@ describe("POI names", () => {
     expect(issues.filter((i) => i.level === "error")).toEqual([]);
   });
 
-  it("gives every POI a ja and en name, unique per language", () => {
+  it("gives every E27 POI a ja and en name, unique per language, and every S03 POI one ja name", () => {
     // #411: S03 search-only POIs carry a ja name only (copied as printed; no English is invented).
     const e27 = pois.filter((p) => !isS03(p));
     for (const lang of ["ja", "en"]) {

@@ -1131,6 +1131,8 @@ type S03Poi = {
   notes: LocalizedText[]; operatorIds?: string[]; line?: string; s03?: unknown;
 };
 const S03_SOURCE_ID = "tokyo-s03-zip";
+/** The contract's §2 categories; anything else (an exit, a toilet) is not a line name and is refused. */
+const S03_CATEGORIES = new Set<string>(["ticket_gate", "transfer", "platform"]);
 const s03 = JSON.parse(readFileSync(join(HERE, "../../../docs/research/lines/shinjuku-line-pois.json"), "utf8")) as { sources: S03Source[]; pois: S03Poi[] };
 if (s03.sources.length !== 1 || s03.sources[0]!.id !== S03_SOURCE_ID) throw new Error(`S03 import: expected exactly one source ${S03_SOURCE_ID}`);
 const s03Src = s03.sources[0]!;
@@ -1160,11 +1162,13 @@ sources.push({
 for (const raw of s03.pois) {
   if (raw.floorId !== null || raw.displayPosition !== null || raw.paid !== null) throw new Error(`S03 import: ${raw.id} carries a floor, position or paid value`);
   if (raw.connectorNodeIds.length > 0) throw new Error(`S03 import: ${raw.id} has connectorNodeIds`);
-  if (raw.evidence.sourceIds.some((x) => x !== S03_SOURCE_ID)) throw new Error(`S03 import: ${raw.id} cites a source other than ${S03_SOURCE_ID}`);
+  if (raw.evidence.sourceIds.length !== 1 || raw.evidence.sourceIds[0] !== S03_SOURCE_ID) throw new Error(`S03 import: ${raw.id} must cite exactly ${S03_SOURCE_ID}`);
+  if (!S03_CATEGORIES.has(raw.category)) throw new Error(`S03 import: ${raw.id} has category ${raw.category}`);
+  if (raw.aliases.length > 0 || raw.names.length !== 1 || raw.names[0]!.lang !== "ja" || !raw.names[0]!.text) throw new Error(`S03 import: ${raw.id} must carry exactly one ja name and no aliases`);
   if (pois.some((p) => p.id === raw.id)) throw new Error(`S03 import: duplicate id ${raw.id}`);
   pois.push({
     id: raw.id,
-    category: raw.category as Poi["category"],
+    category: raw.category as "ticket_gate" | "transfer" | "platform",
     names: raw.names,
     aliases: raw.aliases,
     floorId: raw.floorId,

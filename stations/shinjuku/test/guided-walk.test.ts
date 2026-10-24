@@ -51,6 +51,10 @@ describe("guided walk over the E27 walk world", () => {
   // Search-only POIs (#411, connectorNodeIds []) are not routable and are excluded from the walk targets.
   const targets = bundle.pois.filter((p) => (p.category === "exit" || p.category === "ticket_gate") && p.connectorNodeIds.length > 0).map((p) => p.id);
 
+  it("keeps every E27 exit and gate routable, so the filter above cannot drop one silently", () => {
+    expect(targets).toEqual([1, 2, 3, 4, 5, 6].map((n) => `poi:exit:${n}`).concat([1, 2, 3].map((n) => `poi:gate:${n}`)));
+  });
+
   it.each(targets)("platform → %s arrives", (to) => {
     const res = walk(platform, to);
     expect(res.ok).toBe(true);

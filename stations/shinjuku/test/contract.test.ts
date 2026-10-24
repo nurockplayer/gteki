@@ -16,7 +16,7 @@ describe("Shinjuku gteki/ contract files", () => {
     expect((bundle.station.codes ?? []).map((c) => c.code)).toContain("E27");
   });
 
-  it("gives every POI a distinct display name in each language (search results stay distinguishable)", () => {
+  it("gives every E27 POI a distinct ja and en name, and every S03 POI a ja name (search results stay distinguishable)", () => {
     // #411: S03 search-only POIs have ja names only, and one source name is printed twice (kept as printed).
     const e27 = bundle.pois.filter((p) => !p.evidence.sourceIds.includes("tokyo-s03-zip"));
     for (const lang of ["ja", "en"]) {
