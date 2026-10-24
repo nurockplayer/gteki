@@ -1,0 +1,24 @@
+{
+  "source_id": "keio-site-terms",
+  "resolved_url": "https://www.keio.co.jp/contact/site/",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-24T08:58:04.469Z",
+  "completed_at": "2026-10-24T08:58:04.583Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "text/html",
+    "content-length": null,
+    "etag": null,
+    "last-modified": null,
+    "date": "Sat, 24 Oct 2026 08:58:04 GMT"
+  },
+  "bytes": 107589,
+  "sha256": "3eb3ee6bd471e0fb8bc9ff5c72fde3d8d6b9f30acfe36366882982a59c5c8a4b",
+  "store_path": "raw/3eb3ee6bd471e0fb8bc9ff5c72fde3d8d6b9f30acfe36366882982a59c5c8a4b/site",
+  "tool_version": "0.1.0",
+  "git_commit": "724459b8feb165e20d9fb2e7127c656c09099578",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online"
+}

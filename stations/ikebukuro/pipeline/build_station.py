@@ -331,9 +331,9 @@ def build_instant(src):
     epoch = os.environ.get("SOURCE_DATE_EPOCH")
     if epoch:
         return datetime.datetime.fromtimestamp(int(epoch), datetime.timezone.utc)
-    # Sources used only by the visual street context (#39) are not route evidence: adding or refetching
+    # Sources used only by the visual street/N02 context are not route evidence: adding or refetching
     # them must not move the edges' geometry checkedDate.
-    context_only = {i for a in src.get("assets", []) if a["id"] == "street-context" for i in a["sourceIds"]}
+    context_only = {i for a in src.get("assets", []) if a["id"] in ("street-context", "ksj-n02-context") for i in a["sourceIds"]}
     stamps = [datetime.datetime.fromisoformat(s["retrievedAt"].replace("Z", "+00:00")) for s in src["sources"]
               if s.get("retrievedAt") and s["id"] not in context_only]
     # Date-only checks were made in Japan: they start at local midnight, never at a later UTC midnight.

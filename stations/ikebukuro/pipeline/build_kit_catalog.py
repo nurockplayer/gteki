@@ -8,6 +8,9 @@ Reads scene/dressing_anchors.json (and the committed base GLB for wall proximity
     scene/kit_catalog.json     Lane E catalog (tools/blender/catalog schema): `CATALOG=<path>` builds the GLBs
     scene/kit_placements.json  per anchor flight / lane: catalog ids plus the ENU transform of the piece origin
 
+Stairs keep whole-millimetre risers when their surveyed nosings fit the built strips; a failing flight retries at
+0.1 mm precision before it is skipped.
+
 Stdlib only, deterministic: same inputs, same bytes. Nothing here changes the lit GLB, the bake or the graph.
 
 Generator conventions (tools/blender/gteki_assets/families/dressing.py, PR #143):
@@ -57,7 +60,7 @@ PLACEMENTS_SCHEMA = "gteki.ikebukuro.kit-placements/0"
 SOURCE_ID = "plateau-ubld-13116"
 ID_PREFIX = "gteki_ik_"
 
-QUANT_MM = 1                  # whole mm: flights are nearly all unique anyway, and coarser snapping accumulates over a flight
+QUANT_MM = 1                  # prefer whole mm; retry a stair at 0.1 mm only when whole-mm nosings exceed the strip
 RISER_MM = (100, 220)         # a plausible stair riser, on the unquantised value
 MIN_TREAD_MM = 200
 # The generator spaces nosings by one uniform riser, and its nosing strip is 6 mm high (dressing.py _nosings): a
@@ -70,6 +73,21 @@ ESC_LANDING_MM = 800          # the generator default; the anchors say nothing d
 ESC_PARTS = ["balustrade", "handrail", "newel", "comb"]
 WALL_NEAR_M = 0.3
 WALL_SIDE_SHARE = 0.5         # a side counts as walled when this share of its nosings has a wall within WALL_NEAR_M
+# Baked-AO texture size per entry (px), pinned as Shinjuku does: unpinned, the kit stepped 29 full-tier pieces up to
+# 1024 px (~286 MiB of AO on the GPU). One pin applies to both tiers, and a piece whose chart does not fit fails its
+# build (LightmapOverflow). Lane E's trial build of 128/256 on main 7a2880f: every nosing fit at 128, but 47 of 57
+# rails (wall and post) and all 5 escalators overflowed on the full tier; all fit one step up. Rails take 256 as a
+# kind, not per id, so a regenerated catalog never depends on which flight happened to fit. ~28 MiB per tier.
+# Five wide, thin nosing strips stay below 8 px/m at 128 px even with #335's face-net UVs. Lane E's trial on
+# 7a1db59 at 256 px gave 24-43 px/m with no LightmapOverflow, at ~+1.25 MiB AO per tier; pin those ids below.
+AO_RES = {"nosing": 128, "rails": 256, "escalator": 512}
+AO_RES_BY_ID = {
+    "gteki_ik_stair_n21_r142_t300_w3055_nosing": 256,
+    "gteki_ik_stair_n15_r164_t308_w8376_nosing": 256,
+    "gteki_ik_stair_n19_r168_t328_w4347_nosing": 256,
+    "gteki_ik_stair_n13_r165_t302_w8323_nosing": 256,
+    "gteki_ik_stair_n10_r147_t302_w10522_nosing": 256,
+}
 RAIL_SEGMENTS = 6             # rail_segments param of the rails entries (generator range 6-16, default 10)
 ROUTE_NEAR_M = 1.0            # a golden route polyline within this of the flight's centre line uses the flight
 ROUTE_FALLBACK_M = 4.0        # a route with a stairs edge but no flight within ROUTE_NEAR_M: flights this close to that edge
@@ -92,6 +110,12 @@ def sha256_file(path):
 def quant(mm):
     """Snap to QUANT_MM, halves up (not Python's banker's rounding), so the result never depends on float noise."""
     return int(math.floor(mm / QUANT_MM + 0.5)) * QUANT_MM
+
+
+def riser_token(mm):
+    """Encode whole-mm risers as-is and one-decimal risers in tenths of a millimetre, without a dot."""
+    value = float(mm)
+    return str(int(value)) if value.is_integer() else str(int(round(value * 10)))
 
 
 def median(values):
@@ -260,15 +284,25 @@ def plan_stair(flight, walls):
         return None, f"implausible riser {riser:.0f} mm ({n} steps, rise {flight['rise_m']} m); outside {RISER_MM[0]}-{RISER_MM[1]} mm", None
     if tread < MIN_TREAD_MM:
         return None, f"implausible tread {tread:.0f} mm (run {flight['run_m']} m per step); under {MIN_TREAD_MM} mm", None
-    # Each surveyed nosing (not every step has one) against the strip the generator will actually build for that step:
-    # the step index comes from the survey's own spacing, the height from the whole-millimetre riser the catalog ships,
-    # stacked from the placement origin (the bottom nosing), so rounding drift over a long flight counts too.
-    z0, step, built = flight["bottom"]["position"][2], flight["rise_m"] / (n - 1), quant(riser) / 1000.0
-    dev = max((abs((r[4] - z0) - round((r[4] - z0) / step) * built) for r in flight["nosings"]), default=0.0) * 1000.0
+    # Check every surveyed nosing against the strip the generator will build. The survey supplies the step index;
+    # built height is stacked from the bottom nosing, so rounding drift over a long flight counts too.
+    z0, step = flight["bottom"]["position"][2], flight["rise_m"] / (n - 1)
+
+    def nosing_deviation(built_riser_mm):
+        built = built_riser_mm / 1000.0
+        return max((abs((r[4] - z0) - round((r[4] - z0) / step) * built) for r in flight["nosings"]), default=0.0) * 1000.0
+
+    shipped_riser = quant(riser)
+    dev = nosing_deviation(shipped_riser)
     if round(dev, 1) > MAX_NOSING_DEV_MM:  # at 0.1 mm, so float noise never decides a flight sitting on the limit
-        return None, f"nosing mismatch: a surveyed nosing is {dev:.1f} mm off the generated strip (uneven risers or riser rounding; strip is {MAX_NOSING_DEV_MM:g} mm high)", None
+        fallback_riser = round(riser, 1)
+        fallback_dev = nosing_deviation(fallback_riser)
+        if round(fallback_dev, 1) > MAX_NOSING_DEV_MM:
+            return None, (f"nosing mismatch: a surveyed nosing is {dev:.1f} mm off the whole-mm strip and "
+                          f"{fallback_dev:.1f} mm off the 0.1-mm strip (both tried; strip is {MAX_NOSING_DEV_MM:g} mm high)"), None
+        shipped_riser, dev = fallback_riser, fallback_dev
     width = median([math.hypot(r[2] - r[0], r[3] - r[1]) for r in flight["nosings"]]) * 1000.0
-    params = {"step_count": n, "riser_mm": quant(riser), "tread_mm": quant(tread), "width_mm": quant(width)}
+    params = {"step_count": n, "riser_mm": shipped_riser, "tread_mm": quant(tread), "width_mm": quant(width)}
     err = {
         "riser_mm": round(abs(params["riser_mm"] - riser), 3),
         "tread_mm": round(abs(params["tread_mm"] - tread), 3),
@@ -392,16 +426,19 @@ def main(argv=None):
     rails_key_flights = {}
     for key in sorted(stair_groups):
         n, r, t, w = key
-        base = f"{ID_PREFIX}stair_n{n}_r{r}_t{t}_w{w}"
+        base = f"{ID_PREFIX}stair_n{n}_r{riser_token(r)}_t{t}_w{w}"
+        riser_snap = (f"riser snapped to 0.1 mm; tread and width to {QUANT_MM} mm"
+                      if not float(r).is_integer() else f"each snapped to {QUANT_MM} mm")
         flights = sorted(f["id"] for f, *_ in stair_groups[key])
         nosing_id = f"{base}_nosing"
         entries[nosing_id] = {
-            "id": nosing_id, "generator": "stair_dressing", "anchor": "linear_run",
+            "id": nosing_id, "generator": "stair_dressing", "ao_res": AO_RES_BY_ID.get(nosing_id, AO_RES["nosing"]), "anchor": "linear_run",
             "params": {"step_count": n, "riser_mm": r, "tread_mm": t, "width_mm": w, "parts": ["nosing"]},
             "dimension_basis": "station-verified",
             "notes": (f"Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: {cite}. "
                       f"Flights: {', '.join(flights)} (step_count = surveyed nosing lines; riser = rise / (steps - 1); "
-                      f"tread = mean nosing-to-nosing run; width = median nosing line; each snapped to {QUANT_MM} mm)."),
+                      f"tread = mean nosing-to-nosing run; width = median nosing line; "
+                      f"{riser_snap})."),
             "tags": ["dressing", "stair", "ikebukuro", "nosing"],
         }
         for flight, params, err, extra in stair_groups[key]:
@@ -410,7 +447,7 @@ def main(argv=None):
             rails_key_flights.setdefault(rails_id, []).append(flight["id"])
             if rails_id not in entries:
                 entries[rails_id] = {
-                    "id": rails_id, "generator": "stair_dressing", "anchor": "linear_run",
+                    "id": rails_id, "generator": "stair_dressing", "ao_res": AO_RES["rails"], "anchor": "linear_run",
                     "params": {"step_count": n, "riser_mm": r, "tread_mm": t, "width_mm": w, "parts": ["handrail"],
                                "handrail_sides": "both", "rail_mount": mount,
                                "rail_segments": RAIL_SEGMENTS},
@@ -449,7 +486,7 @@ def main(argv=None):
         eid = f"{ID_PREFIX}escalator_w{width}_rise{rise}_a{int(round(angle * 100))}"
         lanes = sorted(l["id"] for l, *_ in esc_groups[key])
         entries[eid] = {
-            "id": eid, "generator": "escalator_dressing", "anchor": "linear_run",
+            "id": eid, "generator": "escalator_dressing", "ao_res": AO_RES["escalator"], "anchor": "linear_run",
             "params": {"rise_mm": rise, "width_mm": width, "angle_deg": angle, "landing_mm": ESC_LANDING_MM,
                        "treads": True, "parts": list(ESC_PARTS)},
             "dimension_basis": "station-verified",
@@ -475,6 +512,10 @@ def main(argv=None):
                 "tiers": {"dressing": ["high"]},
                 "incline_deg": angle, "quantisation_mm": err,
             })
+
+    missing_ao_ids = sorted(set(AO_RES_BY_ID) - entries.keys())
+    if missing_ao_ids:
+        sys.exit(f"build_kit_catalog: AO override ids not produced: {', '.join(missing_ao_ids)}")
 
     assets = [entries[k] for k in sorted(entries)]
     catalog = {

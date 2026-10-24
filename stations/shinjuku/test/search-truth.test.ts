@@ -1,8 +1,12 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { createSearchIndex } from "@gteki/search";
 import type { Poi } from "@gteki/schema";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
+import approxPositions from "../sources/s03-approx-positions.json" with { type: "json" };
 
 /**
  * Search truth for the Shinjuku (E27) POIs (issue #106): names are distinct, nothing in a name or
@@ -16,6 +20,9 @@ const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
 const text = (p: Poi, lang: string) => p.names.find((n) => n.lang === lang)?.text;
 const byCategory = (c: string) => pois.filter((p) => p.category === c);
 const exits = byCategory("exit");
+/** #411: search-only line POIs cite tokyo-s03-zip and nothing else. */
+const S03_SOURCE = "tokyo-s03-zip";
+const isS03 = (p: Poi) => p.evidence.sourceIds.includes(S03_SOURCE);
 
 interface PlanFacility { id: string; category: string; x: number; y: number }
 const plan = planJson as unknown as { levels: { label: string; ordinal: number; floorId: string; facilities: PlanFacility[]; spaces: { category: string; rings: Pt[][] }[] }[] };
@@ -27,14 +34,22 @@ describe("POI names", () => {
     expect(issues.filter((i) => i.level === "error")).toEqual([]);
   });
 
-  it("gives every POI a ja and en name, unique per language", () => {
+  it("gives every E27 POI a ja and en name, unique per language, and every S03 POI one ja name", () => {
+    // #411: S03 search-only POIs carry a ja name only (copied as printed; no English is invented).
+    const e27 = pois.filter((p) => !isS03(p));
     for (const lang of ["ja", "en"]) {
-      const names = pois.map((p) => text(p, lang));
+      const names = e27.map((p) => text(p, lang));
       expect(names.every(Boolean), lang).toBe(true);
       expect(new Set(names).size, lang).toBe(names.length);
     }
+    const s03Ja = pois.filter(isS03).map((p) => text(p, "ja"));
+    expect(s03Ja.every(Boolean)).toBe(true);
+    // the source lists two gates under one name (S03 has two entities with this name); kept as printed.
+    // Asserted by id: S03 names stay out of Apache-2.0 files.
+    const s03 = pois.filter(isS03);
+    expect(s03.filter((p, i) => s03Ja.indexOf(s03Ja[i]) !== s03Ja.lastIndexOf(s03Ja[i])).map((p) => p.id)).toEqual(["poi:keio-gate:1", "poi:keio-gate:2"]);
     for (const lang of ["ja", "en", "zh-Hant"]) {
-      const names = pois.map((p) => text(p, lang)).filter(Boolean);
+      const names = e27.map((p) => text(p, lang)).filter(Boolean);
       expect(new Set(names).size, lang).toBe(names.length);
     }
   });
@@ -251,7 +266,8 @@ describe("POI aliases", () => {
 
   it("lets nobody read a JR or other-operator claim out of a name or alias", () => {
     const other = /JR|ＪＲ|山手|京王|小田急|メトロ|丸ノ内|丸ノ内線|新宿線|中央線|Yamanote|Keio|Odakyu|Metro|Marunouchi|西口|南口|東口|Nishiguchi/i;
-    for (const p of pois) for (const t of [...p.names, ...p.aliases]) expect(t.text, `${p.id} ${t.lang}`).not.toMatch(other);
+    // S03 search-only POIs (#411) are other operators' names by design; they are checked for having no route in the S03 block.
+    for (const p of pois.filter((x) => !isS03(x))) for (const t of [...p.names, ...p.aliases]) expect(t.text, `${p.id} ${t.lang}`).not.toMatch(other);
   });
 
   it("makes the station-name anchor say it is the Toei Oedo Line station, and says what is not modelled", () => {
@@ -275,7 +291,7 @@ describe("POI aliases", () => {
 
 describe("facility POIs trace to the GSI facility points", () => {
   it("keeps to the five categories Shinjuku has a source anchor for (no shops, kiosks, benches or vending)", () => {
-    expect([...new Set(pois.map((p) => p.category))].sort()).toEqual(["elevator", "exit", "platform", "ticket_gate", "toilet"]);
+    expect([...new Set(pois.filter((p) => !isS03(p)).map((p) => p.category))].sort()).toEqual(["elevator", "exit", "platform", "ticket_gate", "toilet"]);
   });
 
   it("has one exit POI per GSI exit point (F108)", () => {
@@ -310,26 +326,30 @@ describe("facility POIs trace to the GSI facility points", () => {
       const e27 = new Set([...new Set(p.connectorNodeIds.map((id) => floors.get(nodes.get(id)!.floorId)!.ordinal!))].map((o) => (o === 0 ? 1 : o)));
       const gsi = new Set(own.map((f) => f.ordinal));
       const agree = [...e27].every((o) => gsi.has(o)) && [...gsi].every((o) => e27.has(o));
-      const note = p.notes!.map((n) => n.text).join(" ");
-      expect(/確認できません|停止がありません/.test(note), p.id).toBe(!agree);
+      const jaNote = p.notes!.find((n) => n.lang === "ja")!.text;
+      const enNote = p.notes!.find((n) => n.lang === "en")!.text;
+      expect(/確認できません|停止がありません/.test(jaNote), `${p.id} ja`).toBe(!agree);
+      expect(/not confirmed by the station map|has no stop there/.test(enNote), `${p.id} en`).toBe(!agree);
       expect(p.evidence!.method, p.id).toContain("F012");
       if (!agree) mismatched.push(p.id);
     }
     // Known result at import time: the B1–B3 lift has no F012 point on B3.
     expect(mismatched).toEqual(["poi:elevator:2"]);
     expect(byCategory("elevator").find((p) => p.id === "poi:elevator:2")!.notes!.find((n) => n.lang === "ja")!.text).toContain("B3の停止は構内地図で確認できません");
+    expect(byCategory("elevator").find((p) => p.id === "poi:elevator:2")!.notes!.find((n) => n.lang === "en")!.text).toContain("the B3 stop is not confirmed by the station map");
   });
 
   it("names ticket gates per E27 gate cluster and counts every F106 point once, for its nearest cluster", () => {
     const pts = facilities.filter((f) => f.category === "F106");
-    const gates = byCategory("ticket_gate");
+    const gates = byCategory("ticket_gate").filter((p) => !isS03(p));
     expect(gates.length).toBeGreaterThan(0);
     expect(gates.length).toBeLessThanOrEqual(pts.length);
     const counts = gates.map((g) => {
       const level = floors.get(g.floorId!)!.ordinal!;
       const sameLevel = gates.filter((o) => floors.get(o.floorId!)!.ordinal === level);
       const n = pts.filter((f) => f.ordinal === level && sameLevel.reduce((best, o) => (near(f, o.displayPosition!) < near(f, best.displayPosition!) ? o : best)) === g).length;
-      expect(g.evidence!.method, g.id).toContain(`F106 points nearest this cluster on this level: ${n}`);
+      const suffix = `F106 points nearest this cluster on this level: ${n}`;
+      expect(g.evidence!.method.endsWith(suffix), `${g.id} evidence should end with "${suffix}"`).toBe(true);
       return n;
     });
     expect(counts.reduce((a, b) => a + b, 0)).toBe(pts.length); // no overlap, none lost
@@ -352,9 +372,13 @@ describe("facility POIs trace to the GSI facility points", () => {
     // #106 adds no POI: station-name hits ride on the Oedo platform, and the GSI toilet / lift / gate
     // points were already modelled (and are now cross-checked). A new entry must be listed here with its source.
     const ADDED: { id: string; source: string }[] = [];
-    expect(pois.length).toBe(OLD_COUNT + ADDED.length);
+    // #411: 45 search-only line POIs from tokyo-s03-zip, appended after every E27 POI (see the S03 block below).
+    const S03_COUNT = 45;
+    expect(pois.length).toBe(OLD_COUNT + ADDED.length + S03_COUNT);
+    const e27Pois = pois.filter((p) => !isS03(p));
+    expect(e27Pois.length).toBe(OLD_COUNT + ADDED.length);
     const bySource = { exit: 6, ticket_gate: 3, platform: 1, elevator: 3, toilet: 3 } as const;
-    for (const [c, n] of Object.entries(bySource)) expect(byCategory(c).length, c).toBe(n);
+    for (const [c, n] of Object.entries(bySource)) expect(e27Pois.filter((p) => p.category === c).length, c).toBe(n);
   });
 });
 
@@ -403,14 +427,138 @@ describe("expected search results (docs/stations/shinjuku/search-expected.md)", 
     expect(strong(query).map((h) => h.poi.id)).toContain(id);
   });
 
-  it.each(["JR", "JR新宿", "山手線", "Yamanote", "中央線", "京王", "京王線", "小田急", "小田急線", "丸ノ内線", "東京メトロ", "Tokyo Metro", "都営新宿線", "西口", "南口", "東口", "新宿西口", "E01", "3番出口", "Exit 3", "A1出口", "屋根なし"])(
+  it.each(["JR新宿", "東京メトロ", "Tokyo Metro", "都営新宿線", "E01", "Yamanote", "3番出口", "Exit 3", "A1出口", "屋根なし"])(
     "%s returns no Shinjuku POI claim",
     (query) => {
       expect(strong(query)).toEqual([]);
     },
   );
 
-  it("returns nothing at all (not even fuzz) for JR and 山手線", () => {
-    for (const q of ["JR", "山手線", "Yamanote"]) expect(index.search(q, { limit: 10 })).toEqual([]);
+  // #411: other operators' names resolve only to the S03 search-only POIs, which have no route.
+  it.each(["JR", "山手線", "中央線", "京王", "京王線", "小田急", "小田急線", "丸ノ内線", "西口", "南口", "東口", "新宿西口"])(
+    "%s returns only search-only S03 POIs (no route)",
+    (query) => {
+      const hits = strong(query);
+      expect(hits.length).toBeGreaterThan(0);
+      for (const h of hits) {
+        expect(isS03(h.poi), h.poi.id).toBe(true);
+        expect(h.poi.connectorNodeIds, h.poi.id).toEqual([]);
+      }
+    },
+  );
+
+  it("returns nothing at all (not even fuzz) for Yamanote, 都営新宿線 and E01", () => {
+    for (const q of ["Yamanote", "都営新宿線", "E01"]) expect(index.search(q, { limit: 10 })).toEqual([]);
+  });
+});
+
+describe("S03 search-only line POIs (#411)", () => {
+  const s03Pois = pois.filter(isS03);
+  const index = createSearchIndex(bundle);
+  const srcEntry = bundle.sources.find((s) => s.id === S03_SOURCE);
+
+  it("has 45 S03 POIs, all placed after every E27 POI", () => {
+    expect(s03Pois.length).toBe(45);
+    const lastE27 = Math.max(...pois.flatMap((p, i) => (isS03(p) ? [] : [i])));
+    const firstS03 = Math.min(...pois.flatMap((p, i) => (isS03(p) ? [i] : [])));
+    expect(firstS03).toBeGreaterThan(lastE27);
+  });
+
+  it("gives each S03 POI no floor, position, connector or paid value", () => {
+    for (const p of s03Pois) {
+      expect(p.floorId, p.id).toBeNull();
+      expect(p.displayPosition, p.id).toBeNull();
+      expect(p.paid, p.id).toBeNull();
+      expect(p.connectorNodeIds, p.id).toEqual([]);
+    }
+  });
+
+  it("cites only tokyo-s03-zip", () => {
+    for (const p of s03Pois) expect(p.evidence.sourceIds, p.id).toEqual([S03_SOURCE]);
+  });
+
+  it("carries the March 2020 ja and en notes", () => {
+    for (const p of s03Pois) {
+      const ja = p.notes?.find((n) => n.lang === "ja")?.text ?? "";
+      const en = p.notes?.find((n) => n.lang === "en")?.text ?? "";
+      expect(ja, `${p.id} ja`).toContain("2020年3月時点");
+      expect(en, `${p.id} en`).toContain("As of March 2020");
+    }
+  });
+
+  it("has no aliases", () => {
+    for (const p of s03Pois) expect(p.aliases, p.id).toEqual([]);
+  });
+
+  it("registers tokyo-s03-zip as a modified source with the exact attribution", () => {
+    expect(srcEntry).toBeDefined();
+    expect(srcEntry!.modified).toBe(true);
+    expect(srcEntry!.attribution).toBe("出典：東京都都市整備局「新宿駅周辺の施設情報等」");
+    // CC BY 4.0, not facts-only: the app would otherwise say the source has no licence.
+    expect(srcEntry!.usage).not.toBe("facts-only");
+    expect(srcEntry!.license).toEqual({
+      name: [
+        { lang: "ja", text: "CC BY 4.0（データセット単位の表示）" },
+        { lang: "en", text: "CC BY 4.0 (stated at dataset level)" },
+      ],
+      url: "https://creativecommons.org/licenses/by/4.0/",
+    });
+  });
+
+  it("keeps the S03 credit out of plan.json, which S03 does not feed", () => {
+    expect((planJson as unknown as { attribution: string[] }).attribution).not.toContain("出典：東京都都市整備局「新宿駅周辺の施設情報等」");
+  });
+
+  it("uses no poi:toei ids", () => {
+    for (const p of s03Pois) expect(p.id.startsWith("poi:toei"), p.id).toBe(false);
+  });
+
+  it("keeps a routable POI as the top hit for 新宿 and Shinjuku", () => {
+    for (const q of ["新宿", "Shinjuku"]) {
+      const top = index.search(q, { limit: 10 })[0];
+      expect(top, q).toBeDefined();
+      expect(top!.poi.connectorNodeIds.length, `${q} → ${top!.poi.id}`).toBeGreaterThan(0);
+    }
+  });
+
+  it("finds an S03 gate by its own name (read from pois.json, not written here)", () => {
+    const name = text(pois.find((p) => p.id === "poi:jreast-gate:7")!, "ja")!;
+    expect(index.search(name, { limit: 10 }).map((h) => h.poi.id)).toContain("poi:jreast-gate:7");
+  });
+
+  it("S03 approximate points (#463)", () => {
+    // The ids come from the derived input, never from literals: this file is Apache-2.0 and the points are
+    // S03-derived (NOTICE 4.7). Search display only: no connector, no displayPosition, no floor, no routing.
+    const approxPois = pois.filter((p) => p.approximatePosition !== undefined);
+    expect(approxPois.length).toBe(25);
+    expect(approxPois.filter((p) => p.category === "ticket_gate").length).toBe(22);
+    expect(approxPois.filter((p) => p.category === "transfer").length).toBe(3);
+    const derivedIds = approxPositions.positions.map((r) => r.poiId);
+    expect(approxPois.map((p) => p.id).sort()).toEqual([...derivedIds].sort());
+    for (const p of approxPois) {
+      expect(isS03(p), p.id).toBe(true);
+      expect(["ticket_gate", "transfer"], p.id).toContain(p.category);
+      expect(p.connectorNodeIds, p.id).toEqual([]);
+      expect(p.displayPosition, p.id).toBeNull();
+      expect(p.floorId, p.id).toBeNull();
+      const a = p.approximatePosition!;
+      expect(a.navigationUse, p.id).toBe("NOT_FOR_ROUTING");
+      expect(a.floor, p.id).toBe("UNVERIFIED");
+      expect(a.uncertaintyM, p.id).toBeGreaterThanOrEqual(5);
+      expect(Number.isFinite(a.east) && Number.isFinite(a.north), p.id).toBe(true);
+    }
+  });
+
+  it("leaves the unpointed Keio gate and every platform name-only (#463)", () => {
+    const keio = pois.find((p) => p.id === "poi:keio-gate:1");
+    expect(keio, "poi:keio-gate:1 is in the bundle").toBeDefined();
+    expect(keio!.approximatePosition).toBeUndefined();
+    for (const p of pois.filter((x) => x.category === "platform")) expect(p.approximatePosition, p.id).toBeUndefined();
+  });
+
+  it("never gives an E27 POI a point, and keeps the points out of the graph (#463)", () => {
+    for (const p of pois.filter((x) => !isS03(x))) expect(p.approximatePosition, p.id).toBeUndefined();
+    const graphText = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "gteki/graph.json"), "utf8");
+    for (const p of pois.filter((x) => x.approximatePosition !== undefined)) expect(graphText.includes(p.id), `${p.id} appears in graph.json`).toBe(false);
   });
 });

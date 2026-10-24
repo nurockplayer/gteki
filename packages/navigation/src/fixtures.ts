@@ -1,5 +1,5 @@
 import { SCHEMA_VERSION } from "@gteki/schema";
-import type { Edge, EvidenceRef, StationBundle } from "@gteki/schema";
+import type { Edge, EvidenceRef, Poi, StationBundle, Tenant } from "@gteki/schema";
 
 /** All coordinates, names and evidence in these fixtures are invented for tests. */
 export function syntheticEvidence(sourceId = "fixture-geometry", checkedDate = "2026-10-18"): EvidenceRef {
@@ -93,5 +93,59 @@ export function createSyntheticBundle(edges?: Edge[]): StationBundle {
       summary: [{ lang: "en", text: "Synthetic fixture only; no real station coverage." }],
       areas: [], gaps: [], freshness: null,
     },
+  };
+}
+
+/**
+ * A synthetic department store that prints its own brand directory (#419): one routable shop POI with a
+ * `facts-only` source and three invented tenants. Names, floors and evidence are invented; nothing here
+ * describes a real store.
+ */
+export function createTenantFixtureBundle(): StationBundle {
+  const bundle = createSyntheticBundle();
+  bundle.sources.push({
+    id: "fixture-tenants",
+    title: "Invented store brand directory (test fixture)",
+    publisher: "GTEki tests",
+    url: "https://example.invalid/store-directory",
+    license: null,
+    rights: "RESTRICTED",
+    usage: "facts-only",
+    decision: { url: "https://github.com/nurockplayer/gteki/issues/419", date: "2026-10-23" },
+    attribution: "Invented for tests — not a real store directory",
+    modified: false,
+    retrievedAt: null,
+    datasetDate: null,
+  });
+  bundle.pois.push({
+    id: "store", category: "shop",
+    names: [{ lang: "ja", text: "サンプル百貨店" }, { lang: "en", text: "Sample Department Store" }],
+    aliases: [{ lang: "ja-Hrkt", text: "さんぷるひゃっかてん" }],
+    floorId: "concourse", displayPosition: { x: 10, y: 0, z: 0 }, connectorNodeIds: ["a"], paid: false,
+    evidence: syntheticEvidence(),
+  });
+  const tenantEvidence: EvidenceRef = { sourceIds: ["fixture-tenants"], method: "field-survey", checkedDate: "2026-10-22" };
+  const tenant = (n: number, ja: string, en: string, kana: string, floor: string, category: string): Tenant => ({
+    id: `tenant-store-${n}`, poiId: "store",
+    names: [{ lang: "ja", text: ja }, { lang: "en", text: en }],
+    aliases: [{ lang: "ja-Hrkt", text: kana }],
+    floorLabel: [{ lang: "ja", text: floor }],
+    category: [{ lang: "ja", text: category }],
+    evidence: tenantEvidence,
+  });
+  bundle.tenants = [
+    tenant(1, "サンプル薬局", "Sample Pharmacy", "さんぷるやっきょく", "8F", "薬局"),
+    tenant(2, "デモカフェ", "Demo Café", "でもかふぇ", "1F", "喫茶"),
+    tenant(3, "テスト書店", "Test Bookshop", "てすとしょてん", "本館 5F", "書籍"),
+  ];
+  return bundle;
+}
+
+/** A routable synthetic shop POI with no tenant listing, for fixture-local comparisons. */
+export function syntheticStorePoi(id: string, name: string): Poi {
+  return {
+    id, category: "shop", names: [{ lang: "ja", text: name }], aliases: [],
+    floorId: "concourse", displayPosition: null, connectorNodeIds: ["a"], paid: false,
+    evidence: syntheticEvidence(),
   };
 }

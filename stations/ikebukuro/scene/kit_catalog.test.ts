@@ -3,7 +3,7 @@
 // in tools/blender (PR #143; Blender is not needed here), the placements against the anchors, and determinism.
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,6 +18,7 @@ type V3 = [number, number, number];
 interface Entry {
   id: string;
   generator: string;
+  ao_res: number;
   anchor: string;
   params: Record<string, unknown>;
   dimension_basis: string;
@@ -35,6 +36,7 @@ interface Placement {
   incline_deg?: number;
   main_route?: boolean;
   tiers: Record<string, string[]>;
+  quantisation_mm?: { riser_mm: number; top_height_mm: number };
 }
 interface Skipped { anchor: string; kind: string; reason: string }
 interface Anchors {
@@ -60,8 +62,21 @@ const placed = JSON.parse(read("kit_placements.json")) as {
 const station = JSON.parse(readFileSync(join(STATION, "gteki", "station.json"), "utf8")) as { sources: { id: string; sha256?: Record<string, string> }[] };
 const gmlSha = station.sources.find((s) => s.id === "plateau-ubld-13116")!.sha256![anchors.source.gml]!;
 const byId = new Map(catalog.assets.map((a) => [a.id, a]));
+const WIDE_NOSINGS = [
+  "gteki_ik_stair_n21_r142_t300_w3055_nosing",
+  "gteki_ik_stair_n15_r164_t308_w8376_nosing",
+  "gteki_ik_stair_n19_r168_t328_w4347_nosing",
+  "gteki_ik_stair_n13_r165_t302_w8323_nosing",
+  "gteki_ik_stair_n10_r147_t302_w10522_nosing",
+];
 
 describe("kit_catalog.json", () => {
+  it("pins exactly the five wide nosings to 256 px AO and all other nosings to 128 px", () => {
+    const nosings = catalog.assets.filter((a) => a.id.endsWith("_nosing"));
+    expect(nosings.filter((a) => a.ao_res === 256).map((a) => a.id).sort()).toEqual([...WIDE_NOSINGS].sort());
+    for (const a of nosings) expect(a.ao_res, a.id).toBe(WIDE_NOSINGS.includes(a.id) ? 256 : 128);
+  });
+
   it("has the Lane E catalog shape, with valid unique ids", () => {
     expect(catalog.catalog).toBe("gteki-ikebukuro");
     expect(catalog.version).toBe("0.1.0");
@@ -131,6 +146,16 @@ describe("kit_catalog.json", () => {
       }
     }
   });
+
+  it("keeps stair risers numeric and encodes the same value in each riser id", () => {
+    for (const a of catalog.assets.filter((entry) => entry.generator === "stair_dressing")) {
+      const riser = a.params.riser_mm as number;
+      expect(typeof riser).toBe("number");
+      expect(Number.isInteger(riser) || Number.isInteger(riser * 10)).toBe(true);
+      const token = Number.isInteger(riser) ? String(riser) : String(Math.round(riser * 10));
+      expect(a.id.match(/_r(\d+)_t/)?.[1], a.id).toBe(token);
+    }
+  });
 });
 
 /** The surveyed quad is the straight incline between the floors: angle = atan2(rise, horizontal run). */
@@ -160,16 +185,34 @@ describe("kit_placements.json", () => {
     expect(placed.summary.stair_flights.covered).toBe(placed.placements.filter((p) => p.kind === "stair").length);
     expect(placed.summary.escalator_lanes.covered).toBe(placed.placements.filter((p) => p.kind === "escalator").length);
     // the planner flags the 196 mm tread of stair068 and every flight where a surveyed nosing would sit more than the
-    // 6 mm strip height off the strip the generator builds: stair013 (uneven risers, ~21 mm) and four long flights where
-    // the whole-millimetre riser drifts 7-9 mm by the top (stair057, on a golden route, sits at exactly 6.0 mm and stays). stair040 (two overlapping survey solids, once read as a
+    // 6 mm strip height off the strips the generator builds: stair013 has genuinely uneven risers (~21 mm) and stays
+    // skipped after both riser precisions; four long flights are covered by the 0.1 mm fallback. stair057 (on a golden
+    // route) sits at exactly 6.0 mm and stays. stair040 (two overlapping survey solids, once read as a
     // 19-step flight with an 82 mm riser) and the 1-step stair059 fragment are now one 10-step flight that is covered
-    const MISMATCH = ["stair011", "stair012", "stair013", "stair014", "stair027"];
-    expect([...skipped]).toEqual([...MISMATCH, "stair068"]);
+    expect([...skipped]).toEqual(["stair013", "stair068"]);
     const reason = (id: string) => placed.summary.skipped.find((s: { anchor: string }) => s.anchor === id)!.reason;
-    for (const id of MISMATCH) expect(reason(id)).toMatch(/^nosing mismatch: a surveyed nosing is \d+\.\d mm off the generated strip/);
+    expect(reason("stair013")).toMatch(/^nosing mismatch:.*both tried/);
     expect(reason("stair068")).toMatch(/implausible tread 196 mm/);
     expect(placements.has("stair040")).toBe(true);
     expect(anchors.stair_flights.find((f) => f.id === "stair040")!.steps).toBe(10);
+  });
+
+  it("keeps every built stair's top drift within the 6 mm strip and the rescued flights under 6 mm", () => {
+    for (const p of placed.placements.filter((placement) => placement.kind === "stair")) {
+      expect(p.quantisation_mm!.top_height_mm).toBeLessThanOrEqual(6);
+    }
+    for (const id of ["stair011", "stair012", "stair014", "stair027"]) {
+      const p = placements.get(id);
+      expect(p).toBeDefined();
+      expect(p!.quantisation_mm!.top_height_mm).toBeLessThan(6);
+      const nosing = byId.get(p!.ids.nosing!)!;
+      const riser = nosing.params.riser_mm as number;
+      expect(Number.isInteger(riser)).toBe(false);
+      expect(Number.isInteger(riser * 10)).toBe(true);
+      expect(nosing.id.match(/_r(\d+)_t/)?.[1]).toBe(String(Math.round(riser * 10)));
+    }
+    expect(placements.has("stair013")).toBe(false);
+    expect(skipped.has("stair013")).toBe(true);
   });
 
   it("puts each origin within 5 mm of the anchor's first-nosing floor point or bottom comb line", () => {
@@ -254,6 +297,23 @@ describe("per-tier dressing subsets", () => {
 });
 
 describe("build_kit_catalog.py", () => {
+  it("fails before writing output if a survey no longer produces an AO override id", () => {
+    const dir = mkdtempSync(join(tmpdir(), "kit-missing-ao-"));
+    try {
+      const missingId = WIDE_NOSINGS[0]!;
+      const flights = new Set(placed.placements.filter((p) => p.ids.nosing === missingId).map((p) => p.anchor));
+      const path = join(dir, "anchors.json");
+      const outDir = join(dir, "out");
+      writeFileSync(path, JSON.stringify({ ...anchors, stair_flights: anchors.stair_flights.filter((f) => !flights.has(f.id)) }));
+      const r = spawnSync("python3", ["-I", SCRIPT, "--anchors", path, "--out-dir", outDir], { encoding: "utf8" });
+      expect(r.status, r.stderr).toBe(1);
+      expect(r.stderr).toContain(`AO override ids not produced: ${missingId}`);
+      expect(existsSync(outDir)).toBe(false);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it("is deterministic and reproduces the committed files", () => {
     const dirs = [mkdtempSync(join(tmpdir(), "kit-a-")), mkdtempSync(join(tmpdir(), "kit-b-"))];
     try {

@@ -41,6 +41,42 @@ describe("@gteki/cli", { timeout: 30_000 }, () => {
     }
   });
 
+  it("reads the optional store brand directory and refuses an invalid one (#419)", async () => {
+    const root = await fixtureDir();
+    try {
+      const file = stationFile(root, "tenants.json");
+      await writeFile(file, JSON.stringify({ schema: "gteki.tenants/0.1", tenants: [] }), "utf8");
+      expect(invoke(routeScript, [root, "start", "goal"]).status).toBe(0);
+      const invalid = {
+        schema: "gteki.tenants/0.1",
+        tenants: [{
+          id: "tenant-store-1", poiId: "no-such-poi", names: [{ lang: "ja", text: "テスト" }], aliases: [],
+          floorLabel: [{ lang: "ja", text: "1F" }],
+          evidence: { sourceIds: ["demo-synthetic"], method: "field-survey", checkedDate: "2026-10-22" },
+        }],
+      };
+      await writeFile(file, JSON.stringify(invalid), "utf8");
+      const bad = invoke(routeScript, [root, "start", "goal"]);
+      expect(bad.status).toBe(2);
+      expect(bad.stderr).toContain("tenant.poi");
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("refuses a tenants.json whose content is null instead of reading it as absent (#419)", async () => {
+    const root = await fixtureDir();
+    try {
+      await writeFile(stationFile(root, "tenants.json"), "null", "utf8");
+      const result = invoke(routeScript, [root, "start", "goal"]);
+      expect(result.status).toBe(2);
+      expect(result.stdout).toBe("");
+      expect(result.stderr).toContain("tenants.json: expected object, got null");
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("routes start to goal and emits ENU plus renderer coordinates", async () => {
     const root = await fixtureDir();
     try {
@@ -101,6 +137,33 @@ describe("@gteki/cli", { timeout: 30_000 }, () => {
       const badOption = invoke(routeScript, [root, "start", "goal", "--today", "2026-02-30"]);
       expect(badOption.status).toBe(2);
       expect(badOption.stdout).toBe("");
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rejects node and POI argument shape mismatches after loading the station", async () => {
+    const root = await fixtureDir();
+    try {
+      const cases = [
+        { args: [root, "start", "goal", "--from-poi"], message: "--from-poi expects a POI id; start is a node id" },
+        { args: [root, "exit-a1", "goal"], message: "exit-a1 is a POI id; add --from-poi" },
+        { args: [root, "start", "goal", "--goal-poi"], message: "--goal-poi expects a POI id; goal is a node id" },
+        { args: [root, "start", "toilet"], message: "toilet is a POI id; add --goal-poi" },
+      ];
+      for (const { args, message } of cases) {
+        const result = invoke(routeScript, args);
+        expect(result.status).toBe(2);
+        expect(result.stdout).toBe("");
+        expect(result.stderr).toBe(`${message}\nUsage: route.ts <stationDir> <from> <comma-separated goals> [--step-free] [--unpaid-only] [--strict-hours] [--today YYYY-MM-DD] [--from-poi] [--goal-poi]\n`);
+      }
+
+      const unknownFrom = invoke(routeScript, [root, "poi:nope", "goal", "--from-poi"]);
+      expect(unknownFrom.status).toBe(1);
+      expect(JSON.parse(unknownFrom.stdout)).toMatchObject({ result: { ok: false, reason: "unknown_start" } });
+      const unknownGoal = invoke(routeScript, [root, "start", "poi:nope", "--goal-poi"]);
+      expect(unknownGoal.status).toBe(1);
+      expect(JSON.parse(unknownGoal.stdout)).toMatchObject({ result: { ok: false, reason: "unknown_goal" } });
     } finally {
       await rm(root, { recursive: true, force: true });
     }
