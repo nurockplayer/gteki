@@ -4481,8 +4481,8 @@
    "url": "https://www.newoman.jp/shinjuku/floorguide/detail/?scd=001856",
    "retrievedAt": "2026-10-24T11:39:53Z",
    "pageDate": "2026-10-17",
-   "status": "OK",
-   "hoursText": "月～土 11:00～20:30 日・祝日 11:00～20:00"
+   "status": "UNKNOWN",
+   "reason": "dated notice not about hours"
   },
   {
    "poiId": "shop-sjk-newoman-001853",
@@ -5286,7 +5286,7 @@
    "reason": "no date"
   },
   {
-   "poiId": "shop-sjk-rec-005",
+   "poiId": "shop-sjk-rec-007",
    "sourceId": "chain-daiso-keiomall-annex-sjk-2026-10",
    "url": "https://www.daiso-sangyo.co.jp/shop/detail/002645",
    "retrievedAt": "2026-10-24T11:36:30Z",
@@ -5295,7 +5295,7 @@
    "reason": "no date"
   },
   {
-   "poiId": "shop-sjk-rec-006",
+   "poiId": "shop-sjk-rec-008",
    "sourceId": "chain-karadafactory-keiomall-annex-sjk-2026-10",
    "url": "https://salon.karada39.com/detail/942/",
    "retrievedAt": "2026-10-24T11:36:31Z",
@@ -5304,7 +5304,7 @@
    "reason": "date older than 2026-04-27"
   },
   {
-   "poiId": "shop-sjk-rec-007",
+   "poiId": "shop-sjk-rec-009",
    "sourceId": "chain-haruka-keiomall-annex-sjk-2026-10",
    "url": "https://www.haruka.co.jp/salon/082/",
    "retrievedAt": "2026-10-24T11:36:33Z",
@@ -5313,7 +5313,7 @@
    "reason": "no date"
   },
   {
-   "poiId": "shop-sjk-rec-008",
+   "poiId": "shop-sjk-rec-010",
    "sourceId": "chain-krispykreme-ace-north-sjk-2026-10",
    "url": "https://krispykreme.jp/store/tokyo/odakyuace.html",
    "retrievedAt": "2026-10-24T11:36:34Z",
@@ -5322,7 +5322,7 @@
    "reason": "no date"
   },
   {
-   "poiId": "shop-sjk-rec-009",
+   "poiId": "shop-sjk-rec-011",
    "sourceId": "chain-pressbuttersand-ace-sjk-2026-10",
    "url": "https://bake.take-eats.jp/select-shop-info/3549",
    "retrievedAt": "2026-10-24T11:36:36Z",
@@ -5331,7 +5331,7 @@
    "reason": "no hours printed"
   },
   {
-   "poiId": "shop-sjk-rec-010",
+   "poiId": "shop-sjk-rec-012",
    "sourceId": "chain-renoir-keiomall-sjk-2026-10",
    "url": "https://www.ginza-renoir.co.jp/shopsearch/shops/tokyo/shinjuku-ku/caferenoir-shinjuku-keio-mall.html",
    "retrievedAt": "2026-10-24T11:36:36Z",
@@ -5340,7 +5340,7 @@
    "reason": "no date"
   },
   {
-   "poiId": "shop-sjk-rec-011",
+   "poiId": "shop-sjk-rec-013",
    "sourceId": "chain-mignon-ace-south-sjk-2026-10",
    "url": "https://mignon-mini-croissant.com/open-shinjuku-2022/",
    "retrievedAt": "2026-10-24T11:36:37Z",
@@ -5349,7 +5349,7 @@
    "reason": "date older than 2026-04-27"
   },
   {
-   "poiId": "shop-sjk-rec-012",
+   "poiId": "shop-sjk-rec-014",
    "sourceId": "chain-familymart-ace-sjk-2026-10",
    "url": "https://store.family.co.jp/points/21520",
    "retrievedAt": "2026-10-24T11:36:38Z",
@@ -5358,7 +5358,7 @@
    "reason": "no date"
   },
   {
-   "poiId": "shop-sjk-rec-013",
+   "poiId": "shop-sjk-rec-016",
    "sourceId": "chain-sagatani-keiomall-sjk-2026-10",
    "url": "http://foryou-group.co.jp/brandfc/kantou/entry-86.html",
    "retrievedAt": "2026-10-24T11:36:39Z",
@@ -5367,7 +5367,7 @@
    "reason": "no date"
   },
   {
-   "poiId": "shop-sjk-rec-014",
+   "poiId": "shop-sjk-rec-017",
    "sourceId": "chain-tsutsumi-keiomall-sjk-2026-10",
    "url": "https://www.tsutsumi.co.jp/shop/detail/tokyo/1624.html",
    "retrievedAt": "2026-10-24T11:36:40Z",
@@ -5376,13 +5376,13 @@
    "reason": "date older than 2026-04-27"
   },
   {
-   "poiId": "shop-sjk-rec-015",
+   "poiId": "shop-sjk-rec-018",
    "sourceId": "chain-hibiyakadan-ace-sjk-2026-10",
    "url": "https://shop.hibiyakadan.com/detail/80640/",
    "retrievedAt": "2026-10-24T11:36:41Z",
    "pageDate": "2026-10-20",
-   "status": "OK",
-   "hoursText": "月〜日 10:00〜21:00"
+   "status": "UNKNOWN",
+   "reason": "dated notice not about hours"
   },
   {
    "poiId": null,
