@@ -85,6 +85,38 @@
           "text": "Seibu Railway Ikebukuro Station, B1F改札口付近. Features: 自動体外式除細動器 (operator wording). Location is the operator's wording only (unverified, no route)."
         }
       ]
+    },
+    {
+      "id": "service-ikb-seibu-003",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "お忘れ物取扱所"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-ikebukuro-station-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-25), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "西武鉄道 池袋駅 西武南口。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Seibu Railway Ikebukuro Station, 西武南口. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
     }
   ],
   "removed": []
