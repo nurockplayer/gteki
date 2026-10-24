@@ -404,6 +404,8 @@ export interface StationBundle {
   coverage: Coverage;
   /** Suggested user-choosable start nodes (no indoor positioning is claimed). */
   spawnNodeIds?: string[];
+  /** Compass heading in degrees: 0 = north, 90 = east, clockwise. */
+  spawnHeadings?: Record<string, number>;
   assets?: Asset[];
   dataFiles?: DataFile[];
   /** Brands listed by stores' own directories (optional `gteki/tenants.json`). Facts only, never routing targets. */
@@ -418,6 +420,8 @@ export interface StationManifestFile {
   floors: Floor[];
   coverage: Coverage;
   spawnNodeIds?: string[];
+  /** Compass heading in degrees: 0 = north, 90 = east, clockwise. */
+  spawnHeadings?: Record<string, number>;
   assets?: Asset[];
   dataFiles?: DataFile[];
 }
