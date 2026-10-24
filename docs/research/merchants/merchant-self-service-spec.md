@@ -27,7 +27,7 @@
 | Who | A person acting for the shop (owner, manager, head office web/e-commerce team). One row per shop per submission. |
 | Automatic identity check | (1) contact e-mail on the shop's official domain, or (2) the submission cites an official URL that names the shop and the same contact/branch — for chains, the branch page in the operator's own store locator, not the brand homepage. Checked automatically; neither present → `EXCEPTION` (§5). |
 | Contact data | One contact point (e-mail or phone). No name, postal address or employee ID required. Free-text "role" only (e.g. `店長`, `本部`). |
-| Public repo | Contact data never enters `stations/**` or any public file. Public approval records carry no contact-derived value at all; a keyed HMAC (key kept private) and the timestamp live only in the private queue (§4). |
+| Public repo | Contact data never enters `stations/**` or any public file. Public acceptance records carry no contact-derived value at all; a keyed HMAC (key kept private) and the timestamp live only in the private queue (§4). |
 | Retention | Contact kept while the submission is open and 90 days after the decision, then deleted; deleted earlier on request. Withdrawal is logged without the contact. |
 | Chain vs branch | A brand-domain contact proves the brand, not the branch. Branch-specific facts still need the branch page or a field check. |
 
@@ -46,7 +46,7 @@
 | Hours | optional | text + "as of" date | `Poi.notes` with the OD-32 wording (§6) |
 | Official URL | optional | http(s) | `Source.url` (the shop's page) |
 | Photo | **not in Phase 1** | — | — |
-| Contact | yes | e-mail or phone | approval record only, never public (§2) |
+| Contact | yes | e-mail or phone | acceptance record only, never public (§2) |
 | Consent | yes | checkbox, versioned terms (§4) | `Source` licence fields |
 
 Position rules that follow from the schema and validator:
@@ -111,11 +111,11 @@ Rules:
 | `id` | `msub-<stn>-<n>` (e.g. `msub-ikb-001`); never reused |
 | `title` | `Merchant submission <submission id>` |
 | `publisher` | the shop's official name |
-| `url` | the shop's own page; when the shop has none, the public approval record URL for that submission (never empty) |
+| `url` | the shop's own page; when the shop has none, the public acceptance record URL for that submission (never empty) |
 | `license` | `LicenseRef-GTEki-merchant-grant` (DRAFT, §4); `license.url` points to the public, versioned terms page |
 | `rights` | `REUSABLE_WITH_CONDITIONS` once the grant is accepted (core-rights-a9) |
 | `usage` | `data` for facts used as position data; never `facts-only` for a submission that feeds `displayPosition` |
-| `decision` | the approval record (issue/comment URL + ISO date) |
+| `decision` | the acceptance record (issue/comment URL + ISO date) |
 | `attribution` | the shop name + 「店舗提供」 / "merchant-submitted", terms version |
 | `modified` | `true` if we reword, translate or reposition; otherwise `false` |
 | `retrievedAt` / `datasetDate` | submission date |
@@ -183,7 +183,7 @@ The shop and its position are separate records, so a move only updates the ancho
 **core-rights-a9**
 
 4. Final wording of the grant (§4), including whether "irrevocable" plus separate withdrawal is acceptable, and the `LicenseRef` name.
-5. ~~`Source.url` when a shop has no web page~~ — answered by core-rights-a9: use the submission's public approval record URL, never empty.
+5. ~~`Source.url` when a shop has no web page~~ — answered by core-rights-a9: use the submission's public acceptance record URL, never empty.
 6. ~~Who signs off an impersonation claim~~ — answered by core-rights-a9: the station lead decides identity disputes; core-rights only when the validity of the grant is questioned; the Owner only if the two disagree.
 
 **core-search-6a**
