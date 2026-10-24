@@ -109,6 +109,34 @@ describe("freeArea: what the search panel leaves unobstructed", () => {
   const PHONE = { w: 393, h: 852 };
   const DESKTOP = { w: 1440, h: 900 };
 
+  it("shrinks desktop width around a top-right minimap beside a left panel", () => {
+    expect(freeArea(DESKTOP, { x: 16, y: 58, w: 400, h: 260 }, 30, { x: 1234, y: 60, w: 190, h: 270 }))
+      .toEqual({ x: 416, y: 0, w: 818, h: 870 });
+  });
+
+  it("keeps the phone's free band below the minimap when that has the larger short side", () => {
+    expect(freeArea(PHONE, { x: 16, y: 58, w: 361, h: 96 }, 38, { x: 249, y: 60, w: 128, h: 220 }))
+      .toEqual({ x: 0, y: 280, w: 393, h: 534 });
+  });
+
+  it("leaves nonintersecting or off-canvas corners unchanged", () => {
+    const panel = { x: 16, y: 58, w: 361, h: 552 };
+    const expected = freeArea(PHONE, panel, 38);
+    expect(freeArea(PHONE, panel, 38, { x: 249, y: 60, w: 128, h: 220 })).toEqual(expected);
+    expect(freeArea(PHONE, panel, 38, { x: 400, y: 600, w: 128, h: 128 })).toEqual(expected);
+  });
+
+  it("clips the corner and breaks a short-side tie by area", () => {
+    expect(freeArea({ w: 200, h: 100 }, null, 0, { x: 80, y: -20, w: 140, h: 40 }))
+      .toEqual({ x: 0, y: 20, w: 200, h: 80 });
+  });
+
+  it("preserves the existing outputs with a null corner", () => {
+    for (const viewport of [PHONE, DESKTOP]) for (const panel of [null, { x: 16, y: 58, w: 361, h: 96 }]) {
+      expect(freeArea(viewport, panel, 38, null)).toEqual(freeArea(viewport, panel, 38));
+    }
+  });
+
   it("is the whole canvas without a panel (or a panel entirely off it)", () => {
     expect(freeArea(PHONE, null)).toEqual({ x: 0, y: 0, w: 393, h: 852 });
     expect(freeArea(PHONE, { x: 400, y: 0, w: 300, h: 900 })).toEqual({ x: 0, y: 0, w: 393, h: 852 });
