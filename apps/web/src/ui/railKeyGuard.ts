@@ -1,4 +1,5 @@
 import { takesWalkKey, type ClosestLike } from "../explorer/inputGuard.ts";
+import type { GuideKeyAction } from "../explorer/guideSteps.ts";
 
 /** The slice of a KeyboardEvent this guard needs (fakes are fine in tests). */
 export interface WalkKeyEventLike {
@@ -6,6 +7,17 @@ export interface WalkKeyEventLike {
   readonly target: unknown;
   stopImmediatePropagation(): void;
   stopPropagation(): void;
+}
+
+/** Whether a guide shortcut can run without typing into a field or crossing an open dialog. */
+export function shouldHandleGuideKey(
+  action: GuideKeyAction | null,
+  target: ClosestLike | null,
+  coverageDialogOpen: boolean,
+  rideDialogOpen: boolean,
+): boolean {
+  return Boolean(action) && !coverageDialogOpen && !rideDialogOpen &&
+    !target?.closest?.("input, textarea, select, [contenteditable]");
 }
 
 /**

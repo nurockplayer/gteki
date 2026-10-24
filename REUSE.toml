@@ -82,7 +82,24 @@ SPDX-License-Identifier = "CC0-1.0"
 # The LicenseRef files in LICENSES/ are pointers (URL + recorded snapshot sha256), not texts.
 # The SPDX-FileCopyrightText values name the PUBLISHER as the repo records it, not a copyright
 # holder (GIS open item 11); "modified by GTEki contributors" is added where the data was modified.
-# Re-run GIS's list after the pending PRs land: #110, #115 (context GLBs), #117, #127, #61.
+# GIS re-ran the list for PRs #110, #115, #117, #127 and #61 (Issue #161).
+
+# --- 4fonts. Noto Sans JP, pinned Sans2.004; modified subset under our own alias ------------
+[[annotations]]
+path = ["assets/fonts/**", "apps/web/src/fonts/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "© 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+SPDX-License-Identifier = "OFL-1.1"
+
+# --- 4-research. Fallback for research data folders (gteki-1b written ruling, 2026-10-24) -------
+# Facts-only research data with a recorded source gets an explicit annotation and never falls
+# through to the Apache-2.0 default above. Datasets with their own licence get exact-path blocks
+# later in this file, which override this fallback (later annotations win).
+[[annotations]]
+path = ["docs/research/merchants/**", "docs/research/lines/**", "docs/research/facilities/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "No licence granted: facts-only sources (operator and venue pages); compiled by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-facts-only-no-licence"
 
 # --- 4a. MLIT Project PLATEAU ubld 53394576 (Ikebukuro) and files derived from it -------------
 # Credit (Ikebukuro): 「出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成」
@@ -91,12 +108,14 @@ SPDX-License-Identifier = "CC0-1.0"
 # Road (tran) geometry: Owner risk acceptance, NOT a licence finding
 # (docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md); keeps its own terms.
 # Context GLBs from #110 land under stations/ikebukuro/gteki/assets/ and are covered by the first
-# glob. #115's Shinjuku context GLB path is not known yet: add it here when it lands.
+# glob. #115 committed no Shinjuku context GLB; those files stayed in the private store, so there
+# is no Shinjuku GLB path to add here. The #61 surface layer is PLATEAU-derived and flattened.
 [[annotations]]
 path = [
   "stations/ikebukuro/gteki/assets/**",
   "stations/ikebukuro/scene/*.json",
   "tools/gis/test/fixtures/plateau-catalog-meshes-13116-13104.json",
+  "stations/shinjuku/data/surface.json",
 ]
 precedence = "override"
 SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; modified by GTEki contributors"
@@ -131,7 +150,7 @@ path = [
   "tests/e2e/specs/__goldens__/02-navigation.spec.ts/ikebukuro-routes.json",
 ]
 precedence = "override"
-SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; modified by GTEki contributors; also cites facts-only sources (豊島区, 東京地下鉄)"
+SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; modified by GTEki contributors; also cites facts-only sources (豊島区, 東京地下鉄, 西武鉄道, 東武百貨店, 豊島区観光協会, 池袋ショッピングパーク, 東武ホープセンター)"
 SPDX-License-Identifier = "LicenseRef-PLATEAU-site-policy AND LicenseRef-facts-only-no-licence"
 
 # --- 4c. Hokonavi E27 (Toei Oedo, Shinjuku): shipped under the Owner's override ---------------
@@ -147,7 +166,8 @@ SPDX-License-Identifier = "LicenseRef-PLATEAU-site-policy AND LicenseRef-facts-o
 # station.json is E27-derived (coverage polygons, floor labels, node ids; GIS P1). Its own
 # "license: PDL 1.0" line is stale against Q11 = No; the Shinjuku lead owns that file.
 # stations/shinjuku/sources/manifest.json stays at the default (GTEki-authored provenance list).
-# #61 will add stations/shinjuku/data/surface.json.
+# #61's surface.json is mapped to PLATEAU in 4a; its E27-derived fence output and QA fixtures
+# (GIS disposition in Issue #161) are mapped here.
 [[annotations]]
 path = [
   "stations/shinjuku/gteki/station.json",
@@ -155,7 +175,9 @@ path = [
   "stations/shinjuku/gteki/pois.json",
   "stations/shinjuku/data/plan.json",
   "stations/shinjuku/data/import-report.json",
-  "stations/shinjuku/data/surface.json",
+  "stations/shinjuku/scene/fare-restricted.generated.json",
+  "stations/shinjuku/test/fixtures/restricted-conflicts.json",
+  "stations/shinjuku/tools/vantages.json",
   "docs/gis/networks/hokonavi-oedo-shinjuku-*",
   "docs/gis/history/**/networks/hokonavi-oedo-shinjuku-*",
   "tests/e2e/specs/__goldens__/02-navigation.spec.ts/shinjuku-routes.json",
@@ -163,6 +185,14 @@ path = [
 precedence = "override"
 SPDX-FileCopyrightText = "国土交通省（ほこナビDP）; modified by GTEki contributors"
 SPDX-License-Identifier = "LicenseRef-Hokonavi-E27-Owner-override"
+
+# The baked street layer (#121) is derived from surface.json (PLATEAU, 4a) and the E27 plan and
+# bundle (above), so it carries both markers. Before #121 it shipped as surface-baked.ts at the default.
+[[annotations]]
+path = "stations/shinjuku/data/surface-baked.json"
+precedence = "override"
+SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; 国土交通省（ほこナビDP）; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-PLATEAU-site-policy AND LicenseRef-Hokonavi-E27-Owner-override"
 
 # --- 4d. Ikebukuro Hokonavi walking network (historic, not used, nothing ships) ---------------
 # Only inventories are committed. CSV entries cite the digital.go.jp PDL 1.0 URL; GeoJSON
@@ -262,3 +292,83 @@ SPDX-License-Identifier = "CC-BY-4.0"
 # route; scheduled for removal under #124) and get the same no-grant marker as the other POI files.
 
 # OSM: no OSM data is committed (cross-check only), so there is no ODbL annotation.
+
+# --- 4i. KSJ N02-2025 (国土数値情報 鉄道) context overlay (director ruling on #365) -------------
+# The KSJ site terms are cited as published; "CC BY 4.0" on the product page is not treated as a
+# CC BY grant (same handling as PLATEAU). Credit and modification notice: NOTICE 4.11.
+[[annotations]]
+path = "stations/*/gteki/context/ksj_n02_2025_*.glb"
+precedence = "override"
+SPDX-FileCopyrightText = "国土交通省 国土数値情報; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-KSJ"
+
+# --- 4j. S03 plus E27: Shinjuku Tokyo-terminal join research (director ruling on #365) --------
+# Derived from S03 (東京都都市整備局, shisetsu_root.zip; raw stays outside the repo) and E27; both
+# terms apply. Credits: 出典：東京都都市整備局「新宿駅周辺の施設情報等」 and the E27 credits in 4c.
+[[annotations]]
+path = [
+  "docs/stations/shinjuku/research/2026-10-21-tokyo-terminal-join-summary.json",
+  "docs/stations/shinjuku/research/figures/2026-10-21-tokyo-e27-overlay.png",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "東京都都市整備局; 国土交通省（ほこナビDP）; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-S03 AND LicenseRef-Hokonavi-E27-Owner-override"
+
+# --- 4k. S03 line names: Shinjuku searchable line POIs (lines-lead WP1; Owner Q2/Q3, gteki-1b R-1/R-2) ---
+# Plain gate and platform names copied from S03 com-entity.geojson (ZIP sha256 fc3466270c08…4ba31);
+# no geometry, no position. Credit and change notice: NOTICE 4.7.
+[[annotations]]
+path = "docs/research/lines/shinjuku-line-pois.json"
+precedence = "override"
+SPDX-FileCopyrightText = "東京都都市整備局; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-S03"
+
+# --- 4o. S03 line names in the Shinjuku station POIs (import of #411; Owner Q2/Q3, gteki-1b R-1/R-2) ---
+# pois.json keeps its E27 content (4c) and adds 45 S03 gate and platform names: search only,
+# AREA_ONLY, no position, no floor. station.json only cites tokyo-s03-zip and stays under 4c.
+# Credit and change notice: NOTICE 4.7.
+[[annotations]]
+path = "stations/shinjuku/gteki/pois.json"
+precedence = "override"
+SPDX-FileCopyrightText = "国土交通省（ほこナビDP）; 東京都都市整備局; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-Hokonavi-E27-Owner-override AND LicenseRef-S03"
+
+# --- 4n. Facts-only line POIs for Shinjuku (lines-lead WP4; #26 Tokyo Metro, OD-01 A Toei; NOTICE 4.12) ---
+[[annotations]]
+path = [
+  "docs/research/lines/shinjuku-line-pois-wp4.json",
+  "docs/research/lines/shinjuku-line-pois-wp4-notes.md",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "No licence granted: facts-only sources (東京地下鉄, 東京都交通局); compiled by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-facts-only-no-licence"
+
+# --- 4p. Toei S10 「駅構内のお店」 row in the Shinjuku merchant batch (#418; NOTICE 4.6) -----------
+# One row (shop name and location text) of the 新宿西口 CSV, CC BY 4.0 at dataset level, plus the
+# facts-only references in the same files (NOTICE 4.9). The log quotes the same two values.
+[[annotations]]
+path = [
+  "docs/research/merchants/shinjuku-merchants-batch1.json",
+  "docs/research/merchants/shinjuku-merchants-batch1-log.md",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "東京都交通局; facts-only sources; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-Toei-S10 AND LicenseRef-facts-only-no-licence"
+
+# --- 4q. Facts-only transfer facts (lines-lead WP11; #26 Tokyo Metro, OD-01 A / OD-34 Toei, OD-25 Seibu) ---
+[[annotations]]
+path = [
+  "docs/research/lines/transfer-facts-wp11.json",
+  "docs/research/lines/transfer-facts-wp11-notes.md",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "No licence granted: facts-only sources (東京地下鉄, 東京都交通局, 西武鉄道); compiled by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-facts-only-no-licence"
+
+# --- 4r. S03 approximate gate/transfer points for Shinjuku (GIS #463, schema #464) ---
+# Derived from the S03 level geometry; search display only, not for routing. Credit and change notice: NOTICE 4.7.
+[[annotations]]
+path = "stations/shinjuku/sources/s03-approx-positions.json"
+precedence = "override"
+SPDX-FileCopyrightText = "東京都都市整備局; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-S03"

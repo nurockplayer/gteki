@@ -12,6 +12,7 @@ PNG stores pow(linear / scale, 1/2.2) (top 0.2% clipped); decode as gamma 2.2 (s
 """
 import argparse
 from array import array
+from collections import Counter
 import hashlib
 import json
 import math
@@ -25,6 +26,12 @@ import zlib
 import bpy
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
+
+# Blender --python does not promise to add the script directory to sys.path.
+# Resolve station data relative to this file, independently of the host cwd.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from fitting_exclusion import BOX_FACES, FittingExclusion, fitting_box
+from sign_sightlines import ROOT
 
 BAKED = {"floor", "wall", "ceiling", "stairs_ramps", "barriers", "transport", "floor_elements"}
 DOWN, UP = Vector((0, 0, -1)), Vector((0, 0, 1))
@@ -90,6 +97,10 @@ def emission(name, color, strength):
 
 
 def fixtures(objects):
+    signs = json.loads((ROOT / "scene/signage.json").read_text())["signs"]
+    edges = {e["id"]: e for e in json.loads((ROOT / "gteki/graph.json").read_text())["edges"]}
+    exclusion = FittingExclusion(signs, edges)
+    skipped, triggered = 0, Counter()
     def tree(roles):
         vertices, faces = geometry([o for o in objects if o.get("gteki_role") in roles])
         return BVHTree.FromPolygons(vertices, faces, all_triangles=True) if faces else None
@@ -105,9 +116,6 @@ def fixtures(objects):
     low, high = min(p.z for p in points), max(p.z for p in points)
     rays = [Vector((math.cos(i * math.tau / 16), math.sin(i * math.tau / 16), 0)) for i in range(16)]
     vertices, faces, records = [], [], []
-    box = [(-1, -1, -1), (1, -1, -1), (1, 1, -1), (-1, 1, -1),
-           (-1, -1, 1), (1, -1, 1), (1, 1, 1), (-1, 1, 1)]
-    quads = [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
     ranges = [range(math.floor(min(p.dot(v) for p in points) / step),
                     math.ceil(max(p.dot(v) for p in points) / step) + 1)
               for v, step in ((along, 2.4), (across, 3.0))]
@@ -130,11 +138,19 @@ def fixtures(objects):
                 if obstacles and any(obstacles.ray_cast(mid, ray, 0.5)[0] is not None for ray in rays):
                     continue
                 center = Vector((xy.x, xy.y, top.z - 0.03 - 0.02))
+                box = fitting_box(center, yaw)
+                blockers = exclusion.blockers(box)
+                if blockers:
+                    skipped += 1
+                    triggered.update(blockers)
+                    continue
                 offset = len(vertices)
-                vertices.extend(center + along * (x * 0.6) + across * (y * 0.075) + UP * (z * 0.02)
-                                for x, y, z in box)
-                faces.extend(tuple(offset + k for k in face) for face in quads)
+                vertices.extend(box)
+                faces.extend(tuple(offset + k for k in face) for face in BOX_FACES)
                 records.append({"centre_enu_m": list(center), "yaw_radians": yaw})
+    print(f"FIXTURES skipped {skipped} for sign sight-lines; " +
+          json.dumps([{"sign": sid, "face": face, "fittings": count}
+                      for (sid, face), count in sorted(triggered.items())]), flush=True)
     if not records:
         raise RuntimeError("no fixture candidates passed the geometry checks")
     obj = mesh_object("light_fixtures", vertices, faces)

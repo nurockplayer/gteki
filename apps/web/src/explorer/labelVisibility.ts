@@ -30,13 +30,13 @@ export const OCCLUDED_FADE_MAX_M = 40;
  * Origin and destination labels stay findable like the x-ray route: occlusion never fades or hides them,
  * and on another floor they fade instead of hiding. Any other label behind a sign hides (the sign already
  * carries wayfinding text, so a faded label on its face is clutter); one behind geometry fades while within
- * OCCLUDED_FADE_MAX_M of the camera and hides beyond it.
+ * OCCLUDED_FADE_MAX_M of the camera and hides beyond it, except in overview where it always fades.
  */
-export function labelState(l: { occluded: LabelOcclusion; distance: number; onFocusFloor: boolean; selected: boolean }): LabelState {
+export function labelState(l: { occluded: LabelOcclusion; distance: number; onFocusFloor: boolean; selected: boolean; overview: boolean }): LabelState {
   if (l.selected) return l.onFocusFloor ? "shown" : "faded";
   if (!l.onFocusFloor) return "hidden";
   if (l.occluded === "none") return "shown";
-  return l.occluded === "sign" || l.distance > OCCLUDED_FADE_MAX_M ? "hidden" : "faded";
+  return l.occluded === "sign" || (!l.overview && l.distance > OCCLUDED_FADE_MAX_M) ? "hidden" : "faded";
 }
 
 /**

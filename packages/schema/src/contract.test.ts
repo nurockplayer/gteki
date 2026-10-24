@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { asRealStation, createSyntheticBundle, syntheticEdge as edge } from "../../navigation/src/fixtures.ts";
 import { dataFileFactsOnlySources, isOpenAt, parseHm, parseStationFiles, validateBundle } from "./index.ts";
-import type { CoverageArea, CoverageText, DataFile, GraphFile, HoursSpec, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
+import type { ApproximatePosition, CoverageArea, CoverageText, DataFile, GraphFile, HoursSpec, Poi, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
 
 const ev = { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" };
 const DECISION = { url: "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", date: "2026-10-21" };
@@ -373,6 +373,52 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     expect(errors(empty)).toContain("coverage.source");
   });
 
+  it("keeps approximate positions search-display-only: no connectors, no displayPosition, a reusable source (#463)", () => {
+    const approximate = (over: Partial<ApproximatePosition> = {}): ApproximatePosition => ({
+      east: 12.5, north: -3, uncertaintyM: 25, method: "area_weighted_centroid",
+      navigationUse: "NOT_FOR_ROUTING", floor: "UNVERIFIED", ...over,
+    });
+    const place = (over: Partial<Poi> = {}) => {
+      const b = createSyntheticBundle();
+      Object.assign(b.pois[0]!, { connectorNodeIds: [], displayPosition: null, approximatePosition: approximate() }, over);
+      return b;
+    };
+    // A well-formed approximate point round-trips through the shape check and validates clean.
+    const parsed = parseStationFiles(...split(place()));
+    expect(parsed.ok).toBe(true);
+    expect(parsed.bundle?.pois[0]!.approximatePosition).toEqual(approximate());
+    expect(errors(place())).toEqual([]);
+    // Malformed values are shape errors, never silently kept.
+    for (const bad of [
+      { ...approximate(), east: Number.NaN },
+      { ...approximate(), north: Number.POSITIVE_INFINITY },
+      { ...approximate(), uncertaintyM: 0 },
+      { ...approximate(), uncertaintyM: -1 },
+      { ...approximate(), method: "" },
+      { ...approximate(), method: "   " },
+      { ...approximate(), navigationUse: "ROUTING" },
+      { ...approximate(), floor: "VERIFIED" },
+      { ...approximate(), uncertaintyM: "25" },
+    ]) {
+      const shaped = parseStationFiles(...split(place({ approximatePosition: bad as unknown as ApproximatePosition })));
+      expect(shaped.ok, JSON.stringify(bad)).toBe(false);
+      expect(shaped.issues.map((i) => i.code), JSON.stringify(bad)).toContain("shape.type");
+    }
+    // An approximate point can never be routed to or treated as a precise display position.
+    expect(errors(place({ connectorNodeIds: ["a"] }))).toContain("poi.approximate.routing");
+    expect(errors(place({ displayPosition: { x: 0, y: 0, z: 0 } }))).toContain("poi.approximate.display");
+    // On a real station it needs a reusable data source, which may be REUSABLE_WITH_CONDITIONS.
+    const real = (rights: "REUSABLE_WITH_CONDITIONS" | "REFERENCE_ONLY") => {
+      const b = asRealStation(place());
+      b.edges = [];
+      b.sources.push({ ...b.sources[0]!, id: "approx-source", rights });
+      b.pois[0]!.evidence = { sourceIds: ["approx-source"], method: "synthetic-fixture", checkedDate: "2026-10-20" };
+      return b;
+    };
+    expect(errors(real("REUSABLE_WITH_CONDITIONS"))).toEqual([]);
+    expect(errors(real("REFERENCE_ONLY"))).toContain("poi.approximate.rights");
+  });
+
   it("keeps unknown and symbolic floor elevations null and rejects unknown elevation sources", () => {
     for (const elevationSource of ["unknown", "symbolic"] as const) {
       const b = createSyntheticBundle();
@@ -584,6 +630,40 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     // ...but it is still cited, so it still needs a landing URL.
     b.sources[1]!.url = "";
     expect(errors(b)).toContain("source.url");
+  });
+
+  it("accepts plain and localized licence names and rejects empty names", () => {
+    const b = asRealStation(createSyntheticBundle());
+    b.edges = [];
+    const src = b.sources.find((s) => s.id === "fixture-access")!;
+    src.license = { name: "Legacy licence", url: "https://example.org/licence" };
+    expect(errors(b)).not.toContain("source.license");
+    src.license = { name: [{ lang: "ja", text: "日本語のライセンス" }, { lang: "en", text: "English licence" }], url: "https://example.org/licence" };
+    expect(errors(b)).not.toContain("source.license");
+    for (const name of ["", "  ", [], [{ lang: "ja", text: "" }], [{ lang: " ", text: "Licence" }]]) {
+      src.license = { name: name as string | import("./index.ts").LocalizedText[], url: "https://example.org/licence" };
+      expect(errors(b), JSON.stringify(name)).toContain("source.license");
+    }
+  });
+
+  it("requires a full derivation record whenever an asset has a summary", () => {
+    const b = createSyntheticBundle();
+    b.assets = [{
+      id: "summary-only", uri: "assets/summary-only.glb", format: "glb", floorIds: [], role: "visual",
+      sourceIds: ["fixture-access"], derivationSummary: [{ lang: "en", text: "Model simplified for display" }],
+    }];
+    const [manifest, graph, pois] = split(b);
+    manifest.assets = b.assets;
+    const missing = parseStationFiles(manifest, graph, pois);
+    expect(missing.ok).toBe(false);
+    expect(missing.issues.map((issue) => issue.code)).toContain("asset.derivationSummary");
+
+    for (const derivation of ["", "  "]) {
+      manifest.assets![0]!.derivation = derivation;
+      const parsed = parseStationFiles(manifest, graph, pois);
+      expect(parsed.ok, JSON.stringify(derivation)).toBe(false);
+      expect(parsed.issues.map((issue) => issue.code), JSON.stringify(derivation)).toContain("asset.derivationSummary");
+    }
   });
 
   it("requires the #26 decision reference on a real facts-only source", () => {

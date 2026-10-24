@@ -37,7 +37,7 @@ pnpm typecheck
     no post FX).
 - **Shared explorer** (core lane, `apps/web`): discovers `gteki/` automatically. Search, route,
   guided walk and free walk run there.
-- **Street-context budget probe** (draws/tris underground vs street, one run per tier; real GPU, not in CI): after `pnpm build`, in `tests/e2e` run `GTEKI_BUDGET=1 GTEKI_ROOT=<repo> pnpm exec playwright test specs/10-ikebukuro-context-budget.spec.ts --project=phone-chromium` (low) or `--project=desktop-chromium` (high); results land in `<repo>/.qa/ikebukuro-context-budget/`. It counts every pass at the WebGL boundary, so its numbers are not comparable with the scene-pass budget below; to check a change, run it once on the base branch and pass that run's `.json` as `GTEKI_BUDGET_BASELINE` (underground views must match, street views may add at most the context's own 8 meshes). Measured 2026-10-22, low tier, all passes: underground p50 44–53 draws / 132–136k triangles on both main and #110; street views +5–9 draws and +20–30k triangles with the context.
+- **Street-context budget probe** (draws/tris underground vs street, one run per tier; real GPU, not in CI): after `pnpm build`, in `tests/e2e` run `GTEKI_BUDGET=1 GTEKI_ROOT=<repo> pnpm exec playwright test specs/10-ikebukuro-context-budget.spec.ts --project=phone-chromium` (low) or `--project=desktop-chromium` (high); results land in `<repo>/.qa/ikebukuro-context-budget/`. It counts every pass at the WebGL boundary, so its numbers are not comparable with the scene-pass budget below; to check a change, run it once on the base branch and pass that run's `.json` as `GTEKI_BUDGET_BASELINE` (underground views must match, street views may add at most the context's own 10 meshes (8 PLATEAU + 2 N02)). Measured 2026-10-22, low tier, all passes: underground p50 44–53 draws / 132–136k triangles on both main and #110; street views +5–9 draws and +20–30k triangles with the context.
 - **Capture tooling** (dev only): `gt.capture(name)` and `gt.walkCapture(...)` write frames to
   `build/captures/`.
 - **Repeater-sign screenshots and atlas-size probe** (opt-in, needs a real GPU and a built `apps/web`; run from `tests/e2e`): `GTEKI_REPEATERS=1 GTEKI_ROOT=<checkout> pnpm exec playwright test specs/11-ikebukuro-repeater-signs.spec.ts --project=desktop-chromium` (or `--project=phone-chromium` for the low tier); writes `.qa/ikebukuro-repeaters/`.
@@ -191,6 +191,17 @@ library's `_h3200` variant is round only and no kit-matched round column is tall
 sleeve (42 square, 103 round), 136 are listed with a reason and keep the flat column. The PLATEAU column stays in `barriers` and stays the collider; the sleeve is visual only. The finish is the
 kit's generic tile or enamel, not a survey of the real columns.
 
+**Kit sign frames (batch 3).** `scene/kit_signs.ts` stretches `gteki_sign_frame_9slice_h480_d80` around each
+sign using the fitted face dimensions from `buildSigns`, centred and facing with the existing sign. The outer width
+includes the two 3 cm side bars so the opening contains both faces, clamped to 0.5–6.1 m with a warning outside that
+range. Low-ceiling frames match the existing panel height; flush signs have no rods. Other rods and their ceiling
+canopies meet `ceilingZ`. Faces sit 1 mm inside the kit's recessed face plane; a failed kit keeps the original sign
+box and faces. Each part is one instance batch for the whole station, not per kit tile (fewer draws: about +40 draws p50 on desktop instead of +213 with 16 m tiles, spec 13 on 2026-10-23), and visual only. These are generic Lane E presentation
+(CC BY 4.0, GTEki contributors), not a survey of the real Ikebukuro housings. `loadSignKit` offers
+`omitPhoneRods`, which `scene.ts` turns on: phones keep the frames but not the rods, collars and canopies (all 119
+frames: ~123k triangles on desktop, ~40k on phones with rods, ~19k without). The real-GLB triangle report is printed
+by `scene/kit_signs.test.ts`.
+
 **Dressing anchors.** `python3 -I pipeline/build_dressing_anchors.py` (from `build/ubld_enu.json`; it refuses an
 extract whose GML sha256 differs from `gteki/station.json`) writes `scene/dressing_anchors.json`, ENU metres to
 1 mm, deterministic. Facts only, derived from the surveyed EF_35 and EF_80 triangles:
@@ -211,10 +222,13 @@ extract whose GML sha256 differs from `gteki/station.json`) writes `scene/dressi
 the anchors and PLATEAU GML sha256 plus the flight or lane ids it serves. Each stair flight becomes two
 `stair_dressing` entries so every GLB has one bake role: `..._nosing` (`stairs_ramps`) and `..._rails_{post,wall}`
 (handrails, `barriers`). `step_count` is the surveyed nosing count, `riser_mm` = rise / (steps - 1), `tread_mm` the mean
-nosing run, and riser, tread and width are rounded to whole mm (coarser snapping accumulated up to 40 mm by the top of a long flight); identical flights share one id and are instanced.
+nosing run. Risers keep whole-mm precision when the surveyed nosings fit the built strips; a failing flight retries at
+0.1 mm precision. Tread and width stay rounded to whole mm. IDs encode a one-decimal riser in tenths without a dot
+(`r1553` means 155.3 mm); identical flights share one id and are instanced.
 `rail_mount` is `wall` when the base GLB's wall mesh lies within 0.3 m of both stair sides, else `post`. Flights with
-an implausible riser (outside 100-220 mm) or tread (under 200 mm), surveyed nosings more than 6 mm (the strip height) off the strips the generator builds with the whole-millimetre riser, and single-step flights are skipped and listed with
-their reason. Escalators carry `rise_mm`, `angle_deg` = atan2(rise, quad run) (the surveyed quad is the straight incline between the
+an implausible riser (outside 100-220 mm) or tread (under 200 mm), nosings more than 6 mm off both generated strips, and
+single-step flights are skipped with a reason. This covers stair011, stair012, stair014 and stair027 with the fallback;
+stair013 remains skipped because its risers are uneven. Escalators carry `rise_mm`, `angle_deg` = atan2(rise, quad run) (the surveyed quad is the straight incline between the
 floors, so no `run_mm`), `width_mm` (tread width, read as the clear gap between the truss plates) and the default 800 mm
 landing. The placement origin is the bottom comb, 1.2 m before the quad's lower line along `dir` at the lower floor height
 (the top comb is 1.2 m past the upper line). Direction is not surveyed and is left out of the params. Placements carry `tiers`: nosings draw on `low` and `high`, escalators on `high` only (low waits for a phone measurement), and rails (6 segments) on `high` only and only for `main_route` flights, those a Lane F golden guided route walks (a polyline within 1 m of the flight's centre line at a matching height).
@@ -407,6 +421,10 @@ legs is [docs/b1-cue-audit.md](docs/b1-cue-audit.md).
   (`scene/walker_replay.test.ts`, harness `pipeline/walker_replay.ts`; `scene/walker_replay.heavy.test.ts`
   is the dense version, `pnpm test:heavy`). Negative controls: removing the longest panel, and removing
   every fence. Fences block the walker only; the graph, routing and gridnav are unchanged.
+
+## KSJ N02 context overlay
+
+`context/ksj_n02_2025_r700.glb` shows KSJ N02-2025 railway and station geometry clipped to a 700 m origin disc, with coarse kind and feature hashes only: no source names, codes or attributes. It is **NOT_FOR_ROUTING**, **UNVERIFIED**, visual only, and never walkable or a collider. N02 has no underground/at-grade field, so the ribbons assert no track level. It shares the street-context visibility gate and uses a +0.02 m renderer y offset above the constant 32.5 m z basis; the offset is presentation, not data z. Credit (CC BY 4.0, displayed in the bottom credit strip and Credits/coverage dialog): 出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html）を加工して作成
 
 ## Street-level context (#39)
 
