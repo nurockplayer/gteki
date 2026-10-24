@@ -1,0 +1,2600 @@
+{
+  "schema": "gteki.station/0.1",
+  "note": "Shinjuku batch 1 facts-only merchant transcription. Entries are unverified directory listings; locations and entrances are not route evidence.",
+  "sources": [
+    {
+      "id": "toei-shinjuku-stores-2026-10",
+      "title": "新宿線 大江戸線 新宿駅 ｜ 東京都交通局",
+      "publisher": "東京都交通局",
+      "url": "https://www.kotsu.metro.tokyo.jp/other/kanren/stores/shinjuku.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311",
+        "date": "2026-10-24"
+      },
+      "attribution": "新宿線 大江戸線 新宿駅 ｜ 東京都交通局 (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T08:54:54Z",
+      "datasetDate": null,
+      "notes": "1 shop imported. Excluded 2 coin lockers, a photo booth, and an ATM. No category markers removed; page undated."
+    },
+    {
+      "id": "toei-shinjuku-nishiguchi-stores-2026-10",
+      "title": "駅構内のお店 新宿西口",
+      "publisher": "東京都交通局",
+      "url": "https://www.opendata.metro.tokyo.lg.jp/kotsu/other/other_stores_shinjuku-nishiguchi.csv",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311",
+        "date": "2026-10-24"
+      },
+      "attribution": "駅構内のお店 新宿西口 (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T08:54:54Z",
+      "datasetDate": "2025-01-30",
+      "notes": "1 shop imported from the CSV (catalog last-updated date 2025-01-30). Excluded 2 coin lockers, a photo booth, 3 ATMs, baby-carriage rental service, and a childcare-products vending machine."
+    },
+    {
+      "id": "tokyometro-shinjuku-shops-2026-10",
+      "title": "施設・店舗 | 新宿駅/M08 | 東京メトロ",
+      "publisher": "東京地下鉄",
+      "url": "https://www.tokyometro.jp/station/shinjuku/shop/index.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311",
+        "date": "2026-10-24"
+      },
+      "attribution": "施設・店舗 | 新宿駅/M08 | 東京メトロ (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T08:54:54Z",
+      "datasetDate": null,
+      "notes": "4 named shops imported. The 売店 category marker was dropped from the shop name. Two unnamed 期間限定ショップ listings were skipped. Excluded 証明写真, 3 ATMs, コインロッカー, 東京メトロッカー＋（Tokyo Metlocker PLUS）, モバイルバッテリーレンタル機, and モバイルWi-fiレンタル機. Page undated."
+    },
+    {
+      "id": "odakyu-ace-shopsearch-2026-10",
+      "title": "ショップ検索（カテゴリ）すべて | 小田急エース │ OdakyuSCポータル",
+      "publisher": "小田急SCディベロップメント",
+      "url": "https://www.odakyu-sc.com/odakyu-ace/shopsearch/category/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311",
+        "date": "2026-10-24"
+      },
+      "attribution": "ショップ検索（カテゴリ）すべて | 小田急エース │ OdakyuSCポータル (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T08:54:54Z",
+      "datasetDate": null,
+      "notes": "44 shops imported from the all-results listing; deduplicated across category views. Category lists ファッション, サービス・その他, レストラン・カフェ, and フード were read; ライフスタイル returned a reader cache miss, and its names were checked against the all-results list. No category icons or markers were removed. Listing name デリパのひろば conflicts with its detail-page title デリパのちか弁; the all-results listing text was used. Page undated."
+    },
+    {
+      "id": "keio-mall-ekishop-2026-10",
+      "title": "京王モール・京王モールアネックス 公式サイト | 京王えきＳＨＯＰガイド",
+      "publisher": "京王SCクリエイション",
+      "url": "https://ekishop.keio-sc.jp/keiomall-keiomallannex/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311",
+        "date": "2026-10-24"
+      },
+      "attribution": "京王モール・京王モールアネックス 公式サイト | 京王えきＳＨＯＰガイド (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T08:54:54Z",
+      "datasetDate": null,
+      "notes": "24 京王モール shops and 5 京王モールアネックス shops imported. The a-n/b-n placement codes were omitted from names and recorded via detail-URL codes. Excluded セブン銀行ATM. Page undated."
+    }
+  ],
+  "pois": [
+    {
+      "id": "shop-sjk-toei-001",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "カレーショップC＆C"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-stores-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "都営 新宿駅 B1階改札外コンコース（2出口付近）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Toei Shinjuku Station, B1階改札外コンコース（2出口付近）. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-toeinishi-001",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ファミリーマート（ミニ・コンビニ）"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-nishiguchi-stores-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "都営 新宿西口 B3階改札外コンコース（JR新宿駅方面改札付近）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Toei Shinjuku-nishiguchi Station, B3階改札外コンコース（JR新宿駅方面改札付近）. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-metro-001",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "LAWSON METRO'S"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-shops-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ 新宿駅 新宿東口店。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Shinjuku Station, 新宿東口店. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-metro-002",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "OOTORI BANANA"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-shops-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ 新宿駅 A8出入口付近。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Shinjuku Station, A8出入口付近. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-metro-003",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "MS・Style"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-shops-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ 新宿駅。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Shinjuku Station. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-metro-004",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ミスターミニット 新宿東口店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-shops-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ 新宿駅。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Shinjuku Station. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-100021",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "カフェテラス シルエット"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 南館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-100071",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "カフェ ラリー"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-100145",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ビアードパパ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 南館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-100311",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ZETTERIA"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 南館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-100330",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "とんかつ新宿さぼてん"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 南館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-100350",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "新和そば"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 南館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-100400",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ファミリーマート"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 南館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-100811",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "茶の池田や"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 南館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-101504",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "HIBIYA KADAN"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 南館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-101822",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ココカラファイン薬局"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 南館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-101960",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "JINS"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 南館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103050",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "日産レンタカー"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 南館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103314",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ミニヨン"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 南館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103315",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "SHINJUKU DELISH PARK"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103316",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "だし茶漬け＋肉うどん　えん"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 南館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103317",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "箱根そば本陣"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 南館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103319",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "リンツ ショコラ ブティック"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 南館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103320",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ジューススタンド バブルス"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103322",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ポンパドウル"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103323",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "Butz SAND × 献心亭 匠"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103324",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ぼんたぼんた"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103325",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "デリパのひろば"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103327",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ゴディバ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103329",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "サブレミシェル"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103330",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "プレスバターサンド"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103331",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "POP UP ONE"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103332",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "麻布かりんと"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103334",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "あげもちCocoro"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103336",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ル ペパン"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103337",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "スターバックス コーヒー"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103338",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "クリスピー・クリーム・ドーナツ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103339",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "こだわりや"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103340",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "墨繪"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103341",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "#新宿地下ラーメン"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103342",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ポップマート"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103344",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "Manneken"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103345",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "チュチュアンナ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 南館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103347",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "NUTS FACTORY"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103348",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "セブン-イレブン"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103349",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "OSLO COFFEE"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 南館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103350",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "洋麺屋 五右衛門"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 南館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 南館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103351",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "箱根そば本陣　小田急エース北館店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-odakyuace-103352",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "いい菜＆ゼストプラス"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-ace-shopsearch-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館内 SHINJUKU DELISH PARK。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Ace, 北館内 SHINJUKU DELISH PARK. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000758",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "イレブンイマサ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000759",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "陳麻婆豆腐 麺飯館"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000760",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "粥餐庁"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "かゆさんちん"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000761",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "十割蕎麦さがたに 新宿京王モール店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000762",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "こめらく ニッポンのお茶漬け日和。"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000763",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "立食い寿司みさき 新宿京王モール店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000764",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "どうとんぼり神座 新宿京王モール店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000765",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "吉野家 新宿京王モール店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000766",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "つけめんTETSU"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000767",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "UDONつるこし"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000768",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "カフェルノアール"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000769",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "京王モールサービスセンター"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000770",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "チケット大黒屋 新宿京王モール店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000771",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ロペピクニック"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000883",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "KEIO eSTATION Shinjuku powered by DiCE"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000773",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "リモーネプラス"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000774",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "Heartdance second stock"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000935",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "AMERICAN HOLIC"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000776",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "サンドラッグ 新宿京王モール店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000777",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "WA ORiental Traffic"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000778",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ジュエリーツツミ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000779",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "アシックスウォーキング"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000780",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "眼鏡市場 新宿京王モール店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000842",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ドトールコーヒーショップ　新宿京王モール店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000782",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ダイソー"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モールアネックス。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall Annex. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000783",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ＱＢハウス"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モールアネックス。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall Annex. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000784",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "アトリエはるか"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モールアネックス。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall Annex. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000867",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ドトールコーヒーショップ　新宿京王モールアネックス店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モールアネックス。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall Annex. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio-000865",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "整体×骨盤 カ･ラ･ダ ファクトリー"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "keio-mall-ekishop-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モールアネックス。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Mall Annex. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    }
+  ],
+  "removed": []
+}
