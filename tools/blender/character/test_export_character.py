@@ -118,9 +118,24 @@ class P0Export(unittest.TestCase):
 
     def test_non_linear_export_rejected(self):
         doc, builder, meta = sample_glb()
-        doc["animations"][0]["samplers"][0]["interpolation"] = "STEP"
+        doc["animations"][0]["samplers"][0]["interpolation"] = "CUBICSPLINE"
         with self.assertRaisesRegex(ValueError, "LINEAR"):
             exporter.finish_glb(fixture.encode(doc, builder.binary), meta)
+
+    def test_step_on_moving_channel_rejected(self):
+        doc, builder, meta = sample_glb()
+        add_channel(doc, builder, "spine_02", "rotation", [[0., 0., 0., 1.], fixture.quat_x(.1)], "VEC4")
+        doc["animations"][0]["samplers"][-1]["interpolation"] = "STEP"
+        with self.assertRaisesRegex(ValueError, "STEP on a moving channel"):
+            exporter.finish_glb(fixture.encode(doc, builder.binary), meta)
+
+    def test_step_on_constant_channel_normalised(self):
+        # Blender 5.2 writes STEP for a 2-key channel with equal keys
+        doc, builder, meta = sample_glb()
+        for sampler in doc["animations"][0]["samplers"]:
+            sampler["interpolation"] = "STEP"
+        out, _ = vc.parse_glb(exporter.finish_glb(fixture.encode(doc, builder.binary), meta))
+        self.assertEqual({s.get("interpolation", "LINEAR") for a in out["animations"] for s in a["samplers"]}, {"LINEAR"})
 
     def test_wrong_sample_rate_is_rejected_by_validator(self):
         doc, builder, meta = sample_glb()

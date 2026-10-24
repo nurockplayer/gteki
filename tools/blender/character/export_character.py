@@ -142,6 +142,13 @@ def finish_glb(data, extras, blink_vertices=None):
             allowed = (name in JOINT_PARENTS and name != "root" and
                        (path == "rotation" or (name == "pelvis" and path == "translation")))
             sampler = animation["samplers"][channel["sampler"]]
+            if sampler.get("interpolation", "LINEAR") == "STEP":
+                # Blender writes STEP for a 2-key channel with equal keys (or an unanimated one);
+                # a constant channel samples identically under LINEAR, so normalise only that case
+                rows = store.read(sampler["output"])
+                if any(row != rows[0] for row in rows):
+                    raise ValueError("exporter produced STEP on a moving channel")
+                sampler["interpolation"] = "LINEAR"
             if sampler.get("interpolation", "LINEAR") != "LINEAR":
                 raise ValueError("exporter did not produce LINEAR animation")
             if not allowed:
@@ -246,7 +253,7 @@ def export_character(character_id, tier, out_dir):
     keys = head.data.shape_keys
     if keys is None or [key.name for key in keys.key_blocks][1:] != BLINKS:
         raise ValueError("head must carry exactly the two ordered blink keys")
-    if any(key.value != 0. for key in keys.key_blocks):
+    if any(key.value != 0. for key in keys.key_blocks[1:]):  # the Basis reference key reads 1.0
         raise ValueError("P0 export requires blink values at zero")
     if bpy.data.objects["VIS_body"].data.shape_keys is not None:
         raise ValueError("body must not have shape keys")

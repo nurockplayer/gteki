@@ -185,6 +185,7 @@ def build_scene():
     head.shape_key_add(name="Basis")
     for name, side in zip(BLINKS, ("l", "r")):
         key = head.shape_key_add(name=name)
+        key.value = 0.0  # Blender 5.2 creates new keys at 1.0; the rest pose has open eyes
         # Extend the overlapping upper lid down across the white of its own eye.
         for index in lids[side]:
             if key.data[index].co.z < 1.570:
