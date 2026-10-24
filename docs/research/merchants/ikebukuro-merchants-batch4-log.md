@@ -254,12 +254,15 @@ oracle review findings on #432, fixed:
 - HMV closure: the 3F section now records the temporary closure (2026-10-12 ～ 10-27) and cites
   Esola's notice `item_eventnews.jsp?id=172`. The contradiction with the old "none found" line is
   resolved.
-- Non-brand facilities left out of the tenant dataset and moved to `removed` (3):
-  アートギャラリー (6F, `tenant-ikb-tobudept-108114502`), ギフトサロン (6F,
+- Non-brand facilities left out of the tenant dataset and moved to `removed` (4):
+  アートギャラリー (6F, `tenant-ikb-tobudept-108114502`), 美術画廊 (6F,
+  `tenant-ikb-tobudept-108623201`), ギフトサロン (6F,
   `tenant-ikb-tobudept-108226301`), 東武バンケットホール(宴会場・貸切会議室) (14F,
-  `tenant-ikb-tobudept-116619701`). The tenant list is now 861 entries.
-- Counts after this pass: 210 POIs, 11 sources (LUMINE 1, Esola 9 floor pages, Tobu 1), 861
-  tenants, 5 `removed` tenants.
+  `tenant-ikb-tobudept-116619701`). The tenant list is now 860 entries.
+- Every `removed` record carries the `sourceId` of its floor directory page, so an exclusion can
+  be checked against the same page as the tenants.
+- Counts after this pass: 210 POIs, 11 sources (LUMINE 1, Esola 9 floor pages, Tobu 1), 860
+  tenants, 6 `removed` tenants.
 - Reading method for this pass: plain `curl`, default UA, ≥0.6 s apart; 5 pages read (Esola top,
   HMV detail, the closure notice, `fid=3f`, Tobu B2F). Pages were parsed in a temporary directory
   and not committed; no text is reproduced beyond the quoted notice title and dates.

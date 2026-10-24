@@ -7,7 +7,7 @@ Status: research hand-off, 2026-10-24. Single writer: ikb-route-15 (`stations/ik
 | File | Contents |
 | --- | --- |
 | [`ikebukuro-merchants-batch4.json`](ikebukuro-merchants-batch4.json) | 11 sources and 210 POIs (LUMINE 1, Esola 9 floor pages `fid=b1,1f–8f`, Tobu 1): LUMINE Ikebukuro 176 (`shop-ikb-lumine-<scd>`), Esola Ikebukuro 33 (`shop-ikb-esola-<shopid>`), and one store POI `shop-ikb-tobudept` (東武百貨店　池袋店) |
-| [`ikebukuro-tobu-dept-tenants.json`](ikebukuro-tobu-dept-tenants.json) | Tobu Department Store brand list, 861 entries (`tenant-ikb-tobudept-<shop id>`, name, floor label, category, and a `sourceId` for the floor directory page it came from). **Not POIs; not imported.** |
+| [`ikebukuro-tobu-dept-tenants.json`](ikebukuro-tobu-dept-tenants.json) | Tobu Department Store brand list, 860 entries (`tenant-ikb-tobudept-<shop id>`, name, floor label, category, and a `sourceId` for the floor directory page it came from; `removed` records carry the same `sourceId`). **Not POIs; not imported.** |
 | [`ikebukuro-merchants-batch4-log.md`](ikebukuro-merchants-batch4-log.md) | Pages, UTC read times, counts, exclusions, lead review |
 
 ## 2. Rights

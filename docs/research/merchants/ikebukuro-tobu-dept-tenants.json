@@ -5709,14 +5709,6 @@
       "sourceId": "tobu-dept-ikebukuro-2026-10-6F"
     },
     {
-      "id": "tenant-ikb-tobudept-108623201",
-      "name": "美術画廊",
-      "aliases": [],
-      "floorLabel": "6F",
-      "category": "リビング・美術",
-      "sourceId": "tobu-dept-ikebukuro-2026-10-6F"
-    },
-    {
       "id": "tenant-ikb-tobudept-108624501",
       "name": "BToL",
       "aliases": [],
@@ -6899,6 +6891,7 @@
       "name": "お誂え承り所",
       "floorLabel": "4F",
       "category": "呉服",
+      "sourceId": "tobu-dept-ikebukuro-2026-10-4F",
       "reason": "service counter"
     },
     {
@@ -6906,6 +6899,7 @@
       "name": "お渡しカウンター",
       "floorLabel": "5F",
       "category": "紳士",
+      "sourceId": "tobu-dept-ikebukuro-2026-10-5F",
       "reason": "service counter"
     },
     {
@@ -6914,6 +6908,7 @@
       "aliases": [],
       "floorLabel": "6F",
       "category": "リビング・美術",
+      "sourceId": "tobu-dept-ikebukuro-2026-10-6F",
       "reason": "non-brand facility (art gallery / gift salon / banquet hall; contract exclusion rule)"
     },
     {
@@ -6922,6 +6917,16 @@
       "aliases": [],
       "floorLabel": "6F",
       "category": "リビング・美術",
+      "sourceId": "tobu-dept-ikebukuro-2026-10-6F",
+      "reason": "non-brand facility (art gallery / gift salon / banquet hall; contract exclusion rule)"
+    },
+    {
+      "id": "tenant-ikb-tobudept-108623201",
+      "name": "美術画廊",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "リビング・美術",
+      "sourceId": "tobu-dept-ikebukuro-2026-10-6F",
       "reason": "non-brand facility (art gallery / gift salon / banquet hall; contract exclusion rule)"
     },
     {
@@ -6930,6 +6935,7 @@
       "aliases": [],
       "floorLabel": "14F",
       "category": "レストラン・カフェ",
+      "sourceId": "tobu-dept-ikebukuro-2026-10-14F",
       "reason": "non-brand facility (art gallery / gift salon / banquet hall; contract exclusion rule)"
     }
   ],
