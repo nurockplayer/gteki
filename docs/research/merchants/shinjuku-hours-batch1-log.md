@@ -1,137 +1,157 @@
 # Shinjuku shop hours batch 1 — log (OD-32)
 
-Tracking: data-research-05 brief, 2026-10-24; revised twice the same day (Lead review, then the OD-32 amendment). Output: `shinjuku-hours-batch1.json` (schema `gteki.research.hours/0.1`).
+Tracking: data-research-05 brief, 2026-10-24; revised the same day (Lead review, OD-32 amendment, per-shop backfill). Output: `shinjuku-hours-batch1.json` (schema `gteki.research.hours/0.1`).
 Facts only. No current open/closed status is asserted anywhere.
 
 Two rules run through the file:
 
-- **Per-shop hours** (598 POI entries): only where the page prints a qualifying date — ≤180 days, on a notice about hours — on or after 2026-04-27.
-- **Building-level hours** (4 building entries): per the OD-32 amendment of 2026-10-24, undated official pages may be recorded, marked `basis: "undated-official"` (see the amendment section below).
+- **Dated official hours** (per shop): the page prints an hours line and a date on the same page, the dated item itself is about hours (営業時間・休業・変更 etc.), and the date is no older than 2026-04-27. Entries carry the printed date in `pageDate`.
+- **Undated official hours** (OD-32 amendment, 2026-10-24): hours from undated official pages may be recorded with `pageDate: null` and `basis: "undated-official"`. Applied here to every shop page that prints hours and to the four building-hours pages.
 
 ## Scope read
 
 | Source file (branch) | POIs |
 | --- | --- |
 | `shinjuku-merchants-batch1.json` (`claude/data-research-sjk-merchants-batch1`, head bfc27902) | 6 |
-| `shinjuku-merchants-batch2.json` (`claude/data-research-sjk-merchants-batch2`, head e6b57d83) | 576 |
+| `shinjuku-merchants-batch2.json` (`claude/data-research-sjk-merchants-batch2`) | 576 |
 | `shinjuku-odakyu-dept.json` (`ds/odakyu-dept-shinjuku`, head 73554b05) | 1 |
 | `shinjuku-recovery-batch1.json` (`ds/sjk-recovery-odakyu-keio`, head 36bc6361) | 15 |
 | total POIs | 598 |
 | building entries | 4 |
+| total entries | 602 |
 
-Every `poiId` in the JSON was checked against the current head of its file: the 598 ids match the union of the four files exactly, and each entry's `sourceId` is one of that POI's cited sources. The recovery POIs were remapped by source to the current head, whose ids are 001–004, 007–014 and 016–018 (005, 006 and 015 were removed upstream): DAISO → 007, カラダファクトリー → 008, アトリエはるか → 009, クリスピー・クリーム・ドーナツ → 010, PRESS BUTTER SAND → 011, ルノアール → 012, MIGNON → 013, ファミリーマート → 014, さがたに → 016, ツツミ → 017, 日比谷花壇 → 018.
+Every `poiId` in the JSON was checked against its file: the 598 ids match the union of the four files exactly, and each entry's `sourceId` is one of that POI's cited sources. The recovery POIs were remapped by source to the current head, whose ids are 001–004, 007–014 and 016–018 (005, 006 and 015 were removed upstream): DAISO → 007, カラダファクトリー → 008, アトリエはるか → 009, クリスピー・クリーム・ドーナツ → 010, PRESS BUTTER SAND → 011, ルノアール → 012, MIGNON → 013, ファミリーマート → 014, さがたに → 016, ツツミ → 017, 日比谷花壇 → 018.
 
 Each POI was read only on the host its existing source cites. No page was read on jreast.co.jp, ecute.jp, jr-cross.co.jp, tobu.co.jp, sogo-seibu.jp, odakyu-sc.com, keiosc.co.jp, keio-sc.jp, keio-mall.jp, doutor.co.jp, megaineichiba.jp, Google Maps, Tabelog or any aggregator.
 
-## Date rule applied (OD-32, as revised)
-
-A date counts only when it is printed on the same page as the hours **and** the dated item itself is about hours (営業時間・休業・変更 etc.) **and** it is no older than 2026-04-27. A news date on an unrelated product or event notice does not qualify (reason `dated notice not about hours`).
-
 ## Method
 
-- Fetch: plain `curl` with the default UA, no custom headers or referer, sequential, 0.5–0.7 s apart; `WebFetch` only for the two pages curl could not return (see GAPs).
-- 101 page loads in total (98 curl, 3 WebFetch), under the 400 cap.
-- Pages were decoded and the printed hours line and any printed date read off the page text. Nothing was inferred from another page, from a building-wide default, or from memory.
-- Hours text is kept exactly as printed (full-width characters kept). Last-order notes outside the printed hours line were dropped.
+- Fetch: plain `curl`, default UA, no custom headers or referer, sequential, 0.5–0.7 s apart; `WebFetch` only for the two pages curl could not return (see GAPs).
+- Page loads: 74 (first pass) + 23 (sample test) + 4 (building re-read) + 400 (per-shop backfill) = 501 across the session; each pass stayed within the 400-load cap.
+- Pages were decoded and the printed hours line read off the page text. Nothing was inferred from another page, from a building-wide default, or from memory.
+- Hours text is kept exactly as printed (full-width characters kept). Dynamic `営業中` status text and last-order / reservation notes outside the printed hours line were dropped; printed labels (`箱根そば本陣`, `[お知らせ] 土日祝は…`, `【2021.6.21～当面の間】…`) are kept.
 - `retrievedAt` is the fetch time in UTC.
 
-## Coverage and the load budget
+## Coverage
 
-The 576 batch-2 POIs each cite one of three mall floor-guide pages. Those pages (Lumine Est / Lumine Shinjuku / NEWoMan) print shop names and floors only — no hours, no date. Per-shop hours live on each shop's detail page (`/floorguide/detail/?scd=…`) on the same host.
+Batch 2 (576 POIs) cites three mall floor guides. Those pages print shop names and floors only — no hours, no date. Per-shop hours live on each shop's detail page (`/floorguide/detail/?scd=…`) on the same host.
 
-Reading all 576 detail pages would exceed the 400-load cap, so:
-
-- 12 POIs per mall were read (stratified, 36 pages): 35 print an hours line, 1 prints none; **2** carried a dated notice and both turned out to be product news, not hours, so under the revised rule neither qualified.
-- **Random test of the unread pool**: seed `20261024`, `random.Random(20261024).sample(pool, 20)` over the 540 floor-guide POIs whose detail pages had not been read. All 20 pages returned 200 and printed an hours line; **1 of 20** printed a dated notice at all (`10月1日よりハロウィン限定パン販売！ 2026.10.01`, a product notice, not about hours). **0 of 20 (0%)** carried a date that qualifies under the revised rule.
-
-POIs whose detail page was not read are marked UNKNOWN with reason `no hours printed`, meaning the cited floor-guide page itself prints no hours. That is a statement about the page on record, not a claim that the shop has no hours.
+- **First pass**: 12 POIs per mall read (stratified, 36 pages) plus a random test of the unread pool (seed `20261024`, 20 pages): of 56 pages read before the amendment, every one printed an hours line except one, and no page carried a date that qualified under the strict rule.
+- **Per-shop backfill (this revision)**: 400 loads, in the Lead's priority order — NEWoMan 101 (all read), LUMINE新宿 230 (all read), the recovery 15 chain pages (all read), then LUMINE EST 54 of 245 (the 12 previously sampled first, then file order). LUMINE EST stops there because of the 400-load cap.
+- LUMINE EST's remaining 191 POIs are unread and stay UNKNOWN `no hours printed` — a statement about the cited floor-guide page, not a claim that the shop has no hours. They are listed at the end for a second batch.
 
 ## Per-site counts
 
-| Site / source | POIs | OK | no date | date > 180 d | dated notice not about hours | no hours printed | unreadable |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| www.kotsu.metro.tokyo.jp (Toei Shinjuku) | 1 | 0 | 0 | 0 | 0 | 0 | 1 |
-| www.opendata.metro.tokyo.lg.jp (Toei Nishi-guchi CSV) | 1 | 0 | 1 | 0 | 0 | 0 | 0 |
-| www.tokyometro.jp (Metro Shinjuku) | 4 | 0 | 4 | 0 | 0 | 0 | 0 |
-| www.lumine.ne.jp/est (floor guide, 12 read) | 245 | 0 | 11 | 0 | 0 | 234 | 0 |
-| www.lumine.ne.jp/shinjuku (floor guide, 12 read) | 230 | 0 | 12 | 0 | 0 | 218 | 0 |
-| www.newoman.jp/shinjuku (floor guide, 12 read) | 101 | 1 | 10 | 0 | 1 | 89 | 0 |
-| www.odakyu-dept.co.jp | 1 | 0 | 0 | 1 | 0 | 0 | 0 |
-| 15 chain pages (recovery batch 1) | 15 | 0 | 10 | 3 | 1 | 1 | 0 |
-| buildings (Lumine Est / Lumine Shinjuku / NEWoMan / Odakyu hours pages) | 4 entries | 4 | 0 | 0 | 0 | 0 | 0 |
-| **total** | **602 entries** | **5** | **48** | **4** | **2** | **542** | **1** |
+| Site / source | POIs | OK | no hours printed | no date | other |
+| --- | --- | --- | --- | --- | --- |
+| www.kotsu.metro.tokyo.jp (Toei Shinjuku) | 1 | 0 | 0 | 0 | 1 (page unreadable) |
+| www.opendata.metro.tokyo.lg.jp (Toei Nishi-guchi CSV) | 1 | 0 | 0 | 1 | 0 |
+| www.tokyometro.jp (Metro Shinjuku) | 4 | 0 | 0 | 4 | 0 |
+| www.lumine.ne.jp/est (245; 54 read) | 245 | 54 | 191 | 0 | 0 |
+| www.lumine.ne.jp/shinjuku (all 230 read) | 230 | 226 | 4 | 0 | 0 |
+| www.newoman.jp/shinjuku (all 101 read) | 101 | 101 | 0 | 0 | 0 |
+| www.odakyu-dept.co.jp (department-store POI) | 1 | 0 | 0 | 0 | 1 (date older than 2026-04-27) |
+| 15 chain pages (recovery batch 1) | 15 | 14 | 1 | 0 | 0 |
+| buildings (Lumine Est / Lumine Shinjuku / NEWoMan / Odakyu hours pages) | 4 entries | 4 | 0 | 0 | 0 |
+| **total** | **602 entries** | **399** | **196** | **5** | **2** |
 
-The 234 for Lumine Est is 233 unread floor-guide POIs plus `shop-sjk-lumineest-002663`; the three building counts share the floor-guide `sourceId`s and are listed on their own row.
+All 399 OK entries carry `pageDate: null` and `basis: "undated-official"` except one: `shop-sjk-newoman-003262` (PUPA) keeps its dated OK (`pageDate: 2026-10-24`), unchanged as instructed.
 
-## The OK entry, and the two that were withdrawn
+The four shops whose detail page prints no hours line stay `no hours printed`: `shop-sjk-lumine-002665`, `shop-sjk-lumine-003202`, `shop-sjk-lumine-000269`, `shop-sjk-lumine-002663` (all LUMINE新宿), plus `shop-sjk-rec-011` (PRESS BUTTER SAND — a pickup-order page with no hours block).
 
-| POI | Page | Printed hours | Qualifying date |
-| --- | --- | --- | --- |
-| `shop-sjk-newoman-003262` (PUPA) | shop detail, NEWoMan | `11:00～23:00 ※THE ALLEYは12:00～22:00までの営業` | 2026-10-24 |
+## Building entries (OD-32 amendment)
 
-The PUPA page's notice is `『ジ・アレイ』の営業時間変更と休業のお知らせ` (2026.10.24) — an hours/closure notice, printed on the same page as the hours line, which itself carries the `※THE ALLEY…` clause. It concerns THE ALLEY, a tenant printed on that same hours line, not PUPA's own core hours; if the Lead reads the rule as "about this shop's hours", this entry also drops to `dated notice not about hours`.
+Four building-hours pages, read once more for this revision. Each entry has `status: "OK"`, `pageDate: null`, `basis: "undated-official"`, `note: "店舗により異なる場合あり"`, and `hoursText` as printed — the 館営業時間 line(s) including printed exceptions (restaurant floors; for NEWoMan the エキナカ／フードホール／エキソト blocks), stopping before the per-shop `営業時間の異なるショップ` list. Service-counter lines (ルミネカードカウンター受付, 免税カウンター) were not treated as 館営業時間 and are not included.
 
-Withdrawn under the revised rule:
+| Building | Page | Printed hours (full text in the JSON) |
+| --- | --- | --- |
+| ルミネエスト新宿 | `https://www.lumine.ne.jp/est/information/hours/` | `ショッピング 平日 11:00 ～ 21:00 土日祝 10:30 ～ 21:00 レストラン 平日/土日祝 11:00 ～ 22:00` |
+| ルミネ新宿 | `https://www.lumine.ne.jp/shinjuku/information/hours/` | `ショッピング 11:00 ～ 21:00 ルミネ1-7F レストラン 11:00 ～ 22:30` |
+| ニュウマン新宿 | `https://www.newoman.jp/shinjuku/information/hours/` | `ショッピング 月～土 11:00 ～ 20:30 … フードホール 7:00～23:00 エキソト 7:00～23:00` |
+| 小田急百貨店 新宿店 | `https://www.odakyu-dept.co.jp/shinjuku/hour_acces/` | `■地下2階～2階 10：00→20：30 ※日曜・祝日は20：00まで ■7階 10：00→20：00 … ※その他、一部の売場やカフェは営業時間が異なる場合があります。` |
 
-- `shop-sjk-newoman-001856` (LA MAISON DU CHOCOLAT) — dated items are `INSOLITE FUMÉ 2026.10.17` and `WINTER 2026 2026.09.16`, product news.
-- `shop-sjk-rec-018` (日比谷花壇 新宿小田急エース店) — dated items are `今週のおすすめは「AUTUMN ROSE」2026.10.20` and `秋のバラをピックアップ！「フラワーピクニック」開催 2026.10.13`, product/event news.
+小田急百貨店 新宿店 had no building entry before the amendment; one was added (`poiId: null`). The department-store POI itself (`shop-sjk-odakyudept`) is unchanged and stays UNKNOWN.
 
-Display wording for the station writer (not stored):
+## OD-32 amendment rules (2026-10-24)
 
-> `11:00～23:00 ※THE ALLEYは12:00～22:00までの営業`（出典日 2026-10-24 時点の情報です。変更されている場合があります）
+- Display wording: 「GT-Eki 確認日 2026-10-24 時点の公式表記。変更されている場合があります」 with the official page linked.
+- Undated official hours are hidden or re-checked after 180 days.
+- Precedence: **merchant-stated > dated official > undated official**.
 
 ## Why the rest are UNKNOWN
 
-- **Toei Shinjuku (1, `page unreadable`).** `www.kotsu.metro.tokyo.jp` returns a 200 page that is an Incapsula bot-challenge shell (no content, no hours, no date) to both curl and WebFetch. GAP; no workaround attempted.
-- **Tokyo Metro (4, `no date`).** curl gets 403; the page is readable through WebFetch and prints per-shop hours (e.g. OOTORI BANANA `10:00～21:00`) but prints no date.
-- **Toei Nishi-guchi CSV (1, `no date`).** The CSV has a 営業時間 column (`7:00～23:00` for the FamilyMart row) but the file prints no date.
-- **Lumine Est / Lumine Shinjuku / NEWoMan shops (540 unread + 33 read-without-date, `no hours printed` / `no date`).** Floor-guide pages have no hours; sampled detail pages print hours but the only dates seen were unrelated product news, so nothing qualifies.
-- **Odakyu Department Store (1, `date older than 2026-04-27`).** `www.odakyu-dept.co.jp/shinjuku/hour_acces/` prints the building hours (`■地下2階～2階 10：00→20：30` etc.). The only date on the page is `2025年1月15日` (a parking-change notice), before the 180-day window.
-- **Chain shops (3 old dates, 10 no date, 2 dated notices not about hours, 1 no hours).**
-  - Old dates: カラダファクトリー (shop news `2026.02.05`), ミニヨン (opening notice `2022年12月3日`), ジュエリーツツミ (hours note `【2021.6.21～当面の間】`).
-  - No date: ゼッテリア, 箱根そば本陣 北館/南館, 吉野家, DAISO, アトリエはるか, クリスピー・クリーム・ドーナツ, カフェルノアール, ファミリーマート, 十割蕎麦 さがたに.
-  - Dated notices not about hours: LA MAISON DU CHOCOLAT, 日比谷花壇.
-  - No hours: PRESS BUTTER SAND 新宿小田急エース店 — the page is a pickup-order page; its only date (`2026年10月25日`) is the shortest pickup slot, not a page date.
-- **Buildings (4 entries).** Recorded as OK under the OD-32 amendment below; they are not per-shop hours and carry no page date.
+- **Toei Shinjuku (1, `page unreadable`).** `www.kotsu.metro.tokyo.jp` returns a 200 page that is an Incapsula bot-challenge shell (no content) to both curl and WebFetch. GAP; no workaround attempted.
+- **Tokyo Metro (4, `no date`).** curl gets 403; the Lead's instruction keeps 403 and bot challenges as GAPs, so these were not backfilled. (The shop index was readable once through WebFetch and prints per-shop hours, no date — available if the Lead wants it recorded under the amendment.)
+- **Toei Nishi-guchi CSV (1, `no date`).** The CSV's 営業時間 column prints `7:00～23:00` for the FamilyMart row, but the Lead's instruction keeps Toei out of this pass; it is also a CSV, not a shop detail page.
+- **LUMINE EST (191 unread, `no hours printed`).** Floor-guide page has no hours; detail page not read inside the 400-load cap. Listed below for batch 2.
+- **Odakyu Department Store POI (1, `date older than 2026-04-27`).** `hour_acces/` prints the building hours, but the only date on the page is `2025年1月15日` (a parking-change notice). The building-level hours are recorded on the building entry; the POI entry is left unchanged.
+- **PRESS BUTTER SAND (1, `no hours printed`).** A pickup-order page with no hours block; its only date (`2026年10月25日`) is the shortest pickup slot.
 
 ## GAPs
 
 1. `https://www.kotsu.metro.tokyo.jp/other/kanren/stores/shinjuku.html` — bot challenge, unreadable (1 POI).
-2. `https://www.tokyometro.jp/station/shinjuku/shop/index.html` — 403 to curl; readable via WebFetch.
+2. `https://www.tokyometro.jp/station/shinjuku/shop/index.html` — 403 to curl; readable via WebFetch but kept as a GAP per instruction.
 3. `https://www.odakyu-dept.co.jp/shinjuku/information/` — 403; not needed, the hours page `hour_acces/` answered instead.
 
-## OD-32 amendment (2026-10-24): undated official pages
+## Remaining for batch 2
 
-The director amended OD-32 on 2026-10-24: hours from **undated** official pages may also be recorded, for building-level entries, marked as such. The four building-hours pages were read once more for this revision (4 loads) and the four building entries now carry:
+191 LUMINE EST shop detail pages were not read (`/est/floorguide/detail/?scd=<n>`); each POI below stays UNKNOWN `no hours printed` until read:
 
-- `status: "OK"`, `pageDate: null`, `basis: "undated-official"`, `note: "店舗により異なる場合あり"`;
-- `hoursText` exactly as printed — the 館営業時間 line(s), keeping printed exceptions such as restaurant floors and the zone-level blocks (エキナカ／フードホール／エキソト for NEWoMan), stopping before the per-shop `営業時間の異なるショップ` list;
-- service-counter lines (ルミネカードカウンター受付, 免税カウンター) were not treated as 館営業時間 and are not included.
+```
+shop-sjk-lumineest-003117, shop-sjk-lumineest-003130, shop-sjk-lumineest-002690, shop-sjk-lumineest-002165,
+shop-sjk-lumineest-003077, shop-sjk-lumineest-002363, shop-sjk-lumineest-002232, shop-sjk-lumineest-003071,
+shop-sjk-lumineest-003105, shop-sjk-lumineest-002329, shop-sjk-lumineest-002171, shop-sjk-lumineest-003494,
+shop-sjk-lumineest-003496, shop-sjk-lumineest-002174, shop-sjk-lumineest-002150, shop-sjk-lumineest-002145,
+shop-sjk-lumineest-002088, shop-sjk-lumineest-002365, shop-sjk-lumineest-003321, shop-sjk-lumineest-002133,
+shop-sjk-lumineest-003313, shop-sjk-lumineest-002196, shop-sjk-lumineest-002080, shop-sjk-lumineest-002122,
+shop-sjk-lumineest-002103, shop-sjk-lumineest-002249, shop-sjk-lumineest-003493, shop-sjk-lumineest-003451,
+shop-sjk-lumineest-002109, shop-sjk-lumineest-002070, shop-sjk-lumineest-002238, shop-sjk-lumineest-002364,
+shop-sjk-lumineest-003249, shop-sjk-lumineest-002178, shop-sjk-lumineest-003490, shop-sjk-lumineest-002101,
+shop-sjk-lumineest-002175, shop-sjk-lumineest-003107, shop-sjk-lumineest-002162, shop-sjk-lumineest-003106,
+shop-sjk-lumineest-002092, shop-sjk-lumineest-002137, shop-sjk-lumineest-002129, shop-sjk-lumineest-003134,
+shop-sjk-lumineest-002158, shop-sjk-lumineest-002130, shop-sjk-lumineest-002323, shop-sjk-lumineest-002520,
+shop-sjk-lumineest-002228, shop-sjk-lumineest-003491, shop-sjk-lumineest-002140, shop-sjk-lumineest-002117,
+shop-sjk-lumineest-002071, shop-sjk-lumineest-002200, shop-sjk-lumineest-002521, shop-sjk-lumineest-002134,
+shop-sjk-lumineest-002136, shop-sjk-lumineest-002051, shop-sjk-lumineest-002059, shop-sjk-lumineest-002056,
+shop-sjk-lumineest-002243, shop-sjk-lumineest-002076, shop-sjk-lumineest-002044, shop-sjk-lumineest-002075,
+shop-sjk-lumineest-002210, shop-sjk-lumineest-002091, shop-sjk-lumineest-002221, shop-sjk-lumineest-002119,
+shop-sjk-lumineest-003284, shop-sjk-lumineest-002321, shop-sjk-lumineest-002083, shop-sjk-lumineest-002534,
+shop-sjk-lumineest-002536, shop-sjk-lumineest-002115, shop-sjk-lumineest-003131, shop-sjk-lumineest-002163,
+shop-sjk-lumineest-003090, shop-sjk-lumineest-002072, shop-sjk-lumineest-003495, shop-sjk-lumineest-002085,
+shop-sjk-lumineest-002535, shop-sjk-lumineest-002484, shop-sjk-lumineest-002184, shop-sjk-lumineest-002151,
+shop-sjk-lumineest-002335, shop-sjk-lumineest-002188, shop-sjk-lumineest-003297, shop-sjk-lumineest-002141,
+shop-sjk-lumineest-002199, shop-sjk-lumineest-002054, shop-sjk-lumineest-002372, shop-sjk-lumineest-002166,
+shop-sjk-lumineest-003076, shop-sjk-lumineest-002551, shop-sjk-lumineest-002093, shop-sjk-lumineest-002132,
+shop-sjk-lumineest-002226, shop-sjk-lumineest-002212, shop-sjk-lumineest-002180, shop-sjk-lumineest-002251,
+shop-sjk-lumineest-003086, shop-sjk-lumineest-003299, shop-sjk-lumineest-003497, shop-sjk-lumineest-002244,
+shop-sjk-lumineest-002522, shop-sjk-lumineest-002537, shop-sjk-lumineest-003437, shop-sjk-lumineest-002169,
+shop-sjk-lumineest-002173, shop-sjk-lumineest-003125, shop-sjk-lumineest-003492, shop-sjk-lumineest-003261,
+shop-sjk-lumineest-002089, shop-sjk-lumineest-003452, shop-sjk-lumineest-003328, shop-sjk-lumineest-002146,
+shop-sjk-lumineest-002107, shop-sjk-lumineest-002187, shop-sjk-lumineest-003073, shop-sjk-lumineest-002368,
+shop-sjk-lumineest-002483, shop-sjk-lumineest-002328, shop-sjk-lumineest-003456, shop-sjk-lumineest-003453,
+shop-sjk-lumineest-002217, shop-sjk-lumineest-002322, shop-sjk-lumineest-002208, shop-sjk-lumineest-002325,
+shop-sjk-lumineest-002197, shop-sjk-lumineest-002219, shop-sjk-lumineest-002336, shop-sjk-lumineest-002131,
+shop-sjk-lumineest-002077, shop-sjk-lumineest-002068, shop-sjk-lumineest-002201, shop-sjk-lumineest-002332,
+shop-sjk-lumineest-002152, shop-sjk-lumineest-002121, shop-sjk-lumineest-003088, shop-sjk-lumineest-002229,
+shop-sjk-lumineest-002126, shop-sjk-lumineest-003070, shop-sjk-lumineest-002183, shop-sjk-lumineest-002135,
+shop-sjk-lumineest-003132, shop-sjk-lumineest-002106, shop-sjk-lumineest-002048, shop-sjk-lumineest-002211,
+shop-sjk-lumineest-002214, shop-sjk-lumineest-002172, shop-sjk-lumineest-002060, shop-sjk-lumineest-003133,
+shop-sjk-lumineest-002333, shop-sjk-lumineest-003149, shop-sjk-lumineest-002330, shop-sjk-lumineest-002046,
+shop-sjk-lumineest-002553, shop-sjk-lumineest-003074, shop-sjk-lumineest-002237, shop-sjk-lumineest-002096,
+shop-sjk-lumineest-002198, shop-sjk-lumineest-002230, shop-sjk-lumineest-003216, shop-sjk-lumineest-002084,
+shop-sjk-lumineest-002413, shop-sjk-lumineest-002241, shop-sjk-lumineest-002412, shop-sjk-lumineest-002252,
+shop-sjk-lumineest-002222, shop-sjk-lumineest-002482, shop-sjk-lumineest-002225, shop-sjk-lumineest-003176,
+shop-sjk-lumineest-002246, shop-sjk-lumineest-002247, shop-sjk-lumineest-002254, shop-sjk-lumineest-002223,
+shop-sjk-lumineest-003143, shop-sjk-lumineest-002423, shop-sjk-lumineest-002432, shop-sjk-lumineest-003553,
+shop-sjk-lumineest-002242, shop-sjk-lumineest-002240, shop-sjk-lumineest-002420, shop-sjk-lumineest-002148,
+shop-sjk-lumineest-002213, shop-sjk-lumineest-002416, shop-sjk-lumineest-002236, shop-sjk-lumineest-003161,
+shop-sjk-lumineest-002227, shop-sjk-lumineest-002155, shop-sjk-lumineest-003222
+```
 
-The four entries:
-
-| Building | Page | Printed hours |
-| --- | --- | --- |
-| ルミネエスト新宿 | `https://www.lumine.ne.jp/est/information/hours/` | `ショッピング 平日 11:00 ～ 21:00 土日祝 10:30 ～ 21:00 レストラン 平日/土日祝 11:00 ～ 22:00` |
-| ルミネ新宿 | `https://www.lumine.ne.jp/shinjuku/information/hours/` | `ショッピング 11:00 ～ 21:00 ルミネ1-7F レストラン 11:00 ～ 22:30` |
-| ニュウマン新宿 | `https://www.newoman.jp/shinjuku/information/hours/` | `ショッピング 月～土 11:00 ～ 20:30 日・祝日 11:00 ～ 20:00 エキナカ（フード） … フードホール 7:00～23:00 エキソト 7:00～23:00` (full printed block in the JSON) |
-| 小田急百貨店 新宿店 | `https://www.odakyu-dept.co.jp/shinjuku/hour_acces/` | `■地下2階～2階 10：00→20：30 ※日曜・祝日は20：00まで ■7階 10：00→20：00 … ※その他、一部の売場やカフェは営業時間が異なる場合があります。` |
-
-小田急百貨店 新宿店 had no building entry before this amendment; one was added (`poiId: null`). The department-store POI itself (`shop-sjk-odakyudept`) is untouched and stays UNKNOWN, as instructed — per-shop entries are a later batch.
-
-Display wording for the station writer:
-
-> `11:00 ～ 21:00`（GT-Eki 確認日 2026-10-24 時点の公式表記。変更されている場合があります）＋ 官方頁面連結
-
-Operational rules carried with the amendment: building hours are **hidden or re-checked after 180 days**; precedence is **merchant-stated > dated official > undated official**.
-
-## Still open for the Lead
-
-1. **PUPA** — see above: an hours notice for a tenant on the same printed hours line. Keep or drop.
-2. **Unread mall detail pages** — the 20-page random test found no qualifying date (0%), and the 36 stratified pages found none either. A full read of the remaining 540 is roughly 540 loads (two batches) if the Lead wants certainty rather than the sample. Under the amendment, a later batch can also record undated per-shop hours.
+Also outstanding: 4 Metro shops, 1 Toei shop, 1 Toei CSV row, and `shop-sjk-rec-011` (no hours on its page).
 
 ## Totals
 
-602 entries in the JSON = 598 POI entries (one per POI in scope) + 4 building entries.
-OK 5 (1 per-shop, 4 building) · UNKNOWN 597 (no date 48, date older than 2026-04-27 4, dated notice not about hours 2, no hours printed 542, page unreadable 1).
+602 entries = 598 POI entries (one per POI in scope) + 4 building entries.
+OK 399 (398 undated official + 1 dated) · UNKNOWN 203 (no hours printed 196, no date 5, date older than 2026-04-27 1, page unreadable 1).
 JSON parses (`json.load`), all `poiId`s unique, 598 POIs covered exactly once, all ids present at the current head of their source file.
