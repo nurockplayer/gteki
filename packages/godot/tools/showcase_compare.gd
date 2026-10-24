@@ -11,6 +11,7 @@ const HEIGHT := 900
 const SETTLE_RENDER_FRAMES := 60
 const HEADLESS_MESSAGE := "showcase_compare needs a display"
 const DEFAULT_REGION_NAMES := ["whole", "top_third", "middle_third", "bottom_third"]
+static var REGION_NAME := RegEx.create_from_string("^[A-Za-z0-9_.-]+$")
 const LUMINANCE_METHOD := "mean linear Rec.709 luminance, sRGB-decoded, every 2nd pixel; ratio = godot / reference"
 ## Approximation constants, not a physical match: Godot's non-physical energy has no Blender-watt equivalence.
 ## 0.02 gives a 1 m LED energy 1.1; 1.5 m spacing bounds the number of shadowed spots. A wide 75 degree half-cone
@@ -127,22 +128,30 @@ static func parse_args(args: PackedStringArray) -> Dictionary:
 			if camera.is_empty():
 				errors.append("--camera needs a name")
 		elif arg.begins_with("--region="):
+			# The coordinates never contain ':' and the region name never contains '=' or ':', so split on the last
+			# ':' and then the last '=': the camera name may contain either.
 			var spec := arg.trim_prefix("--region=")
-			var camera_separator := spec.find("=")
-			var colon := spec.find(":")
+			var colon := spec.rfind(":")
+			var head := spec.substr(0, colon) if colon >= 0 else ""
+			var camera_separator := head.rfind("=")
 			var coords := spec.substr(colon + 1).split(",") if colon >= 0 else PackedStringArray()
 			var numeric := coords.size() == 4
 			for coord in coords:
 				numeric = numeric and coord.is_valid_int()
-			if camera_separator <= 0 or colon <= camera_separator + 1 or not numeric:
-				errors.append("--region must be <camera>=<name>:<x>,<y>,<w>,<h>: %s" % arg)
+			var region_camera := head.substr(0, camera_separator) if camera_separator >= 0 else ""
+			var region_name := head.substr(camera_separator + 1) if camera_separator >= 0 else ""
+			if region_camera.is_empty() or not REGION_NAME.search(region_name) or not numeric:
+				errors.append("--region must be <camera>=<name>:<x>,<y>,<w>,<h> with a name of letters, digits, '_', '.' or '-': %s" % arg)
 				continue
-			var region_camera := spec.substr(0, camera_separator)
-			var region_name := spec.substr(camera_separator + 1, colon - camera_separator - 1)
-			var rect := Rect2i(int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3]))
-			if rect.position.x < 0 or rect.position.y < 0 or rect.size.x <= 0 or rect.size.y <= 0 or rect.end.x > WIDTH or rect.end.y > HEIGHT:
+			# Bounds are checked on the 64-bit values before Rect2i (32-bit) is built, so no value can wrap into range.
+			var x := int(coords[0])
+			var y := int(coords[1])
+			var w := int(coords[2])
+			var h := int(coords[3])
+			if x < 0 or y < 0 or w <= 0 or h <= 0 or x >= WIDTH or y >= HEIGHT or w > WIDTH - x or h > HEIGHT - y:
 				errors.append("--region must have positive size inside %dx%d: %s" % [WIDTH, HEIGHT, arg])
 				continue
+			var rect := Rect2i(x, y, w, h)
 			var camera_regions: Array = regions.get(region_camera, [])
 			var duplicate := region_name in DEFAULT_REGION_NAMES
 			for existing: Dictionary in camera_regions:

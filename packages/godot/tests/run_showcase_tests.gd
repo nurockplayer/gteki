@@ -277,9 +277,13 @@ func check_luminance() -> void:
 	# --region= accepts a well-formed value and rejects malformed or out-of-frame ones.
 	var good := Compare.parse_args(PackedStringArray(["/tmp/a", "/tmp/b", "--region=hero=face:0,0,10,20"]))
 	check(good.errors.is_empty() and good.regions.hero.size() == 1 and good.regions.hero[0].name == "face" and good.regions.hero[0].rect == Rect2i(0, 0, 10, 20), "--region=<camera>=<name>:<x>,<y>,<w>,<h> parses")
+	var odd := Compare.parse_args(PackedStringArray(["/tmp/a", "/tmp/b", "--region=hall=west:x=face:0,0,10,10"]))
+	check(odd.errors.is_empty() and odd.regions.has("hall=west:x") and odd.regions["hall=west:x"][0].name == "face", "--region camera names may contain '=' and ':'")
 	for spec in [
 		"hero=face:0,0,10", "hero=:0,0,10,10", "hero=face:1500,0,200,10", "hero=face:0,0,0,10",
 		"hero=whole:0,0,10,10", "hero=face:a,0,1,1", "hero", "=face:0,0,1,1",
+		"hero=face:4294967297,0,10,10", "hero=face:0,0,4294967297,10", "hero=face:1599,0,9223372036854775807,1",
+		"hero=   :0,0,10,10", "hero=gate:floor:0,0,10,10",
 	]:
 		var bad := Compare.parse_args(PackedStringArray(["/tmp/a", "/tmp/b", "--region=" + spec]))
 		check(not bad.errors.is_empty(), "reject malformed --region value: %s" % spec)
