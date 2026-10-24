@@ -58,3 +58,12 @@ None between the pages. Both Metro pages print the same 28 rows and the same rev
 - `poi:tokyometro-gate:3` (丸ノ内線 東改札; printed 東改札) and `:4` (丸ノ内線 西改札) come from the accessibility page's equipment end points. PR #411 holds S03-sourced `poi:tokyometro-gate:1` and `:2`, whose names are worded differently. **lines-lead decision:** not merged and no `factsForExisting`; each POI carries a note that it may be the same gate as its S03 counterpart, identity unconfirmed. A field check (WP10) can settle it. The line prefix was added for search, since bare 東改札 / 西改札 would match other operators' gates.
 - This file adds no facts for the existing E27 POIs in `stations/shinjuku/gteki/pois.json`. Toei's per-line counts cannot be attached to specific internal elevator ids without guessing.
 - REUSE annotation is left to lines-lead.
+
+## Truth review record (2026-10-24)
+
+- **oracle-ego (ChatGPT GPT-6, high).** First run timed out after 45 min with no answer. The second run read the Metro accessibility page and confirmed the 8 lift and escalator POIs: end pairs, inside/outside labels, directions and the posted 6:00–23:00 hours. It could not read the Metro exit list (the station page mixes in template entries from another station) or the Toei exit list (built by script), so it left 37 exits unverified and did not count the run as a full PASS.
+- **Fallback: fresh read-only Sonnet 5.5 subagent with ego-lite**, used because oracle could not read those pages and Codex is rationed and cannot render them.
+  - **Metro (print page):** 28 rows, A6–A18 and B5–B18 with B12a and B12b. The 13 time-limit marks, the 7 closed exits, the B12a street-level lift mark and the 2023年12月 revision date all match.
+  - **Toei (rendered exit list):** A1 and 1–8 with their gate-area tags, closed marks, hours and lift/escalator icons all match. No exit is assigned to a line.
+  - **Result:** no discrepancies in the 37 exits.
+- **Not independently re-checked:** the two Metro gate names. They are the end-point labels already confirmed by oracle on the accessibility page.
