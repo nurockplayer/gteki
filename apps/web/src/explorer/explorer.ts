@@ -1497,7 +1497,8 @@ export class Explorer {
       const ring = g.userData.pulse as THREE.Mesh | undefined;
       if (ring) ring.scale.setScalar(this.reducedMotion ? 1 : 1 + 0.25 * Math.sin(t * 3));
     }
-    this.stationScene?.update?.(dt, t);
+    // The camera still holds last frame's pose here (fine for distance culling; see the scene hook contract).
+    this.stationScene?.update?.(dt, t, this.camera);
 
     if (this.mode === "walk") this.stepWalk(dt);
     else if (this.mode === "guide") this.stepGuide(dt);
