@@ -380,10 +380,10 @@ export function tagLightmaps(root: THREE.Object3D): LightmapInfo | null {
   let surfaces = 0;
   root.traverse((object) => {
     if (!isMesh(object)) return;
-    const materials = materialsOf(object);
+    // Surface indices, as Godot sees them: one per exported glTF primitive (see exportedSurfaceMaterials).
     const lit: number[] = [];
-    materials.forEach((material, index) => {
-      const map = (material as THREE.MeshStandardMaterial).lightMap ?? null;
+    exportedSurfaceMaterials(object).forEach((material, index) => {
+      const map = (material as THREE.MeshStandardMaterial | undefined)?.lightMap ?? null;
       if (map === null) return;
       lit.push(index);
       textures.add(map);

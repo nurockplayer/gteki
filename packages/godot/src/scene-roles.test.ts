@@ -313,6 +313,20 @@ describe("tagLightmaps", () => {
     expect(root.children[2]!.userData.gteki_lightmap_surfaces).toBeUndefined();
   });
 
+  it("flags glTF primitive indices (geometry group order), not material slots", () => {
+    const texture = lightmap();
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(new Array(18).fill(0), 3));
+    geometry.addGroup(0, 3, 1);
+    geometry.addGroup(3, 3, 0);
+    geometry.addGroup(0, 3, 1);
+    const mesh = new THREE.Mesh(geometry, [new THREE.MeshBasicMaterial(), new THREE.MeshStandardMaterial({ lightMap: texture, lightMapIntensity: 4.41 })]);
+    const root = new THREE.Group();
+    root.add(mesh);
+    expect(tagLightmaps(root)).toMatchObject({ meshes: 1, surfaces: 2 });
+    expect(mesh.userData.gteki_lightmap_surfaces).toEqual([0, 2]);
+  });
+
   it("returns null when no material carries a lightmap", () => {
     const root = new THREE.Group();
     root.add(named("wall"));
