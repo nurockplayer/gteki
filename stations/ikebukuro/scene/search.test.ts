@@ -102,7 +102,10 @@ const GOLDEN: Record<string, Row[]> = {
   "search-only shops": [
     { q: "Patio de METRO", top1: "shop-ikb-mr-002" },
     { q: "パティオ", top1: "shop-ikb-mr-002" },
-    { q: "マツモトキヨシ", top1: "shop-ikb-mr-004" },
+    { q: "マツモトキヨシ", top: ["shop-ikb-mr-004", "shop-ikb-echika-1108"] }, // two branches: ISP 南館 and Echika (#407)
+    { q: "カフェカルディーノ", top1: "shop-ikb-isp-000066" },
+    { q: "青山フラワーマーケット", top1: "shop-ikb-hope-001" },
+    { q: "リンツ ショコラ ブティック", top1: "shop-ikb-echika-1104" },
   ],
 };
 
