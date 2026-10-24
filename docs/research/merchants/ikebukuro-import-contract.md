@@ -60,7 +60,7 @@ ikb-route-15 re-runs the station's own checks after merging into `graph.src.json
 
 ## 6. Batch 2 (ISP, Tobu Hope Center, Echika池袋)
 
-File: [`ikebukuro-merchants-batch2.json`](ikebukuro-merchants-batch2.json), 119 POIs; transcription log: [`ikebukuro-merchants-batch2-log.md`](ikebukuro-merchants-batch2-log.md). §2 and §4 apply unchanged. Differences from batch 1:
+File: [`ikebukuro-merchants-batch2.json`](ikebukuro-merchants-batch2.json), 118 POIs; transcription log: [`ikebukuro-merchants-batch2-log.md`](ikebukuro-merchants-batch2-log.md). §2 and §4 apply unchanged. Differences from batch 1:
 
 | Item | Batch 2 rule |
 | --- | --- |
@@ -68,12 +68,13 @@ File: [`ikebukuro-merchants-batch2.json`](ikebukuro-merchants-batch2.json), 119 
 | Removed shops | A shop that later leaves a directory goes into the file's top-level `removed` list (id + date + source), and its id is not reused. Batch 2 removes none (`"removed": []`). |
 | Area | The zone or hall as printed (e.g. 池袋ショッピングパーク 南館, 東武ホープセンター サウスゾーン, エチカ池袋 改札外) goes in the ja/en `notes`; confidence `AREA_ONLY`. `floorId`, `displayPosition`, `paid` stay `null` and `connectorNodeIds` stays `[]`. 改札外 is printed by Echika but is not mapped to `paid: false`, because that would be a fare-gate claim this batch does not verify. |
 | `evidence.method` | `facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY` for ISP and Echika; `(OD-23/OD-33)` for Hope Center. |
-| Aliases | Only kana printed on the shop's own detail page (8 Echika shops), tagged `ja-Hrkt`. |
+| Aliases | Only kana printed on the shop's own detail page (10 Echika shops), tagged `ja-Hrkt`. |
+| Closed shops | A shop whose own page prints a closure (e.g. ※7/14（火）営業終了) is not imported; Echika's フレッシュネスバーガー is left out for this reason. |
 | Overlap with batch 1 | Not re-imported: マツモトキヨシ and スターバックス コーヒー 南館店 (ISP), Patio de METRO and Tabio (Echika). Echika's Soup Stock Tokyo (`shopid` 1099) is skipped as a likely duplicate of `shop-ikb-mr-001`. |
 
 Sources to add to `station.json` → `sources`: `echika-ikebukuro-2026-10` (decision OD-31, [#360 comment 6377632614](https://github.com/nurockplayer/gteki/pull/360#issuecomment-6377632614)) and `tobu-hopecenter-floorguide-2026-10` (decision OD-33, [#377 comment 6378920311](https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311)), exactly as in the file. `isp-floorguide-2026-10` is already in the station data.
 
-Acceptance check (run 2026-10-24, scratch copy of `origin/main`, both sources and the batch merged in, under `lockf -k /tmp/gteki-local-test.lock`, single worker; run with 120 POIs, before the lead dropped the Soup Stock duplicate):
+Acceptance check (run 2026-10-24, scratch copy of `origin/main`, both sources and the batch merged in, under `lockf -k /tmp/gteki-local-test.lock`, single worker; run with 120 POIs, before the lead dropped the Soup Stock duplicate and the closed shop and added 3 aliases):
 - `parseStationFiles` + `validateBundle`: 0 errors; the only issues are `poi.unroutable` warnings for search-only POIs.
 - `route.ts stations/ikebukuro c_w shop-ikb-hope-001 --goal-poi` (and an Echika POI): `unknown_goal`, "destination has no verified entrance".
 - `packages/cli/src/real-stations.test.ts`: 21/21 pass.
