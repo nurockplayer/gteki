@@ -1,9 +1,9 @@
-// pipeline/sync_kit_catalog.py: the shipped batches (A: 5 escalators, B: 21 handrails, C: 61 nosing strips and their
-// shared AO atlas) copy exactly the catalog GLBs some placement loads, on the tiers it loads them, and --check proves
-// the committed copies still match the source record's pins. Batch C lands in two stacked changes: this one ships the
-// desktop tier, so the phone copies are still absent (the follow-up widens the plan to both tiers). The negative
-// controls run on a temporary copy of the catalog folder (and a temporary station.json), so the committed tree is
-// never touched.
+// pipeline/sync_kit_catalog.py: the shipped batches (A: 5 escalators, B: 21 handrails, C: 61 nosing strips, with
+// batch A's escalator atlas and batch C's nosing atlas) copy exactly the catalog GLBs some placement loads, on the
+// tiers it loads them, and --check proves the committed copies still match the source record's pins. Batch C lands in
+// two stacked changes: this one ships the desktop tier, so the phone copies are still absent (the follow-up widens
+// the plan to both tiers). The negative controls run on a temporary copy of the catalog folder (and a temporary
+// station.json), so the committed tree is never touched.
 import crypto from "node:crypto";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -38,10 +38,12 @@ const nosingIds = [
 const ids = [...escalatorIds, ...railIds, ...nosingIds].sort();
 /** The packed AO atlas batch C's nosings sample, shipped next to the desktop tier's GLBs. */
 const ATLAS = `${CATALOG_REL}/high/atlas/nosing_ao.png`;
-/** Every file the source record pins: the planned GLBs and the atlas. */
-const shipped = [...ids.map((id) => `${CATALOG_REL}/high/${id}.glb`), ATLAS].sort();
+/** Batch A's escalators sample a packed atlas too, and they draw on the desktop tier alone. */
+const ESCALATOR_ATLAS = `${CATALOG_REL}/high/atlas/escalator_ao.png`;
+/** Every file the source record pins: the planned GLBs and the atlases. */
+const shipped = [...ids.map((id) => `${CATALOG_REL}/high/${id}.glb`), ATLAS, ESCALATOR_ATLAS].sort();
 // The Lane E build output lives outside the repo; when this machine has it, the copy-mode checks can run.
-const LANE_E = "/Users/tachikoma/Developer/gteki/.claude/worktrees/gteki-lane-e-int/tools/blender/.cache/c3_sample_cb3b29b";
+const LANE_E = "/Users/tachikoma/Developer/gteki/.claude/worktrees/gteki-lane-e-int/tools/blender/.cache/c3_ike_cb3b29b_54007755";
 const hasLaneE = fs.existsSync(path.join(LANE_E, "ike_full", "manifest.json"));
 
 const stationJson = JSON.parse(fs.readFileSync(path.join(GTEKI, "station.json"), "utf8")) as {
@@ -98,6 +100,19 @@ describe("the shipped batches", () => {
     for (const p of nosings) expect(p.tiers.nosing).toEqual(["low", "high"]);
   });
 
+  it.skipIf(!python || !hasLaneE)("records each atlas's size and mip limit from the tier manifests", () => {
+    const facts = JSON.parse(fs.readFileSync(path.join(STATION, "scene/kit_catalog_atlas.json"), "utf8"));
+    const expected: Record<string, { path: string; tiers: Record<string, Record<string, unknown>> }> = {};
+    const doc = JSON.parse(fs.readFileSync(path.join(LANE_E, "ike_full", "manifest.json"), "utf8")) as {
+      atlases: Record<string, { path: string; size_px: number[]; bytes: number; max_isolated_mip: number }>;
+    };
+    for (const [kind, a] of Object.entries(doc.atlases))
+      (expected[kind] ??= { path: a.path, tiers: {} }).tiers.high =
+        { size_px: a.size_px, bytes: a.bytes, max_isolated_mip: a.max_isolated_mip };
+    expect(facts).toEqual(expected);
+    expect(Object.keys(facts).sort()).toEqual(["escalator", "nosing"]);
+  });
+
   it.skipIf(!python)("--check passes on the committed tree", () => {
     const r = run("--check");
     expect(r.stderr).toBe("");
@@ -133,6 +148,20 @@ describe("--check negative controls", () => {
     expect(r.stderr).toContain(`gteki/${CATALOG_REL}/high/${ids[1]}.glb is missing`);
   });
 
+  it.skipIf(!python)("fails when the escalator atlas no longer matches its pin or is missing", () => {
+    const tampered = copyDest();
+    fs.appendFileSync(path.join(tampered, "high", "atlas", "escalator_ao.png"), "x");
+    const r = run("--check", "--dest", tampered);
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain(`gteki/${ESCALATOR_ATLAS} differs from the gteki-ikb-catalog-0-1-0 pin`);
+
+    const missing = copyDest();
+    fs.rmSync(path.join(missing, "high", "atlas", "escalator_ao.png"));
+    const r2 = run("--check", "--dest", missing);
+    expect(r2.status).toBe(1);
+    expect(r2.stderr).toContain(`gteki/${ESCALATOR_ATLAS} is missing`);
+  });
+
   it.skipIf(!python)("fails when the nosing atlas no longer matches its pin or is missing", () => {
     const tampered = copyDest();
     fs.appendFileSync(path.join(tampered, "high", "atlas", "nosing_ao.png"), "x");
@@ -154,7 +183,7 @@ describe("--check negative controls", () => {
     fs.writeFileSync(facts, JSON.stringify(doc));
     const r = run("--check", "--atlas-json", facts);
     expect(r.status).toBe(1);
-    expect(r.stderr).toContain("kit_catalog_atlas.json differs from the tier manifests' atlases.nosing");
+    expect(r.stderr).toContain("kit_catalog_atlas.json differs from the tier manifests' atlases");
 
     fs.rmSync(facts);
     const r2 = run("--check", "--atlas-json", facts);
@@ -216,7 +245,7 @@ describe("--check negative controls", () => {
 });
 
 // When the Lane E build is present, prove copy mode reproduces the committed bytes and a second run is a no-op.
-describe.skipIf(!python || !hasLaneE)("copy mode against the Lane E C3 sample tree", () => {
+describe.skipIf(!python || !hasLaneE)("copy mode against the Lane E C3 tree", () => {
   it("reproduces the committed copies byte for byte, the atlas included, and a second run copies nothing", () => {
     const dest = fs.mkdtempSync(path.join(os.tmpdir(), "gteki-catalog-copy-"));
     scratch.push(dest);

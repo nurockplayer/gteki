@@ -95,13 +95,38 @@ export const catalogUri = (id: string, low: boolean) => `kit/catalog/${tierName(
 /** Batch C: the packed AO atlas every nosing of a tier samples, under the same tier folder. */
 export const NOSING_ATLAS = "atlas/nosing_ao.png";
 export const nosingAtlasUri = (low: boolean) => `kit/catalog/${tierName(low)}/${NOSING_ATLAS}`;
-/** Lane E's packed-atlas mip limit per tier (scene/kit_catalog_atlas.json, kept in step by sync_kit_catalog.py).
- *  `null` when the manifest records no limit: then nothing is clamped. */
-export function nosingAtlasLimit(low: boolean): number | null {
-  const tiers = (kitCatalogAtlas as { nosing?: { tiers?: Record<string, { max_isolated_mip?: number }> } }).nosing?.tiers;
-  const value = tiers?.[tierName(low)]?.max_isolated_mip;
+/** The kinds whose tier folder ships a packed AO atlas (scene/kit_catalog_atlas.json, written by
+ *  pipeline/sync_kit_catalog.py). A kind missing from the file has no atlas: its parts draw unoccluded. */
+type AtlasDoc = Record<string, { path?: string; tiers?: Record<string, { max_isolated_mip?: number }> }>;
+/** The catalog batch kind an id belongs to, as far as atlases go: `nosing`, `escalator` or null. */
+export const atlasKindOf = (id: string): string | null =>
+  id.endsWith("_nosing") ? "nosing" : id.includes("_escalator") ? "escalator" : null;
+/** The atlas a tier ships for `kind`, or null when this tier has none. */
+export function atlasUri(kind: string, low: boolean): string | null {
+  const entry = (kitCatalogAtlas as AtlasDoc)[kind];
+  if (!entry) return null;
+  const tiers = entry.tiers ?? {};
+  if (Object.keys(tiers).length && !tiers[tierName(low)]) return null; // shipped on one tier only
+  return `kit/catalog/${tierName(low)}/${entry.path ?? `atlas/${kind}_ao.png`}`;
+}
+/** Lane E's recorded mip limit for a kind on a tier; `null` means "no limit recorded". It is a record only: three
+ *  0.186 has no Texture.maxLevel, and the Lead's ruling on the final C3 build is not to clamp. */
+export function atlasLimit(kind: string, low: boolean): number | null {
+  const value = (kitCatalogAtlas as AtlasDoc)[kind]?.tiers?.[tierName(low)]?.max_isolated_mip;
   return typeof value === "number" ? value : null;
 }
+/** AO atlas sample state: TEXCOORD_1, data (no sRGB), top-down like the UVs, host userData preserved. The manifest's
+ *  mip limit is recorded on the texture, not clamped (see atlasLimit). */
+function prepareAtlas(THREE: ThreeNS, texture: THREE_NS.Texture, uri: string, kind: string, low: boolean): void {
+  texture.flipY = false;
+  texture.colorSpace = THREE.NoColorSpace;
+  texture.channel = 1;
+  Object.assign(texture.userData, { gteki_uri: uri, gteki_atlas_kind: kind });
+  const limit = atlasLimit(kind, low);
+  if (limit !== null) texture.userData.gteki_max_isolated_mip = limit;
+  texture.needsUpdate = true;
+}
+export const nosingAtlasLimit = (low: boolean) => atlasLimit("nosing", low);
 
 /** One part of one placement that this tier draws. */
 export interface CatalogPart {
@@ -187,6 +212,21 @@ export async function loadKitCatalog(
     );
 
   const owned: { dispose(): void }[] = [];
+  // Batch A's escalators (and any later kind with a packed atlas) sample it through TEXCOORD_1. One texture per kind
+  // per tier; without it the parts still draw, just without AO.
+  const atlases = new Map<string, THREE_NS.Texture>();
+  for (const kind of [...new Set(drawn.map((w) => atlasKindOf(w.id)).filter((k): k is string => k !== null))].sort()) {
+    const uri = atlasUri(kind, low);
+    if (!uri || host.assetUrl(uri) === null) continue;
+    try {
+      const texture = await host.loadTexture(uri, { colorSpace: "linear", flipY: false });
+      prepareAtlas(THREE, texture, uri, kind, low);
+      atlases.set(kind, texture);
+      owned.push(texture);
+    } catch (err) {
+      console.warn(`[ikebukuro] kit catalog: ${kind} atlas ${uri}: ${err instanceof Error ? err.message : String(err)}; drawing without AO`);
+    }
+  }
   return {
     placements: drawn,
     skippedIds: [...skipped].sort(),
@@ -200,16 +240,24 @@ export async function loadKitCatalog(
       const stats: CatalogStats = { parts: 0, byKind, uniqueGlbs: assets.size, drawCalls: 0, triangles: 0 };
       if (!drawn.length) return { group, stats };
       const lit = new Map<THREE_NS.Material, THREE_NS.Material>();
-      const litOf = (src: THREE_NS.Material) => {
-        let m = lit.get(src);
+      // A source material shared by an atlas kind and a plain kind needs one clone per look, so cache per atlas.
+      const litWith = new Map<THREE_NS.Texture, Map<THREE_NS.Material, THREE_NS.Material>>();
+      const litOf = (src: THREE_NS.Material, atlas: THREE_NS.Texture | undefined) => {
+        if (atlas && !litWith.has(atlas)) litWith.set(atlas, new Map());
+        const key = atlas ? litWith.get(atlas)! : lit;
+        let m = key.get(src);
         if (!m) {
           m = src.clone();
           const std = m as THREE_NS.MeshStandardMaterial;
           if (std.isMeshStandardMaterial) {
             std.envMap = env;
             std.envMapIntensity = KIT_ENV_INTENSITY;
+            if (atlas) {
+              std.aoMap = atlas;
+              std.aoMapIntensity = 1;
+            }
           }
-          lit.set(src, m);
+          key.set(src, m); // per-atlas caches only: a plain clone must never carry the atlas kind's aoMap
           owned.push(m);
         }
         return m;
@@ -222,7 +270,7 @@ export async function loadKitCatalog(
         // Catalog flights are sparse (today each shipped id has one placement). Keep bounds local to a flight,
         // even if a future catalog reuses an id at opposite ends of the station. Geometry/materials stay shared.
         for (const w of mine) assets.get(id)!.forEach((part, k) => {
-          const im = new THREE.InstancedMesh(part.geometry, litOf(part.material), 1);
+          const im = new THREE.InstancedMesh(part.geometry, litOf(part.material, atlases.get(atlasKindOf(id) ?? "")), 1);
           owned.push(im); // its instance-matrix buffer is freed only by its own dispose()
           im.name = `kit_catalog:${id}:${w.placement.anchor}:${k}`;
           im.userData = { gteki_role: "kit_catalog", gteki_anchors: [w.placement.anchor], gteki_shadow: "none" };
@@ -411,18 +459,7 @@ export async function loadNosingKit(
       // AO is data, not colour: no sRGB transfer; the strips' TEXCOORD_1 already addresses the atlas top-down.
       atlas = await host.loadTexture(atlasUri, { colorSpace: "linear", flipY: false });
       if (isDisposed()) return abandoned();
-      atlas.flipY = false;
-      atlas.colorSpace = THREE.NoColorSpace;
-      atlas.channel = 1; // the catalog GLBs put the atlas UVs in TEXCOORD_1 (three's uv1)
-      // Keep whatever the host already recorded on the texture (the Godot export's placeholder reads gteki_uri).
-      const limit = nosingAtlasLimit(low);
-      Object.assign(atlas.userData, { gteki_uri: atlasUri, gteki_atlas_kind: "nosing" });
-      if (limit !== null) {
-        atlas.userData.gteki_max_isolated_mip = limit;
-        // three 0.186's Texture has no maxLevel; keep one here so a renderer patch or a later three can read it.
-        (atlas as unknown as { maxLevel?: number }).maxLevel = limit;
-      }
-      atlas.needsUpdate = true;
+      prepareAtlas(THREE, atlas, atlasUri, "nosing", low);
       owned.push(atlas);
     } catch (err) {
       atlas = null;

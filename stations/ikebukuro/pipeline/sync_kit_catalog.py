@@ -16,13 +16,15 @@ that tier filter keeps them off phones); batch C adds `nosing` (the 61 nosing st
 BATCH_KINDS is the union the station ships, so plain `--check` covers all three. A kind is read from the catalog
 entry's generator (`escalator_dressing`) or the id's maker suffix (`_nosing`, `_rails_...`).
 
-Batch C's nosings carry no per-id AO image: Lane E's C3 build packs all 61 strips' AO into one atlas per tier, which
-is copied next to the tier's GLBs:
+Batches A and C carry no per-image AO: Lane E packs each batch's AO into one atlas per tier, which is copied next
+to the tier's GLBs, under `atlas/`:
 
-    <src-full>/atlas/nosing_ao.png   -> gteki/kit/catalog/high/atlas/nosing_ao.png
-    <src-mobile>/atlas/nosing_ao.png -> gteki/kit/catalog/low/atlas/nosing_ao.png
+    <src-full>/atlas/escalator_ao.png -> gteki/kit/catalog/high/atlas/escalator_ao.png   (batch A, desktop only)
+    <src-full>/atlas/nosing_ao.png    -> gteki/kit/catalog/high/atlas/nosing_ao.png
+    <src-mobile>/atlas/nosing_ao.png  -> gteki/kit/catalog/low/atlas/nosing_ao.png
 
-The atlas is checked against `manifest.atlases.nosing` the same way each GLB is checked against its own entry.
+Each atlas is checked against `manifest.atlases.<kind>` the same way a GLB is checked against its own entry, and the
+sizes and mip limits the loader needs at runtime are written to scene/kit_catalog_atlas.json.
 
 Each source must match the sha256 and size its tier's manifest.json records. --check changes nothing and exits
 non-zero when a copy is missing or stale (byte-compared with the source manifest when the Lane E tree is present,
@@ -49,19 +51,18 @@ STATION_JSON = os.path.join(STATION, "gteki", "station.json")
 DEST_REL = os.path.join("kit", "catalog")
 
 SOURCE_ID = "gteki-ikb-catalog-0-1-0"
-# Lane E's C3 sample build (draft PR #391): the 61 nosing strips with no per-id AO image, plus the shared nosing AO
-# atlas. Its escalator and handrail GLBs are byte-identical to the ike_cb3b29b tree batches A and B came from; Lane
-# E's final C3 build replaces this constant (and the pins) when it lands.
-LANE_E = ("/Users/tachikoma/Developer/gteki/.claude/worktrees/gteki-lane-e-int/tools/blender/.cache/c3_sample_cb3b29b")
+# Lane E's final C3 build (PR #391): the 61 nosing strips with no per-id AO image, the escalators rebuilt against
+# their packed AO atlas, and one atlas per batch and tier.
+LANE_E = ("/Users/tachikoma/Developer/gteki/.claude/worktrees/gteki-lane-e-int/tools/blender/.cache/c3_ike_cb3b29b_54007755")
 # tier -> (default source folder, manifest file name, destination folder under gteki/kit/catalog/)
 TIERS = {
     "high": (os.path.join(LANE_E, "ike_full"), "manifest.json", "high"),
     "low": (os.path.join(LANE_E, "ike_mobile"), "manifest.json", "low"),
 }
-# The nosing batch's shared AO atlas: one PNG per tier, its path as the manifest records it.
-ATLAS_KIND = "nosing"
-ATLAS_PATH = "atlas/nosing_ao.png"
-# The atlas's per-tier manifest facts the loader needs at runtime (mip clamp, size); generated in copy mode.
+# The batches whose AO is packed into a shared atlas: one PNG per kind per tier, at the path the tier's manifest
+# records under "atlases". Batch B's rails keep their per-id look, so they have no atlas.
+ATLAS_PATHS = {"escalator": "atlas/escalator_ao.png", "nosing": "atlas/nosing_ao.png"}
+# Each atlas's per-tier manifest facts the loader needs at runtime (size, mip limit); generated in copy mode.
 ATLAS_JSON = os.path.join(STATION, "scene", "kit_catalog_atlas.json")
 BATCH_KINDS = ("escalator", "rails", "nosing")  # batch A + B + C
 KINDS = ("escalator", "rails", "nosing")
@@ -131,6 +132,7 @@ def main(argv):
     catalog = read_json(CATALOG)
     placements = read_json(PLACEMENTS)
     pairs = plan(catalog, placements, kinds)
+    kinds_of = {a["id"]: kind_of(a) for a in catalog["assets"]}
     pins = {}
     if os.path.isfile(args.station):
         record = next((s for s in read_json(args.station)["sources"] if s["id"] == SOURCE_ID), None)
@@ -187,31 +189,43 @@ def main(argv):
         else:
             copy_verified(tier, rel, entry, os.path.join(srcs[tier], (entry or {}).get("file", "")), dst, pid)
 
-    # The nosing batch draws on both tiers: each tier that ships a nosing also ships the shared AO atlas.
-    nosing_ids = {a["id"] for a in catalog["assets"] if kind_of(a) == "nosing"}
-    atlas_tiers = {tier for tier, pid in pairs if pid in nosing_ids}
-    for tier in sorted(atlas_tiers):
-        rel = f"{DEST_REL}/{TIERS[tier][2]}/{ATLAS_PATH}"
-        dst = os.path.join(args.dest, TIERS[tier][2], ATLAS_PATH)
-        entry = (manifest_docs.get(tier, {}).get("atlases") or {}).get(ATLAS_KIND)
-        declare.append(rel)
-        if args.check:
-            check_copy(tier, rel, entry, dst)
-        else:
-            copy_verified(tier, rel, entry, os.path.join(srcs[tier], ATLAS_PATH), dst, f"atlas {ATLAS_KIND}")
+    # Each tier that ships a kind with a packed atlas also ships that kind's atlas, at the path its manifest records.
+    atlas_tiers = {}
+    for tier, pid in pairs:
+        kind = kinds_of[pid]
+        if kind in ATLAS_PATHS:
+            atlas_tiers.setdefault(kind, set()).add(tier)
+    atlas_paths = {}  # tier -> the atlas paths inside its folder, for the stale-file sweep
+    for kind in sorted(atlas_tiers):
+        path = ATLAS_PATHS[kind]
+        for tier in sorted(atlas_tiers[kind]):
+            rel = f"{DEST_REL}/{TIERS[tier][2]}/{path}"
+            dst = os.path.join(args.dest, TIERS[tier][2], path.replace("/", os.sep))
+            entry = (manifest_docs.get(tier, {}).get("atlases") or {}).get(kind)
+            declare.append(rel)
+            atlas_paths.setdefault(tier, set()).add(path)
+            if args.check:
+                check_copy(tier, rel, entry, dst)
+            else:
+                copy_verified(tier, rel, entry, os.path.join(srcs[tier], path.replace("/", os.sep)), dst, f"atlas {kind}")
 
-    if atlas_tiers:
-        facts = {"nosing": {"path": ATLAS_PATH.replace(os.sep, "/"), "tiers": {}}}
-        for tier in sorted(atlas_tiers):
-            entry = (manifest_docs.get(tier, {}).get("atlases") or {}).get(ATLAS_KIND) or {}
-            facts["nosing"]["tiers"][tier] = {k: entry[k] for k in ("size_px", "bytes", "max_isolated_mip") if k in entry}
+    # The facts file is only known when every tier that ships an atlas has its manifest at hand; otherwise a copy run
+    # would blank it, so leave the committed one alone.
+    if atlas_tiers and all(tier in manifest_docs for tiers in atlas_tiers.values() for tier in tiers):
+        facts = {}
+        for kind in sorted(atlas_tiers):
+            tiers = {}
+            for tier in sorted(atlas_tiers[kind]):
+                entry = (manifest_docs[tier].get("atlases") or {}).get(kind) or {}
+                tiers[tier] = {k: entry[k] for k in ("size_px", "bytes", "max_isolated_mip") if k in entry}
+            facts[kind] = {"path": ATLAS_PATHS[kind], "tiers": tiers}
         existing = read_json(args.atlas_json) if os.path.isfile(args.atlas_json) else None
         label = os.path.relpath(args.atlas_json, REPO)
         if args.check:
             if existing is None:
                 problems.append(f"{label} is missing (run without --check)")
             elif existing != facts:
-                problems.append(f"{label} differs from the tier manifests' atlases.{ATLAS_KIND}")
+                problems.append(f"{label} differs from the tier manifests' atlases")
         elif existing != facts:
             os.makedirs(os.path.dirname(args.atlas_json) or ".", exist_ok=True)
             with open(args.atlas_json, "w", encoding="utf-8") as f:
@@ -227,9 +241,9 @@ def main(argv):
             for name in sorted(os.listdir(folder)) if os.path.isdir(folder) else []:
                 path = os.path.join(folder, name)
                 if os.path.isdir(path):
-                    # Only the nosing batch's atlas/ folder is a planned subdirectory.
+                    # Only the batches' atlas/ folder is a planned subdirectory.
                     for inner in sorted(os.listdir(path)):
-                        if tier not in atlas_tiers or os.path.join(name, inner).replace(os.sep, "/") != ATLAS_PATH:
+                        if os.path.join(name, inner).replace(os.sep, "/") not in atlas_paths.get(tier, set()):
                             problems.append(f"{os.path.join(args.dest, dst_dir, name, inner)} is not a catalog copy any placement loads")
                     continue
                 if not name.endswith(".glb") or name[:-4] not in planned:
