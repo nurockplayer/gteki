@@ -7,7 +7,8 @@ Snapshot SHA-256: c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938f
 Portal terms: https://portal.data.metro.tokyo.lg.jp/terms/
 Snapshot SHA-256: 74e591bc0092beaed0921015d3b2b0b9bf90c70e67508b036155f6e5400cd67a
 Licence claimed at dataset level: Creative Commons Attribution 4.0
-  (deed snapshot SHA-256 cf5b3d5b092076f0c146b9c41d7bca8a5ad5171660b7033cd8125ba5ac6d0382)
+  Deed: https://creativecommons.org/licenses/by/4.0/deed.ja
+  Snapshot SHA-256: cf5b3d5b092076f0c146b9c41d7bca8a5ad5171660b7033cd8125ba5ac6d0382
 
 Stands for values taken from the S10 CSVs (tools/gis/sources/sources.yaml source ids
 "tokyo-s10-shinjuku-csv", "tokyo-s10-shinjuku-nishiguchi-csv"). Covers plain names, times and

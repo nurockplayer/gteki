@@ -174,12 +174,15 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        block names a dataset licence. Those files restate facts (names, floors,
        exits, gate and facility labels) from operator and venue pages in
        GTEki's own words, with the page URL and retrieval time as evidence.
-       Each file's sources[] records its sources; no page text, map, image,
-       layout or logo is copied.
+       JSON files record their sources in sources[]; Markdown notes and logs
+       cite them inline by URL. No page text, map, image, layout or logo is
+       copied.
 
-   4.10 OpenStreetMap - cited facts-only; nothing derived ships
-       Used for evidence only: committed GIS receipts hold counts and tag keys,
-       never OSM values (#437). Nothing derived from OSM ships in station data.
+   4.10 OpenStreetMap - evidence only; no OSM objects or attributes ship
+       Shipped station data contains no OSM-derived objects or attributes.
+       Research summaries under docs/gis/osm/ (#437) keep aggregate counts and
+       tag keys computed from Overpass extracts, with an automated check that
+       no OSM tag value is copied into them.
        If OSM-derived data is ever committed, an ODbL entry and a share-alike
        assessment are required first.
 
