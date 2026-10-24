@@ -25,6 +25,31 @@ python3 tools/blender/validate_glb.py --require-occlusion assets/library/glb/*.g
 
 Viewer: `pnpm --dir tools/blender/web_preview install && pnpm --dir tools/blender/web_preview dev`, then open `/?asset=<id>` or `/?mode=gallery`.
 
+## Shared AO atlases (C3)
+
+The stdlib packer removes embedded AO from matching GLBs, maps UV1 into aligned
+cells, and writes a separate grayscale atlas plus an updated manifest. Other
+assets are copied unchanged. Use a new, empty output directory outside the input.
+
+```bash
+python3 -I tools/blender/ao_atlas.py --build <cache>/ike_full --out <out>/ike_full --kind 'nosing=gteki_ik_stair_*_nosing'
+python3 -I tools/blender/ao_atlas.py --build <cache>/ike_mobile --out <out>/ike_mobile --kind 'nosing=gteki_ik_stair_*_nosing' --half
+python3 -I tools/blender/validate_glb.py --require-occlusion --manifest <out>/ike_full/manifest.json <out>/ike_full/glb/*.glb
+python3 -I tools/blender/validate_glb.py --require-occlusion --manifest <out>/ike_mobile/manifest.json <out>/ike_mobile/glb/*.glb
+lockf -k /tmp/gteki-local-test.lock python3 -I tools/blender/test_ao_atlas.py
+```
+
+Repeat `--kind` for additional groups (for example, `'escalator=gteki_ik_escalator_*'`);
+overlapping globs fail. `--ids <file>` restricts processing to one id per line.
+Full cells retain every source texel; `--half` averages each 2×2 block with half-up
+rounding before packing. The manifest records atlas hashes, dimensions and cells.
+UV1 stays at least half a texel inside its cell, so bilinear sampling never reads a neighbour. Cells are aligned to
+their own size, so mip levels up to `atlases.<kind>.max_isolated_mip` (log2 of the smallest cell: 7 for 128 px)
+never mix cells; coarser levels average neighbours, which is only reached when a whole cell covers less than
+one screen pixel. A loader that must rule that out clamps the texture's max mip level to that value.
+The client assigns the external AO map on channel 1 before merging geometry.
+`--manifest` checks atlas and GLB hashes/byte counts and reachable UV cells; without it, validation is unchanged.
+
 Texture budget (`docs/assets/texture-budget.md`): `build.sh validate` also runs
 `texture_budget.py assets/library --check tools/blender/catalog/budget.json`. For a before/after report, run
 `python3 tools/blender/texture_budget.py assets/library --compare <old_library> --layout tools/blender/showcase/concourse_demo.json`.
