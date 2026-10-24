@@ -5,8 +5,8 @@ nothing was deduced, and no route, floor id or exit was inferred. Only the text 
 facility / service / floor-guide pages below was read — no floor-guide images, PDFs, maps or
 icons were opened, and no text, logo, photo or layout was reproduced.
 
-Output files: `ikebukuro-facilities-batch2.json` (39 POIs), `shinjuku-facilities-batch2.json`
-(31 POIs).
+Output files: `ikebukuro-facilities-batch2.json` (37 POIs), `shinjuku-facilities-batch2.json`
+(32 POIs), after the lead review.
 
 All reads happened in one session on 2026-10-24, window UTC 10:57–11:26Z (19:57–20:26 JST).
 Method for every page: plain `curl`, default UA, no custom headers or referer, sequential with
@@ -241,19 +241,19 @@ lists pages that a POI actually cites.
 
 | file | sources | pois | toilet | atm | locker | service |
 | --- | --- | --- | --- | --- | --- | --- |
-| ikebukuro-facilities-batch2.json | 9 | 39 | 20 | 0 | 7 | 12 |
-| shinjuku-facilities-batch2.json | 5 | 31 | 17 | 0 | 0 | 14 |
+| ikebukuro-facilities-batch2.json | 9 | 37 | 20 | 0 | 5 | 12 |
+| shinjuku-facilities-batch2.json | 5 | 32 | 17 | 0 | 0 | 15 |
 
 Per building:
 - ルミネ池袋 — toilet 2, service 3 (5)
 - エソラ池袋 — toilet 6, service 1 (7)
 - エチカ池袋 — 0
 - エミオ池袋 — 0
-- 東武百貨店 池袋店 — toilet 12, locker 7, service 8 (27)
+- 東武百貨店 池袋店 — toilet 12, locker 5, service 8 (25)
 - ルミネエスト新宿 — toilet 1, service 1 (2)
 - ルミネ新宿 — toilet 3, service 4 (7)
 - ニュウマン新宿 — toilet 9, service 2 (11)
-- 小田急百貨店 新宿店 — toilet 4, service 7 (11)
+- 小田急百貨店 新宿店 — toilet 4, service 8 (12)
 
 ## Uncertain labels
 
@@ -274,3 +274,10 @@ the 小田急 pages cite the second ruling comment as instructed.
 - AED: the 5 Odakyu floor POIs stand, because the floor guide prints an AED icon on each of those floors. Tobu's staff-area AEDs stay out (not customer areas).
 - ATMs printed only inside HTML comments or as legend icons without a place are correctly not imported (not printed for readers).
 - Totals: Ikebukuro 39, Shinjuku 32.
+
+## Lead review, second pass (after the oracle review)
+
+- Tobu lockers: 常温 and 冷蔵 at the same printed place are one POI each (one POI per printed place): locker-ikb-tobudept-005 merged into -003 (B2F 6番地 階段前) and -006 into -004 (B2F 11番地); both types are in notes. Ikebukuro 37.
+- Odakyu AEDs (service-sjk-odakyudept-002…006): name is AED, the floor-guide icon label as printed.
+- LUMINE新宿 information (service-sjk-lumine-001/-002): notes keep the printed 「＜ルミネ1-5F/ルミネ2-2F＞」.
+- Totals above are synced: Ikebukuro 37 + Shinjuku 32 = 69.
