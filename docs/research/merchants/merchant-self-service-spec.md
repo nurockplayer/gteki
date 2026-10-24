@@ -125,7 +125,7 @@ Rules:
 
 **Hours.** `Poi` has no hours field; hours go in `notes` as text with the submission date and the OD-32 wording 「出典日時点の情報です。変更されている場合があります」 / "As of the source date; may have changed". The ≤180-day rule applies: a submission date older than 180 days drops the hours. Hours never imply current status.
 
-**Tenants.** For a department store, the brand listing stays out of `pois.json` (#419): brands go to the station's tenant file with `poiId` = the store POI (research files call it `storePoiId`), `floorLabel` in the shop's own wording and no conversion. English names only if the shop supplies them. **Known blocker:** #425's `tenant.evidence` rule requires a facts-only source with a decision, but a merchant-submission Source has `usage: "data"`, so such tenant rows would fail CI. core-search-6a will relax that rule in #441 after #425 merges; until then merchant-submitted brands are not written to tenant files.
+**Tenants.** For a department store, the brand listing stays out of `pois.json` (#419): brands go to the station's tenant file with `poiId` = the store POI (research files call it `storePoiId`), `floorLabel` in the shop's own wording and no conversion. English names only if the shop supplies them. Merchant-submitted brands are written to tenant files: #441 lets `tenant.evidence` cite either a `usage: "facts-only"` source (#425) or a shippable data source (the same `reusableData` rule `poi.position.rights` uses), and both need a recorded decision.
 
 ### IMDF mapping (structure, from gteki-1b)
 
@@ -177,7 +177,7 @@ The shop and its position are separate records, so a move only updates the ancho
 
 7. ~~Is the method prefix enough?~~ — core-search-6a: yes for Phase 1; Phase 2 should record the source type on the Source (e.g. `Source.kind`).
 8. ~~Photo slot~~ — core-search-6a: a separate images schema proposal, not `Asset`.
-9. ~~Tenant mapping~~ — confirmed by core-search-6a (`storePoiId` → `poiId`, `floorLabel` as worded); see the known blocker in §6.
+9. ~~Tenant mapping~~ — confirmed by core-search-6a (`storePoiId` → `poiId`, `floorLabel` as worded); the rules for tenant evidence are settled by #441 (§6).
 
 **data-research-05**
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createTenantFixtureBundle, syntheticStorePoi } from "../../navigation/src/fixtures.ts";
 import { parseStationFiles, TENANTS_SCHEMA_VERSION, validateBundle } from "./index.ts";
-import type { GraphFile, PoiFile, StationBundle, StationManifestFile, Tenant, TenantFile } from "./index.ts";
+import type { GraphFile, PoiFile, Source, StationBundle, StationManifestFile, Tenant, TenantFile } from "./index.ts";
 
 /** Split a bundle back into the on-disk files, including the optional tenants file (#419). */
 function files(b: StationBundle): [StationManifestFile, GraphFile, PoiFile, TenantFile] {
@@ -21,6 +21,24 @@ const warnings = (b: StationBundle) => validateBundle(b).filter((i) => i.level =
 function withTenant(patch: Partial<Tenant>): StationBundle {
   const b = createTenantFixtureBundle();
   b.tenants![0] = { ...b.tenants![0]!, ...patch };
+  return b;
+}
+
+/** A merchant submission (#438): registered as a data source with the shop's grant, decision optional. */
+function merchantSource(id: string, rights: "REUSABLE_WITH_CONDITIONS" | "RESTRICTED", decision = true): Source {
+  return {
+    id, title: "Merchant-submitted brand list (test fixture)", publisher: "GTEki tests", url: "https://example.invalid/merchant",
+    license: { name: "Merchant grant for GTEki", url: "https://example.invalid/merchant/grant" },
+    rights, usage: "data",
+    ...(decision ? { decision: { url: "https://github.com/nurockplayer/gteki/issues/438", date: "2026-10-23" } } : {}),
+    attribution: "Submitted by the shop (invented for tests)", modified: false, retrievedAt: null, datasetDate: null,
+  };
+}
+
+/** A tenant whose only evidence is the given source (evaluated after the source is pushed). */
+function withTenantSource(src: Source): StationBundle {
+  const b = withTenant({ evidence: { sourceIds: [src.id], method: "merchant-self-service", checkedDate: "2026-10-22" } });
+  b.sources.push(src);
   return b;
 }
 
@@ -94,10 +112,11 @@ describe("tenant validation (#419)", () => {
     expect(errors(b)).toContain("tenant.dup");
   });
 
-  it("requires a registered facts-only source with a decision, and an ISO checked date", () => {
+  it("accepts a facts-only source with a decision, and requires an ISO checked date", () => {
+    expect(errors(createTenantFixtureBundle())).toEqual([]);
     expect(errors(withTenant({ evidence: { sourceIds: ["no-such-source"], method: "field-survey", checkedDate: "2026-10-22" } }))).toContain("tenant.evidence");
     expect(errors(withTenant({ evidence: { sourceIds: [], method: "field-survey", checkedDate: "2026-10-22" } }))).toContain("tenant.evidence");
-    // A data source may ship content; a printed brand name is a cited fact only.
+    // fixture-geometry is a reusable data source, but it has no decision on record.
     expect(errors(withTenant({ evidence: { sourceIds: ["fixture-geometry"], method: "field-survey", checkedDate: "2026-10-22" } }))).toContain("tenant.evidence");
     expect(errors(withTenant({ evidence: { sourceIds: ["fixture-tenants"], method: "field-survey", checkedDate: "2026/10/22" } }))).toContain("tenant.evidence");
 
@@ -109,6 +128,18 @@ describe("tenant validation (#419)", () => {
     });
     b.tenants![0] = { ...b.tenants![0]!, evidence: { sourceIds: ["fixture-tenants-undecided"], method: "field-survey", checkedDate: "2026-10-22" } };
     expect(errors(b)).toContain("tenant.evidence");
+  });
+
+  it("accepts a shippable data source with a decision — a merchant submission (#441)", () => {
+    // The shop's grant is at least as strong as facts-only: usage:"data" with REUSABLE_WITH_CONDITIONS.
+    const b = withTenantSource(merchantSource("merchant-grant", "REUSABLE_WITH_CONDITIONS"));
+    expect(errors(b)).toEqual([]);
+  });
+
+  it("still rejects a data source without a decision, or with unshippable rights (#441)", () => {
+    expect(errors(withTenantSource(merchantSource("merchant-undecided", "REUSABLE_WITH_CONDITIONS", false)))).toContain("tenant.evidence");
+    // Rights that forbid shipping keep the listing out, decision or not.
+    expect(errors(withTenantSource(merchantSource("merchant-restricted", "RESTRICTED")))).toContain("tenant.evidence");
   });
 
   it("warns, but still accepts, a listing whose store has no connector", () => {
