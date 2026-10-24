@@ -329,6 +329,10 @@
           {
             "poiId": "tobu-central-gate-2",
             "score": 100
+          },
+          {
+            "poiId": "tobu-north-gate",
+            "score": 80
           }
         ]
       },
