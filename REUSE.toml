@@ -82,7 +82,7 @@ SPDX-License-Identifier = "CC0-1.0"
 # The LicenseRef files in LICENSES/ are pointers (URL + recorded snapshot sha256), not texts.
 # The SPDX-FileCopyrightText values name the PUBLISHER as the repo records it, not a copyright
 # holder (GIS open item 11); "modified by GTEki contributors" is added where the data was modified.
-# Re-run GIS's list after the pending PRs land: #110, #115 (context GLBs), #117, #127, #61.
+# GIS re-ran the list for PRs #110, #115, #117, #127 and #61 (Issue #161).
 
 # --- 4a. MLIT Project PLATEAU ubld 53394576 (Ikebukuro) and files derived from it -------------
 # Credit (Ikebukuro): 「出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成」
@@ -91,12 +91,14 @@ SPDX-License-Identifier = "CC0-1.0"
 # Road (tran) geometry: Owner risk acceptance, NOT a licence finding
 # (docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md); keeps its own terms.
 # Context GLBs from #110 land under stations/ikebukuro/gteki/assets/ and are covered by the first
-# glob. #115's Shinjuku context GLB path is not known yet: add it here when it lands.
+# glob. #115 committed no Shinjuku context GLB; those files stayed in the private store, so there
+# is no Shinjuku GLB path to add here. The #61 surface layer is PLATEAU-derived and flattened.
 [[annotations]]
 path = [
   "stations/ikebukuro/gteki/assets/**",
   "stations/ikebukuro/scene/*.json",
   "tools/gis/test/fixtures/plateau-catalog-meshes-13116-13104.json",
+  "stations/shinjuku/data/surface.json",
 ]
 precedence = "override"
 SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; modified by GTEki contributors"
@@ -147,7 +149,8 @@ SPDX-License-Identifier = "LicenseRef-PLATEAU-site-policy AND LicenseRef-facts-o
 # station.json is E27-derived (coverage polygons, floor labels, node ids; GIS P1). Its own
 # "license: PDL 1.0" line is stale against Q11 = No; the Shinjuku lead owns that file.
 # stations/shinjuku/sources/manifest.json stays at the default (GTEki-authored provenance list).
-# #61 will add stations/shinjuku/data/surface.json.
+# #61's surface.json is mapped to PLATEAU in 4a; its E27-derived fence output and QA fixtures
+# (GIS disposition in Issue #161) are mapped here.
 [[annotations]]
 path = [
   "stations/shinjuku/gteki/station.json",
@@ -155,7 +158,9 @@ path = [
   "stations/shinjuku/gteki/pois.json",
   "stations/shinjuku/data/plan.json",
   "stations/shinjuku/data/import-report.json",
-  "stations/shinjuku/data/surface.json",
+  "stations/shinjuku/scene/fare-restricted.generated.json",
+  "stations/shinjuku/test/fixtures/restricted-conflicts.json",
+  "stations/shinjuku/tools/vantages.json",
   "docs/gis/networks/hokonavi-oedo-shinjuku-*",
   "docs/gis/history/**/networks/hokonavi-oedo-shinjuku-*",
   "tests/e2e/specs/__goldens__/02-navigation.spec.ts/shinjuku-routes.json",
