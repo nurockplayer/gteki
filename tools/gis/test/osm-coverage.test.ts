@@ -73,7 +73,11 @@ describe('OSM name matching', () => {
     expect(normaliseName('合成ストア 西口店')).toBe(normaliseName('合成ストア 西口'));
     expect(normaliseName('合成ストア西口店')).toBe(normaliseName('合成ストア西口'));
     // A compound noun that merely ends in 店 is not a branch suffix.
-    for (const kept of ['百貨店', '書店', '商店', '売店', '本店', '支店', '喫茶店', '専門店', '商店街']) expect(normaliseName(kept)).toBe(kept);
+    for (const kept of ['百貨店', '書店', '商店', '売店', '本店', '支店', '喫茶店', '専門店', '商店街', '時計店', '理髪店']) expect(normaliseName(kept)).toBe(kept);
+    // The branch ending has to be a positive one: a place after the shop name, not just any 店.
+    expect(normaliseName('合成ストア新宿店')).toBe('合成ストア新宿');
+    expect(normaliseName('合成ストア駅前店')).toBe('合成ストア駅前');
+    expect(normaliseName('合成時計店')).toBe('合成時計店');
   });
 });
 
@@ -102,6 +106,10 @@ describe('OSM level normalisation', () => {
     // A range and a plain level in one list, de-duplicated.
     expect(parseLevels('1;3-4')).toEqual([1, 3, 4]);
     expect(parseLevels('-0.5-0.5')).toEqual([-0.5, 0, 0.5]);
+    // Fractional endpoints are kept: the two ends plus every integer between them, no invented half-floor.
+    expect(parseLevels('0-0.25')).toEqual([0, 0.25]);
+    expect(parseLevels('0.25-1')).toEqual([0.25, 1]);
+    expect(parseLevels('-0.5-1')).toEqual([-0.5, 0, 1]);
     // Too long to be a floor stack is a malformed value, not a 500-storey building.
     expect(parseLevels('0-500')).toEqual([]);
   });
@@ -113,7 +121,9 @@ describe('OSM source-tag classification', () => {
     expect(classifySourceTag('現地調査')).toBe('srcclass:permitted_tracing');
     expect(classifySourceTag('GSI')).toBe('srcclass:permitted_tracing');
     expect(classifySourceTag('国土地理院')).toBe('srcclass:permitted_tracing');
-    expect(classifySourceTag('aerial imagery')).toBe('srcclass:permitted_tracing');
+    // Generic aerial wording names no permitted provider, so it is not a permission.
+    expect(classifySourceTag('aerial imagery')).toBe('srcclass:unresolved');
+    expect(classifySourceTag('航空写真')).toBe('srcclass:unresolved');
     // Bing counts only for its aerial imagery wording, never as a bare vendor mention.
     expect(classifySourceTag('Bing aerial')).toBe('srcclass:permitted_tracing');
     expect(classifySourceTag('Bing')).toBe('srcclass:unresolved');
@@ -197,8 +207,9 @@ describe('coverage facts', () => {
     expect(quality.objects_with_source_tag).toBe(3);
     // Overlapping: node 101 names both a survey and a URL, so the counts do not sum to objects_with_source_tag.
     expect(quality.source_class_objects).toEqual({ 'srcclass:permitted_tracing': 2, 'srcclass:known_restricted': 1, 'srcclass:unresolved': 1 });
-    // Exclusive: one object names a restricted source; two only a permitted-tracing one.
-    expect(quality.source_class_exclusive).toEqual({ objects_with_known_restricted: 1, objects_with_permitted_tracing_only: 2 });
+    // Exclusive: one object names a restricted source; only one names permitted tracing and nothing else — node 101
+    // also names a URL, so it is not permitted-only.
+    expect(quality.source_class_exclusive).toEqual({ objects_with_known_restricted: 1, objects_with_permitted_tracing_only: 1 });
     expect(quality.fixme_objects).toBe(1);
     expect(quality.note_objects).toBe(1);
   });
@@ -267,6 +278,24 @@ describe('multipolygon ring assembly', () => {
     // One open member only: no ring, and the relation counts as unassembled rather than as no polygon at all.
     const broken = parseOverpassJson({ elements: [{ type: 'relation', id: 922, tags: { type: 'multipolygon', building: 'yes' }, members: [members[0]!] }] }).elements;
     expect(readPolygon(broken[0]!, stationProjector(ORIGIN))).toEqual({ polygon: null, unassembled: 1 });
+    // One open inner chain makes the whole relation incomplete: a polygon that lost a hole is a different shape, so
+    // it is excluded and counted once, never returned with the rings that did assemble.
+    const withOpenHole = parseOverpassJson({ elements: [{ type: 'relation', id: 923, tags: { type: 'multipolygon', building: 'yes' }, members: [
+      ...members,
+      { type: 'way', ref: 913, role: 'inner', geometry: [{ lat: ORIGIN.lat + 0.0002, lon: ORIGIN.lon + 0.0002 }, { lat: ORIGIN.lat + 0.0004, lon: ORIGIN.lon + 0.0004 }] },
+    ] }] }).elements;
+    expect(readPolygon(withOpenHole[0]!, stationProjector(ORIGIN))).toEqual({ polygon: null, unassembled: 1 });
+    // A closed inner ring is kept as the hole it is.
+    const withHole = parseOverpassJson({ elements: [{ type: 'relation', id: 924, tags: { type: 'multipolygon', building: 'yes' }, members: [
+      ...members,
+      { type: 'way', ref: 914, role: 'inner', geometry: [
+        { lat: ORIGIN.lat + 0.0002, lon: ORIGIN.lon + 0.0002 }, { lat: ORIGIN.lat + 0.0002, lon: ORIGIN.lon + 0.0004 },
+        { lat: ORIGIN.lat + 0.0004, lon: ORIGIN.lon + 0.0004 }, { lat: ORIGIN.lat + 0.0002, lon: ORIGIN.lon + 0.0002 },
+      ] },
+    ] }] }).elements;
+    const holeRead = readPolygon(withHole[0]!, stationProjector(ORIGIN));
+    expect(holeRead.unassembled).toBe(0);
+    expect(holeRead.polygon!.inners).toHaveLength(1);
   });
 });
 
@@ -280,21 +309,28 @@ describe('comparison with our own lists', () => {
     // The OSM point of node 101 (normalised '合成コンビニ') in station metres.
     const hit = osm.find((object) => object.key === normaliseName('合成コンビニ'))!;
     expect(hit.x).not.toBeNull();
+    // One OSM object carries a name but no usable position: a third, distinct outcome for an entry we can place.
+    osm.push({ element: { type: 'node', id: 104, tags: { name: '位置不明店' }, timestamp: '', version: 1, lat: null, lon: null, geometry: [], members: [] },
+      key: normaliseName('位置不明店'), x: null, y: null, levels: [] });
     const list: OurList = { list_id: 'fixture', source: 'fixture', entries: [
       { id: 'ours-near', names: ['合成コンビニ'], floor_ordinal: -1, x: hit.x! + 100, y: hit.y! },
       { id: 'ours-far', names: ['合成コンビニ'], floor_ordinal: 2, x: hit.x! + 200, y: hit.y! },
       { id: 'ours-no-position', names: ['合成コンビニ'], floor_ordinal: null, x: null, y: null },
+      { id: 'ours-unlocatable', names: ['位置不明店'], floor_ordinal: null, x: 0, y: 0 },
       { id: 'ours-missing', names: ['存在しない店'], floor_ordinal: null, x: null, y: null },
     ] };
     const result = compareList(list, osm);
-    expect(result.matched).toBe(3);
+    expect(result.matched).toBe(4);
     expect(result.strict_matched).toBe(1);
     expect(result.name_match_only).toBe(1);
     expect(result.name_match_distant).toBe(1);
+    expect(result.name_match_unlocatable).toBe(1);
     expect(result.ours_only).toBe(1);
-    // The three entries all hit the same OSM object, which is therefore not OSM-only.
+    // Every entry lands in exactly one bucket.
+    expect(result.strict_matched + result.name_match_only + result.name_match_distant + result.name_match_unlocatable).toBe(result.matched);
+    // The three located entries all hit the same OSM object, which is therefore not OSM-only.
     expect(result.pairs.filter((pair) => pair.osm_id === 101).map((pair) => pair.strict)).toEqual([true, false, false]);
-    expect(result.pairs.map((pair) => pair.match)).toEqual(['strict', 'distant', 'name_only']);
+    expect(result.pairs.map((pair) => pair.match)).toEqual(['strict', 'distant', 'name_only', 'unlocatable']);
     expect(result.unmatched_ours).toEqual(['ours-missing']);
     // Floor agreement is only counted where both sides have a floor: -1 agrees, 2 does not.
     expect(result.floor_agreement).toEqual({ comparable: 2, agree: 1, rate: 0.5, ambiguous_excluded: 0 });
@@ -412,15 +448,36 @@ describe('receipt guard and write order', () => {
       { path: 'manifest', text: 'evidence' },
       { path: 'table', text: 'a cell reading yes' },
     ];
-    const result = auditSourceValues(files, values, { priorText: 'evidence' });
-    // The name is a leak; `convenience` survives only inside our `cat:` identifier; `evidence` is pre-existing text;
-    // `yes` is too short to be evidence either way.
+    const result = auditSourceValues(files, values, { prior: { path: 'manifest', text: 'evidence' } });
+    // The name is a leak; `convenience` survives only inside our `cat:` identifier; `evidence` is pre-existing text in
+    // the manifest; `yes` is scheme vocabulary on the allowlist.
     expect(result.leaks).toEqual([{ path: 'note', count: 1 }]);
     expect(result.namespaced_hits).toBe(1);
+    expect(result.allowlisted_hits).toBe(1);
     expect(result.pre_existing_hits).toBe(1);
-    expect(result.values_scanned).toBe(3);
+    expect(result.values_scanned).toBe(4);
     // A second bare use of the same value is enough to trip it.
     expect(auditSourceValues([{ path: 'mixed', text: 'cat:合成コンビニ and 合成コンビニ' }], values).leaks).toEqual([{ path: 'mixed', count: 1 }]);
+  });
+
+  it('audits short free-text values, skipping only one character and number or punctuation values', () => {
+    const values = new Set(['西武', '丙丁', 'A', '12', '3.5', '---']);
+    const result = auditSourceValues([{ path: 'note', text: '西武 and 丙丁' }], values);
+    // A two-character Japanese name still identifies a place; a single character and values with no free text do not.
+    expect(result.values_scanned).toBe(2);
+    expect(result.leaks).toEqual([{ path: 'note', count: 2 }]);
+    // An allowlisted two-character word is scheme vocabulary or our own label, so the length rule is not what exempts it.
+    expect(auditSourceValues([{ path: 'note', text: '本店' }], new Set(['本店']))).toMatchObject({ values_scanned: 1, allowlisted_hits: 1, leaks: [] });
+  });
+
+  it('keeps the origin/main exemption inside the manifest, so a copied value in the note still leaks', () => {
+    const prior = { path: 'tools/gis/sources/sources.yaml', text: 'evidence' };
+    const result = auditSourceValues([
+      { path: 'tools/gis/sources/sources.yaml', text: 'evidence' },
+      { path: 'note', text: 'evidence' },
+    ], new Set(['evidence']), { prior });
+    expect(result.pre_existing_hits).toBe(1);
+    expect(result.leaks).toEqual([{ path: 'note', count: 1 }]);
   });
 
   it('writes nothing when the guard trips, and writes all three files after it passes', async () => {

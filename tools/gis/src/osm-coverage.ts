@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 import { docsRoot, getStoreRoot, getStoredSource, readJson, repoRoot, writeJson, TOOL_VERSION } from './common.js';
@@ -23,7 +23,12 @@ import { toolFingerprint } from './provenance.js';
  *
  * The coverage numbers describe what OSM *holds*, not what is true on the ground, and nothing here is routing input.
  */
-export const OSM_COVERAGE_POLICY_VERSION = 'osm-coverage-v1';
+// v2: exclusive source counts require an exactly permitted-tracing class set; generic aerial wording is unresolved; the
+// digest covers the canonical comparison inputs and the full comparison array; the committed-text audit covers the
+// README, this file and both receipts against both extracts; short free-text values are audited; fractional level
+// ranges keep both endpoints; a trailing 店 is stripped only on a positive branch pattern; an incomplete multipolygon
+// is excluded whole; and a located entry whose OSM names are unplaceable gets its own bucket.
+export const OSM_COVERAGE_POLICY_VERSION = 'osm-coverage-v2';
 export const OSM_SOURCE_IDS: Readonly<Record<string, string>> = { shinjuku: 'osm-overpass-shinjuku', ikebukuro: 'osm-overpass-ikebukuro' };
 /** The GET radius recorded verbatim in each manifest entry. */
 export const OSM_RADIUS_M = 900;
@@ -118,20 +123,28 @@ export function tagKeySet(elements: readonly OsmElement[]): Set<string> {
 export const STORE_SUFFIX_COMPOUNDS = ['百貨店', '書店', '商店', '売店', '本店', '支店', '酒店', '質店', '茶店', '喫茶店', '薬店', '代理店', '特約店', '専門店', '量販店', '小売店', 'チェーン店', '商店街'] as const;
 
 /**
- * Name key: NFKC, case-folded, whitespace and punctuation removed, and a trailing branch suffix dropped. The suffix
- * rule is deliberately narrow: a trailing 店 is a branch marker (`〜池袋店`, `〜 西口店`) unless it completes one of
- * the compound words above, and a trailing 店舗 is always the word "premises". A name that is merely a substring of
- * another does not match.
+ * Branch endings that make a trailing 店 a branch suffix: a station (`〜駅`, `〜駅前`), a gate or exit (`〜西口`), a
+ * place name of this station pair (`〜新宿`, `〜池袋`) or the central gate. Only a positive match strips the 店;
+ * `時計店`, `理髪店` and the like are the name itself, so the character alone proves nothing.
+ */
+const BRANCH_SUFFIX = /(?:駅前|駅|[東西南北]口|新宿|池袋|中央口)店$/u;
+
+/**
+ * Name key: NFKC, case-folded, whitespace and punctuation removed, and a trailing branch suffix dropped. A trailing 店
+ * is a branch marker only after a space (`〜 西口店`) or in one of the branch endings above (`〜駅前店`, `〜池袋店`);
+ * a trailing 店舗 is always the word "premises". A name that is merely a substring of another does not match.
  */
 export function normaliseName(name: string): string {
   const folded = name.normalize('NFKC').toLowerCase();
+  // The whitespace is a separator here, so the branch test runs before it is stripped.
+  const spacedBranch = /[\s　]+\S+店$/u.test(folded.trim());
   const core = folded
     .replace(/[\s　]+/gu, '')
     // Every Unicode punctuation and symbol character: ASCII `&`/`.`/`-`, CJK `・`/`、`, fullwidth forms after NFKC.
     // The long vowel mark `ー` is a modifier letter, so it survives.
     .replace(/[\p{P}\p{S}]/gu, '');
   if (/店舗$/u.test(core)) return core.replace(/店舗$/u, '');
-  if (/店$/u.test(core) && !STORE_SUFFIX_COMPOUNDS.some((compound) => core.endsWith(compound))) return core.replace(/店$/u, '');
+  if (/店$/u.test(core) && !STORE_SUFFIX_COMPOUNDS.some((compound) => core.endsWith(compound)) && (spacedBranch || BRANCH_SUFFIX.test(core))) return core.replace(/店$/u, '');
   return core;
 }
 
@@ -152,7 +165,11 @@ export function normaliseLevel(raw: string): number | null {
 /** A range expands to at most this many ordinals; a longer one is a malformed value, not a building with 10,000 floors. */
 const MAX_RANGE_LEVELS = 100;
 
-/** `0-2`, `-4--2`, `1–3`, `B3-B1`: both ends are kept, inclusive, and the direction is normalised. */
+/**
+ * `0-2`, `-4--2`, `1–3`, `B3-B1`: both ends are kept, inclusive, and the direction is normalised. Integer endpoints
+ * expand in steps of one. Fractional endpoints (`0-0.25`, `0.25-1`, `-0.5-1`) expand to the two endpoints plus every
+ * integer between them: the value states its ends, never its intermediate step, so no half-floor is invented.
+ */
 function expandLevelRange(part: string): number[] | null {
   const text = part.normalize('NFKC').trim();
   const numeric = /^(-?\d+(?:\.\d+)?)\s*(?:-|–|—|~|〜|～)\s*(-?\d+(?:\.\d+)?)$/u.exec(text);
@@ -160,10 +177,15 @@ function expandLevelRange(part: string): number[] | null {
   const ends = numeric ? [Number(numeric[1]), Number(numeric[2])] : basement ? [-Number(basement[1]), -Number(basement[2])] : null;
   if (!ends) return null;
   const low = Math.min(ends[0]!, ends[1]!), high = Math.max(ends[0]!, ends[1]!);
-  const step = Number.isInteger(low) && Number.isInteger(high) ? 1 : 0.5;
-  const count = Math.floor((high - low) / step) + 1;
-  if (count < 2 || count > MAX_RANGE_LEVELS) return null;
-  return Array.from({ length: count }, (_, index) => Math.round((low + index * step) * 100) / 100);
+  if (Number.isInteger(low) && Number.isInteger(high)) {
+    const count = high - low + 1;
+    if (count > MAX_RANGE_LEVELS) return null;
+    return Array.from({ length: count }, (_, index) => low + index);
+  }
+  const levels = new Set<number>([low, high]);
+  for (let level = Math.ceil(low); level <= Math.floor(high); level++) levels.add(level);
+  if (levels.size > MAX_RANGE_LEVELS) return null;
+  return [...levels].sort((a, b) => a - b);
 }
 
 /**
@@ -206,17 +228,18 @@ const URL_REFERENCE = /https?:\/\//iu;
 /**
  * Classify one `source*` value.
  *
- * - `permitted_tracing`: survey, GSI, or aerial imagery — including Bing, but only when the value itself says aerial,
- *   imagery or the Japanese equivalents. Any other mention of a vendor is not a tracing permission.
+ * - `permitted_tracing`: survey or GSI, and a vendor whose terms allow it only when the value also names the imagery
+ *   use (Bing aerial). GSI and survey wording name the permitted source itself.
  * - `known_restricted`: Google, Zenrin, Yahoo, MapFan, Apple Maps, shop directories.
- * - `unresolved`: a bare URL, a vendor mention without the imagery wording, or anything this tool cannot place.
+ * - `unresolved`: a bare URL, a vendor mention without the imagery wording, generic aerial wording that names no
+ *   provider, or anything this tool cannot place. "Aerial imagery" alone is not a permission.
  */
 export function classifySourceTag(value: string): SourceClass {
   const text = value.normalize('NFKC');
   if (KNOWN_RESTRICTED.some((pattern) => pattern.test(text))) return 'srcclass:known_restricted';
   if (URL_REFERENCE.test(text) || /\bwww\./iu.test(text)) return 'srcclass:unresolved';
   if (BING.test(text)) return AERIAL.test(text) ? 'srcclass:permitted_tracing' : 'srcclass:unresolved';
-  if (GSI.test(text) || SURVEY.test(text) || AERIAL.test(text)) return 'srcclass:permitted_tracing';
+  if (GSI.test(text) || SURVEY.test(text)) return 'srcclass:permitted_tracing';
   return 'srcclass:unresolved';
 }
 
@@ -301,8 +324,9 @@ export interface PolygonRead { polygon: Polygon | null; unassembled: number }
 
 /**
  * Closed rings of an element in station metres: a closed way's own outline, or a relation's member ways joined into
- * rings. An open way, or a relation whose members do not close, is reported as unassembled rather than guessed into a
- * polygon.
+ * rings. An open way, or a relation with any member chain that does not close, is reported as incomplete rather than
+ * guessed into a polygon — a polygon that lost a hole is a different shape, so the whole relation is left out and
+ * counted once.
  */
 export function readPolygon(element: OsmElement, project: StationProjector): PolygonRead {
   const toRing = (points: readonly OsmPoint[]): Ring | null => points.length >= 3 ? points.map((p) => project(p.lat, p.lon)) : null;
@@ -316,11 +340,12 @@ export function readPolygon(element: OsmElement, project: StationProjector): Pol
   const outerSegments = element.members.filter((member) => member.role !== 'inner' && member.geometry.length >= 2).map((member) => member.geometry);
   const innerSegments = element.members.filter((member) => member.role === 'inner' && member.geometry.length >= 2).map((member) => member.geometry);
   const outer = assembleRings(outerSegments), inner = assembleRings(innerSegments);
-  // A relation with no outer member at all is unassembled too, but a failed chain is counted once, not twice.
-  const unassembled = outer.unassembled + inner.unassembled + (outerSegments.length ? 0 : 1);
   const outers = outer.rings.map((ring) => toRing(ring)).filter((ring): ring is Ring => ring !== null);
   const inners = inner.rings.map((ring) => toRing(ring)).filter((ring): ring is Ring => ring !== null);
-  return { polygon: outers.length ? { outers, inners } : null, unassembled };
+  const complete = outerSegments.length > 0
+    && outer.unassembled === 0 && inner.unassembled === 0
+    && outers.length === outer.rings.length && inners.length === inner.rings.length;
+  return complete ? { polygon: { outers, inners }, unassembled: 0 } : { polygon: null, unassembled: 1 };
 }
 
 /** A polygon of an element, for callers that do not need the unassembled count (the lead list). */
@@ -559,8 +584,9 @@ export function computeQuality(elements: readonly OsmElement[]): QualityFacts {
     // One object contributes at most once per class, even when it has several source tags in the same class.
     const named = new Set(sourceValues.map(classifySourceTag));
     for (const cls of named) classes[cls] = (classes[cls] ?? 0) + 1;
+    // Exclusive means exclusive: an object that also names an unresolved source is not "permitted tracing only".
     if (named.has('srcclass:known_restricted')) withRestricted++;
-    else if (named.has('srcclass:permitted_tracing')) permittedOnly++;
+    else if (named.size === 1 && named.has('srcclass:permitted_tracing')) permittedOnly++;
   }
   const ordered: Record<string, number> = {};
   for (const cls of SOURCE_CLASSES) if (classes[cls] !== undefined) ordered[cls] = classes[cls]!;
@@ -592,11 +618,12 @@ export interface ListComparison {
   strict_matched: number;
   name_match_only: number;
   name_match_distant: number;
+  name_match_unlocatable: number;
   ours_only: number;
   osm_only: number;
   floor_agreement: { comparable: number; agree: number; rate: number | null; ambiguous_excluded: number };
   /** Private detail: our ids against OSM ids. Never committed. */
-  pairs: Array<{ our_id: string; osm_type: string; osm_id: number; strict: boolean; match: 'strict' | 'name_only' | 'distant'; distance_m: number | null; floor_agree: boolean | null }>;
+  pairs: Array<{ our_id: string; osm_type: string; osm_id: number; strict: boolean; match: 'strict' | 'name_only' | 'distant' | 'unlocatable'; distance_m: number | null; floor_agree: boolean | null }>;
   unmatched_osm: Array<{ osm_type: string; osm_id: number }>;
   unmatched_ours: string[];
 }
@@ -617,11 +644,12 @@ export function namedOsmObjects(elements: readonly OsmElement[], project: Statio
 
 /**
  * Match one of our lists against the named OSM objects. Every entry lands in exactly one bucket, so
- * `matched = strict_matched + name_match_only + name_match_distant`:
+ * `matched = strict_matched + name_match_only + name_match_distant + name_match_unlocatable`:
  * - `strict_matched`: we hold coordinates for the entry and an OSM object with the same normalised name is within
  *   STRICT_MATCH_RADIUS_M of them.
  * - `name_match_only`: we hold no coordinates for the entry, so the name is the only evidence.
  * - `name_match_distant`: we hold coordinates and every OSM object of that name is further away than the radius.
+ * - `name_match_unlocatable`: we hold coordinates, but no matching OSM object has a usable position.
  * - `osm_only`: named OSM objects no entry matches; `ours_only`: entries no OSM object matches.
  *
  * Candidate objects are ordered deterministically (nearest first, then OSM type and id), so a pair list is stable.
@@ -635,7 +663,7 @@ export function compareList(list: OurList, osm: readonly NamedOsm[]): ListCompar
   const pairs: ListComparison['pairs'] = [];
   const unmatchedOurs: string[] = [];
   const names = new Set<string>();
-  let matched = 0, strict = 0, nameOnly = 0, distant = 0;
+  let matched = 0, strict = 0, nameOnly = 0, distant = 0, unlocatable = 0;
   let floorComparable = 0, floorAgree = 0, floorAmbiguous = 0;
   const byId = (a: NamedOsm, b: NamedOsm): number => a.element.type.localeCompare(b.element.type) || a.element.id - b.element.id;
   for (const entry of list.entries) {
@@ -656,7 +684,11 @@ export function compareList(list: OurList, osm: readonly NamedOsm[]): ListCompar
       return { hit, distance };
     }).sort((a, b) => (a.distance ?? Number.POSITIVE_INFINITY) - (b.distance ?? Number.POSITIVE_INFINITY) || byId(a.hit, b.hit));
     const nearest = ranked[0]!;
-    if (nearest.distance === null) nameOnly++;
+    // No coordinates on our side and no position on the OSM side are different facts: the first is name-only, the
+    // second is a name we could not place.
+    const entryLocated = entry.x !== null && entry.y !== null;
+    if (!entryLocated) nameOnly++;
+    else if (nearest.distance === null) unlocatable++;
     else if (nearest.distance <= STRICT_MATCH_RADIUS_M) strict++;
     else distant++;
     for (const { hit, distance } of ranked) {
@@ -664,7 +696,7 @@ export function compareList(list: OurList, osm: readonly NamedOsm[]): ListCompar
       pairs.push({
         our_id: entry.id, osm_type: hit.element.type, osm_id: hit.element.id,
         strict: distance !== null && distance <= STRICT_MATCH_RADIUS_M,
-        match: distance === null ? 'name_only' : distance <= STRICT_MATCH_RADIUS_M ? 'strict' : 'distant',
+        match: distance === null ? (entryLocated ? 'unlocatable' : 'name_only') : distance <= STRICT_MATCH_RADIUS_M ? 'strict' : 'distant',
         distance_m: distance === null ? null : Math.round(distance * 10) / 10,
         floor_agree: entry.floor_ordinal !== null && hit.levels.length ? hit.levels.includes(entry.floor_ordinal) : null,
       });
@@ -679,7 +711,7 @@ export function compareList(list: OurList, osm: readonly NamedOsm[]): ListCompar
   const unmatchedOsm = osm.filter((object) => !matchedOsm.has(`${object.element.type}/${object.element.id}`)).map((object) => ({ osm_type: object.element.type, osm_id: object.element.id }));
   return {
     list_id: list.list_id, source: list.source, entries: list.entries.length, distinct_names: names.size,
-    matched, strict_matched: strict, name_match_only: nameOnly, name_match_distant: distant, ours_only: unmatchedOurs.length, osm_only: unmatchedOsm.length,
+    matched, strict_matched: strict, name_match_only: nameOnly, name_match_distant: distant, name_match_unlocatable: unlocatable, ours_only: unmatchedOurs.length, osm_only: unmatchedOsm.length,
     floor_agreement: { comparable: floorComparable, agree: floorAgree, rate: floorComparable === 0 ? null : Math.round((floorAgree / floorComparable) * 10000) / 10000, ambiguous_excluded: floorAmbiguous },
     pairs, unmatched_osm: unmatchedOsm, unmatched_ours: unmatchedOurs,
   };
@@ -740,8 +772,11 @@ export function parseOurList(payload: unknown, kind: ListSpec['kind'], floors: M
 
 const execFileAsync = promisify(execFile);
 
-/** Read a list from our repository without checking anything out: the worktree file for `main`, `git show` otherwise. */
-export async function readList(spec: ListSpec, floors: Map<string, number>): Promise<OurList> {
+/**
+ * Read a list from our repository without checking anything out: the worktree file for `main`, `git show` otherwise.
+ * The sha256 of the exact bytes read travels with the entries, so the run identity can name the input it compared.
+ */
+export async function readList(spec: ListSpec, floors: Map<string, number>): Promise<{ list: OurList; bytes_sha256: string }> {
   const bytes = spec.ref === 'main'
     ? await readFile(join(repoRoot, spec.path))
     : await (async () => {
@@ -753,56 +788,111 @@ export async function readList(spec: ListSpec, floors: Map<string, number>): Pro
       }
     })();
   const entries = parseOurList(JSON.parse(bytes.toString('utf8')), spec.kind, floors);
-  return { list_id: spec.list_id, source: `${spec.ref}:${spec.path}`, entries };
+  const bytesSha256 = createHash('sha256').update(bytes).digest('hex');
+  return { list: { list_id: spec.list_id, source: `${spec.ref}:${spec.path}`, entries }, bytes_sha256: bytesSha256 };
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Committed-text audit (the `check-literals` shape, run against the extract's own values)
 
 /**
- * Committed text this issue adds, audited as a whole against every tag value of the extract. The receipt itself is
- * audited in memory (and is additionally held to the stricter `assertNoSourceValues` token rule). `sources.yaml` is
- * scanned as text, but a value already present in the manifest at `origin/main` is pre-existing text, not an OSM
- * leak introduced here.
+ * Committed text this issue adds or changes, audited as a whole against the tag values of both extracts: the note,
+ * the package README, this source file, the test file, `sources.yaml` and every committed receipt under
+ * `docs/gis/osm/`. The current receipt is audited in memory as well (and is additionally held to the stricter
+ * `assertNoSourceValues` token rule).
  */
 export const AUDITED_PATHS = [
   'docs/gis/research/2026-10-24-osm-coverage-odbl.md',
+  'tools/gis/README.md',
+  'tools/gis/src/osm-coverage.ts',
   'tools/gis/test/osm-coverage.test.ts',
   'tools/gis/sources/sources.yaml',
 ] as const;
 
+/** The committed receipts of both stations, discovered by name so a receipt of the other station is audited too. */
+async function committedReceipts(): Promise<string[]> {
+  const relative = join('docs', 'gis', 'osm');
+  try {
+    const names = await readdir(join(repoRoot, relative));
+    return names.filter((name) => /^coverage-[a-z0-9-]+\.json$/u.test(name)).sort().map((name) => join(relative, name));
+  } catch {
+    return [];
+  }
+}
+
 /**
- * Words that are both an OSM tag value in this extract and a word of our own text. A word that could describe any
+ * Words that are both an OSM tag value in these extracts and a word of our own text. A word that could describe any
  * shop cannot identify a place, so an exact collision on it is not evidence of a copy. Three groups, and nothing else:
  *
  * 1. The vocabulary of the tagging schemes the note names — tag keys used as values elsewhere (`shop`, `amenity`,
  *    `highway`, `public_transport`), the documented values of Simple Indoor Tagging and of the access vocabulary
- *    (`corridor`, `stairs`, `elevator`, `mall`, `private`, `outside`, …). These are the scheme's words, not the
- *    extract's places.
+ *    (`corridor`, `stairs`, `elevator`, `mall`, `private`, `outside`, `yes`, `no`, …). These are the scheme's words,
+ *    not the extract's places.
  * 2. Ordinary English that happens to be a tag value somewhere (`receipt`, `scheme`, `service`, `many`, …).
  * 3. Words of our own that are not from the extract at all: the two fixture strings in the test file (`local
- *    knowledge`, `photo`), the two vendor names the classifier test names (`Apple`, `Bing`), and the two mall names.
- *    The mall names are here because 小田急エース and 京王モール are the complexes the Owner asked about (OD-34) and
- *    reached this work through the brief, not through the extract; the note says so, and they identify two named
- *    buildings rather than any OSM record.
+ *    knowledge`, `photo`), the vendor names the classifier names (`Apple`, `Bing`), and the two mall names. The mall
+ *    names are here because 小田急エース and 京王モール are the complexes the Owner asked about (OD-34) and reached
+ *    this work through the brief, not through the extract; the note says so, and they identify two named buildings
+ *    rather than any OSM record.
  *
  * Adding a term is a deliberate act: it must be one of these three kinds, never a shop, brand, operator or place
  * name read out of the extract.
  */
 export const AUDIT_ALLOWLIST: ReadonlySet<string> = new Set([
+  // 1a. Scheme keys and documented values (Simple Indoor Tagging, access, highway, public transport).
   'amenity', 'books', 'convenience', 'corridor', 'crossing', 'elevator', 'escalator', 'footway', 'forward', 'highway',
   'mall', 'multipolygon', 'outdoor', 'outside', 'platform', 'private', 'public_transport', 'restaurant', 'retail',
-  'roof', 'room', 'shop', 'stairs', 'steps', 'subway_entrance', 'toilet', 'train_station', 'wall',
-  'across', 'closed', 'fixed', 'good', 'internal', 'many', 'marked', 'mixed', 'receipt', 'scheme', 'service',
-  'Apple', 'Bing', 'local knowledge', 'photo', '京王モール', '小田急エース',
+  'roof', 'room', 'shop', 'stairs', 'steps', 'subway_entrance', 'toilet', 'train_station', 'wall', 'yes', 'no',
+  // 1b. The OSM shop and amenity values this classifier maps in AMENITY_CATEGORIES. Our own source file has to name
+  // them to fold them into our categories, so they are scheme vocabulary, not extract places; a copied name is
+  // distinguished by case, since these are the documented lower-case values.
+  'alcohol', 'arts', 'arts_centre', 'atm', 'bag', 'bakery', 'bank', 'bar', 'beauty', 'bed', 'bench', 'beverages',
+  'bicycle', 'bicycle_parking', 'biergarten', 'bureau_de_change', 'bus_station', 'cafe', 'car', 'car_sharing',
+  'casino', 'charging_station', 'chemist', 'cinema', 'clinic', 'clothes', 'coffee', 'college', 'community_centre',
+  'company', 'computer', 'confectionery', 'cosmetics', 'deli', 'dentist', 'department_store', 'doctors', 'doityourself',
+  'door', 'drinking_water', 'dry_cleaning', 'electronics', 'estate_agent', 'events_venue', 'fabric', 'fast_food',
+  'fire_station', 'florist', 'food_court', 'fountain', 'fuel', 'furniture', 'gift', 'greengrocer', 'hairdresser',
+  'hardware', 'hospital', 'hostel', 'hotel', 'houseware', 'ice_cream', 'jewelry', 'kindergarten', 'kiosk',
+  'language_school', 'laundry', 'library', 'locksmith', 'lottery', 'mobile_phone', 'money_lender', 'museum', 'music',
+  'musical_instrument', 'nightclub', 'office', 'optician', 'parking', 'parking_entrance', 'pastry', 'pet', 'pharmacy',
+  'place_of_worship', 'police', 'post_box', 'post_office', 'pub', 'public_building', 'rail', 'religion', 'school',
+  'scrub', 'seafood', 'second_hand', 'shelter', 'shoes', 'social_facility', 'sports', 'stationery', 'storage_rental',
+  'supermarket', 'taxi', 'tea', 'telephone', 'theatre', 'tobacco', 'toilets', 'townhall', 'toys', 'travel_agency',
+  'university',
+  'vacant', 'variety_store', 'vending_machine', 'video', 'video_games', 'waste_basket', 'watches', 'wholesale', 'wine',
+  // 1c. The level syntax our parser documents and the fixture labels our tests use.
+  '0-2', '1-2', '1:2', '1;2', '1;3', '3F', 'B1', 'B2F', 'B3', 'M2',
+  // 2. Ordinary English that happens to be a tag value somewhere.
+  'across', 'area', 'art', 'artwork', 'automatic', 'black', 'building', 'closed', 'column', 'commercial', 'container',
+  'covered', 'dedicated', 'disabled', 'down', 'emergency', 'fixed', 'flat', 'floor', 'gate', 'general', 'good', 'image',
+  'information', 'internal', 'isolated', 'live', 'location', 'main', 'many', 'map', 'marked', 'mixed', 'net', 'only',
+  'park', 'passenger', 'permit', 'public', 'receipt', 'recorded', 'red', 'regional', 'required', 'round', 'scheme',
+  'separate', 'separated', 'served', 'service', 'sign', 'site', 'station', 'stop', 'surface', 'survey', 'temple',
+  'tiles', 'tree', 'underground', 'up',
+  // 3. Words of our own that are not from the extract: fixture strings, the vendor names the classifier names, the
+  // two mall names (OD-34, taken from the brief), and the station names, ids and labels of our own station data and
+  // README. The station names identify our public station ids; the audit cannot tell them apart from the same word in
+  // the extract, and they were already in the repository before this work.
+  'Apple', 'Bing', 'bing', 'local knowledge', 'photo', '京王モール', '小田急エース',
+  'E01', 'E28', 'Ikebukuro', 'S01', 'Shibuya', 'Shinjuku', 'Toei', 'Tokyo', 'Toshima', '1b', 'src',
+  '新宿', '新宿区', '新宿店', '本店', '東京都', '池袋', '池袋店', '西口', '改札', '改札口',
 ]);
 
 /** A derived category or kind is ours, but it is spelled like the OSM value: allowed only in its namespaced form. */
 const NAMESPACES = ['cat:', 'kind:', 'key:', 'srcclass:'] as const;
 
-/** Values shorter than this are too common to be evidence of a copy; pure numbers carry no free-text value. */
-export const AUDIT_MIN_LENGTH = 4;
+/** Only single characters and free-text-free values are skipped; see `isAuditedValue`. */
 const NUMERIC_VALUE = /^[-+]?\d+(?:\.\d+)?$/u;
+const PUNCTUATION_VALUE = /^[\p{P}\p{S}\s]+$/u;
+
+/**
+ * Whether a tag value is specific enough to be evidence of a copy. Nothing below four characters is skipped except a
+ * single character and a value with no free text (a pure number or punctuation): a two- or three-character Japanese
+ * name still identifies a place, and so does a short `name`/`brand`/`operator` value.
+ */
+export function isAuditedValue(value: string): boolean {
+  return value.length >= 2 && !NUMERIC_VALUE.test(value) && !PUNCTUATION_VALUE.test(value);
+}
 
 export interface AuditFile { path: string; text: string }
 export interface AuditResult {
@@ -834,15 +924,24 @@ function occursAsToken(text: string, value: string): boolean {
   return new RegExp(`(?<![A-Za-z0-9_:])${escaped}(?![A-Za-z0-9_:])`, 'u').test(text);
 }
 
+export interface AuditOptions {
+  allowlist?: ReadonlySet<string>;
+  /**
+   * The manifest as it stands on `origin/main`. The exemption is scoped to that one file: text that predates this work
+   * in the manifest is not evidence, but the same value copied into another file is a leak introduced here.
+   */
+  prior?: { path: string; text: string };
+}
+
 /**
  * Scan committed text for extract values. A hit is a leak unless the value is only ever used inside one of our
- * namespaced identifiers, is on the allowlist, or already occurs in `priorText` (text that predates this work). The
+ * namespaced identifiers, is on the allowlist, or already occurs in the `sources.yaml` text from `origin/main`. The
  * audit writes nothing: a non-empty leak list is the caller's signal to stop before writing.
  */
-export function auditSourceValues(files: readonly AuditFile[], sourceValues: ReadonlySet<string>, options: { allowlist?: ReadonlySet<string>; priorText?: string } = {}): AuditResult {
+export function auditSourceValues(files: readonly AuditFile[], sourceValues: ReadonlySet<string>, options: AuditOptions = {}): AuditResult {
   const allowlist = options.allowlist ?? AUDIT_ALLOWLIST;
-  const prior = options.priorText ?? '';
-  const values = [...sourceValues].filter((value) => value.length >= AUDIT_MIN_LENGTH && !NUMERIC_VALUE.test(value));
+  const prior = options.prior;
+  const values = [...sourceValues].filter(isAuditedValue);
   let namespaced = 0, allowlisted = 0, preExisting = 0;
   const leaks: Array<{ path: string; count: number }> = [];
   for (const file of files) {
@@ -852,7 +951,7 @@ export function auditSourceValues(files: readonly AuditFile[], sourceValues: Rea
       if (onlyNamespaced(file.text, value)) { namespaced++; continue; }
       if (!occursAsToken(file.text, value)) continue;
       if (allowlist.has(value)) { allowlisted++; continue; }
-      if (prior && prior.includes(value)) { preExisting++; continue; }
+      if (prior && file.path === prior.path && prior.text.includes(value)) { preExisting++; continue; }
       count++;
     }
     if (count) leaks.push({ path: file.path, count });
@@ -860,13 +959,15 @@ export function auditSourceValues(files: readonly AuditFile[], sourceValues: Rea
   return { files: files.map((file) => file.path), values_scanned: values.length, namespaced_hits: namespaced, allowlisted_hits: allowlisted, pre_existing_hits: preExisting, leaks };
 }
 
-/** The manifest as it stands on `origin/main`: its text is not an OSM leak introduced by this issue. */
-async function priorManifestText(): Promise<string> {
+export const MANIFEST_PATH = 'tools/gis/sources/sources.yaml';
+
+/** The manifest as it stands on `origin/main`: its own text is not an OSM leak introduced by this issue. */
+async function priorManifest(): Promise<AuditOptions['prior']> {
   try {
-    const { stdout } = await execFileAsync('git', ['show', 'origin/main:tools/gis/sources/sources.yaml'], { cwd: repoRoot, maxBuffer: 16 * 1024 * 1024 });
-    return stdout;
+    const { stdout } = await execFileAsync('git', ['show', `origin/main:${MANIFEST_PATH}`], { cwd: repoRoot, maxBuffer: 16 * 1024 * 1024 });
+    return { path: MANIFEST_PATH, text: stdout };
   } catch {
-    return '';
+    return undefined;
   }
 }
 
@@ -880,7 +981,7 @@ export interface CoverageInput {
   extract: { elements: number; rejected: number; tag_keys: number };
   coverage: CoverageFacts;
   quality: QualityFacts;
-  comparisons: Array<{ list_id: string; source: string; entries: number; distinct_names: number; matched: number; strict_matched: number; name_match_only: number; name_match_distant: number; ours_only: number; osm_only: number; floor_agreement: { comparable: number; agree: number; rate: number | null; ambiguous_excluded: number }; status: 'compared' | 'unavailable' }>;
+  comparisons: Array<{ list_id: string; source: string; entries: number; distinct_names: number; matched: number; strict_matched: number; name_match_only: number; name_match_distant: number; name_match_unlocatable: number; ours_only: number; osm_only: number; floor_agreement: { comparable: number; agree: number; rate: number | null; ambiguous_excluded: number }; status: 'compared' | 'unavailable' }>;
   run_id: string;
   /** The committed-text audit: how much text and how many extract values it covered, and what it exempted. */
   leak_guard: { files_checked: number; values_scanned: number; namespaced_hits: number; allowlisted_hits: number; pre_existing_hits: number; leaks: number };
@@ -900,8 +1001,8 @@ export function publicCoverageReceipt(input: CoverageInput, sourceValues: Readon
     gteki_role: 'evidence',
     navigation_use: 'NOT_FOR_ROUTING',
     verification: 'UNVERIFIED',
-    note: 'Coverage evidence for #437 only: counts, shares, histograms, OSM tag keys and our derived categories. No OSM name, free-text tag value or contributor identity is copied; the committed-text audit scanned this receipt, the research note, the test file and the manifest against every tag value of the extract (see leak_guard). The extract stays in the private store. Nothing here is a source for the graph, a route or a shipping POI list, and it may itself raise ODbL Produced Work or attribution questions, open for gteki-1b (docs/gis/research/2026-10-24-osm-coverage-odbl.md).',
-    leak_guard: { ...input.leak_guard, note: 'This receipt, the research note, the test file and the manifest were scanned against every tag value of the extract. Values are exempt only as namespaced identifiers, allowlisted vocabulary or text already on origin/main; a leak stops the run before anything is written.' },
+    note: 'Coverage evidence for #437 only: counts, shares, histograms, OSM tag keys and our derived categories. No OSM name, free-text tag value or contributor identity is copied; the committed-text audit scanned this receipt, the research note, tools/gis/README.md, tools/gis/src/osm-coverage.ts, the test file, sources.yaml and both stations\' committed receipts against the union of both extracts\' tag values (see leak_guard). The extract stays in the private store. Nothing here is a source for the graph, a route or a shipping POI list, and it may itself raise ODbL Produced Work or attribution questions, open for gteki-1b (docs/gis/research/2026-10-24-osm-coverage-odbl.md).',
+    leak_guard: { ...input.leak_guard, note: 'This receipt, the research note, tools/gis/README.md, tools/gis/src/osm-coverage.ts, the test file, sources.yaml and both stations\' committed receipts were scanned against the union of both extracts\' tag values. Values are exempt only as namespaced identifiers, allowlisted vocabulary, or text already on origin/main in sources.yaml; a leak stops the run before anything is written.' },
     extract: { ...input.extract },
     source: { ...input.source },
     query: { kind: 'overpass-ql-get', ...input.query },
@@ -1060,33 +1161,49 @@ export async function osmCoverage(station: string, options: { receiptDir?: strin
   const floors = floorOrdinals(stationJson);
   const comparisons: CoverageInput['comparisons'] = [];
   const details: Array<Record<string, unknown>> = [];
+  /** The canonical comparison inputs: every list with the ref, path and sha256 of the exact bytes that were read. */
+  const comparisonInputs: Array<{ list_id: string; ref: string; path: string; bytes_sha256: string | null }> = [];
   for (const spec of LIST_SPECS[station] ?? []) {
     try {
-      const list = await readList(spec, floors);
+      const { list, bytes_sha256: listSha256 } = await readList(spec, floors);
+      comparisonInputs.push({ list_id: spec.list_id, ref: spec.ref, path: spec.path, bytes_sha256: listSha256 });
       const comparison = compareList(list, osm);
-      comparisons.push({ list_id: comparison.list_id, source: comparison.source, entries: comparison.entries, distinct_names: comparison.distinct_names, matched: comparison.matched, strict_matched: comparison.strict_matched, name_match_only: comparison.name_match_only, name_match_distant: comparison.name_match_distant, ours_only: comparison.ours_only, osm_only: comparison.osm_only, floor_agreement: comparison.floor_agreement, status: 'compared' });
+      comparisons.push({ list_id: comparison.list_id, source: comparison.source, entries: comparison.entries, distinct_names: comparison.distinct_names, matched: comparison.matched, strict_matched: comparison.strict_matched, name_match_only: comparison.name_match_only, name_match_distant: comparison.name_match_distant, name_match_unlocatable: comparison.name_match_unlocatable, ours_only: comparison.ours_only, osm_only: comparison.osm_only, floor_agreement: comparison.floor_agreement, status: 'compared' });
       details.push({ list_id: comparison.list_id, source: comparison.source, pairs: comparison.pairs, unmatched_osm: comparison.unmatched_osm, unmatched_ours: comparison.unmatched_ours });
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
-      comparisons.push({ list_id: spec.list_id, source: `${spec.ref}:${spec.path}`, entries: 0, distinct_names: 0, matched: 0, strict_matched: 0, name_match_only: 0, name_match_distant: 0, ours_only: 0, osm_only: 0, floor_agreement: { comparable: 0, agree: 0, rate: null, ambiguous_excluded: 0 }, status: 'unavailable' });
+      comparisonInputs.push({ list_id: spec.list_id, ref: spec.ref, path: spec.path, bytes_sha256: null });
+      comparisons.push({ list_id: spec.list_id, source: `${spec.ref}:${spec.path}`, entries: 0, distinct_names: 0, matched: 0, strict_matched: 0, name_match_only: 0, name_match_distant: 0, name_match_unlocatable: 0, ours_only: 0, osm_only: 0, floor_agreement: { comparable: 0, agree: 0, rate: null, ambiguous_excluded: 0 }, status: 'unavailable' });
       details.push({ list_id: spec.list_id, source: `${spec.ref}:${spec.path}`, status: 'unavailable', reason });
     }
   }
 
   const query = { sha256: querySha256(stored.source.expected_url), radius_m: OSM_RADIUS_M, origin };
-  // The run identity covers the tool itself and the comparison lists read from git (via their match tables), so a code
-  // or list change can never overwrite an earlier receipt under the same name.
+  // The run identity covers the tool itself and the comparison inputs (each list's ref, path and byte hash) plus the
+  // full comparison array it publishes, so a code, list or result change can never overwrite an earlier receipt under
+  // the same name.
   const fingerprint = await toolFingerprint();
-  const comparisonSha256 = sha256(JSON.stringify(details));
-  const digest = sha256(JSON.stringify({ policy: OSM_COVERAGE_POLICY_VERSION, fingerprint, station, source: stored.record.sha256, query: query.sha256, comparison: comparisonSha256 })).slice(0, 20);
+  const comparisonInputsSha256 = sha256(JSON.stringify(comparisonInputs));
+  const comparisonsSha256 = sha256(JSON.stringify(comparisons));
+  const digest = sha256(JSON.stringify({ policy: OSM_COVERAGE_POLICY_VERSION, fingerprint, station, source: stored.record.sha256, query: query.sha256, comparison_inputs: comparisonInputsSha256, comparisons: comparisonsSha256 })).slice(0, 20);
   const runId = `osm-coverage-${station}-${digest}`;
   const sourceValues = tagValueSet(elements);
   const keyCount = tagKeySet(elements).size;
 
-  // Committed-text audit before anything is written: the note, the test file and the manifest, then the receipt itself.
-  const auditedFiles = await Promise.all(AUDITED_PATHS.map(async (path) => ({ path, text: await readFile(join(repoRoot, path), 'utf8') })));
-  const priorText = await priorManifestText();
-  const fileAudit = auditSourceValues(auditedFiles, sourceValues, { priorText });
+  // The shared text and both stations' receipts are audited against the union of both extracts' values: a value from
+  // the other extract must not reach the text either. A missing other extract fails the run; it is an input.
+  const auditValues = new Set(sourceValues);
+  for (const [otherStation, otherSourceId] of Object.entries(OSM_SOURCE_IDS)) {
+    if (otherStation === station) continue;
+    const otherStored = await getStoredSource(otherSourceId);
+    for (const value of tagValueSet(parseOverpassJson(await readJson<unknown>(otherStored.path)).elements)) auditValues.add(value);
+  }
+
+  // Committed-text audit before anything is written: the shared text, both receipts, then this receipt itself.
+  const receiptPaths = await committedReceipts();
+  const auditedFiles = await Promise.all([...AUDITED_PATHS, ...receiptPaths].map(async (path) => ({ path, text: await readFile(join(repoRoot, path), 'utf8') })));
+  const prior = await priorManifest();
+  const fileAudit = auditSourceValues(auditedFiles, auditValues, { prior });
   if (fileAudit.leaks.length) throw new Error(`Committed-text audit failed (${fileAudit.leaks.map((leak) => `${leak.path}: ${leak.count}`).join(', ')}); nothing written`);
   const audit = { files_checked: fileAudit.files.length + 1, values_scanned: fileAudit.values_scanned, namespaced_hits: fileAudit.namespaced_hits, allowlisted_hits: fileAudit.allowlisted_hits, pre_existing_hits: fileAudit.pre_existing_hits, leaks: 0 };
 
@@ -1101,8 +1218,8 @@ export async function osmCoverage(station: string, options: { receiptDir?: strin
     run_id: runId,
     leak_guard: audit,
   }, sourceValues);
-  receipt.identity = { tool_input_sha256: fingerprint, comparison_sha256: comparisonSha256 };
-  const receiptAudit = auditSourceValues([{ path: 'receipt', text: JSON.stringify(receipt) }], sourceValues, { priorText });
+  receipt.identity = { tool_input_sha256: fingerprint, comparison_inputs_sha256: comparisonInputsSha256, comparisons_sha256: comparisonsSha256 };
+  const receiptAudit = auditSourceValues([{ path: 'receipt', text: JSON.stringify(receipt) }], auditValues, { prior });
   if (receiptAudit.leaks.length) throw new Error(`Receipt audit failed (${receiptAudit.leaks.map((leak) => `${leak.path}: ${leak.count}`).join(', ')}); nothing written`);
 
   // Private: the parsed objects (no user/uid/changeset), then the match tables.
@@ -1134,7 +1251,7 @@ export async function osmCoverage(station: string, options: { receiptDir?: strin
     coverage: { kinds: coverage.kinds, level_histogram: coverage.level_histogram, level_key_objects: coverage.level_key_objects, level_objects: coverage.level_objects, level_unparsed: coverage.level_unparsed, shop_amenity_with_level_key: coverage.shop_amenity_with_level_key, shop_amenity_with_level_parsed: coverage.shop_amenity_with_level_parsed, footprint_overlap_2d: coverage.footprint_overlap_2d, floor_aware_overlap: coverage.floor_aware_overlap },
     quality: { last_edit_year_histogram: quality.last_edit_year_histogram, edited_before_2021: quality.edited_before_2021, source_class_objects: quality.source_class_objects, source_class_exclusive: quality.source_class_exclusive },
     leak_guard: audit,
-    comparison: comparisons.map((entry) => ({ list_id: entry.list_id, status: entry.status, entries: entry.entries, matched: entry.matched, strict_matched: entry.strict_matched, name_match_only: entry.name_match_only, name_match_distant: entry.name_match_distant, ours_only: entry.ours_only, osm_only: entry.osm_only, floor_agreement: entry.floor_agreement })),
+    comparison: comparisons.map((entry) => ({ list_id: entry.list_id, status: entry.status, entries: entry.entries, matched: entry.matched, strict_matched: entry.strict_matched, name_match_only: entry.name_match_only, name_match_distant: entry.name_match_distant, name_match_unlocatable: entry.name_match_unlocatable, ours_only: entry.ours_only, osm_only: entry.osm_only, floor_agreement: entry.floor_agreement })),
     ...(leads ? { leads: { polygons: leads.polygons.length, rows: leads.rows.length, missing_groups: leads.missing_groups } } : {}),
   };
 }

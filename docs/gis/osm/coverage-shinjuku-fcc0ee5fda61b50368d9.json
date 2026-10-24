@@ -1,21 +1,21 @@
 {
   "schema": "gteki.gis.osm-coverage/0.1",
   "command": "osm-coverage",
-  "policy_version": "osm-coverage-v1",
-  "run_id": "osm-coverage-shinjuku-9de4f5400b9e4c78441f",
+  "policy_version": "osm-coverage-v2",
+  "run_id": "osm-coverage-shinjuku-fcc0ee5fda61b50368d9",
   "station_id": "shinjuku",
   "gteki_role": "evidence",
   "navigation_use": "NOT_FOR_ROUTING",
   "verification": "UNVERIFIED",
-  "note": "Coverage evidence for #437 only: counts, shares, histograms, OSM tag keys and our derived categories. No OSM name, free-text tag value or contributor identity is copied; the committed-text audit scanned this receipt, the research note, the test file and the manifest against every tag value of the extract (see leak_guard). The extract stays in the private store. Nothing here is a source for the graph, a route or a shipping POI list, and it may itself raise ODbL Produced Work or attribution questions, open for gteki-1b (docs/gis/research/2026-10-24-osm-coverage-odbl.md).",
+  "note": "Coverage evidence for #437 only: counts, shares, histograms, OSM tag keys and our derived categories. No OSM name, free-text tag value or contributor identity is copied; the committed-text audit scanned this receipt, the research note, tools/gis/README.md, tools/gis/src/osm-coverage.ts, the test file, sources.yaml and both stations' committed receipts against the union of both extracts' tag values (see leak_guard). The extract stays in the private store. Nothing here is a source for the graph, a route or a shipping POI list, and it may itself raise ODbL Produced Work or attribution questions, open for gteki-1b (docs/gis/research/2026-10-24-osm-coverage-odbl.md).",
   "leak_guard": {
-    "files_checked": 4,
-    "values_scanned": 6790,
-    "namespaced_hits": 1,
-    "allowlisted_hits": 57,
-    "pre_existing_hits": 67,
+    "files_checked": 8,
+    "values_scanned": 11196,
+    "namespaced_hits": 8,
+    "allowlisted_hits": 516,
+    "pre_existing_hits": 20,
     "leaks": 0,
-    "note": "This receipt, the research note, the test file and the manifest were scanned against every tag value of the extract. Values are exempt only as namespaced identifiers, allowlisted vocabulary or text already on origin/main; a leak stops the run before anything is written."
+    "note": "This receipt, the research note, tools/gis/README.md, tools/gis/src/osm-coverage.ts, the test file, sources.yaml and both stations' committed receipts were scanned against the union of both extracts' tag values. Values are exempt only as namespaced identifiers, allowlisted vocabulary, or text already on origin/main in sources.yaml; a leak stops the run before anything is written."
   },
   "extract": {
     "elements": 7695,
@@ -337,12 +337,12 @@
     },
     "objects_with_source_tag": 882,
     "source_class_objects": {
-      "srcclass:permitted_tracing": 84,
-      "srcclass:unresolved": 804
+      "srcclass:permitted_tracing": 81,
+      "srcclass:unresolved": 806
     },
     "source_class_exclusive": {
       "objects_with_known_restricted": 0,
-      "objects_with_permitted_tracing_only": 84
+      "objects_with_permitted_tracing_only": 76
     },
     "fixme_objects": 2,
     "note_objects": 50
@@ -358,6 +358,7 @@
         "strict_matched": 0,
         "name_match_only": 0,
         "name_match_distant": 0,
+        "name_match_unlocatable": 0,
         "ours_only": 16,
         "osm_only": 3149,
         "floor_agreement": {
@@ -377,6 +378,7 @@
         "strict_matched": 0,
         "name_match_only": 0,
         "name_match_distant": 0,
+        "name_match_unlocatable": 0,
         "ours_only": 6,
         "osm_only": 3149,
         "floor_agreement": {
@@ -396,6 +398,7 @@
         "strict_matched": 0,
         "name_match_only": 24,
         "name_match_distant": 0,
+        "name_match_unlocatable": 0,
         "ours_only": 552,
         "osm_only": 3114,
         "floor_agreement": {
@@ -410,7 +413,8 @@
   },
   "tool_version": "0.1.0",
   "identity": {
-    "tool_input_sha256": "473de765510e44ca6959d54064e45859d766bd9a94de7bf9b4f3473f4477d7fa",
-    "comparison_sha256": "6436dcb3c20542c3fa5b7d2bf597339559103b226561a0f2e8e238a1246149cf"
+    "tool_input_sha256": "bc0e5ba016f057f4e70b9e3415590e0be5d7a051a4cce80fbd6305c08f7690ae",
+    "comparison_inputs_sha256": "ca6132fdbb7e03aa0c8a423eefd23bd405cf57dfa4ed4b520d155c60c40be728",
+    "comparisons_sha256": "ebb99952f89a49267304107c8a528b1d3c499be7dcbef4f9a349f5269716f537"
   }
 }
