@@ -29,7 +29,7 @@ No browser was used. The worker's resident rules forbid browsers, so the conditi
 | 新宿サブナード | Shinjuku | https://www.subnade.co.jp/ (and http://, and …/shop/) | — | UNKNOWN | — | — | — | 08:53–08:54 (two attempts) | plain-HTTP | GAP: DNS resolves (163.44.2.142) but the server refuses connections on both 443 and 80 (`Couldn't connect to server`, curl exit 7). Host looks down, not JS-gated. |
 | メトロプロムナード (新宿) | Shinjuku | https://www.tokyometro.jp/metropromenade/ | — | UNKNOWN | — | — | — | 09:07–09:09 (four attempts) | plain-HTTP + WebFetch | GAP: no official directory located. The path 301-redirects to `/metropromenade/index.html`, which returns 404 (checked over both http and https). Candidate domains (metrompromenade.com, metro-promenade.com/.jp, metropromenade.jp/.com) have no DNS records. Not listed as a tenant directory on the Metro Properties shopping-centre site either. |
 
-Other commercial directory found while reading A (not in the brief, recorded for planning): **Echika 池袋** (Tokyo Metro in-station, Metro Properties) — https://www.metropro-sc.jp/echika-ikebukuro/shop/floor.jsp?fid=bf, 27 entries (exact), B1F only, detail pattern `…/shop/index.jsp?bf=1&fmt=6&shopid=…`, read 09:01 UTC, plain-HTTP.
+Other commercial directory found while reading A (not in the brief, recorded for planning): **Echika 池袋** (Tokyo Metro in-station, Metro Properties) — https://www.metropro-sc.jp/echika-ikebukuro/shop/floor.jsp?fid=bf, 26 entries (exact; 26 unique `shopid`s, lead recount), B1F only, detail pattern `…/shop/index.jsp?bf=1&fmt=6&shopid=…`, read 09:01 UTC, plain-HTTP.
 
 ## B. JR East in-station shops (エキナカ)
 
@@ -40,7 +40,7 @@ Other commercial directory found while reading A (not in the brief, recorded for
 | ecute (JR東日本クロスステーション) | — | https://www.ecute.jp/ | Shop directories for 9 centres | 0 relevant | n/a | — | 08:58 | plain-HTTP | Reachable and countable, but the centre list is 赤羽, 秋葉原, edition, maach, 日暮里, 大宮, 大宮ノース, 品川, 立川, 上野 — **no 池袋 and no 新宿**. |
 | ディラ (Dila) | — | https://dila.co.jp/ | — | 0 relevant | — | — | 08:58 | plain-HTTP | `dila.co.jp` is an unrelated language school, not the JR East エキナカ brand. No official ディラ directory was located. |
 | ルミネ池袋 / ルミネ新宿 / NEWoMan 新宿 (JR East group station buildings) | Ikebukuro, Shinjuku | see table A | Shops | 177 / 232 / 101 | yes | `scd` | 08:48–08:49 | plain-HTTP | These are the reachable official route to JR-side station shops while `jreast.co.jp` is blocked. Rights for using them stay UNKNOWN (lead decides). |
-| Echika 池袋 (Tokyo Metro, in-station) | Ikebukuro | https://www.metropro-sc.jp/echika-ikebukuro/shop/floor.jsp?fid=bf | In-station shops | 27 (exact) | B1F | `shopid` | 09:01 | plain-HTTP | Not JR East; recorded because it is the other in-station directory at Ikebukuro. |
+| Echika 池袋 (Tokyo Metro, in-station) | Ikebukuro | https://www.metropro-sc.jp/echika-ikebukuro/shop/floor.jsp?fid=bf | In-station shops | 26 (exact; lead recount) | B1F | `shopid` | 09:01 | plain-HTTP | Not JR East; recorded because it is the other in-station directory at Ikebukuro. |
 
 ## C. Station facility directories
 
@@ -95,7 +95,7 @@ Note for the lead: items 4–6 and 8 are readable with a JavaScript-capable read
 6. NEWoMan 新宿 — 101 entries; note the エキナカ/エキソト/フードホール zones are inside-the-station, so it may belong with the エキナカ batch.
 7. 東京メトロ 池袋 施設・店舗 — 46 entries mixing shops and facilities (ATM, lockers).
 8. エソラ池袋 — 42 entries, includes service counters.
-9. Echika 池袋 — 27 entries, in-station.
+9. Echika 池袋 — 26 entries, in-station (already transcribed in #407).
 10. 東京メトロ 新宿 施設・店舗 — 14 entries.
 
 Facility-only batches are small and flag-based (Odakyu, Keio, Seibu, Tobu matrices); they are cheap but carry no counts, so they are best used to confirm availability rather than to size anything.
