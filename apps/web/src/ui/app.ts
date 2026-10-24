@@ -24,6 +24,7 @@ import { railDemoLink } from "./railTravel.ts";
 import { StationIdentityView } from "./identityCard.ts";
 import { RailRideDemo } from "./railRideDemo.ts";
 import { shouldHandleGuideKey } from "./railKeyGuard.ts";
+import { Minimap } from "./minimap.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -92,6 +93,7 @@ export class App {
     profile: el("div", "chips profile"),
     sheet: el("section", "sheet"),
     hud: el("div", "hud"),
+    minimap: new Minimap(() => this.explorer.getPose()),
     coverage: el("dialog", "coverage"),
     toast: el("div", "toast"),
     langBtn: el("button", "ghost lang"),
@@ -131,6 +133,7 @@ export class App {
     // The overview is framed into the part of the view the search panel leaves free (below it on a phone,
     // to its right on a desktop); the panel's own size changes refit it (see Explorer.setPanel).
     this.explorer.setPanel(this.ui.panel);
+    this.explorer.setMinimap(this.ui.minimap.el);
     this.explorer.setGuideTier(readGuideTier());
     this.bindGuideKeys();
     watchReducedMotion((reduce) => {
@@ -161,6 +164,7 @@ export class App {
     });
     this.ui.langBtn.addEventListener("click", () => {
       this.s.lang = this.s.lang === "ja" ? "en" : "ja";
+      this.ui.minimap.setLang(this.s.lang);
       this.layoutText();
       this.refreshAll();
     });
@@ -184,7 +188,7 @@ export class App {
     panel.append(this.identityView.overview, this.ui.banner, fields, this.ui.spawnChips, this.ui.profile, this.ui.more);
 
     this.ui.hint.setAttribute("role", "note");
-    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit);
+    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.minimap.el, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit);
     this.layoutText();
   }
 
@@ -266,6 +270,7 @@ export class App {
     // against the old bundle while the new one loads.
     this.stationReady = false;
     this.s.loaded = null;
+    this.ui.minimap.setStation(null, this.s.lang);
     this.s.router = null;
     this.s.search = null;
     this.s.origin = null;
@@ -297,6 +302,7 @@ export class App {
       if (!current()) return;
       this.identityView.hideCard();
       if (!ready) return;
+      this.ui.minimap.setStation(loaded.bundle, this.s.lang);
       this.toast(this.explorer.sceneError ? `${this.t.sceneFallback}: ${this.explorer.sceneError}` : "", this.explorer.sceneError ? 6000 : 0);
       // Beneath the search fields (the toast fades): the 3D scene failed and the line map is shown instead.
       if (this.explorer.sceneError) this.mascotSay({ kind: "scene_fallback" }, this.ui.panel);

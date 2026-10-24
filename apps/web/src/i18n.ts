@@ -7,6 +7,13 @@ export type Lang = "ja" | "en";
 
 const STRINGS = {
   ja: {
+    minimap: "ミニマップ",
+    minimapPlayerUp: "キャラクターの向きが上",
+    minimapNorthUp: "北を上に固定",
+    minimapCollapse: "ミニマップを折りたたむ",
+    minimapShow: "ミニマップを表示",
+    minimapFloorUnknown: "階不明",
+    minimapSchematic: "概略歩行経路（実際の構内図ではありません）",
     tagline: "駅を探して、歩いて下見する",
     station: "駅",
     from: "出発地",
@@ -176,6 +183,13 @@ const STRINGS = {
     language: "English",
   },
   en: {
+    minimap: "Minimap",
+    minimapPlayerUp: "Player facing up",
+    minimapNorthUp: "North up",
+    minimapCollapse: "Collapse minimap",
+    minimapShow: "Show minimap",
+    minimapFloorUnknown: "Floor unknown",
+    minimapSchematic: "Schematic walk graph (not a floor plan)",
     tagline: "Find it in the station, then walk it",
     station: "Station",
     from: "From",
