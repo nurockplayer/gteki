@@ -292,11 +292,11 @@
       "notes": [
         {
           "lang": "ja",
-          "text": "東京メトロ 新宿駅 以下の路線周辺にコインロッカーがあります ・丸ノ内線。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+          "text": "東京メトロ 新宿駅 丸ノ内線周辺。位置は事業者の表記のみ（未確認、案内ルートなし）。"
         },
         {
           "lang": "en",
-          "text": "Tokyo Metro Shinjuku Station, 以下の路線周辺にコインロッカーがあります ・丸ノ内線. Location is the operator's wording only (unverified, no route)."
+          "text": "Tokyo Metro Shinjuku Station, near the 丸ノ内線 lines. Location is the operator's wording only (unverified, no route)."
         }
       ]
     },
@@ -393,102 +393,6 @@
         {
           "lang": "en",
           "text": "Tokyo Metro Shinjuku Station, A8出入口付近. Location is the operator's wording only (unverified, no route)."
-        }
-      ]
-    },
-    {
-      "id": "toilet-sjk-metro-001",
-      "category": "toilet",
-      "names": [
-        {
-          "lang": "ja",
-          "text": "車いす対応トイレ（改札外）"
-        }
-      ],
-      "aliases": [],
-      "floorId": null,
-      "displayPosition": null,
-      "connectorNodeIds": [],
-      "paid": null,
-      "evidence": {
-        "sourceIds": [
-          "tokyometro-shinjuku-accessibility-2026-10"
-        ],
-        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
-        "checkedDate": "2026-10-24"
-      },
-      "notes": [
-        {
-          "lang": "ja",
-          "text": "東京メトロ 新宿駅 丸ノ内線 東改札外広場。位置は事業者の表記のみ（未確認、案内ルートなし）。"
-        },
-        {
-          "lang": "en",
-          "text": "Tokyo Metro Shinjuku Station, 丸ノ内線 東改札外広場. Location is the operator's wording only (unverified, no route)."
-        }
-      ]
-    },
-    {
-      "id": "toilet-sjk-metro-002",
-      "category": "toilet",
-      "names": [
-        {
-          "lang": "ja",
-          "text": "乳幼児用設備（改札外）"
-        }
-      ],
-      "aliases": [],
-      "floorId": null,
-      "displayPosition": null,
-      "connectorNodeIds": [],
-      "paid": null,
-      "evidence": {
-        "sourceIds": [
-          "tokyometro-shinjuku-accessibility-2026-10"
-        ],
-        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
-        "checkedDate": "2026-10-24"
-      },
-      "notes": [
-        {
-          "lang": "ja",
-          "text": "東京メトロ 新宿駅 丸ノ内線 東改札外広場。位置は事業者の表記のみ（未確認、案内ルートなし）。"
-        },
-        {
-          "lang": "en",
-          "text": "Tokyo Metro Shinjuku Station, 丸ノ内線 東改札外広場. Location is the operator's wording only (unverified, no route)."
-        }
-      ]
-    },
-    {
-      "id": "toilet-sjk-metro-003",
-      "category": "toilet",
-      "names": [
-        {
-          "lang": "ja",
-          "text": "オストメイト（改札外）"
-        }
-      ],
-      "aliases": [],
-      "floorId": null,
-      "displayPosition": null,
-      "connectorNodeIds": [],
-      "paid": null,
-      "evidence": {
-        "sourceIds": [
-          "tokyometro-shinjuku-accessibility-2026-10"
-        ],
-        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
-        "checkedDate": "2026-10-24"
-      },
-      "notes": [
-        {
-          "lang": "ja",
-          "text": "東京メトロ 新宿駅 丸ノ内線 東改札外広場。位置は事業者の表記のみ（未確認、案内ルートなし）。"
-        },
-        {
-          "lang": "en",
-          "text": "Tokyo Metro Shinjuku Station, 丸ノ内線 東改札外広場. Location is the operator's wording only (unverified, no route)."
         }
       ]
     },
@@ -841,6 +745,38 @@
         {
           "lang": "en",
           "text": "Toei Shinjuku-nishiguchi Station, B1階改札外コンコース（D1出口付近）. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-metro-001",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "車いす対応トイレ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-accessibility-2026-10"
+        ],
+        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ 新宿駅 丸ノ内線 東改札外広場（改札外）。設備: 乳幼児用設備・オストメイト（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Shinjuku Station, 丸ノ内線 東改札外広場 (outside the fare gates as printed). Facilities: 乳幼児用設備・オストメイト (operator wording). Location is the operator's wording only (unverified, no route)."
         }
       ]
     }
