@@ -84,29 +84,44 @@ export interface ViewRect { x: number; y: number; w: number; h: number }
  * four rectangles the panel's edges leave and keeps the one with the largest usable short side — which is
  * also the one that lets the slice be framed biggest. A panel over the whole canvas (or none at all) leaves
  * the canvas as it is. `bottomInsetPx` is the height of the strip; no rectangle reaches into it.
+ * An optional top-right `corner` is clipped to the canvas; if it intersects the chosen area, keep
+ * the better of the area left of it or below it (short side first, then area).
  */
-export function freeArea(viewport: { w: number; h: number }, panel: ViewRect | null, bottomInsetPx = 0): ViewRect {
+export function freeArea(viewport: { w: number; h: number }, panel: ViewRect | null, bottomInsetPx = 0, corner: ViewRect | null = null): ViewRect {
   // The strip blocks the whole width, so the usable canvas simply ends above it.
   const h = Math.max(1, viewport.h - Math.max(0, bottomInsetPx));
   const full: ViewRect = { x: 0, y: 0, w: viewport.w, h };
-  if (!panel) return full;
-  // The panel may hang off the canvas (safe areas, a slide-in): only its part over the canvas blocks.
-  const x0 = Math.max(0, panel.x), y0 = Math.max(0, panel.y);
-  const x1 = Math.min(viewport.w, panel.x + panel.w), y1 = Math.min(h, panel.y + panel.h);
-  if (x1 <= x0 || y1 <= y0) return full;
-  const candidates: ViewRect[] = [
-    { x: 0, y: y1, w: viewport.w, h: h - y1 },                    // below a top bar
-    { x: x1, y: 0, w: viewport.w - x1, h },                       // right of a left column
-    { x: 0, y: 0, w: viewport.w, h: y0 },                         // above a bottom bar
-    { x: 0, y: 0, w: x0, h },                                     // left of a right column
-  ];
+  const key = (c: ViewRect) => Math.min(c.w, c.h) * 1e6 + c.w * c.h;
+  const pick = (candidates: ViewRect[], fallback: ViewRect): ViewRect => {
+    let best = fallback, bestKey = -Infinity;
+    for (const c of candidates) {
+      if (c.w <= 0 || c.h <= 0) continue;
+      const k = key(c);
+      if (k > bestKey) { bestKey = k; best = c; }
+    }
+    return best;
+  };
   let best = full;
-  let bestKey = -Infinity;
-  for (const c of candidates) {
-    if (c.w <= 0 || c.h <= 0) continue;
-    // Largest short side first (the fit target), then the larger area.
-    const key = Math.min(c.w, c.h) * 1e6 + c.w * c.h;
-    if (key > bestKey) { bestKey = key; best = c; }
+  if (panel) {
+    // Only the panel's part over the canvas blocks.
+    const x0 = Math.max(0, panel.x), y0 = Math.max(0, panel.y);
+    const x1 = Math.min(viewport.w, panel.x + panel.w), y1 = Math.min(h, panel.y + panel.h);
+    if (x1 > x0 && y1 > y0) best = pick([
+      { x: 0, y: y1, w: viewport.w, h: h - y1 }, // below a top bar
+      { x: x1, y: 0, w: viewport.w - x1, h },    // right of a left column
+      { x: 0, y: 0, w: viewport.w, h: y0 },      // above a bottom bar
+      { x: 0, y: 0, w: x0, h },                 // left of a right column
+    ], full);
+  }
+  if (corner) {
+    const x0 = Math.max(0, corner.x), y0 = Math.max(0, corner.y);
+    const x1 = Math.min(viewport.w, corner.x + corner.w), y1 = Math.min(h, corner.y + corner.h);
+    if (x1 > x0 && y1 > y0 && x0 < best.x + best.w && x1 > best.x && y0 < best.y + best.h && y1 > best.y) {
+      best = pick([
+        { ...best, w: Math.max(0, x0 - best.x) },
+        { ...best, y: y1, h: Math.max(0, best.y + best.h - y1) },
+      ], best);
+    }
   }
   return best;
 }

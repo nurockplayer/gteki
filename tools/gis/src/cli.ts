@@ -21,6 +21,9 @@ import { contextGlb } from './context.js';
 import { csvProfileCommand } from './csv-profile-report.js';
 import { contextOverlay, parseOverlayKinds } from './context-overlay.js';
 import { contextLandmarks } from './context-landmarks.js';
+import { s03TransformCheck } from './s03-transform.js';
+import { s03Positions } from './s03-positions.js';
+import { osmCoverage } from './osm-coverage.js';
 
 async function main() {
   ensurePrivateStore();
@@ -29,7 +32,7 @@ async function main() {
   for(let i=0;i<argv.length-1;i++)if(argv[i]==='--bbox-local'&&argv[i+1].startsWith('-')&&!argv[i+1].startsWith('--'))argv.splice(i,2,`--bbox-local=${argv[i+1]}`);
   const { values, positionals } = parseArgs({ args:argv,allowPositionals:true, options:{offline:{type:'boolean'},all:{type:'boolean'},frame:{type:'string'},'bbox-local':{type:'string'},ids:{type:'string'},'max-polygons':{type:'string'},radius:{type:'string'},'clip-radius':{type:'string'},'exit-radius':{type:'string'},merge:{type:'string'},variant:{type:'string'},kinds:{type:'string'},'no-glb':{type:'boolean'},sources:{type:'string'},out:{type:'string'},vertical:{type:'string'},help:{type:'boolean'}} });
   const [command,...args]=positionals;
-  if(values.help || !command){console.log('sources | acquire <source_id...> [--all] [--offline] | inspect-citygml <source_id> | frame-from-envelope <source_id> <frame_id> | crs-roundtrip <frame_id> | citygml-to-glb <source_id> --frame <frame_id> [--bbox-local minE,minN,maxE,maxN] [--ids id1,id2] [--max-polygons N] | station-frame <station> [frame_id] [--vertical per_feature_ground] | context-glb <station> [--radius M] [--exit-radius M] [--merge none|kind|tiles:<size_m>] [--variant high|low] [--kinds bldg,tran] [--sources id1,id2] | context-overlay <station> [--radius M] [--exit-radius M] [--kinds station,railway,border] [--clip-radius M|0|none] [--no-glb] | context-landmarks <station> [--radius M] | inspect-network <source_id> | inspect-poi <source_id> | csv-profile <source_id[:doc_id]...> [--out docs/gis/research/<file>.md] | check-literals (alias check-poi-literals) | literals-report | scrub-literals <path...> | inspect-vintages | rights-report | overlap | gap-packet');return;}
+  if(values.help || !command){console.log('sources | acquire <source_id...> [--all] [--offline] | inspect-citygml <source_id> | frame-from-envelope <source_id> <frame_id> | crs-roundtrip <frame_id> | citygml-to-glb <source_id> --frame <frame_id> [--bbox-local minE,minN,maxE,maxN] [--ids id1,id2] [--max-polygons N] | station-frame <station> [frame_id] [--vertical per_feature_ground] | context-glb <station> [--radius M] [--exit-radius M] [--merge none|kind|tiles:<size_m>] [--variant high|low] [--kinds bldg,tran] [--sources id1,id2] | context-overlay <station> [--radius M] [--exit-radius M] [--kinds station,railway,border] [--clip-radius M|0|none] [--no-glb] | context-landmarks <station> [--radius M] | s03-transform-check | s03-positions | osm-coverage <station> | inspect-network <source_id> | inspect-poi <source_id> | csv-profile <source_id[:doc_id]...> [--out docs/gis/research/<file>.md] | check-literals (alias check-poi-literals) | literals-report | scrub-literals <path...> | inspect-vintages | rights-report | overlap | gap-packet');return;}
   const requireArg=(index:number):string=>{if(!args[index])throw new Error(`Missing argument ${index+1} for ${command}`);return args[index];};
   const writesReports=['inspect-citygml','frame-from-envelope','station-frame','crs-roundtrip','citygml-to-glb','inspect-network','inspect-poi','inspect-vintages','rights-report','literals-report','scrub-literals','overlap','gap-packet'].includes(command)||(command==='acquire'&&!values.offline)||(command==='csv-profile'&&values.out!==undefined);
   if(writesReports&&process.env.GTEKI_GIS_REAL_RUN!=='1')await invalidateRealRunReceipt(`gis ${positionals.join(' ')}`);
@@ -71,11 +74,20 @@ async function main() {
       if(values.merge!==undefined||values.variant!==undefined||values.sources!==undefined||values.kinds!==undefined||values['exit-radius']!==undefined||values['clip-radius']!==undefined)throw new Error('context-landmarks takes only --radius');
       result=await contextLandmarks(requireArg(0),{...(radius!==undefined?{radiusM:radius}:{})});break;
     }
+    case 'osm-coverage': result=await osmCoverage(requireArg(0));break;
     case 'crs-roundtrip': result=await crsRoundtrip(requireArg(0));break;
     case 'citygml-to-glb': {
       if(!values.frame)throw new Error('--frame is required');
       const bbox=values['bbox-local']===undefined?undefined:parseBboxLocal(values['bbox-local']);
       result=await citygmlToGlb(requireArg(0),values.frame,{...(values.ids?{ids:values.ids.split(',')}:{ }),...(bbox?{bboxLocal:bbox as [number,number,number,number]}:{}),...(values['max-polygons']?{maxPolygons:Number(values['max-polygons'])}:{})});break;
+    }
+    case 's03-transform-check': {
+      if(args.length || Object.keys(values).length)throw new Error('s03-transform-check takes no arguments or options');
+      result=await s03TransformCheck();break;
+    }
+    case 's03-positions': {
+      if(args.length || Object.keys(values).length)throw new Error('s03-positions takes no arguments or options');
+      result=await s03Positions();break;
     }
     case 'inspect-network':{const report=await inspectNetwork(requireArg(0));result={source_id:args[0],report:`docs/gis/networks/${args[0]}.json`,verification:'UNVERIFIED'};break;}
     case 'inspect-poi': { const report=await inspectPoi(requireArg(0)); result={source_id:report.source_id,member_count:report.members.length,report:`docs/gis/poi/${report.source_id}.json`}; break; }

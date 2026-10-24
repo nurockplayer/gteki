@@ -12,7 +12,7 @@ import { ceilingTexture, signTexture, tactileTexture, tileTextures, wallTexture,
 import { prepareLayout } from "./build-cache.ts";
 import { gateMachines, accessSigns, ACCESS_WORDING } from "./fare-fence.ts";
 import surfaceJson from "../data/surface.json";
-import bakedSurface from "../data/surface-baked.ts";
+import bakedSurface from "../data/surface-baked.json" with { type: "json" };
 import { buildSurface, surfaceWalls, trimSurfaceCeilingFixtures, type SurfaceData } from "./surface.ts";
 import { PlaceholderLedger } from "./kit/ledger.ts";
 import type { KitSwap, KitSwapReport, LiftAnchor } from "./kit/types.ts";
@@ -59,7 +59,7 @@ export interface BuildOptions {
    * load-time guard against a stale generated fence table; root CI (`root-test`, #148) also fails on one.
    * false is for tests that exercise the unchecked path. */
   verifyRestrictedInput?: boolean;
-  /** false derives the street layer's polygons instead of reading data/surface-baked.ts. Default true; the
+  /** false derives the street layer's polygons instead of reading data/surface-baked.json. Default true; the
    * baked table is used only if it was made from exactly this surface, bundle and plan (surface-bake.ts). */
   useBakedSurface?: boolean;
 }

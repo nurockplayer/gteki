@@ -1,6 +1,6 @@
 import { createRouter, describeRoute, explainNoPathBetween, floorDisplayName, instructionPoints, routeBetween, routePolyline, ROUTE_PACE } from "@gteki/navigation";
 import type { Instruction, NoPathCause, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
-import type { Poi, Source, StationBundle } from "@gteki/schema";
+import type { Poi, Source, StationBundle, Tenant } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
@@ -11,19 +11,22 @@ import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGu
 import { coverageText, initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
-import { isUnlocatedShop, noRouteText } from "./noRouteText.ts";
+import { isUnlocatedShop, noRouteText, poiNoteText } from "./noRouteText.ts";
 import { stationClock } from "../stationClock.ts";
-import { assetDerivationPresentation, factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
+import { assetDerivationPresentation, dataFileCredits, dataFileRowText, factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { nodeLabel, poiLabel } from "./labels.ts";
+import { tenantAsOfNote, tenantCheckedDate, tenantDestinationTitle, tenantLabel, tenantResultTags } from "./tenantDisplay.ts";
 import { LiveRegion, freshnessReason, routeLiveMessage, searchLiveMessage, unknownLabel } from "./live.ts";
 import { MascotSlot, type MascotEvent } from "./mascot.ts";
 import { watchReducedMotion } from "./motion.ts";
 import { railDemoLink } from "./railTravel.ts";
+import { spawnHeading } from "./spawnHeading.ts";
 import { StationIdentityView } from "./identityCard.ts";
 import { RailRideDemo } from "./railRideDemo.ts";
 import { shouldHandleGuideKey } from "./railKeyGuard.ts";
+import { Minimap } from "./minimap.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -40,6 +43,8 @@ interface State {
   search: SearchIndex | null;
   origin: Origin | null;
   destination: Poi | null;
+  /** Set when the destination was picked through a store's brand directory (#419); routing still goes to the store. */
+  destinationTenant: Tenant | null;
   profile: { stepFree: boolean; unpaidOnly: boolean; strictHours: boolean };
   route: RouteResult | RouteFailure | null;
   /** Which enabled option made the last `no_path` refuse (null = not a no_path). */
@@ -73,7 +78,7 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: 
 export class App {
   private readonly s: State = {
     lang: initialLang(), entries: [], entry: null, loaded: null, router: null, search: null,
-    origin: null, destination: null, profile: { stepFree: false, unpaidOnly: false, strictHours: false },
+    origin: null, destination: null, destinationTenant: null, profile: { stepFree: false, unpaidOnly: false, strictHours: false },
     route: null, noPath: null, polyline: [], instructions: [], activeInstruction: 0,
   };
   private explorer!: Explorer;
@@ -84,12 +89,15 @@ export class App {
     banner: el("div", "banner"),
     fromInput: el("input", "field-input"),
     toInput: el("input", "field-input"),
+    fromNote: el("p", "field-note"),
+    toNote: el("p", "field-note"),
     fromResults: el("div", "results"),
     toResults: el("div", "results"),
     spawnChips: el("div", "chips"),
     profile: el("div", "chips profile"),
     sheet: el("section", "sheet"),
     hud: el("div", "hud"),
+    minimap: new Minimap(() => this.explorer.getPose()),
     coverage: el("dialog", "coverage"),
     toast: el("div", "toast"),
     langBtn: el("button", "ghost lang"),
@@ -129,6 +137,7 @@ export class App {
     // The overview is framed into the part of the view the search panel leaves free (below it on a phone,
     // to its right on a desktop); the panel's own size changes refit it (see Explorer.setPanel).
     this.explorer.setPanel(this.ui.panel);
+    this.explorer.setMinimap(this.ui.minimap.el);
     this.explorer.setGuideTier(readGuideTier());
     this.bindGuideKeys();
     watchReducedMotion((reduce) => {
@@ -159,6 +168,7 @@ export class App {
     });
     this.ui.langBtn.addEventListener("click", () => {
       this.s.lang = this.s.lang === "ja" ? "en" : "ja";
+      this.ui.minimap.setLang(this.s.lang);
       this.layoutText();
       this.refreshAll();
     });
@@ -166,13 +176,13 @@ export class App {
     this.ui.railBtn.hidden = true;
     this.ui.railBtn.addEventListener("click", () => this.startRailRide());
     const actions = el("div", "top-actions");
-    actions.append(this.ui.railBtn, this.ui.coverageBtn, this.ui.langBtn);
+    actions.append(this.ui.coverageBtn, this.ui.langBtn);
     top.append(brand, this.ui.stationSelect, actions);
 
     const panel = this.ui.panel;
     this.ui.more.addEventListener("click", () => { this.panelExpanded = !this.panelExpanded; this.updatePanelCollapse(); });
-    const fromRow = this.field("from", this.ui.fromInput, this.ui.fromResults);
-    const toRow = this.field("to", this.ui.toInput, this.ui.toResults);
+    const fromRow = this.field("from", this.ui.fromInput, this.ui.fromResults, this.ui.fromNote);
+    const toRow = this.field("to", this.ui.toInput, this.ui.toResults, this.ui.toNote);
     const swap = el("button", "swap", "⇅");
     swap.title = this.t.swap;
     swap.setAttribute("aria-label", this.t.swap);
@@ -182,7 +192,7 @@ export class App {
     panel.append(this.identityView.overview, this.ui.banner, fields, this.ui.spawnChips, this.ui.profile, this.ui.more);
 
     this.ui.hint.setAttribute("role", "note");
-    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit);
+    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.minimap.el, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit);
     this.layoutText();
   }
 
@@ -201,7 +211,7 @@ export class App {
     this.ui.hint.textContent = matchMedia("(pointer: coarse)").matches ? t.touchHint : t.controlsHint;
   }
 
-  private field(which: "from" | "to", input: HTMLInputElement, results: HTMLDivElement): HTMLDivElement {
+  private field(which: "from" | "to", input: HTMLInputElement, results: HTMLDivElement, note: HTMLParagraphElement): HTMLDivElement {
     const row = el("div", `field field-${which}`);
     const label = el("label", "field-label");
     label.dataset.label = which;
@@ -228,7 +238,11 @@ export class App {
       else this.setCombo(which, out);
     });
     input.addEventListener("blur", () => setTimeout(() => this.closeResults(which), 160));
-    row.append(label, input, results);
+    // A picked search-only POI keeps its note beside the field (the input holds only the searchable name).
+    note.id = `gteki-${which}-note`;
+    note.hidden = true;
+    input.setAttribute("aria-describedby", note.id);
+    row.append(label, input, results, note);
     return row;
   }
 
@@ -260,16 +274,20 @@ export class App {
     // against the old bundle while the new one loads.
     this.stationReady = false;
     this.s.loaded = null;
+    this.ui.minimap.setStation(null, this.s.lang);
     this.s.router = null;
     this.s.search = null;
     this.s.origin = null;
     this.s.destination = null;
+    this.s.destinationTenant = null;
     this.s.route = null;
     this.s.polyline = [];
     this.s.instructions = [];
     this.renderCredit();
     this.ui.fromInput.value = "";
     this.ui.toInput.value = "";
+    this.renderEndpointNote(this.ui.fromNote, null);
+    this.renderEndpointNote(this.ui.toNote, null);
     this.closeResults("from");
     this.closeResults("to");
     this.ui.mascot.clear();
@@ -289,6 +307,7 @@ export class App {
       if (!current()) return;
       this.identityView.hideCard();
       if (!ready) return;
+      this.ui.minimap.setStation(loaded.bundle, this.s.lang);
       this.toast(this.explorer.sceneError ? `${this.t.sceneFallback}: ${this.explorer.sceneError}` : "", this.explorer.sceneError ? 6000 : 0);
       // Beneath the search fields (the toast fades): the 3D scene failed and the line map is shown instead.
       if (this.explorer.sceneError) this.mascotSay({ kind: "scene_fallback" }, this.ui.panel);
@@ -326,7 +345,7 @@ export class App {
           if (!this.stationReady || this.s.entry?.key !== destination.key || !this.s.loaded) return false;
           // Arrive at a known playable station spawn, NOT at an invented JR platform coordinate.
           const node = this.s.loaded.bundle.spawnNodeIds?.[0];
-          if (node) this.explorer.walkFromNode(this.s.loaded.bundle, node);
+          if (node) this.explorer.walkFromNode(this.s.loaded.bundle, node, spawnHeading(this.s.loaded.bundle, { kind: "node", nodeId: node }, []));
           return true;
         },
         () => { this.railRide = null; },
@@ -375,7 +394,9 @@ export class App {
     this.closeResults("from");
     this.closeResults("to");
     this.ui.fromInput.value = this.originLabel();
-    this.ui.toInput.value = this.s.destination ? this.poiName(this.s.destination) : "";
+    this.ui.toInput.value = this.destinationLabel();
+    this.renderEndpointNote(this.ui.fromNote, this.s.origin?.kind === "poi" ? this.s.origin.poi : null);
+    this.renderEndpointNote(this.ui.toNote, this.s.destination);
     if (b) this.explorer.showPois(b, (p) => poiLabel(b, p, this.s.lang, this.t), [this.s.destination?.id, this.s.origin?.kind === "poi" ? this.s.origin.poi.id : undefined].filter(Boolean) as string[]);
     this.computeRoute();
     this.syncPanelMascot();
@@ -440,10 +461,46 @@ export class App {
     return nodeLabel(b, nodeId, this.s.lang, this.t);
   }
 
+  /** A picked endpoint that is search-only shows its note (e.g. "as of 2020; current status unknown") under the field. */
+  private renderEndpointNote(box: HTMLParagraphElement, poi: Poi | null): void {
+    const note = poi && poi.connectorNodeIds.length === 0 ? poiNoteText(poi, this.s.lang) : null;
+    // An approximate point says so beside the note: its floor is unverified and the ± radius is not for directions (#463).
+    const floor = poi?.approximatePosition ? this.floorLabel(poi) : null;
+    const approximate = poi ? this.approximateText(poi) : null;
+    const text = [floor, note, approximate].filter(Boolean).join(" · ");
+    box.textContent = text;
+    box.hidden = text === "";
+  }
+
+  /** The floor label for display; an approximate POI's floor is a label match, not a surveyed floor (#463). */
+  private floorLabel(poi: Poi): string | null {
+    if (!poi.floorId) return null;
+    const label = floorDisplayName(this.s.loaded?.bundle.floors.find((f) => f.id === poi.floorId), this.s.lang);
+    return poi.approximatePosition ? this.t.floorUnverified(label) : label;
+  }
+
+  /** The search-display line for an approximate position, its ± radius rounded up to a whole metre (#463). */
+  private approximateText(poi: Poi): string | null {
+    return poi.approximatePosition ? this.t.approximatePosition(Math.ceil(poi.approximatePosition.uncertaintyM)) : null;
+  }
+
   private originLabel(): string {
     const o = this.s.origin;
     if (!o) return "";
     return o.kind === "poi" ? this.poiName(o.poi) : o.label;
+  }
+
+  /** The destination field and route-card title: the store, or "store — brand（floor）" after a tenant pick. */
+  private destinationLabel(): string {
+    const d = this.s.destination;
+    if (!d) return "";
+    const tenant = this.s.destinationTenant;
+    return tenant ? tenantDestinationTitle(this.poiName(d), tenantLabel(tenant, this.s.lang), this.s.lang, this.t) : this.poiName(d);
+  }
+
+  /** A tenant of the loaded bundle by id (the result list may outlive a station switch). */
+  private findTenant(id: string): Tenant | null {
+    return this.s.loaded?.bundle.tenants?.find((t) => t.id === id) ?? null;
   }
 
   private renderResults(which: "from" | "to"): void {
@@ -452,7 +509,7 @@ export class App {
     this.closeResults(which);
     if (!this.s.search || !this.s.loaded) return;
     const q = input.value.trim();
-    const hits: SearchHit[] = q ? this.s.search.search(q, { limit: 8 }) : this.s.loaded.bundle.pois.slice(0, 8).map((poi) => ({ poi, score: 0, matched: "", routable: poi.connectorNodeIds.length > 0 }));
+    const hits: SearchHit[] = q ? this.s.search.search(q, { limit: 8, lang: this.s.lang }) : this.s.loaded.bundle.pois.slice(0, 8).map((poi) => ({ poi, score: 0, matched: "", routable: poi.connectorNodeIds.length > 0 }));
     this.ui.live.announce(searchLiveMessage(this.t, hits.length));
     if (hits.length === 0) {
       const none = el("div", "result empty", this.t.noResults);
@@ -463,26 +520,40 @@ export class App {
       this.setCombo(which, { open: true, count: 0, active: -1 });
       return;
     }
-    const floors = new Map(this.s.loaded.bundle.floors.map((f) => [f.id, f]));
     hits.forEach((h, i) => {
       const b = el("button", `result cat-${h.poi.category}${h.routable ? "" : " disabled"}`);
       const dot = el("span", "dot");
       dot.setAttribute("aria-hidden", "true");
       const name = el("span", "result-name", this.poiName(h.poi));
       const meta = el("span", "result-meta");
-      const floor = h.poi.floorId ? floorDisplayName(floors.get(h.poi.floorId), this.s.lang) : null;
+      const floor = this.floorLabel(h.poi);
       const searchOnly = isUnlocatedShop(h.poi) ? this.t.shopSearchOnly : this.t.searchOnly;
-      const tags = [floor, h.matched && h.matched !== this.poiName(h.poi) ? `“${h.matched}”` : null, h.routable ? null : searchOnly].filter(Boolean) as string[];
+      // A brand from the store's own directory (#419) replaces the store floor: the printed floor is the useful one.
+      const tags = h.tenant
+        ? tenantResultTags(h, this.s.lang, this.t)
+        : [floor, h.matched && h.matched !== this.poiName(h.poi) ? `“${h.matched}”` : null].filter(Boolean) as string[];
+      if (!h.routable) tags.push(searchOnly);
       meta.textContent = tags.join(" · ");
+      // The directory is unverified: say since when it was checked, as a second line.
+      const checkedDate = h.tenant ? tenantCheckedDate(this.s.loaded?.bundle.tenants, h.tenant.id) : null;
+      const asOf = h.tenant && checkedDate ? this.t.tenantAsOf(checkedDate) : null;
       b.append(dot, name, meta);
-      // The accessible name carries the visible tags, so "search only" is heard too.
-      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...tags].join(", ")));
+      if (asOf) b.append(el("span", "result-asof", asOf));
+      // A search-only POI's note (e.g. a 2020 status word in the copied name) is shown beside it, not only in routes.
+      const note = h.routable ? null : poiNoteText(h.poi, this.s.lang);
+      if (note) b.append(el("span", "result-note", note));
+      // An approximate point is search display only: show the ± radius and that it is not used for directions (#463).
+      const approximate = this.approximateText(h.poi);
+      if (approximate) b.append(el("span", "result-approx", approximate));
+      // The accessible name carries the visible tags, the as-of line, the note and the approximate warning.
+      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...tags, ...(asOf ? [asOf] : []), ...(note ? [note] : []), ...(approximate ? [approximate] : [])].join(", ")));
       b.addEventListener("mousedown", (e) => e.preventDefault());
       b.addEventListener("click", () => {
         this.closeResults(which);
         input.blur();
+        // A brand is not a destination of its own: the store carries the route (#419).
         if (which === "from") this.setOrigin({ kind: "poi", poi: h.poi });
-        else this.setDestination(h.poi);
+        else this.setDestination(h.poi, h.tenant ? this.findTenant(h.tenant.id) : null);
       });
       box.append(b);
     });
@@ -549,9 +620,11 @@ export class App {
     this.updateUrl();
   }
 
-  private setDestination(p: Poi): void {
+  /** `tenant` is set only when the destination was picked through a store's brand directory (#419). */
+  private setDestination(p: Poi, tenant: Tenant | null = null): void {
     if (!this.ownsPoi(p)) return;
     this.s.destination = p;
+    this.s.destinationTenant = tenant;
     this.refreshAll();
     this.updateUrl();
   }
@@ -560,6 +633,8 @@ export class App {
     const o = this.s.origin;
     const d = this.s.destination;
     this.s.destination = o?.kind === "poi" ? o.poi : null;
+    // The previous destination's brand does not describe the new one.
+    this.s.destinationTenant = null;
     this.s.origin = d ? { kind: "poi", poi: d } : null;
     this.refreshAll();
     this.updateUrl();
@@ -580,6 +655,7 @@ export class App {
     this.leaveGuide();
     this.s.origin = { kind: "poi", poi: to };
     this.s.destination = from;
+    this.s.destinationTenant = null;
     this.refreshAll();
     this.updateUrl();
   }
@@ -642,6 +718,7 @@ export class App {
     this.s.polyline = [];
     this.s.instructions = [];
     this.explorer.clearRoute();
+    this.ui.minimap.setRoute(null, null);
     if (!router || !loaded || !origin || !destination) { this.renderSheet(); return; }
     // One multi-source query: the router ranks entrances by its own cost and keeps "already there";
     // routeBetween also applies the fare policy to the POIs themselves.
@@ -656,6 +733,7 @@ export class App {
       this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination, origin.kind === "poi" ? origin.poi : undefined);
       this.s.activeInstruction = 0;
       this.explorer.showRoute(this.s.polyline);
+      this.ui.minimap.setRoute({ points: this.s.polyline, steps: best.steps }, destination);
       if (this.explorer.currentMode === "overview") this.explorer.focusPoints(this.s.polyline);
     }
     this.renderSheet();
@@ -674,6 +752,13 @@ export class App {
       const card = el("div", "card no-route");
       const view = r.reason === "no_path" && this.s.noPath ? noPathView(t, this.s.noPath) : null;
       card.append(el("h2", undefined, t.noRoute), el("p", undefined, view?.text ?? noRouteText(t, r, this.s.destination)));
+      // The picked brand came from an unverified directory (#419): the failed card says when it was checked.
+      const asOf = tenantAsOfNote(this.s.destinationTenant, t);
+      if (asOf) card.append(el("p", "muted tenant-asof", asOf));
+      const origin = this.s.origin?.kind === "poi" ? this.s.origin.poi : null;
+      const endpointNote = r.reason === "unknown_goal" ? poiNoteText(this.s.destination, this.s.lang)
+        : r.reason === "unknown_start" ? poiNoteText(origin, this.s.lang) : null;
+      if (endpointNote) card.append(el("p", "muted", endpointNote));
       if (view && view.relax.length > 0) {
         const relax = el("div", "actions");
         const relaxOff = (keys: typeof view.relax) => { for (const k of keys) this.s.profile[k] = false; this.renderProfile(); this.computeRoute(); };
@@ -696,6 +781,9 @@ export class App {
       return;
     }
     const card = el("div", "card route");
+    const destTenant = this.s.destinationTenant;
+    // A tenant destination names the brand on the store's card; the route still ends at the store's entrances.
+    if (destTenant) card.append(el("h2", "route-title", this.destinationLabel()));
     const head = el("div", "route-head");
     head.append(
       el("strong", "big", t.minutes(Math.max(1, Math.round(r.estimatedSeconds / 60)))),
@@ -707,6 +795,12 @@ export class App {
     card.append(el("p", "muted pace-note", t.paceNote(ROUTE_PACE.walkMps, ROUTE_PACE.stairsMps)));
     // No station records an on-site check, so a real station's route is always said to be desk-checked only (synthetic data says so itself).
     if (!r.synthetic) card.append(el("p", "desk-check", t.deskChecked));
+    // Store floors above ground are not modelled: the guide stops at the store, never at the brand's floor.
+    // The brand came from an unverified directory (#419), so the card repeats when it was checked.
+    if (destTenant) {
+      const asOf = tenantAsOfNote(destTenant, t);
+      card.append(el("p", "muted tenant-floors", asOf ? `${t.tenantFloorsNotGuided} · ${asOf}` : t.tenantFloorsNotGuided));
+    }
 
     const badges = el("div", "badges");
     const badge = (text: string, cls: string, title?: string) => { const x = el("span", `badge ${cls}`, text); if (title) x.title = title; badges.append(x); };
@@ -734,7 +828,7 @@ export class App {
     const walk = el("button", undefined, t.walk);
     walk.addEventListener("click", () => {
       const first = this.s.polyline[0];
-      if (first) this.explorer.walkFrom(first);
+      if (first) this.explorer.walkFrom(first, spawnHeading(this.s.loaded?.bundle ?? null, this.s.origin, this.s.polyline));
     });
     const overview = el("button", "ghost", t.overview);
     overview.addEventListener("click", () => this.explorer.focusPoints(this.s.polyline));
@@ -776,6 +870,8 @@ export class App {
     this.renderIdentity(mode);
     this.renderSpawnChips(this.s.loaded?.bundle);
     this.renderHud();
+    // A collapsed map has no polling timer, so the mode change itself must re-evaluate its visibility (#220).
+    this.ui.minimap.syncVisibility();
   }
 
   /** Inside the panel observed by setPanel: its ResizeObserver already accounts for this header (#114). */
@@ -788,17 +884,30 @@ export class App {
 
   private renderHud(): void {
     const hud = this.ui.hud;
+    // The ride button is its own HUD row (#375), above the mode row; `hidden` alone decides whether it shows,
+    // since openStation sets it after the HUD may already have rendered. Clearing the HUD detaches it, so a
+    // keyboard user who had focused it gets the focus back.
+    const rideFocused = document.activeElement === this.ui.railBtn;
+    const placeRide = (): void => {
+      hud.append(this.ui.railBtn);
+      if (rideFocused && !this.ui.railBtn.hidden) this.ui.railBtn.focus({ preventScroll: true });
+    };
     this.releaseMascot(hud);
     hud.innerHTML = "";
     const mode = this.explorer.currentMode;
     this.announceInstruction();
-    if (mode === "overview") { this.trackInstruction(); return; }
+    if (mode === "overview") {
+      placeRide();
+      this.trackInstruction();
+      return;
+    }
     const t = this.t;
     const ins = this.s.instructions[this.s.activeInstruction];
     if (mode === "guide" && ins) {
       this.ui.mascot.clear();
       hud.append(this.guideBox(ins.text));
     }
+    placeRide();
     const row = el("div", "hud-row");
     if (mode === "guide") {
       // Built from the explorer's state; instruction changes then go through updateGuideHud, so the controls stay put under the pointer.
@@ -1204,6 +1313,17 @@ export class App {
         }
         d.append(el("h3", undefined, this.t.assetDerivations), ul);
       }
+      // Declared data files that GTEki derived from sources (#121); authored config files are never credited.
+      const dataRows = dataFileCredits(b.dataFiles, b.sources);
+      if (dataRows.length) {
+        const ul = el("ul");
+        for (const f of dataRows) {
+          const li = el("li");
+          li.append(document.createTextNode(dataFileRowText(f)));
+          ul.append(li);
+        }
+        d.append(el("h3", undefined, this.t.dataFileDerivations), ul);
+      }
     }
     d.showModal();
   }
@@ -1241,13 +1361,24 @@ export class App {
       quality: () => this.explorer.qualityLevel,
       mascot: () => this.ui.mascot.info(),
       avatar: () => this.explorer.avatarEnu,
+      camera: () => this.explorer.cameraInfo(),
+      setCamera: (patch: { yaw?: number; pitch?: number; distance?: number } | null) => this.explorer.setCamera(patch),
+      holdAvatarFade: (value: number | null) => this.explorer.holdAvatarFade(value),
       sceneInfo: () => this.explorer.sceneInfo(),
       projectEnu: (points: { x: number; y: number; z: number }[]) => this.explorer.projectEnu(points),
       signFaces: () => this.explorer.signFaces(),
+      identity: () => this.explorer.identity(),
+      setRouteMarkersVisible: (visible: boolean) => this.explorer.setRouteMarkersVisible(visible),
       phase: () => this.explorer.phase,
       audio: () => this.explorer.audioInfo(),
-      walkFromNode: (nodeId: string) => (this.s.loaded ? this.explorer.walkFromNode(this.s.loaded.bundle, nodeId) : false),
+      walkFromNode: (nodeId: string) => (this.s.loaded ? this.explorer.walkFromNode(
+        this.s.loaded.bundle,
+        nodeId,
+        spawnHeading(this.s.loaded.bundle, { kind: "node", nodeId }, []),
+      ) : false),
       simulate: (seconds: number, keys: string[] = []) => this.explorer.simulate(seconds, keys),
+      walkPath: (points: { x: number; z: number; y?: number }[], opts?: { speed?: "walk" | "run"; dt?: number; maxSeconds?: number; onStep?: (i: number) => void }) => this.explorer.walkPath(points, opts),
+      signClearance: (radiusM?: number) => this.explorer.signClearance(radiusM),
     };
   }
 }
