@@ -13,7 +13,7 @@ import { listStations, StationLoadError, type LoadedStation, type StationEntry }
 import { noPathView } from "../noPath.ts";
 import { isUnlocatedShop, noRouteText } from "./noRouteText.ts";
 import { stationClock } from "../stationClock.ts";
-import { assetDerivationPresentation, dataFileCredits, factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
+import { assetDerivationPresentation, dataFileCredits, dataFileRowText, factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { nodeLabel, poiLabel } from "./labels.ts";
@@ -1210,7 +1210,7 @@ export class App {
         const ul = el("ul");
         for (const f of dataRows) {
           const li = el("li");
-          li.append(document.createTextNode(`${f.id} (${f.path}): ${f.derivation} — ${f.sourceTitles.join(", ")}`));
+          li.append(document.createTextNode(dataFileRowText(f)));
           ul.append(li);
         }
         d.append(el("h3", undefined, this.t.dataFileDerivations), ul);

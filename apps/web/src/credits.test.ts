@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Source } from "@gteki/schema";
 import type { DataFile } from "@gteki/schema";
-import { assetDerivationPresentation, dataFileCredits, factsOnlyCredit, overrideCredits, rightsLabel, safeHref, sourceCredit } from "./credits.ts";
+import { assetDerivationPresentation, dataFileCredits, dataFileRowText, factsOnlyCredit, overrideCredits, rightsLabel, safeHref, sourceCredit } from "./credits.ts";
 import { entryRightsLabels } from "./creditLine.ts";
 import { strings } from "./i18n.ts";
 
@@ -193,11 +193,23 @@ describe("data file credits (#121)", () => {
     expect(rows.map((r) => r.id)).toEqual(["built"]);
   });
 
-  it("excludes files without a derivation", () => {
+  it("keeps an unmodified file without a derivation (derivation null)", () => {
     expect(dataFileCredits([
-      file({ id: "none", sourceIds: ["plateau-lod2"] }),
-      file({ id: "empty", sourceIds: ["plateau-lod2"], derivation: "" }),
-    ], [plateau])).toEqual([]);
+      file({ id: "plain", path: "data/plain.json", sourceIds: ["plateau-lod2"] }),
+      file({ id: "empty", path: "data/empty.json", sourceIds: [], derivation: "" }),
+    ], [plateau])).toEqual([
+      { id: "plain", path: "data/plain.json", derivation: null, sourceTitles: ["PLATEAU LOD2 buildings"] },
+      { id: "empty", path: "data/empty.json", derivation: null, sourceTitles: [] },
+    ]);
+  });
+
+  it("builds row text with optional derivation and source parts", () => {
+    expect(dataFileRowText({ id: "built", path: "data/built.json", derivation: "tools/build.ts", sourceTitles: ["PLATEAU", "Guide"] }))
+      .toBe("built (data/built.json): tools/build.ts — PLATEAU, Guide");
+    expect(dataFileRowText({ id: "plain", path: "data/plain.json", derivation: null, sourceTitles: ["PLATEAU"] }))
+      .toBe("plain (data/plain.json) — PLATEAU");
+    expect(dataFileRowText({ id: "bare", path: "data/bare.json", derivation: null, sourceTitles: [] }))
+      .toBe("bare (data/bare.json)");
   });
 
   it("looks up source titles and falls back to the id when the source is missing", () => {

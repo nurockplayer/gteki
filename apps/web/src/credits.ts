@@ -48,21 +48,29 @@ export function assetDerivationPresentation(
 export interface DataFileCredit {
   id: string;
   path: string;
-  derivation: string;
+  /** null when the file is unmodified and the manifest gives no derivation; no text is invented for it. */
+  derivation: string | null;
   sourceTitles: string[];
 }
 
-/** Rows for the data files GTEki did not author and that name a derivation; manifest order is kept. */
+/** Rows for every non-authored declared data file, in manifest order; authored config is never credited. */
 export function dataFileCredits(dataFiles: readonly DataFile[] | undefined, sources: readonly Source[]): DataFileCredit[] {
   if (!dataFiles?.length) return [];
   return dataFiles
-    .filter((f) => !f.authored && f.derivation)
+    .filter((f) => !f.authored)
     .map((f) => ({
       id: f.id,
       path: f.path,
-      derivation: f.derivation!,
+      derivation: f.derivation || null,
       sourceTitles: f.sourceIds.map((id) => sources.find((s) => s.id === id)?.title ?? id),
     }));
+}
+
+/** One line per data file: `id (path)`, then the derivation and the source titles when present. */
+export function dataFileRowText(row: DataFileCredit): string {
+  return `${row.id} (${row.path})`
+    + (row.derivation ? `: ${row.derivation}` : "")
+    + (row.sourceTitles.length ? ` — ${row.sourceTitles.join(", ")}` : "");
 }
 
 /** The extra line a facts-only source carries instead of a licence: the #26 wording and, when safe, the decision link. */
