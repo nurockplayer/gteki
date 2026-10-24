@@ -288,8 +288,8 @@ button.on { border-color: var(--accent); color: var(--accent); }
 
 /* ---- JR Saikyo interstation ride demo (unsurveyed boarding location) ---- */
 .rail-launch {
-  position: fixed; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom));
-  z-index: 8; padding: 12px 18px;
+  max-width: calc(100vw - 32px); min-height: 44px; padding: 12px 18px;
+  white-space: normal;
   font-weight: 750; font-size: 13px; letter-spacing: 0.015em;
   border: 1px solid rgba(94, 240, 255, .65);
   background: rgba(7, 30, 42, .91);
@@ -331,7 +331,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .rail-ride-action { display: block; width: 100%; min-height: 44px; }
 .rail-ride-action:disabled { opacity: .58; cursor: default; }
 @media (max-width: 620px) {
-  .rail-launch { bottom: calc(92px + env(safe-area-inset-bottom)); right: 12px; padding: 9px 12px; }
+  .rail-launch { padding: 9px 12px; }
   .rail-ride-banner { top: calc(64px + env(safe-area-inset-top)); left: 16px; max-width: calc(100vw - 32px); }
   .rail-ride-banner h2 { font-size: 20px; }
   .rail-ride-route { font-size: 16px; }
