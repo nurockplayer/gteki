@@ -121,6 +121,10 @@ describe("core search on the real Shinjuku POIs (docs/stations/shinjuku/search-e
     const e27 = s.filter((h) => !isS03Hit(h));
     expect(ids(e27)).toEqual([...e27Ids].sort());
     for (const h of s.filter(isS03Hit)) expect(h.poi.connectorNodeIds, h.poi.id).toEqual([]);
+    // Search-only hits never push a routable E27 hit down: every E27 hit ranks before the first S03 hit.
+    const firstS03 = s.findIndex(isS03Hit);
+    const lastE27 = s.map((h) => !isS03Hit(h)).lastIndexOf(true);
+    if (firstS03 !== -1) expect(firstS03, q).toBeGreaterThan(lastE27);
     if (q === "出口") expect(e27.map((h) => h.score)).toEqual(e27Ids.map(() => 105));
   });
 
