@@ -3,7 +3,7 @@
 - **Tracking:** issue #211 (parent #209). Two stations, Ikebukuro first, then Shinjuku. Docs only:
   this file changes no station data, adds no coordinate and no route.
 - **Built:** 2026-10-25 (JST) from repo records on `main` (`b10e6557`), the open batch-4 PR
-  [#432](https://github.com/nurockplayer/gteki/pull/432) and the auto-merging PR
+  [#432](https://github.com/nurockplayer/gteki/pull/432) and the open PR
   [#415](https://github.com/nurockplayer/gteki/pull/415). **No page was fetched for this file**;
   every date below is the date already recorded by the lane that read the page.
 - **Inputs:** [`gaps/DR-merchant-sources.md`](../gaps/DR-merchant-sources.md) (the earlier #211
@@ -27,7 +27,8 @@ or a business-use ban, so at most "consistent with … (URL, retrieval time)" fo
 elsewhere. **UNKNOWN** = not read, not covered, or unreachable.
 
 - **OD-34, 2026-10-24** (director gteki-1b, [#377 comment 6382700098](https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098)),
-  with rounds 2–4 the same day and the Toshima policy line of 2026-10-25 recorded in #414.
+  with rounds 2–4 the same day and the **fifth round on 2026-10-25** (odakyu.jp / keio.co.jp,
+  KSJ per dataset, Toshima policy), each with the terms entry it cites.
 - **OD-32, 2026-10-24** (same record): hours only from a first-party page with its date and the
   "may have changed" label; null when undated, older than 180 days, or third-party.
   `current_status` stays UNKNOWN until a field check.
@@ -52,7 +53,7 @@ elsewhere. **UNKNOWN** = not read, not covered, or unreachable.
 | `seibu-ikebukuro-station-2026-10` | 西武鉄道 池袋駅 | https://www.seiburailway.jp/railway/station/ikebukuro/ | usable (OD-25, 2026-10-22) | station-level facility text — search only for merchants | 西武南口 hours, gates, lifts; no shop directory |
 | `tokyometro-ikebukuro-accessibility-2026-10` | バリアフリー設備 / Tokyo Metro | https://www.tokyometro.jp/station/ikebukuro/accessibility/index.html | usable (OD-34 §2, 2026-10-24) | equipment end pairs — not a merchant position | facility POIs only |
 | `lumine-ikebukuro-facilities-2026-10`, `esola-ikebukuro-facilities-{3f,4f,6f,7f,8f}-2026-10`, `tobudept-ikebukuro-facilities*-2026-10` | facility pages (facilities batches) | see `../facilities/ikebukuro-facilities-batch2.json` | usable (OD-34 §2, 2026-10-24) | floor/zone label | facility POIs only |
-| `city.toshima.lg.jp` (underground guide, sign guideline) | 豊島区 池袋駅地下空間案内図 and sign guideline | https://www.city.toshima.lg.jp/405/1705251510.html | usable (OD-34, 2026-10-25 policy read recorded in #414) | exits and gate names — no merchant floor | exit/gate names as aliases; never layout or route |
+| `city.toshima.lg.jp` (underground guide, sign guideline) | 豊島区 池袋駅地下空間案内図 and sign guideline | https://www.city.toshima.lg.jp/405/1705251510.html | usable, facts only (OD-34 fifth round (c), 2026-10-25; site-policy URL, retrievedAt and sha256 recorded in #414) | exits and gate names — no merchant floor | exit/gate names as aliases; never layout or route |
 | `sogo-seibu.jp` | そごう・西武 floor guide | https://www.sogo-seibu.jp/ikebukuro/floor-guide ; terms https://www.sogo-seibu.jp/usage | **corroboration only** (OD-34 round 3, 2026-10-24: clause 2 item 8 bans profit-making activity) | none usable | cross-check only; no brand tenants |
 | `tobu.co.jp` | 東武鉄道 station page | https://www.tobu.co.jp/railway/guide/station/info/7105/ | **corroboration only** (OD-34 round 2, 2026-10-24: §8 business-use ban) | none usable | cross-check only |
 | `jreast.co.jp` | JR East station pages | https://www.jreast.co.jp/estation/ | **corroboration only** (OD-34 §1, 2026-10-24; OD-02 A) | none usable | cross-check only; 403 to plain reads (#415 GAP) |
@@ -71,8 +72,8 @@ elsewhere. **UNKNOWN** = not read, not covered, or unreachable.
 | `odakyudept-shinjuku-facilities-2026-10`, `odakyudept-shinjuku-floorguide-2026-10` | 小田急百貨店 facility pages | see `../facilities/shinjuku-facilities-batch2.json` | usable (OD-34 round 2, 2026-10-24) | floor/area label | facility POIs only |
 | `chain-krispykreme-ace-north-sjk-2026-10` | クリスピー・クリーム・ドーナツ store page | https://krispykreme.jp/store/tokyo/odakyuace.html | usable (OD-34 round 4, 2026-10-24: LUMINE-type clause) | store/facility name — search only | one chain row; the Odakyu Ace directory itself stays banned |
 | `tokyometro-shinjuku-accessibility-*`, `lumineest-shinjuku-facilities-2026-10`, `lumine-shinjuku-facilities-2026-10`, `newoman-shinjuku-facilities-2026-10` | facility pages | see the facilities batches | usable (OD-34 §2, 2026-10-24) | floor/area label | facility POIs only |
-| `odakyu.jp` | 小田急電鉄 駅設備 | https://www.odakyu.jp/station/shinjuku/ | **corroboration only** (lead assignment 2026-10-25; terms were never read, `gaps/DR-SJ-station-facts.md` DR-SJ-16) — **no OD line yet, GAP 8** | none usable | cross-check only |
-| `keio.co.jp` | 京王電鉄 新宿駅 | https://www.keio.co.jp/train/station/ko01_shinjuku/ | **corroboration only** (lead assignment 2026-10-25; the site was 503 and its terms note is a refusal, DR-SJ-12) — **no OD line yet, GAP 8** | none usable | cross-check only |
+| `odakyu.jp` | 小田急電鉄 駅設備 | https://www.odakyu.jp/station/shinjuku/ | **corroboration only** (OD-34 fifth round, 2026-10-25; terms clause read in #415 at 2026-10-24T16:41:16Z) | none usable | cross-check only |
+| `keio.co.jp` | 京王電鉄 新宿駅 | https://www.keio.co.jp/train/station/ko01_shinjuku/ | **corroboration only** (OD-34 fifth round, 2026-10-25; terms clause read in #415 at 2026-10-24T16:41:17Z) | none usable | cross-check only |
 | `odakyu-sc.com` (小田急エース), `keiosc.co.jp` (京王モール) | Mall portals | https://www.odakyu-sc.com/sitepolicy/ ; https://www.keiosc.co.jp/sitepolicy/ | **corroboration only** — flat ban (OD-34 §3, 2026-10-24; overturns OD-33 for these two) | none usable | nothing imported, not even a cross-check |
 | `ecute.jp` / JR東日本クロスステーション | ecute shop directories | https://www.ecute.jp/terms/ | **corroboration only** — flat ban (OD-34 §3, 2026-10-24) | none usable | nothing imported |
 | `doutor.co.jp`, `meganeichiba.jp` | chain store pages | — | **corroboration only** — flat ban (OD-34 round 4, 2026-10-24) | none usable | self-service form candidates (#438) |
@@ -85,7 +86,7 @@ elsewhere. **UNKNOWN** = not read, not covered, or unreachable.
 | source id | Dataset | URL | Status | Position precision | What it supports |
 | --- | --- | --- | --- | --- | --- |
 | `tokyo-s10-shinjuku-csv` | 東京都 S10 店舗等一覧 (新宿) | https://www.opendata.metro.tokyo.lg.jp/kotsu/other/other_stores_shinjuku.csv | **usable under CC BY 4.0** with attribution and change notice; rights record verdict `CLEARED_WITH_CONDITIONS`, `publish_gate: HOLD`, `routable: false` (`docs/gis/rights/tokyo-s10-shinjuku-csv.json`) | `設置場所` text only — area/search only | factual CSV fields only; no coordinates, no floor field; floor assignment and navigation not established |
-| KSJ N02-2023 | 国土数値情報 鉄道データ | https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2023.html | usable, CC BY 4.0-compatible (terms check in PR #415, 2026-10-24) | station identity only | line and station identity, not shops |
+| KSJ N02-2023 | 国土数値情報 鉄道データ (2023年度版, data as of 2023-12-31) | https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2023.html | usable as **primary evidence**, judged per dataset (OD-34 fifth round (b), 2026-10-25): dataset N02-2023 prints CC BY 4.0 and 商用可; both agreement pages read in #415 at 2026-10-24T16:41:31–32Z; credit 「出典：国土数値情報（鉄道データ）（国土交通省）…（2026年10月24日取得）」 | station identity only | line and station identity, not shops |
 
 ## 3. Candidate position-precision list
 
@@ -194,9 +195,10 @@ interior photo is reproduced in the repository.
    until the field checks in §5.2 are done.
 7. **Hours dates**: most directory pages are undated, so under OD-32 their hours stay null until a
    dated first-party page or a field check.
-8. **`odakyu.jp` and `keio.co.jp`**: assigned corroboration-only by the lead on 2026-10-25, but no
-   line for either is in `owner-decisions-pending.md`; their terms were never read (DR-SJ-16
-   timeout, DR-SJ-12 503). Record the basis or confirm the class before either is cited anywhere.
+8. **`odakyu.jp` and `keio.co.jp`** — **resolved 2026-10-25**: now OD-34 fifth round (a), citing
+   the flat-refusal clauses read in #415 at 2026-10-24T16:41:16–17Z. Both stay corroboration only
+   and their rights stay UNKNOWN; nothing is imported from either. Keio department store, Subnade
+   and メトロプロムナード remain UNKNOWN because #415 recorded no clause for them (fifth round (d)).
 9. **Batch 4 source ids** (`lumine-ikebukuro-floorguide-2026-10`, `esola-…-{b1…8f}`,
    `tobu-dept-ikebukuro-2026-10`) are taken from open PR #432, not from `main`; if that PR changes
    them, this table must follow.
