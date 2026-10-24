@@ -477,8 +477,13 @@ def escalator(asset_id, params, tex_res, handrail_segments=10, handrail_corner=0
         for i in range(count):
             span = _slice(path, i * length / count + 0.006, (i + 1) * length / count - 0.006)
             outer = side * (overall / 2 + 0.003)
-            _profile_part(a, "truss_cladding", span, min(outer, outer - side * 0.015), max(outer, outer - side * 0.015),
-                          -p["truss_depth"] + 0.035, 0.09, "gteki_steel_painted_light", bevel=0.002)
+            part = _profile_part(a, "truss_cladding", span, min(outer, outer - side * 0.015), max(outer, outer - side * 0.015),
+                                 -p["truss_depth"] + 0.035, 0.09, "gteki_steel_painted_light", bevel=0.002)
+            # Darken inner cap faces so panel gaps read as reveals without AO.
+            inner_ends = ([span[0][0]] if i > 0 else []) + ([span[-1][0]] if i < count - 1 else [])
+            for face in part.bm.faces:
+                if any(all(abs(v.co.y - end_y) < 0.000001 for v in face.verts) for end_y in inner_ends):
+                    face.material_index = a.mat_index(DARK)
         _profile_part(a, "skirts", inset_path, xa, xb, -0.06, p["skirt_height"], STEEL)
         brushx = side * (w / 2 + 0.016)
         _profile_part(a, "skirt_brushes", path, brushx - 0.014, brushx + 0.014,

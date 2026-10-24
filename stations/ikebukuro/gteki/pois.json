@@ -3042,6 +3042,171 @@
     "method": "official-map-reading (facts only): area name as printed on the map; connector = a junction inside that area",
     "checkedDate": "2026-10-21"
    }
+  },
+  {
+   "id": "shop-ikb-mr-001",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "Soup Stock Tokyo"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only directory listing (#26 facts-only), UNVERIFIED, SEARCH_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Listed on Tokyo Metro's Ikebukuro shop page; facility or area not stated. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-mr-002",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "Patio de METRO"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "パティオ ドゥ メトロ"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only directory listing (#26 facts-only), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "Echika池袋内。 位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Inside Echika Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-mr-003",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "Tabio"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only directory listing (#26 facts-only), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "Echika池袋。 位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Echika Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-mr-004",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "マツモトキヨシ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。 位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-mr-005",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "スターバックス コーヒー 南館店"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "isp-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク 南館。 位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
   }
  ]
 }

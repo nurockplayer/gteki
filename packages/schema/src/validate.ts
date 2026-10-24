@@ -89,6 +89,15 @@ const isHttpUrl = (url: unknown): boolean => {
   }
 };
 
+function hasLicenseName(value: unknown): boolean {
+  if (typeof value === "string") return value.trim().length > 0;
+  return Array.isArray(value) && value.length > 0 && value.every((entry) =>
+    typeof entry === "object" && entry !== null &&
+    typeof (entry as { lang?: unknown }).lang === "string" && (entry as { lang: string }).lang.trim().length > 0 &&
+    typeof (entry as { text?: unknown }).text === "string" && (entry as { text: string }).text.trim().length > 0,
+  );
+}
+
 export function validateBundle(b: StationBundle): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const err = (code: string, message: string, ref?: string) => issues.push({ level: "error", code, message, ref });
@@ -122,7 +131,9 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
       err("source.attribution", "source without an attribution (credit line)", s.id);
     // The credited title links to the source itself, so a real source needs a reachable http(s) landing page.
     if (!b.station.synthetic && !isHttpUrl(s.url)) err("source.url", "source without an http(s) landing URL", s.id);
-    if (!b.station.synthetic && s.usage !== "facts-only" && !(s.license && s.license.name.trim() && isHttpUrl(s.license.url)))
+    if (s.license !== null && !hasLicenseName(s.license.name))
+      err("source.license", "licence name must be non-empty text or a non-empty list of localized text", s.id);
+    if (!b.station.synthetic && s.usage !== "facts-only" && !(s.license && hasLicenseName(s.license.name) && isHttpUrl(s.license.url)))
       err("source.license", "data source without a licence name and http(s) licence link", s.id);
     // #26/#122: a facts-only source has no licence to show; the UI says so, and the source records the Owner decision that allows it.
     const decisionOk = typeof s.decision === "object" && s.decision !== null && isHttpUrl(s.decision.url) && typeof s.decision.date === "string" && isIsoDate(s.decision.date);
@@ -134,7 +145,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     const ovOk = typeof ov === "object" && ov !== null && isDecisionRef((ov as { decision?: unknown }).decision) && typeof (ov as { date?: unknown }).date === "string" && isIsoDate((ov as { date: string }).date);
     if (s.rights === "PUBLISHED_UNDER_OWNER_OVERRIDE") {
       if (!ovOk) err("source.override", "PUBLISHED_UNDER_OWNER_OVERRIDE needs override {decision: issue/comment URL or #ref, date: YYYY-MM-DD}", s.id);
-      if (!(s.license && typeof s.license.name === "string" && s.license.name.trim()))
+      if (!(s.license && hasLicenseName(s.license.name)))
         err("source.override", "PUBLISHED_UNDER_OWNER_OVERRIDE needs license.name text stating the licence status (e.g. unconfirmed)", s.id);
     } else if (ov !== undefined) {
       if (!ovOk) err("source.override", "override needs a decision reference and a YYYY-MM-DD date", s.id);
@@ -296,6 +307,11 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
         err("asset.rights", `asset derives from source ${s} with rights ${rights}; it cannot ship in the public bundle`, a.id);
     }
     if (a.sourceIds.length === 0 && !b.station.synthetic) err("asset.source", "asset without source provenance", a.id);
+    if (a.derivationSummary !== undefined && (!Array.isArray(a.derivationSummary) || a.derivationSummary.length === 0 || a.derivationSummary.some((entry) =>
+      !entry || typeof entry.lang !== "string" || !entry.lang.trim() || typeof entry.text !== "string" || !entry.text.trim(),
+    ))) err("asset.derivationSummary", "derivationSummary must contain non-empty localized text", a.id);
+    if (a.derivationSummary !== undefined && (typeof a.derivation !== "string" || !a.derivation.trim()))
+      err("asset.derivationSummary", "derivationSummary requires a non-empty full derivation record", a.id);
   }
 
   // Data files: the same source and rights gate as assets. Contract files are loaded as data and never declared.

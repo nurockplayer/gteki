@@ -26,7 +26,7 @@ const SPECS = {
   text: { lang: "string", text: "string" },
   operator: { id: "string", names: "array" },
   code: { operatorId: "string", code: "string" },
-  license: { name: "string", url: "string" },
+  license: { name: "string|texts", url: "string" },
   decision: { url: "string", date: "string" },
   override: { decision: "string", date: "string" },
   sourceLabel: { operatorId: "string", label: "string", sourceId: "string" },
@@ -37,7 +37,7 @@ const SPECS = {
   gap: { id: "string", floorId: "string|null", zone: "string|texts", missingFact: "string|texts", fieldWorkNeeded: "string|texts", approximateExtent: "string|texts?", sourceDate: "string|null?" },
   point2: { x: "number", y: "number" },
   coverage: { summary: "array", areas: "array", gaps: "array", freshness: "string|null" },
-  asset: { id: "string", uri: "string", uriMobile: "string?", format: "string", floorIds: "array", role: "string", sourceIds: "array", transform: "array?", derivation: "string?", files: "array?" },
+  asset: { id: "string", uri: "string", uriMobile: "string?", format: "string", floorIds: "array", role: "string", sourceIds: "array", transform: "array?", derivation: "string?", derivationSummary: "array?", files: "array?" },
   dataFile: { id: "string", path: "string", sourceIds: "array", modified: "boolean", authored: "boolean?", derivation: "string?" },
 } satisfies Record<string, Spec>;
 
@@ -157,7 +157,8 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
       c.each(st.codes, SPECS.code, "station.codes");
     }
     c.each(m.sources, SPECS.source, "sources", (src, where) => {
-      if (src.license !== null) c.check(src.license, SPECS.license, `${where}.license`);
+      if (src.license !== null && c.check(src.license, SPECS.license, `${where}.license`))
+        c.textOrTexts(src.license.name, `${where}.license.name`);
       if (src.decision !== undefined) c.check(src.decision, SPECS.decision, `${where}.decision`);
       if (src.override !== undefined) c.check(src.override, SPECS.override, `${where}.override`);
       c.strings(src.downloadUrls, `${where}.downloadUrls`);
@@ -185,6 +186,7 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
     c.strings(m.spawnNodeIds, "spawnNodeIds");
     c.each(m.dataFiles, SPECS.dataFile, "dataFiles", (file, where) => c.strings(file.sourceIds, `${where}.sourceIds`));
     c.each(m.assets, SPECS.asset, "assets", (asset, where) => {
+      c.texts(asset.derivationSummary, `${where}.derivationSummary`);
       c.strings(asset.floorIds, `${where}.floorIds`);
       c.strings(asset.sourceIds, `${where}.sourceIds`);
       c.strings(asset.files, `${where}.files`);

@@ -131,6 +131,6 @@ export interface Router {
  * the router keeps its own fail-closed edge rules but does not re-run contract validation.
  */
 export { createRouter, ROUTE_PACE } from "./router.ts";
-export { routeBetween, type RouteEndpoint } from "./poi.ts";
+export { routeBetween, type RouteDestination, type RouteEndpoint } from "./poi.ts";
 export { describeRoute, floorDisplayName, instructionPoints, nodeDisplayZ, routePolyline, type ConnectorEndKind, type Instruction, type InstructionKind, type JunctionHint, type PolylinePoint, type Turn } from "./present.ts";
 export { explainNoPath, explainNoPathBetween, explainNoPathWith, type NoPathCause, type NoPathContext, type NoPathEndpoint, type NoPathEvidence, type NoPathOption, type NoPathOptionCause } from "./explain.ts";

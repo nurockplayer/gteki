@@ -13,6 +13,7 @@ import type { Poi, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
+import { loadSignFont } from "../signFont.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
@@ -660,8 +661,9 @@ export class Explorer {
    * Abandon any in-flight load and show nothing: called as soon as another station is selected, so a
    * slow previous station can never appear under the new selection (even if the new one fails to load).
    */
-  cancelPendingLoad(): void {
+  cancelPendingLoad(nextId: string): void {
     this.loadGeneration++;
+    this.releaseStationCaches(nextId);
     this.clearStation();
     this.station = null;
     this.phase = "idle";
@@ -794,6 +796,7 @@ export class Explorer {
 
   private async buildStationScene(station: LoadedStation, ctx: SceneContext): Promise<StationScene | null> {
     if (station.sceneImportError) throw new Error(`scene module failed to load: ${station.sceneImportError}`);
+    await loadSignFont();
     if (station.scene) return await station.scene.buildScene(ctx);
     const assets = station.bundle.assets ?? [];
     if (assets.length === 0) return null;
@@ -1213,7 +1216,7 @@ export class Explorer {
     const focusY = this.mode === "overview" ? null : this.pos.y;
     for (const l of labels) {
       const distance = this.labelAt.setFromMatrixPosition(l.obj.matrixWorld).distanceTo(cam.position);
-      const state = labelState({ occluded: l.occluded, distance, onFocusFloor: onFocusFloor(l.groundY, focusY), selected: l.selected });
+      const state = labelState({ occluded: l.occluded, distance, onFocusFloor: onFocusFloor(l.groundY, focusY), selected: l.selected, overview: this.mode === "overview" });
       if (state === l.state) continue;
       l.state = state;
       l.obj.element.classList.toggle("occluded", state === "faded");

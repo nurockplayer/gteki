@@ -3155,8 +3155,8 @@
       "family": "vertical",
       "variant": "escalator",
       "file": "glb/gteki_escalator_s1000_r5000_up.glb",
-      "sha256": "1823a10b58d1cb8e0c48a6438758bfb1b90ebcb58075b14eb8b61d697d35544e",
-      "bytes": 1965964,
+      "sha256": "3c68caa300e8bd6ab730ebdc1b6ba6785c6b38b0b49611b2b368faecdb6eee74",
+      "bytes": 1966872,
       "triangles": 29030,
       "materials": [
         "gteki_escalator_tread",
@@ -3396,8 +3396,8 @@
       "family": "vertical",
       "variant": "escalator",
       "file": "glb/gteki_escalator_s600_r3500_down.glb",
-      "sha256": "3f901674aa3433bfb413c24260275a5333a0981ad4a37eeaeb9d0c120402be4e",
-      "bytes": 1820840,
+      "sha256": "c1ad94dd95746d504076fb0128697873cd2994afe0d546b59a0588cbdbb41561",
+      "bytes": 1821744,
       "triangles": 26946,
       "materials": [
         "gteki_escalator_tread",
@@ -6558,8 +6558,8 @@
       "family": "vertical",
       "variant": "escalator",
       "file": "glb/gteki_escalator_s1000_r5000_down.glb",
-      "sha256": "e7a081d2f1e57e58946558d5e310e698f67895b7b2b0b94d51b3273bdb9a8479",
-      "bytes": 1963016,
+      "sha256": "d93dd7df0781b42e782dcf90b6d741d59dc37f1b360701da13f52c36df78bfce",
+      "bytes": 1963924,
       "triangles": 29030,
       "materials": [
         "gteki_escalator_tread",
