@@ -40,6 +40,36 @@ describe("routeBetween applies the fare policy to the POIs themselves", () => {
     expect(routeBetween(router, { kind: "node", nodeId: "start" }, dest, unpaid).ok).toBe(true);
   });
 
+  it("applies the same origin fare rule to node goals without adding destination evidence", () => {
+    for (const paid of [true, null]) {
+      const { router, exit, dest } = setup(false);
+      const origin = { ...exit, paid };
+      const poiFailure = routeBetween(router, { kind: "poi", poi: origin }, dest, unpaid);
+      const nodeFailure = routeBetween(router, { kind: "poi", poi: origin }, { kind: "nodes", nodeIds: ["goal"] }, unpaid);
+      expect(nodeFailure).toEqual(poiFailure);
+    }
+
+    const b = createSyntheticBundle();
+    const router = createRouter(b);
+    const origin = { ...b.pois.find((poi) => poi.id === "exit-a1")!, paid: false };
+    const nodeGoals = ["goal"];
+    const nodeResult = routeBetween(router, { kind: "poi", poi: origin }, { kind: "nodes", nodeIds: nodeGoals }, unpaid);
+    expect(nodeResult.ok).toBe(true);
+    if (nodeResult.ok) expect(nodeResult.sourceIds).toEqual(expect.arrayContaining(origin.evidence.sourceIds));
+    expect(routeBetween(router, { kind: "poi", poi: origin }, { kind: "nodes", nodeIds: [] }, { fare: "ticketed", stepFree: false }))
+      .toMatchObject({ ok: false, reason: "unknown_goal" });
+  });
+
+  it("routes to node goals exactly like the router for a ticketed profile", () => {
+    const b = createSyntheticBundle();
+    const router = createRouter(b);
+    const origin = b.pois.find((poi) => poi.id === "exit-a1")!;
+    const nodeIds = ["goal", "isolated"];
+    const profile: RouteProfile = { fare: "ticketed", stepFree: false };
+    expect(routeBetween(router, { kind: "poi", poi: origin }, { kind: "nodes", nodeIds }, profile))
+      .toEqual(router.route(origin.connectorNodeIds, nodeIds, profile, [origin.evidence]));
+  });
+
   it("keeps unknown_start / unknown_goal for POIs without connectors and joins both POIs' evidence", () => {
     const b = createSyntheticBundle();
     // Sources cited only by the POIs, so the result can carry them only through routeBetween.

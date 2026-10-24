@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ClosestLike } from "../explorer/inputGuard.ts";
-import { swallowBackgroundWalkKey, type WalkKeyEventLike } from "./railKeyGuard.ts";
+import { guideKeyActionGuarded } from "../explorer/guideSteps.ts";
+import { shouldHandleGuideKey, swallowBackgroundWalkKey, type WalkKeyEventLike } from "./railKeyGuard.ts";
 
 interface Node { tag: string; role?: string; focusVisible?: boolean }
 
@@ -56,5 +57,28 @@ describe("swallowBackgroundWalkKey", () => {
     const k = key("KeyW", null);
     expect(k.swallowed()).toBe(true);
     expect(k.seen.immediate).toBe(1);
+  });
+});
+
+describe("shouldHandleGuideKey", () => {
+  it("blocks guide next shortcuts while the ride dialog is open, even on its focused buttons", () => {
+    for (const key of ["]", "PageDown"]) {
+      const action = guideKeyActionGuarded({ key }, -Infinity, 1000);
+      expect(action).toBe("next");
+      expect(shouldHandleGuideKey(action, fake({ tag: "button" }), false, true)).toBe(false);
+    }
+  });
+
+  it("allows the same shortcuts when the ride dialog is closed", () => {
+    for (const key of ["]", "PageDown"]) {
+      const action = guideKeyActionGuarded({ key }, -Infinity, 1000);
+      expect(shouldHandleGuideKey(action, fake({ tag: "button" }), false, false)).toBe(true);
+    }
+  });
+
+  it("continues excluding coverage dialogs and text fields", () => {
+    const action = guideKeyActionGuarded({ key: "]" }, -Infinity, 1000);
+    expect(shouldHandleGuideKey(action, fake({ tag: "button" }), true, false)).toBe(false);
+    expect(shouldHandleGuideKey(action, fake({ tag: "input" }), false, false)).toBe(false);
   });
 });
