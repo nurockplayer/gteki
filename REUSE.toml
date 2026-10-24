@@ -304,6 +304,34 @@ precedence = "override"
 SPDX-FileCopyrightText = "東京都都市整備局; 国土交通省（ほこナビDP）; modified by GTEki contributors"
 SPDX-License-Identifier = "LicenseRef-S03 AND LicenseRef-Hokonavi-E27-Owner-override"
 
+# --- 4k. S03 line names: Shinjuku searchable line POIs (lines-lead WP1; Owner Q2/Q3, gteki-1b R-1/R-2) ---
+# Plain gate and platform names copied from S03 com-entity.geojson (ZIP sha256 fc3466270c08…4ba31);
+# no geometry, no position. Credit and change notice: NOTICE 4.7.
+[[annotations]]
+path = "docs/research/lines/shinjuku-line-pois.json"
+precedence = "override"
+SPDX-FileCopyrightText = "東京都都市整備局; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-S03"
+
+# --- 4o. S03 line names in the Shinjuku station POIs (import of #411; Owner Q2/Q3, gteki-1b R-1/R-2) ---
+# pois.json keeps its E27 content (4c) and adds 45 S03 gate and platform names: search only,
+# AREA_ONLY, no position, no floor. station.json only cites tokyo-s03-zip and stays under 4c.
+# Credit and change notice: NOTICE 4.7.
+[[annotations]]
+path = "stations/shinjuku/gteki/pois.json"
+precedence = "override"
+SPDX-FileCopyrightText = "国土交通省（ほこナビDP）; 東京都都市整備局; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-Hokonavi-E27-Owner-override AND LicenseRef-S03"
+
+# --- 4n. Facts-only line POIs for Shinjuku (lines-lead WP4; #26 Tokyo Metro, OD-01 A Toei; NOTICE 4.12) ---
+[[annotations]]
+path = [
+  "docs/research/lines/shinjuku-line-pois-wp4.json",
+  "docs/research/lines/shinjuku-line-pois-wp4-notes.md",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "No licence granted: facts-only sources (東京地下鉄, 東京都交通局); compiled by GTEki contributors"
+
 # --- 4q. Facts-only transfer facts (lines-lead WP11; #26 Tokyo Metro, OD-01 A / OD-34 Toei, OD-25 Seibu) ---
 [[annotations]]
 path = [
