@@ -269,6 +269,14 @@ export function landmarksBBox(points: readonly LandmarkPoint[]): { min: [number,
   return box;
 }
 
+/**
+ * A header name as it is compared everywhere: BOM stripped, NFC, trimmed (`trim` removes the full-width space too). Header names are
+ * canonicalised once, so `" 名称"` and `"名称"` are the same column, not two.
+ */
+export function canonicalColumnName(name: string): string {
+  return name.replace(/^﻿/u, '').normalize('NFC').trim();
+}
+
 /** Delimited CSV as rows of cells, decoded by the shared encoding detection; the delimiter is whichever separates the header. */
 export function parseLandmarksCsv(bytes: Buffer): { header: string[]; rows: string[][] } {
   const { text } = decodeCsvBytes(bytes);
@@ -276,9 +284,10 @@ export function parseLandmarksCsv(bytes: Buffer): { header: string[]; rows: stri
   const delimiter = (firstLine.match(/\t/gu)?.length ?? 0) > (firstLine.match(/,/gu)?.length ?? 0) ? '\t' : ',';
   const records = parse(text, { relax_column_count: true, relax_quotes: true, skip_empty_lines: true, delimiter }) as string[][];
   if (!records.length) throw new Error('the CSV has no header row');
-  const header = records[0]!.map((h) => h.replace(/^﻿/u, ''));
-  // A repeated header name would make a column ambiguous; a ragged row would shift every cell after the gap. Both fail, and the
-  // message never carries a cell value.
+  const header = records[0]!.map(canonicalColumnName);
+  // A repeated header name would make a column ambiguous (a whitespace-shadowed duplicate would let a second column sit behind the
+  // approved name); a ragged row would shift every cell after the gap. Both fail, and the message names a header name or a line, never
+  // a cell value.
   const seen = new Set<string>();
   for (const name of header) {
     if (seen.has(name)) throw new Error(`the CSV header repeats the column name ${JSON.stringify(name)}; refusing to read it`);
@@ -318,10 +327,14 @@ export async function contextLandmarks(station: string, options: LandmarksRunOpt
 
   // Header: the four configured columns must be there under exactly those names.
   const { header, rows } = parseLandmarksCsv(bytes);
+  // Exact equality of the canonical names, and exactly one match: the pinned column is never a whitespace variant, and an ambiguous
+  // header is refused rather than resolved to the first hit.
   const columnIndex = (column: string): number => {
-    const index = header.findIndex((name) => name.trim() === column.trim());
-    if (index < 0) throw new Error(`${landmarks.source_id}: the CSV has no column ${JSON.stringify(column)} (named by landmarks.fields)`);
-    return index;
+    const wanted = canonicalColumnName(column);
+    const found = header.flatMap((name, index) => (name === wanted ? [index] : []));
+    if (found.length === 0) throw new Error(`${landmarks.source_id}: the CSV has no column ${JSON.stringify(column)} (named by landmarks.fields)`);
+    if (found.length !== 1) throw new Error(`${landmarks.source_id}: the CSV has ${found.length} columns named ${JSON.stringify(column)}; refusing an ambiguous header`);
+    return found[0]!;
   };
   const latColumn = columnIndex(landmarks.fields.lat), lonColumn = columnIndex(landmarks.fields.lon);
   const nameColumn = columnIndex(landmarks.fields.name), classColumn = columnIndex(landmarks.fields.class);
@@ -414,7 +427,7 @@ export async function contextLandmarks(station: string, options: LandmarksRunOpt
   }
 
   const filled = (column: string): string => {
-    const index = header.findIndex((name) => name.trim() === column);
+    const index = header.indexOf(canonicalColumnName(column));
     if (index < 0) return 'excluded (column absent in this source)';
     return `excluded (${rows.filter((row) => (row[index] ?? '').trim() !== '').length}/${rows.length} filled)`;
   };

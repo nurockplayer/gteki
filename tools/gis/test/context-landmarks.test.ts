@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 import * as common from '../src/common.js';
@@ -129,6 +129,26 @@ describe('context-landmarks: source integrity and shape', () => {
     header[5] = '緯度';
     const { run } = await setup({ csv: csvText(ROWS, header) });
     await expect(run()).rejects.toThrow(/repeats the column name "緯度"/);
+  });
+
+  it('canonicalises a lone header name (trim, full-width space) before resolving it', () => {
+    const header = HEADER.map((name) => (name === '文化財分類' ? '　文化財分類 ' : name));
+    expect(parseLandmarksCsv(utf16(csvText(ROWS, header))).header[2]).toBe('文化財分類');
+  });
+
+  it('refuses a whitespace-shadowed duplicate of a pinned column and writes nothing', async () => {
+    // The shadowing column is another column renamed to a whitespace variant of a pinned one: both canonicalise to the same name.
+    const cases: Array<[string, string]> = [[' 名称', '名称'], ['名称 ', '名称'], ['　名称', '名称'], ['文化財分類　', '文化財分類']];
+    for (const [shadowed, canonical] of cases) {
+      const header = [...HEADER];
+      header[7] = shadowed;
+      const { run, storeRoot } = await setup({ csv: csvText(ROWS, header) });
+      const beforeOut = await readdir(join(storeRoot, 'out')).catch(() => [] as string[]);
+      const beforeReceipts = await readdir(join(common.repoRoot, 'receipts')).catch(() => [] as string[]);
+      await expect(run()).rejects.toThrow(new RegExp(`repeats the column name "${canonical}"`, 'u'));
+      expect(await readdir(join(storeRoot, 'out')).catch(() => [] as string[])).toEqual(beforeOut);
+      expect(await readdir(join(common.repoRoot, 'receipts')).catch(() => [] as string[])).toEqual(beforeReceipts);
+    }
   });
 });
 
