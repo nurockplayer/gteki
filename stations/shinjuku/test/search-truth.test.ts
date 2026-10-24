@@ -1,8 +1,12 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { createSearchIndex } from "@gteki/search";
 import type { Poi } from "@gteki/schema";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
+import approxPositions from "../sources/s03-approx-positions.json" with { type: "json" };
 
 /**
  * Search truth for the Shinjuku (E27) POIs (issue #106): names are distinct, nothing in a name or
@@ -520,5 +524,41 @@ describe("S03 search-only line POIs (#411)", () => {
   it("finds an S03 gate by its own name (read from pois.json, not written here)", () => {
     const name = text(pois.find((p) => p.id === "poi:jreast-gate:7")!, "ja")!;
     expect(index.search(name, { limit: 10 }).map((h) => h.poi.id)).toContain("poi:jreast-gate:7");
+  });
+
+  it("S03 approximate points (#463)", () => {
+    // The ids come from the derived input, never from literals: this file is Apache-2.0 and the points are
+    // S03-derived (NOTICE 4.7). Search display only: no connector, no displayPosition, no floor, no routing.
+    const approxPois = pois.filter((p) => p.approximatePosition !== undefined);
+    expect(approxPois.length).toBe(25);
+    expect(approxPois.filter((p) => p.category === "ticket_gate").length).toBe(22);
+    expect(approxPois.filter((p) => p.category === "transfer").length).toBe(3);
+    const derivedIds = approxPositions.positions.map((r) => r.poiId);
+    expect(approxPois.map((p) => p.id).sort()).toEqual([...derivedIds].sort());
+    for (const p of approxPois) {
+      expect(isS03(p), p.id).toBe(true);
+      expect(["ticket_gate", "transfer"], p.id).toContain(p.category);
+      expect(p.connectorNodeIds, p.id).toEqual([]);
+      expect(p.displayPosition, p.id).toBeNull();
+      expect(p.floorId, p.id).toBeNull();
+      const a = p.approximatePosition!;
+      expect(a.navigationUse, p.id).toBe("NOT_FOR_ROUTING");
+      expect(a.floor, p.id).toBe("UNVERIFIED");
+      expect(a.uncertaintyM, p.id).toBeGreaterThanOrEqual(5);
+      expect(Number.isFinite(a.east) && Number.isFinite(a.north), p.id).toBe(true);
+    }
+  });
+
+  it("leaves the unpointed Keio gate and every platform name-only (#463)", () => {
+    const keio = pois.find((p) => p.id === "poi:keio-gate:1");
+    expect(keio, "poi:keio-gate:1 is in the bundle").toBeDefined();
+    expect(keio!.approximatePosition).toBeUndefined();
+    for (const p of pois.filter((x) => x.category === "platform")) expect(p.approximatePosition, p.id).toBeUndefined();
+  });
+
+  it("never gives an E27 POI a point, and keeps the points out of the graph (#463)", () => {
+    for (const p of pois.filter((x) => !isS03(x))) expect(p.approximatePosition, p.id).toBeUndefined();
+    const graphText = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "gteki/graph.json"), "utf8");
+    for (const p of pois.filter((x) => x.approximatePosition !== undefined)) expect(graphText.includes(p.id), `${p.id} appears in graph.json`).toBe(false);
   });
 });

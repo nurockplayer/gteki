@@ -35,6 +35,16 @@ const STRINGS = {
     searchOnly: "検索のみ（入口未確認）",
     shopNoRoute: "この店舗への道案内はまだありません（位置未確認）",
     shopSearchOnly: "位置未確認・道案内なし",
+    /** An approximate, search-display-only point (#463): the ± radius shown, never used for directions. */
+    approximatePosition: (m: number) => `おおよその位置（±${m} m）・経路案内には使いません`,
+    /** An approximate POI's floor is a label match, not a surveyed floor (#463). */
+    floorUnverified: (label: string) => `${label}（階は未確認）`,
+    /** A store's printed brand directory (#419): unverified, with the date its listing was checked. */
+    tenantAsOf: (date: string) => `店舗情報（${date} 時点・未確認）`,
+    /** The route ends at the store entrance; floors inside the store are not modelled. */
+    tenantFloorsNotGuided: "店内の階は案内しません",
+    /** English-only marker: a store's floor label is quoted exactly as printed, not a station floor. */
+    asPrinted: "（原文どおり）",
     noResults: "該当なし",
     route: "ルート",
     minutes: (m: number) => `約${m}分`,
@@ -217,6 +227,15 @@ const STRINGS = {
     searchOnly: "Search only (entrance not verified)",
     shopNoRoute: "No directions to this shop yet (location not verified).",
     shopSearchOnly: "Location not verified · no directions",
+    /** An approximate, search-display-only point (#463): the ± radius shown, never used for directions. */
+    approximatePosition: (m: number) => `Approximate position (±${m} m) · not used for directions`,
+    /** An approximate POI's floor is a label match, not a surveyed floor (#463). */
+    floorUnverified: (label: string) => `${label} (floor unverified)`,
+    /** A store's printed brand directory (#419): unverified, with the date its listing was checked. */
+    tenantAsOf: (date: string) => `Store directory as printed (${date}, unverified)`,
+    /** The route ends at the store entrance; floors inside the store are not modelled. */
+    tenantFloorsNotGuided: "Floors inside the store are not guided",
+    asPrinted: "(as printed)",
     noResults: "No matches",
     route: "Route",
     minutes: (m: number) => `~${m} min`,
