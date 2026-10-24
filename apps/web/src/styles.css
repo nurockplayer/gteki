@@ -313,6 +313,19 @@ button.on { border-color: var(--accent); color: var(--accent); }
   .app:has(.minimap:not([hidden])[data-collapsed="true"]) .hint { top: calc(100px + env(safe-area-inset-top)); }
   .app:is([data-mode="walk"], [data-mode="guide"]):has(.minimap:not([hidden])) .hud-line { right: calc(16px + 128px + 8px); }
 }
+/* Desktop/tablet: the 190px minimap overlaps the instruction band too. A collapsed minimap is
+   only its small reopen button, so it keeps no inset. The guide band right of the search panel
+   is narrower than ~260px until 906px viewport width, so there the instruction drops below the
+   minimap (same 190px + 120px clearance as .hint above) instead of squeezing beside it. */
+@media (min-width: 721px) {
+  .app[data-mode="walk"]:has(.minimap:not([hidden]):not([data-collapsed="true"])) .hud-line { right: calc(16px + 190px + 8px); }
+}
+@media (min-width: 906px) {
+  .app[data-mode="guide"]:has(.minimap:not([hidden]):not([data-collapsed="true"])) .hud-line { right: calc(16px + 190px + 8px); }
+}
+@media (min-width: 721px) and (max-width: 905px) {
+  .app[data-mode="guide"]:has(.minimap:not([hidden]):not([data-collapsed="true"])) .hud-line { top: calc(60px + env(safe-area-inset-top) + 190px + 120px); }
+}
 
 /* ---- JR Saikyo interstation ride demo (unsurveyed boarding location) ---- */
 .rail-launch {

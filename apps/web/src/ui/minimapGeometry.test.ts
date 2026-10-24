@@ -90,4 +90,16 @@ describe("current-floor schematic walk graph", () => {
     expect(floorWalkGraph(bundle, "upper").map((s) => s.mode)).toEqual(["escalator"]);
     expect(floorWalkGraph(bundle, "unknown")).toEqual([]);
   });
+  it("normalises degenerate polylines to the node endpoints and pins offset ends to the nodes", () => {
+    const bundle = createSyntheticBundle([
+      syntheticEdge("empty", "start", "a", { geometry: [] }),
+      syntheticEdge("single", "start", "b", { geometry: [{ x: 42, y: 42, z: null }] }),
+      syntheticEdge("offset", "a", "goal", { geometry: [{ x: 11, y: 1, z: null }, { x: 15, y: 3, z: null }, { x: 19, y: 1, z: null }] }),
+    ]);
+    expect(floorWalkGraph(bundle, "concourse").map((s) => s.points)).toEqual([
+      [{ east: 0, north: 0 }, { east: 10, north: 0 }],
+      [{ east: 0, north: 0 }, { east: 0, north: 10 }],
+      [{ east: 10, north: 0 }, { east: 15, north: 3 }, { east: 20, north: 0 }],
+    ]);
+  });
 });

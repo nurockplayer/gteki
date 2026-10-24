@@ -27,8 +27,13 @@ export function floorWalkGraph(bundle: StationBundle, floorId: string): WalkSegm
   for (const edge of bundle.edges) {
     const from = nodes.get(edge.from), to = nodes.get(edge.to);
     if (!from || !to || from.floorId !== floorId || to.floorId !== floorId || edge.mode === "elevator") continue;
-    const points = edge.geometry ?? [from.position, to.position];
-    segments.push({ mode: edge.mode, points: points.map((p) => ({ east: p.x, north: p.y })) });
+    // Same normalisation as edgePoints(): a polyline needs ≥2 points, and its ends are the nodes.
+    const raw = edge.geometry && edge.geometry.length >= 2 ? edge.geometry : [from.position, to.position];
+    const points = raw.map((p, i) => ({
+      east: i === 0 ? from.position.x : i === raw.length - 1 ? to.position.x : p.x,
+      north: i === 0 ? from.position.y : i === raw.length - 1 ? to.position.y : p.y,
+    }));
+    segments.push({ mode: edge.mode, points });
   }
   return segments;
 }

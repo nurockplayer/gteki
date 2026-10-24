@@ -73,7 +73,7 @@ describe("Minimap HUD", () => {
     expect(map.el.querySelector<SVGElement>(".minimap-arrow")!.style.display).toBe("none");
     map.setLang("ja");
     expect(map.el.textContent).toContain("階不明");
-    expect(map.el.textContent).toContain("概略路網（非實際平面）");
+    expect(map.el.textContent).toContain("概略歩行経路（実際の構内図ではありません）");
   });
 
   it("makes no DOM writes for an unchanged pose and preserves paths during movement and orientation changes", () => {

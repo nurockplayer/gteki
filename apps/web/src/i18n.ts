@@ -13,7 +13,7 @@ const STRINGS = {
     minimapCollapse: "ミニマップを折りたたむ",
     minimapShow: "ミニマップを表示",
     minimapFloorUnknown: "階不明",
-    minimapSchematic: "概略路網（非實際平面）",
+    minimapSchematic: "概略歩行経路（実際の構内図ではありません）",
     tagline: "駅を探して、歩いて下見する",
     station: "駅",
     from: "出発地",
