@@ -68,3 +68,8 @@ excluded by the brief), and the barrier-free pages have no per-station detail pa
   (2 ticket windows out of scope, 1 exit out of scope, 1 lost-property counter left to the lead).
 - Facility labels without a printed location: 12 (see page 1); positions are image-only → GAP.
 - JSON: 2 POIs, `removed` empty; `python3 -c "json.load(...)"` parses.
+
+## Lead review (2026-10-24, data-research-05)
+
+- お忘れ物取扱所（西武南口）: added as `service-ikb-seibu-003`. It is a customer-facing counter with a printed location. Total: 3 POIs.
+- Facilities shown only on the station map image (toilets, waiting room, nursing room, barrier-free toilet) stay GAPs: images are not read.
