@@ -66,7 +66,7 @@ describe("the shipped batches", () => {
     expect(escalators.length).toBe(5);
     for (const p of escalators) expect(p.tiers.dressing).toEqual(["high"]);
     const rails = plan.placements.filter((p) => "rails" in p.ids);
-    expect(rails.length).toBe(65); // every stair flight has a rail id ...
+    expect(rails.length).toBe(69); // every stair flight has a rail id (65, +4 rescued by #315's 0.1 mm riser) ...
     expect(rails.filter((p) => (p.tiers.rails ?? []).includes("high")).length).toBe(21); // ... 21 draw it (main_route)
     for (const p of rails) expect(p.tiers.rails ?? []).not.toContain("low");
   });
