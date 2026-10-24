@@ -150,3 +150,10 @@ This batch reads the HTML page at a different URL, so it uses the distinct id
     verbatim pass, but a character-level diff against the raw HTML was not possible (the site
     returns 403 to plain HTTP). If character-exactness is critical for these, a re-read through
     ego-lite would remove the remaining doubt.
+
+## Lead review (2026-10-24)
+
+- Toilets: the Metro accessibility pages list 車いす対応トイレ, 乳幼児用設備 and オストメイト as separate rows at the same place. They are now one `toilet` POI per place, named 車いす対応トイレ, with the other two as facilities in notes (operator wording). The 改札内/改札外 label stays text in notes. Result: Ikebukuro 3 toilets (was 9), Shinjuku 1 (was 3). Ids are renumbered within this unmerged batch.
+- Coin lockers: the Metro sentence 「以下の路線周辺にコインロッカーがあります」 is not copied. Notes give only the line names (e.g. 丸ノ内線・有楽町線・副都心線周辺).
+- Merge order: the Shinjuku file reuses `tokyometro-shinjuku-shops-2026-10` and `toei-shinjuku-stores-2026-10`, which are defined in #418, so it merges after #418. The Ikebukuro file reuses source ids that are already in station data.
+- Totals: Ikebukuro 31 POIs, Shinjuku 22.
