@@ -21,6 +21,9 @@ PALETTES = ("gteki_palette", "gteki_palette_blend")  # mobile swatch atlases
 ROLES = ("barriers", "transport", "stairs_ramps")  # station bake roles; keep in step with gteki_assets/contract.py ROLES
 REQUIRED = ("contract id family variant version generator params bounds_m triangles "
             "dimension_basis fidelity navigation provenance license").split()
+# Packing rounds UV1 to float32 in atlas space, which can tip a sliver triangle a few 1e-8 across its
+# neighbour's edge. Overlaps below this many atlas texels^2 are rounding, not overlapping charts.
+ATLAS_OVERLAP_TEXEL2 = 1e-3
 IDENTITY = [1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.]
 
 
@@ -421,7 +424,7 @@ class Validator:
         if not isinstance(meta.get("triangles"), int) or isinstance(meta.get("triangles"), bool) or meta["triangles"] < 0:
             self.message("FAIL", "metadata triangles must be a non-negative integer")
         materials = doc.get("materials", [])
-        atlas_entry = None
+        atlas_entry, overlap_eps = None, 1e-10
         if self.manifest is not None:
             if not isinstance(self.manifest, AtlasManifest):
                 self.manifest = AtlasManifest(self.manifest)
@@ -431,6 +434,7 @@ class Validator:
                 self.message("FAIL", "ao_atlas asset still carries occlusionTexture")
             x, y, w, h = atlas_entry["cell"]
             width, height = self.manifest.sizes[atlas_entry["kind"]]
+            overlap_eps = max(overlap_eps, ATLAS_OVERLAP_TEXEL2 / (width * height))
             owned = self.manifest.helper.asset_nodes(doc, stem)
             mesh_indices = {nodes[i]["mesh"] for i in owned if "mesh" in nodes[i]}
             uv_indices = {p["attributes"]["TEXCOORD_1"] for i in mesh_indices
@@ -578,7 +582,7 @@ class Validator:
             if shared_atlas:
                 atlas.append((node, tris))
                 return
-            overlapping = uv_overlaps(tris)
+            overlapping = uv_overlaps(tris, overlap_eps)
             if overlapping:
                 self.message("FAIL", f"node {node.get('name')!r} lightmap UV (TEXCOORD_1) has "
                              f"{len(overlapping)} overlapping triangle pairs")
@@ -671,7 +675,7 @@ class Validator:
         if shared_atlas:
             # one occlusion map for the whole asset: every visual node lays its islands out in the same
             # UV space, so they must not overlap across nodes (a mesh instanced twice overlaps itself)
-            overlapping = uv_overlaps([tri for _, tris in atlas for tri in tris])
+            overlapping = uv_overlaps([tri for _, tris in atlas for tri in tris], overlap_eps)
             if overlapping:
                 self.message("FAIL", f"visual nodes share one lightmap atlas (occlusion map) but their UV1 has "
                              f"{len(overlapping)} overlapping triangle pairs")

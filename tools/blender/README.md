@@ -43,10 +43,14 @@ Repeat `--kind` for additional groups (for example, `'escalator=gteki_ik_escalat
 overlapping globs fail. `--ids <file>` restricts processing to one id per line.
 Full cells retain every source texel; `--half` averages each 2×2 block with half-up
 rounding before packing. The manifest records atlas hashes, dimensions and cells.
-UV1 stays at least half a texel inside its cell, so bilinear sampling never reads a neighbour. Cells are aligned to
-their own size, so mip levels up to `atlases.<kind>.max_isolated_mip` (log2 of the smallest cell: 7 for 128 px)
-never mix cells; coarser levels average neighbours, which is only reached when a whole cell covers less than
-one screen pixel. A loader that must rule that out clamps the texture's max mip level to that value.
+UV1 stays at least half a texel inside its cell, so bilinear sampling of the full-size level never reads a
+neighbour. At mip level L a texel spans 2^L atlas texels and the bilinear footprint reaches half a level-L texel
+past the sample, so a level stays isolated only while the smallest UV inset is at least 2^(L-1) texels (and the
+smallest cell at least 2^L). `atlases.<kind>.max_isolated_mip` is the deepest such level, measured from the
+packed UVs (Ikebukuro nosing: 2 on full, 1 on mobile, from the bake's 2.5 and 1.25 texel island margins).
+Deeper levels can blend the outer texels of a neighbouring cell. That only happens at strong minification,
+where a cell spans a handful of screen pixels. Clamping a loader's max mip level to the value removes the blend but
+brings back minification shimmer, so treat the field as the strict bound rather than a recommended clamp.
 The client assigns the external AO map on channel 1 before merging geometry.
 `--manifest` checks atlas and GLB hashes/byte counts and reachable UV cells; without it, validation is unchanged.
 

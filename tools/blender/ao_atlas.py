@@ -186,6 +186,22 @@ def uv_in_cell(uv, cell, size):
                for c, start, span, total in zip(uv, cell[:2], cell[2:], size))
 
 
+def min_inset(uvs, cell, size):
+    """Smallest distance, in atlas texels, from any UV to its cell's edge."""
+    return min(min(c * total - start, start + span - c * total)
+               for uv in uvs for c, start, span, total in zip(uv, cell[:2], cell[2:], size))
+
+
+def isolated_mip(smallest_cell, inset):
+    """Deepest mip level whose bilinear footprint stays inside every cell. At level L a texel spans
+    2**L atlas texels and bilinear reads up to half a level-L texel past the sample point, so the
+    UV inset must reach 2**(L-1); box mips also stay inside a cell only while 2**L <= the cell."""
+    level = 0
+    while 2 ** (level + 1) <= smallest_cell and inset + 1e-6 >= 2 ** level:
+        level += 1
+    return level
+
+
 def view_bytes(doc, binary, index):
     view = doc["bufferViews"][index]
     start, size = view.get("byteOffset", 0), view["byteLength"]
@@ -290,7 +306,7 @@ def asset_uv_accessors(doc, asset_id):
 
 def rewrite_uvs(doc, binary, asset_id, cell, size):
     targets = asset_uv_accessors(doc, asset_id)
-    ranges, rewrites = [], []
+    ranges, rewrites, inset = [], [], math.inf
     for i in sorted(targets):
         accessor = doc["accessors"][i]
         if "sparse" in accessor:
@@ -316,6 +332,7 @@ def rewrite_uvs(doc, binary, asset_id, cell, size):
         if not all(uv_in_cell(uv, cell, size) for uv in values):
             raise ValueError("TEXCOORD_1 outside cell: requires a half-texel inset")
         rewrites.append((accessor, offsets, values))
+        inset = min(inset, min_inset(values, cell, size))
     # Accessors may use interleaved storage, but may never alias UV bytes.
     components = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4, "MAT2": 4, "MAT3": 9, "MAT4": 16}
     sizes = {5120: 1, 5121: 1, 5122: 2, 5123: 2, 5125: 4, 5126: 4}
@@ -363,6 +380,7 @@ def rewrite_uvs(doc, binary, asset_id, cell, size):
         for key, fun in (("min", min), ("max", max)):
             if key in accessor:
                 accessor[key] = [fun(v[axis] for v in values) for axis in (0, 1)]
+    return inset
 
 
 def remove_resources(doc, removed, key):
@@ -391,11 +409,13 @@ def compact_binary(doc, binary):
     return bytes(packed)
 
 
-def rewrite_glb(data, asset_id, cell, size):
+def rewrite_glb(data, asset_id, cell, size, insets=None):
     doc, binary = read_glb(data)
     textures, images, samplers, _, _ = ao_resources(doc, binary)
     binary = bytearray(binary)
-    rewrite_uvs(doc, binary, asset_id, cell, size)
+    inset = rewrite_uvs(doc, binary, asset_id, cell, size)
+    if insets is not None:
+        insets[asset_id] = inset
     for material in doc.get("materials", []):
         material.pop("occlusionTexture", None)
     texmap = remove_resources(doc, textures, "textures")
@@ -518,19 +538,24 @@ def build(in_dir, out_dir, kinds, half=False, ids=None):
         atlas_files[path] = raw
         provenance = (f"derived: packed from the per-id Cycles AO bakes of {manifest.get('catalog', '')}/{manifest.get('kit_version', '')} "
                       "by tools/blender/ao_atlas.py; GTEki contributors")
-        # aligned cells stay separate through mip level log2(smallest cell); a coarser level averages
-        # neighbouring cells, so a loader that must never mix them clamps its max mip level here
-        max_isolated_mip = min(side for side, _ in maps.values()).bit_length() - 1
         manifest["atlases"][kind] = dict(path=path, sha256=digest(raw), size_px=list(size), bytes=len(raw),
-                                         max_isolated_mip=max_isolated_mip, provenance=provenance)
+                                         provenance=provenance)  # max_isolated_mip follows the preflight
         stats[kind] = dict(size_px=list(size), fill_ratio=sum(side * side for side, _ in maps.values()) / (width * height),
                            bytes=len(raw), ids=len(maps))
     # Preflight every selected asset before creating output, including later assets.
     # Discard each result to keep peak memory bounded by one GLB rather than the build.
+    insets = {}
     for asset in assets:
         if asset["id"] in selected:
             cell, size = placements[asset["id"]]
-            rewrite_glb((in_dir / asset["file"]).read_bytes(), asset["id"], cell, size)
+            rewrite_glb((in_dir / asset["file"]).read_bytes(), asset["id"], cell, size, insets)
+    for kind, maps in groups.items():
+        # deepest mip whose bilinear footprint stays in every cell of this kind (see isolated_mip);
+        # a loader that must never mix cells clamps its max mip level here
+        inset = min(insets[key] for key in maps)
+        level = isolated_mip(min(side for side, _ in maps.values()), inset)
+        manifest["atlases"][kind]["max_isolated_mip"] = level
+        stats[kind].update(min_inset_texels=inset, max_isolated_mip=level)
     (out_dir / "glb").mkdir(parents=True, exist_ok=True)
     (out_dir / "atlas").mkdir(exist_ok=True)
     for path, raw in atlas_files.items():
