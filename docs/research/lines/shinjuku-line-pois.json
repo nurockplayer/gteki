@@ -1,0 +1,2091 @@
+{
+  "schema": "gteki.lines-pois/0.1-draft",
+  "stationId": "shinjuku",
+  "generatedAt": "2026-10-24",
+  "generatedBy": "WP1 extraction (Haiku worker) + lead review (JR platforms added under R-1; one hallway-linked entity held)",
+  "sources": [
+    {
+      "id": "tokyo-s03-zip",
+      "title": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報",
+      "publisher": "東京都都市整備局",
+      "url": "https://www.toshiseibi.metro.tokyo.lg.jp/kotsu_butsuryu/kotsuseisaku/kotsu_suishin/shinjuku_shisetsu",
+      "license": "CC BY 4.0",
+      "rights": "REUSABLE_WITH_CONDITIONS",
+      "attribution": "出典：東京都都市整備局「新宿駅周辺の施設情報等」",
+      "modified": true,
+      "changeNotice": "GTEki が名称のみを抽出し、検索用に再構成（位置・形状は使用していません）",
+      "retrievedAt": "2026-10-21T00:13:55.097Z",
+      "datasetDate": "2020-03",
+      "sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+      "decision": {
+        "refs": [
+          "Owner Q2/Q3 #39 comment 6324726321",
+          "gteki-1b R-1/R-2 2026-10-24"
+        ]
+      },
+      "usage": "facts-only names; no geometry, no position (CRS UNKNOWN)",
+      "downloadUrl": "https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/zip_kiban_shinjuku_terminal_pdf_shisetsu_root",
+      "acquisitionReceipt": "docs/gis/acquisitions/tokyo-s03-zip.json"
+    }
+  ],
+  "pois": [
+    {
+      "id": "poi:jreast-keio-transfer:1",
+      "category": "transfer",
+      "operatorIds": [
+        "jreast",
+        "keio"
+      ],
+      "line": "keio",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "JR /京王線連絡口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level B1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: B1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: B1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28993980",
+        "levels": [
+          "B1F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-odakyu-transfer:1",
+      "category": "transfer",
+      "operatorIds": [
+        "jreast",
+        "odakyu"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "JR /小田急線　中央地下連絡口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level B1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: B1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: B1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 29087940",
+        "levels": [
+          "B1F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-gate:1",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "JR 中央西口（出口専用）"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level B1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: B1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: B1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28993986",
+        "levels": [
+          "B1F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-gate:2",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "JR 新南口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 2F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 2F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 2F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 29008228",
+        "levels": [
+          "2F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-gate:3",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "JR 新南口 ミライナタワー改札口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 2F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 2F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 2F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 29008230",
+        "levels": [
+          "2F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-gate:4",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "JR 新南口　甲州街道口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 2F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 2F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 2F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 29008229",
+        "levels": [
+          "2F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-gate:5",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "JR中央東口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level B1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: B1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: B1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28993977",
+        "levels": [
+          "B1F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-gate:6",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "JR中央西口（京王口）"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level B1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: B1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: B1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28993978",
+        "levels": [
+          "B1F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-gate:7",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "JR南口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 2F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 2F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 2F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 29008227",
+        "levels": [
+          "2F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-gate:8",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "JR東南口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 2F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 2F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 2F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 29008231",
+        "levels": [
+          "2F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-gate:9",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "JR東口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level B1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: B1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: B1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28993976",
+        "levels": [
+          "B1F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-gate:10",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "JR西口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level B1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: B1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: B1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28993975",
+        "levels": [
+          "B1F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:tokyometro-gate:1",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "tokyometro"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "丸の内線 東口改札口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level B2F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: B2F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: B2F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28993447",
+        "levels": [
+          "B2F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:tokyometro-gate:2",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "tokyometro"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "丸の内線 西口改札口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level B2F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: B2F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: B2F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28993451",
+        "levels": [
+          "B2F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:keio-gate:1",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "keio"
+      ],
+      "line": "keio-new",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "京王新線　京王新線口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level B1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: B1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: B1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        },
+        {
+          "lang": "en",
+          "text": "S03 has two entities with this name"
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28993983",
+        "levels": [
+          "B1F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:keio-gate:2",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "keio"
+      ],
+      "line": "keio-new",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "京王新線　京王新線口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level B1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: B1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: B1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        },
+        {
+          "lang": "en",
+          "text": "S03 has two entities with this name"
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28993984",
+        "levels": [
+          "B1F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:keio-gate:3",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "keio"
+      ],
+      "line": "keio-new",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "京王新線　新都心口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level B1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: B1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: B1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28993988",
+        "levels": [
+          "B1F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:keio-gate:4",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "keio"
+      ],
+      "line": "keio",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "京王線　ルミネ口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level B1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: B1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: B1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 29070276",
+        "levels": [
+          "B1F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:keio-gate:5",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "keio"
+      ],
+      "line": "keio",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "京王線　京王百貨店口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level B1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: B1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: B1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28993979",
+        "levels": [
+          "B1F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:keio-gate:6",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "keio"
+      ],
+      "line": "keio",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "京王線　京王西口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level B1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: B1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: B1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28993981",
+        "levels": [
+          "B1F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:keio-gate:7",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "keio"
+      ],
+      "line": "keio",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "京王線広場口（出口専用）"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level B1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: B1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: B1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28994015",
+        "levels": [
+          "B1F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:keio-gate:8",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "keio"
+      ],
+      "line": "keio",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "京王線臨時口（出口専用）"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level B1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: B1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: B1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28994016",
+        "levels": [
+          "B1F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:odakyu-platform:2",
+      "category": "platform",
+      "operatorIds": [
+        "odakyu"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "小田急線　2　特急ロマンスカー"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 29007679",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    },
+    {
+      "id": "poi:odakyu-platform:3",
+      "category": "platform",
+      "operatorIds": [
+        "odakyu"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "小田急線　3　特急ロマンスカー"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 29007678",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    },
+    {
+      "id": "poi:odakyu-platform:4",
+      "category": "platform",
+      "operatorIds": [
+        "odakyu"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "小田急線　4　快速急行、急行、準急"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 29007677",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    },
+    {
+      "id": "poi:odakyu-platform:5",
+      "category": "platform",
+      "operatorIds": [
+        "odakyu"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "小田急線　5　快速急行、急行、準急"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 29007676",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    },
+    {
+      "id": "poi:odakyu-platform:6",
+      "category": "platform",
+      "operatorIds": [
+        "odakyu"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "小田急線　6　降車ホーム"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 29007675",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-odakyu-transfer:2",
+      "category": "transfer",
+      "operatorIds": [
+        "jreast",
+        "odakyu"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "小田急線　南口JR連絡口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 2F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 2F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 2F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 29008323",
+        "levels": [
+          "2F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:odakyu-gate:1",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "odakyu"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "小田急線　南口改札口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 2F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 2F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 2F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 29008226",
+        "levels": [
+          "2F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:odakyu-gate:2",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "odakyu"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "小田急線　西口地上改札口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 29007888",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:odakyu-gate:3",
+      "category": "ticket_gate",
+      "operatorIds": [
+        "odakyu"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "小田急線　西口地下改札口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level B1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: B1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: B1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28993982",
+        "levels": [
+          "B1F"
+        ],
+        "linkedFeatureKinds": [
+          "barrier:gate"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-platform:10",
+      "category": "platform",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "10　中央本線特急"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28994860",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-platform:11",
+      "category": "platform",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "11　中央本線・中央線（快速）〈高尾方面〉"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28994858",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-platform:12",
+      "category": "platform",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "12　中央本線・中央線（快速）〈高尾方面〉"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28994859",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-platform:13",
+      "category": "platform",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "13　中央線・総武線（各駅停車） 〈御茶ノ水・千葉方面〉"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28994857",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-platform:14",
+      "category": "platform",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "14　山手線内回り〈渋谷・品川方面〉"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28994864",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-platform:15",
+      "category": "platform",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "15　山手線外回り〈池袋・上野方面〉"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28994856",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-platform:16",
+      "category": "platform",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "16　中央線・総武線（各駅停車） 〈三鷹方面〉"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28994833",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-platform:1",
+      "category": "platform",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "1　埼京線　湘南新宿ライン〈東海道本線・ 横須賀線・ 東北本線（宇都宮線）・高崎線方面〉"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28994855",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-platform:2",
+      "category": "platform",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "2　埼京線　湘南新宿ライン〈東海道本線・ 横須賀線・ 東北本線（宇都宮線）・高崎線方面〉"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28994854",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-platform:3",
+      "category": "platform",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "3　埼京線　湘南新宿ライン〈東海道本線・ 横須賀線・ 東北本線（宇都宮線）・高崎線方面〉"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28994853",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-platform:4",
+      "category": "platform",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "4　埼京線　湘南新宿ライン〈東海道本線・ 横須賀線・ 東北本線（宇都宮線）・高崎線方面〉"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28994852",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-platform:7",
+      "category": "platform",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "7　中央本線・中央線（快速）〈東京方面〉"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28994862",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-platform:8",
+      "category": "platform",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "8　中央本線・中央線（快速）〈東京方面〉"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28994863",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    },
+    {
+      "id": "poi:jreast-platform:9",
+      "category": "platform",
+      "operatorIds": [
+        "jreast"
+      ],
+      "names": [
+        {
+          "lang": "ja",
+          "text": "9　中央本線特急"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyo-s03-zip"
+        ],
+        "method": "facts-only S03 entity name (Q2/Q3, R-1, R-2), UNVERIFIED, AREA_ONLY (S03 level 1F)",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "2020年3月時点のデータです。現在は変更されている場合があります。S03 の階層ラベル: 1F（駅の階とは対応づけていません）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "As of March 2020 data; may have changed. S03 level label: 1F (not matched to station floors). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ],
+      "s03": {
+        "entityId": "$id 28994861",
+        "levels": [
+          "1F"
+        ],
+        "linkedFeatureKinds": [
+          "area:section"
+        ]
+      }
+    }
+  ],
+  "held": [
+    {
+      "entityId": "Unit B1F-551",
+      "reason": "commercial unit entry; duplicate of a gate name"
+    },
+    {
+      "entityId": "$id 29010547",
+      "reason": "excluded: department store"
+    },
+    {
+      "entityId": "Unit B1F-70",
+      "reason": "excluded: ticket office (きっぷ売場・定期券売場)"
+    },
+    {
+      "entityId": "$id 28993989",
+      "reason": "Toei gate: E27 vs Shinjuku-nishiguchi (E01) assignment unknown; must not be merged into E27 by name"
+    },
+    {
+      "entityId": "Unit B1F-133",
+      "reason": "excluded: shop (Unit entry)"
+    },
+    {
+      "entityId": "Unit B1F-136",
+      "reason": "excluded: shop (Unit entry)"
+    },
+    {
+      "entityId": "Unit B1F-134",
+      "reason": "excluded: ticket office (Unit entry)"
+    },
+    {
+      "entityId": "$id 29010551",
+      "reason": "excluded: department store"
+    },
+    {
+      "entityId": "$id 28993353, $id 28993352",
+      "reason": "station entity, not a gate or platform"
+    },
+    {
+      "entityId": "$id 28993990",
+      "reason": "Toei gate: E27 vs Shinjuku-nishiguchi (E01) assignment unknown; must not be merged into E27 by name"
+    },
+    {
+      "entityId": "$id 28993091",
+      "reason": "Toei gate: E27 vs Shinjuku-nishiguchi (E01) assignment unknown; must not be merged into E27 by name"
+    },
+    {
+      "entityId": "$id 28993090",
+      "reason": "Toei gate: E27 vs Shinjuku-nishiguchi (E01) assignment unknown; must not be merged into E27 by name"
+    },
+    {
+      "entityId": "$id 28993987",
+      "reason": "Toei gate: E27 vs Shinjuku-nishiguchi (E01) assignment unknown; must not be merged into E27 by name"
+    },
+    {
+      "entityId": "$id 29062555",
+      "reason": "linked S03 feature is a hallway point, not a barrier gate; kind unclear (lead review)"
+    }
+  ]
+}
