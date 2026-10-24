@@ -226,6 +226,7 @@ class AtlasManifest:
         spec = importlib.util.spec_from_file_location("gteki_ao_atlas", Path(__file__).with_name("ao_atlas.py"))
         helper = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(helper)
+        self.helper = helper
         doc = json.loads(self.path.read_text())
         self.assets, self.sizes = {}, {}
         atlases = doc.get("atlases", {})
@@ -266,10 +267,15 @@ class AtlasManifest:
                     raise ValueError(f"atlas {kind}: cells overlap ({other}, {key})")
             cells.setdefault(kind, []).append((key, cell))
 
-    def entry(self, asset_id):
+    def entry(self, asset_id, data):
         if asset_id not in self.assets:
             raise ValueError(f"GLB id {asset_id!r} missing from manifest")
-        return self.assets[asset_id].get("ao_atlas")
+        asset = self.assets[asset_id]
+        if self.helper.digest(data) != asset["sha256"]:
+            raise ValueError(f"{asset_id}: GLB sha256 mismatch")
+        if len(data) != asset["bytes"]:
+            raise ValueError(f"{asset_id}: GLB bytes mismatch")
+        return asset.get("ao_atlas")
 
 
 class Validator:
@@ -419,13 +425,16 @@ class Validator:
         if self.manifest is not None:
             if not isinstance(self.manifest, AtlasManifest):
                 self.manifest = AtlasManifest(self.manifest)
-            atlas_entry = self.manifest.entry(stem)
+            atlas_entry = self.manifest.entry(stem, self.data)
         if atlas_entry is not None:
             if any("occlusionTexture" in material for material in materials):
                 self.message("FAIL", "ao_atlas asset still carries occlusionTexture")
             x, y, w, h = atlas_entry["cell"]
             width, height = self.manifest.sizes[atlas_entry["kind"]]
-            uv_indices = {p["attributes"]["TEXCOORD_1"] for mesh in meshes for p in mesh.get("primitives", [])
+            owned = self.manifest.helper.asset_nodes(doc, stem)
+            mesh_indices = {nodes[i]["mesh"] for i in owned if "mesh" in nodes[i]}
+            uv_indices = {p["attributes"]["TEXCOORD_1"] for i in mesh_indices
+                          for p in self.index(meshes, i).get("primitives", [])
                           if "TEXCOORD_1" in p.get("attributes", {})}
             for i in uv_indices:
                 accessor = self.index(accessors, i)
@@ -436,10 +445,9 @@ class Validator:
                                 or (divisor != 1 and accessor.get("normalized")))):
                     self.message("FAIL", "ao_atlas TEXCOORD_1 must be dense floats or normalized unsigned bytes/shorts")
                     continue
-                if any(not math.isfinite(u) or not math.isfinite(v)
-                       or not x - 0.5 <= u / divisor * width <= x + w + 0.5
-                       or not y - 0.5 <= v / divisor * height <= y + h + 0.5 for u, v in uv):
-                    self.message("FAIL", "ao_atlas TEXCOORD_1 outside cell (half-texel tolerance)")
+                if any(not self.manifest.helper.uv_in_cell((u / divisor, v / divisor),
+                                                          atlas_entry["cell"], (width, height)) for u, v in uv):
+                    self.message("FAIL", "ao_atlas TEXCOORD_1 outside cell (requires a half-texel inset)")
         self.result.update(nodes=len(nodes), materials=len(materials), images=len(doc.get("images", [])))
         for material in materials:
             if not material.get("name", "").startswith("gteki_"):
@@ -546,8 +554,8 @@ class Validator:
                 if not all(math.isfinite(c) for p in uv for c in p):
                     self.message("FAIL", f"mesh {node['mesh']} TEXCOORD_1 contains NaN/Inf")
                     continue
-                # External cells already enforce their half-texel tolerance, including
-                # cells on an atlas edge. Keep the original unit-square rule otherwise.
+                # External cells already enforce a half-texel inset.
+                # Keep the original unit-square rule otherwise.
                 if atlas_entry is None and any(c < -1e-6 or c > 1 + 1e-6 for p in uv for c in p):
                     self.message("FAIL", f"mesh {node['mesh']} lightmap UV (TEXCOORD_1) leaves the unit square")
                     continue

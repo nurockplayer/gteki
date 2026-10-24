@@ -43,8 +43,9 @@ Repeat `--kind` for additional groups (for example, `'escalator=gteki_ik_escalat
 overlapping globs fail. `--ids <file>` restricts processing to one id per line.
 Full cells retain every source texel; `--half` averages each 2×2 block with half-up
 rounding before packing. The manifest records atlas hashes, dimensions and cells.
+UV1 stays at least half a texel inside its cell, and coarse mips blend only within a cell, because cells are aligned to their own size.
 The client assigns the external AO map on channel 1 before merging geometry.
-`--manifest` checks the atlas and UV cells; without it, validation is unchanged.
+`--manifest` checks atlas and GLB hashes/byte counts and reachable UV cells; without it, validation is unchanged.
 
 Texture budget (`docs/assets/texture-budget.md`): `build.sh validate` also runs
 `texture_budget.py assets/library --check tools/blender/catalog/budget.json`. For a before/after report, run

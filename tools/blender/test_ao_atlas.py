@@ -25,7 +25,7 @@ PIXELS = bytes((0, 2, 30, 40, 1, 3, 70, 80, 90, 100, 110, 120, 130, 140, 150, 16
 UVS = ((0.125, 0.125), (0.875, 0.125), (0.125, 0.875))
 
 
-def fixture(key="n_a", interleaved=False):
+def fixture(key="n_a", interleaved=False, uvs=UVS):
     binary, views = bytearray(), []
 
     def add(raw, **extra):
@@ -35,12 +35,12 @@ def fixture(key="n_a", interleaved=False):
         return len(views) - 1
 
     position = add(struct.pack("<9f", 0, 0, 0, 1, 0, 0, 0, 0, 1))
-    uv0 = add(struct.pack("<6f", *(c for uv in UVS for c in uv)))
+    uv0 = add(struct.pack("<6f", *(c for uv in uvs for c in uv)))
     ao = add(atlas.write_png(4, 4, PIXELS))
     if interleaved:
-        uv1 = add(b"".join(struct.pack("<3f", u, v, 123) for u, v in UVS), byteStride=12)
+        uv1 = add(b"".join(struct.pack("<3f", u, v, 123) for u, v in uvs), byteStride=12)
     else:
-        uv1 = add(struct.pack("<6f", *(c for uv in UVS for c in uv)))
+        uv1 = add(struct.pack("<6f", *(c for uv in uvs for c in uv)))
     normal = add(atlas.write_png(2, 2, bytes([128, 129, 130, 131])))
     albedo = add(atlas.write_png(2, 2, bytes([40, 41, 42, 43])))
     add(b"unreferenced-orphan-data")
@@ -60,7 +60,9 @@ def fixture(key="n_a", interleaved=False):
                        dict(primitives=[dict(attributes=dict(POSITION=0))])],
                accessors=[dict(bufferView=position, componentType=5126, count=3, type="VEC3", min=[0, 0, 0], max=[1, 0, 1]),
                           dict(bufferView=uv0, componentType=5126, count=3, type="VEC2"),
-                          dict(bufferView=uv1, componentType=5126, count=3, type="VEC2", min=[.125, .125], max=[.875, .875])],
+                          dict(bufferView=uv1, componentType=5126, count=3, type="VEC2",
+                               min=[min(uv[i] for uv in uvs) for i in (0, 1)],
+                               max=[max(uv[i] for uv in uvs) for i in (0, 1)])],
                bufferViews=views, buffers=[dict(byteLength=len(binary))])
     return doc, bytes(binary)
 
@@ -72,11 +74,11 @@ def read_uvs(doc, binary):
     return [struct.unpack_from("<2f", binary, start + i * v.get("byteStride", 8)) for i in range(a["count"])]
 
 
-def input_library(root, sorted_keys=False):
+def input_library(root, sorted_keys=False, uvs=UVS):
     (root / "glb").mkdir(parents=True)
     assets = []
     for key in ("n_a", "n_b", "other"):
-        doc, binary = fixture(key)
+        doc, binary = fixture(key, uvs=uvs)
         data = atlas.encode_glb(doc, binary)
         file = f"glb/{key}.glb"
         (root / file).write_bytes(data)
@@ -137,12 +139,130 @@ class AtlasTests(unittest.TestCase):
         self.assertEqual((side, pixels), (2, bytes((2, 55, 115, 135))))
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            input_library(root / "in")
+            input_library(root / "in", uvs=((.25, .25), (.75, .25), (.25, .75)))
             atlas.build(root / "in", root / "out", {"nosing": "n_*"}, half=True)
             m = json.loads((root / "out/manifest.json").read_text())
             self.assertEqual(m["assets"][0]["ao_atlas"]["cell"][2:], [2, 2])
             w, _, got = atlas.read_png((root / "out/atlas/nosing_ao.png").read_bytes())
             self.assertEqual(got[:2] + got[w:w + 2], pixels)
+
+    def assert_build_refuses(self, mutate, message, half=False):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            input_library(root / "in")
+            path = root / "in/glb/n_b.glb"  # A later asset must fail before any output is written.
+            doc, binary = atlas.read_glb(path.read_bytes())
+            mutate(doc)
+            path.write_bytes(atlas.encode_glb(doc, binary))
+            before = {p.relative_to(root / "in"): p.read_bytes() for p in (root / "in").rglob("*") if p.is_file()}
+            (root / "out").mkdir()
+            with self.assertRaisesRegex(ValueError, message):
+                atlas.build(root / "in", root / "out", {"nosing": "n_*"}, half=half)
+            self.assertEqual(list((root / "out").iterdir()), [])
+            self.assertEqual(before, {p.relative_to(root / "in"): p.read_bytes()
+                                      for p in (root / "in").rglob("*") if p.is_file()})
+
+    def test_non_ao_uv1_sampling_refused_before_writing(self):
+        for slot in ("normalTexture", "baseColorTexture", "metallicRoughnessTexture", "emissiveTexture", "clearcoatTexture"):
+            for transformed in (False, True):
+                with self.subTest(slot=slot, transformed=transformed):
+                    def mutate(doc):
+                        info = dict(index=0, texCoord=0 if transformed else 1)
+                        if transformed:
+                            info["extensions"] = dict(KHR_texture_transform=dict(texCoord=1))
+                        material = doc["materials"][0]
+                        if slot in ("baseColorTexture", "metallicRoughnessTexture"):
+                            material["pbrMetallicRoughness"][slot] = info
+                        elif slot == "clearcoatTexture":
+                            material["extensions"] = dict(KHR_materials_clearcoat={slot: info})
+                        else:
+                            material[slot] = info
+                    self.assert_build_refuses(mutate, "non-AO texture.*texCoord 1")
+
+    def test_texture_transform_override_to_uv0_is_preserved(self):
+        doc, binary = fixture()
+        info = doc["materials"][0]["normalTexture"]
+        info.update(texCoord=1, extensions=dict(KHR_texture_transform=dict(texCoord=0)))
+        doc["materials"][0]["extras"] = dict(dummyTexture=dict(index=0, texCoord=1))
+        new, _ = atlas.read_glb(atlas.rewrite_glb(atlas.encode_glb(doc, binary), "n_a", [0, 0, 4, 4], (512, 4)))
+        self.assertEqual(new["materials"][0]["normalTexture"], info)
+
+    def test_sparse_aliases_refused_before_rewriting_or_writing(self):
+        for part in ("indices", "values"):
+            for dense in (False, True):
+                with self.subTest(part=part, dense=dense):
+                    def mutate(doc):
+                        uv_view = doc["accessors"][2]["bufferView"]
+                        other = doc["accessors"][1]["bufferView"]
+                        sparse = dict(count=1, indices=dict(bufferView=other, componentType=5121),
+                                      values=dict(bufferView=other))
+                        # A distinct view aliases the second, strided UV1 element.
+                        view = copy.deepcopy(doc["bufferViews"][uv_view])
+                        view.update(byteOffset=view["byteOffset"] + view.get("byteStride", 8), byteLength=8)
+                        view.pop("byteStride", None)
+                        doc["bufferViews"].append(view)
+                        sparse[part].update(bufferView=len(doc["bufferViews"]) - 1)
+                        accessor = dict(componentType=5126, type="VEC2", count=3, sparse=sparse)
+                        if dense:
+                            accessor["bufferView"] = other
+                        doc["accessors"].append(accessor)
+                    doc, binary = fixture(interleaved=True)
+                    mutate(doc)
+                    raw = bytearray(binary)
+                    before_doc, before_bin = copy.deepcopy(doc), bytes(raw)
+                    with self.assertRaisesRegex(ValueError, "bytes alias"):
+                        atlas.rewrite_uvs(doc, raw, "n_a", [4, 4, 4, 4], (512, 8))
+                    self.assertEqual((doc, bytes(raw)), (before_doc, before_bin))
+                    self.assert_build_refuses(mutate, "bytes alias")
+
+    def test_nonoverlapping_interleaved_and_sparse_storage_preserved(self):
+        doc, binary = fixture(interleaved=True)
+        view = doc["accessors"][2]["bufferView"]
+        # The dense accessor lives only in the interleaved padding.
+        dense = dict(bufferView=view, byteOffset=8, componentType=5126, count=3, type="SCALAR")
+        other = doc["accessors"][1]["bufferView"]
+        sparse = dict(componentType=5126, count=3, type="VEC2", sparse=dict(
+            count=1, indices=dict(bufferView=other, componentType=5121), values=dict(bufferView=other, byteOffset=8)))
+        doc["accessors"].extend([dense, sparse])
+        raw = bytearray(binary)
+        atlas.rewrite_uvs(doc, raw, "n_a", [4, 4, 4, 4], (512, 8))
+        start = doc["bufferViews"][view]["byteOffset"]
+        for offset in (start + 8, start + 20, start + 32):
+            self.assertEqual(raw[offset:offset + 4], binary[offset:offset + 4])
+        self.assertEqual(atlas.view_bytes(doc, raw, other), atlas.view_bytes(doc, binary, other))
+
+    def test_packer_requires_half_texel_inset_including_half(self):
+        for axis in (0, 1):
+            for value in (0, .124, .876, 1):
+                with self.subTest(axis=axis, value=value):
+                    doc, binary = fixture()
+                    raw = bytearray(binary)
+                    start = doc["bufferViews"][doc["accessors"][2]["bufferView"]]["byteOffset"]
+                    struct.pack_into("<f", raw, start + axis * 4, value)
+                    with self.assertRaisesRegex(ValueError, "half-texel inset"):
+                        atlas.rewrite_glb(atlas.encode_glb(doc, raw), "n_a", [4, 4, 4, 4], (512, 8))
+        # Default fixture has a 0.5 px full-size inset, only 0.25 px after --half.
+        self.assert_build_refuses(lambda d: None, "half-texel inset", half=True)
+
+    def test_refuse_chained_atlases_even_on_unselected_assets(self):
+        for field in ("atlases", "ao_atlas"):
+            with self.subTest(field=field), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                manifest = input_library(root / "in")
+                if field == "atlases":
+                    manifest[field] = {}
+                else:
+                    manifest["assets"][-1][field] = dict(kind="old", cell=[0, 0, 4, 4])
+                (root / "in/manifest.json").write_text(json.dumps(manifest))
+                with self.assertRaisesRegex(ValueError, "input is already atlas-packed; run on an original build"):
+                    atlas.build(root / "in", root / "out", {"nosing": "n_*"})
+                self.assertFalse((root / "out").exists())
+
+    def test_readme_sampling_guarantee(self):
+        readme = Path(atlas.__file__).with_name("README.md").read_text()
+        self.assertIn("UV1 stays at least half a texel inside its cell", readme)
+        self.assertIn("coarse mips blend only within a cell", readme)
+        self.assertIn("cells are aligned to their own size", readme)
 
     def test_non_float_sparse_and_shared_failures(self):
         for change, message in (
@@ -276,7 +396,9 @@ class ManifestValidatorTests(unittest.TestCase):
         self.manifest = json.loads(self.path.read_text())
         self.data = (self.root / "out/glb/n_a.glb").read_bytes()
 
-    def check(self, data=None):
+    def check(self, data=None, match_integrity=True):
+        if data is not None and match_integrity:
+            self.manifest["assets"][0].update(sha256=atlas.digest(data), bytes=len(data))
         self.path.write_text(json.dumps(self.manifest))
         return validator.Validator("n_a.glb", self.data if data is None else data, require_occlusion=True, manifest=self.path).check()
 
@@ -299,19 +421,64 @@ class ManifestValidatorTests(unittest.TestCase):
         self.manifest["assets"][1]["ao_atlas"]["cell"] = self.manifest["assets"][0]["ao_atlas"]["cell"]
         self.assert_failure(self.check(), "overlap")
 
-    def test_uv_outside_cell_and_half_texel_tolerance(self):
+    def test_uv_half_texel_inset_all_edges_and_float_tolerance(self):
         doc, binary = atlas.read_glb(self.data)
-        data = bytearray(binary)
         view = doc["bufferViews"][doc["accessors"][2]["bufferView"]]
-        width = self.manifest["atlases"]["nosing"]["size_px"][0]
-        struct.pack_into("<f", data, view["byteOffset"], (4 + .49) / width)
-        self.assertEqual(self.check(atlas.encode_glb(doc, data))["status"], "PASS")
-        struct.pack_into("<f", data, view["byteOffset"], (4 + .75) / width)
-        self.assert_failure(self.check(atlas.encode_glb(doc, data)), "outside cell")
-        struct.pack_into("<f", data, view["byteOffset"], -.49 / width)
-        self.assertEqual(self.check(atlas.encode_glb(doc, data))["status"], "PASS")
-        struct.pack_into("<f", data, view["byteOffset"], -.75 / width)
-        self.assert_failure(self.check(atlas.encode_glb(doc, data)), "outside cell")
+        sizes = self.manifest["atlases"]["nosing"]["size_px"]
+        for axis in (0, 1):
+            for texel, status in ((-.49, "FAIL"), (0, "FAIL"), (.49, "FAIL"), (.5 - 5e-7, "PASS"),
+                                  (.5, "PASS"), (3.5, "PASS"), (3.51, "FAIL"), (4, "FAIL"), (4.49, "FAIL")):
+                with self.subTest(axis=axis, texel=texel):
+                    data = bytearray(binary)
+                    # Choose the corner already on this edge to avoid collapsing the triangle.
+                    corner = (1 if axis == 0 else 2) if texel > 2 else 0
+                    struct.pack_into("<f", data, view["byteOffset"] + corner * 8 + axis * 4, texel / sizes[axis])
+                    result = self.check(atlas.encode_glb(doc, data))
+                    if status == "PASS":
+                        self.assertEqual(result["status"], status, result)
+                    else:
+                        self.assert_failure(result, "outside cell")
+
+    def test_manifest_glb_integrity_for_processed_and_unprocessed(self):
+        for index in (0, 2):
+            for field in ("sha256", "bytes"):
+                with self.subTest(index=index, field=field):
+                    asset = self.manifest["assets"][index]
+                    old = asset[field]
+                    asset[field] = "0" * 64 if field == "sha256" else old + 1
+                    self.path.write_text(json.dumps(self.manifest))
+                    data = (self.root / "out" / asset["file"]).read_bytes()
+                    self.assert_failure(validator.Validator(asset["file"], data, require_occlusion=True,
+                                                            manifest=self.path).check(), f"GLB {field} mismatch")
+                    asset[field] = old
+        doc, binary = atlas.read_glb(self.data)
+        binary = bytearray(binary)
+        view = doc["bufferViews"][doc["accessors"][2]["bufferView"]]
+        struct.pack_into("<f", binary, view["byteOffset"], .75 / 512)
+        changed = atlas.encode_glb(doc, binary)
+        self.assertEqual(len(changed), len(self.data))
+        self.assert_failure(self.check(changed, match_integrity=False), "GLB sha256 mismatch")
+
+    def test_atlas_uv_checks_only_active_scene_reachable_meshes(self):
+        for disconnected_node in (False, True):
+            with self.subTest(disconnected_node=disconnected_node):
+                doc, binary = atlas.read_glb(self.data)
+                # UV0 is untouched per-id UV space, outside this asset's small atlas cell.
+                doc["accessors"].append(copy.deepcopy(doc["accessors"][1]))
+                mesh = copy.deepcopy(doc["meshes"][0])
+                mesh["primitives"][0]["attributes"]["TEXCOORD_1"] = len(doc["accessors"]) - 1
+                doc["meshes"].append(mesh)
+                if disconnected_node:
+                    doc["nodes"].append(dict(name="unused", mesh=len(doc["meshes"]) - 1))
+                doc["scenes"].append(copy.deepcopy(doc["scenes"][0]))
+                doc["scene"] = 1
+                data = atlas.encode_glb(doc, binary)
+                self.assertEqual(self.check(data)["status"], "PASS")
+                # Connecting that same mesh makes the out-of-cell UVs an error.
+                if not disconnected_node:
+                    doc["nodes"].append(dict(name="unused", mesh=len(doc["meshes"]) - 1))
+                doc["nodes"][0]["children"].append(len(doc["nodes"]) - 1)
+                self.assert_failure(self.check(atlas.encode_glb(doc, binary)), "outside cell")
 
     def test_leftover_occlusion_texture(self):
         doc, binary = atlas.read_glb(self.data)

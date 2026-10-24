@@ -176,6 +176,16 @@ def texture_infos(material):
                 yield child
 
 
+def effective_texcoord(info):
+    return info.get("extensions", {}).get("KHR_texture_transform", {}).get("texCoord", info.get("texCoord", 0))
+
+
+def uv_in_cell(uv, cell, size):
+    """Bilinear footprint remains inside the cell; tolerance is in texels."""
+    return all(math.isfinite(c) and start + 0.5 - 1e-6 <= c * total <= start + span - 0.5 + 1e-6
+               for c, start, span, total in zip(uv, cell[:2], cell[2:], size))
+
+
 def view_bytes(doc, binary, index):
     view = doc["bufferViews"][index]
     start, size = view.get("byteOffset", 0), view["byteLength"]
@@ -193,8 +203,11 @@ def ao_resources(doc, binary):
         occ = material.get("occlusionTexture")
         if occ and (occ.get("texCoord", 0) != 1 or occ.get("strength", 1) != 1 or occ.get("extensions")):
             raise ValueError("AO must sample untransformed texCoord 1 at strength 1")
-        if any(info["index"] in textures for info in texture_infos({k: v for k, v in material.items() if k != "occlusionTexture"})):
-            raise ValueError("AO texture is shared with another texture slot")
+        for info in texture_infos({k: v for k, v in material.items() if k != "occlusionTexture"}):
+            if effective_texcoord(info) == 1:
+                raise ValueError("non-AO texture samples texCoord 1; rewriting UV1 would change its sampling")
+            if info["index"] in textures:
+                raise ValueError("AO texture is shared with another texture slot")
     images = {doc["textures"][i]["source"] for i in textures}
     if len(images) != 1:
         raise ValueError("asset must share one AO image")
@@ -224,13 +237,11 @@ def ao_resources(doc, binary):
     return textures, images, samplers, w, pixels
 
 
-def asset_uv_accessors(doc, asset_id):
-    """Reject UV1 shared outside the active asset or used for any other purpose."""
+def asset_nodes(doc, asset_id):
+    """Nodes reachable from the active scene's single named asset root."""
     roots = doc["scenes"][doc.get("scene", 0)]["nodes"]
     if len(roots) != 1 or doc["nodes"][roots[0]].get("name") != asset_id:
         raise ValueError("expected one asset root matching id")
-    if any(scene.get("nodes", []) != roots for scene in doc["scenes"]):
-        raise ValueError("scenes must use the same asset root")
     owned = set()
 
     def visit(i):
@@ -241,6 +252,15 @@ def asset_uv_accessors(doc, asset_id):
             visit(child)
 
     visit(roots[0])
+    return owned
+
+
+def asset_uv_accessors(doc, asset_id):
+    """Reject UV1 shared outside the active asset or used for any other purpose."""
+    owned = asset_nodes(doc, asset_id)
+    roots = doc["scenes"][doc.get("scene", 0)]["nodes"]
+    if any(scene.get("nodes", []) != roots for scene in doc["scenes"]):
+        raise ValueError("scenes must use the same asset root")
     meshes = {doc["nodes"][i]["mesh"] for i in owned if "mesh" in doc["nodes"][i]}
     outside = {n["mesh"] for i, n in enumerate(doc["nodes"]) if i not in owned and "mesh" in n}
     targets, attributes = set(), set()
@@ -270,7 +290,7 @@ def asset_uv_accessors(doc, asset_id):
 
 def rewrite_uvs(doc, binary, asset_id, cell, size):
     targets = asset_uv_accessors(doc, asset_id)
-    ranges = []
+    ranges, rewrites = [], []
     for i in sorted(targets):
         accessor = doc["accessors"][i]
         if "sparse" in accessor:
@@ -291,12 +311,11 @@ def rewrite_uvs(doc, binary, asset_id, cell, size):
             if not all(math.isfinite(c) and 0 <= c <= 1 for c in (u, v)):
                 raise ValueError("original TEXCOORD_1 outside unit square or non-finite")
             values.append(((cell[0] + u * cell[2]) / size[0], (cell[1] + v * cell[3]) / size[1]))
-        for offset, value in zip(offsets, values):
-            struct.pack_into("<2f", binary, offset, *value)
-        values = [struct.unpack_from("<2f", binary, offset) for offset in offsets]
-        for key, fun in (("min", min), ("max", max)):
-            if key in accessor:
-                accessor[key] = [fun(v[axis] for v in values) for axis in (0, 1)]
+        # Check the serialized float32 coordinates before mutating any bytes.
+        values = [struct.unpack("<2f", struct.pack("<2f", *uv)) for uv in values]
+        if not all(uv_in_cell(uv, cell, size) for uv in values):
+            raise ValueError("TEXCOORD_1 outside cell: requires a half-texel inset")
+        rewrites.append((accessor, offsets, values))
     # Accessors may use interleaved storage, but may never alias UV bytes.
     components = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4, "MAT2": 4, "MAT3": 9, "MAT4": 16}
     sizes = {5120: 1, 5121: 1, 5122: 2, 5123: 2, 5125: 4, 5126: 4}
@@ -305,21 +324,45 @@ def rewrite_uvs(doc, binary, asset_id, cell, size):
         if any(b in uv_bytes for b in range(start, end)):
             raise ValueError("TEXCOORD_1 accessors alias each other")
         uv_bytes.update(range(start, end))
-    for i, accessor in enumerate(doc["accessors"]):
-        if i in targets or "bufferView" not in accessor:
-            continue
-        view = doc["bufferViews"][accessor["bufferView"]]
-        width = components[accessor["type"]] * sizes[accessor["componentType"]]
-        start = view.get("byteOffset", 0) + accessor.get("byteOffset", 0)
-        if any(b in uv_bytes for n in range(accessor["count"])
-               for b in range(start + n * view.get("byteStride", width), start + n * view.get("byteStride", width) + width)):
+
+    def check_storage(view_index, offset, count, width, interleaved=True):
+        view_bytes(doc, binary, view_index)
+        view = doc["bufferViews"][view_index]
+        start = view.get("byteOffset", 0) + offset
+        stride = view.get("byteStride", width) if interleaved else width
+        if (offset < 0 or count < 0 or stride < width
+                or offset + ((count - 1) * stride + width if count else 0) > view["byteLength"]):
+            raise ValueError("invalid accessor storage")
+        if any(b in uv_bytes for n in range(count) for b in range(start + n * stride, start + n * stride + width)):
             raise ValueError("TEXCOORD_1 bytes alias another accessor")
+
+    for i, accessor in enumerate(doc["accessors"]):
+        if i in targets:
+            continue
+        width = components[accessor["type"]] * sizes[accessor["componentType"]]
+        if accessor["type"].startswith("MAT"):
+            dimension = int(accessor["type"][-1])
+            width = dimension * ((dimension * sizes[accessor["componentType"]] + 3) // 4 * 4)
+        if "bufferView" in accessor:
+            check_storage(accessor["bufferView"], accessor.get("byteOffset", 0), accessor["count"], width)
+        if "sparse" in accessor:
+            sparse = accessor["sparse"]
+            indices, values = sparse["indices"], sparse["values"]
+            check_storage(indices["bufferView"], indices.get("byteOffset", 0), sparse["count"],
+                          sizes[indices["componentType"]], False)
+            check_storage(values["bufferView"], values.get("byteOffset", 0), sparse["count"], width, False)
     for image in doc.get("images", []):
         if "bufferView" in image:
             view = doc["bufferViews"][image["bufferView"]]
             start = view.get("byteOffset", 0)
             if any(b in uv_bytes for b in range(start, start + view["byteLength"])):
                 raise ValueError("TEXCOORD_1 bytes alias an image")
+    for accessor, offsets, values in rewrites:
+        for offset, value in zip(offsets, values):
+            struct.pack_into("<2f", binary, offset, *value)
+        for key, fun in (("min", min), ("max", max)):
+            if key in accessor:
+                accessor[key] = [fun(v[axis] for v in values) for axis in (0, 1)]
 
 
 def remove_resources(doc, removed, key):
@@ -431,6 +474,8 @@ def build(in_dir, out_dir, kinds, half=False, ids=None):
     if out_dir.exists() and any(out_dir.iterdir()):
         raise ValueError("output directory must be empty")
     manifest = json.loads((in_dir / "manifest.json").read_text())
+    if "atlases" in manifest or any("ao_atlas" in asset for asset in manifest["assets"]):
+        raise ValueError("input is already atlas-packed; run on an original build")
     sort_keys = sorted_json(manifest)
     assets, seen, selected, groups = manifest["assets"], set(), {}, {}
     for asset in assets:
@@ -457,9 +502,7 @@ def build(in_dir, out_dir, kinds, half=False, ids=None):
     if not selected:
         raise ValueError("no matching asset ids")
     manifest.setdefault("atlases", {})
-    (out_dir / "glb").mkdir(parents=True, exist_ok=True)
-    (out_dir / "atlas").mkdir(exist_ok=True)
-    placements, stats = {}, {}
+    placements, stats, atlas_files = {}, {}, {}
     for kind, maps in groups.items():
         size, cells = pack_cells({key: item[0] for key, item in maps.items()})
         width, height = size
@@ -472,12 +515,22 @@ def build(in_dir, out_dir, kinds, half=False, ids=None):
             placements[key] = cells[key], size
         raw = write_png(width, height, pixels)
         path = f"atlas/{kind}_ao.png"
-        (out_dir / path).write_bytes(raw)
+        atlas_files[path] = raw
         provenance = (f"derived: packed from the per-id Cycles AO bakes of {manifest.get('catalog', '')}/{manifest.get('kit_version', '')} "
                       "by tools/blender/ao_atlas.py; GTEki contributors")
         manifest["atlases"][kind] = dict(path=path, sha256=digest(raw), size_px=list(size), bytes=len(raw), provenance=provenance)
         stats[kind] = dict(size_px=list(size), fill_ratio=sum(side * side for side, _ in maps.values()) / (width * height),
                            bytes=len(raw), ids=len(maps))
+    # Preflight every selected asset before creating output, including later assets.
+    # Discard each result to keep peak memory bounded by one GLB rather than the build.
+    for asset in assets:
+        if asset["id"] in selected:
+            cell, size = placements[asset["id"]]
+            rewrite_glb((in_dir / asset["file"]).read_bytes(), asset["id"], cell, size)
+    (out_dir / "glb").mkdir(parents=True, exist_ok=True)
+    (out_dir / "atlas").mkdir(exist_ok=True)
+    for path, raw in atlas_files.items():
+        (out_dir / path).write_bytes(raw)
     for asset in assets:
         key = asset["id"]
         source, target = in_dir / asset["file"], out_dir / asset["file"]
