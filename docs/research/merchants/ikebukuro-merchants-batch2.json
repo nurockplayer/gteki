@@ -3628,38 +3628,6 @@
       ]
     },
     {
-      "id": "shop-ikb-echika-1088",
-      "category": "shop",
-      "names": [
-        {
-          "lang": "ja",
-          "text": "フレッシュネスバーガー"
-        }
-      ],
-      "aliases": [],
-      "floorId": null,
-      "displayPosition": null,
-      "connectorNodeIds": [],
-      "paid": null,
-      "evidence": {
-        "sourceIds": [
-          "echika-ikebukuro-2026-10"
-        ],
-        "method": "facts-only directory listing (OD-23/OD-31), UNVERIFIED, AREA_ONLY",
-        "checkedDate": "2026-10-24"
-      },
-      "notes": [
-        {
-          "lang": "ja",
-          "text": "エチカ池袋 改札外。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
-        },
-        {
-          "lang": "en",
-          "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
-        }
-      ]
-    },
-    {
       "id": "shop-ikb-echika-1108",
       "category": "shop",
       "names": [
@@ -3700,7 +3668,12 @@
           "text": "MR.waffle"
         }
       ],
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ミスターワッフル"
+        }
+      ],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -3732,7 +3705,12 @@
           "text": "Raffine"
         }
       ],
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ラフィネ"
+        }
+      ],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -3764,7 +3742,12 @@
           "text": "RANDA CLEPORTE"
         }
       ],
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ランダ　クレボルト"
+        }
+      ],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
