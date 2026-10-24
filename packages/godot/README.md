@@ -440,11 +440,12 @@ there instead (its directory is created if needed), which is how the sweep gives
 
 `tools/showcase_sweep.sh` runs a file of variants sequentially, each under the shared test lock, then prints their
 ratios as one table. Each non-empty line is `<tag> <tune arguments...>`; extra arguments are appended to every run.
-It checks every tag (letters, digits, `_`, `.`, `-`) and rejects duplicates before running anything, gives each run
-its own `<out_dir>/sweep_<tag>_report.json` through `--report` (deleted first, so a run that exits without writing
-cannot reuse an old report), and stops if that file is missing afterwards. A line is a comment only when its first
-non-blank character is `#`; there are no trailing comments, so a `#rrggbb` value keeps its `#`. Never run two sweeps
-concurrently against the same output directory: report files are deleted and checked outside the shared lock.
+It checks every tag (letters, digits, `_`, `.`, `-`, and not ending in `_side`, which is the side-by-side suffix) and
+rejects duplicates before running anything, gives each run its own `<out_dir>/sweep_<tag>_report.json` through
+`--report` (deleted first, so a run that exits without writing cannot reuse an old report), and stops if that file is
+missing afterwards. A line is a comment only when its first non-blank character is `#`; there are no trailing
+comments, so a `#rrggbb` value keeps its `#`. Never run two sweeps concurrently against the same output directory:
+report files are deleted and checked outside the shared lock.
 
 ```sh
 cat > packages/godot/.cache/showcase/concourse.sweep <<'EOF'
