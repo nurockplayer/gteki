@@ -718,11 +718,11 @@
       "notes": [
         {
           "lang": "ja",
-          "text": "東京メトロ 池袋駅 以下の路線周辺にコインロッカーがあります ・丸ノ内線 ・有楽町線 ・副都心線。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+          "text": "東京メトロ 池袋駅 丸ノ内線・有楽町線・副都心線周辺。位置は事業者の表記のみ（未確認、案内ルートなし）。"
         },
         {
           "lang": "en",
-          "text": "Tokyo Metro Ikebukuro Station, 以下の路線周辺にコインロッカーがあります ・丸ノ内線 ・有楽町線 ・副都心線. Location is the operator's wording only (unverified, no route)."
+          "text": "Tokyo Metro Ikebukuro Station, near the 丸ノ内線・有楽町線・副都心線 lines. Location is the operator's wording only (unverified, no route)."
         }
       ]
     },
@@ -924,7 +924,7 @@
       "names": [
         {
           "lang": "ja",
-          "text": "車いす対応トイレ（改札外）"
+          "text": "車いす対応トイレ"
         }
       ],
       "aliases": [],
@@ -942,11 +942,11 @@
       "notes": [
         {
           "lang": "ja",
-          "text": "東京メトロ 池袋駅 丸ノ内線 中央通路東改札外広場。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+          "text": "東京メトロ 池袋駅 丸ノ内線 中央通路東改札外広場（改札外）。設備: 乳幼児用設備・オストメイト（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
         },
         {
           "lang": "en",
-          "text": "Tokyo Metro Ikebukuro Station, 丸ノ内線 中央通路東改札外広場. Location is the operator's wording only (unverified, no route)."
+          "text": "Tokyo Metro Ikebukuro Station, 丸ノ内線 中央通路東改札外広場 (outside the fare gates as printed). Facilities: 乳幼児用設備・オストメイト (operator wording). Location is the operator's wording only (unverified, no route)."
         }
       ]
     },
@@ -956,7 +956,7 @@
       "names": [
         {
           "lang": "ja",
-          "text": "乳幼児用設備（改札外）"
+          "text": "車いす対応トイレ"
         }
       ],
       "aliases": [],
@@ -974,11 +974,11 @@
       "notes": [
         {
           "lang": "ja",
-          "text": "東京メトロ 池袋駅 丸ノ内線 中央通路東改札外広場。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+          "text": "東京メトロ 池袋駅 有楽町線 南通路西改札（改札内）。設備: 乳幼児用設備・オストメイト（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
         },
         {
           "lang": "en",
-          "text": "Tokyo Metro Ikebukuro Station, 丸ノ内線 中央通路東改札外広場. Location is the operator's wording only (unverified, no route)."
+          "text": "Tokyo Metro Ikebukuro Station, 有楽町線 南通路西改札 (inside the fare gates as printed). Facilities: 乳幼児用設備・オストメイト (operator wording). Location is the operator's wording only (unverified, no route)."
         }
       ]
     },
@@ -988,7 +988,7 @@
       "names": [
         {
           "lang": "ja",
-          "text": "オストメイト（改札外）"
+          "text": "車いす対応トイレ"
         }
       ],
       "aliases": [],
@@ -1006,203 +1006,11 @@
       "notes": [
         {
           "lang": "ja",
-          "text": "東京メトロ 池袋駅 丸ノ内線 中央通路東改札外広場。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+          "text": "東京メトロ 池袋駅 副都心線 西通路東改札内中二階広場（改札内）。設備: 乳幼児用設備・オストメイト（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
         },
         {
           "lang": "en",
-          "text": "Tokyo Metro Ikebukuro Station, 丸ノ内線 中央通路東改札外広場. Location is the operator's wording only (unverified, no route)."
-        }
-      ]
-    },
-    {
-      "id": "toilet-ikb-metro-004",
-      "category": "toilet",
-      "names": [
-        {
-          "lang": "ja",
-          "text": "車いす対応トイレ（改札内）"
-        }
-      ],
-      "aliases": [],
-      "floorId": null,
-      "displayPosition": null,
-      "connectorNodeIds": [],
-      "paid": null,
-      "evidence": {
-        "sourceIds": [
-          "tokyometro-ikebukuro-accessibility-2026-10"
-        ],
-        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
-        "checkedDate": "2026-10-24"
-      },
-      "notes": [
-        {
-          "lang": "ja",
-          "text": "東京メトロ 池袋駅 有楽町線 南通路西改札。位置は事業者の表記のみ（未確認、案内ルートなし）。"
-        },
-        {
-          "lang": "en",
-          "text": "Tokyo Metro Ikebukuro Station, 有楽町線 南通路西改札. Location is the operator's wording only (unverified, no route)."
-        }
-      ]
-    },
-    {
-      "id": "toilet-ikb-metro-005",
-      "category": "toilet",
-      "names": [
-        {
-          "lang": "ja",
-          "text": "乳幼児用設備（改札内）"
-        }
-      ],
-      "aliases": [],
-      "floorId": null,
-      "displayPosition": null,
-      "connectorNodeIds": [],
-      "paid": null,
-      "evidence": {
-        "sourceIds": [
-          "tokyometro-ikebukuro-accessibility-2026-10"
-        ],
-        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
-        "checkedDate": "2026-10-24"
-      },
-      "notes": [
-        {
-          "lang": "ja",
-          "text": "東京メトロ 池袋駅 有楽町線 南通路西改札。位置は事業者の表記のみ（未確認、案内ルートなし）。"
-        },
-        {
-          "lang": "en",
-          "text": "Tokyo Metro Ikebukuro Station, 有楽町線 南通路西改札. Location is the operator's wording only (unverified, no route)."
-        }
-      ]
-    },
-    {
-      "id": "toilet-ikb-metro-006",
-      "category": "toilet",
-      "names": [
-        {
-          "lang": "ja",
-          "text": "オストメイト（改札内）"
-        }
-      ],
-      "aliases": [],
-      "floorId": null,
-      "displayPosition": null,
-      "connectorNodeIds": [],
-      "paid": null,
-      "evidence": {
-        "sourceIds": [
-          "tokyometro-ikebukuro-accessibility-2026-10"
-        ],
-        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
-        "checkedDate": "2026-10-24"
-      },
-      "notes": [
-        {
-          "lang": "ja",
-          "text": "東京メトロ 池袋駅 有楽町線 南通路西改札。位置は事業者の表記のみ（未確認、案内ルートなし）。"
-        },
-        {
-          "lang": "en",
-          "text": "Tokyo Metro Ikebukuro Station, 有楽町線 南通路西改札. Location is the operator's wording only (unverified, no route)."
-        }
-      ]
-    },
-    {
-      "id": "toilet-ikb-metro-007",
-      "category": "toilet",
-      "names": [
-        {
-          "lang": "ja",
-          "text": "車いす対応トイレ（改札内）"
-        }
-      ],
-      "aliases": [],
-      "floorId": null,
-      "displayPosition": null,
-      "connectorNodeIds": [],
-      "paid": null,
-      "evidence": {
-        "sourceIds": [
-          "tokyometro-ikebukuro-accessibility-2026-10"
-        ],
-        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
-        "checkedDate": "2026-10-24"
-      },
-      "notes": [
-        {
-          "lang": "ja",
-          "text": "東京メトロ 池袋駅 副都心線 西通路東改札内中二階広場。位置は事業者の表記のみ（未確認、案内ルートなし）。"
-        },
-        {
-          "lang": "en",
-          "text": "Tokyo Metro Ikebukuro Station, 副都心線 西通路東改札内中二階広場. Location is the operator's wording only (unverified, no route)."
-        }
-      ]
-    },
-    {
-      "id": "toilet-ikb-metro-008",
-      "category": "toilet",
-      "names": [
-        {
-          "lang": "ja",
-          "text": "乳幼児用設備（改札内）"
-        }
-      ],
-      "aliases": [],
-      "floorId": null,
-      "displayPosition": null,
-      "connectorNodeIds": [],
-      "paid": null,
-      "evidence": {
-        "sourceIds": [
-          "tokyometro-ikebukuro-accessibility-2026-10"
-        ],
-        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
-        "checkedDate": "2026-10-24"
-      },
-      "notes": [
-        {
-          "lang": "ja",
-          "text": "東京メトロ 池袋駅 副都心線 西通路東改札内中二階広場。位置は事業者の表記のみ（未確認、案内ルートなし）。"
-        },
-        {
-          "lang": "en",
-          "text": "Tokyo Metro Ikebukuro Station, 副都心線 西通路東改札内中二階広場. Location is the operator's wording only (unverified, no route)."
-        }
-      ]
-    },
-    {
-      "id": "toilet-ikb-metro-009",
-      "category": "toilet",
-      "names": [
-        {
-          "lang": "ja",
-          "text": "オストメイト（改札内）"
-        }
-      ],
-      "aliases": [],
-      "floorId": null,
-      "displayPosition": null,
-      "connectorNodeIds": [],
-      "paid": null,
-      "evidence": {
-        "sourceIds": [
-          "tokyometro-ikebukuro-accessibility-2026-10"
-        ],
-        "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
-        "checkedDate": "2026-10-24"
-      },
-      "notes": [
-        {
-          "lang": "ja",
-          "text": "東京メトロ 池袋駅 副都心線 西通路東改札内中二階広場。位置は事業者の表記のみ（未確認、案内ルートなし）。"
-        },
-        {
-          "lang": "en",
-          "text": "Tokyo Metro Ikebukuro Station, 副都心線 西通路東改札内中二階広場. Location is the operator's wording only (unverified, no route)."
+          "text": "Tokyo Metro Ikebukuro Station, 副都心線 西通路東改札内中二階広場 (inside the fare gates as printed). Facilities: 乳幼児用設備・オストメイト (operator wording). Location is the operator's wording only (unverified, no route)."
         }
       ]
     }
