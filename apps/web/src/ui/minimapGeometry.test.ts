@@ -207,6 +207,13 @@ describe("segment route progress", () => {
     expect(progress(B1F, 10, 0, 2, true)).toBe(2);
   });
 
+  it("counts a long ramp's whole run, not only the point it starts from", () => {
+    // A ramp from (0,0) to (8,0): the floor reading flips near the landing, 8 m from its start.
+    const ramp = [point(0, 0, B1F, -1), point(0, 0, B1F, 0), point(8, 0, F1, 1), point(8, 10, F1, 2)];
+    const rampSteps = [step(B1F, B1F), step(B1F, F1, "ramp"), step(F1, F1)];
+    expect(advanceRouteSeg(ramp, rampSteps, F1, 8, 0, 0, true)).toBe(2);
+  });
+
   it("does not fall back to an earlier vertex when a long segment passes 1.4 m from it", () => {
     const longLeg = [
       point(0, 0, B1F, -1),

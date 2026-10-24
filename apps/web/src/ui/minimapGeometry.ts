@@ -173,15 +173,20 @@ function segAfterFloorChange(
 ): number {
   for (const transition of floorTransitions(points, steps)) {
     if (transition.toFloorId !== floorId || transition.startIndex < seg) continue;
-    // A reading that flickers back near an earlier connector must not skip the route to a later
-    // one: the step only counts where the player actually stands at it.
-    if (Math.hypot(east - transition.x, north - transition.y) > ON_ROUTE_M) continue;
     // The step's own end is the last vertex carrying its index: the target floor's landing point.
     let endIndex = -1;
     for (let j = points.length - 1; j > transition.startIndex; j--) {
       if (points[j]!.stepIndex === transition.stepIndex) { endIndex = j; break; }
     }
     if (endIndex < 0 || points[endIndex]!.floorId !== floorId) continue;
+    // A reading that flickers back near an earlier connector must not skip the route to a later
+    // one: the step only counts where the player actually stands at it. A long stair, ramp or
+    // escalator changes the floor near its landing, so its whole run counts, not just its start.
+    let atConnector = false;
+    for (let j = transition.startIndex; j < endIndex && !atConnector; j++) {
+      atConnector = segmentDistance(points, j, east, north) <= ON_ROUTE_M;
+    }
+    if (!atConnector) continue;
     return Math.min(endIndex, points.length - 2);
   }
   return seg;
