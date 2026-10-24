@@ -87,7 +87,10 @@ func check_arguments() -> void:
 	check(is_equal_approx(float(bounds.light_affect), 0.0), "self: --ao-light-affect=0 is a real value, not 'no value' (-1)")
 	var full := Hq.parse_client_args(PackedStringArray(["--ao-light-affect=1"]))
 	check(is_equal_approx(float(full.light_affect), 1.0), "self: --ao-light-affect=1 is accepted")
-	for bad in ["--lightmap=yes", "--ao=1", "--ao-light-affect=1.5", "--ao-light-affect=-0.1", "--ao-light-affect=nan", "--ao-light-affect=inf", "--ao-light-affect="]:
+	var exponent := Hq.parse_client_args(PackedStringArray(["--ao-light-affect=5e-1"]))
+	check(is_equal_approx(float(exponent.light_affect), 0.5), "self: --ao-light-affect=5e-1 is a complete exponent and parses")
+	# String.is_valid_float accepts a trailing exponent with no digits, so the pattern must refuse these itself.
+	for bad in ["--lightmap=yes", "--ao=1", "--ao-light-affect=1.5", "--ao-light-affect=-0.1", "--ao-light-affect=nan", "--ao-light-affect=inf", "--ao-light-affect=", "--ao-light-affect=1e", "--ao-light-affect=0e+", "--ao-light-affect=0e-"]:
 		var parsed := Hq.parse_client_args(PackedStringArray([bad]))
 		check(not (parsed.errors as Array).is_empty(), "self: %s is an argument error" % bad)
 

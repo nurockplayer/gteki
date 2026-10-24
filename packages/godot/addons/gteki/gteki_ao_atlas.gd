@@ -12,8 +12,10 @@ extends RefCounted
 ## (`Image.load_from_file` does not convert colour spaces), its sha256 is checked against the sidecar, and one
 ## `ImageTexture` per kind is shared by every surface bound to it. Every flagged surface gets a duplicate of the
 ## snapshot material with `ao_enabled`, `ao_texture`, `ao_on_uv2` and `ao_texture_channel = TEXTURE_CHANNEL_RED`;
-## `ao_light_affect` keeps Godot's default unless `apply()` is given 0..1 (the C3 GPU check sweeps that value, because
-## the web applies AO to the PMREM indirect term). Unflagged surfaces and the shared snapshot material are never mutated.
+## `ao_light_affect` keeps Godot's default (0) unless `apply()` is given 0..1. That default is the web parity: three's
+## `aoMap` darkens indirect light only, and so does Godot's AO at 0 — `ao_light_affect` additionally lets AO darken
+## direct light, which the web never does, so a non-zero value is a diagnostic, not a parity setting. Unflagged surfaces
+## and the shared snapshot material are never mutated.
 
 const Bridge = preload("res://addons/gteki/gteki_bridge.gd")
 
@@ -37,7 +39,8 @@ var materials: Dictionary = {}
 
 ## Applies `block` (the sidecar's `ao_atlas_bindings`) to the meshes flagged in their extras. `station_dir` overrides
 ## the station folder (the headless test's temp atlas); empty means <repo>/stations/<station_id>/gteki. `light_affect`
-## of 0..1 is written to every AO copy and kept in `light_affect`; a negative value keeps Godot's default (null).
+## of 0..1 is written to every AO copy and kept in `light_affect`; a negative value keeps Godot's default (null), which
+## is 0 and the web parity (AO on indirect light only). A positive value only adds AO to direct light, a diagnostic.
 ## Anything above 1 or NaN is an issue and applies nothing. Returns true when every flagged surface was converted; any
 ## miss is an issue (a partial atlas would misrepresent the kit).
 func apply(root: Node3D, block: Dictionary, station_id: String, station_dir := "", light_affect := -1.0) -> bool:

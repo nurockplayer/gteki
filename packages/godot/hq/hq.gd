@@ -12,9 +12,9 @@ extends Node3D
 ##       --station), prints a summary and quits; it also asserts the lighting wiring (check_lighting) on each.
 ##       --lightmap=on (default) applies the station's baked lightmap (G-4a); =off keeps the unlit snapshot. With the
 ##       lightmap on, the added lights are masked to the avatar, as the web lights only its own avatar in "scene" mode.
-##       --ao=on (default) applies the station's kit AO atlases (#391); =off keeps the snapshot materials. With the
-##       AO applied, --ao-light-affect=<0..1> sets their ao_light_affect (default: Godot's own value), the C3 GPU
-##       check's sweep of the web's AO-on-indirect-light weighting.
+##       --ao=on (default) applies the station's kit AO atlases (#391); =off keeps the snapshot materials. AO always
+##       darkens indirect light; --ao-light-affect=<0..1> additionally lets it darken direct light. Its default (0) is
+##       the web parity — three's aoMap affects indirect light only — so the flag is a diagnostic, not a parity control.
 
 const Scene = preload("res://addons/gteki/gteki_scene.gd")
 const Walker = preload("res://addons/gteki/gteki_walker.gd")
@@ -28,6 +28,8 @@ const Look = preload("res://addons/gteki/gteki_look.gd")
 const WHEEL_UNITS := 100.0
 const STICK_LOOK_SPEED := 700.0
 const STICK_DEADZONE := 0.15
+## A complete decimal number: String.is_valid_float also accepts an exponent with no digits (`1e`, `0e+`, `0e-`).
+const NUMBER_PATTERN := "^[+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][+-]?\\d+)?$"
 
 var scenes_dir := ProjectSettings.globalize_path("res://.cache/scenes")
 var station_ids: Array[String] = []
@@ -38,7 +40,7 @@ var camera: FollowCamera
 var spawn_index := 0
 var guide_hud: GuideHud
 var lightmap := true
-## Kit AO atlases (#391) and the C3 sweep value for their ao_light_affect; -1 keeps Godot's default.
+## Kit AO atlases (#391) and the requested ao_light_affect; -1 keeps Godot's default (0, the web parity).
 var ao := true
 var ao_light_affect := -1.0
 ## G-4b: "baseline" (today's look) or "hq" (style-bible look); see gteki_look.gd.
@@ -166,6 +168,7 @@ static func parse_client_args(args: PackedStringArray) -> Dictionary:
 	var ao := true
 	var light_affect := -1.0
 	var errors: Array[String] = []
+	var number_pattern := RegEx.create_from_string(NUMBER_PATTERN)
 	for arg in args:
 		if arg.begins_with("--lightmap="):
 			var value := arg.trim_prefix("--lightmap=")
@@ -182,15 +185,17 @@ static func parse_client_args(args: PackedStringArray) -> Dictionary:
 		elif arg.begins_with("--ao-light-affect="):
 			var value := arg.trim_prefix("--ao-light-affect=")
 			var number := value.to_float()
-			# is_finite keeps out nan and inf, which compare false with every bound.
-			if not value.is_valid_float() or not is_finite(number) or number < 0.0 or number > 1.0:
+			# The pattern is the whole string, so a trailing exponent with no digits is refused; is_finite is then
+			# belt and braces, because nan and inf compare false with every bound.
+			if number_pattern.search(value) == null or not is_finite(number) or number < 0.0 or number > 1.0:
 				errors.append("--ao-light-affect must be a number from 0 to 1, not %s" % value)
 				continue
 			light_affect = number
 	return {"lightmap": lightmap, "ao": ao, "light_affect": light_affect, "errors": errors}
 
 
-## One line for the kit AO: what the sidecar recorded and applied, and the light_affect the C3 check asked for.
+## One line for the kit AO: what the sidecar recorded and applied, and the ao_light_affect the run asked for (default
+## 0, the web parity; a non-zero value only adds AO to direct light).
 func ao_summary() -> String:
 	if not current.ao_atlas.is_empty() and not ao:
 		return "AO off (%d kinds recorded)" % current.ao_atlas.size()

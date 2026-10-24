@@ -213,7 +213,7 @@ anyway.
 does not convert colour spaces), checks its SHA-256 against the sidecar and reports a mismatch as an issue (nothing is
 applied for that kind rather than sampling the wrong atlas), and gives each flagged surface a mipmapped atlas and a duplicate of the snapshot material (one duplicate per
 snapshot material and kind, so surfaces that shared a material still share one) with `ao_enabled`, `ao_texture`, `ao_on_uv2` and `ao_texture_channel = TEXTURE_CHANNEL_RED`;
-`ao_light_affect` keeps its default. One `Texture2D` per kind is shared by every surface of that kind, and unflagged
+`ao_light_affect` keeps its default (0, AO on indirect light only, as on the web). One `Texture2D` per kind is shared by every surface of that kind, and unflagged
 surfaces (and the shared snapshot material) are never mutated. `gteki_scene.gd` applies it with the lightmap
 (`options.ao_atlas`, default on) and runs it first: the lightmap's `ShaderMaterial` replaces the material on a surface
 that carries both, so the bake stays the governing lighting term there. No station ships a kit AO atlas yet, so no
@@ -221,18 +221,22 @@ sidecar gains an `ao_atlas_bindings` block; Shinjuku's own baked `aoMap` (a stat
 is named in its `warnings` because textures are stripped. `tests/run_scene_tests.gd` checks the applier against a
 synthetic atlas in a temp directory.
 
-`hq.gd` takes `--ao=on|off` (default on) and `--ao-light-affect=<0..1>`. The sweep value exists for the C3 GPU check:
-the web applies AO to the PMREM indirect term, and `ao_light_affect` is Godot's own knob for the same weighting, so the
-check renders the same poses at several values and compares them against the web. `--ao-light-affect` is passed through
-`gteki_scene.gd` `options.ao_light_affect` to the applier, written to every AO copy, and recorded on the scene as
-`ao_atlas_light_affect` (`null` when the value was not given and Godot's own value was kept, which is also what an
-invalid value reports instead of applying a partial atlas). The station line names what was applied
-(`AO <kinds> kinds / <n> surfaces, light_affect <value|default>`, or `AO off (<k> kinds recorded)` with `--ao=off`),
-and `--capture`'s `report.json` records `ao` and `ao_light_affect` (`null` for Godot's own value) beside `look` and
-`gi`, so the C3 comparison states the AO state its pictures were taken with. `tests/run_scene_tests.gd` checks that
-0.5 reaches every copy and is recorded, that no value keeps the default and records `null`, and that 1.5 or NaN is an
-issue applying nothing; `tests/run_capture_tests.gd` checks the flag rules (defaults, the 0..1 bounds, NaN/inf and
-empty values refused).
+`hq.gd` takes `--ao=on|off` (default on) and `--ao-light-affect=<0..1>`. Godot's `ao_light_affect` does **not** gate
+indirect AO: AO always darkens ambient/indirect light, whatever the value. What the value controls is how much AO
+*additionally* darkens direct light (0 = ambient only), and Godot's default is 0. That default is the web parity —
+three's `aoMap` affects indirect light only — so parity needs no flag at all. `--ao-light-affect` is therefore a
+diagnostic for the C3 GPU check (how much AO additionally darkens direct light), not a parity control.
+`--ao-light-affect` is passed through `gteki_scene.gd` `options.ao_light_affect` to the applier, written to every AO
+copy, and recorded on the scene as `ao_atlas_light_affect` (`null` when the value was not given and Godot's own value
+was kept, which is also what an invalid value reports instead of applying a partial atlas). The station line names what
+was applied (`AO <kinds> kinds / <n> surfaces, light_affect <value|default>`, or `AO off (<k> kinds recorded)` with
+`--ao=off`), and `--capture`'s `report.json` records `ao` and `ao_light_affect` beside `look` and `gi`, so the C3
+comparison states the AO state its pictures were taken with: `ao_light_affect` is what the copies actually carry
+(`null` when AO was off or Godot's default was kept) and `ao_light_affect_requested` is the value the run asked for
+(`null` when none was given), so `--ao=off --ao-light-affect=0.5` does not read as AO applied at 0.5.
+`tests/run_scene_tests.gd` checks that 0.5 reaches every copy and is recorded, that no value keeps the default and
+records `null`, and that 1.5 or NaN is an issue applying nothing; `tests/run_capture_tests.gd` checks the flag rules
+(defaults, the 0..1 bounds, NaN/inf, incomplete exponents and empty values refused).
 
 ## HQ look profile (G-4b of #164)
 
