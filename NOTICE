@@ -157,6 +157,12 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        Change notice: GTEki が名称のみを抽出し、検索用に再構成（位置・形状は
        使用していません）. No geometry, position or promotional text is taken;
        the names describe March 2020 data and are not route evidence.
+       Shipped in stations/shinjuku/gteki/pois.json (import of #411): the
+       same 45 plain gate and platform names with their notes, search only
+       (AREA_ONLY; no position, floor, connector or route). The file also
+       carries E27-derived content under LicenseRef-Hokonavi-E27-Owner-override
+       (4.3); both sets of terms apply. Credit:
+       出典：東京都都市整備局「新宿駅周辺の施設情報等」; change notice as above.
 
    4.8 GSI (国土地理院) items - LicenseRef-GSI-terms
        Two Survey Calculation Site bl2xy control responses
