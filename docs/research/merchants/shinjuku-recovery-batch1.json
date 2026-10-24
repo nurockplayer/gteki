@@ -75,42 +75,6 @@
       "notes": "Shop name prints 京王モール; address is 西新宿1丁目1南口地下街, with no block or floor; no closure notice."
     },
     {
-      "id": "chain-doutor-keiomall-sjk-2026-10",
-      "title": "ドトールコーヒーショップ 新宿京王モール店 | 店舗検索｜株式会社ドトールコーヒー",
-      "publisher": "株式会社ドトールコーヒー",
-      "url": "https://shop.doutor.co.jp/doutor/spot/detail?code=1012430",
-      "license": null,
-      "rights": "REFERENCE_ONLY",
-      "usage": "facts-only",
-      "decision": {
-        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
-        "date": "2026-10-24"
-      },
-      "attribution": "ドトールコーヒーショップ 新宿京王モール店 | 店舗検索｜株式会社ドトールコーヒー (facts only, UNVERIFIED; not reproduced)",
-      "modified": false,
-      "retrievedAt": "2026-10-24T10:56:00Z",
-      "datasetDate": null,
-      "notes": "Address prints 京王モール B1F 第D‐4号区画; no アネックス wording; no closure notice."
-    },
-    {
-      "id": "chain-meganeichiba-keiomall-sjk-2026-10",
-      "title": "新宿京王モール店 | 店舗検索｜眼鏡市場（メガネ・めがね）",
-      "publisher": "眼鏡市場",
-      "url": "https://shop.meganeichiba.jp/meganeichiba/spot/detail?code=00896",
-      "license": null,
-      "rights": "REFERENCE_ONLY",
-      "usage": "facts-only",
-      "decision": {
-        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
-        "date": "2026-10-24"
-      },
-      "attribution": "新宿京王モール店 | 店舗検索｜眼鏡市場（メガネ・めがね） (facts only, UNVERIFIED; not reproduced)",
-      "modified": false,
-      "retrievedAt": "2026-10-24T10:56:30Z",
-      "datasetDate": null,
-      "notes": "Shop name and address print 京王モールB1F (西新宿1-1); this page prints the branch name without the chain name; no closure notice."
-    },
-    {
       "id": "chain-daiso-keiomall-annex-sjk-2026-10",
       "title": "DAISO 京王モールアネックス店 | 店舗検索 | DAISO（ダイソー）公式企業サイト",
       "publisher": "DAISO（ダイソー）",
@@ -255,24 +219,6 @@
       "notes": "Shop name prints 小田急エース店; address 西新宿1丁目 西口地下街1号 with no 北館/南館 wording; no closure notice."
     },
     {
-      "id": "chain-doutor-keiomall-annex-sjk-2026-10",
-      "title": "ドトールコーヒーショップ 新宿京王モールアネックス店 | 店舗検索｜株式会社ドトールコーヒー",
-      "publisher": "株式会社ドトールコーヒー",
-      "url": "https://shop.doutor.co.jp/doutor/spot/detail?code=1012046",
-      "license": null,
-      "rights": "REFERENCE_ONLY",
-      "usage": "facts-only",
-      "decision": {
-        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
-        "date": "2026-10-24"
-      },
-      "attribution": "ドトールコーヒーショップ 新宿京王モールアネックス店 | 店舗検索｜株式会社ドトールコーヒー (facts only, UNVERIFIED; not reproduced)",
-      "modified": false,
-      "retrievedAt": "2026-10-24T10:59:40Z",
-      "datasetDate": null,
-      "notes": "Shop name prints 新宿京王モールアネックス店; address 西新宿1‐19 without the facility word; no closure notice."
-    },
-    {
       "id": "chain-sagatani-keiomall-sjk-2026-10",
       "title": "十割蕎麦 さがたに 新宿京王モール店 | 関東エリア | 株式会社フォーユー",
       "publisher": "株式会社フォーユー",
@@ -334,10 +280,15 @@
       "names": [
         {
           "lang": "ja",
+          "text": "ゼッテリア 新宿小田急エース店"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
           "text": "新宿小田急エース店"
         }
       ],
-      "aliases": [],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -457,70 +408,6 @@
       ]
     },
     {
-      "id": "shop-sjk-rec-005",
-      "category": "shop",
-      "names": [
-        {
-          "lang": "ja",
-          "text": "ドトールコーヒーショップ 新宿京王モール店"
-        }
-      ],
-      "aliases": [],
-      "floorId": null,
-      "displayPosition": null,
-      "connectorNodeIds": [],
-      "paid": null,
-      "evidence": {
-        "sourceIds": [
-          "chain-doutor-keiomall-sjk-2026-10"
-        ],
-        "method": "facts-only chain store page (OD-34), UNVERIFIED, AREA_ONLY",
-        "checkedDate": "2026-10-24"
-      },
-      "notes": [
-        {
-          "lang": "ja",
-          "text": "京王モール B1F 第D‐4号区画（店舗公式ページの表記）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
-        },
-        {
-          "lang": "en",
-          "text": "京王モール B1F 第D‐4号区画 (as printed on the shop's own page). Location and entrance not verified (search only, no route). Current status unknown."
-        }
-      ]
-    },
-    {
-      "id": "shop-sjk-rec-006",
-      "category": "shop",
-      "names": [
-        {
-          "lang": "ja",
-          "text": "新宿京王モール店"
-        }
-      ],
-      "aliases": [],
-      "floorId": null,
-      "displayPosition": null,
-      "connectorNodeIds": [],
-      "paid": null,
-      "evidence": {
-        "sourceIds": [
-          "chain-meganeichiba-keiomall-sjk-2026-10"
-        ],
-        "method": "facts-only chain store page (OD-34), UNVERIFIED, AREA_ONLY",
-        "checkedDate": "2026-10-24"
-      },
-      "notes": [
-        {
-          "lang": "ja",
-          "text": "京王モールB1F（眼鏡市場の店舗公式ページの表記。チェーン名はページの店舗名に含まれない）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
-        },
-        {
-          "lang": "en",
-          "text": "京王モールB1F (as printed on 眼鏡市場's own store page; the printed store name omits the chain name). Location and entrance not verified (search only, no route). Current status unknown."
-        }
-      ]
-    },
-    {
       "id": "shop-sjk-rec-007",
       "category": "shop",
       "names": [
@@ -622,10 +509,15 @@
       "names": [
         {
           "lang": "ja",
+          "text": "クリスピー・クリーム・ドーナツ 小田急エース北館店"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
           "text": "小田急エース北館店"
         }
       ],
-      "aliases": [],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -640,11 +532,11 @@
       "notes": [
         {
           "lang": "ja",
-          "text": "小田急エース北館（クリスピー・クリーム・ドーナツの店舗公式ページの表記。チェーン名はページの店舗名に含まれない）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+          "text": "小田急エース北館（店舗公式ページの表記）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
         },
         {
           "lang": "en",
-          "text": "小田急エース北館 (as printed on クリスピー・クリーム・ドーナツ's own store page; the printed store name omits the chain name). Location and entrance not verified (search only, no route). Current status unknown."
+          "text": "小田急エース北館 (as printed on クリスピー・クリーム・ドーナツ's own store page). Location and entrance not verified (search only, no route). Current status unknown."
         }
       ]
     },
@@ -718,10 +610,15 @@
       "names": [
         {
           "lang": "ja",
+          "text": "MIGNON 新宿小田急エース店"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
           "text": "新宿小田急エース店"
         }
       ],
-      "aliases": [],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -736,11 +633,11 @@
       "notes": [
         {
           "lang": "ja",
-          "text": "小田急エース南館（MIGNONの店舗公式ページの表記。チェーン名はページの店舗名に含まれない）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+          "text": "小田急エース南館（店舗公式ページの表記）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
         },
         {
           "lang": "en",
-          "text": "小田急エース南館 (as printed on MIGNON's own page; the printed store name omits the chain name). Location and entrance not verified (search only, no route). Current status unknown."
+          "text": "小田急エース南館 (as printed on MIGNON's own page). Location and entrance not verified (search only, no route). Current status unknown."
         }
       ]
     },
@@ -750,10 +647,15 @@
       "names": [
         {
           "lang": "ja",
+          "text": "ファミリーマート 小田急エース店"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
           "text": "小田急エース店"
         }
       ],
-      "aliases": [],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -773,38 +675,6 @@
         {
           "lang": "en",
           "text": "小田急エース (as printed on ファミリーマート's own store page; no 北館/南館 wording). Location and entrance not verified (search only, no route). Current status unknown."
-        }
-      ]
-    },
-    {
-      "id": "shop-sjk-rec-015",
-      "category": "shop",
-      "names": [
-        {
-          "lang": "ja",
-          "text": "ドトールコーヒーショップ 新宿京王モールアネックス店"
-        }
-      ],
-      "aliases": [],
-      "floorId": null,
-      "displayPosition": null,
-      "connectorNodeIds": [],
-      "paid": null,
-      "evidence": {
-        "sourceIds": [
-          "chain-doutor-keiomall-annex-sjk-2026-10"
-        ],
-        "method": "facts-only chain store page (OD-34), UNVERIFIED, AREA_ONLY",
-        "checkedDate": "2026-10-24"
-      },
-      "notes": [
-        {
-          "lang": "ja",
-          "text": "京王モールアネックス（店舗公式ページの表記。住所は西新宿1‐19）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
-        },
-        {
-          "lang": "en",
-          "text": "京王モールアネックス (as printed on the shop's own page; address 西新宿1‐19). Location and entrance not verified (search only, no route). Current status unknown."
         }
       ]
     },
@@ -846,10 +716,15 @@
       "names": [
         {
           "lang": "ja",
+          "text": "TSUTSUMI 新宿京王モール店"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
           "text": "新宿京王モール店"
         }
       ],
-      "aliases": [],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -864,11 +739,11 @@
       "notes": [
         {
           "lang": "ja",
-          "text": "京王モールB1F（TSUTSUMIの店舗公式ページの表記。チェーン名はページの店舗名に含まれない）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+          "text": "京王モールB1F（店舗公式ページの表記）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
         },
         {
           "lang": "en",
-          "text": "京王モールB1F (as printed on TSUTSUMI's own store page; the printed store name omits the chain name). Location and entrance not verified (search only, no route). Current status unknown."
+          "text": "京王モールB1F (as printed on TSUTSUMI's own store page). Location and entrance not verified (search only, no route). Current status unknown."
         }
       ]
     },
@@ -905,5 +780,21 @@
       ]
     }
   ],
-  "removed": []
+  "removed": [
+    {
+      "id": "shop-sjk-rec-005",
+      "name": "ドトールコーヒーショップ 新宿京王モール店",
+      "reason": "held: the chain site's terms say 「無断で…禁止」 with no stated private-use exception; pending a director ruling under OD-34"
+    },
+    {
+      "id": "shop-sjk-rec-006",
+      "name": "眼鏡市場 新宿京王モール店",
+      "reason": "held: the chain site's terms say 「無断で…禁止」 with no stated private-use exception; pending a director ruling under OD-34"
+    },
+    {
+      "id": "shop-sjk-rec-015",
+      "name": "ドトールコーヒーショップ 新宿京王モールアネックス店",
+      "reason": "held: the chain site's terms say 「無断で…禁止」 with no stated private-use exception; pending a director ruling under OD-34"
+    }
+  ]
 }
