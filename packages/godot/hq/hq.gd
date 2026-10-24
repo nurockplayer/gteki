@@ -2,7 +2,7 @@ extends Node3D
 ## HQ client (G-1 loader + G-2 walk): picks a station snapshot, loads it, and lets you walk it third-person.
 ## No search/route (G-3) yet. The HQ look (G-4b) is opt-in: `--look=hq` builds the sidecar-driven Environment and
 ## applies the station's material table (gteki_look.gd); the default `baseline` is today's look.
-## Run:  godot --path packages/godot res://hq/hq.tscn -- [--station=<id>] [--scenes=<dir>] [--lightmap=on|off] [--look=baseline|hq] [--gi=off|sdfgi] [--check]
+## Run:  godot --path packages/godot res://hq/hq.tscn -- [--station=<id>] [--scenes=<dir>] [--lightmap=on|off] [--look=baseline|hq] [--gi=off|sdfgi] [--ao=on|off] [--ao-light-affect=<0..1>] [--check]
 ## Capture (windowed; see hq_capture.gd): --capture=<dir> [--poses=<file>] [--perf=<seconds>]. On a headless display
 ## `--capture` says so and exits 0 after loading the station; `--perf` says "perf needs a display" and exits 0 before
 ## loading anything, because a frame time nobody rendered is no measurement.
@@ -12,6 +12,9 @@ extends Node3D
 ##       --station), prints a summary and quits; it also asserts the lighting wiring (check_lighting) on each.
 ##       --lightmap=on (default) applies the station's baked lightmap (G-4a); =off keeps the unlit snapshot. With the
 ##       lightmap on, the added lights are masked to the avatar, as the web lights only its own avatar in "scene" mode.
+##       --ao=on (default) applies the station's kit AO atlases (#391); =off keeps the snapshot materials. With the
+##       AO applied, --ao-light-affect=<0..1> sets their ao_light_affect (default: Godot's own value), the C3 GPU
+##       check's sweep of the web's AO-on-indirect-light weighting.
 
 const Scene = preload("res://addons/gteki/gteki_scene.gd")
 const Walker = preload("res://addons/gteki/gteki_walker.gd")
@@ -35,6 +38,9 @@ var camera: FollowCamera
 var spawn_index := 0
 var guide_hud: GuideHud
 var lightmap := true
+## Kit AO atlases (#391) and the C3 sweep value for their ao_light_affect; -1 keeps Godot's default.
+var ao := true
+var ao_light_affect := -1.0
 ## G-4b: "baseline" (today's look) or "hq" (style-bible look); see gteki_look.gd.
 var look_profile := "baseline"
 var gi := "off"
@@ -58,13 +64,15 @@ func _ready() -> void:
 			scenes_dir = arg.trim_prefix("--scenes=")
 		elif arg == "--check":
 			check_only = true
-		elif arg.begins_with("--lightmap="):
-			var value := arg.trim_prefix("--lightmap=")
-			if value != "on" and value != "off":
-				printerr("--lightmap must be on or off, not %s" % value)
-				get_tree().quit(2)
-				return
-			lightmap = value == "on"
+	var client_args := parse_client_args(OS.get_cmdline_user_args())
+	if not (client_args.errors as Array).is_empty():
+		for message in client_args.errors:
+			printerr(message)
+		get_tree().quit(2)
+		return
+	lightmap = bool(client_args.lightmap)
+	ao = bool(client_args.ao)
+	ao_light_affect = float(client_args.light_affect)
 	var capture_args := Capture.parse_args(OS.get_cmdline_user_args())
 	if not (capture_args.error as String).is_empty():
 		printerr(capture_args.error)
@@ -138,7 +146,7 @@ func _ready() -> void:
 			get_tree().quit(0)
 			return
 		var capture := Capture.new()
-		var code := await capture.run(self, capture_dir, poses_file, look_profile, gi, perf_seconds)
+		var code := await capture.run(self, capture_dir, poses_file, look_profile, gi, perf_seconds, ao, ao_light_affect)
 		get_tree().quit(code)
 		return
 
@@ -149,6 +157,48 @@ func lightmap_summary() -> String:
 	if current.lightmap_applied:
 		return "lightmap %d meshes / %d surfaces, %dx%d" % [current.lightmap_meshes, current.lightmap_surfaces, current.lightmap_texture_size.x, current.lightmap_texture_size.y]
 	return "no lightmap"
+
+
+## Flags that change what a station load applies, validated like --lightmap before anything is loaded: --lightmap=on|off
+## (default on), --ao=on|off (default on) and --ao-light-affect=<0..1> (default -1, Godot's own value).
+static func parse_client_args(args: PackedStringArray) -> Dictionary:
+	var lightmap := true
+	var ao := true
+	var light_affect := -1.0
+	var errors: Array[String] = []
+	for arg in args:
+		if arg.begins_with("--lightmap="):
+			var value := arg.trim_prefix("--lightmap=")
+			if value != "on" and value != "off":
+				errors.append("--lightmap must be on or off, not %s" % value)
+				continue
+			lightmap = value == "on"
+		elif arg.begins_with("--ao="):
+			var value := arg.trim_prefix("--ao=")
+			if value != "on" and value != "off":
+				errors.append("--ao must be on or off, not %s" % value)
+				continue
+			ao = value == "on"
+		elif arg.begins_with("--ao-light-affect="):
+			var value := arg.trim_prefix("--ao-light-affect=")
+			var number := value.to_float()
+			# is_finite keeps out nan and inf, which compare false with every bound.
+			if not value.is_valid_float() or not is_finite(number) or number < 0.0 or number > 1.0:
+				errors.append("--ao-light-affect must be a number from 0 to 1, not %s" % value)
+				continue
+			light_affect = number
+	return {"lightmap": lightmap, "ao": ao, "light_affect": light_affect, "errors": errors}
+
+
+## One line for the kit AO: what the sidecar recorded and applied, and the light_affect the C3 check asked for.
+func ao_summary() -> String:
+	if not current.ao_atlas.is_empty() and not ao:
+		return "AO off (%d kinds recorded)" % current.ao_atlas.size()
+	if current.ao_atlas_applied:
+		var affect: Variant = current.ao_atlas_light_affect
+		var note := "light_affect default" if affect == null else "light_affect %.2f" % float(affect)
+		return "AO %d kinds / %d surfaces, %s" % [current.ao_atlas_kinds, current.ao_atlas_surfaces, note]
+	return "no AO atlas"
 
 
 ## One line for the station summary: the look profile, or what the hq Environment took from the sidecar.
@@ -219,7 +269,7 @@ func load_station(id: String) -> bool:
 	holder = Node3D.new()
 	add_child(holder)
 	current = Scene.new()
-	var ok := current.load_snapshot(scenes_dir.path_join(id), holder, {"lightmap": lightmap})
+	var ok := current.load_snapshot(scenes_dir.path_join(id), holder, {"lightmap": lightmap, "ao_atlas": ao, "ao_light_affect": ao_light_affect})
 	if not ok:
 		printerr("Cannot load %s: %s" % [id, str(current.issues)])
 		return false
@@ -239,7 +289,7 @@ func load_station(id: String) -> bool:
 		# skipped instead of repainting whatever took the name (#254/#257).
 		if not (table.mismatched as Array).is_empty():
 			printerr("%s: material mappings skipped, evidence no longer matches: %s" % [id, str(table.mismatched)])
-	print("%s: %d meshes (walkable %d, collider %d), %d walls, %d spawn points, %d export warnings, %s, %s" % [id, current.counts.meshes, current.counts.walkable, current.counts.collider, current.wall_shapes, current.spawn_points.size(), current.sidecar.warnings.size(), lightmap_summary(), look_summary()])
+	print("%s: %d meshes (walkable %d, collider %d), %d walls, %d spawn points, %d export warnings, %s, %s, %s" % [id, current.counts.meshes, current.counts.walkable, current.counts.collider, current.wall_shapes, current.spawn_points.size(), current.sidecar.warnings.size(), lightmap_summary(), look_summary(), ao_summary()])
 	var background: Variant = current.environment.get("background")
 	if background is float or background is int:
 		RenderingServer.set_default_clear_color(Color.hex((int(background) << 8) | 0xff))

@@ -129,7 +129,7 @@ steps, platform-door leaves) is baked into static merged meshes at that pose (Go
 ```sh
 bash packages/godot/run-scenes.sh                 # export both stations, then the headless Godot snapshot tests
 bash packages/godot/run-scenes.sh shinjuku        # one station
-godot --path packages/godot res://hq/hq.tscn -- --station=ikebukuro [--lightmap=on|off]   # HQ skeleton (windowed; Tab cycles stations)
+godot --path packages/godot res://hq/hq.tscn -- --station=ikebukuro [--lightmap=on|off] [--ao=on|off] [--ao-light-affect=<0..1>]   # HQ skeleton (windowed; Tab cycles stations)
 godot --headless --path packages/godot res://hq/hq.tscn -- --station=shinjuku --check
 ```
 
@@ -220,6 +220,19 @@ that carries both, so the bake stays the governing lighting term there. No stati
 sidecar gains an `ao_atlas_bindings` block; Shinjuku's own baked `aoMap` (a station `CanvasTexture`, not a kit atlas)
 is named in its `warnings` because textures are stripped. `tests/run_scene_tests.gd` checks the applier against a
 synthetic atlas in a temp directory.
+
+`hq.gd` takes `--ao=on|off` (default on) and `--ao-light-affect=<0..1>`. The sweep value exists for the C3 GPU check:
+the web applies AO to the PMREM indirect term, and `ao_light_affect` is Godot's own knob for the same weighting, so the
+check renders the same poses at several values and compares them against the web. `--ao-light-affect` is passed through
+`gteki_scene.gd` `options.ao_light_affect` to the applier, written to every AO copy, and recorded on the scene as
+`ao_atlas_light_affect` (`null` when the value was not given and Godot's own value was kept, which is also what an
+invalid value reports instead of applying a partial atlas). The station line names what was applied
+(`AO <kinds> kinds / <n> surfaces, light_affect <value|default>`, or `AO off (<k> kinds recorded)` with `--ao=off`),
+and `--capture`'s `report.json` records `ao` and `ao_light_affect` (`null` for Godot's own value) beside `look` and
+`gi`, so the C3 comparison states the AO state its pictures were taken with. `tests/run_scene_tests.gd` checks that
+0.5 reaches every copy and is recorded, that no value keeps the default and records `null`, and that 1.5 or NaN is an
+issue applying nothing; `tests/run_capture_tests.gd` checks the flag rules (defaults, the 0..1 bounds, NaN/inf and
+empty values refused).
 
 ## HQ look profile (G-4b of #164)
 

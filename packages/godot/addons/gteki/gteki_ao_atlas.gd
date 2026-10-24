@@ -12,7 +12,8 @@ extends RefCounted
 ## (`Image.load_from_file` does not convert colour spaces), its sha256 is checked against the sidecar, and one
 ## `ImageTexture` per kind is shared by every surface bound to it. Every flagged surface gets a duplicate of the
 ## snapshot material with `ao_enabled`, `ao_texture`, `ao_on_uv2` and `ao_texture_channel = TEXTURE_CHANNEL_RED`;
-## `ao_light_affect` keeps Godot's default. Unflagged surfaces and the shared snapshot material are never mutated.
+## `ao_light_affect` keeps Godot's default unless `apply()` is given 0..1 (the C3 GPU check sweeps that value, because
+## the web applies AO to the PMREM indirect term). Unflagged surfaces and the shared snapshot material are never mutated.
 
 const Bridge = preload("res://addons/gteki/gteki_bridge.gd")
 
@@ -28,14 +29,19 @@ var textures: Dictionary = {}
 ## kind → absolute atlas path and size, for diagnostics and the headless check.
 var texture_paths: Dictionary = {}
 var texture_sizes: Dictionary = {}
+## The ao_light_affect every AO copy was given, or null when Godot's default was kept.
+var light_affect: Variant = null
 ## [snapshot material, kind] → the AO copy every surface with that pair shares.
 var materials: Dictionary = {}
 
 
 ## Applies `block` (the sidecar's `ao_atlas_bindings`) to the meshes flagged in their extras. `station_dir` overrides
-## the station folder (the headless test's temp atlas); empty means <repo>/stations/<station_id>/gteki. Returns true
-## when every flagged surface was converted; any miss is an issue (a partial atlas would misrepresent the kit).
-func apply(root: Node3D, block: Dictionary, station_id: String, station_dir := "") -> bool:
+## the station folder (the headless test's temp atlas); empty means <repo>/stations/<station_id>/gteki. `light_affect`
+## of 0..1 is written to every AO copy and kept in `light_affect`; a negative value keeps Godot's default (null).
+## Anything above 1 or NaN is an issue and applies nothing. Returns true when every flagged surface was converted; any
+## miss is an issue (a partial atlas would misrepresent the kit).
+func apply(root: Node3D, block: Dictionary, station_id: String, station_dir := "", light_affect := -1.0) -> bool:
+	self.light_affect = null
 	issues.clear()
 	meshes = 0
 	surfaces = 0
@@ -43,6 +49,12 @@ func apply(root: Node3D, block: Dictionary, station_id: String, station_dir := "
 	texture_paths.clear()
 	texture_sizes.clear()
 	materials.clear()
+	# NaN compares false with every bound, so it is checked before the range test.
+	if is_nan(light_affect) or light_affect > 1.0:
+		issues.append("ao_light_affect must be between 0 and 1, not %s" % str(light_affect))
+		return false
+	if light_affect >= 0.0:
+		self.light_affect = light_affect
 	if block.is_empty():
 		issues.append("AO atlas block is empty")
 		return false
@@ -147,6 +159,9 @@ func _apply_mesh(mesh: MeshInstance3D, flagged: Variant, missing: Dictionary) ->
 			copy.ao_texture = textures[kind]
 			copy.ao_on_uv2 = true
 			copy.ao_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+			# Only when a sweep asked for one: the copies keep Godot's default otherwise.
+			if light_affect != null:
+				copy.ao_light_affect = float(light_affect)
 			materials[cache_key] = copy
 		mesh.set_surface_override_material(index, materials[cache_key])
 		converted += 1

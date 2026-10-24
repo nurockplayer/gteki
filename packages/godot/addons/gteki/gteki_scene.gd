@@ -59,6 +59,8 @@ var ao_atlas_applied := false
 var ao_atlas_meshes := 0
 var ao_atlas_surfaces := 0
 var ao_atlas_kinds := 0
+## The ao_light_affect the AO copies were given (C3 GPU check), or null for Godot's default.
+var ao_atlas_light_affect: Variant = null
 
 
 ## ENU (x east, y north, z up) to Godot (x, z, -y), the same mapping as @gteki/geo enuToRenderer.
@@ -69,6 +71,8 @@ static func enu_to_godot(x: float, y: float, z: float) -> Vector3:
 ## `options.lightmap` (default true): apply the sidecar's baked lightmap when it has one. Shinjuku has none, so the
 ## option changes nothing there. A lightmap that fails to apply is an issue (the load fails) rather than a silent
 ## downgrade: a snapshot with the wrong lighting is worse than a loud error.
+## `options.ao_atlas` (default true): apply the sidecar's kit AO atlases. `options.ao_light_affect` (default -1) is
+## passed to the AO copies: 0..1 sets their ao_light_affect, anything below keeps Godot's default.
 func load_snapshot(dir: String, parent: Node3D, options: Dictionary = {}) -> bool:
 	issues.clear()
 	lightmap = {}
@@ -82,6 +86,7 @@ func load_snapshot(dir: String, parent: Node3D, options: Dictionary = {}) -> boo
 	ao_atlas_meshes = 0
 	ao_atlas_surfaces = 0
 	ao_atlas_kinds = 0
+	ao_atlas_light_affect = null
 	var errors: Array[String] = []
 	sidecar = Station.read_json(dir.path_join("scene.json"), errors)
 	issues.append_array(errors)
@@ -104,7 +109,7 @@ func load_snapshot(dir: String, parent: Node3D, options: Dictionary = {}) -> boo
 	if loaded == null:
 		return false
 	_finish_meshes(loaded)
-	_apply_ao_atlas(options.get("ao_atlas", true))
+	_apply_ao_atlas(options.get("ao_atlas", true), float(options.get("ao_light_affect", -1.0)))
 	_apply_lightmap(options.get("lightmap", true))
 	_build_walls()
 	_read_spawn_points()
@@ -115,7 +120,7 @@ func load_snapshot(dir: String, parent: Node3D, options: Dictionary = {}) -> boo
 ## Lane E #391: the exporter records which surfaces carried a kit AO atlas, one entry per kind; the PNGs are loaded
 ## from the station's own assets, like the lightmap. Applied before the lightmap: its ShaderMaterial replaces the
 ## material on a surface that carries both, so the bake stays the governing lighting term there.
-func _apply_ao_atlas(enabled: bool) -> void:
+func _apply_ao_atlas(enabled: bool, light_affect := -1.0) -> void:
 	var block: Variant = sidecar.get("ao_atlas_bindings", {})
 	if not block is Dictionary or block.is_empty():
 		return
@@ -123,7 +128,7 @@ func _apply_ao_atlas(enabled: bool) -> void:
 	if not enabled:
 		return
 	var applier := AoAtlas.new()
-	var applied := applier.apply(root, block, str(sidecar.get("stationId", "")))
+	var applied := applier.apply(root, block, str(sidecar.get("stationId", "")), "", light_affect)
 	issues.append_array(applier.issues)
 	if not applied:
 		return
@@ -131,6 +136,7 @@ func _apply_ao_atlas(enabled: bool) -> void:
 	ao_atlas_meshes = applier.meshes
 	ao_atlas_surfaces = applier.surfaces
 	ao_atlas_kinds = applier.textures.size()
+	ao_atlas_light_affect = applier.light_affect
 
 
 ## G-4a: the exporter records the material state (which surfaces carry three's lightMap) and the intensity; the

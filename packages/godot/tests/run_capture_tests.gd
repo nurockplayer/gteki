@@ -10,6 +10,7 @@ const Walker = preload("res://addons/gteki/gteki_walker.gd")
 const Bridge = preload("res://addons/gteki/gteki_bridge.gd")
 const Guide = preload("res://addons/gteki/gteki_guide.gd")
 const Capture = preload("res://hq/hq_capture.gd")
+const Hq = preload("res://hq/hq.gd")
 const Evidence = preload("res://addons/gteki/gteki_evidence.gd")
 const Report = preload("res://tests/perf_report.gd")
 ## The evidence walk's plan, read (never run) so a capture pose can only describe a route the G-5a table walks.
@@ -75,6 +76,20 @@ func check_arguments() -> void:
 	check(String(Capture.parse_args(PackedStringArray(["--perf=5"])).error).contains("--capture"), "self: --perf without --capture names the missing flag")
 	check(not String(Capture.parse_args(PackedStringArray(["--capture="])).error).is_empty(), "self: an empty --capture is an argument error")
 	check(not String(Capture.parse_args(PackedStringArray(["--poses="])).error).is_empty(), "self: an empty --poses is an argument error")
+	# The station-load flags (`hq.gd`): lightmap and AO default on, --ao-light-affect defaults to -1 (Godot's own value),
+	# and anything else is an argument error rather than a silent fallback.
+	var defaults := Hq.parse_client_args(PackedStringArray([]))
+	check((defaults.errors as Array).is_empty() and bool(defaults.lightmap) and bool(defaults.ao), "self: lightmap and AO apply by default")
+	check(is_equal_approx(float(defaults.light_affect), -1.0), "self: no --ao-light-affect means Godot's own value (-1)")
+	var off := Hq.parse_client_args(PackedStringArray(["--lightmap=off", "--ao=off", "--ao-light-affect=0.5"]))
+	check((off.errors as Array).is_empty() and not bool(off.lightmap) and not bool(off.ao) and is_equal_approx(float(off.light_affect), 0.5), "self: --lightmap=off, --ao=off and --ao-light-affect=0.5 parse")
+	var bounds := Hq.parse_client_args(PackedStringArray(["--ao-light-affect=0"]))
+	check(is_equal_approx(float(bounds.light_affect), 0.0), "self: --ao-light-affect=0 is a real value, not 'no value' (-1)")
+	var full := Hq.parse_client_args(PackedStringArray(["--ao-light-affect=1"]))
+	check(is_equal_approx(float(full.light_affect), 1.0), "self: --ao-light-affect=1 is accepted")
+	for bad in ["--lightmap=yes", "--ao=1", "--ao-light-affect=1.5", "--ao-light-affect=-0.1", "--ao-light-affect=nan", "--ao-light-affect=inf", "--ao-light-affect="]:
+		var parsed := Hq.parse_client_args(PackedStringArray([bad]))
+		check(not (parsed.errors as Array).is_empty(), "self: %s is an argument error" % bad)
 
 
 func check_percentiles() -> void:

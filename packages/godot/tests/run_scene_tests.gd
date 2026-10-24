@@ -169,6 +169,27 @@ func check_ao_atlas() -> void:
 	check(not malformed.issues.is_empty() and str(malformed.issues[0]).contains("malformed"), "ao: malformed extras are reported (got %s)" % str(malformed.issues))
 	malformed_root.free()
 
+	# The C3 GPU check sweeps ao_light_affect: an explicit value reaches every AO copy and is recorded, the default
+	# (no value) keeps Godot's own and is recorded as null, and an out-of-range or NaN value applies nothing.
+	var sweep_root := _ao_root()
+	var sweep := AoAtlas.new()
+	check(sweep.apply(sweep_root, block, "", dir, 0.5), "ao: an explicit light_affect applies: %s" % str(sweep.issues))
+	check(sweep.light_affect != null and is_equal_approx(float(sweep.light_affect), 0.5), "ao: the applied light_affect is recorded (got %s)" % str(sweep.light_affect))
+	for node_name in ["first", "second"]:
+		var mesh: MeshInstance3D = sweep_root.get_node(node_name)
+		for index in range(mesh.mesh.get_surface_count()):
+			var copy := mesh.get_surface_override_material(index) as BaseMaterial3D
+			check(copy != null and is_equal_approx(copy.ao_light_affect, 0.5), "ao: %s/%d takes the swept light_affect" % [node_name, index])
+	sweep_root.free()
+	check(applier.light_affect == null, "ao: no light_affect asked for is recorded as null, not 0")
+	for bad in [1.5, NAN]:
+		var bad_root := _ao_root()
+		var bad_applier := AoAtlas.new()
+		check(not bad_applier.apply(bad_root, block, "", dir, bad), "ao: light_affect %s is refused" % str(bad))
+		check(bad_applier.issues.size() == 1 and str(bad_applier.issues[0]).contains("ao_light_affect"), "ao: light_affect %s is reported (got %s)" % [str(bad), str(bad_applier.issues)])
+		check(bad_applier.light_affect == null and (bad_root.get_node("first") as MeshInstance3D).get_surface_override_material(0) == null, "ao: light_affect %s applies nothing" % str(bad))
+		bad_root.free()
+
 	DirAccess.remove_absolute(path)
 	DirAccess.remove_absolute(dir)
 
@@ -397,6 +418,7 @@ func _check_ao_atlas_station(scene: Scene, id: String) -> void:
 	var block: Variant = scene.sidecar.get("ao_atlas_bindings", {})
 	if block is Dictionary and block.is_empty():
 		check(not scene.ao_atlas_applied and scene.ao_atlas_meshes == 0 and scene.ao_atlas_surfaces == 0, "%s: no AO atlas block and none applied" % id)
+		check(scene.ao_atlas_light_affect == null, "%s: no AO bookkeeping (light_affect) without a block" % id)
 		return
 	check(block is Dictionary and scene.ao_atlas_applied, "%s: the recorded AO atlases are applied" % id)
 
