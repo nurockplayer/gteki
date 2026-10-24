@@ -5,10 +5,10 @@ import { loadShinjukuBundle } from "../data/bundle.ts";
 import { buildScene } from "../gteki/scene.ts";
 import { buildLayout, type Plan } from "../scene/layout.ts";
 import planJson from "../data/plan.json";
-import { FOLLOW, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack } from "../../../apps/web/src/explorer/followCamera.ts";
+import { FOLLOW, approachBoom, followDistance, followPose, solveRaisedBoom } from "../../../apps/web/src/explorer/followCamera.ts";
 import { bodyBlock, hitNormal } from "../../../apps/web/src/explorer/bodyCollision.ts";
 import { DEFAULT_GROUND, resolveWalls, wallToRenderer } from "../../../apps/web/src/explorer/walker.ts";
-import { castAll, castCamera, explorerTargets, keepBelowBlockers } from "../../../apps/web/src/explorer/raycast.ts";
+import { castAll, castCamera, explorerTargets } from "../../../apps/web/src/explorer/raycast.ts";
 
 /**
  * #70: follow camera and roof on the street-level flights of every roofed (E27 屋根の有無 = 2) sloped run.
@@ -23,6 +23,7 @@ import { castAll, castCamera, explorerTargets, keepBelowBlockers } from "../../.
  */
 const { bundle } = loadShinjukuBundle();
 const layout = buildLayout(bundle, planJson as Plan);
+const NEAR = 0.05; // the PerspectiveCamera near plane below
 const FOV_DEG = 60; // Explorer's PerspectiveCamera
 const DEFAULT_PITCH = -0.12; // Explorer's initial pitch
 const CEILING = "ceiling collider (invisible)";
@@ -72,25 +73,32 @@ describe("roofed sloped street stairs: roof caps, glazing and the follow camera 
     return { full, capless };
   }
 
-  /** Explorer.placeCamera at steady state (snap): shoulder probe, followPose, followBoom / followDistance, keepBelowBlockers. */
+  /**
+   * Explorer.placeCamera at snap (the steady state): every camera target is two-sided (`cameraSides`), the shoulder probe,
+   * followPose, solveRaisedBoom, then the actual-direction recast bounded by approachBoom, exactly as the explorer does.
+   */
   function settle(t: ReturnType<typeof explorerTargets>, ray: THREE.Raycaster, head: THREE.Vector3, yaw: number, pitch: number) {
+    const sides = new Set(t.camera);
+    const hasTargets = t.camera.length > 0;
     let shoulder: number = FOLLOW.shoulder;
-    ray.set(head, new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw))); ray.far = FOLLOW.shoulder + 0.25;
-    const side = castCamera(ray, t.camera, t.blockers)[0];
-    if (side) shoulder = Math.max(0, side.distance - 0.25);
-    const pose = followPose(head, yaw, pitch, shoulder);
-    const cast = (b: THREE.Vector3) => {
-      ray.set(pose.pivot, b); ray.far = FOLLOW.defaultDistance + FOLLOW.clearance;
-      return castCamera(ray, t.camera, t.blockers).map((h) => ({ distance: h.distance, cameraOnly: t.blockers.has(h.object) }));
-    };
-    let { back, distance } = t.blockers.size ? followBoom(FOLLOW.defaultDistance, pose.back, cast) : { back: pose.back, distance: followDistance(FOLLOW.defaultDistance, cast(pose.back)) };
-    if (t.camera.length) {
-      const raise = easeRaise(0, constrainedPitch(FOLLOW.defaultDistance, back, distance, cast, new THREE.Vector3()), 0, true);
-      if (raise > 0) { back = raisedBack(back, raise, new THREE.Vector3()); distance = followDistance(FOLLOW.defaultDistance, cast(back)); }
+    if (hasTargets) {
+      ray.set(head, new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw))); ray.far = FOLLOW.shoulder + 0.25;
+      const side = castCamera(ray, t.camera, sides)[0];
+      if (side) shoulder = Math.max(0, side.distance - 0.25);
     }
-    const position = pose.pivot.clone().addScaledVector(back, distance);
-    if (t.blockers.size) keepBelowBlockers(pose.pivot, position, [...t.blockers], FOLLOW.clearance, ray);
-    return { pose, position, back, distance, hit: cast(back)[0] };
+    const pose = followPose(head, yaw, pitch, shoulder);
+    const cast = (b: THREE.Vector3, length: number = FOLLOW.defaultDistance) => {
+      ray.set(pose.pivot, b); ray.far = length + FOLLOW.clearance;
+      return castCamera(ray, t.camera, sides).map((h) => ({ distance: h.distance, cameraOnly: t.blockers.has(h.object) }));
+    };
+    let back = pose.back, distance: number = FOLLOW.defaultDistance;
+    if (hasTargets) ({ back, distance } = solveRaisedBoom(FOLLOW.defaultDistance, pose.back, cast, 0, 0, true));
+    const length = distance;
+    const hits = hasTargets ? cast(back, Math.max(length, FOLLOW.defaultDistance)) : [];
+    const target = Math.min(length, distance, followDistance(FOLLOW.defaultDistance, hits));
+    const actual = approachBoom(0, target, hits[0]?.distance ?? null, NEAR, 0, true);
+    const position = pose.pivot.clone().addScaledVector(back, actual);
+    return { pose, position, back, distance: actual, hit: cast(back)[0] };
   }
 
   const memo = new Map<number, Row[]>();
