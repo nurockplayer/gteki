@@ -1,0 +1,1128 @@
+{
+  "schema": "gteki.station/0.1",
+  "note": "Shinjuku facilities batch 2 (station buildings), facts only, UNVERIFIED; not route evidence.",
+  "sources": [
+    {
+      "id": "lumineest-shinjuku-facilities-2026-10",
+      "title": "サービス・施設案内 │ ルミネエスト新宿 │ LUMINE",
+      "publisher": "ルミネ",
+      "url": "https://www.lumine.ne.jp/est/information/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "サービス・施設案内 │ ルミネエスト新宿 │ LUMINE (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T11:04:19Z",
+      "datasetDate": null,
+      "notes": "館内のご案内 rows only (インフォメーション / 多目的トイレ). The ベビーチェア付トイレ and ベビーベッド付トイレ floor lists were recorded as features in the log, not as POIs."
+    },
+    {
+      "id": "lumine-shinjuku-facilities-2026-10",
+      "title": "サービス・施設案内 │ ルミネ新宿 │ LUMINE",
+      "publisher": "ルミネ",
+      "url": "https://www.lumine.ne.jp/shinjuku/information/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "サービス・施設案内 │ ルミネ新宿 │ LUMINE (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T11:04:19Z",
+      "datasetDate": null,
+      "notes": "館内のご案内 rows only (インフォメーション / 授乳室 / バリアフリートイレ). The ベビーチェア付トイレ, ベビーベッド付トイレ and 着替台付トイレ floor lists were recorded as features in the log, not as POIs."
+    },
+    {
+      "id": "newoman-shinjuku-facilities-2026-10",
+      "title": "サービス・施設案内 │ ニュウマン新宿 │ NEWoMan",
+      "publisher": "ルミネ",
+      "url": "https://www.newoman.jp/shinjuku/information/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "サービス・施設案内 │ ニュウマン新宿 │ NEWoMan (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T11:04:19Z",
+      "datasetDate": null,
+      "notes": "その他 rows only (お客さま用トイレ / 多目的トイレ / 授乳室) and 4F インフォメーション. Parking, delivery, rental and counter rows not transcribed."
+    },
+    {
+      "id": "odakyudept-shinjuku-facilities-2026-10",
+      "title": "サービスガイド(新宿店) | 小田急百貨店",
+      "publisher": "小田急百貨店",
+      "url": "https://www.odakyu-dept.co.jp/shinjuku/services/index.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896",
+        "date": "2026-10-24"
+      },
+      "attribution": "サービスガイド(新宿店) | 小田急百貨店 (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T11:04:19Z",
+      "datasetDate": null,
+      "notes": "サービスカウンター (地下1階) and the AED statement only. Counters, gift salon, cloak and order services not transcribed."
+    },
+    {
+      "id": "odakyudept-shinjuku-floorguide-2026-10",
+      "title": "フロアガイド(新宿店) | 小田急百貨店",
+      "publisher": "小田急百貨店",
+      "url": "https://www.odakyu-dept.co.jp/shinjuku/floorguide/index.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896",
+        "date": "2026-10-24"
+      },
+      "attribution": "フロアガイド(新宿店) | 小田急百貨店 (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T11:04:19Z",
+      "datasetDate": null,
+      "notes": "Facility icons (化粧室 / ご婦人専用化粧室 / 授乳室 / AED) printed per floor; shop rows not transcribed."
+    }
+  ],
+  "pois": [
+    {
+      "id": "service-sjk-lumineest-001",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "インフォメーション"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "lumineest-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ルミネエスト新宿 1F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "LUMINE EST Shinjuku, 1F. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-lumineest-001",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "多目的トイレ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "lumineest-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ルミネエスト新宿 B1。設備: オストメイト機能あり（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "LUMINE EST Shinjuku, B1. Features: ostomy facilities (operator wording). Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-lumine-001",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "インフォメーション"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "lumine-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ルミネ新宿 ルミネ1-5F（「＜ルミネ1-5F/ルミネ2-2F＞」の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "LUMINE Shinjuku, LUMINE1 5F. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-lumine-002",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "インフォメーション"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "lumine-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ルミネ新宿 ルミネ2-2F（「＜ルミネ1-5F/ルミネ2-2F＞」の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "LUMINE Shinjuku, LUMINE2 2F. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-lumine-003",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "授乳室"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "lumine-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ルミネ新宿 ＜ルミネ1＞7F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "LUMINE Shinjuku, LUMINE1 7F. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-lumine-004",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "授乳室"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "lumine-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ルミネ新宿 ＜ルミネ2＞4F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "LUMINE Shinjuku, LUMINE2 4F. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-lumine-001",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "バリアフリートイレ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "lumine-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ルミネ新宿 ＜ルミネ1＞4F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "LUMINE Shinjuku, LUMINE1 4F. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-lumine-002",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "バリアフリートイレ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "lumine-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ルミネ新宿 ＜ルミネ1＞7F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "LUMINE Shinjuku, LUMINE1 7F. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-lumine-003",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "バリアフリートイレ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "lumine-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ルミネ新宿 ＜ルミネ2＞2F。設備: オストメイト機能付き（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "LUMINE Shinjuku, LUMINE2 2F. Features: ostomy facilities (operator wording). Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-newoman-001",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "インフォメーション"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "newoman-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ニュウマン新宿 4F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "NEWoMan Shinjuku, 4F. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-newoman-002",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "授乳室"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "newoman-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ニュウマン新宿 4F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "NEWoMan Shinjuku, 4F. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-newoman-001",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "お客さま用トイレ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "newoman-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ニュウマン新宿 B1。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "NEWoMan Shinjuku, B1. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-newoman-002",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "お客さま用トイレ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "newoman-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ニュウマン新宿 M2。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "NEWoMan Shinjuku, M2. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-newoman-003",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "お客さま用トイレ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "newoman-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ニュウマン新宿 2F フードホール内。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "NEWoMan Shinjuku, 2F (inside the food hall). Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-newoman-004",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "お客さま用トイレ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "newoman-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ニュウマン新宿 4F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "NEWoMan Shinjuku, 4F. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-newoman-005",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "お客さま用トイレ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "newoman-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ニュウマン新宿 6F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "NEWoMan Shinjuku, 6F. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-newoman-006",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "お客さま用トイレ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "newoman-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ニュウマン新宿 7F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "NEWoMan Shinjuku, 7F. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-newoman-007",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "多目的トイレ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "newoman-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ニュウマン新宿 M2。設備: オストメイト対応あり（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "NEWoMan Shinjuku, M2. Features: ostomy facilities (operator wording). Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-newoman-008",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "多目的トイレ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "newoman-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ニュウマン新宿 4F。設備: オストメイト対応あり（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "NEWoMan Shinjuku, 4F. Features: ostomy facilities (operator wording). Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-newoman-009",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "多目的トイレ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "newoman-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ニュウマン新宿 7F。設備: オストメイト対応あり（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "NEWoMan Shinjuku, 7F. Features: ostomy facilities (operator wording). Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-odakyudept-001",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "サービスカウンター"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyudept-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急百貨店 新宿店 地下1階。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Department Store Shinjuku, B1. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-odakyudept-008",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ecbo cloak(エクボクローク)"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyudept-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急百貨店 新宿店 2階＝ギフトサロン。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "小田急百貨店 新宿店, 2階＝ギフトサロン. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-odakyudept-002",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "AED"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyudept-shinjuku-floorguide-2026-10",
+          "odakyudept-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急百貨店 新宿店 7F。設備: M2階を除く全フロアに設置（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Department Store Shinjuku, 7F. Features: installed on every floor except M2 (operator wording). Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-odakyudept-003",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "AED"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyudept-shinjuku-floorguide-2026-10",
+          "odakyudept-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急百貨店 新宿店 2F。設備: M2階を除く全フロアに設置（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Department Store Shinjuku, 2F. Features: installed on every floor except M2 (operator wording). Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-odakyudept-004",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "AED"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyudept-shinjuku-floorguide-2026-10",
+          "odakyudept-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急百貨店 新宿店 1F。設備: M2階を除く全フロアに設置（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Department Store Shinjuku, 1F. Features: installed on every floor except M2 (operator wording). Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-odakyudept-005",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "AED"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyudept-shinjuku-floorguide-2026-10",
+          "odakyudept-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急百貨店 新宿店 B1F。設備: M2階を除く全フロアに設置（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Department Store Shinjuku, B1F. Features: installed on every floor except M2 (operator wording). Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-odakyudept-006",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "AED"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyudept-shinjuku-floorguide-2026-10",
+          "odakyudept-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急百貨店 新宿店 B2F。設備: M2階を除く全フロアに設置（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Department Store Shinjuku, B2F. Features: installed on every floor except M2 (operator wording). Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "service-sjk-odakyudept-007",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "授乳室"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyudept-shinjuku-floorguide-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急百貨店 新宿店 7F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Department Store Shinjuku, 7F. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-odakyudept-001",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ご婦人専用化粧室"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyudept-shinjuku-floorguide-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急百貨店 新宿店 7F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Department Store Shinjuku, 7F. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-odakyudept-002",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "化粧室"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyudept-shinjuku-floorguide-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急百貨店 新宿店 2F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Department Store Shinjuku, 2F. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-odakyudept-003",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "化粧室"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyudept-shinjuku-floorguide-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急百貨店 新宿店 M2F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Department Store Shinjuku, M2F. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
+      "id": "toilet-sjk-odakyudept-004",
+      "category": "toilet",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "化粧室"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyudept-shinjuku-floorguide-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急百貨店 新宿店 B2F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Department Store Shinjuku, B2F. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    }
+  ],
+  "removed": []
+}
