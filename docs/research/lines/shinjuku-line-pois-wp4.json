@@ -1,0 +1,1879 @@
+{
+  "schema": "gteki.lines-pois/0.1-draft",
+  "stationId": "shinjuku",
+  "generatedAt": "2026-10-24",
+  "generatedBy": "WP4 transcription (DeepSeek ds-research), lines-lead review pending",
+  "sources": [
+    {
+      "id": "tokyometro-shinjuku-station-2026-10",
+      "title": "新宿駅/M08 | 路線・駅の情報 | 東京メトロ",
+      "publisher": "東京地下鉄",
+      "url": "https://www.tokyometro.jp/station/shinjuku/index.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "modified": false,
+      "retrievedAt": "2026-10-24T18:02:00+09:00",
+      "datasetDate": "2023-12",
+      "decision": {
+        "refs": [
+          "#26"
+        ]
+      },
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。Read: exit list block (A6-B18, 28 entries, printed 改定日：2023年12月), station facts and transfer section. No text, map or image copied."
+    },
+    {
+      "id": "tokyometro-shinjuku-accessibility-2026-10",
+      "title": "バリアフリー設備 | 新宿駅/M08 | 東京メトロ",
+      "publisher": "東京地下鉄",
+      "url": "https://www.tokyometro.jp/station/shinjuku/accessibility/index.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "modified": false,
+      "retrievedAt": "2026-10-24T18:05:00+09:00",
+      "datasetDate": null,
+      "decision": {
+        "refs": [
+          "#26"
+        ]
+      },
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。Read: 丸ノ内線 equipment table. Elevators: 1 inside the ticket gates, 3 outside; escalators: both directions 1, up only 1, down none. The page also marks elevator-based step-free access as available. Hours printed on two locations only. No date printed on this page."
+    },
+    {
+      "id": "tokyometro-shinjuku-yardmap-print-2026-10",
+      "title": "構内図 | 新宿駅/M08 | 東京メトロ",
+      "publisher": "東京地下鉄",
+      "url": "https://www.tokyometro.jp/station/shinjuku/yardmap/index_print.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "modified": false,
+      "retrievedAt": "2026-10-24T18:07:00+09:00",
+      "datasetDate": "2023-12",
+      "decision": {
+        "refs": [
+          "#26"
+        ]
+      },
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。Read: printed exit table (same 28 rows as the station page; 改定日：2023年12月). The table states that exits marked with an asterisk have time restrictions. No map or image copied."
+    },
+    {
+      "id": "toei-shinjuku-station-2026-10",
+      "title": "新宿 ｜ 東京都交通局",
+      "publisher": "東京都交通局",
+      "url": "https://www.kotsu.metro.tokyo.jp/subway/stations/shinjuku.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "modified": false,
+      "retrievedAt": "2026-10-24T18:10:00+09:00",
+      "datasetDate": null,
+      "decision": {
+        "refs": [
+          "OD-01 A"
+        ]
+      },
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。Read: マップと出入口 exit list (9 entries) and the per-line barrier-free summary. 新宿線: escalators 14, elevators 1, step-free route secured; 大江戸線: escalators 16, elevators 2, step-free route secured. Lift and escalator locations are not printed. The per-exit coordinate feed was not read or recorded."
+    }
+  ],
+  "pois": [
+    {
+      "id": "poi:tokyometro-exit:a6",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "A6番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "A6"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row A6 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では＊印つきの時間制限のある出入口として表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page marks this exit with an asterisk for time restrictions. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:a7",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "A7番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "A7"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row A7 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では＊印つきの時間制限のある出入口として表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page marks this exit with an asterisk for time restrictions. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:a8",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "A8番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "A8"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row A8 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:a9",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "A9番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "A9"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row A9 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:a10",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "A10番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "A10"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row A10 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では閉鎖中と表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page shows this exit as closed. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:a11",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "A11番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "A11"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row A11 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では閉鎖中と表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page shows this exit as closed. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:a12",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "A12番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "A12"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row A12 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:a13",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "A13番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "A13"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row A13 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では閉鎖中と表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page shows this exit as closed. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:a14",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "A14番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "A14"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row A14 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では閉鎖中と表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page shows this exit as closed. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:a15",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "A15番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "A15"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row A15 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では閉鎖中と表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page shows this exit as closed. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:a16",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "A16番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "A16"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row A16 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では＊印つきの時間制限のある出入口として表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page marks this exit with an asterisk for time restrictions. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:a17",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "A17番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "A17"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row A17 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では＊印つきの時間制限のある出入口として表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page marks this exit with an asterisk for time restrictions. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:a18",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "A18番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "A18"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row A18 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では閉鎖中と表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page shows this exit as closed. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:b5",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "B5番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "B5"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row B5 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:b6",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "B6番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "B6"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row B6 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では＊印つきの時間制限のある出入口として表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page marks this exit with an asterisk for time restrictions. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:b7",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "B7番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "B7"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row B7 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では＊印つきの時間制限のある出入口として表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page marks this exit with an asterisk for time restrictions. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:b8",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "B8番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "B8"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row B8 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では＊印つきの時間制限のある出入口として表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page marks this exit with an asterisk for time restrictions. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:b9",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "B9番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "B9"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row B9 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では閉鎖中と表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page shows this exit as closed. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:b10",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "B10番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "B10"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row B10 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では＊印つきの時間制限のある出入口として表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page marks this exit with an asterisk for time restrictions. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:b11",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "B11番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "B11"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row B11 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では＊印つきの時間制限のある出入口として表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page marks this exit with an asterisk for time restrictions. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:b12a",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "B12a番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "B12a"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row B12a (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では地上行きエレベーターがある出入口として表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page shows that this exit has an elevator to street level. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:b12b",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "B12b番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "B12b"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row B12b (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:b13",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "B13番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "B13"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row B13 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:b14",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "B14番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "B14"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row B14 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では＊印つきの時間制限のある出入口として表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page marks this exit with an asterisk for time restrictions. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:b15",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "B15番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "B15"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row B15 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では＊印つきの時間制限のある出入口として表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page marks this exit with an asterisk for time restrictions. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:b16",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "B16番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "B16"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row B16 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では＊印つきの時間制限のある出入口として表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page marks this exit with an asterisk for time restrictions. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:b17",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "B17番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "B17"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row B17 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-exit:b18",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "B18番出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "B18"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-station-2026-10",
+          "tokyometro-shinjuku-yardmap-print-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro station page and print yard map (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "station page exit list, row B18 (same row in the print page exit table)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では＊印つきの時間制限のある出入口として表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page marks this exit with an asterisk for time restrictions. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-gate:3",
+      "category": "ticket_gate",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "東改札"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-accessibility-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "accessibility page, 改札外 elevator 設置場所 list, end pair starting at the east gate"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典ではエレベーターとエスカレーターの設置場所の起点としてこの改札名が使われています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page uses this gate name as an endpoint of the listed lift and escalator locations. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-gate:4",
+      "category": "ticket_gate",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "西改札"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-accessibility-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "accessibility page, 改札外 elevator 設置場所 list, end pair 西改札～Ａ１２番出入口"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典ではエレベーターとエスカレーターの設置場所の起点としてこの改札名が使われています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source page uses this gate name as an endpoint of the listed lift and escalator locations. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-lift:1",
+      "category": "elevator",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "丸ノ内線 エレベーター ホーム（池袋寄り）～東改札"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-accessibility-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "accessibility page, elevator 設置場所 list, 改札内 row, item 1"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では改札内のエレベーターとして掲載されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source lists it as an elevator inside the ticket gates. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-lift:2",
+      "category": "elevator",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "丸ノ内線 エレベーター 西改札～Ａ１２番出入口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-accessibility-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "accessibility page, elevator 設置場所 list, 改札外 row, item 1"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では改札外のエレベーターとして掲載されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source lists it as an elevator outside the ticket gates. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-lift:3",
+      "category": "elevator",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "丸ノ内線 エレベーター 東改札～Ａ６番出入口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-accessibility-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "accessibility page, elevator 設置場所 list, 改札外 row, item 2"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では改札外のエレベーターとして掲載されています。出典では利用可能時間を6:00～23:00と表示しています。2026年10月24日閲覧時点の情報です。出典ページに日付の記載がない場合は変更されている場合があります。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source lists it as an elevator outside the ticket gates. The source shows the available hours as 6:00～23:00. Information as of 24 October 2026; if the source page carries no date, the hours may have changed. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-lift:4",
+      "category": "elevator",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "丸ノ内線 エレベーター 東改札～Ｂ１２a番出入口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-accessibility-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "accessibility page, elevator 設置場所 list, 改札外 row, item 3"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では改札外のエレベーターとして掲載されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source lists it as an elevator outside the ticket gates. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-escalator:1",
+      "category": "escalator",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "丸ノ内線 エスカレーター（上り・下り） 東改札～Ｂ１１番出入口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-accessibility-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "accessibility page, escalator 設置場所 list, 上り・下り row"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では上り・下りの両方向のエスカレーターとして掲載されています。出典では利用可能時間を6:00～23:00と表示しています。2026年10月24日閲覧時点の情報です。出典ページに日付の記載がない場合は変更されている場合があります。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source lists it as an escalator running in both directions. The source shows the available hours as 6:00～23:00. Information as of 24 October 2026; if the source page carries no date, the hours may have changed. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:tokyometro-escalator:2",
+      "category": "escalator",
+      "operatorId": "tokyometro",
+      "line": "marunouchi",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "丸ノ内線 エスカレーター（上り） ホーム（池袋寄り）～東改札"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-accessibility-2026-10"
+        ],
+        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "accessibility page, escalator 設置場所 list, 上り row"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典では上り専用のエスカレーターとして掲載されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source lists it as an up-only escalator. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:toei-exit:a1",
+      "category": "exit",
+      "operatorId": "toei",
+      "line": null,
+      "names": [
+        {
+          "lang": "ja",
+          "text": "A1出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "A1"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-station-2026-10"
+        ],
+        "method": "facts-only Toei station page (OD-01 A), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Toei station page, マップと出入口 exit list, entry A1出口"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "新宿線・大江戸線のどちらの出口かは出典に記載なし。出典の改札区分ラベルは「マインズタワー方面改札」。方面の表示は「マインズタワー方面」。出典ではこの出口にエレベーターがあることを示す表示があります。出典ではこの出口に上りエスカレーターがあることを示す表示があります。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source does not state whether this exit belongs to the Shinjuku Line or the Oedo Line. The source prints the gate-area label マインズタワー方面改札 for this exit. The source also prints the direction label マインズタワー方面. The source shows an icon indicating that this exit has an elevator. The source shows an icon indicating that this exit has an up escalator. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:toei-exit:1",
+      "category": "exit",
+      "operatorId": "toei",
+      "line": null,
+      "names": [
+        {
+          "lang": "ja",
+          "text": "1出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "1"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-station-2026-10"
+        ],
+        "method": "facts-only Toei station page (OD-01 A), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Toei station page, マップと出入口 exit list, entry 1出口"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "新宿線・大江戸線のどちらの出口かは出典に記載なし。出典では閉鎖中と表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source does not state whether this exit belongs to the Shinjuku Line or the Oedo Line. The source page shows this exit as closed. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:toei-exit:2",
+      "category": "exit",
+      "operatorId": "toei",
+      "line": null,
+      "names": [
+        {
+          "lang": "ja",
+          "text": "2出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "2"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-station-2026-10"
+        ],
+        "method": "facts-only Toei station page (OD-01 A), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Toei station page, マップと出入口 exit list, entry 2出口"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "新宿線・大江戸線のどちらの出口かは出典に記載なし。出典では閉鎖中と表示されています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source does not state whether this exit belongs to the Shinjuku Line or the Oedo Line. The source page shows this exit as closed. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:toei-exit:3",
+      "category": "exit",
+      "operatorId": "toei",
+      "line": null,
+      "names": [
+        {
+          "lang": "ja",
+          "text": "3出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "3"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-station-2026-10"
+        ],
+        "method": "facts-only Toei station page (OD-01 A), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Toei station page, マップと出入口 exit list, entry 3出口"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "新宿線・大江戸線のどちらの出口かは出典に記載なし。出典の改札区分ラベルは「京王新線口」。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source does not state whether this exit belongs to the Shinjuku Line or the Oedo Line. The source prints the gate-area label 京王新線口 for this exit. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:toei-exit:4",
+      "category": "exit",
+      "operatorId": "toei",
+      "line": null,
+      "names": [
+        {
+          "lang": "ja",
+          "text": "4出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "4"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-station-2026-10"
+        ],
+        "method": "facts-only Toei station page (OD-01 A), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Toei station page, マップと出入口 exit list, entry 4出口"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "新宿線・大江戸線のどちらの出口かは出典に記載なし。出典の改札区分ラベルは「京王新線口」。出典では利用可能時間を6:00～23:00と表示しています。2026年10月24日閲覧時点の情報です。出典ページに日付の記載がない場合は変更されている場合があります。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source does not state whether this exit belongs to the Shinjuku Line or the Oedo Line. The source prints the gate-area label 京王新線口 for this exit. The source shows the available hours as 6:00～23:00. Information as of 24 October 2026; if the source page carries no date, the hours may have changed. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:toei-exit:5",
+      "category": "exit",
+      "operatorId": "toei",
+      "line": null,
+      "names": [
+        {
+          "lang": "ja",
+          "text": "5出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "5"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-station-2026-10"
+        ],
+        "method": "facts-only Toei station page (OD-01 A), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Toei station page, マップと出入口 exit list, entry 5出口"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "新宿線・大江戸線のどちらの出口かは出典に記載なし。出典の改札区分ラベルは「京王新線口」。出典では利用可能時間を6:00～23:00と表示しています。2026年10月24日閲覧時点の情報です。出典ページに日付の記載がない場合は変更されている場合があります。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source does not state whether this exit belongs to the Shinjuku Line or the Oedo Line. The source prints the gate-area label 京王新線口 for this exit. The source shows the available hours as 6:00～23:00. Information as of 24 October 2026; if the source page carries no date, the hours may have changed. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:toei-exit:6",
+      "category": "exit",
+      "operatorId": "toei",
+      "line": null,
+      "names": [
+        {
+          "lang": "ja",
+          "text": "6出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "6"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-station-2026-10"
+        ],
+        "method": "facts-only Toei station page (OD-01 A), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Toei station page, マップと出入口 exit list, entry 6出口"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "新宿線・大江戸線のどちらの出口かは出典に記載なし。出典の改札区分ラベルは「新都心口」。出典では利用可能時間を6:00～23:00と表示しています。2026年10月24日閲覧時点の情報です。出典ページに日付の記載がない場合は変更されている場合があります。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source does not state whether this exit belongs to the Shinjuku Line or the Oedo Line. The source prints the gate-area label 新都心口 for this exit. The source shows the available hours as 6:00～23:00. Information as of 24 October 2026; if the source page carries no date, the hours may have changed. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:toei-exit:7",
+      "category": "exit",
+      "operatorId": "toei",
+      "line": null,
+      "names": [
+        {
+          "lang": "ja",
+          "text": "7出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "7"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-station-2026-10"
+        ],
+        "method": "facts-only Toei station page (OD-01 A), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Toei station page, マップと出入口 exit list, entry 7出口"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "新宿線・大江戸線のどちらの出口かは出典に記載なし。出典の改札区分ラベルは「新都心口」。出典では利用可能時間を6:00～23:00と表示しています。2026年10月24日閲覧時点の情報です。出典ページに日付の記載がない場合は変更されている場合があります。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source does not state whether this exit belongs to the Shinjuku Line or the Oedo Line. The source prints the gate-area label 新都心口 for this exit. The source shows the available hours as 6:00～23:00. Information as of 24 October 2026; if the source page carries no date, the hours may have changed. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "poi:toei-exit:8",
+      "category": "exit",
+      "operatorId": "toei",
+      "line": null,
+      "names": [
+        {
+          "lang": "ja",
+          "text": "8出口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "8"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "toei-shinjuku-station-2026-10"
+        ],
+        "method": "facts-only Toei station page (OD-01 A), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Toei station page, マップと出入口 exit list, entry 8出口"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "新宿線・大江戸線のどちらの出口かは出典に記載なし。出典の改札区分ラベルは「新都心口」。出典では利用可能時間を7:00～23:00と表示しています。2026年10月24日閲覧時点の情報です。出典ページに日付の記載がない場合は変更されている場合があります。出典ではこの出口に上りエスカレーターがあることを示す表示があります。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "The source does not state whether this exit belongs to the Shinjuku Line or the Oedo Line. The source prints the gate-area label 新都心口 for this exit. The source shows the available hours as 7:00～23:00. Information as of 24 October 2026; if the source page carries no date, the hours may have changed. The source shows an icon indicating that this exit has an up escalator. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    }
+  ],
+  "factsForExisting": [],
+  "notFound": [
+    "Tokyo Metro platform numbers: not printed in the text of the station, accessibility, print or transfer-guide pages (diagrams only).",
+    "Toei lift and escalator locations or end pairs: not printed; the page gives only per-line counts and the step-free route status.",
+    "Toei platform numbers: not printed in the text of the station page.",
+    "Tokyo Metro ticket gate list: the station page has no gate list; the only printed gate names are 東改札 and 西改札, used as endpoints in the accessibility page's equipment locations.",
+    "Exits A1-A5 and B1-B4 for the Tokyo Metro station: the printed table starts at A6 and B5, and no other exit numbers appear."
+  ],
+  "conflicts": []
+}
