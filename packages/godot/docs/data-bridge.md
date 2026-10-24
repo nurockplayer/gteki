@@ -40,12 +40,15 @@ read the file and compare.
   entries:[{ poiId, category, floorId|null, names:{ja,en,"zh-Hant"} (null when absent),
              routable, nodeIds[], paid: true|false|null,
              position: { source:"connector_node"|"display_position", nodeId|null, renderer:[x,y,z], zKnown } | null,
+             approximate: { uncertaintyM, navigationUse:"NOT_FOR_ROUTING", floor:"UNVERIFIED" } | null,
              keys:[{ lang, text, norm }], evidence:{ sourceIds[], method, checkedDate, note|null }, notes[] }] }
 ```
 
 Truth rules: `routable` is true only when the data lists connector nodes (search-only POIs stay selectable but must
 not be routed to). `paid: null` is unknown. `zKnown: false` means the height is symbolic. No verified/confirmed flag is
 exported: `evidence` is passed through as the data states it. `renderer` is Godot/Y-up (`enuToRenderer`).
+`approximate` carries only the ± radius and the two fixed markers for an approximate, search-display-only point
+(#463): it has no coordinates, and `position` stays null for such a POI.
 
 ### `gteki.search.result/0.1` (search-query.ts)
 

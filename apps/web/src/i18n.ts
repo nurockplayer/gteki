@@ -24,6 +24,8 @@ const STRINGS = {
     shopSearchOnly: "位置未確認・道案内なし",
     /** An approximate, search-display-only point (#463): the ± radius shown, never used for directions. */
     approximatePosition: (m: number) => `おおよその位置（±${m} m）・経路案内には使いません`,
+    /** An approximate POI's floor is a label match, not a surveyed floor (#463). */
+    floorUnverified: (label: string) => `${label}（階は未確認）`,
     /** A store's printed brand directory (#419): unverified, with the date its listing was checked. */
     tenantAsOf: (date: string) => `店舗情報（${date} 時点・未確認）`,
     /** The route ends at the store entrance; floors inside the store are not modelled. */
@@ -201,6 +203,8 @@ const STRINGS = {
     shopSearchOnly: "Location not verified · no directions",
     /** An approximate, search-display-only point (#463): the ± radius shown, never used for directions. */
     approximatePosition: (m: number) => `Approximate position (±${m} m) · not used for directions`,
+    /** An approximate POI's floor is a label match, not a surveyed floor (#463). */
+    floorUnverified: (label: string) => `${label} (floor unverified)`,
     /** A store's printed brand directory (#419): unverified, with the date its listing was checked. */
     tenantAsOf: (date: string) => `Store directory as printed (${date}, unverified)`,
     /** The route ends at the store entrance; floors inside the store are not modelled. */

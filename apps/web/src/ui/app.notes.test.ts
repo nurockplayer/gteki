@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Poi } from "@gteki/schema";
+import { createSearchIndex } from "@gteki/search";
 import { createSyntheticBundle } from "../../../../packages/navigation/src/fixtures.ts";
 import { strings, type Lang } from "../i18n.ts";
 
@@ -9,9 +10,11 @@ vi.mock("../registry.ts", () => ({ listStations: vi.fn(), StationLoadError: clas
 import { App } from "./app.ts";
 
 type Harness = {
-  s: { lang: Lang; loaded: unknown; route: unknown; noPath: null; origin: unknown; destination: Poi | null };
+  s: { lang: Lang; loaded: unknown; route: unknown; noPath: null; origin: unknown; destination: Poi | null; search?: unknown };
   ui: { sheet: HTMLElement; fromNote: HTMLElement; toNote: HTMLElement; fromInput: HTMLInputElement; toInput: HTMLInputElement; fromResults: HTMLElement; toResults: HTMLElement };
+  stationReady: boolean;
   renderEndpointNote: (box: HTMLElement, poi: Poi | null) => void;
+  renderResults: (which: "from" | "to") => void;
   renderSheet: () => void;
   releaseMascot: () => void;
   mascotSay: () => void;
@@ -126,5 +129,57 @@ describe("approximate positions are search display only (#463)", () => {
   it("names the approximate radius the same way in both languages", () => {
     expect(strings("ja").approximatePosition(25)).toBe("おおよその位置（±25 m）・経路案内には使いません");
     expect(strings("en").approximatePosition(25)).toBe("Approximate position (±25 m) · not used for directions");
+  });
+});
+
+describe("approximate positions in search results (#463)", () => {
+  const approximate = { east: 12, north: -4, uncertaintyM: 24.2, method: "area_weighted_centroid", navigationUse: "NOT_FOR_ROUTING", floor: "UNVERIFIED" } as const;
+  const LINE = "おおよその位置（±25 m）・経路案内には使いません";
+
+  /** The synthetic bundle plus one searchable POI that has only an approximate, search-display point. */
+  function searchable() {
+    const bundle = createSyntheticBundle();
+    bundle.pois.push({
+      id: "approx-shop", category: "shop",
+      names: [{ lang: "ja", text: "おおよそ商店" }, { lang: "en", text: "Approximate Shop" }],
+      aliases: [], floorId: "concourse", displayPosition: null, approximatePosition: approximate,
+      connectorNodeIds: [], paid: null,
+      evidence: { sourceIds: ["fixture-geometry"], method: "synthetic-fixture", checkedDate: "2026-10-20" },
+    });
+    return bundle;
+  }
+
+  it("shows the approximate line and the unverified floor in the row and its accessible name", () => {
+    const a = app();
+    const bundle = searchable();
+    a.s.loaded = { bundle };
+    a.s.search = createSearchIndex(bundle);
+    a.ui.toInput.value = "おおよそ";
+    a.renderResults("to");
+    const option = a.ui.toResults.querySelector('[role="option"]')!;
+    expect(option.querySelector(".result-approx")?.textContent).toBe(LINE);
+    expect(option.querySelector(".result-meta")?.textContent).toContain("B1（階は未確認）");
+    const label = option.getAttribute("aria-label") ?? "";
+    expect(label).toContain(LINE);
+    expect(label).toContain("B1（階は未確認）");
+  });
+
+  it("keeps the warning under the picked endpoint's field", () => {
+    const a = app();
+    const bundle = searchable();
+    a.s.loaded = { bundle };
+    a.s.search = createSearchIndex(bundle);
+    a.stationReady = true;
+    a.explorer = { showPois: vi.fn() };
+    // Only the parts the pick triggers after the field note are stubbed; renderEndpointNote runs for real.
+    for (const name of ["updatePanelCollapse", "renderIdentity", "renderCredit", "renderBanner", "renderSpawnChips", "renderProfile", "computeRoute", "syncPanelMascot"] as const)
+      vi.spyOn(a as unknown as Record<string, () => void>, name).mockImplementation(() => {});
+    a.ui.toInput.value = "おおよそ";
+    a.renderResults("to");
+    (a.ui.toResults.querySelector('[role="option"]') as HTMLElement).click();
+    expect(a.s.destination?.id).toBe("approx-shop");
+    expect(a.ui.toNote.hidden).toBe(false);
+    expect(a.ui.toNote.textContent).toContain("B1（階は未確認）");
+    expect(a.ui.toNote.textContent).toContain(LINE);
   });
 });
