@@ -146,7 +146,7 @@ No car positions, relative placement or layout are taken (OD-03).
 
 ## Truth review record
 
-- **oracle-ego (ChatGPT GPT-6, high), 2026-10-24.** Viewed m25_b, y09_a, y09_b, f09_b, m08_a, the Toei 構内図 and the Seibu map. It could not open m25_a, f09_a or m08_b; lines-lead read those three and found them identical in labels to their other-direction pair.
+- **oracle-ego (ChatGPT GPT-6, high), 2026-10-24.** Viewed m25_b, y09_a, y09_b, f09_b, m08_a, the Toei 構内図 and the Seibu map. It could not open m25_a, f09_a or m08_b. Those three were read only by lines-lead in the original pass, so they have no independent check.
 - **One discrepancy, fixed:** 副都心線連絡通路 is a footnote on the M25 diagram, not part of a direction label. It was removed from `viaLabels`; its hours stay in `fact`.
 - **No other discrepancies.**
 - **Rights review:** core-rights-a9, no P0/P1 at 1f2070fc.
