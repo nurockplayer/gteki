@@ -134,12 +134,22 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        prose. The modification notice text is a placeholder in the records
        (「GTEki が［実際の編集・加工内容］」): UNKNOWN until written.
 
-   4.7 Tokyo Bureau of Urban Development, S03 「新宿駅周辺の施設情報等」
+   4.7 Tokyo Bureau of Urban Development, S03 「新宿駅周辺の施設情報等」 - LicenseRef-S03
        Nothing ships in station data; same status as 4.6. Recorded licence: CC BY
        4.0 at dataset level, for the geometry and factual-fields subset only.
        Owner credit: 出典：東京都都市整備局「新宿駅周辺の施設情報等」.
        Promotional prose, linked content and the reference-PDF illustration are
-       UNKNOWN and excluded. Modification notice: placeholder, UNKNOWN.
+       UNKNOWN and excluded. Modification notice for station data: placeholder,
+       UNKNOWN (nothing ships there).
+       Committed research files derived from S03 together with E27 (4.3), both
+       terms applying: docs/stations/shinjuku/research/
+       2026-10-21-tokyo-terminal-join-summary.json and
+       figures/2026-10-21-tokyo-e27-overlay.png. Modifications (described in
+       2026-10-21-tokyo-terminal-join.md): v5_nav.json node coordinates were
+       transformed with the file's own drawing transform to longitude/latitude
+       and a local frame, compared with the E27 graph (separations, headings,
+       floor labels), summarised as join metrics and drawn as a figure. The raw
+       ZIP is not committed.
 
    4.8 GSI (国土地理院) items - LicenseRef-GSI-terms
        Two Survey Calculation Site bl2xy control responses
@@ -158,3 +168,30 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
    4.10 OpenStreetMap - nothing committed or shipped
        Cross-check only. No ODbL entry. If OSM-derived data is ever committed,
        an ODbL entry and a share-alike assessment are required first.
+
+   4.11 MLIT 国土数値情報 N02-2025 (鉄道) - LicenseRef-KSJ
+       Ships: stations/ikebukuro/gteki/context/ksj_n02_2025_r700.glb, the
+       Ikebukuro railway and station context overlay (visual only, never
+       routable; receipt docs/gis/context/overlay-ikebukuro-r700-ikebukuro-
+       station-enu-v0-station-railway-70f286365793c8e9acf3.json).
+       Source: tools/gis/sources/sources.yaml "ksj-n02-2025". Recorded licence:
+       CC BY 4.0 on the product page; cited as the site's own terms, not taken
+       as a CC BY grant by GTEki (director, #365). Not relicensed.
+       Credit (recorded attribution_text):
+         出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html）を加工して作成
+       Modification notice: 「加工」 above. Modifications: features selected by
+       a 700 m disc around the station origin, projected to the station-local
+       ENU frame, clipped to that disc and drawn as flat ribbons (railway 1.5 m,
+       station 3 m); no source name, code or other attribute is copied.
+
+5. NOTO SANS JP - SIL Open Font License 1.1 (OFL-1.1)
+   © 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'.
+   Upstream: https://github.com/notofonts/noto-cjk/tree/Sans2.004
+   Pinned release tag: Sans2.004 (already cited by our art pipeline).
+   Font: Sans/Variable/TTF/Subset/NotoSansJP-VF.ttf, version 2.004.
+   Noto Sans JP subset and converted to WOFF2 by GTEki (modified).
+   Family/registration alias: GTEki Sign JP; PostScript name: GTEkiSignJP.
+   The pinned upstream LICENSE is copied verbatim to
+   assets/fonts/noto-sans-jp/OFL.txt; the font's name-table copyright notice
+   above is retained in the subset. See source.json for URL, size and SHA-256,
+   and LICENSES/OFL-1.1.txt for the licence text.

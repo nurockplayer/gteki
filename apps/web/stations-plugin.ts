@@ -13,6 +13,8 @@ import { dataFileFactsOnlySources, parseStationFiles, validateBundle } from "../
 
 export interface DiscoveredStation {
   dir: string;
+  /** Real path of stations/<dir>/, kept separate from gtekiDir because gteki/ may itself be a symlink. */
+  folder: string;
   gtekiDir: string;
   scene: string | null;
   assets: string[];
@@ -60,9 +62,10 @@ export function discoverStations(roots: string[]): DiscoveredStation[] {
     for (const dir of fs.readdirSync(root).sort()) {
       const gtekiDir = path.join(root, dir, "gteki");
       if (seen.has(dir) || !fs.existsSync(path.join(gtekiDir, "station.json"))) continue;
+      const folder = fs.realpathSync(path.join(root, dir));
       seen.add(dir);
       const scene = ["scene.ts", "scene.js"].map((f) => path.join(gtekiDir, f)).find((f) => fs.existsSync(f)) ?? null;
-      found.push({ dir, gtekiDir, scene, assets: walk(gtekiDir, fs.realpathSync(path.join(root, dir))) });
+      found.push({ dir, folder, gtekiDir, scene, assets: walk(gtekiDir, folder) });
     }
   }
   return found;
@@ -103,9 +106,9 @@ export function publishableAssets(stations: DiscoveredStation[]): Map<string, Se
     const found = new Set(s.assets);
     const missing = [...declared].filter((f) => !found.has(f));
     // A canonical name may still link to a target whose real path Vite would read as a query or fragment.
-    const odd = [...declared].filter((f) => found.has(f) && /[?#]/.test(path.relative(path.dirname(s.gtekiDir), fs.realpathSync(path.join(s.gtekiDir, f)))));
+    const odd = [...declared].filter((f) => found.has(f) && /[?#]/.test(path.relative(s.folder, fs.realpathSync(path.join(s.gtekiDir, f)))));
     if (odd.length) failures.push(`${s.dir}: declared asset files resolve to paths containing ? or #: ${odd.join(", ")}`);
-    const folder = path.dirname(s.gtekiDir);
+    const folder = s.folder;
     const dataPaths = (parsed.bundle.dataFiles ?? []).map((d) => d.path);
     const noData = dataPaths.filter((p) => !fs.existsSync(path.join(folder, p)));
     if (noData.length) failures.push(`${s.dir}: declared data files not found: ${noData.join(", ")}`);
@@ -156,7 +159,7 @@ function symlinkEscapes(dir: string, fence: string, depth = 0, out = new Map<str
  */
 export function declaredStationFiles(stations: DiscoveredStation[]): DeclaredStationFiles[] {
   return stations.map((s) => {
-    const folder = path.dirname(s.gtekiDir);
+    const folder = s.folder;
     let manifest: { assets?: { uri?: unknown; uriMobile?: unknown; files?: unknown }[]; dataFiles?: { path?: unknown }[] } = {};
     try { manifest = JSON.parse(fs.readFileSync(path.join(s.gtekiDir, "station.json"), "utf8")); } catch { /* invalid: publishableAssets refuses it */ }
     const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
@@ -202,6 +205,93 @@ export function undeclaredInlinedData(moduleIds: Iterable<string>, stations: rea
     }
   }
   return [...failures].sort();
+}
+
+const modulePath = (id: string) => id.startsWith("\0") ? id : id.replace(VITE_QUERY, "");
+const hasNodeModulesSegment = (id: string) => id.split(/[\\/]/).includes("node_modules");
+const JS_CODE_EXT = /\.[cm]?[jt]sx?$/i;
+
+/**
+ * Finds non-code modules reachable from each station scene that live outside every station folder.
+ * The graph contains both static and dynamic imports. App modules that no station scene reaches are
+ * intentionally out of scope; virtual ids and dependencies are ignored.
+ */
+export function outsideStationData(
+  graph: ReadonlyMap<string, readonly string[]>,
+  stationEntries: ReadonlyMap<string, string>,
+  stations: readonly DiscoveredStation[],
+): string[] {
+  const byId = new Map<string, readonly string[]>(graph);
+  const folders = stations.map((s) => ({ dir: s.dir, folder: s.folder }));
+  const findings = new Set<string>();
+  for (const [stationName, entry] of stationEntries) {
+    const visited = new Set<string>();
+    const pending = [entry];
+    while (pending.length) {
+      const id = pending.pop()!;
+      if (visited.has(id) || id.startsWith("\0")) continue;
+      visited.add(id);
+      const fileId = modulePath(id);
+      if (!hasNodeModulesSegment(fileId) && !CODE_EXT.test(fileId) && path.isAbsolute(fileId)) {
+        const insideStation = folders.some(({ folder }) => id === folder || id.startsWith(folder + path.sep));
+        if (!insideStation) findings.add(`${stationName}: ${fileId}`);
+      }
+      pending.push(...(byId.get(id) ?? []));
+    }
+  }
+  return [...findings].sort();
+}
+
+/**
+ * Conservative station-code data detector: any `?raw` import qualifies. Otherwise source must
+ * exceed 64 KiB and at least 80% of its bytes must be quoted-string/number tokens or array/object
+ * literal punctuation (`[]{}:,`). This intentionally avoids small generated helpers and ordinary code.
+ */
+export function isInlineDataCode(id: string, code: string): boolean {
+  const normalized = modulePath(id);
+  if (!JS_CODE_EXT.test(normalized)) return false;
+  const queryAt = id.indexOf("?");
+  if (queryAt >= 0 && /(?:^|&)raw(?:&|$)/.test(id.slice(queryAt + 1))) return true;
+  const bytes = Buffer.byteLength(code, "utf8");
+  if (bytes <= 64 * 1024) return false;
+  const dataLike = /(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b\d+(?:\.\d+)?\b|[\[\]{}:,])/g;
+  let covered = 0;
+  for (const match of code.matchAll(dataLike)) covered += Buffer.byteLength(match[0], "utf8");
+  return covered / bytes >= 0.8;
+}
+
+/** Read original station-owned JavaScript/TypeScript source for the data-shape heuristic. */
+export function stationCodeSources(moduleIds: Iterable<string>, stations: readonly DiscoveredStation[]): Map<string, string> {
+  const folders = stations.map((s) => ({ folder: s.folder }));
+  const sources = new Map<string, string>();
+  for (const id of moduleIds) {
+    const file = modulePath(id);
+    if (id.startsWith("\0") || !path.isAbsolute(file) || !JS_CODE_EXT.test(file) || hasNodeModulesSegment(file)) continue;
+    if (!folders.some(({ folder }) => file.startsWith(folder + path.sep))) continue;
+    try { sources.set(id, fs.readFileSync(file, "utf8")); } catch { /* module may be virtualized or removed during the build */ }
+  }
+  return sources;
+}
+
+/** Station-owned source modules for which the data-shape heuristic raised a warning. */
+export function wrappedStationData(
+  modules: ReadonlyMap<string, string>,
+  stations: readonly DiscoveredStation[],
+): string[] {
+  const findings = new Set<string>();
+  const folders = stations.map((s) => ({ dir: s.dir, folder: s.folder }));
+  for (const [rawId, code] of modules) {
+    const id = modulePath(rawId);
+    if (id.startsWith("\0") || !path.isAbsolute(id) || hasNodeModulesSegment(id) || !isInlineDataCode(rawId, code)) continue;
+    for (const { dir, folder } of folders) {
+      if (id.startsWith(folder + path.sep)) {
+        const reason = rawId.includes("?") && /(?:^|&)raw(?:&|$)/.test(rawId.slice(rawId.indexOf("?") + 1)) ? "?raw import" : "large literal-heavy module";
+        findings.add(`${dir}: ${path.relative(folder, id).split(path.sep).join("/")} (${reason})`);
+        break;
+      }
+    }
+  }
+  return [...findings].sort();
 }
 
 /**
@@ -294,7 +384,21 @@ export function gtekiStations(roots: string[]): Plugin {
      */
     buildEnd(error) {
       if (serve || error) return;
-      const undeclared = undeclaredInlinedData(this.getModuleIds(), declaredStationFiles(discoverStations(roots)));
+      const stations = discoverStations(roots);
+      const ids = [...this.getModuleIds()];
+      const graph = new Map<string, readonly string[]>();
+      for (const id of ids) {
+        const module = this.getModuleInfo(id);
+        graph.set(id, module ? [...module.importedIds, ...module.dynamicallyImportedIds] : []);
+      }
+      const entries = new Map(stations.flatMap((s) => s.scene ? [[s.dir, fs.realpathSync(s.scene)] as const] : []));
+      for (const finding of outsideStationData(graph, entries, stations)) {
+        this.warn(`gteki-stations: station scene reaches data outside every station folder (${finding}); move the data into that station folder and declare it in dataFiles[].`);
+      }
+      for (const finding of wrappedStationData(stationCodeSources(ids, stations), stations)) {
+        this.warn(`gteki-stations: station code may wrap inline data (${finding}); declare it as JSON in dataFiles[] instead of wrapping it in code.`);
+      }
+      const undeclared = undeclaredInlinedData(ids, declaredStationFiles(stations));
       if (undeclared.length === 0) return;
       const message = `gteki-stations: station data inlined into the bundle without a manifest declaration (add it to assets[].files or dataFiles[] with source ids; a symlink leaving the station folder is refused even if declared): ${undeclared.join(", ")}`;
       if (inlineDataGateMode() === "error") this.error(message);
