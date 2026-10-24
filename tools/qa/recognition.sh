@@ -36,13 +36,14 @@ for p in $projects; do
   # shellcheck disable=SC2086
   GTEKI_RECOGNITION=1 QA_REUSE=$reuse QA_UNIT=0 locked sh "$here/tools/qa/run-candidate.sh" "$work" "$base" $merges -- \
     specs/20-recognition.spec.ts --project="$p" --trace=off || status=$?
-  rm -rf "${out:?}/$p"; mv "$here/tests/e2e/artifacts" "$out/$p"
-  dirs="$dirs $out/$p"
+  # A run that failed before Playwright leaves no artifacts: don't abort, and don't move stale ones.
+  rm -rf "${out:?}/$p"
+  if [ -d "$here/tests/e2e/artifacts" ]; then mv "$here/tests/e2e/artifacts" "$out/$p"; dirs="$dirs $out/$p"; else echo "no artifacts for $p" >&2; fi
   reuse=1
 done
 
 # shellcheck disable=SC2086
-node "$here/tools/qa/recognition/proxy.mjs" "$out/proxy" $dirs || status=$?
+[ -n "$dirs" ] && node "$here/tools/qa/recognition/proxy.mjs" "$out/proxy" $dirs || status=$?
 
 mkdir -p "$out/anon"
 for p in $projects; do

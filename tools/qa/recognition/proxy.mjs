@@ -3,17 +3,18 @@
 //   each <project-artifacts-dir> is a moved tests/e2e/artifacts (evidence/<project>/<station>-recognition.json + rec-*.png)
 // OCRs every frame with Apple Vision (ocr.swift, ja + en, on device), keeps only in-world text (lines whose centre
 // is outside app UI and POI chips), and per station × project × view reports the #342 proxy:
-//   name readable and unobscured ≥3 of 5 s (JA name found in-world, no visible chip over it, per second of game time);
+//   name readable and unobscured ≥3 of 5 s (JA name found in-world, no visible chip over it; readable frames × frame interval);
 //   phone JA name ≥18 CSS px and EN ≥12 CSS px (OCR line-box height / devicePixelRatio, an approximation of the
 //   rendered size); kana present in-world; chip-over-name frames; equipment cues are left to the reviewer.
 // When the build has __gteki.identity() (#342 Q2) its per-frame answer is summarised next to the OCR columns.
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const [out, ...dirs] = process.argv.slice(2);
 if (!out || dirs.length === 0) { console.error("usage: proxy.mjs <out-dir> <artifacts-dir>..."); process.exit(2); }
-const here = path.dirname(new URL(import.meta.url).pathname);
+const here = path.dirname(fileURLToPath(import.meta.url));
 fs.mkdirSync(out, { recursive: true });
 
 const NAMES = {
@@ -55,13 +56,15 @@ for (const dir of dirs) {
         const covered = ja.some((l) => chips.some((c) => overlaps(l, c))) || notUi.some((l) => names.ja.test(l.text) && chips.some((c) => inside(c, ...centre(l))) && !chipText(l));
         const id = f.identity && !f.identity.error ? f.identity : null;
         return {
-          t: f.t, second: Math.floor(f.t + 1e-6),
+          t: f.t, ocrError: !page || Boolean(page.error),
           jaPx: ja.length ? Math.max(...ja.map((l) => l.h)) : null, enPx: en.length ? Math.max(...en.map((l) => l.h)) : null,
           readable: ja.length > 0 && !covered, covered, kanaName: kanaName.length > 0, kanaAny: lines.some((l) => KANA.test(l.text)),
           hook: id ? { ok: Boolean(id.inFrame && id.frontFacing && !id.coveredByChip && !id.occluded), px: id.nameHeightPx ?? null, covered: Boolean(id.coveredByChip) } : null,
         };
       });
-      const seconds = (pred) => new Set(per.filter(pred).map((p) => p.second)).size;
+      // Readable time = readable frames × frame interval (each frame stands for its own interval only).
+      const frameS = run.frameS ?? 0.5;
+      const seconds = (pred) => Math.round(per.filter(pred).length * frameS * 10) / 10;
       const maxOf = (k) => { const v = per.map((p) => p[k]).filter((x) => x != null); return v.length ? Math.max(...v) : null; };
       const hookFrames = per.filter((p) => p.hook);
       const row = {
@@ -76,7 +79,11 @@ for (const dir of dirs) {
       };
       const readable = (row.hookReadableS ?? row.readableS) >= 3;
       const size = !isPhone || ((row.hookMaxPx ?? row.jaMaxPx ?? 0) >= PHONE.ja && (row.enMaxPx ?? 0) >= PHONE.en);
-      row.auto = readable && size && row.kanaAny && row.chipOverNameFrames === 0 && !row.hookCoveredFrames ? "pass" : "fail";
+      // The hook (geometry) leads when present, since OCR misses oblique or partly covered signs; where the two
+      // disagree by 2 s or more the row is flagged for the reviewer rather than silently trusting either.
+      row.disagree = row.hookReadableS != null && Math.abs(row.hookReadableS - row.readableS) >= 2;
+      // An OCR failure (or a missing OCR page) is a missing measurement, not a missing name: invalid, never fail.
+      row.auto = per.some((p) => p.ocrError) ? "invalid (OCR error)" : readable && size && row.kanaAny && row.chipOverNameFrames === 0 && !row.hookCoveredFrames ? "pass" : "fail";
       rows.push(row);
     }
   }
@@ -95,10 +102,11 @@ for (const st of [...new Set(rows.map((r) => r.station))]) {
     const si = rs.find((r) => r.project === p)?.stationIdentityAtReady;
     md.splice(md.length - 2, 0, `Q4 station identity at ready (${p}): ${si ? JSON.stringify(si) : "no hook"}`, "");
   }
-  for (const r of rs) md.push(`| ${r.view} | ${r.project} | ${r.tier} | ${r.readableS}/5 | ${r.hookReadableS == null ? "no hook" : `${r.hookReadableS}/5`} | ${b(r.hookMaxPx ?? r.jaMaxPx)} | ${b(r.enMaxPx)} | ${b(r.kanaName)} | ${b(r.kanaAny)} | ${r.chipOverNameFrames + (r.hookCoveredFrames ?? 0)} | ${b(r.fontsReady)}${r.notoJp ? ", Noto JP" : ""} | review | ${r.auto} |`);
+  for (const r of rs) md.push(`| ${r.view} | ${r.project} | ${r.tier} | ${r.readableS}/5 | ${r.hookReadableS == null ? "no hook" : `${r.hookReadableS}/5`} | ${b(r.hookMaxPx ?? r.jaMaxPx)} | ${b(r.enMaxPx)} | ${b(r.kanaName)} | ${b(r.kanaAny)} | ${r.chipOverNameFrames + (r.hookCoveredFrames ?? 0)} | ${b(r.fontsReady)}${r.notoJp ? ", Noto JP" : ""} | review | ${r.auto}${r.disagree ? " (hook/OCR disagree: review)" : ""} |`);
   md.push("");
 }
-md.push(`Thresholds: readable and unobscured ≥3/5 s; phone JA ≥${PHONE.ja} CSS px, EN ≥${PHONE.en} CSS px; kana plus ≥2 equipment cues (cues judged by the reviewer from the contact sheet); no POI chip over the name.`,
+md.push("Report only, not a gate: \"automated\" is the proxy's reading; Q5 acceptance is the reviewer's, with the equipment cues.",
+  `Thresholds: readable and unobscured ≥3/5 s (readable frames × frame interval); phone JA ≥${PHONE.ja} CSS px, EN ≥${PHONE.en} CSS px; kana plus ≥2 equipment cues (cues judged by the reviewer from the contact sheet); no POI chip over the name.`,
   "OCR px = Apple Vision line-box height ÷ devicePixelRatio, an approximation of rendered size; the identity hook's height is used when the build has it. A view without the station name in-world reads 0/5 by construction.");
 fs.writeFileSync(path.join(out, "recognition-proxy.md"), md.join("\n") + "\n");
 console.log(md.join("\n"));

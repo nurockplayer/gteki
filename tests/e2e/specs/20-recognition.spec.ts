@@ -54,6 +54,8 @@ async function face(page: Page, from: Vec3, to: Vec3) {
 /** First waypoint where the route turns by more than 30° after at least 6 m of straight-ish walking. */
 function firstJunction(wps: Waypoint[]): { at: Vec3; from: Vec3 } | null {
   let run = 0;
+  // Drop repeated points at step boundaries: a zero-length segment has no heading and would fake a turn.
+  wps = wps.filter((w, i) => i === 0 || Math.hypot(w.p.x - wps[i - 1]!.p.x, w.p.y - wps[i - 1]!.p.y) > 0.05);
   for (let i = 1; i < wps.length - 1; i++) {
     const a = wps[i - 1]!.p, b = wps[i]!.p, c = wps[i + 1]!.p;
     const h1 = Math.atan2(b.y - a.y, b.x - a.x), h2 = Math.atan2(c.y - b.y, c.x - b.x);
@@ -82,7 +84,12 @@ function nearestNode(key: StationKey, p: Vec3): string {
 
 const frameDom = () => {
   const rect = (e: Element) => { const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height }; };
-  const visible = (e: HTMLElement) => e.offsetParent !== null && e.getBoundingClientRect().width > 0 && getComputedStyle(e).visibility !== "hidden";
+  // Not offsetParent: it is null for position:fixed overlays, which would drop real UI from the exclusion rects.
+  const visible = (e: HTMLElement) => {
+    const r = e.getBoundingClientRect(), cs = getComputedStyle(e);
+    const shown = typeof (e as any).checkVisibility === "function" ? (e as any).checkVisibility({ checkOpacity: false, checkVisibilityCSS: true }) : cs.display !== "none" && cs.visibility !== "hidden";
+    return shown && r.width > 0 && r.height > 0 && r.right > 0 && r.bottom > 0 && r.left < innerWidth && r.top < innerHeight;
+  };
   const chips = [...document.querySelectorAll<HTMLElement>(".gteki-labels > *")].filter((e) => e.style.display !== "none" && visible(e)).map((e) => ({ ...rect(e), opacity: Number(getComputedStyle(e).opacity), text: (e.textContent ?? "").trim().slice(0, 60) }));
   const ui = [".topbar", ".panel", ".sheet.open", ".hud", ".credit-line", ".mascot", ".toast.show"].flatMap((s) => [...document.querySelectorAll<HTMLElement>(s)]).filter(visible).map(rect);
   const g = (window as any).__gteki;

@@ -16,21 +16,26 @@ for path in CommandLine.arguments.dropFirst() {
     pages.append(Page(file: path, width: 0, height: 0, lines: [], error: "unreadable image")); continue
   }
   let W = Double(img.width), H = Double(img.height)
-  let req = VNRecognizeTextRequest()
-  req.recognitionLevel = .accurate
-  req.recognitionLanguages = ["ja-JP", "en-US"]
-  req.usesLanguageCorrection = false
-  req.minimumTextHeight = 0.004
   var lines: [Line] = []
   var err: String? = nil
-  do {
-    try VNImageRequestHandler(cgImage: img, options: [:]).perform([req])
-    for o in req.results ?? [] {
-      guard let c = o.topCandidates(1).first else { continue }
-      let b = o.boundingBox // normalised, bottom-left origin
-      lines.append(Line(text: c.string, confidence: c.confidence, x: b.minX * W, y: (1 - b.maxY) * H, w: b.width * W, h: b.height * H))
-    }
-  } catch { err = String(describing: error) }
+  // The Neural Engine path fails now and then on a busy host (e5rtError); retry, the proxy marks what still fails invalid.
+  for attempt in 1...3 {
+    // A fresh request per attempt: one that failed stays failed when reused.
+    let req = VNRecognizeTextRequest()
+    req.recognitionLevel = .accurate
+    req.recognitionLanguages = ["ja-JP", "en-US"]
+    req.usesLanguageCorrection = false
+    req.minimumTextHeight = 0.004
+    do {
+      try VNImageRequestHandler(cgImage: img, options: [:]).perform([req])
+      for o in req.results ?? [] {
+        guard let c = o.topCandidates(1).first else { continue }
+        let b = o.boundingBox // normalised, bottom-left origin
+        lines.append(Line(text: c.string, confidence: c.confidence, x: b.minX * W, y: (1 - b.maxY) * H, w: b.width * W, h: b.height * H))
+      }
+      err = nil; break
+    } catch { err = "attempt \(attempt): \(error)"; usleep(200_000) }
+  }
   pages.append(Page(file: path, width: img.width, height: img.height, lines: lines, error: err))
 }
 let enc = JSONEncoder()
