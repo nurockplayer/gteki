@@ -425,16 +425,24 @@ inside 1600×900, names unique and not a default name); they appear under that c
 A run that compares lighting variants can override the approximation without editing code, with a repeatable
 `--tune=<key>=<value>`: `agx_contrast` (0.5–2.5), `exposure_ev` (−4 to 4 stops, added to the layout's exposure),
 `ambient_energy` (0–16), `gi` (`none` by default, `sdfgi`, or `voxelgi`, which bakes a VoxelGI over the visible
-bounds before the first frame), `gi_energy` (0–16, only with `sdfgi` or `voxelgi`), `probe_ambient`
-(`disabled` by default, `environment` or `color`, only when an interior probe exists), `probe_ambient_energy`
-(0–16) and `ssao` (`true` by default). Unknown keys, out-of-range values and duplicate keys fail the run like any
-other argument. The effective overrides are recorded as the report's `tuning` object (empty without `--tune`).
-`--tag=<name>` (letters, digits, `_`, `.` and `-`) suffixes the PNG, side PNG and report names — `<layout>_<camera>_<tag>.png`
-and `<layout>_<tag>_report.json` — so variants do not overwrite each other; with neither `--tune` nor `--tag` every
-output name is unchanged.
+bounds — flat geometry included, each axis grown 0.5 m per side and at least 1 m — before the first frame),
+`gi_energy` (0–16, only with `sdfgi` or `voxelgi`), `probe_ambient` (`disabled` by default, `environment` or
+`color`, only when an interior probe exists), `probe_ambient_colour` (`#rrggbb`, sRGB exactly as written),
+`probe_ambient_energy` (0–16) and `ssao` (`true` by default). The probe colour and energy only take effect in
+`AMBIENT_COLOR` mode, so they are argument errors without `probe_ambient=color`; without an explicit colour that
+mode uses `APPROXIMATION.colour_linear` converted to sRGB, like the background. Unknown keys, out-of-range values
+and duplicate keys fail the run like any other argument. The effective overrides are recorded as the report's
+`tuning` object (empty without
+`--tune`). `--tag=<name>` (letters, digits, `_`, `.` and `-`) suffixes the PNG, side PNG and report names —
+`<layout>_<camera>_<tag>.png` and `<layout>_<tag>_report.json` — so variants do not overwrite each other; with
+neither `--tune` nor `--tag` every output name is unchanged. `--report=<absolute path>` writes the report exactly
+there instead (its directory is created if needed), which is how the sweep gives each run its own file.
 
 `tools/showcase_sweep.sh` runs a file of variants sequentially, each under the shared test lock, then prints their
-ratios as one table. Each non-empty line is `<tag> <tune arguments...>`; extra arguments are appended to every run:
+ratios as one table. Each non-empty line is `<tag> <tune arguments...>`; extra arguments are appended to every run.
+It checks every tag (letters, digits, `_`, `.`, `-`) and rejects duplicates before running anything, gives each run
+its own `<out_dir>/sweep_<tag>_report.json` through `--report` (deleted first, so a run that exits without writing
+cannot reuse an old report), and stops if that file is missing afterwards:
 
 ```sh
 cat > packages/godot/.cache/showcase/concourse.sweep <<'EOF'

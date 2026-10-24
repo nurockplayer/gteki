@@ -3,7 +3,7 @@ extends SceneTree
 ## Run in the lead's GPU slot; a headless display exits successfully before reading inputs or writing anything.
 ## Usage: --script res://tools/showcase_compare.gd -- <absolute.glb> <absolute out_dir>
 ##        [--camera=<name>] [--ref=<camera>=<absolute image>]... [--region=<camera>=<name>:<x>,<y>,<w>,<h>]...
-##        [--tune=<key>=<value>]... [--tag=<name>]
+##        [--tune=<key>=<value>]... [--tag=<name>] [--report=<absolute json path>]
 ## Imported geometry, materials and camera transforms/FOV stay the GLB's. Lighting approximates render_preview.py;
 ## neither Godot spots nor its AgX implementation reproduce Blender area lights / Medium High Contrast exactly.
 
@@ -83,6 +83,8 @@ const PROBE_AMBIENT_MODES := {
 	"color": ReflectionProbe.AMBIENT_COLOR,
 }
 static var TAG_NAME := RegEx.create_from_string("^[A-Za-z0-9_.-]+$")
+## ReflectionProbe.ambient_color only matters in AMBIENT_COLOR mode, so its colour is #rrggbb sRGB there.
+static var TUNE_COLOUR := RegEx.create_from_string("^#[0-9A-Fa-f]{6}$")
 
 
 func _initialize() -> void:
@@ -152,6 +154,10 @@ static func parse_tuning(key: String, value: String) -> Dictionary:
 		if not value in ["true", "false"]:
 			return {"ok": false, "error": "--tune=ssao must be true or false: %s" % value}
 		return {"ok": true, "value": value == "true"}
+	if key == "probe_ambient_colour":
+		if not TUNE_COLOUR.search(value) or not Color.html_is_valid(value):
+			return {"ok": false, "error": "--tune=probe_ambient_colour must be #rrggbb: %s" % value}
+		return {"ok": true, "value": value}
 	return {"ok": false, "error": "Unknown --tune key: %s" % key}
 
 
@@ -165,6 +171,8 @@ static func parse_args(args: PackedStringArray) -> Dictionary:
 	var tuned: Array[String] = []
 	var tag := ""
 	var tag_given := false
+	var report := ""
+	var report_given := false
 	var errors: Array[String] = []
 	for arg in args:
 		if arg.begins_with("--camera="):
@@ -245,14 +253,26 @@ static func parse_args(args: PackedStringArray) -> Dictionary:
 			tag = arg.trim_prefix("--tag=")
 			if not TAG_NAME.search(tag):
 				errors.append("--tag must be letters, digits, '_', '.' or '-': %s" % tag)
+		elif arg.begins_with("--report="):
+			if report_given:
+				errors.append("--report may appear only once")
+				continue
+			report_given = true
+			report = arg.trim_prefix("--report=")
+			if not absolute_file_path(report):
+				errors.append("Report path must be absolute: %s" % report)
 		elif arg.begins_with("--"):
 			errors.append("Unknown argument: %s" % arg)
 		else:
 			positional.append(arg)
 	if tuning.has("gi_energy") and not (tuning.get("gi", "none") in ["sdfgi", "voxelgi"]):
 		errors.append("--tune=gi_energy needs --tune=gi=sdfgi or --tune=gi=voxelgi")
+	# ReflectionProbe's ambient colour and its energy only reach the renderer in AMBIENT_COLOR mode.
+	for key in ["probe_ambient_energy", "probe_ambient_colour"]:
+		if tuning.has(key) and tuning.get("probe_ambient", "disabled") != "color":
+			errors.append("--tune=%s needs --tune=probe_ambient=color" % key)
 	if positional.size() != 2:
-		errors.append("Usage: showcase_compare.gd -- <absolute.glb> <absolute out_dir> [--camera=<name>] [--ref=<camera>=<absolute image>]... [--tune=<key>=<value>]... [--tag=<name>]")
+		errors.append("Usage: showcase_compare.gd -- <absolute.glb> <absolute out_dir> [--camera=<name>] [--ref=<camera>=<absolute image>]... [--tune=<key>=<value>]... [--tag=<name>] [--report=<absolute json path>]")
 	for path in positional:
 		if not absolute_file_path(path):
 			errors.append("File arguments must be absolute: %s" % path)
@@ -260,7 +280,7 @@ static func parse_args(args: PackedStringArray) -> Dictionary:
 		"glb": positional[0] if positional.size() > 0 else "",
 		"out_dir": positional[1] if positional.size() > 1 else "",
 		"camera": camera, "refs": refs, "regions": regions, "tuning": tuning, "tag": tag,
-		"errors": errors,
+		"report": report, "errors": errors,
 	}
 
 
@@ -400,25 +420,48 @@ static func apply_tuning(environment: Environment, tuning: Dictionary, exposure:
 
 
 ## The probe keeps APPROXIMATION's disabled ambient unless a sweep overrides it; no probe means nothing to apply.
+## AMBIENT_COLOR also takes a colour: the parser only let it through with probe_ambient=color.
 static func apply_probe_tuning(probe: ReflectionProbe, tuning: Dictionary) -> void:
 	if probe == null:
 		return
 	if tuning.has("probe_ambient"):
 		probe.ambient_mode = PROBE_AMBIENT_MODES[tuning.probe_ambient]
+		if tuning.probe_ambient == "color":
+			probe.ambient_color = probe_ambient_colour(tuning)
 	if tuning.has("probe_ambient_energy"):
 		probe.ambient_color_energy = float(tuning.probe_ambient_energy)
+
+
+## `#rrggbb` is sRGB exactly as written, like every Color shown in the editor. Without one, ambient_color would stay
+## black, which is why AMBIENT_COLOR defaults to APPROXIMATION.colour_linear made sRGB the way background() does.
+static func probe_ambient_colour(tuning: Dictionary) -> Color:
+	if tuning.has("probe_ambient_colour"):
+		return Color.html(tuning.probe_ambient_colour)
+	var linear: Array = APPROXIMATION.colour_linear
+	return Color(linear[0], linear[1], linear[2]).linear_to_srgb()
+
+
+## VoxelGI needs a non-degenerate box even for flat geometry (a floor slab, a facade), so every axis grows by a 0.5 m
+## margin on each side with a 1 m minimum. Only empty bounds (no mesh at all) are an error; the caller returns null.
+static func voxel_gi_box(bounds: AABB) -> AABB:
+	if bounds.size == Vector3.ZERO:
+		return AABB()
+	var size := bounds.size + Vector3.ONE
+	for axis in 3:
+		size[axis] = maxf(size[axis], 1.0)
+	return AABB(bounds.get_center() - size / 2.0, size)
 
 
 ## VoxelGI boxes the visible bounds like add_interior_probe, so its extents cover every mesh. bake() runs once the
 ## node is in the tree and before the first rendered frame; it needs a display, so the tests never call this.
 static func add_voxel_gi(parent: Node3D) -> VoxelGI:
-	var bounds := visual_bounds(parent)
-	if not bounds.has_volume():
+	var box := voxel_gi_box(visual_bounds(parent))
+	if box.size == Vector3.ZERO:
 		return null
 	var voxel_gi := VoxelGI.new()
-	voxel_gi.size = bounds.size
+	voxel_gi.size = box.size
 	parent.add_child(voxel_gi)
-	voxel_gi.global_transform = Transform3D(Basis.IDENTITY, bounds.get_center())
+	voxel_gi.global_transform = Transform3D(Basis.IDENTITY, box.get_center())
 	voxel_gi.bake()
 	return voxel_gi
 
@@ -679,7 +722,13 @@ func run() -> void:
 		"reflection_probe_position_m": [probe.global_position.x, probe.global_position.y, probe.global_position.z] if probe != null else [],
 		"approximation": APPROXIMATION, "settle_render_frames": SETTLE_RENDER_FRAMES,
 	}
-	var report_path := str(args.out_dir).path_join(report_file_name(layout, args.tag))
+	var report_path: String = args.report
+	if report_path.is_empty():
+		report_path = str(args.out_dir).path_join(report_file_name(layout, args.tag))
+	var report_dir := report_path.get_base_dir()
+	if DirAccess.make_dir_recursive_absolute(report_dir) != OK:
+		fail("Cannot create report directory: %s" % report_dir)
+		return
 	var file := FileAccess.open(report_path, FileAccess.WRITE)
 	if file == null:
 		fail("Cannot write report: %s" % report_path)

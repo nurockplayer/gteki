@@ -332,6 +332,20 @@ func check_tuning() -> void:
 	]:
 		check(parse_with([spec]).errors.is_empty(), "accept the range boundary: %s" % spec)
 	check(parse_with(["--tune=gi=voxelgi", "--tune=gi_energy=16"]).errors.is_empty(), "gi_energy is accepted with voxelgi")
+	# --report writes exactly where the sweep says; it must be absolute, and only once.
+	check(parse_with(["--report=/tmp/out/custom_report.json"]).errors.is_empty() and parse_with(["--report=/tmp/out/custom_report.json"]).report == "/tmp/out/custom_report.json", "--report accepts and keeps an absolute path")
+	check(not parse_with(["--report=custom_report.json"]).errors.is_empty(), "relative --report is rejected")
+	check(not parse_with(["--report="]).errors.is_empty(), "empty --report is rejected")
+	check(not parse_with(["--report=/tmp/a.json", "--report=/tmp/b.json"]).errors.is_empty(), "duplicate --report is rejected")
+	check(parse_with([]).report == "", "no --report keeps the layout-derived report name")
+	# ReflectionProbe's ambient colour and energy only reach the renderer in AMBIENT_COLOR mode.
+	check(not parse_with(["--tune=probe_ambient_energy=1"]).errors.is_empty(), "probe_ambient_energy without probe_ambient=color is rejected")
+	check(not parse_with(["--tune=probe_ambient=environment", "--tune=probe_ambient_energy=1"]).errors.is_empty(), "probe_ambient_energy with probe_ambient=environment is rejected")
+	check(not parse_with(["--tune=probe_ambient_colour=#204060"]).errors.is_empty(), "probe_ambient_colour without probe_ambient=color is rejected")
+	var coloured := parse_with(["--tune=probe_ambient=color", "--tune=probe_ambient_energy=2.5", "--tune=probe_ambient_colour=#204060"])
+	check(coloured.errors.is_empty() and coloured.tuning.probe_ambient_colour == "#204060", "probe_ambient=color accepts a colour and its energy")
+	for value in ["#fff", "204060", "#gg0000", "#2040607"]:
+		check(not parse_with(["--tune=probe_ambient=color", "--tune=probe_ambient_colour=" + value]).errors.is_empty(), "reject malformed probe_ambient_colour: %s" % value)
 	# Application on a bare Environment: exposure_ev adds to the layout exposure, 0 here.
 	var untouched := Environment.new()
 	var environment := Environment.new()
@@ -360,12 +374,21 @@ func check_tuning() -> void:
 	# A bare probe defaults to AMBIENT_ENVIRONMENT; add_interior_probe is what applies APPROXIMATION's disabled mode.
 	Compare.apply_probe_tuning(probe, {})
 	check(probe.ambient_mode == ReflectionProbe.AMBIENT_ENVIRONMENT, "empty tuning leaves the bare probe's ambient mode untouched")
-	Compare.apply_probe_tuning(probe, {"probe_ambient": "environment", "probe_ambient_energy": 2.5})
-	check(probe.ambient_mode == ReflectionProbe.AMBIENT_ENVIRONMENT and is_equal_approx(probe.ambient_color_energy, 2.5), "probe_ambient=environment and its energy apply to the probe")
-	Compare.apply_probe_tuning(probe, {"probe_ambient": "color"})
-	check(probe.ambient_mode == ReflectionProbe.AMBIENT_COLOR and is_equal_approx(probe.ambient_color_energy, 2.5), "probe_ambient=color keeps the energy already set")
+	Compare.apply_probe_tuning(probe, {"probe_ambient": "environment"})
+	check(probe.ambient_mode == ReflectionProbe.AMBIENT_ENVIRONMENT, "probe_ambient=environment applies to the probe")
+	Compare.apply_probe_tuning(probe, {"probe_ambient": "color", "probe_ambient_energy": 2.5})
+	check(probe.ambient_mode == ReflectionProbe.AMBIENT_COLOR and is_equal_approx(probe.ambient_color_energy, 2.5), "probe_ambient=color applies its energy to the probe")
+	check(probe.ambient_color.is_equal_approx(Color(1.0, 0.96, 0.9).linear_to_srgb()), "probe_ambient=color without a colour uses APPROXIMATION.colour_linear as sRGB")
+	Compare.apply_probe_tuning(probe, {"probe_ambient": "color", "probe_ambient_colour": "#204060"})
+	check(probe.ambient_color.is_equal_approx(Color.html("#204060")), "probe_ambient_colour is sRGB exactly as written")
 	# A detached ReflectionProbe owns a scene-cull instance; free it so the suite exits without a leak warning.
 	probe.free()
+	# VoxelGI boxes flat geometry too: a 0.5 m margin per side, at least 1 m per axis, empty bounds skipped.
+	var flat := AABB(Vector3(-2, 3, -1), Vector3(4, 0, 6))
+	var flat_box := Compare.voxel_gi_box(flat)
+	check(flat_box.size.is_equal_approx(Vector3(5, 1, 7)) and flat_box.get_center().is_equal_approx(flat.get_center()), "flat bounds grow by 0.5 m per side with a 1 m minimum axis")
+	check(Compare.voxel_gi_box(AABB(Vector3(-2, 0, -3), Vector3(4, 2, 6))).size.is_equal_approx(Vector3(5, 3, 7)), "a normal box grows by 0.5 m on every side")
+	check(Compare.voxel_gi_box(AABB()).size == Vector3.ZERO, "empty bounds stay empty so the caller can skip VoxelGI")
 	# Names: no tag keeps the G-4 output names; a tag suffixes the PNG, side PNG and report alike.
 	check(Compare.output_stem("concourse", "gates_closed", "") == "concourse_gates_closed", "no tag keeps the G-4 PNG name")
 	check(Compare.output_stem("concourse", "gates_closed", "sdfgi") == "concourse_gates_closed_sdfgi", "a tag suffixes the PNG and side PNG names")
