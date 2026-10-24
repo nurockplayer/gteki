@@ -143,3 +143,10 @@ No car positions, relative placement or layout are taken (OD-03).
 - **Candidates for the writers, not applied:**
   - The Toei map prints the gate name 新都心口 with hours 6:45～22:00. That name is already a tag on Toei exits 6–8 in #421, so it could become a Toei gate POI.
   - The Seibu map draws 西武南口 in the same style as the 東口 exit labels. In #414 it is `other`, because the text page does not say what it is.
+
+## Truth review record
+
+- **oracle-ego (ChatGPT GPT-6, high), 2026-10-24.** Viewed m25_b, y09_a, y09_b, f09_b, m08_a, the Toei 構内図 and the Seibu map. It could not open m25_a, f09_a or m08_b; lines-lead read those three and found them identical in labels to their other-direction pair.
+- **One discrepancy, fixed:** 副都心線連絡通路 is a footnote on the M25 diagram, not part of a direction label. It was removed from `viaLabels`; its hours stay in `fact`.
+- **No other discrepancies.**
+- **Rights review:** core-rights-a9, no P0/P1 at 1f2070fc.

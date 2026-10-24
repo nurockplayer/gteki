@@ -499,11 +499,10 @@
       "toLine": "副都心線",
       "viaLabels": [
         "東京芸術劇場",
-        "東武百貨店",
-        "副都心線連絡通路"
+        "東武百貨店"
       ],
       "viaPoiIds": [],
-      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded. A footnote on the diagram gives the 副都心線連絡通路 hours as 始発～0:06 (as read on 2026-10-24; may have changed).",
+      "fact": "The platform diagram groups this transfer with a pointer to the printed direction label(s) in viaLabels. Car positions are not recorded. A separate footnote on the diagram gives the 副都心線連絡通路 hours as 始発～0:06 (as read on 2026-10-24; may have changed).",
       "sourceId": "tokyometro-ikebukuro-norikae-figures-2026-10",
       "locator": "Marunouchi line page, 池袋 platform diagrams, footnote"
     },
