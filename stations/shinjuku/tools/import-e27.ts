@@ -35,6 +35,7 @@ import {
   type EdgeMode,
   type EvidenceRef,
   type Floor,
+  type LocalizedText,
   type Node,
   type Poi,
   type Source,
@@ -869,7 +870,7 @@ pois.push({
   category: "platform",
   // Station-name anchor (issue #106). The names reuse the station record's own wording (station.names:
   // 新宿駅（都営大江戸線） / Shinjuku Station (Toei Oedo Line) / 新宿站（都營大江戶線); code E27), so
-  // searching 新宿 / Shinjuku lands on the Toei Oedo Line station and never implies JR or other operators.
+  // searching 新宿 / Shinjuku lands on the Toei Oedo Line station. Other operators' names are added separately as search-only POIs from S03 (#411), appended at the end of the array.
   names: [
     { lang: "ja", text: "新宿駅（都営大江戸線）ホーム" },
     { lang: "en", text: "Toei Oedo Line platform (Shinjuku Station, E27)" },
@@ -910,8 +911,8 @@ pois.push({
   connectorNodeIds: platformNodes,
   paid: true,
   notes: [
-    { lang: "ja", text: "都営大江戸線 新宿駅（E27）のみのデータです。JR・京王・小田急・東京メトロ・都営新宿線など、他事業者・他路線の施設は含みません。" },
-    { lang: "en", text: "Data for the Toei Oedo Line station (E27) only. Facilities of JR, Keio, Odakyu, Tokyo Metro, the Toei Shinjuku Line and other operators or lines are not modelled." },
+    { lang: "ja", text: "都営大江戸線 新宿駅（E27）のデータです。JR・京王・小田急・東京メトロ丸ノ内線の改札とホームは、東京都都市整備局の2020年3月時点の資料にある名前を検索用に収録しています。改札と乗換の一部には同資料の形状から求めたおおよその位置（検索表示のみ、経路案内には不使用）を付けていますが、経路はありません。都営新宿線などその他の路線は収録していません。" },
+    { lang: "en", text: "Data for the Toei Oedo Line station (E27). Ticket gates and platforms of JR, Keio, Odakyu and the Tokyo Metro Marunouchi Line are listed by name, for search, from Tokyo Metropolitan Government data as of March 2020; some gates and transfers also carry an approximate position derived from that data's shapes (search display only, not for routing). There is no route for them. The Toei Shinjuku Line and other lines are not modelled." },
   ],
   evidence: vEv("NWD floor=-6 nodes inside GSI paid (toll=2) walkway on 地下6階", "Track/direction assignment per platform side not in source → not shown"),
 });
@@ -1117,10 +1118,132 @@ const gaps: CoverageGap[] = [
   { id: "gap:reuse-after-publication", floorId: null, zone: [{ lang: "en", text: "All E27-derived data (graph, geometry, POIs)" }, { lang: "ja", text: "E27 由来の全データ（経路網、形状、施設情報）" }], missingFact: [{ lang: "en", text: `Provider confirmation that GTEki's derived Web 3D data may still be reused/distributed (incl. commercially) after the publication period ends ${PUBLICATION_PERIOD_END}. The licence basis for the E27 resources is unconfirmed (published under the Owner's override at #16; PDL 1.0 is not treated as covering them, #39 Q11 = No).` }, { lang: "ja", text: `公開提供期限（${PUBLICATION_PERIOD_END}）の経過後も GTEki の派生 Web 3D データを再利用・配布（商用を含む）してよいかは、提供者の確認待ち。E27 資料のライセンス根拠は未確認で、オーナー判断により公開している。PDL 1.0 の対象とはみなしていない。` }], sourceDate: "2026-09-17", fieldWorkNeeded: [{ lang: "en", text: "Written answer from MLIT ほこナビDP窓口; E27 itself ships under the Owner's #16 override; any other public release relying on it stays HOLD until confirmed" }, { lang: "ja", text: "MLIT ほこナビDP窓口からの書面での回答。E27 自体はオーナー判断により公開している。確認が取れるまで、これに依拠する他の公開は保留。" }] },
   { id: "gap:closures", floorId: null, zone: [{ lang: "en", text: "Construction areas around 新宿駅西口・南口" }, { lang: "ja", text: "新宿駅西口・南口周辺の工事区域" }], missingFact: [{ lang: "en", text: "Current closures (e.g. OSM notes exit 2 closed since 2024-03-30 for building demolition — outside E27 data)" }, { lang: "ja", text: "現在の通行止め（例: OSM のメモによると出口 2 は 2024-03-30 から建物解体のため閉鎖、E27 データの範囲外）" }], sourceDate: null, fieldWorkNeeded: [{ lang: "en", text: "Operator notices + field check before any real-world guidance" }, { lang: "ja", text: "実際の案内を出す前に、事業者からの告知の確認と現地確認" }] },
 ];
+// ---------------------------------------------------------------- S03 search-only line POIs (#411)
+// Contract: docs/research/lines/shinjuku-line-pois-contract.md. Names only: no position, floor, connector or paid value.
+// These are other operators' names from tokyo-s03-zip (facts only). They are routable nowhere (connectorNodeIds []).
+type S03Source = {
+  id: string; title: string; publisher: string; url: string; license: string; rights: string; attribution: string;
+  modified: boolean; changeNotice: string; retrievedAt: string; datasetDate: string; sha256: string; usage: string;
+};
+type S03Poi = {
+  id: string; category: string; names: LocalizedText[]; aliases: LocalizedText[]; floorId: string | null;
+  displayPosition: Poi["displayPosition"]; connectorNodeIds: string[]; paid: Poi["paid"]; evidence: EvidenceRef;
+  notes: LocalizedText[]; operatorIds?: string[]; line?: string; s03?: unknown;
+};
+const S03_SOURCE_ID = "tokyo-s03-zip";
+// The research file's own change notice and usage describe that file, which still carries names only. The
+// shipped station data also carries the approximate points (#463), so its notice is stated here (NOTICE 4.7).
+const S03_STATION_CHANGE_NOTICE = "GTEki が名称を抽出し検索用に再構成。改札・乗換の一部に形状から求めたおおよその代表点を付加（経路案内には不使用）";
+const S03_STATION_USAGE = "plain names; approximate representative points derived from the source shapes for some gates and transfers (CRS UNKNOWN; not for routing)";
+/** The contract's §2 categories; anything else (an exit, a toilet) is not a line name and is refused. */
+const S03_CATEGORIES = new Set<string>(["ticket_gate", "transfer", "platform"]);
+const s03 = JSON.parse(readFileSync(join(HERE, "../../../docs/research/lines/shinjuku-line-pois.json"), "utf8")) as { sources: S03Source[]; pois: S03Poi[] };
+if (s03.sources.length !== 1 || s03.sources[0]!.id !== S03_SOURCE_ID) throw new Error(`S03 import: expected exactly one source ${S03_SOURCE_ID}`);
+const s03Src = s03.sources[0]!;
+
+// #463: approximate representative points for some S03 gates and transfers. GIS derived one point per pointed
+// POI from the source shapes (contract: docs/gis/s03/positions-import-contract.md); the committed derived input
+// carries no name, entity id, level or coordinate reference. These points are search display only: no connector,
+// no displayPosition, floor UNVERIFIED, NOT_FOR_ROUTING.
+type S03ApproxEntry = { poiId: string; east: number; north: number; uncertaintyM: number; method: string; labels: Record<string, string> };
+const S03_APPROX_LABELS: Record<string, string> = {
+  position: "approximate (±max(5 m, polygon radius))",
+  navigation_use: "NOT_FOR_ROUTING",
+  gteki_role: "context",
+  floor: "UNVERIFIED",
+};
+const S03_APPROX_METHODS = new Set(["area_weighted_centroid", "largest_part_closest_point"]);
+const s03Approx = JSON.parse(readFileSync(join(HERE, "../sources/s03-approx-positions.json"), "utf8")) as {
+  contract: string; sourceId: string; inputDigest: string; positions: S03ApproxEntry[];
+};
+if (s03Approx.contract !== "docs/gis/s03/positions-import-contract.md") throw new Error(`S03 positions: unexpected contract ${s03Approx.contract}`);
+if (s03Approx.sourceId !== S03_SOURCE_ID) throw new Error(`S03 positions: expected source ${S03_SOURCE_ID}, got ${s03Approx.sourceId}`);
+const s03PoiById = new Map<string, S03Poi>();
+for (const raw of s03.pois) {
+  if (s03PoiById.has(raw.id)) throw new Error(`S03 import: ${raw.id} appears twice in the line-POI file`);
+  s03PoiById.set(raw.id, raw);
+}
+const s03ApproxById = new Map<string, S03ApproxEntry>();
+const approxLabelKeys = Object.keys(S03_APPROX_LABELS).sort();
+for (const entry of s03Approx.positions) {
+  if (s03ApproxById.has(entry.poiId)) throw new Error(`S03 positions: ${entry.poiId} appears twice in the positions file`);
+  if (entry.poiId === "poi:keio-gate:1") throw new Error("S03 positions: poi:keio-gate:1 is unpointed (SOURCE_DEFECT_HOLE_OUTSIDE_SHELL)");
+  const linePoi = s03PoiById.get(entry.poiId);
+  if (!linePoi) throw new Error(`S03 positions: ${entry.poiId} is not an S03 line POI`);
+  if (linePoi.category !== "ticket_gate" && linePoi.category !== "transfer") throw new Error(`S03 positions: ${entry.poiId} is a ${linePoi.category}; only gates and transfers get a point`);
+  const entryKeys = Object.keys(entry.labels).sort();
+  if (entryKeys.length !== approxLabelKeys.length || entryKeys.some((k, i) => k !== approxLabelKeys[i]) || approxLabelKeys.some((k) => entry.labels[k] !== S03_APPROX_LABELS[k]))
+    throw new Error(`S03 positions: ${entry.poiId} labels differ from the contract`);
+  if (!Number.isFinite(entry.east) || !Number.isFinite(entry.north)) throw new Error(`S03 positions: ${entry.poiId} has a non-finite coordinate`);
+  if (typeof entry.uncertaintyM !== "number" || !Number.isFinite(entry.uncertaintyM) || entry.uncertaintyM < 5)
+    throw new Error(`S03 positions: ${entry.poiId} has uncertainty ${entry.uncertaintyM}; the contract's label is max(5 m, radius)`);
+  if (!S03_APPROX_METHODS.has(entry.method)) throw new Error(`S03 positions: ${entry.poiId} has unknown method ${entry.method}`);
+  s03ApproxById.set(entry.poiId, entry);
+}
+sources.push({
+  id: S03_SOURCE_ID,
+  title: s03Src.title,
+  publisher: s03Src.publisher,
+  url: s03Src.url,
+  // Stated at dataset level only (Owner Q2; REUSE LicenseRef-S03), so the shown name says so.
+  license: {
+    name: [
+      { lang: "ja", text: `${s03Src.license}（データセット単位の表示）` },
+      { lang: "en", text: `${s03Src.license} (stated at dataset level)` },
+    ],
+    url: "https://creativecommons.org/licenses/by/4.0/",
+  },
+  rights: s03Src.rights as Source["rights"],
+  // Not `usage: "facts-only"`: that tells the app the source has no licence, and S03 is CC BY 4.0. Its plain names
+  // ship under that licence with the credit and change notice (Owner Q2/Q3, #39 comment of 2026-10-22 JST).
+  decision: { url: "https://github.com/nurockplayer/gteki/issues/39#issuecomment-6324726321", date: "2026-10-22" },
+  attribution: s03Src.attribution,
+  modified: s03Src.modified,
+  retrievedAt: s03Src.retrievedAt,
+  datasetDate: s03Src.datasetDate,
+  notes: `${S03_STATION_CHANGE_NOTICE}. Approximate representative points (area-weighted centroids, or the closest boundary point of the largest part) derived by GTEki for ${s03Approx.positions.length} gates and transfers; search display only, NOT_FOR_ROUTING, floor UNVERIFIED (#463). ZIP sha256 ${s03Src.sha256}. ${S03_STATION_USAGE}. Licence claimed at dataset level by catalogue t000008d0000000037; shipped under LicenseRef-S03 (Owner Q2).`,
+});
+const usedApprox = new Set<string>();
+for (const raw of s03.pois) {
+  if (raw.floorId !== null || raw.displayPosition !== null || raw.paid !== null) throw new Error(`S03 import: ${raw.id} carries a floor, position or paid value`);
+  if (raw.connectorNodeIds.length > 0) throw new Error(`S03 import: ${raw.id} has connectorNodeIds`);
+  if (raw.evidence.sourceIds.length !== 1 || raw.evidence.sourceIds[0] !== S03_SOURCE_ID) throw new Error(`S03 import: ${raw.id} must cite exactly ${S03_SOURCE_ID}`);
+  if (!S03_CATEGORIES.has(raw.category)) throw new Error(`S03 import: ${raw.id} has category ${raw.category}`);
+  if (raw.aliases.length > 0 || raw.names.length !== 1 || raw.names[0]!.lang !== "ja" || !raw.names[0]!.text) throw new Error(`S03 import: ${raw.id} must carry exactly one ja name and no aliases`);
+  if (pois.some((p) => p.id === raw.id)) throw new Error(`S03 import: duplicate id ${raw.id}`);
+  const approx = s03ApproxById.get(raw.id);
+  if (approx) usedApprox.add(approx.poiId);
+  pois.push({
+    id: raw.id,
+    category: raw.category as "ticket_gate" | "transfer" | "platform",
+    names: raw.names,
+    aliases: raw.aliases,
+    floorId: raw.floorId,
+    displayPosition: raw.displayPosition,
+    // #463: search display only, never routing (the schema keeps this key right after displayPosition).
+    ...(approx
+      ? {
+          approximatePosition: {
+            east: approx.east,
+            north: approx.north,
+            uncertaintyM: approx.uncertaintyM,
+            method: approx.method,
+            navigationUse: "NOT_FOR_ROUTING" as const,
+            floor: "UNVERIFIED" as const,
+          },
+        }
+      : {}),
+    connectorNodeIds: raw.connectorNodeIds,
+    paid: raw.paid,
+    evidence: raw.evidence,
+    notes: raw.notes,
+  });
+}
+if (usedApprox.size !== s03ApproxById.size) throw new Error(`S03 positions: ${s03ApproxById.size - usedApprox.size} entries do not match an appended POI`);
 const coverage = {
   summary: [
-    { lang: "ja", text: "都営大江戸線 新宿駅（E27）の公開歩行空間ネットワーク／構内地図の範囲のみ。他社線・乗換通路は未収録。高さは推定値（実測ではない）。" },
-    { lang: "en", text: "Only the published Toei Oedo Line Shinjuku (E27) indoor network and floor-plan extent. Other operators and transfer passages are not included. Heights are estimates, not measurements." },
+    { lang: "ja", text: "都営大江戸線 新宿駅（E27）の公開歩行空間ネットワーク／構内地図の範囲のみ。他社線の改札・ホームは2020年3月時点の資料から名前を収録し、改札と乗換の一部に同資料の形状から求めたおおよその位置を付加（検索表示のみ、±5 m 以上、経路案内には不使用）。乗換通路は未収録。高さは推定値（実測ではない）。" },
+    { lang: "en", text: "Only the published Toei Oedo Line Shinjuku (E27) indoor network and floor-plan extent. Other operators' gates and platforms are listed by name from March 2020 data, with approximate positions for some gates and transfers derived from the same shapes (search display only, ±5 m or more, not for routing); transfer passages are not included. Heights are estimates, not measurements." },
   ],
   areas,
   gaps,
@@ -1128,9 +1251,10 @@ const coverage = {
 };
 
 // Suggested free-walk starts (user-chosen; no indoor positioning is claimed):
-// first ticket-gate cluster, then platform, then a street exit.
+// first ticket-gate cluster, then platform, then a street exit. Only routable POIs qualify: the search-only
+// S03 POIs (#411) have no connector and sort before the E27 ids in some categories.
 const spawnNodeIds = (["ticket_gate", "platform", "exit"] as const).flatMap((cat) => {
-  const poi = pois.filter((p) => p.category === cat).sort((a, b) => a.id.localeCompare(b.id))[0];
+  const poi = pois.filter((p) => p.category === cat && p.connectorNodeIds.length > 0).sort((a, b) => a.id.localeCompare(b.id))[0];
   return poi?.connectorNodeIds[0] ? [poi.connectorNodeIds[0]] : [];
 });
 
@@ -1202,7 +1326,8 @@ const bundle: StationBundle = {
 // ---------------------------------------------------------------- plan (render geometry)
 const plan = {
   note: "Render-only geometry derived from 構内地図データ（都営地下鉄大江戸線 新宿駅）（国土交通省）, published under the Owner's #16 override; licence basis unconfirmed. Not routing truth. Heights are symbolic.",
-  attribution: sources.map((s) => s.attribution),
+  // S03 (#411) supplies POI names only, nothing in the plan, so its credit is not listed here.
+  attribution: sources.filter((s) => s.id !== S03_SOURCE_ID).map((s) => s.attribution),
   levels: mapLevels.map((ml) => {
     const nwdOrd = ml.ordinal === -5 ? -4.5 : ml.ordinal;
     return {

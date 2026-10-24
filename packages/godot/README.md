@@ -6,6 +6,14 @@ route computed by the existing TypeScript router. Godot contains no routing
 implementation. All fixture data is synthetic and cannot be used for real station
 directions.
 
+## Handoff (G-5)
+
+Deliberate simplifications, known gaps and the commands a successor needs are collected in
+[docs/g5-handoff.md](docs/g5-handoff.md). G-1 to G-3 are merged; G-4 is partial (the interior is still too dark, #401,
+and the kit AO waits on #352); G-5's evidence walks and first performance table are merged, and that document is its
+last item. GPU work runs only on weekdays 03:00–15:00 JST, single process under `lockf`, with
+`--rendering-method forward_plus` on the command line while `project.godot` stays `gl_compatibility`.
+
 From the workspace root, with its pinned pnpm dependencies installed:
 
 ```sh
@@ -107,7 +115,9 @@ Walkable HQ client work starts by loading both stations in Godot without Godot o
   `gteki_source_role`, so nothing collides twice. Material names, base colours and both UV sets (TEXCOORD_1) are kept.
 - `scene.json` (`gteki.godot-scene/0.1`): `stationId`, `sourceCommit` (+ `sourceDirty`), `walls` and `spawnPoints` in
   ENU exactly as returned, `environment`, `counts` per role, `lightmap` (only when the scene has a baked one: the URI
-  it loaded, channel, colour space, `lightMapIntensity` and the flagged mesh/surface counts — see G-4a), a `reference`
+  it loaded, channel, colour space, `lightMapIntensity` and the flagged mesh/surface counts — see G-4a),
+  `ao_atlas_bindings` (only when the scene uses kit AO atlases: per kind URI, SHA-256, channel, colour space, `flipY`
+  and counts — see below), a `reference`
   block (TypeScript-computed renderer-frame values the Godot tests compare against; an oracle, not scene truth), and
   `warnings`. The counts describe what the GLB can carry: a mesh with no drawable geometry (an empty `BufferGeometry`,
   such as Shinjuku's viewer probe) is skipped by three's exporter, so it is left out of every count and named in a
@@ -117,8 +127,9 @@ The browser-only parts are **shims, listed in `warnings`**: a no-op 2D canvas (b
 em-width estimate, so sign sizes can differ), stubbed PMREM (no reflections), `loadTexture` returning blank textures
 (the lightmap is a blank placeholder in the snapshot itself; G-4a re-loads the real file on the Godot side), no audio.
 All material textures are omitted, so snapshots are **untextured and unlit**: this is geometry, roles and colours, not
-the #94 look (G-4 re-materials). The one exception is the baked lightmap, whose material state is recorded in the
-sidecar and re-applied on the Godot side (G-4a, below). `update()` runs once at `(0, 0)`; `InstancedMesh` (escalator
+the #94 look (G-4 re-materials). The exceptions are the baked lightmap, whose material state is recorded in the
+sidecar and re-applied on the Godot side (G-4a, below), and the kit's shared AO atlases, recorded the same way (Lane E
+#391, below). `update()` runs once at `(0, 0)`; `InstancedMesh` (escalator
 steps, platform-door leaves) is baked into static merged meshes at that pose (Godot 4.7 cannot import
 `EXT_mesh_gpu_instancing`), and the Ikebukuro crowd (`ambient_crowd`) is dropped. The only added dependency is
 `three` (same version as the stations, so the station modules share the exporter's instance); no canvas library.
@@ -126,7 +137,7 @@ steps, platform-door leaves) is baked into static merged meshes at that pose (Go
 ```sh
 bash packages/godot/run-scenes.sh                 # export both stations, then the headless Godot snapshot tests
 bash packages/godot/run-scenes.sh shinjuku        # one station
-godot --path packages/godot res://hq/hq.tscn -- --station=ikebukuro [--lightmap=on|off]   # HQ skeleton (windowed; Tab cycles stations)
+godot --path packages/godot res://hq/hq.tscn -- --station=ikebukuro [--lightmap=on|off] [--ao=on|off] [--ao-light-affect=<0..1>]   # HQ skeleton (windowed; Tab cycles stations)
 godot --headless --path packages/godot res://hq/hq.tscn -- --station=shinjuku --check
 ```
 
@@ -192,6 +203,48 @@ every light does. The real wiring is asserted by the client itself: `run-scenes.
 `hq.tscn --station=<id> --check` for each station, where `hq.gd` `check_lighting` compares every light's
 `light_cull_mask` with `gteki_hq_lights.cull_mask(lightmap_applied)`, requires every drawing station mesh to be on
 `WORLD_LAYER`, and requires a light on `AVATAR_LAYER` whenever a bake is applied. Layer 2 is reserved for the avatar.
+
+## Kit AO atlases (Lane E #391 of #164)
+
+The kit ships ambient occlusion as shared atlases, one 8-bit grey PNG per kind (`kit/catalog/<tier>/atlas/<kind>_ao.png`,
+AO in the R channel, linear data, unused texels 255). The web loader puts it on `material.aoMap` with `channel = 1`
+(TEXCOORD_1 → Godot UV2), `flipY = false` and `colorSpace = NoColorSpace`, and records `gteki_uri` and
+`gteki_atlas_kind` on the texture. The snapshot strips every texture, so the exporter records the material state the
+same way it does the lightmap: each material slot whose `aoMap` carries a kind gets its surface index in
+`userData.gteki_ao_atlas_surfaces` (a glTF extras object, `{"<surface index>": "<kind>"}`), and the sidecar
+`ao_atlas_bindings` block records, per kind, the URI, the SHA-256 of that station file, channel, colour space,
+`flipY`, and the flagged mesh/surface counts. It throws when one kind maps to two URIs, an atlas has no source URI or
+samples a channel other than 1; an `aoMap` without a kit kind is only a warning, because every texture is stripped
+anyway.
+
+`addons/gteki/gteki_ao_atlas.gd` loads each kind's PNG raw from the station's `gteki/` folder (`Image.load_from_file`
+does not convert colour spaces), checks its SHA-256 against the sidecar and reports a mismatch as an issue (nothing is
+applied for that kind rather than sampling the wrong atlas), and gives each flagged surface a mipmapped atlas and a duplicate of the snapshot material (one duplicate per
+snapshot material and kind, so surfaces that shared a material still share one) with `ao_enabled`, `ao_texture`, `ao_on_uv2` and `ao_texture_channel = TEXTURE_CHANNEL_RED`;
+`ao_light_affect` keeps its default (0, AO on indirect light only, as on the web). One `Texture2D` per kind is shared by every surface of that kind, and unflagged
+surfaces (and the shared snapshot material) are never mutated. `gteki_scene.gd` applies it with the lightmap
+(`options.ao_atlas`, default on) and runs it first: the lightmap's `ShaderMaterial` replaces the material on a surface
+that carries both, so the bake stays the governing lighting term there. No station ships a kit AO atlas yet, so no
+sidecar gains an `ao_atlas_bindings` block; Shinjuku's own baked `aoMap` (a station `CanvasTexture`, not a kit atlas)
+is named in its `warnings` because textures are stripped. `tests/run_scene_tests.gd` checks the applier against a
+synthetic atlas in a temp directory.
+
+`hq.gd` takes `--ao=on|off` (default on) and `--ao-light-affect=<0..1>`. Godot's `ao_light_affect` does **not** gate
+indirect AO: AO always darkens ambient/indirect light, whatever the value. What the value controls is how much AO
+*additionally* darkens direct light (0 = ambient only), and Godot's default is 0. That default is the web parity —
+three's `aoMap` affects indirect light only — so parity needs no flag at all. `--ao-light-affect` is therefore a
+diagnostic for the C3 GPU check (how much AO additionally darkens direct light), not a parity control.
+`--ao-light-affect` is passed through `gteki_scene.gd` `options.ao_light_affect` to the applier, written to every AO
+copy, and recorded on the scene as `ao_atlas_light_affect` (`null` when the value was not given and Godot's own value
+was kept, which is also what an invalid value reports instead of applying a partial atlas). The station line names what
+was applied (`AO <kinds> kinds / <n> surfaces, light_affect <value|default>`, or `AO off (<k> kinds recorded)` with
+`--ao=off`), and `--capture`'s `report.json` records `ao` and `ao_light_affect` beside `look` and `gi`, so the C3
+comparison states the AO state its pictures were taken with: `ao_light_affect` is what the copies actually carry
+(`null` when AO was off or Godot's default was kept) and `ao_light_affect_requested` is the value the run asked for
+(`null` when none was given), so `--ao=off --ao-light-affect=0.5` does not read as AO applied at 0.5.
+`tests/run_scene_tests.gd` checks that 0.5 reaches every copy and is recorded, that no value keeps the default and
+records `null`, and that 1.5 or NaN is an issue applying nothing; `tests/run_capture_tests.gd` checks the flag rules
+(defaults, the 0..1 bounds, NaN/inf, incomplete exponents and empty values refused).
 
 ## HQ look profile (G-4b of #164)
 

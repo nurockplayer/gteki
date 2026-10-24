@@ -92,6 +92,15 @@ export function buildSearchExport(bundle: StationBundle) {
       // true / false / null (null = unknown, never guessed).
       paid: poi.paid,
       position: position(poi),
+      // An approximate point is search display only (#463): the ± radius and the two fixed markers, never
+      // coordinates (they would be mistaken for a renderer position) and never a route.
+      approximate: poi.approximatePosition
+        ? {
+            uncertaintyM: poi.approximatePosition.uncertaintyM,
+            navigationUse: poi.approximatePosition.navigationUse,
+            floor: poi.approximatePosition.floor,
+          }
+        : null,
       keys: keys(poi),
       evidence: { sourceIds: poi.evidence.sourceIds, method: poi.evidence.method, checkedDate: poi.evidence.checkedDate, note: poi.evidence.note ?? null },
       notes: poi.notes ?? [],

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { describe, expect, it, vi } from "vitest";
-import { CAST_HEADROOM_M, SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, SHADOW_Y_PAD_M, TALL_CANDIDATE_SPAN_M, applyStationShadows, meshShadowFlags, setCasters, shadowYRange, shadowsActive } from "./shadows.ts";
+import { CAST_HEADROOM_M, SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, SHADOW_Y_PAD_M, TALL_CANDIDATE_SPAN_M, applyStationShadows, meshShadowFlags, needsCasterRetune, setCasters, shadowFitRange, shadowYRange, shadowsActive } from "./shadows.ts";
 
 const box = (mat: THREE.Material | THREE.Material[] = new THREE.MeshStandardMaterial(), at: [number, number, number] = [0, 0, 0]) => {
   const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), mat);
@@ -8,7 +8,7 @@ const box = (mat: THREE.Material | THREE.Material[] = new THREE.MeshStandardMate
   return m;
 };
 const rootOf = (...kids: THREE.Object3D[]) => { const r = new THREE.Group(); r.add(...kids); return r; };
-const apply = (root: THREE.Object3D, quality: "low" | "high" = "high", lighting: "default" | "scene" = "default") => applyStationShadows(root, quality, lighting);
+const apply = (root: THREE.Object3D, quality: "low" | "high" = "high", lighting: "default" | "scene" = "default", floorY = Infinity) => applyStationShadows(root, quality, lighting, floorY);
 
 describe("shadow constants", () => {
   it("keeps the tuned starting values", () => {
@@ -141,6 +141,26 @@ describe("applyStationShadows", () => {
   });
 });
 
+describe("attach-time caster mask (#307 item 3)", () => {
+  it("leaves the ceiling and the level above off as soon as the flags are applied, with no update in between", () => {
+    const prop = box(undefined, [0, 0.5, 0]); // y 0 … 1
+    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(40, 40).rotateX(Math.PI / 2), new THREE.MeshStandardMaterial({ side: THREE.DoubleSide }));
+    ceiling.position.y = 3;
+    const upper = box(undefined, [0, 6.8, 0]); // the level above
+    const r = apply(rootOf(prop, ceiling, upper), "high", "default", 0);
+    expect([prop.castShadow, ceiling.castShadow, upper.castShadow]).toEqual([true, false, false]);
+    expect(r.casters).toBe(1);
+    expect(r.candidates).toHaveLength(3);
+  });
+
+  it("masks at a pinned floor Y (the QA harness path)", () => {
+    const lower = box(), upper = box(undefined, [0, 5, 0]);
+    const r = apply(rootOf(lower, upper), "high", "default", 5);
+    expect([lower.castShadow, upper.castShadow]).toEqual([true, true]);
+    expect(r.casters).toBe(2);
+  });
+});
+
 describe("gteki_shadow opt-out", () => {
   it("drops a marked mesh and its whole subtree from the casters and candidates", () => {
     const solo = box(), group = new THREE.Group(), under = box(), deep = box(undefined, [2, 0, 0]), keep = box(undefined, [5, 0, 0]);
@@ -200,6 +220,32 @@ describe("fit helpers", () => {
   });
 });
 
+describe("shadowFitRange (#307 item 1: skip a fit that would throw every frame)", () => {
+  it("pads a finite box, like shadowYRange", () => {
+    const b = new THREE.Box3(new THREE.Vector3(0, -3, 0), new THREE.Vector3(1, 9, 1));
+    expect(shadowFitRange(b)).toEqual(shadowYRange(b));
+  });
+
+  it("is null for an empty box", () => {
+    expect(shadowFitRange(new THREE.Box3())).toBeNull();
+  });
+
+  it("is null for a NaN box that Box3.isEmpty() lets through", () => {
+    const nan = new THREE.Box3(new THREE.Vector3(NaN, NaN, NaN), new THREE.Vector3(NaN, NaN, NaN));
+    expect(nan.isEmpty()).toBe(false);
+    expect(shadowFitRange(nan)).toBeNull();
+  });
+
+  it("is null for a station whose mesh has NaN positions", () => {
+    const m = box();
+    m.geometry.attributes.position!.setXYZ(0, NaN, NaN, NaN);
+    m.geometry.boundingBox = null;
+    const r = apply(rootOf(m));
+    expect(r.bounds.isEmpty()).toBe(false);
+    expect(shadowFitRange(r.bounds)).toBeNull();
+  });
+});
+
 describe("setCasters (only geometry starting below the walker's head casts)", () => {
   /** A level: floor slab, a prop on it, a ceiling 3 m up (a thin double-sided plane), and the next level's slab above. */
   const level = () => {
@@ -250,5 +296,35 @@ describe("setCasters (only geometry starting below the walker's head casts)", ()
     setCasters(r.candidates, 100);
     expect(prop.receiveShadow).toBe(true);
     expect(other.castShadow).toBe(true);
+  });
+});
+
+describe("needsCasterRetune (#307 item 2: a NaN feet Y must not switch every caster off)", () => {
+  const level = () => {
+    const prop = box(undefined, [0, 0.5, 0]);
+    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(40, 40).rotateX(Math.PI / 2), new THREE.MeshStandardMaterial());
+    ceiling.position.y = 3;
+    const r = apply(rootOf(prop, ceiling), "high", "default", 0);
+    return { prop, ceiling, r };
+  };
+
+  it("retunes on a floor move beyond CAST_RETUNE_M, and on the first retune", () => {
+    expect(needsCasterRetune(0.6, 0)).toBe(true);
+    expect(needsCasterRetune(-0.6, 0)).toBe(true);
+    expect(needsCasterRetune(0.4, 0)).toBe(false);
+    expect(needsCasterRetune(0, NaN)).toBe(true);
+  });
+
+  it("never retunes to a non-finite floor Y", () => {
+    expect(needsCasterRetune(NaN, 0)).toBe(false);
+    expect(needsCasterRetune(NaN, NaN)).toBe(false);
+    expect(needsCasterRetune(Infinity, 0)).toBe(false);
+  });
+
+  it("shows the hazard it prevents: setCasters with a NaN floor masks everything off", () => {
+    const { prop, ceiling, r } = level();
+    expect([prop.castShadow, ceiling.castShadow]).toEqual([true, false]);
+    expect(setCasters(r.candidates, NaN)).toBe(0);
+    expect([prop.castShadow, ceiling.castShadow]).toEqual([false, false]);
   });
 });
