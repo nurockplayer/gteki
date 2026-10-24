@@ -112,7 +112,7 @@ describe("no path / refusals", () => {
 
   it("a search-only POI (no verified connector) refuses to route rather than guessing an entrance", () => {
     const searchOnly = bundle.pois.filter((p) => p.connectorNodeIds.length === 0);
-    expect(searchOnly.length).toBe(146); // 6 gates (incl. Yurakucho South Passage West Gate), 15 exit numbers per the gap list, and 125 shops (#212, #407)
+    expect(searchOnly.length).toBe(188); // 6 gates (incl. Yurakucho South Passage West Gate), 15 exit numbers per the gap list, 125 shops (#212, #407), and 42 line POIs (#414)
     const exit35 = bundle.pois.find((p) => p.id === "exit-35")!;
     const gate = bundle.pois.find((p) => p.id === "jr-central-gate-2")!;
     const tobu = bundle.pois.find((p) => p.id === "tobu-central-gate-2")!;

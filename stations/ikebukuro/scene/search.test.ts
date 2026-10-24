@@ -82,7 +82,7 @@ const GOLDEN: Record<string, Row[]> = {
     { q: "まるのうち", top: METRO },
     { q: "Marunouchi", top: METRO },
     { q: "丸之內線", top: METRO },
-    { q: "西改札", top: ["metro-m-central-west-gate", "metro-y-south-west-gate"] },
+    { q: "西改札", top: ["metro-m-central-west-gate", "metro-y-south-west-gate", "metro-f-west-west-gate"] }, // + Fukutoshin West Passage West Gate (#414)
     { q: "南通路西改札", top1: "metro-y-south-west-gate" },
     { q: "marunouchi-sen chuo-tsuro higashi kaisatsu", top1: "metro-m-central-east-gate" },
   ],
@@ -106,6 +106,11 @@ const GOLDEN: Record<string, Row[]> = {
     { q: "カフェカルディーノ", top1: "shop-ikb-isp-000066" },
     { q: "青山フラワーマーケット", top1: "shop-ikb-hope-001" },
     { q: "リンツ ショコラ ブティック", top1: "shop-ikb-echika-1104" },
+  ],
+  "search-only line POIs (#414)": [
+    { q: "C1番出口", top1: "exit-c1" },
+    { q: "副都心線 西通路東改札", top1: "metro-f-west-east-gate" },
+    { q: "西武池袋線 1F改札口", top1: "seibu-1f-gate" },
   ],
 };
 
@@ -131,19 +136,33 @@ describe("Ikebukuro golden search", () => {
     for (const id of EAST) expect(ids("西口").slice(0, 4)).not.toContain(id);
   });
 
-  // The data has no Seibu gate (only the operator in station.json), so searching it must not invent one.
-  // Same for department-store names: no source ties them to an exit here.
+  // Department-store names: no source ties them to an exit here, so searching them must not invent a gate.
+  // Seibu names come from the Seibu Railway station page (seibu-ikebukuro-station-2026-10, OD-25); only POIs
+  // sourced from that page may carry 西武 / Seibu labels, and the Seibu queries may reach only those POIs.
+  const SEIBU_SOURCE = "seibu-ikebukuro-station-2026-10";
   describe("no false gate for names the data does not evidence", () => {
-    for (const q of ["西武", "西武線", "Seibu", "Seibu Railway", "そごう", "PARCO", "パルコ", "山手線"]) {
+    for (const q of ["そごう", "PARCO", "パルコ", "山手線"]) {
       it(`${JSON.stringify(q)} returns no gate or exit`, () => {
         const hits = index.search(q).filter((hit) => hit.poi.category === "ticket_gate" || hit.poi.category === "exit");
         expect(hits).toEqual([]);
       });
     }
 
-    it("no POI name or alias carries a Seibu / PARCO / department-store label", () => {
-      const banned = /西武|seibu|parco|パルコ|そごう|百貨店|sogo/i;
-      const offenders = bundle.pois.flatMap((poi) => [...poi.names, ...poi.aliases].filter(({ text }) => banned.test(text)).map(({ text }) => `${poi.id}: ${text}`));
+    it("the Seibu queries reach only POIs sourced from the Seibu Railway station page", () => {
+      for (const q of ["西武", "西武線", "Seibu", "Seibu Railway"]) {
+        const hits = index.search(q);
+        for (const hit of hits) expect(hit.poi.evidence.sourceIds, `${q} -> ${hit.poi.id}`).toContain(SEIBU_SOURCE);
+      }
+    });
+
+    it("no POI name or alias carries a PARCO / department-store label, and Seibu labels only on Seibu-sourced POIs", () => {
+      const banned = /parco|パルコ|そごう|百貨店|sogo/i;
+      const seibu = /西武|seibu/i;
+      const offenders = bundle.pois.flatMap((poi) =>
+        [...poi.names, ...poi.aliases]
+          .filter(({ text }) => banned.test(text) || (seibu.test(text) && !poi.evidence.sourceIds.includes(SEIBU_SOURCE)))
+          .map(({ text }) => `${poi.id}: ${text}`),
+      );
       expect(offenders).toEqual([]);
     });
   });

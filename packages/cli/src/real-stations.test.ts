@@ -74,6 +74,9 @@ describe("@gteki/cli route on the real stations", { timeout: 30_000 }, () => {
     ["ikebukuro", ["jr-central-gate-2", "shop-ikb-echika-1129", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#407)
     ["ikebukuro", ["jr-central-gate-2", "shop-ikb-metro-001", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#407)
     ["ikebukuro", ["jr-central-gate-2", "tobu-central-gate-2", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only POI: no verified entrance
+    ["ikebukuro", ["jr-central-gate-2", "exit-c1", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only line POI (#414)
+    ["ikebukuro", ["jr-central-gate-2", "metro-f-west-east-gate", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only line POI (#414)
+    ["ikebukuro", ["jr-central-gate-2", "seibu-1f-gate", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only line POI (#414)
     ["ikebukuro", ["g_jr_c2", "no-such-node"], "unknown_goal"],
     ["shinjuku", ["poi:platform:oedo", "poi:nope", "--from-poi", "--goal-poi"], "unknown_goal"],
     ["shinjuku", ["poi:nope", "poi:exit:1", "--from-poi", "--goal-poi"], "unknown_start"],
