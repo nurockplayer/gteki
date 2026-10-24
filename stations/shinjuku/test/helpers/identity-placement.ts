@@ -1,10 +1,23 @@
 import * as THREE from "three";
 import type { StationBundle } from "@gteki/schema";
 import type { Layout, WalkWorld } from "../../scene/layout.ts";
-import { identitySightline, platformIdentityCandidate, type PlatformIdentitySlot } from "../../scene/identity-placement.ts";
+import { platformIdentityCandidate, type PlatformIdentitySlot } from "../../scene/identity-placement.ts";
 
 type Size = { width: number; height: number; depth: number };
 type Box = { min: [number, number, number]; max: [number, number, number] };
+
+/** CPU qualification only: runtime never traverses or raycasts station triangles. */
+export function identitySightline(root: THREE.Group, eye: THREE.Vector3, target: THREE.Vector3) {
+  root.updateMatrixWorld(true);
+  const opaque: THREE.Mesh[] = [];
+  root.traverseVisible(o => {
+    const mesh = o as THREE.Mesh;
+    if (mesh.isMesh && !mesh.name.startsWith("identity") && [mesh.material].flat().some(m => m.visible && !m.transparent)) opaque.push(mesh);
+  });
+  const origin = root.localToWorld(eye.clone()), delta = root.localToWorld(target.clone()).sub(origin);
+  return new THREE.Raycaster(origin, delta.clone().normalize(), 0, delta.length() - 0.001)
+    .intersectObjects(opaque, false)[0]?.object.name ?? null;
+}
 
 /** Casing margin: 2 cm in width, 2.5 cm in depth. Hangers: 8 mm radial margin;
  * their last 2 mm meet the ceiling rather than being tested as an intersection. */
@@ -65,11 +78,15 @@ export function searchPlatformIdentityPlacement(bundle: StationBundle, layout: L
   for (const direction of ["toward midpoint", "away from midpoint"] as const) {
     for (let step = 16; step <= 36; step++) {
       const slot: PlatformIdentitySlot = { direction, offsetM: step / 2 };
-      const candidate = platformIdentityCandidate(bundle, layout, world, root, size, nameBox, slot);
+      const candidate = platformIdentityCandidate(bundle, layout, world, size, nameBox, slot);
       if (!candidate) throw new Error("Missing platform identity POI, connector, floor or valid slab");
+      const node = bundle.nodes.find(n => n.id === candidate.nodeId)!;
+      const eye = new THREE.Vector3(node.position.x, candidate.level.z + 1.6, -node.position.y);
+      const target = candidate.board.localToWorld(new THREE.Vector3(...nameBox.min).add(new THREE.Vector3(...nameBox.max)).multiplyScalar(0.5));
+      const blockedBy = obstacles.sightline(eye, target);
       const geometryBlocker = obstacles.hardwareBlocker(candidate.board, identityHardwareBoxes(size, candidate.ceilingZ - candidate.top));
-      const pass = candidate.checks.pass && geometryBlocker === null;
-      attempts.push({ ...candidate.checks, geometryBlocker, pass });
+      const pass = candidate.checks.pass && blockedBy === null && geometryBlocker === null;
+      attempts.push({ ...candidate.checks, blockedBy, geometryBlocker, pass });
       if (pass) return { ...candidate, attempts };
     }
   }

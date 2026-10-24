@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import stationJson from "../gteki/station.json" with { type: "json" };
-import { PLATFORM_IDENTITY_SLOT } from "../scene/identity-placement.ts";
+import { PLATFORM_IDENTITY_SLOT, platformIdentityCandidate } from "../scene/identity-placement.ts";
 import { identityHardwareBoxes, identityObstacles, searchPlatformIdentityPlacement } from "./helpers/identity-placement.ts";
 import planJson from "../data/plan.json" with { type: "json" };
 import { buildStation, type BuiltStation } from "../scene/build.ts";
@@ -154,6 +154,9 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
     expect(chosen.attempts.slice(0, -1).map(c => c.offsetM)).toEqual(Array.from({ length: 21 }, (_, i) => 8 + i * 0.5));
     const accepted = chosen.attempts.at(-1)!;
     expect({ direction: accepted.direction, offsetM: accepted.offsetM }).toEqual(PLATFORM_IDENTITY_SLOT);
+    const slab = level.slabs.find(s => s.category === "B029" && pointInRings(node.position, s.rings))!;
+    expect(accepted.ringVertexCount).toBe(slab.rings[0]!.length);
+    expect(chosen.level).toBe(level);
     expect(accepted).toMatchObject({ pass: true,
       blockedBy: null, wallsClear: true, roofClear: true, footprintInside: true, geometryBlocker: null });
     expect(board.position.x).toBeCloseTo(chosen.center.x, 10);
@@ -171,12 +174,29 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
     const platformPoi = bundle.pois.find(p => p.id === "poi:platform:oedo")!;
     const insufficientHeadroom = { ...station.layout, levels: station.layout.levels.map(level => level.floorId === platformPoi.floorId
       ? { ...level, ceilingZ: level.z + 2.5 } : level) };
+    const node = bundle.nodes.find(n => n.id === platformPoi.connectorNodeIds[0])!;
+    const level = station.layout.levels.find(l => l.floorId === platformPoi.floorId)!;
+    const slab = level.slabs.find(s => s.category === "B029" && pointInRings(node.position, s.rings))!;
+    const withRings = (rings: typeof slab.rings) => ({ ...station.layout, levels: station.layout.levels.map(l => l === level
+      ? { ...l, slabs: l.slabs.map(s => s === slab ? { ...s, rings } : s) } : l) });
+    // An empty hole preserves connector containment but makes polygon-clipping throw.
+    const throwingPolygon = withRings([...slab.rings, []]);
+    const region = station.root.getObjectByName("identity:platform:poi:platform:oedo")!.userData.gteki_identity.regions[0] as LocalBox;
+    expect(() => platformIdentityCandidate(bundle, throwingPolygon, station.world, IDENTITY_SIZE, region, PLATFORM_IDENTITY_SLOT))
+      .toThrow("Input geometry is not a valid Polygon or MultiPolygon");
+    const paddedRing = (count: number) => [...slab.rings[0]!, ...Array.from({ length: count - slab.rings[0]!.length }, () => ({ ...slab.rings[0]![0]! }))];
+    const atLimit = withRings([paddedRing(256), ...slab.rings.slice(1)]);
+    const overLimit = withRings([paddedRing(257), ...slab.rings.slice(1)]);
+    expect(platformIdentityCandidate(bundle, atLimit, station.world, IDENTITY_SIZE, region, PLATFORM_IDENTITY_SLOT)?.checks)
+      .toMatchObject({ pass: true, ringVertexCount: 256 });
+    expect(platformIdentityCandidate(bundle, overLimit, station.world, IDENTITY_SIZE, region, PLATFORM_IDENTITY_SLOT)).toBeNull();
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const disposables: { dispose(): void }[] = [];
     const track = <T extends { dispose(): void }>(value: T) => { disposables.push(value); return value; };
     try {
-      // First fail a cheap height check with valid data, then fail missing data on a second build.
-      for (const [input, layout] of [[bundle, insufficientHeadroom], [missingConnector, station.layout]] as const) {
+      // Cheap failure, missing data, an actual clipping exception and the axis-cost guard share one warning.
+      for (const [input, layout] of [[bundle, insufficientHeadroom], [missingConnector, station.layout],
+        [bundle, throwingPolygon], [bundle, overLimit]] as const) {
         const root = new THREE.Group();
         let boards: THREE.Object3D[] = [];
         expect(() => { boards = withCanvasStub(() => buildIdentityBoards(input, layout, station.world, root, track, "low")); }).not.toThrow();
@@ -190,6 +210,29 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
       warn.mockRestore();
       disposables.forEach(value => value.dispose());
     }
+  });
+
+  it("builds the fixed platform without raycasts and retains its validated level among equal elevations", () => {
+    const poi = bundle.pois.find(p => p.id === "poi:platform:oedo")!;
+    const level = station.layout.levels.find(l => l.floorId === poi.floorId)!;
+    const layout = { ...station.layout, levels: [{ ...level, floorId: "unrelated-same-elevation", ceilingZ: level.ceilingZ + 5 }, ...station.layout.levels] };
+    const root = new THREE.Group(), fixture = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial());
+    fixture.raycast = vi.fn(() => { throw new Error("Runtime identity placement must not raycast geometry"); });
+    root.add(fixture);
+    const disposables: { dispose(): void }[] = [fixture.geometry, fixture.material];
+    const track = <T extends { dispose(): void }>(value: T) => { disposables.push(value); return value; };
+    try {
+      const boards = withCanvasStub(() => buildIdentityBoards(bundle, layout, station.world, root, track, "low"));
+      expect(fixture.raycast).not.toHaveBeenCalled();
+      expect(boards.map(board => board.name)).toEqual(station.identityBoards.map(board => board.name));
+      for (const name of ["identity-faces", "identity-cases-rods"]) {
+        const actual = (root.getObjectByName(name) as THREE.Mesh).geometry;
+        const expected = (station.root.getObjectByName(name) as THREE.Mesh).geometry;
+        for (const attribute of Object.keys(expected.attributes))
+          expect(Array.from(actual.getAttribute(attribute).array), `${name} ${attribute}`).toEqual(Array.from(expected.getAttribute(attribute).array));
+        expect(Array.from(actual.index!.array)).toEqual(Array.from(expected.index!.array));
+      }
+    } finally { disposables.forEach(value => value.dispose()); }
   });
 
   it("rejects opaque and glass fixture intersections, including transformed instances", () => {

@@ -1,10 +1,10 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { StationBundle } from "@gteki/schema";
-import { type Layout, type WalkWorld, type XY, type XYZ } from "./layout.ts";
+import { type Layout, type LevelLayout, type WalkWorld, type XY, type XYZ } from "./layout.ts";
 import { stationSpawn } from "./spawn.ts";
 import { IDENTITY_ART, identityTexture } from "./textures.ts";
-import { identityClearance, platformIdentityPlacement, warnPlatformIdentitySkipped } from "./identity-placement.ts";
+import { identityClearance, platformIdentityPlacement } from "./identity-placement.ts";
 import { identityNearFade } from "./identity-fade.ts";
 
 export const IDENTITY_SIZE = { width: 1.72, height: 0.86, depth: 0.07 } as const;
@@ -58,11 +58,11 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
   const { width, height, depth } = IDENTITY_SIZE;
   const region = IDENTITY_ART.name;
   const nameBox = identityBox(region.left, region.top, region.right, region.bottom);
-  const add = (name: string, nodeId: string, center: XYZ, facing: XY, placement: string, fixedTop?: number) => {
-    const level = layout.levels.find((lv) => Math.abs(lv.z - center.z) < 0.3);
+  const add = (name: string, nodeId: string, center: XYZ, facing: XY, placement: string, fixed?: { top: number; level: LevelLayout }) => {
+    const level = fixed?.level ?? layout.levels.find((lv) => Math.abs(lv.z - center.z) < 0.3);
     if (!level) return;
     // 2.1 m clear below the casing; 0.12 m below the ceiling. Lower than route signs.
-    const top = fixedTop ?? Math.min(center.z + 3.0, level.ceilingZ - 0.12);
+    const top = fixed?.top ?? Math.min(center.z + 3.0, level.ceilingZ - 0.12);
     const board = new THREE.Group();
     board.name = name;
     const clear = () => {
@@ -72,16 +72,16 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
     // Search only small offsets from the source anchor. In particular, the normal
     // spawn backs up near a wall: its board needs a little lateral clearance.
     let found = false;
-    for (const along of fixedTop === undefined ? [0, 0.3, -0.3, 0.6, -0.6, 0.9] : [0]) {
-      for (const lateral of fixedTop === undefined ? [0, 0.2, -0.2, 0.4, -0.4, 0.6, -0.6] : [0]) {
+    for (const along of fixed ? [0] : [0, 0.3, -0.3, 0.6, -0.6, 0.9]) {
+      for (const lateral of fixed ? [0] : [0, 0.2, -0.2, 0.4, -0.4, 0.6, -0.6]) {
         board.position.set(center.x + facing.x * along - facing.y * lateral, top - height / 2, -(center.y + facing.y * along + facing.x * lateral));
         board.lookAt(board.position.x + facing.x, board.position.y, board.position.z - facing.y);
-        if (clear()) { found = true; break; }
+        // The fixed platform pose and exact level were already validated inside the fallback boundary.
+        if (fixed || clear()) { found = true; break; }
       }
       if (found) break;
     }
     if (!found) {
-      if (fixedTop !== undefined) { warnPlatformIdentitySkipped(); return; }
       throw new Error(`No clear identity board placement near ${name}`);
     }
     board.userData = { nodeId, placement, generated: IDENTITY_GENERATED, gteki_identity: { front: [0, 0, 1], regions: [{ kind: "name", ...nameBox }] } };
@@ -130,9 +130,9 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
     add(`identity:gate:${poi.id}`, node.id, gate.center, { x: dx / length, y: dy / length },
       "GTEki placement at the ticket-gate POI; not surveyed, not a replica of an on-site sign");
   }
-  const platform = platformIdentityPlacement(bundle, layout, world, root, IDENTITY_SIZE, nameBox);
+  const platform = platformIdentityPlacement(bundle, layout, world, IDENTITY_SIZE, nameBox);
   if (platform) add("identity:platform:poi:platform:oedo", platform.nodeId, platform.center, platform.facing,
-    "GTEki wayfinding placement; not surveyed, not a replica of the on-site sign", platform.top);
+    "GTEki wayfinding placement; not surveyed, not a replica of the on-site sign", { top: platform.top, level: platform.level });
   if (faces.length) {
     const geometry = mergeGeometries(faces)!;
     faces.forEach((g) => g.dispose());

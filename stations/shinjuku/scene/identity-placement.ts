@@ -37,21 +37,8 @@ export function identityClearance(board: THREE.Object3D, floor: number, level: L
 export const PLATFORM_IDENTITY_SLOT = { direction: "away from midpoint", offsetM: 8 } as const;
 export type PlatformIdentitySlot = { direction: "toward midpoint" | "away from midpoint"; offsetM: number };
 
-/** Only the reading ray is needed at runtime; hardware triangle scans live in test/helpers. */
-export function identitySightline(root: THREE.Group, eye: THREE.Vector3, target: THREE.Vector3) {
-  root.updateMatrixWorld(true);
-  const opaque: THREE.Mesh[] = [];
-  root.traverseVisible(o => {
-    const mesh = o as THREE.Mesh;
-    if (mesh.isMesh && !mesh.name.startsWith("identity") && [mesh.material].flat().some(m => m.visible && !m.transparent)) opaque.push(mesh);
-  });
-  const origin = root.localToWorld(eye.clone()), delta = root.localToWorld(target.clone()).sub(origin);
-  return new THREE.Raycaster(origin, delta.clone().normalize(), 0, delta.length() - 0.001)
-    .intersectObjects(opaque, false)[0]?.object.name ?? null;
-}
-
-/** Derive and cheaply validate one data-relative slot; no ordered search or hardware scan. */
-export function platformIdentityCandidate(bundle: StationBundle, layout: Layout, world: WalkWorld, root: THREE.Group, size: Size, nameBox: Box, slot: PlatformIdentitySlot) {
+/** Derive and cheaply validate one data-relative slot; triangle checks live in CPU tests. */
+export function platformIdentityCandidate(bundle: StationBundle, layout: Layout, world: WalkWorld, size: Size, nameBox: Box, slot: PlatformIdentitySlot) {
   const poi = bundle.pois.find(p => p.id === "poi:platform:oedo");
   const node = bundle.nodes.find(n => n.id === poi?.connectorNodeIds[0]);
   const level = layout.levels.find(l => l.floorId === poi?.floorId);
@@ -59,7 +46,8 @@ export function platformIdentityCandidate(bundle: StationBundle, layout: Layout,
   const slab = level.slabs.find(s => s.category === "B029" && pointInRings(node.position, s.rings));
   if (!slab) return null;
   const ring = slab.rings[0];
-  if (!ring || ring.length < 2) return null;
+  // Preserve the exact all-pairs derivation, but bound its quadratic load-time cost.
+  if (!ring || ring.length < 2 || ring.length > 256) return null;
   let a = ring[0]!, b = ring[1]!, length = 0;
   for (const p of ring) for (const q of ring) {
     const distance = Math.hypot(q.x - p.x, q.y - p.y);
@@ -68,10 +56,14 @@ export function platformIdentityCandidate(bundle: StationBundle, layout: Layout,
   if (!Number.isFinite(length) || length <= 0) return null;
   const axis = { x: (b.x - a.x) / length, y: (b.y - a.y) / length };
   const across = { x: -axis.y, y: axis.x };
-  const alongValues = ring.map(p => p.x * axis.x + p.y * axis.y);
-  const acrossValues = ring.map(p => p.x * across.x + p.y * across.y);
-  const middleAlong = (Math.min(...alongValues) + Math.max(...alongValues)) / 2;
-  const middleAcross = (Math.min(...acrossValues) + Math.max(...acrossValues)) / 2;
+  let minAlong = Infinity, maxAlong = -Infinity, minAcross = Infinity, maxAcross = -Infinity;
+  for (const p of ring) {
+    const along = p.x * axis.x + p.y * axis.y, transverse = p.x * across.x + p.y * across.y;
+    minAlong = Math.min(minAlong, along); maxAlong = Math.max(maxAlong, along);
+    minAcross = Math.min(minAcross, transverse); maxAcross = Math.max(maxAcross, transverse);
+  }
+  const middleAlong = (minAlong + maxAlong) / 2;
+  const middleAcross = (minAcross + maxAcross) / 2;
   const nodeAlong = node.position.x * axis.x + node.position.y * axis.y;
   const toward = Math.sign(middleAlong - nodeAlong) || 1;
   const eye = new THREE.Vector3(node.position.x, level.z + 1.6, -node.position.y);
@@ -88,7 +80,6 @@ export function platformIdentityCandidate(bundle: StationBundle, layout: Layout,
   const target = board.localToWorld(nameCenter.clone()), delta = target.clone().sub(eye);
   const normal = new THREE.Vector3(0, 0, 1).transformDirection(board.matrixWorld);
   const facingDot = normal.dot(delta.clone().negate().normalize());
-  const blockedBy = identitySightline(root, eye, target);
   const clearance = identityClearance(board, level.z, level, layout, world, size);
   // Exact containment of the conservative casing rectangle, including slab holes.
   const footprint = [[-size.width / 2 - 0.04, -0.06], [size.width / 2 + 0.04, -0.06],
@@ -98,12 +89,12 @@ export function platformIdentityCandidate(bundle: StationBundle, layout: Layout,
   });
   const footprintInside = polygonClipping.difference([footprint], slab.rings.map(r => r.map(p => [p.x, p.y] as [number, number]))).length === 0;
   const headroom = board.position.y - size.height / 2 - 0.02 - level.z;
-  const pass = blockedBy === null && facingDot >= 0.5 && clearance.wallsClear && clearance.roofClear && footprintInside
+  const pass = facingDot >= 0.5 && clearance.wallsClear && clearance.roofClear && footprintInside
     && headroom >= 2.3 && top + 0.02 <= level.ceilingZ - 0.12 && delta.length() >= 4 && delta.length() <= 20;
-  const checks = { ...slot, centerEnu: { ...center, z: board.position.y }, distance: delta.length(), facingDot,
+  const checks = { ...slot, ringVertexCount: ring.length, centerEnu: { ...center, z: board.position.y }, distance: delta.length(), facingDot,
     heading: (Math.atan2(delta.x, -delta.z) * 180 / Math.PI + 360) % 360,
-    blockedBy, ...clearance, footprintInside, headroom, pass };
-  return { nodeId: node.id, center, facing, top, board, ceilingZ: level.ceilingZ, checks };
+    ...clearance, footprintInside, headroom, pass };
+  return { nodeId: node.id, center, facing, top, board, level, ceilingZ: level.ceilingZ, checks };
 }
 
 let platformWarningReported = false;
@@ -114,9 +105,13 @@ export function warnPlatformIdentitySkipped() {
 }
 
 /** Display-only hardware must never prevent the station from loading. */
-export function platformIdentityPlacement(bundle: StationBundle, layout: Layout, world: WalkWorld, root: THREE.Group, size: Size, nameBox: Box) {
-  const candidate = platformIdentityCandidate(bundle, layout, world, root, size, nameBox, PLATFORM_IDENTITY_SLOT);
-  if (candidate?.checks.pass) return candidate;
+export function platformIdentityPlacement(bundle: StationBundle, layout: Layout, world: WalkWorld, size: Size, nameBox: Box) {
+  try {
+    const candidate = platformIdentityCandidate(bundle, layout, world, size, nameBox, PLATFORM_IDENTITY_SLOT);
+    if (candidate?.checks.pass) return candidate;
+  } catch {
+    // Malformed geometry and clearance failures follow the same display-only fallback.
+  }
   warnPlatformIdentitySkipped();
   return null;
 }
