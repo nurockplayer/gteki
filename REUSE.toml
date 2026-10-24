@@ -303,3 +303,15 @@ path = [
 precedence = "override"
 SPDX-FileCopyrightText = "東京都都市整備局; 国土交通省（ほこナビDP）; modified by GTEki contributors"
 SPDX-License-Identifier = "LicenseRef-S03 AND LicenseRef-Hokonavi-E27-Owner-override"
+
+# --- 4l. Facts-only line POIs for Ikebukuro (lines-lead WP2/WP3; #26 Tokyo Metro, OD-25 Seibu) ------
+# Gate, lift, escalator and exit names and end pairs as printed on the operator pages; no licence
+# exists to relicense, nothing is reproduced beyond short quotes of the facts (NOTICE 4.9).
+[[annotations]]
+path = [
+  "docs/research/lines/ikebukuro-line-pois.json",
+  "docs/research/lines/ikebukuro-line-pois-contract.md",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "No licence granted: facts-only sources (東京地下鉄, 西武鉄道); compiled by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-facts-only-no-licence"
