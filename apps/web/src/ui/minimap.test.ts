@@ -250,6 +250,17 @@ describe("Minimap route overlay (#220 PR2)", () => {
     expect(map.el.querySelectorAll(".minimap-poi")).toHaveLength(2);
   });
 
+  it("clears the connector hint when the route is cleared while the floor is unknown", () => {
+    const map = create();
+    map.setRoute({ points: loopPoints, steps: loopSteps }, null);
+    // An unknown floor leaves refresh() no floor to recompute the hint for.
+    pose = { ...pose!, up: 100 };
+    tick();
+    expect(display(map, ".minimap-connector-marker")).toBe("");
+    map.setRoute(null, null);
+    expect(display(map, ".minimap-connector-marker")).toBe("none");
+  });
+
   it("highlights an evidenced on-floor destination's POI dot, not the route end", () => {
     const map = create();
     const route = [point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)];

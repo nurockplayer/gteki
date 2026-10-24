@@ -188,6 +188,8 @@ export class Minimap {
     this.transitions = points && route ? floorTransitions(points, route.steps) : [];
     this.destinationPoint = null;
     this.seg = 0;
+    // An unknown floor leaves refresh() without a hint to recompute, so the old route's must go now.
+    this.connectorHint = null;
     this.connectorDirty = true;
     this.labelKey = "";
     this.routeDirty = true;
@@ -418,7 +420,8 @@ export class Minimap {
     const hint = this.connectorHint;
     const connectorScreen = hint ? toMinimap(hint.x, hint.y, pose, this.orientation, METRES_PER_PX) : null;
     this.placeMarker(this.connectorMarker, connectorScreen, false);
-    this.placeConnectorRim(this.connectorRim, connectorScreen);
+    // The connector marker only exists inside the circle; outside, the same rim chevron takes over.
+    this.placeRim(this.connectorRim, connectorScreen);
   }
 
   private placeMarker(marker: SVGElement, at: { x: number; y: number } | null, forceHide: boolean): void {
@@ -445,12 +448,6 @@ export class Minimap {
     const x = CENTRE + Math.sin(radians) * RIM_MARKER_RADIUS;
     const y = CENTRE - Math.cos(radians) * RIM_MARKER_RADIUS;
     setTransform(rim, `translate(${Math.round(x)} ${Math.round(y)}) rotate(${Math.round(bearing.angleDeg)})`);
-  }
-
-  /** The connector marker only exists inside the circle; outside, its rim chevron takes over. */
-  private placeConnectorRim(rim: SVGElement, at: { x: number; y: number } | null): void {
-    if (at && !rimBearing(at, RIM_RADIUS).inside) this.placeRim(rim, at);
-    else setDisplay(rim, "none");
   }
 
   private hideMarkers(): void {

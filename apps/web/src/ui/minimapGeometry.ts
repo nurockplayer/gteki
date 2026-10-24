@@ -159,10 +159,18 @@ function forwardOnFloor(
 
 /**
  * After currentFloorId becomes `floorId`: the first segment past the cross-floor step that lands
- * there. Steps whose start is already behind `seg` cannot be it; a floor the route never reaches
- * after this point leaves progress untouched.
+ * there, taken only when the player is at that step's own connector. Steps whose start is already
+ * behind `seg` cannot be it; a floor the route never reaches after this point leaves progress
+ * untouched.
  */
-function segAfterFloorChange(points: readonly PolylinePoint[], steps: readonly RouteStep[], floorId: string, seg: number): number {
+function segAfterFloorChange(
+  points: readonly PolylinePoint[],
+  steps: readonly RouteStep[],
+  floorId: string,
+  seg: number,
+  east: number,
+  north: number,
+): number {
   for (const transition of floorTransitions(points, steps)) {
     if (transition.toFloorId !== floorId || transition.startIndex < seg) continue;
     // The step's own end is the last vertex carrying its index: the target floor's landing point.
@@ -171,6 +179,14 @@ function segAfterFloorChange(points: readonly PolylinePoint[], steps: readonly R
       if (points[j]!.stepIndex === transition.stepIndex) { endIndex = j; break; }
     }
     if (endIndex < 0 || points[endIndex]!.floorId !== floorId) continue;
+    // A reading that flickers back near an earlier connector must not skip the route to a later
+    // one: the step only counts where the player actually stands at it. A long stair, ramp or
+    // escalator changes the floor near its landing, so its whole run counts, not just its start.
+    let atConnector = false;
+    for (let j = transition.startIndex; j < endIndex && !atConnector; j++) {
+      atConnector = segmentDistance(points, j, east, north) <= ON_ROUTE_M;
+    }
+    if (!atConnector) continue;
     return Math.min(endIndex, points.length - 2);
   }
   return seg;
@@ -193,24 +209,8 @@ export function advanceRouteSeg(
 ): number {
   if (points.length < 2) return 0;
   const current = Math.max(0, Math.min(seg, points.length - 2));
-  const base = floorChanged ? segAfterFloorChange(points, steps, floorId, current) : current;
+  const base = floorChanged ? segAfterFloorChange(points, steps, floorId, current, east, north) : current;
   return forwardOnFloor(points, steps, floorId, east, north, base);
-}
-
-/**
- * The first floor change at or after `seg`, and where on this floor it starts. A step whose start is
- * at or after the current segment is still ahead; the cross-floor step being walked stays selected
- * until currentFloorId really changes, and a revisited floor never points back at a walked-past
- * connector. A same-floor stair/escalator is not a floor change.
- */
-export function nextFloorChange(
-  points: readonly PolylinePoint[],
-  steps: readonly RouteStep[],
-  floorId: string,
-  seg: number,
-): { x: number; y: number; mode: RouteStep["mode"]; toFloorId: string } | null {
-  const change = floorTransitions(points, steps).find((t) => t.fromFloorId === floorId && t.startIndex >= seg);
-  return change ? { x: change.x, y: change.y, mode: change.mode, toFloorId: change.toFloorId } : null;
 }
 
 /** Room kept between a point and the rim for its marker, in viewBox units. */
