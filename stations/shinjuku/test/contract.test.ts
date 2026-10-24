@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { createRouter } from "@gteki/navigation";
+import type { CoverageText } from "@gteki/schema";
 import { loadShinjukuBundle } from "../data/bundle.ts";
+
+function textOf(v: CoverageText | undefined, lang: string): string {
+  return Array.isArray(v) ? (v.find((t) => t.lang === lang)?.text ?? "") : "";
+}
 
 describe("Shinjuku gteki/ contract files", () => {
   const { bundle, issues } = loadShinjukuBundle();
@@ -83,5 +88,30 @@ describe("Shinjuku gteki/ contract files", () => {
     const ids = new Set(bundle.nodes.map((n) => n.id));
     expect(bundle.spawnNodeIds?.length).toBe(3);
     for (const id of bundle.spawnNodeIds!) expect(ids.has(id)).toBe(true);
+  });
+
+  it("gives every Shinjuku coverage gap exactly one en and one ja text, with plain ja and the reuse rights wording (#259)", () => {
+    const gaps = bundle.coverage.gaps;
+    expect(gaps.length).toBe(8);
+    for (const g of gaps) {
+      for (const key of ["zone", "missingFact", "approximateExtent", "fieldWorkNeeded"] as const) {
+        const v = g[key];
+        if (v === undefined) continue;
+        expect(Array.isArray(v), `${g.id}.${key}`).toBe(true);
+        if (!Array.isArray(v)) continue;
+        expect(v.length, `${g.id}.${key}`).toBe(2);
+        const en = v.filter((t) => t.lang === "en");
+        const ja = v.filter((t) => t.lang === "ja");
+        expect(en.length, `${g.id}.${key}`).toBe(1);
+        expect(ja.length, `${g.id}.${key}`).toBe(1);
+        expect(en[0]!.text.length, `${g.id}.${key} en`).toBeGreaterThan(0);
+        expect(ja[0]!.text.length, `${g.id}.${key} ja`).toBeGreaterThan(0);
+        expect(ja[0]!.text, `${g.id}.${key} ja`).not.toMatch(/\b(TP|EF_\d+|gap:)/);
+      }
+    }
+    const reuse = gaps.find((g) => g.id === "gap:reuse-after-publication");
+    const reuseJa = textOf(reuse?.missingFact, "ja");
+    expect(reuseJa).toContain("「ライセンス根拠は未確認」");
+    expect(reuseJa).not.toMatch(/PDL\s*1\.0\s*(で|に基づ)/);
   });
 });
