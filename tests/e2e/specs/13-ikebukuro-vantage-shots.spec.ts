@@ -205,13 +205,17 @@ async function frameTime(page: Page, ms: number) {
   const t = await page.evaluate(
     (dur) =>
       new Promise<number[]>((resolve) => {
+        // rAF's own frame timestamps (no main-thread jitter); a hidden page gets no rAF at all, so a timer
+        // resolves with whatever was collected instead of hanging the run.
         const ts: number[] = [];
-        const t0 = performance.now();
-        const tick = () => {
-          ts.push(performance.now());
-          if (performance.now() - t0 < dur) requestAnimationFrame(tick);
+        let t0: number | null = null;
+        const tick = (now: number) => {
+          ts.push(now);
+          t0 ??= now;
+          if (now - t0 < dur) requestAnimationFrame(tick);
           else resolve(ts);
         };
+        setTimeout(() => resolve(ts), dur + 2000);
         requestAnimationFrame(tick);
       }),
     ms,
@@ -252,7 +256,9 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
   const spawnNodes: string[] = Array.isArray((station as { spawnNodeIds?: string[] }).spawnNodeIds) ? (station as { spawnNodeIds: string[] }).spawnNodeIds : [];
   const allDefaults = [...DEFAULT_NODES, ...spawnNodes.map((n) => `spawn:${n}`)];
   const requested = (process.env.GTEKI_VANTAGE_NODES ? process.env.GTEKI_VANTAGE_NODES.split(",") : allDefaults).map((s) => s.trim()).filter(Boolean);
-  const defaultGroup = new Map(allDefaults.map((s) => s.split(":") as [string, string]).map(([g, n]) => [n, g]));
+  // first wins: a bare id keeps its original group (w_c stays rail) even though it is also a spawn
+  const defaultGroup = new Map<string, string>();
+  for (const [g, n] of allDefaults.map((s) => s.split(":") as [string, string])) if (!defaultGroup.has(n)) defaultGroup.set(n, g);
   const spots: { group: string; node: string }[] = [];
   const dropped: string[] = [];
   const notInGroups: string[] = [];
@@ -382,20 +388,21 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
   const groups = [...new Set(rows.map((r) => r.group))].map((g) => {
     const rs = measured.filter((r) => r.group === g);
     const nums = (k: "draws" | "drawsMax" | "tris" | "trisMax") => rs.map((r) => r[k] as number);
-    const ft = rs.map((r) => r.ftP95).filter((v): v is number => v !== null);
+    const ft = (k: "ftP50" | "ftP95") => rs.map((r) => r[k]).filter((v): v is number => v !== null);
     return {
       group: g, views: rs.length, nodes: [...new Set(rs.map((r) => r.node))],
       drawsMax: rs.length ? Math.max(...nums("drawsMax")) : null, drawsP50: pct(nums("draws"), 0.5),
       trisMax: rs.length ? Math.max(...nums("trisMax")) : null, trisP50: pct(nums("tris"), 0.5),
-      ftP50: pct(ft, 0.5), ftP95: pct(ft, 0.95),
+      // median of the views' p50 frame intervals; the worst view's p95
+      ftP50: pct(ft("ftP50"), 0.5), ftP95: ft("ftP95").length ? Math.max(...ft("ftP95")) : null,
       overLowLimit: rs.filter((r) => r.overLowLimit).length,
     };
   });
   const failed = rows.filter((r) => r.error);
   // A view measured in a hidden or occluded window has throttled rAF; its frame time is not the build's.
-  const hiddenViews = rows.filter((r) => r.visibility !== null && r.visibility !== "visible");
+  const hiddenViews = rows.filter((r) => (r.visibility !== null && r.visibility !== "visible") || r.focused === false);
   const warnings = hiddenViews.length
-    ? [`${hiddenViews.length} of ${measured.length} measured views had document.visibilityState !== "visible" (${[...new Set(hiddenViews.map((r) => `${r.node} h${r.heading}: ${r.visibility}`))].join(", ")}): requestAnimationFrame was throttled, so their frame times are not comparable to a foreground run.`]
+    ? [`${hiddenViews.length} of ${measured.length} measured views were hidden or unfocused (${[...new Set(hiddenViews.map((r) => `${r.node} h${r.heading}: ${r.visibility}${r.focused === false ? ", unfocused" : ""}`))].join(", ")}): requestAnimationFrame may have been throttled, so their frame times are not comparable to a foreground run.`]
     : [];
   for (const w of warnings) console.warn(`vantage: ${w}`);
   const result = {
@@ -427,7 +434,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
     "",
     "## Per group",
     "",
-    "| group | nodes | views | draws max | draws p50 | tris max | tris p50 | ft p50 ms | ft p95 ms | rows over limit |",
+    "| group | nodes | views | draws max | draws p50 | tris max | tris p50 | ft p50 ms (median view) | ft p95 ms (worst view) | rows over limit |",
     "|---|---|---|---|---|---|---|---|---|---|",
     ...groups.map((g) => `| ${g.group} | ${g.nodes.join(", ")} | ${g.views} | ${cell(g.drawsMax)} | ${cell(g.drawsP50)} | ${cell(g.trisMax)} | ${cell(g.trisP50)} | ${cell(g.ftP50)} | ${cell(g.ftP95)} | ${g.overLowLimit} |`),
     "",
