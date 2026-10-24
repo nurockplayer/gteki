@@ -31,6 +31,7 @@ func run() -> void:
 	check_metadata()
 	check_luminance()
 	check_tuning()
+	check_tuning_extras()
 	check(DisplayServer.get_name() == "headless", "suite runs without a display")
 	check(Compare.HEADLESS_MESSAGE == "showcase_compare needs a display", "headless early-exit message")
 	if failures.is_empty():
@@ -399,3 +400,96 @@ func check_tuning() -> void:
 	check(Compare.output_stem("concourse", "gates_closed", "sdfgi") == "concourse_gates_closed_sdfgi", "a tag suffixes the PNG and side PNG names")
 	check(Compare.report_file_name("concourse", "") == "concourse_report.json", "no tag keeps the G-4 report name")
 	check(Compare.report_file_name("concourse", "sdfgi") == "concourse_sdfgi_report.json", "a tag suffixes the report name")
+
+
+## G-5 extras: hint spot overrides, SSIL, SDFGI and AgX white. Range edges, prerequisites and duplicates are parse checks;
+## application runs on bare Environment and SpotLight3D nodes only. VoxelGI is never baked here.
+func check_tuning_extras() -> void:
+	for spec in [
+		"--tune=light_scale=0.1", "--tune=light_scale=8", "--tune=spot_range_m=1", "--tune=spot_range_m=60",
+		"--tune=spot_angle_deg=10", "--tune=spot_angle_deg=89", "--tune=ssil=false", "--tune=agx_white=1", "--tune=agx_white=64",
+	]:
+		check(parse_with([spec]).errors.is_empty(), "accept the extras range boundary: %s" % spec)
+	for pair in [
+		["--tune=ssil=true", "--tune=ssil_intensity=0"], ["--tune=ssil=true", "--tune=ssil_intensity=16"],
+		["--tune=gi=sdfgi", "--tune=sdfgi_bounce=0"], ["--tune=gi=sdfgi", "--tune=sdfgi_bounce=1.99"],
+		["--tune=gi=sdfgi", "--tune=sdfgi_occlusion=true"], ["--tune=gi=sdfgi", "--tune=sdfgi_sky=false"],
+		["--tune=gi=sdfgi", "--tune=sdfgi_min_cell=0.05"], ["--tune=gi=sdfgi", "--tune=sdfgi_min_cell=2"],
+		["--tune=gi=voxelgi", "--tune=voxelgi_subdiv=64"], ["--tune=gi=voxelgi", "--tune=voxelgi_subdiv=512"],
+		["--tune=gi=voxelgi", "--tune=voxelgi_propagation=0"], ["--tune=gi=voxelgi", "--tune=voxelgi_propagation=1"],
+	]:
+		check(parse_with(pair).errors.is_empty(), "accept the extras prerequisite pair: %s %s" % pair)
+	# Malformed values get the prerequisite they need, so each rejection is for the value alone.
+	for spec in [
+		"--tune=light_scale=0.09", "--tune=light_scale=8.1", "--tune=light_scale=", "--tune=spot_range_m=0.9",
+		"--tune=spot_range_m=60.1", "--tune=spot_angle_deg=9.9", "--tune=spot_angle_deg=89.5", "--tune=spot_angle_deg=high",
+		"--tune=ssil=yes", "--tune=ssil=1", "--tune=agx_white=0.9", "--tune=agx_white=64.5",
+	]:
+		check(not parse_with([spec]).errors.is_empty(), "reject malformed extras value: %s" % spec)
+	for spec in ["--tune=ssil_intensity=-0.1", "--tune=ssil_intensity=16.1"]:
+		check(not parse_with(["--tune=ssil=true", spec]).errors.is_empty(), "reject ssil_intensity out of range: %s" % spec)
+	for spec in [
+		"--tune=sdfgi_occlusion=maybe", "--tune=sdfgi_sky=TRUE", "--tune=sdfgi_bounce=2.0",
+		"--tune=sdfgi_min_cell=0.04", "--tune=sdfgi_min_cell=2.1",
+	]:
+		check(not parse_with(["--tune=gi=sdfgi", spec]).errors.is_empty(), "reject malformed sdfgi value: %s" % spec)
+	for spec in ["--tune=voxelgi_subdiv=32", "--tune=voxelgi_subdiv=1024", "--tune=voxelgi_subdiv=", "--tune=voxelgi_propagation=1.01"]:
+		check(not parse_with(["--tune=gi=voxelgi", spec]).errors.is_empty(), "reject malformed voxelgi value: %s" % spec)
+	# Missing prerequisites.
+	check(not parse_with(["--tune=ssil_intensity=4"]).errors.is_empty(), "ssil_intensity without ssil is rejected")
+	check(not parse_with(["--tune=ssil=false", "--tune=ssil_intensity=4"]).errors.is_empty(), "ssil_intensity with ssil=false is rejected")
+	check(not parse_with(["--tune=gi=none", "--tune=sdfgi_bounce=1"]).errors.is_empty(), "sdfgi_bounce with gi=none is rejected")
+	check(not parse_with(["--tune=gi=voxelgi", "--tune=sdfgi_sky=true"]).errors.is_empty(), "sdfgi_sky with gi=voxelgi is rejected")
+	check(not parse_with(["--tune=sdfgi_min_cell=0.5"]).errors.is_empty(), "sdfgi_min_cell without gi is rejected")
+	check(not parse_with(["--tune=gi=sdfgi", "--tune=voxelgi_subdiv=256"]).errors.is_empty(), "voxelgi_subdiv with gi=sdfgi is rejected")
+	check(not parse_with(["--tune=gi=sdfgi", "--tune=voxelgi_propagation=0.5"]).errors.is_empty(), "voxelgi_propagation with gi=sdfgi is rejected")
+	check(not parse_with(["--tune=voxelgi_propagation=0.5"]).errors.is_empty(), "voxelgi_propagation without gi is rejected")
+	# Duplicates are rejected, even for the new keys.
+	for pair in [
+		["--tune=light_scale=2", "--tune=light_scale=3"], ["--tune=ssil=true", "--tune=ssil=false"],
+		["--tune=gi=voxelgi", "--tune=voxelgi_subdiv=64", "--tune=voxelgi_subdiv=64"], ["--tune=gi=sdfgi", "--tune=sdfgi_sky=true", "--tune=sdfgi_sky=true"],
+	]:
+		check(not parse_with(pair).errors.is_empty(), "duplicate extras key is rejected: %s" % str(pair))
+	# Parsed types: the enum stays its string, bools and floats keep their values.
+	var typed := parse_with([
+		"--tune=gi=voxelgi", "--tune=voxelgi_subdiv=256", "--tune=voxelgi_propagation=0.25", "--tune=light_scale=2.5",
+		"--tune=ssil=true", "--tune=ssil_intensity=6", "--tune=agx_white=12",
+	])
+	check(typed.errors.is_empty() and typed.tuning.voxelgi_subdiv == "256", "voxelgi_subdiv stays its string value in the report")
+	check(is_equal_approx(typed.tuning.voxelgi_propagation, 0.25) and is_equal_approx(typed.tuning.light_scale, 2.5), "extras floats keep their parsed values")
+	check(typed.tuning.ssil == true and is_equal_approx(typed.tuning.ssil_intensity, 6.0) and is_equal_approx(typed.tuning.agx_white, 12.0), "ssil and agx_white keep their parsed values")
+	check(parse_with(["--tune=gi=sdfgi", "--tune=sdfgi_occlusion=false"]).tuning.sdfgi_occlusion == false, "sdfgi_occlusion=false keeps its bool")
+	check(Compare.VOXEL_SUBDIVS["512"] == VoxelGI.SUBDIV_512 and Compare.VOXEL_SUBDIVS["64"] == VoxelGI.SUBDIV_64, "voxelgi_subdiv names map to VoxelGI.SUBDIV_*")
+	# Application on a bare Environment: an empty tuning leaves every new field at its default.
+	var untouched := Environment.new()
+	var environment := Environment.new()
+	Compare.apply_tuning(environment, {})
+	check(environment.ssil_enabled == untouched.ssil_enabled and is_equal_approx(environment.ssil_intensity, untouched.ssil_intensity), "empty tuning leaves SSIL at its defaults")
+	check(is_equal_approx(environment.tonemap_agx_white, untouched.tonemap_agx_white), "empty tuning leaves agx_white at its default")
+	environment = Environment.new()
+	Compare.apply_tuning(environment, {"ssil": true, "ssil_intensity": 6.0, "agx_white": 12.0})
+	check(environment.ssil_enabled and is_equal_approx(environment.ssil_intensity, 6.0), "ssil and ssil_intensity apply to the environment")
+	check(is_equal_approx(environment.tonemap_agx_white, 12.0), "agx_white applies to the environment")
+	environment = Environment.new()
+	Compare.apply_tuning(environment, {"ssil": false})
+	check(not environment.ssil_enabled, "ssil=false disables SSIL")
+	environment = Environment.new()
+	Compare.apply_tuning(environment, {"gi": "sdfgi", "sdfgi_bounce": 1.2, "sdfgi_occlusion": true, "sdfgi_sky": false, "sdfgi_min_cell": 0.5})
+	check(is_equal_approx(environment.sdfgi_bounce_feedback, 1.2), "sdfgi_bounce applies to sdfgi_bounce_feedback")
+	check(environment.sdfgi_use_occlusion and not environment.sdfgi_read_sky_light, "sdfgi_occlusion and sdfgi_sky apply to the environment")
+	check(is_equal_approx(environment.sdfgi_min_cell_size, 0.5), "sdfgi_min_cell applies to sdfgi_min_cell_size")
+	# Hint spots: an empty tuning is the unscaled APPROXIMATION spot; the overrides replace range and angle.
+	var defaults := Compare.hint_spot_params({})
+	check(is_equal_approx(defaults.energy_scale, 1.0) and is_equal_approx(defaults.range_m, Compare.APPROXIMATION.spot_range_m) and is_equal_approx(defaults.angle_deg, Compare.APPROXIMATION.spot_angle_deg), "empty tuning gives unscaled APPROXIMATION spot parameters")
+	var tuned_params := Compare.hint_spot_params({"light_scale": 2.5, "spot_range_m": 20.0, "spot_angle_deg": 45.0})
+	check(is_equal_approx(tuned_params.energy_scale, 2.5) and is_equal_approx(tuned_params.range_m, 20.0) and is_equal_approx(tuned_params.angle_deg, 45.0), "light_scale, spot_range_m and spot_angle_deg become spot parameters")
+	var holder := Node3D.new()
+	root.add_child(holder)
+	var spot_spec := Compare.hint_light_specs({"kind": "panel"}, Transform3D.IDENTITY, 1.0)[0]
+	var plain := Compare.add_hint_spot(holder, spot_spec)
+	check(is_equal_approx(plain.light_energy, spot_spec.energy) and is_equal_approx(plain.spot_range, Compare.APPROXIMATION.spot_range_m) and is_equal_approx(plain.spot_angle, Compare.APPROXIMATION.spot_angle_deg), "add_hint_spot without params keeps the APPROXIMATION spot")
+	var scaled := Compare.add_hint_spot(holder, spot_spec, tuned_params)
+	check(is_equal_approx(scaled.light_energy, spot_spec.energy * 2.5) and is_equal_approx(scaled.spot_range, 20.0) and is_equal_approx(scaled.spot_angle, 45.0), "add_hint_spot applies light_scale, spot_range_m and spot_angle_deg")
+	# Removing the holder from the tree and freeing it frees its spot children, so the suite exits without leaked lights.
+	root.remove_child(holder)
+	holder.free()
