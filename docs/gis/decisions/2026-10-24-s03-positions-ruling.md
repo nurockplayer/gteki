@@ -15,7 +15,7 @@ Platforms keep their names only. No other S03 geometry ships. Names stay `CONDIT
 
 The ruling expects 26 candidates (23 gates, 3 transfers), but WP7 (`2026-10-24` topology rulings) excludes one gate feature whole: `poi:keio-gate:1`, `SOURCE_DEFECT_HOLE_OUTSIDE_SHELL`. The lead ruled, in writing, that this POI **stays name-only**: no coordinates, no geometry repair, no substitute position. The private positions file lists it with its reason code; the public receipt carries only the count and the reason code, with no id.
 
-The expected outcome is therefore fail-closed at **25 pointed, 1 unpointed, 19 platforms**. Any other outcome stops the run.
+The expected outcome is therefore fail-closed at **25 pointed, 1 unpointed, 19 platforms**, and the one unpointed candidate is pinned: its id, its reason code and its feature's level must match exactly. Any other outcome, or any substitution, stops the run.
 
 ## Not a rights change
 

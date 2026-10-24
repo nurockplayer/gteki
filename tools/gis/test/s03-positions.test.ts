@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
-  POSITIONS_FLOOR_MAPPING_SHA256, S03_POSITIONS_POLICY, assertPositionCounts, buildPositionsReceipt, enuToGeodetic, joinS03Pois,
-  locateSelection, parseS03EntityId, partAreaCentroid, positionsIdentity, representativePoint, splitSelections, uncertaintyFor,
+  POSITION_RECORD_LABELS, POSITIONS_FLOOR_MAPPING_SHA256, S03_POSITIONS_POLICY, assertPositionCounts, assertUnpointed,
+  buildPositionsReceipt, enuToGeodetic, joinS03Pois, locateSelection, parseS03EntityId, partAreaCentroid, positionsIdentity,
+  representativePoint, splitSelections, uncertaintyFor,
   type PointedPosition, type PositionsDigestFacts, type S03Selection,
 } from '../src/s03-positions.js';
 import { S03_FLOOR_ORDINALS, floorMappingSha256, pointInPolygon, type Point2, type Polygon2, type S03Inputs } from '../src/s03-transform.js';
@@ -75,6 +76,21 @@ describe('S03 positions: entity id join (synthetic only)', () => {
     const twice = { levels: [...levels, { ...levels[0]!, id: 12 }], sourceDefects: [] } as unknown as S03Inputs;
     expect(() => locateSelection(twice, selection(7))).toThrow(/resolves to 2 used level features/);
   });
+  it('pins the unpointed candidate to the one the ruling names, with its reason and its declared level', () => {
+    const selection = (poiId: string): S03Selection => ({ poiId, category: 'ticket_gate', entityId: 1, levelLabel: 'B1F' });
+    const candidates = [selection('poi:keio-gate:1')];
+    const inputs = { levels: [{ id: 11, label: 'B1F', ordinal: -1, features: [] }], sourceDefects: [] } as unknown as S03Inputs;
+    const entry = { poi_id: 'poi:keio-gate:1', reason: 'SOURCE_DEFECT_HOLE_OUTSIDE_SHELL', level_id: 11 };
+    expect(() => assertUnpointed([entry], candidates, inputs)).not.toThrow();
+    // A substituted POI, a different reason, a level mismatch, a missing level file and an extra exclusion all stop the run.
+    expect(() => assertUnpointed([{ ...entry, poi_id: 'poi:jreast-gate:1' }], candidates, inputs)).toThrow(/poi:jreast-gate:1 is unpointed; the ruling names only poi:keio-gate:1/);
+    expect(() => assertUnpointed([{ ...entry, reason: 'SOURCE_DEFECT_UNCLOSED_RING' }], candidates, inputs)).toThrow(/reason SOURCE_DEFECT_UNCLOSED_RING; the ruling names SOURCE_DEFECT_HOLE_OUTSIDE_SHELL/);
+    expect(() => assertUnpointed([{ ...entry, level_id: 12 }], candidates, inputs)).toThrow(/level 12 is not a parsed S03 level/);
+    const otherLevel = { levels: [{ id: 11, label: '2F', ordinal: 2, features: [] }], sourceDefects: [] } as unknown as S03Inputs;
+    expect(() => assertUnpointed([entry], candidates, otherLevel)).toThrow(/level 2F differs from its declared s03\.levels B1F/);
+    expect(() => assertUnpointed([], candidates, inputs)).toThrow(/0 unpointed candidates/);
+    expect(() => assertUnpointed([entry, { ...entry }], candidates, inputs)).toThrow(/2 unpointed candidates/);
+  });
   it('fails closed unless exactly 25 points, 1 unpointed candidate and 19 platforms result', () => {
     expect(() => assertPositionCounts(25, 1, 19)).not.toThrow();
     expect(() => assertPositionCounts(26, 0, 19)).toThrow(/produced pointed=26, unpointed=0, platforms=19; the reviewed data produces pointed=25, unpointed=1, platforms=19/);
@@ -146,7 +162,7 @@ describe('S03 positions: representative point (synthetic only)', () => {
 describe('S03 positions: digest and public receipt (synthetic only)', () => {
   const facts = (): PositionsDigestFacts => ({ policy_version: S03_POSITIONS_POLICY, tool_input_sha256: 'a'.repeat(64), zip_sha256: 'b'.repeat(64),
     station_json_sha256: 'c'.repeat(64), pois_json_sha256: 'd'.repeat(64), entity_source_sha256: 'e'.repeat(64),
-    floor_mapping_sha256: POSITIONS_FLOOR_MAPPING_SHA256() });
+    floor_mapping_sha256: POSITIONS_FLOOR_MAPPING_SHA256(), publish_gate: 'CONDITIONAL', sources_yaml_sha256: '1'.repeat(64) });
   it('names the run from policy, tool, ZIP, station.json, pois.json, entity source and floor mapping', () => {
     const base = positionsIdentity(facts());
     expect(base.run_id).toMatch(/^positions-[0-9a-f]{20}$/);
@@ -157,13 +173,17 @@ describe('S03 positions: digest and public receipt (synthetic only)', () => {
     expect(positionsIdentity({ ...facts(), pois_json_sha256: 'f'.repeat(64) }).digest).not.toBe(base.digest);
     expect(positionsIdentity({ ...facts(), station_json_sha256: 'f'.repeat(64) }).digest).not.toBe(base.digest);
     expect(positionsIdentity({ ...facts(), policy_version: 's03-positions-v2' }).digest).not.toBe(base.digest);
+    // The effective publish gate and the manifest bytes that state it are part of the run identity.
+    expect(positionsIdentity({ ...facts(), publish_gate: 'PASS' }).digest).not.toBe(base.digest);
+    expect(positionsIdentity({ ...facts(), sources_yaml_sha256: '2'.repeat(64) }).digest).not.toBe(base.digest);
+    expect(base.digest_inputs).toMatchObject({ publish_gate: 'CONDITIONAL' });
   });
   it('carries counts, methods and the uncertainty distribution but no coordinate, name or source id', () => {
     const pointed: PointedPosition[] = [
       { poi_id: 'poi:synth-ticket_gate:1', s03_entity_id: 1000, category: 'ticket_gate', level_id: 11, level_label: 'B1F', floor_ordinal: -1,
-        lon: 139.7001234, lat: 35.6905678, east_m: 12.5, north_m: -3.25, radius_m: 7.5, uncertainty_m: 7.5, method: 'area_weighted_centroid', part_count: 1, vertex_count: 5 },
+        lon: 139.7001234, lat: 35.6905678, east_m: 12.5, north_m: -3.25, radius_m: 7.5, uncertainty_m: 7.5, method: 'area_weighted_centroid', part_count: 1, vertex_count: 5, labels: POSITION_RECORD_LABELS },
       { poi_id: 'poi:synth-transfer:1', s03_entity_id: 1001, category: 'transfer', level_id: 11, level_label: 'B1F', floor_ordinal: -1,
-        lon: 139.7002, lat: 35.6906, east_m: 18, north_m: -2, radius_m: 3, uncertainty_m: 5, method: 'largest_part_closest_point', part_count: 2, vertex_count: 10 },
+        lon: 139.7002, lat: 35.6906, east_m: 18, north_m: -2, radius_m: 3, uncertainty_m: 5, method: 'largest_part_closest_point', part_count: 2, vertex_count: 10, labels: POSITION_RECORD_LABELS },
     ];
     const receipt = buildPositionsReceipt({ digest_inputs: facts(), digest: positionsIdentity(facts()).digest, run_id: positionsIdentity(facts()).run_id,
       publish_gate: 'CONDITIONAL', zip_sha256: 'b'.repeat(64), pointed, unpointed: [{ reason: 'SOURCE_DEFECT_HOLE_OUTSIDE_SHELL' }],
@@ -176,17 +196,21 @@ describe('S03 positions: digest and public receipt (synthetic only)', () => {
     expect(receipt.uncertainty_m).toMatchObject({ count: 2, min: 5, median: 6.25, p90: 7.25, max: 7.5 });
     expect(receipt.floor_counts).toEqual([{ floor_ordinal: -1, pointed: 2 }]);
     expect(receipt.label).toBe('approximate (±max(5 m, polygon radius))');
+    expect(receipt.public_receipt_rule).toMatch(/GTEki's own registry id for the dataset, not a value read from the source/);
+    // The restriction labels travel on every record, not only at document level.
+    expect(pointed.every(position => position.labels === POSITION_RECORD_LABELS)).toBe(true);
+    expect(pointed[0]!.labels).toEqual({ position: 'approximate (±max(5 m, polygon radius))', navigation_use: 'NOT_FOR_ROUTING', gteki_role: 'context', floor: 'UNVERIFIED' });
     expect(receipt.navigation_use).toBe('NOT_FOR_ROUTING');
     const text = JSON.stringify(receipt);
     for (const leaked of [String(pointed[0]!.lon), String(pointed[0]!.lat), String(pointed[0]!.east_m), String(pointed[0]!.north_m),
       'poi:synth', 's03_entity_id', 'B1F', 'level_label']) expect(text).not.toContain(leaked);
     expect(receipt).not.toHaveProperty('positions');
   });
-  it('round-trips a station ENU position through lon/lat within a micrometre', () => {
+  it('round-trips a station ENU position through lon/lat within a millimetre at 2 km', () => {
     const origin = { lat: 35.6905, lon: 139.7004 }, frame = stationEnuProjector({ ...origin, hM: 0 });
-    for (const [east, north] of [[0, 0], [25, -12], [-80, 45]] as const) {
+    for (const [east, north] of [[0, 0], [25, -12], [-80, 45], [2000, 0], [0, -2000], [-1414.21356237, 1414.21356237]] as const) {
       const { lat, lon } = enuToGeodetic(origin, east, north), back = frame(lat, lon, 0);
-      expect(Math.hypot(back[0] - east, back[1] - north)).toBeLessThan(1e-4);
+      expect(Math.hypot(back[0] - east, back[1] - north), `${east},${north}`).toBeLessThan(1e-3);
     }
   });
 });

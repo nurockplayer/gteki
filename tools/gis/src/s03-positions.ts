@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { getStoredSource, getStoreRoot, repoRoot, writeJson } from './common.js';
+import { getStoredSource, getStoreRoot, packageRoot, repoRoot, writeJson } from './common.js';
 import { assertNoSourceValues } from './context-overlay.js';
 import { geodeticToEcef, stationEnuProjector } from './station-enu.js';
 import { toolFingerprint } from './provenance.js';
@@ -37,6 +37,11 @@ export const EXPECTED_S03_POI_COUNTS: Readonly<Record<string, number>> = { ticke
 export const EXPECTED_POSITION_COUNTS = { pointed: 25, unpointed: 1, platforms: 19 } as const;
 export const CANDIDATE_CATEGORIES = ['ticket_gate', 'transfer'] as const;
 export const SKIPPED_CATEGORY = 'platform';
+/**
+ * The one candidate the reviewed data leaves unpointed, and why. The count check alone would accept any substitution,
+ * so the identity, the reason and the level are pinned here as well.
+ */
+export const EXPECTED_UNPOINTED = { poi_id: 'poi:keio-gate:1', reason: 'SOURCE_DEFECT_HOLE_OUTSIDE_SHELL' } as const;
 
 const sha256 = (bytes: string | Buffer): string => createHash('sha256').update(bytes).digest('hex');
 const record = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -159,6 +164,26 @@ export function locateSelection(inputs: S03Inputs, selection: S03Selection): Sel
   return { kind: 'excluded', reason: defect.kind, levelId: defect.levelId };
 }
 
+/**
+ * The unpointed candidate must be exactly the one the lead ruled on, with its reason and its feature's level matching
+ * the level it declares. Any substitution, an extra exclusion or a missing level file stops the run.
+ */
+export function assertUnpointed(unpointed: readonly { poi_id: string; reason: string; level_id: number }[],
+  candidates: readonly S03Selection[], inputs: S03Inputs): void {
+  if (unpointed.length !== 1) throw new Error(`S03 positions: ${unpointed.length} unpointed candidates; the ruling names exactly ${EXPECTED_UNPOINTED.poi_id}`);
+  const [entry] = unpointed as [typeof unpointed[number]];
+  if (entry.poi_id !== EXPECTED_UNPOINTED.poi_id)
+    throw new Error(`S03 positions: ${entry.poi_id} is unpointed; the ruling names only ${EXPECTED_UNPOINTED.poi_id}`);
+  if (entry.reason !== EXPECTED_UNPOINTED.reason)
+    throw new Error(`${entry.poi_id}: unpointed reason ${entry.reason}; the ruling names ${EXPECTED_UNPOINTED.reason}`);
+  const selection = candidates.find(candidate => candidate.poiId === entry.poi_id);
+  if (!selection) throw new Error(`${entry.poi_id}: unpointed but not a gate or transfer candidate`);
+  const level = inputs.levels.find(candidate => candidate.id === entry.level_id);
+  if (!level) throw new Error(`${entry.poi_id}: excluded feature level ${entry.level_id} is not a parsed S03 level`);
+  if (level.label !== selection.levelLabel)
+    throw new Error(`${entry.poi_id}: excluded feature level ${level.label} differs from its declared s03.levels ${selection.levelLabel}`);
+}
+
 /** Point candidates and platforms against the counts this data must produce; any other outcome stops the run. */
 export function assertPositionCounts(pointed: number, unpointed: number, platforms: number): void {
   const actual = `pointed=${pointed}, unpointed=${unpointed}, platforms=${platforms}`;
@@ -242,6 +267,8 @@ export function uncertaintyFor(radiusM: number): number {
 export interface PositionsDigestFacts {
   policy_version: string; tool_input_sha256: string; zip_sha256: string; station_json_sha256: string;
   pois_json_sha256: string; entity_source_sha256: string; floor_mapping_sha256: string;
+  /** The effective publish gate this run shipped under, and the manifest bytes that state it. */
+  publish_gate: string; sources_yaml_sha256: string;
 }
 /** Receipt identity: the facts object is hashed in this key order and truncated to 20 hex characters. */
 export function positionsIdentity(facts: PositionsDigestFacts) {
@@ -252,9 +279,13 @@ export const POSITIONS_FLOOR_MAPPING_SHA256 = (): string =>
   floorMappingSha256(Object.entries(S03_FLOOR_ORDINALS).map(([id, ordinal]) => ({ id, ordinal })));
 
 const RAD = Math.PI / 180;
+const A = 6378137.0, F = 1 / 298.257222101, E2 = F * (2 - F);
 /**
- * Inverse of the horizontal station projection, whose points are all evaluated at ellipsoidal height 0. The caller re-projects the
- * result and fails closed on any round-trip mismatch, so no position is reported that the forward frame does not return.
+ * Inverse of the horizontal station projection. ENU -> ECEF is exact (the forward frame is a pure rotation about the
+ * origin); ECEF -> geodetic then has no closed form and is solved by fixed-point iteration to convergence. The height
+ * it returns is dropped, because the forward frame evaluates every point at ellipsoidal height 0. The caller
+ * re-projects the result and fails closed on any round-trip mismatch, so no position is reported that the frame does
+ * not return.
  */
 export function enuToGeodetic(origin: { lat: number; lon: number }, east: number, north: number): { lat: number; lon: number } {
   const [x0, y0, z0] = geodeticToEcef(origin.lat, origin.lon, 0);
@@ -262,17 +293,28 @@ export function enuToGeodetic(origin: { lat: number; lon: number }, east: number
   const x = x0 - Math.sin(l) * east - Math.sin(p) * Math.cos(l) * north;
   const y = y0 + Math.cos(l) * east - Math.sin(p) * Math.sin(l) * north;
   const z = z0 + Math.cos(p) * north;
-  // GRS80. The projection evaluates every point at ellipsoidal height 0, so the inverse is the closed-form relation on
-  // that surface: z / p = (1 - e2) tan(lat) exactly.
-  const f = 1 / 298.257222101, e2 = f * (2 - f);
-  const radius = Math.hypot(x, y);
-  return { lat: Math.atan2(z, radius * (1 - e2)) / RAD, lon: Math.atan2(y, x) / RAD };
+  const horizontal = Math.hypot(x, y);
+  let lat = Math.atan2(z, horizontal * (1 - E2));
+  for (let step = 0; step < 20; step++) {
+    const sin = Math.sin(lat), next = Math.atan2(z + E2 * (A / Math.sqrt(1 - E2 * sin * sin)) * sin, horizontal);
+    if (Math.abs(next - lat) < 1e-15) { lat = next; break; }
+    lat = next;
+  }
+  return { lat: lat / RAD, lon: Math.atan2(y, x) / RAD };
 }
+
+/**
+ * The restriction labels travel on every record, not only on the document, so a record lifted out of the file cannot be
+ * read as a routing position.
+ */
+export const POSITION_RECORD_LABELS = Object.freeze({ position: POSITION_LABEL, navigation_use: 'NOT_FOR_ROUTING',
+  gteki_role: 'context', floor: 'UNVERIFIED' });
 
 export interface PointedPosition {
   poi_id: string; s03_entity_id: number; category: string; level_id: number; level_label: string; floor_ordinal: number;
   lon: number; lat: number; east_m: number; north_m: number; radius_m: number; uncertainty_m: number;
   method: PositionMethod; part_count: number; vertex_count: number;
+  labels: typeof POSITION_RECORD_LABELS;
 }
 
 /** The public receipt: counts and distributions only. No coordinate, name or source id, and no dynamic string keys. */
@@ -302,7 +344,7 @@ export function buildPositionsReceipt(args: {
     floor_counts: ordinals.map(ordinal => ({ floor_ordinal: ordinal, pointed: args.pointed.filter(position => position.floor_ordinal === ordinal).length })),
     floor_mapping: { verification: 'UNVERIFIED', rule: 'The S03 level label maps to a comparison ordinal by assertion (docs/gis/s03/...); it is not a station floor and not an elevation.' },
     position_rule: 'One representative point per gate or transfer: the area-weighted centroid of all parts of its S03 feature geometry in horizontal station ENU; if that point is outside every part, the closest point of the largest part boundary instead. A candidate whose feature is excluded by the WP7 topology ruling stays unpointed, with its reason code only. Platforms keep no point. Search display only; never routing or connectors.',
-    public_receipt_rule: 'This receipt carries counts and distributions only: no coordinate, name or source id.',
+    public_receipt_rule: 'This receipt carries counts and distributions only: no coordinate, no POI name and no S03 entity or feature id. The `source_id` is GTEki\'s own registry id for the dataset, not a value read from the source.',
     inputs: args.inputs.map(input => ({ role: input.role, path: input.path, sha256: input.sha256 })),
     outputs: { private: { store_path: args.private_output.path, sha256: args.private_output.sha256, bytes: args.private_output.bytes } },
   };
@@ -347,18 +389,21 @@ export async function s03Positions() {
     pointed.push({ poi_id: selection.poiId, s03_entity_id: selection.entityId, category: selection.category,
       level_id: level.id, level_label: level.label, floor_ordinal: level.ordinal, lon, lat, east_m: east, north_m: north,
       radius_m: representative.radius_m, uncertainty_m: uncertaintyFor(representative.radius_m), method: representative.method,
-      part_count: representative.part_count, vertex_count: representative.vertex_count });
+      part_count: representative.part_count, vertex_count: representative.vertex_count, labels: POSITION_RECORD_LABELS });
   }
+  assertUnpointed(unpointed, candidates, inputs);
   assertPositionCounts(pointed.length, unpointed.length, platforms.length);
+  const sourcesBytes = await readFile(join(packageRoot, 'sources', 'sources.yaml'));
   const digestInputs: PositionsDigestFacts = { policy_version: S03_POSITIONS_POLICY, tool_input_sha256: await toolFingerprint(),
     zip_sha256: stored.record.sha256, station_json_sha256: sha256(stationBytes), pois_json_sha256: sha256(poisBytes),
-    entity_source_sha256: sha256(entityBytes), floor_mapping_sha256: POSITIONS_FLOOR_MAPPING_SHA256() };
+    entity_source_sha256: sha256(entityBytes), floor_mapping_sha256: POSITIONS_FLOOR_MAPPING_SHA256(),
+    publish_gate: stored.source.publish_gate, sources_yaml_sha256: sha256(sourcesBytes) };
   const identity = positionsIdentity(digestInputs);
   const privatePath = `out/s03/${identity.run_id}.json`;
   const privateDocument = {
     policy_version: S03_POSITIONS_POLICY, digest_inputs: digestInputs, digest: identity.digest, run_id: identity.run_id,
     source_id: S03_SOURCE_ID, source_record: stored.record, credit: S03_CREDIT,
-    labels: { position: POSITION_LABEL, navigation_use: 'NOT_FOR_ROUTING', gteki_role: 'context', floor: 'UNVERIFIED' },
+    labels: POSITION_RECORD_LABELS,
     datum: S03_DATUM,
     frame: { station_json_path: STATION_PATH, station_json_sha256: sha256(stationBytes), ellipsoid: 'GRS80', horizontal_calculation_height_m: 0,
       projected_datum_asserted: false, floor_mapping_rule: 'The S03 level label maps to a comparison ordinal by assertion, from the same map WP7 uses; the level mapping stays UNVERIFIED.' },

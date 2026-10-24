@@ -2,15 +2,17 @@
   "policy_version": "s03-positions-v1",
   "digest_inputs": {
     "policy_version": "s03-positions-v1",
-    "tool_input_sha256": "813b1fdce4b419d78149c2f5c141e179b462d09e7765c3b3a422a0b2289abb14",
+    "tool_input_sha256": "020e7e9f482e9e0c4808993b008ac912ee3c20fb21106ccf779cd5c93b8e6d73",
     "zip_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
     "station_json_sha256": "43f74f0d68fca44358884c7461a8570a8aa44df2ec155bb36156ab9fb7d13728",
     "pois_json_sha256": "45937ec00e20397769cb2d4eb5cd6a97ebf5c759fe5771324b7a8a27caa2fd3e",
     "entity_source_sha256": "abf486b8925caa7b1232a766904c8ff863f30714ba5f110ff630e27fad9c79fc",
-    "floor_mapping_sha256": "062f61527031ac513b322b6c5b03d3744c907838a201e9419eb29270c7c3c6ea"
+    "floor_mapping_sha256": "062f61527031ac513b322b6c5b03d3744c907838a201e9419eb29270c7c3c6ea",
+    "publish_gate": "CONDITIONAL",
+    "sources_yaml_sha256": "c2d7e124ea677952f4ee6a1874fe644a207ec74372fe56f6c60d7a7f26f71ed7"
   },
-  "digest": "8e3e31916f0a6174f5a7",
-  "run_id": "positions-8e3e31916f0a6174f5a7",
+  "digest": "eb814e7fa1688f07b038",
+  "run_id": "positions-eb814e7fa1688f07b038",
   "source_id": "tokyo-s03-zip",
   "source_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
   "publish_gate": "CONDITIONAL",
@@ -72,7 +74,7 @@
     "rule": "The S03 level label maps to a comparison ordinal by assertion (docs/gis/s03/...); it is not a station floor and not an elevation."
   },
   "position_rule": "One representative point per gate or transfer: the area-weighted centroid of all parts of its S03 feature geometry in horizontal station ENU; if that point is outside every part, the closest point of the largest part boundary instead. A candidate whose feature is excluded by the WP7 topology ruling stays unpointed, with its reason code only. Platforms keep no point. Search display only; never routing or connectors.",
-  "public_receipt_rule": "This receipt carries counts and distributions only: no coordinate, name or source id.",
+  "public_receipt_rule": "This receipt carries counts and distributions only: no coordinate, no POI name and no S03 entity or feature id. The `source_id` is GTEki's own registry id for the dataset, not a value read from the source.",
   "inputs": [
     {
       "role": "station",
@@ -92,9 +94,9 @@
   ],
   "outputs": {
     "private": {
-      "store_path": "out/s03/positions-8e3e31916f0a6174f5a7.json",
-      "sha256": "5f7717e505ada050cf0b82a84bec2dfb23130c78056ca504222f0723d8af86d8",
-      "bytes": 18491
+      "store_path": "out/s03/positions-eb814e7fa1688f07b038.json",
+      "sha256": "9095de321e84ea86085082c9077dfc18df8a2ada84bdf18fd7ece1e661160a11",
+      "bytes": 23601
     }
   }
 }
