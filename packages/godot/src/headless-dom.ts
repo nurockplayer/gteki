@@ -7,6 +7,7 @@
  * through them is presented as faithful. No canvas library is used.
  */
 import * as THREE from "three";
+import type { GLTFLoaderPlugin, GLTFParser } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 /** What the station scenes asked of the shims; the exporter turns this into sidecar warnings. */
 export interface ShimUsage {
@@ -15,10 +16,35 @@ export interface ShimUsage {
   imageDataReads: number;
   pmremEnvironments: number;
   placeholderTextures: string[];
+  /** Images embedded in GLBs loaded through `ctx.loadGlb`, replaced by blank placeholders (not decoded). */
+  glbTextures: number;
 }
 
 export function newShimUsage(): ShimUsage {
-  return { canvases: 0, measuredTexts: 0, imageDataReads: 0, pmremEnvironments: 0, placeholderTextures: [] };
+  return { canvases: 0, measuredTexts: 0, imageDataReads: 0, pmremEnvironments: 0, placeholderTextures: [], glbTextures: 0 };
+}
+
+/**
+ * GLTFLoader plugin: a blank `THREE.Texture` for every glTF texture instead of decoding its image. Decoding needs a
+ * browser (`self.URL`, `createImageBitmap` or an `<img>`); without this, a GLB with an embedded image fails to load
+ * at all under Node and the station falls back or skips the piece. The snapshot strips every texture anyway, so
+ * only the slot and its sampling state matter: `flipY = false` as GLTFLoader sets, and `assignTexture` still sets the
+ * channel and colour space. The image name is kept on the placeholder for diagnostics.
+ */
+export function headlessGltfTextures(usage: ShimUsage): (parser: GLTFParser) => GLTFLoaderPlugin {
+  return (parser) => ({
+    name: "gteki_headless_textures",
+    loadTexture(textureIndex: number): Promise<THREE.Texture> {
+      const json = parser.json as { textures?: { source?: number; name?: string }[]; images?: { name?: string }[] };
+      const textureDef = json.textures?.[textureIndex] ?? {};
+      const texture = new THREE.Texture();
+      texture.flipY = false;
+      texture.name = textureDef.name ?? json.images?.[textureDef.source ?? -1]?.name ?? "";
+      texture.userData.gteki_glb_placeholder = true;
+      usage.glbTextures += 1;
+      return Promise.resolve(texture);
+    },
+  });
 }
 
 /**
