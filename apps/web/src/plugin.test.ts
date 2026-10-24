@@ -41,6 +41,16 @@ describe("station discovery", () => {
     expect(found).toHaveLength(1);
     expect(found[0]!.gtekiDir.startsWith(a)).toBe(true);
   });
+
+  it("finds the optional brand directory but never treats it as an asset (#419)", () => {
+    const root = tree();
+    expect(discoverStations([root])[0]!.tenants).toBeNull();
+    const file = path.join(root, "alpha", "gteki", "tenants.json");
+    fs.writeFileSync(file, JSON.stringify({ schema: "gteki.tenants/0.1", tenants: [] }));
+    const found = discoverStations([root]);
+    expect(found[0]!.tenants).toBe(file);
+    expect(found[0]!.assets).not.toContain("tenants.json");
+  });
 });
 
 describe("threeAliases", () => {
@@ -101,6 +111,41 @@ describe("virtual station module asset URLs", () => {
   it("uses statically resolvable, fingerprinted ?url imports for production builds", () => {
     // One literal specifier: Vite must see "?url" without folding a runtime concatenation.
     expect(load([valid(tree())], "build")).toMatch(/import\("[^"]*\/b1\.glb\?url"\)/);
+  });
+
+  it("publishes a declared uriMobile variant, and refuses it when it is missing", () => {
+    const root = valid(tree());
+    const dir = path.join(root, "alpha", "gteki");
+    const [m] = createDemoFiles();
+    m.assets = [{ id: "b1", uri: "assets/b1.glb", uriMobile: "assets/b1.mobile.glb", format: "glb", floorIds: [], role: "visual", sourceIds: ["demo-synthetic"], files: ["assets/b1.meta.json"] }];
+    fs.writeFileSync(path.join(dir, "station.json"), JSON.stringify(m));
+    expect(() => publishableAssets(discoverStations([root]))).toThrow(/declared asset files not found: assets\/b1\.mobile\.glb/);
+    fs.writeFileSync(path.join(dir, "assets", "b1.mobile.glb"), "x");
+    expect([...publishableAssets(discoverStations([root])).get("alpha")!].sort()).toEqual(["assets/b1.glb", "assets/b1.meta.json", "assets/b1.mobile.glb"]);
+  });
+
+  it("refuses a facts-only source without a #26 decision in a build, even for a synthetic station", () => {
+    const root = valid(tree());
+    const file = path.join(root, "alpha", "gteki", "station.json");
+    const m = JSON.parse(fs.readFileSync(file, "utf8"));
+    expect(m.station.synthetic).toBe(true);
+    m.sources.push({ ...m.sources[0], id: "facts-src", usage: "facts-only", rights: "REFERENCE_ONLY" });
+    fs.writeFileSync(file, JSON.stringify(m));
+    expect(() => load([root], "build")).toThrow(/source\.decision \(facts-src\)/);
+    expect(() => load([root], "serve")).not.toThrow();
+    m.sources.at(-1).decision = { url: "https://github.com/nurockplayer/gteki/issues/26#issuecomment-1", date: "2026-10-21" };
+    fs.writeFileSync(file, JSON.stringify(m));
+    expect(() => load([root], "build")).not.toThrow();
+  });
+
+  it("loads a valid brand directory and refuses an unreadable one (#419)", () => {
+    const root = valid(tree());
+    const file = path.join(root, "alpha", "gteki", "tenants.json");
+    fs.writeFileSync(file, JSON.stringify({ schema: "gteki.tenants/0.1", tenants: [] }));
+    expect(load([root], "build")).toContain("tenants: () => import(");
+    // Broken JSON is refused, not read as "this station has no directory".
+    fs.writeFileSync(file, "{ broken");
+    expect(() => load([root], "build")).toThrow(/refusing a production build/);
   });
 
   it("refuses a production build from a station that fails the contract, but still serves it in dev", () => {

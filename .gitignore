@@ -7,7 +7,14 @@ dist/
 coverage/
 .claude/
 .serena/
+/.qa/
+
+# Pinned upstream fonts (verified by tools/fonts/subset-sign-font.mjs).
+/.cache/fonts/
 data-cache/
 stations/*/build/
 __pycache__/
 /.qa/
+
+# Godot HQ client: generated scene snapshots (never committed)
+/packages/godot/.cache/

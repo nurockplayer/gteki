@@ -28,6 +28,11 @@ export interface FollowConstants {
   bodyTopM: number;
   /** Declared vertical FOVs (degrees) from the source, for comparison with the measured one. null: not declared. */
   declaredFov: { follow: number | null; firstPerson: number | null; overview: number | null; settleS: number | null; source: string };
+  /** #136's reasons to widen the follow lens: boom squeezed below comfortDistance (released above comfortDistance + release). null: not in the source. */
+  lensSqueeze: { comfortDistance: number | null; release: number | null };
+  /** #136's slope lens: the wide lens is kept for `hold` s after the smoothed vertical speed (time constant `smooth` s)
+   *  drops below `exit` m/s; a height change above `jump` m in one frame is a teleport. null: not in the source. */
+  lensSlope: { exit: number | null; hold: number | null; smooth: number | null; jump: number | null };
 }
 
 // origin/main values when this was written (apps/web/src/explorer/followCamera.ts, packages/scene-api).
@@ -35,6 +40,8 @@ const FALLBACK: FollowConstants = {
   source: "fallback (origin/main constants; GTEKI_ROOT source not readable)",
   minDistance: 0.55, defaultDistance: 3.4, shoulder: 0.42, clearance: 0.3, lowestBoom: -0.1, eyeM: 1.62, bodyTopM: 1.7,
   declaredFov: { follow: null, firstPerson: null, overview: null, settleS: null, source: "none" },
+  lensSqueeze: { comfortDistance: null, release: null },
+  lensSlope: { exit: null, hold: null, smooth: null, jump: null },
 };
 
 export function followConstants(): FollowConstants {
@@ -63,7 +70,11 @@ export function followConstants(): FollowConstants {
       clearance: num(block, "clearance"), lowestBoom: num(block, "lowestBoom"), eyeM: num(body, "eyeM"), bodyTopM: num(body, "bodyTopM"),
     };
     if (Object.values(c).some((v) => v === null)) return { ...FALLBACK, source: "fallback (a constant was not found in the GTEKI_ROOT source)" };
-    return { source: "GTEKI_ROOT apps/web/src/explorer/followCamera.ts FOLLOW + packages/scene-api WALKER_BODY", ...(c as Omit<FollowConstants, "source" | "declaredFov">), declaredFov };
+    const squeeze = /export const SQUEEZE = \{([^}]*)\}/.exec(follow)?.[1] ?? "";
+    const lensSqueeze = { comfortDistance: num(block, "comfortDistance"), release: num(squeeze, "release") };
+    const slope = /export const SLOPE = \{([\s\S]*?)\} as const/.exec(follow)?.[1] ?? "";
+    const lensSlope = { exit: num(slope, "exit"), hold: num(slope, "hold"), smooth: num(slope, "smooth"), jump: num(slope, "jump") };
+    return { source: "GTEKI_ROOT apps/web/src/explorer/followCamera.ts FOLLOW + packages/scene-api WALKER_BODY", ...(c as Omit<FollowConstants, "source" | "declaredFov" | "lensSqueeze" | "lensSlope">), declaredFov, lensSqueeze, lensSlope };
   } catch {
     return FALLBACK;
   }
@@ -141,7 +152,7 @@ export const LENS_PROBE = `(() => {
     if (!best) return null;
     const P = best.proj, vw = L.views.get(bestKey) ?? null, V = vw ? vw.view : null;
     const cam = V ? [0, 1, 2].map((j) => -(V[j * 4] * V[12] + V[j * 4 + 1] * V[13] + V[j * 4 + 2] * V[14])) : null;
-    let share = null, inFrame = null, cx = null;
+    let share = null, inFrame = null, headIn = null, feetIn = null, cx = null;
     if (avatar && V) {
       const proj = (x, y, z) => {
         const v = [0, 1, 2].map((i) => V[i] * x + V[4 + i] * y + V[8 + i] * z + V[12 + i]);
@@ -152,20 +163,22 @@ export const LENS_PROBE = `(() => {
       const f = proj(avatar.x, avatar.z, -avatar.y), h = proj(avatar.x, avatar.z + bodyTopM, -avatar.y);
       if (f && h) {
         share = Math.round(((h[1] - f[1]) / 2) * 1000) / 1000;
-        inFrame = Math.abs(f[0]) <= 1 && Math.abs(h[0]) <= 1 && Math.abs(f[1]) <= 1 && Math.abs(h[1]) <= 1;
+        headIn = Math.abs(h[0]) <= 1 && Math.abs(h[1]) <= 1;
+        feetIn = Math.abs(f[0]) <= 1 && Math.abs(f[1]) <= 1;
+        inFrame = headIn && feetIn;
         cx = Math.round(((f[0] + h[0]) / 2) * 1000) / 1000;
       }
     }
     const now = performance.now();
     return {
       fovV: Math.round(2 * Math.atan(1 / P[5]) * 180 / Math.PI * 1000) / 1000, aspect: Math.round(ca * 1000) / 1000,
-      cam: cam ? cam.map((v) => Math.round(v * 1000) / 1000) : null, ageMs: Math.round(now - best.t), viewAgeMs: vw ? Math.round(now - vw.t) : null, share, inFrame, cx,
+      cam: cam ? cam.map((v) => Math.round(v * 1000) / 1000) : null, ageMs: Math.round(now - best.t), viewAgeMs: vw ? Math.round(now - vw.t) : null, share, inFrame, headIn, feetIn, cx,
       candidates: best.fovs.map((f) => Math.round(f.fov * 100) / 100),
     };
   };
 })();`;
 
-export interface LensRead { fovV: number; aspect: number; cam: number[] | null; ageMs: number; viewAgeMs: number | null; share: number | null; inFrame: boolean | null; cx: number | null; candidates: number[] }
+export interface LensRead { fovV: number; aspect: number; cam: number[] | null; ageMs: number; viewAgeMs: number | null; share: number | null; inFrame: boolean | null; headIn: boolean | null; feetIn: boolean | null; cx: number | null; candidates: number[] }
 
 // ---- Samplers -------------------------------------------------------------------------------------
 
@@ -243,6 +256,10 @@ export interface CameraSample {
   avatarHeightShare: number | null;
   /** Avatar feet and top both inside the viewport. */
   avatarInFrame: boolean | null;
+  /** Top of the avatar (bodyTopM) inside the viewport; false means the head is lost, not only the feet. */
+  avatarHeadInFrame: boolean | null;
+  /** Avatar feet inside the viewport. */
+  avatarFeetInFrame: boolean | null;
   /** Edge mode of the route step the avatar is on (nearest route segment), when a route was given. */
   stepMode: string | null;
 }
@@ -274,7 +291,7 @@ export function toSample(raw: RawCameraSample, t0: number, k: FollowConstants, w
     overheadBlocker: null,
     fovV, aspect,
     fovH: fovV !== null && aspect !== null ? r(2 * Math.atan(Math.tan((fovV / 2) / DEG) * aspect) * DEG, 100) : null,
-    avatarHeightShare: raw.lens?.share ?? null, avatarInFrame: raw.lens?.inFrame ?? null,
+    avatarHeightShare: raw.lens?.share ?? null, avatarInFrame: raw.lens?.inFrame ?? null, avatarHeadInFrame: raw.lens?.headIn ?? null, avatarFeetInFrame: raw.lens?.feetIn ?? null,
     stepMode: wps && wps.length > 1 ? stepModeAt(wps, raw.avatar) : null,
   };
 }
@@ -330,7 +347,10 @@ function stats(samples: CameraSample[], intervalMs: number) {
     longestCrowdedRun: longestRunMs(samples, (s) => s.crowded, intervalMs),
     minCameraAboveHead: n ? Math.min(...samples.map((s) => s.cameraAboveHead)) : null,
     avatarHeightShare: { min: share[0] ?? null, median: quantile(share, 0.5), max: share.at(-1) ?? null, n: share.length },
+    // Combined (feet or head out), kept for comparison with earlier runs; the split says which end left the frame.
     fractionAvatarOutOfFrame: n ? Math.round((samples.filter((s) => s.avatarInFrame === false).length / n) * 1000) / 1000 : null,
+    fractionHeadOutOfFrame: n ? Math.round((samples.filter((s) => s.avatarHeadInFrame === false).length / n) * 1000) / 1000 : null,
+    fractionFeetOutOfFrame: n ? Math.round((samples.filter((s) => s.avatarFeetInFrame === false).length / n) * 1000) / 1000 : null,
   };
 }
 
@@ -402,7 +422,7 @@ export interface FovEase {
   settleMs: number | null;
   /** Total change in FOV after the click (deg). */
   changeDeg: number | null;
-  curve: { t: number; fovV: number | null }[];
+  curve: { t: number; fovV: number | null; mode: string | null }[];
 }
 
 export function analyseFovEase(event: string, rec: { frames: FovFrame[] }): FovEase {
@@ -423,6 +443,6 @@ export function analyseFovEase(event: string, rec: { frames: FovFrame[] }): FovE
     event, frames: rec.frames.length, startFov: rnd(start, 100), endFov: rnd(end, 100), maxStepDeg: post.length > 1 ? rnd(maxStep, 100) : null, settleMs: settle,
     changeDeg: start !== null && end !== null ? rnd(end - start, 100) : null,
     // Thin the curve (every other frame away from the click) so the JSON stays small and diffable.
-    curve: post.filter((f, i) => i % 2 === 0 || Math.abs(f.t) < 80).map((f) => ({ t: f.t, fovV: rnd(f.fovV, 100) })),
+    curve: post.filter((f, i) => i % 2 === 0 || Math.abs(f.t) < 80).map((f) => ({ t: f.t, fovV: rnd(f.fovV, 100), mode: f.mode })),
   };
 }

@@ -77,6 +77,26 @@ for (const key of STATIONS) {
       return null;
     });
 
+    // #114 (d940021+) frames into the area the panel leaves free and reports it as `visibleRect` (page CSS px).
+    // Check that independently: the slice's projected bbox lies inside it, and the rect itself is clear of the panel.
+    const placement = await page.evaluate((f) => {
+      const v = f?.value?.visibleRect, b = f?.value?.bbox;
+      if (!v || !b) return null;
+      const inter = (a: { x0: number; y0: number; x1: number; y1: number }, c: { x0: number; y0: number; x1: number; y1: number }) =>
+        Math.max(0, Math.min(a.x1, c.x1) - Math.max(a.x0, c.x0)) * Math.max(0, Math.min(a.y1, c.y1) - Math.max(a.y0, c.y0));
+      const vr = { x0: v.x, y0: v.y, x1: v.x + v.w, y1: v.y + v.h };
+      const area = (r: { x0: number; y0: number; x1: number; y1: number }) => Math.max(0, r.x1 - r.x0) * Math.max(0, r.y1 - r.y0);
+      const panel = [...document.querySelectorAll<HTMLElement>(".panel")].find((e) => e.offsetParent !== null)?.getBoundingClientRect();
+      const pr = panel ? { x0: panel.left, y0: panel.top, x1: panel.right, y1: panel.bottom } : null;
+      return {
+        visibleRect: v, bbox: b, panel: pr,
+        bboxInsideShare: area(b) ? inter(b, vr) / area(b) : null,
+        bboxUnderPanelShare: pr && area(b) ? inter(b, pr) / area(b) : null,
+        visibleUnderPanelShare: pr && area(vr) ? inter(vr, pr) / area(vr) : null,
+        centreOffset: { x: (b.x0 + b.x1) / 2 - (vr.x0 + vr.x1) / 2, y: (b.y0 + b.y1) / 2 - (vr.y0 + vr.y1) / 2 },
+      };
+    }, framingDirect);
+
     // Exits: present in the DOM, on screen, and which ones the declutter hid.
     const exits = boxes.filter((b) => b.category === "exit");
     const exitsVisible = exits.filter((b) => b.visible);
@@ -112,7 +132,7 @@ for (const key of STATIONS) {
       mode, view, labelsSettled,
       thresholds: { framing: FRAMING, nearBlackMax: NEAR_BLACK_MAX, meanLuma: MEAN_LUMA },
       stats,
-      framing: { proxy: "label anchors; a lower bound of the slice extent", all: spreadAll, routable: spreadRoutable, labelSpreadFromSmoke: smoke.labelSpread, framingDirect },
+      framing: { proxy: "label anchors; a lower bound of the slice extent", all: spreadAll, routable: spreadRoutable, labelSpreadFromSmoke: smoke.labelSpread, framingDirect, placement },
       labels: {
         domCount: boxes.length, visibleCount: visible.length, readableCount: readable.length,
         hooksLabels: await page.evaluate(() => (window as any).__gteki.labels()),
@@ -142,6 +162,11 @@ for (const key of STATIONS) {
       expect.soft(spreadRoutable.spread, "spread of routable label anchors / shorter viewport side (proxy for the slice)").toBeLessThanOrEqual(FRAMING.max);
     } else {
       expect.soft(spreadRoutable.count, "at least two routable labels on screen to measure framing").toBeGreaterThanOrEqual(2);
+    }
+    // The slice sits in the area the UI leaves free (#114 P1: on phones it used to sit under the panel).
+    if (placement) {
+      expect.soft(placement.bboxInsideShare, "share of the slice bbox inside overviewFrame().visibleRect").toBeGreaterThanOrEqual(0.95);
+      if (placement.bboxUnderPanelShare !== null) expect.soft(placement.bboxUnderPanelShare, "share of the slice bbox under the search panel").toBeLessThanOrEqual(0.05);
     }
     // Exits stay reachable.
     expect.soft(exits.length, "exit labels in the DOM").toBeGreaterThan(0);

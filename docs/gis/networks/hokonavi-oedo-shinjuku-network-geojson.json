@@ -736,7 +736,10 @@
           "not_checkable": 0,
           "method_unknown": 0,
           "inconsistent_link_ids": [
-            "b80b3f4aef474ac2aa25c6680b26177a"
+            {
+              "value_sha256": "a9b08f56f1dd49af2654254d40f9a2a3f24392feee109025bcb3796744810e74",
+              "value_type": "string"
+            }
           ],
           "inconsistent_link_ids_truncated": 0,
           "inconsistent_link_ids_unavailable": 0,
@@ -762,7 +765,10 @@
               "not_checkable": 0,
               "method_unknown": 0,
               "inconsistent_link_ids": [
-                "b80b3f4aef474ac2aa25c6680b26177a"
+                {
+                  "value_sha256": "a9b08f56f1dd49af2654254d40f9a2a3f24392feee109025bcb3796744810e74",
+                  "value_type": "string"
+                }
               ],
               "inconsistent_link_ids_truncated": 0,
               "inconsistent_link_ids_unavailable": 0,
@@ -813,7 +819,7 @@
           "note": "Literal co-occurrence counts only; missing or duplicate endpoint identifiers have unknown floor. No floor equivalence or connectivity is inferred."
         }
       },
-      "floor_labels_present_literally": []
+      "floor_label_value_hash_distribution": []
     },
     {
       "file": "node.geojson",
@@ -1091,16 +1097,52 @@
           "note": "Literal co-occurrence counts only; missing or duplicate endpoint identifiers have unknown floor. No floor equivalence or connectivity is inferred."
         }
       },
-      "floor_labels_present_literally": [
-        "-0.5",
-        "-1",
-        "-2",
-        "-2.5",
-        "-3",
-        "-4.5",
-        "-6",
-        "0",
-        "1"
+      "floor_label_value_hash_distribution": [
+        {
+          "value_sha256": "1bad6b8cf97131fceab8543e81f7757195fbb1d36b376ee994ad1cf17699c464",
+          "value_type": "string",
+          "count": 73
+        },
+        {
+          "value_sha256": "615bdd17c2556f82f384392ea8557f8cc88b03501c759e23093ab0b2a9b5cd48",
+          "value_type": "string",
+          "count": 47
+        },
+        {
+          "value_sha256": "cf3bae39dd692048a8bf961182e6a34dfd323eeb0748e162eaf055107f1cb873",
+          "value_type": "string",
+          "count": 43
+        },
+        {
+          "value_sha256": "03b26944890929ff751653acb2f2af795cee38f937f379f52ed654a68ce91216",
+          "value_type": "string",
+          "count": 32
+        },
+        {
+          "value_sha256": "28a54a8b18714a7369d93c1b4e179ab1eb0341e74ddee57b134c68ed633a9e9f",
+          "value_type": "string",
+          "count": 16
+        },
+        {
+          "value_sha256": "1b07b0cffa0b3f596b5e048b0115168886cc5183dd518655b5515ee5dddac6d1",
+          "value_type": "string",
+          "count": 10
+        },
+        {
+          "value_sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "value_type": "string",
+          "count": 8
+        },
+        {
+          "value_sha256": "20fb508cd069b7fbaf72c798394a7995c9a3ded09ccf19a294fdb9415fd03317",
+          "value_type": "string",
+          "count": 2
+        },
+        {
+          "value_sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+          "value_type": "string",
+          "count": 2
+        }
       ]
     }
   ],
@@ -1988,7 +2030,10 @@
         "not_checkable": 0,
         "method_unknown": 0,
         "inconsistent_link_ids": [
-          "b80b3f4aef474ac2aa25c6680b26177a"
+          {
+            "value_sha256": "a9b08f56f1dd49af2654254d40f9a2a3f24392feee109025bcb3796744810e74",
+            "value_type": "string"
+          }
         ],
         "inconsistent_link_ids_truncated": 0,
         "inconsistent_link_ids_unavailable": 0,
@@ -2014,7 +2059,10 @@
             "not_checkable": 0,
             "method_unknown": 0,
             "inconsistent_link_ids": [
-              "b80b3f4aef474ac2aa25c6680b26177a"
+              {
+                "value_sha256": "a9b08f56f1dd49af2654254d40f9a2a3f24392feee109025bcb3796744810e74",
+                "value_type": "string"
+              }
             ],
             "inconsistent_link_ids_truncated": 0,
             "inconsistent_link_ids_unavailable": 0,
@@ -2224,16 +2272,52 @@
         "note": "Literal co-occurrence counts only; missing or duplicate endpoint identifiers have unknown floor. No floor equivalence or connectivity is inferred."
       }
     },
-    "floor_labels_present_literally": [
-      "-0.5",
-      "-1",
-      "-2",
-      "-2.5",
-      "-3",
-      "-4.5",
-      "-6",
-      "0",
-      "1"
+    "floor_label_value_hash_distribution": [
+      {
+        "value_sha256": "1bad6b8cf97131fceab8543e81f7757195fbb1d36b376ee994ad1cf17699c464",
+        "value_type": "string",
+        "count": 73
+      },
+      {
+        "value_sha256": "615bdd17c2556f82f384392ea8557f8cc88b03501c759e23093ab0b2a9b5cd48",
+        "value_type": "string",
+        "count": 47
+      },
+      {
+        "value_sha256": "cf3bae39dd692048a8bf961182e6a34dfd323eeb0748e162eaf055107f1cb873",
+        "value_type": "string",
+        "count": 43
+      },
+      {
+        "value_sha256": "03b26944890929ff751653acb2f2af795cee38f937f379f52ed654a68ce91216",
+        "value_type": "string",
+        "count": 32
+      },
+      {
+        "value_sha256": "28a54a8b18714a7369d93c1b4e179ab1eb0341e74ddee57b134c68ed633a9e9f",
+        "value_type": "string",
+        "count": 16
+      },
+      {
+        "value_sha256": "1b07b0cffa0b3f596b5e048b0115168886cc5183dd518655b5515ee5dddac6d1",
+        "value_type": "string",
+        "count": 10
+      },
+      {
+        "value_sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+        "value_type": "string",
+        "count": 8
+      },
+      {
+        "value_sha256": "20fb508cd069b7fbaf72c798394a7995c9a3ded09ccf19a294fdb9415fd03317",
+        "value_type": "string",
+        "count": 2
+      },
+      {
+        "value_sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+        "value_type": "string",
+        "count": 2
+      }
     ]
   },
   "topology": {
@@ -2982,7 +3066,10 @@
       "not_checkable": 0,
       "method_unknown": 0,
       "inconsistent_link_ids": [
-        "b80b3f4aef474ac2aa25c6680b26177a"
+        {
+          "value_sha256": "a9b08f56f1dd49af2654254d40f9a2a3f24392feee109025bcb3796744810e74",
+          "value_type": "string"
+        }
       ],
       "inconsistent_link_ids_truncated": 0,
       "inconsistent_link_ids_unavailable": 0,
@@ -3008,7 +3095,10 @@
           "not_checkable": 0,
           "method_unknown": 0,
           "inconsistent_link_ids": [
-            "b80b3f4aef474ac2aa25c6680b26177a"
+            {
+              "value_sha256": "a9b08f56f1dd49af2654254d40f9a2a3f24392feee109025bcb3796744810e74",
+              "value_type": "string"
+            }
           ],
           "inconsistent_link_ids_truncated": 0,
           "inconsistent_link_ids_unavailable": 0,
@@ -3218,7 +3308,7 @@
       "note": "Literal co-occurrence counts only; missing or duplicate endpoint identifiers have unknown floor. No floor equivalence or connectivity is inferred."
     }
   },
-  "tool_input_sha256": "ca9ef46e121b7da44432c6b39e75b87bfc5be56e7e661fdd04e6bfbaefcbf403",
+  "tool_input_sha256": "d355cfb305eea2cf5ad0ae6f07c1b2990de94d8b22c036573f1ed2f61ca7ea19",
   "input_sources": [
     {
       "source_id": "hokonavi-oedo-shinjuku-network-geojson",
@@ -3232,5 +3322,28 @@
       "source_id": "mlit-walk-network-spec-2024-07",
       "sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4"
     }
-  ]
+  ],
+  "detail": {
+    "store_path": "out/networks/hokonavi-oedo-shinjuku-network-geojson-14ab2b3be2a9.network-detail.json",
+    "sha256": "14ab2b3be2a9453ae4b3aec2140fcf0ea9dab110d30daaa91bd68385c37effd7",
+    "bytes": 112055
+  },
+  "credit": {
+    "attribution_text": "出典：国土交通省「歩行空間ネットワークデータ等整備仕様 平成30年3月」（版 2018-03、https://www.mlit.go.jp/common/001244374.pdf、SHA-256 9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974）／加工して作成 ; 出典：国土交通省「歩行空間ネットワークデータ整備仕様 令和6年7月」（版 2024-07、https://www.mlit.go.jp/sogoseisaku/soukou/content/001757259.pdf、SHA-256 963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4）／加工して作成",
+    "sources": [
+      {
+        "source_id": "mlit-walk-network-spec-2018-03",
+        "attribution_text": "出典：国土交通省「歩行空間ネットワークデータ等整備仕様 平成30年3月」（版 2018-03、https://www.mlit.go.jp/common/001244374.pdf、SHA-256 9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974）／加工して作成",
+        "license_name": "PDL 1.0",
+        "license_url": "https://www.mlit.go.jp/link.html"
+      },
+      {
+        "source_id": "mlit-walk-network-spec-2024-07",
+        "attribution_text": "出典：国土交通省「歩行空間ネットワークデータ整備仕様 令和6年7月」（版 2024-07、https://www.mlit.go.jp/sogoseisaku/soukou/content/001757259.pdf、SHA-256 963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4）／加工して作成",
+        "license_name": "PDL 1.0",
+        "license_url": "https://www.mlit.go.jp/link.html"
+      }
+    ],
+    "classification": "docs/gis/rights/non-poi-literals.md"
+  }
 }

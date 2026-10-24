@@ -10,7 +10,7 @@ import bmesh
 import bpy
 from mathutils import Matrix, Vector
 
-from . import contract, materials
+from . import ao, contract, materials
 from .mesh import Part
 
 
@@ -58,6 +58,9 @@ class Asset:
         self.license = contract.LICENSE
         self.license_spdx = contract.LICENSE_SPDX  # written only when contract.EMBED_SPDX
         self.placement = "free"
+        self.role = None  # station bake role (contract §10); dressing generators set it
+        self.anchor = None  # catalog `anchor` class (contract §10), for the Godot origin check
+        self.ao_res_override = None  # catalog `ao_res`, applied to both tiers
         self.materials = []
         self.parts = []  # (group, Part)
         self.collision = []  # (name, Part)
@@ -65,6 +68,12 @@ class Asset:
         self.light_hints = []
         self.shift = Vector((0.0, 0.0, 0.0))  # applied to everything at build time
         self.pivots = {}  # VIS group -> node origin (for runtime-animated parts)
+
+    def drop_collision(self):
+        """Catalog `"collision": false`: a visual-only GLB, with no COL_* nodes on either tier."""
+        for _, part in self.collision:
+            part.bm.free()
+        self.collision = []
 
     def use_full_twin(self, twin):
         """Mobile: take collision from the same asset generated at full detail, so colliders are
@@ -118,11 +127,25 @@ class Asset:
 
     # ---------------------------------------------------------------- build
 
+    def _fit_lightmap(self, vis_objs, res, nets, min_density):
+        """Lay the lightmap out at `res`, a size up each time the charts do not fit (or, with
+        `min_density`, are sparser than that), never past the full tier's largest map."""
+        while True:
+            try:
+                _lightmap_uvs(vis_objs, res, nets, min_density=min_density)
+                return res
+            except LightmapOverflow as error:
+                if self.ao_res_override or res >= ao.RES_FULL[-1]:
+                    raise
+                print(f"[gteki] {self.id}: AO {res}px: {error}; trying the next size", flush=True)
+                res *= 2
+
     def build(self):
         reset_scene()
         coll = bpy.context.scene.collection
-        # mobile: content textures (sign faces) as JPEG; the palette stays PNG
-        mats = [materials.get(m, self.tex_res, jpeg=self.profile == "mobile") for m in self.materials]
+        # mobile: content as JPEG; palette and declared finish normals keep their PNG bytes
+        normal_png = self.family == "finish" and materials.finish_normal_png(self.params, self.profile)
+        mats = [materials.get(m, self.tex_res, jpeg=self.profile == "mobile", normal_png=normal_png) for m in self.materials]
 
         root = bpy.data.objects.new(self.id, None)
         coll.objects.link(root)
@@ -153,11 +176,71 @@ class Asset:
             vis_objs.append(o)
         if mobile:
             self.export_materials = _fold_to_palette(vis_objs)
-            for o in vis_objs:
-                _lightmap_uvs(o)
         else:
             self.export_materials = list(self.materials)
+            for m in mats:  # two UV layers: bind every texture to the base one (see _bind_uv)
+                _bind_uv(m, "UVMap")
+        if self.role:
+            if self.role not in contract.ROLES:
+                raise ValueError(f"role {self.role!r} must be one of {contract.ROLES}")
+            # custom properties export as node extras: a station reads the root or any VIS_* node
+            root["gteki_role"] = self.role
+            for o in vis_objs:
+                o["gteki_role"] = self.role
         bpy.context.view_layer.update()
+
+        # one shared occlusion map per asset; baked before the colliders exist, so they never occlude
+        # a station catalog may pin the size (`ao_res`) when it places many copies of a long piece
+        self.ao_res = self.ao_res_override or ao.resolution(_gltf_bounds(vis_objs), mobile)
+        # mobile always lays out face nets; full does too when the catalog pins `ao_res`, because Smart UV
+        # Project's 5 px margins would eat a small pinned atlas. A pinned full asset keeps the Smart UV
+        # layout as its reference and is only switched to the face nets when they are no worse.
+        nets = mobile or bool(self.ao_res_override)
+        reference = _lightmap_reference(vis_objs, self.ao_res, bool(self.ao_res_override)) if nets else None
+        # the face nets must at least match the old layout's density; they need not reach a fixed
+        # px/m, or a small asset would grow its map and then fall back to the worse old layout
+        minimum = reference[1] - 0.001 if reference and not self.ao_res_override else 0.0
+        use_reference = False
+        try:
+            self.ao_res = self._fit_lightmap(vis_objs, self.ao_res, nets, minimum)
+        except LightmapOverflow:
+            if reference is None:
+                raise
+            use_reference = True
+        except RuntimeError as error:
+            if reference is not None:
+                use_reference = True
+            elif nets:
+                raise
+            else:
+                # Smart UV Project can leave charts folded over each other after every repair
+                # (a narrow, finely bevelled escalator): only then does full use the face nets
+                print(f"[gteki] {self.id}: {error}; laying the lightmap out as face nets", flush=True)
+                _drop_lightmap(vis_objs)
+                self.ao_res = self._fit_lightmap(vis_objs, self.ao_res, True, 0.0)
+        if reference:
+            use_reference |= self.ao_res > reference[0]
+            if not use_reference:
+                quality = _object_lightmap_density(vis_objs, self.ao_res, with_metrics=True)
+                prior = reference[3]
+                # island count guards mobile's single joined body against fragmentation; full keeps
+                # its parts as separate meshes, where the nets add islands but gain density and fill
+                use_reference = (quality[0] + 0.001 < prior[0] or quality[1] + 1e-5 < prior[1]
+                                 or (mobile and quality[2] > prior[2]))
+            if bpy.context.mode != "OBJECT":
+                bpy.ops.object.mode_set(mode="OBJECT")
+            for obj, mesh in reference[2]:
+                if use_reference:
+                    current, name = obj.data, obj.data.name
+                    obj.data = mesh
+                    bpy.data.meshes.remove(current)
+                    mesh.name = name
+                else:
+                    bpy.data.meshes.remove(mesh)
+            if use_reference:
+                self.ao_res = reference[0]
+                print(f"[gteki] {self.id}: retaining the legacy lightmap to preserve atlas quality and map size", flush=True)
+        self.ao_png = ao.png(*ao.bake(vis_objs, self.ao_res))
 
         col_objs = []
         for name, part in self.collision:
@@ -207,6 +290,7 @@ class Asset:
             "triangles": tris,
             "dimension_basis": self.dimension_basis,
             "placement": self.placement,
+            **({"anchor": self.anchor} if self.anchor else {}),
             "fidelity": contract.FIDELITY,
             "navigation": contract.NAVIGATION,
             "provenance": self.provenance,
@@ -221,6 +305,12 @@ class Asset:
         self.meta = meta
         self.root = root
         return root
+
+    def _texture_plan(self, name):
+        """Manifest plan of one exported material: its own maps plus the shared occlusion map
+        (`occlusion_res` px, whatever the material's `res`)."""
+        plan = _plan(name, self.tex_res) or {"res": 0, "maps": {}}
+        return {"res": plan["res"], "maps": sorted([*plan["maps"], "occlusion"]), "occlusion_res": self.ao_res}
 
     def export(self, out_dir, save_blend_dir=None, jpeg_quality=88):
         if not contract.is_asset_id(self.id):
@@ -251,13 +341,13 @@ class Asset:
             use_selection=False,
             export_draco_mesh_compression_enable=False,
         )
-        _patch_root_extras(path, self.id, self.meta)
+        _patch_root_extras(path, self.id, self.meta, self.ao_png)
         if save_blend_dir:
             os.makedirs(save_blend_dir, exist_ok=True)
             bpy.ops.wm.save_as_mainfile(filepath=os.path.join(save_blend_dir, f"{self.id}.blend"), compress=True)
         with open(path, "rb") as f:
             data = f.read()
-        return {
+        entry = {
             "id": self.id,
             "family": self.family,
             "variant": self.variant,
@@ -267,11 +357,7 @@ class Asset:
             "triangles": self.meta["triangles"],
             "materials": list(self.export_materials),
             # exported texture size and which maps stayed textures (the rest became factors)
-            "textures": {
-                m: {"res": plan["res"], "maps": sorted(plan["maps"])}
-                for m in self.export_materials
-                if (plan := _plan(m, self.tex_res))
-            },
+            "textures": {m: self._texture_plan(m) for m in self.export_materials},
             "bounds_m": self.meta["bounds_m"],
             "dimension_basis": self.dimension_basis,
             "placement": self.placement,
@@ -285,15 +371,21 @@ class Asset:
             "generator": self.generator,
             **contract.rights_fields(self.license_spdx),  # {} while contract.EMBED_SPDX is off
         }
+        if self.role:  # keeps the manifest of role-less assets byte-identical
+            entry["gteki_role"] = self.role
+        if self.anchor:  # likewise for assets without an anchor class
+            entry["anchor"] = self.anchor
+        return entry
 
 
 NEAREST, NEAREST_MIPMAP_NEAREST = 9728, 9984  # glTF sampler filters
 
 
-def _patch_root_extras(path, root_name, meta):
+def _patch_root_extras(path, root_name, meta, ao_png):
     """Replace the exporter's IDProperty-flattened root extras with exact JSON
-    (lists of strings, empty lists and booleans keep their types), and keep
-    nearest-sampled (palette) textures free of mipmaps."""
+    (lists of strings, empty lists and booleans keep their types), keep
+    nearest-sampled (palette) textures free of mipmaps, and attach the asset's
+    baked occlusion map (PNG bytes) to every material as `occlusionTexture`."""
     with open(path, "rb") as f:
         data = f.read()
     magic, version, _ = struct.unpack_from("<4sII", data, 0)
@@ -312,9 +404,24 @@ def _patch_root_extras(path, root_name, meta):
         # through mips, where swatches average into each other (only the palette samples Closest)
         if sampler.get("magFilter") == NEAREST and sampler.get("minFilter") == NEAREST_MIPMAP_NEAREST:
             sampler["minFilter"] = NEAREST
+    blen, btype = struct.unpack_from("<II", rest, 0)
+    if btype != 0x004E4942 or doc["buffers"][0]["byteLength"] > blen:
+        raise ValueError(f"{path}: unexpected BIN chunk")
+    binary = rest[8 : 8 + doc["buffers"][0]["byteLength"]]
+    binary += b"\0" * (-len(binary) % 4)
+    views, images, samplers, textures = (doc.setdefault(k, []) for k in ("bufferViews", "images", "samplers", "textures"))
+    views.append({"buffer": 0, "byteOffset": len(binary), "byteLength": len(ao_png)})
+    binary += ao_png
+    doc["buffers"][0]["byteLength"] = len(binary)
+    images.append({"name": f"{root_name}_ao", "mimeType": "image/png", "bufferView": len(views) - 1})
+    samplers.append({"magFilter": 9729, "minFilter": 9987, "wrapS": 33071, "wrapT": 33071})  # linear + mips, clamped
+    textures.append({"sampler": len(samplers) - 1, "source": len(images) - 1})
+    for material in doc["materials"]:
+        material["occlusionTexture"] = {"index": len(textures) - 1, "texCoord": 1}
+    binary += b"\0" * (-len(binary) % 4)
     js = json.dumps(doc, separators=(",", ":"), ensure_ascii=False).encode()
     js += b" " * (-len(js) % 4)
-    body = struct.pack("<II", len(js), 0x4E4F534A) + js + rest
+    body = struct.pack("<II", len(js), 0x4E4F534A) + js + struct.pack("<II", len(binary), 0x004E4942) + binary
     with open(path, "wb") as f:
         f.write(struct.pack("<4sII", b"glTF", 2, 12 + len(body)) + body)
 
@@ -376,77 +483,442 @@ def _bind_uv(mat, uv_name):
             nt.links.new(uvn.outputs["UV"], node.inputs["Vector"])
 
 
-def _lightmap_uvs(obj):
-    """Mobile: non-overlapping lightmap UVs in a second layer (exported as TEXCOORD_1).
-    Smart UV Project keeps connected charts, so vertices stay shared and
-    lightmaps get few seams."""
-    me = obj.data
-    base = me.uv_layers[0]
-    lm = me.uv_layers.new(name="UVLightmap")
-    me.uv_layers.active = lm
+def _lightmap_uvs(objs, res, mobile=False, min_density=0.0):
+    """Non-overlapping lightmap UVs in a second layer (exported as TEXCOORD_1), laid out jointly
+    for every visual object: one atlas, because the asset's occlusion map is shared by all of
+    them. Mobile conformal face nets keep connected pieces together without projecting their
+    side faces edge-on; full keeps its original Smart UV Project layout."""
+    margin = ao.MARGIN_PX / res
     view_layer = bpy.context.view_layer
+    for o in objs:
+        o.data.uv_layers.active = o.data.uv_layers.new(name="UVLightmap")
     for o in view_layer.objects:
-        o.select_set(o is obj)
-    view_layer.objects.active = obj
+        o.select_set(o in objs)
+    view_layer.objects.active = objs[0]
     bpy.ops.object.mode_set(mode="EDIT")
     bpy.ops.mesh.select_all(action="SELECT")
-    bpy.ops.uv.smart_project(angle_limit=math.radians(66), island_margin=0.01, area_weight=0.0,
-                             correct_aspect=True, scale_to_bounds=True)
-    _separate_overlaps(me, "UVLightmap")  # lm is invalid once in edit mode
-    bpy.ops.object.mode_set(mode="OBJECT")
-    obj.select_set(False)
-    me.uv_layers.active = base
-    base.active_render = True
-    _quantize_uvs(me)
-    bm = bmesh.new()  # snapping to the grid must not create an overlap either
-    bm.from_mesh(me)
     try:
-        if _lightmap_overlaps(bm, bm.loops.layers.uv["UVLightmap"])[0]:
-            raise RuntimeError(f"{me.name}: lightmap UVs overlap after quantization")
+        _unwrap_lightmap(objs, margin, mobile, min_density)
+    except LightmapOverflow:  # leave the objects as they were, for a retry at another size
+        bpy.ops.object.mode_set(mode="OBJECT")
+        for o in objs:
+            o.data.uv_layers.remove(o.data.uv_layers["UVLightmap"])
+        raise
+    bpy.ops.object.mode_set(mode="OBJECT")
+    for o in objs:
+        o.select_set(False)
+        base = o.data.uv_layers[0]
+        o.data.uv_layers.active = base
+        base.active_render = True
+        _quantize_uvs(o.data)
+    bms = []
+    try:  # snapping to the grid must not create an overlap either, nor leave the unit square
+        for o in objs:
+            bm = bmesh.new()
+            bm.from_mesh(o.data)
+            bms.append(bm)
+            uv = bm.loops.layers.uv["UVLightmap"]
+            if any(not -1e-6 <= c <= 1 + 1e-6 for f in bm.faces for loop in f.loops for c in loop[uv].uv):
+                raise RuntimeError(f"{o.data.name}: lightmap UVs leave the unit square")
+        if any(_lightmap_overlaps(bms)[0]):
+            raise RuntimeError("lightmap UVs overlap after quantization")
     finally:
-        bm.free()
+        for bm in bms:
+            bm.free()
 
 
-def _lightmap_overlaps(bm, uv):
-    """Faces whose lightmap triangles overlap, and the faces that fold over themselves.
-    Uses Blender's own tessellation, which the glTF exporter writes."""
-    from validate_glb import uv_overlaps  # stdlib; build.py puts tools/blender on sys.path
+def _unwrap_lightmap(objs, margin, mobile=False, min_density=0.0):
+    if mobile:
+        bms = [bmesh.from_edit_mesh(o.data) for o in objs]
+        max_span = math.sqrt(2 * sum(f.calc_area() for bm in bms for f in bm.faces))
+        for o, bm in zip(objs, bms):
+            _lightmap_seams(bm, max_span)
+            bmesh.update_edit_mesh(o.data)
+        bpy.ops.uv.unwrap(method="CONFORMAL", fill_holes=False, correct_aspect=True, margin=0.0)
+        bpy.ops.uv.average_islands_scale()
+    else:
+        bpy.ops.uv.smart_project(angle_limit=math.radians(66), island_margin=0.0, area_weight=0.0,
+                                 correct_aspect=True, scale_to_bounds=False)
+    _pack(objs, margin, mobile)
+    _separate_overlaps(objs, margin, mobile=mobile)  # the layers are invalid once in edit mode
+    if min_density:
+        median = _lightmap_density([bmesh.from_edit_mesh(o.data) for o in objs], ao.MARGIN_PX / margin)
+        if median < min_density:
+            raise LightmapOverflow(f"lightmap density p50 {median:.2f} px/m is below {min_density:g} px/m")
+
+
+def _lightmap_density(bms, res, with_metrics=False):
+    from validate_glb import _area, VISIBLE_GEOMETRY_M2
+
+    samples, parents, seen = [], [], {}
+    fill, islands = 0.0, 0
+
+    def root(i):
+        while parents[i] != i:
+            parents[i] = parents[parents[i]]
+            i = parents[i]
+        return i
+
+    for bi, bm in enumerate(bms):
+        uv = bm.loops.layers.uv["UVLightmap"]
+        for tri in bm.calc_loop_triangles():
+            coords = tuple(tuple(loop[uv].uv) for loop in tri)
+            uv_area = abs(_area(coords))
+            fill += uv_area
+            if with_metrics:
+                index = len(parents)
+                parents.append(index)
+                islands += 1
+                for k in range(3):
+                    key = bi, tuple(sorted((coords[k], coords[(k + 1) % 3])))
+                    if key in seen:
+                        a, b = root(index), root(seen[key])
+                        if a != b:
+                            parents[a] = b
+                            islands -= 1
+                    else:
+                        seen[key] = index
+            p, q, r = (loop.vert.co for loop in tri)
+            area = (q - p).cross(r - p).length / 2
+            if area >= VISIBLE_GEOMETRY_M2:
+                samples.append((res * math.sqrt(uv_area / area), area))
+    halfway = sum(area for _, area in samples) / 2
+    covered, median = 0.0, 0.0
+    for median, area in sorted(samples):
+        covered += area
+        if covered >= halfway:
+            break
+    return (median, fill, islands) if with_metrics else median
+
+
+def _object_lightmap_density(objs, res, with_metrics=False):
+    bms = []
+    try:
+        for obj in objs:
+            bm = bmesh.new()
+            bm.from_mesh(obj.data)
+            bms.append(bm)
+        return _lightmap_density(bms, res, with_metrics)
+    finally:
+        for bm in bms:
+            bm.free()
+
+
+def _lightmap_reference(objs, res, fixed):
+    """Measure the old mobile layout on disposable meshes, without baking or changing UV0."""
+    originals = [(obj, obj.data) for obj in objs]
+    copies = [(obj, obj.data.copy()) for obj in objs]
+    keep = False
+    try:
+        for obj, mesh in copies:
+            obj.data = mesh
+        while True:
+            try:
+                _lightmap_uvs(objs, res)
+                break
+            except LightmapOverflow:
+                if fixed or res >= ao.RES_FULL[-1]:
+                    return None
+                res *= 2
+        quality = _object_lightmap_density(objs, res, with_metrics=True)
+        keep = True
+        return res, quality[0], copies, quality
+    except RuntimeError:  # an invalid legacy unwrap must not prevent a repaired mobile build
+        return None
+    finally:
+        if bpy.context.mode != "OBJECT":
+            bpy.ops.object.mode_set(mode="OBJECT")
+        for obj, mesh in originals:
+            obj.data = mesh
+        if not keep:
+            for _, mesh in copies:
+                bpy.data.meshes.remove(mesh)
+
+
+def _lightmap_seams(bm, max_span):
+    """Grow non-overlapping face nets, keeping long, flat connections first."""
+    import heapq
+    from validate_glb import _area, _clip
 
     bm.faces.index_update()
+    bm.edges.index_update()
     bm.faces.ensure_lookup_table()
-    loop_tris = bm.calc_loop_triangles()
-    tris = [tuple(tuple(loop[uv].uv) for loop in t) for t in loop_tris]
-    owner = [t[0].face.index for t in loop_tris]
-    pairs = uv_overlaps(tris)
-    bad = sorted({owner[i] for pair in pairs for i in pair})
-    folded = sorted({owner[a] for a, b in pairs if owner[a] == owner[b]})
-    return bad, folded
+    bm.edges.ensure_lookup_table()
+    triangles = [[] for _ in bm.faces]
+    for tri in bm.calc_loop_triangles():
+        triangles[tri[0].face.index].append(tri)
+    remaining = set(bm.faces)
+    for edge in bm.edges:
+        edge.seam = True
+
+    def project(face, edge, a, b):
+        p, q = (v.co for v in edge.verts)
+        u = (q - p).normalized()
+        v = face.normal.cross(u).normalized()
+        x = (b - a).normalized()
+        y = Vector((-x.y, x.x))
+        coords = {}
+        for loop in face.loops:
+            d = loop.vert.co - p
+            coords[loop] = a + x * d.dot(u) + y * d.dot(v)
+            if loop.vert == edge.verts[0]:
+                coords[loop] = a.copy()
+            elif loop.vert == edge.verts[1]:
+                coords[loop] = b.copy()
+        return coords
+
+    for seed in sorted(bm.faces, key=lambda f: (-round(f.calc_area(), 6), f.index)):
+        if seed not in remaining:
+            continue
+        edge = max(seed.edges, key=lambda e: (round(e.calc_length(), 6), -e.index))
+        pending = [(0, 0, edge.index, seed.index, None)]
+        coords, occupied = {}, []
+        area, bounds = 0.0, None
+        while pending:
+            _, _, ei, fi, parent = heapq.heappop(pending)
+            face = bm.faces[fi]
+            if face not in remaining:
+                continue
+            edge = bm.edges[ei]
+            if parent is None:
+                a, b = Vector((0.0, 0.0)), Vector((edge.calc_length(), 0.0))
+            else:
+                loops = {loop.vert: loop for loop in bm.faces[parent].loops}
+                a, b = (coords[loops[v]] for v in edge.verts)
+            candidate = project(face, edge, a, b)
+            tris = [tuple(tuple(candidate[loop]) for loop in tri) for tri in triangles[fi]]
+            tris = [tri if _area(tri) >= 0 else tri[::-1] for tri in tris]
+            boxes = [(min(p[0] for p in tri), min(p[1] for p in tri),
+                      max(p[0] for p in tri), max(p[1] for p in tri)) for tri in tris]
+            new_area = area + sum(abs(_area(tri)) for tri in tris)
+            all_boxes = boxes + ([bounds] if bounds else [])
+            box = (min(b[0] for b in all_boxes), min(b[1] for b in all_boxes),
+                   max(b[2] for b in all_boxes), max(b[3] for b in all_boxes))
+            # Bent tube strips can enclose enormous empty regions. Cut those nets before
+            # their gutters consume the atlas; ordinary box nets stay connected.
+            if parent is not None and new_area < 0.35 * (box[2] - box[0]) * (box[3] - box[1]):
+                continue
+            # A dense but very long rim can set the scale of the entire square atlas.
+            if parent is not None and max(box[2] - box[0], box[3] - box[1]) > max_span:
+                continue
+            if any(x[0] < y[2] and y[0] < x[2] and x[1] < y[3] and y[1] < x[3]
+                   and abs(_area(_clip(t, s))) > 1e-9
+                   for t, x in zip(tris, boxes) for s, y in occupied):
+                continue
+            remaining.remove(face)
+            coords.update(candidate)
+            occupied.extend(zip(tris, boxes))
+            area, bounds = new_area, box
+            if parent is not None:
+                edge.seam = False
+            for e in face.edges:
+                if not e.is_manifold:
+                    continue
+                other = next(f for f in e.link_faces if f != face)
+                if other in remaining:
+                    heapq.heappush(pending, (-round(face.normal.dot(other.normal), 5),
+                                            -round(e.calc_length(), 6), e.index, other.index, fi))
 
 
-def _separate_overlaps(me, layer, attempts=4):
-    """Smart UV Project can fold a chart over itself. Detach every face that overlaps another
+def _drop_lightmap(objs):
+    """Undo a failed lightmap layout so it can be laid out again."""
+    if bpy.context.mode != "OBJECT":
+        bpy.ops.object.mode_set(mode="OBJECT")
+    for o in objs:
+        layer = o.data.uv_layers.get("UVLightmap")
+        if layer:
+            o.data.uv_layers.remove(layer)
+        o.data.uv_layers.active = o.data.uv_layers[0]
+
+
+class LightmapOverflow(RuntimeError):
+    """The map cannot fit the charts with the requested margin or texel density."""
+
+
+def _pack(objs, margin, mobile=False):
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.uv.select_all(action="SELECT")
+    if not mobile:
+        bpy.ops.uv.pack_islands(rotate=False, margin=margin, margin_method="FRACTION")
+        return
+    # FRACTION pads both islands: half the requested gap on each boundary.
+    bpy.ops.uv.pack_islands(rotate=True, rotate_method="ANY", shape_method="AABB",
+                           margin=margin / 2, margin_method="FRACTION")
+    _pack_rectangles(objs, margin)
+
+
+def _pack_rectangles(objs, margin):
+    """Improve on Blender's placement when padded chart rectangles can fit at a larger scale."""
+    from .uvpack import pack_rectangles
+
+    charts = []
+    for o in sorted(objs, key=lambda o: o.name):
+        bm = bmesh.from_edit_mesh(o.data)
+        bm.faces.index_update()
+        bm.edges.index_update()
+        uv = bm.loops.layers.uv["UVLightmap"]
+        parents, seen = list(range(len(bm.faces))), {}
+
+        def root(i):
+            while parents[i] != i:
+                parents[i] = parents[parents[i]]
+                i = parents[i]
+            return i
+
+        for face in bm.faces:
+            for loop in face.loops:
+                a, b = tuple(loop[uv].uv), tuple(loop.link_loop_next[uv].uv)
+                if loop.vert != loop.edge.verts[0]:
+                    a, b = b, a
+                key = loop.edge.index, a, b
+                if key in seen:
+                    parents[root(face.index)] = root(seen[key])
+                else:
+                    seen[key] = face.index
+        groups = {}
+        for face in bm.faces:
+            groups.setdefault(root(face.index), []).extend(face.loops)
+        for index in sorted(groups):
+            loops = groups[index]
+            x, y = (min(loop[uv].uv[k] for loop in loops) for k in (0, 1))
+            w, h = (max(loop[uv].uv[k] for loop in loops) - low for k, low in ((0, x), (1, y)))
+            charts.append((uv, loops, x, y, w, h))
+    scale, placements = pack_rectangles([(c[4], c[5]) for c in charts], margin)
+    if scale <= 1.0001:  # retain Blender's layout unless rectangle placement increases fill
+        return
+    for index, x, y, rotate in placements:
+        uv, loops, lx, ly, w, h = charts[index]
+        for loop in loops:
+            u, v = loop[uv].uv.x - lx, loop[uv].uv.y - ly
+            if rotate:
+                u, v = v, w - u
+            loop[uv].uv = (x + u * scale, y + v * scale)
+    for o in objs:
+        bmesh.update_edit_mesh(o.data)
+
+
+def _lightmap_overlaps(bms):
+    """Per bmesh, the faces whose lightmap triangles overlap another's (in any of `bms`, which
+    share one atlas) and the faces that fold over themselves. Uses Blender's own tessellation,
+    which the glTF exporter writes."""
+    from validate_glb import uv_overlaps  # stdlib; build.py puts tools/blender on sys.path
+
+    tris, owner = [], []
+    for k, bm in enumerate(bms):
+        uv = bm.loops.layers.uv["UVLightmap"]
+        bm.faces.index_update()
+        bm.faces.ensure_lookup_table()
+        for t in bm.calc_loop_triangles():
+            tris.append(tuple(tuple(loop[uv].uv) for loop in t))
+            owner.append((k, t[0].face.index))
+    bad, folded = [set() for _ in bms], [set() for _ in bms]
+    for a, b in uv_overlaps(tris):
+        for k, face in (owner[a], owner[b]):
+            bad[k].add(face)
+        if owner[a] == owner[b]:
+            folded[owner[a][0]].add(owner[a][1])
+    return [sorted(x) for x in bad], [sorted(x) for x in folded]
+
+
+def _separate_overlaps(objs, margin, attempts=4, mobile=False):
+    """Unwrapping or quantization can fold a chart over itself. Detach every face that overlaps another
     into its own chart (splitting faces that fold over themselves) and repack, until nothing
     overlaps (validate_glb checks the export)."""
     for attempt in range(attempts + 1):
-        bm = bmesh.from_edit_mesh(me)
-        uv = bm.loops.layers.uv[layer]
-        bad, folded = _lightmap_overlaps(bm, uv)
-        if not bad:
+        bms = [bmesh.from_edit_mesh(o.data) for o in objs]
+        for o, bm in zip(objs, bms):  # check the coordinates _quantize_uvs will export: snapping
+            _snap_lightmap(bm)        # can make bevel slivers overlap that did not before
+            bmesh.update_edit_mesh(o.data)
+        bad, folded = _lightmap_overlaps(bms)
+        collapsed = _collapsed_lightmap_faces(bms)
+        if any(collapsed) and attempt < attempts:  # a sliver projected edge-on: unwrap it alone
+            _reproject_faces(objs, bms, collapsed)
+            _pack(objs, margin, mobile)
+            continue
+        outside = any(not -1e-6 <= c <= 1 + 1e-6 for bm in bms for f in bm.faces
+                      for loop in f.loops for c in loop[bm.loops.layers.uv["UVLightmap"]].uv)
+        if not any(bad) and not outside and not any(collapsed):
             return
         if attempt == attempts:
             break
-        if folded:  # its triangles become faces of their own; detached on the next pass
-            bmesh.ops.triangulate(bm, faces=[bm.faces[i] for i in folded], quad_method="FIXED", ngon_method="EAR_CLIP")
-            bmesh.update_edit_mesh(me)
+        if not any(bad):  # a repack left charts parked outside the unit square: pack again
+            _pack(objs, margin, mobile)
             continue
-        for n, index in enumerate(bad):  # its own chart, outside the unit square until repacked
-            for loop in bm.faces[index].loops:
-                loop[uv].uv += Vector((2.0 + 2.0 * n, 0.0))
-        bmesh.update_edit_mesh(me)
-        bpy.ops.mesh.select_all(action="SELECT")
-        bpy.ops.uv.select_all(action="SELECT")
-        bpy.ops.uv.pack_islands(rotate=False, margin=0.01)
-    raise RuntimeError(f"{me.name}: lightmap UVs still overlap after {attempts} repairs")
+        if any(folded):  # its triangles become faces of their own; detached on the next pass
+            for o, bm, faces in zip(objs, bms, folded):
+                if faces:
+                    bmesh.ops.triangulate(bm, faces=[bm.faces[i] for i in faces], quad_method="FIXED", ngon_method="EAR_CLIP")
+                    bmesh.update_edit_mesh(o.data)
+            continue
+        n = 0
+        for o, bm, faces in zip(objs, bms, bad):
+            uv = bm.loops.layers.uv["UVLightmap"]
+            for index in faces:  # its own chart, outside the unit square until repacked
+                for loop in bm.faces[index].loops:
+                    loop[uv].uv += Vector((2.0 + 2.0 * n, 0.0))
+                n += 1
+            bmesh.update_edit_mesh(o.data)
+        _pack(objs, margin, mobile)
+    if not any(bad):
+        raise LightmapOverflow(f"lightmap charts do not fit the unit square at margin {margin:g}")
+    raise RuntimeError(f"lightmap UVs still overlap after {attempts} repairs")
+
+
+def _collapsed_lightmap_faces(bms):
+    """Per bmesh, the faces with a lightmap triangle that validate_glb would call collapsed:
+    visible geometry whose chart squeezed it to a point or a line."""
+    from validate_glb import COLLAPSED_UV_AREA, VISIBLE_GEOMETRY_M2
+
+    out = []
+    for bm in bms:
+        uv = bm.loops.layers.uv["UVLightmap"]
+        bm.faces.index_update()
+        faces = set()
+        for t in bm.calc_loop_triangles():
+            (a, b, c) = (loop[uv].uv for loop in t)
+            uv_area = abs((b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y)) / 2
+            p, q, r = (loop.vert.co for loop in t)
+            if uv_area <= COLLAPSED_UV_AREA and (q - p).cross(r - p).length / 2 >= VISIBLE_GEOMETRY_M2:
+                faces.add(t[0].face.index)
+        out.append(sorted(faces))
+    return out
+
+
+def _reproject_faces(objs, bms, faces_per_bm):
+    """Give each face its own chart: projected onto its own plane at the atlas's mean texel
+    density, parked outside the unit square until the next pack."""
+    uv_area = mesh_area = 0.0
+    for bm in bms:
+        uv = bm.loops.layers.uv["UVLightmap"]
+        for t in bm.calc_loop_triangles():
+            (a, b, c) = (loop[uv].uv for loop in t)
+            uv_area += abs((b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y)) / 2
+            p, q, r = (loop.vert.co for loop in t)
+            mesh_area += (q - p).cross(r - p).length / 2
+    scale = math.sqrt(uv_area / mesh_area) if mesh_area > 0 else 1.0
+    n = 0
+    for o, bm, faces in zip(objs, bms, faces_per_bm):
+        uv = bm.loops.layers.uv["UVLightmap"]
+        bm.faces.ensure_lookup_table()
+        for index in faces:
+            face = bm.faces[index]
+            origin = face.verts[0].co
+            u = (face.verts[1].co - origin).normalized()
+            v = face.normal.cross(u).normalized()
+            for loop in face.loops:
+                d = loop.vert.co - origin
+                loop[uv].uv = Vector((2.0 + 2.0 * n + d.dot(u) * scale, d.dot(v) * scale))
+            n += 1
+        bmesh.update_edit_mesh(o.data)
+
+
+def _snap_lightmap(bm, step=None):
+    """The `_quantize_uvs` grid, applied to the lightmap layer of an edit-mode bmesh."""
+    step = step or LIGHTMAP_UV_STEP
+    uv = bm.loops.layers.uv["UVLightmap"]
+    for f in bm.faces:
+        for loop in f.loops:
+            loop[uv].uv = Vector((round(loop[uv].uv.x / step) * step, round(loop[uv].uv.y / step) * step))
 
 
 def _part_object(part, mats, coll):
@@ -518,15 +990,19 @@ def _join(objs, name):
     return target
 
 
+LIGHTMAP_UV_STEP = 1.0 / 1048576.0  # 2^-20: a long asset's thin slivers keep their area; still 16 ULPs below 1
+
+
 def _quantize_uvs(me, step=1.0 / 65536.0):
     """Bevel UV interpolation can differ by 1 ULP between runs (threading);
-    snapping to a fine grid makes exports byte-reproducible."""
+    snapping to a fine grid makes exports byte-reproducible. The lightmap layer uses a finer grid."""
     import numpy as np
 
     for layer in me.uv_layers:
+        grid = LIGHTMAP_UV_STEP if layer.name == "UVLightmap" else step
         buf = np.empty(len(layer.data) * 2, dtype=np.float32)
         layer.data.foreach_get("uv", buf)
-        layer.data.foreach_set("uv", (np.round(buf / step) * step).astype(np.float32))
+        layer.data.foreach_set("uv", (np.round(buf / grid) * grid).astype(np.float32))
 
 
 def _tri_count(obj):

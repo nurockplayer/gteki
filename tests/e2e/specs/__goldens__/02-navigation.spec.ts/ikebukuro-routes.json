@@ -8,28 +8,30 @@
     "note": "Central Passage east, PR #14 evidence route",
     "result": {
       "ok": true,
-      "lengthM": 198.6,
-      "seconds": 246,
+      "lengthM": 199.1,
+      "seconds": 207,
       "floorChanges": 1,
       "crossesFareBoundary": false,
       "synthetic": false,
       "unknowns": [
-        "hours×9",
+        "hours×11",
         "wheelchair×9"
       ],
+      "stale": true,
       "sources": 3,
-      "nodes": 10,
+      "nodes": 12,
       "modes": [
         "walk",
         "stairs"
       ],
       "instructions": [
         "Start",
-        "Go straight ~7 m",
-        "Turn left, ~72 m. After ~54 m, continue straight through the junction.",
+        "Go ~7 m",
+        "Turn left, ~72 m. After ~55 m, continue straight through the junction.",
         "Turn right, ~16 m",
-        "Turn left, ~34 m. After ~20 m, continue straight through the junction.",
+        "Turn left, ~57 m. After ~20 m, continue straight through the junction. After ~34 m, continue straight through the junction.",
         "Take the stairs down",
+        "Go straight ~11 m",
         "Take the stairs up to street level",
         "Arrive at destination"
       ],
@@ -41,7 +43,9 @@
         ">c_n__c_e2",
         ">c_e2__e_27j",
         ">e_27j__e_hall",
-        ">e_hall__e_low",
+        ">e_hall__e_hall_stair_top",
+        ">e_hall_stair_top__e_hall_stair_foot",
+        ">e_hall_stair_foot__e_low",
         ">e_low__x35"
       ]
     }
@@ -64,14 +68,15 @@
         "hours×3",
         "wheelchair×3"
       ],
-      "sources": 3,
+      "stale": true,
+      "sources": 4,
       "nodes": 4,
       "modes": [
         "walk"
       ],
       "instructions": [
         "Start",
-        "Go straight ~20 m",
+        "Go ~20 m",
         "Turn left, ~152 m",
         "Turn right, ~14 m",
         "Stairs to Exit 4 start here"
@@ -92,16 +97,17 @@
     "note": "JR east side to North Passage",
     "result": {
       "ok": true,
-      "lengthM": 187.4,
+      "lengthM": 187.5,
       "seconds": 169,
       "floorChanges": 1,
       "crossesFareBoundary": false,
       "synthetic": false,
       "unknowns": [
         "hours×8",
-        "wheelchair×8"
+        "wheelchair×7"
       ],
-      "sources": 3,
+      "stale": true,
+      "sources": 4,
       "nodes": 9,
       "modes": [
         "walk",
@@ -109,9 +115,9 @@
       ],
       "instructions": [
         "Start",
-        "Go straight ~11 m",
+        "Go ~11 m",
         "Turn right, ~11 m",
-        "Turn right, ~72 m. After ~54 m, continue straight through the junction.",
+        "Turn right, ~72 m. After ~55 m, continue straight through the junction.",
         "Turn left, ~82 m",
         "Take the stairs up to street level",
         "Arrive at destination"
@@ -137,15 +143,16 @@
     "note": "South Gate to West Exit hall U-stair",
     "result": {
       "ok": true,
-      "lengthM": 287.7,
-      "seconds": 269,
+      "lengthM": 288.2,
+      "seconds": 270,
       "floorChanges": 1,
       "crossesFareBoundary": false,
       "synthetic": false,
       "unknowns": [
         "hours×6",
-        "wheelchair×6"
+        "wheelchair×5"
       ],
+      "stale": true,
       "sources": 3,
       "nodes": 7,
       "modes": [
@@ -154,11 +161,11 @@
       ],
       "instructions": [
         "Start",
-        "Go straight ~10 m",
+        "Go ~10 m",
         "Turn right, ~49 m",
         "Turn right, ~152 m",
         "Turn right, ~20 m",
-        "Turn left, ~31 m",
+        "Turn left, ~32 m",
         "Turn right, then take the stairs up to street level",
         "Arrive at destination"
       ],
@@ -181,15 +188,16 @@
     "note": "South-east corridor",
     "result": {
       "ok": true,
-      "lengthM": 373.4,
+      "lengthM": 373.5,
       "seconds": 383,
       "floorChanges": 1,
       "crossesFareBoundary": false,
       "synthetic": false,
       "unknowns": [
         "hours×11",
-        "wheelchair×11"
+        "wheelchair×8"
       ],
+      "stale": true,
       "sources": 3,
       "nodes": 12,
       "modes": [
@@ -198,8 +206,8 @@
       ],
       "instructions": [
         "Start",
-        "Continue ~11 m",
-        "Turn right, ~54 m",
+        "Go ~11 m",
+        "Turn right, ~55 m",
         "Turn right, ~125 m. After ~13 m, continue straight through the junction. After ~98 m, keep left at the junction.",
         "Take the stairs up",
         "Go straight ~31 m",
@@ -232,15 +240,16 @@
     "note": "West stair foot across the station to the east",
     "result": {
       "ok": true,
-      "lengthM": 345.3,
-      "seconds": 306,
+      "lengthM": 345.4,
+      "seconds": 307,
       "floorChanges": 1,
       "crossesFareBoundary": false,
       "synthetic": false,
       "unknowns": [
         "hours×15",
-        "wheelchair×15"
+        "wheelchair×14"
       ],
+      "stale": true,
       "sources": 3,
       "nodes": 16,
       "modes": [
@@ -248,11 +257,11 @@
         "stairs"
       ],
       "instructions": [
-        "Start",
-        "Go straight ~7 m",
+        "Start at the foot of the Exit 13 stairs (the stairs are not part of this route)",
+        "Go ~7 m",
         "Turn left, ~33 m. After ~13 m, continue straight through the junction.",
-        "Turn right, ~112 m. After ~100 m, keep left at Central Passage.",
-        "Turn right, ~72 m. After ~54 m, continue straight through the junction.",
+        "Turn right, ~112 m. After ~100 m, keep left at the junction.",
+        "Turn right, ~72 m. After ~55 m, continue straight through the junction.",
         "Turn right, ~16 m",
         "Turn left, ~34 m. After ~20 m, continue straight through the junction.",
         "Turn right, ~55 m",
@@ -287,15 +296,16 @@
     "note": "North-east to north-west, longest cross-station",
     "result": {
       "ok": true,
-      "lengthM": 420.6,
-      "seconds": 408,
+      "lengthM": 421.3,
+      "seconds": 409,
       "floorChanges": 2,
       "crossesFareBoundary": false,
       "synthetic": false,
       "unknowns": [
         "hours×14",
-        "wheelchair×14"
+        "wheelchair×11"
       ],
+      "stale": true,
       "sources": 3,
       "nodes": 15,
       "modes": [
@@ -309,7 +319,7 @@
         "Continue ~28 m",
         "Turn left, ~82 m",
         "Turn right, ~72 m. After ~18 m, continue straight through the junction.",
-        "Turn left, ~143 m. After ~11 m, continue straight past Central Passage. After ~112 m, continue straight past West Exit (B1).",
+        "Turn left, ~144 m. After ~11 m, continue straight through the junction. After ~112 m, continue straight through the junction.",
         "Turn left, ~46 m",
         "Turn left, then take the stairs up to street level",
         "Arrive at destination"
@@ -341,7 +351,7 @@
     "result": {
       "ok": false,
       "reason": "unknown_goal",
-      "uiCard": "No verified route to showThe destination has no verified entrance."
+      "uiCard": "No route confirmed in the surveyed dataThe destination has no entrance confirmed in the surveyed data."
     }
   },
   "IN2": {
@@ -356,7 +366,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showVerified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet."
+      "uiCard": "No route confirmed in the surveyed dataNo route confirmed in the surveyed data with \"Only places with listed hours\" on. This station has no opening-hours data.Turn off \"Only places with listed hours\""
     }
   },
   "IN3": {
@@ -371,7 +381,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showVerified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet."
+      "uiCard": "No route confirmed in the surveyed dataNo route confirmed in the surveyed data with \"Step-free\" on.Turn off \"Step-free\""
     }
   },
   "IN4": {
@@ -383,7 +393,7 @@
     "result": {
       "ok": false,
       "reason": "start_equals_goal",
-      "uiCard": "No verified route to showStart and destination are the same."
+      "uiCard": "No route confirmed in the surveyed dataStart and destination are the same."
     }
   },
   "IN5": {
@@ -395,7 +405,7 @@
     "result": {
       "ok": false,
       "reason": "unknown_start",
-      "uiCard": "No verified route to showThe start is not on the network."
+      "uiCard": "No route confirmed in the surveyed dataThe start is not on the network."
     }
   }
 }

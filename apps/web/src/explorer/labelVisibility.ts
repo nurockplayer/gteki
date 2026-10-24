@@ -1,8 +1,9 @@
 /**
  * POI label visibility, kept free of three.js so it can be unit-tested.
  *
- * A label is "shown", "faded" (occluded by scene geometry, or a selected label on another floor) or
- * "hidden" (an unselected label on another floor than the walker's). Occlusion is a raycast per label,
+ * A label is "shown", "faded" (occluded by nearby scene geometry, or a selected label on another floor) or
+ * "hidden" (an unselected label on another floor than the walker's, behind a sign or with a sign backdrop, or occluded and far).
+ * Occlusion is a raycast per label,
  * spread over frames by `OcclusionSweep` so phones pay only a few rays per frame, and none at rest.
  */
 
@@ -16,14 +17,26 @@ export function onFocusFloor(groundY: number, focusY: number | null): boolean {
   return focusY === null || Math.abs(groundY - focusY) <= FLOOR_BAND_M;
 }
 
+/** What stands between the camera and a label: nothing, scene geometry (walls, floors) or a sign. */
+export type LabelOcclusion = "none" | "geometry" | "sign";
+
+/** A sign this close behind a label's anchor (or within its 0.3 m anchor margin) is its backdrop, hiding the label as if behind it. */
+export const SIGN_BACKDROP_M = 0.5;
+
+/** An unselected label occluded and farther than this (m) from the camera hides rather than fades: far faded labels only add clutter. */
+export const OCCLUDED_FADE_MAX_M = 40;
+
 /**
- * Origin and destination labels stay findable like the x-ray route: occlusion never fades them, and on
- * another floor they fade instead of hiding.
+ * Origin and destination labels stay findable like the x-ray route: occlusion never fades or hides them,
+ * and on another floor they fade instead of hiding. Any other label behind a sign hides (the sign already
+ * carries wayfinding text, so a faded label on its face is clutter); one behind geometry fades while within
+ * OCCLUDED_FADE_MAX_M of the camera and hides beyond it, except in overview where it always fades.
  */
-export function labelState(l: { occluded: boolean; onFocusFloor: boolean; selected: boolean }): LabelState {
+export function labelState(l: { occluded: LabelOcclusion; distance: number; onFocusFloor: boolean; selected: boolean; overview: boolean }): LabelState {
   if (l.selected) return l.onFocusFloor ? "shown" : "faded";
   if (!l.onFocusFloor) return "hidden";
-  return l.occluded ? "faded" : "shown";
+  if (l.occluded === "none") return "shown";
+  return l.occluded === "sign" || (!l.overview && l.distance > OCCLUDED_FADE_MAX_M) ? "hidden" : "faded";
 }
 
 /**

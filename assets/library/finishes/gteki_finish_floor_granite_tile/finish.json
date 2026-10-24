@@ -1,0 +1,83 @@
+{
+  "format": "gteki-finish/0.1",
+  "id": "gteki_finish_floor_granite_tile",
+  "kit_version": "0.1.0",
+  "tier": "full",
+  "role": "floor",
+  "gteki_role": "floor",
+  "facility": [
+    "paid_area",
+    "gate_surround"
+  ],
+  "use": "paid-side floor, gate surrounds and the 0.30 m border band",
+  "pattern": "dark granite tile 600 x 300 mm (u x v), 3 mm grout",
+  "source_material": "gteki_floor_granite_dark",
+  "repeat_m": [
+    1.2,
+    1.2
+  ],
+  "uv": {
+    "u": "east",
+    "v": "north",
+    "surface": "floor, in the surface plane",
+    "origin": "a repeat starts where u and v are whole multiples of repeat_m from the surface origin"
+  },
+  "maps": {
+    "albedo": {
+      "file": "albedo.jpg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 143801,
+      "sha256": "9d74e86c67a05839e91f27b850e3992869bf00bfa90265a02a7030b1ec41daa2"
+    },
+    "orm": {
+      "file": "orm.jpg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 70030,
+      "sha256": "aa0982fd670978fe55fa271dae5f488e6ca5990ddf09b25b5f0ddcb3b22fb107"
+    },
+    "normal": {
+      "file": "normal.jpg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 38567,
+      "sha256": "cc926e0f29c58f7049e7fedf0b1b43e2104307deaacb839214b257b4f4a3212b"
+    }
+  },
+  "factors": {
+    "baseColorFactor": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "roughnessFactor": 1.0,
+    "metallicFactor": 1.0
+  },
+  "omitted_maps": [],
+  "texel_density_px_per_m": [
+    853.3,
+    853.3
+  ],
+  "tint": false,
+  "sample_glb": "../glb/gteki_finish_floor_granite_tile.glb",
+  "sample": {
+    "plane": "floor",
+    "repeats": 2,
+    "size_m": [
+      2.4,
+      2.4
+    ]
+  },
+  "dimension_basis": "synthetic",
+  "generator": "tools/blender/gteki_assets/finishes.py",
+  "license": "CC-BY-4.0 — original GTEki work; attribution: GTEki contributors",
+  "provenance": "original procedural geometry and textures; see assets/library/PROVENANCE.md"
+}

@@ -51,6 +51,26 @@ for (const w of walks) {
   test(`ikebukuro: wayfinding cues along ${w.label} (guided, sampled) @phone`, async ({ page }, testInfo) => {
     test.setTimeout(420_000);
     const key = "ikebukuro";
+    // Large canvas textures uploaded to WebGL (the sign atlas pages are canvases; GLB images are not), to see
+    // whether a tier's signs spill onto a second atlas page (#126/#180 low-tier atlas). Recorded only.
+    await page.addInitScript(() => {
+      const seen: { w: number; h: number }[] = ((window as any).__qaCanvasTextures = []);
+      for (const C of [WebGLRenderingContext, (window as any).WebGL2RenderingContext].filter(Boolean)) {
+        const orig = C.prototype.texImage2D;
+        C.prototype.texImage2D = function (this: unknown, ...a: unknown[]) {
+          const src = a.find((x) => x instanceof HTMLCanvasElement) as HTMLCanvasElement | undefined;
+          if (src && Math.max(src.width, src.height) >= 1024) seen.push({ w: src.width, h: src.height });
+          return orig.apply(this, a as never);
+        };
+        // WebGL2 three.js allocates with texStorage2D and uploads with texSubImage2D.
+        const sub = C.prototype.texSubImage2D;
+        C.prototype.texSubImage2D = function (this: unknown, ...a: unknown[]) {
+          const src = a.find((x) => x instanceof HTMLCanvasElement) as HTMLCanvasElement | undefined;
+          if (src && Math.max(src.width, src.height) >= 1024) seen.push({ w: src.width, h: src.height });
+          return sub.apply(this, a as never);
+        };
+      }
+    });
     await openStation(page, key);
     const isPhone = testInfo.project.name.startsWith("phone");
     await chooseBySearch(page, "from", w.from[0], w.from[1]);
@@ -65,7 +85,8 @@ for (const w of walks) {
     const primary = cues.filter((c) => c.type !== "fence");
     const g = gaps(primary, line.lengthM);
     const gWithFences = gaps(cues, line.lengthM);
-    const gFront = gaps(primary.filter((c) => c.type === "junction" || (c.facingDot ?? 0) < 0), line.lengthM);
+    // A double-sided board (`back` faces) reads from both directions, so it counts as facing the walker either way.
+    const gFront = gaps(primary.filter((c) => c.type === "junction" || c.twoSided || (c.facingDot ?? 0) < 0), line.lengthM);
 
     await page.locator(".sheet .card.route button.primary").click();
     await expect.poll(() => hooks.mode(page)).toBe("guide");
@@ -73,7 +94,11 @@ for (const w of walks) {
     for (let n = 0; n < 3 && (await hooks.guideControls(page)).tier !== "fast"; n++) await speed.click();
     const guideTier = (await hooks.guideControls(page)).tier;
     expect(guideTier, "guide speed tier").toBe("fast");
-    await expect(speed).toContainText(`${FAST_MPS} m/s`);
+    // The button shows this route's effective pace (#92), at most the fast tier's top speed (as in 03).
+    await expect(speed).toContainText(/fast|早送り/i);
+    const pace = Number((await speed.textContent())?.match(/(\d+(?:\.\d+)?)\s*m\/s/)?.[1]);
+    expect(pace, "effective guide pace (m/s)").toBeGreaterThan(0);
+    expect(pace, "effective guide pace (m/s)").toBeLessThanOrEqual(FAST_MPS);
 
     const samples: { i: number; tMs: number; instruction: string | null; avatar: { x: number; y: number; z: number }; sM: number; lateralM: number; ahead: string[]; nextCue: { id: string; type: string; aheadM: number } | null; key: string; frame: string | null }[] = [];
     const seen = new Set<string>();
@@ -113,8 +138,9 @@ for (const w of walks) {
 
     save(testInfo, `ikebukuro-cues-${w.label}.json`, {
       project: testInfo.project.name, quality: await hooks.quality(page), guideTier, flowOnly: FLOW_ONLY, arrived,
+      largeCanvasTextures: await page.evaluate(() => (window as any).__qaCanvasTextures ?? null),
       route: { lengthM: route.totalLengthM, horizontalLengthM: round(line.lengthM), nodeIds: route.nodeIds, instructions: await hooks.instructions(page) },
-      sources: { signage: "stations/ikebukuro/scene/signage.json", repeaterSigns: cues.filter((c) => c.repeater).length, signsOnRoute: cues.filter((c) => c.type === "sign").length, junctionsOnRoute: cues.filter((c) => c.type === "junction").length, fencesOnRoute: cues.filter((c) => c.type === "fence").length },
+      sources: { signage: "stations/ikebukuro/scene/signage.json", repeaterSigns: cues.filter((c) => c.repeater).length, placeBoards: cues.filter((c) => c.place).length, signsOnRoute: cues.filter((c) => c.type === "sign").length, junctionsOnRoute: cues.filter((c) => c.type === "junction").length, fencesOnRoute: cues.filter((c) => c.type === "fence").length },
       thresholds: { maxGapM: MAX_GAP_M, aheadM: AHEAD_M },
       gaps: { signsAndJunctions: g, withFences: { maxGapM: gWithFences.maxGapM, from: gWithFences.from, to: gWithFences.to }, frontFacingOnly: { maxGapM: gFront.maxGapM, from: gFront.from, to: gFront.to } },
       cues: cues.map((c) => ({ ...c, s: round(c.s), lateralM: round(c.lateralM), facingDot: c.facingDot === undefined ? undefined : round(c.facingDot, 2) })),

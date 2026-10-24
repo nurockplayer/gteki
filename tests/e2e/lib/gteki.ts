@@ -102,6 +102,10 @@ export const hooks = {
   mode: (page: Page): Promise<string> => page.evaluate(() => (window as any).__gteki.mode()),
   avatar: (page: Page): Promise<Vec3> => page.evaluate(() => (window as any).__gteki.avatar()),
   sceneInfo: (page: Page) => page.evaluate(() => (window as any).__gteki.sceneInfo()),
+  /** Station-ENU points to canvas-relative CSS pixels with the camera as last rendered. */
+  projectEnu: (page: Page, pts: Vec3[]): Promise<{ x: number; y: number; behind: boolean }[]> => page.evaluate((p) => (window as any).__gteki.projectEnu(p), pts),
+  /** Face sizes recorded by the sign builder (id, side, scale, widthM, heightM, canvasPx). */
+  signFaces: (page: Page): Promise<{ id: string; side: "front" | "back"; scale: number; widthM: number; heightM: number; canvasPx: { w: number; h: number } }[]> => page.evaluate(() => (window as any).__gteki.signFaces()),
   simulate: (page: Page, seconds: number, keys: string[] = []): Promise<Vec3> =>
     page.evaluate(([s, k]) => (window as any).__gteki.simulate(s, k), [seconds, keys] as const),
   setOrigin: (page: Page, id: string) => page.evaluate((x) => (window as any).__gteki.setOrigin(x), id),
@@ -178,7 +182,8 @@ export async function perfWindow(page: Page, seconds: number) {
 /** Overlap of floating POI labels with the app's own UI (labels must never cover controls). */
 export async function labelUiOverlaps(page: Page) {
   return page.evaluate(() => {
-    const ui = [".topbar", ".panel", ".sheet.open", ".hud"].flatMap((sel) => [...document.querySelectorAll<HTMLElement>(sel)]).filter((e) => e.offsetParent !== null);
+    // .credit-line: the persistent data-credit strip (#187), absent on builds without it.
+    const ui = [".topbar", ".panel", ".sheet.open", ".hud", ".credit-line"].flatMap((sel) => [...document.querySelectorAll<HTMLElement>(sel)]).filter((e) => e.offsetParent !== null);
     const labels = [...document.querySelectorAll<HTMLElement>(".gteki-labels > *")].filter((e) => e.style.display !== "none" && e.getBoundingClientRect().width > 0);
     const hits: { label: string; over: string; labelOnTop: boolean }[] = [];
     for (const l of labels) {

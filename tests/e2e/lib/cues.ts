@@ -15,7 +15,7 @@ import { routeWaypoints, stationData, type StationKey, type Vec3, type Waypoint 
  */
 
 export type CueType = "sign" | "junction" | "fence";
-export interface Cue { id: string; type: CueType; s: number; lateralM: number; /** sign only: dot of its facing with the walking direction; < 0 means its front faces the walker */ facingDot?: number; repeater?: boolean }
+export interface Cue { id: string; type: CueType; s: number; lateralM: number; /** sign only: dot of its facing with the walking direction; < 0 means its front faces the walker */ facingDot?: number; /** sign only: has a readable back face, so it faces walkers from both directions */ twoSided?: boolean; repeater?: boolean; /** #180 blue place boards (`sign-place-*`) */ place?: boolean }
 
 export interface RouteLine { wps: Waypoint[]; s: number[]; lengthM: number; nodeS: number[] }
 
@@ -60,7 +60,7 @@ export function project(line: RouteLine, p: Vec3, minS = 0, dzWeight = 0.5): { s
   return { s: best.s, lateralM: best.lateralM, dz: best.dz, dir: best.dir };
 }
 
-export interface SignRecord { id: string; position: Vec3; facing: { x: number; y: number } }
+export interface SignRecord { id: string; position: Vec3; facing: { x: number; y: number }; /** a second face on the back (double-sided board), read from the other direction */ back?: unknown[] }
 
 export function loadSigns(key: StationKey): SignRecord[] {
   const root = process.env.GTEKI_ROOT;
@@ -99,7 +99,7 @@ export function cuesAlong(key: StationKey, line: RouteLine, nodeIds: string[], o
   for (const sg of loadSigns(key)) {
     const pr = project(line, sg.position);
     if (pr.lateralM > lateralMax || Math.abs(pr.dz) > dzMax) continue;
-    cues.push({ id: sg.id, type: "sign", s: pr.s, lateralM: pr.lateralM, facingDot: sg.facing.x * pr.dir.x + sg.facing.y * pr.dir.y, repeater: sg.id.startsWith("sign-rep-") });
+    cues.push({ id: sg.id, type: "sign", s: pr.s, lateralM: pr.lateralM, facingDot: sg.facing.x * pr.dir.x + sg.facing.y * pr.dir.y, twoSided: Array.isArray(sg.back) && sg.back.length > 0, repeater: sg.id.startsWith("sign-rep-"), place: sg.id.startsWith("sign-place-") });
   }
   loadFences(key).forEach((f, i) => {
     const mid = { x: (f.a[0] + f.b[0]) / 2, y: (f.a[1] + f.b[1]) / 2, z: (f.z0 + f.z1) / 2 };

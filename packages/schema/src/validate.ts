@@ -1,4 +1,4 @@
-import type { Edge, Floor, StationBundle } from "./index.ts";
+import type { Edge, Floor, LocalizedText, Poi, StationBundle } from "./index.ts";
 import { SCHEMA_VERSION } from "./index.ts";
 import { parseHm } from "./hours.ts";
 
@@ -20,7 +20,12 @@ const POI_CATEGORIES = new Set(["exit", "ticket_gate", "platform", "elevator", "
 const WEEKDAYS = new Set(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
 /** File types a station may publish next to its GLBs (same list the web build discovers). */
 export const ASSET_FILE_EXT = /\.(glb|gltf|bin|png|jpe?g|webp|ktx2|hdr|ogg|mp3|m4a|json)$/i;
-const CONTRACT_FILES = new Set(["station.json", "graph.json", "pois.json"]);
+/**
+ * Extensions a station may declare in `dataFiles[]`; code (.ts/.js) is never data and needs no declaration.
+ * svg/shader text are here because a scene may `?raw`-import them, which inlines the bytes like any other data.
+ */
+export const DATA_FILE_EXT = /\.(json|geojson|csv|tsv|txt|xml|yaml|yml|bin|dat|svg|glsl|vert|frag|wgsl)$/i;
+const CONTRACT_FILES = new Set(["station.json", "graph.json", "pois.json", "tenants.json"]);
 const CANONICAL_MESSAGE = "asset paths must be canonical slash-separated relative paths inside the station folder (no ., .. or empty segments; no colon, backslash, ? or #)";
 
 /** Relative, canonical and URL-safe: `?` and `#` would be read as a query or fragment once served. */
@@ -30,7 +35,18 @@ export function isCanonicalAssetPath(p: string): boolean {
 
 const COVERAGE_STATUSES = new Set(["routable", "visual_only", "unverified", "excluded"]);
 const ELEVATION_SOURCES = new Set(["measured", "source-derived", "symbolic", "unknown"]);
-const RIGHTS = new Set(["REUSABLE_WITH_CONDITIONS", "REFERENCE_ONLY", "RESTRICTED", "UNVERIFIED"]);
+const RIGHTS = new Set(["REUSABLE_WITH_CONDITIONS", "PUBLISHED_UNDER_OWNER_OVERRIDE", "REFERENCE_ONLY", "RESTRICTED", "UNVERIFIED"]);
+/** Rights values whose data may feed published geometry/data: REUSABLE_WITH_CONDITIONS and the Owner's recorded override (#130). */
+const isShippableRights = (r: unknown) => r === "REUSABLE_WITH_CONDITIONS" || r === "PUBLISHED_UNDER_OWNER_OVERRIDE";
+/**
+ * Director decision under Owner delegation, 2026-10-22 (#186/#26): a data file MAY cite facts-only sources,
+ * because it states facts (names, ids, labels) without reproducing the source, as the shipped graph already does.
+ * Every other non-shippable source is still refused, and `derivation` is required (see `data.derivation`).
+ * Flip to false to refuse facts-only citations in data files again.
+ */
+const DATA_FILES_MAY_CITE_FACTS_ONLY = true;
+/** An issue/comment URL or an issue reference such as #130 or owner/repo#130. */
+const isDecisionRef = (v: unknown) => typeof v === "string" && (isHttpUrl(v) || /^(?:[\w.-]+\/[\w.-]+)?#\d+$/.test(v));
 /** Polyline endpoints further than this from their node are reported. */
 const ENDPOINT_TOLERANCE_M = 1;
 
@@ -73,6 +89,15 @@ const isHttpUrl = (url: unknown): boolean => {
   }
 };
 
+function hasLicenseName(value: unknown): boolean {
+  if (typeof value === "string") return value.trim().length > 0;
+  return Array.isArray(value) && value.length > 0 && value.every((entry) =>
+    typeof entry === "object" && entry !== null &&
+    typeof (entry as { lang?: unknown }).lang === "string" && (entry as { lang: string }).lang.trim().length > 0 &&
+    typeof (entry as { text?: unknown }).text === "string" && (entry as { text: string }).text.trim().length > 0,
+  );
+}
+
 export function validateBundle(b: StationBundle): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const err = (code: string, message: string, ref?: string) => issues.push({ level: "error", code, message, ref });
@@ -92,7 +117,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
   const sourceRights = new Map(b.sources.map((s) => [s.id, s.rights]));
   const factsOnly = new Set(b.sources.filter((s) => s.usage === "facts-only").map((s) => s.id));
   /** A source that may feed published geometry: reusable and not restricted to citing facts. */
-  const reusableData = (id: string) => sourceRights.get(id) === "REUSABLE_WITH_CONDITIONS" && !factsOnly.has(id);
+  const reusableData = (id: string) => isShippableRights(sourceRights.get(id)) && !factsOnly.has(id);
   for (const s of b.sources) {
     if (sourceIds.has(s.id)) err("source.dup", `duplicate source id`, s.id);
     sourceIds.add(s.id);
@@ -106,10 +131,55 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
       err("source.attribution", "source without an attribution (credit line)", s.id);
     // The credited title links to the source itself, so a real source needs a reachable http(s) landing page.
     if (!b.station.synthetic && !isHttpUrl(s.url)) err("source.url", "source without an http(s) landing URL", s.id);
-    if (!b.station.synthetic && s.usage !== "facts-only" && !(s.license && s.license.name.trim() && isHttpUrl(s.license.url)))
+    if (s.license !== null && !hasLicenseName(s.license.name))
+      err("source.license", "licence name must be non-empty text or a non-empty list of localized text", s.id);
+    if (!b.station.synthetic && s.usage !== "facts-only" && !(s.license && hasLicenseName(s.license.name) && isHttpUrl(s.license.url)))
       err("source.license", "data source without a licence name and http(s) licence link", s.id);
-    if (!b.station.synthetic && s.rights !== "REUSABLE_WITH_CONDITIONS" && s.usage !== "facts-only")
+    // #26/#122: a facts-only source has no licence to show; the UI says so, and the source records the Owner decision that allows it.
+    const decisionOk = typeof s.decision === "object" && s.decision !== null && isHttpUrl(s.decision.url) && typeof s.decision.date === "string" && isIsoDate(s.decision.date);
+    if (s.decision !== undefined && !decisionOk) err("source.decision", "decision needs an http(s) url and a YYYY-MM-DD date", s.id);
+    if (!b.station.synthetic && s.usage === "facts-only" && s.decision === undefined)
+      err("source.decision", "facts-only source without a decision {url, date} (the #26 Owner decision)", s.id);
+    // #130: the Owner's override is only valid with its recorded decision reference and a showable licence text.
+    const ov = (s as { override?: unknown }).override;
+    const ovOk = typeof ov === "object" && ov !== null && isDecisionRef((ov as { decision?: unknown }).decision) && typeof (ov as { date?: unknown }).date === "string" && isIsoDate((ov as { date: string }).date);
+    if (s.rights === "PUBLISHED_UNDER_OWNER_OVERRIDE") {
+      if (!ovOk) err("source.override", "PUBLISHED_UNDER_OWNER_OVERRIDE needs override {decision: issue/comment URL or #ref, date: YYYY-MM-DD}", s.id);
+      if (!(s.license && hasLicenseName(s.license.name)))
+        err("source.override", "PUBLISHED_UNDER_OWNER_OVERRIDE needs license.name text stating the licence status (e.g. unconfirmed)", s.id);
+    } else if (ov !== undefined) {
+      if (!ovOk) err("source.override", "override needs a decision reference and a YYYY-MM-DD date", s.id);
+      else warn("source.override", `override recorded but rights is ${s.rights}, not PUBLISHED_UNDER_OWNER_OVERRIDE; it has no effect`, s.id);
+    }
+    if (!b.station.synthetic && !isShippableRights(s.rights) && s.usage !== "facts-only")
       warn("source.rights", `source rights ${s.rights}; must not feed published geometry/data (mark usage:"facts-only" if only cited as evidence)`, s.id);
+  }
+
+  const identity = b.station.identity;
+  if (identity) {
+    const texts = (values: typeof identity.names, ref: string) => {
+      if (values.length === 0 || values.some((v) => !v.text.trim())) err("identity.text", "identity text must not be empty", ref);
+    };
+    texts(identity.names, "station.identity.names");
+    for (const lang of ["ja", "en"]) {
+      if (!identity.names.some((n) => n.lang === lang && n.text.trim())) err("identity.names", `identity needs ${lang}`, "station.identity.names");
+    }
+    const seen = new Set<string>();
+    for (const side of identity.sides ?? []) {
+      const ref = `station.identity.sides.${side.side}`;
+      if (!["east", "west", "north", "south"].includes(side.side)) err("identity.side", "unknown compass side", ref);
+      if (seen.has(side.side)) err("identity.side.dup", "duplicate identity side", ref);
+      seen.add(side.side);
+      texts(side.exit, ref);
+      texts(side.landmark, ref);
+      const ids = side.evidence.sourceIds;
+      if (!ids.length || ids.some((id) => !sourceIds.has(id))) err("identity.evidence", "identity side needs registered sources", ref);
+      if (!isIsoDate(side.evidence.checkedDate)) err("identity.evidence.date", "identity evidence needs a YYYY-MM-DD date", ref);
+      if (!["confirmed", "unverified"].includes(side.verification)) err("identity.verification", "unknown verification", ref);
+      // Different URLs or IDs from the same publisher are not independent confirmation.
+      const publishers = new Set(ids.map((id) => b.sources.find((s) => s.id === id)?.publisher.trim().toLowerCase()).filter(Boolean));
+      if (side.verification === "confirmed" && publishers.size < 2) err("identity.verification", "confirmed identity side needs two independent publishers", ref);
+    }
   }
 
   const operatorIds = new Set(b.station.operators.map((o) => o.id));
@@ -150,7 +220,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
       // Node coordinates are drawn and measured (straight edges have no other geometry): same gate as edge geometry.
       const rights = sourceRights.get(r.sourceId);
       if (factsOnly.has(r.sourceId)) err("node.source.rights", `node position cites facts-only source ${r.sourceId}; the position would be a derivative`, n.id);
-      else if (rights !== undefined && rights !== "REUSABLE_WITH_CONDITIONS" && !b.station.synthetic)
+      else if (rights !== undefined && !isShippableRights(rights) && !b.station.synthetic)
         err("node.source.rights", `node position derives from source ${r.sourceId} with rights ${rights}; it cannot ship in the public bundle`, n.id);
     }
   }
@@ -180,7 +250,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     for (const s of e.geometryEvidence.sourceIds) {
       const rights = sourceRights.get(s);
       if (factsOnly.has(s)) err("edge.geometry.rights", `polyline geometry cites facts-only source ${s}; geometry would be a derivative`, e.id);
-      else if (rights !== undefined && rights !== "REUSABLE_WITH_CONDITIONS" && !b.station.synthetic)
+      else if (rights !== undefined && !isShippableRights(rights) && !b.station.synthetic)
         err("edge.geometry.rights", `edge geometry derives from source ${s} with rights ${rights}; it cannot ship in the public bundle`, e.id);
     }
     checkEvidence(e, e.accessEvidence, "accessEvidence");
@@ -242,6 +312,11 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     // Canonical form only: the Web loader keys assets by their exact relative path and Godot refuses ":" and "\\".
     if (!isCanonicalAssetPath(a.uri)) err("asset.uri", CANONICAL_MESSAGE, a.id);
     else if (!a.uri.toLowerCase().endsWith(".glb")) err("asset.uri", "glb asset uri must end in .glb", a.id);
+    if (a.uriMobile !== undefined) {
+      if (!isCanonicalAssetPath(a.uriMobile)) err("asset.uri", `uriMobile: ${CANONICAL_MESSAGE}`, a.id);
+      else if (!a.uriMobile.toLowerCase().endsWith(".glb")) err("asset.uri", "glb asset uriMobile must end in .glb", a.id);
+      else if (a.uriMobile === a.uri) err("asset.uri", "uriMobile must differ from uri (omit it when there is no lighter variant)", a.id);
+    }
     for (const f of a.files ?? []) {
       if (!isCanonicalAssetPath(f)) err("asset.files", `${f}: ${CANONICAL_MESSAGE}`, a.id);
       else if (!ASSET_FILE_EXT.test(f) || CONTRACT_FILES.has(f)) err("asset.files", `${f}: not a publishable asset file type`, a.id);
@@ -255,16 +330,60 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
       if (!sourceIds.has(s)) err("asset.source", `unknown source ${s}`, a.id);
       if (factsOnly.has(s)) err("asset.rights", `asset derives from facts-only source ${s}`, a.id);
       const rights = sourceRights.get(s);
-      if (rights !== undefined && rights !== "REUSABLE_WITH_CONDITIONS" && !b.station.synthetic)
+      if (rights !== undefined && !isShippableRights(rights) && !b.station.synthetic)
         err("asset.rights", `asset derives from source ${s} with rights ${rights}; it cannot ship in the public bundle`, a.id);
     }
     if (a.sourceIds.length === 0 && !b.station.synthetic) err("asset.source", "asset without source provenance", a.id);
+    if (a.derivationSummary !== undefined && (!Array.isArray(a.derivationSummary) || a.derivationSummary.length === 0 || a.derivationSummary.some((entry) =>
+      !entry || typeof entry.lang !== "string" || !entry.lang.trim() || typeof entry.text !== "string" || !entry.text.trim(),
+    ))) err("asset.derivationSummary", "derivationSummary must contain non-empty localized text", a.id);
+    if (a.derivationSummary !== undefined && (typeof a.derivation !== "string" || !a.derivation.trim()))
+      err("asset.derivationSummary", "derivationSummary requires a non-empty full derivation record", a.id);
+  }
+
+  // Data files: the same source and rights gate as assets. Contract files are loaded as data and never declared.
+  const dataIds = new Set<string>();
+  const dataPaths = new Set<string>();
+  for (const d of b.dataFiles ?? []) {
+    if (dataIds.has(d.id)) err("data.dup", "duplicate data file id", d.id);
+    dataIds.add(d.id);
+    if (!isCanonicalAssetPath(d.path)) err("data.path", CANONICAL_MESSAGE.replace("asset paths", "data file paths"), d.id);
+    else if (!DATA_FILE_EXT.test(d.path)) err("data.path", `${d.path}: not a data file type`, d.id);
+    // dataFiles are relative to the station folder and live outside gteki/ (assets[] covers that folder).
+    else if (d.path.toLowerCase().startsWith("gteki/")) err("data.path", `${d.path}: data files live outside gteki/ (declare files there as assets[].files; contract files are loaded as data and never declared)`, d.id);
+    if (dataPaths.has(d.path)) err("data.dup", `${d.path}: declared twice`, d.id);
+    dataPaths.add(d.path);
+    let citesFactsOnly = false;
+    for (const s of d.sourceIds) {
+      if (!sourceIds.has(s)) err("data.source", `unknown source ${s}`, d.id);
+      if (factsOnly.has(s)) {
+        citesFactsOnly = true;
+        if (!DATA_FILES_MAY_CITE_FACTS_ONLY) err("data.rights", `data derives from facts-only source ${s}`, d.id);
+        continue;
+      }
+      const rights = sourceRights.get(s);
+      if (rights !== undefined && !isShippableRights(rights) && !b.station.synthetic)
+        err("data.rights", `data derives from source ${s} with rights ${rights}; it cannot ship in the public bundle`, d.id);
+    }
+    const hasDerivation = typeof d.derivation === "string" && d.derivation.trim() !== "";
+    if (d.authored) {
+      // An authored file is GTEki's own config, derived from nothing: it cites no sources, is never credited (#252),
+      // and its derivation must say so.
+      if (d.sourceIds.length > 0) err("data.source", "an authored data file cites no sources", d.id);
+      if (!hasDerivation) err("data.derivation", "an authored data file needs a derivation saying so", d.id);
+    } else {
+      if (d.sourceIds.length === 0 && !b.station.synthetic) err("data.source", "data file without source provenance", d.id);
+      if ((d.modified || citesFactsOnly) && !hasDerivation)
+        err("data.derivation", `${d.modified ? "modified data" : "data citing a facts-only source"} needs a derivation naming the generating script`, d.id);
+    }
   }
 
   const poiIds = new Set<string>();
+  const poiById = new Map<string, Poi>();
   for (const p of b.pois) {
     if (poiIds.has(p.id)) err("poi.dup", "duplicate POI id", p.id);
     poiIds.add(p.id);
+    poiById.set(p.id, p);
     if (!POI_CATEGORIES.has(p.category)) err("poi.category", `unknown category ${p.category}`, p.id);
     if (p.floorId !== null && !floorIds.has(p.floorId)) err("poi.floor", `unknown floor ${p.floorId}`, p.id);
     if (p.names.length === 0) err("poi.name", "POI without a name", p.id);
@@ -274,8 +393,48 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (!isIsoDate(p.evidence.checkedDate)) err("poi.evidence.date", `checkedDate ${p.evidence.checkedDate} is not YYYY-MM-DD`, p.id);
     // A drawn position needs a reusable geometric basis among its sources (others may still evidence facts).
     if (p.displayPosition !== null && !b.station.synthetic && !p.evidence.sourceIds.some(reusableData))
-      err("poi.position.rights", "displayPosition needs at least one REUSABLE_WITH_CONDITIONS data source in its evidence", p.id);
+      err("poi.position.rights", "displayPosition needs at least one REUSABLE_WITH_CONDITIONS or PUBLISHED_UNDER_OWNER_OVERRIDE data source in its evidence", p.id);
+    // An approximate point is search display only (#463): it is never a routing target and never drawn as a
+    // precise pin, so the POI must have no connectors, no displayPosition, and a reusable geometric basis.
+    if (p.approximatePosition) {
+      if (p.connectorNodeIds.length > 0) err("poi.approximate.routing", "a POI with approximatePosition must have connectorNodeIds: []", p.id);
+      if (p.displayPosition !== null) err("poi.approximate.display", "a POI with approximatePosition must have displayPosition: null", p.id);
+      if (!b.station.synthetic && !p.evidence.sourceIds.some(reusableData))
+        err("poi.approximate.rights", "approximatePosition needs at least one REUSABLE_WITH_CONDITIONS or PUBLISHED_UNDER_OWNER_OVERRIDE data source in its evidence", p.id);
+    }
     if (p.connectorNodeIds.length === 0) warn("poi.unroutable", "POI has no verified connector; search-only", p.id);
+  }
+
+  // Store tenant directories (#419): listings that attach to an existing shop POI. They are never routing
+  // targets, so the store's own POI carries the route; these rules only keep the facts honest.
+  const tenantIds = new Set<string>();
+  const hasText = (texts: LocalizedText[]) => texts.length > 0 && texts.every((t) => t.lang.trim() !== "" && t.text.trim() !== "");
+  for (const tenant of b.tenants ?? []) {
+    if (tenantIds.has(tenant.id)) err("tenant.dup", "duplicate tenant id", tenant.id);
+    tenantIds.add(tenant.id);
+    const store = poiById.get(tenant.poiId);
+    if (!store) err("tenant.poi", `unknown store POI ${tenant.poiId}`, tenant.id);
+    else if (store.category !== "shop") err("tenant.poi", `store POI ${tenant.poiId} is category ${store.category}, not shop`, tenant.id);
+    if (!hasText(tenant.names)) err("tenant.text", "tenant without a non-empty name exactly as printed", tenant.id);
+    if (!hasText(tenant.floorLabel)) err("tenant.text", "tenant without a non-empty floor label as printed", tenant.id);
+    if (tenant.evidence.sourceIds.length === 0) err("tenant.evidence", "tenant listing without a source", tenant.id);
+    for (const sid of tenant.evidence.sourceIds) {
+      if (!sourceIds.has(sid)) { err("tenant.evidence", `unknown source ${sid}`, tenant.id); continue; }
+      const src = b.sources.find((s) => s.id === sid)!;
+      // A printed brand name is a cited fact, so a facts-only source may carry it. A merchant submission
+      // (#438) is a shippable data source whose grant is at least as strong as facts-only; both need the
+      // decision on record (#441).
+      const d = src.decision;
+      const decisionOk = typeof d === "object" && d !== null && isHttpUrl(d.url) && typeof d.date === "string" && isIsoDate(d.date);
+      const accepted = src.usage === "facts-only" || reusableData(sid);
+      if (!decisionOk || !accepted)
+        err("tenant.evidence", `source ${sid} must be usage:"facts-only" or a reusable data source (REUSABLE_WITH_CONDITIONS or PUBLISHED_UNDER_OWNER_OVERRIDE), with a decision {url, date}`, tenant.id);
+    }
+    if (!isIsoDate(tenant.evidence.checkedDate))
+      err("tenant.evidence", `checkedDate ${tenant.evidence.checkedDate} is not YYYY-MM-DD`, tenant.id);
+    // The brand is still shown on the store's card; only the route is missing.
+    if (store && store.connectorNodeIds.length === 0)
+      warn("tenant.unroutable", "store POI has no verified connector; the brand shows but there is no route", tenant.id);
   }
 
   for (const a of b.coverage.areas) {
@@ -284,8 +443,17 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (a.sourceIds.length === 0) err("coverage.source", "coverage area without sources", a.id);
     for (const sid of a.sourceIds) if (!sourceIds.has(sid)) err("coverage.source", `unknown source ${sid}`, a.id);
     if (a.polygon && !b.station.synthetic && !a.sourceIds.some(reusableData))
-      err("coverage.polygon.rights", "coverage polygon needs at least one REUSABLE_WITH_CONDITIONS data source", a.id);
+      err("coverage.polygon.rights", "coverage polygon needs at least one REUSABLE_WITH_CONDITIONS or PUBLISHED_UNDER_OWNER_OVERRIDE data source", a.id);
   }
 
   return issues;
+}
+
+/** Audit list: every declared data file that cites facts-only sources (the #186/#26 allowance), with those source ids. */
+export function dataFileFactsOnlySources(b: StationBundle): { dataFileId: string; path: string; factsOnlySourceIds: string[] }[] {
+  const factsOnly = new Set(b.sources.filter((s) => s.usage === "facts-only").map((s) => s.id));
+  return (b.dataFiles ?? []).flatMap((d) => {
+    const ids = [...new Set(d.sourceIds.filter((id) => factsOnly.has(id)))];
+    return ids.length ? [{ dataFileId: d.id, path: d.path, factsOnlySourceIds: ids }] : [];
+  });
 }

@@ -1,0 +1,71 @@
+{
+  "source_id": "hokonavi-shibuya-sendagaya-shinjuku-package",
+  "resolved_url": "https://ckan.hokonavi.go.jp/api/3/action/package_show?id=nwd_shibuya_sendagaya_shinjuku",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-22T12:22:42.959Z",
+  "completed_at": "2026-10-22T12:22:43.032Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/json;charset=utf-8",
+    "content-length": "5950",
+    "etag": null,
+    "last-modified": null,
+    "date": "Thu, 22 Oct 2026 12:22:42 GMT"
+  },
+  "bytes": 5950,
+  "sha256": "18a9a0c4ac726f2082244918113b58e993f2e1343c3083aca53183f712f0b350",
+  "store_path": "raw/18a9a0c4ac726f2082244918113b58e993f2e1343c3083aca53183f712f0b350/package_show",
+  "tool_version": "0.1.0",
+  "git_commit": "e1b9dd2deb2b1c3314524bdbbf8ca5687006e0d2",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online",
+  "supporting_documents": [
+    {
+      "id": "dataset-page",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/nwd_shibuya_sendagaya_shinjuku",
+      "url": "https://ckan.hokonavi.go.jp/dataset/nwd_shibuya_sendagaya_shinjuku",
+      "http_status": 200,
+      "sha256": "7e3db55e8ccd8e84c4673ef85cd3b3716ed61c31a6ff459c050a0a0d708e6c62",
+      "bytes": 21695,
+      "store_path": "raw/7e3db55e8ccd8e84c4673ef85cd3b3716ed61c31a6ff459c050a0a0d708e6c62/nwd_shibuya_sendagaya_shinjuku"
+    },
+    {
+      "id": "hokonavi-site-terms",
+      "requested_url": "https://www.hokonavi.go.jp/terms/",
+      "url": "https://www.hokonavi.go.jp/terms/",
+      "http_status": 200,
+      "sha256": "479ce0b33324fc6dd3ee7ba75fdb9de2a2a5f2095ab1cbacc790ad1cfe4a9aa6",
+      "bytes": 55246,
+      "store_path": "raw/479ce0b33324fc6dd3ee7ba75fdb9de2a2a5f2095ab1cbacc790ad1cfe4a9aa6/terms"
+    },
+    {
+      "id": "pdl-1-0-text",
+      "requested_url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "http_status": 200,
+      "sha256": "4d4c4cc5e8ac952f640cdf9c8242de648e36995667a361302589d468fd1e12a0",
+      "bytes": 59216,
+      "store_path": "raw/4d4c4cc5e8ac952f640cdf9c8242de648e36995667a361302589d468fd1e12a0/public_data_license_v1.0"
+    },
+    {
+      "id": "res-link-csv",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/eaf1695b-fc4c-41f0-8ff1-3279d0cfa839/resource/864b086f-de71-48bc-be52-b1560a27fe49/download/link.csv",
+      "url": "https://ckan.hokonavi.go.jp/dataset/eaf1695b-fc4c-41f0-8ff1-3279d0cfa839/resource/864b086f-de71-48bc-be52-b1560a27fe49/download/link.csv",
+      "http_status": 200,
+      "sha256": "3572563bb3da1feaecc121f068aa27459da1dab4454e0768b0f7416cd7affb91",
+      "bytes": 1335090,
+      "store_path": "raw/3572563bb3da1feaecc121f068aa27459da1dab4454e0768b0f7416cd7affb91/link.csv"
+    },
+    {
+      "id": "res-node-csv",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/eaf1695b-fc4c-41f0-8ff1-3279d0cfa839/resource/7f949aa2-114f-4812-95a4-e922eb9aab89/download/node.csv",
+      "url": "https://ckan.hokonavi.go.jp/dataset/eaf1695b-fc4c-41f0-8ff1-3279d0cfa839/resource/7f949aa2-114f-4812-95a4-e922eb9aab89/download/node.csv",
+      "http_status": 200,
+      "sha256": "41b8c7f343a7a57f32baebe515cbeb4d9bb68c090a4bd9960dd3f05405b74f71",
+      "bytes": 1023161,
+      "store_path": "raw/41b8c7f343a7a57f32baebe515cbeb4d9bb68c090a4bd9960dd3f05405b74f71/node.csv"
+    }
+  ]
+}

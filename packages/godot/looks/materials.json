@@ -1,0 +1,646 @@
+{
+  "schema": "gteki.godot-look/0.1",
+  "style_source": "docs/assets/style.md §2 (sRGB authoring colours; written to StandardMaterial3D.albedo_color as the glTF importer writes albedo, i.e. sRGB values)",
+  "styles": {
+    "floor_terrazzo": {
+      "albedo": "#C7C2B8",
+      "roughness": 0.37,
+      "metal": 0.0,
+      "role": "field: public concourse floor"
+    },
+    "wall_panel_enamel": {
+      "albedo": "#DBDBD6",
+      "roughness": 0.28,
+      "metal": 0.0,
+      "role": "field: upper wall panels, column cladding"
+    },
+    "steel_painted_light": {
+      "albedo": "#CCCCC7",
+      "roughness": 0.34,
+      "metal": 0.0,
+      "role": "field: painted steel panels, wall field"
+    },
+    "wall_tile_white": {
+      "albedo": "#DEDED6",
+      "roughness": 0.22,
+      "metal": 0.0,
+      "role": "field: 150 mm tile, lift surrounds"
+    },
+    "wall_panel_accent": {
+      "albedo": "#334F66",
+      "roughness": 0.3,
+      "metal": 0.0,
+      "role": "accent: wainscot"
+    },
+    "oedo_accent": {
+      "albedo": "#B0186F",
+      "roughness": 0.4,
+      "metal": 0.0,
+      "role": "accent: Oedo line identity bands",
+      "local": true,
+      "note": "GTEki-chosen Oedo magenta per OD-29 (#222); not the operator's official colour; replaces #b6007a"
+    },
+    "ceiling_spandrel": {
+      "albedo": "#DBDBD9",
+      "roughness": 0.42,
+      "metal": 0.85,
+      "role": "field: linear metal ceiling"
+    },
+    "gate_body": {
+      "albedo": "#D6D6D1",
+      "roughness": 0.22,
+      "metal": 0.0,
+      "role": "field: gate cabinets, equipment bodies"
+    },
+    "gate_top": {
+      "albedo": "#09090A",
+      "roughness": 0.18,
+      "metal": 0.0,
+      "role": "accent: gloss black caps"
+    },
+    "steel_brushed": {
+      "albedo": "#9EA1A3",
+      "roughness": 0.35,
+      "metal": 1.0,
+      "role": "metal: skirting, chair rail, handrails"
+    },
+    "aluminium_anodised": {
+      "albedo": "#B2B5B8",
+      "roughness": 0.38,
+      "metal": 1.0,
+      "role": "metal: sign frames, light trims"
+    },
+    "stainless_polished": {
+      "albedo": "#CCCFD1",
+      "roughness": 0.24,
+      "metal": 1.0,
+      "role": "metal: bench frames, corner guards"
+    },
+    "vertical_safety_yellow": {
+      "albedo": "#F5B009",
+      "roughness": 0.48,
+      "metal": 0.0,
+      "role": "signal: step edges, escalator demarcation"
+    },
+    "tactile_dots": {
+      "albedo": "#EDBD0F",
+      "roughness": 0.52,
+      "metal": 0.0,
+      "role": "signal: tactile paving"
+    },
+    "rubber_black": {
+      "albedo": "#060606",
+      "roughness": 0.55,
+      "metal": 0.0,
+      "role": "rubber: moving handrail, flap edge, pads"
+    }
+  },
+  "stations": {
+    "shinjuku": {
+      "materials": {
+        "mat.floor": {
+          "style": "floor_terrazzo",
+          "from": {
+            "color": "#ffffff",
+            "metal": 0.0,
+            "roughness": 0.72,
+            "surfaces": 5,
+            "roles": {
+              "visual": 5
+            },
+            "meshes": [
+              "walkable",
+              "walkable2",
+              "walkable4"
+            ],
+            "evidence": "source mat.floor (concourseTiles texture, stripped from the snapshot, so it reads #ffffff), roughness 0.72; the merged concourse floor meshes walkable/walkable2/walkable4"
+          }
+        },
+        "mat.ceiling": {
+          "style": "ceiling_spandrel",
+          "from": {
+            "color": "#c0c2bd",
+            "metal": 0.0,
+            "roughness": 0.96,
+            "surfaces": 7,
+            "roles": {
+              "visual": 7
+            },
+            "meshes": [
+              "elevator-interior-hood"
+            ],
+            "evidence": "source mat.ceiling (#c0c2bd, roughness 0.96); the merged ceiling slabs, one of them the lift interior hood"
+          }
+        },
+        "mat.wall": {
+          "style": "steel_painted_light",
+          "from": {
+            "color": "#d3cec4",
+            "metal": 0.03,
+            "roughness": 0.76,
+            "surfaces": 7,
+            "roles": {
+              "visual": 7
+            },
+            "evidence": "source mat.wall (#d3cec4, metal 0.03, roughness 0.76): the wall field. The wall texture is the Oedo-magenta pattern; this table replaces it with a grey painted field (provisional, see below)"
+          },
+          "provisional": "OD-30 via R10 (#234): second-hand description of grey panels; not E27 fact"
+        },
+        "mat.floorPaid": {
+          "style": "floor_terrazzo",
+          "from": {
+            "color": "#ffffff",
+            "metal": 0.0,
+            "roughness": 0.68,
+            "surfaces": 4,
+            "roles": {
+              "visual": 4
+            },
+            "meshes": [
+              "walkable3",
+              "walkable5",
+              "walkable6"
+            ],
+            "evidence": "source mat.floorPaid (paidTiles texture, stripped), roughness 0.68; the merged paid-area floor meshes walkable3/walkable5/walkable6"
+          }
+        },
+        "mat.floorPlatform": {
+          "style": "floor_terrazzo",
+          "from": {
+            "color": "#ffffff",
+            "metal": 0.0,
+            "roughness": 0.82,
+            "surfaces": 1,
+            "roles": {
+              "visual": 1
+            },
+            "meshes": [
+              "walkable8"
+            ],
+            "evidence": "source mat.floorPlatform (platformTiles texture, stripped), roughness 0.82; the one platform floor mesh walkable8"
+          }
+        },
+        "mat.accent": {
+          "style": "oedo_accent",
+          "from": {
+            "color": "#b0186f",
+            "metal": 0.0,
+            "roughness": 0.4,
+            "surfaces": 5,
+            "roles": {
+              "visual": 5
+            },
+            "evidence": "source mat.accent (OEDO_MAGENTA #b0186f, the GTEki-chosen value since #264 / OD-29 (was #b6007a), roughness 0.4, faint emission): the 40 mm identity bands along the walls. The train stripe primitives share this source material and are repainted with it. Kept as the station-identity cue; the override is a duplicate, so the source's emission survives"
+          }
+        },
+        "mat.lightHousing": {
+          "style": "aluminium_anodised",
+          "from": {
+            "color": "#9a9ea2",
+            "metal": 0.6,
+            "roughness": 0.35,
+            "surfaces": 1,
+            "roles": {
+              "visual": 1
+            },
+            "evidence": "source mat.lightHousing (#9a9ea2, metal 0.6, roughness 0.35); the merged light-fixture housings"
+          }
+        },
+        "mat.tactile": {
+          "style": "tactile_dots",
+          "from": {
+            "color": "#ffffff",
+            "metal": 0.0,
+            "roughness": 0.6,
+            "surfaces": 1,
+            "roles": {
+              "visual": 1
+            },
+            "evidence": "source mat.tactile (tactile texture, stripped, so it reads #ffffff), roughness 0.6; the one merged tactile-paving mesh"
+          }
+        },
+        "mat.nosing": {
+          "style": "vertical_safety_yellow",
+          "from": {
+            "color": "#303532",
+            "metal": 0.0,
+            "roughness": 0.7,
+            "surfaces": 1,
+            "roles": {
+              "visual": 1
+            },
+            "evidence": "source mat.nosing (#303532, roughness 0.7): stair nosings. The source is dark grey; the style bible gives stair nosings its safety-yellow signal"
+          },
+          "provisional": "representative finish from the style bible; not verified for E27 (R10 found no source)"
+        },
+        "mat.rubber": {
+          "style": "rubber_black",
+          "from": {
+            "color": "#121314",
+            "metal": 0.0,
+            "roughness": 0.55,
+            "surfaces": 1,
+            "roles": {
+              "visual": 1
+            },
+            "evidence": "source mat.rubber (#121314, roughness 0.55); the merged handrail surfaces"
+          }
+        },
+        "mat.gateBody": {
+          "style": "gate_body",
+          "from": {
+            "color": "#e9ebec",
+            "metal": 0.15,
+            "roughness": 0.35,
+            "surfaces": 1,
+            "roles": {
+              "visual": 1
+            },
+            "evidence": "source mat.gateBody (#e9ebec, metal 0.15, roughness 0.35); the merged gate cabinets"
+          }
+        },
+        "mat.gateTop": {
+          "style": "gate_top",
+          "from": {
+            "color": "#303634",
+            "metal": 0.15,
+            "roughness": 0.58,
+            "surfaces": 1,
+            "roles": {
+              "visual": 1
+            },
+            "evidence": "source mat.gateTop (#303634, metal 0.15, roughness 0.58); the merged gate caps"
+          }
+        },
+        "mat.steel": {
+          "style": "steel_brushed",
+          "from": {
+            "color": "#aab2b5",
+            "metal": 0.6,
+            "roughness": 0.58,
+            "surfaces": 1,
+            "roles": {
+              "visual": 1
+            },
+            "meshes": [
+              "static-steel-finishes"
+            ],
+            "evidence": "source mat.steel (#aab2b5, metal 0.6, roughness 0.58): lift-portal frames and handrails, merged into static-steel-finishes by #72 (was elevator-portal_finish2). The source changed in main (it was #c7ccd1, metal 0.85, roughness 0.28, a polished stainless); the darker, rougher finish is brushed steel, so the mapping follows it (lead's decision, 2026-10-23)"
+          }
+        }
+      },
+      "unmapped": [
+        {
+          "materials": [
+            "material_27"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 0.9,
+          "surfaces": 435,
+          "why": "invisible walk/collision proxy (roles: walkable 433, collider 2; three's copies have material.visible = false): drawn by nothing, so it has no finish"
+        },
+        {
+          "materials": [
+            "mat.trainBody",
+            "mat.trainDoor",
+            "mat.trainWindow"
+          ],
+          "color": "#d9dcde",
+          "metal": 0.75,
+          "roughness": 0.3,
+          "surfaces": 6,
+          "why": "train body / door / window (rolling stock), not station finishes"
+        },
+        {
+          "materials": [
+            "mat.darkSteel"
+          ],
+          "color": "#3b3f44",
+          "metal": 0.6,
+          "roughness": 0.45,
+          "surfaces": 3,
+          "why": "dark steel on the train door frames and the lift-portal finish; the style bible has no dark-steel finish, and the lead decides"
+        },
+        {
+          "materials": [
+            "mat.psdLeaf"
+          ],
+          "color": "#c9d6dd",
+          "metal": 0.4,
+          "roughness": 0.15,
+          "surfaces": 2,
+          "why": "semi-transparent platform-screen leaf; the table sets albedo/roughness/metal only and would flatten the intended alpha"
+        },
+        {
+          "materials": [
+            "mat.glass"
+          ],
+          "color": "#b4ccd1",
+          "metal": 0.08,
+          "roughness": 0.32,
+          "surfaces": 1,
+          "why": "transmission glass (street-level glazing); the table sets albedo/roughness/metal only and would drop the transmission"
+        },
+        {
+          "materials": [
+            "mat.flap"
+          ],
+          "color": "#e64060",
+          "metal": 0.0,
+          "roughness": 0.4,
+          "surfaces": 1,
+          "why": "semi-transparent gate flap; alpha would be lost"
+        },
+        {
+          "materials": [
+            "mat.psd"
+          ],
+          "color": "#d4d8dc",
+          "metal": 0.5,
+          "roughness": 0.3,
+          "surfaces": 2,
+          "why": "platform screen door panel: the bible covers it through ceramic tile, but its colour is a station decision"
+        },
+        {
+          "materials": [
+            "mat.light"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 0.4,
+          "surfaces": 3,
+          "why": "emissive light fixtures; the table would replace their emission with a flat albedo"
+        },
+        {
+          "materials": [
+            "material_32"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 0.9,
+          "surfaces": 1,
+          "why": "unlit, vertex-coloured luminaire strip (linear-light:underground); its colour is per-fixture vertex data, not a finish"
+        },
+        {
+          "materials": [
+            "mat.trackBed"
+          ],
+          "color": "#2a2826",
+          "metal": 0.0,
+          "roughness": 0.95,
+          "surfaces": 2,
+          "why": "track bed, outside the station finish palette"
+        },
+        {
+          "materials": [
+            "mat.rail"
+          ],
+          "color": "#8d8f92",
+          "metal": 0.9,
+          "roughness": 0.3,
+          "surfaces": 2,
+          "why": "running rail, outside the station finish palette"
+        },
+        {
+          "materials": [
+            "mat.tunnel"
+          ],
+          "color": "#3a3b3d",
+          "metal": 0.0,
+          "roughness": 0.95,
+          "surfaces": 2,
+          "why": "tunnel lining, outside the station finish palette"
+        },
+        {
+          "materials": [
+            "mat.escStep"
+          ],
+          "color": "#6d7177",
+          "metal": 0.7,
+          "roughness": 0.4,
+          "surfaces": 21,
+          "why": "escalator steps: mechanism, outside the station-finish palette"
+        },
+        {
+          "materials": [
+            "mat.stair"
+          ],
+          "color": "#8d887d",
+          "metal": 0.0,
+          "roughness": 0.76,
+          "surfaces": 1,
+          "why": "stair treads: the style bible has no stair finish; the lead decides"
+        },
+        {
+          "materials": [
+            "mat.gateIc",
+            "mat.gateOk"
+          ],
+          "color": "#1a507e",
+          "metal": 0.0,
+          "roughness": 0.45,
+          "surfaces": 2,
+          "why": "emissive gate status lamps (IC reader, OK lamp); signals, not finishes"
+        },
+        {
+          "materials": [
+            "material_12",
+            "material_13",
+            "material_14",
+            "material_15",
+            "material_16",
+            "material_17",
+            "material_18",
+            "material_19",
+            "material_20",
+            "material_21",
+            "material_22",
+            "material_23",
+            "material_24",
+            "material_25",
+            "material_26",
+            "mat.sidewalk",
+            "(unnamed)"
+          ],
+          "color": "#f2eee5",
+          "metal": 0.0,
+          "roughness": 0.9,
+          "surfaces": 19,
+          "why": "street level (surface.ts): ground, asphalt, paint, stone and tree trunks, steel and streetlights, glass, signs, tactile paving, facades, roof, tree crowns, sidewalk and the unnamed sky. Outside the station interior the look profile covers, so it keeps its own materials"
+        },
+        {
+          "materials": [
+            "material_43",
+            "material_44",
+            "material_48",
+            "material_49",
+            "material_50",
+            "material_46"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 0.9,
+          "surfaces": 18,
+          "why": "sign faces and sign cases: their textures carry the content, and a style albedo would paint over it"
+        },
+        {
+          "materials": [
+            "mat.portal"
+          ],
+          "color": "#7fd3ff",
+          "metal": 0.0,
+          "roughness": 0.9,
+          "surfaces": 13,
+          "why": "translucent coverage-portal hint at a dataset dead end; not a surface finish"
+        },
+        {
+          "materials": [
+            "material_51"
+          ],
+          "color": "#888888",
+          "metal": 0.8,
+          "roughness": 0.4,
+          "surfaces": 1,
+          "why": "not identified from the snapshot (one unnamed Mesh496 surface, no source name); left unmapped"
+        }
+      ]
+    },
+    "ikebukuro": {
+      "materials": {},
+      "unmapped": [
+        {
+          "materials": [
+            "material_19",
+            "material_22",
+            "material_20",
+            "material_21",
+            "mat.accent",
+            "material_18",
+            "material_17",
+            "material_15",
+            "material_14",
+            "material_13",
+            "material_12",
+            "mat.floorPlatform"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 0.9,
+          "surfaces": 1383,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "material_16"
+          ],
+          "color": "#4f565f",
+          "metal": 0.0,
+          "roughness": 0.9,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "mat.tunnel"
+          ],
+          "color": "#9aa0a7",
+          "metal": 0.35,
+          "roughness": 0.38,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "mat.psdLeaf"
+          ],
+          "color": "#9b958c",
+          "metal": 0.0,
+          "roughness": 0.6,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "mat.floor"
+          ],
+          "color": "#c6cacf",
+          "metal": 0.0,
+          "roughness": 0.3,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "mat.light"
+          ],
+          "color": "#dedee0",
+          "metal": 0.0,
+          "roughness": 0.42,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "mat_portals"
+          ],
+          "color": "#ff00ff",
+          "metal": 0.0,
+          "roughness": 0.8,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "mat.psd"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 0.15,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "mat.wall"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 0.2,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "mat.rail"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 0.7,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "mat.ceiling"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 0.95,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "mat.floorPaid"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 1.0,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        }
+      ]
+    }
+  }
+}

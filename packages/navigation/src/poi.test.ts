@@ -40,6 +40,36 @@ describe("routeBetween applies the fare policy to the POIs themselves", () => {
     expect(routeBetween(router, { kind: "node", nodeId: "start" }, dest, unpaid).ok).toBe(true);
   });
 
+  it("applies the same origin fare rule to node goals without adding destination evidence", () => {
+    for (const paid of [true, null]) {
+      const { router, exit, dest } = setup(false);
+      const origin = { ...exit, paid };
+      const poiFailure = routeBetween(router, { kind: "poi", poi: origin }, dest, unpaid);
+      const nodeFailure = routeBetween(router, { kind: "poi", poi: origin }, { kind: "nodes", nodeIds: ["goal"] }, unpaid);
+      expect(nodeFailure).toEqual(poiFailure);
+    }
+
+    const b = createSyntheticBundle();
+    const router = createRouter(b);
+    const origin = { ...b.pois.find((poi) => poi.id === "exit-a1")!, paid: false };
+    const nodeGoals = ["goal"];
+    const nodeResult = routeBetween(router, { kind: "poi", poi: origin }, { kind: "nodes", nodeIds: nodeGoals }, unpaid);
+    expect(nodeResult.ok).toBe(true);
+    if (nodeResult.ok) expect(nodeResult.sourceIds).toEqual(expect.arrayContaining(origin.evidence.sourceIds));
+    expect(routeBetween(router, { kind: "poi", poi: origin }, { kind: "nodes", nodeIds: [] }, { fare: "ticketed", stepFree: false }))
+      .toMatchObject({ ok: false, reason: "unknown_goal" });
+  });
+
+  it("routes to node goals exactly like the router for a ticketed profile", () => {
+    const b = createSyntheticBundle();
+    const router = createRouter(b);
+    const origin = b.pois.find((poi) => poi.id === "exit-a1")!;
+    const nodeIds = ["goal", "isolated"];
+    const profile: RouteProfile = { fare: "ticketed", stepFree: false };
+    expect(routeBetween(router, { kind: "poi", poi: origin }, { kind: "nodes", nodeIds }, profile))
+      .toEqual(router.route(origin.connectorNodeIds, nodeIds, profile, [origin.evidence]));
+  });
+
   it("keeps unknown_start / unknown_goal for POIs without connectors and joins both POIs' evidence", () => {
     const b = createSyntheticBundle();
     // Sources cited only by the POIs, so the result can carry them only through routeBetween.
@@ -57,5 +87,22 @@ describe("routeBetween applies the fare policy to the POIs themselves", () => {
     if (!node.ok) throw new Error(node.message);
     expect(node.sourceIds).toContain("destination-poi-source");
     expect(node.sourceIds).not.toContain("origin-poi-source");
+  });
+
+  it("keeps a POI with only an approximate display point unroutable: no connectors means unknown_goal", () => {
+    const b = createSyntheticBundle();
+    const router = createRouter(b);
+    const exit = b.pois.find((p) => p.id === "exit-a1")!;
+    // The approximate point is search display only (#463); it never becomes a routing target.
+    const approximate = {
+      ...b.pois.find((p) => p.id === "shop")!,
+      approximatePosition: {
+        east: 10, north: 0, uncertaintyM: 25, method: "area_weighted_centroid",
+        navigationUse: "NOT_FOR_ROUTING" as const, floor: "UNVERIFIED" as const,
+      },
+    };
+    expect(approximate.connectorNodeIds).toEqual([]);
+    expect(routeBetween(router, { kind: "poi", poi: exit }, approximate, unpaid)).toMatchObject({ ok: false, reason: "unknown_goal" });
+    expect(routeBetween(router, { kind: "poi", poi: approximate }, exit, unpaid)).toMatchObject({ ok: false, reason: "unknown_start" });
   });
 });

@@ -37,8 +37,10 @@ pnpm typecheck
     no post FX).
 - **Shared explorer** (core lane, `apps/web`): discovers `gteki/` automatically. Search, route,
   guided walk and free walk run there.
+- **Street-context budget probe** (draws/tris underground vs street, one run per tier; real GPU, not in CI): after `pnpm build`, in `tests/e2e` run `GTEKI_BUDGET=1 GTEKI_ROOT=<repo> pnpm exec playwright test specs/10-ikebukuro-context-budget.spec.ts --project=phone-chromium` (low) or `--project=desktop-chromium` (high); results land in `<repo>/.qa/ikebukuro-context-budget/`. It counts every pass at the WebGL boundary, so its numbers are not comparable with the scene-pass budget below; to check a change, run it once on the base branch and pass that run's `.json` as `GTEKI_BUDGET_BASELINE` (underground views must match, street views may add at most the context's own 10 meshes (8 PLATEAU + 2 N02)). Measured 2026-10-22, low tier, all passes: underground p50 44–53 draws / 132–136k triangles on both main and #110; street views +5–9 draws and +20–30k triangles with the context.
 - **Capture tooling** (dev only): `gt.capture(name)` and `gt.walkCapture(...)` write frames to
   `build/captures/`.
+- **Repeater-sign screenshots and atlas-size probe** (opt-in, needs a real GPU and a built `apps/web`; run from `tests/e2e`): `GTEKI_REPEATERS=1 GTEKI_ROOT=<checkout> pnpm exec playwright test specs/11-ikebukuro-repeater-signs.spec.ts --project=desktop-chromium` (or `--project=phone-chromium` for the low tier); writes `.qa/ikebukuro-repeaters/`.
 
 ## Layout
 
@@ -51,6 +53,11 @@ pnpm typecheck
 | `scene/signage.json`, `scene/crowd_lanes.json` | Derived from the verified graph and the PLATEAU walkable grid | presentation |
 | `scene/walk_bridges.json` | Invisible walking strips over hairline cracks between PLATEAU floor polygons | presentation |
 | `scene/access_fences.json` | Walker-blocking fences with a 「通行可否 未確認」/"Access unverified" marker where surveyed floor of unknown access would shortcut the routable areas | presentation |
+| `scene/finishes.json` | Finish-pack manifest for the Lane E kit: role → texture folder + repeat in metres. Empty today (see "Kit integration") | presentation |
+| `scene/kit/kit.json`, `scene/kit.ts` | Kit GLBs placed as instances on existing data (batch 1: barrier rails on the access-fence stretches; plus one labelled representative gate array per JR gate node); copies in `gteki/kit/` | presentation |
+| `scene/columns.json`, `scene/kit_columns.ts` | PLATEAU column footprints (found by shape in the `barriers` triangles, `pipeline/extract_columns.py`) and the kit column sleeves placed on them (batch 2) | truth (footprints, heights) / presentation (sleeves) |
+| `scene/dressing_anchors.json` | Stair nosing lines and escalator landings from the PLATEAU survey, where kit dressing is placed (see "Kit integration") | truth (survey positions) |
+| `scene/kit_catalog.json`, `scene/kit_placements.json` | Lane E catalog and per-anchor placements for stair and escalator dressing, generated from the anchors (see "Kit integration") | derived (survey dimensions) |
 | `pipeline/` | Reproducible data and asset build (stdlib Python + Blender; one Node walker check) | — |
 | `docs/` | G0 source audit, coverage gaps, evidence | — |
 
@@ -93,13 +100,15 @@ reproduces `w_n__x18` at ENU (-100.5, 152.5) blocked by `doors`), which shows th
   `barriers`, `transport`. `doors`, `portals`, `windows`, `ceiling` and `floor_elements` get none;
   `floor` and `stairs_ramps` are tagged walkable but also get no physics body (the addon has no floor
   collider). Door/portal/window colliders: 0.
-- **Verified routes:** all 63 verified edges (7140 samples) are clear of rays; 0 blocked. The stricter
-  capsule overlaps `barriers` / `transport` (stair and escalator rails) at 35 samples on `e_low__x35`,
-  `ne_e__x33` and `w_c__w_n` (ENU (-112.8, 130.8)): the centerline is clear, but a 0.3 m radius body would graze
-  those rails. This is not a door problem.
-- **Access fences are web-only:** `scene/access_fences.json` is built by `scene/scene.ts` and is not in
-  the GLB or the manifest, so Godot free walk is NOT access-fenced; it can reach surveyed floor the web scene
-  fences off as "access unverified".
+- **Verified routes:** all 67 verified edges (7150 samples) are clear of rays and of the 0.3 m capsule: 0 blocked
+  (polylines keep ≥ 0.35 m from colliders since #245). The Godot HQ walk replay (`packages/godot/run-walk.sh`, web
+  `bodyBlock` rules on the `buildScene` snapshot, which includes access fences) reports `bodyBlocked=1`: `sp_m__g_jr_s`
+  sample 38 at the gate-line end `g_jr_s`, which sits 0.13 m from the access fence it routes to (the same 0.6 m end
+  allowance as `build_access.py` `END_ALLOW`).
+- **Access fences are not in the GLB:** `scene/access_fences.json` is built by `scene/scene.ts` and is not
+  in the GLB or the manifest, so free walk with the GLB addon loader (`gteki_station.gd`) is NOT
+  access-fenced; it can reach surveyed floor the web scene fences off as "access unverified". The Godot HQ
+  client (`packages/godot`, from the `buildScene` snapshot) includes the fence colliders.
 - **Door semantics:** with role `visual`, doors are simply non-colliding everywhere in Godot. Verified exit
   routes pass, but so do shopfront doors and windows, which the web scene makes solid (`solidDoors`, leaving
   open only panels that verified-route segments cross), and so do `portals`, which the web blocks as
@@ -110,28 +119,159 @@ reproduces `w_n__x18` at ENU (-100.5, 152.5) blocked by `doors`), which shows th
   meshes tagged `wall`. Recommendation: not now; keep role `visual` and use `pnpm check:godot` as the
   regression gate.
 
+## Kit integration (Lane E, issue #94)
+
+Swapping a kit piece in is a data change. Nothing below changes the lit GLB, the graph or the walker; with an
+empty `scene/finishes.json` the scene builds exactly the procedural materials.
+
+**Finish packs.** `scene/finishes.json` maps a role (`floor`, `ceiling`, `stairs_ramps`, `shopfront` for both
+`windows` and `doors`, plus `wall` and `barriers`) to a texture set. `scene/finishes.ts` loads it through
+`ctx.loadTexture` (albedo sRGB; normal and roughness linear; `flipY` as the canvas textures), sets the repeat from
+metres (UV0 is metric) and hands the textures to `createMaterials`. `patchLit`, the lightmap and the balance knee
+are untouched. Roles without an entry keep the procedural texture.
+
+```json
+{ "schema": "gteki.ikebukuro.finishes/0",
+  "packs": {
+    "floor": {
+      "source": "assets/library/<pack folder>",
+      "dir": "assets/finishes/floor",
+      "repeat_m": 1.2,
+      "maps": { "albedo": "albedo.webp", "normal": "normal.webp", "roughness": "roughness.webp" },
+      "low": { "albedo": "albedo_512.webp" },
+      "color": "#ffffff" } } }
+```
+
+- `repeat_m` is a number or `[u, v]`. `orm` may replace `roughness` (three reads its G channel). `color` tints a
+  textured pack; for `wall` and `barriers` a pack with only a `color` is a recolour.
+- Low tier (style.md §8): `low` names smaller variants, the normal map is not fetched (shader relief is a no-op
+  there), and any loaded image over 1024 px drops the pack. A pack that cannot load (file not in the station
+  folder, bad entry) warns and falls back to the procedural texture; it never fails the scene.
+- **Serving.** The explorer bundles only files under `gteki/` and follows symlinks only inside the station's own
+  folder, so a link into `assets/library/` is refused. Copy instead: `python3 -I pipeline/sync_finish_packs.py`
+  copies each pack's `source` files to `gteki/<dir>/` (`--check` for CI) and prints the paths to add as
+  `assets[].files` of the kit asset in `data/graph.src.json`; a production build refuses undeclared asset files.
+  The kit source (CC BY 4.0, "GTEki contributors") is declared there too, once the licence PR (#131) lands.
+
+**Kit instances (batch 1).** `scene/kit/kit.json` lists the kit GLBs the scene places; `scene/kit.ts` places them on
+data the station already has and nothing else, except the labelled gate arrays below. Batch 1: `gteki_barrier_rail_2400_solid` along the access-fence label
+stretches (`scene/access_fences.json` `marks`; the 62 of 80 that are at least 1.8 m long, 259 modules, stretched at most
+12 % along the run; the label boards move onto the rail faces and the collision panels are unchanged). The
+desktop tier loads `gteki/kit/high/` (the full library GLB), `quality: "low"` loads `gteki/kit/low/` (the mobile library
+GLB) for the gate arrays only: phones keep the procedural boards instead of rails, which cost up to ~95k triangles a frame
+near the JR gates on the low tier (spec 13 against main, 2026-10-23). The low rail copy stays declared for a cheaper rail later. Instances are grouped into 16 m (desktop) or 32 m (phone) tiles so three.js culls them per tile. Kit meshes are
+visual only: they never enter `walkable` or `colliders`, and a GLB that cannot load leaves the procedural board.
+`python3 -I pipeline/sync_kit.py [--check]` (`pnpm sync:kit`) copies the GLBs byte for byte from `assets/library/` and
+checks them against the kit manifests' sha256; both copies are declared in `assets[id=b1].files`. Credit:
+"GTEki contributors, CC BY 4.0" (source `gteki-kit-0-1-0` in `station.json`; `REUSE.toml` section 2 covers
+`stations/*/gteki/kit/**`; the GLBs' embedded licence strings read UNDECIDED until Lane E's EMBED_SPDX rebuild). Kit
+meshes have no lightmap in this atlas, so they are lit by the scene's PMREM environment only. What else still renders
+procedurally, and what each needs: [docs/kit-gap-list.md](docs/kit-gap-list.md).
+
+**Representative gate arrays (the one exception).** By director decision (issue #3, 2026-10-22) the three JR gate nodes
+(`g_jr_c1`, `g_jr_c2`, `g_jr_s`) each get one `gteki_gate_array_2` (the smallest neutral, bidirectional array), and every
+one is labelled 「代表性擺設，通道數與方向未驗證」 / "representative placement; aisle count and orientation unverified"
+(`GATE_ARRAY_LABEL` in `scene/kit.ts`, copied into `kit.json`, each placement, each mesh's `userData`, the kit source
+credit in `station.json` and the asset derivation; a manifest entry without that exact label is not placed). The data
+fixes only the node and its verified edge. Placement rule, a guess: the piece's aisles run along the edge's last segment as
+it arrives, the first aisle's centre stands on the node at mid-depth (the edge runs down an aisle and crosses no cabinet),
+lifted 1 cm against z-fighting with the piece's floor plate. Like the rails the arrays are visual only (no collider, not in
+`walkable` or the walk graph). The three arrays are merged per material and instanced: one draw on the phone tier (one
+palette material, always drawn) and one draw per material per 16 m tile on desktop.
+
+**Column sleeves (batch 2).** PLATEAU has no per-column object or class: the columns are part of the one `barriers` triangle
+soup. `python3 -I pipeline/extract_columns.py` (from `build/ubld_enu.json`; same GML-hash check as the anchors) finds them
+by shape (welded components that are vertical prisms, 1.5 m or taller, up to 3 m across) and writes `scene/columns.json`
+with centre, footprint (square, rect, round or polygon), rotation, base and top height, level band and the source
+installation and polygon ids, plus a `kit` piece id or `null` with a reason. `scene/kit_columns.ts` scales
+`gteki_column_square_600` / `gteki_column_round_d600` onto the measured footprint plus 2 cm on every side (scaled from the piece's visible 0.60 m body, allowing for the square piece's rounded corners so a column corner never pokes through) (so it stands
+clear of the PLATEAU faces and does not z-fight), never stretches it taller than the 2.8 m piece and stops 1 cm under the
+column top (so on the 2 square columns over 3.05 m and 24 between 2.8 and 3.05 m the PLATEAU column shows above the sleeve; the
+library's `_h3200` variant is round only and no kit-matched round column is taller than 2.9 m). 281 columns are found; 145 get a
+sleeve (42 square, 103 round), 136 are listed with a reason and keep the flat column. The PLATEAU column stays in `barriers` and stays the collider; the sleeve is visual only. The finish is the
+kit's generic tile or enamel, not a survey of the real columns.
+
+**Kit sign frames (batch 3).** `scene/kit_signs.ts` stretches `gteki_sign_frame_9slice_h480_d80` around each
+sign using the fitted face dimensions from `buildSigns`, centred and facing with the existing sign. The outer width
+includes the two 3 cm side bars so the opening contains both faces, clamped to 0.5–6.1 m with a warning outside that
+range. Low-ceiling frames match the existing panel height; flush signs have no rods. Other rods and their ceiling
+canopies meet `ceilingZ`. Faces sit 1 mm inside the kit's recessed face plane; a failed kit keeps the original sign
+box and faces. Each part is one instance batch for the whole station, not per kit tile (fewer draws: about +40 draws p50 on desktop instead of +213 with 16 m tiles, spec 13 on 2026-10-23), and visual only. These are generic Lane E presentation
+(CC BY 4.0, GTEki contributors), not a survey of the real Ikebukuro housings. `loadSignKit` offers
+`omitPhoneRods`, which `scene.ts` turns on: phones keep the frames but not the rods, collars and canopies (all 119
+frames: ~123k triangles on desktop, ~40k on phones with rods, ~19k without). The real-GLB triangle report is printed
+by `scene/kit_signs.test.ts`.
+
+**Dressing anchors.** `python3 -I pipeline/build_dressing_anchors.py` (from `build/ubld_enu.json`; it refuses an
+extract whose GML sha256 differs from `gteki/station.json`) writes `scene/dressing_anchors.json`, ENU metres to
+1 mm, deterministic. Facts only, derived from the surveyed EF_35 and EF_80 triangles:
+
+- `stair_flights[]`: a riser's top edge is the nosing line of the tread above; nosings one rise and one tread apart
+  chain into a flight, one-to-one (each nosing has at most one successor and one predecessor; a stair the survey models
+  twice as two overlapping solids is kept as one of them, and `counts.duplicate_nosings_dropped` says how many nosings
+  that dropped). Each has `bottom` and `top` (`position`, `dir` = horizontal up-stair unit vector, `width_m`,
+  end points `a` left and `b` right facing up), `steps`, `rise_m`, `run_m`, and every `nosings` row `[ax, ay, bx, by, z]`.
+- `escalator_lanes[]`: the bank's sloped walking quad gives the landing lines (low edge = `lower`, high edge =
+  `upper`); the thin truss plates inside pair into lanes. Each lane has `lower` and `upper` anchors
+  (`position`, `dir` up the escalator, `width_m` clear between plates), plus `rise_m`, `run_m` and `slope_deg`.
+
+**Lane E catalog.** `python3 -I pipeline/build_kit_catalog.py` (`pnpm build:kit-catalog`) turns the anchors into
+`scene/kit_catalog.json`, a Lane E batch catalog (`CATALOG=stations/ikebukuro/scene/kit_catalog.json`), and
+`scene/kit_placements.json`, which gives each flight or lane its catalog ids and ENU transform (`origin`, `dir`,
+`yaw_deg` about +Z taking the piece's +Y to `dir`, `mirror` always false). Every entry is `station-verified` and cites
+the anchors and PLATEAU GML sha256 plus the flight or lane ids it serves. Each stair flight becomes two
+`stair_dressing` entries so every GLB has one bake role: `..._nosing` (`stairs_ramps`) and `..._rails_{post,wall}`
+(handrails, `barriers`). `step_count` is the surveyed nosing count, `riser_mm` = rise / (steps - 1), `tread_mm` the mean
+nosing run. Risers keep whole-mm precision when the surveyed nosings fit the built strips; a failing flight retries at
+0.1 mm precision. Tread and width stay rounded to whole mm. IDs encode a one-decimal riser in tenths without a dot
+(`r1553` means 155.3 mm); identical flights share one id and are instanced.
+`rail_mount` is `wall` when the base GLB's wall mesh lies within 0.3 m of both stair sides, else `post`. Flights with
+an implausible riser (outside 100-220 mm) or tread (under 200 mm), nosings more than 6 mm off both generated strips, and
+single-step flights are skipped with a reason. This covers stair011, stair012, stair014 and stair027 with the fallback;
+stair013 remains skipped because its risers are uneven. Escalators carry `rise_mm`, `angle_deg` = atan2(rise, quad run) (the surveyed quad is the straight incline between the
+floors, so no `run_mm`), `width_mm` (tread width, read as the clear gap between the truss plates) and the default 800 mm
+landing. The placement origin is the bottom comb, 1.2 m before the quad's lower line along `dir` at the lower floor height
+(the top comb is 1.2 m past the upper line). Direction is not surveyed and is left out of the params. Placements carry `tiers`: nosings draw on `low` and `high`, escalators on `high` only (low waits for a phone measurement), and rails (6 segments) on `high` only and only for `main_route` flights, those a Lane F golden guided route walks (a polyline within 1 m of the flight's centre line at a matching height).
+
+**How the bake will take a kit GLB in** (not built yet; `blender_bake_lighting.py` is unchanged):
+
+1. A Lane E generator places pieces on the anchors: origin at the nosing midpoint or landing point, rotated about
+   +Z by `atan2(dir.y, dir.x)`, width / rise / run passed as catalog params (the kit stays generic; station
+   measurements live only in the anchors). Output is a separate `ikebukuro_kit.glb` in ENU, not merged into the
+   PLATEAU base, so it stays separately attributable.
+2. The bake imports the base GLB and the kit GLB, selects meshes by `gteki_role` extras (`barriers` for railings,
+   `transport` for escalator parts, `stairs_ramps` only on walkable overlays, `light_fixtures` for luminaires),
+   and packs both into one atlas. Kit meshes arrive with their own UV2 (lightmap UVs); `pack()` today expects a
+   single UV layer and unwraps, so it needs a branch that keeps a kit mesh's UV2 islands and scales them into
+   the atlas. UV0 stays the material UV.
+3. It exports two lit GLBs sharing the one lightmap WebP: `ikebukuro_b1_lit.glb` as today and
+   `ikebukuro_kit_lit.glb`, each with TEXCOORD_1.
+4. `scene.ts` loads the kit GLB with `ctx.loadGlb`, applies the same lightmap (`channel = 1`) and adds it to
+   `root` **without** `assembleCollision`: kit pieces carry no colliders, so `walkable` and `colliders` stay the
+   PLATEAU sets. Kit luminaires would replace the generated ceiling fixtures (`fixtures()`), a separate change.
+
 ## Sources and rights
 
 | Source | Use | Rights |
 |---|---|---|
-| PLATEAU CityGML ubld 53394576 (Toshima, LOD4.1, 2023 survey) | all geometry, assets and walkable grid | CC BY 4.0. Credit "PLATEAU (MLIT)", modified |
+| PLATEAU CityGML ubld 53394576 (Toshima, LOD4.1, 2023 survey) | all geometry, assets and walkable grid | PLATEAU Site Policy 「３．著作権について」(#161). Credit 「出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成」 |
 | Toshima underground guide map (2022) | facts only: which opening is which exit or gate | reference-only, `usage: facts-only` |
 | Tokyo Metro Ikebukuro yard map (2026-03) | facts only: exit numbers, gate names | reference-only, `usage: facts-only` |
 
 - No operator maps, logos, photos or typefaces are in the repo.
 - Signs use GTEki's own style: charcoal panels and yellow exit badges.
-- Every texture is procedural, generated at runtime.
+- Every texture is procedural, generated at runtime, except the Lane E kit GLBs (CC BY 4.0, "GTEki contributors") in `gteki/kit/`.
 - Light fixtures, crowd and haze are GTEki art direction, declared in each asset's `derivation`.
 
 ## Acceptance record (quality contract G0–G4)
 
 | Gate | Verdict | Evidence / remaining |
 |---|---|---|
-| **G0** evidence / rights | **PASS (desk)**, **HOLD (field)** | [G0 audit](docs/G0-source-audit.md); rights chain above. Owner decision 2026-10-21: facts and works are separated, so facts from the reference-only maps may be published; JR East maps were traced and not used. Field visit pending ([survey brief](docs/coverage-gaps.md)). |
+| **G0** evidence / rights | **PASS (desk)**, **HOLD (field)** | [G0 audit](docs/G0-source-audit.md); rights chain above. Owner decision, relayed by the lane on 2026-10-21 ([#26 comment](https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404)): facts and works are separated, so facts from the reference-only maps may be published; JR East maps were traced and not used. Field visit pending ([survey brief](docs/coverage-gaps.md)). |
 | **G1** geometry | **PASS** for slices 1–5 | Real-scale PLATEAU geometry, identity transform, z = TP height. Walker stays on floor, climbs Exit 35 stairs (TP 27.0 → 30.1 m), is blocked by walls and by openings into unmodelled space. No verified edge crosses a wall or opening at 1 m. Slice 2 follows the surveyed level changes: South Passage TP 27.6 → 29.1 m (up) → 25.9 m (down), with exit stairs to TP 32.2–32.6 m. Slice 3: North Passage TP 28.5 m, down to TP 26.2 m between the shopping-park blocks, U-shaped Exit 28 stair via a TP 29.0 m landing. Slice 4: West Exit hall TP 27.9 m, exit stairs to TP 33.15 m; Exit 18 is a three-flight stair (landings TP 29.1 and 30.5 m) whose top flight passes over the bottom one. Sloped wall faces (stair side walls) are split into ≤0.5 m pieces with their own height band, so a flight passing under another is not falsely blocked. Slice 5: South Passage west and West Exit (South) hall TP 27.6 m, rising to TP 27.9 m along the passage north. Godot 4.7 headless import keeps roles and UV2 (`pipeline/godot_probe.gd`). Playability sweep: the preview walker, steered only by keyboard input, walks every verified edge in both directions (126/126 pass). Hairline cracks between adjacent PLATEAU floor polygons, which had stalled it on the Exit 18 stair landing, are bridged by invisible walking strips (`pipeline/build_walkfix.py`). |
-| **G2** routing | **PASS (desk)** | 63/63 edges verified, 1744 m. Shared-core `parseStationFiles` returns ok; the only warnings are 20 deliberately search-only POIs (5 Metro/Tobu gates and 15 exit numbers on the official maps that are not yet routable, so a search for them says so instead of finding nothing). From JR Central Gate 2: Exit 35 = 199 m, Exit 38 = 242 m, Exit 41 = 291 m, Exit 40 = 369 m, Exit 39 = 425 m, Exit 22 = 173 m, Exit 26 = 223 m, Exit 28 = 244 m, Exit 33 = 269 m, Exit 32 = 278 m, Exit 17 = 166 m, Exit 15 = 169 m, Exit 18 = 176 m, Exit 10 = 211 m, Exit 11 = 212 m, JR South Gate = 234 m, Exit 4 (stair foot) = 287 m, Exit 13 (stair foot) = 159 m. Junction nodes sit at real decision points (e.g. just outside each JR gate), so narration reads "Go straight ~7 m / Turn left…" ([explorer](docs/evidence/explorer-route-jrc2-exit35.jpg)). Negative case: the step-free profile fails safely (`no_path`). |
+| **G2** routing | **PASS (desk)** | 67/67 edges verified, 1745 m. Every verified polyline keeps 0.35 m from the walker's colliders (`build_station.py` `EDGE_CLEAR`; one reviewed exception, `ne_j__x26` at 0.33 m, `CLEARANCE_EXCEPTIONS`), checked against the web body by `scene/route_clearance.test.ts` (#227). Shared-core `parseStationFiles` returns ok; the only warnings are 21 deliberately search-only POIs (6 Metro/Tobu gates and 15 exit numbers on the official maps that are not yet routable, so a search for them says so instead of finding nothing). From JR Central Gate 2: Exit 35 = 199 m, Exit 38 = 242 m, Exit 41 = 291 m, Exit 40 = 369 m, Exit 39 = 425 m, Exit 22 = 173 m, Exit 26 = 224 m, Exit 28 = 244 m, Exit 33 = 270 m, Exit 32 = 278 m, Exit 17 = 167 m, Exit 15 = 169 m, Exit 18 = 176 m, Exit 10 = 212 m, Exit 11 = 213 m, JR South Gate = 234 m, Exit 4 (stair foot) = 287 m, Exit 13 (stair foot) = 159 m. Junction nodes sit at real decision points (e.g. just outside each JR gate), so narration reads "Go straight ~7 m / Turn left…" ([explorer](docs/evidence/explorer-route-jrc2-exit35.jpg)). Negative case: the step-free profile fails safely (`no_path`). |
 | **G3** quality (L2) | **GAP**: candidate, not yet claimed | See "G3 detail" below. |
-| **G4** delivery | **PASS (Owner, 2026-10-21)** | Public release cleared ("ship directly") once the rights check, deployment isolation, Codex review and integration regression pass. The UI states that the data is desk-verified, not field-verified, and that hours are unknown. |
+| **G4** delivery | **GAP**: Owner acceptance not recorded | Merge authorization ("ship directly" once the rights check, deployment isolation, Codex review and integration regression pass) is recorded in the [#26 comment](https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404), relayed by the lane from the Owner's instructions. An Owner acceptance of the delivered state is not on record (lane assessment, not an Owner decision). The UI states that the data is desk-verified, not field-verified, and that hours are unknown. |
 
 ### Automated evidence for G0 / G1 / G2
 
@@ -141,7 +281,7 @@ Code-and-test evidence only (no browser, GPU or field visit). Each is a light vi
 |---|---|---|---|
 | **G0** asset audit | [`pipeline/audit_assets.test.ts`](pipeline/audit_assets.test.ts) runs [`pipeline/audit_assets.ts`](pipeline/audit_assets.ts) (`pnpm audit:assets [--dist <dir>]`) | Every file the deploy ships for Ikebukuro (10: contract JSON, scene entry, 6 declared assets) is declared in `station.json` or is a contract file; none is missing; the sidecar source hash is `station.json`'s pin and the recorded sizes are the files'. Negative controls fail on an undeclared, a missing or a tampered file; `--dist` checks a deploy directory for every non-inlined declared file by sha256. | Rights (see the G0 audit), and the built `dist/` unless `--dist` is given. Finding: `ikebukuro_b1_lit.meta.json` records `source_glb_sha256` of an older generic GLB than the one shipped (warning, not fatal). Scene code and `scene/*.json` are bundled into JS and left to PR review. |
 | **G1** frame round trip | [`scene/frame.test.ts`](scene/frame.test.ts) | The scene's `enuToRenderer` is the shared `(x, z, -y)` mapping and round-trips all nodes and edge vertices exactly. Both GLBs' POSITION bounds equal the build-time ENU bounds mapped through it, with identity node transforms, and the graph sits inside them. The Python extractor, `packages/geo` and `tools/gis` agree on the `station.json` origin to 1 cm across the footprint. With `GTEKI_UBLD_ENU=<ubld_enu.json>` (git-ignored build output) 100 % of sampled PLATEAU polygon vertices are in the GLB within 1 cm. | The PLATEAU GML's own lat/lon/h are not read (the 35 MB GML is not committed): the source-to-ENU step is shown by Python-vs-TS agreement, not against the GML. The extract-to-GLB check runs only where the build output exists. |
-| **G2** core matrix | [`scene/routing.test.ts`](scene/routing.test.ts) | On the committed bundle: golden route (JR Central Gate 2 to Exit 35, 198.6 m) and optimality against an independent Dijkstra for all endpoint pairs; unknown ids, `start_equals_goal`, search-only POIs; one-way and closed-link reroute / `no_path` (on mutated copies); the stairs level change and its narration; freshness (`stale`, dates); `require_known` hours and step-free both `no_path`. | Fare-paid boundary and cross-operator rows do not apply (no paid edge, one operator; asserted). Real-world hours, step-free access and narration versus the station are not field-verified. |
+| **G2** core matrix | [`scene/routing.test.ts`](scene/routing.test.ts) | On the committed bundle: golden route (JR Central Gate 2 to Exit 35, 199.1 m) and optimality against an independent Dijkstra for all endpoint pairs; unknown ids, `start_equals_goal`, search-only POIs; one-way and closed-link reroute / `no_path` (on mutated copies); the stairs level change and its narration; freshness (`stale`, dates); `require_known` hours and step-free both `no_path`. | Fare-paid boundary and cross-operator rows do not apply (no paid edge, one operator; asserted). Real-world hours, step-free access and narration versus the station are not field-verified. |
 
 ### G3 detail
 
@@ -162,11 +302,13 @@ Done so far:
   ([video](docs/evidence/walk-west-exit-to-exit4.mp4)).
 - An independent Astra High critique, addressed in `ca399cb`.
 
-Remaining before claiming L2:
+Remaining before claiming L2: see [docs/g0-g4-status.md](docs/g0-g4-status.md) (gate-by-gate status, dated, with the
+main SHA) and [docs/l2-evidence.md](docs/l2-evidence.md) (the four required L2 evidence items, what is missing and the
+capture plan). In short:
 
 - A real phone test (only emulated so far).
-- A side-by-side reference review on site.
-- An avatar pass in the explorer (core lane).
+- A fresh independent side-by-side review, and the on-site reference comparison.
+- Recordings and measurements on current main, desktop and phone (Lane F).
 
 Evidence stills:
 
@@ -196,8 +338,25 @@ Evidence stills:
   [Exit 4 stair foot](docs/evidence/27-exit4-foot.jpg), [passage north](docs/evidence/28-west-corridor.jpg)
 
 **Measured** (harness, Apple Silicon, Chromium):
-- quality "low": at most 28 draw calls and 129k triangles per frame (56 crowd agents, 100 signs; four spots × four headings in the Central, West, South-West and North areas). Signs share atlas textures and merged geometry (three draw calls for all of them; one mesh per sign had pushed this to 252). On "low" the sign atlas is one 4096 × 2048 page painted at ~160 px/m (about 45 MB of GPU texture with mipmaps, down from 134 MB at full resolution);
+- quality "low": at most 28 draw calls and 129k triangles per frame (56 crowd agents, 100 signs; four spots × four headings in the Central, West, South-West and North areas). Signs share atlas textures and merged geometry (three draw calls for all of them; one mesh per sign had pushed this to 252). On "low" the sign atlas is one 4096 × 2048 page plus, only when the faces need it, an overflow page (4096 × 512 today), painted at `LOW_TEXEL_SCALE` 0.56 (~168 px/m; about 53 MB of GPU texture with mipmaps, against 134 MB at full resolution); the overflow page adds one draw call to the 28 measured with a single page. 0.56 was chosen over 0.6 (4096 × 1024, ~64 MB) on the 2026-10-23 iPhone 15-size low-tier shoot: at 6, 8 and 10 m both read the same (Japanese, English and "~N m"), since the 1.5× render resolution, not the atlas, is the limit;
 - shipped assets: 9.5 MB at "high", with lightmap WebP 1.1 MB (4k) or 0.5 MB (2k).
+
+### Cue source (#108 acceptance 4)
+
+The cues along the two guided legs, and where each comes from. Nothing here is invented: signs list
+only POIs the verified graph routes to, and the junctions are graph nodes.
+
+| Cue | Where | Source |
+| --- | --- | --- |
+| End signs at junctions | ~4 m along each verified edge from a junction | `graph:<edge>` + `poi:<exit or gate>`, derived by `pipeline/build_signage.py` |
+| Repeater 1 to 5 (`sign-rep-sw_h__w_cj-1…5`) | on `sw_h__w_cj` (152 m), 24 m apart between its two end signs | `basis`: `graph:sw_h__w_cj`, `fact:af-west-corridor`, and the `poi:` ids shown: `exit-4`, `exit-13`, `exit-15`, `exit-17`, `exit-38`, `exit-41`, `jr-central-gate-1`, `jr-south-gate` |
+| Place boards 1 to 6 (`sign-place-sw_h__w_cj-1…6`) | blue boards halfway between neighbouring signs on `sw_h__w_cj`, so two sign kinds alternate every ~12 m | `basis`: `graph:sw_h__w_cj`, `fact:af-west-corridor`, `poi:west-exit-b1`, `poi:west-exit-south-b1` (area names as printed on the reference map; distances are graph walks to the hall's junction) |
+| Junction nodes | `w_cj`, `sw_h` and the other graph junctions on the legs | `data/graph.src.json` nodes snapped to the PLATEAU walkable grid |
+
+The `basis` field of every repeater in `scene/signage.json` is the authoritative list. The
+`westb1-exit4` leg ran 143 m between two signs before this; it now has a readable sign every 24 m at
+most (`scene/signage.test.ts`). `jrc2-exit35` already met the 30 m rule. The per-window audit of both
+legs is [docs/b1-cue-audit.md](docs/b1-cue-audit.md).
 
 ## Deliberate simplifications
 
@@ -210,6 +369,19 @@ Evidence stills:
 - **Signs** use GTEki's design, placed about 4 m along each verified edge from junctions. Their
   content is computed from the verified graph. Positions are not real sign locations. Gate names
   carry a plain line-colour chip ("JR" on green), not an operator logo.
+  **Place boards** (`kind: "place"`, #108) sit between the repeaters: a blue panel naming the nearest B1 hall
+  (西口（地下）, 西口（南）（地下）, 東口（地下）, whose names are the area names printed on the reference map) each way,
+  with the graph walking distance to the hall's junction, rounded to 5 m. Passages are not named, because their
+  connector is an arbitrary junction inside them. Positions are design. On "low" the sign atlas is painted at
+  `LOW_TEXEL_SCALE` 0.56 (168 px/m), on one 4096 × 2048 page and an on-demand overflow page (see "Measured").
+  **Repeater signs** (`kind: "repeat"`, #108) fill verified edges of 100 m or more, spaced at most
+  24 m apart between the two end signs. Each is double-sided: the front faces walkers leaving the
+  edge's `from` node and the back faces the other way, with at most 3 exits and 1 gate and a
+  small "~140 m" countdown per item. The countdown is the graph's own walking distance
+  (`lengthM`, Dijkstra) to the POI's connector node less the sign's position, rounded to 5 m.
+  Exit 4 counts down to its stair foot, where the route ends. Content is a fact (verified edge,
+  routable POI); the positions and the spacing are design, not the real signs' locations. They
+  add two faces each to the sign atlas (see the budget test in `scene/signage.test.ts`).
 - **Crowd** is ambient decoration on verified edges, clamped to surveyed walkable lanes. It is
   not a pedestrian-flow model.
 - **Openings into unmodelled space** (fare areas, shops) block movement and render as a fogged
@@ -249,6 +421,33 @@ Evidence stills:
   (`scene/walker_replay.test.ts`, harness `pipeline/walker_replay.ts`; `scene/walker_replay.heavy.test.ts`
   is the dense version, `pnpm test:heavy`). Negative controls: removing the longest panel, and removing
   every fence. Fences block the walker only; the graph, routing and gridnav are unchanged.
+
+## KSJ N02 context overlay
+
+`context/ksj_n02_2025_r700.glb` shows KSJ N02-2025 railway and station geometry clipped to a 700 m origin disc, with coarse kind and feature hashes only: no source names, codes or attributes. It is **NOT_FOR_ROUTING**, **UNVERIFIED**, visual only, and never walkable or a collider. N02 has no underground/at-grade field, so the ribbons assert no track level. It shares the street-context visibility gate and uses a +0.02 m renderer y offset above the constant 32.5 m z basis; the offset is presentation, not data z. Credit (CC BY 4.0, displayed in the bottom credit strip and Credits/coverage dialog): 出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html）を加工して作成
+
+## Street-level context (#39)
+
+`assets/ikebukuro_context_low.glb` (8 tiled meshes, 30,418 triangles, 2.3 MB) and `_high.glb` (8 meshes, 139,525
+triangles, 9.5 MB) are visual-only PLATEAU surface **buildings and roads** around the exits, built by `tools/gis`
+(`gis context-glb ikebukuro --variant low|high --merge tiles:380`; commands, receipts in `docs/gis/context/` and
+sha256s are on the `street-context` asset in `station.json`). Every node is `gteki_role=context`, `ctx_bldg_*` or
+`ctx_road_*`, `NOT_FOR_ROUTING`: never walkable, never a collider, and `assembleCollision`
+never sees them. `scene/scene.ts` loads the file for `ctx.quality` (fails soft) with a cheap daylight material that
+takes the explorer's street fog, and keeps the group **out of the scene** unless the camera is at street height:
+renderer y within [street - 1 m, street + 25 m] (street = 32.5 m) and the scene is fogged (`scene/context.ts`, read
+from an `onBeforeRender` on the B1 floor mesh, so one frame late and no extra draw call). Underground and in overview
+(camera about 301 m up, no fog) the context costs nothing and does not change the overview framing; at street level
+low adds at most 8 draws and 30.4k triangles. The credit 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成
+is each context source's `attribution`, which the app's coverage dialog lists. **Roads ship as geometry only** (no
+`tran` attribute) under the Owner's risk acceptance that the GSI approval (令7関公第296号) covers attributes only:
+`docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md`. If that scope turns up and does not fit, the
+`--kinds bldg` build is the buildings-only fallback. The **buildings** (not the roads) also stop the follow camera, so it
+cannot end up inside one near the exits: the explorer reads `cameraBlockers` once when `buildScene` resolves, so
+`scene/scene.ts` returns one empty camera-only mesh per street node and `createContextBlockers` fills them from the
+`ctx_bldg_*` triangles within 20 m of the node when the context arrives (about 1.4k triangles low, 11k high, in
+world space and outside the scene graph); they are switched on only with the context, so underground and overview
+rays never test them, and walking is unchanged.
 
 ## Next
 

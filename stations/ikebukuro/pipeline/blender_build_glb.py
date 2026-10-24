@@ -33,8 +33,7 @@ COLORS = {
     "portals": (1, 0, 1, 0),
 }
 AREA_EPS = 1e-10  # square metres; substantially below a 1 mm square
-ATTRIBUTION = ("Contains PLATEAU data (MLIT), CC BY 4.0. Modified: reprojected "
-               "to a local ENU frame, triangulated and re-encoded as glTF by GTEki.")
+ATTRIBUTION = "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成"
 
 
 def area_vector(ring):

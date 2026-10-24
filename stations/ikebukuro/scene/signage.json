@@ -314,15 +314,15 @@
    "id": "sign-w_c-w_c__w_n",
    "atNode": "w_c",
    "position": {
-    "x": -109.11,
-    "y": 125.399,
+    "x": -109.098,
+    "y": 125.407,
     "z": 30.4
    },
    "maxWidthM": 6.0,
    "scale": 1.0,
    "facing": {
-    "x": 0.5433,
-    "y": -0.8396
+    "x": 0.5408,
+    "y": -0.8412
    },
    "ceilingZ": 31.428,
    "exits": [
@@ -511,15 +511,15 @@
    "id": "sign-w_n-w_c__w_n-r",
    "atNode": "w_n",
    "position": {
-    "x": -111.025,
-    "y": 147.633,
+    "x": -109.198,
+    "y": 144.932,
     "z": 30.15
    },
-   "maxWidthM": 6.0,
+   "maxWidthM": 4.99,
    "scale": 1.0,
    "facing": {
-    "x": 0.2425,
-    "y": 0.9701
+    "x": 0.4258,
+    "y": 0.9048
    },
    "ceilingZ": 30.42,
    "exits": [
@@ -572,6 +572,12 @@
      "arrow": "left",
      "exits": [
       {
+       "id": "exit-17",
+       "label": "17",
+       "ja": "17番出口",
+       "en": "Exit 17"
+      },
+      {
        "id": "exit-15",
        "label": "15",
        "ja": "15番出口",
@@ -588,18 +594,6 @@
        "label": "11",
        "ja": "11番出口",
        "en": "Exit 11"
-      }
-     ],
-     "gates": []
-    },
-    {
-     "arrow": "up",
-     "exits": [
-      {
-       "id": "exit-17",
-       "label": "17",
-       "ja": "17番出口",
-       "en": "Exit 17"
       }
      ],
      "gates": []
@@ -837,29 +831,6 @@
      "gates": []
     },
     {
-     "arrow": "up",
-     "exits": [
-      {
-       "id": "exit-13",
-       "label": "13",
-       "ja": "13番出口",
-       "en": "Exit 13"
-      }
-     ],
-     "gates": [
-      {
-       "id": "jr-central-gate-1",
-       "ja": "JR 中央1改札",
-       "en": "JR Central Gate 1"
-      },
-      {
-       "id": "jr-central-gate-2",
-       "ja": "JR 中央2改札",
-       "en": "JR Central Gate 2"
-      }
-     ]
-    },
-    {
      "arrow": "right",
      "exits": [
       {
@@ -879,9 +850,26 @@
        "label": "11",
        "ja": "11番出口",
        "en": "Exit 11"
+      },
+      {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
       }
      ],
-     "gates": []
+     "gates": [
+      {
+       "id": "jr-central-gate-1",
+       "ja": "JR 中央1改札",
+       "en": "JR Central Gate 1"
+      },
+      {
+       "id": "jr-central-gate-2",
+       "ja": "JR 中央2改札",
+       "en": "JR Central Gate 2"
+      }
+     ]
     }
    ]
   },
@@ -1138,8 +1126,8 @@
    "id": "sign-w_13j-w_cj__w_13j-r",
    "atNode": "w_13j",
    "position": {
-    "x": -135.61,
-    "y": 122.067,
+    "x": -136.783,
+    "y": 123.608,
     "z": 30.4
    },
    "maxWidthM": 6.0,
@@ -1231,8 +1219,8 @@
    "id": "sign-w_13j-w_13j__w_w",
    "atNode": "w_13j",
    "position": {
-    "x": -143.39,
-    "y": 123.933,
+    "x": -144.749,
+    "y": 126.839,
     "z": 30.4
    },
    "maxWidthM": 6.0,
@@ -2696,15 +2684,15 @@
    "id": "sign-c_mid-c_w__c_mid-r",
    "atNode": "c_mid",
    "position": {
-    "x": -27.645,
-    "y": 73.795,
+    "x": -27.64,
+    "y": 73.793,
     "z": 30.18
    },
    "maxWidthM": 4.87,
    "scale": 1.0,
    "facing": {
-    "x": 0.9149,
-    "y": -0.4036
+    "x": 0.9138,
+    "y": -0.4061
    },
    "ceilingZ": 30.5,
    "exits": [
@@ -5114,7 +5102,7 @@
    ]
   },
   {
-   "id": "sign-e_hall-e_hall__e_low",
+   "id": "sign-e_hall-e_hall__e_hall_stair_top",
    "atNode": "e_hall",
    "position": {
     "x": 97.495,
@@ -5282,7 +5270,7 @@
    ]
   },
   {
-   "id": "sign-e_low-e_hall__e_low-r",
+   "id": "sign-e_low-e_hall_stair_foot__e_low-r",
    "atNode": "e_low",
    "position": {
     "x": 123.802,
@@ -5521,6 +5509,330 @@
       }
      ],
      "gates": []
+    }
+   ]
+  },
+  {
+   "id": "sign-e_hall_stair_top-e_hall__e_hall_stair_top-r",
+   "atNode": "e_hall_stair_top",
+   "position": {
+    "x": 106.679,
+    "y": 31.696,
+    "z": 30.03
+   },
+   "maxWidthM": 4.42,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.9818,
+    "y": 0.19
+   },
+   "ceilingZ": 30.32,
+   "exits": [
+    {
+     "id": "exit-27",
+     "label": "27",
+     "ja": "27番出口",
+     "en": "Exit 27"
+    },
+    {
+     "id": "exit-36",
+     "label": "36",
+     "ja": "36番出口",
+     "en": "Exit 36"
+    },
+    {
+     "id": "exit-43",
+     "label": "43",
+     "ja": "43番出口",
+     "en": "Exit 43"
+    },
+    {
+     "id": "exit-42",
+     "label": "42",
+     "ja": "42番出口",
+     "en": "Exit 42"
+    },
+    {
+     "id": "exit-37",
+     "label": "37",
+     "ja": "37番出口",
+     "en": "Exit 37"
+    }
+   ],
+   "gates": [
+    {
+     "id": "jr-central-gate-2",
+     "ja": "JR 中央2改札",
+     "en": "JR Central Gate 2"
+    },
+    {
+     "id": "jr-central-gate-1",
+     "ja": "JR 中央1改札",
+     "en": "JR Central Gate 1"
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [
+      {
+       "id": "exit-34",
+       "label": "34",
+       "ja": "34番出口",
+       "en": "Exit 34"
+      },
+      {
+       "id": "exit-35",
+       "label": "35",
+       "ja": "35番出口",
+       "en": "Exit 35"
+      }
+     ],
+     "gates": []
+    }
+   ]
+  },
+  {
+   "id": "sign-e_hall_stair_top-e_hall_stair_top__e_hall_stair_foot",
+   "atNode": "e_hall_stair_top",
+   "position": {
+    "x": 115.964,
+    "y": 31.654,
+    "z": 29.67
+   },
+   "maxWidthM": 2.0,
+   "scale": 0.678,
+   "facing": {
+    "x": -0.7071,
+    "y": -0.7071
+   },
+   "ceilingZ": 29.853,
+   "exits": [
+    {
+     "id": "exit-34",
+     "label": "34",
+     "ja": "34番出口",
+     "en": "Exit 34"
+    },
+    {
+     "id": "exit-35",
+     "label": "35",
+     "ja": "35番出口",
+     "en": "Exit 35"
+    }
+   ],
+   "gates": [],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [
+      {
+       "id": "exit-27",
+       "label": "27",
+       "ja": "27番出口",
+       "en": "Exit 27"
+      },
+      {
+       "id": "exit-36",
+       "label": "36",
+       "ja": "36番出口",
+       "en": "Exit 36"
+      },
+      {
+       "id": "exit-43",
+       "label": "43",
+       "ja": "43番出口",
+       "en": "Exit 43"
+      },
+      {
+       "id": "exit-42",
+       "label": "42",
+       "ja": "42番出口",
+       "en": "Exit 42"
+      },
+      {
+       "id": "exit-37",
+       "label": "37",
+       "ja": "37番出口",
+       "en": "Exit 37"
+      }
+     ],
+     "gates": [
+      {
+       "id": "jr-central-gate-2",
+       "ja": "JR 中央2改札",
+       "en": "JR Central Gate 2"
+      },
+      {
+       "id": "jr-central-gate-1",
+       "ja": "JR 中央1改札",
+       "en": "JR Central Gate 1"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sign-e_hall_stair_foot-e_hall_stair_top__e_hall_stair_foot-r",
+   "atNode": "e_hall_stair_foot",
+   "position": {
+    "x": 116.349,
+    "y": 31.74,
+    "z": 29.559
+   },
+   "maxWidthM": 1.2,
+   "scale": 0.709,
+   "facing": {
+    "x": 0.7071,
+    "y": 0.7071
+   },
+   "ceilingZ": 29.749,
+   "exits": [
+    {
+     "id": "exit-27",
+     "label": "27",
+     "ja": "27番出口",
+     "en": "Exit 27"
+    },
+    {
+     "id": "exit-36",
+     "label": "36",
+     "ja": "36番出口",
+     "en": "Exit 36"
+    },
+    {
+     "id": "exit-43",
+     "label": "43",
+     "ja": "43番出口",
+     "en": "Exit 43"
+    },
+    {
+     "id": "exit-42",
+     "label": "42",
+     "ja": "42番出口",
+     "en": "Exit 42"
+    },
+    {
+     "id": "exit-37",
+     "label": "37",
+     "ja": "37番出口",
+     "en": "Exit 37"
+    }
+   ],
+   "gates": [
+    {
+     "id": "jr-central-gate-2",
+     "ja": "JR 中央2改札",
+     "en": "JR Central Gate 2"
+    },
+    {
+     "id": "jr-central-gate-1",
+     "ja": "JR 中央1改札",
+     "en": "JR Central Gate 1"
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [
+      {
+       "id": "exit-34",
+       "label": "34",
+       "ja": "34番出口",
+       "en": "Exit 34"
+      },
+      {
+       "id": "exit-35",
+       "label": "35",
+       "ja": "35番出口",
+       "en": "Exit 35"
+      }
+     ],
+     "gates": []
+    }
+   ]
+  },
+  {
+   "id": "sign-e_hall_stair_foot-e_hall_stair_foot__e_low",
+   "atNode": "e_hall_stair_foot",
+   "position": {
+    "x": 122.229,
+    "y": 34.75,
+    "z": 29.03
+   },
+   "maxWidthM": 5.66,
+   "scale": 0.625,
+   "facing": {
+    "x": -0.9899,
+    "y": -0.1414
+   },
+   "ceilingZ": 29.2,
+   "exits": [
+    {
+     "id": "exit-34",
+     "label": "34",
+     "ja": "34番出口",
+     "en": "Exit 34"
+    },
+    {
+     "id": "exit-35",
+     "label": "35",
+     "ja": "35番出口",
+     "en": "Exit 35"
+    }
+   ],
+   "gates": [],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [
+      {
+       "id": "exit-27",
+       "label": "27",
+       "ja": "27番出口",
+       "en": "Exit 27"
+      },
+      {
+       "id": "exit-36",
+       "label": "36",
+       "ja": "36番出口",
+       "en": "Exit 36"
+      },
+      {
+       "id": "exit-43",
+       "label": "43",
+       "ja": "43番出口",
+       "en": "Exit 43"
+      },
+      {
+       "id": "exit-42",
+       "label": "42",
+       "ja": "42番出口",
+       "en": "Exit 42"
+      },
+      {
+       "id": "exit-37",
+       "label": "37",
+       "ja": "37番出口",
+       "en": "Exit 37"
+      }
+     ],
+     "gates": [
+      {
+       "id": "jr-central-gate-2",
+       "ja": "JR 中央2改札",
+       "en": "JR Central Gate 2"
+      },
+      {
+       "id": "jr-central-gate-1",
+       "ja": "JR 中央1改札",
+       "en": "JR Central Gate 1"
+      }
+     ]
     }
    ]
   },
@@ -6608,17 +6920,17 @@
    "id": "sign-ne_j-n_e__ne_j-r",
    "atNode": "ne_j",
    "position": {
-    "x": 105.82,
-    "y": 107.99,
-    "z": 29.057
+    "x": 105.872,
+    "y": 107.969,
+    "z": 29.036
    },
    "maxWidthM": 6.0,
    "scale": 1.0,
    "facing": {
-    "x": 0.9191,
-    "y": -0.3939
+    "x": 0.9285,
+    "y": -0.3714
    },
-   "ceilingZ": 29.354,
+   "ceilingZ": 29.356,
    "exits": [
     {
      "id": "exit-22",
@@ -6788,8 +7100,8 @@
    "id": "sign-ne_j-ne_j__ne_m",
    "atNode": "ne_j",
    "position": {
-    "x": 113.032,
-    "y": 104.974,
+    "x": 113.959,
+    "y": 104.596,
     "z": 28.73
    },
    "maxWidthM": 6.0,
@@ -8592,12 +8904,12 @@
    ]
   },
   {
-   "id": "sign-s41_j-s41_j__s41_f",
+   "id": "sign-s41_j-s41_j__s41_stair_foot",
    "atNode": "s41_j",
    "position": {
-    "x": 73.28,
-    "y": -67.062,
-    "z": 28.963
+    "x": 72.994,
+    "y": -70.55,
+    "z": 28.35
    },
    "maxWidthM": 2.59,
    "scale": 1.0,
@@ -8605,7 +8917,7 @@
     "x": -0.0,
     "y": -1.0
    },
-   "ceilingZ": 29.283,
+   "ceilingZ": 28.883,
    "exits": [
     {
      "id": "exit-41",
@@ -8760,7 +9072,7 @@
    ]
   },
   {
-   "id": "sign-s41_f-s41_j__s41_f-r",
+   "id": "sign-s41_f-s41_stair_top__s41_f-r",
    "atNode": "s41_f",
    "position": {
     "x": 73.943,
@@ -8847,6 +9159,306 @@
    "facing": {
     "x": -0.5882,
     "y": -0.8087
+   },
+   "ceilingZ": 29.283,
+   "exits": [
+    {
+     "id": "exit-41",
+     "label": "41",
+     "ja": "41番出口",
+     "en": "Exit 41"
+    }
+   ],
+   "gates": [],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [
+      {
+       "id": "exit-38",
+       "label": "38",
+       "ja": "38番出口",
+       "en": "Exit 38"
+      },
+      {
+       "id": "exit-40",
+       "label": "40",
+       "ja": "40番出口",
+       "en": "Exit 40"
+      },
+      {
+       "id": "exit-39",
+       "label": "39",
+       "ja": "39番出口",
+       "en": "Exit 39"
+      },
+      {
+       "id": "exit-37",
+       "label": "37",
+       "ja": "37番出口",
+       "en": "Exit 37"
+      },
+      {
+       "id": "exit-4",
+       "label": "4",
+       "ja": "4番出口",
+       "en": "Exit 4"
+      }
+     ],
+     "gates": [
+      {
+       "id": "jr-south-gate",
+       "ja": "JR 南改札",
+       "en": "JR South Gate"
+      },
+      {
+       "id": "jr-central-gate-2",
+       "ja": "JR 中央2改札",
+       "en": "JR Central Gate 2"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sign-s41_stair_foot-s41_j__s41_stair_foot-r",
+   "atNode": "s41_stair_foot",
+   "position": {
+    "x": 73.002,
+    "y": -70.45,
+    "z": 28.35
+   },
+   "maxWidthM": 2.59,
+   "scale": 1.0,
+   "facing": {
+    "x": -0.0,
+    "y": 1.0
+   },
+   "ceilingZ": 28.883,
+   "exits": [
+    {
+     "id": "exit-38",
+     "label": "38",
+     "ja": "38番出口",
+     "en": "Exit 38"
+    },
+    {
+     "id": "exit-40",
+     "label": "40",
+     "ja": "40番出口",
+     "en": "Exit 40"
+    },
+    {
+     "id": "exit-39",
+     "label": "39",
+     "ja": "39番出口",
+     "en": "Exit 39"
+    },
+    {
+     "id": "exit-37",
+     "label": "37",
+     "ja": "37番出口",
+     "en": "Exit 37"
+    },
+    {
+     "id": "exit-4",
+     "label": "4",
+     "ja": "4番出口",
+     "en": "Exit 4"
+    }
+   ],
+   "gates": [
+    {
+     "id": "jr-south-gate",
+     "ja": "JR 南改札",
+     "en": "JR South Gate"
+    },
+    {
+     "id": "jr-central-gate-2",
+     "ja": "JR 中央2改札",
+     "en": "JR Central Gate 2"
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [
+      {
+       "id": "exit-41",
+       "label": "41",
+       "ja": "41番出口",
+       "en": "Exit 41"
+      }
+     ],
+     "gates": []
+    }
+   ]
+  },
+  {
+   "id": "sign-s41_stair_foot-s41_stair_foot__s41_stair_top",
+   "atNode": "s41_stair_foot",
+   "position": {
+    "x": 73.132,
+    "y": -68.86,
+    "z": 28.563
+   },
+   "maxWidthM": 2.62,
+   "scale": 1.0,
+   "facing": {
+    "x": -0.2425,
+    "y": -0.9701
+   },
+   "ceilingZ": 28.883,
+   "exits": [
+    {
+     "id": "exit-41",
+     "label": "41",
+     "ja": "41番出口",
+     "en": "Exit 41"
+    }
+   ],
+   "gates": [],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [
+      {
+       "id": "exit-38",
+       "label": "38",
+       "ja": "38番出口",
+       "en": "Exit 38"
+      },
+      {
+       "id": "exit-40",
+       "label": "40",
+       "ja": "40番出口",
+       "en": "Exit 40"
+      },
+      {
+       "id": "exit-39",
+       "label": "39",
+       "ja": "39番出口",
+       "en": "Exit 39"
+      },
+      {
+       "id": "exit-37",
+       "label": "37",
+       "ja": "37番出口",
+       "en": "Exit 37"
+      },
+      {
+       "id": "exit-4",
+       "label": "4",
+       "ja": "4番出口",
+       "en": "Exit 4"
+      }
+     ],
+     "gates": [
+      {
+       "id": "jr-south-gate",
+       "ja": "JR 南改札",
+       "en": "JR South Gate"
+      },
+      {
+       "id": "jr-central-gate-2",
+       "ja": "JR 中央2改札",
+       "en": "JR Central Gate 2"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sign-s41_stair_top-s41_stair_foot__s41_stair_top-r",
+   "atNode": "s41_stair_top",
+   "position": {
+    "x": 73.153,
+    "y": -68.602,
+    "z": 28.64
+   },
+   "maxWidthM": 2.62,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.2425,
+    "y": 0.9701
+   },
+   "ceilingZ": 28.96,
+   "exits": [
+    {
+     "id": "exit-38",
+     "label": "38",
+     "ja": "38番出口",
+     "en": "Exit 38"
+    },
+    {
+     "id": "exit-40",
+     "label": "40",
+     "ja": "40番出口",
+     "en": "Exit 40"
+    },
+    {
+     "id": "exit-39",
+     "label": "39",
+     "ja": "39番出口",
+     "en": "Exit 39"
+    },
+    {
+     "id": "exit-37",
+     "label": "37",
+     "ja": "37番出口",
+     "en": "Exit 37"
+    },
+    {
+     "id": "exit-4",
+     "label": "4",
+     "ja": "4番出口",
+     "en": "Exit 4"
+    }
+   ],
+   "gates": [
+    {
+     "id": "jr-south-gate",
+     "ja": "JR 南改札",
+     "en": "JR South Gate"
+    },
+    {
+     "id": "jr-central-gate-2",
+     "ja": "JR 中央2改札",
+     "en": "JR Central Gate 2"
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [
+      {
+       "id": "exit-41",
+       "label": "41",
+       "ja": "41番出口",
+       "en": "Exit 41"
+      }
+     ],
+     "gates": []
+    }
+   ]
+  },
+  {
+   "id": "sign-s41_stair_top-s41_stair_top__s41_f",
+   "atNode": "s41_stair_top",
+   "position": {
+    "x": 73.573,
+    "y": -63.5,
+    "z": 28.963
+   },
+   "maxWidthM": 2.59,
+   "scale": 1.0,
+   "facing": {
+    "x": -0.0,
+    "y": -1.0
    },
    "ceilingZ": 29.283,
    "exits": [
@@ -9306,6 +9918,785 @@
       }
      ]
     }
+   ]
+  },
+  {
+   "id": "sign-rep-sw_h__w_cj-1",
+   "kind": "repeat",
+   "atNode": "sw_h",
+   "position": {
+    "x": -118.4,
+    "y": -1.343,
+    "z": 29.85
+   },
+   "maxWidthM": 6.0,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.1178,
+    "y": -0.993
+   },
+   "ceilingZ": 30.17,
+   "exits": [
+    {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13",
+     "distanceM": 145
+    },
+    {
+     "id": "exit-17",
+     "label": "17",
+     "ja": "17番出口",
+     "en": "Exit 17",
+     "distanceM": 190
+    },
+    {
+     "id": "exit-15",
+     "label": "15",
+     "ja": "15番出口",
+     "en": "Exit 15",
+     "distanceM": 195
+    }
+   ],
+   "gates": [
+    {
+     "id": "jr-central-gate-1",
+     "ja": "JR 中央1改札",
+     "en": "JR Central Gate 1",
+     "distanceM": 255
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [
+      {
+       "id": "exit-4",
+       "label": "4",
+       "ja": "4番出口",
+       "en": "Exit 4",
+       "distanceM": 45
+      },
+      {
+       "id": "exit-38",
+       "label": "38",
+       "ja": "38番出口",
+       "en": "Exit 38",
+       "distanceM": 225
+      },
+      {
+       "id": "exit-41",
+       "label": "41",
+       "ja": "41番出口",
+       "en": "Exit 41",
+       "distanceM": 275
+      }
+     ],
+     "gates": [
+      {
+       "id": "jr-south-gate",
+       "ja": "JR 南改札",
+       "en": "JR South Gate",
+       "distanceM": 85
+      }
+     ]
+    }
+   ],
+   "basis": [
+    "graph:sw_h__w_cj",
+    "poi:exit-13",
+    "poi:exit-15",
+    "poi:exit-17",
+    "poi:exit-38",
+    "poi:exit-4",
+    "poi:exit-41",
+    "poi:jr-central-gate-1",
+    "poi:jr-south-gate",
+    "fact:af-west-corridor"
+   ]
+  },
+  {
+   "id": "sign-rep-sw_h__w_cj-2",
+   "kind": "repeat",
+   "atNode": "sw_h",
+   "position": {
+    "x": -123.042,
+    "y": 20.637,
+    "z": 30.4
+   },
+   "maxWidthM": 5.29,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.0264,
+    "y": -0.9997
+   },
+   "ceilingZ": 31.0,
+   "exits": [
+    {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13",
+     "distanceM": 120
+    },
+    {
+     "id": "exit-17",
+     "label": "17",
+     "ja": "17番出口",
+     "en": "Exit 17",
+     "distanceM": 170
+    },
+    {
+     "id": "exit-15",
+     "label": "15",
+     "ja": "15番出口",
+     "en": "Exit 15",
+     "distanceM": 170
+    }
+   ],
+   "gates": [
+    {
+     "id": "jr-central-gate-1",
+     "ja": "JR 中央1改札",
+     "en": "JR Central Gate 1",
+     "distanceM": 230
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [
+      {
+       "id": "exit-4",
+       "label": "4",
+       "ja": "4番出口",
+       "en": "Exit 4",
+       "distanceM": 65
+      },
+      {
+       "id": "exit-38",
+       "label": "38",
+       "ja": "38番出口",
+       "en": "Exit 38",
+       "distanceM": 250
+      },
+      {
+       "id": "exit-41",
+       "label": "41",
+       "ja": "41番出口",
+       "en": "Exit 41",
+       "distanceM": 300
+      }
+     ],
+     "gates": [
+      {
+       "id": "jr-south-gate",
+       "ja": "JR 南改札",
+       "en": "JR South Gate",
+       "distanceM": 110
+      }
+     ]
+    }
+   ],
+   "basis": [
+    "graph:sw_h__w_cj",
+    "poi:exit-13",
+    "poi:exit-15",
+    "poi:exit-17",
+    "poi:exit-38",
+    "poi:exit-4",
+    "poi:exit-41",
+    "poi:jr-central-gate-1",
+    "poi:jr-south-gate",
+    "fact:af-west-corridor"
+   ]
+  },
+  {
+   "id": "sign-rep-sw_h__w_cj-3",
+   "kind": "repeat",
+   "atNode": "sw_h",
+   "position": {
+    "x": -125.62,
+    "y": 44.436,
+    "z": 30.4
+   },
+   "maxWidthM": 5.7,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.0264,
+    "y": -0.9997
+   },
+   "ceilingZ": 31.0,
+   "exits": [
+    {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13",
+     "distanceM": 95
+    },
+    {
+     "id": "exit-17",
+     "label": "17",
+     "ja": "17番出口",
+     "en": "Exit 17",
+     "distanceM": 145
+    },
+    {
+     "id": "exit-15",
+     "label": "15",
+     "ja": "15番出口",
+     "en": "Exit 15",
+     "distanceM": 145
+    }
+   ],
+   "gates": [
+    {
+     "id": "jr-central-gate-1",
+     "ja": "JR 中央1改札",
+     "en": "JR Central Gate 1",
+     "distanceM": 205
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [
+      {
+       "id": "exit-4",
+       "label": "4",
+       "ja": "4番出口",
+       "en": "Exit 4",
+       "distanceM": 90
+      },
+      {
+       "id": "exit-38",
+       "label": "38",
+       "ja": "38番出口",
+       "en": "Exit 38",
+       "distanceM": 275
+      },
+      {
+       "id": "exit-41",
+       "label": "41",
+       "ja": "41番出口",
+       "en": "Exit 41",
+       "distanceM": 320
+      }
+     ],
+     "gates": [
+      {
+       "id": "jr-south-gate",
+       "ja": "JR 南改札",
+       "en": "JR South Gate",
+       "distanceM": 135
+      }
+     ]
+    }
+   ],
+   "basis": [
+    "graph:sw_h__w_cj",
+    "poi:exit-13",
+    "poi:exit-15",
+    "poi:exit-17",
+    "poi:exit-38",
+    "poi:exit-4",
+    "poi:exit-41",
+    "poi:jr-central-gate-1",
+    "poi:jr-south-gate",
+    "fact:af-west-corridor"
+   ]
+  },
+  {
+   "id": "sign-rep-sw_h__w_cj-4",
+   "kind": "repeat",
+   "atNode": "sw_h",
+   "position": {
+    "x": -126.996,
+    "y": 68.266,
+    "z": 30.4
+   },
+   "maxWidthM": 5.12,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.0264,
+    "y": -0.9997
+   },
+   "ceilingZ": 31.0,
+   "exits": [
+    {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13",
+     "distanceM": 70
+    },
+    {
+     "id": "exit-17",
+     "label": "17",
+     "ja": "17番出口",
+     "en": "Exit 17",
+     "distanceM": 120
+    },
+    {
+     "id": "exit-15",
+     "label": "15",
+     "ja": "15番出口",
+     "en": "Exit 15",
+     "distanceM": 125
+    }
+   ],
+   "gates": [
+    {
+     "id": "jr-central-gate-1",
+     "ja": "JR 中央1改札",
+     "en": "JR Central Gate 1",
+     "distanceM": 185
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [
+      {
+       "id": "exit-4",
+       "label": "4",
+       "ja": "4番出口",
+       "en": "Exit 4",
+       "distanceM": 115
+      },
+      {
+       "id": "exit-38",
+       "label": "38",
+       "ja": "38番出口",
+       "en": "Exit 38",
+       "distanceM": 295
+      },
+      {
+       "id": "exit-41",
+       "label": "41",
+       "ja": "41番出口",
+       "en": "Exit 41",
+       "distanceM": 345
+      }
+     ],
+     "gates": [
+      {
+       "id": "jr-south-gate",
+       "ja": "JR 南改札",
+       "en": "JR South Gate",
+       "distanceM": 160
+      }
+     ]
+    }
+   ],
+   "basis": [
+    "graph:sw_h__w_cj",
+    "poi:exit-13",
+    "poi:exit-15",
+    "poi:exit-17",
+    "poi:exit-38",
+    "poi:exit-4",
+    "poi:exit-41",
+    "poi:jr-central-gate-1",
+    "poi:jr-south-gate",
+    "fact:af-west-corridor"
+   ]
+  },
+  {
+   "id": "sign-rep-sw_h__w_cj-5",
+   "kind": "repeat",
+   "atNode": "sw_h",
+   "position": {
+    "x": -127.891,
+    "y": 92.109,
+    "z": 30.4
+   },
+   "maxWidthM": 5.52,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.0264,
+    "y": -0.9997
+   },
+   "ceilingZ": 31.0,
+   "exits": [
+    {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13",
+     "distanceM": 45
+    },
+    {
+     "id": "exit-17",
+     "label": "17",
+     "ja": "17番出口",
+     "en": "Exit 17",
+     "distanceM": 95
+    },
+    {
+     "id": "exit-15",
+     "label": "15",
+     "ja": "15番出口",
+     "en": "Exit 15",
+     "distanceM": 100
+    }
+   ],
+   "gates": [
+    {
+     "id": "jr-central-gate-1",
+     "ja": "JR 中央1改札",
+     "en": "JR Central Gate 1",
+     "distanceM": 160
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [
+      {
+       "id": "exit-4",
+       "label": "4",
+       "ja": "4番出口",
+       "en": "Exit 4",
+       "distanceM": 140
+      },
+      {
+       "id": "exit-38",
+       "label": "38",
+       "ja": "38番出口",
+       "en": "Exit 38",
+       "distanceM": 320
+      },
+      {
+       "id": "exit-41",
+       "label": "41",
+       "ja": "41番出口",
+       "en": "Exit 41",
+       "distanceM": 370
+      }
+     ],
+     "gates": [
+      {
+       "id": "jr-south-gate",
+       "ja": "JR 南改札",
+       "en": "JR South Gate",
+       "distanceM": 185
+      }
+     ]
+    }
+   ],
+   "basis": [
+    "graph:sw_h__w_cj",
+    "poi:exit-13",
+    "poi:exit-15",
+    "poi:exit-17",
+    "poi:exit-38",
+    "poi:exit-4",
+    "poi:exit-41",
+    "poi:jr-central-gate-1",
+    "poi:jr-south-gate",
+    "fact:af-west-corridor"
+   ]
+  },
+  {
+   "id": "sign-place-sw_h__w_cj-1",
+   "kind": "place",
+   "atNode": "sw_h",
+   "position": {
+    "x": -117.952,
+    "y": -13.302,
+    "z": 29.85
+   },
+   "maxWidthM": 6.0,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.1178,
+    "y": -0.993
+   },
+   "ceilingZ": 30.17,
+   "exits": [],
+   "gates": [],
+   "places": [
+    {
+     "id": "west-exit-b1",
+     "ja": "西口（地下）",
+     "en": "West Exit (B1)",
+     "distanceM": 155
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [],
+     "gates": [],
+     "places": [
+      {
+       "id": "west-exit-south-b1",
+       "ja": "西口（南）（地下）",
+       "en": "West Exit South (B1)",
+       "distanceM": 15
+      }
+     ]
+    }
+   ],
+   "basis": [
+    "graph:sw_h__w_cj",
+    "poi:west-exit-b1",
+    "poi:west-exit-south-b1",
+    "fact:af-west-corridor"
+   ]
+  },
+  {
+   "id": "sign-place-sw_h__w_cj-2",
+   "kind": "place",
+   "atNode": "sw_h",
+   "position": {
+    "x": -122.579,
+    "y": 8.716,
+    "z": 30.4
+   },
+   "maxWidthM": 5.3,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.0264,
+    "y": -0.9997
+   },
+   "ceilingZ": 31.0,
+   "exits": [],
+   "gates": [],
+   "places": [
+    {
+     "id": "west-exit-b1",
+     "ja": "西口（地下）",
+     "en": "West Exit (B1)",
+     "distanceM": 130
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [],
+     "gates": [],
+     "places": [
+      {
+       "id": "west-exit-south-b1",
+       "ja": "西口（南）（地下）",
+       "en": "West Exit South (B1)",
+       "distanceM": 40
+      }
+     ]
+    }
+   ],
+   "basis": [
+    "graph:sw_h__w_cj",
+    "poi:west-exit-b1",
+    "poi:west-exit-south-b1",
+    "fact:af-west-corridor"
+   ]
+  },
+  {
+   "id": "sign-place-sw_h__w_cj-3",
+   "kind": "place",
+   "atNode": "sw_h",
+   "position": {
+    "x": -123.646,
+    "y": 32.555,
+    "z": 30.4
+   },
+   "maxWidthM": 5.17,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.0264,
+    "y": -0.9997
+   },
+   "ceilingZ": 31.0,
+   "exits": [],
+   "gates": [],
+   "places": [
+    {
+     "id": "west-exit-b1",
+     "ja": "西口（地下）",
+     "en": "West Exit (B1)",
+     "distanceM": 110
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [],
+     "gates": [],
+     "places": [
+      {
+       "id": "west-exit-south-b1",
+       "ja": "西口（南）（地下）",
+       "en": "West Exit South (B1)",
+       "distanceM": 65
+      }
+     ]
+    }
+   ],
+   "basis": [
+    "graph:sw_h__w_cj",
+    "poi:west-exit-b1",
+    "poi:west-exit-south-b1",
+    "fact:af-west-corridor"
+   ]
+  },
+  {
+   "id": "sign-place-sw_h__w_cj-4",
+   "kind": "place",
+   "atNode": "sw_h",
+   "position": {
+    "x": -126.165,
+    "y": 56.355,
+    "z": 30.4
+   },
+   "maxWidthM": 5.7,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.0264,
+    "y": -0.9997
+   },
+   "ceilingZ": 31.0,
+   "exits": [],
+   "gates": [],
+   "places": [
+    {
+     "id": "west-exit-b1",
+     "ja": "西口（地下）",
+     "en": "West Exit (B1)",
+     "distanceM": 85
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [],
+     "gates": [],
+     "places": [
+      {
+       "id": "west-exit-south-b1",
+       "ja": "西口（南）（地下）",
+       "en": "West Exit South (B1)",
+       "distanceM": 90
+      }
+     ]
+    }
+   ],
+   "basis": [
+    "graph:sw_h__w_cj",
+    "poi:west-exit-b1",
+    "poi:west-exit-south-b1",
+    "fact:af-west-corridor"
+   ]
+  },
+  {
+   "id": "sign-place-sw_h__w_cj-5",
+   "kind": "place",
+   "atNode": "sw_h",
+   "position": {
+    "x": -127.524,
+    "y": 78.184,
+    "z": 30.4
+   },
+   "maxWidthM": 4.98,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.0264,
+    "y": -0.9997
+   },
+   "ceilingZ": 31.0,
+   "exits": [],
+   "gates": [],
+   "places": [
+    {
+     "id": "west-exit-b1",
+     "ja": "西口（地下）",
+     "en": "West Exit (B1)",
+     "distanceM": 60
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [],
+     "gates": [],
+     "places": [
+      {
+       "id": "west-exit-south-b1",
+       "ja": "西口（南）（地下）",
+       "en": "West Exit South (B1)",
+       "distanceM": 110
+      }
+     ]
+    }
+   ],
+   "basis": [
+    "graph:sw_h__w_cj",
+    "poi:west-exit-b1",
+    "poi:west-exit-south-b1",
+    "fact:af-west-corridor"
+   ]
+  },
+  {
+   "id": "sign-place-sw_h__w_cj-6",
+   "kind": "place",
+   "atNode": "sw_h",
+   "position": {
+    "x": -128.155,
+    "y": 104.035,
+    "z": 30.4
+   },
+   "maxWidthM": 5.74,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.0264,
+    "y": -0.9997
+   },
+   "ceilingZ": 31.0,
+   "exits": [],
+   "gates": [],
+   "places": [
+    {
+     "id": "west-exit-b1",
+     "ja": "西口（地下）",
+     "en": "West Exit (B1)",
+     "distanceM": 35
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [],
+     "gates": [],
+     "places": [
+      {
+       "id": "west-exit-south-b1",
+       "ja": "西口（南）（地下）",
+       "en": "West Exit South (B1)",
+       "distanceM": 135
+      }
+     ]
+    }
+   ],
+   "basis": [
+    "graph:sw_h__w_cj",
+    "poi:west-exit-b1",
+    "poi:west-exit-south-b1",
+    "fact:af-west-corridor"
    ]
   }
  ]

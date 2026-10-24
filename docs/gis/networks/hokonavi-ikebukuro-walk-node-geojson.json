@@ -222,6 +222,13 @@
     "0.5",
     "1"
   ],
+  "floor_label_counts": {
+    "0": 1852,
+    "1": 7,
+    "-0.5": 8,
+    "-1": 12,
+    "0.5": 8
+  },
   "topology": {
     "duplicate_ids": [],
     "duplicate_node_ids": [],
@@ -1297,7 +1304,7 @@
     },
     "method": "Join unique literal IDs; unavailable IDs are excluded and counted per side. Shared numeric fields accept only finite numbers or decimal numeric strings; invalid values are non-comparable. Other scalar fields use exact text; blank/null both absent. Raw attributes are retained unchanged. Node CSV lon/lat compared exactly with GeoJSON Point coordinates. No CSV link geometry is available for a polyline equality check."
   },
-  "tool_input_sha256": "ca9ef46e121b7da44432c6b39e75b87bfc5be56e7e661fdd04e6bfbaefcbf403",
+  "tool_input_sha256": "d355cfb305eea2cf5ad0ae6f07c1b2990de94d8b22c036573f1ed2f61ca7ea19",
   "input_sources": [
     {
       "source_id": "hokonavi-ikebukuro-walk-node-geojson",
@@ -1323,5 +1330,40 @@
       "source_id": "mlit-walk-network-spec-2024-07",
       "sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4"
     }
-  ]
+  ],
+  "detail": {
+    "store_path": "out/networks/hokonavi-ikebukuro-walk-node-geojson-207100b49031.network-detail.json",
+    "sha256": "207100b4903132e1d97683908d53bce711a412e2c6b71d1d70b96b463c394ca1",
+    "bytes": 42843
+  },
+  "credit": {
+    "attribution_text": "出典：国土交通省／加工して作成 ; 出典：国土交通省「歩行空間ネットワークデータ等整備仕様 平成30年3月」（版 2018-03、https://www.mlit.go.jp/common/001244374.pdf、SHA-256 9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974）／加工して作成 ; 出典：国土交通省「歩行空間ネットワークデータ整備仕様 令和6年7月」（版 2024-07、https://www.mlit.go.jp/sogoseisaku/soukou/content/001757259.pdf、SHA-256 963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4）／加工して作成",
+    "sources": [
+      {
+        "source_id": "hokonavi-ikebukuro-walk-link-geojson",
+        "attribution_text": "出典：国土交通省／加工して作成",
+        "license_name": "PDL 1.0",
+        "license_url": "https://www.mlit.go.jp/link.html"
+      },
+      {
+        "source_id": "hokonavi-ikebukuro-walk-node-geojson",
+        "attribution_text": "出典：国土交通省／加工して作成",
+        "license_name": "PDL 1.0",
+        "license_url": "https://www.mlit.go.jp/link.html"
+      },
+      {
+        "source_id": "mlit-walk-network-spec-2018-03",
+        "attribution_text": "出典：国土交通省「歩行空間ネットワークデータ等整備仕様 平成30年3月」（版 2018-03、https://www.mlit.go.jp/common/001244374.pdf、SHA-256 9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974）／加工して作成",
+        "license_name": "PDL 1.0",
+        "license_url": "https://www.mlit.go.jp/link.html"
+      },
+      {
+        "source_id": "mlit-walk-network-spec-2024-07",
+        "attribution_text": "出典：国土交通省「歩行空間ネットワークデータ整備仕様 令和6年7月」（版 2024-07、https://www.mlit.go.jp/sogoseisaku/soukou/content/001757259.pdf、SHA-256 963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4）／加工して作成",
+        "license_name": "PDL 1.0",
+        "license_url": "https://www.mlit.go.jp/link.html"
+      }
+    ],
+    "classification": "docs/gis/rights/non-poi-literals.md"
+  }
 }

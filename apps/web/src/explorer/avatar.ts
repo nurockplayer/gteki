@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { mergeGeometries, mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { ditherFade, sanitizeAvatarFade } from "./avatarDither.ts";
 
 /**
  * Procedural third-person player avatar: a ~1.70 m modern Tokyo commuter (navy jacket over a light
@@ -13,6 +14,8 @@ export interface AvatarRig {
   /** speedMps: actual horizontal speed this frame (0 idle, ~1.45 walk, ~3.4 run). */
   update(dt: number, speedMps: number): void;
   setEnvMap(env: THREE.Texture | null, intensity?: number): void;
+  /** Screen-door fade of the whole body: 1 opaque, 0 hidden. Sets a uniform only (no program rebuild, no transparency). */
+  setFade(opacity: number): void;
   dispose(): void;
 }
 
@@ -383,9 +386,12 @@ function tube(points: readonly THREE.Vector3[], radius: number, d: Detail, close
 /* materials                                                                                   */
 /* ------------------------------------------------------------------------------------------ */
 
-function makeMaterials() {
-  const std = (color: number, roughness: number, side: THREE.Side = THREE.FrontSide, metalness = 0): THREE.MeshStandardMaterial =>
-    new THREE.MeshStandardMaterial({ color, roughness, metalness, side, envMapIntensity: 0.6, vertexColors: true });
+function makeMaterials(fade: { value: number }) {
+  const std = (color: number, roughness: number, side: THREE.Side = THREE.FrontSide, metalness = 0): THREE.MeshStandardMaterial => {
+    const material = new THREE.MeshStandardMaterial({ color, roughness, metalness, side, envMapIntensity: 0.6, vertexColors: true });
+    ditherFade(material, fade);
+    return material;
+  };
   return {
     skin: std(0xcfa283, 0.55),
     hair: std(0x2a2523, 0.72),
@@ -511,9 +517,10 @@ class Avatar implements AvatarRig {
   private readonly q2 = new THREE.Quaternion();
   private readonly e1 = new THREE.Euler();
   private disposed = false;
+  private readonly fade = { value: 1 };
 
   constructor(private readonly d: Detail) {
-    this.materials = makeMaterials();
+    this.materials = makeMaterials(this.fade);
     this.root.name = "avatar";
     this.build();
     this.hips.rotation.order = "YXZ";
@@ -909,6 +916,10 @@ class Avatar implements AvatarRig {
       mat.envMapIntensity = intensity;
       mat.needsUpdate = true;
     }
+  }
+
+  setFade(opacity: number): void {
+    this.fade.value = sanitizeAvatarFade(opacity);
   }
 
   dispose(): void {
