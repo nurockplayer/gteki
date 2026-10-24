@@ -571,7 +571,7 @@
    "datasetDate": null,
    "notes": "ライセンスなし・事実のみ参照（複製なし）。駅の案内文の改札口名、駅施設の営業時間（西武南口）を確認。エレベーター・エスカレーター位置は画像のみで本文に無し。 Rights: OD-25 (docs/research/owner-decisions-pending.md; decided 2026-10-22 by the director under the Owner's delegation, recorded in PR #222): same class as Tokyo Metro, facts-only under #26.",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/222", "date": "2026-10-22" }
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
   }
  ],
  "floors": [
