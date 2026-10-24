@@ -149,7 +149,7 @@
       "result": "differs",
       "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
       "retrievedAt": "2026-10-24T20:10:00+09:00",
-      "note": "JR's plan shows a single Odakyu transfer gate on the south side; no central-underground Odakyu connection is drawn"
+      "note": "No connection matching our name was found on the JR page."
     },
     {
       "poiId": "poi:jreast-odakyu-transfer:2",
@@ -181,7 +181,7 @@
       "result": "differs",
       "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
       "retrievedAt": "2026-10-24T20:10:00+09:00",
-      "note": "JR assigns this platform number to the Saikyo line only; our name also lists the Shonan-Shinjuku line"
+      "note": "Line assignment for this platform number does not match our name."
     },
     {
       "poiId": "poi:jreast-platform:4",
@@ -275,5 +275,6 @@
   "jrOnlyCount": {
     "ikebukuro": 1,
     "shinjuku": 2
-  }
+  },
+  "reviewNote": "lines-lead review 2026-10-24: 'differs' notes state only the kind of difference, not what the JR page shows (OD-34 (1): corroboration only). A 'differs' result does not change any name: the names stay as their non-JR source prints them (S03, March 2020); the writer may add a note that a later check did not match and that the current status is unknown. jrOnlyCount items are not added; a non-JR source or a field check (WP10) is needed first."
 }
