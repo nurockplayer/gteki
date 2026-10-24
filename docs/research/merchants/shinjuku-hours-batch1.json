@@ -5389,30 +5389,48 @@
    "building": "ルミネエスト新宿",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
    "url": "https://www.lumine.ne.jp/est/information/hours/",
-   "retrievedAt": "2026-10-24T11:37:24Z",
+   "retrievedAt": "2026-10-24T11:45:34Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no date"
+   "status": "OK",
+   "hoursText": "ショッピング 平日 11:00 ～ 21:00 土日祝 10:30 ～ 21:00 レストラン 平日/土日祝 11:00 ～ 22:00",
+   "basis": "undated-official",
+   "note": "店舗により異なる場合あり"
   },
   {
    "poiId": null,
    "building": "ルミネ新宿",
    "sourceId": "lumine-shinjuku-floorguide-2026-10",
    "url": "https://www.lumine.ne.jp/shinjuku/information/hours/",
-   "retrievedAt": "2026-10-24T11:37:24Z",
+   "retrievedAt": "2026-10-24T11:45:35Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no date"
+   "status": "OK",
+   "hoursText": "ショッピング 11:00 ～ 21:00 ルミネ1-7F レストラン 11:00 ～ 22:30",
+   "basis": "undated-official",
+   "note": "店舗により異なる場合あり"
   },
   {
    "poiId": null,
    "building": "ニュウマン新宿",
    "sourceId": "newoman-shinjuku-floorguide-2026-10",
    "url": "https://www.newoman.jp/shinjuku/information/hours/",
-   "retrievedAt": "2026-10-24T11:37:26Z",
+   "retrievedAt": "2026-10-24T11:45:36Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no date"
+   "status": "OK",
+   "hoursText": "ショッピング 月～土 11:00 ～ 20:30 日・祝日 11:00 ～ 20:00 エキナカ（フード） 月～土 8:00 ～ 21:00 日・祝日 8:00 ～ 20:30 （スイーツ） 月～土 9:00 ～ 21:00 日・祝日 9:00 ～ 20:30 （エキナカイベントスペース） 月～土 8:00 ～ 20:30 日・祝日 8:00 ～ 20:00 ※出店初日のみ11:00オープン フードホール 7:00～23:00 エキソト 7:00～23:00",
+   "basis": "undated-official",
+   "note": "店舗により異なる場合あり"
+  },
+  {
+   "poiId": null,
+   "building": "小田急百貨店 新宿店",
+   "sourceId": "odakyu-dept-shinjuku-2026-10",
+   "url": "https://www.odakyu-dept.co.jp/shinjuku/hour_acces/",
+   "retrievedAt": "2026-10-24T11:45:37Z",
+   "pageDate": null,
+   "status": "OK",
+   "hoursText": "■地下2階～2階 10：00→20：30 ※日曜・祝日は20：00まで ■7階 10：00→20：00 ※地下1階＝化粧品売場＜パーソナルアトリエ バイ プロフェリエ＞は平日13：00→20：00、土曜・日曜・祝日は10：30→19：30の営業となります。 ※1階＝＜サブウェイ＞は8：00→21：00の営業となります。 ※その他、一部の売場やカフェは営業時間が異なる場合があります。",
+   "basis": "undated-official",
+   "note": "店舗により異なる場合あり"
   }
  ]
 }
