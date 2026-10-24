@@ -140,7 +140,7 @@ path = [
   "tests/e2e/specs/__goldens__/02-navigation.spec.ts/ikebukuro-routes.json",
 ]
 precedence = "override"
-SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; modified by GTEki contributors; also cites facts-only sources (豊島区, 東京地下鉄)"
+SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; modified by GTEki contributors; also cites facts-only sources (豊島区, 東京地下鉄, 西武鉄道, 東武百貨店, 豊島区観光協会, 池袋ショッピングパーク, 東武ホープセンター)"
 SPDX-License-Identifier = "LicenseRef-PLATEAU-site-policy AND LicenseRef-facts-only-no-licence"
 
 # --- 4c. Hokonavi E27 (Toei Oedo, Shinjuku): shipped under the Owner's override ---------------
@@ -303,3 +303,22 @@ path = [
 precedence = "override"
 SPDX-FileCopyrightText = "東京都都市整備局; 国土交通省（ほこナビDP）; modified by GTEki contributors"
 SPDX-License-Identifier = "LicenseRef-S03 AND LicenseRef-Hokonavi-E27-Owner-override"
+
+# --- 4k. S03 line names: Shinjuku searchable line POIs (lines-lead WP1; Owner Q2/Q3, gteki-1b R-1/R-2) ---
+# Plain gate and platform names copied from S03 com-entity.geojson (ZIP sha256 fc3466270c08…4ba31);
+# no geometry, no position. Credit and change notice: NOTICE 4.7.
+[[annotations]]
+path = "docs/research/lines/shinjuku-line-pois.json"
+precedence = "override"
+SPDX-FileCopyrightText = "東京都都市整備局; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-S03"
+
+# --- 4o. S03 line names in the Shinjuku station POIs (import of #411; Owner Q2/Q3, gteki-1b R-1/R-2) ---
+# pois.json keeps its E27 content (4c) and adds 45 S03 gate and platform names: search only,
+# AREA_ONLY, no position, no floor. station.json only cites tokyo-s03-zip and stays under 4c.
+# Credit and change notice: NOTICE 4.7.
+[[annotations]]
+path = "stations/shinjuku/gteki/pois.json"
+precedence = "override"
+SPDX-FileCopyrightText = "国土交通省（ほこナビDP）; 東京都都市整備局; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-Hokonavi-E27-Owner-override AND LicenseRef-S03"
