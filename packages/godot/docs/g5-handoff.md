@@ -17,11 +17,11 @@ documentation PR.
 
 | Milestone | Status | Key PRs | What exists |
 | --- | --- | --- | --- |
-| G-1 Scene snapshot + load | merged | #184, #253, #396 | Headless `buildScene` export to GLB + sidecar for both stations; Godot loads roles, walls, spawn points, the environment and the baked Ikebukuro lightmap; headless count/role/frame tests. |
+| G-1 Scene snapshot + load | merged | #184, #253, #396 | Headless `buildScene` export to GLB + sidecar for both stations; Godot loads roles, walls, spawn points and the environment; headless count/role/frame tests. |
 | G-2 Walk + follow camera | merged | #228 | Web-rule `CharacterBody3D` walker and `followCamera`/`placeCamera` port; headless walk and camera replays. |
-| G-3 Search + route + guided walk | merged | #169, #241, #290 | HUD search/route/step list, route ribbon and guided walk through the TypeScript CLIs; lift rides read from the route's own `elevator` step. |
-| G-4 High-quality look | partial | #254, #355, #370, #390, #403, #405, #412 | Opt-in `hq` profile (AgX Environment, material table), showcase side-by-side and luminance/tuning tooling, four round-1 look gaps closed. Interior brightness (#401) is open and the kit AO is not in yet (#393 waits for #352). |
-| G-5 Evidence + performance | partial | #283, #289, #291, #306 | Evidence walks for both stations and the first windowed performance table. This document is the milestone's remaining item and ships in its own PR. |
+| G-3 Search + route + guided walk | merged | #169, #241 | HUD search/route/step list, route ribbon and guided walk through the TypeScript CLIs; lift rides read from the route's own `elevator` step. |
+| G-4 High-quality look | partial | #251, #254, #355, #370, #390, #403, #405, #412 | The G-4a baked Ikebukuro lightmap (#251), opt-in `hq` profile (AgX Environment, material table), showcase side-by-side and luminance/tuning tooling, four round-1 look gaps closed. Interior brightness (#401) is open and the kit AO is not in yet (#393 waits for #352). |
+| G-5 Evidence + performance | partial | #283, #289, #290, #291, #306 | Evidence walks for both stations (including lift rides, #290) and the first windowed performance table. This document is the milestone's remaining item and ships in its own PR. |
 
 G-4 and G-5 are called partial rather than done: the look profile is still opt-in and the #401 sweep has not run
 (see [In flight](#4-in-flight)). No open PR is described as merged anywhere in this document.
@@ -53,11 +53,15 @@ G-4 and G-5 are called partial rather than done: the look profile is still opt-i
 | A uniform sky shader (one colour, no gradient or sun disk) and, in interior layouts, one `UPDATE_ONCE` room probe that is deliberately **not** `interior`, its box being the visible bounds grown by the 1 m blend distance. | Metals need something to reflect; an interior probe drops the sky and would reflect black. | `APPROXIMATION.sky_shader`, probe entries and header comment; README "Showcase side-by-side". |
 | AgX contrast `1.5` instead of the 1.25 default. | It was meant to approach Blender's Medium High Contrast — a look the references do not actually use; see [Known gaps](#3-known-gaps). | `APPROXIMATION.agx_contrast`; `packages/godot/README.md` showcase section. |
 | No GI by default: the comparison tool starts at `gi=none`; the HQ client keeps SDFGI off and `--gi=sdfgi` turns it on for a review slot only. | GI is a GPU cost and the right setting is unsettled (#401). | `tools/showcase_compare.gd` `TUNE_*`; README G-4b. |
-| `project.godot` stays `gl_compatibility`; Forward+ comes from the command line. Godot therefore ignores SSAO and SDFGI in the project's own runs (SDFGI prints a warning). | The headless proof runs on `gl_compatibility`. | README G-4b and "Capture and performance". |
+| `project.godot` stays `gl_compatibility`; Forward+ comes from the command line. Godot therefore ignores SSAO and SDFGI in the project's own runs (SDFGI prints a warning). | The project setting stays `gl_compatibility`; Forward+ is chosen on the command line. | README G-4b and "Capture and performance". |
 | Station ambient: a station whose bake is applied gets **no ambient**; unbaked Shinjuku gets the style-bible studio grey at a 0.25 fill. | The bake is Ikebukuro's light; the web's Shinjuku hemisphere + `RoomEnvironment` 0.55 is a scene light Godot does not mirror. | README G-4b. |
 | The lightmap becomes an EMISSION term `(byte/255)^2.2 × scale × gain` times `albedo × (1 − metalness)`, with the albedo uniform declared `source_color`; `LIGHTMAP_GAIN` is 0.09. Not mirrored: three's dielectric multi-scattering energy compensation and the envMap specular. | Neither glTF nor the Godot importer carries three's lightmap state, so it is re-derived explicitly. | README G-4a; `packages/godot/addons/gteki/gteki_lightmap.gd`. |
 | The material table sets only albedo (sRGB), roughness and metal; it never touches emission, transparency or textures. Ikebukuro is listed as entirely unmapped because its lightmap shader owns its surfaces. | The table must not overwrite lighting or alpha decisions it does not own. | README G-4b. |
 | Two mappings are provisional, not E27 facts: `mat.wall` (OD-30 grey, R10 #234) and `mat.nosing` (a style-bible safety yellow; R10 found no source). `mat.accent` is GTEki's own Oedo magenta per OD-29, marked `local`. | The evidence does not support more. | README G-4b; #222, #234. |
+
+The one recorded SDFGI performance run (`docs/evidence/g5-performance.md`, "shinjuku — look hq, GI sdfgi")
+rendered with `forward_plus`, not the project's `gl_compatibility`; the runbook records that `gl_compatibility`
+ignores SDFGI (README "GPU slot runbook", step 5).
 
 ### 2.3 Walk and camera
 
@@ -82,7 +86,7 @@ G-4 and G-5 are called partial rather than done: the look profile is still opt-i
 | The route ribbon sits 6 cm above the floor; `zKnown: false` segments are a second orange dashed surface and the HUD says the heights are symbolic (all Shinjuku data is). | Symbolic heights must stay visibly symbolic. | README G-3. |
 | Hours are printed as `UNKNOWN` and route facts (`evidenceCheckedDate`, `stale`, `unknowns`, ...) exactly as the JSON gives them. | No freshness inference in Godot. | README G-3. |
 | The start is always the user's choice (a result, or the spawn nearest the avatar); the client never claims to know where you are. | Position truth is not available. | README G-3. |
-| Lift rides exist only where the route itself states an `elevator` step; a vertical jump no step calls a lift is neither walkable nor rideable. | Geometry is not evidence of a ride. | README G-3 and G-5a; #290. |
+| Lift rides exist only where the route itself states an `elevator` step; a vertical jump no step calls a lift is neither walkable nor rideable. | Geometry is not evidence of a ride. | README G-3 and G-5a; #290 (G-5a follow-up). |
 
 ### 2.5 Evidence and performance
 
@@ -99,8 +103,8 @@ G-4 and G-5 are called partial rather than done: the look profile is still opt-i
 
 | Gap | Evidence | Tracking |
 | --- | --- | --- |
-| The interior is too dark: concourse luminance ratio Godot/Blender 0.66 whole and 0.53 at the floor (top 0.73, middle 0.67); the studio shot is close at 1.11. | Measured by the `showcase_compare` luminance block; table in #401. | [#401](https://github.com/nurockplayer/gteki/issues/401); causes named there: no GI, AgX contrast, uncalibrated light energy. |
-| Residual specular/geometric aliasing on stair treads and the distant floor. | #401 finding 2; #164 comment 2026-10-24 (round 2: anisotropic mip filtering reduced it, some remains). The amount is **unmeasured** — no metric exists. | #401; candidates TAA or FSR2, not implemented. |
+| The interior is too dark: concourse luminance ratio Godot/Blender 0.66 whole and 0.53 at the floor (top 0.73, middle 0.67); the studio shot is close at 1.11. | Measured by the `showcase_compare` luminance block; table in #401. `docs/assets/style.md` §7 records the references as EEVEE with ray tracing and 64-sample GI, so they have bounce light; #401 records that Godot has no GI by default and that the interior ReflectionProbe's ambient is disabled. | [#401](https://github.com/nurockplayer/gteki/issues/401); causes named there: no GI, the probe's ambient disabled, AgX contrast, uncalibrated light energy. |
+| Residual specular/geometric aliasing on stair treads and the distant floor. | #401 finding 2; #164 comment 2026-10-24 (round 2: anisotropic mip filtering reduced it, some remains). The amount is **unmeasured** — no metric exists. | #401; candidates TAA, FSR2 or MSAA (#401), not implemented. |
 | The `agx_contrast = 1.5` premise is contradicted by the style bible: `packages/godot/README.md` and `tools/showcase_compare.gd` describe it as approximating Medium High Contrast, but `docs/assets/style.md` §7 records that Blender 5.2.2 has no such look and the references are **plain AgX**. | `docs/assets/style.md` §7; `tools/showcase_compare.gd` `APPROXIMATION` comment; README showcase section. | #401 (sweep). |
 | Light energy is uncalibrated: the watt→energy fit and the sun mapping have not been measured against Blender. | #164 comment 2026-10-24 ("the watt-to-energy fit is uncalibrated"); `APPROXIMATION` is labelled an approximation. | #401 (sweep). |
 | Shinjuku has no baked lightmap, so it has no scene light source of its own in `hq`; its ambient is a fixed studio grey at a 0.25 fill. | README G-4a ("Shinjuku has no lightmap block, so the flag changes nothing there") and G-4b. | None found; visual acceptance is part of #164. |
@@ -108,24 +112,26 @@ G-4 and G-5 are called partial rather than done: the look profile is still opt-i
 | Ikebukuro is entirely unmapped in the look table because its lightmap shader owns its surfaces; the decision belongs to the lead. | README G-4b. | None found. |
 | The capture pose `inverted_wall1` has no walkable ground at its pick point (-48.54282, 1.1, -144.3577), so it is listed as failed. | `docs/evidence/g5-performance.md` "Failed poses" in three runs. | None found. |
 | W2 (Ikebukuro) and S4 (Shinjuku) have no `stairs` step, so no mid-stair pose exists for them; S4's lift landing is captured instead. | `docs/evidence/g5-performance.md` "Poses not taken". | None found. |
+| Shinjuku S1's "all-yellow treads" come from the viewing angle (looking down the 0.075 m nosings), not from the material mapping; narrowing the nosing to about 3 cm is a follow-up after #156. | #164 comment 2026-10-23 (visual check with sjk-visual-13, after #306). | Follow-up after #156; no separate issue found. |
 | README traps: Shinjuku's 92 inverted wall bands have no boxes (the walker applies the band rule), Ikebukuro has no `walls` at all (656 collider tiles), Shinjuku has no collider/camera-blocker/sign roles (walls only), and a spawn point is not proven legal to stand on. | README G-1 "Known gaps and traps". | None found. |
 | GLB features beyond the tested subset are untested: Draco/meshopt/compressed-texture extensions, complex materials, animation, and performance. | README intro. | None found. |
-| Frame time has only been measured on one machine, and headroom is `unmeasured` (the interval is vsync-bound). | `docs/evidence/g5-performance.md`. | None found. |
+| Frame time has only been measured on one machine, and headroom is unmeasured: the interval includes vsync, so the run shows the client kept up at that rate, not how much headroom it has. | #164 comment 2026-10-23; `docs/evidence/g5-performance.md` (one machine). | None found. |
 
 ## 4. In flight
 
 | Item | Status | What is left |
 | --- | --- | --- |
-| [#393](https://github.com/nurockplayer/gteki/pull/393) kit AO atlases in the HQ snapshot | open PR; reviewed | Waits for [#352](https://github.com/nurockplayer/gteki/pull/352) (draft, kit catalog batches A+B). CPU end-to-end passes with #394; the AO has not been seen in a GPU render (#164 comment 2026-10-24). |
+| [#393](https://github.com/nurockplayer/gteki/pull/393) kit AO atlases in the HQ snapshot | open PR; reviewed | Waits for [#352](https://github.com/nurockplayer/gteki/pull/352) (draft, kit catalog batches A+B). CPU end-to-end passes with #394 (open draft, batch C); the AO has not been seen in a GPU render (#164 comment 2026-10-24). |
 | [#401](https://github.com/nurockplayer/gteki/issues/401) interior brightness/contrast and aliasing | open issue; tooling merged (#403, #405, #406, #412) | A GPU sweep is queued for the Monday 2026-10-26 morning slot (weekdays 03:00–15:00 JST). Target: Godot/Blender ratio 0.9–1.1 per region on both shots; record every choice in `APPROXIMATION`. Aliasing: compare TAA and FSR2 in the same slot. |
-| [#352](https://github.com/nurockplayer/gteki/pull/352) Ikebukuro kit catalog, batches A+B | open draft | GPU checks: escalator orientation, seating on the PLATEAU geometry, draw-call and frame-time cost. |
+| [#352](https://github.com/nurockplayer/gteki/pull/352) Ikebukuro kit catalog, batches A+B | open draft | GPU checks: escalator orientation, seating on the PLATEAU geometry, draw-call and frame-time cost. The PR planned these for the Saturday 2026-10-24 slot; no result is recorded. |
 
 ## 5. How to run and hand-off checklist
 
-Host rules (from the Owner's standing policy): GPU work runs on weekdays **03:00–15:00 JST only**, in the lead's
-slot; every local test is a single process under `lockf -k /tmp/gteki-local-test.lock ...`, after `memory_pressure`
-shows at least ~20% free; Forward+ comes from `--rendering-method forward_plus` on the command line while
-`project.godot` stays `gl_compatibility`; never `pkill`/`killall` by name.
+Host rules: GPU work runs on weekdays **03:00–15:00 JST only**, in the lead's slot (#164 comment 2026-10-24);
+local tests are a single process under `lockf -k /tmp/gteki-local-test.lock ...` (the README's test commands);
+Forward+ comes from `--rendering-method forward_plus` on the command line while `project.godot` stays
+`gl_compatibility` (README). Two further rules are the Owner's host policy, **not recorded in this repo**: gate a
+local run on `memory_pressure` showing ~20% free, and never `pkill`/`killall` by name.
 
 | Task | Command | Reference |
 | --- | --- | --- |
