@@ -325,6 +325,11 @@ func check_tuning() -> void:
 	check(not parse_with(["--tune=gi=sdfgi", "--tune=gi=voxelgi"]).errors.is_empty(), "duplicate --tune keys are rejected")
 	check(not parse_with(["--tune=agx_contrast=9", "--tune=agx_contrast=1.0"]).errors.is_empty(), "a duplicate is rejected even when the first value was invalid")
 	check(not parse_with(["--tag=a", "--tag=b"]).errors.is_empty(), "duplicate --tag arguments are rejected")
+	# A tag ending in "_side" would make its stem collide with another tag's side-by-side image name.
+	check(not parse_with(["--tag=baseline_side"]).errors.is_empty(), "a --tag ending in _side is rejected")
+	check(parse_with(["--tag=side"]).errors.is_empty(), "--tag=side is accepted (the suffix is _side, not side)")
+	check(parse_with(["--tag=sidewalk"]).errors.is_empty(), "--tag=sidewalk is accepted")
+	check(parse_with(["--tag=side"]).tag == "side", "--tag=side keeps its name")
 	for spec in [
 		"--tune=agx_contrast=0.5", "--tune=agx_contrast=2.5", "--tune=exposure_ev=-4",
 		"--tune=exposure_ev=4", "--tune=ambient_energy=0", "--tune=ambient_energy=16",

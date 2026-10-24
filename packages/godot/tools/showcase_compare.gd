@@ -253,6 +253,8 @@ static func parse_args(args: PackedStringArray) -> Dictionary:
 			tag = arg.trim_prefix("--tag=")
 			if not TAG_NAME.search(tag):
 				errors.append("--tag must be letters, digits, '_', '.' or '-': %s" % tag)
+			elif tag.ends_with("_side"):
+				errors.append("--tag must not end in '_side', which is the side-by-side suffix: %s" % tag)
 		elif arg.begins_with("--report="):
 			if report_given:
 				errors.append("--report may appear only once")
@@ -467,6 +469,8 @@ static func add_voxel_gi(parent: Node3D) -> VoxelGI:
 
 
 ## Tag suffixes keep sweep runs apart; without a tag the names are exactly the G-4 ones.
+## A tag ending in "_side" is rejected in parse_args because its stem would then equal another tag's
+## "<stem>_side.png" side-by-side image, so one run would silently overwrite the other's file.
 static func output_stem(layout: String, camera: String, tag: String) -> String:
 	var stem := "%s_%s" % [layout, camera.validate_filename()]
 	return stem + "_" + tag if not tag.is_empty() else stem

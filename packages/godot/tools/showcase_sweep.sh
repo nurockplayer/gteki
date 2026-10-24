@@ -62,6 +62,10 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     echo "showcase_sweep: tag must be letters, digits, '_', '.' or '-': $tag" >&2
     exit 1
   fi
+  if [[ "$tag" == *_side ]]; then
+    echo "showcase_sweep: tag must not end in '_side', which is the side-by-side suffix: $tag" >&2
+    exit 1
+  fi
   if [[ "$seen_tags" == *" $tag "* ]]; then
     echo "showcase_sweep: duplicate tag in $sweeps: $tag" >&2
     exit 1
