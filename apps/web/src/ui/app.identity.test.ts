@@ -10,7 +10,7 @@ vi.mock("../registry.ts", () => ({ listStations: vi.fn(), StationLoadError: clas
 import { App } from "./app.ts";
 
 type Harness = {
-  explorer: { currentMode: string; sceneError: null; cancelPendingLoad: () => void; loadStation: (s: LoadedStation) => Promise<boolean> };
+  explorer: { currentMode: string; sceneError: null; cancelPendingLoad: () => void; loadStation: (s: LoadedStation) => Promise<boolean>; getPose: () => null };
   identityView: StationIdentityView;
   ui: { sheet: HTMLElement };
   openStation: (e: StationEntry) => Promise<void>;
@@ -38,7 +38,7 @@ function entry(key: string, promise: Promise<LoadedStation>): StationEntry {
 function app() {
   const root = document.createElement("div"); document.body.append(root);
   const a = new App(root) as unknown as Harness;
-  a.explorer = { currentMode: "overview", sceneError: null, cancelPendingLoad: vi.fn(), loadStation: vi.fn(async () => true) };
+  a.explorer = { currentMode: "overview", sceneError: null, cancelPendingLoad: vi.fn(), loadStation: vi.fn(async () => true), getPose: () => null };
   for (const name of ["renderCredit", "renderSpawnChips", "renderHud", "updateUrl"] as const) vi.spyOn(a, name).mockImplementation(() => {});
   vi.spyOn(a, "refreshAll").mockImplementation(() => a.renderIdentity());
   root.append(a.identityView.card, a.identityView.overview, a.ui.sheet);
