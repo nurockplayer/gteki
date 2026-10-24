@@ -1,7 +1,7 @@
 # 小田急百貨店 新宿店 — store POI and brand tenants (facts only)
 
 - Task: data-research-05 brief, 2026-10-24. Branch `ds/odakyu-dept-shinjuku` from `origin/main` (`e1d4a71a`), worktree `.claude/worktrees/ds-research`.
-- Outputs: `shinjuku-odakyu-dept.json` (1 store POI), `shinjuku-odakyu-dept-tenants.json` (271 tenants), this log.
+- Outputs: `shinjuku-odakyu-dept.json` (1 store POI), `shinjuku-odakyu-dept-tenants.json` (269 tenants after the lead review), this log.
 - Source ruling: OD-23 / OD-31 / OD-33 (facts only, REFERENCE_ONLY). No rights decision was made here.
 
 ## Pages read
@@ -21,7 +21,7 @@ All 28 brand-list pages returned HTTP 200 after the p1 redirect (the site redire
 
 - Printed total: `該当件数：275件` on every page.
 - Rows read: 275 (10 per page × 27 pages + 5 on p28). All 28 pages read; no page failed.
-- Imported tenants: **271** (275 − 4 service entries; no duplicates).
+- Imported tenants: **269** (275 − 4 service entries − 2 pop-up spaces removed in the lead review; no duplicates).
 
 ## Duplicates
 
@@ -42,7 +42,7 @@ Nothing for hours, ATMs, lounges, toilets or parking was printed on the brand li
 ## Dropped promotional text
 
 - None. No name in the 275 rows carries a 【NEW】, 期間限定 or similar prefix/suffix. Nothing was rewritten.
-- `★` is printed after the name in 165 imported rows (and in 2 excluded rows); it is part of the printed name and was kept. Its meaning is not printed, so it is not interpreted. `ReD★` prints the star with no space.
+- `★` is printed after the name in 165 rows (and in 2 excluded rows). The site's brand search defines it as a marker for the remote-order service, so it is not part of the name: it was stripped from every tenant name in the lead review (see the end). `ReD★` printed the star with no space.
 - Names, フロア and 売場 are copied verbatim (full-width digits/kana/brackets, U+3000 in `硝子工房　彩鳳`, `※` inside 売場 parentheticals are all as printed). Phone numbers printed after `<br>` in each shop cell are not part of the name and were not copied.
 
 ## Uncertain names (kept as printed, flagged for the Lead)
@@ -65,7 +65,7 @@ These read as generic item/counter labels rather than brand names, but the sourc
 
 ## Ids
 
-The brand list prints no per-brand code, so tenant ids are a 3-digit sequence in list order across pages (`tenant-sjk-odakyudept-001` … `-271`), assigned after the 4 service exclusions.
+The brand list prints no per-brand code, so tenant ids are a 3-digit sequence in list order across pages (`tenant-sjk-odakyudept-001` … `-271`), assigned after the 4 service exclusions. 119 and 203 were later removed (pop-up spaces); ids were not renumbered.
 
 ## Validation
 
@@ -76,3 +76,10 @@ The brand list prints no per-brand code, so tenant ids are a 3-digit sequence in
 - `★` is a marker printed between the name and the phone number, not part of the name; it is stripped from every tenant name.
 - The store POI notes now say only what the store prints (operating in 新宿西口ハルク); the absence of entrance labels stays in this log, not in user-facing notes.
 - Generic counter labels (サングラス, 和洋酒, …) are kept as printed rows: the tenant dataset is not imported as POIs, and core-search decides how tenant search treats them.
+
+## Lead review, second pass (2026-10-24, after the oracle review)
+
+- Removed 2 pop-up spaces, moved to `removed[]`: tenant-sjk-odakyudept-119 ＃新宿地下ラーメン and -203 POP UP ONE (both 新宿デリッシュパーク, rotating vendors, not permanent brands). Tenants: 269.
+- ★ wording above corrected to match the JSON (stripped).
+- 21 rows have floorLabel 小田急エース北館 (the store's 新宿デリッシュパーク area). They are listed by 小田急百貨店's own site; the label is kept as printed and does not mean they are inside 新宿西口ハルク. Nothing is read from the Odakyu Ace directory (OD-34).
+- Rights: OD-34 second round (#377 issuecomment-6382878896): the site policy has no use clause, so facts only.
