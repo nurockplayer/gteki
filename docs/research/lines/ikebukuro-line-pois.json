@@ -5,40 +5,22 @@
   "generatedBy": "WP2/WP3 transcription (Haiku worker) + lines-lead review (exit ids/names to the station pattern; Seibu names prefixed; 西武南口 as other; undated-page hour wording)",
   "sources": [
     {
-      "id": "tokyometro-ikebukuro-station-2026-10",
-      "title": "池袋駅/M25/Y09/F09 | 路線・駅の情報 | 東京メトロ",
-      "publisher": "東京地下鉄",
-      "url": "https://www.tokyometro.jp/station/ikebukuro/index.html",
-      "license": null,
-      "rights": "REFERENCE_ONLY",
-      "usage": "facts-only",
-      "modified": false,
-      "retrievedAt": "2026-10-24T17:57:00+09:00",
-      "datasetDate": null,
-      "decision": {
-        "refs": [
-          "#26"
-        ]
-      },
-      "notes": "ライセンスなし・事実のみ参照（複製なし）。駅トップを確認したが、POIの根拠には使用せず（出口・端点は構内図印刷ページ、バリアフリー設備ページから採用）。"
-    },
-    {
       "id": "tokyometro-ikebukuro-accessibility-2026-10",
       "title": "バリアフリー設備 | 池袋駅/M25/Y09/F09 | 東京メトロ",
       "publisher": "東京地下鉄",
       "url": "https://www.tokyometro.jp/station/ikebukuro/accessibility/index.html",
       "license": null,
       "rights": "REFERENCE_ONLY",
-      "usage": "facts-only",
+      "attribution": "東京メトロ 池袋駅 バリアフリー設備 (facts only; not reproduced)",
       "modified": false,
       "retrievedAt": "2026-10-24T17:57:00+09:00",
       "datasetDate": null,
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。丸ノ内線・有楽町線・副都心線の各バリアフリー設備（エレベーター・エスカレーターの設置場所の端点表記、対応の有無「あり」のみ採用）。運転停止予定とトイレ等は対象外。 Re-read 2026-10-24 (WP2): lift and escalator end pairs per line. The existing station record (retrieved 2026-10-22) keeps its id; the writer updates retrievedAt and these notes.",
+      "usage": "facts-only",
       "decision": {
-        "refs": [
-          "#26"
-        ]
-      },
-      "notes": "ライセンスなし・事実のみ参照（複製なし）。丸ノ内線・有楽町線・副都心線の各バリアフリー設備（エレベーター・エスカレーターの設置場所の端点表記、対応の有無「あり」のみ採用）。運転停止予定とトイレ等は対象外。 Re-read 2026-10-24 (WP2): lift and escalator end pairs per line. The existing station record (retrieved 2026-10-22) keeps its id; the writer updates retrievedAt and these notes."
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
     },
     {
       "id": "tokyometro-ikebukuro-yardmap-print-2026-10",
@@ -47,16 +29,16 @@
       "url": "https://www.tokyometro.jp/station/ikebukuro/yardmap/index_print.html",
       "license": null,
       "rights": "REFERENCE_ONLY",
-      "usage": "facts-only",
+      "attribution": "東京メトロ 池袋駅構内図 (facts only; not reproduced)",
       "modified": false,
       "retrievedAt": "2026-10-24T17:57:00+09:00",
       "datasetDate": "2026-03",
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。出口案内の出入口番号・時間制限表記（*）・地上行エレベーターの表記のみ採用。近隣施設名・構内図画像は対象外。 改定日：2026年3月（ページ表記）。",
+      "usage": "facts-only",
       "decision": {
-        "refs": [
-          "#26"
-        ]
-      },
-      "notes": "ライセンスなし・事実のみ参照（複製なし）。出口案内の出入口番号・時間制限表記（*）・地上行エレベーターの表記のみ採用。近隣施設名・構内図画像は対象外。 改定日：2026年3月（ページ表記）。"
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
     },
     {
       "id": "seibu-ikebukuro-station-2026-10",
@@ -65,16 +47,16 @@
       "url": "https://www.seiburailway.jp/railway/station/ikebukuro/",
       "license": null,
       "rights": "REFERENCE_ONLY",
-      "usage": "facts-only",
+      "attribution": "西武鉄道 池袋駅ページ (facts only; not reproduced)",
       "modified": false,
       "retrievedAt": "2026-10-24T17:57:00+09:00",
       "datasetDate": null,
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。駅の案内文の改札口名、駅施設の営業時間（西武南口）を確認。エレベーター・エスカレーター位置は画像のみで本文に無し。 Rights: OD-25 (docs/research/owner-decisions-pending.md; decided 2026-10-22 by the director under the Owner's delegation, recorded in PR #222): same class as Tokyo Metro, facts-only under #26.",
+      "usage": "facts-only",
       "decision": {
-        "refs": [
-          "OD-25"
-        ]
-      },
-      "notes": "ライセンスなし・事実のみ参照（複製なし）。駅の案内文の改札口名、駅施設の営業時間（西武南口）を確認。エレベーター・エスカレーター位置は画像のみで本文に無し。"
+        "url": "https://github.com/nurockplayer/gteki/pull/222",
+        "date": "2026-10-22"
+      }
     }
   ],
   "pois": [

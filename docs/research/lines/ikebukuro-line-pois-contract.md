@@ -2,7 +2,7 @@
 
 - **Tracking:** lines-lead Phase 1, packages WP2 and WP3 ([`lines-inventory.md`](lines-inventory.md), PR #408). Facts-only rules: Tokyo Metro under #26 ([comment](https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404)), Seibu under OD-25 (`docs/research/owner-decisions-pending.md`).
 - **Writer:** **ikb-route-15** only. It merges these entries into `stations/ikebukuro/gteki/station.json` and `data/graph.src.json` → `pois.json`. lines-lead does not edit `stations/`.
-- **Data:** [`ikebukuro-line-pois.json`](ikebukuro-line-pois.json): 4 sources, 42 POIs, 10 `factsForExisting` entries for POIs already in the station, and `notFound` / `conflicts` lists.
+- **Data:** [`ikebukuro-line-pois.json`](ikebukuro-line-pois.json): 3 sources (each in the station `Source` shape: `attribution` and `decision {url, date}`; the Metro station page was read but no POI cites it, so it is not registered), 42 POIs, 10 `factsForExisting` entries for POIs already in the station, and `notFound` / `conflicts` lists.
 - **Schema:** unchanged (`Poi` / `Source`, `gteki.station/0.1`). `operatorId` and `evidence.locator` are provenance fields for the writer review. They are not `Poi` fields.
 - **Read:** 2026-10-24, about 17:57 JST, in ego-lite (read-only; the Metro pages are JS-rendered and refuse plain requests). Every name was checked to appear on its page. No other page text is copied: evidence is a `locator` (page and section, in our own words), and notes and facts are in our own words (GIS rights review P1).
 
