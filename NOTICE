@@ -135,12 +135,14 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        (「GTEki が［実際の編集・加工内容］」): UNKNOWN until written.
 
    4.7 Tokyo Bureau of Urban Development, S03 「新宿駅周辺の施設情報等」 - LicenseRef-S03
-       Nothing ships in station data; same status as 4.6. Recorded licence: CC BY
-       4.0 at dataset level, for the geometry and factual-fields subset only.
+       Station data carries only the plain gate and platform names imported
+       from #411 (see the last paragraph below); nothing else from S03 ships.
+       Recorded licence: CC BY 4.0, stated at dataset level, for the geometry
+       and factual-fields subset only.
        Owner credit: 出典：東京都都市整備局「新宿駅周辺の施設情報等」.
        Promotional prose, linked content and the reference-PDF illustration are
-       UNKNOWN and excluded. Modification notice for station data: placeholder,
-       UNKNOWN (nothing ships there).
+       UNKNOWN and excluded. Modification notice for station data:
+       GTEki が名称のみを抽出し検索用に再構成（位置・形状は不使用）.
        Committed research files derived from S03 together with E27 (4.3), both
        terms applying: docs/stations/shinjuku/research/
        2026-10-21-tokyo-terminal-join-summary.json and

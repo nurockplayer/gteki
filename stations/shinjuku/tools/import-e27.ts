@@ -1139,7 +1139,14 @@ sources.push({
   title: s03Src.title,
   publisher: s03Src.publisher,
   url: s03Src.url,
-  license: { name: s03Src.license, url: "https://creativecommons.org/licenses/by/4.0/" },
+  // Stated at dataset level only (Owner Q2; REUSE LicenseRef-S03), so the shown name says so.
+  license: {
+    name: [
+      { lang: "ja", text: `${s03Src.license}（データセット単位の表示）` },
+      { lang: "en", text: `${s03Src.license} (stated at dataset level)` },
+    ],
+    url: "https://creativecommons.org/licenses/by/4.0/",
+  },
   rights: s03Src.rights as Source["rights"],
   // Not `usage: "facts-only"`: that tells the app the source has no licence, and S03 is CC BY 4.0. Its plain names
   // ship under that licence with the credit and change notice (Owner Q2/Q3, #39 comment of 2026-10-22 JST).
