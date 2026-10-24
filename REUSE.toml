@@ -267,3 +267,24 @@ SPDX-License-Identifier = "CC-BY-4.0"
 # route; scheduled for removal under #124) and get the same no-grant marker as the other POI files.
 
 # OSM: no OSM data is committed (cross-check only), so there is no ODbL annotation.
+
+# --- 4i. KSJ (国土数値情報) context overlays (director ruling on #365) --------------------------
+# The KSJ site terms are cited as published; "CC BY 4.0" on the product page is not treated as a
+# CC BY grant (same handling as PLATEAU). Credit 「国土交通省 国土数値情報（N02 鉄道）を加工して作成」.
+[[annotations]]
+path = "stations/*/gteki/context/ksj_*.glb"
+precedence = "override"
+SPDX-FileCopyrightText = "国土交通省 国土数値情報; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-KSJ"
+
+# --- 4j. S03 plus E27: Shinjuku Tokyo-terminal join research (director ruling on #365) --------
+# Derived from S03 (東京都都市整備局, shisetsu_root.zip; raw stays outside the repo) and E27; both
+# terms apply. Credits: 出典：東京都都市整備局「新宿駅周辺の施設情報等」 and the E27 credits in 4c.
+[[annotations]]
+path = [
+  "docs/stations/shinjuku/research/2026-10-21-tokyo-terminal-join-summary.json",
+  "docs/stations/shinjuku/research/figures/2026-10-21-tokyo-e27-overlay.png",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "東京都都市整備局; 国土交通省（ほこナビDP）; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-S03 AND LicenseRef-Hokonavi-E27-Owner-override"

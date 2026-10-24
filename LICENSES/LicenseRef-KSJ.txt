@@ -1,0 +1,22 @@
+国土数値情報 (KSJ, National Land Numerical Information) terms of use, 国土交通省
+
+Terms URL: https://nlftp.mlit.go.jp/ksj/other/agreement.html
+Snapshot SHA-256: 9dff25309f83c71e1499cd55f6c96a37ab0c210bee1bc4d625fac009d4feb87b
+  (docs/gis/acquisitions/ksj-n02-2025.json, supporting_documents id "ksj-terms")
+Product page: https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html
+Snapshot SHA-256: a507acf73e7a7a671c7d9251e958f671a3dfcf1c3805ff7f9bcca8b0a758ad85
+  (same receipt, id "ksj-n02-2025-page")
+
+Stands for files derived from KSJ datasets. Source dataset: N02-2025
+(鉄道, tools/gis/sources/sources.yaml source_id "ksj-n02-2025", ZIP SHA-256
+aaf76af133b2e771e538fabc4646d2e443dc1d5a67b221382a28d744e706cc9f).
+The product page's usage-terms row is recorded as CC BY 4.0; per the director
+(#365), that is cited as the site's own terms and is not taken as a CC BY grant
+by GTEki. The data is not relicensed under the repository's grants.
+Credit: 「国土交通省 国土数値情報（N02 鉄道）を加工して作成」
+(the full form recorded in sources.yaml: 「出典：国土交通省国土数値情報ダウンロードサイト
+（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html）を加工して作成」).
+
+Pointer only: terms as published by the licensor. GTEki does not author or
+paraphrase the official wording. Source of the URLs and hashes: GIS (Lane D),
+docs/gis/acquisitions/ksj-n02-2025.json.
