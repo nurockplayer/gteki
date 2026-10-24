@@ -2,7 +2,7 @@
 
 Date: 2026-10-24. Status: evidence only; findings for the director (gteki-1b) to rule on. Nothing here is a rights PASS, nothing is converted or shipped, and no `sources.yaml` gate changes. Method follows `2026-10-23-shinjuku-cultural-properties-rights.md`: every file was hashed against its receipt before reading (all matched), HTML was tag-stripped locally, and no network was used. Terms pages are quoted in clauses of at most 30 characters, each tied to the snapshot sha256. No CSV cell value or data name is reproduced; only column headers (field names) and counts.
 
-Scope: the nine sources the lines lead asked about for WP6: Keio and Odakyu site terms, だれでも東京, the two Toei barrier-free CSVs, the Toei station-info CSV, and the Hokonavi 渋谷・千駄ヶ谷・新宿 package.
+Scope: the seven sources the lines lead asked about for WP6: Keio and Odakyu site terms, だれでも東京, the two Toei barrier-free CSVs, the Toei station-info CSV, and the Hokonavi 渋谷・千駄ヶ谷・新宿 package.
 
 ## Sources
 
@@ -78,7 +78,7 @@ The package page also lists 浅草線 and 三田線 resources; they are not in W
 ### Portal terms (`74e591bc…`)
 
 - Content is licensed under CC BY 4.0 「「注」があるものを除いて」 and may be used freely, including 「商用利用も可能です」, with translation and modification (the same clauses used in the 2026-10-23 note). Content with its own individually applied rules is excluded; none is recorded here.
-- Credit template (unmodified): 【title】、東京都・【その他の著作権者】、クリエイティブ・コモンズ・ライセンス 表示4.0国際 (with the deed URL).
+- Credit template (unmodified use): the dataset title, then 東京都 and any other rights holder, then the CC BY 4.0 licence name and deed URL (full wording in the `74e591bc…` snapshot).
 - Modified use: the same credit plus a statement that the work was edited, introduced by a template sentence saying the work uses the listed works in modified form (「…を改変して利用しています」); and it is forbidden to present edited information as if the content provider (東京都 or a municipality) made it. Portal §2 also asks users to respect third-party rights.
 
 ### Structure (headers and counts only; no cell values read into this note)
@@ -154,7 +154,7 @@ The CSVs and GeoJSON were not opened; the receipt also lists `link.csv` and `nod
 
 The package shows the identical licence pattern to both precedents and so cannot by itself select between them. The geography (渋谷・千駄ヶ谷・新宿) overlaps the Shinjuku E27 area rather than Ikebukuro. No Owner decision names this package.
 
-Classification: **context-only candidate, needs a director ruling**. Nothing routable. If the director treats it like Ikebukuro decision (i), a credit would follow the Hokonavi site format with a processing notice; if like Q11, it stays internal evidence. Proposed credit if accepted (not adopted): 「歩行空間ナビゲーションデータプラットフォームオープンデータサイト」（国土交通省）（<dataset page URL>）を加工して作成. The ruling would also need to say whether the Hokonavi 重要情報 page must be acquired first.
+Classification: **context-only candidate, needs a director ruling**. No routing use is cleared or proposed; routing fitness has not been evaluated (the resources were not opened). If the director treats it like Ikebukuro decision (i), a credit would follow the Hokonavi site format with a processing notice; if like Q11, it stays internal evidence. Proposed credit if accepted (not adopted): 「歩行空間ナビゲーションデータプラットフォームオープンデータサイト」（国土交通省）（<dataset page URL>）を加工して作成. The ruling would also need to say whether the Hokonavi 重要情報 page must be acquired first.
 
 ## Summary
 
