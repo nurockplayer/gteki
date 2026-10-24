@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { readZip } from '../src/zip.js';
 import {
   applyAffine, assertS03Bytes, checkInternal, collectS03Strings, compatibleFloors, distanceToPolygonEdge, distanceToSegment,
-  guardS03Receipt, mutualNearest, parseS03Members, pointInPolygon, residualStats, transformS03, type Affine, type Polygon2,
+  guardS03Receipt, mutualNearest, parseS03Members, pointInPolygon, residualStats, sourceDefectRecords, transformS03, type Affine, type Polygon2,
 } from '../src/s03-transform.js';
 
 const nav: Affine = [2, 0, 0, 2, 10, 20], drawing: Affine = [0.01, 0, 0, 0.01, 0, 0];
@@ -15,6 +15,11 @@ const fixtureMembers = () => [
   { name: 'nested/com-entity.geojson', value: { entities: [{ properties: { description: 'SYNTH-private-description', translated: { text: 'SYNTH-private-localized' } } }] } },
 ];
 const encode = (members = fixtureMembers()) => members.map(m => ({ name: m.name, data: Buffer.from(JSON.stringify(m.value)) }));
+// Same fixture with hand-picked level features; only synthetic geometry is used.
+const withLevelFeatures = (features: unknown[]) => encode(fixtureMembers()).map(entry => entry.name.endsWith('geojson-level-geom-B1F.geojson')
+  ? { name: entry.name, data: Buffer.from(JSON.stringify({ ...(JSON.parse(entry.data.toString()) as Record<string, unknown>), features })) } : entry);
+const polygonFeature = (coordinates: unknown) => ({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates } });
+const project = (lat: number, lon: number): [number, number] => [lon, lat];
 
 // Minimal in-memory, uncompressed ZIP. Only synthetic JSON is passed to it.
 function fixtureZip(entries: readonly { name: string; data: Buffer }[]): Buffer {
@@ -91,6 +96,48 @@ describe('S03 affine and geometry checks (synthetic only)', () => {
   });
 });
 
+describe('S03 unclosed source rings: exclude, never repair', () => {
+  const openRing = [[0, 0], [1, 0], [1, 1], [0, 1]];
+  it('excludes the feature, records the defect and keeps the other features on the level', () => {
+    const inputs = parseS03Members(withLevelFeatures([polygonFeature([openRing]), polygonFeature(square)]));
+    expect(sourceDefectRecords(inputs, project)).toEqual([{ kind: 'SOURCE_DEFECT_UNCLOSED_RING', level_id: 11, feature_index: 0, polygon_index: 0, ring_index: 0, endpoint_gap_m: 1 }]);
+    expect(inputs.levels[0]).toMatchObject({ featuresTotal: 2, featuresUsed: 1, featuresExcludedUnclosedRing: 1 });
+    expect(inputs.levels[0]!.polygons).toEqual([square]);
+    const result = checkInternal(inputs, project);
+    expect(result).toMatchObject({ status: 'PASS', node_count: 1, node_count_total: 1, inside_count: 1, inside_share: 1, levels_without_usable_polygons: [] });
+    expect(result.levels['11']).toMatchObject({ node_count: 1, polygon_count: 1, inside_count: 1, features_total: 2, features_used: 1, features_excluded_unclosed_ring: 1, reason: null });
+  });
+  it('names the first unclosed ring by polygon and ring index without touching any position', () => {
+    const multipolygon = { type: 'Feature', properties: {}, geometry: { type: 'MultiPolygon', coordinates: [square, [[[0, 0], [1, 0], [1, 1], [0, 1.5]]]] } };
+    const inputs = parseS03Members(withLevelFeatures([multipolygon]));
+    expect(sourceDefectRecords(inputs, project)).toEqual([{ kind: 'SOURCE_DEFECT_UNCLOSED_RING', level_id: 11, feature_index: 0, polygon_index: 1, ring_index: 0, endpoint_gap_m: 1.5 }]);
+    expect(inputs.levels[0]!.polygons).toEqual([]);
+    expect(inputs.levels[0]!.featuresExcludedUnclosedRing).toBe(1);
+  });
+  it('keeps a level with no usable polygon and reports null inside metrics with a reason', () => {
+    const inputs = parseS03Members(withLevelFeatures([polygonFeature([openRing])]));
+    expect(inputs.levels[0]!.polygons).toEqual([]);
+    const result = checkInternal(inputs, project);
+    expect(result.status).toBe('FAIL');
+    expect(result.levels_without_usable_polygons).toEqual([11]);
+    expect(result.levels['11']).toMatchObject({ node_count: 1, polygon_count: 0, inside_count: null, inside_share: null, outside_count: null, outside_unprojectable_count: null,
+      features_total: 1, features_used: 0, features_excluded_unclosed_ring: 1, reason: expect.stringContaining('SOURCE_DEFECT_UNCLOSED_RING') });
+    expect(result.levels['11']!.outside_edge_distance_m).toEqual({ count: 0, min_m: null, median_m: null, p90_m: null, max_m: null });
+    expect(result).toMatchObject({ node_count: 0, node_count_total: 1, inside_share: null, outside_unprojectable_count: 0 });
+  });
+  it('does not report a level with usable polygons but no nodes as unassessed', () => {
+    const inputs = parseS03Members(encode());
+    inputs.levels.push({ ...inputs.levels[0]!, id: 12, polygons: [square] });
+    const result = checkInternal(inputs, project);
+    expect(result.levels_without_usable_polygons).toEqual([]);
+    expect(result.levels['12']).toMatchObject({ node_count: 0, polygon_count: 1, inside_share: null });
+  });
+  it('still fails closed when an unclosed feature also carries a structural malformation', () => {
+    const entries = withLevelFeatures([polygonFeature([openRing]), polygonFeature([[[0, 0], [1, 0], [1, 1], [200, 0]]])]);
+    expect(() => parseS03Members(entries)).toThrow(/invalid geographic coordinate/);
+  });
+});
+
 describe('S03 reciprocal compatible-floor pairing', () => {
   it('pairs reciprocally before applying inclusive thresholds; excludes wrong and unknown floor ordinals', () => {
     const e27 = [
@@ -135,15 +182,16 @@ describe('S03 member, byte-integrity and publication boundaries', () => {
     expect(() => parseS03Members([...encode(), { name: 'other/v5_nav.json', data: Buffer.from('{}') }])).toThrow('v5_nav.json: duplicate basename');
   });
   it('rejects malformed geometry, explicit CRS, multiple node floors and mismatched level identity', () => {
-    for (const change of ['geometry', 'crs', 'node-level', 'level-id'] as const) {
+    for (const change of ['ring-length', 'invalid-coordinate', 'crs', 'node-level', 'level-id'] as const) {
       const entries = encode(), index = change === 'node-level' ? 0 : 2;
       const value = JSON.parse(entries[index]!.data.toString());
-      if (change === 'geometry') value.features[0].geometry.coordinates[0][4] = [2, 2];
+      if (change === 'ring-length') value.features[0].geometry.coordinates = [[[0, 0], [1, 0], [0, 0]]];
+      if (change === 'invalid-coordinate') value.features[0].geometry.coordinates = [[[0, 0], [1, 0], [1, 1], [0, 0], [200, 0]]];
       if (change === 'crs') value.crs = null;
       if (change === 'node-level') value.n[0].l.push({ lid: 11 });
       if (change === 'level-id') value.id = 12;
       entries[index]!.data = Buffer.from(JSON.stringify(value));
-      expect(() => parseS03Members(entries), change).toThrow(change === 'node-level' ? /v5_nav.json/ : /geojson-level-geom-B1F.geojson/);
+      expect(() => parseS03Members(entries), change).toThrow(change === 'node-level' ? /v5_nav.json/ : /geojson-level-geom-B1F\.geojson/);
     }
   });
   it('fails SHA mismatch or byte-count mismatch before parsing', () => {
