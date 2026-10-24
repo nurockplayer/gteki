@@ -488,6 +488,13 @@ describe("S03 search-only line POIs (#411)", () => {
     expect(srcEntry).toBeDefined();
     expect(srcEntry!.modified).toBe(true);
     expect(srcEntry!.attribution).toBe("出典：東京都都市整備局「新宿駅周辺の施設情報等」");
+    // CC BY 4.0, not facts-only: the app would otherwise say the source has no licence.
+    expect(srcEntry!.usage).not.toBe("facts-only");
+    expect(srcEntry!.license).toEqual({ name: "CC BY 4.0", url: "https://creativecommons.org/licenses/by/4.0/" });
+  });
+
+  it("keeps the S03 credit out of plan.json, which S03 does not feed", () => {
+    expect((planJson as unknown as { attribution: string[] }).attribution).not.toContain("出典：東京都都市整備局「新宿駅周辺の施設情報等」");
   });
 
   it("uses no poi:toei ids", () => {

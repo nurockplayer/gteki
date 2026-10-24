@@ -1141,9 +1141,9 @@ sources.push({
   url: s03Src.url,
   license: { name: s03Src.license, url: "https://creativecommons.org/licenses/by/4.0/" },
   rights: s03Src.rights as Source["rights"],
-  usage: "facts-only",
-  // The Owner's clearance for facts-only use (Q2/Q3 comment on #39; R-1/R-2 ruling dated 2026-10-24).
-  decision: { url: "https://github.com/nurockplayer/gteki/issues/39#issuecomment-6324726321", date: "2026-10-24" },
+  // Not `usage: "facts-only"`: that tells the app the source has no licence, and S03 is CC BY 4.0. Its plain names
+  // ship under that licence with the credit and change notice (Owner Q2/Q3, #39 comment of 2026-10-22 JST).
+  decision: { url: "https://github.com/nurockplayer/gteki/issues/39#issuecomment-6324726321", date: "2026-10-22" },
   attribution: s03Src.attribution,
   modified: s03Src.modified,
   retrievedAt: s03Src.retrievedAt,
@@ -1254,7 +1254,8 @@ const bundle: StationBundle = {
 // ---------------------------------------------------------------- plan (render geometry)
 const plan = {
   note: "Render-only geometry derived from 構内地図データ（都営地下鉄大江戸線 新宿駅）（国土交通省）, published under the Owner's #16 override; licence basis unconfirmed. Not routing truth. Heights are symbolic.",
-  attribution: sources.map((s) => s.attribution),
+  // S03 (#411) supplies POI names only, nothing in the plan, so its credit is not listed here.
+  attribution: sources.filter((s) => s.id !== S03_SOURCE_ID).map((s) => s.attribution),
   levels: mapLevels.map((ml) => {
     const nwdOrd = ml.ordinal === -5 ? -4.5 : ml.ordinal;
     return {
