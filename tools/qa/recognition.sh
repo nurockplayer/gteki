@@ -34,6 +34,9 @@ for p in $projects; do
   gate "$p"
   echo "=== $p $(date +%H:%M:%S)"
   # shellcheck disable=SC2086
+  # Clear the previous run's artifacts first: run-candidate.sh clears them only once its build and servers are up,
+  # so after a setup failure the directory would still hold someone else's evidence.
+  rm -rf "$here/tests/e2e/artifacts"
   GTEKI_RECOGNITION=1 QA_REUSE=$reuse QA_UNIT=0 locked sh "$here/tools/qa/run-candidate.sh" "$work" "$base" $merges -- \
     specs/20-recognition.spec.ts --project="$p" --trace=off || status=$?
   # A run that failed before Playwright leaves no artifacts: don't abort, and don't move stale ones.

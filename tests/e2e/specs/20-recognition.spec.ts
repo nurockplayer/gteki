@@ -87,7 +87,10 @@ const frameDom = () => {
   // Not offsetParent: it is null for position:fixed overlays, which would drop real UI from the exclusion rects.
   const visible = (e: HTMLElement) => {
     const r = e.getBoundingClientRect(), cs = getComputedStyle(e);
-    const shown = typeof (e as any).checkVisibility === "function" ? (e as any).checkVisibility({ checkOpacity: false, checkVisibilityCSS: true }) : cs.display !== "none" && cs.visibility !== "hidden";
+    // Effective opacity counts ancestors: walk mode keeps .sheet.open (and its .mascot) in the DOM at opacity 0.
+    let alpha = 1;
+    for (let n: HTMLElement | null = e; n; n = n.parentElement) alpha *= Number(getComputedStyle(n).opacity);
+    const shown = alpha >= 0.05 && (typeof (e as any).checkVisibility === "function" ? (e as any).checkVisibility({ checkVisibilityCSS: true }) : cs.display !== "none" && cs.visibility !== "hidden");
     return shown && r.width > 0 && r.height > 0 && r.right > 0 && r.bottom > 0 && r.left < innerWidth && r.top < innerHeight;
   };
   const chips = [...document.querySelectorAll<HTMLElement>(".gteki-labels > *")].filter((e) => e.style.display !== "none" && visible(e)).map((e) => ({ ...rect(e), opacity: Number(getComputedStyle(e).opacity), text: (e.textContent ?? "").trim().slice(0, 60) }));
@@ -129,7 +132,9 @@ for (const key of enabled ? STATIONS : []) test(`${key}: recognition proxy captu
   const wps = routeWaypoints(key, route.steps);
   const junction = firstJunction(wps);
   const last = route.steps.at(-1) as { fromNodeId: string; toNodeId: string };
-  const exitWps = wps.filter((w) => w.stepIndex === route.steps.length - 1);
+  // The last two distinct route points: a final step with only two geometry points emits just its endpoint under
+  // its own step index (its start was emitted with the step before), so filtering by step would leave one point.
+  const exitWps = wps.filter((w, i) => i === 0 || Math.hypot(w.p.x - wps[i - 1]!.p.x, w.p.y - wps[i - 1]!.p.y) > 0.05).slice(-2);
 
   type View = { id: string; node: string; facing?: { from: Vec3; to: Vec3 }; keys: string[]; note: string };
   const views: View[] = [
