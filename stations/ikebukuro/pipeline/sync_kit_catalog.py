@@ -61,6 +61,8 @@ TIERS = {
 # The nosing batch's shared AO atlas: one PNG per tier, its path as the manifest records it.
 ATLAS_KIND = "nosing"
 ATLAS_PATH = "atlas/nosing_ao.png"
+# The atlas's per-tier manifest facts the loader needs at runtime (mip clamp, size); generated in copy mode.
+ATLAS_JSON = os.path.join(STATION, "scene", "kit_catalog_atlas.json")
 BATCH_KINDS = ("escalator", "rails", "nosing")  # batch A + B + C
 KINDS = ("escalator", "rails", "nosing")
 # Batch C lands in two stacked PRs to keep each under the 100-file review limit: the desktop tier first, the phone
@@ -117,6 +119,7 @@ def main(argv):
     ap.add_argument("--station", default=STATION_JSON, help="the station.json holding source record " + SOURCE_ID)
     ap.add_argument("--dest", default=os.path.join(STATION, "gteki", DEST_REL),
                     help="folder holding the high/ and low/ tier folders (default gteki/kit/catalog); the source record keys stay kit/catalog/...")
+    ap.add_argument("--atlas-json", default=ATLAS_JSON, help="the scene file carrying each tier's atlas facts (default scene/kit_catalog_atlas.json)")
     args = ap.parse_args(argv)
 
     kinds = [k.strip() for k in args.kinds.split(",") if k.strip()]
@@ -133,8 +136,8 @@ def main(argv):
         record = next((s for s in read_json(args.station)["sources"] if s["id"] == SOURCE_ID), None)
         pins = record.get("sha256", {}) if record else {}
     manifest_docs, manifests = {}, {}
-    for tier, (src, manifest, _dst) in TIERS.items():
-        path = os.path.join(src, manifest)
+    for tier, (_src, manifest, _dst) in TIERS.items():
+        path = os.path.join(srcs[tier], manifest)
         if os.path.isfile(path):
             manifest_docs[tier] = read_json(path)
             manifests[tier] = {a["id"]: a for a in manifest_docs[tier]["assets"]}
@@ -147,6 +150,8 @@ def main(argv):
             problems.append(f"gteki/{rel} is missing (run without --check)")
             return
         digest = sha256_of(dst)
+        if tier in manifests and entry is None:
+            problems.append(f"gteki/{rel} has no entry in the {tier} manifest, but the plan expects it")
         if rel not in pins:
             problems.append(f"gteki/{rel} is not pinned by {SOURCE_ID}")
         elif pins[rel] != digest:
@@ -194,6 +199,25 @@ def main(argv):
             check_copy(tier, rel, entry, dst)
         else:
             copy_verified(tier, rel, entry, os.path.join(srcs[tier], ATLAS_PATH), dst, f"atlas {ATLAS_KIND}")
+
+    if atlas_tiers:
+        facts = {"nosing": {"path": ATLAS_PATH.replace(os.sep, "/"), "tiers": {}}}
+        for tier in sorted(atlas_tiers):
+            entry = (manifest_docs.get(tier, {}).get("atlases") or {}).get(ATLAS_KIND) or {}
+            facts["nosing"]["tiers"][tier] = {k: entry[k] for k in ("size_px", "bytes", "max_isolated_mip") if k in entry}
+        existing = read_json(args.atlas_json) if os.path.isfile(args.atlas_json) else None
+        label = os.path.relpath(args.atlas_json, REPO)
+        if args.check:
+            if existing is None:
+                problems.append(f"{label} is missing (run without --check)")
+            elif existing != facts:
+                problems.append(f"{label} differs from the tier manifests' atlases.{ATLAS_KIND}")
+        elif existing != facts:
+            os.makedirs(os.path.dirname(args.atlas_json) or ".", exist_ok=True)
+            with open(args.atlas_json, "w", encoding="utf-8") as f:
+                json.dump(facts, f, indent=1)
+                f.write("\n")
+            print(f"wrote {args.atlas_json}")
 
     if args.check:
         # A copy no placement loads any more is stale, and so is a pin that no copy backs.

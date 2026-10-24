@@ -258,7 +258,14 @@ per-id AO image; each strip's TEXCOORD_1 already addresses one packed AO atlas p
 the per-id Cycles AO bakes). The loader bakes every placement into a cloned geometry (position, normal, uv, uv1;
 mirror reflections reverse the winding), merges each spatial cluster into one `BufferGeometry` with
 `BufferGeometryUtils.mergeGeometries`, and draws them with one material whose `aoMap` is that atlas
-(`channel = 1`, `flipY = false`, `colorSpace = THREE.NoColorSpace`). The clusters are a deterministic k-means over
+(`channel = 1`, `flipY = false`, `colorSpace = THREE.NoColorSpace`). A part must carry position, normal and uv1 to
+join the merge; uv (the base-colour map) is dropped from a cluster only when one of its parts lacks it, and a part
+whose material differs visibly (colour, finish, emissive strength, alpha cutoff, vertex colours, base-colour map)
+is left out with a warning. `scene/kit_catalog_atlas.json` records each shipped tier's atlas size, bytes and
+`max_isolated_mip` from Lane E's manifest (`pipeline/sync_kit_catalog.py` writes and `--check` verifies it); the
+loader records the limit as `gteki_max_isolated_mip` on the texture. three 0.186's `Texture` has no `maxLevel`, so
+the GPU mip chain is not clamped at that level yet; the value is carried for the renderer/export step that can apply
+it, and `generateMipmaps` stays at three's default. The clusters are a deterministic k-means over
 the strip origins (at most `NOSING_CLUSTERS` = 8 per tier), so frustum and 50 m distance culling still reject most
 of the station's nosings. This change ships the desktop tier's copies; the phone copies are the stacked follow-up.
 Cost on the desktop tier: 26 part instances of 26 GLBs, 77 draws before frustum culling and extra passes, 155 712

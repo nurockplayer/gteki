@@ -1,0 +1,12 @@
+{
+ "nosing": {
+  "path": "atlas/nosing_ao.png",
+  "tiers": {
+   "high": {
+    "size_px": [1024, 1280],
+    "bytes": 69258,
+    "max_isolated_mip": 7
+   }
+  }
+ }
+}
