@@ -3,8 +3,14 @@ import * as THREE from "three";
 import { GLTFLoader, type GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { headlessGltfTextures, newShimUsage } from "./headless-dom.ts";
 
-/** A one-triangle GLB whose material samples an embedded PNG (bufferView image) through TEXCOORD_1 as its occlusion. */
-function glbWithEmbeddedImage(): ArrayBuffer {
+type TextureDef = { source?: number; extensions?: Record<string, { source: number }> };
+
+/**
+ * A one-triangle GLB whose material samples an embedded image (bufferView) through TEXCOORD_1 as its occlusion and,
+ * through a second glTF texture on the same image, as its base colour. `extension` moves both textures onto that
+ * texture extension (the image then only reachable through it), as Lane E's bundle_kit alternates would.
+ */
+function glbWithEmbeddedImage(extension?: string, required = false): ArrayBuffer {
   const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
   const uvs = new Float32Array([0, 0, 1, 0, 0, 1]);
   const png = Buffer.from("89504e470d0a1a0a", "hex"); // header bytes only: never decoded
@@ -18,8 +24,10 @@ function glbWithEmbeddedImage(): ArrayBuffer {
     asset: { version: "2.0" },
     scene: 0, scenes: [{ nodes: [0] }], nodes: [{ mesh: 0 }],
     meshes: [{ primitives: [{ attributes: { POSITION: 0, TEXCOORD_0: 1, TEXCOORD_1: 2 }, material: 0 }] }],
-    materials: [{ name: "strip", occlusionTexture: { index: 0, texCoord: 1 } }],
-    textures: [{ source: 0 }], images: [{ name: "nosing_ao", bufferView: 3, mimeType: "image/png" }],
+    materials: [{ name: "strip", occlusionTexture: { index: 0, texCoord: 1 }, pbrMetallicRoughness: { baseColorTexture: { index: 1 } } }],
+    textures: [0, 1].map((): TextureDef => (extension ? { extensions: { [extension]: { source: 0 } } } : { source: 0 })),
+    images: [{ name: "nosing_ao", bufferView: 3, mimeType: "image/png" }],
+    ...(extension ? { extensionsUsed: [extension], ...(required ? { extensionsRequired: [extension] } : {}) } : {}),
     buffers: [{ byteLength: bin.length }],
     bufferViews: [
       { buffer: 0, byteOffset: 0, byteLength: positions.byteLength },
@@ -49,17 +57,28 @@ function glbWithEmbeddedImage(): ArrayBuffer {
 }
 
 describe("headlessGltfTextures (GLB images under Node)", () => {
-  it("loads a GLB with an embedded image as a blank placeholder, keeping the slot and its UV set", async () => {
+  const cases: [string, string | undefined, boolean][] = [
+    ["a plain embedded image", undefined, false],
+    ["EXT_texture_webp", "EXT_texture_webp", false],
+    ["EXT_texture_avif", "EXT_texture_avif", false],
+    ["required KHR_texture_basisu (no KTX2Loader)", "KHR_texture_basisu", true],
+  ];
+  it.each(cases)("loads %s as blank placeholders, keeping each slot's UV set and sampling", async (_, extension, required) => {
+    expect((globalThis as Record<string, unknown>).self).toBeUndefined();
     const usage = newShimUsage();
     const loader = new GLTFLoader().register(headlessGltfTextures(usage));
-    const gltf = await new Promise<GLTF>((ok, fail) => loader.parse(glbWithEmbeddedImage(), "", ok, fail));
+    const gltf = await new Promise<GLTF>((ok, fail) => loader.parse(glbWithEmbeddedImage(extension, required), "", ok, fail));
     let material: THREE.MeshStandardMaterial | undefined;
     gltf.scene.traverse((o) => { if ((o as THREE.Mesh).isMesh) material = (o as THREE.Mesh).material as THREE.MeshStandardMaterial; });
-    expect(material?.aoMap).toBeInstanceOf(THREE.Texture);
-    expect(material!.aoMap!.userData.gteki_glb_placeholder).toBe(true);
-    expect(material!.aoMap!.channel).toBe(1);
-    expect(material!.aoMap!.flipY).toBe(false);
-    expect(material!.aoMap!.name).toBe("nosing_ao");
-    expect(usage.glbTextures).toBe(1);
+    const ao = material!.aoMap!;
+    expect(ao.userData.gteki_glb_placeholder).toBe(true);
+    expect(ao.channel).toBe(1);
+    expect(ao.flipY).toBe(false);
+    expect(ao.name).toBe("nosing_ao");
+    expect(material!.map!.userData.gteki_glb_placeholder).toBe(true);
+    expect(material!.map!.colorSpace).toBe(THREE.SRGBColorSpace);
+    // Two glTF textures, one image source: counted once.
+    expect(usage.glbEmbeddedImages).toBe(1);
+    expect(usage.glbExternalImages).toBe(0);
   });
 });

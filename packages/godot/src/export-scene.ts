@@ -149,7 +149,7 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
   if (usage.canvases > 0) warnings.push(`${usage.canvases} canvas(es) were no-op 2D contexts (blank): procedural textures and sign faces are placeholders, and ${usage.measuredTexts} measureText call(s) used an em-width estimate that may size signs differently from the browser`);
   if (usage.imageDataReads > 0) warnings.push(`${usage.imageDataReads} canvas getImageData read(s) returned zeros`);
   if (usage.pmremEnvironments > 0) warnings.push(`${usage.pmremEnvironments} PMREM environment map(s) stubbed (no GPU): reflections absent`);
-  if (usage.glbTextures > 0) warnings.push(`${usage.glbTextures} image(s) embedded in GLBs loaded via ctx.loadGlb were blank placeholders, not decoded (Node has no image decoder)`);
+  if (usage.glbEmbeddedImages + usage.glbExternalImages > 0) warnings.push(`GLB images loaded via ctx.loadGlb were blank placeholders, not decoded (Node has no image decoder): ${usage.glbEmbeddedImages} embedded, ${usage.glbExternalImages} external URI image source(s)`);
   if (usage.placeholderTextures.length > 0) warnings.push(`textures loaded via ctx.loadTexture are blank placeholders, not decoded: ${usage.placeholderTextures.join(", ")}`);
   warnings.push("ctx.audio undefined: no station audio");
   if (roles.replacedByCollision > 0) warnings.push(`${roles.replacedByCollision} drawn mesh(es) carry walkable/collider roles in the source but the scene collides through its own proxies; exported as role "visual" (original in extras.gteki_source_role)`);
