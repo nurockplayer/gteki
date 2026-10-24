@@ -149,7 +149,9 @@ function idOf(item: unknown): string {
 
 /**
  * Structural check of the station files. Returns issues; empty = shape-valid.
- * `tenants` is the optional `gteki/tenants.json` (undefined/null = no file, which is valid).
+ * `tenants` is the optional `gteki/tenants.json`: only `undefined` (the file does not exist) means "no
+ * directory". A file that exists with `null` or any other non-object content is a shape error, so an invalid
+ * file can never be read as an absent one.
  */
 export function checkShape(manifest: unknown, graph: unknown, pois: unknown, tenants?: unknown): ValidationIssue[] {
   const c = new ShapeChecker();
@@ -238,7 +240,7 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown, ten
       if (poi.displayPosition !== null) c.check(poi.displayPosition, SPECS.position, `${where}.displayPosition`);
     });
   }
-  if (tenants !== undefined && tenants !== null && c.check(tenants, { schema: "string", tenants: "array" }, "tenants.json")) {
+  if (tenants !== undefined && c.check(tenants, { schema: "string", tenants: "array" }, "tenants.json")) {
     c.each((tenants as Record<string, unknown>).tenants, SPECS.tenant, "tenants", (tenant, where) => {
       c.evidence(tenant.evidence, `${where}.evidence`);
       c.texts(tenant.names, `${where}.names`);
@@ -283,7 +285,7 @@ export function parseStationFiles(manifest: unknown, graph: unknown, pois: unkno
   const m = manifest as StationManifestFile;
   const g = graph as GraphFile;
   const p = pois as PoiFile;
-  const t = tenants === undefined || tenants === null ? null : (tenants as TenantFile);
+  const t = tenants === undefined ? null : (tenants as TenantFile);
   const issues: ValidationIssue[] = [];
   for (const [label, file] of [["graph.json", g], ["pois.json", p]] as const) {
     if (file.schema !== SCHEMA_VERSION) issues.push({ level: "error", code: "schema.version", message: `${label}: expected ${SCHEMA_VERSION}, got ${file.schema}` });

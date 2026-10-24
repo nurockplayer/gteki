@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Tenant } from "@gteki/schema";
 import { strings } from "../i18n.ts";
-import { printedFloor, tenantCheckedDate, tenantDestinationTitle, tenantLabel, tenantResultTags } from "./tenantDisplay.ts";
+import { printedFloor, tenantAsOfNote, tenantCheckedDate, tenantDestinationTitle, tenantLabel, tenantResultTags } from "./tenantDisplay.ts";
 
 const JA = strings("ja");
 const EN = strings("en");
@@ -40,5 +40,11 @@ describe("tenant display (#419)", () => {
     expect(tenantCheckedDate([tenant], "tenant-store-1")).toBe("2026-10-22");
     expect(tenantCheckedDate([tenant], "tenant-gone")).toBeNull();
     expect(tenantCheckedDate(undefined, "tenant-store-1")).toBeNull();
+  });
+
+  it("repeats the directory's check date on a picked brand's route card", () => {
+    expect(tenantAsOfNote(tenant, JA)).toBe("店舗情報（2026-10-22 時点・未確認）");
+    expect(tenantAsOfNote(tenant, EN)).toBe("Store directory as printed (2026-10-22, unverified)");
+    expect(tenantAsOfNote(null, JA)).toBeNull();
   });
 });

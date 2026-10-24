@@ -40,6 +40,20 @@ describe("tenants.json is optional (#419)", () => {
     expect(withoutFile.bundle?.edges).toEqual(withFile.bundle?.edges);
   });
 
+  it("treats only a missing file as no directory: null or non-object content is a shape error", () => {
+    const [m, g, p] = files(createTenantFixtureBundle());
+    expect(parseStationFiles(m, g, p).ok).toBe(true);
+    // A `tenants.json` whose content is JSON null is a broken file, never "the station has none".
+    const parsed = parseStationFiles(m, g, p, null);
+    expect(parsed.ok).toBe(false);
+    expect(parsed.issues.filter((i) => i.level === "error").map((i) => i.code)).toContain("shape.type");
+    expect(parsed.issues.map((i) => i.message)).toContain("tenants.json: expected object, got null");
+    for (const bad of [42, "text", []]) {
+      const issues = parseStationFiles(m, g, p, bad).issues;
+      expect(issues.filter((i) => i.level === "error").map((i) => i.code)).toContain("shape.type");
+    }
+  });
+
   it("rejects a malformed file instead of ignoring it", () => {
     const [m, g, p] = files(createTenantFixtureBundle());
     const issues = parseStationFiles(m, g, p, { tenants: [] }).issues;

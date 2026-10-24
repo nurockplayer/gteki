@@ -17,7 +17,7 @@ import { assetDerivationPresentation, factsOnlyCredit, overrideCredits, sourceCr
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { nodeLabel, poiLabel } from "./labels.ts";
-import { tenantCheckedDate, tenantDestinationTitle, tenantLabel, tenantResultTags } from "./tenantDisplay.ts";
+import { tenantAsOfNote, tenantCheckedDate, tenantDestinationTitle, tenantLabel, tenantResultTags } from "./tenantDisplay.ts";
 import { LiveRegion, freshnessReason, routeLiveMessage, searchLiveMessage, unknownLabel } from "./live.ts";
 import { MascotSlot, type MascotEvent } from "./mascot.ts";
 import { watchReducedMotion } from "./motion.ts";
@@ -705,6 +705,9 @@ export class App {
       const card = el("div", "card no-route");
       const view = r.reason === "no_path" && this.s.noPath ? noPathView(t, this.s.noPath) : null;
       card.append(el("h2", undefined, t.noRoute), el("p", undefined, view?.text ?? noRouteText(t, r, this.s.destination)));
+      // The picked brand came from an unverified directory (#419): the failed card says when it was checked.
+      const asOf = tenantAsOfNote(this.s.destinationTenant, t);
+      if (asOf) card.append(el("p", "muted tenant-asof", asOf));
       if (view && view.relax.length > 0) {
         const relax = el("div", "actions");
         const relaxOff = (keys: typeof view.relax) => { for (const k of keys) this.s.profile[k] = false; this.renderProfile(); this.computeRoute(); };
@@ -742,7 +745,11 @@ export class App {
     // No station records an on-site check, so a real station's route is always said to be desk-checked only (synthetic data says so itself).
     if (!r.synthetic) card.append(el("p", "desk-check", t.deskChecked));
     // Store floors above ground are not modelled: the guide stops at the store, never at the brand's floor.
-    if (destTenant) card.append(el("p", "muted tenant-floors", t.tenantFloorsNotGuided));
+    // The brand came from an unverified directory (#419), so the card repeats when it was checked.
+    if (destTenant) {
+      const asOf = tenantAsOfNote(destTenant, t);
+      card.append(el("p", "muted tenant-floors", asOf ? `${t.tenantFloorsNotGuided} · ${asOf}` : t.tenantFloorsNotGuided));
+    }
 
     const badges = el("div", "badges");
     const badge = (text: string, cls: string, title?: string) => { const x = el("span", `badge ${cls}`, text); if (title) x.title = title; badges.append(x); };

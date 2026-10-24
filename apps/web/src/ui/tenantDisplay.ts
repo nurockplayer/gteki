@@ -30,6 +30,14 @@ export function tenantCheckedDate(tenants: Tenant[] | undefined, id: string): st
   return tenants?.find((t) => t.id === id)?.evidence.checkedDate ?? null;
 }
 
+/**
+ * The unverified-directory note a route card carries for a picked brand (#419), or null without one.
+ * The brand was picked from a store's own printed directory, so the route card repeats when it was checked.
+ */
+export function tenantAsOfNote(tenant: Pick<Tenant, "evidence"> | null | undefined, t: Strings): string | null {
+  return tenant ? t.tenantAsOf(tenant.evidence.checkedDate) : null;
+}
+
 /** The destination title when the destination was picked through a tenant: "Store — Brand（8F）". */
 export function tenantDestinationTitle(
   storeName: string,

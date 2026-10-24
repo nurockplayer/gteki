@@ -83,6 +83,21 @@ export function fsUrl(realPath: string): string {
 }
 
 /**
+ * The optional `gteki/tenants.json` (#419) as parsed JSON. `undefined` only means the file does not exist.
+ * A file that exists but cannot be parsed is returned as `{}` (and a `null` file as `null`), so the shape check
+ * refuses it: an unreadable or invalid directory must never be read as "this station has none".
+ */
+export function readOptionalTenants(gtekiDir: string): unknown {
+  const file = path.join(gtekiDir, "tenants.json");
+  if (!fs.existsSync(file)) return undefined;
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8")) as unknown;
+  } catch {
+    return {};
+  }
+}
+
+/**
  * What a production build may publish for each station: the manifest's declared asset files
  * (`assets[].uri`, `assets[].uriMobile` and `assets[].files`), keyed by station folder. Throws, refusing the build, when a
  * station fails `parseStationFiles`, declares a file that isn't there, or holds an asset file it
@@ -95,8 +110,8 @@ export function publishableAssets(stations: DiscoveredStation[]): Map<string, Se
     const read = (name: string): unknown => {
       try { return JSON.parse(fs.readFileSync(path.join(s.gtekiDir, name), "utf8")); } catch { return undefined; }
     };
-    // An unreadable optional file is refused, not read as "no directory": `{}` fails the shape check.
-    const tenants = fs.existsSync(path.join(s.gtekiDir, "tenants.json")) ? read("tenants.json") ?? {} : undefined;
+    // Only a missing file is "no directory"; null or any other non-object content fails the shape check.
+    const tenants = readOptionalTenants(s.gtekiDir);
     const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), tenants);
     if (!parsed.ok) {
       const errors = parsed.issues.filter((i) => i.level === "error");
@@ -308,7 +323,7 @@ export function factsOnlyDataLines(stations: DiscoveredStation[]): string[] {
     const read = (name: string): unknown => {
       try { return JSON.parse(fs.readFileSync(path.join(s.gtekiDir, name), "utf8")); } catch { return undefined; }
     };
-    const tenants = fs.existsSync(path.join(s.gtekiDir, "tenants.json")) ? read("tenants.json") ?? {} : undefined;
+    const tenants = readOptionalTenants(s.gtekiDir);
     const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), tenants);
     if (!parsed.ok) return [];
     return dataFileFactsOnlySources(parsed.bundle).map((d) => `[gteki] ${s.dir} ${d.path} cites facts-only: ${d.factsOnlySourceIds.join(", ")}`);

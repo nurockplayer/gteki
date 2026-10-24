@@ -64,6 +64,19 @@ describe("@gteki/cli", { timeout: 30_000 }, () => {
     }
   });
 
+  it("refuses a tenants.json whose content is null instead of reading it as absent (#419)", async () => {
+    const root = await fixtureDir();
+    try {
+      await writeFile(stationFile(root, "tenants.json"), "null", "utf8");
+      const result = invoke(routeScript, [root, "start", "goal"]);
+      expect(result.status).toBe(2);
+      expect(result.stdout).toBe("");
+      expect(result.stderr).toContain("tenants.json: expected object, got null");
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("routes start to goal and emits ENU plus renderer coordinates", async () => {
     const root = await fixtureDir();
     try {

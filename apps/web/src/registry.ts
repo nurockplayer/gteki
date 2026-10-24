@@ -71,7 +71,8 @@ export async function listStations(): Promise<StationEntry[]> {
         const scenePromise = s.scene
           ? s.scene().catch((err: unknown) => { sceneImportError = err instanceof Error ? err.message : String(err); return null; })
           : Promise.resolve(null);
-        // `tenants` is optional (#419): undefined = the station ships no brand directory.
+        // `tenants` is optional (#419): undefined = the station ships no brand directory. A file whose content is
+        // null or not an object is passed through and refused by `parseStationFiles`, never read as absent.
         const [graph, pois, tenants, sceneModule] = await Promise.all([
           s.graph(), s.pois(), s.tenants ? s.tenants() : Promise.resolve(undefined), scenePromise,
         ]);
