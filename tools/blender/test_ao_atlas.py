@@ -530,7 +530,7 @@ class ManifestValidatorTests(unittest.TestCase):
         doc["buffers"][0]["byteLength"] = len(data)
         result = self.check(atlas.encode_glb(doc, data))
         self.assertEqual(result["status"], "WARN", result)
-        self.assertTrue(any("squashed over 10x across" in m["message"] for m in result["messages"]), result)
+        self.assertTrue(any("stretched over 10x more in one direction" in m["message"] for m in result["messages"]), result)
 
     def test_leftover_occlusion_texture(self):
         doc, binary = atlas.read_glb(self.data)
@@ -562,7 +562,7 @@ class ManifestValidatorTests(unittest.TestCase):
         # without a manifest the atlas cell is read as raw UV1, which is squashed there: diagnostic WARN only
         raw = validator.Validator("n_a.glb", self.data).check()
         self.assertEqual([m["level"] for m in raw["messages"]], ["WARN"], raw)
-        self.assertIn("squashed over 10x across", raw["messages"][0]["message"])
+        self.assertIn("stretched over 10x more in one direction", raw["messages"][0]["message"])
         self.assert_failure(validator.Validator("n_a.glb", self.data, require_occlusion=True).check(), "without occlusionTexture")
         doc, binary = atlas.read_glb(self.data)
         del doc["meshes"][0]["primitives"][0]["attributes"]["TEXCOORD_1"]

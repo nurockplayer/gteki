@@ -124,14 +124,32 @@ def _area3(p, q, r):
 # A lightmap triangle whose geometry covers at least 1 mm^2 must keep some UV area; slivers below
 # that (stair-nosing seams) may collapse when UVs are snapped to the 1/65536 grid.
 COLLAPSED_UV_AREA, VISIBLE_GEOMETRY_M2 = 1e-12, 1e-6
-# Diagnostic WARN only: a triangle at least 1 cm^2 and 5 mm across in 3D whose UV1 is squashed more than
-# 10x across relative to its 3D shape gets its AO from the few texels along a line (scale-invariant).
+# Diagnostic WARN only: a triangle at least 1 cm^2 and 5 mm across in 3D whose 3D-to-UV1 mapping stretches
+# one direction more than 10x the other (singular values) gets its AO from the few texels along a line.
 THIN_UV_MIN_AREA_M2, THIN_UV_MIN_ALTITUDE_M, THIN_UV_SQUASH = 1e-4, 0.005, 0.1
 
 
 def _longest_edge(a, b, c):
     """Longest edge of a 2D or 3D triangle."""
     return max(math.dist(a, b), math.dist(b, c), math.dist(c, a))
+
+
+def _uv_anisotropy(p, uv):
+    """sigma_min / sigma_max of the affine map from a 3D triangle's plane to its UV triangle (1 = conformal)."""
+    ab, ac = [[q[k] - p[0][k] for k in range(3)] for q in p[1:]]
+    length = math.hypot(*ab)
+    e1 = [c / length for c in ab]
+    x_c = sum(ac[k] * e1[k] for k in range(3))
+    y_c = math.hypot(*[ac[k] - x_c * e1[k] for k in range(3)])  # > 0: callers pass visible triangles
+    du = [[q[k] - uv[0][k] for k in range(2)] for q in uv[1:]]
+    # J maps the plane basis (e1, e2) to UV: columns J e1 = du_b / length, J e2 = (du_c - x_c J e1) / y_c
+    j1 = [du[0][k] / length for k in range(2)]
+    j2 = [(du[1][k] - x_c * j1[k]) / y_c for k in range(2)]
+    a, b, c, d = j1[0], j2[0], j1[1], j2[1]
+    frob, det = a * a + b * b + c * c + d * d, abs(a * d - b * c)
+    root = math.sqrt(max(frob * frob - 4 * det * det, 0.0))
+    smax, smin = math.sqrt((frob + root) / 2), math.sqrt(max((frob - root) / 2, 0.0))
+    return smin / smax if smax > 0 else 0.0
 
 
 def _min_altitude(a, b, c, area):
@@ -605,16 +623,14 @@ class Validator:
                         continue
                     map_scale = (width / w, height / h) if atlas_entry is not None else (1, 1)
                     map_tri = tuple((u * map_scale[0], v * map_scale[1]) for u, v in tri)
-                    along = _longest_edge(*map_tri) / _longest_edge(*corners3)
-                    across = _min_altitude(*map_tri, abs(_area(map_tri))) / alt3
-                    if across < THIN_UV_SQUASH * along:
+                    if _uv_anisotropy(corners3, map_tri) < THIN_UV_SQUASH:
                         thin += 1
             if collapsed:
                 self.message("FAIL", f"node {node.get('name')!r} has {collapsed} lightmap UV (TEXCOORD_1) triangles "
                              "collapsed to a point or line although their geometry is at least 1 mm^2")
             if thin:
                 self.message("WARN", f"node {node.get('name')!r} has {thin} lightmap UV (TEXCOORD_1) triangles "
-                             "squashed over 10x across their width although they are at least 1 cm^2 and 5 mm across in 3D")
+                             "stretched over 10x more in one direction than the other although they are at least 1 cm^2 and 5 mm across in 3D")
             if shared_atlas:
                 atlas.append((node, tris))
                 return
@@ -962,14 +978,18 @@ def self_test():
     # visible 10 cm x 10 cm triangle: a fat UV1 chart gives no thin WARN; a 1e-4 x 0.5 UV1 sliver gives
     # the WARN and no FAIL; the same sliver on a 2 mm triangle is below the 1 cm^2 floor and gives nothing
     visible = (0, 0, 0, .1, 0, 0, 0, .1, 0)
-    thin_warn = "squashed over 10x across"
+    thin_warn = "stretched over 10x more in one direction"
     assert not any(thin_warn in m["message"] for m in thin(visible, (0, 0, .5, 0, 0, .5))["messages"])
     sliver = thin(visible, (0, 0, 1e-4, 0, 0, .5))
     assert sliver["status"] == "WARN" and [m["level"] for m in sliver["messages"]] == ["WARN"], sliver
-    assert "has 1 lightmap UV (TEXCOORD_1) triangles squashed over 10x across" in sliver["messages"][0]["message"]
+    assert "has 1 lightmap UV (TEXCOORD_1) triangles stretched over 10x more" in sliver["messages"][0]["message"]
     assert not any(thin_warn in m["message"] for m in thin(tuple(c * .02 for c in visible), (0, 0, 1e-4, 0, 0, .5))["messages"])
     # a correctly shaped UV chart at 1/100 scale is not squashed, however small (scale-invariant)
     assert not any(thin_warn in m["message"] for m in thin(visible, (0, 0, .005, 0, 0, .005))["messages"])
+    # same edge lengths and altitudes in 3D and UV, but AB shrinks 10x and AC grows 10x (review case): 100x
+    assert any(thin_warn in m["message"] for m in thin((0, 0, 0, .1, 0, 0, 0, .01, 0), (0, 0, .01, 0, 0, .1))["messages"])
+    # a sheared but conformal chart (rotated and scaled copy of the 3D triangle) gives nothing
+    assert not any(thin_warn in m["message"] for m in thin((0, 0, 0, .1, 0, 0, .07, .05, 0), (.5, .5, .5, .6, .45, .57))["messages"])
     def occluded(uv_a, uv_b, coord=1, attrs_b=("POSITION", "TEXCOORD_1"), same_mesh=False, side=256, strength=None,
                  second_material=False, require=False):
         """Two visual triangles (meshes A and B) whose material carries an occlusionTexture on `coord`."""
