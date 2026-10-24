@@ -586,6 +586,20 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     expect(errors(b)).toContain("source.url");
   });
 
+  it("accepts plain and localized licence names and rejects empty names", () => {
+    const b = asRealStation(createSyntheticBundle());
+    b.edges = [];
+    const src = b.sources.find((s) => s.id === "fixture-access")!;
+    src.license = { name: "Legacy licence", url: "https://example.org/licence" };
+    expect(errors(b)).not.toContain("source.license");
+    src.license = { name: [{ lang: "ja", text: "日本語のライセンス" }, { lang: "en", text: "English licence" }], url: "https://example.org/licence" };
+    expect(errors(b)).not.toContain("source.license");
+    for (const name of ["", "  ", [], [{ lang: "ja", text: "" }], [{ lang: " ", text: "Licence" }]]) {
+      src.license = { name: name as string | import("./index.ts").LocalizedText[], url: "https://example.org/licence" };
+      expect(errors(b), JSON.stringify(name)).toContain("source.license");
+    }
+  });
+
   it("requires the #26 decision reference on a real facts-only source", () => {
     const b = asRealStation(createSyntheticBundle());
     b.edges = [];

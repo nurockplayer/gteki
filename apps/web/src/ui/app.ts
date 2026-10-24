@@ -11,7 +11,7 @@ import { coverageText, initialLang, pick, strings, type Lang } from "../i18n.ts"
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
 import { stationClock } from "../stationClock.ts";
-import { factsOnlyCredit, rightsLabel, sourceCredit } from "../credits.ts";
+import { assetDerivationPresentation, factsOnlyCredit, rightsLabel, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { nodeLabel, poiLabel } from "./labels.ts";
@@ -1063,13 +1063,13 @@ export class App {
     };
     const li = el("li");
     sources.forEach((s, i) => {
-      const c = sourceCredit(s);
+      const c = sourceCredit(s, this.s.lang);
       if (i) li.append(el("span", "muted", "、"));
       li.append(link(c.title, c.href));
     });
     const attribution = sources[0]?.attribution.replace(/\s+/g, " ").trim() ?? "";
     if (attribution) li.append(el("span", "muted", ` — ${attribution}`));
-    const licenses = groupLicenses(sources);
+    const licenses = groupLicenses(sources, this.s.lang);
     if (licenses.length) {
       li.append(el("span", "muted", " ("));
       licenses.forEach((l, i) => { if (i) li.append(el("span", "muted", ", ")); li.append(link(l.name, l.href)); });
@@ -1150,7 +1150,18 @@ export class App {
       const derived = (b.assets ?? []).filter((a) => a.derivation);
       if (derived.length) {
         const ul = el("ul");
-        for (const a of derived) ul.append(el("li", undefined, `${a.id}: ${a.derivation} — ${a.sourceIds.map((id) => b.sources.find((s) => s.id === id)?.title ?? id).join(", ")}`));
+        for (const a of derived) {
+          const li = el("li");
+          const presentation = assetDerivationPresentation(a.derivation!, a.derivationSummary, this.s.lang, this.t.derivationDetails);
+          li.append(document.createTextNode(`${a.id}: ${presentation.text}`));
+          if (presentation.details !== null) {
+            const details = el("details");
+            details.append(el("summary", undefined, presentation.detailsLabel!), document.createTextNode(presentation.details));
+            li.append(" ", details);
+          }
+          li.append(document.createTextNode(` — ${a.sourceIds.map((id) => b.sources.find((s) => s.id === id)?.title ?? id).join(", ")}`));
+          ul.append(li);
+        }
         d.append(el("h3", undefined, this.t.assetDerivations), ul);
       }
     }

@@ -38,7 +38,7 @@ export interface Source {
   url: string;
   /** Exact resource URL(s) that were downloaded, if any. */
   downloadUrls?: string[];
-  license: { name: string; url: string } | null;
+  license: { name: string | LocalizedText[]; url: string } | null;
   rights: RightsStatus;
   /**
    * How GTEki uses the source. "facts-only": cited only as evidence for facts (a passage is
@@ -323,6 +323,8 @@ export interface Asset {
   files?: string[];
   /** e.g. "Blender build from PLATEAU ubld 53394576, 0.5 m grid"; disclosure of modification. */
   derivation?: string;
+  /** Plain-word, user-facing summary; `derivation` remains the full provenance record (#26). */
+  derivationSummary?: LocalizedText[];
 }
 
 /**
