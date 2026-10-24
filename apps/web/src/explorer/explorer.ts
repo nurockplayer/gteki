@@ -1213,7 +1213,7 @@ export class Explorer {
     const focusY = this.mode === "overview" ? null : this.pos.y;
     for (const l of labels) {
       const distance = this.labelAt.setFromMatrixPosition(l.obj.matrixWorld).distanceTo(cam.position);
-      const state = labelState({ occluded: l.occluded, distance, onFocusFloor: onFocusFloor(l.groundY, focusY), selected: l.selected });
+      const state = labelState({ occluded: l.occluded, distance, onFocusFloor: onFocusFloor(l.groundY, focusY), selected: l.selected, overview: this.mode === "overview" });
       if (state === l.state) continue;
       l.state = state;
       l.obj.element.classList.toggle("occluded", state === "faded");
