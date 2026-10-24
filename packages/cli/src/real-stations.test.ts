@@ -65,6 +65,8 @@ describe("@gteki/cli route on the real stations", { timeout: 30_000 }, () => {
   });
 
   it.each([
+    ["ikebukuro", ["jr-central-gate-2", "shop-ikb-mr-002", "--from-poi", "--goal-poi"], "unknown_goal"],
+    ["ikebukuro", ["jr-central-gate-2", "shop-ikb-mr-005", "--from-poi", "--goal-poi"], "unknown_goal"],
     ["ikebukuro", ["jr-central-gate-2", "tobu-central-gate-2", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only POI: no verified entrance
     ["ikebukuro", ["g_jr_c2", "no-such-node"], "unknown_goal"],
     ["shinjuku", ["poi:platform:oedo", "poi:nope", "--from-poi", "--goal-poi"], "unknown_goal"],
