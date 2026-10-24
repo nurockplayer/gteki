@@ -376,6 +376,9 @@ SPDX-License-Identifier = "LicenseRef-S03"
 # --- 4l. Facts-only line POIs for Ikebukuro (lines-lead WP2/WP3; #26 Tokyo Metro, OD-25 Seibu) ------
 # Gate, lift, escalator and exit names and end pairs as printed on the operator pages; no licence
 # exists to relicense, nothing is reproduced beyond short quotes of the facts (NOTICE 4.9).
+# 豊島区 facts only, director ruling OD-34 (2026-10-25): site policy read 2026-10-25T02:10:49+09:00,
+# https://www.city.toshima.lg.jp/012/kuse/koho/homepage/sitepolicy.html (sha256 9f2f0e5a…9c2d);
+# no document or image is reproduced, only the 1a/C4 closure fact in our own words with URL and date.
 [[annotations]]
 path = [
   "docs/research/lines/ikebukuro-line-pois.json",

@@ -41,6 +41,15 @@ As in the merchant contract §4, plus: no Tobu station-map gate name (OD-01 B), 
 
 ## 7. Rights review record
 
+**Toshima City terms (2026-10-25, director ruling OD-34).** The city site policy
+(https://www.city.toshima.lg.jp/012/kuse/koho/homepage/sitepolicy.html, retrieved
+2026-10-25T02:10:49+09:00, HTTP 200, 23,634 B, sha256 `9f2f0e5a…9c2d`, fetched with plain
+`curl`, default UA) forbids unauthorised reproduction or adaptation of the site's documents and
+images except private-use copies and quotation permitted by copyright law. Under OD-34 the
+guide is **facts only**: no PDF text or figure is reproduced; the closure note in §2 is in our
+own words and carries the source URL, retrieval time and hash.
+
+
 GIS Lane D reviewed the first head of #414 on 2026-10-24 (by message; it cannot post on the PR):
 
 - **Found in order:** names, end pairs and facts under the facts-only class (Tokyo Metro #26, Seibu OD-25); REUSE 4l as a two-path exact list resolving to `LicenseRef-facts-only-no-licence`.

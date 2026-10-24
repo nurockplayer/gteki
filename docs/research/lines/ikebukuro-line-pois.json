@@ -69,7 +69,7 @@
       "modified": false,
       "retrievedAt": "2026-10-25T02:02:16+09:00",
       "datasetDate": "2022-01",
-      "notes": "ライセンスなし・事実のみ参照（複製なし）。更新通知（令和4年1月6日付）の変更点に、池袋マルイ解体工事に伴い1aとC4の出入口が閉鎖された旨の記載があることのみ確認。本文は転記せず、地図面は読んでいない。 取得物: 438,368 B, sha256 db85abf7d77131ca7f72af074de993a371b6925d0e903fa2f82a2a330d1a7a15; リンク元 https://www.city.toshima.lg.jp/405/1705251510.html (2026-10-25, HTTP 200). Cited by the contract's exit-closure note only; no POI cites it, because the 2026-03 Metro list is newer. Same guide as toshima-underground-guide-2022 (station record); this id is the update-notice PDF.",
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。更新通知（令和4年1月6日付）の変更点に、池袋マルイ解体工事に伴い1aとC4の出入口が閉鎖された旨の記載があることのみ確認。本文は転記せず、地図面は読んでいない。 取得物: 438,368 B, sha256 db85abf7d77131ca7f72af074de993a371b6925d0e903fa2f82a2a330d1a7a15; リンク元 https://www.city.toshima.lg.jp/405/1705251510.html (2026-10-25, HTTP 200). Cited by the contract's exit-closure note only; no POI cites it, because the 2026-03 Metro list is newer. Same guide as toshima-underground-guide-2022 (station record); this id is the update-notice PDF. Site terms (checked 2026-10-25): city.toshima.lg.jp サイトポリシー (https://www.city.toshima.lg.jp/012/kuse/koho/homepage/sitepolicy.html, retrievedAt 2026-10-25T02:10:49+09:00, HTTP 200, 23,634 B, sha256 9f2f0e5a3610c1f6dfc2d08a918220a31706287a698105f4cdf06c4f4a869c2d) forbids unauthorised reproduction or adaptation of the site's documents and images except private-use copies and quotation permitted by copyright law; facts only, director ruling OD-34 2026-10-25.",
       "usage": "facts-only",
       "decision": {
         "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
