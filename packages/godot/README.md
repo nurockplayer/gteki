@@ -6,6 +6,14 @@ route computed by the existing TypeScript router. Godot contains no routing
 implementation. All fixture data is synthetic and cannot be used for real station
 directions.
 
+## Handoff (G-5)
+
+Deliberate simplifications, known gaps and the commands a successor needs are collected in
+[docs/g5-handoff.md](docs/g5-handoff.md). G-1 to G-3 are merged; G-4 is partial (the interior is still too dark, #401,
+and the kit AO waits on #352); G-5's evidence walks and first performance table are merged, and that document is its
+last item. GPU work runs only on weekdays 03:00–15:00 JST, single process under `lockf`, with
+`--rendering-method forward_plus` on the command line while `project.godot` stays `gl_compatibility`.
+
 From the workspace root, with its pinned pnpm dependencies installed:
 
 ```sh
