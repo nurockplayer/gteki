@@ -77,3 +77,7 @@ Acceptance check (run 2026-10-24, scratch copy of `origin/main`, both sources an
 - `parseStationFiles` + `validateBundle`: 0 errors; the only issues are `poi.unroutable` warnings for search-only POIs.
 - `route.ts stations/ikebukuro c_w shop-ikb-hope-001 --goal-poi` (and an Echika POI): `unknown_goal`, "destination has no verified entrance".
 - `packages/cli/src/real-stations.test.ts`: 21/21 pass.
+
+### 6.1 Batch 3 (Tokyo Metro Ikebukuro shop page remainder)
+
+File: [`ikebukuro-merchants-batch3.json`](ikebukuro-merchants-batch3.json), 2 POIs (`shop-ikb-metro-001` LAWSON METRO'S, `shop-ikb-metro-002` Wrapped Crepe Korot); log: [`ikebukuro-merchants-batch3-log.md`](ikebukuro-merchants-batch3-log.md). Source `tokyometro-ikebukuro-shops-2026-10` is already in the station data. Of 46 entries on the page, the rest are batch 1–2 shops, Echika shops, facilities (ATMs, lockers, photo booths and similar, for a later facilities batch), or places outside the station (駅周辺). IDs use a sequence (`shop-ikb-metro-<NNN>`) because the page has no store codes. Both are `SEARCH_ONLY`, with the same field rules as §2.
