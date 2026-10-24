@@ -1,9 +1,10 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { StationBundle } from "@gteki/schema";
-import { pointInRings, soffitHeight, type Layout, type WalkWorld, type XY, type XYZ } from "./layout.ts";
+import { type Layout, type WalkWorld, type XY, type XYZ } from "./layout.ts";
 import { stationSpawn } from "./spawn.ts";
 import { IDENTITY_ART, identityTexture } from "./textures.ts";
+import { identityClearance, platformIdentityPlacement, warnPlatformIdentitySkipped } from "./identity-placement.ts";
 import { identityNearFade } from "./identity-fade.ts";
 
 export const IDENTITY_SIZE = { width: 1.72, height: 0.86, depth: 0.07 } as const;
@@ -57,44 +58,33 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
   const { width, height, depth } = IDENTITY_SIZE;
   const region = IDENTITY_ART.name;
   const nameBox = identityBox(region.left, region.top, region.right, region.bottom);
-  const add = (name: string, nodeId: string, center: XYZ, facing: XY) => {
+  const add = (name: string, nodeId: string, center: XYZ, facing: XY, placement: string, fixedTop?: number) => {
     const level = layout.levels.find((lv) => Math.abs(lv.z - center.z) < 0.3);
     if (!level) return;
     // 2.1 m clear below the casing; 0.12 m below the ceiling. Lower than route signs.
-    const top = Math.min(center.z + 3.0, level.ceilingZ - 0.12);
+    const top = fixedTop ?? Math.min(center.z + 3.0, level.ceilingZ - 0.12);
     const board = new THREE.Group();
     board.name = name;
-    const roofs = [...level.ceilings, ...layout.soffits];
     const clear = () => {
-      board.updateMatrixWorld(true);
-      for (const y of [-height / 2 - 0.02, 0, height / 2 + 0.02]) {
-        const corners = [[-width / 2 - 0.04, -0.06], [width / 2 + 0.04, -0.06], [width / 2 + 0.04, 0.06], [-width / 2 - 0.04, 0.06]]
-          .map(([x, z]) => board.localToWorld(new THREE.Vector3(x, y, z)));
-        for (let i = 0; i < corners.length; i++) {
-          const a = corners[i]!, b = corners[(i + 1) % corners.length]!;
-          if (world.firstWallHit({ x: a.x, y: -a.z }, { x: b.x, y: -b.z }, a.y) < 1) return false;
-        }
-      }
-      for (let i = 0; i <= 10; i++) for (const z of [-0.06, 0, 0.06]) {
-        const p = board.localToWorld(new THREE.Vector3((-0.5 + i / 10) * (width + 0.08), height / 2 + 0.02, z));
-        const enu = { x: p.x, y: -p.z };
-        if (roofs.some((roof) => pointInRings(enu, roof.rings) && soffitHeight(roof, enu) > center.z + 1.8 && soffitHeight(roof, enu) - p.y < 0.08)) return false;
-      }
-      return true;
+      const result = identityClearance(board, center.z, level, layout, world, IDENTITY_SIZE);
+      return result.wallsClear && result.roofClear;
     };
     // Search only small offsets from the source anchor. In particular, the normal
     // spawn backs up near a wall: its board needs a little lateral clearance.
     let found = false;
-    for (const along of [0, 0.3, -0.3, 0.6, -0.6, 0.9]) {
-      for (const lateral of [0, 0.2, -0.2, 0.4, -0.4, 0.6, -0.6]) {
+    for (const along of fixedTop === undefined ? [0, 0.3, -0.3, 0.6, -0.6, 0.9] : [0]) {
+      for (const lateral of fixedTop === undefined ? [0, 0.2, -0.2, 0.4, -0.4, 0.6, -0.6] : [0]) {
         board.position.set(center.x + facing.x * along - facing.y * lateral, top - height / 2, -(center.y + facing.y * along + facing.x * lateral));
         board.lookAt(board.position.x + facing.x, board.position.y, board.position.z - facing.y);
         if (clear()) { found = true; break; }
       }
       if (found) break;
     }
-    if (!found) throw new Error(`No clear identity board placement near ${name}`);
-    board.userData = { nodeId, generated: IDENTITY_GENERATED, gteki_identity: { front: [0, 0, 1], regions: [{ kind: "name", ...nameBox }] } };
+    if (!found) {
+      if (fixedTop !== undefined) { warnPlatformIdentitySkipped(); return; }
+      throw new Error(`No clear identity board placement near ${name}`);
+    }
+    board.userData = { nodeId, placement, generated: IDENTITY_GENERATED, gteki_identity: { front: [0, 0, 1], regions: [{ kind: "name", ...nameBox }] } };
     root.add(board);
     board.updateMatrix();
     board.updateMatrixWorld(true);
@@ -111,7 +101,7 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
         const back = new THREE.Group();
         back.name = `${name}:back`;
         back.rotation.y = Math.PI;
-        back.userData = { generated: IDENTITY_GENERATED, gteki_identity: { front: [0, 0, 1], regions: [{ kind: "name", ...nameBox }] } };
+        back.userData = { placement, generated: IDENTITY_GENERATED, gteki_identity: { front: [0, 0, 1], regions: [{ kind: "name", ...nameBox }] } };
         board.add(back);
         board.updateMatrixWorld(true);
       }
@@ -126,7 +116,7 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
   const forward = { x: Math.sin(spawn.heading), y: Math.cos(spawn.heading) };
   add("identity:spawn", spawn.nodeId,
     { x: spawn.position.x + forward.x * 0.9, y: spawn.position.y + forward.y * 0.9, z: spawn.position.z },
-    { x: -forward.x, y: -forward.y });
+    { x: -forward.x, y: -forward.y }, "GTEki placement at the normal spawn; not surveyed, not a replica of an on-site sign");
   for (const poi of bundle.pois.filter((p) => p.category === "ticket_gate")) {
     const node = nodes.get(poi.connectorNodeIds[0] ?? "");
     if (!node || !poi.displayPosition) continue;
@@ -137,8 +127,12 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
     // Gate POI connectors are the verified unpaid approach nodes (import-e27.ts).
     const dx = node.position.x - poi.displayPosition.x, dy = node.position.y - poi.displayPosition.y;
     const length = Math.hypot(dx, dy) || 1;
-    add(`identity:gate:${poi.id}`, node.id, gate.center, { x: dx / length, y: dy / length });
+    add(`identity:gate:${poi.id}`, node.id, gate.center, { x: dx / length, y: dy / length },
+      "GTEki placement at the ticket-gate POI; not surveyed, not a replica of an on-site sign");
   }
+  const platform = platformIdentityPlacement(bundle, layout, world, root, IDENTITY_SIZE, nameBox);
+  if (platform) add("identity:platform:poi:platform:oedo", platform.nodeId, platform.center, platform.facing,
+    "GTEki wayfinding placement; not surveyed, not a replica of the on-site sign", platform.top);
   if (faces.length) {
     const geometry = mergeGeometries(faces)!;
     faces.forEach((g) => g.dispose());

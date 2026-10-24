@@ -45,13 +45,15 @@ describe("station geometry lifetime", () => {
     expect(result.retired).toBeGreaterThan(30_000); // exercise the real PLATEAU and station merges
     expect(result.retained).toBe(0);
     expect(result.live).toBe(140);
-    expect(result.bytes).toBe(13_319_392);
+    expect(result.bytes).toBe(13_325_024);
     // #49 retains two clipped render-only shell batches: +12,198 B and +193 triangles.
     // #342 adds the shared identity face batch plus cases/hangers: +15,872 B / +256 triangles.
     // Near-camera fade splits out one hardware mesh: +6,656 B in colour/metalness attributes,
     // +1 live geometry, no new triangles. Captured again from the helper's real build.
+    // #342 platform placement adds 5,632 B and 64 triangles in those same two meshes,
+    // with no new live geometry. Values/hash recaptured from the failing helper test.
     // Counts/hash above were captured with helpers/retained-geometry.ts after that build;
     // physical buffers remain byte-identical (scene-digest.test.ts). Retired arrays stay collectible.
-    expect(result.geometryHash).toBe("b53fa699bffd75a264d22d909b1150d305be0000a4e4d0aabbf4cc3a9c6f1166");
+    expect(result.geometryHash).toBe("8f65a92e7fb8a796c4e10586bd201e34d0f08da95b8fbb17447f6154dab98021");
   }, 60_000);
 });

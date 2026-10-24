@@ -1,6 +1,9 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { loadShinjukuBundle } from "../data/bundle.ts";
+import stationJson from "../gteki/station.json" with { type: "json" };
+import { PLATFORM_IDENTITY_SLOT } from "../scene/identity-placement.ts";
+import { identityHardwareBoxes, identityObstacles, searchPlatformIdentityPlacement } from "./helpers/identity-placement.ts";
 import planJson from "../data/plan.json" with { type: "json" };
 import { buildStation, type BuiltStation } from "../scene/build.ts";
 import { pointInRings, soffitHeight, type Plan } from "../scene/layout.ts";
@@ -81,16 +84,18 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
     }
   });
 
-  it("tags both readable faces of every spawn/gate board with valid local name boxes", () => {
+  it("tags both readable faces of every spawn/gate/platform board with valid local name boxes", () => {
     const boards = station.identityBoards;
     expect(station.signs.every((o) => o.name.startsWith("sign:") && !o.userData.gteki_identity)).toBe(true);
     expect(boards.every((o) => !station.signs.includes(o))).toBe(true);
-    expect(boards.map((o) => o.name)).toEqual(["identity:spawn", ...bundle.pois.filter((p) => p.category === "ticket_gate").map((p) => `identity:gate:${p.id}`)]);
+    expect(boards.map((o) => o.name)).toEqual(["identity:spawn", ...bundle.pois.filter((p) => p.category === "ticket_gate").map((p) => `identity:gate:${p.id}`), "identity:platform:poi:platform:oedo"]);
     const tagged: THREE.Object3D[] = [];
     station.root.traverse((o) => { if (o.userData.gteki_identity) tagged.push(o); });
     expect(tagged).toHaveLength(boards.length * 2);
     for (const board of tagged) {
       expect(board.userData.generated).toBe(IDENTITY_GENERATED);
+      expect(board.userData.placement).toMatch(/^GTEki (?:wayfinding )?placement/);
+      expect(board.userData.placement).toContain("not surveyed");
       const tag = board.userData.gteki_identity;
       expect(tag.front).toHaveLength(3);
       expect(tag.front.every(Number.isFinite)).toBe(true);
@@ -108,6 +113,109 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
         expect(Math.max(Math.abs(region.min[1]), Math.abs(region.max[1]))).toBeLessThanOrEqual(IDENTITY_SIZE.height / 2);
       }
     }
+  });
+
+  it("places the platform board across the track at the first qualifying chip-2 candidate", () => {
+    const board = station.root.getObjectByName("identity:platform:poi:platform:oedo")!;
+    const poi = bundle.pois.find(p => p.id === "poi:platform:oedo")!;
+    const node = bundle.nodes.find(n => n.id === poi.connectorNodeIds[0])!;
+    expect(node.id).toBe(stationJson.spawnNodeIds[1]);
+    expect(board.userData.nodeId).toBe(node.id);
+    expect(board.userData.placement).toBe("GTEki wayfinding placement; not surveyed, not a replica of the on-site sign");
+    expect(board.children[0]!.userData.placement).toBe(board.userData.placement);
+    const floor = station.layout.nodeZ.get(node.id)!;
+    const eye = new THREE.Vector3(node.position.x, floor + 1.6, -node.position.y);
+    const region = board.userData.gteki_identity.regions[0] as LocalBox;
+    const target = board.localToWorld(new THREE.Vector3(...region.min).add(new THREE.Vector3(...region.max)).multiplyScalar(0.5));
+    const delta = target.clone().sub(eye);
+    const facing = worldFront(board).dot(delta.clone().negate().normalize());
+    expect(delta.length()).toBeCloseTo(8.119919707321568, 10);
+    expect(facing).toBeCloseTo(0.9852314171021372, 10);
+    expect((Math.atan2(delta.x, -delta.z) * 180 / Math.PI + 360) % 360).toBeCloseTo(160.72154431381705, 10);
+    expect(delta.length()).toBeGreaterThanOrEqual(4);
+    expect(delta.length()).toBeLessThanOrEqual(20);
+    expect(facing).toBeGreaterThanOrEqual(0.5);
+    const meshes: THREE.Mesh[] = [];
+    station.root.traverseVisible(o => {
+      const mesh = o as THREE.Mesh;
+      if (mesh.isMesh && !mesh.name.startsWith("identity") && [mesh.material].flat().some(m => m.visible && !m.transparent)) meshes.push(mesh);
+    });
+    const ray = new THREE.Raycaster(eye, delta.clone().normalize(), 0, delta.length() - 0.001);
+    expect(ray.intersectObjects(meshes, false)).toHaveLength(0);
+    const level = station.layout.levels.find(l => l.floorId === poi.floorId)!;
+    const top = board.position.y + IDENTITY_SIZE.height / 2;
+    expect(board.position.y - IDENTITY_SIZE.height / 2 - 0.02 - floor).toBeGreaterThanOrEqual(2.3);
+    expect(top + 0.02).toBeLessThanOrEqual(level.ceilingZ - 0.12);
+    expect(identityObstacles(station.root).hardwareBlocker(board, identityHardwareBoxes(IDENTITY_SIZE, level.ceilingZ - top))).toBeNull();
+    // Re-run the full ordered search against the completed scene, including sign hardware.
+    const chosen = searchPlatformIdentityPlacement(bundle, station.layout, station.world, station.root, IDENTITY_SIZE, region);
+    expect(chosen.attempts).toHaveLength(22);
+    expect(chosen.attempts.slice(0, -1).every(c => c.direction === "toward midpoint" && !c.pass)).toBe(true);
+    expect(chosen.attempts.slice(0, -1).map(c => c.offsetM)).toEqual(Array.from({ length: 21 }, (_, i) => 8 + i * 0.5));
+    const accepted = chosen.attempts.at(-1)!;
+    expect({ direction: accepted.direction, offsetM: accepted.offsetM }).toEqual(PLATFORM_IDENTITY_SLOT);
+    expect(accepted).toMatchObject({ pass: true,
+      blockedBy: null, wallsClear: true, roofClear: true, footprintInside: true, geometryBlocker: null });
+    expect(board.position.x).toBeCloseTo(chosen.center.x, 10);
+    expect(-board.position.z).toBeCloseTo(chosen.center.y, 10);
+    expect(board.position.y).toBeCloseTo(chosen.top - IDENTITY_SIZE.height / 2, 10);
+    // Normal along the slab's derived long axis: the board plane hangs across it.
+    expect(worldFront(board).dot(new THREE.Vector3(chosen.facing.x, 0, -chosen.facing.y))).toBeCloseTo(1, 10);
+    console.log(JSON.stringify({ platformIdentity: { ...accepted, nameCenterEnu: { x: target.x, y: -target.z, z: target.y },
+      readableFace: "front", ceilingClearance: level.ceilingZ - top - 0.02, attempts: chosen.attempts } }));
+  });
+
+  it("skips an invalid platform slot without throwing, preserves other boards and warns once", () => {
+    const missingConnector = { ...bundle, pois: bundle.pois.map(p => p.id === "poi:platform:oedo"
+      ? { ...p, connectorNodeIds: ["missing-platform-identity-connector"] } : p) };
+    const platformPoi = bundle.pois.find(p => p.id === "poi:platform:oedo")!;
+    const insufficientHeadroom = { ...station.layout, levels: station.layout.levels.map(level => level.floorId === platformPoi.floorId
+      ? { ...level, ceilingZ: level.z + 2.5 } : level) };
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const disposables: { dispose(): void }[] = [];
+    const track = <T extends { dispose(): void }>(value: T) => { disposables.push(value); return value; };
+    try {
+      // First fail a cheap height check with valid data, then fail missing data on a second build.
+      for (const [input, layout] of [[bundle, insufficientHeadroom], [missingConnector, station.layout]] as const) {
+        const root = new THREE.Group();
+        let boards: THREE.Object3D[] = [];
+        expect(() => { boards = withCanvasStub(() => buildIdentityBoards(input, layout, station.world, root, track, "low")); }).not.toThrow();
+        expect(boards.map(board => board.name)).toEqual(station.identityBoards.filter(board => !board.name.startsWith("identity:platform:")).map(board => board.name));
+        expect(root.getObjectByName("identity:platform:poi:platform:oedo")).toBeUndefined();
+        const faces = root.getObjectByName("identity-faces") as THREE.Mesh;
+        expect(faces.userData.faceCount).toBe(8);
+      }
+      expect(warn).toHaveBeenCalledExactlyOnceWith("Skipping GTEki platform identity board: missing placement data or failed clearance checks");
+    } finally {
+      warn.mockRestore();
+      disposables.forEach(value => value.dispose());
+    }
+  });
+
+  it("rejects opaque and glass fixture intersections, including transformed instances", () => {
+    const root = new THREE.Group(), board = new THREE.Object3D();
+    root.position.set(7, 2, -3);
+    root.rotation.y = 0.4;
+    board.position.set(3, 1, 2);
+    board.updateMatrix();
+    const geometry = new THREE.BoxGeometry(0.05, 0.05, 0.05);
+    const material = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.3 });
+    const fixture = new THREE.InstancedMesh(geometry, material, 1);
+    fixture.name = "ceiling fixture";
+    const boxes = identityHardwareBoxes(IDENTITY_SIZE, 0.4);
+    root.add(fixture);
+    try {
+      for (const local of [new THREE.Vector3(0, 0, 0), new THREE.Vector3(IDENTITY_SIZE.width * 0.35, 0.6, 0)]) {
+        const center = local.applyMatrix4(board.matrix);
+        fixture.setMatrixAt(0, new THREE.Matrix4().makeTranslation(center.x, center.y, center.z));
+        expect(identityObstacles(root).hardwareBlocker(board, boxes)).toBe("ceiling fixture");
+        material.transparent = false;
+        expect(identityObstacles(root).hardwareBlocker(board, boxes)).toBe("ceiling fixture");
+        material.transparent = true;
+      }
+      fixture.setMatrixAt(0, new THREE.Matrix4().makeTranslation(50, 50, 50));
+      expect(identityObstacles(root).hardwareBlocker(board, boxes)).toBeNull();
+    } finally { fixture.dispose(); geometry.dispose(); material.dispose(); }
   });
 
   it("keeps every pair of identity board centres more than 1 m apart", () => {
@@ -311,10 +419,10 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
         expect(entry.category).toBe("signage");
         expect([entry.width, entry.height]).toEqual(quality === "high" ? [1024, 512] : [512, 256]);
         const faces = built.root.getObjectByName("identity-faces") as THREE.Mesh;
-        expect(faces.userData.faceCount).toBe(8);
-        expect(faces.geometry.index!.count / 3).toBe(16);
+        expect(faces.userData.faceCount).toBe(10);
+        expect(faces.geometry.index!.count / 3).toBe(20);
         const hardware = built.root.getObjectByName("identity-cases-rods") as THREE.Mesh;
-        expect(hardware.geometry.index!.count / 3).toBe(240);
+        expect(hardware.geometry.index!.count / 3).toBe(300);
         expect(hardware.geometry.groups).toHaveLength(0);
         expect(Array.isArray(hardware.material)).toBe(false);
         let draws = 0;

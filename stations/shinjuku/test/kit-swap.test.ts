@@ -35,15 +35,18 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
  * #370 names the `mat` materials `mat.<key>`, which changes texturesDigest only (was b799e0f8…; re-measured with
  * and without the naming line, every other field unchanged).
  * #342 Q1a (#348) adds the identity boards: two meshes (faces, hardware), 13,319,392 B and geometry b53fa699…
- * as geometry-lifetime.test.ts; re-measured on main ce67809d + #348. The explorer lists stay identical. */
+ * as geometry-lifetime.test.ts; re-measured on main ce67809d + #348. The explorer lists stay identical.
+ * #342 platform ruling adds one cross-platform board in the same meshes: +5,632 B / +64 triangles;
+ * geometry 8f65a92e… and nodes 792b970f… recaptured from the failing exact-tree assertions.
+ * The nodes digest also includes the explicit design-placement labels; all explorer lists stay identical. */
 const MAIN_BASELINE = {
   station: {
-    geometryDigest: "b53fa699bffd75a264d22d909b1150d305be0000a4e4d0aabbf4cc3a9c6f1166",
+    geometryDigest: "8f65a92e7fb8a796c4e10586bd201e34d0f08da95b8fbb17447f6154dab98021",
     appearanceDigest: "b22d80d5524de069aa3eba2927b2fb04cc0b9ff521c031b890d51e4c3ca56bd8",
-    nodesDigest: "52959028e655d685aca95707946ba0dad4ae0cdb6dcc547fe8346080be9fda40",
+    nodesDigest: "792b970f730f09f856511da9fd6f5d3bf705fcb13f441a4179e1f49ecfad555c",
     texturesDigest: "6fcae65a3d08734ee7ff61aef64011704954a5eb7d6dbbc97bc279d2f9fc855b",
     meshes: 140,
-    bytes: 13_319_392,
+    bytes: 13_325_024,
   },
   lists: {
     listsDigest: "ddd5c84df153fb71c2254a20ec8132134ef0aaa6bb4878cb683da4ffc967913f",
