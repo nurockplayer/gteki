@@ -134,6 +134,12 @@ const GOLDEN: Record<string, Row[]> = {
     { q: "コインロッカー", top1: "locker-ikb-metro-001" },
     { q: "ATM・三井住友銀行", top1: "atm-ikb-metro-008" },
   ],
+  "facilities batches 2-3 (#453, #455)": [
+    { q: "インフォメーション", top1: "service-ikb-lumine-001" }, // LUMINE B1; exact name unique among all Ikebukuro POI names and aliases
+    // No Tōbu facility name is unique (12 バリアフリートイレ, 5 コインロッカー（有料）, ...), so the two printed ベビー休憩室 are asserted as a set.
+    { q: "ベビー休憩室", top: ["service-ikb-tobudept-007", "service-ikb-tobudept-008"] },
+    { q: "お忘れ物取扱所", top1: "service-ikb-seibu-003" }, // #455, Seibu lost-property office; exact name unique among all Ikebukuro POI names and aliases
+  ],
 };
 
 describe("Ikebukuro golden search", () => {
