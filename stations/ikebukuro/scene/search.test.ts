@@ -148,9 +148,9 @@ describe("Ikebukuro golden search", () => {
       });
     }
 
-    it("the Seibu queries reach only gates and exits sourced from the Seibu Railway station page", () => {
+    it("the Seibu queries reach only POIs sourced from the Seibu Railway station page", () => {
       for (const q of ["西武", "西武線", "Seibu", "Seibu Railway"]) {
-        const hits = index.search(q).filter((hit) => hit.poi.category === "ticket_gate" || hit.poi.category === "exit");
+        const hits = index.search(q);
         for (const hit of hits) expect(hit.poi.evidence.sourceIds, `${q} -> ${hit.poi.id}`).toContain(SEIBU_SOURCE);
       }
     });
