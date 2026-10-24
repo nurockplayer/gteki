@@ -91,6 +91,11 @@ export interface StationScene {
   };
   /** Per-frame hook, before the camera is stepped; `camera` (optional) holds the previous frame's pose, e.g. for distance culling. */
   update?(dtSeconds: number, elapsedSeconds: number, camera?: THREE.Camera): void;
+  /**
+   * Resolves once presentation content the scene loads in the background (after the first frame) is in place.
+   * Renderers need not wait for it; hosts that export a snapshot instead of rendering await it first. Never rejects.
+   */
+  settled?(): Promise<void>;
   dispose(): void;
 }
 

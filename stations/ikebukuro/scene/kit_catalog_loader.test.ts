@@ -355,6 +355,30 @@ describe("loadKitCatalog", () => {
     }
   });
 
+  it("settled() starts the build itself and resolves after failed loads, without a frame or after dispose", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const root = new THREE.Group();
+      const failing = host(allUris, async (uri) => { throw new Error(`no ${uri}`); });
+      const lazy = lazyKitCatalog(THREE, failing, escalators, false, root, env, toRenderer);
+      await lazy.settled(); // no update() and no start() first: an export host calls only this
+      expect(failing.loadGlb).toHaveBeenCalledTimes(allUris.length);
+      expect(root.children).toHaveLength(0);
+      lazy.dispose();
+
+      const never = host(allUris, () => new Promise<GLTF>(() => {}));
+      const stuck = lazyKitCatalog(THREE, never, escalators, false, new THREE.Group(), env, toRenderer);
+      const waiting = stuck.settled();
+      stuck.dispose();
+      await waiting; // dispose releases a waiter even when a fetch never returns
+
+      const none = lazyKitCatalog(THREE, host([]), [], false, new THREE.Group(), env, toRenderer);
+      await none.settled(); // nothing to load
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
   it("culls by sphere surface distance, restores visibility and reuses its scratch objects", async () => {
     const loaded = await loadKitCatalog(THREE, host(allUris), escalators.slice(0, 1), false);
     const { group } = loaded.build(THREE, env, toRenderer);
