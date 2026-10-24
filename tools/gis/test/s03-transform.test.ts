@@ -138,6 +138,11 @@ describe('S03 unclosed source rings: exclude, never repair', () => {
     const entries = withLevelFeatures([polygonFeature([openRing]), polygonFeature([[[0, 0], [1, 0], [1, 1], [200, 0]]])]);
     expect(() => parseS03Members(entries)).toThrow(/invalid geographic coordinate/);
   });
+  it('still fails closed when an unclosed ring also self-intersects, instead of excluding it', () => {
+    // Topology is decided before any exclusion ruling, so the two defects cannot cancel each other out.
+    const openBowtie = [[0, 0], [2, 2], [2, 0], [0, 2]];
+    expect(() => parseS03Members(withLevelFeatures([polygonFeature([openBowtie])]))).toThrow(/ring 0 self-intersects/);
+  });
   it('reports INCOMPLETE, not PASS, when a level carrying nodes has no usable polygon', () => {
     const inputs = parseS03Members(encode());
     // Level 11 keeps its usable square and its one inside node; level 12 has no polygons and a thousand nodes.
@@ -161,6 +166,9 @@ describe('S03 unclosed source rings: exclude, never repair', () => {
     const openInputs = parseS03Members(withLevelFeatures([polygonFeature([open3d])]));
     expect(sourceDefectRecords(openInputs, project)).toEqual([{ kind: 'SOURCE_DEFECT_UNCLOSED_RING', level_id: 11, feature_index: 0, polygon_index: 0, ring_index: 0, endpoint_gap_m: 0 }]);
     expect(openInputs.levels[0]!.polygons).toEqual([]);
+    // The private provenance keeps the complete original tuples, so the two endpoints stay distinguishable in z.
+    expect(openInputs.sourceDefects).toEqual([{ kind: 'SOURCE_DEFECT_UNCLOSED_RING', levelId: 11, featureIndex: 0, polygonIndex: 0, ringIndex: 0,
+      first: [139, 35, 0], last: [139, 35, 10] }]);
   });
 });
 
@@ -187,6 +195,15 @@ describe('S03 hole outside its shell: exclude, never repair', () => {
     expect(sourceDefectRecords(inputs, project)[0]).toMatchObject({ kind: 'SOURCE_DEFECT_HOLE_OUTSIDE_SHELL', feature_index: 0, polygon_index: 1, ring_index: 1 });
     expect(inputs.levels[0]).toMatchObject({ featuresTotal: 2, featuresUsed: 1, featuresExcludedHoleOutsideShell: 1 });
     expect(checkInternal(inputs, project).status).toBe('PASS');
+  });
+  it('keeps the complete shell and hole tuples of an excluded hole, third value included', () => {
+    const shell3d = [[0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1], [0, 0, 1]];
+    const hole3d = [[2, 2, 3], [3, 2, 3], [3, 3, 3], [2, 3, 3], [2, 2, 3]];
+    const inputs = parseS03Members(withLevelFeatures([polygonFeature([shell3d, hole3d])]));
+    expect(inputs.sourceDefects).toEqual([{ kind: 'SOURCE_DEFECT_HOLE_OUTSIDE_SHELL', levelId: 11, featureIndex: 0, polygonIndex: 0, ringIndex: 1,
+      vertices: hole3d, shell: shell3d }]);
+    // The public record keeps only the horizontal ENU offset.
+    expect((sourceDefectRecords(inputs, project)[0] as { max_offset_m: number }).max_offset_m).toBeCloseTo(Math.hypot(2, 2), 12);
   });
   it('keeps a level with no usable polygon and reports null inside metrics with a reason that names the ruling', () => {
     const inputs = parseS03Members(withLevelFeatures([polygonFeature(outsideHole)]));
@@ -216,14 +233,29 @@ describe('S03 polygon topology (fail closed)', () => {
     expect(ringContainsInclusive([2.5, 2], holeOutside[1]!)).toBe(true);
     expect(pointInPolygon([0.2, 0.5], [square[0]!, [[0.2, 0.2], [0.8, 0.2], [0.8, 0.8], [0.2, 0.8], [0.2, 0.2]]])).toBe(true);
   });
-  it('accepts a hole inside its shell, or touching its boundary, and counts both rings as checked', () => {
+  it('accepts a hole inside its shell, or sharing one position with it, and counts both rings as checked', () => {
     const inside = parseS03Members(withLevelFeatures([polygonFeature([square[0]!, [[0.2, 0.2], [0.8, 0.2], [0.8, 0.8], [0.2, 0.8], [0.2, 0.2]]])]));
     expect(inside.levels[0]!.polygons).toHaveLength(1);
-    expect(inside.topology).toEqual({ rings_checked: 2, rings_skipped_large: 0 });
-    // The containment test is inclusive, so a hole vertex on the shell boundary is not an outside vertex.
-    const touching = parseS03Members(withLevelFeatures([polygonFeature([square[0]!, [[0, 0], [0.5, 0], [0.5, 0.5], [0, 0]]])]));
+    expect(inside.topology).toEqual({ rings_checked: 2, rings_skipped_large: 0, hole_shell_touches: 0 });
+    // The containment test is inclusive, so a hole vertex on the shell boundary is not an outside vertex; a single
+    // shared position is a legitimate boundary touch, counted, not a crossing.
+    const touching = parseS03Members(withLevelFeatures([polygonFeature([square[0]!, [[0, 0], [0.5, 0.2], [0.2, 0.5], [0, 0]]])]));
     expect(touching.levels[0]!.polygons).toHaveLength(1);
     expect(sourceDefectRecords(touching, project)).toEqual([]);
+    expect(touching.topology).toEqual({ rings_checked: 2, rings_skipped_large: 0, hole_shell_touches: 1 });
+  });
+  it('fails closed when a hole edge crosses a concave shell whose vertices are all inside', () => {
+    // An L-shaped shell: the notch x > 1, y > 1 is outside. Every vertex of this hole is inside the L, yet the edge
+    // from the bottom arm to the left arm passes through the notch.
+    const ell = [[0, 0], [4, 0], [4, 1], [1, 1], [1, 4], [0, 4], [0, 0]];
+    const hole = [[2, 0.5], [0.5, 2], [0.5, 0.5], [2, 0.5]];
+    expect(hole.slice(0, -1).every(([x, y]) => ringContainsInclusive([x!, y!], ell))).toBe(true);
+    expect(() => parseS03Members(withLevelFeatures([polygonFeature([ell, hole])]))).toThrow(/ring 1 cuts through its shell/);
+  });
+  it('fails closed when a hole edge runs along its shell', () => {
+    // Sharing a stretch of boundary is not the director's exclusion, which covers only a hole wholly outside its shell.
+    const alongShell = [[0, 0], [0.5, 0], [0.5, 0.5], [0, 0]];
+    expect(() => parseS03Members(withLevelFeatures([polygonFeature([square[0]!, alongShell])]))).toThrow(/ring 1 runs along its shell/);
   });
   it('fails closed on a self-intersecting ring and never reports an unchecked large ring as clean', () => {
     const bowtie = [[0, 0], [1, 1], [1, 0], [0, 1], [0, 0]];
@@ -233,6 +265,25 @@ describe('S03 polygon topology (fail closed)', () => {
     const huge = Array.from({ length: 2002 }, (_, index) => [index / 10000, index % 2] as const);
     huge.push([0, 0] as const);
     expect(selfIntersectionCheck(huge)).toBe('NOT_CHECKED_TOO_MANY_VERTICES');
+  });
+  it('treats a collinear overlap and a non-adjacent touch as non-simple', () => {
+    // A notch doubling back along an earlier edge: the two edges share a stretch of positive length.
+    const overlap = [[0, 0], [3, 0], [3, 1], [2, 1], [2, 0], [1, 0], [1, 1], [0, 1], [0, 0]] as const;
+    expect(selfIntersectionCheck(overlap)).toBe('SELF_INTERSECTING');
+    expect(() => parseS03Members(withLevelFeatures([polygonFeature([overlap])]))).toThrow(/ring 0 self-intersects/);
+    // A pinched ring whose tip lands on a non-adjacent edge: one point of contact, no crossing.
+    const pinched = [[0, 0], [4, 0], [4, 4], [2, 0], [0, 4], [0, 0]] as const;
+    expect(selfIntersectionCheck(pinched)).toBe('SELF_INTERSECTING');
+    expect(() => parseS03Members(withLevelFeatures([polygonFeature([pinched])]))).toThrow(/ring 0 self-intersects/);
+  });
+  it('does not read a repeated or redundant vertex as a self-touch, and rejects a ring without an interior', () => {
+    // Repeated consecutive positions are zero-length edges, not edges: the ring itself stays simple.
+    expect(selfIntersectionCheck([[0, 0], [1, 0], [1, 0], [1, 1], [0, 1], [0, 0]])).toBe('CLEAN');
+    // A redundant collinear vertex only touches its neighbours at the shared position.
+    expect(selfIntersectionCheck([[0, 0], [0.5, 0], [1, 0], [1, 1], [0, 1], [0, 0]])).toBe('CLEAN');
+    expect(selfIntersectionCheck([[0, 0], [0, 0], [0, 0], [0, 0]])).toBe('DEGENERATE_RING');
+    expect(() => parseS03Members(withLevelFeatures([polygonFeature([[[0, 0], [0, 0], [0, 0], [0, 0]]])])))
+      .toThrow(/ring 0 has fewer than three distinct positions/);
   });
 });
 

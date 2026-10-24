@@ -1,11 +1,11 @@
 {
   "policy_version": "s03-transform-check-v4",
-  "tool_input_sha256": "a2a3dc1b06507ba2e6c264a5af4484ebd3c9b91e0d0d748e5f8d3b8e3d6a18ce",
+  "tool_input_sha256": "cd0b48b4e95bb4c9321fd0fb971243ec09e33fbf99d3c63e20a5e6d945b76d06",
   "zip_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
   "station_origin_sha256": "816473fd5c95a86b868f06faad0b32d84d4d61fb82e90e996f0b0c6462a5ade7",
   "floor_mapping_sha256": "93f81e6dd279d86e460ec0660d189952ad8b417d12d0fffc852fad0aa70ede8c",
   "e27_graph_sha256": "06d6193124f0dc6d44a663c5a1bfdff224bcd0d71114fc303c154501555863be",
-  "run_id": "transform-check-d482981cd55e9f9010c6",
+  "run_id": "transform-check-55ab8623a3f5f242cb5a",
   "source_id": "tokyo-s03-zip",
   "source_bytes": 2317035,
   "publish_gate": "HOLD",
@@ -75,14 +75,15 @@
       "SOURCE_DEFECT_UNCLOSED_RING": 2,
       "SOURCE_DEFECT_HOLE_OUTSIDE_SHELL": 1
     },
-    "rule": "A polygon feature is excluded from Check A, whole, on either of two director rulings: any of its rings has a first position different from its last, comparing the complete positions including an optional third value; or any of its hole vertices lies strictly outside its shell. Rings are never closed, clipped, repaired, dropped or otherwise modified, and no vertex is moved.",
+    "rule": "A polygon feature is excluded from Check A, whole, on either of two director rulings: any of its rings has a first position different from its last, comparing the complete positions including an optional third value; or one of its hole rings lies wholly outside its shell, that is at least one hole vertex is outside while no hole edge crosses or runs along the shell. Rings are never closed, clipped, repaired, dropped or otherwise modified, and no vertex is moved.",
     "endpoint_gap_rule": "Horizontal ENU distance between the first and last ring positions, using the same station projector as Check A.",
     "hole_offset_rule": "Horizontal ENU distance from the worst offending hole vertex to the nearest point of its shell, using the same station projector as Check A.",
     "topology": {
       "rings_checked": 15507,
       "rings_skipped_large": 0,
+      "hole_shell_touches": 0,
       "max_vertices": 2000,
-      "rule": "Every ring of a used feature is checked for proper segment crossings up to 2000 vertices; larger rings are counted in rings_skipped_large and not checked. A self-intersecting ring fails the whole run closed, on an excluded feature too; the counters describe the rings of used features only."
+      "rule": "Every ring of every feature is checked before any exclusion decision, up to 2000 vertices: a proper segment crossing, a collinear overlap, or any contact between two non-adjacent edges makes the ring non-simple and fails the whole run closed, on an excluded feature too. Larger rings are counted in rings_skipped_large and not checked. Hole edges are tested against their shell edge by edge: a crossing or a collinear overlap fails closed, while a single shared position is a valid boundary touch, counted per hole ring in hole_shell_touches for used features only. rings_checked and rings_skipped_large likewise describe used features only."
     },
     "items": [
       {
@@ -620,7 +621,7 @@
     "negative_control_detected": true,
     "invalid_coordinate_rule": "Invalid geographic outputs count as outside and unprojectable; no edge distance is asserted for them.",
     "containment_rule": "Union of own-level polygon surfaces in horizontal ENU, including boundaries and excluding hole interiors; Point and LineString features excluded.",
-    "feature_exclusion_rule": "Features with an unclosed ring, or with a hole vertex outside its shell, are excluded from containment entirely (no implicit closure, no clipping). A level left without usable polygons keeps null inside metrics and is not assessed.",
+    "feature_exclusion_rule": "Features with an unclosed ring, or with a hole ring wholly outside its shell, are excluded from containment entirely (no implicit closure, no clipping). A hole edge crossing or running along its shell is not excluded: it fails the run closed. A level left without usable polygons keeps null inside metrics and is not assessed.",
     "status_rule": "PASS needs overwhelming containment on every assessed level and overall. INCOMPLETE means the assessed part would pass but nodes remain on levels without usable polygons; FAIL means the assessed part already fails."
   },
   "internal_outside_diagnostic": {
@@ -878,12 +879,12 @@
   },
   "outputs": {
     "geojson": {
-      "store_path": "out/s03-transform-check-d482981cd55e9f9010c6.geojson",
+      "store_path": "out/s03-transform-check-55ab8623a3f5f242cb5a.geojson",
       "sha256": "30ad44b1b86674647b4fbddadd1f14ebcb4da492719220ddf0b7ae2cd01165b2",
       "bytes": 588090
     },
     "provenance": {
-      "store_path": "out/s03-transform-check-d482981cd55e9f9010c6.provenance.json"
+      "store_path": "out/s03-transform-check-55ab8623a3f5f242cb5a.provenance.json"
     }
   }
 }

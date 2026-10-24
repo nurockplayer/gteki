@@ -32,20 +32,25 @@ export type Point2 = readonly [number, number];
 export type Affine = readonly [number, number, number, number, number, number];
 export type Polygon2 = readonly (readonly Point2[])[];
 export type Project = (lat: number, lon: number) => Point2;
-/** A source feature excluded from Check A because one of its rings does not repeat its first position. */
+/**
+ * A source feature excluded from Check A because one of its rings does not repeat its first position. `first` and
+ * `last` are the source's complete original tuples, an optional third value included, so a ring that returns to the
+ * same x/y at a different height is still recorded as the distinct endpoints it is.
+ */
 export interface S03UnclosedRingDefect {
   kind: typeof UNCLOSED_RING_DEFECT;
   levelId: number;
   featureIndex: number;
   polygonIndex: number;
   ringIndex: number;
-  first: Point2;
-  last: Point2;
+  first: number[];
+  last: number[];
 }
 /**
- * A source feature excluded from Check A because a hole vertex lies strictly outside its shell. The ring is never
- * clipped, moved or repaired: the offending positions and the shell they were tested against are kept here for the
- * ENU offset only, and the private provenance records them; the public receipt carries the numeric offset.
+ * A source feature excluded from Check A because a hole ring lies strictly outside its shell: at least one hole vertex
+ * is outside and no hole edge crosses the shell. The ring is never clipped, moved or repaired: the source tuples and
+ * the shell they were tested against are kept here for the ENU offset only, and the private provenance records them
+ * untruncated; the public receipt carries the numeric offset.
  */
 export interface S03HoleOutsideShellDefect {
   kind: typeof HOLE_OUTSIDE_SHELL_DEFECT;
@@ -53,10 +58,10 @@ export interface S03HoleOutsideShellDefect {
   featureIndex: number;
   polygonIndex: number;
   ringIndex: number;
-  /** Hole positions (lon/lat) that the inclusive shell test rejects. */
-  vertices: Point2[];
-  /** The shell ring those positions were tested against, as lon/lat. */
-  shell: Point2[];
+  /** Hole source tuples that the inclusive shell test rejects, third value included when the source has one. */
+  vertices: number[][];
+  /** The shell ring those positions were tested against, as source tuples. */
+  shell: number[][];
 }
 export type S03SourceDefect = S03UnclosedRingDefect | S03HoleOutsideShellDefect;
 type JsonObject = Record<string, unknown>;
@@ -109,21 +114,67 @@ export function pointInPolygon(point: Point2, polygon: Polygon2): boolean {
   if (holes.some(hole => distanceToRing(point, hole) <= 1e-9)) return true;
   return !holes.some(hole => inRing(point, hole));
 }
-const cross = (origin: Point2, a: Point2, b: Point2): number => (a[0] - origin[0]) * (b[1] - origin[1]) - (a[1] - origin[1]) * (b[0] - origin[0]);
-/** Proper crossing only: segments that merely share an endpoint or touch are not flagged. */
-function segmentsProperlyIntersect(a: Point2, b: Point2, c: Point2, d: Point2): boolean {
-  const d1 = cross(c, d, a), d2 = cross(c, d, b), d3 = cross(a, b, c), d4 = cross(a, b, d);
-  return ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0));
+/** Positions closer than this, in degrees, are treated as coincident: about a tenth of a micrometre on the ground. */
+export const GEOMETRY_EPS = 1e-12;
+const signedDistance = (point: Point2, a: Point2, b: Point2): number => {
+  const dx = b[0] - a[0], dy = b[1] - a[1], length = Math.hypot(dx, dy);
+  return length === 0 ? Math.hypot(point[0] - a[0], point[1] - a[1]) : ((point[0] - a[0]) * dy - (point[1] - a[1]) * dx) / length;
+};
+const sideOf = (point: Point2, a: Point2, b: Point2): -1 | 0 | 1 => {
+  const distance = signedDistance(point, a, b);
+  return Math.abs(distance) <= GEOMETRY_EPS ? 0 : distance > 0 ? 1 : -1;
+};
+export type SegmentRelation = 'none' | 'touch' | 'cross' | 'overlap';
+/**
+ * How two closed segments meet: `touch` is a single shared position, `overlap` a collinear shared interval of positive
+ * length, `cross` a proper crossing through both interiors. Collinear and touching contact are decided on true
+ * distances, so neither a T-junction nor a fold-back hides inside a zero cross product.
+ */
+export function segmentRelation(a: Point2, b: Point2, c: Point2, d: Point2): SegmentRelation {
+  if (Math.max(a[0], b[0]) + GEOMETRY_EPS < Math.min(c[0], d[0]) || Math.max(c[0], d[0]) + GEOMETRY_EPS < Math.min(a[0], b[0])
+    || Math.max(a[1], b[1]) + GEOMETRY_EPS < Math.min(c[1], d[1]) || Math.max(c[1], d[1]) + GEOMETRY_EPS < Math.min(a[1], b[1])) return 'none';
+  const lengthAB = Math.hypot(b[0] - a[0], b[1] - a[1]), lengthCD = Math.hypot(d[0] - c[0], d[1] - c[1]);
+  // A zero-length edge is a position; it can only touch or miss.
+  if (lengthAB <= GEOMETRY_EPS || lengthCD <= GEOMETRY_EPS) {
+    const [point, from, to] = lengthAB <= GEOMETRY_EPS ? [a, c, d] : [c, a, b];
+    return sideOf(point, from, to) === 0 && distanceToSegment(point, from, to) <= GEOMETRY_EPS ? 'touch' : 'none';
+  }
+  const sides = [sideOf(a, c, d), sideOf(b, c, d), sideOf(c, a, b), sideOf(d, a, b)] as const;
+  if (sides.every(side => side === 0)) {
+    // Collinear: the shared interval decides between a single touch and an overlap.
+    const axis = Math.abs(b[0] - a[0]) >= Math.abs(b[1] - a[1]) ? 0 : 1;
+    const overlap = Math.min(Math.max(a[axis], b[axis]), Math.max(c[axis], d[axis])) - Math.max(Math.min(a[axis], b[axis]), Math.min(c[axis], d[axis]));
+    return overlap > GEOMETRY_EPS ? 'overlap' : overlap >= -GEOMETRY_EPS ? 'touch' : 'none';
+  }
+  if (sides[0] * sides[1] < 0 && sides[2] * sides[3] < 0) return 'cross';
+  const endpoints: Array<[Point2, Point2, Point2, number]> = [[a, c, d, sides[0]], [b, c, d, sides[1]], [c, a, b, sides[2]], [d, a, b, sides[3]]];
+  return endpoints.some(([point, from, to, side]) => side === 0 && distanceToSegment(point, from, to) <= GEOMETRY_EPS) ? 'touch' : 'none';
 }
-export type SelfIntersectionVerdict = 'CLEAN' | 'SELF_INTERSECTING' | 'NOT_CHECKED_TOO_MANY_VERTICES';
-/** O(n^2) proper-crossing check on a closed ring; rings above the vertex cap are reported as unchecked, never as clean. */
+export type SelfIntersectionVerdict = 'CLEAN' | 'SELF_INTERSECTING' | 'DEGENERATE_RING' | 'NOT_CHECKED_TOO_MANY_VERTICES';
+const coincident = (a: Point2, b: Point2): boolean => Math.abs(a[0] - b[0]) <= GEOMETRY_EPS && Math.abs(a[1] - b[1]) <= GEOMETRY_EPS;
+/**
+ * O(n^2) check on a ring. A simple ring has no proper crossing, no collinear overlap anywhere and no contact between
+ * non-adjacent edges at all, so a T-junction or a boundary touch between two non-adjacent edges is not simple either;
+ * adjacent edges may only meet at their shared position. Repeated consecutive positions are zero-length edges rather
+ * than edges, so they are collapsed before the test (the stored ring is untouched), which keeps a duplicated vertex from
+ * reading as the ring touching itself. Rings above the vertex cap are reported as unchecked, never as clean, and a ring
+ * left with fewer than three distinct positions has no interior at all, so it fails closed instead of passing as clean.
+ */
 export function selfIntersectionCheck(points: readonly Point2[]): SelfIntersectionVerdict {
   if (points.length - 1 > SELF_INTERSECTION_MAX_VERTICES) return 'NOT_CHECKED_TOO_MANY_VERTICES';
-  const segments = points.length - 1;
-  for (let i = 0; i < segments; i++) for (let j = i + 2; j < segments; j++) {
-    // The first and last segments meet at the repeated closing position, which is not a crossing.
-    if (i === 0 && j === segments - 1) continue;
-    if (segmentsProperlyIntersect(points[i]!, points[i + 1]!, points[j]!, points[j + 1]!)) return 'SELF_INTERSECTING';
+  const ring: Point2[] = [];
+  for (const point of points) { const previous = ring.at(-1); if (!previous || !coincident(previous, point)) ring.push(point); }
+  // The closing position repeats the first one; anything else stays an open polyline whose ends are not joined.
+  const closedRing = ring.length > 1 && coincident(ring[0]!, ring.at(-1)!);
+  if (closedRing) ring.pop();
+  if (ring.length < 3) return 'DEGENERATE_RING';
+  const segments = closedRing ? ring.length : ring.length - 1;
+  const end = (index: number): Point2 => ring[closedRing ? (index + 1) % ring.length : index + 1]!;
+  for (let i = 0; i < segments; i++) for (let j = i + 1; j < segments; j++) {
+    const adjacent = j === i + 1 || (closedRing && i === 0 && j === segments - 1);
+    const relation = segmentRelation(ring[i]!, end(i), ring[j]!, end(j));
+    // Neighbours legitimately share their position, so for them only a shared stretch of positive length is a defect.
+    if (adjacent ? relation === 'overlap' : relation !== 'none') return 'SELF_INTERSECTING';
   }
   return 'CLEAN';
 }
@@ -148,7 +199,7 @@ interface S03Level {
 export interface S03Inputs {
   navTransform: Affine; drawingTransform: Affine; drawingId: number;
   nodes: S03Node[]; levels: S03Level[]; links: S03Link[]; sourceValues: Set<string>; sourceDefects: S03SourceDefect[];
-  topology: { rings_checked: number; rings_skipped_large: number };
+  topology: { rings_checked: number; rings_skipped_large: number; hole_shell_touches: number };
   navSha256: string; mapSha256: string;
 }
 // Comparison labels from the note, never physical elevations; source zlevel is deliberately unused.
@@ -236,7 +287,7 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
     return (v as unknown[]).map(r => ring(r, member));
   };
   const horizontal = (positions: readonly (readonly number[])[]): Point2[] => positions.map(([lon, lat]) => [lon!, lat!] as Point2);
-  const topology = { rings_checked: 0, rings_skipped_large: 0 };
+  const topology = { rings_checked: 0, rings_skipped_large: 0, hole_shell_touches: 0 };
   const sourceDefects: S03SourceDefect[] = [];
   const levels: S03Level[] = (md.levels as unknown[]).map(raw => {
     if (!record(raw) || !id(raw.id) || !record(raw.properties) || typeof raw.properties.name !== 'string') fail(mapName, 'invalid level id/properties');
@@ -266,29 +317,48 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
       } else fail(member, 'unsupported geometry type');
       // Parse every ring of every part first, so an unrelated malformation still fails closed on an excluded feature.
       const parsed = parts.map((part, polygonIndex) => ({ polygonIndex, rings: polygon(part, member) }));
-      const unclosed = parsed.flatMap(({ polygonIndex, rings }) => rings.map((positions, ringIndex) => ({ positions, polygonIndex, ringIndex })))
-        .find(({ positions }) => !closed(positions));
-      if (unclosed) {
-        // Whole-feature exclusion, first offending ring only; reported by numeric level id and zero-based indexes.
-        featuresExcludedUnclosedRing++;
-        sourceDefects.push({ kind: UNCLOSED_RING_DEFECT, levelId: level.id, featureIndex, polygonIndex: unclosed.polygonIndex, ringIndex: unclosed.ringIndex,
-          first: [unclosed.positions[0]![0]!, unclosed.positions[0]![1]!], last: [unclosed.positions.at(-1)![0]!, unclosed.positions.at(-1)![1]!] });
-        return;
-      }
-      // A ring that crosses itself still fails closed, including on a feature an exclusion rule would drop.
+      // Topology comes first and covers every ring of the feature, so a feature carrying both an exclusion defect and a
+      // topology defect still fails closed instead of being quietly excluded.
       const verdicts = parsed.flatMap(({ polygonIndex, rings }) => rings.map((points, ringIndex) => ({ polygonIndex, ringIndex, verdict: selfIntersectionCheck(horizontal(points)) })));
       const crossing = verdicts.find(({ verdict }) => verdict === 'SELF_INTERSECTING');
       if (crossing) fail(member, `ring ${crossing.ringIndex} self-intersects (level ${level.id}, feature ${featureIndex}, polygon ${crossing.polygonIndex})`);
-      // Two director rulings exclude a whole feature: an unclosed ring, and a hole vertex strictly outside its shell.
-      // Neither ring is clipped, moved or otherwise repaired, and every other malformation still fails closed above.
+      const degenerate = verdicts.find(({ verdict }) => verdict === 'DEGENERATE_RING');
+      if (degenerate) fail(member, `ring ${degenerate.ringIndex} has fewer than three distinct positions (level ${level.id}, feature ${featureIndex}, polygon ${degenerate.polygonIndex})`);
+      // A hole edge that crosses its shell, or runs collinearly along it, fails closed: vertex containment alone misses a
+      // concave shell where every hole vertex is inside while an edge between two of them leaves it. A single shared
+      // position is a legitimate boundary touch, counted, not a defect: the director's exclusion covers only a hole
+      // wholly outside its shell, which by definition has no crossing edge.
+      let holeShellTouches = 0;
       for (const { polygonIndex, rings } of parsed) {
-        const flat = rings.map(horizontal), shell = flat[0]!;
-        const holeIndex = flat.slice(1).findIndex(hole => hole.some(vertex => !ringContainsInclusive(vertex, shell)));
+        const shell = horizontal(rings[0]!);
+        for (let ringIndex = 1; ringIndex < rings.length; ringIndex++) {
+          const hole = horizontal(rings[ringIndex]!), relations = new Set<SegmentRelation>();
+          for (let i = 0; i + 1 < hole.length; i++) for (let j = 0; j + 1 < shell.length; j++) relations.add(segmentRelation(hole[i]!, hole[i + 1]!, shell[j]!, shell[j + 1]!));
+          if (relations.has('cross')) fail(member, `ring ${ringIndex} cuts through its shell (level ${level.id}, feature ${featureIndex}, polygon ${polygonIndex})`);
+          if (relations.has('overlap')) fail(member, `ring ${ringIndex} runs along its shell (level ${level.id}, feature ${featureIndex}, polygon ${polygonIndex})`);
+          if (relations.has('touch')) holeShellTouches++;
+        }
+      }
+      // Two director rulings exclude a whole feature: an unclosed ring, and a hole wholly outside its shell. Neither
+      // ring is clipped, moved or otherwise repaired, and every other malformation still fails closed above.
+      const unclosed = parsed.flatMap(({ polygonIndex, rings }) => rings.map((positions, ringIndex) => ({ positions, polygonIndex, ringIndex })))
+        .find(({ positions }) => !closed(positions));
+      if (unclosed) {
+        // Whole-feature exclusion, first offending ring only; reported by numeric level id and zero-based indexes. The
+        // endpoints are the source's complete tuples, so a ring unclosed only in its third value keeps both endpoints.
+        featuresExcludedUnclosedRing++;
+        sourceDefects.push({ kind: UNCLOSED_RING_DEFECT, levelId: level.id, featureIndex, polygonIndex: unclosed.polygonIndex, ringIndex: unclosed.ringIndex,
+          first: [...unclosed.positions[0]!], last: [...unclosed.positions.at(-1)!] });
+        return;
+      }
+      for (const { polygonIndex, rings } of parsed) {
+        const shell = horizontal(rings[0]!);
+        const holeIndex = rings.slice(1).findIndex(hole => horizontal(hole).some(vertex => !ringContainsInclusive(vertex, shell)));
         if (holeIndex < 0) continue;
-        const hole = flat[holeIndex + 1]!;
+        const hole = rings[holeIndex + 1]!, flat = horizontal(hole);
         featuresExcludedHoleOutsideShell++;
         sourceDefects.push({ kind: HOLE_OUTSIDE_SHELL_DEFECT, levelId: level.id, featureIndex, polygonIndex, ringIndex: holeIndex + 1,
-          vertices: hole.filter(vertex => !ringContainsInclusive(vertex, shell)), shell });
+          vertices: hole.filter((_, index) => !ringContainsInclusive(flat[index]!, shell)), shell: rings[0]! });
         return;
       }
       // The counters describe the rings Check A actually used, so an excluded feature's rings are not counted as checked.
@@ -296,6 +366,7 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
         if (verdict === 'CLEAN') topology.rings_checked++;
         else topology.rings_skipped_large++;
       }
+      topology.hole_shell_touches += holeShellTouches;
       featuresUsed++;
       for (const part of parsed) polygons.push(part.rings.map(horizontal));
     });
@@ -336,13 +407,14 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
 export function sourceDefectRecords(inputs: S03Inputs, project: Project) {
   return inputs.sourceDefects.map(defect => {
     const base = { kind: defect.kind, level_id: defect.levelId, feature_index: defect.featureIndex, polygon_index: defect.polygonIndex, ring_index: defect.ringIndex };
+    // The records carry complete source tuples; only the horizontal position enters the ENU maths.
     if (defect.kind === UNCLOSED_RING_DEFECT) {
-      const first = project(defect.first[1], defect.first[0]), last = project(defect.last[1], defect.last[0]);
+      const first = project(defect.first[1]!, defect.first[0]!), last = project(defect.last[1]!, defect.last[0]!);
       return { ...base, endpoint_gap_m: Math.hypot(last[0] - first[0], last[1] - first[1]) };
     }
-    const shell = defect.shell.map(([lon, lat]) => project(lat, lon));
-    const offset = ([lon, lat]: Point2): number => {
-      const xy = project(lat, lon);
+    const shell = defect.shell.map(([lon, lat]) => project(lat!, lon!));
+    const offset = (position: readonly number[]): number => {
+      const xy = project(position[1]!, position[0]!);
       return Math.min(...shell.slice(0, -1).map((from, index) => {
         const nearest = nearestPointOnSegment(xy, from, shell[index + 1]!);
         return Math.hypot(nearest[0] - xy[0], nearest[1] - xy[1]);
@@ -695,15 +767,16 @@ export async function s03TransformCheck() {
       order: 'nav affine, then drawing affine, then horizontal ENU; no fitted correction', level_member_sha256: Object.fromEntries(inputs.levels.map(l => [l.id, l.memberSha256])) },
     source_defects: { count: excludedTotal, kinds: Object.entries(excludedByKind).filter(([, count]) => count > 0).map(([kind]) => kind),
       by_kind: excludedByKind,
-      rule: 'A polygon feature is excluded from Check A, whole, on either of two director rulings: any of its rings has a first position different from its last, comparing the complete positions including an optional third value; or any of its hole vertices lies strictly outside its shell. Rings are never closed, clipped, repaired, dropped or otherwise modified, and no vertex is moved.',
+      rule: 'A polygon feature is excluded from Check A, whole, on either of two director rulings: any of its rings has a first position different from its last, comparing the complete positions including an optional third value; or one of its hole rings lies wholly outside its shell, that is at least one hole vertex is outside while no hole edge crosses or runs along the shell. Rings are never closed, clipped, repaired, dropped or otherwise modified, and no vertex is moved.',
       endpoint_gap_rule: 'Horizontal ENU distance between the first and last ring positions, using the same station projector as Check A.',
       hole_offset_rule: 'Horizontal ENU distance from the worst offending hole vertex to the nearest point of its shell, using the same station projector as Check A.',
-      topology: { rings_checked: inputs.topology.rings_checked, rings_skipped_large: inputs.topology.rings_skipped_large, max_vertices: SELF_INTERSECTION_MAX_VERTICES,
-        rule: `Every ring of a used feature is checked for proper segment crossings up to ${SELF_INTERSECTION_MAX_VERTICES} vertices; larger rings are counted in rings_skipped_large and not checked. A self-intersecting ring fails the whole run closed, on an excluded feature too; the counters describe the rings of used features only.` },
+      topology: { rings_checked: inputs.topology.rings_checked, rings_skipped_large: inputs.topology.rings_skipped_large, hole_shell_touches: inputs.topology.hole_shell_touches,
+        max_vertices: SELF_INTERSECTION_MAX_VERTICES,
+        rule: `Every ring of every feature is checked before any exclusion decision, up to ${SELF_INTERSECTION_MAX_VERTICES} vertices: a proper segment crossing, a collinear overlap, or any contact between two non-adjacent edges makes the ring non-simple and fails the whole run closed, on an excluded feature too. Larger rings are counted in rings_skipped_large and not checked. Hole edges are tested against their shell edge by edge: a crossing or a collinear overlap fails closed, while a single shared position is a valid boundary touch, counted per hole ring in hole_shell_touches for used features only. rings_checked and rings_skipped_large likewise describe used features only.` },
       items: sourceDefects },
     internal: { as_is: asIs, swapped_order: swapped, coverage, negative_control_detected: true, invalid_coordinate_rule: 'Invalid geographic outputs count as outside and unprojectable; no edge distance is asserted for them.',
       containment_rule: 'Union of own-level polygon surfaces in horizontal ENU, including boundaries and excluding hole interiors; Point and LineString features excluded.',
-      feature_exclusion_rule: 'Features with an unclosed ring, or with a hole vertex outside its shell, are excluded from containment entirely (no implicit closure, no clipping). A level left without usable polygons keeps null inside metrics and is not assessed.',
+      feature_exclusion_rule: 'Features with an unclosed ring, or with a hole ring wholly outside its shell, are excluded from containment entirely (no implicit closure, no clipping). A hole edge crossing or running along its shell is not excluded: it fails the run closed. A level left without usable polygons keeps null inside metrics and is not assessed.',
       status_rule: 'PASS needs overwhelming containment on every assessed level and overall. INCOMPLETE means the assessed part would pass but nodes remain on levels without usable polygons; FAIL means the assessed part already fails.' },
     internal_outside_diagnostic: outsideDiagnostic,
     external: { e27_node_count: e27.length, s03_node_count: nodes.length, floor_rule: 'Label-derived comparison ordinals equal, or E27 ordinal 0 with S03 ordinal 1; no source zlevel or measured elevation is used.',
@@ -716,9 +789,9 @@ export async function s03TransformCheck() {
   // Validate the entire public receipt before writing any output. Geometry and source IDs stay in the private store.
   await writeJson(join(getStoreRoot(), sidecarRel), { ...receipt, credit: S03_CREDIT, source_record: stored.record, source_manifest: stored.source,
     node_table: nodes.map(n => ({ index: n.index, source_id: n.sourceId, level_id: n.levelId })), check_b_pairs: externalPairs,
-    // Private provenance keeps the untouched source endpoints; the public receipt keeps only their ENU gap.
-    // Private provenance keeps the untouched source positions each exclusion was decided on; the public receipt keeps only
-    // the ENU gap or offset.
+    // Private provenance keeps the untouched source positions each exclusion was decided on, complete tuples and an
+    // optional third value included, so an unclosed-in-z ring shows its two distinct endpoints; the public receipt keeps
+    // only the ENU gap or offset.
     source_defect_positions: inputs.sourceDefects.map(d => d.kind === UNCLOSED_RING_DEFECT
       ? { ...d, first: [...d.first], last: [...d.last] }
       : { ...d, vertices: d.vertices.map(vertex => [...vertex]), shell: d.shell.map(vertex => [...vertex]) }),
