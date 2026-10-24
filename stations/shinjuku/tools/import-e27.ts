@@ -1131,6 +1131,10 @@ type S03Poi = {
   notes: LocalizedText[]; operatorIds?: string[]; line?: string; s03?: unknown;
 };
 const S03_SOURCE_ID = "tokyo-s03-zip";
+// The research file's own change notice and usage describe that file, which still carries names only. The
+// shipped station data also carries the approximate points (#463), so its notice is stated here (NOTICE 4.7).
+const S03_STATION_CHANGE_NOTICE = "GTEki が名称を抽出し検索用に再構成。改札・乗換の一部に形状から求めたおおよその代表点を付加（経路案内には不使用）";
+const S03_STATION_USAGE = "plain names; approximate representative points derived from the source shapes for some gates and transfers (CRS UNKNOWN; not for routing)";
 /** The contract's §2 categories; anything else (an exit, a toilet) is not a line name and is refused. */
 const S03_CATEGORIES = new Set<string>(["ticket_gate", "transfer", "platform"]);
 const s03 = JSON.parse(readFileSync(join(HERE, "../../../docs/research/lines/shinjuku-line-pois.json"), "utf8")) as { sources: S03Source[]; pois: S03Poi[] };
@@ -1196,7 +1200,7 @@ sources.push({
   modified: s03Src.modified,
   retrievedAt: s03Src.retrievedAt,
   datasetDate: s03Src.datasetDate,
-  notes: `${s03Src.changeNotice}. Approximate representative points (area-weighted centroids, or the closest boundary point of the largest part) derived by GTEki for ${s03Approx.positions.length} gates and transfers; search display only, NOT_FOR_ROUTING, floor UNVERIFIED (#463). ZIP sha256 ${s03Src.sha256}. ${s03Src.usage}. Licence claimed at dataset level by catalogue t000008d0000000037; shipped under LicenseRef-S03 (Owner Q2).`,
+  notes: `${S03_STATION_CHANGE_NOTICE}. Approximate representative points (area-weighted centroids, or the closest boundary point of the largest part) derived by GTEki for ${s03Approx.positions.length} gates and transfers; search display only, NOT_FOR_ROUTING, floor UNVERIFIED (#463). ZIP sha256 ${s03Src.sha256}. ${S03_STATION_USAGE}. Licence claimed at dataset level by catalogue t000008d0000000037; shipped under LicenseRef-S03 (Owner Q2).`,
 });
 const usedApprox = new Set<string>();
 for (const raw of s03.pois) {
