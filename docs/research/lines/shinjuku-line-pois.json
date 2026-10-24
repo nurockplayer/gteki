@@ -14,7 +14,7 @@
       "attribution": "出典：東京都都市整備局「新宿駅周辺の施設情報等」",
       "modified": true,
       "changeNotice": "GTEki が名称のみを抽出し、検索用に再構成（位置・形状は使用していません）",
-      "retrievedAt": "2026-10-21T02:32:00+09:00",
+      "retrievedAt": "2026-10-21T00:13:55.097Z",
       "datasetDate": "2020-03",
       "sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
       "decision": {
@@ -23,7 +23,9 @@
           "gteki-1b R-1/R-2 2026-10-24"
         ]
       },
-      "usage": "facts-only names; no geometry, no position (CRS UNKNOWN)"
+      "usage": "facts-only names; no geometry, no position (CRS UNKNOWN)",
+      "downloadUrl": "https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/zip_kiban_shinjuku_terminal_pdf_shisetsu_root",
+      "acquisitionReceipt": "docs/gis/acquisitions/tokyo-s03-zip.json"
     }
   ],
   "pois": [
@@ -2030,72 +2032,58 @@
   ],
   "held": [
     {
-      "name": "京王ルミネ口",
       "entityId": "Unit B1F-551",
       "reason": "commercial unit entry; duplicate of a gate name"
     },
     {
-      "name": "京王百貨店",
       "entityId": "$id 29010547",
       "reason": "excluded: department store"
     },
     {
-      "name": "京王線きっぷ売場・定期券売場",
       "entityId": "Unit B1F-70",
       "reason": "excluded: ticket office (きっぷ売場・定期券売場)"
     },
     {
-      "name": "大江戸線改札B",
       "entityId": "$id 28993989",
       "reason": "Toei gate: E27 vs Shinjuku-nishiguchi (E01) assignment unknown; must not be merged into E27 by name"
     },
     {
-      "name": "小田急アジュール",
       "entityId": "Unit B1F-133",
       "reason": "excluded: shop (Unit entry)"
     },
     {
-      "name": "小田急グッズショップ　TRAINS",
       "entityId": "Unit B1F-136",
       "reason": "excluded: shop (Unit entry)"
     },
     {
-      "name": "小田急トラベル・定期券（窓口）売場・特急券売場",
       "entityId": "Unit B1F-134",
       "reason": "excluded: ticket office (Unit entry)"
     },
     {
-      "name": "小田急ハルク",
       "entityId": "$id 29010551",
       "reason": "excluded: department store"
     },
     {
-      "name": "東京メトロ丸ノ内線新宿駅",
       "entityId": "$id 28993353, $id 28993352",
       "reason": "station entity, not a gate or platform"
     },
     {
-      "name": "都営大江戸線 JR方面改札口",
       "entityId": "$id 28993990",
       "reason": "Toei gate: E27 vs Shinjuku-nishiguchi (E01) assignment unknown; must not be merged into E27 by name"
     },
     {
-      "name": "都営大江戸線 JR方面改札口",
       "entityId": "$id 28993091",
       "reason": "Toei gate: E27 vs Shinjuku-nishiguchi (E01) assignment unknown; must not be merged into E27 by name"
     },
     {
-      "name": "都営大江戸線 小滝橋通り方面改札口",
       "entityId": "$id 28993090",
       "reason": "Toei gate: E27 vs Shinjuku-nishiguchi (E01) assignment unknown; must not be merged into E27 by name"
     },
     {
-      "name": "都営大江戸線 新都心口",
       "entityId": "$id 28993987",
       "reason": "Toei gate: E27 vs Shinjuku-nishiguchi (E01) assignment unknown; must not be merged into E27 by name"
     },
     {
-      "name": "東京メトロ丸ノ内線ゲート",
       "entityId": "$id 29062555",
       "reason": "linked S03 feature is a hallway point, not a barrier gate; kind unclear (lead review)"
     }
