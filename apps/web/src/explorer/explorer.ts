@@ -201,6 +201,12 @@ export class Explorer {
   private readonly timer = new THREE.Timer();
   private readonly input: Input;
   private readonly ray = new THREE.Raycaster();
+  private readonly qaSignBounds = new THREE.Box3();
+  private readonly qaSignExpanded = new THREE.Box3();
+  private qaSignCount = 0;
+  private qaSignInside = false;
+  private qaSignNearestName = "";
+  private qaSignNearestGap = Infinity;
 
   private station: LoadedStation | null = null;
   private stationScene: StationScene | null = null;
@@ -1535,6 +1541,109 @@ export class Explorer {
     this.input.virtualKeys.clear();
     this.render(1 / 60);
     return this.avatarEnu;
+  }
+
+  /**
+   * Walk renderer-space points (x/z, optional y in metres) in the explorer world frame, through normal walk input.
+   * A point is reached when its horizontal distance is within 0.35 m and, if it carries `y`, the feet are within 0.6 m of it vertically.
+   * stuck: no waypoint advanced and under 0.1 m of 3D displacement over the last second. timedOut: maxSeconds ran out while still moving.
+   */
+  walkPath(
+    points: { x: number; z: number; y?: number }[],
+    opts: { speed?: "walk" | "run"; dt?: number; maxSeconds?: number; onStep?: (i: number) => void } = {},
+  ): { done: boolean; stuck: boolean; timedOut: boolean; steps: number } {
+    if (this.mode !== "walk") return { done: false, stuck: false, timedOut: false, steps: 0 };
+    const dt = opts.dt ?? 1 / 60;
+    const maxSeconds = opts.maxSeconds ?? 60;
+    if (!(dt > 0) || !Number.isFinite(dt) || !(maxSeconds >= 0) || !Number.isFinite(maxSeconds)) {
+      throw new RangeError("walkPath dt must be positive and maxSeconds must be non-negative");
+    }
+    if (points.length === 0) return { done: true, stuck: false, timedOut: false, steps: 0 };
+    this.input.virtualKeys.clear();
+    const reached = (p: { x: number; z: number; y?: number }): boolean =>
+      Math.hypot(p.x - this.pos.x, p.z - this.pos.z) <= 0.35 && (p.y === undefined || Math.abs(this.pos.y - p.y) <= 0.6);
+    const checkpointPos = this.pos.clone();
+    let point = 0;
+    let steps = 0;
+    let elapsed = 0;
+    let checkpointT = 0;
+    let done = false;
+    let stuck = false;
+    let timedOut = false;
+    const maxSteps = Math.floor(maxSeconds / dt + 1e-9);
+    const t0 = this.timer.getElapsed();
+    // Moves past every waypoint already reached; true once the last one is reached.
+    const advance = (): boolean => {
+      while (reached(points[point]!)) {
+        if (point === points.length - 1) return true;
+        point++;
+        checkpointT = elapsed;
+        checkpointPos.copy(this.pos);
+      }
+      return false;
+    };
+    try {
+      for (;;) {
+        if (advance()) { done = true; break; }
+        if (elapsed - checkpointT >= 1 - 1e-9) {
+          if (this.pos.distanceTo(checkpointPos) < 0.1) { stuck = true; break; }
+          checkpointT = elapsed;
+          checkpointPos.copy(this.pos);
+        }
+        if (steps >= maxSteps) { timedOut = true; break; }
+        const target = points[point]!;
+        const dx = target.x - this.pos.x;
+        const dz = target.z - this.pos.z;
+        this.yaw = Math.atan2(-dx, -dz);
+        this.input.virtualKeys.add("KeyW");
+        if (opts.speed === "run") this.input.virtualKeys.add("ShiftLeft");
+        this.step(dt, t0 + elapsed);
+        steps++;
+        elapsed += dt;
+        opts.onStep?.(steps - 1);
+      }
+    } finally {
+      this.input.virtualKeys.clear();
+    }
+    this.render(dt);
+    return { done, stuck, timedOut, steps };
+  }
+
+  /**
+   * QA sign clearance around the camera, by box distance (not a frustum test). Counts camera blockers and cuttable sign boxes
+   * within radiusM horizontally whose top reaches 0.3 m below the camera or higher (hanging signs; floor props are ignored).
+   * gapM = box bottom minus camera Y (positive means above the camera). inside = camera within the box grown by near plane + 0.05 m.
+   */
+  signClearance(radiusM = 6): { nearest: { name: string; gapM: number } | null; inside: boolean; count: number } {
+    this.qaSignCount = 0;
+    this.qaSignInside = false;
+    this.qaSignNearestName = "";
+    this.qaSignNearestGap = Infinity;
+    const camera = this.camera.position;
+    for (const mesh of this.blockerTargets) this.measureSignClearance(mesh, camera, radiusM);
+    for (const mesh of this.signMeshes) if (!this.blockerTargets.has(mesh)) this.measureSignClearance(mesh, camera, radiusM);
+    return {
+      nearest: this.qaSignCount ? { name: this.qaSignNearestName, gapM: this.qaSignNearestGap } : null,
+      inside: this.qaSignInside,
+      count: this.qaSignCount,
+    };
+  }
+
+  private measureSignClearance(mesh: THREE.Object3D, camera: THREE.Vector3, radiusM: number): void {
+    this.qaSignBounds.setFromObject(mesh);
+    const dx = Math.max(this.qaSignBounds.min.x - camera.x, 0, camera.x - this.qaSignBounds.max.x);
+    const dz = Math.max(this.qaSignBounds.min.z - camera.z, 0, camera.z - this.qaSignBounds.max.z);
+    // Only boxes reaching into the band the near plane can touch when pitched down are clearance; floor-standing props are not.
+    if (Math.hypot(dx, dz) > radiusM || this.qaSignBounds.max.y <= camera.y - 0.3) return;
+    this.qaSignCount++;
+    if (!this.qaSignInside) {
+      this.qaSignInside = this.qaSignExpanded.copy(this.qaSignBounds).expandByScalar(this.camera.near + 0.05).containsPoint(camera);
+    }
+    const gapM = this.qaSignBounds.min.y - camera.y;
+    if (gapM < this.qaSignNearestGap) {
+      this.qaSignNearestName = mesh.name;
+      this.qaSignNearestGap = gapM;
+    }
   }
 
   private frame(): void {
