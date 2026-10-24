@@ -17789,6 +17789,1286 @@
      "text": "Tokyo Metro Ikebukuro Station, 副都心線 西通路東改札内中二階広場 (inside the fare gates as printed). Facilities: 乳幼児用設備・オストメイト (operator wording). Location is the operator's wording only (unverified, no route)."
     }
    ]
+  },
+  {
+   "id": "service-ikb-lumine-001",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "インフォメーション"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "lumine-ikebukuro-facilities-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "ルミネ池袋 B1。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "LUMINE Ikebukuro, B1. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-lumine-002",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "授乳室"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "lumine-ikebukuro-facilities-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "ルミネ池袋 6F TULLY’S COFFEE with U内。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "LUMINE Ikebukuro, 6F (inside TULLY’S COFFEE with U). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-lumine-003",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "授乳室"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "lumine-ikebukuro-facilities-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "ルミネ池袋 8F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "LUMINE Ikebukuro, 8F. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-lumine-001",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "多目的トイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "lumine-ikebukuro-facilities-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "ルミネ池袋 8F。設備: オストメイト機能あり（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "LUMINE Ikebukuro, 8F. Features: ostomy facilities (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-lumine-002",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "多目的トイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "lumine-ikebukuro-facilities-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "ルミネ池袋 10F。設備: オストメイト機能あり（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "LUMINE Ikebukuro, 10F. Features: ostomy facilities (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-esola-001",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "トイレ(女子)"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "esola-ikebukuro-facilities-3f-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エソラ池袋 3F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Esola Ikebukuro, 3F. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-esola-001",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "授乳室"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "esola-ikebukuro-facilities-4f-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エソラ池袋 4F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Esola Ikebukuro, 4F. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-esola-002",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "トイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "esola-ikebukuro-facilities-4f-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エソラ池袋 4F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Esola Ikebukuro, 4F. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-esola-003",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "トイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "esola-ikebukuro-facilities-6f-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エソラ池袋 6F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Esola Ikebukuro, 6F. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-esola-004",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "トイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "esola-ikebukuro-facilities-7f-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エソラ池袋 7F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Esola Ikebukuro, 7F. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-esola-005",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "車いす対応トイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "esola-ikebukuro-facilities-7f-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エソラ池袋 7F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Esola Ikebukuro, 7F. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-esola-006",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "トイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "esola-ikebukuro-facilities-8f-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エソラ池袋 8F。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Esola Ikebukuro, 8F. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-tobudept-001",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "バリアフリートイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-access-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 B2F 3番地。設備: 車イスで利用できる（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, B2F 3番地. Features: usable with a wheelchair (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-tobudept-002",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "バリアフリートイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-access-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 B2F 11番地。設備: 車イスで利用できる（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, B2F 11番地. Features: usable with a wheelchair (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-tobudept-003",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "バリアフリートイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-access-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 B1F 11番地。設備: 車イスで利用できる（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, B1F 11番地. Features: usable with a wheelchair (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-tobudept-004",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "バリアフリートイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-access-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 3F 2番地。設備: 車イスで利用できる（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, 3F 2番地. Features: usable with a wheelchair (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-tobudept-005",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "バリアフリートイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-access-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 4F 2番地。設備: 車イスで利用できる（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, 4F 2番地. Features: usable with a wheelchair (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-tobudept-006",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "バリアフリートイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-access-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 4F 11番地。設備: 車イスで利用できる（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, 4F 11番地. Features: usable with a wheelchair (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-tobudept-007",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "バリアフリートイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-access-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 5F 2番地。設備: 車イスで利用できる（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, 5F 2番地. Features: usable with a wheelchair (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-tobudept-008",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "バリアフリートイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-access-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 5F 11番地。設備: 車イスで利用できる（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, 5F 11番地. Features: usable with a wheelchair (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-tobudept-009",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "バリアフリートイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-access-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 6F 2番地。設備: 車イスで利用できる（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, 6F 2番地. Features: usable with a wheelchair (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-tobudept-010",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "バリアフリートイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-access-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 7F 11番地。設備: 車イスで利用できる（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, 7F 11番地. Features: usable with a wheelchair (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-tobudept-011",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "バリアフリートイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-access-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 8F 2番地。設備: 車イスで利用できる（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, 8F 2番地. Features: usable with a wheelchair (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-tobudept-012",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "バリアフリートイレ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-access-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 11～15F。設備: 車イスで利用できる（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, 11～15F. Features: usable with a wheelchair (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-tobudept-001",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "店内案内所"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 B1F 3番地　お入口。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, B1F 3番地　お入口 (entrance). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-tobudept-002",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "店内案内所"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 B1F 6番地　お入口。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, B1F 6番地　お入口 (entrance). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-tobudept-003",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "店内案内所"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 B1F 8番地　お入口。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, B1F 8番地　お入口 (entrance). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-tobudept-004",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "AED（自動体外式除細動器）"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 B1F 3番地。設備: ［売場内3台］のうち1台（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, B1F 3番地. Features: 1 of 3 units in the sales floor (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-tobudept-005",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "AED（自動体外式除細動器）"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 B1F 8番地。設備: ［売場内3台］のうち1台（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, B1F 8番地. Features: 1 of 3 units in the sales floor (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-tobudept-006",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "AED（自動体外式除細動器）"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 4F 3番地。設備: ［売場内3台］のうち1台（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, 4F 3番地. Features: 1 of 3 units in the sales floor (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-tobudept-007",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ベビー休憩室"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-kids-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 7F2番地。設備: 授乳室:3室、おむつ交換台:5台、着替台:2台、ベビーチェア:6台、給湯器、おむつ・飲料自動販売機、電子レンジ（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, 7F 2番地. Features: nursing rooms: 3, nappy-changing tables: 5, changing tables: 2, baby chairs: 6, water heater, nappy/drink vending machines, microwave (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-tobudept-008",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ベビー休憩室"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-kids-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 11F1番地。設備: 授乳室:個室3室・ソファ席、おむつ交換台:3台、着替台:1台、給湯器、飲料、電子レンジ（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, 11F 1番地. Features: nursing rooms: 3 private rooms with sofa seats, nappy-changing tables: 3, changing table: 1, water heater, drinks, microwave (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "locker-ikb-tobudept-001",
+   "category": "locker",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "コインロッカー（有料）"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 1F 2番地 お入口。設備: 常温（有料）（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, 1F 2番地 お入口. Features: room temperature (paid) (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "locker-ikb-tobudept-002",
+   "category": "locker",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "コインロッカー（有料）"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 2F 11番地 お入口。設備: 常温（有料）（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, 2F 11番地 お入口. Features: room temperature (paid) (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "locker-ikb-tobudept-003",
+   "category": "locker",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "コインロッカー（有料）"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 B2F 6番地 階段前。設備: 常温（有料）・冷蔵（有料）（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, B2F 6番地 階段前. Features: room temperature (paid) and refrigerated (paid) (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "locker-ikb-tobudept-004",
+   "category": "locker",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "コインロッカー（有料）"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 B2F 11番地。設備: 常温（有料）・冷蔵（有料）（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, B2F 11番地. Features: room temperature (paid) and refrigerated (paid) (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "locker-ikb-tobudept-007",
+   "category": "locker",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "コインロッカー（有料）"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-facilities-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武百貨店 池袋店 1F 2番地。設備: 冷蔵（有料）（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Department Store Ikebukuro, 1F 2番地. Features: refrigerated (paid) (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-seibu-001",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "AED"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-ikebukuro-station-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-25), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "西武鉄道 池袋駅 1F改札口付近。設備: 自動体外式除細動器（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Seibu Railway Ikebukuro Station, 1F改札口付近. Features: 自動体外式除細動器 (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-seibu-002",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "AED"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-ikebukuro-station-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-25), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "西武鉄道 池袋駅 B1F改札口付近。設備: 自動体外式除細動器（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Seibu Railway Ikebukuro Station, B1F改札口付近. Features: 自動体外式除細動器 (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-seibu-003",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "お忘れ物取扱所"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-ikebukuro-station-2026-10"
+    ],
+    "method": "facts-only facility listing (OD-25), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "西武鉄道 池袋駅 西武南口。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Seibu Railway Ikebukuro Station, 西武南口. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
   }
  ]
 }
