@@ -37,6 +37,7 @@ import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
 import { CAST_RETUNE_M, SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, setCasters, shadowYRange, type ShadowCandidate } from "./shadows.ts";
 import { buildGraphView, type GraphView } from "./graphView.ts";
 import { Input } from "./input.ts";
+import { headingFromYaw } from "./pose.ts";
 import { DEFAULT_GROUND, acceptGround, angleDelta, cumulativeLengths, resolveWalls, samplePolyline, wallToRenderer, type Segment2 } from "./walker.ts";
 import { OcclusionSweep, SIGN_BACKDROP_M, labelState, onFocusFloor, type LabelOcclusion, type LabelState } from "./labelVisibility.ts";
 import { TriangleBvh, segmentHitsBox, type Cull } from "./triangleBvh.ts";
@@ -45,6 +46,8 @@ import { occludedLineStyle, type OccludedLineStyle } from "./occludedLine.ts";
 import { BLOOM_HEADROOM, OVERLAY_INPUT_MIN, compensate, linearToSrgb, type Vec3 } from "./toneComp.ts";
 
 export type ExplorerMode = "overview" | "walk" | "guide";
+
+export interface ExplorerPose { east: number; north: number; up: number; headingDeg: number; mode: ExplorerMode }
 
 export interface ExplorerOptions { avatarGlbUrl?: string }
 
@@ -317,6 +320,7 @@ export class Explorer {
   private panelEl: HTMLElement | null = null;
   /** The persistent credit line along the canvas bottom; the overview keeps clear of it too. */
   private creditEl: HTMLElement | null = null;
+  private minimapEl: HTMLElement | null = null;
   /** Refits the overview when an occluder's size changes: the panel collapsing, the credit line wrapping. */
   private occluderResize: ResizeObserver | null = null;
   private quality: "low" | "high";
@@ -446,6 +450,13 @@ export class Explorer {
   /** Avatar position in station ENU (a virtual position, never the user's real location). */
   get avatarEnu(): { x: number; y: number; z: number } {
     return { x: this.pos.x, y: -this.pos.z, z: this.pos.y };
+  }
+
+  /** Read-only walker pose for 2D HUD overlays (ENU metres, body heading clockwise from north). Null before a station loads. */
+  getPose(): ExplorerPose | null {
+    if (!this.station) return null;
+    const { x, y, z } = this.avatarEnu;
+    return { east: x, north: y, up: z, headingDeg: headingFromYaw(this.bodyYaw), mode: this.mode };
   }
 
   private defaultEnvironment(): void {
@@ -891,11 +902,18 @@ export class Explorer {
     this.refitOverview();
   }
 
-  /** Observe both occluders on one observer, so a size change of either refits through the same path. */
+  /** Name the top-right minimap occluder; hidden maps leave the canvas free. */
+  setMinimap(el: HTMLElement | null): void {
+    this.minimapEl = el;
+    this.watchOccluders();
+    this.refitOverview();
+  }
+
+  /** Observe the occluders on one observer, so size changes refit through the same path. */
   private watchOccluders(): void {
     this.occluderResize?.disconnect();
     this.occluderResize = null;
-    const els = [this.panelEl, this.creditEl].filter((e): e is HTMLElement => e !== null);
+    const els = [this.panelEl, this.creditEl, this.minimapEl].filter((e): e is HTMLElement => e !== null);
     if (els.length === 0 || typeof ResizeObserver === "undefined") return;
     this.occluderResize = new ResizeObserver(() => this.refitOverview());
     for (const e of els) this.occluderResize.observe(e);
@@ -907,7 +925,7 @@ export class Explorer {
   }
 
   /**
-   * The canvas area no UI covers (CSS px, canvas-relative): neither the panel nor the credit line. Both page
+   * The canvas area no UI covers (CSS px, canvas-relative): panel, credit line and minimap. Their page
    * rects are measured here, on a resize or an occluder change — never per frame.
    */
   private freeRect(): ViewRect {
@@ -915,9 +933,11 @@ export class Explorer {
     const el = this.panelEl;
     // display:none (walk/guide on a phone), a collapsed element or none at all leaves the canvas free.
     const measured = el && el.getClientRects().length > 0 ? el.getBoundingClientRect() : null;
-    const host = (measured || this.creditEl) ? this.host.getBoundingClientRect() : null;
+    const cornerRect = this.minimapEl && this.minimapEl.getClientRects().length > 0 ? this.minimapEl.getBoundingClientRect() : null;
+    const host = (measured || this.creditEl || cornerRect) ? this.host.getBoundingClientRect() : null;
     const panel = measured && host ? { x: measured.left - host.left, y: measured.top - host.top, w: measured.width, h: measured.height } : null;
-    return freeArea({ w, h }, panel, this.creditInset(host));
+    const corner = cornerRect && host ? { x: cornerRect.left - host.left, y: cornerRect.top - host.top, w: cornerRect.width, h: cornerRect.height } : null;
+    return freeArea({ w, h }, panel, this.creditInset(host), corner);
   }
 
   /** The canvas-bottom band the credit line blocks (CSS px): it spans the width, so only its top edge counts. */
