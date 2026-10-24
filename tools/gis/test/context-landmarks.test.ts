@@ -5,7 +5,7 @@ import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 import * as common from '../src/common.js';
 import { assertNoSourceValues } from '../src/context-overlay.js';
 import {
-  assertLandmarksConfig, collectSourceValues, contextLandmarks, maskCreditText, LANDMARK_CRS, LANDMARKS_POLICY_VERSION, LANDMARK_PROPERTY_KEYS,
+  assertLandmarksConfig, collectSourceValues, contextLandmarks, maskCreditText, maskShippedFieldValues, LANDMARK_CRS, LANDMARKS_POLICY_VERSION, LANDMARK_PROPERTY_KEYS,
   landmarksGeoJson, parseLandmarksCsv, type LandmarksConfig,
 } from '../src/context-landmarks.js';
 import { stationEnuProjector } from '../src/station-enu.js';
@@ -201,6 +201,45 @@ describe('context-landmarks: shipped fields and leak guards', () => {
     const c = (await other.run()) as Record<string, any>;
     expect(c.source.source_sha256).not.toBe(a.source.source_sha256);
     expect(c.run_id).not.toBe(a.run_id);
+  });
+});
+
+describe('context-landmarks: shipped-field masking', () => {
+  const META = { station_id: 'shinjuku', frame_label: 'origin-only', z_m: 0, z_basis: 'symbolic street z = 0', source_id: 'synthetic', source_sha256: 'b'.repeat(64), window_label: 'origin_disc 700 m', credit: { ja: 'c', en: 'd' } };
+  const POINT = { row_index: 0, x: 0, y: 0, z: 0, name: '架空寺本堂', class: '記念物', row_hash: 'a'.repeat(64) };
+  /** A temple name that contains its owner's name: the real source has such rows (owner 130 cells, 種類 35, 所在地_町字 5). */
+  const TEMPLE: string[][] = [['1', '架空寺本堂', '記念物', '東京都新宿区架空一丁目1番', String(latAtNorth(100)), String(ORIGIN.lon), '架空寺', 'テスト説明文甲', '', '']];
+
+  it('passes when a shipped name contains another column cell as a substring', async () => {
+    const { run } = await setup({ csv: csvText(TEMPLE) });
+    const receipt = (await run()) as Record<string, any>;
+    expect(receipt.selected).toBe(1);
+    expect(receipt.leak_guard.shipped_field_values_masked).toBe(2);
+    const geojson = JSON.parse(await readFile(join(common.repoRoot, 'store', receipt.outputs.geojson.store_path), 'utf8')) as { features: Array<{ properties: { name: string } }> };
+    expect(geojson.features[0]!.properties.name).toBe('架空寺本堂');
+  });
+
+  it('still trips when the same owner value sits outside the shipped fields', () => {
+    const guard = collectSourceValues(TEMPLE, new Set([1, 2]));
+    expect(guard.has('架空寺')).toBe(true);
+    const geojson = landmarksGeoJson([POINT], META);
+    const masked = maskShippedFieldValues(maskCreditText(geojson, META.credit).text, [POINT.name, POINT.class]);
+    expect(masked.occurrences).toBe(2);
+    expect(() => assertNoSourceValues(masked.text, guard, 'The landmark GeoJSON')).not.toThrow();
+    const injected = geojson.replace('"row_hash"', '"所有者":"架空寺","row_hash"');
+    const injectedMasked = maskShippedFieldValues(maskCreditText(injected, META.credit).text, [POINT.name, POINT.class]);
+    expect(() => assertNoSourceValues(injectedMasked.text, guard, 'The landmark GeoJSON')).toThrow(/source property value/);
+  });
+
+  it('passes in the GeoJSON when an owner cell equals a shipped name, but the receipt still forbids it', async () => {
+    const rows = [['1', '架空寺本堂', '記念物', '東京都新宿区架空一丁目1番', String(latAtNorth(100)), String(ORIGIN.lon), '架空寺本堂', 'テスト説明文甲', '', '']];
+    const { run } = await setup({ csv: csvText(rows) });
+    const receipt = (await run()) as Record<string, any>;
+    expect(receipt.selected).toBe(1);
+    const guard = collectSourceValues(rows, new Set([1, 2]));
+    expect(guard.has('架空寺本堂')).toBe(true);
+    // The receipt is never masked this way: a name token there is still a leak.
+    expect(() => assertNoSourceValues(JSON.stringify('架空寺本堂'), guard, 'The public landmark receipt')).toThrow(/source property value/);
   });
 });
 

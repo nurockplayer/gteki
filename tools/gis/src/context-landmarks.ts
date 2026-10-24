@@ -146,6 +146,27 @@ export function maskCreditText(text: string, credit: LandmarksCredit, placeholde
   return { text: masked, occurrences };
 }
 
+/** What a shipped name or class token is replaced by before the store scan. */
+export const SHIPPED_FIELD_PLACEHOLDER = '<shipped-field>';
+
+/**
+ * The GeoJSON ships `name` and `class` by design, and a shipped string may contain another column's cell as a substring (a temple name
+ * contains its owner's name), which the non-ASCII substring match would read as a leak. Before the store scan, each exact JSON string
+ * token (`JSON.stringify(value)`, quotes included) of the shipped values is replaced in a copy; raw substrings are never masked, so
+ * the same value still fails anywhere it is not shipped as a whole string. The receipt is never masked this way.
+ */
+export function maskShippedFieldValues(text: string, values: ReadonlyArray<string | null>, placeholder: string = SHIPPED_FIELD_PLACEHOLDER): { text: string; occurrences: number } {
+  const forms = [...new Set(values.filter((value): value is string => typeof value === 'string' && value !== '').map((value) => JSON.stringify(value)))]
+    .sort((a, b) => b.length - a.length);
+  let masked = text, occurrences = 0;
+  for (const form of forms) {
+    const parts = masked.split(form);
+    occurrences += parts.length - 1;
+    masked = parts.join(placeholder);
+  }
+  return { text: masked, occurrences };
+}
+
 export interface LandmarkPoint {
   row_index: number;
   x: number;
@@ -287,10 +308,12 @@ export async function contextLandmarks(station: string, options: LandmarksRunOpt
   };
 
   // Leak guards, before anything is written. The store outputs may ship 名称 and 文化財分類 only; the receipt may ship no row value at all.
-  // No value is exempted: the mandated credit strings are masked in a copy of each text, and that copy is scanned against every value.
+  // No value is exempted: the mandated credit strings are masked in a copy of each text, and the GeoJSON's shipped name/class tokens
+  // too; each copy is scanned against the full value set and the written text stays unmasked.
   const storeGuard = collectSourceValues(rows, new Set([nameColumn, classColumn]));
   const receiptGuard = collectSourceValues(rows);
   const maskedCredits: Record<string, number> = {};
+  let shippedFieldValuesMasked = 0;
   const store = join(getStoreRoot(), 'out');
   await mkdir(store, { recursive: true });
   const outputs: Record<string, unknown> = {};
@@ -299,7 +322,9 @@ export async function contextLandmarks(station: string, options: LandmarksRunOpt
     const geojson = landmarksGeoJson(points, meta);
     const maskedGeoJson = maskCreditText(geojson, landmarks.credit);
     maskedCredits.store_geojson = maskedGeoJson.occurrences;
-    assertNoSourceValues(maskedGeoJson.text, storeGuard, 'The landmark GeoJSON');
+    const maskedShipped = maskShippedFieldValues(maskedGeoJson.text, points.flatMap((point) => [point.name, point.class]));
+    shippedFieldValuesMasked = maskedShipped.occurrences;
+    assertNoSourceValues(maskedShipped.text, storeGuard, 'The landmark GeoJSON');
     const geojsonRel = `out/${runId}.geojson`;
     await writeFile(join(getStoreRoot(), geojsonRel), geojson);
     outputs.geojson = { store_path: geojsonRel, sha256: sha256(geojson), bytes: Buffer.byteLength(geojson) };
@@ -356,7 +381,8 @@ export async function contextLandmarks(station: string, options: LandmarksRunOpt
       row_values_scanned_in_store_outputs: storeGuard.size,
       row_values_scanned_in_receipt: receiptGuard.size,
       credit_occurrences_masked: { store_geojson: maskedCredits.store_geojson ?? 0, store_provenance: maskedCredits.store_provenance ?? 0, receipt: 0 },
-      credit_masking: 'the mandated credit strings are masked before scanning; no source value is exempted',
+      shipped_field_values_masked: shippedFieldValuesMasked,
+      credit_masking: 'the mandated credit strings and the shipped name/class values are masked before scanning; no source value is exempted',
     },
     outputs,
     tool_input_sha256: fingerprint,
