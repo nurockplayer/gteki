@@ -1,102 +1,113 @@
-# Ikebukuro shop hours batch 1 — transcription log (OD-32)
+# Ikebukuro shop hours batch 1 — transcription log (OD-32, amended)
 
-Facts only. Output: `ikebukuro-hours-batch1.json`. Hours are recorded only where the page that
-prints them also prints a qualifying date; nothing is inferred from another page, a building-wide
-default, or memory. No current status is asserted.
+Facts only. Output: `ikebukuro-hours-batch1.json`. Hours are recorded only from the official page
+that prints them, for the source the POI already cites; nothing is inferred from another page, a
+building-wide default, or memory. No current status is asserted.
 
 ## Method
 
 - Worktree `.claude/worktrees/ds-research`, branch `ds/ikebukuro-hours-batch1` from `origin/main`
   (`70bdc305`).
-- Scope read from the research files at the heads of their branches
-  (verified 2026-10-24 before building the output; every `poiId` re-confirmed present):
+- Scope read from the research files at the heads of their branches (verified 2026-10-24; every
+  `poiId` re-confirmed present at the latest head):
   - `claude/data-research-ikb-merchants-batch2` `9cd35158` — `ikebukuro-merchants-batch2.json`
     (118 POIs), `ikebukuro-merchants-batch3.json` (2 POIs)
   - `claude/data-research-ikb-merchants-batch4` `b3fb248f` — `ikebukuro-merchants-batch4.json`
     (210 POIs)
   - `ds/ikb-merchants-batch5-seibu` `320975ab` — `ikebukuro-merchants-batch5.json` (13 POIs)
   - 343 POIs in total; 343 entries, each id used once.
-- Fetch: plain `curl -sL`, default UA, no custom headers, no referer, sequential with ~0.6 s
-  between requests, no browser, no JavaScript execution. HTML parsed from the response in memory;
-  no pages saved. **395 page loads** in total (cap 400).
-- OD-32 gate as applied:
-  - `OK` only when the page that prints the hours also prints a date on/after 2026-04-27.
-  - Director ruling of 2026-10-24 applied: a date counts only if the notice it belongs to is
-    itself about hours (営業時間/休業/変更) and is ≤180 days old. Other dated notices
-    (shop news, product news, event notices) do not count — those POIs are `UNKNOWN` with reason
-    `dated notice not about hours`.
-  - No date at all on the page → `no date`.
-- Hours text copied as printed, full-width characters kept; no prices, descriptions, images or
-  last-order notes added beyond what the hours cell/line prints.
-- Sampled reading (director ruling): seed `20261024`, 20 POIs drawn at random from the 343 →
-  2 of 20 qualified (10%). Note: the per-POI page read had already completed before the ruling
-  arrived, so the full per-POI classification below is reported rather than only the sample.
+- Fetch: plain `curl -sL`, default UA, no custom headers, no referer, sequential, ≥0.6 s between
+  requests, no browser, no JavaScript execution, no workaround attempted for 403. HTML parsed in
+  memory; no pages saved.
+- 367 page loads in total: 11 parser samples, 298 per-POI pages, 2 inspection fetches, 10
+  エソラ池袋/ホープセンター pages, 46 Lumine re-reads. This is 1 over the 366 the director approved
+  (one page, `scd=000530`, was fetched twice); reported here.
+- Hours text is copied as printed. Runs of whitespace are normalised to one space and `<br>` to a
+  newline; full-width characters (`～`, `：`, `※`, `〈〉`) are kept.
+- Sampled reading (director ruling, seed `20261024`): 20 POIs drawn at random from the 343. The
+  per-POI read had already completed before the ruling arrived, so the full classification below
+  is reported rather than the sample rate alone.
+
+## OD-32 amendment (director, 2026-10-24)
+
+- Hours printed on **undated** official pages may now be recorded, both building-level and per
+  shop, for sources cleared by OD-34. Those entries carry `"basis":"undated-official"` and
+  `pageDate: null`.
+- A dated notice counts only if the notice itself is about hours (営業時間/休業/変更) and is
+  ≤180 days old. No entry in this batch ends up relying on a dated notice: エソラ池袋's
+  site-wide notices were judged not to date individual shops' hours, so all its entries are
+  `undated-official` with `pageDate: null`.
+- Display wording for the station writer (not stored in the JSON):
+  「<hoursText>（GT-Eki 確認日 2026-10-24 時点の公式表記。変更されている場合があります）」,
+  with a link to the entry's `url` (official page).
+- Refresh: hide or re-check undated entries after 180 days — i.e. by **2027-04-22**.
+- Precedence: merchant-provided > dated official > undated official.
+- Building entries use `"note":"店舗により異なる場合あり"` when the building hours page prints
+  館営業時間.
 
 ## Per-site counts (POIs)
 
-| Source | POIs | OK | no date | dated notice not about hours | no hours printed | page unreadable |
-| --- | --- | --- | --- | --- | --- | --- |
-| isp-floorguide-2026-10 (池袋ショッピングパーク) | 53 | 0 | 46 | 7 | 0 | 0 |
-| tobuhopecenter-floorguide-2026-10 (東武ホープセンター) | 43 | 0 | 43 | 0 | 0 | 0 |
-| echika-ikebukuro-2026-10 (エチカ池袋) | 22 | 0 | 20 | 2 | 0 | 0 |
-| lumine-ikebukuro-floorguide-2026-10 (ルミネ池袋) | 176 | 0 | 153 | 23 | 0 | 0 |
-| esola-ikebukuro-floorguide-2026-10 (エソラ池袋) | 33 | 33 | 0 | 0 | 0 | 0 |
-| tobu-dept-ikebukuro-2026-10 (東武百貨店 池袋店) | 1 | 0 | 0 | 0 | 1 | 0 |
-| seibu-shop-ikebukuro-2026-10 (エミオ池袋) | 11 | 0 | 9 | 2 | 0 | 0 |
-| seibu-shop-ikebukuro-station-2026-10 (西武池袋駅) | 2 | 0 | 2 | 0 | 0 | 0 |
-| tokyometro-ikebukuro-shops-2026-10 | 2 | 0 | 0 | 0 | 0 | 2 |
-| **Total POIs** | **343** | **33** | **273** | **34** | **1** | **2** |
+| Source | POIs | OK (undated-official) | no hours printed | page unreadable |
+| --- | --- | --- | --- | --- |
+| isp-floorguide-2026-10 (池袋ショッピングパーク) | 53 | 53 | 0 | 0 |
+| tobuhopecenter-floorguide-2026-10 (東武ホープセンター) | 43 | 43 | 0 | 0 |
+| echika-ikebukuro-2026-10 (エチカ池袋) | 22 | 22 | 0 | 0 |
+| lumine-ikebukuro-floorguide-2026-10 (ルミネ池袋) | 176 | 176 | 0 | 0 |
+| esola-ikebukuro-floorguide-2026-10 (エソラ池袋) | 33 | 33 | 0 | 0 |
+| tobu-dept-ikebukuro-2026-10 (東武百貨店 池袋店) | 1 | 0 | 1 | 0 |
+| seibu-shop-ikebukuro-2026-10 (エミオ池袋) | 11 | 11 | 0 | 0 |
+| seibu-shop-ikebukuro-station-2026-10 (西武池袋駅) | 2 | 2 | 0 | 0 |
+| tokyometro-ikebukuro-shops-2026-10 | 2 | 0 | 0 | 2 |
+| **Total POIs** | **343** | **340** | **1** | **2** |
 
 ## Building entries (poiId null)
 
-| Building | Source | Status | Reason / pageDate |
+| Building | Source | Status | hoursText (as printed) |
 | --- | --- | --- | --- |
-| 池袋ショッピングパーク | isp-floorguide-2026-10 | UNKNOWN | no date (`/facilities/` prints 全館 10:00～21:00（月～土） / 10:00～19:30（日・祝）, no date) |
-| 東武ホープセンター | tobuhopecenter-floorguide-2026-10 | UNKNOWN | dated notice not about hours (top page prints 営業時間 10:00～21:00; its dates are event/news only) |
-| エチカ池袋 | echika-ikebukuro-2026-10 | UNKNOWN | no hours printed (`/shop/hours.jsp` says hours differ by shop and points to a PDF list) |
-| エソラ池袋 | esola-ikebukuro-floorguide-2026-10 | OK | 2026-10-12 |
-| ルミネ池袋 | lumine-ikebukuro-floorguide-2026-10 | UNKNOWN | no date (`/information/hours/` prints 館営業時間, no date) |
-| エミオ池袋 | seibu-shop-ikebukuro-2026-10 | UNKNOWN | no hours printed (listing prints per-shop hours only) |
+| 池袋ショッピングパーク | isp-floorguide-2026-10 | OK, undated-official | 全館 10:00～21:00（月～土） / 10:00～19:30（日・祝） |
+| 東武ホープセンター | tobuhopecenter-floorguide-2026-10 | OK, undated-official | 10:00～21:00 |
+| エチカ池袋 | echika-ikebukuro-2026-10 | UNKNOWN — no hours printed | — (page says hours differ by shop and points to a PDF list) |
+| エソラ池袋 | esola-ikebukuro-floorguide-2026-10 | OK, undated-official | ショップ 10:30～21:30 / レストラン 11:00～23:00 / ※店舗により一部異なります |
+| ルミネ池袋 | lumine-ikebukuro-floorguide-2026-10 | OK, undated-official | B1～7F ショッピング 11:00～21:00 / 8F～9F レストラン 11:00～22:00 |
+| エミオ池袋 | seibu-shop-ikebukuro-2026-10 | UNKNOWN — no hours printed | — (listing prints per-shop hours only) |
 
-Totals including buildings: 349 entries — 34 OK, 315 UNKNOWN
-(275 `no date`, 35 `dated notice not about hours`, 3 `no hours printed`, 2 `page unreadable (403)`).
+All four OK building entries carry `"note":"店舗により異なる場合あり"`.
 
-## The one qualifying site: エソラ池袋
+**Totals: 349 entries — 344 OK (all `undated-official`, `pageDate` null), 5 UNKNOWN
+(3 `no hours printed`, 2 `page unreadable (403)`).**
 
-- Every エソラ池袋 shop/floor page and the 営業時間 page print a site-wide お知らせ block:
-  - `2026-10-12` 設備工事に伴う一部休業店舗のお知らせ（3F）
-  - `2026-05-27` 営業時間変更のお知らせ
-- Both notices match the ruling's hours keywords (休業 / 営業時間・変更) and are ≤180 days old;
-  the newest printed date, 2026-10-12, is recorded as `pageDate` for all 33 shop entries and the
-  building entry.
-- Per-shop hours were taken from the printed hours cell of the shop's floor table
-  (`/esola-ikebukuro/shop/floor.jsp?fid=…`), which also carries the same dated notice block;
-  the floor page read is the `url` recorded for each entry. Shop id → row matched by `shopid`;
-  all 33 names matched the research files exactly.
-- Caveat for the Lead: on sub-pages the script shows only the first notice item; the 2026-05-27
-  item is present in the markup but hidden. The 2026-10-12 notice is about 3F construction
-  closures, not about every shop's hours. If the Lead judges that a site-wide/3F notice does not
-  vouch for a B1 shop's hours, all 33 エソラ池袋 entries and its building entry should be demoted
-  to `UNKNOWN` (`dated notice not about hours`); the hours text itself is unaffected.
+## How the undated hours were read
+
+- 池袋ショッピングパーク: each shop's detail page, `営業時間` block (`月～土 10：00～21：00 /
+  日・祝 10：00～19：30 / ※館営業時間に準ずる`). Building hours from `/facilities/` (全館).
+- 東武ホープセンター: the three zone pages' per-shop `営業時間` table rows; no per-POI fetch.
+  Building hours from the top page (`10:00～21:00`).
+- エチカ池袋: each shop's detail page (`10:00-21:00` style).
+- ルミネ池袋: each shop's detail page. Fashion shops print weekday/weekend rows
+  (`平日 11:00 ~ 21:00 / 土日祝 11:00 ~ 21:00`); restaurants print a single range. Building hours
+  from `/ikebukuro/information/hours/`.
+- エソラ池袋: the printed `営業時間` cell of each shop's floor table
+  (`/esola-ikebukuro/shop/floor.jsp?fid=…`), matched by `shopid`; all 33 names matched the
+  research files exactly. Building hours from `/esola-ikebukuro/shop/hours.jsp`.
+- エミオ池袋 / 西武池袋駅: each shop's detail page (`6:30A.M.～10:45P.M.` style).
+- 東武百貨店 池袋店: the cited top page prints no hours at all → `no hours printed`.
+- 東武ホープセンター's zone pages and every other site carry no date tied to hours.
 
 ## GAPs
 
 - `https://www.tokyometro.jp/station/ikebukuro/shop/index.html` returns **403** (Akamai) to plain
-  curl, twice. Not worked around. The 2 POIs from that source are `UNKNOWN`,
-  reason `page unreadable (403)`.
-- Two URL patterns guessed from the site nav returned 404 and were replaced with the linked page:
-  `/ikebukuro/hours/` → `/ikebukuro/information/hours/`; metropro `/hours/` → `/shop/hours.jsp`.
-- 池袋ショッピングパーク pages print shop hours but no date anywhere; 東武ホープセンター zone pages
-  print per-shop hours in tables but no date; ルミネ池袋 and 西武/エミオ pages print hours without
-  dates. Their only dates are shop-news/product-news dates, which do not qualify under the ruling.
+  curl, twice. Not worked around. Its 2 POIs are `UNKNOWN`, reason `page unreadable (403)`.
+- エチカ池袋 and エミオ池袋 print no 館営業時間 on any page read (エチカ points to a dated PDF
+  list instead); their building entries stay `UNKNOWN`.
+- 東武百貨店 池袋店: the cited page prints no hours; kept `UNKNOWN`.
 
 ## Notes for the Lead
 
-- `tobu-dept.jp` was read for the 東武百貨店 池袋店 POI. It is not on the brief's exclusion list
-  (`tobu.co.jp` is), but it is the same company; flag for the rights review if that matters.
-- The 東武百貨店 池袋店 POI is kept as a POI entry, not converted to a building entry. Its top page
-  prints no hours at all.
-- 東武ホープセンター POIs were not fetched one by one: the 43 entries point at the three zone pages
-  (south / center / north) they were transcribed from; those pages print per-shop hours but no date.
+- `tobu-dept.jp` was read; the director cleared it (東武百貨店 is a separate company from
+  東武鉄道, OD-34). Only `tobu.co.jp` is excluded.
+- The 東武百貨店 池袋店 POI stays a POI entry, not a building entry.
+- ホープセンター POIs were not fetched one by one: their entries point at the zone page
+  (south / center / north) they were transcribed from, which prints per-shop hours.
 - No browser, no JavaScript, no oracle/LLM tool, no contact with anyone, no rights decision made.
-- Retrieval times are UTC. Pages read between 2026-10-24T11:36Z and 2026-10-24T11:48Z.
+- Retrieval times are UTC, recorded per entry (pages read between 2026-10-24T11:46Z and
+  2026-10-24T11:58Z).
