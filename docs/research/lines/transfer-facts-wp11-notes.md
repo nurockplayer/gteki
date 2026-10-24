@@ -130,7 +130,7 @@ DeepSeek could not read the diagrams, so lines-lead (Claude Opus 5.5) read them 
 
 No car positions, relative placement or layout are taken (OD-03).
 
-- **Tokyo Metro 池袋 (M25, Y09, F09 diagrams)** — 27 entries:
+- **Tokyo Metro 池袋 (M25, Y09, F09 diagrams)** — 20 entries:
   - each transfer group with the direction label it points to: 中央通路 (linked to `central-passage`), 東京芸術劇場 / 東武百貨店, 西武百貨店 / サンシャインシティ(方面), Esola池袋, 立教大学;
   - printed hours: 副都心線連絡通路 始発～0:06 (from M25); F09 routes 始発～23:55 and 始発～0:05.
 - **Tokyo Metro 新宿 (M08 diagrams)** — 6 entries. The key fact is a footnote saying the 都営大江戸線 transfer is a **connection with 新宿西口駅 (E01)**, not with the Toei 新宿 station. The 西武線 label carries the Seibu Shinjuku Line mark (西武新宿 is a separate station; no connection is modelled).
