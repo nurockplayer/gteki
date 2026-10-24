@@ -1365,6 +1365,8 @@ export class App {
         spawnHeading(this.s.loaded.bundle, { kind: "node", nodeId }, []),
       ) : false),
       simulate: (seconds: number, keys: string[] = []) => this.explorer.simulate(seconds, keys),
+      walkPath: (points: { x: number; z: number; y?: number }[], opts?: { speed?: "walk" | "run"; dt?: number; maxSeconds?: number; onStep?: (i: number) => void }) => this.explorer.walkPath(points, opts),
+      signClearance: (radiusM?: number) => this.explorer.signClearance(radiusM),
     };
   }
 }
