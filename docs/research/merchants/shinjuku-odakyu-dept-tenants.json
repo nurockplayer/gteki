@@ -1,0 +1,1907 @@
+{
+  "schema": "gteki.research.tenants/0.1",
+  "note": "Facts-only brand list of a department store. Not POIs: a brand search should return the store's POI with the floor. UNVERIFIED.",
+  "storePoiId": "shop-sjk-odakyudept",
+  "sourceId": "odakyu-dept-shinjuku-2026-10",
+  "retrievedAt": "2026-10-24T09:35:35Z",
+  "tenants": [
+    {
+      "id": "tenant-sjk-odakyudept-001",
+      "name": "アイフレグランス ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（ギフトギャラリーnanafuro）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-002",
+      "name": "赤坂柿山",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-003",
+      "name": "赤ちゃんの城 ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ギフトサロン"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-004",
+      "name": "アクセーヌ ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-005",
+      "name": "あげもちCocoro",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK3］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-006",
+      "name": "浅草今半",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "漬物・佃煮"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-007",
+      "name": "麻布かりんと",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK3］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-008",
+      "name": "アストロン ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-009",
+      "name": "アタオ",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ハンドバッグ"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-010",
+      "name": "アテニア ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-011",
+      "name": "アディクション ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-012",
+      "name": "アトリテナ ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-013",
+      "name": "アナ スイ ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "アクセサリー・雑貨"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-014",
+      "name": "アラジン ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-015",
+      "name": "アラビア ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（和洋食器）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-016",
+      "name": "有賀園ゴルフ eStand+",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "ゴルフ用品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-017",
+      "name": "有賀園ゴルフスクール プログレス",
+      "aliases": [],
+      "floorLabel": "７階",
+      "category": "ゴルフスクール受付"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-018",
+      "name": "アルビオン ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-019",
+      "name": "アンテプリマ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "婦人服飾雑貨"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-020",
+      "name": "RF1",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-021",
+      "name": "RMK ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-022",
+      "name": "いい菜＆ゼストプラス",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK1］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-023",
+      "name": "イザック ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ハンドバッグ"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-024",
+      "name": "イザベル・ラングロア ★",
+      "aliases": [],
+      "floorLabel": "７階",
+      "category": "宝飾"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-025",
+      "name": "維新號",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-026",
+      "name": "イッケンドルフ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（ギフトギャラリーnanafuro）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-027",
+      "name": "イッタラ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（和洋食器）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-028",
+      "name": "伊藤園",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "お茶・コーヒー・はちみつ"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-029",
+      "name": "イプサ ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-030",
+      "name": "ウェッジウッド ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（和洋食器）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-031",
+      "name": "ウォーターマン ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ギフトサロン"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-032",
+      "name": "ＳＫ-ＩＩ ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-033",
+      "name": "エスティ ローダー ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-034",
+      "name": "エスト ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-035",
+      "name": "エペイオス ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-036",
+      "name": "エムプラスホーム ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（ギフトギャラリーnanafuro）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-037",
+      "name": "エルベシャプリエ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ハンドバッグ"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-038",
+      "name": "岡半 ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（ギフトギャラリーnanafuro）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-039",
+      "name": "岡山デニムラボ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（ギフトギャラリーnanafuro）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-040",
+      "name": "OXO ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-041",
+      "name": "オグラ眼鏡店",
+      "aliases": [],
+      "floorLabel": "７階",
+      "category": "メガネ・こどもメガネ・補聴器"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-042",
+      "name": "おこわ米八",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-043",
+      "name": "オッジ",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-044",
+      "name": "オメガ ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-045",
+      "name": "オンリーユー ★",
+      "aliases": [],
+      "floorLabel": "７階",
+      "category": "宝飾"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-046",
+      "name": "オークス ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-047",
+      "name": "懐石料理 青山",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-048",
+      "name": "カガミクリスタル ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（和洋食器）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-049",
+      "name": "神楽坂から揚げ 斉唐",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-050",
+      "name": "掛置時計 ★",
+      "aliases": [],
+      "floorLabel": "７階",
+      "category": "時計修理工房・掛置時計"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-051",
+      "name": "菓匠 清閑院",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-052",
+      "name": "片岡屏風 ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（ギフトギャラリーnanafuro）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-053",
+      "name": "カネボウ ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-054",
+      "name": "カバーマーク ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-055",
+      "name": "カプセルスクエア",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK3］（カプセルトイ）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-056",
+      "name": "鎌倉 豊島屋",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-057",
+      "name": "カルティエ",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック（時計）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-058",
+      "name": "カルディコーヒーファーム",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "グロサリー"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-059",
+      "name": "カンナムキンパ",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-060",
+      "name": "硝子工房　彩鳳 ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（和洋食器）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-061",
+      "name": "キタムラ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ハンドバッグ"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-062",
+      "name": "木村屋總本店",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "パン"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-063",
+      "name": "キャピタルコーヒー",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "お茶・コーヒー・はちみつ"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-064",
+      "name": "キュウ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（ギフトギャラリーnanafuro）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-065",
+      "name": "九州屋",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "生鮮"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-066",
+      "name": "京粕漬 魚久",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "漬物・佃煮"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-067",
+      "name": "京都・宇治式部郷",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-068",
+      "name": "崎陽軒",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-069",
+      "name": "キングセイコー ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-070",
+      "name": "キンタン イン ザ ハウス",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-071",
+      "name": "ギャラリーレア",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": null
+    },
+    {
+      "id": "tenant-sjk-odakyudept-072",
+      "name": "銀座あけぼの",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-073",
+      "name": "銀座甘楽",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-074",
+      "name": "銀座天一",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-075",
+      "name": "久世福商店",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "グロサリー"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-076",
+      "name": "九谷焼 ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（和洋食器）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-077",
+      "name": "クラランス ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-078",
+      "name": "クリステル ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-079",
+      "name": "クリスピー・クリーム・ドーナツ",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK5］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-080",
+      "name": "クリニーク ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-081",
+      "name": "クレ・ド・ポー ボーテ",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-082",
+      "name": "クレドール ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック（時計）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-083",
+      "name": "グッチ ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック（※紳士雑貨も取り扱いあり）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-084",
+      "name": "グッチ ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック（※紳士雑貨）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-085",
+      "name": "グランドセイコー ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック（時計）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-086",
+      "name": "グリーンパン ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-087",
+      "name": "グローバル ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-088",
+      "name": "桂新堂",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-089",
+      "name": "桂林",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-090",
+      "name": "ゲラン ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-091",
+      "name": "ココシュニック ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "アクセサリー・雑貨"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-092",
+      "name": "ココチビューティー ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（タオル美術館）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-093",
+      "name": "コスメデコルテ ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-094",
+      "name": "こだわりや",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK5］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-095",
+      "name": "こどもメガネ「アンファン」",
+      "aliases": [],
+      "floorLabel": "７階",
+      "category": "メガネ・こどもメガネ・補聴器"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-096",
+      "name": "コーチ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ハンドバッグ（※紳士雑貨も取り扱いあり）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-097",
+      "name": "ゴディバ",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK2］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-098",
+      "name": "ごはん遊 米八",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-099",
+      "name": "ゴールディ アッシュ・ペー・フランス ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "アクセサリー・雑貨"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-100",
+      "name": "ゴールドサロン ★",
+      "aliases": [],
+      "floorLabel": "７階",
+      "category": "宝飾"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-101",
+      "name": "魚の北辰",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "生鮮"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-102",
+      "name": "サブウェイ",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "サブウェイ"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-103",
+      "name": "サブレミシェル",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK3］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-104",
+      "name": "サムソナイト",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-105",
+      "name": "サムソナイト・ブラックレーベル",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-106",
+      "name": "サラダデリ マルゴ",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-107",
+      "name": "サロンドアルファード ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ハンドバッグ"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-108",
+      "name": "サングラス",
+      "aliases": [],
+      "floorLabel": "７階",
+      "category": "メガネ・こどもメガネ・補聴器"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-109",
+      "name": "365メソッド ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-110",
+      "name": "サンローラン ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック（紳士雑貨）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-111",
+      "name": "サンローラン ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック（※紳士雑貨も取り扱いあり）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-112",
+      "name": "資生堂",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-113",
+      "name": "シャネル ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック（※婦人服も取り扱いあり）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-114",
+      "name": "シャネル ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-115",
+      "name": "シュウ ウエムラ ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-116",
+      "name": "シュン ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-117",
+      "name": "白雪ふきん ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-118",
+      "name": "新宿高野",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-119",
+      "name": "＃新宿地下ラーメン",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK6］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-120",
+      "name": "ジップトップ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-121",
+      "name": "ジャックバニー ★",
+      "aliases": [],
+      "floorLabel": "M２階",
+      "category": "ゴルフウェア"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-122",
+      "name": "ジュリア・オージェ",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品（ウィッグ）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-123",
+      "name": "ジューススタンド バブルス",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK1］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-124",
+      "name": "叙々苑キッチン",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-125",
+      "name": "ジョー マローン ロンドン ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-126",
+      "name": "ジルスチュアート ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-127",
+      "name": "ジンズ",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "アイウェア"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-128",
+      "name": "スガハラ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（和洋食器）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-129",
+      "name": "スターバックス コーヒー",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK4］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-130",
+      "name": "スック ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-131",
+      "name": "墨繪",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK5］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-132",
+      "name": "THREE ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-133",
+      "name": "スワティ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（ギフトギャラリーnanafuro）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-134",
+      "name": "スワロフスキー ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "アクセサリー・雑貨"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-135",
+      "name": "セイコーウオッチサロン ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-136",
+      "name": "西洋銀座",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-137",
+      "name": "セント・アンドリュース ★",
+      "aliases": [],
+      "floorLabel": "M２階",
+      "category": "ゴルフウェア"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-138",
+      "name": "ゾーイ ★",
+      "aliases": [],
+      "floorLabel": "M２階",
+      "category": "ゴルフウェア"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-139",
+      "name": "タオルシンクラボ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（タオル美術館）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-140",
+      "name": "タオル美術館 ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-141",
+      "name": "田島硝子 ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（和洋食器）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-142",
+      "name": "ダミアーニ ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-143",
+      "name": "ツェラミカ アルティスティチナ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（和洋食器）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-144",
+      "name": "築地 魚弁",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-145",
+      "name": "ツボエ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-146",
+      "name": "ツヴィリング ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-147",
+      "name": "てふ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（和洋食器）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-148",
+      "name": "ディオール ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-149",
+      "name": "東京鶏肉本舗",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "生鮮"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-150",
+      "name": "時計バンド ★",
+      "aliases": [],
+      "floorLabel": "７階",
+      "category": "時計修理工房・掛置時計"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-151",
+      "name": "トム フォード ビューティ ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-152",
+      "name": "とらや",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-153",
+      "name": "とんかつ まい泉",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-154",
+      "name": "なだ万厨房",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-155",
+      "name": "ナッツファクトリー",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK3］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-156",
+      "name": "ナディア ★",
+      "aliases": [],
+      "floorLabel": "７階",
+      "category": "宝飾"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-157",
+      "name": "鍋・ケトル ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-158",
+      "name": "ナルエー ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（ギフトギャラリーnanafuro）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-159",
+      "name": "ナルミ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（和洋食器）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-160",
+      "name": "にちにち道具 ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-161",
+      "name": "ニュー・クイック",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "生鮮"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-162",
+      "name": "ニューバランスゴルフ ★",
+      "aliases": [],
+      "floorLabel": "M２階",
+      "category": "ゴルフウェア"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-163",
+      "name": "ニュービー ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（ギフトギャラリーnanafuro）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-164",
+      "name": "能作 ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（和洋食器）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-165",
+      "name": "野田琺瑯 ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-166",
+      "name": "登亭",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-167",
+      "name": "ノリタケ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（和洋食器）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-168",
+      "name": "ハウス オブ ローゼ ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-169",
+      "name": "ハオチャオズ",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-170",
+      "name": "ハリオ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-171",
+      "name": "ハートマン",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-172",
+      "name": "ハーバー ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-173",
+      "name": "バーミキュラ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-174",
+      "name": "パステル",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK2］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-175",
+      "name": "パティスリー モンシェール",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-176",
+      "name": "パンドラ ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "アクセサリー・雑貨"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-177",
+      "name": "パーカー ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ギフトサロン"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-178",
+      "name": "パーソナルアトリエ バイ プロフェリエ",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-179",
+      "name": "パーリーゲイツ ★",
+      "aliases": [],
+      "floorLabel": "M２階",
+      "category": "ゴルフウェア"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-180",
+      "name": "ヒポポタマス ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（タオル美術館）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-181",
+      "name": "ビスキュイテリエ ブルトンヌ",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-182",
+      "name": "ビレロイ＆ボッホ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（和洋食器）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-183",
+      "name": "ビームス ゴルフ ★",
+      "aliases": [],
+      "floorLabel": "M２階",
+      "category": "ゴルフウェア"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-184",
+      "name": "ピン アパレル ★",
+      "aliases": [],
+      "floorLabel": "M２階",
+      "category": "ゴルフウェア"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-185",
+      "name": "ファンケル ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-186",
+      "name": "フェイラー ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "婦人服飾雑貨"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-187",
+      "name": "深川伊勢屋",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-188",
+      "name": "フスフレーゲ",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品（フットケア）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-189",
+      "name": "フランク ミュラー",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック（時計）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-190",
+      "name": "フルラ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ハンドバッグ（※紳士鞄も取り扱いあり）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-191",
+      "name": "フレグランス ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-192",
+      "name": "フロイド ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（ギフトギャラリーnanafuro）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-193",
+      "name": "ブッツサンド×献心亭 匠",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK1］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-194",
+      "name": "ブロッサム＆ブーケ",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "パン"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-195",
+      "name": "プリンス ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-196",
+      "name": "プレザージュ ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-197",
+      "name": "プレスバターサンド",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK3］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-198",
+      "name": "プロスペックス ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-199",
+      "name": "ベルン",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-200",
+      "name": "補聴器（アイテム）",
+      "aliases": [],
+      "floorLabel": "７階",
+      "category": "メガネ・こどもメガネ・補聴器"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-201",
+      "name": "ホリエ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（和洋食器）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-202",
+      "name": "ぼんたぼんた",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK1］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-203",
+      "name": "POP UP ONE",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK3］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-204",
+      "name": "ポンパドウル",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK1］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-205",
+      "name": "ポーラ ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-206",
+      "name": "ポール ＆ ジョー ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-207",
+      "name": "マイケル・コース ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ハンドバッグ"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-208",
+      "name": "MAKANAI ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-209",
+      "name": "曲げわっぱ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（和洋食器）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-210",
+      "name": "マザーハウス",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ハンドバッグ（※紳士雑貨も取り扱いあり）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-211",
+      "name": "マスターバニーエディション ★",
+      "aliases": [],
+      "floorLabel": "M２階",
+      "category": "ゴルフウェア"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-212",
+      "name": "真多呂人形 ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（ギフトギャラリーnanafuro）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-213",
+      "name": "マッキントッシュフィロソフィー ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "婦人服飾雑貨"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-214",
+      "name": "マッキントッシュ ロンドン ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "婦人服飾雑貨"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-215",
+      "name": "マックスマテリア ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（ギフトギャラリーnanafuro）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-216",
+      "name": "マネケン",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK2］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-217",
+      "name": "マリアージュ フレール",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "お茶・コーヒー・はちみつ"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-218",
+      "name": "ミキハウス ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ギフトサロン"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-219",
+      "name": "ミキモト",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック（宝飾）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-220",
+      "name": "宮川本店",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-221",
+      "name": "京鳥",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "惣菜・弁当"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-222",
+      "name": "ミートデリカテッセン カイゼル",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "生鮮食品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-223",
+      "name": "ミート ミート ミー",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "生鮮"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-224",
+      "name": "ムーンレーベル ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "アクセサリー・雑貨"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-225",
+      "name": "メイクアップソリューション ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-226",
+      "name": "明治屋",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "グロサリー"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-227",
+      "name": "モニッケンダム ★",
+      "aliases": [],
+      "floorLabel": "７階",
+      "category": "宝飾"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-228",
+      "name": "モロゾフ",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-229",
+      "name": "モンブラン ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-230",
+      "name": "モーブッサン ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "インターナショナルブティック"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-231",
+      "name": "ヤーマン ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-232",
+      "name": "ユーハイム",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-233",
+      "name": "ヨックモック",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-234",
+      "name": "４℃ ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "アクセサリー・雑貨"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-235",
+      "name": "ラ・カスタ ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-236",
+      "name": "ラ・クローヌ ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-237",
+      "name": "ラ・ソマ ★",
+      "aliases": [],
+      "floorLabel": "７階",
+      "category": "宝飾"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-238",
+      "name": "ラッセルホブス ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-239",
+      "name": "ラ バガジェリー ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ハンドバッグ"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-240",
+      "name": "ラフリンクルズ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（ギフトギャラリーnanafuro）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-241",
+      "name": "ラブクロム ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（ギフトギャラリーnanafuro）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-242",
+      "name": "ラべイユ",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "お茶・コーヒー・はちみつ"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-243",
+      "name": "ラ・メゾン・デュ・ショコラ",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-244",
+      "name": "ラ・メール ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-245",
+      "name": "ラルフローレンホーム ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（タオル美術館）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-246",
+      "name": "ランコム ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-247",
+      "name": "ランバン オン ブルー ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "婦人服飾雑貨"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-248",
+      "name": "ランバン コレクション ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "婦人服飾雑貨"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-249",
+      "name": "リファ ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-250",
+      "name": "両口屋是清",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-251",
+      "name": "リーデル ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（和洋食器）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-252",
+      "name": "ル サロン ド ニナス",
+      "aliases": [],
+      "floorLabel": "M２階",
+      "category": "カフェ"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-253",
+      "name": "ル ビアン",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "パン"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-254",
+      "name": "ル ペパン",
+      "aliases": [],
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK3］"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-255",
+      "name": "ルマヨルカ ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（ギフトギャラリーnanafuro）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-256",
+      "name": "レオナルド ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ギフトサロン"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-257",
+      "name": "レコルト ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-258",
+      "name": "レスポートサック",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ハンドバッグ"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-259",
+      "name": "ReD★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "スリープ＆ウェルネス"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-260",
+      "name": "レミー ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-261",
+      "name": "ロイヤル・アッシャー ★",
+      "aliases": [],
+      "floorLabel": "７階",
+      "category": "宝飾"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-262",
+      "name": "ロイヤルコペンハーゲン ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（和洋食器）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-263",
+      "name": "ワインショップ・エノテカ",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "和洋酒"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-264",
+      "name": "ワック ★",
+      "aliases": [],
+      "floorLabel": "M２階",
+      "category": "ゴルフウェア"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-265",
+      "name": "和洋酒",
+      "aliases": [],
+      "floorLabel": "地下２階",
+      "category": "和洋酒"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-266",
+      "name": "ヴァンドーム青山 ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "アクセサリー・雑貨"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-267",
+      "name": "ヴァンドームブティック ★",
+      "aliases": [],
+      "floorLabel": "１階",
+      "category": "アクセサリー・雑貨"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-268",
+      "name": "ヴィタクラフト ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-269",
+      "name": "ヴィタメール",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "和洋菓子"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-270",
+      "name": "WMF ★",
+      "aliases": [],
+      "floorLabel": "２階",
+      "category": "ライフスタイル雑貨（キッチン用品）"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-271",
+      "name": "ヴェーダヴィ ★",
+      "aliases": [],
+      "floorLabel": "地下１階",
+      "category": "化粧品"
+    }
+  ],
+  "removed": []
+}

@@ -1,0 +1,59 @@
+{
+  "schema": "gteki.station/0.1",
+  "note": "小田急百貨店 新宿店 store POI, facts only. UNVERIFIED; entrances are the store's own wording, not route evidence.",
+  "sources": [
+    {
+      "id": "odakyu-dept-shinjuku-2026-10",
+      "title": "新宿店TOP | 小田急百貨店",
+      "publisher": "株式会社小田急百貨店",
+      "url": "https://www.odakyu-dept.co.jp/shinjuku/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311",
+        "date": "2026-10-24"
+      },
+      "attribution": "新宿店TOP | 小田急百貨店 (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T09:36:06Z",
+      "datasetDate": null,
+      "notes": "Store top page and 営業時間・アクセス page (https://www.odakyu-dept.co.jp/shinjuku/hour_acces/index.html) read as facts; no entrance/connection labels printed. Pages undated."
+    }
+  ],
+  "pois": [
+    {
+      "id": "shop-sjk-odakyudept",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "小田急百貨店 新宿店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyu-dept-shinjuku-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急百貨店 新宿店。入口・連絡口の表記は店舗ページに見当たらない。位置・入口は未確認（検索のみ。案内ルートなし）。店舗ページに「新宿西口ハルクで営業」との記載。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Odakyu Department Store Shinjuku. No entrance or station-connection label is printed on the store's pages. Location and entrance not verified (search only, no route). The store's page states it operates at 新宿西口ハルク (Shinjuku West Exit Hulk). Current status unknown."
+        }
+      ]
+    }
+  ],
+  "removed": []
+}
