@@ -399,6 +399,80 @@ export function tagLightmaps(root: THREE.Object3D): LightmapInfo | null {
   };
 }
 
+/** One shared kit AO atlas, as recorded from the scene (the exporter adds the file hash when it writes the sidecar). */
+export interface AoAtlasSource {
+  /** Station-relative URI the kit loaded the atlas from (recorded by the export's `loadTexture` shim). */
+  uri: string;
+  /** three `aoMap.channel`: 1 is TEXCOORD_1, which glTF keeps and Godot imports as UV2. */
+  channel: number;
+  /** three `aoMap.colorSpace`; `NoColorSpace` is the empty string (linear data). */
+  color_space: string;
+  flip_y: boolean;
+  /** Meshes with at least one surface bound to this kind's atlas. */
+  meshes: number;
+  /** Material slots bound to this kind's atlas. */
+  surfaces: number;
+}
+
+/** One sidecar `ao_atlas_bindings` entry: the scene's record plus the station file's SHA-256. */
+export interface AoAtlasBinding extends AoAtlasSource {
+  /** SHA-256 of the station file at `uri`; computed by the exporter, because this module never touches the filesystem. */
+  sha256: string;
+}
+
+/** What this module records about the kit's shared AO atlases; the exporter adds the hashes for the sidecar. */
+export interface AoAtlasInfo {
+  /** Atlas kind (e.g. "nosing") → source; empty when the scene uses no kit AO atlas. */
+  bindings: Record<string, AoAtlasSource>;
+  /** `aoMap`s that are not kit atlases; they are stripped with every other texture, never guessed. */
+  warnings: string[];
+}
+
+/**
+ * The kit ships ambient occlusion as shared atlases, one per kind (Lane E #391): the web loader puts the PNG on
+ * `material.aoMap` with `channel = 1` (TEXCOORD_1), `colorSpace = NoColorSpace` and `flipY = false`, and marks the
+ * texture `userData.gteki_uri` / `userData.gteki_atlas_kind`. glTF carries neither the AO map nor its UV-set choice,
+ * so record what `buildScene` did, as `tagLightmaps` does for the bake: every atlas slot gets its surface index →
+ * kind in `userData.gteki_ao_atlas_surfaces` (a glTF extras object, so its keys are strings), and each kind is
+ * described once in the returned bindings (the exporter adds the sidecar `ao_atlas_bindings` hashes). Throws rather
+ * than guess when a kind has two URIs, an atlas has no recorded source URI, or it samples a channel other than 1.
+ *
+ * AO maps that are not kit atlases (no `gteki_atlas_kind`) are only a warning: every texture is stripped from the
+ * snapshot, so they cannot be re-applied and are not an exporter error.
+ */
+export function tagAoAtlases(root: THREE.Object3D): AoAtlasInfo {
+  const atlases = new Map<string, AoAtlasSource>();
+  const warnings: string[] = [];
+  let nonAtlas = 0;
+  root.traverse((object) => {
+    if (!isMesh(object)) return;
+    const surfaces: Record<string, string> = {};
+    materialsOf(object).forEach((material, index) => {
+      const map = (material as THREE.MeshStandardMaterial).aoMap ?? null;
+      if (map === null) return;
+      const kind = map.userData?.gteki_atlas_kind;
+      const uri = map.userData?.gteki_uri;
+      if (typeof kind !== "string" || kind.length === 0) {
+        nonAtlas += 1;
+        return;
+      }
+      if (typeof uri !== "string" || uri.length === 0) throw new Error(`AO atlas for kind "${kind}" has no recorded source URI (ctx.loadTexture must record it)`);
+      if (map.channel !== 1) throw new Error(`AO atlas for kind "${kind}" uses channel ${map.channel}; only channel 1 (TEXCOORD_1 → UV2) can be applied`);
+      const known = atlases.get(kind);
+      if (known === undefined) atlases.set(kind, { uri, channel: map.channel, color_space: map.colorSpace, flip_y: map.flipY, meshes: 0, surfaces: 0 });
+      else if (known.uri !== uri) throw new Error(`AO atlas kind "${kind}" maps to two URIs (${known.uri}, ${uri}); the snapshot records one per kind (not guessed)`);
+      surfaces[String(index)] = kind;
+    });
+    const kinds = new Set(Object.values(surfaces));
+    if (kinds.size === 0) return;
+    object.userData.gteki_ao_atlas_surfaces = surfaces;
+    for (const kind of kinds) atlases.get(kind)!.meshes += 1;
+    for (const kind of Object.values(surfaces)) atlases.get(kind)!.surfaces += 1;
+  });
+  if (nonAtlas > 0) warnings.push(`${nonAtlas} aoMap slot(s) are not kit atlases (no userData.gteki_atlas_kind); every texture is stripped from the snapshot, so they are not re-applied`);
+  return { bindings: Object.fromEntries(atlases), warnings };
+}
+
 /** Detaches every texture from every material (their canvas/lightmap content is placeholder under Node). */
 export function stripTextures(root: THREE.Object3D): number {
   const seen = new Set<THREE.Material>();

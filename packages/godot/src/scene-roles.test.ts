@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import { sceneFromGlbRoles, seeThroughMeshes, type StationScene } from "@gteki/scene-api";
-import { AMBIENT_ROLES, CAMERA_ROLES, COLLIDER_ROLES, SEE_THROUGH_ROLES, WALKABLE_ROLES, bakeInstancedMeshes, categoryOf, dropDynamicObjects, stripTextures, tagLightmaps, tagSceneRoles } from "./scene-roles.ts";
+import { AMBIENT_ROLES, CAMERA_ROLES, COLLIDER_ROLES, SEE_THROUGH_ROLES, WALKABLE_ROLES, bakeInstancedMeshes, categoryOf, dropDynamicObjects, stripTextures, tagAoAtlases, tagLightmaps, tagSceneRoles } from "./scene-roles.ts";
 import { approximateTextWidth } from "./headless-dom.ts";
 
 const named = (name: string, role?: string) => {
@@ -330,6 +330,69 @@ describe("tagLightmaps", () => {
     const anonymous = new THREE.Group();
     anonymous.add(lit(new THREE.Texture()));
     expect(() => tagLightmaps(anonymous)).toThrow(/no recorded source URI/);
+  });
+});
+
+describe("tagAoAtlases", () => {
+  const atlas = (kind: string, uri = `kit/catalog/high/atlas/${kind}_ao.png`) => {
+    const texture = new THREE.Texture();
+    texture.userData = { gteki_uri: uri, gteki_atlas_kind: kind };
+    texture.channel = 1;
+    texture.colorSpace = THREE.NoColorSpace;
+    texture.flipY = false;
+    return texture;
+  };
+  const withAo = (aoMap: THREE.Texture | null) => new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ aoMap }));
+
+  it("flags the atlas surfaces and describes each kind once", () => {
+    // The kit shares one material per kind: two meshes use the same material instance.
+    const shared = new THREE.MeshStandardMaterial({ aoMap: atlas("nosing") });
+    const first = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), shared);
+    const second = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), shared);
+    const mixed = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), [new THREE.MeshBasicMaterial(), new THREE.MeshStandardMaterial({ aoMap: atlas("nosing") })]);
+    const nonAtlas = withAo(new THREE.Texture());
+    const none = named("none");
+    const root = new THREE.Group();
+    root.add(first, second, mixed, nonAtlas, none);
+    const info = tagAoAtlases(root);
+    expect(first.userData.gteki_ao_atlas_surfaces).toEqual({ 0: "nosing" });
+    expect(second.userData.gteki_ao_atlas_surfaces).toEqual({ 0: "nosing" });
+    expect(mixed.userData.gteki_ao_atlas_surfaces).toEqual({ 1: "nosing" });
+    expect(nonAtlas.userData.gteki_ao_atlas_surfaces).toBeUndefined();
+    expect(none.userData.gteki_ao_atlas_surfaces).toBeUndefined();
+    expect(info.bindings).toEqual({
+      nosing: { uri: "kit/catalog/high/atlas/nosing_ao.png", channel: 1, color_space: "", flip_y: false, meshes: 3, surfaces: 3 },
+    });
+    expect(info.warnings).toHaveLength(1);
+    expect(info.warnings[0]).toMatch(/1 aoMap slot\(s\) are not kit atlases/);
+  });
+
+  it("returns no bindings, but still warns, when no material carries an atlas", () => {
+    const root = new THREE.Group();
+    root.add(withAo(new THREE.Texture()), named("none"));
+    const info = tagAoAtlases(root);
+    expect(info.bindings).toEqual({});
+    expect(info.warnings).toHaveLength(1);
+    expect(tagAoAtlases(new THREE.Group())).toEqual({ bindings: {}, warnings: [] });
+  });
+
+  it("throws rather than guess when an atlas is ambiguous or incomplete", () => {
+    const twoUris = new THREE.Group();
+    twoUris.add(withAo(atlas("nosing")), withAo(atlas("nosing", "other/nosing_ao.png")));
+    expect(() => tagAoAtlases(twoUris)).toThrow(/maps to two URIs/);
+
+    const anonymous = new THREE.Group();
+    const unrecorded = new THREE.Texture();
+    unrecorded.userData = { gteki_atlas_kind: "nosing" };
+    unrecorded.channel = 1;
+    anonymous.add(withAo(unrecorded));
+    expect(() => tagAoAtlases(anonymous)).toThrow(/no recorded source URI/);
+
+    const wrongChannel = new THREE.Group();
+    const channel = atlas("nosing");
+    channel.channel = 0;
+    wrongChannel.add(withAo(channel));
+    expect(() => tagAoAtlases(wrongChannel)).toThrow(/uses channel 0/);
   });
 });
 

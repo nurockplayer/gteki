@@ -6,6 +6,7 @@ extends SceneTree
 const Scene = preload("res://addons/gteki/gteki_scene.gd")
 const Assets = preload("res://addons/gteki/gteki_assets.gd")
 const Lightmap = preload("res://addons/gteki/gteki_lightmap.gd")
+const AoAtlas = preload("res://addons/gteki/gteki_ao_atlas.gd")
 const Bridge = preload("res://addons/gteki/gteki_bridge.gd")
 const EPSILON := 0.001
 const AABB_TOLERANCE := 0.01
@@ -38,6 +39,7 @@ func run() -> void:
 	check_mapping_constants()
 	check_hide_rules()
 	check_hide_edge_cases()
+	check_ao_atlas()
 	for i in range(1, args.size()):
 		await check_station(args[0].path_join(args[i]), args[i])
 	finish()
@@ -101,6 +103,128 @@ func check_hide_edge_cases() -> void:
 	painted.free()
 
 
+## Lane E #391: a kit AO atlas applies to exactly the flagged surfaces, one Texture2D per kind is shared, unflagged
+## surfaces stay untouched, and a sha mismatch fails loudly instead of sampling the wrong atlas.
+func check_ao_atlas() -> void:
+	var dir := OS.get_temp_dir().path_join("gteki-ao-atlas-test-%d" % Time.get_ticks_usec())
+	check(DirAccess.make_dir_recursive_absolute(dir) == OK, "ao: temp dir for the synthetic atlas")
+	var uri := "kit/catalog/high/atlas/nosing_ao.png"
+	var path := dir.path_join(uri)
+	check(DirAccess.make_dir_recursive_absolute(path.get_base_dir()) == OK, "ao: temp atlas folders")
+	var image := Image.create(4, 4, false, Image.FORMAT_RGBA8)
+	image.fill(Color(1.0, 1.0, 1.0, 1.0))
+	image.set_pixel(0, 0, Color(0.5, 0.5, 0.5, 1.0))
+	check(image.save_png(path) == OK, "ao: synthetic atlas PNG saves")
+	var sha := FileAccess.get_sha256(path)
+	check(not sha.is_empty(), "ao: synthetic atlas has a sha256")
+	var block := {"nosing": {"uri": uri, "sha256": sha, "channel": 1, "color_space": "", "flip_y": false, "meshes": 2, "surfaces": 3}}
+
+	var root := _ao_root()
+	var applier := AoAtlas.new()
+	check(applier.apply(root, block, "", dir), "ao: the synthetic atlas applies: %s" % str(applier.issues))
+	check(applier.issues.is_empty(), "ao: no issues for the matching atlas")
+	check(applier.meshes == 2 and applier.surfaces == 3, "ao: applied mesh/surface counts (got %d/%d)" % [applier.meshes, applier.surfaces])
+	check(applier.textures.size() == 1, "ao: one Texture2D per kind")
+	var texture: Variant = applier.textures.get("nosing", null)
+	check(texture is Texture2D, "ao: the nosing atlas is a Texture2D")
+	var first: MeshInstance3D = root.get_node("first")
+	var second: MeshInstance3D = root.get_node("second")
+	var untouched: MeshInstance3D = root.get_node("untouched")
+	_check_ao_surface(first, 0, texture)
+	_check_ao_surface(first, 1, texture)
+	_check_ao_surface(second, 0, texture)
+	check(untouched.get_surface_override_material(0) == null, "ao: an unflagged surface gets no override")
+	var untouched_source := untouched.mesh.surface_get_material(0) as BaseMaterial3D
+	check(untouched_source != null and not untouched_source.ao_enabled, "ao: an unflagged surface keeps its material")
+	check((texture as Texture2D).get_image().has_mipmaps(), "ao: the atlas texture is mipmapped")
+	root.free()
+
+	# Surfaces that shared one snapshot material share one AO copy (the web's one material per kind, so it can batch).
+	var shared_root := _ao_root()
+	var shared_first: MeshInstance3D = shared_root.get_node("first")
+	var shared_second: MeshInstance3D = shared_root.get_node("second")
+	shared_second.mesh.surface_set_material(0, shared_first.mesh.surface_get_material(0))
+	var sharing := AoAtlas.new()
+	check(sharing.apply(shared_root, block, "", dir), "ao: the shared-material case applies: %s" % str(sharing.issues))
+	check(shared_first.get_surface_override_material(0) == shared_second.get_surface_override_material(0), "ao: one shared snapshot material gets one shared AO copy")
+	check(shared_first.get_surface_override_material(0) != shared_first.get_surface_override_material(1), "ao: distinct snapshot materials keep distinct AO copies")
+	shared_root.free()
+
+	# A sha mismatch is an issue and applies nothing, rather than sampling the wrong atlas.
+	var mismatched_root := _ao_root()
+	var mismatched := block.duplicate(true)
+	mismatched["nosing"]["sha256"] = "0000000000000000000000000000000000000000000000000000000000000000"
+	var wrong := AoAtlas.new()
+	check(not wrong.apply(mismatched_root, mismatched, "", dir), "ao: a sha mismatch fails")
+	check(wrong.issues.size() == 1 and str(wrong.issues[0]).contains("sha256"), "ao: the sha mismatch is reported (got %s)" % str(wrong.issues))
+	check(wrong.textures.is_empty() and wrong.meshes == 0 and wrong.surfaces == 0, "ao: a mismatched atlas applies nothing")
+	check((mismatched_root.get_node("first") as MeshInstance3D).get_surface_override_material(0) == null, "ao: a mismatched atlas leaves surfaces untouched")
+	mismatched_root.free()
+
+	# Malformed extras are reported instead of guessed.
+	var malformed_root := _ao_root()
+	(malformed_root.get_node("second") as MeshInstance3D).set_meta("extras", {"gteki_ao_atlas_surfaces": ["nosing"]})
+	var malformed := AoAtlas.new()
+	check(not malformed.apply(malformed_root, block, "", dir), "ao: malformed extras fail")
+	check(not malformed.issues.is_empty() and str(malformed.issues[0]).contains("malformed"), "ao: malformed extras are reported (got %s)" % str(malformed.issues))
+	malformed_root.free()
+
+	DirAccess.remove_absolute(path)
+	DirAccess.remove_absolute(dir)
+
+
+## Two meshes sharing one kind (three atlas surfaces in total) and an unflagged third mesh. Each surface is a quad
+## with UV and UV2, as the glTF importer produces from TEXCOORD_0/TEXCOORD_1.
+func _ao_root() -> Node3D:
+	var root := Node3D.new()
+	var first := _ao_mesh("first", 2)
+	first.set_meta("extras", {"gteki_ao_atlas_surfaces": {"0": "nosing", "1": "nosing"}})
+	var second := _ao_mesh("second", 1)
+	second.set_meta("extras", {"gteki_ao_atlas_surfaces": {"0": "nosing"}})
+	var untouched := _ao_mesh("untouched", 1)
+	root.add_child(first)
+	root.add_child(second)
+	root.add_child(untouched)
+	return root
+
+
+func _ao_mesh(node_name: String, surfaces: int) -> MeshInstance3D:
+	var mesh := ArrayMesh.new()
+	for i in range(surfaces):
+		var arrays := []
+		arrays.resize(Mesh.ARRAY_MAX)
+		arrays[Mesh.ARRAY_VERTEX] = PackedVector3Array([Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(1, 1, 0), Vector3(0, 1, 0)])
+		arrays[Mesh.ARRAY_NORMAL] = PackedVector3Array([Vector3(0, 0, 1), Vector3(0, 0, 1), Vector3(0, 0, 1), Vector3(0, 0, 1)])
+		arrays[Mesh.ARRAY_TEX_UV] = PackedVector2Array([Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)])
+		arrays[Mesh.ARRAY_TEX_UV2] = PackedVector2Array([Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)])
+		arrays[Mesh.ARRAY_INDEX] = PackedInt32Array([0, 1, 2, 0, 2, 3])
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		var material := StandardMaterial3D.new()
+		material.resource_name = "%s_%d" % [node_name, i]
+		mesh.surface_set_material(i, material)
+	var instance := MeshInstance3D.new()
+	instance.name = node_name
+	instance.mesh = mesh
+	return instance
+
+
+func _check_ao_surface(mesh: MeshInstance3D, index: int, texture: Variant) -> void:
+	var material: Material = mesh.get_surface_override_material(index)
+	check(material is BaseMaterial3D, "ao: surface %s/%d gets an override material" % [mesh.name, index])
+	if not material is BaseMaterial3D:
+		return
+	var base: BaseMaterial3D = material
+	check(base.ao_enabled, "ao: surface %s/%d has ao_enabled" % [mesh.name, index])
+	check(texture is Texture2D and base.ao_texture == texture, "ao: surface %s/%d shares the kind's one texture" % [mesh.name, index])
+	check(base.ao_on_uv2, "ao: surface %s/%d samples UV2" % [mesh.name, index])
+	check(base.ao_texture_channel == BaseMaterial3D.TEXTURE_CHANNEL_RED, "ao: surface %s/%d samples the R channel" % [mesh.name, index])
+	check(is_zero_approx(base.ao_light_affect), "ao: surface %s/%d keeps ao_light_affect at its default" % [mesh.name, index])
+	# The override is a duplicate; the snapshot material it came from stays untouched.
+	check(base != mesh.mesh.surface_get_material(index), "ao: surface %s/%d override is a duplicate" % [mesh.name, index])
+	var source := mesh.mesh.surface_get_material(index) as BaseMaterial3D
+	check(source != null and not source.ao_enabled and source.ao_texture == null, "ao: the snapshot material of %s/%d is untouched" % [mesh.name, index])
+
+
 func check_mapping_constants() -> void:
 	# ENU (east, north, up) to Godot (x, z, -y): north is -Z, up is +Y.
 	check(Scene.enu_to_godot(1, 2, 3).is_equal_approx(Vector3(1, 3, -2)), "ENU→Godot mapping (x, z, -y)")
@@ -128,6 +252,7 @@ func check_station(dir: String, id: String) -> void:
 	check(scene.counts.hidden == int(expected.hidden), "%s: hidden source meshes %d == sidecar %d" % [id, scene.counts.hidden, int(expected.hidden)])
 	_check_hidden_sources(scene, id)
 	_check_lightmap(scene, id)
+	_check_ao_atlas_station(scene, id)
 	check(scene.counts.walkable >= 1, "%s: at least one walkable mesh" % id)
 	# Mesh colliders and wall segments are both collision; a station may use only one kind (Shinjuku: walls only).
 	var walls: Array = sidecar.walls
@@ -265,6 +390,15 @@ func _check_lightmap_off(dir: String) -> void:
 	check(not scene.lightmap_applied and scene.lightmap_meshes == 0, "ikebukuro: --lightmap=off applies no lightmap")
 	holder.queue_free()
 	await process_frame
+
+
+## Lane E #391: today no station ships a kit AO atlas, so its sidecar has no block and nothing may be applied.
+func _check_ao_atlas_station(scene: Scene, id: String) -> void:
+	var block: Variant = scene.sidecar.get("ao_atlas_bindings", {})
+	if block is Dictionary and block.is_empty():
+		check(not scene.ao_atlas_applied and scene.ao_atlas_meshes == 0 and scene.ao_atlas_surfaces == 0, "%s: no AO atlas block and none applied" % id)
+		return
+	check(block is Dictionary and scene.ao_atlas_applied, "%s: the recorded AO atlases are applied" % id)
 
 
 func _station_dir(id: String) -> String:

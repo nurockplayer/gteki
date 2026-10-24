@@ -8,6 +8,8 @@
  * scene relied on, and everything dropped or degraded, is listed in the sidecar `warnings`.
  */
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -19,7 +21,7 @@ import { enuToRenderer } from "@gteki/geo";
 import { parseStationFiles } from "@gteki/schema";
 import { glbPrimitivePlugin, type SceneContext, type StationScene, type StationSceneModule } from "@gteki/scene-api";
 import { headlessThree, installHeadlessDom, newShimUsage, stubRenderer, type ShimUsage } from "./headless-dom.ts";
-import { bakeInstancedMeshes, categoryOf, dropDynamicObjects, stripTextures, tagLightmaps, tagSceneRoles, type LightmapInfo, type RoleSummary } from "./scene-roles.ts";
+import { bakeInstancedMeshes, categoryOf, dropDynamicObjects, stripTextures, tagAoAtlases, tagLightmaps, tagSceneRoles, type AoAtlasBinding, type LightmapInfo, type RoleSummary } from "./scene-roles.ts";
 
 export const SIDECAR_SCHEMA = "gteki.godot-scene/0.1" as const;
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -47,6 +49,8 @@ export interface SceneSidecar {
   };
   /** The scene's baked lightmap, when it has one (three material state recorded before textures are stripped). */
   lightmap?: LightmapInfo;
+  /** The kit's shared AO atlases by kind, when the scene uses any (recorded before textures are stripped). */
+  ao_atlas_bindings?: Record<string, AoAtlasBinding>;
   /** Everything a shim degraded or the exporter dropped. Empty only if nothing was. */
   warnings: string[];
 }
@@ -141,10 +145,16 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
   if (baked > 0) warnings.push(`${baked} InstancedMesh object(s) (escalator steps, platform-door leaves) baked into static merged meshes at their update(0, 0) pose; Godot 4.7 has no EXT_mesh_gpu_instancing import, per-instance colours and per-frame animation are not exported`);
   const roles = tagSceneRoles(scene);
   warnings.push(...roles.warnings);
-  // Before stripTextures: the lightmap lives on the material and would otherwise vanish with every other texture.
+  // Before stripTextures: the lightmap and kit AO atlases live on the material and would otherwise vanish with every
+  // other texture. The hash pins the exact station file, so the Godot side can refuse a stale atlas.
   const lightmap = tagLightmaps(scene.root);
+  const aoAtlases = tagAoAtlases(scene.root);
+  const aoAtlasBindings: Record<string, AoAtlasBinding> = {};
+  for (const [kind, atlas] of Object.entries(aoAtlases.bindings)) aoAtlasBindings[kind] = { ...atlas, sha256: createHash("sha256").update(readFileSync(inStation(atlas.uri))).digest("hex") };
+  warnings.push(...aoAtlases.warnings);
+  const atlasKinds = Object.keys(aoAtlasBindings).length;
   const stripped = stripTextures(scene.root);
-  warnings.push(`all material textures omitted (${stripped} slot(s)); only base colours, names and UVs (incl. TEXCOORD_1) are kept, so the snapshot is untextured and unlit${lightmap === null ? "" : "; the baked lightmap is described in the lightmap block and re-applied by the Godot client (G-4a)"}`);
+  warnings.push(`all material textures omitted (${stripped} slot(s)); only base colours, names and UVs (incl. TEXCOORD_1) are kept, so the snapshot is untextured and unlit${lightmap === null ? "" : "; the baked lightmap is described in the lightmap block and re-applied by the Godot client (G-4a)"}${atlasKinds === 0 ? "" : `; ${atlasKinds} kit AO atlas kind(s) are described in ao_atlas_bindings and re-applied by the Godot client (Lane E #391)`}`);
   if (usage.canvases > 0) warnings.push(`${usage.canvases} canvas(es) were no-op 2D contexts (blank): procedural textures and sign faces are placeholders, and ${usage.measuredTexts} measureText call(s) used an em-width estimate that may size signs differently from the browser`);
   if (usage.imageDataReads > 0) warnings.push(`${usage.imageDataReads} canvas getImageData read(s) returned zeros`);
   if (usage.pmremEnvironments > 0) warnings.push(`${usage.pmremEnvironments} PMREM environment map(s) stubbed (no GPU): reflections absent`);
@@ -176,6 +186,7 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
     environment: scene.environment ?? {},
     counts,
     ...(lightmap === null ? {} : { lightmap }),
+    ...(atlasKinds === 0 ? {} : { ao_atlas_bindings: aoAtlasBindings }),
     reference: {
       spawnPointsRenderer: spawns.map((p) => enuToRenderer(p)),
       wallSamplesRenderer: wallSamples,
