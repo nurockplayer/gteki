@@ -161,7 +161,8 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
     holds.push(overlap?.mesh_coverage?.hold??'Mesh-catalog coverage UNKNOWN; HOLD for geometry/network pairing.');
     if(network?.attribute_decoding)holds.push('Applicable walking-network specification version remains UNKNOWN; decoded labels and rank checks are literal consistency evidence only.');
     if(station.id==='ikebukuro')holds.push('R1 CRS is INFERRED_FROM_SPEC; all endpoint and overlap metrics relying on it are CONDITIONAL_ON_INFERRED_CRS. Distance evidence cannot identify the datum.');
-    holds.push('POI, S03 and related-layer publish gates remain HOLD. Rights clearance never establishes navigability.');
+    // The S03 gate moved on 2026-10-24 (gteki-1b WP7/WP8 rulings); the rest of the lane stays HOLD.
+    holds.push('S03 names are CONDITIONAL (search only). S03 gate and transfer approximate representative points are CONDITIONAL (search display, ±max(5 m, polygon radius), NOT_FOR_ROUTING, floor UNVERIFIED, not routing). S03 platform and all other geometry remain HOLD. POI and related-layer publish gates remain HOLD. Rights clearance never establishes navigability.');
     for (const row of rightsContent) if(row.verdict !== 'CLEARED_WITH_CONDITIONS') holds.push(`${row.source_id}${row.layer ? ` / ${row.layer}` : ''}: ${row.verdict}; ${row.reason}; ${rightsScopeMarkdown(row)}`);
     holds.push(...missingEvidenceHolds(station.id, poiById, rightsById, manifestStations, admittedPoiIds));
     // Class (a) values quoted in this packet (CityGML names, Ikebukuro network values, MLIT specification labels) keep their credit.

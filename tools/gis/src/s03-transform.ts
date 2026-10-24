@@ -40,6 +40,8 @@ export type Project = (lat: number, lon: number) => Point2;
 export interface S03UnclosedRingDefect {
   kind: typeof UNCLOSED_RING_DEFECT;
   levelId: number;
+  /** The excluded feature's own source id when it has one; private provenance only, never the public receipt. */
+  featureId: number | null;
   featureIndex: number;
   polygonIndex: number;
   ringIndex: number;
@@ -55,6 +57,8 @@ export interface S03UnclosedRingDefect {
 export interface S03HoleOutsideShellDefect {
   kind: typeof HOLE_OUTSIDE_SHELL_DEFECT;
   levelId: number;
+  /** The excluded feature's own source id when it has one; private provenance only, never the public receipt. */
+  featureId: number | null;
   featureIndex: number;
   polygonIndex: number;
   ringIndex: number;
@@ -233,9 +237,17 @@ export function residualStats(values: readonly number[]) {
 interface S03Node { index: number; sourceId: number; levelId: number; native: Point2 }
 /** Nav link: `direction` is the source's `d` (1 forward, 2 reverse, 3 both); `dz` is the source's vertical step when present. */
 export interface S03Link { sourceId: number; n1: number; n2: number; direction: number; dz: number | null }
-interface S03Level {
-  id: number; ordinal: number; polygons: Polygon2[]; nonPolygonFeatures: number; memberSha256: string;
+/**
+ * One used polygon feature, kept with the source feature id so a caller can locate it again. `featureId` is the
+ * numeric id of the feature in its `geojson-level-geom-*.geojson` member, never a com-entity id; features excluded by a
+ * source-defect ruling never appear here, because their geometry is not used.
+ */
+export interface S03FeatureGeometry { featureIndex: number; featureId: number | null; polygons: Polygon2[] }
+export interface S03Level {
+  /** `label` is the source level label that the asserted ordinal map was applied to; it never enters a public receipt. */
+  id: number; label: string; ordinal: number; polygons: Polygon2[]; nonPolygonFeatures: number; memberSha256: string;
   featuresTotal: number; featuresUsed: number; featuresExcludedUnclosedRing: number; featuresExcludedHoleOutsideShell: number;
+  features: S03FeatureGeometry[];
 }
 export interface S03Inputs {
   navTransform: Affine; drawingTransform: Affine; drawingId: number;
@@ -243,8 +255,8 @@ export interface S03Inputs {
   topology: { rings_checked: number; rings_skipped_large: number; hole_shell_touches: number };
   navSha256: string; mapSha256: string;
 }
-// Comparison labels from the note, never physical elevations; source zlevel is deliberately unused.
-const FLOOR_ORDINALS: Readonly<Record<string, number>> = { B5F: -5, B4F: -4, B3F: -3, MB2F: -2.5, B2F: -2, B1F: -1, M1F: -0.5, '1F': 1, '2F': 2, '3F': 3, '4F': 4 };
+/** Asserted comparison ordinals from WP7: source level label to our floor ordinal. Never a physical elevation; source zlevel is deliberately unused. */
+export const S03_FLOOR_ORDINALS: Readonly<Record<string, number>> = { B5F: -5, B4F: -4, B3F: -3, MB2F: -2.5, B2F: -2, B1F: -1, M1F: -0.5, '1F': 1, '2F': 2, '3F': 3, '4F': 4 };
 
 /** Guard all string leaves, including nested/localized properties and nav tuple properties, without a length exemption. */
 export function collectS03Strings(value: unknown, into = new Set<string>()): Set<string> {
@@ -335,15 +347,19 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
     const level = raw as { id: number; properties: { name: string } }, label = level.properties.name;
     if (levelIds.has(level.id)) fail(mapName, 'duplicate level id');
     levelIds.add(level.id);
-    if (!Object.hasOwn(FLOOR_ORDINALS, label)) fail(mapName, 'level has no comparison ordinal in the research rule');
+    if (!Object.hasOwn(S03_FLOOR_ORDINALS, label)) fail(mapName, 'level has no comparison ordinal in the research rule');
     const member = `geojson-level-geom-${label}.geojson`, doc = required(member);
     noCrsOverride(doc, member);
     if (doc.type !== 'FeatureCollection' || doc.id !== level.id || doc.drawing_id !== drawingId || !Array.isArray(doc.features)) fail(member, 'invalid collection, level id or drawing id');
-    const polygons: Polygon2[] = [];
+    const polygons: Polygon2[] = [], usedFeatures: S03FeatureGeometry[] = [];
     let nonPolygonFeatures = 0, featuresUsed = 0, featuresExcludedUnclosedRing = 0, featuresExcludedHoleOutsideShell = 0;
     const features = doc.features as unknown[];
     features.forEach((rawFeature, featureIndex) => {
       if (!record(rawFeature) || rawFeature.type !== 'Feature' || !record(rawFeature.geometry)) fail(member, 'invalid feature/geometry');
+      // A feature id is optional in the source format, but a present one that is not a positive safe integer is malformed.
+      const rawFeatureId = (rawFeature as JsonObject).id;
+      if (rawFeatureId !== undefined && !id(rawFeatureId)) fail(member, `feature ${featureIndex} has an invalid id`);
+      const featureId = rawFeatureId === undefined ? null : rawFeatureId as number;
       const geometry = (rawFeature as JsonObject).geometry as JsonObject;
       const parts: unknown[] = [];
       if (geometry.type === 'Polygon') parts.push(geometry.coordinates);
@@ -391,7 +407,7 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
         // Whole-feature exclusion, first offending ring only; reported by numeric level id and zero-based indexes. The
         // endpoints are the source's complete tuples, so a ring unclosed only in its third value keeps both endpoints.
         featuresExcludedUnclosedRing++;
-        sourceDefects.push({ kind: UNCLOSED_RING_DEFECT, levelId: level.id, featureIndex, polygonIndex: unclosed.polygonIndex, ringIndex: unclosed.ringIndex,
+        sourceDefects.push({ kind: UNCLOSED_RING_DEFECT, levelId: level.id, featureId, featureIndex, polygonIndex: unclosed.polygonIndex, ringIndex: unclosed.ringIndex,
           first: [...unclosed.positions[0]!], last: [...unclosed.positions.at(-1)!] });
         return;
       }
@@ -401,7 +417,7 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
         if (holeIndex < 0) continue;
         const hole = rings[holeIndex + 1]!, flat = horizontal(hole);
         featuresExcludedHoleOutsideShell++;
-        sourceDefects.push({ kind: HOLE_OUTSIDE_SHELL_DEFECT, levelId: level.id, featureIndex, polygonIndex, ringIndex: holeIndex + 1,
+        sourceDefects.push({ kind: HOLE_OUTSIDE_SHELL_DEFECT, levelId: level.id, featureId, featureIndex, polygonIndex, ringIndex: holeIndex + 1,
           vertices: hole.filter((_, index) => !ringContainsInclusive(flat[index]!, shell)), shell: rings[0]! });
         return;
       }
@@ -412,12 +428,14 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
       }
       topology.hole_shell_touches += holeShellTouches;
       featuresUsed++;
-      for (const part of parsed) polygons.push(part.rings.map(horizontal));
+      const featurePolygons = parsed.map(({ rings }) => rings.map(horizontal));
+      for (const featurePolygon of featurePolygons) polygons.push(featurePolygon);
+      usedFeatures.push({ featureIndex, featureId, polygons: featurePolygons });
     });
     // A level whose polygon features were all excluded stays in the output with null inside metrics; a level with no polygon feature at all still fails.
     if (!polygons.length && !featuresExcludedUnclosedRing && !featuresExcludedHoleOutsideShell) fail(member, 'no polygons to test');
-    return { id: level.id, ordinal: FLOOR_ORDINALS[label]!, polygons, nonPolygonFeatures, memberSha256: sha256(members.get(member)!.data),
-      featuresTotal: features.length, featuresUsed, featuresExcludedUnclosedRing, featuresExcludedHoleOutsideShell };
+    return { id: level.id, label, ordinal: S03_FLOOR_ORDINALS[label]!, polygons, nonPolygonFeatures, memberSha256: sha256(members.get(member)!.data),
+      featuresTotal: features.length, featuresUsed, featuresExcludedUnclosedRing, featuresExcludedHoleOutsideShell, features: usedFeatures };
   });
   if (!Array.isArray(nd.l) || nd.l.length !== levels.length || new Set(nd.l.map(l => record(l) ? l.id : null)).size !== levels.length || nd.l.some(l => !record(l) || !levelIds.has(l.id as number))) fail(navName, 'drawing levels do not match com-map.geojson');
   if (!Array.isArray(nav.n) || !nav.n.length) fail(navName, 'missing nodes');
