@@ -34,7 +34,7 @@ import { createAvatarRig, type AvatarSelection } from "./avatarSelection.ts";
 import { avatarMotion } from "./avatarMotion.ts";
 import { contactShadow } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
-import { CAST_RETUNE_M, SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, setCasters, shadowYRange, type ShadowCandidate } from "./shadows.ts";
+import { SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, needsCasterRetune, setCasters, shadowFitRange, type ShadowCandidate } from "./shadows.ts";
 import { buildGraphView, type GraphView } from "./graphView.ts";
 import { Input } from "./input.ts";
 import { DEFAULT_GROUND, acceptGround, angleDelta, cumulativeLengths, resolveWalls, samplePolyline, wallToRenderer, type Segment2 } from "./walker.ts";
@@ -518,9 +518,13 @@ export class Explorer {
    */
   private attachShadows(root: THREE.Object3D, focus: THREE.Vector3 | null = null, halfExtentM = SHADOW_HALF_EXTENT_M, floorY: number | null = focus ? focus.y : null): { casters: number; receivers: number } {
     this.shadowFit = null;
-    const r = applyStationShadows(root, this.quality, this.lighting);
-    if (r.bounds.isEmpty()) return r;
-    this.shadowFit = { yRange: shadowYRange(r.bounds), candidates: r.candidates, tallCandidates: r.tallCandidates, casters: 0, castFloorY: NaN, receivers: r.receivers, fitted: null, walkHalf: halfExtentM, focus, floorY };
+    // The caster mask is applied at attach (shadows.ts), with the walker's feet: no frame has the ceilings casting.
+    const feetY = floorY ?? this.pos.y;
+    const r = applyStationShadows(root, this.quality, this.lighting, feetY);
+    const yRange = shadowFitRange(r.bounds);
+    // Nothing to fit (no drawn geometry), or a non-finite box (a mesh with NaN positions): following it would throw every frame.
+    if (!yRange) return r;
+    this.shadowFit = { yRange, candidates: r.candidates, tallCandidates: r.tallCandidates, casters: r.casters, castFloorY: feetY, receivers: r.receivers, fitted: null, walkHalf: halfExtentM, focus, floorY };
     return r;
   }
 
@@ -549,7 +553,9 @@ export class Explorer {
     }
     // Only geometry starting below the walker's head casts (shadows.ts). Recomputed on a floor change, not per frame.
     const floorY = f.floorY ?? this.pos.y; // pos is the feet
-    if (!(Math.abs(floorY - f.castFloorY) <= CAST_RETUNE_M)) { f.castFloorY = floorY; f.casters = setCasters(f.candidates, floorY); }
+    // A non-finite feet Y would retune the mask to "nothing casts" every frame; skip the frame instead.
+    if (!Number.isFinite(floorY)) return;
+    if (needsCasterRetune(floorY, f.castFloorY)) { f.castFloorY = floorY; f.casters = setCasters(f.candidates, floorY); }
     f.fitted = "follow";
     const at = f.focus ?? this.pos;
     // followShadow throws on a non-finite target; skip the frame rather than throw every frame.
