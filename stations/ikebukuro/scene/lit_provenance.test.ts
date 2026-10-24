@@ -5,25 +5,16 @@ import { describe, expect, it } from "vitest";
 /**
  * Lit-bake provenance pin (Lane F audit #12, item 6).
  *
- * `ikebukuro_b1_lit.meta.json` records the sha256 of the generic GLB the lightmap was baked from. The shipped
- * `ikebukuro_b1.glb` has a different hash because commit 93023f3 ("portal closures are fully transparent in the
- * generic GLB") rebuilt it. That commit changed the `mat_portals` material only (BLEND alpha 0.5 -> MASK alpha 0);
- * the glTF JSON apart from `materials`, and the BIN buffer, are byte-identical. The bake replaces every material
- * and only reads portal geometry (for daylight faces), so the lightmap is not stale.
- *
- * This test pins that known pair. If it fails, the b1 GLB or the lit meta changed: decide whether to re-bake
- * (`pnpm bake:lighting`) or to re-document the new pair here and in the README, then update the constants below.
+ * `ikebukuro_b1_lit.meta.json` records the sha256 of the generic GLB the lightmap was baked from. Since the #308
+ * rebake (PR #386) that is the shipped `ikebukuro_b1.glb` itself (the earlier pair e0188c50 / aef077a6 from the
+ * material-only rebuild 93023f3 is gone). If this fails, the b1 GLB changed after the bake: re-bake
+ * (`pnpm bake:lighting`), or document why the lightmap is still valid and pin the new pair here and in the README.
  */
-const KNOWN_PAIR = {
-  bakedFrom: "e0188c5009365d075b1f3828ab12cdc77a900c16de21b8cea271979a1d5b33bd",
-  current: "aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8",
-  diff: "mat_portals material only (93023f3); bake replaces materials",
-} as const;
+const SHIPPED_B1 = "aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8";
 
 const DECISION =
-  "The generic b1 GLB or the lit meta changed since the documented pair " +
-  `{ bakedFrom: ${KNOWN_PAIR.bakedFrom.slice(0, 8)}, current: ${KNOWN_PAIR.current.slice(0, 8)}, diff: "${KNOWN_PAIR.diff}" }. ` +
-  "Decide: re-bake the lightmap (pnpm bake:lighting) or re-document the new hash pair here and in stations/ikebukuro/README.md.";
+  `The generic b1 GLB or the lit meta changed since the bake from ${SHIPPED_B1.slice(0, 8)}. ` +
+  "Decide: re-bake the lightmap (pnpm bake:lighting) or document the new hash pair here and in stations/ikebukuro/README.md.";
 
 const assets = (name: string) => new URL(`../gteki/assets/${name}`, import.meta.url);
 const sha256 = (buf: Buffer) => createHash("sha256").update(buf).digest("hex");
@@ -61,16 +52,9 @@ describe("lit bake provenance", () => {
     source_glb_sha256: string;
   };
 
-  it("lit meta still records the documented bake-source hash", () => {
-    expect(litMeta.source_glb_sha256, DECISION).toBe(KNOWN_PAIR.bakedFrom);
-  });
-
-  it("the shipped generic GLB is still the documented current hash", () => {
-    expect(sha256(b1), DECISION).toBe(KNOWN_PAIR.current);
-  });
-
-  it("the documented pair differs, on purpose", () => {
-    expect(KNOWN_PAIR.bakedFrom).not.toBe(KNOWN_PAIR.current);
+  it("the lit meta records the shipped generic GLB as its bake source", () => {
+    expect(sha256(b1), DECISION).toBe(SHIPPED_B1);
+    expect(litMeta.source_glb_sha256, DECISION).toBe(SHIPPED_B1);
   });
 
   it("the generic GLB geometry matches what the lit GLB was baked from", () => {
