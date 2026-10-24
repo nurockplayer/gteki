@@ -26,7 +26,7 @@ function runtime(boardZ = -10) {
     labelSweep: new OcclusionSweep(), labelSweepDoneAt: -Infinity, labelCamPos: new THREE.Vector3(Infinity, 0, 0), labelCamQuat: new THREE.Quaternion(), labelAt: new THREE.Vector3(), quality: "low",
     guide: null, guideAllStops: [], guideIdentityHoldS: 0, tier: "run", events: {}, groundAt: vi.fn(() => 0),
     input: { consumeLook: vi.fn(() => ({ dx: 0, dy: 0, zoom: 0 })), move: vi.fn(() => ({ x: 0, y: 0, run: false })) },
-    orbit: { target: new THREE.Vector3() }, avatar: new THREE.Group(), routeGroup: new THREE.Group(), world: root, overviewLook: { set: vi.fn() },
+    orbit: { target: new THREE.Vector3() }, avatar: new THREE.Group(), routeGroup: new THREE.Group(), routeMarkersVisible: true, world: root, overviewLook: { set: vi.fn() },
     street: { restore: vi.fn() }, setFov: vi.fn(), camDistance: 4,
     host: { getBoundingClientRect: () => ({ left: 10, top: 20 }) }, viewSize: { w: 390, h: 845 }, poiLabels: [],
   });
@@ -280,7 +280,7 @@ describe("identity QA and chip integration", () => {
     obj.visible = false;
     expect(e.identity()[0].coveredByChip).toBe(false);
     board.visible = false;
-    expect(e.identity()[0]).toMatchObject({ inFrame: false, nameRect: null, nameHeightPx: 0 });
+    expect(e.identity()[0]).toMatchObject({ inFrame: false, nameRect: null, nameHeightPx: null });
     board.visible = true; root.remove(board);
     expect(e.identity()[0].inFrame).toBe(false);
   });
@@ -347,6 +347,95 @@ describe("identity QA and chip integration", () => {
       // Ordinary POI labels retain their backdrop behavior.
       expect(e.labelOccluded({ obj: board, occluded: "none" })).toBe("sign");
     }
+  });
+
+  // Both stations tag a metadata-only proxy/group and draw the plate itself in a merged sign batch beside
+  // it (Ikebukuro signs.ts, Shinjuku identity.ts), so the plate is never inside the tagged subtree.
+  it.each([["ikebukuro", 0.002, 0.001], ["shinjuku", 0.045, 0.037]])("does not count the board's own plate from a merged sign batch (%s)", (_, halfDepth, plateFront) => {
+    const { e, board, root } = runtime();
+    root.remove(board);
+    const proxy = new THREE.Object3D();
+    proxy.name = "identity:fixture";
+    proxy.position.set(-2, 3, -10);
+    proxy.userData.gteki_identity = { front: [0, 0, 1], regions: [{ kind: "name", min: [-0.8, -0.2, -halfDepth], max: [0.8, 0.2, halfDepth] }] };
+    const plate = new THREE.Mesh(new THREE.PlaneGeometry(4, 1), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    plate.name = "identity-faces"; plate.position.set(-2, 3, -10 + plateFront);
+    root.add(proxy, plate); root.updateMatrixWorld(true);
+    e.identityBoards = collectIdentityBoards(root);
+    e.signMeshes = new Set([plate]);
+    e.camera.position.set(-2, 3, 0); e.camera.lookAt(proxy.position); e.camera.updateMatrixWorld(true);
+    e.buildOccluders(root);
+    expect(e.identity()[0]).toMatchObject({ id: "identity:fixture", frontFacing: true, occluded: "none" });
+    // A sign genuinely in front of the name still reads as a sign occluder.
+    const ahead = new THREE.Mesh(new THREE.PlaneGeometry(4, 1), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    ahead.position.set(-2, 3, -9); root.add(ahead); root.updateMatrixWorld(true);
+    e.signMeshes.add(ahead); e.occluders = []; e.buildOccluders(root);
+    expect(e.identity()[0].occluded).toBe("sign");
+  });
+
+  it("reports no name rect or height for a board behind the camera or off to the side", () => {
+    const { e, board } = runtime();
+    e.camera.position.set(-2, 3, -11); e.camera.lookAt(-2, 3, -20); e.camera.updateMatrixWorld(true);
+    expect(e.identity()[0]).toMatchObject({ inFrame: false, nameRect: null, nameHeightPx: null });
+    e.camera.position.set(-2, 3, 0); e.camera.lookAt(0, 3, -6); e.camera.updateMatrixWorld(true); // ~18° off-axis
+    expect(e.identity()[0]).toMatchObject({ inFrame: false, nameRect: null, nameHeightPx: null });
+    e.camera.lookAt(board.position); e.camera.updateMatrixWorld(true);
+    const frame = e.identity()[0];
+    expect(frame.inFrame).toBe(true);
+    expect(frame.nameHeightPx).toBeGreaterThan(0);
+  });
+
+  it("only counts an occluder that reaches the name rect, not the rest of the board", () => {
+    const { e, board, root } = runtime();
+    board.userData.gteki_identity = { regions: [{ kind: "name", min: [-0.8, -0.2, 0], max: [0.8, 0.2, 0] }] };
+    e.identityBoards = collectIdentityBoards(root);
+    e.camera.position.set(-2, 3, 0); e.camera.lookAt(board.position); e.camera.updateMatrixWorld(true);
+    const edge = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    edge.position.set(-3.5, 3, -9.5); root.add(edge); root.updateMatrixWorld(true);
+    e.signMeshes = new Set([edge]);
+    e.buildOccluders(root);
+    // The board is 4 m wide; the name rect (inset 10 %) spans -2.72 … -1.28, so this leaves it clear.
+    expect(e.identity()[0]).toMatchObject({ frontFacing: true, occluded: "none" });
+    edge.position.x = -2; edge.geometry = new THREE.PlaneGeometry(2, 1); root.updateMatrixWorld(true);
+    e.occluders = []; e.buildOccluders(root);
+    expect(e.identity()[0].occluded).toBe("sign");
+  });
+
+  it("ignores a sign-role child of the board itself", () => {
+    const { e, board, root } = runtime();
+    const text = new THREE.Mesh(new THREE.PlaneGeometry(4, 1), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    text.position.z = 0.01; board.add(text); root.updateMatrixWorld(true);
+    e.signMeshes = new Set([text]);
+    e.camera.position.set(-2, 3, 0); e.camera.lookAt(board.position); e.camera.updateMatrixWorld(true);
+    e.buildOccluders(root);
+    expect(e.identity()[0].occluded).toBe("none");
+  });
+
+  it("never counts route markers as occluders", () => {
+    const { e, root } = runtime();
+    e.trackOverlay = (m: THREE.MeshBasicMaterial) => m;
+    e.routeGroup.add(e.beacon(new THREE.Vector3(-2, 0.5, -5), 0x7dffa0, 5));
+    e.camera.position.set(-2, 3, 0); e.camera.lookAt(e.identityBoards[0]!.object.position); e.camera.updateMatrixWorld(true);
+    e.buildOccluders(root);
+    expect(e.identity()[0].occluded).toBe("none");
+  });
+
+  it("setRouteMarkersVisible hides beacons across a route recompute and restores them", () => {
+    const { e } = runtime();
+    e.trackOverlay = (m: THREE.MeshBasicMaterial) => m;
+    const build = () => {
+      const beacons = [e.beacon(new THREE.Vector3(0, 0, 0), 0x7dffa0, 2.2), e.beacon(new THREE.Vector3(0, 0, 9), 0xffc857, 5)];
+      e.routeGroup.add(...beacons);
+      return beacons;
+    };
+    const first = build();
+    expect(first.map((g: THREE.Group) => g.visible)).toEqual([true, true]);
+    e.setRouteMarkersVisible(false);
+    expect(first.map((g: THREE.Group) => g.visible)).toEqual([false, false]);
+    const second = build(); // a recomputed route rebuilds them through the same path
+    expect(second.map((g: THREE.Group) => g.visible)).toEqual([false, false]);
+    e.setRouteMarkersVisible(true);
+    expect([...first, ...second].map((g: THREE.Group) => g.visible)).toEqual([true, true, true, true]);
   });
 
   it("hides unselected overlap in labelInfo, offsets endpoints and resets on overview", () => {

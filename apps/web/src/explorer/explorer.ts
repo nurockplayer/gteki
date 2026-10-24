@@ -28,7 +28,7 @@ import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachFov, avatarFade, boomSqueezed, co
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
-import { collectIdentityBoards, identityBoardObjects, identityFront, identityNameCentre, identityNameCorners, identityRegionRect, intersectsRect, protectIdentityChip, withinObject, type IdentityBoard, type ScreenRect } from "./identityBoards.ts";
+import { collectIdentityBoards, identityBoardObjects, identityFront, identityNameBehind, identityNameCentre, identityNameCorners, identityNameSamples, identityRegionRect, intersectsRect, protectIdentityChip, withinObject, type IdentityBoard, type ScreenRect } from "./identityBoards.ts";
 import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming } from "./identityFraming.ts";
 import { StationCaches } from "./stationCaches.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
@@ -236,6 +236,8 @@ export class Explorer {
   private readonly cameraCut = new CameraCut();
   private routeTexture: THREE.CanvasTexture | null = null;
   private routeLines: OccludedLineStyle | null = null;
+  /** QA hook state: the start/destination beacons follow it, including across route recomputes. */
+  private routeMarkersVisible = true;
   /** `toneMapped: false` overlays whose colour is pre-compensated for the high tier's OutputPass (see applyOverlayTone). */
   private overlayTints: OverlayTint[] = [];
   /** Max modelled display error (0..255) over the compensated overlays; null on the low tier or with no overlays. */
@@ -422,7 +424,7 @@ export class Explorer {
   }
 
   /** Live recognition-proxy evidence in page CSS pixels; no renderer or label state is changed. */
-  identity(): { id: string; inFrame: boolean; frontFacing: boolean; facingDeg: number; nameRect: ScreenRect | null; nameHeightPx: number; coveredByChip: boolean; occluded: LabelOcclusion }[] {
+  identity(): { id: string; inFrame: boolean; frontFacing: boolean; facingDeg: number; nameRect: ScreenRect | null; nameHeightPx: number | null; coveredByChip: boolean; occluded: LabelOcclusion }[] {
     this.camera.updateMatrixWorld();
     this.refreshOccluders();
     const host = this.host.getBoundingClientRect();
@@ -446,14 +448,30 @@ export class Explorer {
         if (!chip.width || !chip.height) return false;
         return rects.some((r) => r.rect && intersectsRect(pageRect(r.rect), { x0: chip.left, y0: chip.top, x1: chip.right, y1: chip.bottom }));
       });
+      // A name corner behind the camera projects to a meaningless rect; report no size then.
+      const inFrame = !identityNameBehind(board, this.camera) &&
+        names.length === visibleNames.length && name !== null && name.x0 >= 0 && name.y0 >= 0 && name.x1 <= w && name.y1 <= h;
       return {
         id: board.object.name || board.object.uuid,
-        inFrame: names.length === visibleNames.length && name !== null && name.x0 >= 0 && name.y0 >= 0 && name.x1 <= w && name.y1 <= h,
+        inFrame,
         frontFacing: facing > 0.2, facingDeg: THREE.MathUtils.radToDeg(Math.acos(facing)),
-        nameRect: name ? pageRect(name) : null, nameHeightPx: name ? name.y1 - name.y0 : 0, coveredByChip,
-        occluded: this.labelOccluded({ obj: { getWorldPosition: (target) => target.copy(centre) }, occluded: "none" }, { ignore: identityBoardObjects(board, this.identityBoards), segmentOnly: true }),
+        nameRect: inFrame && name ? pageRect(name) : null, nameHeightPx: inFrame && name ? name.y1 - name.y0 : null, coveredByChip,
+        occluded: this.identityOccluded(identityNameSamples(board, this.camera.getWorldPosition(new THREE.Vector3())), identityBoardObjects(board, this.identityBoards)),
       };
     });
+  }
+
+  /**
+   * Identity occlusion over the name rect: the centre ray decides, else a majority (3 of 4) of the inset
+   * corner rays; among the rays that block, geometry beats sign. Each ray stops at the name's visible face.
+   */
+  private identityOccluded(samples: readonly THREE.Vector3[], ignore: readonly THREE.Object3D[]): LabelOcclusion {
+    const at = (p: THREE.Vector3) => this.labelOccluded({ obj: { getWorldPosition: (target) => target.copy(p) }, occluded: "none" }, { ignore, segmentOnly: true });
+    const centre = at(samples[0]!);
+    if (centre !== "none") return centre;
+    const corners = samples.slice(1).map(at).filter((r) => r !== "none");
+    if (corners.length < 3) return "none";
+    return corners.includes("geometry") ? "geometry" : "sign";
   }
 
   /** POI label states for automated visual checks. */
@@ -1144,8 +1162,15 @@ export class Explorer {
     ring.position.y = 0.08;
     g.add(col, ring);
     g.position.copy(at);
-    g.userData.pulse = ring;
+    g.userData = { pulse: ring, routeMarker: true };
+    g.visible = this.routeMarkersVisible;
     return g;
+  }
+
+  /** QA hook: show or hide the route's start/destination beacons; the route and guidance are untouched. */
+  setRouteMarkersVisible(visible: boolean): void {
+    this.routeMarkersVisible = visible;
+    for (const g of this.routeGroup.children) if (g.userData.routeMarker) g.visible = visible;
   }
 
   /** Removing the route also ends any guidance along it: a recomputed or failed route never keeps the old guide. */
@@ -1419,7 +1444,8 @@ export class Explorer {
   /**
    * What blocks the camera's view of `label`: "geometry" when any non-sign occluder does, "sign" when only
    * signs do, including a backdrop within SIGN_BACKDROP_M behind the anchor or inside its 0.3 m margin,
-   * else "none". Identity uses only the camera-to-name segment, ignoring all faces of the same board.
+   * else "none". Identity probes only the name rect (`identityOccluded`), stopping at its visible face,
+   * and ignores all faces of the same board.
    */
   private labelOccluded(label: { obj: Pick<THREE.Object3D, "getWorldPosition">; occluded: LabelOcclusion }, options: { ignore?: readonly THREE.Object3D[]; segmentOnly?: boolean } = {}): LabelOcclusion {
     if (this.occluders.length === 0) return "none";

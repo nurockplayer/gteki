@@ -82,6 +82,53 @@ export function identityNameCentre(board: IdentityBoard): THREE.Vector3 {
   return bounds.getCenter(new THREE.Vector3()).applyMatrix4(board.object.matrixWorld);
 }
 
+/**
+ * Five world-space points on the name's visible face — its centre and four corners inset 10 % — never a
+ * point inside the box: a tag may be a metadata-only proxy while the plate itself is drawn by a merged
+ * sign batch outside the tagged subtree, so a sample inside the plate would hit its own face.
+ */
+export function identityNameSamples(board: IdentityBoard, from: THREE.Vector3, inset = 0.1): THREE.Vector3[] {
+  const bounds = new THREE.Box3();
+  for (const r of board.regions) if (r.kind === "name") bounds.union(r.box);
+  const centre = bounds.getCenter(new THREE.Vector3());
+  const local = from.clone().applyMatrix4(board.object.matrixWorld.clone().invert());
+  const d = local.clone().sub(centre);
+  // The face the camera looks at most directly; a flat name box always picks its own plane.
+  let axis: "x" | "y" | "z" = "z";
+  let side = 1;
+  let best = -Infinity;
+  for (const a of ["x", "y", "z"] as const) {
+    const score = Math.abs(d[a]) / Math.max((bounds.max[a] - bounds.min[a]) / 2, 1e-9);
+    if (score > best) { best = score; axis = a; side = d[a] >= 0 ? 1 : -1; }
+  }
+  const face = centre.clone();
+  face[axis] = side > 0 ? bounds.max[axis] : bounds.min[axis];
+  const [u, v] = (["x", "y", "z"] as const).filter((a) => a !== axis);
+  const halfU = ((bounds.max[u!] - bounds.min[u!]) / 2) * (1 - inset);
+  const halfV = ((bounds.max[v!] - bounds.min[v!]) / 2) * (1 - inset);
+  const points = [face];
+  for (const su of [-1, 1]) for (const sv of [-1, 1]) {
+    const p = face.clone();
+    p[u!] = centre[u!] + su * halfU;
+    p[v!] = centre[v!] + sv * halfV;
+    points.push(p);
+  }
+  return points.map((p) => p.applyMatrix4(board.object.matrixWorld));
+}
+
+/** True when any name-region corner is at or behind the camera's near plane. */
+export function identityNameBehind(board: IdentityBoard, camera: THREE.PerspectiveCamera): boolean {
+  const matrix = camera.matrixWorldInverse.clone().multiply(board.object.matrixWorld);
+  for (const r of board.regions) {
+    if (r.kind !== "name") continue;
+    for (let i = 0; i < 8; i++) {
+      const p = new THREE.Vector3(i & 1 ? r.box.max.x : r.box.min.x, i & 2 ? r.box.max.y : r.box.min.y, i & 4 ? r.box.max.z : r.box.min.z).applyMatrix4(matrix);
+      if (p.z >= -camera.near) return true;
+    }
+  }
+  return false;
+}
+
 export function identityFront(board: IdentityBoard): THREE.Vector3 {
   return board.front.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(board.object.matrixWorld)).normalize();
 }
