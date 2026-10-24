@@ -16,12 +16,19 @@ describe("Shinjuku gteki/ contract files", () => {
     expect((bundle.station.codes ?? []).map((c) => c.code)).toContain("E27");
   });
 
-  it("gives every POI a distinct display name in each language (search results stay distinguishable)", () => {
+  it("gives every E27 POI a distinct ja and en name, and every S03 POI a ja name (search results stay distinguishable)", () => {
+    // #411: S03 search-only POIs have ja names only, and one source name is printed twice (kept as printed).
+    const e27 = bundle.pois.filter((p) => !p.evidence.sourceIds.includes("tokyo-s03-zip"));
     for (const lang of ["ja", "en"]) {
-      const names = bundle.pois.map((p) => p.names.find((n) => n.lang === lang)?.text);
+      const names = e27.map((p) => p.names.find((n) => n.lang === lang)?.text);
       expect(names.every(Boolean)).toBe(true);
       expect(new Set(names).size).toBe(names.length);
     }
+    const s03 = bundle.pois.filter((p) => p.evidence.sourceIds.includes("tokyo-s03-zip"));
+    const s03Ja = s03.map((p) => p.names.find((n) => n.lang === "ja")?.text);
+    expect(s03Ja.every(Boolean)).toBe(true);
+    // One S03 name is printed for two gates; asserted by id (S03 names stay out of Apache-2.0 files).
+    expect(s03.filter((p, i) => s03Ja.indexOf(s03Ja[i]) !== s03Ja.lastIndexOf(s03Ja[i])).map((p) => p.id)).toEqual(["poi:keio-gate:1", "poi:keio-gate:2"]);
   });
 
   it("cites the render-only PLATEAU street context under the catalogue licence with the Owner's Option A credit (#161)", () => {
