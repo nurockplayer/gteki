@@ -48,6 +48,20 @@ export function factsOnlyCredit(s: Source, t: Pick<Strings, "factsOnly" | "right
   };
 }
 
+export interface OverrideCredit {
+  text: string;
+  decision: { label: string; href: string | null } | null;
+}
+
+/** null unless rights is owner override; only an http(s) decision can be linked. */
+export function overrideCredit(s: Source, t: Pick<Strings, "rightsReusable" | "rightsOwnerOverride" | "rightsReference" | "rightsRestricted" | "rightsUnverified" | "rightsDecision">): OverrideCredit | null {
+  if (s.rights !== "PUBLISHED_UNDER_OWNER_OVERRIDE") return null;
+  return {
+    text: rightsLabel(s.rights, t),
+    decision: s.override ? { label: `${t.rightsDecision} ${s.override.date}`, href: safeHref(s.override.decision) } : null,
+  };
+}
+
 /** Human wording for a source's rights status (#130); an unknown value reads as unverified rather than leaking the enum. */
 export function rightsLabel(rights: Source["rights"], t: Pick<Strings, "rightsReusable" | "rightsOwnerOverride" | "rightsReference" | "rightsRestricted" | "rightsUnverified">): string {
   switch (rights) {

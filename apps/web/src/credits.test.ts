@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Source } from "@gteki/schema";
-import { factsOnlyCredit, rightsLabel, safeHref, sourceCredit } from "./credits.ts";
+import { factsOnlyCredit, overrideCredit, rightsLabel, safeHref, sourceCredit } from "./credits.ts";
 import { strings } from "./i18n.ts";
 
 const glbSource: Source = {
@@ -74,5 +74,39 @@ describe("rights label (#130)", () => {
         expect(label).not.toContain("SOMETHING_NEW");
       }
     }
+  });
+});
+
+describe("owner override credit (#249)", () => {
+  const ownerOverride: Source = {
+    ...glbSource,
+    rights: "PUBLISHED_UNDER_OWNER_OVERRIDE",
+    override: { decision: "https://github.com/nurockplayer/gteki/issues/249", date: "2026-10-24" },
+  } as Source;
+
+  it("uses the rights label wording in both languages", () => {
+    for (const lang of ["ja", "en"] as const) {
+      const t = strings(lang);
+      expect(overrideCredit(ownerOverride, t)?.text).toBe(rightsLabel(ownerOverride.rights, t));
+    }
+  });
+
+  it("links an http(s) decision and leaves non-http decisions as plain text", () => {
+    const t = strings("en");
+    expect(overrideCredit(ownerOverride, t)?.decision).toEqual({
+      label: `${t.rightsDecision} 2026-10-24`,
+      href: "https://github.com/nurockplayer/gteki/issues/249",
+    });
+    for (const decision of ["#16", "javascript:alert(1)"]) {
+      expect(overrideCredit({ ...ownerOverride, override: { decision, date: "2026-10-24" } } as Source, t)?.decision).toEqual({
+        label: `${t.rightsDecision} 2026-10-24`,
+        href: null,
+      });
+    }
+  });
+
+  it("omits the decision when absent and returns null for other rights", () => {
+    expect(overrideCredit({ ...ownerOverride, override: undefined } as Source, strings("en"))?.decision).toBeNull();
+    expect(overrideCredit(glbSource, strings("en"))).toBeNull();
   });
 });

@@ -11,7 +11,7 @@ import { coverageText, initialLang, pick, strings, type Lang } from "../i18n.ts"
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
 import { stationClock } from "../stationClock.ts";
-import { factsOnlyCredit, rightsLabel, sourceCredit } from "../credits.ts";
+import { factsOnlyCredit, overrideCredit, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { nodeLabel, poiLabel } from "./labels.ts";
@@ -1049,8 +1049,8 @@ export class App {
 
   /**
    * A credit line for one source, or for several sources sharing an attribution: titles (linked), the attribution once,
-   * the distinct licences (linked) and the modification notice; a facts-only source adds the #26 wording and decision link
-   * (Coverage dialog and the route card's 出典 both use this).
+   * the distinct licences (linked) and the modification notice; facts-only and owner-override sources add their wording
+   * and safe decision link (Coverage dialog and the route card's 出典 both use).
    */
   private creditItem(...sources: Source[]): HTMLLIElement {
     const link = (text: string, href: string | null): HTMLElement => {
@@ -1081,6 +1081,12 @@ export class App {
       if (!facts) continue;
       li.append(el("span", "muted", ` · ${facts.text}`));
       if (facts.decision) li.append(el("span", "muted", " ("), link(facts.decision.label, facts.decision.href), el("span", "muted", ")"));
+    }
+    for (const s of sources) {
+      const override = overrideCredit(s, this.t);
+      if (!override) continue;
+      li.append(el("span", "muted", ` · ${override.text}`));
+      if (override.decision) li.append(el("span", "muted", " ("), link(override.decision.label, override.decision.href), el("span", "muted", ")"));
     }
     return li;
   }
@@ -1141,7 +1147,8 @@ export class App {
       // facts-only and blank-attribution sources stay single. Rights are plain language (#130), never the internal enum.
       for (const g of creditEntries(b.sources)) {
         const li = this.creditItem(...g.sources);
-        const rights = entryRightsLabels(g.sources, this.t);
+        // creditItem already renders the full owner-override line and decision link; keep other rights labels here.
+        const rights = entryRightsLabels(g.sources, this.t).filter((label) => label !== this.t.rightsOwnerOverride);
         if (rights.length) li.append(el("span", "muted", ` · ${rights.join(" / ")}`));
         src.append(li);
       }
