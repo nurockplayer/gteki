@@ -20,31 +20,16 @@ Read time recorded in UTC: 2026-10-24T08:54:54Z. Directory pages are undated unl
 - Imported in page order: LAWSON METRO'S 新宿東口店; OOTORI BANANA (A8出入口付近); MS・Style; ミスターミニット 新宿東口店. No uncertain names.
 - Dropped the category marker （売店） from the Lawson label. No store code was present in a detail URL; IDs are 3-digit page-order sequences `shop-sjk-metro-001` through `004`. SEARCH_ONLY used when no area/zone/floor field was printed.
 
-## 4. Odakyu Ace
-- Pages read: https://www.odakyu-sc.com/odakyu-ace/shopsearch/category/ (all results, 44 items), plus category views https://www.odakyu-sc.com/odakyu-ace/shopsearch/category/101, /103, /104, /105, /102 — 2026-10-24T08:54:54Z; individual shop detail URLs use `https://www.odakyu-sc.com/odakyu-ace/shop/detail/<code>?tenant_cd=<code>` and were opened one at a time. Codes in page order: 100021, 100071, 100145, 100311, 100330, 1003321, 100350, 100400, 100811, 101504, 101822, 101960, 103050, 103314, 103315, 103316, 103317, 103319, 103320, 103322, 103323, 103324, 103325, 103326, 103327, 103329, 103330, 103331, 103332, 103334, 103336, 103337, 103338, 103339, 103340, 103341, 103342, 103344, 103345, 103347, 103348, 103349, 103350, 103351. Details were read sequentially; exact per-page retrieval instants were not separately captured.
-- Counts (first transcription, superseded by the lead review below): listed 44; imported 44; skipped 0; excluded 0. Final: 43. Category views deduplicated against the all-results list. No category icons/markers removed.
-- Uncertain name: all-results listing prints デリパのひろば for code 103325 while its detail page title prints デリパのちか弁; the listing text was imported as the requested directory-list transcription. The ライフスタイル category view (`/102`) returned a reader cache miss; shop names were checked against the all-results list, which reports 44 total.
-- ID rule: use each numeric shop code from its detail URL, e.g. `shop-sjk-odakyuace-100021`.
+## 4. Odakyu Ace (removed under OD-34; redacted)
+- Directory read 2026-10-24T08:54:54Z: https://www.odakyu-sc.com/odakyu-ace/shopsearch/category/ and its category views, plus individual shop detail pages. Listed 44; after the lead review 43. All of them were later removed under OD-34 (see the end). Store codes, names and page text from this directory are redacted from this log.
 
-## 5. Keio Mall / Keio Mall Annex
-- Pages read: https://ekishop.keio-sc.jp/keiomall-keiomallannex/ — 2026-10-24T08:54:54Z; individual detail URLs `https://ekishop.keio-sc.jp/keiomall-keiomallannex/shop/detail/?scd=<code>` were opened one at a time.
-- Counts: listed 24 京王モール shops and 5 京王モールアネックス shops; imported 29; skipped 0; excluded セブン銀行ATM.
-- The a-1 through a-24 and b-1 through b-5 directory placement codes were not copied into names. Source detail codes in listing order: 000758, 000759, 000760, 000761, 000762, 000763, 000764, 000765, 000766, 000767, 000768, 000769, 000770, 000771, 000883, 000773, 000774, 000935, 000776, 000777, 000778, 000779, 000780, 000842, 000782, 000783, 000784, 000867, 000865. Alias recorded only for the printed reading in 粥餐庁(かゆさんちん): ja-Hrkt かゆさんちん. No uncertain names.
-- ID rule: preserve the detail URL `scd` as the code, including leading zeroes, e.g. `shop-sjk-keio-000758`. No category markers removed.
+## 5. Keio Mall / Keio Mall Annex (removed under OD-34; redacted)
+- Directory read 2026-10-24T08:54:54Z: https://ekishop.keio-sc.jp/keiomall-keiomallannex/ and individual shop detail pages. Listed 24 京王モール + 5 京王モールアネックス = 29 shops (1 ATM excluded). All of them were later removed under OD-34 (see the end). Store codes, names and page text from this directory are redacted from this log.
 
 ## Lead review (2026-10-24)
 
-Odakyu Ace and Keio Mall names were re-extracted from the raw directory HTML (Odakyu Ace card `alt` text, Keio Mall `shopname`) and compared with this transcription: 72 of 78 entries checked character for character, plus the Tokyo Metro page by verbatim quote. Changes:
-- Full-width spaces restored where the reader had turned them into half-width (だし茶漬け＋肉うどん　えん, 箱根そば本陣　小田急エース北館店).
-- Promotional prefixes dropped from names: 3/28オープン (箱根そば本陣　小田急エース北館店), 【10月9日NEW OPEN】 (AMERICAN HOLIC).
-- Dropped: サラダデリ MARGO (`1003321`) and パステル (`103326`): neither is on the current directory, and their detail pages return 404.
-- Added: いい菜＆ゼストプラス (`103352`, 北館内 SHINJUKU DELISH PARK), which is on the directory but was missed. Odakyu Ace is now 43, matching the 43 codes on the page.
-- Tokyo Metro: the page prints LAWSON METRO'S with 新宿東口店 as a separate label, so the name is LAWSON METRO'S and 新宿東口店 goes in notes (same as Ikebukuro `shop-ikb-metro-001`).
-- 粥餐庁 is printed 粥餐庁(かゆさんちん); the reading in parentheses is the alias.
-- Every Odakyu Ace and Keio Mall detail page was re-read for closure notices: none is closed. Odakyu Ace `100350` prints 【臨時休業】設備不良のため、現在休業中です (temporarily closed); it is kept, and its notes already say current status is unknown, as for every entry. Neither site prints readings other than the 粥餐庁 one.
-- Result: 78 POIs (Toei 1, Toei Shinjuku-nishiguchi 1, Tokyo Metro 4, Odakyu Ace 43, Keio Mall 29).
-- oracle-ego (GPT-6) review: Keio Mall entries name 京王モール or 京王モールアネックス in notes, so their method is AREA_ONLY (was SEARCH_ONLY); the Odakyu Ace source note now gives the final 43.
+The first transcription was re-checked against the raw HTML of each source. For the Toei and Tokyo Metro entries that remain: full-width spaces kept as printed; Tokyo Metro prints LAWSON METRO'S with 新宿東口店 as a separate label, so the name is LAWSON METRO'S and 新宿東口店 goes in notes (same as Ikebukuro `shop-ikb-metro-001`). The Odakyu Ace and Keio Mall entries were also re-checked (names, promotional prefixes, two delisted shops, one missed shop, closure notices) before they were removed under OD-34; those details are redacted here. oracle-ego (GPT-6) reviewed the batch at that stage.
 
 ## OD-34 removal (2026-10-24)
 
-The terms of the Odakyu SC portal (https://www.odakyu-sc.com/sitepolicy/) and Keio SC (https://www.keiosc.co.jp/sitepolicy/), read 2026-10-24T09:42Z, refuse every use of the sites' content data with no legal exception (「…全ての行為も含め、一切お断りいたします。」). The director ruled (OD-34) that they get OD-02 A treatment, overturning the earlier OD-33 facts-only ruling for these two sites. Sections 4 and 5 above are kept as a record only: none of their 72 entries is in the JSON, and the SC directories may not be used as a source or a cross-check. The same shops may come in later from each chain's own store page. The batch is now 6 POIs (Toei 1, Toei Shinjuku-nishiguchi 1, Tokyo Metro 4).
+The terms of the Odakyu SC portal (https://www.odakyu-sc.com/sitepolicy/) and Keio SC (https://www.keiosc.co.jp/sitepolicy/), read 2026-10-24T09:42Z, refuse every use of the sites' content data with no legal exception (「…全ての行為も含め、一切お断りいたします。」). The director ruled (OD-34) that they get OD-02 A treatment, overturning the earlier OD-33 facts-only ruling for these two sites. Sections 4 and 5 above keep only the URLs and counts (store identifiers, names and page text redacted after review): none of their 72 entries is in the JSON, and the SC directories may not be used as a source or a cross-check. The same shops may come in later from each chain's own store page. The batch is now 6 POIs (Toei 1, Toei Shinjuku-nishiguchi 1, Tokyo Metro 4).
