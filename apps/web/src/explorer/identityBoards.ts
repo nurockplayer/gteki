@@ -56,12 +56,14 @@ export function withinObject(object: THREE.Object3D, root: THREE.Object3D): bool
   return false;
 }
 
-/** Same physical board: overlapping world bounds, or sibling faces named <id> and <id>:back. */
+/** Same physical board: sibling faces with overlapping world bounds or names <id> and <id>:back. */
 export function identityBoardObjects(board: IdentityBoard, boards: readonly IdentityBoard[]): THREE.Object3D[] {
   const bounds = new THREE.Box3().setFromObject(board.object);
   const faceId = (o: THREE.Object3D) => o.name.replace(/:back$/, "");
-  return boards.filter((b) => b === board || bounds.intersectsBox(new THREE.Box3().setFromObject(b.object)) ||
-    (board.object.parent !== null && b.object.parent === board.object.parent && b.object.name !== board.object.name && !!faceId(board.object) && faceId(b.object) === faceId(board.object)))
+  return boards.filter((b) => b === board ||
+    (board.object.parent !== null && b.object.parent === board.object.parent &&
+      (bounds.intersectsBox(new THREE.Box3().setFromObject(b.object)) ||
+        (b.object.name !== board.object.name && !!faceId(board.object) && faceId(b.object) === faceId(board.object)))))
     .map((b) => b.object);
 }
 

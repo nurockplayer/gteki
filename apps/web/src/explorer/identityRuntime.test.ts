@@ -314,6 +314,28 @@ describe("identity QA and chip integration", () => {
     expect(e.identity().map((b: { occluded: string }) => b.occluded)).toEqual(["none", "none"]);
   });
 
+  it.each([false, true])("keeps an overlapping tagged board under a different parent as an occluder (sign %s)", (sign) => {
+    const { e, board, root } = runtime();
+    const farParent = new THREE.Group(), nearParent = new THREE.Group();
+    root.add(farParent, nearParent); farParent.add(board);
+    board.rotation.y = Math.PI / 4;
+    const near = board.clone();
+    // Even matching face names cannot make independently parented boards one physical board.
+    near.name = `${board.name}:back`;
+    near.position.z += 1;
+    near.rotation.y = -Math.PI / 4;
+    nearParent.add(near); root.updateMatrixWorld(true);
+    expect(board.parent).not.toBe(near.parent);
+    expect(new THREE.Box3().setFromObject(board).intersectsBox(new THREE.Box3().setFromObject(near))).toBe(true);
+    e.identityBoards = collectIdentityBoards(root);
+    if (sign) e.signMeshes = new Set([board, near]);
+    e.camera.position.set(-2, 3, 0); e.camera.lookAt(board.position); e.camera.updateMatrixWorld(true);
+    e.buildOccluders(root);
+    expect(e.identity().find((b: { id: string }) => b.id === board.name)).toMatchObject({
+      inFrame: true, frontFacing: true, occluded: sign ? "sign" : "geometry",
+    });
+  });
+
   it.each([[0.1, "sign"], [5, "sign"], [-0.1, "none"]])("identity sign %s m toward the camera reports %s", (offset, expected) => {
     const { e, board, root } = runtime();
     e.camera.position.set(-2, 3, 0); e.camera.lookAt(board.position); e.camera.updateMatrixWorld(true);

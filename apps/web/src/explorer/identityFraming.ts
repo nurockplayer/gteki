@@ -20,7 +20,8 @@ export function identityFraming(head: THREE.Vector3, yaw: number, _pitch: number
   const camera = new THREE.PerspectiveCamera(fovDeg, aspect, 0.05, 100);
   const tanV = Math.tan(THREE.MathUtils.degToRad(fovDeg / 2)), tanH = tanV * camera.aspect;
   const left = Math.max(-1, free.x0), right = Math.min(1, free.x1);
-  const bottom = Math.max(-0.4, free.y0), top = Math.min(0.7, free.y1);
+  const freeBottom = Math.max(-1, free.y0), freeTop = Math.min(1, free.y1);
+  const bottom = Math.max(-0.4, freeBottom), top = Math.min(0.7, freeTop);
   if (left >= right || bottom >= top) return null;
   const minX = left + (right - left) * 0.2, maxX = right - (right - left) * 0.2;
   const targetX = (minX + maxX) / 2;
@@ -49,7 +50,10 @@ export function identityFraming(head: THREE.Vector3, yaw: number, _pitch: number
     const ndc = project();
     if (ndc.x < minX || ndc.x > maxX || ndc.y < bottom || ndc.y > top || Math.abs(ndc.z) > 1) continue;
     const name = board.nameCorners.map((p) => p.clone().project(camera));
-    if (!name.length || name.some((p) => Math.abs(p.z) > 1) || Math.max(...name.map((p) => p.y)) - Math.min(...name.map((p) => p.y)) > MAX_NAME_HEIGHT_NDC) continue;
+    if (!name.length || name.some((p) => Math.abs(p.z) > 1)) continue;
+    const nameBox = new THREE.Box3().setFromPoints(name);
+    if (nameBox.max.y - nameBox.min.y > MAX_NAME_HEIGHT_NDC ||
+      nameBox.min.x < left || nameBox.max.x > right || nameBox.min.y < freeBottom || nameBox.max.y > freeTop) continue;
     if (board.front.dot(camera.position.clone().sub(board.centre).normalize()) <= 0.2) continue;
     if (board.visible && !board.visible(camera.position.clone(), board.centre.clone())) continue;
     // Keep yaw continuous around the current camera heading.
