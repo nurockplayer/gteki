@@ -117,9 +117,21 @@ describe("groupByAttribution", () => {
     const reusable = src("reusable", PLATEAU);
     const reference = src("reference", PLATEAU, { rights: "REFERENCE_ONLY" });
 
+    expect(groupLicenses([reusable, reference])).toEqual([{ name: "CC BY 4.0", href: "https://creativecommons.org/licenses/by/4.0/" }]);
+  });
+
+  it("keeps different names at the same URL when rights differ", () => {
+    const reusable = src("reusable", PLATEAU, {
+      license: { name: "PDL 1.0", url: "https://example.org/terms" },
+    });
+    const reference = src("reference", PLATEAU, {
+      rights: "REFERENCE_ONLY",
+      license: { name: "Licence unconfirmed", url: "https://example.org/terms" },
+    });
+
     expect(groupLicenses([reusable, reference])).toEqual([
-      { name: "CC BY 4.0", href: "https://creativecommons.org/licenses/by/4.0/" },
-      { name: "CC BY 4.0", href: "https://creativecommons.org/licenses/by/4.0/" },
+      { name: "PDL 1.0", href: "https://example.org/terms" },
+      { name: "Licence unconfirmed", href: "https://example.org/terms" },
     ]);
   });
 
