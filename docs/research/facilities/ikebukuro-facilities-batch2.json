@@ -1278,11 +1278,11 @@
       "notes": [
         {
           "lang": "ja",
-          "text": "東武百貨店 池袋店 B2F 6番地 階段前。設備: 常温（有料）（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+          "text": "東武百貨店 池袋店 B2F 6番地 階段前。設備: 常温（有料）・冷蔵（有料）（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
         },
         {
           "lang": "en",
-          "text": "Tobu Department Store Ikebukuro, B2F 6番地 階段前. Features: room temperature (paid) (operator wording). Location is the operator's wording only (unverified, no route)."
+          "text": "Tobu Department Store Ikebukuro, B2F 6番地 階段前. Features: room temperature (paid) and refrigerated (paid) (operator wording). Location is the operator's wording only (unverified, no route)."
         }
       ]
     },
@@ -1310,75 +1310,11 @@
       "notes": [
         {
           "lang": "ja",
-          "text": "東武百貨店 池袋店 B2F 11番地。設備: 常温（有料）（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+          "text": "東武百貨店 池袋店 B2F 11番地。設備: 常温（有料）・冷蔵（有料）（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
         },
         {
           "lang": "en",
-          "text": "Tobu Department Store Ikebukuro, B2F 11番地. Features: room temperature (paid) (operator wording). Location is the operator's wording only (unverified, no route)."
-        }
-      ]
-    },
-    {
-      "id": "locker-ikb-tobudept-005",
-      "category": "locker",
-      "names": [
-        {
-          "lang": "ja",
-          "text": "コインロッカー（有料）"
-        }
-      ],
-      "aliases": [],
-      "floorId": null,
-      "displayPosition": null,
-      "connectorNodeIds": [],
-      "paid": null,
-      "evidence": {
-        "sourceIds": [
-          "tobudept-ikebukuro-facilities-2026-10"
-        ],
-        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
-        "checkedDate": "2026-10-24"
-      },
-      "notes": [
-        {
-          "lang": "ja",
-          "text": "東武百貨店 池袋店 B2F 6番地 階段前。設備: 冷蔵（有料）（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
-        },
-        {
-          "lang": "en",
-          "text": "Tobu Department Store Ikebukuro, B2F 6番地 階段前. Features: refrigerated (paid) (operator wording). Location is the operator's wording only (unverified, no route)."
-        }
-      ]
-    },
-    {
-      "id": "locker-ikb-tobudept-006",
-      "category": "locker",
-      "names": [
-        {
-          "lang": "ja",
-          "text": "コインロッカー（有料）"
-        }
-      ],
-      "aliases": [],
-      "floorId": null,
-      "displayPosition": null,
-      "connectorNodeIds": [],
-      "paid": null,
-      "evidence": {
-        "sourceIds": [
-          "tobudept-ikebukuro-facilities-2026-10"
-        ],
-        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
-        "checkedDate": "2026-10-24"
-      },
-      "notes": [
-        {
-          "lang": "ja",
-          "text": "東武百貨店 池袋店 B2F 11番地。設備: 冷蔵（有料）（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
-        },
-        {
-          "lang": "en",
-          "text": "Tobu Department Store Ikebukuro, B2F 11番地. Features: refrigerated (paid) (operator wording). Location is the operator's wording only (unverified, no route)."
+          "text": "Tobu Department Store Ikebukuro, B2F 11番地. Features: room temperature (paid) and refrigerated (paid) (operator wording). Location is the operator's wording only (unverified, no route)."
         }
       ]
     },
