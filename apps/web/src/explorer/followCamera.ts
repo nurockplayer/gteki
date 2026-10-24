@@ -106,21 +106,38 @@ export const SLOPE = {
 export interface SlopeState {
   /** Smoothed absolute vertical speed (m/s). */
   speed: number;
+  /** Smoothed signed vertical speed (m/s); descending is negative. */
+  velocity: number;
   on: boolean;
   /** Seconds spent below `exit` while on. */
   level: number;
 }
 
-export const NO_SLOPE: SlopeState = { speed: 0, on: false, level: 0 };
+export const NO_SLOPE: SlopeState = { speed: 0, velocity: 0, on: false, level: 0 };
 
-/** One step of slope detection for a height change `dy` (m) over `dt` (s). Pure: returns a new state. */
-export function stepSlope(s: SlopeState, dy: number, dt: number): SlopeState {
-  if (!(dt > 0)) return s;
+/** Height-based detection with an explicit guide stair hint; either source shares the landing hold. Pure. */
+export function stepSlope(s: SlopeState, dy: number, dt: number, onStairs = false): SlopeState {
+  if (!(dt > 0)) return onStairs ? { ...s, on: true, level: 0 } : s;
   const k = 1 - Math.exp(-dt / SLOPE.smooth);
   const speed = s.speed + (Math.abs(dy) / dt - s.speed) * k;
-  if (!s.on) return { speed, on: speed > SLOPE.enter, level: 0 };
+  const velocity = s.velocity + (dy / dt - s.velocity) * k;
+  if (!s.on || onStairs) return { speed, velocity, on: onStairs || speed > SLOPE.enter, level: 0 };
   const level = speed < SLOPE.exit ? s.level + dt : 0;
-  return { speed, on: level < SLOPE.hold, level };
+  return { speed, velocity, on: level < SLOPE.hold, level };
+}
+
+/**
+ * Extra aim drop while descending. At the default 3.45 m boom and -0.12 pitch, the camera is
+ * ~0.87 m above the head and the target ~8.3 m ahead of the camera. Lowering the target by 0.65 m
+ * adds ~4 degrees of downward aim, leaving margin for feet and positional damping at 60 FOV.
+ * Full strength at ~0.4 m/s down (0.9 m/s along a stair rising 0.5 m per metre run).
+ */
+export const DESCENT = { maxDrop: 0.65, fullSpeed: 0.4 } as const;
+
+export function descentAimDrop(s: SlopeState): number {
+  if (!s.on || s.velocity >= 0) return 0;
+  const t = Math.min(1, -s.velocity / DESCENT.fullSpeed);
+  return DESCENT.maxDrop * t * t * (3 - 2 * t);
 }
 
 /** One framerate-independent step of `current` toward `target` (exponential, time constant `FOV.settle`); lands exactly within 0.01 degrees. */
