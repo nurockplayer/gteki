@@ -100,7 +100,7 @@ describe("groupByAttribution", () => {
     ]);
   });
 
-  it("dedupes legacy and localized names by safe URL and rights in both languages", () => {
+  it("keeps different rendered names even when they share a licence URL", () => {
     const legacy = src("legacy", PLATEAU, { license: { name: "Legacy licence", url: "https://example.org/licence" } });
     const localized = src("localized", PLATEAU, {
       license: {
@@ -109,23 +109,29 @@ describe("groupByAttribution", () => {
       },
     });
 
-    expect(groupLicenses([legacy, localized], "ja")).toEqual([{ name: "Legacy licence", href: "https://example.org/licence" }]);
-    expect(groupLicenses([legacy, localized], "en")).toEqual([{ name: "Legacy licence", href: "https://example.org/licence" }]);
+    // Avoid this duplicate by keeping license.name consistent in station data; code must not merge different rendered names.
+    expect(groupLicenses([legacy, localized], "ja")).toEqual([
+      { name: "Legacy licence", href: "https://example.org/licence" },
+      { name: "日本語ライセンス", href: "https://example.org/licence" },
+    ]);
+    expect(groupLicenses([legacy, localized], "en")).toEqual([
+      { name: "Legacy licence", href: "https://example.org/licence" },
+      { name: "Localized licence", href: "https://example.org/licence" },
+    ]);
   });
 
-  it("keeps the same URL separate when sources have different rights", () => {
+  it("dedupes an identical rendered name and link regardless of rights", () => {
     const reusable = src("reusable", PLATEAU);
     const reference = src("reference", PLATEAU, { rights: "REFERENCE_ONLY" });
 
     expect(groupLicenses([reusable, reference])).toEqual([{ name: "CC BY 4.0", href: "https://creativecommons.org/licenses/by/4.0/" }]);
   });
 
-  it("keeps different names at the same URL when rights differ", () => {
+  it("keeps different names at the same URL even when rights are the same", () => {
     const reusable = src("reusable", PLATEAU, {
       license: { name: "PDL 1.0", url: "https://example.org/terms" },
     });
     const reference = src("reference", PLATEAU, {
-      rights: "REFERENCE_ONLY",
       license: { name: "Licence unconfirmed", url: "https://example.org/terms" },
     });
 

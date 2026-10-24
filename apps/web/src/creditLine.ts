@@ -89,21 +89,16 @@ export function entryRightsLabels(sources: readonly Source[], t: Parameters<type
   return [...new Set(sources.filter((s) => s.usage !== "facts-only").map((s) => rightsLabel(s.rights, t)))];
 }
 
-/** Distinct licences in first appearance order, deduped by identity and by identical rendered name/link. */
+/** Distinct rendered licence name/link pairs in first appearance order; rights are shown separately. */
 export function groupLicenses(sources: readonly Source[], lang: Lang = "ja"): NonNullable<SourceCredit["license"]>[] {
-  const seenIdentity = new Set<string>();
-  const seenDisplay = new Set<string>();
+  const seen = new Set<string>();
   const out: NonNullable<SourceCredit["license"]>[] = [];
   for (const s of sources) {
     const l = sourceCredit(s, lang).license;
     if (!l) continue;
-    const identity = l.href
-      ? JSON.stringify([l.href, s.rights])
-      : JSON.stringify([l.name, s.rights]);
-    const display = JSON.stringify([l.name, l.href]);
-    if (seenIdentity.has(identity) || seenDisplay.has(display)) continue;
-    seenIdentity.add(identity);
-    seenDisplay.add(display);
+    const key = JSON.stringify([l.name, l.href]);
+    if (seen.has(key)) continue;
+    seen.add(key);
     out.push(l);
   }
   return out;
