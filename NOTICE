@@ -158,12 +158,20 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        invent one. If the PLATEAU border layer ever ships, keep 「測量法に基づく国土地理院長承認（複製）R 6JHf 503」.
 
    4.9 Facts-only sources - LicenseRef-facts-only-no-licence
-       豊島区「池袋駅地下空間案内図」 and 東京地下鉄 池袋駅構内図: facts (exit
+       豊島区「池袋駅地下空間案内図」, 東京地下鉄 池袋駅構内図 and its accessibility
+       page, and 西武鉄道 池袋駅ページ: facts (exit
        numbers, gate names, which passage is public) in GTEki's own words in the
        Ikebukuro graph and POIs. No licence exists to relicense; no image,
        layout, tracing, pictogram or logo is copied. Credit as recorded:
        「豊島区「池袋駅地下空間案内図」(facts only; not reproduced)」 and
-       「東京メトロ 池袋駅構内図 (facts only; not reproduced)」.
+       「東京メトロ 池袋駅構内図 (facts only; not reproduced)」 and
+       「西武鉄道 池袋駅ページ (facts only; not reproduced)」.
+       Line POI data (lines-lead WP2/WP3, 2026-10-24):
+       docs/research/lines/ikebukuro-line-pois.json and its contract. Gate,
+       lift, escalator and exit names and end pairs as printed on Tokyo Metro
+       pages (#26) and the Seibu Railway station page (OD-25), with
+       evidence given as a page locator in GTEki's own words. No other page
+       text, map or image is copied.
 
    4.10 OpenStreetMap - nothing committed or shipped
        Cross-check only. No ODbL entry. If OSM-derived data is ever committed,

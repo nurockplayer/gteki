@@ -1,0 +1,1740 @@
+{
+  "schema": "gteki.lines-pois/0.1-draft",
+  "stationId": "ikebukuro",
+  "generatedAt": "2026-10-24",
+  "generatedBy": "WP2/WP3 transcription (Haiku worker) + lines-lead review (exit ids/names to the station pattern; Seibu names prefixed; 西武南口 as other; undated-page hour wording)",
+  "sources": [
+    {
+      "id": "tokyometro-ikebukuro-accessibility-2026-10",
+      "title": "バリアフリー設備 | 池袋駅/M25/Y09/F09 | 東京メトロ",
+      "publisher": "東京地下鉄",
+      "url": "https://www.tokyometro.jp/station/ikebukuro/accessibility/index.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "東京メトロ 池袋駅 バリアフリー設備 (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T17:57:00+09:00",
+      "datasetDate": null,
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。丸ノ内線・有楽町線・副都心線の各バリアフリー設備（エレベーター・エスカレーターの設置場所の端点表記、対応の有無「あり」のみ採用）。運転停止予定とトイレ等は対象外。 Re-read 2026-10-24 (WP2): lift and escalator end pairs per line. The existing station record (retrieved 2026-10-22) keeps its id; the writer updates retrievedAt and these notes.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
+    },
+    {
+      "id": "tokyometro-ikebukuro-yardmap-print-2026-10",
+      "title": "構内図 | 池袋駅/M25/Y09/F09 | 東京メトロ",
+      "publisher": "東京地下鉄",
+      "url": "https://www.tokyometro.jp/station/ikebukuro/yardmap/index_print.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "東京メトロ 池袋駅構内図 (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T17:57:00+09:00",
+      "datasetDate": "2026-03",
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。出口案内の出入口番号・時間制限表記（*）・地上行エレベーターの表記のみ採用。近隣施設名・構内図画像は対象外。 改定日：2026年3月（ページ表記）。",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
+    },
+    {
+      "id": "seibu-ikebukuro-station-2026-10",
+      "title": "池袋駅 ：西武鉄道Webサイト",
+      "publisher": "西武鉄道",
+      "url": "https://www.seiburailway.jp/railway/station/ikebukuro/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "西武鉄道 池袋駅ページ (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T17:57:00+09:00",
+      "datasetDate": null,
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。駅の案内文の改札口名、駅施設の営業時間（西武南口）を確認。エレベーター・エスカレーター位置は画像のみで本文に無し。 Rights: OD-25 (docs/research/owner-decisions-pending.md; decided 2026-10-22 by the director under the Owner's delegation, recorded in PR #222): same class as Tokyo Metro, facts-only under #26.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/222",
+        "date": "2026-10-22"
+      }
+    }
+  ],
+  "pois": [
+    {
+      "id": "metro-f-west-east-gate",
+      "category": "ticket_gate",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "副都心線 西通路東改札"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, lift and escalator tables (gate named as an end point)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "副都心線の設備表記に登場する改札名（改札内外の区分は出典に記載なし）位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Gate name as printed in the 副都心線 equipment rows (inside/outside not stated on the page). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-f-west-west-gate",
+      "category": "ticket_gate",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "副都心線 西通路西改札"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, lift and escalator tables (gate named as an end point)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "副都心線の設備表記に登場する改札名（改札内外の区分は出典に記載なし）位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Gate name as printed in the 副都心線 equipment rows (inside/outside not stated on the page). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-y-south-east-gate",
+      "category": "ticket_gate",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "有楽町線 南通路東改札"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, lift and escalator tables (gate named as an end point)"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "有楽町線の設備表記に登場する改札名（改札内外の区分は出典に記載なし）位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Gate name as printed in the 有楽町線 equipment rows (inside/outside not stated on the page). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-m-lift-1",
+      "category": "elevator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "丸ノ内線 エレベーター ホーム（終端寄り）～中央通路西改札"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Marunouchi lift table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札内のエレベーター（出典の設備表で設置ありと表示）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Inside the gates (as printed: 改札内 エレベーター, marked あり). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-m-lift-2",
+      "category": "elevator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "丸ノ内線 エレベーター 中央通路東改札～３４番出入口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Marunouchi lift table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札外のエレベーター（出典の設備表で設置ありと表示）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Outside the gates (as printed: 改札外 エレベーター, marked あり). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-y-lift-1",
+      "category": "elevator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "有楽町線 エレベーター ホーム（和光市寄り）～南通路西改札"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Yurakucho lift table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札内のエレベーター（出典の設備表で設置ありと表示）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Inside the gates (as printed: 改札内 エレベーター, marked あり). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-y-lift-2",
+      "category": "elevator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "有楽町線 エレベーター 南通路西改札～４番出入口（エソラ）"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Yurakucho lift table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札外のエレベーター（出典の設備表で設置ありと表示）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Outside the gates (as printed: 改札外 エレベーター, marked あり). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-f-lift-1",
+      "category": "elevator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "副都心線 エレベーター ホーム（中央）～中二階～西通路東改札"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Fukutoshin lift table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札内のエレベーター（出典の設備表で設置ありと表示）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Inside the gates (as printed: 改札内 エレベーター, marked あり). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-f-lift-2",
+      "category": "elevator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "副都心線 エレベーター 西通路東改札～Ｃ９番出入口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Fukutoshin lift table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札外のエレベーター（出典の設備表で設置ありと表示）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Outside the gates (as printed: 改札外 エレベーター, marked あり). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-f-lift-3",
+      "category": "elevator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "副都心線 エレベーター 西通路東改札～C１b出入口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Fukutoshin lift table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札外のエレベーター（出典の設備表で設置ありと表示）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Outside the gates (as printed: 改札外 エレベーター, marked あり). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-m-escalator-1",
+      "category": "escalator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "丸ノ内線 エスカレーター（上り・下り） 中央通路東改札～３５番出入口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Marunouchi escalator table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札内外の区分は出典に記載なし。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Inside/outside the gates is not stated on the page. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-m-escalator-2",
+      "category": "escalator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "丸ノ内線 エスカレーター（上り） ホーム（荻窪寄り）～中央通路東改札"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Marunouchi escalator table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札内外の区分は出典に記載なし。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Inside/outside the gates is not stated on the page. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-y-escalator-1",
+      "category": "escalator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "有楽町線 エスカレーター（上り・下り） ホーム（中央・和光市寄り）～南通路西改札"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Yurakucho escalator table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札内外の区分は出典に記載なし。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Inside/outside the gates is not stated on the page. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-y-escalator-2",
+      "category": "escalator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "有楽町線 エスカレーター（上り・下り） ホーム（中央・新木場寄り）～南通路東改札"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Yurakucho escalator table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札内外の区分は出典に記載なし。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Inside/outside the gates is not stated on the page. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-y-escalator-3",
+      "category": "escalator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "有楽町線 エスカレーター（上り・下り） 南通路西改札～４番出入口（エソラ）"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Yurakucho escalator table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札内外の区分は出典に記載なし。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Inside/outside the gates is not stated on the page. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-y-escalator-4",
+      "category": "escalator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "有楽町線 エスカレーター（上り） ホーム（新木場寄り）～南通路東改札"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Yurakucho escalator table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札内外の区分は出典に記載なし。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Inside/outside the gates is not stated on the page. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-f-escalator-1",
+      "category": "escalator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "副都心線 エスカレーター（上り・下り） ホーム（中央・和光市寄り）～西通路西改札"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Fukutoshin escalator table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札内外の区分は出典に記載なし。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Inside/outside the gates is not stated on the page. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-f-escalator-2",
+      "category": "escalator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "副都心線 エスカレーター（上り・下り） ホーム（中央・和光市寄り）～中二階～西通路東改札"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Fukutoshin escalator table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札内外の区分は出典に記載なし。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Inside/outside the gates is not stated on the page. Location and entrance not verified (search only, no route). Current status unknown."
+        },
+        {
+          "lang": "ja",
+          "text": "出典に記載の時刻: 始発～24：00（2026年10月24日閲覧時点の情報です。出典ページに日付の記載はありません。変更されている場合があります）"
+        },
+        {
+          "lang": "en",
+          "text": "Hours printed on the page: 始発～24：00 (as read on 2026-10-24; the page carries no date; may have changed)."
+        }
+      ]
+    },
+    {
+      "id": "metro-f-escalator-3",
+      "category": "escalator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "副都心線 エスカレーター（上り・下り） ホーム（中央・渋谷寄り）～中二階～西通路東改札"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Fukutoshin escalator table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札内外の区分は出典に記載なし。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Inside/outside the gates is not stated on the page. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-f-escalator-4",
+      "category": "escalator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "副都心線 エスカレーター（上り・下り） ホーム（渋谷寄り）～丸ノ内線乗降階連絡通路"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Fukutoshin escalator table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札内外の区分は出典に記載なし。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Inside/outside the gates is not stated on the page. Location and entrance not verified (search only, no route). Current status unknown."
+        },
+        {
+          "lang": "ja",
+          "text": "出典に記載の時刻: 始発～24：15（2026年10月24日閲覧時点の情報です。出典ページに日付の記載はありません。変更されている場合があります）"
+        },
+        {
+          "lang": "en",
+          "text": "Hours printed on the page: 始発～24：15 (as read on 2026-10-24; the page carries no date; may have changed)."
+        }
+      ]
+    },
+    {
+      "id": "metro-f-escalator-5",
+      "category": "escalator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "副都心線 エスカレーター（上り・下り） 西通路東改札～丸ノ内線・有楽町線連絡階"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Fukutoshin escalator table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札内外の区分は出典に記載なし。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Inside/outside the gates is not stated on the page. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-f-escalator-6",
+      "category": "escalator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "副都心線 エスカレーター（上り・下り） 西通路西改札～Ｃ６番出入口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Fukutoshin escalator table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札内外の区分は出典に記載なし。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Inside/outside the gates is not stated on the page. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-f-escalator-7",
+      "category": "escalator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "副都心線 エスカレーター（上り・下り） 西通路西改札～Ｃ７番出入口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Fukutoshin escalator table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札内外の区分は出典に記載なし。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Inside/outside the gates is not stated on the page. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "metro-f-escalator-8",
+      "category": "escalator",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "副都心線 エスカレーター（上り） 西通路東改札～Ｃ８番出入口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-accessibility-2026-10"
+        ],
+        "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro accessibility page, Fukutoshin escalator table"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "改札内外の区分は出典に記載なし。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Inside/outside the gates is not stated on the page. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "exit-1a",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "1a番出口"
+        },
+        {
+          "lang": "en",
+          "text": "Exit 1a"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "1a"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-yardmap-print-2026-10"
+        ],
+        "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro printed yardmap, exit list"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。出典の凡例では、*印の出入口は利用時間に制限があるとされる（時刻は出典に記載なし）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). Legend on page: exits marked * have time restrictions (hours not stated). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "exit-2a",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "2a番出口"
+        },
+        {
+          "lang": "en",
+          "text": "Exit 2a"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "2a"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-yardmap-print-2026-10"
+        ],
+        "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro printed yardmap, exit list"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。出典の凡例では、*印の出入口は利用時間に制限があるとされる（時刻は出典に記載なし）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). Legend on page: exits marked * have time restrictions (hours not stated). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "exit-1b",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "1b番出口"
+        },
+        {
+          "lang": "en",
+          "text": "Exit 1b"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "1b"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-yardmap-print-2026-10"
+        ],
+        "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro printed yardmap, exit list"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。出典の凡例では、*印の出入口は利用時間に制限があるとされる（時刻は出典に記載なし）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). Legend on page: exits marked * have time restrictions (hours not stated). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "exit-2b",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "2b番出口"
+        },
+        {
+          "lang": "en",
+          "text": "Exit 2b"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "2b"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-yardmap-print-2026-10"
+        ],
+        "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro printed yardmap, exit list"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "exit-3",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "3番出口"
+        },
+        {
+          "lang": "en",
+          "text": "Exit 3"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "3"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-yardmap-print-2026-10"
+        ],
+        "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro printed yardmap, exit list"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "exit-c1",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "C1番出口"
+        },
+        {
+          "lang": "en",
+          "text": "Exit C1"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "C1"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-yardmap-print-2026-10"
+        ],
+        "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro printed yardmap, exit list"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "exit-c1b",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "C1b番出口"
+        },
+        {
+          "lang": "en",
+          "text": "Exit C1b"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "C1b"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-yardmap-print-2026-10"
+        ],
+        "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro printed yardmap, exit list"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。出典の出口一覧で、地上へのエレベーターありと表示。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). The exit list marks it as having a lift to street level. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "exit-c2",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "C2番出口"
+        },
+        {
+          "lang": "en",
+          "text": "Exit C2"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "C2"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-yardmap-print-2026-10"
+        ],
+        "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro printed yardmap, exit list"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "exit-c3",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "C3番出口"
+        },
+        {
+          "lang": "en",
+          "text": "Exit C3"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "C3"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-yardmap-print-2026-10"
+        ],
+        "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro printed yardmap, exit list"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "exit-c4",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "C4番出口"
+        },
+        {
+          "lang": "en",
+          "text": "Exit C4"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "C4"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-yardmap-print-2026-10"
+        ],
+        "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro printed yardmap, exit list"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。出典の凡例では、*印の出入口は利用時間に制限があるとされる（時刻は出典に記載なし）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). Legend on page: exits marked * have time restrictions (hours not stated). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "exit-c6",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "C6番出口"
+        },
+        {
+          "lang": "en",
+          "text": "Exit C6"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "C6"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-yardmap-print-2026-10"
+        ],
+        "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro printed yardmap, exit list"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "exit-c7",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "C7番出口"
+        },
+        {
+          "lang": "en",
+          "text": "Exit C7"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "C7"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-yardmap-print-2026-10"
+        ],
+        "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro printed yardmap, exit list"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "exit-c8",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "C8番出口"
+        },
+        {
+          "lang": "en",
+          "text": "Exit C8"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "C8"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-yardmap-print-2026-10"
+        ],
+        "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro printed yardmap, exit list"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "exit-c9",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "C9番出口"
+        },
+        {
+          "lang": "en",
+          "text": "Exit C9"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "C9"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-yardmap-print-2026-10"
+        ],
+        "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro printed yardmap, exit list"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。出典の出口一覧で、地上へのエレベーターありと表示。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). The exit list marks it as having a lift to street level. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "exit-c10",
+      "category": "exit",
+      "operatorId": "tokyometro",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "C10番出口"
+        },
+        {
+          "lang": "en",
+          "text": "Exit C10"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "C10"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-yardmap-print-2026-10"
+        ],
+        "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
+        "checkedDate": "2026-10-24",
+        "locator": "Tokyo Metro printed yardmap, exit list"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "seibu-1f-gate",
+      "category": "ticket_gate",
+      "operatorId": "seibu",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "西武池袋線 1F改札口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "1F改札口"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-ikebukuro-station-2026-10"
+        ],
+        "method": "facts-only 駅情報 page (OD-25), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Seibu station page, AED location notice"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "駅の案内文（AEDの設置記載）に登場する改札口名。AEDの行は対象外。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Gate name as printed in a station notice (AED placement sentence); the AED item itself is out of scope. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "seibu-b1f-gate",
+      "category": "ticket_gate",
+      "operatorId": "seibu",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "西武池袋線 B1F改札口"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "B1F改札口"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-ikebukuro-station-2026-10"
+        ],
+        "method": "facts-only 駅情報 page (OD-25), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24",
+        "locator": "Seibu station page, AED location notice"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "駅の案内文（AEDの設置記載）に登場する改札口名。AEDの行は対象外。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Gate name as printed in a station notice (AED placement sentence); the AED item itself is out of scope. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "seibu-minami-guchi",
+      "category": "other",
+      "operatorId": "seibu",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "西武南口"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-ikebukuro-station-2026-10"
+        ],
+        "method": "facts-only 駅情報 page (OD-25), UNVERIFIED, SEARCH_ONLY; category other: the page does not say whether it is an exit or a gate",
+        "checkedDate": "2026-10-24",
+        "locator": "Seibu station page, station facility hours section"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "駅施設の営業時間の一覧に掲載（出入口か改札かの区分は出典に記載なし）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+        },
+        {
+          "lang": "en",
+          "text": "Listed under 駅施設の営業時間 (facility hours); whether it is an exit or a gate is not stated. Location and entrance not verified (search only, no route). Current status unknown."
+        },
+        {
+          "lang": "ja",
+          "text": "出典に記載の時刻: 西武南口 7:00～22:30（2026年10月24日閲覧時点の情報です。出典ページに日付の記載はありません。変更されている場合があります）"
+        },
+        {
+          "lang": "en",
+          "text": "Hours printed on the page: 西武南口 7:00～22:30 (as read on 2026-10-24; the page carries no date; may have changed)."
+        }
+      ]
+    }
+  ],
+  "factsForExisting": [
+    {
+      "poiId": "metro-m-central-west-gate",
+      "fact": "丸ノ内線 改札内 エレベーター（対応あり）の設置場所: ホーム（終端寄り）～中央通路西改札",
+      "sourceId": "tokyometro-ikebukuro-accessibility-2026-10",
+      "locator": "Tokyo Metro accessibility page, lift and escalator tables"
+    },
+    {
+      "poiId": "metro-m-central-east-gate",
+      "fact": "丸ノ内線 改札外 エレベーター（対応あり）の設置場所: 中央通路東改札～３４番出入口",
+      "sourceId": "tokyometro-ikebukuro-accessibility-2026-10",
+      "locator": "Tokyo Metro accessibility page, lift and escalator tables"
+    },
+    {
+      "poiId": "metro-m-central-east-gate",
+      "fact": "丸ノ内線 エスカレーター（上り・下り、対応あり）の設置場所: 中央通路東改札～３５番出入口",
+      "sourceId": "tokyometro-ikebukuro-accessibility-2026-10",
+      "locator": "Tokyo Metro accessibility page, lift and escalator tables"
+    },
+    {
+      "poiId": "metro-y-south-west-gate",
+      "fact": "有楽町線 改札内 エレベーター（対応あり）の設置場所: ホーム（和光市寄り）～南通路西改札",
+      "sourceId": "tokyometro-ikebukuro-accessibility-2026-10",
+      "locator": "Tokyo Metro accessibility page, lift and escalator tables"
+    },
+    {
+      "poiId": "exit-4",
+      "fact": "構内図印刷ページの出口一覧で、地上へのエレベーターがある出口として表示",
+      "sourceId": "tokyometro-ikebukuro-yardmap-print-2026-10",
+      "locator": "Tokyo Metro printed yardmap, exit list"
+    },
+    {
+      "poiId": "exit-34",
+      "fact": "丸ノ内線 改札外 エレベーター（対応あり）の端点: 中央通路東改札～３４番出入口",
+      "sourceId": "tokyometro-ikebukuro-accessibility-2026-10",
+      "locator": "Tokyo Metro accessibility page, lift and escalator tables"
+    },
+    {
+      "poiId": "exit-35",
+      "fact": "構内図印刷ページの出口一覧で、地上へのエレベーターがある出口として表示",
+      "sourceId": "tokyometro-ikebukuro-yardmap-print-2026-10",
+      "locator": "Tokyo Metro printed yardmap, exit list"
+    },
+    {
+      "poiId": "exit-35",
+      "fact": "丸ノ内線 エスカレーター（上り・下り、対応あり）の端点: 中央通路東改札～３５番出入口",
+      "sourceId": "tokyometro-ikebukuro-accessibility-2026-10",
+      "locator": "Tokyo Metro accessibility page, lift and escalator tables"
+    },
+    {
+      "poiId": "exit-39",
+      "fact": "構内図印刷ページの出口一覧で39番に*印（凡例では利用時間に制限がある出入口）",
+      "sourceId": "tokyometro-ikebukuro-yardmap-print-2026-10",
+      "locator": "Tokyo Metro printed yardmap, exit list"
+    },
+    {
+      "poiId": "exit-40",
+      "fact": "構内図印刷ページの出口一覧で40番に*印（凡例では利用時間に制限がある出入口）",
+      "sourceId": "tokyometro-ikebukuro-yardmap-print-2026-10",
+      "locator": "Tokyo Metro printed yardmap, exit list"
+    }
+  ],
+  "notFound": [
+    "Tokyo Metro platform numbers (ホーム / のりば numbers): not stated in page text (station page, print yardmap); platform references appear only as ホーム（…寄り） end-points, so no platform POIs created",
+    "Tokyo Metro exit names and positions from the JS-rendered 3D 出口案内 modal on the station page: not read (print yardmap exit list used instead)",
+    "Tokyo Metro escalator 改札内/改札外 split: not stated on the accessibility page for escalators (only elevators carry 改札内/改札外 labels)",
+    "Tokyo Metro 階段昇降機 rows (Marunouchi none, Yurakucho none, Fukutoshin あり: 西通路東改札～丸ノ内線・有楽町線連絡階): not elevator/escalator, excluded from POIs",
+    "Tokyo Metro 'なし' (not available) equipment rows (車いす対応エスカレーター, エスカレーター（下り）, etc.): excluded, no end-pairs printed",
+    "Tokyo Metro 運転停止予定 (2026年10月16日 等の点検・停止スケジュール): not transcribed; current status unknown",
+    "Seibu platform numbers / のりば: not stated in page text",
+    "Seibu lifts and escalators (エレベーター、エスカレーター、階段の位置): only shown as images (si01_pos_8.png, si01_pos_10.png); no end-pair text on page; screenshot attempt timed out, so not transcribed",
+    "Seibu gate names other than 1F改札口 and B1F改札口: not stated in page text",
+    "Seibu exit codes (numbered/lettered): not stated in page text; 西武南口 is the only exit-like name",
+    "Metro exit 12 and other numbers absent from the printed 出口案内 list: no POI created"
+  ],
+  "conflicts": [
+    "C9: the print page writes the code with half-width digits, the accessibility page with full-width digits. Spelling only; the POI uses C9.",
+    "C1b: the print page writes C1b, the accessibility page writes its 1 as a full-width digit. Spelling only; the POI uses C1b."
+  ]
+}
