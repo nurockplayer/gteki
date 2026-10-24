@@ -4597,9 +4597,8 @@
    "url": "https://www.lumine.ne.jp/shinjuku/floorguide/detail/?scd=002379",
    "retrievedAt": "2026-10-24T12:07:19Z",
    "pageDate": null,
-   "status": "OK",
-   "hoursText": "※最新の営業時間については下記のよしもと公式サイトをご確認ください 。",
-   "basis": "undated-official"
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
   },
   {
    "poiId": "shop-sjk-lumine-002380",
@@ -4607,9 +4606,8 @@
    "url": "https://www.lumine.ne.jp/shinjuku/floorguide/detail/?scd=002380",
    "retrievedAt": "2026-10-24T12:07:21Z",
    "pageDate": null,
-   "status": "OK",
-   "hoursText": "※最新の営業時間については下記のよしもと公式サイトをご確認ください 。",
-   "basis": "undated-official"
+   "status": "UNKNOWN",
+   "reason": "no hours printed"
   },
   {
    "poiId": "shop-sjk-newoman-003262",

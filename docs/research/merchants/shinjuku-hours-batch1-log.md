@@ -48,16 +48,16 @@ Batch 2 (576 POIs) cites three mall floor guides. Those pages print shop names a
 | www.opendata.metro.tokyo.lg.jp (Toei Nishi-guchi CSV) | 1 | 0 | 0 | 1 | 0 |
 | www.tokyometro.jp (Metro Shinjuku) | 4 | 0 | 0 | 4 | 0 |
 | www.lumine.ne.jp/est (245; 54 read) | 245 | 54 | 191 | 0 | 0 |
-| www.lumine.ne.jp/shinjuku (all 230 read) | 230 | 226 | 4 | 0 | 0 |
+| www.lumine.ne.jp/shinjuku (all 230 read) | 230 | 224 | 6 | 0 | 0 |
 | www.newoman.jp/shinjuku (all 101 read) | 101 | 101 | 0 | 0 | 0 |
 | www.odakyu-dept.co.jp (department-store POI) | 1 | 0 | 0 | 0 | 1 (date older than 2026-04-27) |
 | 15 chain pages (recovery batch 1) | 15 | 14 | 1 | 0 | 0 |
 | buildings (Lumine Est / Lumine Shinjuku / NEWoMan / Odakyu hours pages) | 4 entries | 4 | 0 | 0 | 0 |
-| **total** | **602 entries** | **399** | **196** | **5** | **2** |
+| **total** | **602 entries** | **397** | **198** | **5** | **2** |
 
-All 399 OK entries carry `pageDate: null` and `basis: "undated-official"` except one: `shop-sjk-newoman-003262` (PUPA) keeps its dated OK (`pageDate: 2026-10-24`), unchanged as instructed.
+All 397 OK entries carry `pageDate: null` and `basis: "undated-official"` except one: `shop-sjk-newoman-003262` (PUPA) keeps its dated OK (`pageDate: 2026-10-24`), unchanged as instructed.
 
-The four shops whose detail page prints no hours line stay `no hours printed`: `shop-sjk-lumine-002665`, `shop-sjk-lumine-003202`, `shop-sjk-lumine-000269`, `shop-sjk-lumine-002663` (all LUMINE新宿), plus `shop-sjk-rec-011` (PRESS BUTTER SAND — a pickup-order page with no hours block).
+The six shops whose detail page prints no hours line (or only a pointer to another site) stay `no hours printed`: `shop-sjk-lumine-002665`, `shop-sjk-lumine-003202`, `shop-sjk-lumine-000269`, `shop-sjk-lumine-002663`, `shop-sjk-lumine-002379`, `shop-sjk-lumine-002380` (all LUMINE新宿; the last two print only `※最新の営業時間については下記のよしもと公式サイトをご確認ください`, which is not a time), plus `shop-sjk-rec-011` (PRESS BUTTER SAND — a pickup-order page with no hours block).
 
 ## Building entries (OD-32 amendment)
 
@@ -153,5 +153,5 @@ Also outstanding: 4 Metro shops, 1 Toei shop, 1 Toei CSV row, and `shop-sjk-rec-
 ## Totals
 
 602 entries = 598 POI entries (one per POI in scope) + 4 building entries.
-OK 399 (398 undated official + 1 dated) · UNKNOWN 203 (no hours printed 196, no date 5, date older than 2026-04-27 1, page unreadable 1).
+OK 397 (396 undated official + 1 dated) · UNKNOWN 205 (no hours printed 198, no date 5, date older than 2026-04-27 1, page unreadable 1).
 JSON parses (`json.load`), all `poiId`s unique, 598 POIs covered exactly once, all ids present at the current head of their source file.
