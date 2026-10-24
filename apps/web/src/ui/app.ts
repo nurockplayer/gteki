@@ -1199,6 +1199,8 @@ export class App {
       audio: () => this.explorer.audioInfo(),
       walkFromNode: (nodeId: string) => (this.s.loaded ? this.explorer.walkFromNode(this.s.loaded.bundle, nodeId) : false),
       simulate: (seconds: number, keys: string[] = []) => this.explorer.simulate(seconds, keys),
+      walkPath: (points: { x: number; z: number; y?: number }[], opts?: { speed?: "walk" | "run"; dt?: number; maxSeconds?: number; onStep?: (i: number) => void }) => this.explorer.walkPath(points, opts),
+      signClearance: (radiusM?: number) => this.explorer.signClearance(radiusM),
     };
   }
 }
