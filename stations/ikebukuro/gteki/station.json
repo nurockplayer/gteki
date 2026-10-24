@@ -566,7 +566,7 @@
    "datasetDate": null,
    "notes": "ライセンスなし・事実のみ参照（複製なし）。駅の案内文の改札口名、駅施設の営業時間（西武南口）を確認。エレベーター・エスカレーター位置は画像のみで本文に無し。 Rights: OD-25 (docs/research/owner-decisions-pending.md; decided 2026-10-22 by the director under the Owner's delegation, recorded in PR #222): same class as Tokyo Metro, facts-only under #26.",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/222", "date": "2026-10-22" }
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
   },
   {
    "id": "lumine-ikebukuro-floorguide-2026-10",
@@ -576,7 +576,7 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311", "date": "2026-10-24" },
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
    "attribution": "フロアガイド │ ルミネ池袋 │ LUMINE (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -591,7 +591,7 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311", "date": "2026-10-24" },
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
    "attribution": "フロアガイドB1｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -606,7 +606,7 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311", "date": "2026-10-24" },
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
    "attribution": "東武百貨店 池袋店トップ (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",

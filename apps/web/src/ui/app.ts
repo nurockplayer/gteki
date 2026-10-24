@@ -13,7 +13,7 @@ import { listStations, StationLoadError, type LoadedStation, type StationEntry }
 import { noPathView } from "../noPath.ts";
 import { isUnlocatedShop, noRouteText } from "./noRouteText.ts";
 import { stationClock } from "../stationClock.ts";
-import { assetDerivationPresentation, factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
+import { assetDerivationPresentation, dataFileCredits, dataFileRowText, factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { nodeLabel, poiLabel } from "./labels.ts";
@@ -1203,6 +1203,17 @@ export class App {
           ul.append(li);
         }
         d.append(el("h3", undefined, this.t.assetDerivations), ul);
+      }
+      // Declared data files that GTEki derived from sources (#121); authored config files are never credited.
+      const dataRows = dataFileCredits(b.dataFiles, b.sources);
+      if (dataRows.length) {
+        const ul = el("ul");
+        for (const f of dataRows) {
+          const li = el("li");
+          li.append(document.createTextNode(dataFileRowText(f)));
+          ul.append(li);
+        }
+        d.append(el("h3", undefined, this.t.dataFileDerivations), ul);
       }
     }
     d.showModal();

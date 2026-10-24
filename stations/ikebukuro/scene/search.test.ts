@@ -153,6 +153,7 @@ describe("Ikebukuro golden search", () => {
   // 百貨店 only on the Tobu Department Store POI, which cites the store's own page (OD-34); Sogo & Seibu stays excluded.
   const SEIBU_SOURCE = "seibu-ikebukuro-station-2026-10";
   const TOBU_DEPT_SOURCE = "tobu-dept-ikebukuro-2026-10";
+  const TOBU_DEPT_POI = "shop-ikb-tobudept";
   describe("no false gate for names the data does not evidence", () => {
     for (const q of ["そごう", "PARCO", "パルコ", "山手線"]) {
       it(`${JSON.stringify(q)} returns no gate or exit`, () => {
@@ -177,7 +178,7 @@ describe("Ikebukuro golden search", () => {
           .filter(
             ({ text }) =>
               banned.test(text) ||
-              (departmentStore.test(text) && !poi.evidence.sourceIds.includes(TOBU_DEPT_SOURCE)) ||
+              (departmentStore.test(text) && !(poi.id === TOBU_DEPT_POI && poi.evidence.sourceIds.includes(TOBU_DEPT_SOURCE))) ||
               (seibu.test(text) && !poi.evidence.sourceIds.includes(SEIBU_SOURCE)),
           )
           .map(({ text }) => `${poi.id}: ${text}`),

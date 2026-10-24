@@ -6,6 +6,14 @@ route computed by the existing TypeScript router. Godot contains no routing
 implementation. All fixture data is synthetic and cannot be used for real station
 directions.
 
+## Handoff (G-5)
+
+Deliberate simplifications, known gaps and the commands a successor needs are collected in
+[docs/g5-handoff.md](docs/g5-handoff.md). G-1 to G-3 are merged; G-4 is partial (the interior is still too dark, #401,
+and the kit AO waits on #352); G-5's evidence walks and first performance table are merged, and that document is its
+last item. GPU work runs only on weekdays 03:00–15:00 JST, single process under `lockf`, with
+`--rendering-method forward_plus` on the command line while `project.godot` stays `gl_compatibility`.
+
 From the workspace root, with its pinned pnpm dependencies installed:
 
 ```sh
@@ -428,7 +436,11 @@ A run that compares lighting variants can override the approximation without edi
 bounds — flat geometry included, each axis grown 0.5 m per side and at least 1 m — before the first frame),
 `gi_energy` (0–16, only with `sdfgi` or `voxelgi`), `probe_ambient` (`disabled` by default, `environment` or
 `color`, only when an interior probe exists), `probe_ambient_colour` (`#rrggbb`, sRGB exactly as written),
-`probe_ambient_energy` (0–16) and `ssao` (`true` by default). The probe colour and energy only take effect in
+`probe_ambient_energy` (0–16) and `ssao` (`true` by default). G-5 extras: `light_scale` (0.1–8, multiplies every hint
+spot's energy), `spot_range_m` (1–60) and `spot_angle_deg` (10–89) replace the hint spots' range and cone angle; `ssil`
+(`true`/`false`) with `ssil_intensity` (0–16, needs `ssil=true`); with `gi=sdfgi`, `sdfgi_bounce` (0–1.99),
+`sdfgi_occlusion` and `sdfgi_sky` (`true`/`false`) and `sdfgi_min_cell` (0.05–2); with `gi=voxelgi`, `voxelgi_subdiv`
+(`64`, `128`, `256` or `512`, set before the bake) and `voxelgi_propagation` (0–1); `agx_white` (1–64). The probe colour and energy only take effect in
 `AMBIENT_COLOR` mode, so they are argument errors without `probe_ambient=color`; without an explicit colour that
 mode uses `APPROXIMATION.colour_linear` converted to sRGB, like the background. Unknown keys, out-of-range values
 and duplicate keys fail the run like any other argument. The effective overrides are recorded as the report's
