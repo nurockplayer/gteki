@@ -75,7 +75,7 @@ The submitter ticks a versioned consent with these effects (wording to be finali
 | `RECEIVED` | form accepted | nothing published; contact kept (§2) |
 | `IDENTITY_UNCONFIRMED` | §2 check fails | nothing published; one follow-up attempt, then closed |
 | `PENDING_REVIEW` | identity ok, in queue | nothing published |
-| `VERIFIED` | checked against the shop's own page (dated ≤180 days) or a field photo taken by us | one `Source` added; POI created or updated (§6) |
+| `APPROVED` | checked against the shop's own page (dated ≤180 days) or a field photo taken by us; still shown as merchant-submitted and UNVERIFIED | one `Source` added; POI created or updated (§6) |
 | `REJECTED` | impersonation, no authority, banned content, duplicate of a different shop | nothing published; reason logged |
 | `WITHDRAWN` | submitter asks | POI removed or reverted at the next merge |
 
@@ -83,7 +83,7 @@ Rules:
 
 - **Ranking is source-type neutral.** Merchant-submitted entries get no bonus and no penalty; current ranking is text-match quality plus the routable +5 bonus (core-search-6a).
 - **No route from a submission.** `connectorNodeIds` stays `[]` (router answers `unknown_goal`, "destination has no verified entrance") until GIS aligns an entrance to verified graph nodes.
-- **Verified means "the shop said so, and we checked the shop's own page",** not "field-surveyed". `Poi` has no verification enum; the wording lives in `evidence.method` (and the UI label).
+- **Approved means "the shop said so, and we checked the shop's own page",** not verified or field-surveyed; the data stays UNVERIFIED and is labelled merchant-submitted. `Poi` has no verification enum; the wording lives in `evidence.method` (and the UI label).
 - **Existing POIs.** Same shop, better facts → update the existing `Poi.id` in place; never renumber. Unclear whether it is the same shop → `PENDING_REVIEW`, never a silent second POI. A merchant submission never overwrites field-verified facts (`displayPosition`, `connectorNodeIds`, `paid`) without a Lead decision.
 - **Single writer.** Only that station's writer merges data (ikb-route-15 for Ikebukuro, sjk-search-78 for Shinjuku); data research does not touch `stations/`.
 - **Audit trail.** One `Source` per submission (or per verification batch), `decision` = the approval record URL under #26; the queue row keeps the submission id, reviewer, date, state history.
