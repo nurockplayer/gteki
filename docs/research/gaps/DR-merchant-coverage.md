@@ -6,13 +6,14 @@
 - Scope: counts only. No store names, logos, photos, maps or copy are reproduced here. Official names were used in memory for matching against OSM and are not stored.
 - Source ids follow `context-DR-merchant-sources.md` (DR-MR-01..17). New ids added here: DR-MR-18 to DR-MR-21.
 
-## 1. Short answer
+## 1. Short answer (updated 2026-10-24 after OD-33)
 
-- **What the denominator is:** only shops listed in the official directories we could read. Shops not listed anywhere, JR East in-station shops (GAP) and the unreadable directories are not in it, so every coverage figure here is an upper bound on true coverage.
-- **Can 70% be found by search?** Ikebukuro: **borderline, not yet.** Tokyo Metro, Echika and ISP are importable facts-only (OD-31 / #26); Tobu Hope Center's directory is **not** covered by OD-31 (its rights are UNKNOWN in DR-MR-03; OD-18 covers only simple connection facts), so its 43 entries are pending a decision. Searchable today: 110 of 153 raw (72%), or about 84 of about 127 after de-duplication (about 66%, estimate). With Hope Center given OD-31 treatment: 100% of the listed entries. Shinjuku: no. Only 8 of 51 known (a)-scope entries (16%) are importable today. Odakyu Ace (43 entries) is pending terms, and the Subnade and Keio Mall counts are GAPs.
-- **Can a shop get an OSM point?** About 18% of the (a)-scope shops (36 of 200 by name match, estimate). Ikebukuro is about 17% and Shinjuku about 21%. The E27-scope list has one shop, and it matches by name (1 of 1, estimate).
-- **70% target:** Ikebukuro is at about 66–72% of listed entries today and reaches 100% of listed entries if Hope Center gets OD-31 treatment (an Owner decision; completeness of the directory list is not established). **Not met** for Shinjuku (16% of the known listed entries; Odakyu Ace terms pending and Subnade / Keio Mall unread).
-- **JR East in-station denominator:** GAP. The two search summaries gave no in-station shop counts, so the "including JR" coverage cannot be computed.
+- **Denominator:** only shops listed in the official directories we could read (station passages plus directly connected underground malls). Unlisted shops and JR East in-station shops (GAP; OD-02, denominator only) are not in it, so every figure is an upper bound on true coverage.
+- **Ikebukuro: 70% met on listed entries.** With OD-33 (Tobu Hope Center gets OD-31 treatment), all four directories are importable facts-only: 153 of 153 raw (about 127 of 127 de-duplicated) = 100% of listed entries. Before OD-33 it was 110/153 = 72% raw, about 66% de-duplicated.
+- **Shinjuku: 64% of the directories read today; about 84% if Subnade is counted.** Read and counted: Toei 1, S10 新宿西口 1, Metro 6, Odakyu Ace 43 (importable since OD-33), Keio Mall + Annex 29 (DR-MR-21: https://ekishop.keio-sc.jp/keiomall-keiomallannex/, read 2026-10-24T02:49:33Z, exact; the old keio-mall.jp host no longer resolves). Keio Mall's terms are not yet ruled, so it is pending. Searchable now: 51 of 80 = **64%**. Shinjuku Subnade's official site refused connections on 2026-10-24 (plain request, ego-lite read-only at about 02:55Z, and curl all failed); public secondary pages give "about 100" / 97 shops (2020) — **estimate**, secondary, not an official count. Counting Subnade (OD-31, importable once its list can be read) at about 100: about 151 of about 180 = **about 84% (estimate)**; with Keio Mall cleared too, 100% of listed entries.
+- **Positions:** about 18% of listed shops (36 of 200 by name match in the station box, estimate) have an OpenStreetMap point; Ikebukuro about 17%, Shinjuku about 21%. The E27-scope list has one shop, matched by name (1 of 1, estimate). Name matching does not prove the point is inside the station.
+- **JR East in-station denominator:** GAP (no counts in public search summaries), so "including JR" coverage cannot be computed.
+- **Open items:** Keio Mall terms (ruling needed); Subnade official list (site down; retry later).
 
 ## 2. Per-station source tables
 
@@ -158,7 +159,9 @@ GAPs:
 - G4: Lumine Shinjuku not read. Classed (b) without verification.
 - G5: Seibu Ikebukuro floor counts not read. Classed (b), so not in the denominator anyway.
 - G6: Odakyu Ace and Keio Mall terms (pending terms). Odakyu Ace is excluded from searchable.
-- G9: Tobu Hope Center directory rights (DR-MR-03 UNKNOWN; not in OD-31). Owner question: give it OD-31 treatment? That alone moves Ikebukuro from about 66–72% to 100% of listed entries.
+- G9: Tobu Hope Center directory rights: decided by OD-33 (OD-31 treatment). Ikebukuro is now 100% of listed entries.
+- G10: Keio Mall directory terms not yet ruled (29 shops pending).
+- G11: Shinjuku Subnade official site refused connections on 2026-10-24 (plain, ego-lite, curl); count is a secondary estimate (about 100).
 - G7: Metro Shinjuku page does not mention メトロプロムナード; no separate count for it.
 - G8: Exact retrieval time of the first successful Q1 response is not logged.
 
