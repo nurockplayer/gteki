@@ -509,137 +509,152 @@
   {
    "poiId": "shop-sjk-lumineest-003117",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003117",
+   "retrievedAt": "2026-10-24T12:11:19Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003130",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003130",
+   "retrievedAt": "2026-10-24T12:11:20Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002690",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002690",
+   "retrievedAt": "2026-10-24T12:11:21Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002165",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002165",
+   "retrievedAt": "2026-10-24T12:11:23Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003077",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003077",
+   "retrievedAt": "2026-10-24T12:11:24Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002363",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002363",
+   "retrievedAt": "2026-10-24T12:11:25Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002232",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002232",
+   "retrievedAt": "2026-10-24T12:11:26Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003071",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003071",
+   "retrievedAt": "2026-10-24T12:11:27Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003105",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003105",
+   "retrievedAt": "2026-10-24T12:11:28Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002329",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002329",
+   "retrievedAt": "2026-10-24T12:11:30Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002171",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002171",
+   "retrievedAt": "2026-10-24T12:11:31Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003494",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003494",
+   "retrievedAt": "2026-10-24T12:11:32Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003496",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003496",
+   "retrievedAt": "2026-10-24T12:11:33Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00 ※ショップ切り替えの為、休業日を設けることがございます。",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002174",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002174",
+   "retrievedAt": "2026-10-24T12:11:34Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002150",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002150",
+   "retrievedAt": "2026-10-24T12:11:35Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003450",
@@ -654,173 +669,192 @@
   {
    "poiId": "shop-sjk-lumineest-002145",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002145",
+   "retrievedAt": "2026-10-24T12:11:36Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002088",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002088",
+   "retrievedAt": "2026-10-24T12:11:37Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002365",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002365",
+   "retrievedAt": "2026-10-24T12:11:39Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003321",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003321",
+   "retrievedAt": "2026-10-24T12:11:40Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002133",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002133",
+   "retrievedAt": "2026-10-24T12:11:41Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003313",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003313",
+   "retrievedAt": "2026-10-24T12:11:42Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002196",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002196",
+   "retrievedAt": "2026-10-24T12:11:43Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002080",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002080",
+   "retrievedAt": "2026-10-24T12:11:44Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002122",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002122",
+   "retrievedAt": "2026-10-24T12:11:45Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002103",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002103",
+   "retrievedAt": "2026-10-24T12:11:46Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002249",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002249",
+   "retrievedAt": "2026-10-24T12:11:47Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00～22:00（L.O.22:00） 土日祝 10:30～22:00（L.O.22:00）",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003493",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003493",
+   "retrievedAt": "2026-10-24T12:11:49Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003451",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003451",
+   "retrievedAt": "2026-10-24T12:11:50Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002109",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002109",
+   "retrievedAt": "2026-10-24T12:11:51Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002070",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002070",
+   "retrievedAt": "2026-10-24T12:11:52Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002238",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002238",
+   "retrievedAt": "2026-10-24T12:11:53Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00～21:00 土日祝 10:30～21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002364",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002364",
+   "retrievedAt": "2026-10-24T12:11:54Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003249",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003249",
+   "retrievedAt": "2026-10-24T12:11:55Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002178",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002178",
+   "retrievedAt": "2026-10-24T12:11:57Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002253",
@@ -835,125 +869,138 @@
   {
    "poiId": "shop-sjk-lumineest-003490",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003490",
+   "retrievedAt": "2026-10-24T12:11:58Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002101",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002101",
+   "retrievedAt": "2026-10-24T12:11:59Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日11:00-21:00（ショコリキサーのL.O.20:00） 土日祝10:30-21:00（ショコリキサーのL.O.20:00）",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002175",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002175",
+   "retrievedAt": "2026-10-24T12:12:00Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003107",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003107",
+   "retrievedAt": "2026-10-24T12:12:01Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002162",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002162",
+   "retrievedAt": "2026-10-24T12:12:02Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日・土日祝 9:00～21:00（L.O.20:30）",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003106",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003106",
+   "retrievedAt": "2026-10-24T12:12:03Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002092",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002092",
+   "retrievedAt": "2026-10-24T12:12:04Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002137",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002137",
+   "retrievedAt": "2026-10-24T12:12:05Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002129",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002129",
+   "retrievedAt": "2026-10-24T12:12:06Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003134",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003134",
+   "retrievedAt": "2026-10-24T12:12:08Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002158",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002158",
+   "retrievedAt": "2026-10-24T12:12:09Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002130",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002130",
+   "retrievedAt": "2026-10-24T12:12:10Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002323",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002323",
+   "retrievedAt": "2026-10-24T12:12:11Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002520",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002520",
+   "retrievedAt": "2026-10-24T12:12:12Z",
    "pageDate": null,
    "status": "UNKNOWN",
    "reason": "no hours printed"
@@ -961,47 +1008,52 @@
   {
    "poiId": "shop-sjk-lumineest-002228",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002228",
+   "retrievedAt": "2026-10-24T12:12:13Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日・土日祝 7:30～22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003491",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003491",
+   "retrievedAt": "2026-10-24T12:12:14Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002140",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002140",
+   "retrievedAt": "2026-10-24T12:12:15Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002117",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002117",
+   "retrievedAt": "2026-10-24T12:12:16Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002071",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002071",
+   "retrievedAt": "2026-10-24T12:12:17Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002108",
@@ -1016,173 +1068,192 @@
   {
    "poiId": "shop-sjk-lumineest-002200",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002200",
+   "retrievedAt": "2026-10-24T12:12:18Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002521",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002521",
+   "retrievedAt": "2026-10-24T12:12:20Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002134",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002134",
+   "retrievedAt": "2026-10-24T12:12:21Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002136",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002136",
+   "retrievedAt": "2026-10-24T12:12:22Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002051",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002051",
+   "retrievedAt": "2026-10-24T12:12:23Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002059",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002059",
+   "retrievedAt": "2026-10-24T12:12:24Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002056",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002056",
+   "retrievedAt": "2026-10-24T12:12:25Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002243",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002243",
+   "retrievedAt": "2026-10-24T12:12:26Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00～21:00（L.O.20:00） 土日祝 10:30～21:00（L.O.20:00）",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002076",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002076",
+   "retrievedAt": "2026-10-24T12:12:27Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002044",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002044",
+   "retrievedAt": "2026-10-24T12:12:28Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002075",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002075",
+   "retrievedAt": "2026-10-24T12:12:30Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002210",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002210",
+   "retrievedAt": "2026-10-24T12:12:31Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002091",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002091",
+   "retrievedAt": "2026-10-24T12:12:32Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002221",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002221",
+   "retrievedAt": "2026-10-24T12:12:33Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002119",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002119",
+   "retrievedAt": "2026-10-24T12:12:34Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003284",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003284",
+   "retrievedAt": "2026-10-24T12:12:35Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002321",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002321",
+   "retrievedAt": "2026-10-24T12:12:36Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002083",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002083",
+   "retrievedAt": "2026-10-24T12:12:38Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002534",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002534",
+   "retrievedAt": "2026-10-24T12:12:39Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002248",
@@ -1197,173 +1268,192 @@
   {
    "poiId": "shop-sjk-lumineest-002536",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002536",
+   "retrievedAt": "2026-10-24T12:12:40Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002115",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002115",
+   "retrievedAt": "2026-10-24T12:12:41Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003131",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003131",
+   "retrievedAt": "2026-10-24T12:12:42Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002163",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002163",
+   "retrievedAt": "2026-10-24T12:12:44Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003090",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003090",
+   "retrievedAt": "2026-10-24T12:12:45Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002072",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002072",
+   "retrievedAt": "2026-10-24T12:12:46Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003495",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003495",
+   "retrievedAt": "2026-10-24T12:12:47Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002085",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002085",
+   "retrievedAt": "2026-10-24T12:12:48Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002535",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002535",
+   "retrievedAt": "2026-10-24T12:12:50Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002484",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002484",
+   "retrievedAt": "2026-10-24T12:12:51Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002184",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002184",
+   "retrievedAt": "2026-10-24T12:12:52Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002151",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002151",
+   "retrievedAt": "2026-10-24T12:12:53Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002335",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002335",
+   "retrievedAt": "2026-10-24T12:12:54Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002188",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002188",
+   "retrievedAt": "2026-10-24T12:12:55Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003297",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003297",
+   "retrievedAt": "2026-10-24T12:12:57Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002141",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002141",
+   "retrievedAt": "2026-10-24T12:12:58Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002199",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002199",
+   "retrievedAt": "2026-10-24T12:12:59Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002054",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002054",
+   "retrievedAt": "2026-10-24T12:13:00Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002372",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002372",
+   "retrievedAt": "2026-10-24T12:13:01Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002040",
@@ -1378,173 +1468,192 @@
   {
    "poiId": "shop-sjk-lumineest-002166",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002166",
+   "retrievedAt": "2026-10-24T12:13:02Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003076",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003076",
+   "retrievedAt": "2026-10-24T12:13:04Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002551",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002551",
+   "retrievedAt": "2026-10-24T12:13:05Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002093",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002093",
+   "retrievedAt": "2026-10-24T12:13:06Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002132",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002132",
+   "retrievedAt": "2026-10-24T12:13:07Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002226",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002226",
+   "retrievedAt": "2026-10-24T12:13:08Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002212",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002212",
+   "retrievedAt": "2026-10-24T12:13:09Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002180",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002180",
+   "retrievedAt": "2026-10-24T12:13:10Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002251",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002251",
+   "retrievedAt": "2026-10-24T12:13:11Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003086",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003086",
+   "retrievedAt": "2026-10-24T12:13:16Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003299",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003299",
+   "retrievedAt": "2026-10-24T12:13:17Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003497",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003497",
+   "retrievedAt": "2026-10-24T12:13:18Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002244",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002244",
+   "retrievedAt": "2026-10-24T12:13:19Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002522",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002522",
+   "retrievedAt": "2026-10-24T12:13:20Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002537",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002537",
+   "retrievedAt": "2026-10-24T12:13:21Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003437",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003437",
+   "retrievedAt": "2026-10-24T12:13:22Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002169",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002169",
+   "retrievedAt": "2026-10-24T12:13:23Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002173",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002173",
+   "retrievedAt": "2026-10-24T12:13:24Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003125",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003125",
+   "retrievedAt": "2026-10-24T12:13:25Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002185",
@@ -1559,125 +1668,138 @@
   {
    "poiId": "shop-sjk-lumineest-003492",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003492",
+   "retrievedAt": "2026-10-24T12:13:26Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003261",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003261",
+   "retrievedAt": "2026-10-24T12:13:28Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002089",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002089",
+   "retrievedAt": "2026-10-24T12:13:29Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003452",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003452",
+   "retrievedAt": "2026-10-24T12:13:30Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003328",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003328",
+   "retrievedAt": "2026-10-24T12:13:31Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002146",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002146",
+   "retrievedAt": "2026-10-24T12:13:32Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002107",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002107",
+   "retrievedAt": "2026-10-24T12:13:33Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002187",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002187",
+   "retrievedAt": "2026-10-24T12:13:34Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003073",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003073",
+   "retrievedAt": "2026-10-24T12:13:35Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002368",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002368",
+   "retrievedAt": "2026-10-24T12:13:36Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002483",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002483",
+   "retrievedAt": "2026-10-24T12:13:38Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002328",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002328",
+   "retrievedAt": "2026-10-24T12:13:39Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003456",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003456",
+   "retrievedAt": "2026-10-24T12:13:40Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003453",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003453",
+   "retrievedAt": "2026-10-24T12:13:41Z",
    "pageDate": null,
    "status": "UNKNOWN",
    "reason": "no hours printed"
@@ -1685,47 +1807,52 @@
   {
    "poiId": "shop-sjk-lumineest-002217",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002217",
+   "retrievedAt": "2026-10-24T12:13:43Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002322",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002322",
+   "retrievedAt": "2026-10-24T12:13:44Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002208",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002208",
+   "retrievedAt": "2026-10-24T12:13:45Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002325",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002325",
+   "retrievedAt": "2026-10-24T12:13:46Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002197",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002197",
+   "retrievedAt": "2026-10-24T12:13:48Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003285",
@@ -1740,173 +1867,192 @@
   {
    "poiId": "shop-sjk-lumineest-002219",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002219",
+   "retrievedAt": "2026-10-24T12:13:49Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002336",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002336",
+   "retrievedAt": "2026-10-24T12:13:50Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002131",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002131",
+   "retrievedAt": "2026-10-24T12:13:51Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002077",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002077",
+   "retrievedAt": "2026-10-24T12:13:52Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002068",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002068",
+   "retrievedAt": "2026-10-24T12:13:53Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002201",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002201",
+   "retrievedAt": "2026-10-24T12:13:54Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002332",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002332",
+   "retrievedAt": "2026-10-24T12:13:55Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002152",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002152",
+   "retrievedAt": "2026-10-24T12:13:56Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002121",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002121",
+   "retrievedAt": "2026-10-24T12:13:57Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003088",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003088",
+   "retrievedAt": "2026-10-24T12:13:58Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002229",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002229",
+   "retrievedAt": "2026-10-24T12:13:59Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002126",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002126",
+   "retrievedAt": "2026-10-24T12:14:01Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003070",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003070",
+   "retrievedAt": "2026-10-24T12:14:02Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002183",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002183",
+   "retrievedAt": "2026-10-24T12:14:03Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002135",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002135",
+   "retrievedAt": "2026-10-24T12:14:04Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003132",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003132",
+   "retrievedAt": "2026-10-24T12:14:05Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002106",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002106",
+   "retrievedAt": "2026-10-24T12:14:06Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002048",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002048",
+   "retrievedAt": "2026-10-24T12:14:07Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002211",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002211",
+   "retrievedAt": "2026-10-24T12:14:08Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002373",
@@ -1921,173 +2067,192 @@
   {
    "poiId": "shop-sjk-lumineest-002214",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002214",
+   "retrievedAt": "2026-10-24T12:14:09Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002172",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002172",
+   "retrievedAt": "2026-10-24T12:14:10Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002060",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002060",
+   "retrievedAt": "2026-10-24T12:14:11Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003133",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003133",
+   "retrievedAt": "2026-10-24T12:14:13Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002333",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002333",
+   "retrievedAt": "2026-10-24T12:14:14Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003149",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003149",
+   "retrievedAt": "2026-10-24T12:14:15Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002330",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002330",
+   "retrievedAt": "2026-10-24T12:14:16Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002046",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002046",
+   "retrievedAt": "2026-10-24T12:14:17Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002553",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002553",
+   "retrievedAt": "2026-10-24T12:14:18Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003074",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003074",
+   "retrievedAt": "2026-10-24T12:14:19Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002237",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002237",
+   "retrievedAt": "2026-10-24T12:14:20Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002096",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002096",
+   "retrievedAt": "2026-10-24T12:14:21Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002198",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002198",
+   "retrievedAt": "2026-10-24T12:14:22Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002230",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002230",
+   "retrievedAt": "2026-10-24T12:14:24Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003216",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003216",
+   "retrievedAt": "2026-10-24T12:14:25Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "全日 11:00～22:00 (LO21:30)",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002084",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002084",
+   "retrievedAt": "2026-10-24T12:14:26Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002413",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002413",
+   "retrievedAt": "2026-10-24T12:14:27Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002241",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002241",
+   "retrievedAt": "2026-10-24T12:14:28Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002412",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002412",
+   "retrievedAt": "2026-10-24T12:14:29Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002216",
@@ -2102,218 +2267,242 @@
   {
    "poiId": "shop-sjk-lumineest-002252",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002252",
+   "retrievedAt": "2026-10-24T12:14:30Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002222",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002222",
+   "retrievedAt": "2026-10-24T12:14:31Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002482",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002482",
+   "retrievedAt": "2026-10-24T12:14:33Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00~22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002225",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002225",
+   "retrievedAt": "2026-10-24T12:14:34Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00~22:00（L.O. 21:30）",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003176",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003176",
+   "retrievedAt": "2026-10-24T12:14:35Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002246",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002246",
+   "retrievedAt": "2026-10-24T12:14:36Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002247",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002247",
+   "retrievedAt": "2026-10-24T12:14:37Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002254",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002254",
+   "retrievedAt": "2026-10-24T12:14:38Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11：00～22：00 土日祝 11：00～22：00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002223",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002223",
+   "retrievedAt": "2026-10-24T12:14:40Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日・土日祝 11:00～21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003143",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003143",
+   "retrievedAt": "2026-10-24T12:14:41Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日・土日祝 11:00～22:00（L.O.21:30）",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002423",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002423",
+   "retrievedAt": "2026-10-24T12:14:42Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日、土日祝 11:00～22:00 ※ガレット L.O. 21:00 ※クレープ・ドリンク L.O. 21:45",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002432",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002432",
+   "retrievedAt": "2026-10-24T12:14:43Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003553",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003553",
+   "retrievedAt": "2026-10-24T12:14:44Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日 11:00 ~ 21:00 土日祝 10:30 ~ 21:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002242",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002242",
+   "retrievedAt": "2026-10-24T12:14:45Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002240",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002240",
+   "retrievedAt": "2026-10-24T12:14:46Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002420",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002420",
+   "retrievedAt": "2026-10-24T12:14:47Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "全日11:00 ～ 22:00 平日 15:30～17:00クローズ（ランチL.O.15:00）（L.O.21:15）",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002148",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002148",
+   "retrievedAt": "2026-10-24T12:14:48Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002213",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002213",
+   "retrievedAt": "2026-10-24T12:14:50Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002416",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002416",
+   "retrievedAt": "2026-10-24T12:14:51Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日・土日祝 11：00～22：00（フード・アルコールL.O.21:00）",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002236",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002236",
+   "retrievedAt": "2026-10-24T12:14:52Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003161",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003161",
+   "retrievedAt": "2026-10-24T12:14:53Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002227",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002227",
+   "retrievedAt": "2026-10-24T12:14:54Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00 ※ラストオーダー╱営業時間の30分前（食べ放題：最終入店時間／ 20:00） ※混雑状況により最終受付が早くなる場合がございますのでご了承下さい。",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-002155",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=002155",
+   "retrievedAt": "2026-10-24T12:14:55Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "11:00 ～ 22:00",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumineest-003222",
    "sourceId": "lumine-est-shinjuku-floorguide-2026-10",
-   "url": "https://www.lumine.ne.jp/est/floorguide/",
-   "retrievedAt": "2026-10-24T11:36:22Z",
+   "url": "https://www.lumine.ne.jp/est/floorguide/detail/?scd=003222",
+   "retrievedAt": "2026-10-24T12:14:56Z",
    "pageDate": null,
-   "status": "UNKNOWN",
-   "reason": "no hours printed"
+   "status": "OK",
+   "hoursText": "平日・土日祝 11:15～21:30",
+   "basis": "undated-official"
   },
   {
    "poiId": "shop-sjk-lumine-003436",
