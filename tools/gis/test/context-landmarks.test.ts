@@ -6,7 +6,7 @@ import * as common from '../src/common.js';
 import { assertNoSourceValues } from '../src/context-overlay.js';
 import {
   assertLandmarkFeatureProperties, assertLandmarksConfig, collectSourceValues, contextLandmarks, landmarkScanText, maskCreditText, LANDMARK_CRS,
-  LANDMARK_POLICIES, LANDMARKS_POLICY_VERSION, LANDMARK_PROPERTY_KEYS, landmarksGeoJson, parseLandmarksCsv, type LandmarksConfig,
+  LANDMARK_POLICIES, LANDMARKS_POLICY_VERSION, LANDMARK_PROPERTY_KEYS, landmarksGeoJson, parseLandmarkCoordinate, parseLandmarksCsv, type LandmarksConfig,
 } from '../src/context-landmarks.js';
 import { stationEnuProjector } from '../src/station-enu.js';
 import { loadSources } from '../src/acquire.js';
@@ -101,6 +101,31 @@ describe('context-landmarks: gate and source reading', () => {
   it('fails when station.json no longer carries the configured z', async () => {
     const { run } = await setup({ stationHeight: 5 });
     await expect(run()).rejects.toThrow(/z basis no longer matches/);
+  });
+});
+
+describe('context-landmarks: coordinate syntax', () => {
+  it('reads only a plain signed decimal', () => {
+    for (const raw of ['35.687', '+35.687', '-35.687', '35', '0.5', '.5', '+.5', '-.5']) expect(parseLandmarkCoordinate(raw)).toBe(Number(raw));
+    for (const raw of ['', '.', '+', '-', '0x23', '0x8b', '0b100011', '0o43', '1e1', '1E1', 'Infinity', '-Infinity', 'NaN', '35.', '35.6 9', ' 35.687', '35.687 ']) expect(parseLandmarkCoordinate(raw)).toBeNaN();
+  });
+
+  it('counts hex, binary, exponent, Infinity and spaced cells as invalid instead of projecting them', async () => {
+    const invalid = ['0x23', '0x8b', '1e1', 'Infinity', '0b100011', '35.6 9'];
+    const rows = [
+      ...invalid.map((lat, i) => [`x${i + 1}`, `架空の非十進${i + 1}`, '記念物', `東京都新宿区架空${i + 1}丁目`, lat, String(ORIGIN.lon), '新宿区', `テスト説明文非十進${i}`, '', '']),
+      ['v1', '架空の符号付き', '記念物', '東京都新宿区架空七丁目', `+${latAtNorth(100)}`, String(ORIGIN.lon), '新宿区', 'テスト説明文符号付き', '', ''],
+      ['v2', '架空の先頭零', '記念物', '東京都新宿区架空八丁目', `0${latAtNorth(200)}`, String(ORIGIN.lon), '新宿区', 'テスト説明文先頭零', '', ''],
+      ['v3', '架空の素の十進', '記念物', '東京都新宿区架空九丁目', String(latAtNorth(300)), String(ORIGIN.lon), '新宿区', 'テスト説明文素の十進', '', ''],
+    ];
+    const { run } = await setup({ csv: csvText(rows) });
+    const receipt = (await run()) as Record<string, any>;
+    expect(receipt.rows_in_source).toBe(9);
+    expect(receipt.rows_invalid_coordinates).toBe(6);
+    expect(receipt.selected).toBe(3);
+    expect(receipt.outside_window).toBe(0);
+    const geojson = JSON.parse(await readFile(join(common.repoRoot, 'store', receipt.outputs.geojson.store_path), 'utf8')) as { features: Array<{ properties: { name: string | null } }> };
+    expect(geojson.features.map((f) => f.properties.name)).toEqual(['架空の符号付き', '架空の先頭零', '架空の素の十進']);
   });
 });
 
