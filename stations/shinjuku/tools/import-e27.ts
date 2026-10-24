@@ -1171,6 +1171,11 @@ const bundle: StationBundle = {
   schema: SCHEMA_VERSION,
   station: {
     id: "shinjuku",
+    identity: { names: [
+      { lang: "ja", text: "新宿" },
+      { lang: "ja-Hrkt", text: "しんじゅく" },
+      { lang: "en", text: "Shinjuku" },
+    ] },
     names: [
       { lang: "ja", text: "新宿駅（都営大江戸線）" },
       { lang: "en", text: "Shinjuku Station (Toei Oedo Line)" },

@@ -54,12 +54,19 @@ for (const dir of dirs) {
         const kanaName = lines.filter((l) => names.kana.test(l.text));
         // Covered: an in-world JA name line that a visible chip overlaps, or one read through a (translucent) chip.
         const covered = ja.some((l) => chips.some((c) => overlaps(l, c))) || notUi.some((l) => names.ja.test(l.text) && chips.some((c) => inside(c, ...centre(l))) && !chipText(l));
-        const id = f.identity && !f.identity.error ? f.identity : null;
+        // __gteki.identity() lists every tagged board (#347); `occluded` is "none" | "sign" | "geometry".
+        const boards = f.identity && !f.identity.error ? [f.identity].flat() : null;
+        const shown = (boards ?? []).filter((b) => b.inFrame && b.frontFacing);
+        const id = boards ? {
+          ok: shown.some((b) => !b.coveredByChip && (b.occluded === "none" || !b.occluded)),
+          px: shown.length ? Math.max(...shown.map((b) => b.nameHeightPx ?? 0)) : 0,
+          covered: shown.some((b) => b.coveredByChip),
+        } : null;
         return {
           t: f.t, ocrError: !page || Boolean(page.error),
           jaPx: ja.length ? Math.max(...ja.map((l) => l.h)) : null, enPx: en.length ? Math.max(...en.map((l) => l.h)) : null,
           readable: ja.length > 0 && !covered, covered, kanaName: kanaName.length > 0, kanaAny: lines.some((l) => KANA.test(l.text)),
-          hook: id ? { ok: Boolean(id.inFrame && id.frontFacing && !id.coveredByChip && !id.occluded), px: id.nameHeightPx ?? null, covered: Boolean(id.coveredByChip) } : null,
+          hook: id,
         };
       });
       // Readable time = readable frames × frame interval (each frame stands for its own interval only).

@@ -125,6 +125,26 @@ async function clearance(page: Page, node: string, s: number): Promise<number> {
   return worst;
 }
 
+/**
+ * Hold the explorer's real-time loop (`setAnimationLoop` asks `window.requestAnimationFrame` for each frame): between
+ * `simulate` calls, and while a screenshot is taken, real frames would run the rig with no keys held and ease the
+ * gait toward idle. Held callbacks are handed back to the browser on release.
+ */
+async function realTimeLoop(page: Page, run: boolean) {
+  await page.evaluate((run) => {
+    const w = window as any;
+    if (!run && !w.__qaRaf) {
+      const held: FrameRequestCallback[] = [];
+      w.__qaRaf = { orig: w.requestAnimationFrame, held };
+      w.requestAnimationFrame = (cb: FrameRequestCallback) => { held.push(cb); return 0; };
+    } else if (run && w.__qaRaf) {
+      const { orig, held } = w.__qaRaf;
+      w.requestAnimationFrame = orig; delete w.__qaRaf;
+      for (const cb of held) orig.call(w, cb);
+    }
+  }, run);
+}
+
 async function runLegs(page: Page, node: string, legs: Leg[]) {
   expect(await hooks.walkFromNode(page, node)).toBe(true);
   await hooks.simulate(page, 1.0, []);
@@ -181,8 +201,9 @@ for (const key of enabled ? STATIONS_UNDER_TEST : []) test(`${key}: avatar basel
   const shots: string[] = [];
   const shot = async (name: string) => { const p = shotPath(testInfo, `${key}-avatar-${name}.png`); await page.screenshot({ path: p }); shots.push(p); };
 
-  // ---- captures at the default follow camera ----
+  // ---- captures at the default follow camera (fixed-step only: the real-time loop is held) ----
   expect(await hooks.walkFromNode(page, spot.node)).toBe(true);
+  await realTimeLoop(page, false);
   await hooks.simulate(page, 2, []);
   await shot("idle-back");
   await drag(page, Math.round(Math.PI / 2 / LOOK_RAD_PER_PX));
@@ -212,6 +233,8 @@ for (const key of enabled ? STATIONS_UNDER_TEST : []) test(`${key}: avatar basel
   await hooks.simulate(page, 2.5, ["KeyS"]);
   await hooks.simulate(page, 1.5, ["KeyW"]);
   for (const dt of [0, 0.15, 0.15, 0.2, 0.3, 0.4]) { if (dt) await hooks.simulate(page, dt, []); await shot(`stop-${shots.length}`); }
+
+  await realTimeLoop(page, true);
 
   // ---- frame time (real render loop) ----
   expect(await hooks.walkFromNode(page, spot.node)).toBe(true);

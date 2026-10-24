@@ -9,6 +9,7 @@ import argparse
 import base64
 import copy
 import itertools
+import importlib.util
 import json
 import math
 from pathlib import Path
@@ -20,6 +21,11 @@ PALETTES = ("gteki_palette", "gteki_palette_blend")  # mobile swatch atlases
 ROLES = ("barriers", "transport", "stairs_ramps")  # station bake roles; keep in step with gteki_assets/contract.py ROLES
 REQUIRED = ("contract id family variant version generator params bounds_m triangles "
             "dimension_basis fidelity navigation provenance license").split()
+# Packing rounds UV1 to float32 in atlas space, which can tip a sliver triangle (one whose UV altitude is
+# itself within a few float32 ulps) across its neighbour's edge. For ao_atlas entries such slivers, with a
+# minimum UV altitude at most this (atlas UV units, 4 float32 ulps at 1.0), are left out of the overlap
+# test; every other triangle is tested exactly as before, however thin its overlap.
+ATLAS_OVERLAP_SLACK = 2.0 ** -22
 IDENTITY = [1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.]
 
 
@@ -148,14 +154,15 @@ def _clip(subject, clipper):
     return out
 
 
-def uv_overlaps(tris, eps=1e-10):
+def uv_overlaps(tris, eps=1e-10, slack=0.0):
     """Index pairs of UV triangles that overlap by more than `eps` of the unit square.
 
-    Lightmap charts must not overlap; triangles that only share an edge or a vertex do not count."""
+    Lightmap charts must not overlap; triangles that only share an edge or a vertex do not count.
+    With `slack`, triangles whose minimum altitude (2 * area / longest edge) is at most `slack` are skipped."""
     ccw = {}
     for i, t in enumerate(tris):
         a = _area(t)
-        if abs(a) > 1e-14:
+        if abs(a) > 1e-14 and not (slack and 2 * abs(a) <= slack * max(math.dist(t[k - 1], t[k]) for k in range(3))):
             ccw[i] = tuple(t) if a > 0 else tuple(t[::-1])
     boxes = {i: (min(p[0] for p in t), min(p[1] for p in t), max(p[0] for p in t), max(p[1] for p in t)) for i, t in ccw.items()}
     # 1/64 cells, unless that enumerates millions of them (a huge triangle): then no smaller than the largest triangle
@@ -216,11 +223,73 @@ def parse_glb(data):
     return doc, bins[0][1] if bins else b""
 
 
+class AtlasManifest:
+    """Validated external AO metadata, shared by all GLBs in a CLI invocation."""
+
+    def __init__(self, path):
+        self.path = Path(path).resolve()
+        # Explicit sibling loading also works under python3 -I (no script-dir sys.path).
+        spec = importlib.util.spec_from_file_location("gteki_ao_atlas", Path(__file__).with_name("ao_atlas.py"))
+        helper = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(helper)
+        self.helper = helper
+        doc = json.loads(self.path.read_text())
+        self.assets, self.sizes = {}, {}
+        atlases = doc.get("atlases", {})
+        for kind, atlas in atlases.items():
+            file = helper.local_path(self.path.parent, atlas["path"])
+            raw = file.read_bytes()
+            if helper.digest(raw) != atlas["sha256"]:
+                raise ValueError(f"atlas {kind}: sha256 mismatch")
+            width, height, _ = helper.read_png(raw)
+            if [width, height] != atlas["size_px"]:
+                raise ValueError(f"atlas {kind}: size_px mismatch")
+            if atlas.get("bytes", len(raw)) != len(raw):
+                raise ValueError(f"atlas {kind}: bytes mismatch")
+            self.sizes[kind] = width, height
+        cells = {}
+        for asset in doc["assets"]:
+            key = asset["id"]
+            if key in self.assets:
+                raise ValueError(f"duplicate manifest id {key}")
+            if Path(asset["file"]).stem != key:
+                raise ValueError(f"manifest file/id mismatch for {key}")
+            self.assets[key] = asset
+            if "ao_atlas" not in asset:
+                continue
+            entry = asset["ao_atlas"]
+            kind, cell = entry["kind"], entry["cell"]
+            if kind not in self.sizes:
+                raise ValueError(f"{key}: missing atlas kind {kind}")
+            width, height = self.sizes[kind]
+            if (not isinstance(cell, list) or len(cell) != 4 or any(type(v) is not int for v in cell)):
+                raise ValueError(f"{key}: invalid atlas cell")
+            x, y, w, h = cell
+            if (not helper.power_of_two(w) or w != h or x < 0 or y < 0 or x % w or y % h
+                    or x + w > width or y + h > height):
+                raise ValueError(f"{key}: atlas cell must be an aligned power-of-two square inside atlas")
+            for other, (ox, oy, ow, oh) in cells.get(kind, []):
+                if x < ox + ow and ox < x + w and y < oy + oh and oy < y + h:
+                    raise ValueError(f"atlas {kind}: cells overlap ({other}, {key})")
+            cells.setdefault(kind, []).append((key, cell))
+
+    def entry(self, asset_id, data):
+        if asset_id not in self.assets:
+            raise ValueError(f"GLB id {asset_id!r} missing from manifest")
+        asset = self.assets[asset_id]
+        if self.helper.digest(data) != asset["sha256"]:
+            raise ValueError(f"{asset_id}: GLB sha256 mismatch")
+        if len(data) != asset["bytes"]:
+            raise ValueError(f"{asset_id}: GLB bytes mismatch")
+        return asset.get("ao_atlas")
+
+
 class Validator:
-    def __init__(self, name, data, require_occlusion=False):
+    def __init__(self, name, data, require_occlusion=False, manifest=None):
         self.name = name
         self.data = data
         self.require_occlusion = require_occlusion  # opt-in: every visual material needs the baked AO map
+        self.manifest = manifest
         self.result = dict(file=name, bytes=len(data), triangles=0, materials=0,
                            images=0, image_bytes=0, nodes=0, sockets=[], aabb=None,
                            messages=[])
@@ -231,7 +300,7 @@ class Validator:
     def check(self):
         try:
             self._check()
-        except (ValueError, TypeError, KeyError, IndexError, AttributeError, struct.error, OverflowError, RecursionError) as error:
+        except (OSError, ValueError, TypeError, KeyError, IndexError, AttributeError, struct.error, OverflowError, RecursionError) as error:
             self.message("FAIL", f"malformed GLB: {error}")
         levels = {item["level"] for item in self.result["messages"]}
         self.result["status"] = "FAIL" if "FAIL" in levels else "WARN" if "WARN" in levels else "PASS"
@@ -358,6 +427,34 @@ class Validator:
         if not isinstance(meta.get("triangles"), int) or isinstance(meta.get("triangles"), bool) or meta["triangles"] < 0:
             self.message("FAIL", "metadata triangles must be a non-negative integer")
         materials = doc.get("materials", [])
+        atlas_entry, overlap_slack = None, 0.0
+        if self.manifest is not None:
+            if not isinstance(self.manifest, AtlasManifest):
+                self.manifest = AtlasManifest(self.manifest)
+            atlas_entry = self.manifest.entry(stem, self.data)
+        if atlas_entry is not None:
+            if any("occlusionTexture" in material for material in materials):
+                self.message("FAIL", "ao_atlas asset still carries occlusionTexture")
+            x, y, w, h = atlas_entry["cell"]
+            width, height = self.manifest.sizes[atlas_entry["kind"]]
+            overlap_slack = ATLAS_OVERLAP_SLACK
+            owned = self.manifest.helper.asset_nodes(doc, stem)
+            mesh_indices = {nodes[i]["mesh"] for i in owned if "mesh" in nodes[i]}
+            uv_indices = {p["attributes"]["TEXCOORD_1"] for i in mesh_indices
+                          for p in self.index(meshes, i).get("primitives", [])
+                          if "TEXCOORD_1" in p.get("attributes", {})}
+            for i in uv_indices:
+                accessor = self.index(accessors, i)
+                uv = read(accessor)
+                divisor = {5121: 255, 5123: 65535}.get(accessor["componentType"], 1)
+                if (accessor["type"] != "VEC2" or uv is None
+                        or not (accessor["componentType"] == 5126
+                                or (divisor != 1 and accessor.get("normalized")))):
+                    self.message("FAIL", "ao_atlas TEXCOORD_1 must be dense floats or normalized unsigned bytes/shorts")
+                    continue
+                if any(not self.manifest.helper.uv_in_cell((u / divisor, v / divisor),
+                                                          atlas_entry["cell"], (width, height)) for u, v in uv):
+                    self.message("FAIL", "ao_atlas TEXCOORD_1 outside cell (requires a half-texel inset)")
         self.result.update(nodes=len(nodes), materials=len(materials), images=len(doc.get("images", [])))
         for material in materials:
             if not material.get("name", "").startswith("gteki_"):
@@ -423,7 +520,7 @@ class Validator:
 
         visual_materials = set()
         textures = doc.get("textures", [])
-        shared_atlas = any("occlusionTexture" in m for m in materials)
+        shared_atlas = atlas_entry is not None or any("occlusionTexture" in m for m in materials)
         mesh_tris = {}  # mesh index -> lightmap triangles of its primitives
         atlas = []  # visual node instances sharing the occlusion map: one UV space for all of them
 
@@ -442,8 +539,9 @@ class Validator:
                 if mode not in (4, 5, 6):
                     continue
                 if "TEXCOORD_1" not in primitive.get("attributes", {}):
-                    if meta.get("profile") == "mobile":
-                        self.message("FAIL", f"mesh {node['mesh']} has no lightmap UV (TEXCOORD_1); mobile requires one")
+                    if meta.get("profile") == "mobile" or atlas_entry is not None:
+                        self.message("FAIL", f"mesh {node['mesh']} has no lightmap UV (TEXCOORD_1); "
+                                     + ("ao_atlas requires one" if atlas_entry is not None else "mobile requires one"))
                     continue
                 accessor = self.index(accessors, primitive["attributes"]["TEXCOORD_1"])
                 normalized = {5121: 255, 5123: 65535}
@@ -463,7 +561,9 @@ class Validator:
                 if not all(math.isfinite(c) for p in uv for c in p):
                     self.message("FAIL", f"mesh {node['mesh']} TEXCOORD_1 contains NaN/Inf")
                     continue
-                if any(c < -1e-6 or c > 1 + 1e-6 for p in uv for c in p):
+                # External cells already enforce a half-texel inset.
+                # Keep the original unit-square rule otherwise.
+                if atlas_entry is None and any(c < -1e-6 or c > 1 + 1e-6 for p in uv for c in p):
                     self.message("FAIL", f"mesh {node['mesh']} lightmap UV (TEXCOORD_1) leaves the unit square")
                     continue
                 order = ([v for (v,) in read(self.index(accessors, primitive["indices"]))]
@@ -474,7 +574,9 @@ class Validator:
                 for corners in triangle_corners(order, mode):
                     tri = tuple(uv[i] for i in corners)
                     tris.append(tri)
-                    if (positions and abs(_area(tri)) <= COLLAPSED_UV_AREA
+                    # Keep the pre-atlas collapse threshold in per-id UV units.
+                    area_scale = width * height / (w * h) if atlas_entry is not None else 1
+                    if (positions and abs(_area(tri)) * area_scale <= COLLAPSED_UV_AREA
                             and _area3(*(positions[i] for i in corners)) >= VISIBLE_GEOMETRY_M2):
                         collapsed += 1
             if collapsed:
@@ -483,7 +585,7 @@ class Validator:
             if shared_atlas:
                 atlas.append((node, tris))
                 return
-            overlapping = uv_overlaps(tris)
+            overlapping = uv_overlaps(tris, slack=overlap_slack)
             if overlapping:
                 self.message("FAIL", f"node {node.get('name')!r} lightmap UV (TEXCOORD_1) has "
                              f"{len(overlapping)} overlapping triangle pairs")
@@ -576,11 +678,11 @@ class Validator:
         if shared_atlas:
             # one occlusion map for the whole asset: every visual node lays its islands out in the same
             # UV space, so they must not overlap across nodes (a mesh instanced twice overlaps itself)
-            overlapping = uv_overlaps([tri for _, tris in atlas for tri in tris])
+            overlapping = uv_overlaps([tri for _, tris in atlas for tri in tris], slack=overlap_slack)
             if overlapping:
                 self.message("FAIL", f"visual nodes share one lightmap atlas (occlusion map) but their UV1 has "
                              f"{len(overlapping)} overlapping triangle pairs")
-        if shared_atlas or self.require_occlusion:
+        if atlas_entry is None and (shared_atlas or self.require_occlusion):
             lit = {m: (materials[m].get("occlusionTexture") or {}).get("index") for m in visual_materials}
             if any(i is None for i in lit.values()) and (shared_atlas or visual_materials):
                 names = sorted(materials[m].get("name") for m, i in lit.items() if i is None)
@@ -858,6 +960,7 @@ def main():
     parser.add_argument("files", nargs="*", type=Path)
     parser.add_argument("--report", type=Path)
     parser.add_argument("--self-test", action="store_true")
+    parser.add_argument("--manifest", type=Path, help="validate external shared AO atlases and per-asset UV1 cells")
     parser.add_argument("--require-occlusion", action="store_true",
                         help="FAIL a GLB whose visual materials lack the baked occlusion map (default: allowed during the rollout)")
     args = parser.parse_args()
@@ -866,9 +969,16 @@ def main():
     if not args.files and not args.self_test:
         parser.error("provide GLB files or --self-test")
     results = []
+    manifest = None
+    if args.manifest:
+        try:
+            manifest = AtlasManifest(args.manifest)
+        except (OSError, ValueError, TypeError, KeyError, IndexError, AttributeError, struct.error) as error:
+            print(f"FAIL {args.manifest}: {error}")
+            return 1
     for path in args.files:
         try:
-            result = Validator(str(path), path.read_bytes(), args.require_occlusion).check()
+            result = Validator(str(path), path.read_bytes(), args.require_occlusion, manifest).check()
         except OSError as error:
             result = dict(file=str(path), status="FAIL", messages=[dict(level="FAIL", message=str(error))])
         results.append(result)

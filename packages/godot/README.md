@@ -211,30 +211,32 @@ sidecar (`environment`), never from hard-coded values:
   apply the transform twice, leaving the fog almost black). Ikebukuro has fog (25..180 m), Shinjuku does not.
 - Ambient: a station whose bake is applied gets **no ambient** (`AMBIENT_SOURCE_DISABLED`), because the bake is its
   light. An unbaked station (Shinjuku) gets `AMBIENT_SOURCE_COLOR` at §7's studio world grey
-  `(0.55, 0.58, 0.62)` linear, encoded once to sRGB (`linear_to_srgb()`, because Environment colours are sRGB), and
+  `(0.55, 0.58, 0.62)` linear, encoded once to sRGB (`linear_to_srgb()`, because Environment colours are sRGB, verified on Godot 4.7.2), and
   scaled to a 0.25 fill so the client's key + fill stay dominant. The web's Shinjuku rule
   (hemisphere + RoomEnvironment 0.55, §8) is a scene light; Godot gets this ambient plus the same key + fill lights.
 - SDFGI is off; `--gi=sdfgi` turns it on for the GPU review slot. SSAO and SDFGI only render on Forward+/Mobile this
   project runs `gl_compatibility`, where Godot ignores both (it prints a warning for SDFGI); they are set for the visual
   pass, not for the headless gate.
 
-`looks/materials.json` maps snapshot material names to style-bible materials. Each mapping carries a `from` block with
-the snapshot evidence (colour, metal, roughness, surface count, roles, optionally the sample mesh names) and a one-line
-`evidence` note, because the snapshot loses the scene's own material names (three's exporter names unnamed materials
-`material_<n>`). Those names are positional, so the loader re-checks every mapping before applying it: a mapping is
-applied only while its material still has the recorded sRGB albedo exactly, metal and roughness within 0.01, and every
-recorded sample mesh still carries it. A mapping that no longer matches is skipped with a warning instead of repainting
-whatever took the name (#254/#257), and `run_look_tests.gd` fails on it. A station's
+`looks/materials.json` maps source material names (for example `mat.wall`, `mat.nosing`, `mat.accent`) to style-bible
+materials. The exporter keeps those names in the GLB and records every GLB material's index and name in `scene.json`.
+Each mapping carries a `from` block with the snapshot evidence (colour, metal, roughness, surface count, roles,
+optionally the sample mesh names) and a one-line `evidence` note. The loader re-checks every mapping before applying it:
+a mapping is applied only while its material still has the recorded sRGB albedo exactly, metal and roughness within 0.01,
+and every recorded sample mesh still carries it. A mapping that no longer matches is skipped with a warning instead of
+repainting another material (#254/#257); duplicate source names are ambiguous and are skipped the same way. The look
+tests fail on either case. A station's
 `unmapped` array lists every material the table leaves alone and why; anything ambiguous stays there rather than being
-guessed. Shinjuku has 13 mapped materials (floors, walls, ceiling, tactile paving, stair nosings, gate bodies/caps,
+guessed. Materials the source leaves unnamed (the walk proxies, the street level, the luminaire strip) are listed by
+their positional `material_<n>` name; that list is documentation and the loader never applies it. Shinjuku has 13 mapped materials (floors, walls, ceiling, tactile paving, stair nosings, gate bodies/caps,
 steel plates, light housings, the Oedo accent band, handrails); Ikebukuro is listed as entirely unmapped because its lightmap
 shader owns its surfaces and that decision belongs to the lead. The table sets only albedo (sRGB, written to
 `albedo_color` exactly as the glTF importer writes it), roughness and metal; it never touches emission, transparency or
 textures, and it only ever overrides surfaces whose material it names.
 
-Two mappings are **provisional, not E27 facts**: `material_2` (wall field → `steel_painted_light`, a grey painted steel
-per OD-30 via R10 #234) and `material_37` (stair nosings → `vertical_safety_yellow`, a representative style-bible finish;
-R10 found no source). `material_11` maps to `oedo_accent`, a style marked `local: true` with a `note`: GTEki's chosen
+Two mappings are **provisional, not E27 facts**: `mat.wall` (wall field → `steel_painted_light`, a grey painted steel
+per OD-30 via R10 #234) and `mat.nosing` (stair nosings → `vertical_safety_yellow`, a representative style-bible finish;
+R10 found no source). `mat.accent` maps to `oedo_accent`, a style marked `local: true` with a `note`: GTEki's chosen
 Oedo magenta per OD-29 (#222), not the operator's official colour. The optional `local`, `note` and `provisional` fields
 are documentation; the loader ignores them, and the source's faint emission survives because the override duplicates the
 snapshot material.
@@ -415,11 +417,63 @@ godot --path packages/godot --rendering-method forward_plus --script res://tools
 
 Each run writes a 1600×900 Godot PNG, a 3200×900 `_side.png` (Blender reference left, Godot right), and a layout-specific
 `_report.json` under `packages/godot/.cache/showcase/` (gitignored). Omit `--camera` to render all imported cameras.
+For each camera with a reference, the report's `luminance` block gives the mean linear Rec.709 luminance of the reference
+and Godot images and their `ratio` (godot / reference, null when the reference is black) for `whole`, `top_third`,
+`middle_third` and `bottom_third`. Add regions with a repeatable `--region=<camera>=<name>:<x>,<y>,<w>,<h>` (pixels
+inside 1600×900, names unique and not a default name); they appear under that camera's `luminance` entry.
+
+A run that compares lighting variants can override the approximation without editing code, with a repeatable
+`--tune=<key>=<value>`: `agx_contrast` (0.5–2.5), `exposure_ev` (−4 to 4 stops, added to the layout's exposure),
+`ambient_energy` (0–16), `gi` (`none` by default, `sdfgi`, or `voxelgi`, which bakes a VoxelGI over the visible
+bounds — flat geometry included, each axis grown 0.5 m per side and at least 1 m — before the first frame),
+`gi_energy` (0–16, only with `sdfgi` or `voxelgi`), `probe_ambient` (`disabled` by default, `environment` or
+`color`, only when an interior probe exists), `probe_ambient_colour` (`#rrggbb`, sRGB exactly as written),
+`probe_ambient_energy` (0–16) and `ssao` (`true` by default). The probe colour and energy only take effect in
+`AMBIENT_COLOR` mode, so they are argument errors without `probe_ambient=color`; without an explicit colour that
+mode uses `APPROXIMATION.colour_linear` converted to sRGB, like the background. Unknown keys, out-of-range values
+and duplicate keys fail the run like any other argument. The effective overrides are recorded as the report's
+`tuning` object (empty without
+`--tune`). `--tag=<name>` (letters, digits, `_`, `.` and `-`) suffixes the PNG, side PNG and report names —
+`<layout>_<camera>_<tag>.png` and `<layout>_<tag>_report.json` — so variants do not overwrite each other; with
+neither `--tune` nor `--tag` every output name is unchanged. `--report=<absolute path>` writes the report exactly
+there instead (its directory is created if needed), which is how the sweep gives each run its own file.
+
+`tools/showcase_sweep.sh` runs a file of variants sequentially, each under the shared test lock, then prints their
+ratios as one table. Each non-empty line is `<tag> <tune arguments...>`; extra arguments are appended to every run.
+It checks every tag (letters, digits, `_`, `.`, `-`, and not ending in `_side`, which is the side-by-side suffix) and
+rejects duplicates before running anything, gives each run its own `<out_dir>/sweep_<tag>_report.json` through
+`--report` (deleted first, so a run that exits without writing cannot reuse an old report), and stops if that file is
+missing afterwards. A line is a comment only when its first non-blank character is `#`; there are no trailing
+comments, so a `#rrggbb` value keeps its `#`. Never run two sweeps concurrently against the same output directory:
+report files are deleted and checked outside the shared lock.
+
+```sh
+cat > packages/godot/.cache/showcase/concourse.sweep <<'EOF'
+baseline
+sdfgi       --tune=gi=sdfgi --tune=gi_energy=1.0
+exposure    --tune=exposure_ev=0.5 --tune=ambient_energy=2.0
+probe       --tune=probe_ambient=color --tune=probe_ambient_energy=2.0
+probe_warm  --tune=probe_ambient=color --tune=probe_ambient_colour=#ffd9b3 --tune=probe_ambient_energy=1.5
+EOF
+bash packages/godot/tools/showcase_sweep.sh "$CONCOURSE_GLB" "$PWD/packages/godot/.cache/showcase/" \
+  gates_closed "$PWD/docs/assets/img/concourse_gates_closed.jpg" \
+  packages/godot/.cache/showcase/concourse.sweep --region=gates_closed=floor:0,600,1600,300
+```
+
+The table has the tag, then the `whole` and `bottom_third` ratios and every extra region's ratio (`null` for a black
+reference, `-` when a report lacks that region). `tools/showcase_sweep_table.py` prints it and reads only the reports.
 The Godot lighting is an approximation of Blender's hint area lights: wide downward spots replace disks and short
 rows of spots replace long LEDs, sharing each hint's power. Both use Blender's fixed warm colour and ignore
 `colour_temp_k`. The watt-to-energy factor, cone, range, row spacing and studio sun mapping are documented in
 `tools/showcase_compare.gd` and recorded in the report; AgX and SSAO do not imply identical Blender shading. A headless
 invocation prints `showcase_compare needs a display`, exits zero and writes nothing.
+The showcase pass generates missing texture mipmaps once per shared texture (normal maps renormalised; colour mips
+average stored sRGB values, as Godot's own importer does) and uses anisotropic mipmapped filtering; a uniform sky
+preserves the world's colour/strength for ambient and metal reflections, with one room probe in interior layouts. The
+probe keeps the sky (not `interior`) and is the visible bounds (excluding `-colonly`) grown by its 1 m blend distance. Studio sun energy is `3 / PI` to account for Godot's nonphysical light
+normalisation; AgX contrast 1.5 provisionally approximates Blender's Medium High Contrast. Spots use bias 0.06 / normal
+bias 1.5 and an 8192 shadow atlas with four 64-map quadrants (256 slots at 512 px) to reduce wall/column acne. These
+choices and texture/probe counts are recorded in the JSON report; their visual result still needs the lead's GPU slot.
 The argument rules, the sun mapping, the hint-to-spot split and the metadata contract are checked headless by
 `godot --headless --path packages/godot --script res://tests/run_showcase_tests.gd` (no GLB or GPU needed).
 
