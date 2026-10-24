@@ -397,8 +397,8 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (p.connectorNodeIds.length === 0) warn("poi.unroutable", "POI has no verified connector; search-only", p.id);
   }
 
-  // Store tenant directories (#419): facts-only listings that attach to an existing shop POI. They are
-  // never routing targets, so the store's own POI carries the route; these rules only keep the facts honest.
+  // Store tenant directories (#419): listings that attach to an existing shop POI. They are never routing
+  // targets, so the store's own POI carries the route; these rules only keep the facts honest.
   const tenantIds = new Set<string>();
   const hasText = (texts: LocalizedText[]) => texts.length > 0 && texts.every((t) => t.lang.trim() !== "" && t.text.trim() !== "");
   for (const tenant of b.tenants ?? []) {
@@ -413,11 +413,14 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     for (const sid of tenant.evidence.sourceIds) {
       if (!sourceIds.has(sid)) { err("tenant.evidence", `unknown source ${sid}`, tenant.id); continue; }
       const src = b.sources.find((s) => s.id === sid)!;
-      // A printed brand name is a cited fact: the source may not ship data, and the Owner decision is on record.
+      // A printed brand name is a cited fact, so a facts-only source may carry it. A merchant submission
+      // (#438) is a shippable data source whose grant is at least as strong as facts-only; both need the
+      // decision on record (#441).
       const d = src.decision;
       const decisionOk = typeof d === "object" && d !== null && isHttpUrl(d.url) && typeof d.date === "string" && isIsoDate(d.date);
-      if (src.usage !== "facts-only" || !decisionOk)
-        err("tenant.evidence", `source ${sid} must be usage:"facts-only" with a decision {url, date}`, tenant.id);
+      const accepted = src.usage === "facts-only" || reusableData(sid);
+      if (!decisionOk || !accepted)
+        err("tenant.evidence", `source ${sid} must be usage:"facts-only" or a reusable data source (REUSABLE_WITH_CONDITIONS or PUBLISHED_UNDER_OWNER_OVERRIDE), with a decision {url, date}`, tenant.id);
     }
     if (!isIsoDate(tenant.evidence.checkedDate))
       err("tenant.evidence", `checkedDate ${tenant.evidence.checkedDate} is not YYYY-MM-DD`, tenant.id);

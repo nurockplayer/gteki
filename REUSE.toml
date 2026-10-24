@@ -354,3 +354,13 @@ path = [
 precedence = "override"
 SPDX-FileCopyrightText = "東京都交通局; facts-only sources; modified by GTEki contributors"
 SPDX-License-Identifier = "LicenseRef-Toei-S10 AND LicenseRef-facts-only-no-licence"
+
+# --- 4q. Facts-only transfer facts (lines-lead WP11; #26 Tokyo Metro, OD-01 A / OD-34 Toei, OD-25 Seibu) ---
+[[annotations]]
+path = [
+  "docs/research/lines/transfer-facts-wp11.json",
+  "docs/research/lines/transfer-facts-wp11-notes.md",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "No licence granted: facts-only sources (東京地下鉄, 東京都交通局, 西武鉄道); compiled by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-facts-only-no-licence"

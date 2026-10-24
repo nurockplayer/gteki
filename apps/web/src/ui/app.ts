@@ -171,7 +171,7 @@ export class App {
     this.ui.railBtn.hidden = true;
     this.ui.railBtn.addEventListener("click", () => this.startRailRide());
     const actions = el("div", "top-actions");
-    actions.append(this.ui.railBtn, this.ui.coverageBtn, this.ui.langBtn);
+    actions.append(this.ui.coverageBtn, this.ui.langBtn);
     top.append(brand, this.ui.stationSelect, actions);
 
     const panel = this.ui.panel;
@@ -855,17 +855,30 @@ export class App {
 
   private renderHud(): void {
     const hud = this.ui.hud;
+    // The ride button is its own HUD row (#375), above the mode row; `hidden` alone decides whether it shows,
+    // since openStation sets it after the HUD may already have rendered. Clearing the HUD detaches it, so a
+    // keyboard user who had focused it gets the focus back.
+    const rideFocused = document.activeElement === this.ui.railBtn;
+    const placeRide = (): void => {
+      hud.append(this.ui.railBtn);
+      if (rideFocused && !this.ui.railBtn.hidden) this.ui.railBtn.focus({ preventScroll: true });
+    };
     this.releaseMascot(hud);
     hud.innerHTML = "";
     const mode = this.explorer.currentMode;
     this.announceInstruction();
-    if (mode === "overview") { this.trackInstruction(); return; }
+    if (mode === "overview") {
+      placeRide();
+      this.trackInstruction();
+      return;
+    }
     const t = this.t;
     const ins = this.s.instructions[this.s.activeInstruction];
     if (mode === "guide" && ins) {
       this.ui.mascot.clear();
       hud.append(this.guideBox(ins.text));
     }
+    placeRide();
     const row = el("div", "hud-row");
     if (mode === "guide") {
       // Built from the explorer's state; instruction changes then go through updateGuideHud, so the controls stay put under the pointer.
