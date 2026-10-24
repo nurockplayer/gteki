@@ -116,6 +116,38 @@ class P0Export(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "differs from bind pose"):
             exporter.finish_glb(fixture.encode(doc, builder.binary), meta)
 
+    def test_feet_measured_on_exported_joints(self):
+        # a foot joint tilted forward and down (as Blender exports it): the heel offset must still
+        # reconstruct the foot origin projected to the floor, and the ball offset the ball origin
+        doc, builder, meta = sample_glb()
+        foot = next(n for n in doc["nodes"] if n.get("name") == "foot_l")
+        foot["rotation"] = vc.quat_normalize([.3, .1, 0., .95])
+        out, _ = vc.parse_glb(exporter.finish_glb(fixture.encode(doc, builder.binary), meta))
+        feet = out["nodes"][out["scenes"][0]["nodes"][0]]["extras"]["gteki_character"]["feet"]
+        nodes = out["nodes"]
+        parent = {c: i for i, n in enumerate(nodes) for c in n.get("children", [])}
+
+        def world(i):
+            n = nodes[i]
+            local = vc.trs_matrix(n.get("translation", [0., 0., 0.]), n.get("rotation", [0., 0., 0., 1.]),
+                                  n.get("scale", [1., 1., 1.]))
+            return vc.multiply(world(parent[i]), local) if i in parent else local
+
+        for side in ("l", "r"):
+            for point, joint in (("heel", f"foot_{side}"), ("ball", f"ball_{side}")):
+                m = world(next(i for i, n in enumerate(nodes) if n.get("name") == joint))
+                got = vc.transform(m, feet[side][point])
+                want = [m[12], 0., m[14]] if point == "heel" else m[12:15]
+                for a, b in zip(got, want):
+                    self.assertAlmostEqual(a, b, places=5)
+
+    def test_step_on_antipodal_constant_rotation_normalised(self):
+        doc, builder, meta = sample_glb()
+        add_channel(doc, builder, "spine_02", "rotation", [[0., 0., 0., 1.], [0., 0., 0., -1.]], "VEC4")
+        doc["animations"][0]["samplers"][-1]["interpolation"] = "STEP"
+        out, _ = vc.parse_glb(exporter.finish_glb(fixture.encode(doc, builder.binary), meta))
+        self.assertEqual({s.get("interpolation", "LINEAR") for a in out["animations"] for s in a["samplers"]}, {"LINEAR"})
+
     def test_non_linear_export_rejected(self):
         doc, builder, meta = sample_glb()
         doc["animations"][0]["samplers"][0]["interpolation"] = "CUBICSPLINE"
