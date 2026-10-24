@@ -2,7 +2,7 @@ extends SceneTree
 ## G-4: render Lane E's showcase GLBs through their exported cameras, beside the Blender references.
 ## Run in the lead's GPU slot; a headless display exits successfully before reading inputs or writing anything.
 ## Usage: --script res://tools/showcase_compare.gd -- <absolute.glb> <absolute out_dir>
-##        [--camera=<name>] [--ref=<camera>=<absolute image>]...
+##        [--camera=<name>] [--ref=<camera>=<absolute image>]... [--region=<camera>=<name>:<x>,<y>,<w>,<h>]...
 ## Imported geometry, materials and camera transforms/FOV stay the GLB's. Lighting approximates render_preview.py;
 ## neither Godot spots nor its AgX implementation reproduce Blender area lights / Medium High Contrast exactly.
 
@@ -10,6 +10,9 @@ const WIDTH := 1600
 const HEIGHT := 900
 const SETTLE_RENDER_FRAMES := 60
 const HEADLESS_MESSAGE := "showcase_compare needs a display"
+const DEFAULT_REGION_NAMES := ["whole", "top_third", "middle_third", "bottom_third"]
+static var REGION_NAME := RegEx.create_from_string("^[A-Za-z0-9_.-]+$")
+const LUMINANCE_METHOD := "mean linear Rec.709 luminance, sRGB-decoded, every 2nd pixel; ratio = godot / reference"
 ## Approximation constants, not a physical match: Godot's non-physical energy has no Blender-watt equivalence.
 ## 0.02 gives a 1 m LED energy 1.1; 1.5 m spacing bounds the number of shadowed spots. A wide 75 degree half-cone
 ## and 8 m reach spread light over a concourse bay. Split watts equally so a longer row never multiplies its power.
@@ -64,6 +67,47 @@ func _initialize() -> void:
 	call_deferred("run")
 
 
+## Brightness per named region: mean linear Rec.709 luminance of sRGB-decoded pixels, every 2nd pixel in x and y.
+## Both images share a size and FORMAT_RGBA8. A zero reference mean gives a null ratio instead of dividing.
+static func luminance_stats(reference: Image, godot: Image, regions: Array) -> Dictionary:
+	var stats := {}
+	for region: Dictionary in regions:
+		var rect: Rect2i = region.rect
+		var reference_mean := mean_linear_luminance(reference, rect)
+		var godot_mean := mean_linear_luminance(godot, rect)
+		var ratio: Variant = null
+		if reference_mean > 0.0:
+			ratio = snappedf(godot_mean / reference_mean, 0.0001)
+		stats[region.name] = {
+			"reference": snappedf(reference_mean, 0.0001),
+			"godot": snappedf(godot_mean, 0.0001),
+			"ratio": ratio,
+		}
+	return stats
+
+
+static func mean_linear_luminance(image: Image, rect: Rect2i) -> float:
+	var total := 0.0
+	var samples := 0
+	for y in range(rect.position.y, rect.end.y, 2):
+		for x in range(rect.position.x, rect.end.x, 2):
+			var linear := image.get_pixel(x, y).srgb_to_linear()
+			total += 0.2126 * linear.r + 0.7152 * linear.g + 0.0722 * linear.b
+			samples += 1
+	return total / samples if samples > 0 else 0.0
+
+
+## Whole frame, then three horizontal bands; the bottom band absorbs remainder rows so every row is covered once.
+static func default_regions(size: Vector2i) -> Array:
+	var third := size.y / 3
+	return [
+		{"name": "whole", "rect": Rect2i(0, 0, size.x, size.y)},
+		{"name": "top_third", "rect": Rect2i(0, 0, size.x, third)},
+		{"name": "middle_third", "rect": Rect2i(0, third, size.x, third)},
+		{"name": "bottom_third", "rect": Rect2i(0, 2 * third, size.x, size.y - 2 * third)},
+	]
+
+
 ## Absolute filesystem paths only: res:// and user:// are not host file arguments either.
 static func absolute_file_path(path: String) -> bool:
 	return path.is_absolute_path() and not path.contains("://")
@@ -74,6 +118,7 @@ static func parse_args(args: PackedStringArray) -> Dictionary:
 	var positional: Array[String] = []
 	var camera := ""
 	var refs := {}
+	var regions := {}
 	var errors: Array[String] = []
 	for arg in args:
 		if arg.begins_with("--camera="):
@@ -82,6 +127,40 @@ static func parse_args(args: PackedStringArray) -> Dictionary:
 			camera = arg.trim_prefix("--camera=")
 			if camera.is_empty():
 				errors.append("--camera needs a name")
+		elif arg.begins_with("--region="):
+			# The coordinates never contain ':' and the region name never contains '=' or ':', so split on the last
+			# ':' and then the last '=': the camera name may contain either.
+			var spec := arg.trim_prefix("--region=")
+			var colon := spec.rfind(":")
+			var head := spec.substr(0, colon) if colon >= 0 else ""
+			var camera_separator := head.rfind("=")
+			var coords := spec.substr(colon + 1).split(",") if colon >= 0 else PackedStringArray()
+			var numeric := coords.size() == 4
+			for coord in coords:
+				numeric = numeric and coord.is_valid_int()
+			var region_camera := head.substr(0, camera_separator) if camera_separator >= 0 else ""
+			var region_name := head.substr(camera_separator + 1) if camera_separator >= 0 else ""
+			if region_camera.is_empty() or not REGION_NAME.search(region_name) or not numeric:
+				errors.append("--region must be <camera>=<name>:<x>,<y>,<w>,<h> with a name of letters, digits, '_', '.' or '-': %s" % arg)
+				continue
+			# Bounds are checked on the 64-bit values before Rect2i (32-bit) is built, so no value can wrap into range.
+			var x := int(coords[0])
+			var y := int(coords[1])
+			var w := int(coords[2])
+			var h := int(coords[3])
+			if x < 0 or y < 0 or w <= 0 or h <= 0 or x >= WIDTH or y >= HEIGHT or w > WIDTH - x or h > HEIGHT - y:
+				errors.append("--region must have positive size inside %dx%d: %s" % [WIDTH, HEIGHT, arg])
+				continue
+			var rect := Rect2i(x, y, w, h)
+			var camera_regions: Array = regions.get(region_camera, [])
+			var duplicate := region_name in DEFAULT_REGION_NAMES
+			for existing: Dictionary in camera_regions:
+				duplicate = duplicate or existing.name == region_name
+			if duplicate:
+				errors.append("Duplicate or reserved region for camera %s: %s" % [region_camera, region_name])
+				continue
+			camera_regions.append({"name": region_name, "rect": rect})
+			regions[region_camera] = camera_regions
 		elif arg.begins_with("--ref="):
 			var pair := arg.trim_prefix("--ref=")
 			var separator := pair.find("=")
@@ -107,7 +186,7 @@ static func parse_args(args: PackedStringArray) -> Dictionary:
 	return {
 		"glb": positional[0] if positional.size() > 0 else "",
 		"out_dir": positional[1] if positional.size() > 1 else "",
-		"camera": camera, "refs": refs, "errors": errors,
+		"camera": camera, "refs": refs, "regions": regions, "errors": errors,
 	}
 
 
@@ -366,6 +445,10 @@ func run() -> void:
 	if cameras.is_empty() or (not args.camera.is_empty() and not cameras.has(args.camera)):
 		fail("No matching imported Camera3D: %s" % args.camera)
 		return
+	for name: String in args.regions:
+		if not cameras.has(name):
+			fail("Region camera is not in the GLB: %s" % name)
+			return
 	var references := {}
 	for name in args.refs:
 		if not cameras.has(name):
@@ -404,6 +487,7 @@ func run() -> void:
 	configure_shadow_atlas(root)
 	var rendered: Array[String] = []
 	var refs_used := {}
+	var luminance := {}
 	var names := cameras.keys()
 	names.sort()
 	for name: String in names:
@@ -433,6 +517,9 @@ func run() -> void:
 				fail("Cannot save %s_side.png: %s" % [stem, error_string(error)])
 				return
 			refs_used[name] = args.refs[name]
+			var luminance_regions := default_regions(Vector2i(WIDTH, HEIGHT))
+			luminance_regions.append_array(args.regions.get(name, []))
+			luminance[name] = luminance_stats(references[name], image, luminance_regions)
 		rendered.append(name)
 		print("showcase_compare: wrote ", stem)
 	var report := {
@@ -440,6 +527,7 @@ func run() -> void:
 		"glb": args.glb, "sha256": FileAccess.get_sha256(args.glb),
 		"layout": layout, "mode": mode, "exposure": exposure,
 		"cameras": rendered, "refs": refs_used,
+		"luminance": luminance, "luminance_method": LUMINANCE_METHOD,
 		"renderer": RenderingServer.get_current_rendering_method(),
 		"project_renderer": str(ProjectSettings.get_setting("rendering/renderer/rendering_method")),
 		"driver": RenderingServer.get_current_rendering_driver_name(),

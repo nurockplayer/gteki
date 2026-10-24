@@ -417,6 +417,10 @@ godot --path packages/godot --rendering-method forward_plus --script res://tools
 
 Each run writes a 1600×900 Godot PNG, a 3200×900 `_side.png` (Blender reference left, Godot right), and a layout-specific
 `_report.json` under `packages/godot/.cache/showcase/` (gitignored). Omit `--camera` to render all imported cameras.
+For each camera with a reference, the report's `luminance` block gives the mean linear Rec.709 luminance of the reference
+and Godot images and their `ratio` (godot / reference, null when the reference is black) for `whole`, `top_third`,
+`middle_third` and `bottom_third`. Add regions with a repeatable `--region=<camera>=<name>:<x>,<y>,<w>,<h>` (pixels
+inside 1600×900, names unique and not a default name); they appear under that camera's `luminance` entry.
 The Godot lighting is an approximation of Blender's hint area lights: wide downward spots replace disks and short
 rows of spots replace long LEDs, sharing each hint's power. Both use Blender's fixed warm colour and ignore
 `colour_temp_k`. The watt-to-energy factor, cone, range, row spacing and studio sun mapping are documented in

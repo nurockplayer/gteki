@@ -29,6 +29,7 @@ func run() -> void:
 	check_reflections_and_shadows()
 	check_hints()
 	check_metadata()
+	check_luminance()
 	check(DisplayServer.get_name() == "headless", "suite runs without a display")
 	check(Compare.HEADLESS_MESSAGE == "showcase_compare needs a display", "headless early-exit message")
 	if failures.is_empty():
@@ -231,3 +232,58 @@ func check_metadata() -> void:
 	showcase.remove_meta("extras")
 	check("No gteki_showcase node" in "\n".join(Compare.inspect_scene(scene).errors), "lost showcase extras fail clearly")
 	scene.free()
+
+
+func solid(size: Vector2i, colour: Color) -> Image:
+	var image := Image.create(size.x, size.y, false, Image.FORMAT_RGBA8)
+	image.fill(colour)
+	return image
+
+
+func check_luminance() -> void:
+	var whole := [{"name": "all", "rect": Rect2i(0, 0, 8, 8)}]
+	var same := Compare.luminance_stats(solid(Vector2i(8, 8), Color(0.5, 0.25, 0.75)), solid(Vector2i(8, 8), Color(0.5, 0.25, 0.75)), whole)
+	check(is_equal_approx(same.all.ratio, 1.0), "identical images give luminance ratio 1.0")
+	# Halve the linear light of a grey reference; the expected ratio is decoded from the stored 8-bit pixels in the test.
+	var reference := solid(Vector2i(8, 8), Color(0.8, 0.8, 0.8))
+	var half := solid(Vector2i(8, 8), (Color(0.8, 0.8, 0.8).srgb_to_linear() * 0.5).linear_to_srgb())
+	var expected := half.get_pixel(0, 0).srgb_to_linear().r / reference.get_pixel(0, 0).srgb_to_linear().r
+	var halved := Compare.luminance_stats(reference, half, whole)
+	check(absf(halved.all.ratio - snappedf(expected, 0.0001)) < 0.0001, "half-bright godot image gives the decoded linear ratio (%s)" % str(halved.all.ratio))
+	check(is_equal_approx(halved.all.reference, snappedf(reference.get_pixel(0, 0).srgb_to_linear().r, 0.0001)), "grey reference mean equals its decoded linear value")
+	# Rec.709 weighting: pure green is 0.7152 of linear luminance, pure red 0.2126.
+	var colours := Compare.luminance_stats(solid(Vector2i(8, 8), Color.GREEN), solid(Vector2i(8, 8), Color.RED), whole)
+	check(is_equal_approx(colours.all.reference, 0.7152) and is_equal_approx(colours.all.godot, 0.2126), "Rec.709 weights green 0.7152 and red 0.2126")
+	# A black reference has a zero mean in its black half, so that region's ratio is null rather than a division by zero.
+	var black := solid(Vector2i(8, 8), Color.BLACK)
+	black.fill_rect(Rect2i(0, 4, 8, 4), Color(0.5, 0.5, 0.5))
+	var split := Compare.luminance_stats(black, solid(Vector2i(8, 8), Color(0.5, 0.5, 0.5)), [
+		{"name": "dark", "rect": Rect2i(0, 0, 8, 4)},
+		{"name": "lit", "rect": Rect2i(0, 4, 8, 4)},
+	])
+	check(split.dark.ratio == null and split.dark.reference == 0.0, "zero reference mean gives a null ratio")
+	check(is_equal_approx(split.lit.ratio, 1.0), "lit region of the same reference still gives a ratio")
+	# Bands cover every row exactly once, with the bottom band taking the odd remainder.
+	var rows := []
+	rows.resize(7)
+	rows.fill(0)
+	var regions := Compare.default_regions(Vector2i(4, 7))
+	check(regions.size() == 4 and regions[0].name == "whole" and regions[0].rect == Rect2i(0, 0, 4, 7), "default regions start with the whole frame")
+	for region: Dictionary in regions.slice(1):
+		var rect: Rect2i = region.rect
+		for y in range(rect.position.y, rect.end.y):
+			rows[y] += 1
+	check(rows == [1, 1, 1, 1, 1, 1, 1], "top, middle and bottom thirds cover every row of a 7-row image exactly once")
+	# --region= accepts a well-formed value and rejects malformed or out-of-frame ones.
+	var good := Compare.parse_args(PackedStringArray(["/tmp/a", "/tmp/b", "--region=hero=face:0,0,10,20"]))
+	check(good.errors.is_empty() and good.regions.hero.size() == 1 and good.regions.hero[0].name == "face" and good.regions.hero[0].rect == Rect2i(0, 0, 10, 20), "--region=<camera>=<name>:<x>,<y>,<w>,<h> parses")
+	var odd := Compare.parse_args(PackedStringArray(["/tmp/a", "/tmp/b", "--region=hall=west:x=face:0,0,10,10"]))
+	check(odd.errors.is_empty() and odd.regions.has("hall=west:x") and odd.regions["hall=west:x"][0].name == "face", "--region camera names may contain '=' and ':'")
+	for spec in [
+		"hero=face:0,0,10", "hero=:0,0,10,10", "hero=face:1500,0,200,10", "hero=face:0,0,0,10",
+		"hero=whole:0,0,10,10", "hero=face:a,0,1,1", "hero", "=face:0,0,1,1",
+		"hero=face:4294967297,0,10,10", "hero=face:0,0,4294967297,10", "hero=face:1599,0,9223372036854775807,1",
+		"hero=   :0,0,10,10", "hero=gate:floor:0,0,10,10",
+	]:
+		var bad := Compare.parse_args(PackedStringArray(["/tmp/a", "/tmp/b", "--region=" + spec]))
+		check(not bad.errors.is_empty(), "reject malformed --region value: %s" % spec)
