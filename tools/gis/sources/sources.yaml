@@ -1931,3 +1931,75 @@
   availability_deadline: null
   notes: "Evidence-only for lines-lead WP6 (OD-26; gate HOLD). On 2026-10-24 the site served a maintenance notice and no terms page URL was found, so the terms stay UNKNOWN. The snapshot holds whatever the site served."
   publish_gate: HOLD
+- source_id: osm-overpass-shinjuku
+  title: "OpenStreetMap Overpass extract for the shinjuku station area (shops, amenities, indoor and level tags, station buildings, entrances)"
+  station_ids: [shinjuku]
+  publisher: "OpenStreetMap contributors via the Overpass API (overpass-api.de)"
+  official_url: https://overpass-api.de/api/interpreter
+  resolution: { kind: direct }
+  expected_url: https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A120%5D%3B(nwr(around%3A900%2C35.687%2C139.6994)%5B%22shop%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22amenity%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22indoor%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22level%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22level%3Aref%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22repeat_on%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22railway%22%3D%22station%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22public_transport%22%3D%22station%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22building%22%3D%22train_station%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22railway%22%3D%22subway_entrance%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22entrance%22%5D%3Bway(around%3A900%2C35.687%2C139.6994)%5B%22building%22%5D%5B%22name%22%5D%3Brelation(around%3A900%2C35.687%2C139.6994)%5B%22building%22%5D%5B%22name%22%5D%3B)%3Bout%20meta%20geom%3B
+  expected_bytes: null
+  license_name: unknown
+  license_url: null
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-24-osm-coverage-odbl.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-osm-coverage-odbl.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-osm-coverage-odbl.md }
+  content_year: null
+  availability_deadline: null
+  notes: "One fixed GET query (Overpass QL recorded verbatim in expected_url; 686 characters, well under the 8 kB GET limit; every tag key is quoted because a bare [level:ref] filter is rejected with HTTP 400). Radius 900 m around the station origin (35.687,139.6994). Evidence for #437 only: gate HOLD, nothing converted or shipped. The response contains contributor user names and uids; they are stripped on parse and never written. `out meta` is requested for last-edit timestamps."
+  publish_gate: HOLD
+- source_id: osm-overpass-ikebukuro
+  title: "OpenStreetMap Overpass extract for the ikebukuro station area (shops, amenities, indoor and level tags, station buildings, entrances)"
+  station_ids: [ikebukuro]
+  publisher: "OpenStreetMap contributors via the Overpass API (overpass-api.de)"
+  official_url: https://overpass-api.de/api/interpreter
+  resolution: { kind: direct }
+  expected_url: https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A120%5D%3B(nwr(around%3A900%2C35.7297%2C139.7114)%5B%22shop%22%5D%3Bnwr(around%3A900%2C35.7297%2C139.7114)%5B%22amenity%22%5D%3Bnwr(around%3A900%2C35.7297%2C139.7114)%5B%22indoor%22%5D%3Bnwr(around%3A900%2C35.7297%2C139.7114)%5B%22level%22%5D%3Bnwr(around%3A900%2C35.7297%2C139.7114)%5B%22level%3Aref%22%5D%3Bnwr(around%3A900%2C35.7297%2C139.7114)%5B%22repeat_on%22%5D%3Bnwr(around%3A900%2C35.7297%2C139.7114)%5B%22railway%22%3D%22station%22%5D%3Bnwr(around%3A900%2C35.7297%2C139.7114)%5B%22public_transport%22%3D%22station%22%5D%3Bnwr(around%3A900%2C35.7297%2C139.7114)%5B%22building%22%3D%22train_station%22%5D%3Bnwr(around%3A900%2C35.7297%2C139.7114)%5B%22railway%22%3D%22subway_entrance%22%5D%3Bnwr(around%3A900%2C35.7297%2C139.7114)%5B%22entrance%22%5D%3Bway(around%3A900%2C35.7297%2C139.7114)%5B%22building%22%5D%5B%22name%22%5D%3Brelation(around%3A900%2C35.7297%2C139.7114)%5B%22building%22%5D%5B%22name%22%5D%3B)%3Bout%20meta%20geom%3B
+  expected_bytes: null
+  license_name: unknown
+  license_url: null
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-24-osm-coverage-odbl.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-osm-coverage-odbl.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-osm-coverage-odbl.md }
+  content_year: null
+  availability_deadline: null
+  notes: "One fixed GET query (Overpass QL recorded verbatim in expected_url; 699 characters, well under the 8 kB GET limit; every tag key is quoted because a bare [level:ref] filter is rejected with HTTP 400). Radius 900 m around the station origin (35.7297,139.7114). Evidence for #437 only: gate HOLD, nothing converted or shipped. The response contains contributor user names and uids; they are stripped on parse and never written. `out meta` is requested for last-edit timestamps."
+  publish_gate: HOLD
+- source_id: osm-copyright-page
+  title: "OpenStreetMap copyright and attribution page (terms snapshot)"
+  station_ids: [ikebukuro, shinjuku]
+  publisher: "OpenStreetMap Foundation"
+  official_url: https://www.openstreetmap.org/copyright
+  resolution: { kind: direct }
+  expected_url: https://www.openstreetmap.org/copyright
+  expected_bytes: null
+  license_name: unknown
+  license_url: null
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-24-osm-coverage-odbl.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-osm-coverage-odbl.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-osm-coverage-odbl.md }
+  content_year: null
+  availability_deadline: null
+  notes: "Evidence-only snapshot of OSMFs attribution page for #437 (gate HOLD). The snapshot holds whatever the page served; its reading is in docs/gis/research/2026-10-24-osm-coverage-odbl.md."
+  publish_gate: HOLD
+- source_id: odbl-1-0-text
+  title: "Open Data Commons Open Database License 1.0 text (terms snapshot)"
+  station_ids: [ikebukuro, shinjuku]
+  publisher: "Open Data Commons (Open Knowledge Foundation)"
+  official_url: https://opendatacommons.org/licenses/odbl/1-0/
+  resolution: { kind: direct }
+  expected_url: https://opendatacommons.org/licenses/odbl/1-0/
+  expected_bytes: null
+  license_name: unknown
+  license_url: null
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-24-osm-coverage-odbl.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-osm-coverage-odbl.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-osm-coverage-odbl.md }
+  content_year: null
+  availability_deadline: null
+  notes: "Evidence-only snapshot of the ODbL 1.0 text for #437 (gate HOLD). The snapshot holds whatever the page served; its reading is in docs/gis/research/2026-10-24-osm-coverage-odbl.md."
+  publish_gate: HOLD
