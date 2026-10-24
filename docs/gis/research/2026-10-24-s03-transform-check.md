@@ -8,53 +8,56 @@ This is an offline evidence check of the acquired `tokyo-s03-zip`, independent o
 
 Apply `v5_nav.json.d[0].t`, then `com-map.geojson.drawings[0].ref_frame.transform`. Both use `[a,b,c,d,e,f]` with `u=a*x+c*y+e`, `v=b*x+d*y+f`. The second result is assumed longitude/latitude. The GIS `stationEnuProjector` supplies GRS80 horizontal ENU at the committed station origin, evaluated at zero height only for horizontal computation. Physical heights remain null. No translation, rotation, scale or datum correction is fitted.
 
-Check A tests each level's nodes against the union of its own geometry polygons in ENU, including outer/hole boundaries and excluding hole interiors, after requiring shell membership first so a hole boundary outside its shell can never contain a point. Point/line features do not count as polygons. A polygon feature is excluded from Check A entirely when any of its rings has a first position different from its last, comparing the complete positions including an optional third value before z is dropped for horizontal maths: rings are never closed, repaired, dropped or otherwise modified, and no implicit closure is applied (director ruling, 2026-10-24). The whole feature is excluded, the first offending polygon/ring is recorded as `SOURCE_DEFECT_UNCLOSED_RING` with its horizontal ENU endpoint gap, and every other malformation still fails closed. A hole with any vertex outside its shell, or a ring that self-intersects, stops the whole run: only unclosed rings carry a ruling to exclude. The self-intersection test is an O(n²) proper-crossing check on rings of up to 2000 vertices; a larger ring is counted as unchecked, never as clean. A level left without usable polygons keeps null inside metrics and a reason, and is not assessed. The policy fixes “overwhelmingly inside” at **95% overall and on each assessed level**, before examining results, and the overall status distinguishes **PASS** (threshold met everywhere, no node on an unassessed level) from **INCOMPLETE** (the assessed part would pass, but nodes remain on levels without usable polygons; `nodes_unassessed` and `levels_with_nodes_unassessed` say how many and where) from **FAIL** (the assessed part already fails). Outside-node distances use the nearest polygon edge in ENU. Empty or unprojectable distance samples remain null. The deliberately reversed affine composition is the negative control.
+Check A tests each level's nodes against the union of its own geometry polygons in ENU, including outer/hole boundaries and excluding hole interiors, after requiring shell membership first so a hole boundary outside its shell can never contain a point. Point/line features do not count as polygons. A polygon feature is excluded from Check A entirely, whole, on either of two director rulings of 2026-10-24: any of its rings has a first position different from its last, comparing the complete positions including an optional third value before z is dropped for horizontal maths; or any of its hole vertices lies strictly outside its shell. Rings are never closed, clipped, repaired, dropped or otherwise modified, no vertex is moved and no implicit closure is applied. The first offending polygon/ring is recorded — `SOURCE_DEFECT_UNCLOSED_RING` with its horizontal ENU endpoint gap, `SOURCE_DEFECT_HOLE_OUTSIDE_SHELL` with the offset of the worst offending hole vertex from its shell — and the exclusions are counted by kind. Every other malformation still fails closed; a self-intersecting ring does so even on a feature one of the rulings would drop. The self-intersection test is an O(n²) proper-crossing check on rings of up to 2000 vertices; a larger ring is counted as unchecked, never as clean. A level left without usable polygons keeps null inside metrics and a reason, and is not assessed. The policy fixes “overwhelmingly inside” at **95% overall and on each assessed level**, before examining results, and the overall status distinguishes **PASS** (threshold met everywhere, no node on an unassessed level) from **INCOMPLETE** (the assessed part would pass, but nodes remain on levels without usable polygons; `nodes_unassessed` and `levels_with_nodes_unassessed` say how many and where) from **FAIL** (the assessed part already fails). Outside-node distances use the nearest polygon edge in ENU. Empty or unprojectable distance samples remain null. The deliberately reversed affine composition is the negative control.
 
 Check B independently selects reciprocal nearest nodes over all compatible floors, then applies inclusive distance thresholds. It uses the note's label-derived comparison ordinals, including E27 street ordinal 0 compared with source ground ordinal 1. Source `zlevel` is not an elevation or the comparison ordinal. The ordinals come from `station.json`, and the canonical SHA-256 of the floor mapping actually used (floor id to ordinal, sorted by id) is part of the receipt identity, so moving one ordinal changes the run id. Percentiles interpolate at `(n−1)*p`. Deltas mean S03 minus E27; their mean is reported and never applied. The selected overlap sample does not establish all-station coverage or an accepted connection.
 
 ## Observed results
 
-### v3 revision: the run now stops on a source topology defect
+### v4 revision: the source topology defect is excluded by ruling
 
-Policy `s03-transform-check-v3` adds the INCOMPLETE status, the hole/shell and self-intersection fail-closed rules, the full-position ring-closure test, the floor-mapping hash in the receipt identity and private-only outside-node means. Under it the real run exits non-zero before writing any receipt or provenance:
+Policy `s03-transform-check-v3` added the INCOMPLETE status, the hole/shell and self-intersection fail-closed rules, the full-position ring-closure test, the floor-mapping hash in the receipt identity and private-only outside-node means. Under it the real run stopped, before writing any receipt, on one hole that lies outside its shell:
 
 | Numeric level ID | Feature index | Kind |
 | ---: | ---: | --- |
 | 64676 | 384 | hole ring 1 of multipolygon part 1 has every vertex outside its shell |
 
-Measured on the private copy: the part is a sliver of about 0.16 m² whose hole is about 0.16 m² (ratio 1.03), its bounding boxes overlap, and its worst vertex sits 5.536e-6 degrees (about 0.62 m) outside the shell; all 4 unique positions, plus the repeated closing position, are outside. It is 1 of 15,204 polygon features; no ring in the dataset self-intersects, none exceeds the 2000-vertex cap, and the two known unclosed rings are unchanged. Only unclosed rings carry a director ruling to exclude, so nothing was excluded here: the check stops and asks for that ruling. A scratch recomputation of Check A with this feature's second part dropped changes **0 of 2506 nodes and 0 of the 2463 inside**, with every per-level count identical, so excluding it would not move any number below.
+Measured on the private copy: the part is a sliver of about 0.16 m² whose hole is about 0.16 m² (ratio 1.03), its bounding boxes overlap, and its worst vertex lies 0.511531 m from the nearest shell point in horizontal ENU; all 4 unique hole positions, plus the repeated closing position, are outside. It is 1 of 15,556 features (15,204 polygon features); no ring in the dataset self-intersects, none exceeds the 2000-vertex cap, and the two known unclosed rings are unchanged.
 
-The tables in this section are therefore the last completed run, under `s03-transform-check-v2` (receipt `transform-check-a7ccdb9007422f33546f.json`, unchanged and still the committed evidence).
+Policy `s03-transform-check-v4` applies the director ruling of 2026-10-24: this feature is excluded whole, exactly like an unclosed ring, and recorded as `SOURCE_DEFECT_HOLE_OUTSIDE_SHELL`. It is never clipped, repaired or moved, every other malformation still fails closed, and no v3 receipt was ever written, so nothing was reissued under an old policy. The exclusion changes **0 of 2506 nodes and 0 of 2463 inside**, with every per-level inside count identical: no node changed side. The only numbers that move are the coverage counts, by exactly this feature — `features_used` 15202 → 15201, and level 64676 uses 1097 instead of 1098 features and 1247 instead of 1256 polygon surfaces.
 
-The run uses the ZIP with SHA-256 `fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31`; that receipt covers policy `s03-transform-check-v2`. A v3 receipt will replace it only after the ruling, and its run id changes in any case because the identity now includes the policy version and `floor_mapping_sha256`.
+The tables in this section are the run under `s03-transform-check-v4` (receipt `transform-check-d482981cd55e9f9010c6.json`), which replaces the v2 receipt `transform-check-a7ccdb9007422f33546f.json`.
+
+The run uses the ZIP with SHA-256 `fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31`. The run id changed from the v2 receipt because the identity now includes the policy version and `floor_mapping_sha256`.
 
 ### Source defects
 
-Two source polygon features have a ring whose last position does not repeat the first. They are excluded from Check A and recorded as defects. No ring was closed, repaired, dropped or otherwise modified, and no vertex was changed:
+Three source polygon features are excluded from Check A by the two rulings and recorded as defects: two have a ring whose last position does not repeat the first, one has a hole whose vertices lie outside its shell. No ring was closed, clipped, repaired, dropped or otherwise modified, and no vertex was changed:
 
-| Numeric level ID | Feature index (zero-based) | Polygon / ring index | Source defect | Endpoint gap in horizontal ENU (m) |
+| Numeric level ID | Feature index (zero-based) | Polygon / ring index | Source defect | Gap / offset in horizontal ENU (m) |
 | --- | ---: | --- | --- | ---: |
 | 64676 | 195 | 0 / 0 | `SOURCE_DEFECT_UNCLOSED_RING` | 3.028552467 |
+| 64676 | 384 | 1 / 1 | `SOURCE_DEFECT_HOLE_OUTSIDE_SHELL` | 0.511531472 |
 | 64679 | 0 | 0 / 0 | `SOURCE_DEFECT_UNCLOSED_RING` | 48.922969786 |
 
-The endpoint gap is the horizontal ENU distance between the first and last ring positions, using the same station projector as Check A. Both gaps are substantial, not floating-point closure noise.
+The gap is the horizontal ENU distance between the first and last ring positions, and the offset is the horizontal ENU distance from the worst offending hole vertex to the nearest point of its shell; both use the same station projector as Check A. Both gaps are substantial, not floating-point closure noise.
 
-Check A uses all polygon features except 2 excluded for SOURCE_DEFECT_UNCLOSED_RING.
+Check A uses all polygon features except 3 excluded by director ruling: 2 for SOURCE_DEFECT_UNCLOSED_RING and 1 for SOURCE_DEFECT_HOLE_OUTSIDE_SHELL.
 
-| Numeric level ID | Features total | Features used | Excluded (`SOURCE_DEFECT_UNCLOSED_RING`) | Non-polygon features excluded |
-| ---: | ---: | ---: | ---: | ---: |
-| 64672 | 12 | 12 | 0 | 0 |
-| 64673 | 37 | 37 | 0 | 0 |
-| 64674 | 338 | 277 | 0 | 61 |
-| 64675 | 183 | 131 | 0 | 52 |
-| 64676 | 1246 | 1098 | 1 | 147 |
-| 64677 | 13125 | 13122 | 0 | 3 |
-| 64678 | 309 | 277 | 0 | 32 |
-| 64679 | 78 | 67 | 1 | 10 |
-| 64680 | 142 | 103 | 0 | 39 |
-| 64688 | 33 | 28 | 0 | 5 |
-| 64689 | 53 | 50 | 0 | 3 |
-| **All** | **15556** | **15202** | **2** | **352** |
+| Numeric level ID | Features total | Features used | Excluded (`SOURCE_DEFECT_UNCLOSED_RING`) | Excluded (`SOURCE_DEFECT_HOLE_OUTSIDE_SHELL`) | Non-polygon features excluded |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 64672 | 12 | 12 | 0 | 0 | 0 |
+| 64673 | 37 | 37 | 0 | 0 | 0 |
+| 64674 | 338 | 277 | 0 | 0 | 61 |
+| 64675 | 183 | 131 | 0 | 0 | 52 |
+| 64676 | 1246 | 1097 | 1 | 1 | 147 |
+| 64677 | 13125 | 13122 | 0 | 0 | 3 |
+| 64678 | 309 | 277 | 0 | 0 | 32 |
+| 64679 | 78 | 67 | 1 | 0 | 10 |
+| 64680 | 142 | 103 | 0 | 0 | 39 |
+| 64688 | 33 | 28 | 0 | 0 | 5 |
+| 64689 | 53 | 50 | 0 | 0 | 3 |
+| **All** | **15556** | **15201** | **2** | **1** | **352** |
 
 ### Check A (as-is)
 

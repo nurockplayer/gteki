@@ -1,10 +1,11 @@
 {
-  "policy_version": "s03-transform-check-v2",
-  "tool_input_sha256": "eb76a34202c6009463a37ff725f4d42f4054f3ee5e21b4b9022f1ba42bbff17a",
+  "policy_version": "s03-transform-check-v4",
+  "tool_input_sha256": "a2a3dc1b06507ba2e6c264a5af4484ebd3c9b91e0d0d748e5f8d3b8e3d6a18ce",
   "zip_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
   "station_origin_sha256": "816473fd5c95a86b868f06faad0b32d84d4d61fb82e90e996f0b0c6462a5ade7",
+  "floor_mapping_sha256": "93f81e6dd279d86e460ec0660d189952ad8b417d12d0fffc852fad0aa70ede8c",
   "e27_graph_sha256": "06d6193124f0dc6d44a663c5a1bfdff224bcd0d71114fc303c154501555863be",
-  "run_id": "transform-check-a7ccdb9007422f33546f",
+  "run_id": "transform-check-d482981cd55e9f9010c6",
   "source_id": "tokyo-s03-zip",
   "source_bytes": 2317035,
   "publish_gate": "HOLD",
@@ -26,7 +27,8 @@
     "ellipsoid": "GRS80",
     "horizontal_calculation_height_m": 0,
     "physical_height_m": null,
-    "floor_elevations_asserted": false
+    "floor_elevations_asserted": false,
+    "floor_mapping_rule": "Check B ordinals come from station.json floors; floor_mapping_sha256 is the SHA-256 of [floor id, ordinal] pairs sorted by id as UTF-8 JSON."
   },
   "transform": {
     "drawing_id": 35814,
@@ -64,12 +66,24 @@
     }
   },
   "source_defects": {
-    "count": 2,
+    "count": 3,
     "kinds": [
-      "SOURCE_DEFECT_UNCLOSED_RING"
+      "SOURCE_DEFECT_UNCLOSED_RING",
+      "SOURCE_DEFECT_HOLE_OUTSIDE_SHELL"
     ],
-    "rule": "A polygon feature is excluded from Check A when any of its rings has a first position different from its last. Rings are never closed, repaired, dropped or otherwise modified; the whole feature is excluded.",
+    "by_kind": {
+      "SOURCE_DEFECT_UNCLOSED_RING": 2,
+      "SOURCE_DEFECT_HOLE_OUTSIDE_SHELL": 1
+    },
+    "rule": "A polygon feature is excluded from Check A, whole, on either of two director rulings: any of its rings has a first position different from its last, comparing the complete positions including an optional third value; or any of its hole vertices lies strictly outside its shell. Rings are never closed, clipped, repaired, dropped or otherwise modified, and no vertex is moved.",
     "endpoint_gap_rule": "Horizontal ENU distance between the first and last ring positions, using the same station projector as Check A.",
+    "hole_offset_rule": "Horizontal ENU distance from the worst offending hole vertex to the nearest point of its shell, using the same station projector as Check A.",
+    "topology": {
+      "rings_checked": 15507,
+      "rings_skipped_large": 0,
+      "max_vertices": 2000,
+      "rule": "Every ring of a used feature is checked for proper segment crossings up to 2000 vertices; larger rings are counted in rings_skipped_large and not checked. A self-intersecting ring fails the whole run closed, on an excluded feature too; the counters describe the rings of used features only."
+    },
     "items": [
       {
         "kind": "SOURCE_DEFECT_UNCLOSED_RING",
@@ -78,6 +92,14 @@
         "polygon_index": 0,
         "ring_index": 0,
         "endpoint_gap_m": 3.0285524667988115
+      },
+      {
+        "kind": "SOURCE_DEFECT_HOLE_OUTSIDE_SHELL",
+        "level_id": 64676,
+        "feature_index": 384,
+        "polygon_index": 1,
+        "ring_index": 1,
+        "max_offset_m": 0.5115314722509969
       },
       {
         "kind": "SOURCE_DEFECT_UNCLOSED_RING",
@@ -99,12 +121,15 @@
       "inside_share": 0.9828411811652035,
       "outside_unprojectable_count": 0,
       "levels_without_usable_polygons": [],
+      "levels_with_nodes_unassessed": [],
+      "nodes_unassessed": 0,
       "reason": "Not overwhelmingly inside at the fixed threshold on every assessed level and overall; no transform adjustment applied.",
       "levels": {
         "64672": {
           "features_total": 12,
           "features_used": 12,
           "features_excluded_unclosed_ring": 0,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 0,
           "node_count": 27,
           "polygon_count": 12,
@@ -125,6 +150,7 @@
           "features_total": 37,
           "features_used": 37,
           "features_excluded_unclosed_ring": 0,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 0,
           "node_count": 50,
           "polygon_count": 37,
@@ -145,6 +171,7 @@
           "features_total": 338,
           "features_used": 277,
           "features_excluded_unclosed_ring": 0,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 61,
           "node_count": 420,
           "polygon_count": 291,
@@ -165,6 +192,7 @@
           "features_total": 183,
           "features_used": 131,
           "features_excluded_unclosed_ring": 0,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 52,
           "node_count": 278,
           "polygon_count": 171,
@@ -183,11 +211,12 @@
         },
         "64676": {
           "features_total": 1246,
-          "features_used": 1098,
+          "features_used": 1097,
           "features_excluded_unclosed_ring": 1,
+          "features_excluded_hole_outside_shell": 1,
           "non_polygon_features_excluded": 147,
           "node_count": 710,
-          "polygon_count": 1256,
+          "polygon_count": 1247,
           "inside_count": 710,
           "inside_share": 1,
           "outside_count": 0,
@@ -205,6 +234,7 @@
           "features_total": 13125,
           "features_used": 13122,
           "features_excluded_unclosed_ring": 0,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 3,
           "node_count": 363,
           "polygon_count": 13130,
@@ -225,6 +255,7 @@
           "features_total": 309,
           "features_used": 277,
           "features_excluded_unclosed_ring": 0,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 32,
           "node_count": 295,
           "polygon_count": 324,
@@ -245,6 +276,7 @@
           "features_total": 78,
           "features_used": 67,
           "features_excluded_unclosed_ring": 1,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 10,
           "node_count": 96,
           "polygon_count": 67,
@@ -265,6 +297,7 @@
           "features_total": 142,
           "features_used": 103,
           "features_excluded_unclosed_ring": 0,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 39,
           "node_count": 118,
           "polygon_count": 103,
@@ -285,6 +318,7 @@
           "features_total": 33,
           "features_used": 28,
           "features_excluded_unclosed_ring": 0,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 5,
           "node_count": 52,
           "polygon_count": 28,
@@ -305,6 +339,7 @@
           "features_total": 53,
           "features_used": 50,
           "features_excluded_unclosed_ring": 0,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 3,
           "node_count": 97,
           "polygon_count": 50,
@@ -332,12 +367,15 @@
       "inside_share": 0,
       "outside_unprojectable_count": 2506,
       "levels_without_usable_polygons": [],
+      "levels_with_nodes_unassessed": [],
+      "nodes_unassessed": 0,
       "reason": "Not overwhelmingly inside at the fixed threshold on every assessed level and overall; no transform adjustment applied.",
       "levels": {
         "64672": {
           "features_total": 12,
           "features_used": 12,
           "features_excluded_unclosed_ring": 0,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 0,
           "node_count": 27,
           "polygon_count": 12,
@@ -358,6 +396,7 @@
           "features_total": 37,
           "features_used": 37,
           "features_excluded_unclosed_ring": 0,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 0,
           "node_count": 50,
           "polygon_count": 37,
@@ -378,6 +417,7 @@
           "features_total": 338,
           "features_used": 277,
           "features_excluded_unclosed_ring": 0,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 61,
           "node_count": 420,
           "polygon_count": 291,
@@ -398,6 +438,7 @@
           "features_total": 183,
           "features_used": 131,
           "features_excluded_unclosed_ring": 0,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 52,
           "node_count": 278,
           "polygon_count": 171,
@@ -416,11 +457,12 @@
         },
         "64676": {
           "features_total": 1246,
-          "features_used": 1098,
+          "features_used": 1097,
           "features_excluded_unclosed_ring": 1,
+          "features_excluded_hole_outside_shell": 1,
           "non_polygon_features_excluded": 147,
           "node_count": 710,
-          "polygon_count": 1256,
+          "polygon_count": 1247,
           "inside_count": 0,
           "inside_share": 0,
           "outside_count": 710,
@@ -438,6 +480,7 @@
           "features_total": 13125,
           "features_used": 13122,
           "features_excluded_unclosed_ring": 0,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 3,
           "node_count": 363,
           "polygon_count": 13130,
@@ -458,6 +501,7 @@
           "features_total": 309,
           "features_used": 277,
           "features_excluded_unclosed_ring": 0,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 32,
           "node_count": 295,
           "polygon_count": 324,
@@ -478,6 +522,7 @@
           "features_total": 78,
           "features_used": 67,
           "features_excluded_unclosed_ring": 1,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 10,
           "node_count": 96,
           "polygon_count": 67,
@@ -498,6 +543,7 @@
           "features_total": 142,
           "features_used": 103,
           "features_excluded_unclosed_ring": 0,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 39,
           "node_count": 118,
           "polygon_count": 103,
@@ -518,6 +564,7 @@
           "features_total": 33,
           "features_used": 28,
           "features_excluded_unclosed_ring": 0,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 5,
           "node_count": 52,
           "polygon_count": 28,
@@ -538,6 +585,7 @@
           "features_total": 53,
           "features_used": 50,
           "features_excluded_unclosed_ring": 0,
+          "features_excluded_hole_outside_shell": 0,
           "non_polygon_features_excluded": 3,
           "node_count": 97,
           "polygon_count": 50,
@@ -558,20 +606,27 @@
     },
     "coverage": {
       "features_total": 15556,
-      "features_used": 15202,
+      "features_used": 15201,
       "features_excluded_unclosed_ring": 2,
+      "features_excluded_hole_outside_shell": 1,
+      "features_excluded": 3,
+      "features_excluded_by_kind": {
+        "SOURCE_DEFECT_UNCLOSED_RING": 2,
+        "SOURCE_DEFECT_HOLE_OUTSIDE_SHELL": 1
+      },
       "non_polygon_features_excluded": 352,
-      "statement": "Check A uses all polygon features except 2 excluded for SOURCE_DEFECT_UNCLOSED_RING."
+      "statement": "Check A uses all polygon features except 3 excluded by director ruling: 2 for SOURCE_DEFECT_UNCLOSED_RING and 1 for SOURCE_DEFECT_HOLE_OUTSIDE_SHELL."
     },
     "negative_control_detected": true,
     "invalid_coordinate_rule": "Invalid geographic outputs count as outside and unprojectable; no edge distance is asserted for them.",
     "containment_rule": "Union of own-level polygon surfaces in horizontal ENU, including boundaries and excluding hole interiors; Point and LineString features excluded.",
-    "unclosed_ring_rule": "Features with an unclosed ring are excluded from containment entirely (no implicit closure). A level left without usable polygons keeps null inside metrics and is not assessed."
+    "feature_exclusion_rule": "Features with an unclosed ring, or with a hole vertex outside its shell, are excluded from containment entirely (no implicit closure, no clipping). A level left without usable polygons keeps null inside metrics and is not assessed.",
+    "status_rule": "PASS needs overwhelming containment on every assessed level and overall. INCOMPLETE means the assessed part would pass but nodes remain on levels without usable polygons; FAIL means the assessed part already fails."
   },
   "internal_outside_diagnostic": {
     "diagnostic_only": true,
     "main_check_a_modified": false,
-    "classification_field": "v5_nav.json l[].d is the direction (1 forward, 2 reverse, 3 both); floor-transition ends come from links whose n1/n2 sit on different levels or whose dz is present",
+    "classification_field": "v5_nav.json l[].d is the direction (1 forward, 2 reverse, 3 both); floor-transition ends come from links whose n1/n2 sit on different levels or whose dz is non-zero, while a same-level dz of 0 stays a corridor link",
     "device_type": "UNKNOWN: v5_nav.json has no stair, lift or escalator field; the source specification defines d as direction only",
     "class_codes": [
       "corridor: no incident cross-level link",
@@ -590,6 +645,8 @@
       "6:south",
       "7:south-east"
     ],
+    "bearing_rule": "Bearings are angles in degrees, not positions: mean_bearing_deg_ccw_from_east is Math.atan2(north, east) and mean_bearing_deg_compass is the same direction clockwise from north. Circular spread is sqrt(-2 ln R) in degrees.",
+    "public_position_rule": "Absolute ENU means for outside nodes are recorded only in the private provenance; a level's public statistics are suppressed below 3 outside nodes.",
     "levels": {
       "64677": {
         "node_count": 363,
@@ -610,8 +667,6 @@
         ],
         "position_enu": {
           "count": 30,
-          "mean_east_m": 89.87977828932894,
-          "mean_north_m": 480.5426574031379,
           "sd_east_m": 140.44446627958385,
           "sd_north_m": 193.41235775134328,
           "rms_radius_m": 239.02507868315985
@@ -621,6 +676,9 @@
           "mean_vector_east": -0.492126819392045,
           "mean_vector_north": -0.03275721384707022,
           "mean_resultant_length": 0.4932158162751406,
+          "circular_spread_deg": 68.12217309369817,
+          "mean_bearing_deg_ccw_from_east": 183.80813549135684,
+          "mean_bearing_deg_compass": 266.19186450864316,
           "sectors": [
             2,
             1,
@@ -653,8 +711,6 @@
         ],
         "position_enu": {
           "count": 13,
-          "mean_east_m": 115.6862525707458,
-          "mean_north_m": 212.45224157998427,
           "sd_east_m": 72.32798769640732,
           "sd_north_m": 31.11392511737505,
           "rms_radius_m": 78.73635844018487
@@ -664,6 +720,9 @@
           "mean_vector_east": 0.17117865318351033,
           "mean_vector_north": 0.3389282085508567,
           "mean_resultant_length": 0.3797031233176961,
+          "circular_spread_deg": 79.73652481695721,
+          "mean_bearing_deg_ccw_from_east": 63.203542876337565,
+          "mean_bearing_deg_compass": 26.796457123662435,
           "sectors": [
             3,
             1,
@@ -819,12 +878,12 @@
   },
   "outputs": {
     "geojson": {
-      "store_path": "out/s03-transform-check-a7ccdb9007422f33546f.geojson",
+      "store_path": "out/s03-transform-check-d482981cd55e9f9010c6.geojson",
       "sha256": "30ad44b1b86674647b4fbddadd1f14ebcb4da492719220ddf0b7ae2cd01165b2",
       "bytes": 588090
     },
     "provenance": {
-      "store_path": "out/s03-transform-check-a7ccdb9007422f33546f.provenance.json"
+      "store_path": "out/s03-transform-check-d482981cd55e9f9010c6.provenance.json"
     }
   }
 }

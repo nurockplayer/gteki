@@ -10,11 +10,14 @@ import { readZip } from './zip.js';
 // v2 excludes polygon features with an unclosed ring from Check A instead of rejecting the whole ZIP.
 // v3 adds the INCOMPLETE status, hashes the floor mapping into the receipt identity, keeps absolute outside-node
 // positions private, ignores same-level dz = 0 links, compares full ring positions on closure and fails closed on
-// hole/shell and self-intersection topology.
-export const S03_TRANSFORM_POLICY = 's03-transform-check-v3';
+// hole/shell and self-intersection topology. v4 replaces v3's hole/shell fail-closed rule with the director ruling of
+// 2026-10-24: that feature is excluded whole and recorded, like an unclosed ring, and every other malformation still
+// fails closed. No v3 receipt was ever written, so nothing was reissued under an old policy.
+export const S03_TRANSFORM_POLICY = 's03-transform-check-v4';
 export const OUTSIDE_SUPPRESSION_MIN_NODES = 3;
 export const SELF_INTERSECTION_MAX_VERTICES = 2000;
 export const UNCLOSED_RING_DEFECT = 'SOURCE_DEFECT_UNCLOSED_RING';
+export const HOLE_OUTSIDE_SHELL_DEFECT = 'SOURCE_DEFECT_HOLE_OUTSIDE_SHELL';
 export const S03_DATUM = {
   declared: null,
   spec_statement: 'absent crs means WGS84 (S03 spec p8)',
@@ -30,7 +33,7 @@ export type Affine = readonly [number, number, number, number, number, number];
 export type Polygon2 = readonly (readonly Point2[])[];
 export type Project = (lat: number, lon: number) => Point2;
 /** A source feature excluded from Check A because one of its rings does not repeat its first position. */
-export interface S03SourceDefect {
+export interface S03UnclosedRingDefect {
   kind: typeof UNCLOSED_RING_DEFECT;
   levelId: number;
   featureIndex: number;
@@ -39,6 +42,23 @@ export interface S03SourceDefect {
   first: Point2;
   last: Point2;
 }
+/**
+ * A source feature excluded from Check A because a hole vertex lies strictly outside its shell. The ring is never
+ * clipped, moved or repaired: the offending positions and the shell they were tested against are kept here for the
+ * ENU offset only, and the private provenance records them; the public receipt carries the numeric offset.
+ */
+export interface S03HoleOutsideShellDefect {
+  kind: typeof HOLE_OUTSIDE_SHELL_DEFECT;
+  levelId: number;
+  featureIndex: number;
+  polygonIndex: number;
+  ringIndex: number;
+  /** Hole positions (lon/lat) that the inclusive shell test rejects. */
+  vertices: Point2[];
+  /** The shell ring those positions were tested against, as lon/lat. */
+  shell: Point2[];
+}
+export type S03SourceDefect = S03UnclosedRingDefect | S03HoleOutsideShellDefect;
 type JsonObject = Record<string, unknown>;
 const record = (v: unknown): v is JsonObject => v !== null && typeof v === 'object' && !Array.isArray(v);
 const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
@@ -123,7 +143,7 @@ interface S03Node { index: number; sourceId: number; levelId: number; native: Po
 export interface S03Link { sourceId: number; n1: number; n2: number; direction: number; dz: number | null }
 interface S03Level {
   id: number; ordinal: number; polygons: Polygon2[]; nonPolygonFeatures: number; memberSha256: string;
-  featuresTotal: number; featuresUsed: number; featuresExcludedUnclosedRing: number;
+  featuresTotal: number; featuresUsed: number; featuresExcludedUnclosedRing: number; featuresExcludedHoleOutsideShell: number;
 }
 export interface S03Inputs {
   navTransform: Affine; drawingTransform: Affine; drawingId: number;
@@ -228,7 +248,7 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
     noCrsOverride(doc, member);
     if (doc.type !== 'FeatureCollection' || doc.id !== level.id || doc.drawing_id !== drawingId || !Array.isArray(doc.features)) fail(member, 'invalid collection, level id or drawing id');
     const polygons: Polygon2[] = [];
-    let nonPolygonFeatures = 0, featuresUsed = 0, featuresExcludedUnclosedRing = 0;
+    let nonPolygonFeatures = 0, featuresUsed = 0, featuresExcludedUnclosedRing = 0, featuresExcludedHoleOutsideShell = 0;
     const features = doc.features as unknown[];
     features.forEach((rawFeature, featureIndex) => {
       if (!record(rawFeature) || rawFeature.type !== 'Feature' || !record(rawFeature.geometry)) fail(member, 'invalid feature/geometry');
@@ -255,26 +275,34 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
           first: [unclosed.positions[0]![0]!, unclosed.positions[0]![1]!], last: [unclosed.positions.at(-1)![0]!, unclosed.positions.at(-1)![1]!] });
         return;
       }
-      // Only unclosed rings have a director ruling to exclude from Check A; every other topology malformation fails closed.
+      // A ring that crosses itself still fails closed, including on a feature an exclusion rule would drop.
+      const verdicts = parsed.flatMap(({ polygonIndex, rings }) => rings.map((points, ringIndex) => ({ polygonIndex, ringIndex, verdict: selfIntersectionCheck(horizontal(points)) })));
+      const crossing = verdicts.find(({ verdict }) => verdict === 'SELF_INTERSECTING');
+      if (crossing) fail(member, `ring ${crossing.ringIndex} self-intersects (level ${level.id}, feature ${featureIndex}, polygon ${crossing.polygonIndex})`);
+      // Two director rulings exclude a whole feature: an unclosed ring, and a hole vertex strictly outside its shell.
+      // Neither ring is clipped, moved or otherwise repaired, and every other malformation still fails closed above.
       for (const { polygonIndex, rings } of parsed) {
         const flat = rings.map(horizontal), shell = flat[0]!;
-        flat.slice(1).forEach((hole, holeIndex) => hole.forEach((vertex, vertexIndex) => {
-          if (!ringContainsInclusive(vertex, shell)) fail(member, `hole ${holeIndex + 1} vertex ${vertexIndex} lies outside its shell (level ${level.id}, feature ${featureIndex}, polygon ${polygonIndex})`);
-        }));
-        flat.forEach((points, ringIndex) => {
-          const verdict = selfIntersectionCheck(points);
-          if (verdict === 'SELF_INTERSECTING') fail(member, `ring ${ringIndex} self-intersects (level ${level.id}, feature ${featureIndex}, polygon ${polygonIndex})`);
-          if (verdict === 'CLEAN') topology.rings_checked++;
-          else topology.rings_skipped_large++;
-        });
+        const holeIndex = flat.slice(1).findIndex(hole => hole.some(vertex => !ringContainsInclusive(vertex, shell)));
+        if (holeIndex < 0) continue;
+        const hole = flat[holeIndex + 1]!;
+        featuresExcludedHoleOutsideShell++;
+        sourceDefects.push({ kind: HOLE_OUTSIDE_SHELL_DEFECT, levelId: level.id, featureIndex, polygonIndex, ringIndex: holeIndex + 1,
+          vertices: hole.filter(vertex => !ringContainsInclusive(vertex, shell)), shell });
+        return;
+      }
+      // The counters describe the rings Check A actually used, so an excluded feature's rings are not counted as checked.
+      for (const { verdict } of verdicts) {
+        if (verdict === 'CLEAN') topology.rings_checked++;
+        else topology.rings_skipped_large++;
       }
       featuresUsed++;
       for (const part of parsed) polygons.push(part.rings.map(horizontal));
     });
     // A level whose polygon features were all excluded stays in the output with null inside metrics; a level with no polygon feature at all still fails.
-    if (!polygons.length && !featuresExcludedUnclosedRing) fail(member, 'no polygons to test');
+    if (!polygons.length && !featuresExcludedUnclosedRing && !featuresExcludedHoleOutsideShell) fail(member, 'no polygons to test');
     return { id: level.id, ordinal: FLOOR_ORDINALS[label]!, polygons, nonPolygonFeatures, memberSha256: sha256(members.get(member)!.data),
-      featuresTotal: features.length, featuresUsed, featuresExcludedUnclosedRing };
+      featuresTotal: features.length, featuresUsed, featuresExcludedUnclosedRing, featuresExcludedHoleOutsideShell };
   });
   if (!Array.isArray(nd.l) || nd.l.length !== levels.length || new Set(nd.l.map(l => record(l) ? l.id : null)).size !== levels.length || nd.l.some(l => !record(l) || !levelIds.has(l.id as number))) fail(navName, 'drawing levels do not match com-map.geojson');
   if (!Array.isArray(nav.n) || !nav.n.length) fail(navName, 'missing nodes');
@@ -300,12 +328,27 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
   return { navTransform, drawingTransform, drawingId, nodes, levels, links, sourceValues, sourceDefects, topology, navSha256: sha256(members.get(navName)!.data), mapSha256: sha256(members.get(mapName)!.data) };
 }
 
-/** ENU endpoint gap from the first and last positions, using the same station projector Check A uses. Nothing is closed or moved. */
+/**
+ * Public defect records: the ENU endpoint gap for an unclosed ring, the ENU offset of the worst offending hole vertex
+ * from its shell for a hole outside its shell. Both use the same station projector Check A uses; nothing is closed,
+ * clipped or moved, and the source positions themselves stay in the private provenance.
+ */
 export function sourceDefectRecords(inputs: S03Inputs, project: Project) {
   return inputs.sourceDefects.map(defect => {
-    const first = project(defect.first[1], defect.first[0]), last = project(defect.last[1], defect.last[0]);
-    return { kind: defect.kind, level_id: defect.levelId, feature_index: defect.featureIndex, polygon_index: defect.polygonIndex,
-      ring_index: defect.ringIndex, endpoint_gap_m: Math.hypot(last[0] - first[0], last[1] - first[1]) };
+    const base = { kind: defect.kind, level_id: defect.levelId, feature_index: defect.featureIndex, polygon_index: defect.polygonIndex, ring_index: defect.ringIndex };
+    if (defect.kind === UNCLOSED_RING_DEFECT) {
+      const first = project(defect.first[1], defect.first[0]), last = project(defect.last[1], defect.last[0]);
+      return { ...base, endpoint_gap_m: Math.hypot(last[0] - first[0], last[1] - first[1]) };
+    }
+    const shell = defect.shell.map(([lon, lat]) => project(lat, lon));
+    const offset = ([lon, lat]: Point2): number => {
+      const xy = project(lat, lon);
+      return Math.min(...shell.slice(0, -1).map((from, index) => {
+        const nearest = nearestPointOnSegment(xy, from, shell[index + 1]!);
+        return Math.hypot(nearest[0] - xy[0], nearest[1] - xy[1]);
+      }));
+    };
+    return { ...base, max_offset_m: Math.max(...defect.vertices.map(offset)) };
   });
 }
 /** Policy fixed before looking at results: >=95% inside, both overall and on every assessed level with nodes. */
@@ -314,13 +357,13 @@ export function checkInternal(inputs: S03Inputs, project: Project, swapped = fal
   const perLevel = inputs.levels.map(level => {
     const nodes = inputs.nodes.filter(n => n.levelId === level.id);
     const coverage = { features_total: level.featuresTotal, features_used: level.featuresUsed, features_excluded_unclosed_ring: level.featuresExcludedUnclosedRing,
-      non_polygon_features_excluded: level.nonPolygonFeatures };
+      features_excluded_hole_outside_shell: level.featuresExcludedHoleOutsideShell, non_polygon_features_excluded: level.nonPolygonFeatures };
     const polygons = level.polygons.map(poly => poly.map(ring => ring.map(([lon, lat]) => project(lat, lon))));
     if (!polygons.length) {
       // Every polygon feature on this level was excluded as a source defect. Nothing is invented and the level stays visible.
       return [level.id, { ...coverage, node_count: nodes.length, polygon_count: 0, inside_count: null, inside_share: null,
         outside_count: null, outside_unprojectable_count: null, outside_edge_distance_m: residualStats([]),
-        reason: 'No usable polygon: every polygon feature on this level was excluded for SOURCE_DEFECT_UNCLOSED_RING; inside metrics are null.' }] as const;
+        reason: 'No usable polygon: every polygon feature on this level was excluded for a source defect (SOURCE_DEFECT_UNCLOSED_RING or SOURCE_DEFECT_HOLE_OUTSIDE_SHELL); inside metrics are null.' }] as const;
     }
     // Precomputed bboxes reduce the ground-level polygon checks without changing the closed-surface rule.
     const bounds = polygons.map(poly => {
@@ -592,13 +635,23 @@ export async function s03TransformCheck() {
   const frame = stationEnuProjector({ lat: origin.lat, lon: origin.lon, hM: 0 });
   const project: Project = (lat, lon) => { const p = frame(lat, lon, 0); return [p[0], p[1]]; };
   const asIs = checkInternal(inputs, project), swapped = checkInternal(inputs, project, true);
-  // Public defect records carry only numeric ids and the ENU endpoint gap; source coordinates stay in the private store.
+  // Public defect records carry only numeric ids and the ENU gap or offset; source coordinates stay in the private store.
   const sourceDefects = sourceDefectRecords(inputs, project);
   const featuresTotal = inputs.levels.reduce((sum, l) => sum + l.featuresTotal, 0);
   const featuresUsed = inputs.levels.reduce((sum, l) => sum + l.featuresUsed, 0);
-  const coverage = { features_total: featuresTotal, features_used: featuresUsed, features_excluded_unclosed_ring: sourceDefects.length,
+  const excludedByKind = { [UNCLOSED_RING_DEFECT]: inputs.sourceDefects.filter(d => d.kind === UNCLOSED_RING_DEFECT).length,
+    [HOLE_OUTSIDE_SHELL_DEFECT]: inputs.sourceDefects.filter(d => d.kind === HOLE_OUTSIDE_SHELL_DEFECT).length };
+  const excludedTotal = excludedByKind[UNCLOSED_RING_DEFECT] + excludedByKind[HOLE_OUTSIDE_SHELL_DEFECT];
+  // The defect records and the per-level counters are computed independently; a disagreement means one of them is wrong.
+  const countedByKind = { [UNCLOSED_RING_DEFECT]: inputs.levels.reduce((sum, l) => sum + l.featuresExcludedUnclosedRing, 0),
+    [HOLE_OUTSIDE_SHELL_DEFECT]: inputs.levels.reduce((sum, l) => sum + l.featuresExcludedHoleOutsideShell, 0) };
+  if (countedByKind[UNCLOSED_RING_DEFECT] !== excludedByKind[UNCLOSED_RING_DEFECT] || countedByKind[HOLE_OUTSIDE_SHELL_DEFECT] !== excludedByKind[HOLE_OUTSIDE_SHELL_DEFECT])
+    throw new Error('S03 source-defect records disagree with the per-level exclusion counters');
+  const coverage = { features_total: featuresTotal, features_used: featuresUsed, features_excluded_unclosed_ring: excludedByKind[UNCLOSED_RING_DEFECT],
+    features_excluded_hole_outside_shell: excludedByKind[HOLE_OUTSIDE_SHELL_DEFECT],
+    features_excluded: excludedTotal, features_excluded_by_kind: excludedByKind,
     non_polygon_features_excluded: inputs.levels.reduce((sum, l) => sum + l.nonPolygonFeatures, 0),
-    statement: `Check A uses all polygon features except ${sourceDefects.length} excluded for ${UNCLOSED_RING_DEFECT}.` };
+    statement: `Check A uses all polygon features except ${excludedTotal} excluded by director ruling: ${excludedByKind[UNCLOSED_RING_DEFECT]} for ${UNCLOSED_RING_DEFECT} and ${excludedByKind[HOLE_OUTSIDE_SHELL_DEFECT]} for ${HOLE_OUTSIDE_SHELL_DEFECT}.` };
   if (swapped.status !== 'FAIL') throw new Error('Swapped-order negative control unexpectedly passed the fixed containment threshold');
   const graph = JSON.parse(graphBytes.toString('utf8')) as { nodes: Array<{ id: string; floorId: string; position: { x: number; y: number } }> };
   const floorById = new Map(station.floors.map(f => [f.id, f.ordinal]));
@@ -640,15 +693,17 @@ export async function s03TransformCheck() {
     transform: { drawing_id: inputs.drawingId, level_ids: inputs.levels.map(l => l.id), nav_member_sha256: inputs.navSha256, map_member_sha256: inputs.mapSha256,
       nav_coefficients_sha256: sha256(JSON.stringify(inputs.navTransform)), drawing_coefficients_sha256: sha256(JSON.stringify(inputs.drawingTransform)), coefficient_hash_encoding: 'UTF-8 JSON array in source order',
       order: 'nav affine, then drawing affine, then horizontal ENU; no fitted correction', level_member_sha256: Object.fromEntries(inputs.levels.map(l => [l.id, l.memberSha256])) },
-    source_defects: { count: sourceDefects.length, kinds: sourceDefects.length ? [UNCLOSED_RING_DEFECT] : [],
-      rule: 'A polygon feature is excluded from Check A when any of its rings has a first position different from its last, comparing the complete positions including an optional third value. Rings are never closed, repaired, dropped or otherwise modified; the whole feature is excluded.',
+    source_defects: { count: excludedTotal, kinds: Object.entries(excludedByKind).filter(([, count]) => count > 0).map(([kind]) => kind),
+      by_kind: excludedByKind,
+      rule: 'A polygon feature is excluded from Check A, whole, on either of two director rulings: any of its rings has a first position different from its last, comparing the complete positions including an optional third value; or any of its hole vertices lies strictly outside its shell. Rings are never closed, clipped, repaired, dropped or otherwise modified, and no vertex is moved.',
       endpoint_gap_rule: 'Horizontal ENU distance between the first and last ring positions, using the same station projector as Check A.',
+      hole_offset_rule: 'Horizontal ENU distance from the worst offending hole vertex to the nearest point of its shell, using the same station projector as Check A.',
       topology: { rings_checked: inputs.topology.rings_checked, rings_skipped_large: inputs.topology.rings_skipped_large, max_vertices: SELF_INTERSECTION_MAX_VERTICES,
-        rule: `Every ring of a used feature is checked for proper segment crossings up to ${SELF_INTERSECTION_MAX_VERTICES} vertices; larger rings are counted in rings_skipped_large and not checked. A hole vertex strictly outside its shell, or a self-intersecting ring, fails the whole run closed; only unclosed rings are excluded by ruling.` },
+        rule: `Every ring of a used feature is checked for proper segment crossings up to ${SELF_INTERSECTION_MAX_VERTICES} vertices; larger rings are counted in rings_skipped_large and not checked. A self-intersecting ring fails the whole run closed, on an excluded feature too; the counters describe the rings of used features only.` },
       items: sourceDefects },
     internal: { as_is: asIs, swapped_order: swapped, coverage, negative_control_detected: true, invalid_coordinate_rule: 'Invalid geographic outputs count as outside and unprojectable; no edge distance is asserted for them.',
       containment_rule: 'Union of own-level polygon surfaces in horizontal ENU, including boundaries and excluding hole interiors; Point and LineString features excluded.',
-      unclosed_ring_rule: 'Features with an unclosed ring are excluded from containment entirely (no implicit closure). A level left without usable polygons keeps null inside metrics and is not assessed.',
+      feature_exclusion_rule: 'Features with an unclosed ring, or with a hole vertex outside its shell, are excluded from containment entirely (no implicit closure, no clipping). A level left without usable polygons keeps null inside metrics and is not assessed.',
       status_rule: 'PASS needs overwhelming containment on every assessed level and overall. INCOMPLETE means the assessed part would pass but nodes remain on levels without usable polygons; FAIL means the assessed part already fails.' },
     internal_outside_diagnostic: outsideDiagnostic,
     external: { e27_node_count: e27.length, s03_node_count: nodes.length, floor_rule: 'Label-derived comparison ordinals equal, or E27 ordinal 0 with S03 ordinal 1; no source zlevel or measured elevation is used.',
@@ -662,7 +717,11 @@ export async function s03TransformCheck() {
   await writeJson(join(getStoreRoot(), sidecarRel), { ...receipt, credit: S03_CREDIT, source_record: stored.record, source_manifest: stored.source,
     node_table: nodes.map(n => ({ index: n.index, source_id: n.sourceId, level_id: n.levelId })), check_b_pairs: externalPairs,
     // Private provenance keeps the untouched source endpoints; the public receipt keeps only their ENU gap.
-    source_defect_endpoints: inputs.sourceDefects.map(d => ({ ...d, first: [...d.first], last: [...d.last] })),
+    // Private provenance keeps the untouched source positions each exclusion was decided on; the public receipt keeps only
+    // the ENU gap or offset.
+    source_defect_positions: inputs.sourceDefects.map(d => d.kind === UNCLOSED_RING_DEFECT
+      ? { ...d, first: [...d.first], last: [...d.last] }
+      : { ...d, vertices: d.vertices.map(vertex => [...vertex]), shell: d.shell.map(vertex => [...vertex]) }),
     // Absolute ENU means and the full floor mapping stay private; the public receipt carries only the mapping hash.
     outside_diagnostic_private_levels: outsidePrivateLevels,
     floor_mapping: station.floors.map(f => ({ id: f.id, ordinal: f.ordinal })).sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0) });
