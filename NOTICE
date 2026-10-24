@@ -197,6 +197,7 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        layout, tracing, pictogram or logo is copied. Credit as recorded:
        「豊島区「池袋駅地下空間案内図」(facts only; not reproduced)」 and
        「東京メトロ 池袋駅構内図 (facts only; not reproduced)」 and
+       「東京メトロ 池袋駅 バリアフリー設備 (facts only; not reproduced)」 and
        「西武鉄道 池袋駅ページ (facts only; not reproduced)」.
        豊島区 pages: facts only, director ruling OD-34 (2026-10-25). The site
        policy (https://www.city.toshima.lg.jp/012/kuse/koho/homepage/sitepolicy.html,
@@ -216,8 +217,9 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        docs/research/lines/ikebukuro-line-pois.json and its contract. Gate,
        lift, escalator and exit names and end pairs as printed on Tokyo Metro
        pages (#26) and the Seibu Railway station page (OD-25), with
-       evidence given as a page locator in GTEki's own words. No other page
-       text, map or image is copied.
+       evidence given as a page locator in GTEki's own words. The exit-closure
+       note in the contract cites the 豊島区 2022-01 update notice of the guide
+       credited above. No other page text, map or image is copied.
 
    4.10 OpenStreetMap - evidence only; no OSM objects or attributes ship
        Shipped station data contains no OSM-derived objects or attributes.

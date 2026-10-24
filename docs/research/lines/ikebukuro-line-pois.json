@@ -57,6 +57,24 @@
         "url": "https://github.com/nurockplayer/gteki/pull/222",
         "date": "2026-10-22"
       }
+    },
+    {
+      "id": "toshima-underground-guide-2022-notice",
+      "title": "池袋駅地下空間案内図の配布について（令和4年1月更新版）",
+      "publisher": "豊島区",
+      "url": "https://www.city.toshima.lg.jp/documents/17300/undergroundmap_202201.pdf",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "豊島区「池袋駅地下空間案内図」(令和4年1月更新版) (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-25T02:02:16+09:00",
+      "datasetDate": "2022-01",
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。更新通知（令和4年1月6日付）の変更点に、池袋マルイ解体工事に伴い1aとC4の出入口が閉鎖された旨の記載があることのみ確認。本文は転記せず、地図面は読んでいない。 取得物: 438,368 B, sha256 db85abf7d77131ca7f72af074de993a371b6925d0e903fa2f82a2a330d1a7a15; リンク元 https://www.city.toshima.lg.jp/405/1705251510.html (2026-10-25, HTTP 200). Cited by the contract's exit-closure note only; no POI cites it, because the 2026-03 Metro list is newer. Same guide as toshima-underground-guide-2022 (station record); this id is the update-notice PDF.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
     }
   ],
   "pois": [

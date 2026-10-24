@@ -2,9 +2,9 @@
 
 - **Tracking:** lines-lead Phase 1, packages WP2 and WP3 ([`lines-inventory.md`](lines-inventory.md), PR #408). Facts-only rules: Tokyo Metro under #26 ([comment](https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404)), Seibu under OD-25 (`docs/research/owner-decisions-pending.md`).
 - **Writer:** **ikb-route-15** only. It merges these entries into `stations/ikebukuro/gteki/station.json` and `data/graph.src.json` → `pois.json`. lines-lead does not edit `stations/`.
-- **Data:** [`ikebukuro-line-pois.json`](ikebukuro-line-pois.json): 3 sources (each in the station `Source` shape: `attribution` and `decision {url, date}`; the Metro station page was read but no POI cites it, so it is not registered), 42 POIs, 10 `factsForExisting` entries for POIs already in the station, and `notFound` / `conflicts` lists.
+- **Data:** [`ikebukuro-line-pois.json`](ikebukuro-line-pois.json): 4 sources (each in the station `Source` shape: `attribution` and `decision {url, date}`; the Metro station page was read but no POI cites it, so it is not registered; the fourth source is the Toshima guide's 2022-01 update notice, cited only by §2's exit-closure note), 42 POIs, 10 `factsForExisting` entries for POIs already in the station, and `notFound` / `conflicts` lists.
 - **Schema:** unchanged (`Poi` / `Source`, `gteki.station/0.1`). `operatorId` and `evidence.locator` are provenance fields for the writer review. They are not `Poi` fields.
-- **Read:** 2026-10-24, about 17:57 JST, in ego-lite (read-only; the Metro pages are JS-rendered and refuse plain requests). Every name was checked to appear on its page. No other page text is copied: evidence is a `locator` (page and section, in our own words), and notes and facts are in our own words (GIS rights review P1).
+- **Read:** 2026-10-24, about 17:57 JST, in ego-lite (read-only; the Metro pages are JS-rendered and refuse plain requests). Every name was checked to appear on its page. The exit-closure note in §2 was checked on 2026-10-25 from the ward's update-notice PDF, fetched with plain curl (default UA) after the page link was followed. No other page text is copied: evidence is a `locator` (page and section, in our own words), and notes and facts are in our own words (GIS rights review P1).
 
 ## 1. This batch
 
@@ -17,7 +17,7 @@ Lift and escalator names are the line, the kind and the end-pair label as printe
 
 ## 2. Review changes made by lines-lead
 
-- **Exits:** ids follow the station pattern `exit-<code>`, and names follow the existing exit POIs (「1a番出口」 / "Exit 1a"). The code as printed (`1a`, `C1` …) is a `ja` alias. 1a, 1b, 2a and C4 carry the page's `*` mark, which the legend explains as limited opening hours. No hours are given, so the notes say so. 1a and C4 were closed in the 2022 Toshima guide. The 2026-03 Metro list includes them again, and their current status stays UNKNOWN.
+- **Exits:** ids follow the station pattern `exit-<code>`, and names follow the existing exit POIs (「1a番出口」 / "Exit 1a"). The code as printed (`1a`, `C1` …) is a `ja` alias. 1a, 1b, 2a and C4 carry the page's `*` mark, which the legend explains as limited opening hours. No hours are given, so the notes say so. The Toshima guide's 2022-01 update notice names 1a and C4 as exits closed for the 池袋マルイ demolition works (source `toshima-underground-guide-2022-notice`: <https://www.city.toshima.lg.jp/documents/17300/undergroundmap_202201.pdf>, retrieved 2026-10-25, 438,368 B, sha256 `db85abf7…7a15`, linked from <https://www.city.toshima.lg.jp/405/1705251510.html>). The 2026-03 Metro list includes them again, and their current status stays UNKNOWN.
 - **Seibu gates:** the page names the 1F and B1F gates only in an AED-location notice. They are prefixed 「西武池袋線」 for search, and the printed form is an alias. No other Seibu gate name is printed in text.
 - **西武南口:** category `other`, not `exit`. The page lists it under facility hours and does not say whether it is an exit or a gate.
 - **Hours:** printed only for two Fukutoshin escalators (始発～24：00, 始発～24：15) and 西武南口 (7:00～22:30). They are in `notes` with a read-on-2026-10-24, page-undated, may-have-changed caveat.
