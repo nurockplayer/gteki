@@ -163,6 +163,10 @@
           {
             "poiId": "exit-35",
             "score": 105
+          },
+          {
+            "poiId": "metro-m-escalator-1",
+            "score": 60
           }
         ]
       },

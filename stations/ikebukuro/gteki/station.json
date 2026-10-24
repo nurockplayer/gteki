@@ -349,16 +349,16 @@
   },
   {
    "id": "tokyometro-ikebukuro-accessibility-2026-10",
-   "title": "東京メトロ 池袋駅 バリアフリー設備",
+   "title": "バリアフリー設備 | 池袋駅/M25/Y09/F09 | 東京メトロ",
    "publisher": "東京地下鉄",
    "url": "https://www.tokyometro.jp/station/ikebukuro/accessibility/index.html",
    "license": null,
    "rights": "REFERENCE_ONLY",
    "attribution": "東京メトロ 池袋駅 バリアフリー設備 (facts only; not reproduced)",
    "modified": false,
-   "retrievedAt": "2026-10-22T00:00:00+09:00",
+   "retrievedAt": "2026-10-24T17:57:00+09:00",
    "datasetDate": null,
-   "notes": "ライセンスなし・事実のみ参照（複製なし）。Owner decision #26 (FACTS_ONLY_REFERENCE). Terms: all rights reserved, no use beyond private use/quotation without permission (https://www.tokyometro.jp/terms/index.html). Read only for names and lift/escalator connections; no text block, map or graphic is copied. Fact used: under the 改札外 lift and escalator lists, 南通路西改札～４番出入口（エソラ）. Hours not stated. Same record as DR-IK-02 / M-acc in docs/research/gaps/DR-IK-station-facts.md (PR #177).",
+   "notes": "ライセンスなし・事実のみ参照（複製なし）。丸ノ内線・有楽町線・副都心線の各バリアフリー設備（エレベーター・エスカレーターの設置場所の端点表記、対応の有無「あり」のみ採用）。運転停止予定とトイレ等は対象外。 Re-read 2026-10-24 (WP2): lift and escalator end pairs per line. The existing station record (retrieved 2026-10-22) keeps its id; the writer updates retrievedAt and these notes.",
    "usage": "facts-only",
    "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
   },
@@ -537,6 +537,36 @@
    "retrievedAt": "2026-10-24T02:56:55Z",
    "datasetDate": null,
    "notes": "Shop names and printed zone labels only; descriptions and visual material not reproduced. Pages undated."
+  },
+  {
+   "id": "tokyometro-ikebukuro-yardmap-print-2026-10",
+   "title": "構内図 | 池袋駅/M25/Y09/F09 | 東京メトロ",
+   "publisher": "東京地下鉄",
+   "url": "https://www.tokyometro.jp/station/ikebukuro/yardmap/index_print.html",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "attribution": "東京メトロ 池袋駅構内図 (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T17:57:00+09:00",
+   "datasetDate": "2026-03",
+   "notes": "ライセンスなし・事実のみ参照（複製なし）。出口案内の出入口番号・時間制限表記（*）・地上行エレベーターの表記のみ採用。近隣施設名・構内図画像は対象外。 改定日：2026年3月（ページ表記）。",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
+  },
+  {
+   "id": "seibu-ikebukuro-station-2026-10",
+   "title": "池袋駅 ：西武鉄道Webサイト",
+   "publisher": "西武鉄道",
+   "url": "https://www.seiburailway.jp/railway/station/ikebukuro/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "attribution": "西武鉄道 池袋駅ページ (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T17:57:00+09:00",
+   "datasetDate": null,
+   "notes": "ライセンスなし・事実のみ参照（複製なし）。駅の案内文の改札口名、駅施設の営業時間（西武南口）を確認。エレベーター・エスカレーター位置は画像のみで本文に無し。 Rights: OD-25 (docs/research/owner-decisions-pending.md; decided 2026-10-22 by the director under the Owner's delegation, recorded in PR #222): same class as Tokyo Metro, facts-only under #26.",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/222", "date": "2026-10-22" }
   }
  ],
  "floors": [
