@@ -20,7 +20,7 @@ import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
 import { castAll, castCamera, cuttableSigns, explorerTargets } from "./raycast.ts";
 import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
-import { PostFx } from "./postfx.ts";
+import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
@@ -365,11 +365,12 @@ export class Explorer {
   }
 
   /** Follow-camera diagnostics for the QA hook. Angles are radians, distances metres. */
-  cameraInfo(): { fov: number; far: number; slopeOn: boolean; boomWanted: number; boomActual: number; raise: number; pitch: number; yaw: number; avatarFade: number; mode: ExplorerMode } {
+  cameraInfo(): { fov: number; far: number; slopeOn: boolean; boomWanted: number; boomActual: number; raise: number; pitch: number; yaw: number; avatarFade: number; reflections: boolean; mode: ExplorerMode } {
     return {
       fov: this.camera.fov, far: this.camera.far, slopeOn: this.slope.on,
       boomWanted: this.camDistance, boomActual: this.boomActual, raise: this.boomRaise,
-      pitch: this.pitch, yaw: this.yaw, avatarFade: this.cameraFade, mode: this.mode,
+      pitch: this.pitch, yaw: this.yaw, avatarFade: this.cameraFade,
+      reflections: this.composer?.settings.reflections ?? false, mode: this.mode,
     };
   }
 
@@ -662,7 +663,7 @@ export class Explorer {
   /** Built once: the composer only references this explorer's scene and camera, so stations reuse it. */
   private setupComposer(): void {
     if (this.composer || this.quality !== "high") return;
-    this.composer = new PostFx(this.renderer, this.scene, this.camera);
+    this.composer = new PostFx(this.renderer, this.scene, this.camera, qaPostFxSettings(location.search));
     this.composer.setBloomThreshold(this.bloomThreshold);
     this.applyOverlayTone();
   }

@@ -16,7 +16,7 @@ function cameraStand() {
     cameraTargets: [] as THREE.Object3D[], cameraSides: new Set<THREE.Object3D>(), blockerTargets: new Set<THREE.Object3D>(),
     ray: new THREE.Raycaster(), reducedMotion: false, squeezed: false,
     setFov: vi.fn(), avatarRig: { root: new THREE.Group(), setFade: vi.fn() },
-    composer: { setAvatarFade: vi.fn() },
+    composer: { settings: { reflections: true }, setAvatarFade: vi.fn() },
     qaCamera: {} as CameraHold, qaCameraSnap: false, qaAvatarFade: null as number | null,
     boomActual: 0, cameraFade: 1,
   };
@@ -205,7 +205,7 @@ describe("Explorer wall fallback and QA controls", () => {
     expect(state.camera.position.distanceTo(held)).toBeLessThan(1e-9);
     expect(qa(state).cameraInfo()).toEqual({
       fov: 50, far: 2000, slopeOn: false, boomWanted: 2, boomActual: 2,
-      raise: 0, pitch: -0.5, yaw: 1, avatarFade: 1, mode: "walk",
+      raise: 0, pitch: -0.5, yaw: 1, avatarFade: 1, reflections: true, mode: "walk",
     });
     qa(state).setCamera(null);
     state.yaw = 0.6;
@@ -224,6 +224,15 @@ describe("Explorer wall fallback and QA controls", () => {
     qa(state).holdAvatarFade(null);
     expect(qa(state).cameraInfo().avatarFade).toBe(1);
     expect(state.avatarRig.setFade.mock.lastCall).toEqual([1]);
+  });
+
+  it("reports reflections only when the postprocessing pass is active", () => {
+    const state = cameraStand();
+    expect(qa(state).cameraInfo().reflections).toBe(true);
+    state.composer.settings.reflections = false;
+    expect(qa(state).cameraInfo().reflections).toBe(false);
+    Object.assign(state, { composer: null }); // Low quality has no composer.
+    expect(qa(state).cameraInfo().reflections).toBe(false);
   });
 });
 
