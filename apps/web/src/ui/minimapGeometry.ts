@@ -1,5 +1,6 @@
 import { nodeDisplayZ } from "@gteki/navigation";
-import type { Edge, StationBundle } from "@gteki/schema";
+import type { PolylinePoint, RouteStep } from "@gteki/navigation";
+import type { Edge, Poi, StationBundle } from "@gteki/schema";
 import { FLOOR_BAND_M } from "../explorer/labelVisibility.ts";
 import type { ExplorerPose } from "../explorer/explorer.ts";
 
@@ -47,4 +48,148 @@ export function toMinimap(east: number, north: number, pose: ExplorerPose, orien
 
 export function arrowRotationDeg(pose: ExplorerPose, orientation: MinimapOrientation): number {
   return orientation === "player-up" ? 0 : pose.headingDeg;
+}
+
+/**
+ * The route's own line, cut into the runs that stay on one floor. A pair of consecutive points is drawn
+ * only when both are on `floorId` AND the step ending at the second point stays on one floor: the drawn
+ * geometry of a stair/escalator/elevator is never flattened into a corridor. No points are synthesised.
+ */
+export function routeOnFloor(points: readonly PolylinePoint[], floorId: string, steps: readonly RouteStep[]): Array<Array<{ x: number; y: number }>> {
+  const runs: Array<Array<{ x: number; y: number }>> = [];
+  let run: Array<{ x: number; y: number }> | null = null;
+  const flush = () => {
+    if (run && run.length >= 2) runs.push(run);
+    run = null;
+  };
+  for (let i = 0; i < points.length; i++) {
+    const point = points[i]!;
+    if (point.floorId !== floorId) { flush(); continue; }
+    const previous = i > 0 ? points[i - 1]! : null;
+    const step = point.stepIndex >= 0 ? steps[point.stepIndex] : undefined;
+    // No step for the vertex that ends this segment: it may be a stair, so drop the segment rather
+    // than flatten it onto the floor. Missing evidence is never filled in by a guess.
+    const missingStep = point.stepIndex >= 0 && !step;
+    const leavesFloor = !!step && step.fromFloorId !== step.toFloorId;
+    if (!previous || previous.floorId !== floorId || missingStep || leavesFloor) {
+      flush();
+      run = [{ x: point.x, y: point.y }];
+      continue;
+    }
+    if (run === null) run = [{ x: previous.x, y: previous.y }];
+    run.push({ x: point.x, y: point.y });
+  }
+  flush();
+  return runs;
+}
+
+/** A step that changes floor, with the point on the floor it leaves where the change begins. */
+export interface FloorTransition {
+  stepIndex: number;
+  fromFloorId: string;
+  toFloorId: string;
+  mode: RouteStep["mode"];
+  x: number;
+  y: number;
+}
+
+/**
+ * Every floor-changing step of the route (computed once per route, not per frame). A step whose start
+ * point has no polyline evidence is dropped rather than given a made-up position.
+ */
+export function floorTransitions(points: readonly PolylinePoint[], steps: readonly RouteStep[]): FloorTransition[] {
+  const transitions: FloorTransition[] = [];
+  for (let i = 0; i < steps.length; i++) {
+    const step = steps[i]!;
+    if (step.fromFloorId === step.toFloorId) continue;
+    let start: { x: number; y: number } | null = null;
+    if (i === 0) {
+      start = points[0] ? { x: points[0].x, y: points[0].y } : null;
+    } else {
+      for (let j = points.length - 1; j >= 0; j--) {
+        if (points[j]!.stepIndex === i - 1) { start = { x: points[j]!.x, y: points[j]!.y }; break; }
+      }
+    }
+    if (start) transitions.push({ stepIndex: i, fromFloorId: step.fromFloorId, toFloorId: step.toFloorId, mode: step.mode, ...start });
+  }
+  return transitions;
+}
+
+/** How far off the still-ahead part of the route the player must be before progress may jump back. */
+export const PROGRESS_BACKTRACK_M = 8;
+
+/**
+ * How far along this floor's run the player is, as a step index. Monotonic along route order:
+ * only on-floor points at or after `lastProgress` are candidates, so a route that crosses the same
+ * coordinates twice cannot drag progress back to the earlier visit. Equal distances prefer the
+ * later step. Progress only moves backwards when the player is more than `PROGRESS_BACKTRACK_M`
+ * from every still-ahead point AND an earlier on-floor point is genuinely closer (they wandered off).
+ */
+export function routeProgress(
+  points: readonly PolylinePoint[],
+  floorId: string,
+  east: number,
+  north: number,
+  lastProgress: number,
+): number {
+  let ahead: { stepIndex: number; distanceSq: number } | null = null;
+  let anywhere: { stepIndex: number; distanceSq: number } | null = null;
+  for (const point of points) {
+    if (point.floorId !== floorId) continue;
+    const distanceSq = (point.x - east) ** 2 + (point.y - north) ** 2;
+    if (!anywhere || distanceSq < anywhere.distanceSq || (distanceSq === anywhere.distanceSq && point.stepIndex > anywhere.stepIndex)) {
+      anywhere = { stepIndex: point.stepIndex, distanceSq };
+    }
+    if (point.stepIndex < lastProgress) continue;
+    if (!ahead || distanceSq < ahead.distanceSq || (distanceSq === ahead.distanceSq && point.stepIndex > ahead.stepIndex)) {
+      ahead = { stepIndex: point.stepIndex, distanceSq };
+    }
+  }
+  if (!ahead) return lastProgress;
+  // Only an off-route player may move backwards, and only to the nearest earlier point.
+  if (anywhere && ahead.distanceSq > PROGRESS_BACKTRACK_M ** 2 && anywhere.distanceSq < ahead.distanceSq) {
+    return anywhere.stepIndex;
+  }
+  return ahead.stepIndex;
+}
+
+/**
+ * The first floor change at or after the current step, and where on this floor it starts. Using `>=`
+ * keeps the current cross-floor step selected while the player is inside it (its mid-stair vertices
+ * carry the step's own index), until the floor actually changes. A same-floor stair/escalator is not
+ * a floor change.
+ */
+export function nextFloorChange(
+  points: readonly PolylinePoint[],
+  steps: readonly RouteStep[],
+  floorId: string,
+  fromStepIndex: number,
+): { x: number; y: number; mode: RouteStep["mode"]; toFloorId: string } | null {
+  const change = floorTransitions(points, steps).find((t) => t.fromFloorId === floorId && t.stepIndex >= fromStepIndex);
+  return change ? { x: change.x, y: change.y, mode: change.mode, toFloorId: change.toFloorId } : null;
+}
+
+/** Room kept between a point and the rim for its marker, in viewBox units. */
+export const RIM_MARGIN_PX = 8;
+
+/**
+ * A toMinimap result's place on the minimap: inside the circle (with a marker margin) or its screen
+ * bearing for a rim chevron — 0° is up and angles grow clockwise, matching SVG's rotate().
+ */
+export function rimBearing(px: { x: number; y: number }, radiusPx: number): { inside: boolean; angleDeg: number } {
+  // atan2(0, -0) is π, not 0: a point at the centre has no bearing, and up is the harmless default.
+  const raw = px.x === 0 && px.y === 0 ? 0 : Math.atan2(px.x, -px.y) * 180 / Math.PI;
+  return {
+    inside: Math.hypot(px.x, px.y) <= radiusPx - RIM_MARGIN_PX,
+    angleDeg: ((raw % 360) + 360) % 360,
+  };
+}
+
+/**
+ * POIs the map may draw on a floor: a recorded display position on that floor AND a verified connector
+ * (a routable entrance). A centroid without a connector, a null position or a null floor is search-only
+ * evidence and gets no point.
+ */
+export function floorPois(bundle: StationBundle, floorId: string): Poi[] {
+  return bundle.pois.filter((poi) => poi.displayPosition !== null && poi.floorId === floorId && poi.connectorNodeIds.length > 0);
 }

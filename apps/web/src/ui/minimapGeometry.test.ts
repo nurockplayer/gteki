@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
+import type { PolylinePoint, RouteStep } from "@gteki/navigation";
+import type { Poi } from "@gteki/schema";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 import type { ExplorerPose } from "../explorer/explorer.ts";
-import { arrowRotationDeg, currentFloorId, floorWalkGraph, toMinimap } from "./minimapGeometry.ts";
+import { arrowRotationDeg, currentFloorId, floorPois, floorWalkGraph, nextFloorChange, rimBearing, routeOnFloor, routeProgress, toMinimap } from "./minimapGeometry.ts";
 
 const pose: ExplorerPose = { east: 10, north: 20, up: 0, headingDeg: 0, mode: "walk" };
 
@@ -101,5 +103,195 @@ describe("current-floor schematic walk graph", () => {
       [{ east: 0, north: 0 }, { east: 0, north: 10 }],
       [{ east: 10, north: 0 }, { east: 15, north: 3 }, { east: 20, north: 0 }],
     ]);
+  });
+});
+
+const point = (x: number, y: number, floorId: string, stepIndex: number): PolylinePoint =>
+  ({ x, y, z: floorId === "upper" ? 4 : 0, zKnown: true, stepIndex, floorId });
+
+const step = (fromFloorId: string, toFloorId: string, mode: RouteStep["mode"] = "walk"): RouteStep =>
+  ({ edgeId: `${fromFloorId}-${toFloorId}-${mode}`, fromNodeId: "from", toNodeId: "to", reversed: false, mode, lengthM: 10, fromFloorId, toFloorId });
+
+/** B1F → 1F → B1F → 1F: leaves the concourse twice and re-enters once. */
+const B1F = "concourse", F1 = "upper";
+const zigzag: PolylinePoint[] = [
+  point(0, 0, B1F, -1),
+  point(10, 0, B1F, 0),
+  point(10, 0, F1, 1),
+  point(10, 10, F1, 2),
+  point(10, 10, B1F, 3),
+  point(20, 10, B1F, 4),
+  point(20, 10, F1, 5),
+];
+const zigzagSteps: RouteStep[] = [
+  step(B1F, B1F),
+  step(B1F, F1, "stairs"),
+  step(F1, F1),
+  step(F1, B1F, "stairs"),
+  step(B1F, B1F),
+  step(B1F, F1, "escalator"),
+];
+
+describe("route on one floor", () => {
+  it("splits into separate runs when the route leaves and re-enters the floor", () => {
+    expect(routeOnFloor(zigzag, B1F, zigzagSteps)).toEqual([
+      [{ x: 0, y: 0 }, { x: 10, y: 0 }],
+      [{ x: 10, y: 10 }, { x: 20, y: 10 }],
+    ]);
+    expect(routeOnFloor(zigzag, F1, zigzagSteps)).toEqual([[{ x: 10, y: 0 }, { x: 10, y: 10 }]]);
+    expect(routeOnFloor(zigzag, "missing", zigzagSteps)).toEqual([]);
+  });
+  it("never draws a level change or a single point as a run", () => {
+    expect(routeOnFloor([point(0, 0, B1F, -1), point(0, 0, F1, 0)], B1F, [step(B1F, F1)])).toEqual([]);
+    // A lone on-floor point between two off-floor points has no pair to draw.
+    const isolated = [point(0, 0, F1, 0), point(5, 0, B1F, 1), point(6, 0, F1, 2)];
+    expect(routeOnFloor(isolated, B1F, [step(F1, B1F)])).toEqual([]);
+    expect(routeOnFloor([], B1F, [])).toEqual([]);
+  });
+  it("does not flatten a cross-floor stair's drawn vertices into the floor line", () => {
+    const points = [
+      point(0, 0, B1F, -1),
+      point(10, 0, B1F, 0),
+      point(11, 2, B1F, 1), // stair interior, tagged with the floor it leaves
+      point(12, 4, F1, 1),
+    ];
+    const steps = [step(B1F, B1F), step(B1F, F1, "stairs")];
+    expect(routeOnFloor(points, B1F, steps)).toEqual([[{ x: 0, y: 0 }, { x: 10, y: 0 }]]);
+    expect(routeOnFloor(points, F1, steps)).toEqual([]);
+    // Losing the step evidence drops the segment instead of assuming it stays on the floor.
+    expect(routeOnFloor(points, B1F, [])).toEqual([]);
+  });
+  it("drops a segment whose ending point has no step at all, rather than assuming a same-floor walk", () => {
+    const points = [point(0, 0, B1F, -1), point(10, 0, B1F, 2)];
+    // The second point claims step 2, but only steps 0 and 1 were supplied.
+    expect(routeOnFloor(points, B1F, [step(B1F, B1F), step(B1F, B1F)])).toEqual([]);
+  });
+});
+
+describe("next floor change", () => {
+  it("picks the first step leaving the current floor and its start point on this floor", () => {
+    expect(nextFloorChange(zigzag, zigzagSteps, B1F, -1)).toEqual({ x: 10, y: 0, mode: "stairs", toFloorId: F1 });
+    expect(nextFloorChange(zigzag, zigzagSteps, F1, -1)).toEqual({ x: 10, y: 10, mode: "stairs", toFloorId: B1F });
+  });
+  it("ignores same-floor stairs, escalators and gates", () => {
+    const points = [point(0, 0, B1F, -1), point(10, 0, B1F, 0), point(20, 0, B1F, 1), point(20, 0, F1, 2)];
+    const steps = [step(B1F, B1F, "stairs"), step(B1F, B1F, "escalator"), step(B1F, F1, "elevator")];
+    expect(nextFloorChange(points, steps, B1F, -1)).toEqual({ x: 20, y: 0, mode: "elevator", toFloorId: F1 });
+  });
+  it("uses the route's start point when the very first step leaves the floor", () => {
+    const points = [point(3, 4, B1F, -1), point(3, 4, F1, 0)];
+    expect(nextFloorChange(points, [step(B1F, F1, "ramp")], B1F, -1)).toEqual({ x: 3, y: 4, mode: "ramp", toFloorId: F1 });
+  });
+  it("returns null when the route never leaves the floor", () => {
+    expect(nextFloorChange(zigzag, [step(B1F, B1F)], B1F, -1)).toBeNull();
+    expect(nextFloorChange(zigzag, zigzagSteps, "missing", -1)).toBeNull();
+    expect(nextFloorChange([], [], B1F, -1)).toBeNull();
+  });
+  it("does not point back at a connector already walked past on a revisited floor", () => {
+    expect(routeProgress(zigzag, B1F, 0, 0, -1)).toBe(-1);
+    expect(routeProgress(zigzag, B1F, 20, 10, -1)).toBe(4);
+    expect(routeProgress(zigzag, "missing", 0, 0, -1)).toBe(-1);
+    // Back on B1F after the up-and-down leg, the next change is the later one at (20, 10).
+    expect(nextFloorChange(zigzag, zigzagSteps, B1F, routeProgress(zigzag, B1F, 20, 10, -1)))
+      .toEqual({ x: 20, y: 10, mode: "escalator", toFloorId: F1 });
+    expect(nextFloorChange(zigzag, zigzagSteps, B1F, 6)).toBeNull();
+  });
+  it("keeps the current cross-floor step selected until the floor actually changes", () => {
+    // progress -1/0: the stairs ahead; progress 1: standing on the stairs step itself.
+    expect(nextFloorChange(zigzag, zigzagSteps, B1F, -1)?.toFloorId).toBe(F1);
+    expect(nextFloorChange(zigzag, zigzagSteps, B1F, 0)?.toFloorId).toBe(F1);
+    expect(nextFloorChange(zigzag, zigzagSteps, B1F, 1)?.toFloorId).toBe(F1);
+    // Past it, the hint moves on to the later escalator rather than disappearing.
+    expect(nextFloorChange(zigzag, zigzagSteps, B1F, 2)?.mode).toBe("escalator");
+  });
+});
+
+describe("route progress", () => {
+  it("stays on the later visit when a route crosses the same coordinates twice", () => {
+    const loop = [
+      point(0, 0, B1F, -1),
+      point(10, 0, B1F, 0),
+      point(10, 0, F1, 1),
+      point(10, 10, F1, 2),
+      point(10, 10, B1F, 3),
+      point(10, 0, B1F, 4), // back over (10, 0), which step 0 also reached
+      point(20, 0, B1F, 5),
+    ];
+    // Without history the tie goes to the later step: the second visit is the real position.
+    expect(routeProgress(loop, B1F, 10, 0, -1)).toBe(4);
+    // Once past the first visit, the earlier point is no longer a candidate at all.
+    expect(routeProgress(loop, B1F, 10, 0, 4)).toBe(4);
+    expect(routeProgress(loop, B1F, 12, 0, 4)).toBe(4);
+  });
+  it("picks the nearer of nearly overlapping points, and the later step on an exact tie", () => {
+    const close = [
+      point(0, 0, B1F, -1),
+      point(0.2, 0, B1F, 0),
+      point(0.25, 0, B1F, 1),
+    ];
+    expect(routeProgress(close, B1F, 0.21, 0, -1)).toBe(0);
+    expect(routeProgress(close, B1F, 0.24, 0, -1)).toBe(1);
+    const tied = [point(0, 0, B1F, 0), point(0, 0, B1F, 1)];
+    expect(routeProgress(tied, B1F, 0, 0, -1)).toBe(1);
+  });
+  it("only jumps backwards after wandering more than 8 m off the still-ahead route", () => {
+    const outAndBack = [
+      point(0, 0, B1F, -1),
+      point(40, 0, B1F, 0),
+      point(100, 0, B1F, 1),
+      point(100, 0, F1, 2),
+      point(40, 0, B1F, 3), // the return leg comes back over (40, 0)
+      point(0, 0, B1F, 4),
+    ];
+    // At the end, the only point still ahead is (0, 0); 40 m away and an earlier point is on the spot.
+    expect(routeProgress(outAndBack, B1F, 40, 0, 4)).toBe(3);
+    // Walking back to the end re-advances to the last step, then the same trip repeats.
+    expect(routeProgress(outAndBack, B1F, 0, 0, 3)).toBe(4);
+    expect(routeProgress(outAndBack, B1F, 40, 0, 4)).toBe(3);
+    // Near the still-ahead route, an even closer earlier point does not pull progress back.
+    const nearMiss = [point(0, 0, B1F, -1), point(2, 0, B1F, 0), point(50, 0, B1F, 1), point(0, 0, B1F, 2)];
+    expect(routeProgress(nearMiss, B1F, 1.9, 0, 2)).toBe(2);
+    // Far from it, the nearest earlier point (step 1 at 50, 0) wins the backward jump.
+    expect(routeProgress(nearMiss, B1F, 40, 0, 2)).toBe(1);
+  });
+});
+
+describe("rim bearing", () => {
+  const radius = 93;
+  it("measures screen bearings with 0 up and clockwise", () => {
+    expect(rimBearing({ x: 0, y: -50 }, radius).angleDeg).toBeCloseTo(0);
+    expect(rimBearing({ x: 50, y: -50 }, radius).angleDeg).toBeCloseTo(45);
+    expect(rimBearing({ x: 50, y: 0 }, radius).angleDeg).toBeCloseTo(90);
+    expect(rimBearing({ x: 0, y: 50 }, radius).angleDeg).toBeCloseTo(180);
+    expect(rimBearing({ x: -50, y: 0 }, radius).angleDeg).toBeCloseTo(270);
+  });
+  it("keeps a margin inside the rim and reports outside points", () => {
+    expect(rimBearing({ x: 0, y: -50 }, radius).inside).toBe(true);
+    expect(rimBearing({ x: 0, y: -(radius - 8) }, radius).inside).toBe(true);
+    expect(rimBearing({ x: 0, y: -(radius - 7) }, radius).inside).toBe(false);
+    expect(rimBearing({ x: 100, y: 0 }, radius).inside).toBe(false);
+    expect(rimBearing({ x: 0, y: 0 }, radius)).toEqual({ inside: true, angleDeg: 0 });
+  });
+});
+
+describe("floor POIs by evidence", () => {
+  const poi = (over: Partial<Poi>): Poi => ({ ...createSyntheticBundle().pois[0]!, ...over });
+  it("keeps only POIs with a position, the current floor and a verified connector", () => {
+    const bundle = createSyntheticBundle();
+    bundle.pois = [
+      poi({ id: "ok", floorId: "concourse", displayPosition: { x: 1, y: 2, z: 0 }, connectorNodeIds: ["a"] }),
+      poi({ id: "search-only", floorId: "concourse", displayPosition: { x: 1, y: 2, z: 0 }, connectorNodeIds: [] }),
+      poi({ id: "no-position", floorId: "concourse", displayPosition: null, connectorNodeIds: ["a"] }),
+      poi({ id: "other-floor", floorId: "upper", displayPosition: { x: 10, y: 0, z: 4 }, connectorNodeIds: ["upper"] }),
+      poi({ id: "null-floor", floorId: null, displayPosition: { x: 1, y: 2, z: 0 }, connectorNodeIds: ["a"] }),
+    ];
+    expect(floorPois(bundle, "concourse").map((p) => p.id)).toEqual(["ok"]);
+    expect(floorPois(bundle, "upper").map((p) => p.id)).toEqual(["other-floor"]);
+    expect(floorPois(bundle, "missing")).toEqual([]);
+  });
+  it("applies the rule to the synthetic fixture's own POIs", () => {
+    expect(floorPois(createSyntheticBundle(), "concourse").map((p) => p.id)).toEqual(["toilet", "exit-a1"]);
+    // The shop has a position but no connector: search-only, so it never gets a dot.
+    expect(floorPois(createSyntheticBundle(), "upper")).toEqual([]);
   });
 });

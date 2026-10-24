@@ -1,14 +1,29 @@
 import { floorDisplayName } from "@gteki/navigation";
-import type { StationBundle } from "@gteki/schema";
+import type { PolylinePoint, RouteStep } from "@gteki/navigation";
+import type { Poi, StationBundle } from "@gteki/schema";
 import type { ExplorerPose } from "../explorer/explorer.ts";
 import { pick, strings, type Lang } from "../i18n.ts";
-import { arrowRotationDeg, currentFloorId, floorWalkGraph, toMinimap, type MinimapOrientation } from "./minimapGeometry.ts";
+import { poiLabel } from "./labels.ts";
+import { arrowRotationDeg, currentFloorId, floorPois, floorTransitions, floorWalkGraph, rimBearing, routeOnFloor, routeProgress, toMinimap, type FloorTransition, type MinimapOrientation } from "./minimapGeometry.ts";
 
 const ORIENTATION_KEY = "gteki.minimap.orientation";
 const COLLAPSED_KEY = "gteki.minimap.collapsed";
 const METRES_PER_PX = 0.5;
 const CENTRE = 95; // Fixed viewBox: mobile shows the same 95 m span as desktop.
+const RIM_RADIUS = 93; // Matches the rim circle in the viewBox.
+const RIM_MARKER_RADIUS = RIM_RADIUS - 9; // Just inside the marker margin, so a chevron sits on the rim.
 let nextClipId = 0;
+
+/** Off-floor connector glyphs, drawn around the marker origin (24-unit box, stroked). */
+const CONNECTOR_GLYPHS: Record<string, string> = {
+  stairs: "M -5,5 L -5,1 L 0,1 L 0,-3 L 5,-3 L 5,-6",
+  escalator: "M -5,5 L 5,-5 M 1,-5 L 5,-5 L 5,-1",
+  elevator: "M -4,5 L -4,-5 L 4,-5 L 4,5 Z M 0,3 L 0,-1 M -2,1 L 0,-1 L 2,1",
+  ramp: "M -5,5 L 5,5 M -5,5 L 5,-1",
+  moving_walkway: "M -5,2 L 5,2 M -5,-2 L 5,-2 M 2,-5 L 5,-2 L 2,1",
+  walk: "M -4,4 L 4,-4 M 0,-4 L 4,-4 L 4,0",
+  gate: "M -4,5 L -4,-1 L 4,-1 L 4,5 M 0,5 L 0,0",
+};
 
 function read(key: string): string | null {
   try { return localStorage.getItem(key); } catch { return null; }
@@ -32,6 +47,16 @@ export class Minimap {
   private readonly collapseButton = document.createElement("button");
   private readonly reopen = document.createElement("button");
   private readonly graph = svg("g", { class: "minimap-graph" });
+  private readonly routeGroup = svg("g", { class: "minimap-route" });
+  private readonly poiGroup = svg("g", { class: "minimap-pois" });
+  private readonly markerGroup = svg("g", { class: "minimap-markers" });
+  private readonly routeEnd = svg("g", { class: "minimap-route-end" });
+  private readonly destinationRim = svg("path", { class: "minimap-rim-marker minimap-destination-rim", d: "M 0,-6 L 5,4 L -5,4 Z" });
+  private readonly connectorMarker = svg("g", { class: "minimap-connector-marker" });
+  private readonly connectorGlyph = svg("path", { class: "minimap-connector-glyph" });
+  private readonly connectorRim = svg("path", { class: "minimap-rim-marker minimap-connector-rim", d: "M 0,-6 L 5,4 L -5,4 Z" });
+  private readonly connectorTitle = svg("title");
+  private readonly routeLabel = document.createElement("div");
   private readonly arrow = svg("path", { class: "minimap-arrow", d: "M 0,-10 L 7,8 L 0,4 L -7,8 Z" });
   private readonly north = svg("g");
   private bundle: StationBundle | null = null;
@@ -39,7 +64,22 @@ export class Minimap {
   private orientation: MinimapOrientation = read(ORIENTATION_KEY) === "north-up" ? "north-up" : "player-up";
   private collapsed = read(COLLAPSED_KEY) === "true";
   private floorId: string | null | undefined;
+  private route: PolylinePoint[] | null = null;
+  private steps: RouteStep[] | null = null;
+  private destination: Poi | null = null;
+  /** The destination's evidenced display position on the drawn floor; null means no dot was earned. */
+  private destinationPoint: { x: number; y: number } | null = null;
+  private routeDirty = false;
+  /** Every floor-changing step, computed once per route; per-tick selection only reads this. */
+  private transitions: FloorTransition[] = [];
+  /** Monotonic along route order: the last step reached, also the floor for the next search. */
+  private progress = -1;
+  private connectorHint: FloorTransition | null = null;
+  private connectorDirty = true;
+  private labelKey = "";
   private lastPose = "";
+  /** Position without heading: a turn alone cannot change route progress, so it skips the search. */
+  private lastPosition = "";
   private timer: ReturnType<typeof setInterval> | null = null;
   private disposed = false;
   private readonly visibilityChanged = () => {
@@ -59,12 +99,19 @@ export class Minimap {
     clip.append(svg("circle", { cx: "95", cy: "95", r: "92" }));
     defs.append(clip);
     const clipped = svg("g", { "clip-path": `url(#${clipId})` });
-    clipped.append(this.graph);
+    this.routeEnd.append(svg("circle", { r: "3", class: "minimap-route-end-dot" }));
+    this.connectorMarker.append(this.connectorGlyph, this.connectorTitle);
+    this.markerGroup.append(this.routeEnd, this.destinationRim, this.connectorMarker, this.connectorRim);
+    for (const marker of [this.routeEnd, this.destinationRim, this.connectorMarker, this.connectorRim]) marker.style.display = "none";
+    // Route and POIs share the walk graph's rotated/translated world; markers stay in screen space.
+    clipped.append(this.graph, this.routeGroup, this.poiGroup, this.markerGroup);
     const n = svg("text", { x: "95", y: "19", "text-anchor": "middle", class: "minimap-north" });
     n.textContent = "N";
     this.north.append(n);
     map.append(defs, svg("circle", { cx: "95", cy: "95", r: "93", class: "minimap-rim" }), clipped, this.north, this.arrow);
     this.arrow.style.display = "none";
+    this.routeLabel.className = "minimap-route-label";
+    this.routeLabel.hidden = true;
     const controls = document.createElement("div");
     controls.className = "minimap-controls";
     this.toggle.className = "minimap-orientation";
@@ -81,7 +128,7 @@ export class Minimap {
     this.collapseButton.addEventListener("click", () => this.collapse());
     this.reopen.addEventListener("click", () => this.show());
     controls.append(this.toggle, this.collapseButton);
-    this.body.append(map, this.label, this.notice, controls);
+    this.body.append(map, this.label, this.routeLabel, this.notice, controls);
     this.el.append(this.body, this.reopen);
     this.applyCollapsed();
     this.updateText();
@@ -93,8 +140,27 @@ export class Minimap {
     this.lang = lang;
     this.floorId = undefined;
     this.lastPose = "";
+    // A route belongs to the station it was computed in; never carry one across.
+    this.route = null;
+    this.steps = null;
+    this.destination = null;
+    this.destinationPoint = null;
+    this.routeDirty = false;
+    this.transitions = [];
+    this.progress = -1;
+    this.connectorHint = null;
+    this.connectorDirty = true;
+    this.labelKey = "";
+    this.lastPosition = "";
     this.graph.replaceChildren();
     this.graph.removeAttribute("transform");
+    this.routeGroup.replaceChildren();
+    this.routeGroup.removeAttribute("transform");
+    this.poiGroup.replaceChildren();
+    this.poiGroup.removeAttribute("transform");
+    this.hideMarkers();
+    this.routeLabel.replaceChildren();
+    this.routeLabel.hidden = true;
     this.arrow.style.display = "none";
     this.arrow.removeAttribute("transform");
     this.north.removeAttribute("transform");
@@ -104,9 +170,35 @@ export class Minimap {
     this.refresh();
   }
 
+  /**
+   * The computed route (`routePolyline` + `best.steps`) and its destination. Called after every
+   * `computeRoute()`; null clears. Points and steps only make sense together — a point's stepIndex
+   * is checked against the steps — so they arrive as one object or not at all. Only evidenced
+   * geometry is ever drawn: the route's own polyline on this floor, and the current floor's
+   * routable POIs.
+   */
+  setRoute(route: { points: PolylinePoint[]; steps: RouteStep[] } | null, destination: Poi | null): void {
+    const points = route && route.points.length >= 2 ? route.points : null;
+    this.route = points;
+    this.steps = points && route ? route.steps : null;
+    this.destination = destination;
+    this.transitions = points && route ? floorTransitions(points, route.steps) : [];
+    this.destinationPoint = null;
+    this.progress = -1;
+    this.connectorDirty = true;
+    this.labelKey = "";
+    this.routeDirty = true;
+    this.lastPose = "";
+    this.lastPosition = "";
+    this.refresh();
+  }
+
   setLang(lang: Lang): void {
     this.lang = lang;
     this.updateText();
+    this.routeDirty = true;
+    this.lastPose = "";
+    this.refresh();
   }
 
   show(): void { this.setCollapsed(false); }
@@ -174,7 +266,8 @@ export class Minimap {
     if (key === this.lastPose) return;
     this.lastPose = key;
     const floorId = currentFloorId(this.bundle, pose.up, pose.east, pose.north);
-    if (floorId !== this.floorId) {
+    const floorChanged = floorId !== this.floorId;
+    if (floorChanged) {
       this.floorId = floorId;
       const segments = floorId === null ? [] : floorWalkGraph(this.bundle, floorId);
       // Paths stay in north-up station coordinates; movement only changes the group transform.
@@ -189,10 +282,175 @@ export class Minimap {
       this.arrow.style.display = floorId === null ? "none" : "";
       this.updateText();
     }
+    // The connector hint follows progress, but a turn alone cannot advance it: only a new position,
+    // floor or route re-runs the search. `>=` keeps the current cross-floor step while inside it.
+    const position = `${pose.east},${pose.north},${pose.up}`;
+    const moved = position !== this.lastPosition;
+    this.lastPosition = position;
+    if (floorChanged || this.connectorDirty || moved) {
+      const progress = this.route && floorId ? routeProgress(this.route, floorId, pose.east, pose.north, this.progress) : -1;
+      if (floorChanged || this.connectorDirty || progress !== this.progress) {
+        this.progress = progress;
+        this.connectorHint = floorId ? this.transitions.find((t) => t.fromFloorId === floorId && t.stepIndex >= progress) ?? null : null;
+        this.renderLabel();
+      }
+      this.connectorDirty = false;
+    }
+    // Route runs and POIs change only with the route or the floor — never per tick.
+    if (floorChanged || this.routeDirty) {
+      this.routeDirty = false;
+      this.drawFloorLayers();
+    }
     const rotation = this.orientation === "player-up" ? -pose.headingDeg : 0;
-    this.graph.setAttribute("transform", `translate(${CENTRE} ${CENTRE}) rotate(${rotation}) translate(${-pose.east / METRES_PER_PX} ${pose.north / METRES_PER_PX})`);
-    this.arrow.setAttribute("transform", `translate(${CENTRE} ${CENTRE}) rotate(${arrowRotationDeg(pose, this.orientation)})`);
+    const transform = `translate(${CENTRE} ${CENTRE}) rotate(${rotation}) translate(${-pose.east / METRES_PER_PX} ${pose.north / METRES_PER_PX})`;
+    this.graph.setAttribute("transform", transform);
+    if (this.routeGroup.getAttribute("transform") !== transform) this.routeGroup.setAttribute("transform", transform);
+    if (this.poiGroup.getAttribute("transform") !== transform) this.poiGroup.setAttribute("transform", transform);
+    setTransform(this.arrow, `translate(${CENTRE} ${CENTRE}) rotate(${arrowRotationDeg(pose, this.orientation)})`);
     const northTransform = `rotate(${rotation} ${CENTRE} ${CENTRE})`;
     if (this.north.getAttribute("transform") !== northTransform) this.north.setAttribute("transform", northTransform);
+    this.updateMarkers(pose);
   }
+
+  /** Draw what the current floor evidences, in station coordinates: the route runs and the routable POIs. */
+  private drawFloorLayers(): void {
+    const t = strings(this.lang);
+    this.routeGroup.replaceChildren();
+    this.poiGroup.replaceChildren();
+    this.destinationPoint = null;
+    const floorId = this.floorId;
+    const route = this.route;
+    if (!floorId || !this.bundle) {
+      this.renderLabel();
+      return;
+    }
+    const origin: ExplorerPose = { east: 0, north: 0, up: 0, headingDeg: 0, mode: "walk" };
+    for (const run of route ? routeOnFloor(route, floorId, this.steps ?? []) : []) {
+      this.routeGroup.append(svg("polyline", {
+        class: "minimap-route-line",
+        points: run.map((point) => {
+          const p = toMinimap(point.x, point.y, origin, "north-up", METRES_PER_PX);
+          return `${p.x},${p.y}`;
+        }).join(" "),
+      }));
+    }
+    // A POI earns a dot, and the destination's highlight, only through the same evidence rule.
+    for (const poi of floorPois(this.bundle, floorId)) {
+      const p = toMinimap(poi.displayPosition!.x, poi.displayPosition!.y, origin, "north-up", METRES_PER_PX);
+      const dot = svg("circle", { cx: String(p.x), cy: String(p.y), r: "2.5", class: "minimap-poi", "data-category": poi.category });
+      if (poi.id === this.destination?.id) {
+        dot.classList.add("is-destination");
+        this.destinationPoint = { x: poi.displayPosition!.x, y: poi.displayPosition!.y };
+      }
+      const title = svg("title");
+      title.textContent = poiLabel(this.bundle, poi, this.lang, t);
+      dot.append(title);
+      this.poiGroup.append(dot);
+    }
+    this.renderLabel();
+  }
+
+  /** The two label-strip lines (destination floor, next floor change); rewritten only when they change. */
+  private renderLabel(): void {
+    const t = strings(this.lang);
+    const route = this.route;
+    const last = route && route.length > 0 ? route[route.length - 1]! : null;
+    const lines: string[] = [];
+    if (this.destination && route && this.floorId) {
+      const destinationFloorId = this.destinationFloorId(last);
+      if (destinationFloorId && destinationFloorId !== this.floorId) lines.push(t.minimapDestination(this.floorName(destinationFloorId)));
+    }
+    if (this.connectorHint) {
+      lines.push(t.minimapNextFloor(this.floorName(this.connectorHint.toFloorId), t.minimapMode[this.connectorHint.mode]));
+    }
+    const key = `${this.lang}|${this.floorId}|${lines.join("\n")}`;
+    if (key === this.labelKey) return;
+    this.labelKey = key;
+    this.routeLabel.replaceChildren(...lines.map((line) => {
+      const div = document.createElement("div");
+      div.textContent = line;
+      return div;
+    }));
+    this.routeLabel.hidden = lines.length === 0;
+    if (this.connectorHint) {
+      this.connectorTitle.textContent = lines[lines.length - 1]!;
+      this.connectorGlyph.setAttribute("d", CONNECTOR_GLYPHS[this.connectorHint.mode] ?? CONNECTOR_GLYPHS.walk!);
+    }
+  }
+
+  /** Per-tick marker positions: inside the circle at the point, or a rim chevron at its bearing. */
+  private updateMarkers(pose: ExplorerPose): void {
+    const floorId = this.floorId;
+    const route = this.route;
+    const last = route && route.length > 0 ? route[route.length - 1]! : null;
+    const routeEnd = floorId && last && last.floorId === floorId ? last : null;
+    const endScreen = routeEnd ? toMinimap(routeEnd.x, routeEnd.y, pose, this.orientation, METRES_PER_PX) : null;
+    // Rim arrow: an evidenced POI position wins; otherwise the route's own end. Both are on this floor.
+    const poiPoint = this.destinationPoint;
+    const rimTarget = poiPoint
+      ? toMinimap(poiPoint.x, poiPoint.y, pose, this.orientation, METRES_PER_PX)
+      : endScreen;
+    this.placeRim(this.destinationRim, rimTarget);
+    // The neutral route-end dot is not a POI and carries no destination meaning; it yields to the
+    // highlighted destination dot when they coincide.
+    const coincident = !!poiPoint && !!routeEnd && Math.hypot(poiPoint.x - routeEnd.x, poiPoint.y - routeEnd.y) < 0.5;
+    this.placeMarker(this.routeEnd, endScreen, coincident);
+    const hint = this.connectorHint;
+    const connectorScreen = hint ? toMinimap(hint.x, hint.y, pose, this.orientation, METRES_PER_PX) : null;
+    this.placeMarker(this.connectorMarker, connectorScreen, false);
+    this.placeConnectorRim(this.connectorRim, connectorScreen);
+  }
+
+  private placeMarker(marker: SVGElement, at: { x: number; y: number } | null, forceHide: boolean): void {
+    if (!at || forceHide || !rimBearing(at, RIM_RADIUS).inside) {
+      setDisplay(marker, "none");
+      return;
+    }
+    setDisplay(marker, "");
+    setTransform(marker, `translate(${Math.round(CENTRE + at.x)} ${Math.round(CENTRE + at.y)})`);
+  }
+
+  private placeRim(rim: SVGElement, at: { x: number; y: number } | null): void {
+    if (!at) {
+      setDisplay(rim, "none");
+      return;
+    }
+    const bearing = rimBearing(at, RIM_RADIUS);
+    if (bearing.inside) {
+      setDisplay(rim, "none");
+      return;
+    }
+    setDisplay(rim, "");
+    const radians = bearing.angleDeg * Math.PI / 180;
+    const x = CENTRE + Math.sin(radians) * RIM_MARKER_RADIUS;
+    const y = CENTRE - Math.cos(radians) * RIM_MARKER_RADIUS;
+    setTransform(rim, `translate(${Math.round(x)} ${Math.round(y)}) rotate(${Math.round(bearing.angleDeg)})`);
+  }
+
+  /** The connector marker only exists inside the circle; outside, its rim chevron takes over. */
+  private placeConnectorRim(rim: SVGElement, at: { x: number; y: number } | null): void {
+    if (at && !rimBearing(at, RIM_RADIUS).inside) this.placeRim(rim, at);
+    else setDisplay(rim, "none");
+  }
+
+  private hideMarkers(): void {
+    for (const marker of [this.routeEnd, this.destinationRim, this.connectorMarker, this.connectorRim]) setDisplay(marker, "none");
+  }
+
+  private floorName(floorId: string): string {
+    return floorDisplayName(this.bundle?.floors.find((floor) => floor.id === floorId), this.lang);
+  }
+
+  /** The floor the destination is recorded on; with none recorded, the route's own last point is the evidence. */
+  private destinationFloorId(last: PolylinePoint | null): string | null {
+    return this.destination?.floorId ?? last?.floorId ?? null;
+  }
+}
+
+function setDisplay(element: Element, value: string): void {
+  if ((element as SVGElement).style.display !== value) (element as SVGElement).style.display = value;
+}
+
+function setTransform(element: Element, value: string): void {
+  if (element.getAttribute("transform") !== value) element.setAttribute("transform", value);
 }
