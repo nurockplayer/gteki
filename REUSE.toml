@@ -91,6 +91,16 @@ precedence = "override"
 SPDX-FileCopyrightText = "© 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
 SPDX-License-Identifier = "OFL-1.1"
 
+# --- 4-research. Fallback for research data folders (gteki-1b written ruling, 2026-10-24) -------
+# Facts-only research data with a recorded source gets an explicit annotation and never falls
+# through to the Apache-2.0 default above. Datasets with their own licence get exact-path blocks
+# later in this file, which override this fallback (later annotations win).
+[[annotations]]
+path = ["docs/research/merchants/**", "docs/research/lines/**", "docs/research/facilities/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "No licence granted: facts-only sources (operator and venue pages); compiled by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-facts-only-no-licence"
+
 # --- 4a. MLIT Project PLATEAU ubld 53394576 (Ikebukuro) and files derived from it -------------
 # Credit (Ikebukuro): 「出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成」
 # Shinjuku context (only where building bases are flattened, Owner option A, #39 comment
@@ -140,7 +150,7 @@ path = [
   "tests/e2e/specs/__goldens__/02-navigation.spec.ts/ikebukuro-routes.json",
 ]
 precedence = "override"
-SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; modified by GTEki contributors; also cites facts-only sources (豊島区, 東京地下鉄)"
+SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; modified by GTEki contributors; also cites facts-only sources (豊島区, 東京地下鉄, 西武鉄道, 東武百貨店, 豊島区観光協会, 池袋ショッピングパーク, 東武ホープセンター)"
 SPDX-License-Identifier = "LicenseRef-PLATEAU-site-policy AND LicenseRef-facts-only-no-licence"
 
 # --- 4c. Hokonavi E27 (Toei Oedo, Shinjuku): shipped under the Owner's override ---------------
@@ -303,3 +313,62 @@ path = [
 precedence = "override"
 SPDX-FileCopyrightText = "東京都都市整備局; 国土交通省（ほこナビDP）; modified by GTEki contributors"
 SPDX-License-Identifier = "LicenseRef-S03 AND LicenseRef-Hokonavi-E27-Owner-override"
+
+# --- 4k. S03 line names: Shinjuku searchable line POIs (lines-lead WP1; Owner Q2/Q3, gteki-1b R-1/R-2) ---
+# Plain gate and platform names copied from S03 com-entity.geojson (ZIP sha256 fc3466270c08…4ba31);
+# no geometry, no position. Credit and change notice: NOTICE 4.7.
+[[annotations]]
+path = "docs/research/lines/shinjuku-line-pois.json"
+precedence = "override"
+SPDX-FileCopyrightText = "東京都都市整備局; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-S03"
+
+# --- 4o. S03 line names in the Shinjuku station POIs (import of #411; Owner Q2/Q3, gteki-1b R-1/R-2) ---
+# pois.json keeps its E27 content (4c) and adds 45 S03 gate and platform names: search only,
+# AREA_ONLY, no position, no floor. station.json only cites tokyo-s03-zip and stays under 4c.
+# Credit and change notice: NOTICE 4.7.
+[[annotations]]
+path = "stations/shinjuku/gteki/pois.json"
+precedence = "override"
+SPDX-FileCopyrightText = "国土交通省（ほこナビDP）; 東京都都市整備局; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-Hokonavi-E27-Owner-override AND LicenseRef-S03"
+
+# --- 4n. Facts-only line POIs for Shinjuku (lines-lead WP4; #26 Tokyo Metro, OD-01 A Toei; NOTICE 4.12) ---
+[[annotations]]
+path = [
+  "docs/research/lines/shinjuku-line-pois-wp4.json",
+  "docs/research/lines/shinjuku-line-pois-wp4-notes.md",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "No licence granted: facts-only sources (東京地下鉄, 東京都交通局); compiled by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-facts-only-no-licence"
+
+# --- 4p. Toei S10 「駅構内のお店」 row in the Shinjuku merchant batch (#418; NOTICE 4.6) -----------
+# One row (shop name and location text) of the 新宿西口 CSV, CC BY 4.0 at dataset level, plus the
+# facts-only references in the same files (NOTICE 4.9). The log quotes the same two values.
+[[annotations]]
+path = [
+  "docs/research/merchants/shinjuku-merchants-batch1.json",
+  "docs/research/merchants/shinjuku-merchants-batch1-log.md",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "東京都交通局; facts-only sources; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-Toei-S10 AND LicenseRef-facts-only-no-licence"
+
+# --- 4q. Facts-only transfer facts (lines-lead WP11; #26 Tokyo Metro, OD-01 A / OD-34 Toei, OD-25 Seibu) ---
+[[annotations]]
+path = [
+  "docs/research/lines/transfer-facts-wp11.json",
+  "docs/research/lines/transfer-facts-wp11-notes.md",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "No licence granted: facts-only sources (東京地下鉄, 東京都交通局, 西武鉄道); compiled by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-facts-only-no-licence"
+
+# --- 4r. S03 approximate gate/transfer points for Shinjuku (GIS #463, schema #464) ---
+# Derived from the S03 level geometry; search display only, not for routing. Credit and change notice: NOTICE 4.7.
+[[annotations]]
+path = "stations/shinjuku/sources/s03-approx-positions.json"
+precedence = "override"
+SPDX-FileCopyrightText = "東京都都市整備局; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-S03"

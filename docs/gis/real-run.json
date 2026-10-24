@@ -180,8 +180,8 @@
     }
   ],
   "invalidated": {
-    "at": "2026-10-24T08:58:03.107Z",
-    "by_command": "gis acquire tokyo-toei-barrierfree-oedo-csv tokyo-toei-barrierfree-shinjuku-line-csv keio-site-terms odakyu-site-policy daredemo-tokyo-site",
+    "at": "2026-10-24T10:14:14.849Z",
+    "by_command": "gis acquire odbl-1-0-text",
     "reason": "Report-writing command run outside real-run; rerun real-run before summarizing"
   }
 }

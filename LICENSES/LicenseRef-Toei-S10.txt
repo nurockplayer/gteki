@@ -1,0 +1,20 @@
+東京都交通局 「駅構内のお店」 dataset terms
+
+Dataset: Tokyo Open Data Catalog t000018d0000000039
+package_show: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000018d0000000039
+Snapshot SHA-256: c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea
+  (docs/gis/acquisitions/tokyo-s10-catalog.json, retrieved 2026-10-21T00:13:54.317Z)
+Portal terms: https://portal.data.metro.tokyo.lg.jp/terms/
+Snapshot SHA-256: 74e591bc0092beaed0921015d3b2b0b9bf90c70e67508b036155f6e5400cd67a
+Licence claimed at dataset level: Creative Commons Attribution 4.0
+  Deed: https://creativecommons.org/licenses/by/4.0/deed.ja
+  Snapshot SHA-256: cf5b3d5b092076f0c146b9c41d7bca8a5ad5171660b7033cd8125ba5ac6d0382
+
+Stands for values taken from the S10 CSVs (tools/gis/sources/sources.yaml source ids
+"tokyo-s10-shinjuku-csv", "tokyo-s10-shinjuku-nishiguchi-csv"). Covers plain names, times and
+locations only (Owner, #39 comment 6324726321). No logos, photos, trademarks or promotional prose.
+Not relicensed under the repository's grants.
+Credit: 出典：東京都交通局「駅構内のお店」. File list and modifications: NOTICE 4.6.
+
+Pointer only: terms as published by the licensor. GTEki does not author or
+paraphrase the official wording. Source of the URLs and hashes: GIS (Lane D).

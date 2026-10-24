@@ -74,6 +74,26 @@ describe("@gteki/cli route on the real stations", { timeout: 30_000 }, () => {
     ["ikebukuro", ["jr-central-gate-2", "shop-ikb-echika-1129", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#407)
     ["ikebukuro", ["jr-central-gate-2", "shop-ikb-metro-001", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#407)
     ["ikebukuro", ["jr-central-gate-2", "tobu-central-gate-2", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only POI: no verified entrance
+    ["ikebukuro", ["jr-central-gate-2", "exit-c1", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only line POI (#414)
+    ["ikebukuro", ["jr-central-gate-2", "metro-f-west-east-gate", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only line POI (#414)
+    ["ikebukuro", ["jr-central-gate-2", "seibu-1f-gate", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only line POI (#414)
+    ["ikebukuro", ["jr-central-gate-2", "jr-north-gate", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only North gate (#420)
+    ["ikebukuro", ["jr-central-gate-2", "tobu-north-gate", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only North gate (#420)
+    ["ikebukuro", ["jr-north-gate", "jr-central-gate-2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only North gate as origin (#420)
+    ["ikebukuro", ["tobu-north-gate", "jr-central-gate-2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only North gate as origin (#420)
+    ["ikebukuro", ["jr-central-gate-2", "shop-ikb-tobudept", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#432)
+    ["ikebukuro", ["jr-central-gate-2", "shop-ikb-lumine-000415", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#432)
+    ["ikebukuro", ["jr-central-gate-2", "shop-ikb-esola-1147", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#432)
+    ["ikebukuro", ["jr-central-gate-2", "shop-ikb-seibu-000597", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#443)
+    ["ikebukuro", ["jr-central-gate-2", "shop-ikb-seibu-000901", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#443)
+    ["ikebukuro", ["jr-central-gate-2", "toilet-ikb-metro-001", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only facility (#431)
+    ["ikebukuro", ["jr-central-gate-2", "atm-ikb-metro-001", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only facility (#431)
+    ["ikebukuro", ["jr-central-gate-2", "locker-ikb-metro-001", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only facility (#431)
+    ["ikebukuro", ["jr-central-gate-2", "toilet-ikb-metro-002", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only facility (#431)
+    ["ikebukuro", ["jr-central-gate-2", "toilet-ikb-metro-003", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only facility (#431)
+    ["ikebukuro", ["toilet-ikb-metro-001", "jr-central-gate-2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only facility as origin (#431)
+    ["ikebukuro", ["atm-ikb-metro-001", "jr-central-gate-2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only facility as origin (#431)
+    ["ikebukuro", ["locker-ikb-metro-001", "jr-central-gate-2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only facility as origin (#431)
     ["ikebukuro", ["g_jr_c2", "no-such-node"], "unknown_goal"],
     ["shinjuku", ["poi:platform:oedo", "poi:nope", "--from-poi", "--goal-poi"], "unknown_goal"],
     ["shinjuku", ["poi:nope", "poi:exit:1", "--from-poi", "--goal-poi"], "unknown_start"],
