@@ -10,7 +10,8 @@ import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { describe, expect, it, vi } from "vitest";
 import kitPlacements from "./kit_placements.json";
 import kitCatalog from "./kit_catalog.json";
-import { type CatalogPlacement, catalogUri, loadKitCatalog, piecePose, tierName, tierParts } from "./kit_catalog_loader.ts";
+import { type CatalogPlacement, catalogUri, lazyKitCatalog, loadKitCatalog, piecePose, tierName, tierParts } from "./kit_catalog_loader.ts";
+import { applyStationShadows } from "../../../apps/web/src/explorer/shadows.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const STATION = path.resolve(HERE, "..");
@@ -249,6 +250,167 @@ describe("loadKitCatalog", () => {
     expect(used.envMap).toBe(env);
     const src = (made[0]!.scene.children[0]!.children[0] as THREE.Mesh).material as THREE.MeshStandardMaterial;
     expect(src.envMap).toBeNull();
+  });
+
+  it("bounds every transformed vertex and keeps thin dressing cullable without shadow casting", async () => {
+    const loaded = await loadKitCatalog(THREE, host(plannedUris(false), async () => {
+      const gltf = fakePiece();
+      const root = gltf.scene.children[0]!;
+      root.position.set(2, 1, -3);
+      root.rotation.set(0.1, 0.2, 0.3);
+      root.scale.set(1.2, 0.8, 1.1);
+      return gltf;
+    }), placements, false);
+    const { group } = loaded.build(THREE, env, toRenderer);
+    const matrix = new THREE.Matrix4(), vertex = new THREE.Vector3();
+    expect(group.children.length).toBeGreaterThan(0);
+    for (const im of group.children as THREE.InstancedMesh[]) {
+      expect(im.frustumCulled).toBe(true);
+      expect(im.castShadow).toBe(false);
+      expect(im.receiveShadow).toBe(false); // same initial defaults as the other kits
+      expect(im.boundingSphere).not.toBeNull();
+      expect(im.boundingBox).not.toBeNull();
+      const position = im.geometry.getAttribute("position");
+      for (let i = 0; i < im.count; i++) {
+        im.getMatrixAt(i, matrix);
+        for (let k = 0; k < position.count; k++) {
+          vertex.fromBufferAttribute(position, k).applyMatrix4(matrix);
+          expect(vertex.distanceTo(im.boundingSphere!.center)).toBeLessThanOrEqual(im.boundingSphere!.radius + 1e-8);
+          expect(im.boundingBox!.clone().expandByScalar(1e-8).containsPoint(vertex)).toBe(true);
+        }
+      }
+    }
+    // A camera looking away from the whole catalog rejects every mesh, using three's actual culling path.
+    group.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(group);
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    camera.position.copy(box.max).addScalar(100);
+    camera.lookAt(camera.position.clone().addScalar(1));
+    camera.updateMatrixWorld(true);
+    const frustum = new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+    expect(group.children.every((im) => !frustum.intersectsObject(im))).toBe(true);
+    // Even the explorer's fallback sun policy must respect the thin-dressing opt-out.
+    expect(applyStationShadows(group, "high", "default").casters).toBe(0);
+    expect(group.children.every((im) => !im.castShadow)).toBe(true);
+    loaded.dispose();
+  });
+
+  it("culls separate placements of a reused id when the camera sees only the gap between flights", async () => {
+    const spread = [-100, 100].map((x, i): CatalogPlacement => ({
+      ...escalators[0]!, anchor: `spread_${i}`, origin: [x, 0, 0], yaw_deg: 0,
+    }));
+    const loaded = await loadKitCatalog(THREE, host(allUris), spread, false);
+    const { group, stats } = loaded.build(THREE, env, toRenderer);
+    expect(stats).toMatchObject({ parts: 2, uniqueGlbs: 1, drawCalls: 4 });
+    const meshes = group.children as THREE.InstancedMesh[];
+    expect(meshes.map((im) => im.count)).toEqual([1, 1, 1, 1]);
+    expect(meshes[0]!.geometry).toBe(meshes[2]!.geometry);
+    expect(meshes[0]!.material).toBe(meshes[2]!.material);
+    group.updateMatrixWorld(true);
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 20); // default looks along -Z from the origin
+    camera.updateMatrixWorld(true);
+    const frustum = new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+    expect(meshes.every((im) => !frustum.intersectsObject(im))).toBe(true);
+    camera.position.x = -100;
+    camera.updateMatrixWorld(true);
+    frustum.setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+    expect(meshes.map((im) => frustum.intersectsObject(im))).toEqual([true, true, false, false]);
+    loaded.dispose();
+  });
+
+  it("defers catalog fetches past the first frame and attaches each GLB without waiting for the rest", async () => {
+    vi.useFakeTimers();
+    const root = new THREE.Group();
+    const pending: ((gltf: GLTF) => void)[] = [];
+    const h = host(allUris, () => new Promise<GLTF>((resolve) => pending.push(resolve)));
+    const lazy = lazyKitCatalog(THREE, h, escalators, false, root, env, toRenderer);
+    try {
+      expect(h.loadGlb).not.toHaveBeenCalled(); // buildScene can resolve and the host can reach ready
+      lazy.start(); // first attached scene update, immediately before render
+      lazy.start();
+      expect(h.loadGlb).not.toHaveBeenCalled();
+      await vi.runOnlyPendingTimersAsync(); // the task after that render
+      expect(h.loadGlb).toHaveBeenCalledTimes(1);
+      expect(root.children).toHaveLength(0);
+      pending[0]!(fakePiece());
+      await vi.runOnlyPendingTimersAsync();
+      expect(root.children).toHaveLength(1);
+      expect(root.children[0]!.children).toHaveLength(2);
+      expect(h.loadGlb).toHaveBeenCalledTimes(2); // serial: the second starts only after the first resolves
+      for (let i = 1; i < allUris.length; i++) {
+        pending[i]!(fakePiece());
+        await vi.runOnlyPendingTimersAsync();
+        expect(root.children).toHaveLength(i + 1);
+      }
+      expect(h.loadGlb.mock.calls.map((c) => c[0])).toEqual(allUris);
+      lazy.dispose();
+      expect(root.children).toHaveLength(0);
+    } finally {
+      lazy.dispose();
+      vi.useRealTimers();
+    }
+  });
+
+  it("cancels a scheduled catalog load and frees an in-flight GLB after scene teardown", async () => {
+    vi.useFakeTimers();
+    const root = new THREE.Group();
+    const made = fakePiece();
+    const geometry = (made.scene.children[0]!.children[0] as THREE.Mesh).geometry;
+    const free = vi.spyOn(geometry, "dispose");
+    let finish!: (gltf: GLTF) => void;
+    const h = host(allUris, () => new Promise<GLTF>((resolve) => { finish = resolve; }));
+    const cancelled = lazyKitCatalog(THREE, h, escalators, false, root, env, toRenderer);
+    const late = lazyKitCatalog(THREE, h, escalators, false, root, env, toRenderer);
+    try {
+      cancelled.start();
+      cancelled.dispose();
+      cancelled.start();
+      await vi.runOnlyPendingTimersAsync();
+      expect(h.loadGlb).not.toHaveBeenCalled();
+      late.start();
+      await vi.runOnlyPendingTimersAsync();
+      expect(h.loadGlb).toHaveBeenCalledTimes(1);
+      late.dispose();
+      finish(made);
+      await vi.runOnlyPendingTimersAsync();
+      expect(root.children).toHaveLength(0);
+      expect(free).toHaveBeenCalledTimes(1);
+      expect(h.loadGlb).toHaveBeenCalledTimes(1); // no subsequent fetches after teardown
+      late.dispose();
+      expect(free).toHaveBeenCalledTimes(1);
+    } finally {
+      cancelled.dispose();
+      late.dispose();
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps background loading tier-aware and continues after a failed asset", async () => {
+    vi.useFakeTimers();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const root = new THREE.Group();
+    const h = host(allUris.slice(0, 2), async (uri) => {
+      if (uri === allUris[0]) throw new Error("404");
+      return fakePiece();
+    });
+    const phone = lazyKitCatalog(THREE, h, escalators, true, root, env, toRenderer);
+    const desktop = lazyKitCatalog(THREE, h, escalators, false, root, env, toRenderer);
+    try {
+      phone.start();
+      await vi.runOnlyPendingTimersAsync();
+      expect(h.loadGlb).not.toHaveBeenCalled();
+      desktop.start();
+      await vi.runOnlyPendingTimersAsync();
+      expect(h.loadGlb.mock.calls.map((c) => c[0])).toEqual(allUris.slice(0, 2));
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(root.children).toHaveLength(1); // no empty groups for failed or unshipped assets
+      expect(root.children[0]!.children).toHaveLength(2);
+    } finally {
+      phone.dispose();
+      desktop.dispose();
+      warn.mockRestore();
+      vi.useRealTimers();
+    }
   });
 
   it("frees every geometry, cloned material and texture on dispose", async () => {
