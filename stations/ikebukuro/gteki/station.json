@@ -356,9 +356,9 @@
    "rights": "REFERENCE_ONLY",
    "attribution": "東京メトロ 池袋駅 バリアフリー設備 (facts only; not reproduced)",
    "modified": false,
-   "retrievedAt": "2026-10-24T17:57:00+09:00",
+   "retrievedAt": "2026-10-24T18:48:44+09:00",
    "datasetDate": null,
-   "notes": "ライセンスなし・事実のみ参照（複製なし）。丸ノ内線・有楽町線・副都心線の各バリアフリー設備（エレベーター・エスカレーターの設置場所の端点表記、対応の有無「あり」のみ採用）。運転停止予定とトイレ等は対象外。 Re-read 2026-10-24 (WP2): lift and escalator end pairs per line. The existing station record (retrieved 2026-10-22) keeps its id; the writer updates retrievedAt and these notes.",
+   "notes": "ライセンスなし・事実のみ参照（複製なし）。丸ノ内線・有楽町線・副都心線の各バリアフリー設備（エレベーター・エスカレーターの設置場所の端点表記、対応の有無「あり」のみ採用）。運転停止予定は対象外。トイレ設備は車いす対応トイレ・乳幼児用設備・オストメイトの設置場所表記のみ採用（「なし」の行は除外、#431）。 Re-read 2026-10-24 (WP2): lift and escalator end pairs per line. The existing station record (retrieved 2026-10-22) keeps its id; the writer updates retrievedAt and these notes. Re-read 2026-10-24 (#431): toilet rows; page undated.",
    "usage": "facts-only",
    "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
   },
