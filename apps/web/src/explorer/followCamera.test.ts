@@ -66,6 +66,18 @@ describe("followBoom", () => {
     expect(out.distance).toBe(followDistance(wanted, cast()));
   });
 
+  it("still slides under a blocker that is the nearest hit when a wall sits just behind it (stair mouth under the street slab, #70)", () => {
+    // Shinjuku 056410 facing uphill at z -1.68: street surface 0.19 m up the boom, a wall 0.31 m, both clear below 0.05.
+    const b = back(0.25);
+    const cast = (c: THREE.Vector3): Hit[] => c.y > 0.05
+      ? [{ distance: 0.06 / c.y, cameraOnly: true }, { distance: 0.31, cameraOnly: false }]
+      : [];
+    expect(followDistance(wanted, cast(b))).toBe(0);
+    const out = followBoom(wanted, b, cast);
+    expect(out.distance).toBeGreaterThanOrEqual(FOLLOW.comfortDistance);
+    expect(out.back.y).toBeLessThan(b.y);
+  });
+
   it("slides under a hanging blocker instead of pulling the camera in", () => {
     const b = back(0.5);
     const cast = slab(0.6, true);
