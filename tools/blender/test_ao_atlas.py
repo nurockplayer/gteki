@@ -108,12 +108,19 @@ class AtlasTests(unittest.TestCase):
                     self.assertEqual([struct.unpack_from("<f", new_bin, view["byteOffset"] + i * 12 + 8)[0]
                                       for i in range(3)], [123] * 3)
 
+    def test_packing_fills_gaps_and_picks_smallest_area(self):
+        # the Ikebukuro nosing shape: 52 maps at 128 px and 5 at 256 px fill 1024x1152 exactly
+        sizes = {**{f"n{i:02d}": 128 for i in range(52)}, **{f"b{i}": 256 for i in range(5)}}
+        size, cells = atlas.pack_cells(sizes)
+        self.assertEqual(size, (1024, 1152))
+        self.assertEqual(sum(w * h for _, _, w, h in cells.values()), 1024 * 1152)
+
     def test_packing_alignment_no_overlap_and_id_ties(self):
         sizes = {"z": 128, "b": 256, "a": 256, **{str(i): 64 for i in range(61)}}
         size, cells = atlas.pack_cells(sizes)
         self.assertIn(size[0], (512, 1024, 2048))
-        self.assertLessEqual(size[1], size[0])
-        self.assertEqual(size[1] % 256, 0)
+        self.assertEqual(size[1] % 64, 0)
+        self.assertLessEqual(size[1], 2048)
         self.assertEqual(cells["a"], [0, 0, 256, 256])
         items = list(cells.values())
         for i, (x, y, w, h) in enumerate(items):

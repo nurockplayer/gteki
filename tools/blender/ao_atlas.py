@@ -371,29 +371,36 @@ def rewrite_glb(data, asset_id, cell, size):
 
 
 def pack_cells(sizes):
-    """Largest first, id ties; left-to-right shelves. Prefer a square-fitting width."""
+    """Largest first, id ties; each cell takes the first free slot aligned to its own size, scanning
+    rows top to bottom and left to right (so small cells fill the gaps beside large ones). Of the
+    widths 512, 1024 and 2048, the smallest atlas area wins, then the smaller width. The height is a
+    multiple of the smallest cell (NPOT is fine for WebGL2 and Godot) and at most 2048."""
     ordered = sorted(sizes, key=lambda key: (-sizes[key], key))
     if not ordered or any(not power_of_two(s) for s in sizes.values()):
         raise ValueError("packing needs power-of-two cells")
-    largest, candidates = sizes[ordered[0]], []
+    largest, unit, candidates = sizes[ordered[0]], min(sizes.values()), []
     for width in (512, 1024, 2048):
         if largest > width:
             continue
-        cells, x, y, shelf = {}, 0, 0, 0
+        cells, used, bottom = {}, set(), 0  # used: occupied unit squares (column, row)
         for key in ordered:
-            side = sizes[key]
-            x = (x + side - 1) // side * side
-            if x + side > width:
-                x, y, shelf = 0, y + shelf, 0
-            cells[key] = [x, y, side, side]
-            x, shelf = x + side, max(shelf, side)
-        height = (y + shelf + largest - 1) // largest * largest
-        candidates.append((width, height, cells))
-    for square in (True, False):
-        for width, height, cells in candidates:
-            if height <= (width if square else 2048):
-                return (width, height), cells
-    raise ValueError("cells do not fit an atlas with width/height <= 2048")
+            side, span = sizes[key], sizes[key] // unit
+            y = 0
+            while key not in cells:
+                for x in range(0, width, side):
+                    squares = {(x // unit + i, y // unit + j) for i in range(span) for j in range(span)}
+                    if not squares & used:
+                        cells[key], used = [x, y, side, side], used | squares
+                        bottom = max(bottom, y + side)
+                        break
+                y += side
+        height = (bottom + unit - 1) // unit * unit  # cells stay aligned to their own size, so mips never mix them
+        if height <= 2048:
+            candidates.append((width * height, width, height, cells))
+    if not candidates:
+        raise ValueError("cells do not fit an atlas with width/height <= 2048")
+    _, width, height, cells = min(candidates, key=lambda c: (c[0], c[1]))
+    return (width, height), cells
 
 
 def sorted_json(value):
