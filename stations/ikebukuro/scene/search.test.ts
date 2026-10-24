@@ -123,6 +123,11 @@ const GOLDEN: Record<string, Row[]> = {
     { q: "Timberland", top1: "shop-ikb-esola-1147" },
     { q: "ミラ オーウェン", top1: "shop-ikb-lumine-000463" }, // printed kana alias of Mila Owen
   ],
+  "merchant batch 5 (#443)": [
+    { q: "トモニー 池袋駅１階改札内店", top1: "shop-ikb-seibu-000597" },
+    { q: "宝くじ 1F", top1: "shop-ikb-seibu-000901" },
+    { q: "マネケン", top1: "shop-ikb-seibu-000516" }, // exact name unique among all Ikebukuro POI names and aliases
+  ],
 };
 
 describe("Ikebukuro golden search", () => {

@@ -612,6 +612,36 @@
    "retrievedAt": "2026-10-24T09:18:40Z",
    "datasetDate": null,
    "notes": "Tenant names, printed floors/categories/store IDs, and store access label only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "seibu-shop-ikebukuro-2026-10",
+   "title": "エミオ 池袋 | エミオを探す | エミオ",
+   "publisher": "株式会社西武不動産プロパティマネジメント",
+   "url": "https://www.seibu-shop.jp/emio/floorguide/?emio=emio01",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896", "date": "2026-10-24" },
+   "attribution": "エミオ 池袋 | エミオを探す | エミオ (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T10:12:37Z",
+   "datasetDate": null,
+   "notes": "Shop names and the facility label (エミオ 池袋) only, under OD-34: facts-only POI attributes, never route evidence. No descriptions, hours, logos or images reproduced. Page undated."
+  },
+  {
+   "id": "seibu-shop-ikebukuro-station-2026-10",
+   "title": "池袋 | 駅ナカ・駅チカニュース | 西武沿線駅ナカ・駅チカ情報ポータル",
+   "publisher": "株式会社西武不動産プロパティマネジメント",
+   "url": "https://www.seibu-shop.jp/floorguide/station/?station=st01",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896", "date": "2026-10-24" },
+   "attribution": "池袋 | 駅ナカ・駅チカニュース | 西武沿線駅ナカ・駅チカ情報ポータル (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T10:12:37Z",
+   "datasetDate": null,
+   "notes": "Shop names, floor labels printed in the shop names and item categories only, under OD-34: facts-only POI attributes, never route evidence. No descriptions, hours, logos or images reproduced. Page undated."
   }
  ],
  "floors": [
