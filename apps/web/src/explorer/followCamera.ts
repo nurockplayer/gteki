@@ -15,7 +15,11 @@ export const FOLLOW = {
   aim: 5,
   /** Clearance kept in front of whatever the backward ray hits (m). */
   clearance: 0.3,
-  /** Closest the camera comes to the pivot (m). */
+  /** Inward boom speed (m/s): crosses the remaining clearance band in ~0.3 s at the default near plane. */
+  contractSpeed: 0.8,
+  /** Extra clearance beyond the near plane for an emergency collision cut (m). */
+  nearEpsilon: 0.02,
+  /** Preferred closest follow distance (m); collision safety may pull it all the way to the pivot. */
   minDistance: 0.55,
   /**
    * Boom length (m). Third-person FOV narrowed 60 -> 50 degrees (#94), which alone grows the avatar by
@@ -47,8 +51,10 @@ export const FOLLOW = {
   raiseGain: 0.1,
   /** The avatar starts to fade when the camera is closer than this to the pivot (m)... */
   fadeStart: 1.0,
-  /** Lowest avatar opacity (fraction of the screen-door dither kept), reached at `minDistance`, the closest the camera gets. */
+  /** Lowest avatar opacity (fraction of the screen-door dither kept), reached at `minDistance` or closer. */
   fadeMin: 0.25,
+  /** Opacity recovery per second: restores 0.25 -> 1 in 0.5 s, avoiding a pop when a raised boom clears a lip. */
+  fadeRecoverPerS: 1.5,
   /** Rate (1/s) at which the raise eases toward its wanted value (same damping as the camera position). */
   raiseDamping: 10,
 } as const;
@@ -148,26 +154,30 @@ export function followPose(head: THREE.Vector3, yaw: number, pitch: number, shou
 }
 
 /**
- * Camera distance along `back` given the first obstruction (if any) at `hitDistance`. A camera-only
- * blocker (a ceiling) may pull the camera in past the usual minimum, down to the pivot, so a low ceiling
- * at a steep pitch never pushes it through.
+ * Clear distance along the boom. The preferred minimum must never push the camera past a hit:
+ * when even that minimum is blocked, fall back toward the shoulder pivot (a first-person-like view).
  */
-export function clampDistance(wanted: number, hitDistance: number | null, cameraOnly = false): number {
+export function clampDistance(wanted: number, hitDistance: number | null): number {
   if (hitDistance === null) return wanted;
-  return Math.max(cameraOnly ? 0 : FOLLOW.minDistance, Math.min(wanted, hitDistance - FOLLOW.clearance));
+  return Math.max(0, Math.min(wanted, hitDistance - FOLLOW.clearance));
+}
+
+/** Nearest-first hits bound every boom, whether a wall, floor or camera-only blocker. */
+export function followDistance(wanted: number, hits: readonly { distance: number; cameraOnly: boolean }[]): number {
+  return clampDistance(wanted, hits[0]?.distance ?? null);
 }
 
 /**
- * Camera distance for the ray's hits (nearest first). The nearest obstruction clamps as usual; a
- * camera-only blocker (a ceiling) then bounds the distance on its own, even behind a nearer wall whose
- * minimum would otherwise hold the camera past it.
+ * Contract at a bounded speed through the clearance band. Safety wins when a newly appearing hit
+ * would contain the old camera: cut only as far as its near-plane margin, then resume the ramp.
+ * The ramp always settles at full clearance; the near-plane margin is only an emergency bound.
+ * Increases keep the caller's existing position damping. Placements and reduced motion snap.
  */
-export function followDistance(wanted: number, hits: readonly { distance: number; cameraOnly: boolean }[]): number {
-  const first = hits[0];
-  let distance = clampDistance(wanted, first?.distance ?? null, first?.cameraOnly ?? false);
-  const blocker = hits.find((h) => h.cameraOnly);
-  if (blocker) distance = Math.min(distance, Math.max(0, blocker.distance - FOLLOW.clearance));
-  return distance;
+export function approachBoom(current: number, target: number, hitDistance: number | null, near: number, dt: number, snap = false): number {
+  const safe = hitDistance === null ? Infinity : Math.max(0, hitDistance - near - FOLLOW.nearEpsilon);
+  target = clampDistance(target, hitDistance);
+  const next = snap || target >= current ? target : Math.max(target, current - FOLLOW.contractSpeed * Math.max(0, dt));
+  return Math.min(next, safe);
 }
 
 /**
@@ -175,7 +185,7 @@ export function followDistance(wanted: number, hits: readonly { distance: number
  * candidate `back`. A camera-only blocker (a hanging sign box, a low cap) over the boom used to pull the
  * camera into the avatar although there was room below it; the camera now slides under it by lowering the
  * boom (never raising it, never below `FOLLOW.lowestBoom`), still looking at the same target. Walls and
- * floors keep their existing clamp: unless a blocker is what limits the camera, `back` is returned as is.
+ * floors limit the distance too: unless a blocker is what limits the camera, `back` is returned as is.
  */
 export function followBoom(
   wanted: number,
@@ -184,9 +194,10 @@ export function followBoom(
 ): { back: THREE.Vector3; distance: number } {
   const hits = cast(back);
   const d0 = followDistance(wanted, hits);
-  const dWalls = followDistance(wanted, hits.filter((h) => !h.cameraOnly));
   const unchanged = { back, distance: d0 };
-  if (d0 >= dWalls - 0.05) return unchanged;
+  // Only a blocker as the nearest hit is worth sliding under. A wall just behind it (a stair mouth under the street
+  // slab) no longer vetoes this: walls clamp to the pivot too, and the lowered boom below often clears both.
+  if (!hits[0]?.cameraOnly) return unchanged;
   const flat = Math.hypot(back.x, back.z);
   if (flat < 1e-6 || back.y <= FOLLOW.lowestBoom) return unchanged;
   let best: { back: THREE.Vector3; distance: number } | null = null;
@@ -195,7 +206,8 @@ export function followBoom(
     const cos = Math.sqrt(1 - sin * sin);
     const candidate = new THREE.Vector3((back.x / flat) * cos, sin, (back.z / flat) * cos);
     const distance = followDistance(wanted, cast(candidate));
-    if (distance >= FOLLOW.boomKeep * wanted) return { back: candidate, distance };
+    // Good enough to stop early, but only when it actually beats the unlowered boom (a wall may limit both).
+    if (distance >= FOLLOW.boomKeep * wanted && distance >= d0 + FOLLOW.boomGain) return { back: candidate, distance };
     if (!best || distance > best.distance) best = { back: candidate, distance };
   }
   return best && best.distance >= d0 + FOLLOW.boomGain ? best : unchanged;
@@ -251,12 +263,72 @@ export function easeRaise(current: number, target: number, dt: number, snap = fa
 }
 
 /**
+ * Solve the raised boom before smoothing it. If easing would leave the camera squeezed while the
+ * solved raise clears the lip, use the solved pose now; walking must not linger below a slab either.
+ * A placement/reduced-motion snap takes the complete solution immediately, including a zero raise.
+ */
+export function solveRaisedBoom(
+  wanted: number,
+  back: THREE.Vector3,
+  cast: (back: THREE.Vector3) => readonly { distance: number; cameraOnly: boolean }[],
+  currentRaise: number,
+  dt: number,
+  snap = false,
+): { back: THREE.Vector3; distance: number; raise: number } {
+  const base = followBoom(wanted, back, cast);
+  const scratch = new THREE.Vector3();
+  const target = constrainedPitch(wanted, base.back, base.distance, cast, scratch);
+  let raise = easeRaise(currentRaise, target, dt, snap);
+  let raised = raisedBack(base.back, raise, new THREE.Vector3());
+  let distance = raise > 0 ? followDistance(wanted, cast(raised)) : base.distance;
+  if (!snap && target > raise && distance < Math.min(FOLLOW.comfortDistance, wanted)) {
+    const solved = raisedBack(base.back, target, scratch);
+    const clear = followDistance(wanted, cast(solved));
+    if (clear >= distance + FOLLOW.raiseGain) {
+      raise = target;
+      raised = solved.clone();
+      distance = clear;
+    }
+  }
+  return { back: raised, distance, raise };
+}
+
+/**
  * Avatar opacity for a camera `distanceM` from the pivot: 1 at `fadeStart` or farther, `fadeMin` at
- * `minDistance` (the closest the camera gets) or closer, smooth and monotonic between. A pure function of distance; the avatar renders it as
+ * `minDistance` or closer, smooth and monotonic between. A pure function of distance; the avatar renders it as
  * a screen-door dither, so there is no transparency and no sort.
  */
 export function avatarFade(distanceM: number): number {
   if (!(distanceM < FOLLOW.fadeStart)) return 1;
   const t = Math.min(1, Math.max(0, (FOLLOW.fadeStart - distanceM) / (FOLLOW.fadeStart - FOLLOW.minDistance)));
   return 1 - (1 - FOLLOW.fadeMin) * t * t * (3 - 2 * t);
+}
+
+/**
+ * Pure time step for the distance-driven opacity target. Decreases apply immediately so the body never
+ * stays opaque around the camera; recovery is capped at `FOLLOW.fadeRecoverPerS` (0.25 -> 1 in 0.5 s).
+ * Placements/reduced motion and an uninitialised current value snap to target; stopped or reversed time
+ * holds a recovering fade where it is (a zero-length frame must not pop the body back in).
+ */
+export function stepAvatarFade(current: number, target: number, dt: number, snap = false): number {
+  if (snap || !Number.isFinite(current) || target <= current) return target;
+  return Math.min(target, current + FOLLOW.fadeRecoverPerS * Math.max(0, dt));
+}
+
+/** QA-only held follow controls; absent fields leave the ordinary controls running. */
+export interface CameraHold { yaw?: number; pitch?: number; distance?: number }
+
+/** Merge finite QA controls, using the ordinary pitch limits and allowing a close inspection pose. Null releases. */
+export function patchCameraHold(current: CameraHold, patch: CameraHold | null): CameraHold {
+  if (patch === null) return {};
+  const next = { ...current };
+  if (Number.isFinite(patch.yaw)) next.yaw = patch.yaw;
+  if (Number.isFinite(patch.pitch)) next.pitch = Math.max(-1.1, Math.min(0.5, patch.pitch!));
+  if (Number.isFinite(patch.distance)) next.distance = Math.max(0, Math.min(9, patch.distance!));
+  return next;
+}
+
+/** A QA fade override, or null to use the distance-driven fade again. */
+export function fadeHold(value: number | null): number | null {
+  return value === null || !Number.isFinite(value) ? null : Math.max(0, Math.min(1, value));
 }

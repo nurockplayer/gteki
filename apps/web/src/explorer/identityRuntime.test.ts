@@ -50,7 +50,7 @@ describe("initial identity placement", () => {
     const { e } = runtime();
     expect(e.walkFrom({ x: 0, y: 0, z: 0 })).toBe(true);
     expect(e.yaw).toBeGreaterThan(0.05);
-    expect(e.snapCamera).toBe(true);
+    expect(e.teleported).toBe(true);
     e.walkFrom({ x: 0, y: 0, z: 0 }, 30);
     expect(e.yaw).toBeCloseTo(-Math.PI / 6);
     e.mode = "overview";
