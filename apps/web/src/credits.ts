@@ -60,6 +60,32 @@ export function factsOnlyCredit(s: Source, t: Pick<Strings, "factsOnly" | "right
   };
 }
 
+export interface OverrideCredit {
+  text: string;
+  decisions: { label: string; href: string | null }[];
+}
+
+/** null unless a source has owner-override rights; only http(s) decisions can be linked. */
+export function overrideCredits(sources: readonly Source[], t: Pick<Strings, "rightsReusable" | "rightsOwnerOverride" | "rightsReference" | "rightsRestricted" | "rightsUnverified" | "rightsDecision">): OverrideCredit | null {
+  const overrides = sources.filter((s) => s.rights === "PUBLISHED_UNDER_OWNER_OVERRIDE");
+  if (!overrides.length) return null;
+  const seen = new Set<string>();
+  const decisions: OverrideCredit["decisions"] = [];
+  for (const s of overrides) {
+    if (!s.override) continue;
+    const key = JSON.stringify([s.override.decision, s.override.date]);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const href = safeHref(s.override.decision);
+    const reference = href || !/^#\d+$/.test(s.override.decision) ? "" : ` ${s.override.decision}`;
+    decisions.push({ label: `${t.rightsDecision}${reference} ${s.override.date}`, href });
+  }
+  return {
+    text: rightsLabel("PUBLISHED_UNDER_OWNER_OVERRIDE", t),
+    decisions,
+  };
+}
+
 /** Human wording for a source's rights status (#130); an unknown value reads as unverified rather than leaking the enum. */
 export function rightsLabel(rights: Source["rights"], t: Pick<Strings, "rightsReusable" | "rightsOwnerOverride" | "rightsReference" | "rightsRestricted" | "rightsUnverified">): string {
   switch (rights) {

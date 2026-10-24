@@ -11,7 +11,7 @@ import { coverageText, initialLang, pick, strings, type Lang } from "../i18n.ts"
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
 import { stationClock } from "../stationClock.ts";
-import { assetDerivationPresentation, factsOnlyCredit, rightsLabel, sourceCredit } from "../credits.ts";
+import { assetDerivationPresentation, factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { nodeLabel, poiLabel } from "./labels.ts";
@@ -20,6 +20,7 @@ import { MascotSlot, type MascotEvent } from "./mascot.ts";
 import { watchReducedMotion } from "./motion.ts";
 import { railDemoLink } from "./railTravel.ts";
 import { RailRideDemo } from "./railRideDemo.ts";
+import { shouldHandleGuideKey } from "./railKeyGuard.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -248,7 +249,7 @@ export class App {
     // A later selection supersedes this one: never let a slow station overwrite the one now selected.
     const generation = ++this.openGeneration;
     const current = () => generation === this.openGeneration;
-    this.explorer.cancelPendingLoad();
+    this.explorer.cancelPendingLoad(entry.key);
     this.s.entry = entry;
     this.ui.stationSelect.value = entry.key;
     // Drop the previous station's services now, not after the await: nothing may search or route
@@ -1003,8 +1004,12 @@ export class App {
     document.addEventListener("compositionend", () => { this.compositionEndMs = performance.now(); }, true);
     window.addEventListener("keydown", (e) => {
       const action = guideKeyActionGuarded(e, this.compositionEndMs, performance.now());
-      if (!action || this.explorer.currentMode !== "guide" || this.ui.coverage.open) return;
-      if ((e.target as HTMLElement | null)?.closest?.("input, textarea, select, [contenteditable]")) return;
+      if (this.explorer.currentMode !== "guide" || !shouldHandleGuideKey(
+        action,
+        e.target as HTMLElement | null,
+        this.ui.coverage.open,
+        this.railRide !== null,
+      )) return;
       e.preventDefault();
       this.jumpGuide(action === "next" ? 1 : -1);
     });
@@ -1049,8 +1054,8 @@ export class App {
 
   /**
    * A credit line for one source, or for several sources sharing an attribution: titles (linked), the attribution once,
-   * the distinct licences (linked) and the modification notice; a facts-only source adds the #26 wording and decision link
-   * (Coverage dialog and the route card's 出典 both use this).
+   * the distinct licences (linked) and the modification notice; facts-only and owner-override sources add their wording
+   * and safe decision link (the Coverage dialog and the route card's 出典 both use this).
    */
   private creditItem(...sources: Source[]): HTMLLIElement {
     const link = (text: string, href: string | null): HTMLElement => {
@@ -1081,6 +1086,18 @@ export class App {
       if (!facts) continue;
       li.append(el("span", "muted", ` · ${facts.text}`));
       if (facts.decision) li.append(el("span", "muted", " ("), link(facts.decision.label, facts.decision.href), el("span", "muted", ")"));
+    }
+    const override = overrideCredits(sources, this.t);
+    if (override) {
+      li.append(el("span", "muted", ` · ${override.text}`));
+      if (override.decisions.length) {
+        li.append(el("span", "muted", " ("));
+        override.decisions.forEach((decision, i) => {
+          if (i) li.append(el("span", "muted", ", "));
+          li.append(link(decision.label, decision.href));
+        });
+        li.append(el("span", "muted", ")"));
+      }
     }
     return li;
   }
@@ -1141,7 +1158,8 @@ export class App {
       // facts-only and blank-attribution sources stay single. Rights are plain language (#130), never the internal enum.
       for (const g of creditEntries(b.sources)) {
         const li = this.creditItem(...g.sources);
-        const rights = entryRightsLabels(g.sources, this.t);
+        // creditItem already renders the full owner-override line and decision link; keep other rights labels here.
+        const rights = entryRightsLabels(g.sources, this.t).filter((label) => label !== this.t.rightsOwnerOverride);
         if (rights.length) li.append(el("span", "muted", ` · ${rights.join(" / ")}`));
         src.append(li);
       }

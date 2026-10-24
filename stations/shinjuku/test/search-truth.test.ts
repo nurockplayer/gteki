@@ -310,14 +310,17 @@ describe("facility POIs trace to the GSI facility points", () => {
       const e27 = new Set([...new Set(p.connectorNodeIds.map((id) => floors.get(nodes.get(id)!.floorId)!.ordinal!))].map((o) => (o === 0 ? 1 : o)));
       const gsi = new Set(own.map((f) => f.ordinal));
       const agree = [...e27].every((o) => gsi.has(o)) && [...gsi].every((o) => e27.has(o));
-      const note = p.notes!.map((n) => n.text).join(" ");
-      expect(/確認できません|停止がありません/.test(note), p.id).toBe(!agree);
+      const jaNote = p.notes!.find((n) => n.lang === "ja")!.text;
+      const enNote = p.notes!.find((n) => n.lang === "en")!.text;
+      expect(/確認できません|停止がありません/.test(jaNote), `${p.id} ja`).toBe(!agree);
+      expect(/not confirmed by the station map|has no stop there/.test(enNote), `${p.id} en`).toBe(!agree);
       expect(p.evidence!.method, p.id).toContain("F012");
       if (!agree) mismatched.push(p.id);
     }
     // Known result at import time: the B1–B3 lift has no F012 point on B3.
     expect(mismatched).toEqual(["poi:elevator:2"]);
     expect(byCategory("elevator").find((p) => p.id === "poi:elevator:2")!.notes!.find((n) => n.lang === "ja")!.text).toContain("B3の停止は構内地図で確認できません");
+    expect(byCategory("elevator").find((p) => p.id === "poi:elevator:2")!.notes!.find((n) => n.lang === "en")!.text).toContain("the B3 stop is not confirmed by the station map");
   });
 
   it("names ticket gates per E27 gate cluster and counts every F106 point once, for its nearest cluster", () => {
@@ -329,7 +332,8 @@ describe("facility POIs trace to the GSI facility points", () => {
       const level = floors.get(g.floorId!)!.ordinal!;
       const sameLevel = gates.filter((o) => floors.get(o.floorId!)!.ordinal === level);
       const n = pts.filter((f) => f.ordinal === level && sameLevel.reduce((best, o) => (near(f, o.displayPosition!) < near(f, best.displayPosition!) ? o : best)) === g).length;
-      expect(g.evidence!.method, g.id).toContain(`F106 points nearest this cluster on this level: ${n}`);
+      const suffix = `F106 points nearest this cluster on this level: ${n}`;
+      expect(g.evidence!.method.endsWith(suffix), `${g.id} evidence should end with "${suffix}"`).toBe(true);
       return n;
     });
     expect(counts.reduce((a, b) => a + b, 0)).toBe(pts.length); // no overlap, none lost
