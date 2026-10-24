@@ -1,5 +1,5 @@
 {
-  "run_id": "landmarks-shinjuku-r700-origin-only-16ba78e74df5c26432fd",
+  "run_id": "landmarks-shinjuku-r700-origin-only-0c15f5d29b6adcbf2e12",
   "command": "context-landmarks",
   "policy_version": "context-landmarks-v1",
   "station_id": "shinjuku",
@@ -94,16 +94,16 @@
   },
   "outputs": {
     "geojson": {
-      "store_path": "out/landmarks-shinjuku-r700-origin-only-16ba78e74df5c26432fd.geojson",
+      "store_path": "out/landmarks-shinjuku-r700-origin-only-0c15f5d29b6adcbf2e12.geojson",
       "sha256": "422febec84e433c565e03d2ce063529d3c265a917d2379eb2259ed29f2759535",
       "bytes": 5090
     },
     "provenance": {
-      "store_path": "out/landmarks-shinjuku-r700-origin-only-16ba78e74df5c26432fd.provenance.json",
-      "sha256": "62fe577a07772cbd4065949d3e527ed8b209bcac2c8d39eb0ebd1f262b8266a1",
+      "store_path": "out/landmarks-shinjuku-r700-origin-only-0c15f5d29b6adcbf2e12.provenance.json",
+      "sha256": "c6ae57825386fa5d8db9f15bd3cab46cf26fb0491ae4e73b6a4199aa63ea5092",
       "bytes": 3535
     }
   },
-  "tool_input_sha256": "4e606782a34e56110492677d2f4743b1e1853af3a85beafa95cee82f64216671",
+  "tool_input_sha256": "81930d40a6f2d6cd1d42a5aa7fa0342fbb127937071c1853f2d9f0498a50a3ed",
   "tool_version": "0.1.0"
 }
