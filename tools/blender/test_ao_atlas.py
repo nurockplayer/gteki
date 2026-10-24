@@ -285,6 +285,13 @@ class AtlasTests(unittest.TestCase):
         c = ((0.499, 0.499), (0.502, 0.499), (0.499, 0.502))  # contains a
         self.assertEqual(validator.uv_overlaps([a, c], slack=slack), [(0, 1)])
         self.assertEqual(validator.uv_overlaps([a, b], slack=slack), [])  # shared edge only
+        # a long overlap thinner than the slack, through a column of texel centres, between two
+        # full-size triangles must still fail (review counterexample)
+        f32 = lambda x: struct.unpack("<f", struct.pack("<f", x))[0]
+        c, d = 300.5 / 512, 2 ** -24
+        e = ((f32(c + d), f32(c - .06)), (f32(c + d), f32(c + .06)), (f32(c - .05), f32(c)))
+        g = ((f32(c - d), f32(c + .06)), (f32(c - d), f32(c - .06)), (f32(c + .05), f32(c)))
+        self.assertEqual(validator.uv_overlaps([e, g], slack=slack), [(0, 1)])
 
     def test_readme_sampling_guarantee(self):
         readme = Path(atlas.__file__).with_name("README.md").read_text()
