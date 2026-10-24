@@ -474,6 +474,14 @@ export class Explorer {
     return corners.includes("geometry") ? "geometry" : "sign";
   }
 
+  /**
+   * Whether the camera actually sees the board's name face. Only a visible board reserves room on screen;
+   * one behind a wall must not displace POI chips that the user can read (#342).
+   */
+  private identityBoardVisible(board: IdentityBoard): boolean {
+    return this.identityOccluded(identityNameSamples(board, this.camera.getWorldPosition(new THREE.Vector3())), identityBoardObjects(board, this.identityBoards)) === "none";
+  }
+
   /** POI label states for automated visual checks. */
   labelInfo(): { shown: number; faded: number; hidden: number; decluttered: number } {
     const n = { shown: 0, faded: 0, hidden: 0, decluttered: 0 };
@@ -1354,12 +1362,16 @@ export class Explorer {
     const { w, h } = this.viewSize;
     this.camera.updateMatrixWorld();
     const regions: ScreenRect[] = [];
-    if (this.mode !== "overview") for (const board of this.identityBoards) {
-      if (!inScene(board.object, this.scene) || !objectVisible(board.object)) continue;
-      board.object.updateWorldMatrix(true, false);
-      for (const region of board.regions) {
-        const rect = identityRegionRect(region.box, board.object, this.camera, w, h);
-        if (rect) regions.push(rect);
+    if (this.mode !== "overview" && this.identityBoards.length) {
+      // Visibility rays read occluder bounds: bring them current even when no POI sweep is pending.
+      this.refreshOccluders();
+      for (const board of this.identityBoards) {
+        if (!inScene(board.object, this.scene) || !objectVisible(board.object)) continue;
+        board.object.updateWorldMatrix(true, false);
+        const rects = board.regions.map((region) => identityRegionRect(region.box, board.object, this.camera, w, h)).filter((r): r is ScreenRect => r !== null);
+        // A board no ray reaches still projects a rect, but it protects empty screen: skip it (#342).
+        if (!rects.length || !this.identityBoardVisible(board)) continue;
+        regions.push(...rects);
       }
     }
     regions.sort((a, b) => a.y0 - b.y0);
@@ -1382,7 +1394,7 @@ export class Explorer {
       const p = l.obj.getWorldPosition(new THREE.Vector3()).project(this.camera);
       const x = (p.x + 1) * w / 2, y = (1 - p.y) * h / 2;
       const chip = { x0: x - size.w / 2, x1: x + size.w / 2, y0: y - size.h / 2, y1: y + size.h / 2 };
-      const result = Math.abs(p.z) <= 1 ? protectIdentityChip(chip, l.selected, regions) : { hidden: false, offsetY: 0 };
+      const result = Math.abs(p.z) <= 1 ? protectIdentityChip(chip, l.selected, regions, h) : { hidden: false, offsetY: 0 };
       if (l.identityHidden !== result.hidden) l.identityHidden = result.hidden;
       if (l.identityOffsetY !== result.offsetY) {
         l.identityOffsetY = result.offsetY;

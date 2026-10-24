@@ -460,4 +460,19 @@ describe("identity QA and chip integration", () => {
     expect(plain.identityHidden).toBe(false); expect(endpoint.identityOffsetY).toBe(0);
     expect((endpoint.obj.element as { style: unknown }).style).toMatchObject({ translate: "" });
   });
+
+  it("protects chips only for identity boards the camera can actually see (#342)", () => {
+    const { e, board, root } = runtime();
+    e.mode = "walk";
+    e.camera.position.set(-2, 2, 0); e.camera.lookAt(board.position); e.camera.updateMatrixWorld(true);
+    const chip = labelAt(board, false); e.poiLabels = [chip];
+    e.updateIdentityLabels();
+    expect(chip.identityHidden).toBe(true);
+    // A wall between the camera and the board hides the board: its screen rect must not displace a chip.
+    const wall = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    wall.position.set(-2, 2, -5); root.add(wall); root.updateMatrixWorld(true);
+    e.buildOccluders(root); e.refreshOccluders();
+    e.updateIdentityLabels();
+    expect(chip.identityHidden).toBe(false);
+  });
 });

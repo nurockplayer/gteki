@@ -62,30 +62,38 @@ describe("identity tags", () => {
 describe("identity screen regions and chip protection", () => {
   const region = { x0: 100, y0: 100, x1: 250, y1: 150 };
   const chip = { x0: 125, y0: 120, x1: 225, y1: 146 };
+  const viewportHeight = 845;
   it("hides an intersecting unselected chip", () => {
-    expect(protectIdentityChip(chip, false, [region])).toEqual({ hidden: true, offsetY: 0 });
+    expect(protectIdentityChip(chip, false, [region], viewportHeight)).toEqual({ hidden: true, offsetY: 0 });
   });
   it("leaves non-overlapping chips untouched, including selected chips", () => {
-    for (const selected of [false, true]) expect(protectIdentityChip({ ...chip, x0: 300, x1: 400 }, selected, [region])).toEqual({ hidden: false, offsetY: 0 });
+    for (const selected of [false, true]) expect(protectIdentityChip({ ...chip, x0: 300, x1: 400 }, selected, [region], viewportHeight)).toEqual({ hidden: false, offsetY: 0 });
   });
   it.each([region, { ...region, y0: 0 }])("offsets selected chips above if room, else below", (r) => {
-    const result = protectIdentityChip(chip, true, [r]);
+    const result = protectIdentityChip(chip, true, [r], viewportHeight);
     expect(result.hidden).toBe(false);
     expect(result.offsetY < 0).toBe(r.y0 > 0);
     expect(intersectsRect({ ...chip, y0: chip.y0 + result.offsetY, y1: chip.y1 + result.offsetY }, r)).toBe(false);
   });
   it("clears all horizontally overlapping name/arrow regions without accumulating offsets", () => {
     const regions = [{ ...region, y0: 75, y1: 95 }, region, { ...region, y0: 155, y1: 180 }];
-    const result = protectIdentityChip(chip, true, regions);
+    const result = protectIdentityChip(chip, true, regions, viewportHeight);
     for (const r of regions) expect(intersectsRect({ ...chip, y0: chip.y0 + result.offsetY, y1: chip.y1 + result.offsetY }, r)).toBe(false);
-    expect(protectIdentityChip(chip, true, regions)).toEqual(result);
+    expect(protectIdentityChip(chip, true, regions, viewportHeight)).toEqual(result);
   });
   it("uses available space between disjoint boards instead of moving an endpoint off screen", () => {
     const regions = [{ ...region, y0: 0, y1: 10 }, region, { ...region, y0: 800, y1: 840 }];
-    const result = protectIdentityChip(chip, true, regions);
+    const result = protectIdentityChip(chip, true, regions, viewportHeight);
     expect(chip.y0 + result.offsetY).toBeGreaterThanOrEqual(0);
     expect(chip.y1 + result.offsetY).toBeLessThanOrEqual(region.y0);
     for (const r of regions) expect(intersectsRect({ ...chip, y0: chip.y0 + result.offsetY, y1: chip.y1 + result.offsetY }, r)).toBe(false);
+  });
+  it("clamps a selected chip to the bottom edge when the boards leave no room below", () => {
+    // A region reaching the bottom of a short viewport: the only clear side would be past the edge.
+    const result = protectIdentityChip(chip, true, [{ ...region, y0: 0, y1: 300 }], 300);
+    const y0 = chip.y0 + result.offsetY, y1 = chip.y1 + result.offsetY;
+    expect(y0).toBeGreaterThanOrEqual(0);
+    expect(y1).toBe(300);
   });
   it("projects transformed regions in CSS pixels and rejects boxes behind or outside the frustum", () => {
     const camera = new THREE.PerspectiveCamera(50, 1, 0.05, 100);
