@@ -386,7 +386,7 @@ describe('exit_poi_connectors: graph nodes that exit POIs name as connectors', (
     const base = await readGraphWindowNodes(IKEBUKURO_RULE, { stationId: 'ikebukuro' });
     const { facts, nodes } = await readGraphWindowNodes(POI_RULE, { stationId: 'ikebukuro' });
     expect(base.facts.pois).toBeNull(); // off unless configured
-    expect(facts.pois).toMatchObject({ pois_path: 'stations/ikebukuro/gteki/pois.json', categories: ['exit'], pois_total: 222, exit_pois: 53, exit_pois_with_connectors: 23, connector_nodes: 23, added_beyond_kind_and_floor: ['x13f', 'x36f', 'x4f'] });
+    expect(facts.pois).toMatchObject({ pois_path: 'stations/ikebukuro/gteki/pois.json', categories: ['exit'], pois_total: 476, exit_pois: 53, exit_pois_with_connectors: 23, connector_nodes: 23, added_beyond_kind_and_floor: ['x13f', 'x36f', 'x4f'] });
     expect(facts.pois!.pois_sha256).toBe(createHash('sha256').update(poisBytes).digest('hex'));
     expect(facts.graph_sha256).toBe(base.facts.graph_sha256);
     expect(facts).toMatchObject({ exit_connectors: 20, street_level_nodes: 20, selected_nodes: 23 }); // the kind/floor counts are unchanged

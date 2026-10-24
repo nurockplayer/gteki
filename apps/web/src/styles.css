@@ -82,9 +82,13 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .results { position: absolute; left: 72px; right: 0; top: 100%; z-index: 10; display: grid; margin-top: 4px; border-radius: 10px; overflow: hidden; background: var(--glass-strong); box-shadow: var(--shadow); }
 .results:empty { display: none; }
 .result { display: grid; grid-template-columns: 14px 1fr; grid-template-rows: auto auto; column-gap: 8px; text-align: left; border: 0; border-radius: 0; border-bottom: 1px solid var(--line); padding: 9px 12px; background: transparent; }
-.result .dot { grid-row: 1 / -1; align-self: center; width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+.result .dot { grid-row: span 4; align-self: center; width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
 .result-meta { font-size: 11px; color: var(--muted); }
+/* A store's brand directory is unverified: the as-of line sits under the meta line (#419). */
+.result .result-asof { grid-column: 2; font-size: 11px; color: var(--muted); opacity: 0.85; }
 .result-note { grid-column: 2; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
+/* An approximate, search-display-only position says its ± radius under the note (#463). */
+.result .result-approx { grid-column: 2; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
 .field-note { grid-column: 2 / -1; margin: 0; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
 .field-note[hidden] { display: none; }
 .result.disabled .result-name { color: var(--muted); }
@@ -332,8 +336,8 @@ button.on { border-color: var(--accent); color: var(--accent); }
 
 /* ---- JR Saikyo interstation ride demo (unsurveyed boarding location) ---- */
 .rail-launch {
-  position: fixed; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom));
-  z-index: 8; padding: 12px 18px;
+  max-width: calc(100vw - 32px); min-height: 44px; padding: 12px 18px;
+  white-space: normal;
   font-weight: 750; font-size: 13px; letter-spacing: 0.015em;
   border: 1px solid rgba(94, 240, 255, .65);
   background: rgba(7, 30, 42, .91);
@@ -375,7 +379,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .rail-ride-action { display: block; width: 100%; min-height: 44px; }
 .rail-ride-action:disabled { opacity: .58; cursor: default; }
 @media (max-width: 620px) {
-  .rail-launch { bottom: calc(92px + env(safe-area-inset-bottom)); right: 12px; padding: 9px 12px; }
+  .rail-launch { padding: 9px 12px; }
   .rail-ride-banner { top: calc(64px + env(safe-area-inset-top)); left: 16px; max-width: calc(100vw - 32px); }
   .rail-ride-banner h2 { font-size: 20px; }
   .rail-ride-route { font-size: 16px; }
