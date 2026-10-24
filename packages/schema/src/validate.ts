@@ -1,4 +1,4 @@
-import type { Edge, Floor, StationBundle } from "./index.ts";
+import type { Edge, Floor, LocalizedText, Poi, StationBundle } from "./index.ts";
 import { SCHEMA_VERSION } from "./index.ts";
 import { parseHm } from "./hours.ts";
 
@@ -25,7 +25,7 @@ export const ASSET_FILE_EXT = /\.(glb|gltf|bin|png|jpe?g|webp|ktx2|hdr|ogg|mp3|m
  * svg/shader text are here because a scene may `?raw`-import them, which inlines the bytes like any other data.
  */
 export const DATA_FILE_EXT = /\.(json|geojson|csv|tsv|txt|xml|yaml|yml|bin|dat|svg|glsl|vert|frag|wgsl)$/i;
-const CONTRACT_FILES = new Set(["station.json", "graph.json", "pois.json"]);
+const CONTRACT_FILES = new Set(["station.json", "graph.json", "pois.json", "tenants.json"]);
 const CANONICAL_MESSAGE = "asset paths must be canonical slash-separated relative paths inside the station folder (no ., .. or empty segments; no colon, backslash, ? or #)";
 
 /** Relative, canonical and URL-safe: `?` and `#` would be read as a query or fragment once served. */
@@ -385,9 +385,11 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
   }
 
   const poiIds = new Set<string>();
+  const poiById = new Map<string, Poi>();
   for (const p of b.pois) {
     if (poiIds.has(p.id)) err("poi.dup", "duplicate POI id", p.id);
     poiIds.add(p.id);
+    poiById.set(p.id, p);
     if (!POI_CATEGORIES.has(p.category)) err("poi.category", `unknown category ${p.category}`, p.id);
     if (p.floorId !== null && !floorIds.has(p.floorId)) err("poi.floor", `unknown floor ${p.floorId}`, p.id);
     if (p.names.length === 0) err("poi.name", "POI without a name", p.id);
@@ -398,7 +400,47 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     // A drawn position needs a reusable geometric basis among its sources (others may still evidence facts).
     if (p.displayPosition !== null && !b.station.synthetic && !p.evidence.sourceIds.some(reusableData))
       err("poi.position.rights", "displayPosition needs at least one REUSABLE_WITH_CONDITIONS or PUBLISHED_UNDER_OWNER_OVERRIDE data source in its evidence", p.id);
+    // An approximate point is search display only (#463): it is never a routing target and never drawn as a
+    // precise pin, so the POI must have no connectors, no displayPosition, and a reusable geometric basis.
+    if (p.approximatePosition) {
+      if (p.connectorNodeIds.length > 0) err("poi.approximate.routing", "a POI with approximatePosition must have connectorNodeIds: []", p.id);
+      if (p.displayPosition !== null) err("poi.approximate.display", "a POI with approximatePosition must have displayPosition: null", p.id);
+      if (!b.station.synthetic && !p.evidence.sourceIds.some(reusableData))
+        err("poi.approximate.rights", "approximatePosition needs at least one REUSABLE_WITH_CONDITIONS or PUBLISHED_UNDER_OWNER_OVERRIDE data source in its evidence", p.id);
+    }
     if (p.connectorNodeIds.length === 0) warn("poi.unroutable", "POI has no verified connector; search-only", p.id);
+  }
+
+  // Store tenant directories (#419): listings that attach to an existing shop POI. They are never routing
+  // targets, so the store's own POI carries the route; these rules only keep the facts honest.
+  const tenantIds = new Set<string>();
+  const hasText = (texts: LocalizedText[]) => texts.length > 0 && texts.every((t) => t.lang.trim() !== "" && t.text.trim() !== "");
+  for (const tenant of b.tenants ?? []) {
+    if (tenantIds.has(tenant.id)) err("tenant.dup", "duplicate tenant id", tenant.id);
+    tenantIds.add(tenant.id);
+    const store = poiById.get(tenant.poiId);
+    if (!store) err("tenant.poi", `unknown store POI ${tenant.poiId}`, tenant.id);
+    else if (store.category !== "shop") err("tenant.poi", `store POI ${tenant.poiId} is category ${store.category}, not shop`, tenant.id);
+    if (!hasText(tenant.names)) err("tenant.text", "tenant without a non-empty name exactly as printed", tenant.id);
+    if (!hasText(tenant.floorLabel)) err("tenant.text", "tenant without a non-empty floor label as printed", tenant.id);
+    if (tenant.evidence.sourceIds.length === 0) err("tenant.evidence", "tenant listing without a source", tenant.id);
+    for (const sid of tenant.evidence.sourceIds) {
+      if (!sourceIds.has(sid)) { err("tenant.evidence", `unknown source ${sid}`, tenant.id); continue; }
+      const src = b.sources.find((s) => s.id === sid)!;
+      // A printed brand name is a cited fact, so a facts-only source may carry it. A merchant submission
+      // (#438) is a shippable data source whose grant is at least as strong as facts-only; both need the
+      // decision on record (#441).
+      const d = src.decision;
+      const decisionOk = typeof d === "object" && d !== null && isHttpUrl(d.url) && typeof d.date === "string" && isIsoDate(d.date);
+      const accepted = src.usage === "facts-only" || reusableData(sid);
+      if (!decisionOk || !accepted)
+        err("tenant.evidence", `source ${sid} must be usage:"facts-only" or a reusable data source (REUSABLE_WITH_CONDITIONS or PUBLISHED_UNDER_OWNER_OVERRIDE), with a decision {url, date}`, tenant.id);
+    }
+    if (!isIsoDate(tenant.evidence.checkedDate))
+      err("tenant.evidence", `checkedDate ${tenant.evidence.checkedDate} is not YYYY-MM-DD`, tenant.id);
+    // The brand is still shown on the store's card; only the route is missing.
+    if (store && store.connectorNodeIds.length === 0)
+      warn("tenant.unroutable", "store POI has no verified connector; the brand shows but there is no route", tenant.id);
   }
 
   for (const a of b.coverage.areas) {

@@ -107,7 +107,7 @@ const partsAre = (a: KitAsset, want: readonly string[]) => {
 export type ActiveRole = Exclude<KitRole, "toilet">;
 export const ROLE_SELECTORS: Record<ActiveRole, (a: KitAsset) => boolean> = {
   // One verified gate row = one aisle flanked by two machines. A multi-aisle array would draw aisles the
-  // dataset does not have, so only single-aisle arrays qualify (none in kit 0.1.0).
+  // dataset does not have, so only single-aisle arrays qualify.
   gate: (a) => a.family === "gate" && num(a.params.aisles) === 1,
   lift: (a) => a.family === "vertical" && a.placement === "wall" && /lift/.test(a.id),
   // Dressing pieces (Lane E D2, PR #143) fitted to a run through params. Only the parts Shinjuku has no placeholder
