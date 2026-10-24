@@ -20,6 +20,7 @@ import { MascotSlot, type MascotEvent } from "./mascot.ts";
 import { watchReducedMotion } from "./motion.ts";
 import { railDemoLink } from "./railTravel.ts";
 import { RailRideDemo } from "./railRideDemo.ts";
+import { shouldHandleGuideKey } from "./railKeyGuard.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -1003,8 +1004,12 @@ export class App {
     document.addEventListener("compositionend", () => { this.compositionEndMs = performance.now(); }, true);
     window.addEventListener("keydown", (e) => {
       const action = guideKeyActionGuarded(e, this.compositionEndMs, performance.now());
-      if (!action || this.explorer.currentMode !== "guide" || this.ui.coverage.open) return;
-      if ((e.target as HTMLElement | null)?.closest?.("input, textarea, select, [contenteditable]")) return;
+      if (this.explorer.currentMode !== "guide" || !shouldHandleGuideKey(
+        action,
+        e.target as HTMLElement | null,
+        this.ui.coverage.open,
+        this.railRide !== null,
+      )) return;
       e.preventDefault();
       this.jumpGuide(action === "next" ? 1 : -1);
     });
