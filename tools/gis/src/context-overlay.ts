@@ -431,15 +431,16 @@ export async function contextOverlay(station: string, options: OverlayRunOptions
   return { station_id: station, runs };
 }
 
-async function overlayRun(station: string, config: StationContextConfig, overlay: OverlayConfig, sourceId: string, layers: OverlayLayerConfig[], options: OverlayRunOptions): Promise<Record<string, unknown>> {
-  const started = performance.now();
-  const kinds = OVERLAY_KINDS.filter((k) => layers.some((l) => l.kind === k));
-
-  // Frame: a stored station-enu frame, or (when the vertical anchor is undecided) the horizontal origin of station.json only.
+/**
+ * The frame a context run is projected into: a stored station-enu frame, or (when the vertical anchor is undecided) the horizontal
+ * origin of station.json only. Shared by `context-overlay` and `context-landmarks`, so both project and record the frame identically.
+ */
+export interface ResolvedStationFrame { projection: OverlayProjection; frameFacts: Record<string, unknown>; frameLabel: string }
+export async function resolveStationFrame(station: string, frameConfig: OverlayFrameConfig): Promise<ResolvedStationFrame> {
   let projection: OverlayProjection, frameFacts: Record<string, unknown>, frameLabel: string;
-  if (overlay.frame.mode === 'station-enu-frame') {
-    const frame = await loadFrame(overlay.frame.frame_id);
-    if (!isStationEnuFrame(frame) || frame.station_id !== station) throw new Error(`Frame ${overlay.frame.frame_id} is not a station-enu frame for ${station}`);
+  if (frameConfig.mode === 'station-enu-frame') {
+    const frame = await loadFrame(frameConfig.frame_id);
+    if (!isStationEnuFrame(frame) || frame.station_id !== station) throw new Error(`Frame ${frameConfig.frame_id} is not a station-enu frame for ${station}`);
     const stationBytes = await readFile(join(repoRoot, frame.station_json_path));
     const o = (JSON.parse(stationBytes.toString('utf8')) as { station?: { origin?: { lat?: number; lon?: number; hM?: number | null; crs?: string } } }).station?.origin;
     if (!o || o.lat !== frame.origin.lat || o.lon !== frame.origin.lon || o.hM !== frame.origin.hM || o.crs !== frame.origin.crs) throw new Error(`${frame.station_json_path} origin no longer matches frame ${frame.frame_id}; regenerate it with station-frame`);
@@ -447,8 +448,8 @@ async function overlayRun(station: string, config: StationContextConfig, overlay
     frameLabel = frame.frame_id;
     frameFacts = { mode: 'station-enu-frame', frame_id: frame.frame_id, station_json_path: frame.station_json_path, station_origin_sha256: stationOriginSha256(o), origin_crs: frame.origin.crs };
   } else {
-    const path = overlay.frame.station_json;
-    if (path !== `stations/${station}/gteki/station.json`) throw new Error(`overlay.frame.station_json must be stations/${station}/gteki/station.json`);
+    const path = frameConfig.station_json;
+    if (path !== `stations/${station}/gteki/station.json`) throw new Error(`frame.station_json must be stations/${station}/gteki/station.json`);
     const bytes = await readFile(join(repoRoot, path));
     const o = (JSON.parse(bytes.toString('utf8')) as { station?: { origin?: { lat?: unknown; lon?: unknown; hM?: unknown; crs?: unknown } } }).station?.origin;
     if (!o || !finite(o.lat) || !finite(o.lon)) throw new Error(`${path}: origin lat/lon must be finite numbers`);
@@ -458,18 +459,30 @@ async function overlayRun(station: string, config: StationContextConfig, overlay
     frameLabel = 'origin-only';
     frameFacts = { mode: 'origin-only', note: 'horizontal ENU at the station.json origin (evaluated at height 0; no vertical anchor exists and none is asserted); same x/y as the station-enu frame would give to well under a millimetre', station_json_path: path, station_origin_sha256: stationOriginSha256(o), origin_crs: typeof o.crs === 'string' ? o.crs : 'unknown' };
   }
+  return { projection, frameFacts, frameLabel };
+}
 
-  // z: a per-station constant that must equal the station lead's value in station.json (re-read now).
-  const zBytes = await readFile(join(repoRoot, overlay.z.check.path));
+/** A per-station constant z that must equal the station lead's value in station.json (re-read on every run). Shared like resolveStationFrame. */
+export async function resolveConstantZ(zConfig: OverlayZConfig): Promise<{ z: number; zFacts: Record<string, unknown> }> {
+  const zBytes = await readFile(join(repoRoot, zConfig.check.path));
   const floors = (JSON.parse(zBytes.toString('utf8')) as { floors?: Array<{ ordinal?: unknown; renderElevationM?: unknown }> }).floors;
-  const floor = Array.isArray(floors) ? floors.filter((fl) => fl.ordinal === overlay.z.check.floor_ordinal) : [];
-  if (floor.length !== 1 || floor[0]!.renderElevationM !== overlay.z.z_m) throw new Error(`${overlay.z.check.path}: the ordinal-${overlay.z.check.floor_ordinal} floor renderElevationM is not ${overlay.z.z_m}; the z basis no longer matches the station lead's value`);
-  const z = overlay.z.z_m;
+  const floor = Array.isArray(floors) ? floors.filter((fl) => fl.ordinal === zConfig.check.floor_ordinal) : [];
+  if (floor.length !== 1 || floor[0]!.renderElevationM !== zConfig.z_m) throw new Error(`${zConfig.check.path}: the ordinal-${zConfig.check.floor_ordinal} floor renderElevationM is not ${zConfig.z_m}; the z basis no longer matches the station lead's value`);
+  const z = zConfig.z_m;
+  const evidenceField = `floors[ordinal ${zConfig.check.floor_ordinal}].${zConfig.check.field}`;
+  const zFacts = { mode: 'constant', z_m: z, basis: zConfig.basis, datum_asserted: false, drape: 'none', baked_offset_m: 0, evidence_path: zConfig.check.path, evidence_value_sha256: sha256(JSON.stringify({ field: evidenceField, value: z })), evidence_field: evidenceField };
+  return { z, zFacts };
+}
+
+async function overlayRun(station: string, config: StationContextConfig, overlay: OverlayConfig, sourceId: string, layers: OverlayLayerConfig[], options: OverlayRunOptions): Promise<Record<string, unknown>> {
+  const started = performance.now();
+  const kinds = OVERLAY_KINDS.filter((k) => layers.some((l) => l.kind === k));
+
+  const { projection, frameFacts, frameLabel } = await resolveStationFrame(station, overlay.frame);
+  const { z, zFacts } = await resolveConstantZ(overlay.z);
   if (options.clipRadiusM !== undefined && (!Number.isFinite(options.clipRadiusM) || options.clipRadiusM < 0)) throw new Error('clip radius must be a non-negative number of metres (0 disables clipping)');
   const clipRadius: number | null = options.clipRadiusM !== undefined ? (options.clipRadiusM === 0 ? null : options.clipRadiusM) : (overlay.clip?.radius_m ?? null);
   const clipFacts = { kind: clipRadius === null ? 'none' : 'origin_disc', radius_m: clipRadius };
-  const evidenceField = `floors[ordinal ${overlay.z.check.floor_ordinal}].${overlay.z.check.field}`;
-  const zFacts = { mode: 'constant', z_m: z, basis: overlay.z.basis, datum_asserted: false, drape: 'none', baked_offset_m: 0, evidence_path: overlay.z.check.path, evidence_value_sha256: sha256(JSON.stringify({ field: evidenceField, value: z })), evidence_field: evidenceField };
 
   // Selection window: the overlay's own origin disc when configured (the director's 700 m decision), else the building window.
   const window = overlay.window
