@@ -23,7 +23,7 @@ import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
-import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -382,11 +382,11 @@ export class Explorer {
   /** QA-only: hold the shared body/postprocessing fade; null restores the automatic value. */
   holdAvatarFade(value: number | null): void {
     this.qaAvatarFade = fadeHold(value);
-    this.applyAvatarFade();
+    this.applyAvatarFade(0, true);
   }
 
-  private applyAvatarFade(): void {
-    this.cameraFade = this.qaAvatarFade ?? avatarFade(this.boomActual);
+  private applyAvatarFade(dt: number, snap: boolean): void {
+    this.cameraFade = this.qaAvatarFade ?? stepAvatarFade(this.cameraFade, avatarFade(this.boomActual), dt, snap || this.reducedMotion);
     this.avatarRig?.setFade(this.cameraFade);
     this.composer?.setAvatarFade(this.avatarRig?.root ?? null, this.cameraFade);
   }
@@ -1668,7 +1668,7 @@ export class Explorer {
     if (this.firstPerson) {
       this.boomActual = 0;
       this.boomRaise = 0;
-      this.applyAvatarFade();
+      this.applyAvatarFade(dt, snap);
       this.camera.position.copy(head);
       this.camera.lookAt(head.clone().add(dir));
       this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
@@ -1726,7 +1726,7 @@ export class Explorer {
     this.camera.lookAt(pose.target);
     // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
     this.boomActual = this.camera.position.distanceTo(pose.pivot);
-    this.applyAvatarFade();
+    this.applyAvatarFade(dt, snap);
   }
 
   private ensureAudio(): boolean {

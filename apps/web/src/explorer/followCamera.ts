@@ -53,6 +53,8 @@ export const FOLLOW = {
   fadeStart: 1.0,
   /** Lowest avatar opacity (fraction of the screen-door dither kept), reached at `minDistance` or closer. */
   fadeMin: 0.25,
+  /** Opacity recovery per second: restores 0.25 -> 1 in 0.5 s, avoiding a pop when a raised boom clears a lip. */
+  fadeRecoverPerS: 1.5,
   /** Rate (1/s) at which the raise eases toward its wanted value (same damping as the camera position). */
   raiseDamping: 10,
 } as const;
@@ -298,6 +300,16 @@ export function avatarFade(distanceM: number): number {
   if (!(distanceM < FOLLOW.fadeStart)) return 1;
   const t = Math.min(1, Math.max(0, (FOLLOW.fadeStart - distanceM) / (FOLLOW.fadeStart - FOLLOW.minDistance)));
   return 1 - (1 - FOLLOW.fadeMin) * t * t * (3 - 2 * t);
+}
+
+/**
+ * Pure time step for the distance-driven opacity target. Decreases apply immediately so the body never
+ * stays opaque around the camera; recovery is capped at `FOLLOW.fadeRecoverPerS` (0.25 -> 1 in 0.5 s).
+ * Placements/reduced motion, an uninitialised current value, and stopped or reversed time snap to target.
+ */
+export function stepAvatarFade(current: number, target: number, dt: number, snap = false): number {
+  if (snap || !Number.isFinite(current) || dt <= 0 || target <= current) return target;
+  return Math.min(target, current + FOLLOW.fadeRecoverPerS * dt);
 }
 
 /** QA-only held follow controls; absent fields leave the ordinary controls running. */

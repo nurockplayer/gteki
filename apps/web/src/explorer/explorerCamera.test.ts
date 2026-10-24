@@ -145,6 +145,51 @@ describe("Explorer wall fallback and QA controls", () => {
     expect(state.boomActual).toBeGreaterThanOrEqual(FOLLOW.comfortDistance);
   });
 
+  it("limits fade recovery when a raised boom clears a squeeze in one frame", () => {
+    const state = cameraStand();
+    setTargets(state, [pocket()]);
+    place(state, true);
+    const fade = state.cameraFade;
+    expect(fade).toBeLessThan(1);
+    expect(state.boomActual).toBeLessThan(FOLLOW.fadeStart);
+
+    const lip = new THREE.Mesh(new THREE.BoxGeometry(10, 1.97, 0.2), new THREE.MeshBasicMaterial());
+    lip.position.set(0, 1.97 / 2, 0.6);
+    lip.updateMatrixWorld(true);
+    setTargets(state, [lip]);
+    place(state);
+    expect(state.boomRaise).toBeGreaterThan(0);
+    expect(state.boomActual).toBeGreaterThanOrEqual(FOLLOW.comfortDistance);
+    expect(state.cameraFade).toBeGreaterThan(fade);
+    expect(state.cameraFade - fade).toBeLessThanOrEqual(FOLLOW.fadeRecoverPerS / 60 + 1e-12);
+    expect(state.avatarRig.setFade.mock.lastCall).toEqual([state.cameraFade]);
+    expect(state.composer.setAvatarFade.mock.lastCall).toEqual([state.avatarRig.root, state.cameraFade]);
+  });
+
+  it.each(["placement", "reduced motion", "QA camera cut"])("snaps fade recovery for %s", (reason) => {
+    const state = cameraStand();
+    setTargets(state, [pocket()]);
+    place(state, true);
+    expect(state.cameraFade).toBeLessThan(1);
+    setTargets(state, []);
+    state.reducedMotion = reason === "reduced motion";
+    if (reason === "QA camera cut") qa(state).setCamera({ distance: FOLLOW.defaultDistance });
+    place(state, reason === "placement");
+    expect(state.cameraFade).toBe(1);
+    expect(state.avatarRig.setFade.mock.lastCall).toEqual([1]);
+    expect(state.composer.setAvatarFade.mock.lastCall).toEqual([state.avatarRig.root, 1]);
+  });
+
+  it("fades immediately on entry to first person", () => {
+    const state = cameraStand();
+    place(state, true);
+    state.firstPerson = true;
+    place(state);
+    expect(state.cameraFade).toBe(FOLLOW.fadeMin);
+    expect(state.avatarRig.setFade.mock.lastCall).toEqual([FOLLOW.fadeMin]);
+    expect(state.composer.setAvatarFade.mock.lastCall).toEqual([state.avatarRig.root, FOLLOW.fadeMin]);
+  });
+
   it("leaves ordinary controls alone until called, holds the requested pose, then releases it", () => {
     const state = cameraStand();
     state.yaw = 0.4;

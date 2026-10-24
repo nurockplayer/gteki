@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, clampDistance, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, clampDistance, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
   it("stays under a 2.6 m ceiling at the default pitch and distance", () => {
@@ -369,6 +369,44 @@ describe("avatarFade", () => {
       expect(f).toBeGreaterThanOrEqual(last - 1e-12);
       last = f;
     }
+  });
+});
+
+describe("stepAvatarFade", () => {
+  it("applies decreases immediately, including while recovering", () => {
+    expect(stepAvatarFade(1, 0.479, 1 / 60)).toBe(0.479);
+    const recovering = stepAvatarFade(0.479, 1, 1 / 60);
+    expect(stepAvatarFade(recovering, FOLLOW.fadeMin, 1 / 60)).toBe(FOLLOW.fadeMin);
+  });
+
+  it.each([0.479, FOLLOW.fadeMin])("recovers from %s over multiple 60 Hz frames within half a second", (start) => {
+    let fade = stepAvatarFade(start, 1, 1 / 60);
+    expect(fade).toBeCloseTo(start + FOLLOW.fadeRecoverPerS / 60, 12);
+    expect(fade).toBeLessThan(1);
+    let frames = 1;
+    while (fade < 1 && frames < 30) {
+      const next = stepAvatarFade(fade, 1, 1 / 60);
+      expect(next - fade).toBeLessThanOrEqual(FOLLOW.fadeRecoverPerS / 60 + 1e-12);
+      fade = next;
+      frames++;
+    }
+    expect(fade).toBe(1);
+    expect(frames / 60).toBeCloseTo((1 - start) / FOLLOW.fadeRecoverPerS, 1);
+  });
+
+  it("snaps on request or when time does not advance", () => {
+    expect(stepAvatarFade(0.25, 1, 1 / 60, true)).toBe(1);
+    expect(stepAvatarFade(0.25, 1, 0)).toBe(1);
+    expect(stepAvatarFade(0.25, 1, -1)).toBe(1);
+  });
+
+  it.each([1 / 60, 0.5, 10])("never overshoots the target with dt=%s", (dt) => {
+    expect(stepAvatarFade(0.49, 0.5, dt)).toBe(0.5);
+    expect(stepAvatarFade(0.5, 0.5, dt)).toBe(0.5);
+  });
+
+  it.each([NaN, Infinity, -Infinity])("replaces a non-finite current value %s immediately", (current) => {
+    expect(stepAvatarFade(current, 0.6, 1 / 60)).toBe(0.6);
   });
 });
 
