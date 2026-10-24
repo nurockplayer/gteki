@@ -1,6 +1,6 @@
 # S03 drawing-transform check — 2026-10-24
 
-This is an offline evidence check of the acquired `tokyo-s03-zip`, independent of the station research scripts. It exports no route or public source positions. The public receipt contains hashes, numeric level IDs, counts, residuals and source-defect records; transformed nodes, provenance and source endpoints remain in the private store. Every result is `gteki_role: evidence`, `UNVERIFIED`, `NOT_FOR_ROUTING`. Source credit: 出典：東京都都市整備局「新宿駅周辺の施設情報等」. Modification: two affine transforms, horizontal projection and consistency statistics.
+This is an offline evidence check of the acquired `tokyo-s03-zip`, independent of the station research scripts. It exports no route or public source positions. The public receipt contains hashes, numeric level IDs, counts, residuals and source-defect records; transformed nodes, provenance, source endpoints and every absolute ENU position statistic remain in the private store. Every result is `gteki_role: evidence`, `UNVERIFIED`, `NOT_FOR_ROUTING`. Source credit: 出典：東京都都市整備局「新宿駅周辺の施設情報等」. Modification: two affine transforms, horizontal projection and consistency statistics.
 
 ## Method
 
@@ -8,13 +8,25 @@ This is an offline evidence check of the acquired `tokyo-s03-zip`, independent o
 
 Apply `v5_nav.json.d[0].t`, then `com-map.geojson.drawings[0].ref_frame.transform`. Both use `[a,b,c,d,e,f]` with `u=a*x+c*y+e`, `v=b*x+d*y+f`. The second result is assumed longitude/latitude. The GIS `stationEnuProjector` supplies GRS80 horizontal ENU at the committed station origin, evaluated at zero height only for horizontal computation. Physical heights remain null. No translation, rotation, scale or datum correction is fitted.
 
-Check A tests each level's nodes against the union of its own geometry polygons in ENU, including outer/hole boundaries and excluding hole interiors. Point/line features do not count as polygons. A polygon feature is excluded from Check A entirely when any of its rings has a first position different from its last: rings are never closed, repaired, dropped or otherwise modified, and no implicit closure is applied (director ruling, 2026-10-24). The whole feature is excluded, the first offending polygon/ring is recorded as `SOURCE_DEFECT_UNCLOSED_RING` with its horizontal ENU endpoint gap, and every other malformation still fails closed. A level left without usable polygons keeps null inside metrics and a reason, and is not assessed. The policy fixes “overwhelmingly inside” at **95% overall and on each assessed level**, before examining results. Outside-node distances use the nearest polygon edge in ENU. Empty or unprojectable distance samples remain null. The deliberately reversed affine composition is the negative control.
+Check A tests each level's nodes against the union of its own geometry polygons in ENU, including outer/hole boundaries and excluding hole interiors, after requiring shell membership first so a hole boundary outside its shell can never contain a point. Point/line features do not count as polygons. A polygon feature is excluded from Check A entirely when any of its rings has a first position different from its last, comparing the complete positions including an optional third value before z is dropped for horizontal maths: rings are never closed, repaired, dropped or otherwise modified, and no implicit closure is applied (director ruling, 2026-10-24). The whole feature is excluded, the first offending polygon/ring is recorded as `SOURCE_DEFECT_UNCLOSED_RING` with its horizontal ENU endpoint gap, and every other malformation still fails closed. A hole with any vertex outside its shell, or a ring that self-intersects, stops the whole run: only unclosed rings carry a ruling to exclude. The self-intersection test is an O(n²) proper-crossing check on rings of up to 2000 vertices; a larger ring is counted as unchecked, never as clean. A level left without usable polygons keeps null inside metrics and a reason, and is not assessed. The policy fixes “overwhelmingly inside” at **95% overall and on each assessed level**, before examining results, and the overall status distinguishes **PASS** (threshold met everywhere, no node on an unassessed level) from **INCOMPLETE** (the assessed part would pass, but nodes remain on levels without usable polygons; `nodes_unassessed` and `levels_with_nodes_unassessed` say how many and where) from **FAIL** (the assessed part already fails). Outside-node distances use the nearest polygon edge in ENU. Empty or unprojectable distance samples remain null. The deliberately reversed affine composition is the negative control.
 
-Check B independently selects reciprocal nearest nodes over all compatible floors, then applies inclusive distance thresholds. It uses the note's label-derived comparison ordinals, including E27 street ordinal 0 compared with source ground ordinal 1. Source `zlevel` is not an elevation or the comparison ordinal. Percentiles interpolate at `(n−1)*p`. Deltas mean S03 minus E27; their mean is reported and never applied. The selected overlap sample does not establish all-station coverage or an accepted connection.
+Check B independently selects reciprocal nearest nodes over all compatible floors, then applies inclusive distance thresholds. It uses the note's label-derived comparison ordinals, including E27 street ordinal 0 compared with source ground ordinal 1. Source `zlevel` is not an elevation or the comparison ordinal. The ordinals come from `station.json`, and the canonical SHA-256 of the floor mapping actually used (floor id to ordinal, sorted by id) is part of the receipt identity, so moving one ordinal changes the run id. Percentiles interpolate at `(n−1)*p`. Deltas mean S03 minus E27; their mean is reported and never applied. The selected overlap sample does not establish all-station coverage or an accepted connection.
 
 ## Observed results
 
-The run uses the ZIP with SHA-256 `fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31`; the receipt is `transform-check-a7ccdb9007422f33546f.json` under policy `s03-transform-check-v2`.
+### v3 revision: the run now stops on a source topology defect
+
+Policy `s03-transform-check-v3` adds the INCOMPLETE status, the hole/shell and self-intersection fail-closed rules, the full-position ring-closure test, the floor-mapping hash in the receipt identity and private-only outside-node means. Under it the real run exits non-zero before writing any receipt or provenance:
+
+| Numeric level ID | Feature index | Kind |
+| ---: | ---: | --- |
+| 64676 | 384 | hole ring 1 of multipolygon part 1 has every vertex outside its shell |
+
+Measured on the private copy: the part is a sliver of about 0.16 m² whose hole is about 0.16 m² (ratio 1.03), its bounding boxes overlap, and its worst vertex sits 5.536e-6 degrees (about 0.62 m) outside the shell; all 4 unique positions, plus the repeated closing position, are outside. It is 1 of 15,204 polygon features; no ring in the dataset self-intersects, none exceeds the 2000-vertex cap, and the two known unclosed rings are unchanged. Only unclosed rings carry a director ruling to exclude, so nothing was excluded here: the check stops and asks for that ruling. A scratch recomputation of Check A with this feature's second part dropped changes **0 of 2506 nodes and 0 of the 2463 inside**, with every per-level count identical, so excluding it would not move any number below.
+
+The tables in this section are therefore the last completed run, under `s03-transform-check-v2` (receipt `transform-check-a7ccdb9007422f33546f.json`, unchanged and still the committed evidence).
+
+The run uses the ZIP with SHA-256 `fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31`; that receipt covers policy `s03-transform-check-v2`. A v3 receipt will replace it only after the ruling, and its run id changes in any case because the identity now includes the policy version and `floor_mapping_sha256`.
 
 ### Source defects
 
@@ -84,7 +96,7 @@ The current E27 graph hash is `06d6193124f0dc6d44a663c5a1bfdff224bcd0d71114fc303
 
 This section is a diagnostic only. It recomputes the Check A containment rule independently and is stored as receipt field `internal_outside_diagnostic` with `diagnostic_only: true` and `main_check_a_modified: false`. It changes no main Check A result, status or threshold: the as-is run above stays **2463 of 2506 inside (0.982841), FAIL**, and the gate stays **HOLD**.
 
-**Classification field.** The source navigation members have no stair, lift or escalator attribute (device type **UNKNOWN**). What they do have is the link tuple: `l[].d` is the direction (**1** forward, **2** reverse, **3** both), and `l[].dz` is present only when the two endpoints sit on different levels. Floor-transition ends are therefore identified structurally: a node is one when it is an endpoint of a link whose endpoints are on different levels or which carries `dz`. Class codes: **0** corridor (no incident cross-level link), **1** floor-transition end with one forward-only link, **2** one reverse-only link, **3** one bidirectional link, **4** mixed directions. No source node property on these levels was used, because none names a device.
+**Classification field.** The source navigation members have no stair, lift or escalator attribute (device type **UNKNOWN**). What they do have is the link tuple: `l[].d` is the direction (**1** forward, **2** reverse, **3** both), and `l[].dz` is present only when the two endpoints sit on different levels. Floor-transition ends are therefore identified structurally: a node is one when it is an endpoint of a link whose endpoints are on different levels, or of a same-level link with a non-zero `dz`; a same-level `dz` of 0 is a corridor link. The dataset contains no such link — all 2,407 same-level links carry no `dz` and no link anywhere has `dz` = 0 — so the class counts below are unchanged by that rule. Class codes: **0** corridor (no incident cross-level link), **1** floor-transition end with one forward-only link, **2** one reverse-only link, **3** one bidirectional link, **4** mixed directions. No source node property on these levels was used, because none names a device.
 
 ### (a) Outside nodes by class
 
@@ -97,12 +109,12 @@ Every outside node on both levels is a plain corridor node; none is an end of a 
 
 ### (b) Spread and direction
 
-Positions are horizontal station ENU. The direction of each outside node is the unit vector from the node to its nearest polygon edge point; bearing is measured clockwise from east, and the circular spread is `sqrt(-2 ln R)` of the mean resultant length `R`.
+Positions are horizontal station ENU. The direction of each outside node is the unit vector from the node to its nearest polygon edge point. The bearing is the raw `atan2(north, east)` angle in **degrees counter-clockwise from east**; the compass column is the same direction measured clockwise from north (`(90 − raw) mod 360`). The circular spread is `sqrt(-2 ln R)` of the mean resultant length `R`. Absolute ENU means locate nodes, so they are not published: they stay in the private provenance, and the public per-level summary keeps only counts, standard deviations, RMS radius, directions and the count of distinct nearest polygons. A level with fewer than three outside nodes publishes only its two counts and `suppressed: "fewer than 3 nodes"`; both levels here have more than three.
 
-| Numeric level ID | Outside nodes | Mean ENU east / north (m) | SD east / north (m) | RMS radius (m) | Mean unit vector east / north | Mean bearing | `R` | Circular spread | Distinct nearest polygons |
-| ---: | ---: | --- | --- | ---: | --- | ---: | ---: | ---: | ---: |
-| 64677 | 30 | 89.879778 / 480.542657 | 140.444466 / 193.412358 | 239.025079 | −0.492127 / −0.032757 | 183.808° | 0.493216 | 68.122° | 20 |
-| 64678 | 13 | 115.686253 / 212.452242 | 72.327988 / 31.113925 | 78.736358 | 0.171179 / 0.338928 | 63.204° | 0.379703 | 79.737° | 6 |
+| Numeric level ID | Outside nodes | SD east / north (m) | RMS radius (m) | Mean unit vector east / north | Bearing (ccw from east) | Compass bearing | `R` | Circular spread | Distinct nearest polygons |
+| ---: | ---: | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: |
+| 64677 | 30 | 140.444466 / 193.412358 | 239.025079 | −0.492127 / −0.032757 | 183.808° | 266.192° | 0.493216 | 68.122° | 20 |
+| 64678 | 13 | 72.327988 / 31.113925 | 78.736358 | 0.171179 / 0.338928 | 63.204° | 26.796° | 0.379703 | 79.737° | 6 |
 
 8-sector histogram of the nearest-edge direction, sector order `0:east, 1:north-east, 2:north, 3:north-west, 4:west, 5:south-west, 6:south, 7:south-east`:
 
@@ -111,7 +123,7 @@ Positions are horizontal station ENU. The direction of each outside node is the 
 | 64677 | 2 | 1 | 5 | 1 | 13 | 5 | 2 | 1 |
 | 64678 | 3 | 1 | 5 | 1 | 0 | 1 | 1 | 1 |
 
-The outside nodes are spread over hundreds of metres (SD 140.444466 m east and 193.412358 m north on 64677; 72.327988 m and 31.113925 m on 64678), the resultant length is low (0.493216 and 0.379703), the mean directions of the two levels differ (183.808° and 63.204°), and the nodes touch 20 and 6 distinct nearest polygons. These numbers **do not support one systematic offset**; they are consistent with local polygon gaps and coverage differences that hit scattered corridor nodes. The offset size under discussion (0.94 m) is two orders of magnitude smaller than this spread.
+The outside nodes are spread over hundreds of metres (SD 140.444466 m east and 193.412358 m north on 64677; 72.327988 m and 31.113925 m on 64678), the resultant length is low (0.493216 and 0.379703), the mean directions of the two levels differ (183.808° and 63.204° counter-clockwise from east), and the nodes touch 20 and 6 distinct nearest polygons. These numbers **do not support one systematic offset**; they are consistent with local polygon gaps and coverage differences that hit scattered corridor nodes. The offset size under discussion (0.94 m) is two orders of magnitude smaller than this spread.
 
 ### (c) Diagnostic offset (not adopted)
 

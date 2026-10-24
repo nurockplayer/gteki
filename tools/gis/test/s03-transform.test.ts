@@ -3,8 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { readZip } from '../src/zip.js';
 import {
   applyAffine, assertS03Bytes, checkInternal, classifyNodes, collectS03Strings, compatibleFloors, directionSummary, distanceToPolygonEdge,
-  distanceToSegment, guardS03Receipt, mutualNearest, nearestPointOnSegment, outsideNodeDiagnostic, parseS03Members, pointInPolygon, residualStats,
-  sourceDefectRecords, transformS03, type Affine, type Polygon2, type S03Link,
+  distanceToSegment, floorMappingSha256, guardS03Receipt, mutualNearest, nearestPointOnSegment, outsideNodeDiagnostic, parseS03Members,
+  pointInPolygon, receiptIdentity, residualStats, ringContainsInclusive, selfIntersectionCheck, sourceDefectRecords, transformS03,
+  type Affine, type Polygon2, type S03Link,
 } from '../src/s03-transform.js';
 
 const nav: Affine = [2, 0, 0, 2, 10, 20], drawing: Affine = [0.01, 0, 0, 0.01, 0, 0];
@@ -137,6 +138,55 @@ describe('S03 unclosed source rings: exclude, never repair', () => {
     const entries = withLevelFeatures([polygonFeature([openRing]), polygonFeature([[[0, 0], [1, 0], [1, 1], [200, 0]]])]);
     expect(() => parseS03Members(entries)).toThrow(/invalid geographic coordinate/);
   });
+  it('reports INCOMPLETE, not PASS, when a level carrying nodes has no usable polygon', () => {
+    const inputs = parseS03Members(encode());
+    // Level 11 keeps its usable square and its one inside node; level 12 has no polygons and a thousand nodes.
+    inputs.levels.push({ ...inputs.levels[0]!, id: 12, polygons: [] });
+    for (let index = 0; index < 1000; index++) inputs.nodes.push({ ...inputs.nodes[0]!, index: index + 1, sourceId: 200 + index, levelId: 12 });
+    const result = checkInternal(inputs, project);
+    expect(result).toMatchObject({ status: 'INCOMPLETE', node_count: 1, inside_count: 1, inside_share: 1, node_count_total: 1001,
+      nodes_unassessed: 1000, levels_with_nodes_unassessed: [12], levels_without_usable_polygons: [12] });
+    expect(result.reason).toContain('INCOMPLETE');
+    // The same assessment without the unassessed nodes is a clean PASS.
+    inputs.levels.pop(); inputs.nodes = inputs.nodes.slice(0, 1);
+    expect(checkInternal(inputs, project)).toMatchObject({ status: 'PASS', nodes_unassessed: 0, levels_with_nodes_unassessed: [] });
+  });
+  it('compares complete positions on ring closure, including an optional third value', () => {
+    const closed3d = [[139, 35, 0], [139.001, 35, 0], [139.001, 35.001, 0], [139, 35.001, 0], [139, 35, 0]];
+    const closedInputs = parseS03Members(withLevelFeatures([polygonFeature([closed3d])]));
+    expect(sourceDefectRecords(closedInputs, project)).toEqual([]);
+    expect(closedInputs.levels[0]!.polygons).toHaveLength(1);
+    // Same x/y endpoint at a different height is unclosed: the ring is not silently flattened for the closure test.
+    const open3d = [...closed3d.slice(0, 4), [139, 35, 10]];
+    const openInputs = parseS03Members(withLevelFeatures([polygonFeature([open3d])]));
+    expect(sourceDefectRecords(openInputs, project)).toEqual([{ kind: 'SOURCE_DEFECT_UNCLOSED_RING', level_id: 11, feature_index: 0, polygon_index: 0, ring_index: 0, endpoint_gap_m: 0 }]);
+    expect(openInputs.levels[0]!.polygons).toEqual([]);
+  });
+});
+
+describe('S03 polygon topology (fail closed)', () => {
+  it('requires shell membership before a hole boundary can contain a point', () => {
+    const holeOutside: Polygon2 = [square[0]!, [[2, 2], [3, 2], [3, 3], [2, 3], [2, 2]]];
+    expect(pointInPolygon([2.5, 2], holeOutside)).toBe(false);
+    expect(ringContainsInclusive([2.5, 2], holeOutside[1]!)).toBe(true);
+    expect(pointInPolygon([0.2, 0.5], [square[0]!, [[0.2, 0.2], [0.8, 0.2], [0.8, 0.8], [0.2, 0.8], [0.2, 0.2]]])).toBe(true);
+  });
+  it('fails closed when a hole vertex lies strictly outside its shell', () => {
+    expect(() => parseS03Members(withLevelFeatures([polygonFeature([square[0]!, [[2, 2], [3, 2], [3, 3], [2, 3], [2, 2]]])])))
+      .toThrow(/hole 1 vertex 0 lies outside its shell/);
+    const inside = parseS03Members(withLevelFeatures([polygonFeature([square[0]!, [[0.2, 0.2], [0.8, 0.2], [0.8, 0.8], [0.2, 0.8], [0.2, 0.2]]])]));
+    expect(inside.levels[0]!.polygons).toHaveLength(1);
+    expect(inside.topology).toEqual({ rings_checked: 2, rings_skipped_large: 0 });
+  });
+  it('fails closed on a self-intersecting ring and never reports an unchecked large ring as clean', () => {
+    const bowtie = [[0, 0], [1, 1], [1, 0], [0, 1], [0, 0]];
+    expect(selfIntersectionCheck(bowtie.map(([x, y]) => [x!, y!] as const))).toBe('SELF_INTERSECTING');
+    expect(selfIntersectionCheck(square[0]!)).toBe('CLEAN');
+    expect(() => parseS03Members(withLevelFeatures([polygonFeature([bowtie])]))).toThrow(/ring 0 self-intersects/);
+    const huge = Array.from({ length: 2002 }, (_, index) => [index / 10000, index % 2] as const);
+    huge.push([0, 0] as const);
+    expect(selfIntersectionCheck(huge)).toBe('NOT_CHECKED_TOO_MANY_VERTICES');
+  });
 });
 
 describe('S03 outside-node diagnostic (diagnostic only)', () => {
@@ -150,12 +200,29 @@ describe('S03 outside-node diagnostic (diagnostic only)', () => {
     const classes = classifyNodes(nodes, links);
     expect([...classes.values()]).toEqual([1, 1, 2, 2, 3, 3, 0, 0, 4, 4, 3, 3]);
   });
+  it('treats a same-level dz of zero as a corridor link, not a floor transition', () => {
+    const nodes = [1, 2, 3, 4].map(sourceId => ({ sourceId, levelId: 11 }));
+    const classes = classifyNodes(nodes, [
+      { sourceId: 1, n1: 1, n2: 2, direction: 3, dz: 0 },
+      { sourceId: 2, n1: 3, n2: 4, direction: 2, dz: 1.5 },
+    ]);
+    expect([...classes.values()]).toEqual([0, 0, 2, 2]);
+  });
   it('summarises edge direction as a mean unit vector, resultant length and 8 sectors', () => {
     expect(directionSummary([[0, 0], [0, 0], [0, 0], [0, 0]], [[1, 0], [0, 1], [-1, 0], [0, -1]]))
       .toMatchObject({ count: 4, mean_vector_east: 0, mean_vector_north: 0, mean_resultant_length: 0, sectors: [1, 0, 1, 0, 1, 0, 1, 0] });
     expect(directionSummary([[0, 0], [0, 0], [0, 0]], [[2, 0], [5, 0], [0, 0]]))
       .toMatchObject({ count: 2, mean_vector_east: 1, mean_vector_north: 0, mean_resultant_length: 1, sectors: [2, 0, 0, 0, 0, 0, 0, 0] });
-    expect(directionSummary([], [])).toMatchObject({ count: 0, mean_vector_east: null, mean_resultant_length: null });
+    expect(directionSummary([], [])).toMatchObject({ count: 0, mean_vector_east: null, mean_resultant_length: null, circular_spread_deg: null,
+      mean_bearing_deg_ccw_from_east: null, mean_bearing_deg_compass: null });
+    // Bearings are counter-clockwise from east in the raw field and clockwise from north in the compass field.
+    const north = directionSummary([[0, 0]], [[0, 1]]), west = directionSummary([[0, 0]], [[-1, 0]]);
+    expect(north.mean_bearing_deg_ccw_from_east).toBeCloseTo(90, 12);
+    expect(north.mean_bearing_deg_compass).toBeCloseTo(0, 12);
+    expect(north.circular_spread_deg).toBeCloseTo(0, 12);
+    expect(west.mean_bearing_deg_ccw_from_east).toBeCloseTo(180, 12);
+    expect(west.mean_bearing_deg_compass).toBeCloseTo(270, 12);
+    expect(west.circular_spread_deg).toBeCloseTo(0, 12);
     expect(nearestPointOnSegment([2, 1], [0, 0], [2, 0])).toEqual([2, 0]);
     expect(nearestPointOnSegment([-1, 0], [0, 0], [0, 0])).toEqual([0, 0]);
   });
@@ -168,12 +235,27 @@ describe('S03 outside-node diagnostic (diagnostic only)', () => {
     const after = checkInternal(inputs, project);
     expect(after).toEqual(before);
     expect(diagnostic).toMatchObject({ diagnostic_only: true, main_check_a_modified: false, offset_diagnostic: { diagnostic_offset_applied: true, adopted: false, main_check_a_modified: false } });
-    expect(diagnostic.levels['11']).toMatchObject({ node_count: 1, outside_node_count: 1, classes_baseline: [1, 0, 0, 0, 0], classes_outside: [1, 0, 0, 0, 0],
-      directions: { count: 1, distinct_nearest_polygons: 1 } });
-    expect(diagnostic.levels['11']!.position_enu.mean_east_m).toBeCloseTo(0.14, 12);
-    expect(diagnostic.levels['11']!.position_enu.mean_north_m).toBeCloseTo(0.26, 12);
+    // One outside node is suppressed in public: its spread and direction histogram would describe that single position.
+    expect(diagnostic.levels['11']).toEqual({ node_count: 1, outside_node_count: 1, suppressed: 'fewer than 3 nodes' });
+    expect(diagnostic.private_levels['11']!.position_enu.mean_east_m).toBeCloseTo(0.14, 12);
+    expect(diagnostic.private_levels['11']!.position_enu.mean_north_m).toBeCloseTo(0.26, 12);
     expect(diagnostic.offset_diagnostic.overall).toMatchObject({ node_count: 1, inside_count: 1, inside_share: 1 });
     expect(before.levels['11']!.inside_count).toBe(0);
+  });
+  it('suppresses public per-level statistics below three outside nodes and keeps absolute ENU means private', () => {
+    const inputs = parseS03Members(encode());
+    inputs.levels[0]!.polygons = [[[[2, 2], [3, 2], [3, 3], [2, 3], [2, 2]]]];
+    inputs.nodes.push({ ...inputs.nodes[0]!, index: 1, sourceId: 102, native: [4, 5] }, { ...inputs.nodes[0]!, index: 2, sourceId: 103, native: [6, 7] });
+    const diagnostic = outsideNodeDiagnostic(inputs, project);
+    const summary = diagnostic.levels['11']!;
+    expect(summary).toMatchObject({ node_count: 3, outside_node_count: 3, position_enu: { count: 3 }, directions: { count: 3 } });
+    expect(Object.keys(summary.position_enu!)).toEqual(['count', 'sd_east_m', 'sd_north_m', 'rms_radius_m']);
+    expect(summary.directions!.mean_resultant_length).toBeGreaterThan(0);
+    expect(summary.directions!.mean_bearing_deg_compass).toBeCloseTo((90 - summary.directions!.mean_bearing_deg_ccw_from_east! + 360) % 360, 12);
+    expect(JSON.stringify(diagnostic.levels)).not.toMatch(/mean_east_m|mean_north_m/);
+    // The means locate nodes, so only the private provenance carries them.
+    expect(diagnostic.private_levels['11']!.position_enu.mean_east_m).toBeCloseTo(0.18, 12);
+    expect(diagnostic.private_levels['11']!.position_enu.mean_north_m).toBeCloseTo(0.3, 12);
   });
 });
 
@@ -232,6 +314,18 @@ describe('S03 member, byte-integrity and publication boundaries', () => {
       entries[index]!.data = Buffer.from(JSON.stringify(value));
       expect(() => parseS03Members(entries), change).toThrow(change === 'node-level' ? /v5_nav.json/ : /geojson-level-geom-B1F\.geojson/);
     }
+  });
+  it('hashes the floor mapping into the receipt identity, so changing one ordinal changes the run id', () => {
+    const floors = [{ id: 'B1F', ordinal: -1 }, { id: '1F', ordinal: 1 }], moved = [{ id: 'B1F', ordinal: -2 }, { id: '1F', ordinal: 1 }];
+    expect(floorMappingSha256(floors)).toBe(floorMappingSha256([...floors].reverse()));
+    expect(floorMappingSha256(moved)).not.toBe(floorMappingSha256(floors));
+    const facts = { policy_version: 'policy', tool_input_sha256: 'tool', zip_sha256: 'zip', station_origin_sha256: 'origin',
+      floor_mapping_sha256: floorMappingSha256(floors), e27_graph_sha256: 'graph' };
+    expect(receiptIdentity(facts).run_id).toMatch(/^transform-check-[0-9a-f]{20}$/);
+    expect(receiptIdentity(facts).run_id).toBe(receiptIdentity({ ...facts }).run_id);
+    const changed = receiptIdentity({ ...facts, floor_mapping_sha256: floorMappingSha256(moved) });
+    expect(changed.run_id).not.toBe(receiptIdentity(facts).run_id);
+    expect(changed.digest_inputs.floor_mapping_sha256).toBe(floorMappingSha256(moved));
   });
   it('fails SHA mismatch or byte-count mismatch before parsing', () => {
     const bytes = fixtureZip(encode()), expected = { sha256: createHash('sha256').update(bytes).digest('hex'), bytes: bytes.length };

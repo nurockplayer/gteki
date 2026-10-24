@@ -8,7 +8,12 @@ import { toolFingerprint } from './provenance.js';
 import { readZip } from './zip.js';
 
 // v2 excludes polygon features with an unclosed ring from Check A instead of rejecting the whole ZIP.
-export const S03_TRANSFORM_POLICY = 's03-transform-check-v2';
+// v3 adds the INCOMPLETE status, hashes the floor mapping into the receipt identity, keeps absolute outside-node
+// positions private, ignores same-level dz = 0 links, compares full ring positions on closure and fails closed on
+// hole/shell and self-intersection topology.
+export const S03_TRANSFORM_POLICY = 's03-transform-check-v3';
+export const OUTSIDE_SUPPRESSION_MIN_NODES = 3;
+export const SELF_INTERSECTION_MAX_VERTICES = 2000;
 export const UNCLOSED_RING_DEFECT = 'SOURCE_DEFECT_UNCLOSED_RING';
 export const S03_DATUM = {
   declared: null,
@@ -53,9 +58,14 @@ export function distanceToSegment(point: Point2, a: Point2, b: Point2): number {
   const t = length2 === 0 ? 0 : Math.max(0, Math.min(1, ((point[0] - a[0]) * dx + (point[1] - a[1]) * dy) / length2));
   return Math.hypot(point[0] - a[0] - t * dx, point[1] - a[1] - t * dy);
 }
+function distanceToRing(point: Point2, ring: readonly Point2[]): number {
+  let nearest = Infinity;
+  for (let i = 0; i + 1 < ring.length; i++) nearest = Math.min(nearest, distanceToSegment(point, ring[i]!, ring[i + 1]!));
+  return nearest;
+}
 export function distanceToPolygonEdge(point: Point2, polygon: Polygon2): number {
   let nearest = Infinity;
-  for (const ring of polygon) for (let i = 0; i + 1 < ring.length; i++) nearest = Math.min(nearest, distanceToSegment(point, ring[i]!, ring[i + 1]!));
+  for (const ring of polygon) nearest = Math.min(nearest, distanceToRing(point, ring));
   return nearest;
 }
 function inRing(point: Point2, ring: readonly Point2[]): boolean {
@@ -66,11 +76,36 @@ function inRing(point: Point2, ring: readonly Point2[]): boolean {
   }
   return inside;
 }
-/** Closed polygon surface: outer and hole boundaries count as inside; hole interiors do not. */
+/** Inside a single ring or on one of its edges; hole semantics are the caller's business. */
+export function ringContainsInclusive(point: Point2, ring: readonly Point2[]): boolean {
+  return distanceToRing(point, ring) <= 1e-9 || inRing(point, ring);
+}
+/** Closed polygon surface: the shell decides first, then hole boundaries count as inside and hole interiors do not. */
 export function pointInPolygon(point: Point2, polygon: Polygon2): boolean {
   if (!polygon.length) return false;
-  if (distanceToPolygonEdge(point, polygon) <= 1e-9) return true;
-  return inRing(point, polygon[0]!) && !polygon.slice(1).some(ring => inRing(point, ring));
+  const shell = polygon[0]!, holes = polygon.slice(1);
+  // A hole boundary can never contain a point the shell does not: require shell membership first.
+  if (!ringContainsInclusive(point, shell)) return false;
+  if (holes.some(hole => distanceToRing(point, hole) <= 1e-9)) return true;
+  return !holes.some(hole => inRing(point, hole));
+}
+const cross = (origin: Point2, a: Point2, b: Point2): number => (a[0] - origin[0]) * (b[1] - origin[1]) - (a[1] - origin[1]) * (b[0] - origin[0]);
+/** Proper crossing only: segments that merely share an endpoint or touch are not flagged. */
+function segmentsProperlyIntersect(a: Point2, b: Point2, c: Point2, d: Point2): boolean {
+  const d1 = cross(c, d, a), d2 = cross(c, d, b), d3 = cross(a, b, c), d4 = cross(a, b, d);
+  return ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0));
+}
+export type SelfIntersectionVerdict = 'CLEAN' | 'SELF_INTERSECTING' | 'NOT_CHECKED_TOO_MANY_VERTICES';
+/** O(n^2) proper-crossing check on a closed ring; rings above the vertex cap are reported as unchecked, never as clean. */
+export function selfIntersectionCheck(points: readonly Point2[]): SelfIntersectionVerdict {
+  if (points.length - 1 > SELF_INTERSECTION_MAX_VERTICES) return 'NOT_CHECKED_TOO_MANY_VERTICES';
+  const segments = points.length - 1;
+  for (let i = 0; i < segments; i++) for (let j = i + 2; j < segments; j++) {
+    // The first and last segments meet at the repeated closing position, which is not a crossing.
+    if (i === 0 && j === segments - 1) continue;
+    if (segmentsProperlyIntersect(points[i]!, points[i + 1]!, points[j]!, points[j + 1]!)) return 'SELF_INTERSECTING';
+  }
+  return 'CLEAN';
 }
 /** Linear interpolation at (n-1)*p, matching the research note. Empty samples remain null. */
 export function residualStats(values: readonly number[]) {
@@ -84,7 +119,7 @@ export function residualStats(values: readonly number[]) {
 }
 
 interface S03Node { index: number; sourceId: number; levelId: number; native: Point2 }
-/** Nav link: `direction` is the source's `d` (1 forward, 2 reverse, 3 both); `dz` is present only when the link changes level. */
+/** Nav link: `direction` is the source's `d` (1 forward, 2 reverse, 3 both); `dz` is the source's vertical step when present. */
 export interface S03Link { sourceId: number; n1: number; n2: number; direction: number; dz: number | null }
 interface S03Level {
   id: number; ordinal: number; polygons: Polygon2[]; nonPolygonFeatures: number; memberSha256: string;
@@ -93,6 +128,7 @@ interface S03Level {
 export interface S03Inputs {
   navTransform: Affine; drawingTransform: Affine; drawingId: number;
   nodes: S03Node[]; levels: S03Level[]; links: S03Link[]; sourceValues: Set<string>; sourceDefects: S03SourceDefect[];
+  topology: { rings_checked: number; rings_skipped_large: number };
   navSha256: string; mapSha256: string;
 }
 // Comparison labels from the note, never physical elevations; source zlevel is deliberately unused.
@@ -163,20 +199,24 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
   const drawingTransform = affine((md.ref_frame as JsonObject).transform, mapName);
   if (!Array.isArray(md.levels) || !md.levels.length) fail(mapName, 'missing levels');
   const levelIds = new Set<number>();
-  const position = (v: unknown, member: string): Point2 => {
+  // Positions keep the tuple the source wrote, including an optional third value; horizontal maths drops z afterwards.
+  const position = (v: unknown, member: string): number[] => {
     if (!Array.isArray(v) || (v.length !== 2 && v.length !== 3) || !v.every(finite) || !lonLat(v as unknown as Point2)) fail(member, 'invalid geographic coordinate');
-    const p = v as number[];
-    return [p[0]!, p[1]!];
+    return v as number[];
   };
-  const ring = (v: unknown, member: string): Point2[] => {
+  const ring = (v: unknown, member: string): number[][] => {
     if (!Array.isArray(v) || v.length < 4) fail(member, 'polygon ring must have at least four positions');
     return (v as unknown[]).map(p => position(p, member));
   };
-  const closed = (points: Point2[]): boolean => points[0]![0] === points.at(-1)![0] && points[0]![1] === points.at(-1)![1];
-  const polygon = (v: unknown, member: string): Point2[][] => {
+  const samePosition = (a: readonly number[], b: readonly number[]): boolean => a.length === b.length && a.every((value, index) => value === b[index]);
+  // Closure compares the complete original tuples, so a ring that returns to the first x/y at a different height is unclosed.
+  const closed = (points: readonly (readonly number[])[]): boolean => samePosition(points[0]!, points.at(-1)!);
+  const polygon = (v: unknown, member: string): number[][][] => {
     if (!Array.isArray(v) || !v.length) fail(member, 'polygon has no rings');
     return (v as unknown[]).map(r => ring(r, member));
   };
+  const horizontal = (positions: readonly (readonly number[])[]): Point2[] => positions.map(([lon, lat]) => [lon!, lat!] as Point2);
+  const topology = { rings_checked: 0, rings_skipped_large: 0 };
   const sourceDefects: S03SourceDefect[] = [];
   const levels: S03Level[] = (md.levels as unknown[]).map(raw => {
     if (!record(raw) || !id(raw.id) || !record(raw.properties) || typeof raw.properties.name !== 'string') fail(mapName, 'invalid level id/properties');
@@ -212,11 +252,24 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
         // Whole-feature exclusion, first offending ring only; reported by numeric level id and zero-based indexes.
         featuresExcludedUnclosedRing++;
         sourceDefects.push({ kind: UNCLOSED_RING_DEFECT, levelId: level.id, featureIndex, polygonIndex: unclosed.polygonIndex, ringIndex: unclosed.ringIndex,
-          first: unclosed.positions[0]!, last: unclosed.positions.at(-1)! });
+          first: [unclosed.positions[0]![0]!, unclosed.positions[0]![1]!], last: [unclosed.positions.at(-1)![0]!, unclosed.positions.at(-1)![1]!] });
         return;
       }
+      // Only unclosed rings have a director ruling to exclude from Check A; every other topology malformation fails closed.
+      for (const { polygonIndex, rings } of parsed) {
+        const flat = rings.map(horizontal), shell = flat[0]!;
+        flat.slice(1).forEach((hole, holeIndex) => hole.forEach((vertex, vertexIndex) => {
+          if (!ringContainsInclusive(vertex, shell)) fail(member, `hole ${holeIndex + 1} vertex ${vertexIndex} lies outside its shell (level ${level.id}, feature ${featureIndex}, polygon ${polygonIndex})`);
+        }));
+        flat.forEach((points, ringIndex) => {
+          const verdict = selfIntersectionCheck(points);
+          if (verdict === 'SELF_INTERSECTING') fail(member, `ring ${ringIndex} self-intersects (level ${level.id}, feature ${featureIndex}, polygon ${polygonIndex})`);
+          if (verdict === 'CLEAN') topology.rings_checked++;
+          else topology.rings_skipped_large++;
+        });
+      }
       featuresUsed++;
-      for (const part of parsed) polygons.push(part.rings);
+      for (const part of parsed) polygons.push(part.rings.map(horizontal));
     });
     // A level whose polygon features were all excluded stays in the output with null inside metrics; a level with no polygon feature at all still fails.
     if (!polygons.length && !featuresExcludedUnclosedRing) fail(member, 'no polygons to test');
@@ -244,7 +297,7 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
     if (!Number.isSafeInteger(link.n1) || !Number.isSafeInteger(link.n2) || !nodeIds.has(link.n1) || !nodeIds.has(link.n2)) fail(navName, `link endpoints at index ${index} are not nodes`);
     return { sourceId: link.id, n1: link.n1, n2: link.n2, direction: link.d, dz: typeof link.dz === 'number' ? link.dz : null };
   });
-  return { navTransform, drawingTransform, drawingId, nodes, levels, links, sourceValues, sourceDefects, navSha256: sha256(members.get(navName)!.data), mapSha256: sha256(members.get(mapName)!.data) };
+  return { navTransform, drawingTransform, drawingId, nodes, levels, links, sourceValues, sourceDefects, topology, navSha256: sha256(members.get(navName)!.data), mapSha256: sha256(members.get(mapName)!.data) };
 }
 
 /** ENU endpoint gap from the first and last positions, using the same station projector Check A uses. Nothing is closed or moved. */
@@ -298,14 +351,19 @@ export function checkInternal(inputs: S03Inputs, project: Project, swapped = fal
   const assessed = perLevel.flatMap(([, v]) => v.inside_share === null ? [] : [{ ...v, inside_count: v.inside_count ?? 0, outside_unprojectable_count: v.outside_unprojectable_count ?? 0 }]);
   // Only a level with no usable polygon is unassessed; a level with polygons but no nodes has nothing to test and is not listed here.
   const unassessed = perLevel.filter(([, v]) => v.polygon_count === 0).map(([levelId]) => levelId);
+  // Nodes on an unassessed level are neither inside nor outside; PASS must never hide them.
+  const unassessedWithNodes = perLevel.filter(([, v]) => v.polygon_count === 0 && v.node_count > 0).map(([levelId]) => levelId);
+  const nodesUnassessed = perLevel.reduce((sum, [, v]) => sum + (v.polygon_count === 0 ? v.node_count : 0), 0);
   const nodeCount = assessed.reduce((sum, v) => sum + v.node_count, 0), inside = assessed.reduce((sum, v) => sum + v.inside_count, 0);
-  const overwhelming = nodeCount > 0 && inside / nodeCount >= OVERWHELMING_INSIDE_SHARE && assessed.every(v => !v.node_count || v.inside_share! >= OVERWHELMING_INSIDE_SHARE);
+  const assessedPasses = nodeCount > 0 && inside / nodeCount >= OVERWHELMING_INSIDE_SHARE && assessed.every(v => !v.node_count || v.inside_share! >= OVERWHELMING_INSIDE_SHARE);
   const failed = 'Not overwhelmingly inside at the fixed threshold on every assessed level and overall; no transform adjustment applied.';
-  return { status: overwhelming ? 'PASS' : 'FAIL', inside_threshold: OVERWHELMING_INSIDE_SHARE, node_count: nodeCount, node_count_total: inputs.nodes.length, inside_count: inside,
+  const status = !assessedPasses ? 'FAIL' : unassessedWithNodes.length ? 'INCOMPLETE' : 'PASS';
+  const reason = status === 'PASS' ? 'Overwhelmingly inside at the fixed threshold on every assessed level and overall.'
+    : status === 'INCOMPLETE' ? `The assessed levels are overwhelmingly inside at the fixed threshold, but ${nodesUnassessed} nodes on levels ${unassessedWithNodes.join(', ')} have no usable polygon and were not assessed; the status is INCOMPLETE, not PASS.`
+    : unassessed.length ? `${failed} Levels in levels_without_usable_polygons were not assessed.` : failed;
+  return { status, inside_threshold: OVERWHELMING_INSIDE_SHARE, node_count: nodeCount, node_count_total: inputs.nodes.length, inside_count: inside,
     inside_share: nodeCount ? inside / nodeCount : null, outside_unprojectable_count: assessed.reduce((sum, v) => sum + v.outside_unprojectable_count, 0),
-    levels_without_usable_polygons: unassessed,
-    reason: overwhelming ? 'Overwhelmingly inside at the fixed threshold on every assessed level and overall.'
-      : unassessed.length ? `${failed} Levels in levels_without_usable_polygons were not assessed.` : failed,
+    levels_without_usable_polygons: unassessed, levels_with_nodes_unassessed: unassessedWithNodes, nodes_unassessed: nodesUnassessed, reason,
     levels: Object.fromEntries(perLevel) };
 }
 
@@ -320,14 +378,17 @@ export const NODE_CLASS = { CORRIDOR: 0, FLOOR_TRANSITION_FORWARD_ONLY: 1, FLOOR
 
 /**
  * Classify nodes by edge structure only: a node is a floor-transition end when it is incident to a link whose endpoints sit
- * on different levels (or whose dz is present). The source's `d` is a direction (1 forward, 2 reverse, 3 both), not a device
- * type; v5_nav.json carries no stair/lift/escalator field, so the device stays UNKNOWN.
+ * on different levels, or to a link on one level that carries a non-zero dz. A same-level dz of exactly 0 is a corridor
+ * link, not a transition. The source's `d` is a direction (1 forward, 2 reverse, 3 both), not a device type;
+ * v5_nav.json carries no stair/lift/escalator field, so the device stays UNKNOWN.
  */
 export function classifyNodes(nodes: readonly { sourceId: number; levelId: number }[], links: readonly S03Link[]): Map<number, number> {
   const levelOf = new Map(nodes.map(node => [node.sourceId, node.levelId])), directions = new Map<number, Set<number>>();
   for (const link of links) {
     const from = levelOf.get(link.n1), to = levelOf.get(link.n2);
-    if (from === undefined || to === undefined || from === to && link.dz === null) continue;
+    if (from === undefined || to === undefined) continue;
+    const transition = from !== to || link.dz !== null && link.dz !== 0;
+    if (!transition) continue;
     for (const id of [link.n1, link.n2]) directions.set(id, (directions.get(id) ?? new Set<number>()).add(link.direction));
   }
   const classes = new Map<number, number>();
@@ -338,7 +399,11 @@ export function classifyNodes(nodes: readonly { sourceId: number; levelId: numbe
   return classes;
 }
 
-/** Unit directions from each node to its nearest edge point: mean vector, resultant length in [0,1] and an 8-sector histogram (0 E, 1 NE, 2 N, 3 NW, 4 W, 5 SW, 6 S, 7 SE). */
+/**
+ * Unit directions from each node to its nearest edge point: mean vector, resultant length in [0,1], circular spread and an
+ * 8-sector histogram (0 E, 1 NE, 2 N, 3 NW, 4 W, 5 SW, 6 S, 7 SE). Bearings are angles, not positions: both are given,
+ * `ccw_from_east` is what `Math.atan2(north, east)` returns and the compass bearing is clockwise from north.
+ */
 export function directionSummary(from: readonly Point2[], to: readonly Point2[]) {
   let east = 0, north = 0, count = 0;
   const sectors = [0, 0, 0, 0, 0, 0, 0, 0];
@@ -349,7 +414,13 @@ export function directionSummary(from: readonly Point2[], to: readonly Point2[])
     sectors[Math.round((Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360 / 45) % 8]!++;
   }
   const meanEast = count ? east / count : null, meanNorth = count ? north / count : null;
-  return { count, mean_vector_east: meanEast, mean_vector_north: meanNorth, mean_resultant_length: meanEast === null || meanNorth === null ? null : Math.hypot(meanEast, meanNorth), sectors };
+  // R is 1 when every direction agrees; then the spread is 0 and the bearing is that single direction.
+  const resultant = meanEast === null || meanNorth === null ? null : Math.min(1, Math.hypot(meanEast, meanNorth));
+  const hasDirection = resultant !== null && resultant > 0;
+  const ccw = hasDirection ? (Math.atan2(meanNorth!, meanEast!) * 180 / Math.PI + 360) % 360 : null;
+  return { count, mean_vector_east: meanEast, mean_vector_north: meanNorth, mean_resultant_length: resultant,
+    circular_spread_deg: resultant === null || resultant === 0 ? null : Math.sqrt(-2 * Math.log(resultant)) * 180 / Math.PI,
+    mean_bearing_deg_ccw_from_east: ccw, mean_bearing_deg_compass: ccw === null ? null : (90 - ccw + 360) % 360, sectors };
 }
 
 /** Mean, population SD and RMS radius of ENU points. Empty input yields nulls, never a fabricated value. */
@@ -365,15 +436,26 @@ function positionStats(points: readonly Point2[]) {
  * Diagnostic only: explains the nodes that fall outside their level's polygons. Mirrors Check A's containment rule but never
  * feeds back into it. The offset variant subtracts Check B's mean S03-minus-E27 vector from every projected node and is
  * labelled as not adopted.
+ *
+ * Absolute ENU means locate nodes, so they stay in the private provenance (`private_levels`), never in the public receipt.
+ * The public per-level summary is suppressed below OUTSIDE_SUPPRESSION_MIN_NODES outside nodes, where a spread or a
+ * direction histogram would describe one or two identifiable positions.
  */
-export interface OutsideNodeLevelDiagnostic {
-  node_count: number; outside_node_count: number; classes_baseline: number[]; classes_outside: number[];
+export interface OutsideNodeLevelDetail {
+  classes_baseline: number[]; classes_outside: number[];
   position_enu: { count: number; mean_east_m: number | null; mean_north_m: number | null; sd_east_m: number | null; sd_north_m: number | null; rms_radius_m: number | null };
-  directions: { count: number; mean_vector_east: number | null; mean_vector_north: number | null; mean_resultant_length: number | null; sectors: number[]; distinct_nearest_polygons: number };
+  directions: ReturnType<typeof directionSummary>;
+}
+export interface OutsideNodeLevelPublic {
+  node_count: number; outside_node_count: number; suppressed?: string;
+  classes_baseline?: number[]; classes_outside?: number[];
+  position_enu?: { count: number; sd_east_m: number | null; sd_north_m: number | null; rms_radius_m: number | null };
+  directions?: ReturnType<typeof directionSummary>;
 }
 export function outsideNodeDiagnostic(inputs: S03Inputs, project: Project, offset: { east: number; north: number } | null = null) {
   const classes = classifyNodes(inputs.nodes, inputs.links);
-  const levels: Record<string, OutsideNodeLevelDiagnostic> = {}, offsetLevels: Record<string, { node_count: number; inside_count: number; inside_share: number | null }> = {};
+  const levels: Record<string, OutsideNodeLevelPublic> = {}, privateLevels: Record<string, OutsideNodeLevelDetail> = {},
+    offsetLevels: Record<string, { node_count: number; inside_count: number; inside_share: number | null }> = {};
   let offsetNodes = 0, offsetInside = 0;
   for (const level of inputs.levels) {
     const polygons = level.polygons.map(poly => poly.map(ring => ring.map(([lon, lat]) => project(lat, lon))));
@@ -417,25 +499,28 @@ export function outsideNodeDiagnostic(inputs: S03Inputs, project: Project, offse
       offsetLevels[level.id] = { node_count: levelOffsetNodes, inside_count: levelOffsetInside, inside_share: levelOffsetNodes ? levelOffsetInside / levelOffsetNodes : null };
     }
     if (!outside.length) continue;
-    levels[level.id] = {
-      node_count: nodes.length,
-      outside_node_count: outside.length,
-      classes_baseline: baseline,
-      classes_outside: outsideClasses,
-      position_enu: positionStats(outside.map(entry => entry.xy)),
-      directions: { ...directionSummary(outside.map(entry => entry.xy), outside.map(entry => entry.nearestPoint)),
-        distinct_nearest_polygons: new Set(outside.map(entry => entry.polygonIndex)).size },
-    };
+    const position = positionStats(outside.map(entry => entry.xy));
+    const directions = { ...directionSummary(outside.map(entry => entry.xy), outside.map(entry => entry.nearestPoint)),
+      distinct_nearest_polygons: new Set(outside.map(entry => entry.polygonIndex)).size };
+    privateLevels[level.id] = { classes_baseline: baseline, classes_outside: outsideClasses, position_enu: position, directions };
+    // Below the suppression minimum, counts plus one reason are all the public receipt gets.
+    levels[level.id] = outside.length < OUTSIDE_SUPPRESSION_MIN_NODES
+      ? { node_count: nodes.length, outside_node_count: outside.length, suppressed: `fewer than ${OUTSIDE_SUPPRESSION_MIN_NODES} nodes` }
+      : { node_count: nodes.length, outside_node_count: outside.length, classes_baseline: baseline, classes_outside: outsideClasses,
+        position_enu: { count: position.count, sd_east_m: position.sd_east_m, sd_north_m: position.sd_north_m, rms_radius_m: position.rms_radius_m }, directions };
   }
   return {
     diagnostic_only: true,
     main_check_a_modified: false,
-    classification_field: 'v5_nav.json l[].d is the direction (1 forward, 2 reverse, 3 both); floor-transition ends come from links whose n1/n2 sit on different levels or whose dz is present',
+    classification_field: 'v5_nav.json l[].d is the direction (1 forward, 2 reverse, 3 both); floor-transition ends come from links whose n1/n2 sit on different levels or whose dz is non-zero, while a same-level dz of 0 stays a corridor link',
     device_type: 'UNKNOWN: v5_nav.json has no stair, lift or escalator field; the source specification defines d as direction only',
     class_codes: ['corridor: no incident cross-level link', 'floor-transition end: single forward-only link', 'floor-transition end: single reverse-only link', 'floor-transition end: single bidirectional link', 'floor-transition end: mixed directions'],
     // Sector labels are indexed: bare compass letters equal short source codelist values and would trip the leak guard.
     sector_codes: ['0:east', '1:north-east', '2:north', '3:north-west', '4:west', '5:south-west', '6:south', '7:south-east'],
+    bearing_rule: 'Bearings are angles in degrees, not positions: mean_bearing_deg_ccw_from_east is Math.atan2(north, east) and mean_bearing_deg_compass is the same direction clockwise from north. Circular spread is sqrt(-2 ln R) in degrees.',
+    public_position_rule: `Absolute ENU means for outside nodes are recorded only in the private provenance; a level's public statistics are suppressed below ${OUTSIDE_SUPPRESSION_MIN_NODES} outside nodes.`,
     levels,
+    private_levels: privateLevels,
     offset_diagnostic: {
       diagnostic_offset_applied: offset !== null, adopted: false, main_check_a_modified: false,
       basis: 'Check B mean S03 minus E27 offset over reciprocal pairs within 5 m, subtracted from every projected node (east then north)',
@@ -471,6 +556,21 @@ export function mutualNearest(e27: readonly E27Point[], s03: readonly S03Point[]
   return { compatible_mutual_pairs_before_threshold: pairs.length, thresholds_m: [1, 2, 3, 5].map(t => ({ threshold_m: t, pair_count: selected.filter(p => p.distance_m <= t).length })),
     residuals_within_5m: residualStats(selected.map(p => p.distance_m)),
     mean_delta_within_5m: { d_east_m: meanEast, d_north_m: meanNorth, length_m: meanEast === null || meanNorth === null ? null : Math.hypot(meanEast, meanNorth), applied: false }, pairs: selected };
+}
+
+/** Canonical SHA-256 of the floor mapping Check B actually uses: floor id to comparison ordinal, sorted by id. */
+export function floorMappingSha256(floors: readonly { id: string; ordinal: number }[]): string {
+  const canonical = floors.map(floor => [floor.id, floor.ordinal] as const).sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
+  return sha256(JSON.stringify(canonical));
+}
+export interface S03DigestFacts {
+  policy_version: string; tool_input_sha256: string; zip_sha256: string; station_origin_sha256: string;
+  floor_mapping_sha256: string; e27_graph_sha256: string;
+}
+/** Receipt identity: the facts object is hashed in this key order and truncated to 20 hex characters. */
+export function receiptIdentity(facts: S03DigestFacts) {
+  const digest = sha256(JSON.stringify(facts)).slice(0, 20);
+  return { digest_inputs: facts, digest, run_id: `transform-check-${digest}` };
 }
 
 export function guardS03Receipt<T>(receipt: T, sourceValues: ReadonlySet<string>): T {
@@ -520,10 +620,13 @@ export async function s03TransformCheck() {
   const { pairs: externalPairs, ...externalSummary } = external;
   // Diagnostic only: it never feeds back into Check A, its status or any other receipt field.
   const meanDelta = external.mean_delta_within_5m;
-  const outsideDiagnostic = outsideNodeDiagnostic(inputs, project, meanDelta.d_east_m === null || meanDelta.d_north_m === null ? null : { east: meanDelta.d_east_m, north: meanDelta.d_north_m });
+  // Absolute ENU means stay in the private provenance; only the summary is eligible for the public receipt.
+  const { private_levels: outsidePrivateLevels, ...outsideDiagnostic } = outsideNodeDiagnostic(inputs, project,
+    meanDelta.d_east_m === null || meanDelta.d_north_m === null ? null : { east: meanDelta.d_east_m, north: meanDelta.d_north_m });
   const stationSha = stationOriginSha256(origin), graphSha = sha256(graphBytes);
-  const digestInputs = { policy_version: S03_TRANSFORM_POLICY, tool_input_sha256: fingerprint, zip_sha256: stored.record.sha256, station_origin_sha256: stationSha, e27_graph_sha256: graphSha };
-  const digest = sha256(JSON.stringify(digestInputs)).slice(0, 20), runId = `transform-check-${digest}`;
+  // Check B's floor ordinals are an input to the comparison, so their canonical hash belongs in the receipt identity.
+  const { digest_inputs: digestInputs, run_id: runId } = receiptIdentity({ policy_version: S03_TRANSFORM_POLICY, tool_input_sha256: fingerprint,
+    zip_sha256: stored.record.sha256, station_origin_sha256: stationSha, floor_mapping_sha256: floorMappingSha256(station.floors), e27_graph_sha256: graphSha });
   const geojsonRel = `out/s03-${runId}.geojson`, sidecarRel = `out/s03-${runId}.provenance.json`;
   const geojson = `${JSON.stringify({ type: 'FeatureCollection', gteki_role: 'evidence', navigation_use: 'NOT_FOR_ROUTING', verification: 'UNVERIFIED', crs_assumption: S03_DATUM,
     credit: S03_CREDIT, source_sha256: stored.record.sha256,
@@ -532,17 +635,21 @@ export async function s03TransformCheck() {
   const reproduced = JSON.stringify(external.thresholds_m) === JSON.stringify(expected.thresholds_m) && external.residuals_within_5m.median_m !== null && Number(external.residuals_within_5m.median_m.toFixed(2)) === expected.median_m_rounded_2dp;
   const receipt = guardS03Receipt({ ...digestInputs, run_id: runId, source_id: 'tokyo-s03-zip', source_bytes: zipBytes.length, publish_gate: stored.source.publish_gate,
     gteki_role: 'evidence', navigation_use: 'NOT_FOR_ROUTING', verification: 'UNVERIFIED', crs: S03_DATUM, datum_note: DATUM_NOTE,
-    frame: { station_json_path: stationPath, e27_graph_path: graphPath, station_json_sha256: sha256(stationBytes), ellipsoid: 'GRS80', horizontal_calculation_height_m: 0, physical_height_m: null, floor_elevations_asserted: false },
+    frame: { station_json_path: stationPath, e27_graph_path: graphPath, station_json_sha256: sha256(stationBytes), ellipsoid: 'GRS80', horizontal_calculation_height_m: 0, physical_height_m: null, floor_elevations_asserted: false,
+      floor_mapping_rule: 'Check B ordinals come from station.json floors; floor_mapping_sha256 is the SHA-256 of [floor id, ordinal] pairs sorted by id as UTF-8 JSON.' },
     transform: { drawing_id: inputs.drawingId, level_ids: inputs.levels.map(l => l.id), nav_member_sha256: inputs.navSha256, map_member_sha256: inputs.mapSha256,
       nav_coefficients_sha256: sha256(JSON.stringify(inputs.navTransform)), drawing_coefficients_sha256: sha256(JSON.stringify(inputs.drawingTransform)), coefficient_hash_encoding: 'UTF-8 JSON array in source order',
       order: 'nav affine, then drawing affine, then horizontal ENU; no fitted correction', level_member_sha256: Object.fromEntries(inputs.levels.map(l => [l.id, l.memberSha256])) },
     source_defects: { count: sourceDefects.length, kinds: sourceDefects.length ? [UNCLOSED_RING_DEFECT] : [],
-      rule: 'A polygon feature is excluded from Check A when any of its rings has a first position different from its last. Rings are never closed, repaired, dropped or otherwise modified; the whole feature is excluded.',
+      rule: 'A polygon feature is excluded from Check A when any of its rings has a first position different from its last, comparing the complete positions including an optional third value. Rings are never closed, repaired, dropped or otherwise modified; the whole feature is excluded.',
       endpoint_gap_rule: 'Horizontal ENU distance between the first and last ring positions, using the same station projector as Check A.',
+      topology: { rings_checked: inputs.topology.rings_checked, rings_skipped_large: inputs.topology.rings_skipped_large, max_vertices: SELF_INTERSECTION_MAX_VERTICES,
+        rule: `Every ring of a used feature is checked for proper segment crossings up to ${SELF_INTERSECTION_MAX_VERTICES} vertices; larger rings are counted in rings_skipped_large and not checked. A hole vertex strictly outside its shell, or a self-intersecting ring, fails the whole run closed; only unclosed rings are excluded by ruling.` },
       items: sourceDefects },
     internal: { as_is: asIs, swapped_order: swapped, coverage, negative_control_detected: true, invalid_coordinate_rule: 'Invalid geographic outputs count as outside and unprojectable; no edge distance is asserted for them.',
       containment_rule: 'Union of own-level polygon surfaces in horizontal ENU, including boundaries and excluding hole interiors; Point and LineString features excluded.',
-      unclosed_ring_rule: 'Features with an unclosed ring are excluded from containment entirely (no implicit closure). A level left without usable polygons keeps null inside metrics and is not assessed.' },
+      unclosed_ring_rule: 'Features with an unclosed ring are excluded from containment entirely (no implicit closure). A level left without usable polygons keeps null inside metrics and is not assessed.',
+      status_rule: 'PASS needs overwhelming containment on every assessed level and overall. INCOMPLETE means the assessed part would pass but nodes remain on levels without usable polygons; FAIL means the assessed part already fails.' },
     internal_outside_diagnostic: outsideDiagnostic,
     external: { e27_node_count: e27.length, s03_node_count: nodes.length, floor_rule: 'Label-derived comparison ordinals equal, or E27 ordinal 0 with S03 ordinal 1; no source zlevel or measured elevation is used.',
       selection_rule: 'Reciprocal nearest across all compatible-floor nodes, then threshold <= 1, 2, 3, 5 m. Equal distances break by numeric S03 source id and lexicographic E27 id.', delta_direction: 'S03 minus E27', node_index_basis: 'zero-based position in v5_nav.json n array',
@@ -555,7 +662,10 @@ export async function s03TransformCheck() {
   await writeJson(join(getStoreRoot(), sidecarRel), { ...receipt, credit: S03_CREDIT, source_record: stored.record, source_manifest: stored.source,
     node_table: nodes.map(n => ({ index: n.index, source_id: n.sourceId, level_id: n.levelId })), check_b_pairs: externalPairs,
     // Private provenance keeps the untouched source endpoints; the public receipt keeps only their ENU gap.
-    source_defect_endpoints: inputs.sourceDefects.map(d => ({ ...d, first: [...d.first], last: [...d.last] })) });
+    source_defect_endpoints: inputs.sourceDefects.map(d => ({ ...d, first: [...d.first], last: [...d.last] })),
+    // Absolute ENU means and the full floor mapping stay private; the public receipt carries only the mapping hash.
+    outside_diagnostic_private_levels: outsidePrivateLevels,
+    floor_mapping: station.floors.map(f => ({ id: f.id, ordinal: f.ordinal })).sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0) });
   await writeFile(join(getStoreRoot(), geojsonRel), geojson);
   const receiptPath = `docs/gis/s03/${runId}.json`;
   await writeJson(join(repoRoot, receiptPath), receipt);
