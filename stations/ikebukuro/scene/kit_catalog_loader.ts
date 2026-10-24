@@ -44,6 +44,9 @@ export function catalogVisibility(THREE: ThreeNS) {
         mesh.visible = at.distanceToSquared(sphere.center) <= reach * reach;
       }
     },
+    clear() {
+      meshes.length = 0;
+    },
   };
 }
 
@@ -285,6 +288,9 @@ export function lazyKitCatalog(
       clearTimeout(timer);
       for (const group of groups) group.removeFromParent();
       for (const kit of loaded) kit.dispose();
+      loaded.length = 0;
+      groups.length = 0;
+      visibility.clear();
     },
   };
 }
