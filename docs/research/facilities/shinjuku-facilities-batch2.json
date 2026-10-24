@@ -767,6 +767,38 @@
       ]
     },
     {
+      "id": "service-sjk-odakyudept-008",
+      "category": "service",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ecbo cloak(エクボクローク)"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "odakyudept-shinjuku-facilities-2026-10"
+        ],
+        "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急百貨店 新宿店 2階＝ギフトサロン。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+        },
+        {
+          "lang": "en",
+          "text": "小田急百貨店 新宿店, 2階＝ギフトサロン. Location is the operator's wording only (unverified, no route)."
+        }
+      ]
+    },
+    {
       "id": "service-sjk-odakyudept-002",
       "category": "service",
       "names": [
