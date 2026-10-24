@@ -23,12 +23,13 @@ Read with the plain-text web reader; source read timestamps recorded as 2026-10-
 
 - Main directory and shop list read: https://www.metropro-sc.jp/echika-ikebukuro/ — 2026-10-24T02:56:55Z (UTC).
 - Shop detail pages followed via `https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=<shopid>` in the same session on 2026-10-24 (UTC); each `shopid` is recorded in its ID.
-- Listed 26; imported 23; skipped 3 (Patio de METRO, Tabio; retained in batch 1; Soup Stock Tokyo, shopid 1099, skipped by the lead as a likely duplicate of batch 1 `shop-ikb-mr-001`, which comes from the Tokyo Metro shop page and has no area); excluded 0.
+- Listed 26; imported 22; skipped 4 (Patio de METRO, Tabio; retained in batch 1; Soup Stock Tokyo, shopid 1099, skipped by the lead as a likely duplicate of batch 1 `shop-ikb-mr-001`, which comes from the Tokyo Metro shop page and has no area; フレッシュネスバーガー, shopid 1088, whose own detail page prints ※7/14（火）営業終了, so it is closed and not imported); excluded 0.
 - Non-shop facilities: none in the shop listing.
 - Name uncertainty: none.
 
 ## Lead review (2026-10-24)
 
-- All 119 names were found verbatim on the directory pages (100% name check, beyond the 20% spot-check); every ISP `cd` and Echika `shopid` in an ID appears on the source page.
-- All 8 kana aliases (Echika) were found verbatim on their shop detail pages.
+- All imported names were found verbatim on the directory pages (100% name check, beyond the 20% spot-check); every ISP `cd` and Echika `shopid` in an ID appears on the source page.
+- Every Echika detail page was re-read for its printed reading (`<span class="kana">`): 10 shops print one, and all 10 are aliases (3 were missed in the first pass and added after the oracle-ego review: ラフィネ, ミスターワッフル, ランダ　クレボルト). ISP detail pages print no readings.
+- All 53 ISP and 22 Echika detail pages were re-read for closure notices (営業終了, 閉店, 移転, 休業): only フレッシュネスバーガー (closed 7/14) has one, and it is dropped. Hope Center zone pages show none.
 - `evidence.method` set per source: OD-23/OD-31 for ISP and Echika, OD-23/OD-33 for Hope Center.
