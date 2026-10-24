@@ -1,17 +1,36 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { PolylinePoint, RouteStep } from "@gteki/navigation";
+import type { Poi, StationBundle } from "@gteki/schema";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 import type { ExplorerPose } from "../explorer/explorer.ts";
 import { Minimap } from "./minimap.ts";
 
+/** A synthetic destination: the fixture's restroom is on the concourse at (10, 0) with a connector. */
+const poi = (over: Partial<Poi> = {}): Poi => ({ ...createSyntheticBundle().pois[0]!, ...over });
+
+const point = (x: number, y: number, floorId: string, stepIndex: number): PolylinePoint =>
+  ({ x, y, z: floorId === "upper" ? 4 : 0, zKnown: true, stepIndex, floorId });
+const step = (fromFloorId: string, toFloorId: string, mode: RouteStep["mode"] = "walk"): RouteStep =>
+  ({ edgeId: `${fromFloorId}-${toFloorId}`, fromNodeId: "from", toNodeId: "to", reversed: false, mode, lengthM: 10, fromFloorId, toFloorId });
+
+/** Concourse → 1F: a walk to the stairs, then the stairs. */
+const upRoute: PolylinePoint[] = [
+  point(0, 0, "concourse", -1),
+  point(10, 0, "concourse", 0),
+  point(10, 0, "upper", 1),
+  point(10, 4, "upper", 2),
+];
+const upSteps: RouteStep[] = [step("concourse", "concourse"), step("concourse", "upper", "stairs"), step("upper", "upper")];
+
 describe("Minimap HUD", () => {
   let pose: ExplorerPose | null;
   const maps: Minimap[] = [];
-  function create() {
+  function create(bundle: StationBundle = createSyntheticBundle()) {
     const map = new Minimap(() => pose);
     maps.push(map);
     document.body.append(map.el);
-    map.setStation(createSyntheticBundle(), "en");
+    map.setStation(bundle, "en");
     return map;
   }
   const tick = () => vi.advanceTimersByTime(90);
@@ -135,5 +154,137 @@ describe("Minimap HUD", () => {
     expect(map.el.querySelector(".minimap-orientation")?.getAttribute("aria-pressed")).toBe("true");
     map.collapse();
     expect(map.el.dataset.collapsed).toBe("true");
+  });
+});
+
+describe("Minimap route overlay (#220 PR2)", () => {
+  let pose: ExplorerPose | null;
+  const maps: Minimap[] = [];
+  function create(bundle: StationBundle = createSyntheticBundle()) {
+    const map = new Minimap(() => pose);
+    maps.push(map);
+    document.body.append(map.el);
+    map.setStation(bundle, "en");
+    return map;
+  }
+  const tick = () => vi.advanceTimersByTime(90);
+  const display = (map: Minimap, selector: string) => map.el.querySelector<SVGElement>(selector)!.style.display;
+  const routeLines = (map: Minimap) => map.el.querySelectorAll(".minimap-route-line");
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    localStorage.clear();
+    vi.spyOn(document, "hidden", "get").mockReturnValue(false);
+    pose = { east: 0, north: 0, up: 0, headingDeg: 0, mode: "walk" };
+  });
+  afterEach(() => {
+    for (const map of maps.splice(0)) map.dispose();
+    document.body.replaceChildren();
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+  });
+
+  it("draws only the current floor's run of the route and names the next floor change", () => {
+    const map = create();
+    map.setRoute(upRoute, upSteps, poi());
+    expect(routeLines(map)).toHaveLength(1);
+    expect(map.el.querySelector(".minimap-route-line")!.getAttribute("points")).toBe("0,0 20,0");
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F: stairs");
+    // The stairs marker sits at the start of the stairs step, on the current floor.
+    expect(display(map, ".minimap-connector-marker")).toBe("");
+    expect(display(map, ".minimap-connector-rim")).toBe("none");
+    expect(map.el.querySelector(".minimap-connector-marker")!.getAttribute("transform")).toBe("translate(115 95)");
+    expect(map.el.querySelector(".minimap-connector-glyph")!.getAttribute("d")).toContain("M -5,5");
+
+    pose = { ...pose!, east: 10, north: 2, up: 4 };
+    tick();
+    expect(routeLines(map)).toHaveLength(1);
+    // Run geometry is in station coordinates; the group transform is what follows the player.
+    expect(map.el.querySelector(".minimap-route-line")!.getAttribute("points")).toBe("20,0 20,-8");
+    // From 1F the recorded destination (the concourse restroom) is on another floor.
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("Destination: B1");
+    expect(display(map, ".minimap-destination-marker")).toBe("none");
+  });
+
+  it("clears the overlay when the route is cleared, but keeps evidenced POI dots", () => {
+    const map = create();
+    map.setRoute(upRoute, upSteps, poi());
+    expect(routeLines(map)).toHaveLength(1);
+    map.setRoute(null, null, null);
+    expect(routeLines(map)).toHaveLength(0);
+    expect(map.el.querySelector<HTMLElement>(".minimap-route-label")!.hidden).toBe(true);
+    expect(display(map, ".minimap-destination-marker")).toBe("none");
+    expect(display(map, ".minimap-connector-marker")).toBe("none");
+    expect(map.el.querySelectorAll(".minimap-poi")).toHaveLength(2);
+  });
+
+  it("marks an on-floor destination inside the circle and highlights its POI dot", () => {
+    const map = create();
+    const route = [point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)];
+    map.setRoute(route, [step("concourse", "concourse")], poi());
+    expect(display(map, ".minimap-destination-marker")).toBe("");
+    expect(display(map, ".minimap-destination-rim")).toBe("none");
+    expect(map.el.querySelector(".minimap-destination-marker")!.getAttribute("transform")).toBe("translate(115 95)");
+    expect(map.el.querySelector(".minimap-destination-marker title")!.textContent).toBe("Restroom");
+    expect(map.el.querySelector(".minimap-poi.is-destination")).not.toBeNull();
+  });
+
+  it("shows a rim chevron for a destination outside the circle", () => {
+    const map = create();
+    const route = [point(0, 0, "concourse", -1), point(200, 0, "concourse", 0)];
+    map.setRoute(route, [step("concourse", "concourse")], poi());
+    expect(display(map, ".minimap-destination-marker")).toBe("none");
+    expect(display(map, ".minimap-destination-rim")).toBe("");
+    expect(map.el.querySelector(".minimap-destination-rim")!.getAttribute("transform")).toBe("translate(179 95) rotate(90)");
+  });
+
+  it("shows no destination marker for another floor, only the label line", () => {
+    const map = create();
+    const upperDestination = poi({ id: "upstairs", floorId: "upper" });
+    const route = [point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)];
+    map.setRoute(route, [step("concourse", "concourse")], upperDestination);
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("Destination: 1F");
+    expect(display(map, ".minimap-destination-marker")).toBe("none");
+    expect(display(map, ".minimap-destination-rim")).toBe("none");
+  });
+
+  it("never draws a search-only POI and drops dots when the floor changes", () => {
+    const bundle = createSyntheticBundle();
+    bundle.pois.push({
+      ...poi({ id: "search-only" }),
+      names: [{ lang: "en", text: "Unlocated Shop" }],
+      displayPosition: { x: 5, y: 5, z: 0 },
+      connectorNodeIds: [],
+    });
+    const map = create(bundle);
+    const titles = [...map.el.querySelectorAll(".minimap-poi title")].map((t) => t.textContent);
+    expect(titles).toEqual(["Restroom", "Exit A1"]);
+    pose = { ...pose!, east: 10, north: 0, up: 4 };
+    tick();
+    // The fixture's upper-floor shop has no connector, so this floor has no evidenced POI.
+    expect(map.el.querySelectorAll(".minimap-poi")).toHaveLength(0);
+  });
+
+  it("clears the route and its POIs when the station changes", () => {
+    const map = create();
+    map.setRoute(upRoute, upSteps, poi());
+    map.setStation(null, "en");
+    expect(routeLines(map)).toHaveLength(0);
+    expect(map.el.querySelectorAll(".minimap-poi")).toHaveLength(0);
+    expect(map.el.querySelector<HTMLElement>(".minimap-route-label")!.hidden).toBe(true);
+    expect(display(map, ".minimap-destination-marker")).toBe("none");
+    map.setStation(createSyntheticBundle(), "en");
+    expect(routeLines(map)).toHaveLength(0);
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toBe("");
+  });
+
+  it("makes no DOM writes for an unchanged pose with a route set", () => {
+    const map = create();
+    map.setRoute(upRoute, upSteps, poi());
+    const observer = new MutationObserver(() => {});
+    observer.observe(map.el, { subtree: true, attributes: true, childList: true, characterData: true });
+    tick();
+    expect(observer.takeRecords()).toHaveLength(0);
+    observer.disconnect();
   });
 });

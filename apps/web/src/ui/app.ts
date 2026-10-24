@@ -668,6 +668,7 @@ export class App {
     this.s.polyline = [];
     this.s.instructions = [];
     this.explorer.clearRoute();
+    this.ui.minimap.setRoute(null, null, null);
     if (!router || !loaded || !origin || !destination) { this.renderSheet(); return; }
     // One multi-source query: the router ranks entrances by its own cost and keeps "already there";
     // routeBetween also applies the fare policy to the POIs themselves.
@@ -682,6 +683,7 @@ export class App {
       this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination, origin.kind === "poi" ? origin.poi : undefined);
       this.s.activeInstruction = 0;
       this.explorer.showRoute(this.s.polyline);
+      this.ui.minimap.setRoute(this.s.polyline, best.steps, destination);
       if (this.explorer.currentMode === "overview") this.explorer.focusPoints(this.s.polyline);
     }
     this.renderSheet();
