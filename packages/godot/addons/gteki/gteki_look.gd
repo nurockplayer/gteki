@@ -9,11 +9,9 @@ extends RefCounted
 ##   and fog are the station's own numbers (scene-api `environment`), carried by the snapshot sidecar.
 ## - SSAO and SDFGI are Forward+/Mobile features. This project runs gl_compatibility, where Godot ignores both, so they
 ##   are set for the GPU review slot rather than for the headless gate. `--gi=sdfgi` is the lead's switch.
-## - The material table maps snapshot material names to style.md §2 finishes. It is applied only with `--look=hq`,
-##   only to StandardMaterial3D surfaces, and never to a material the table does not name. Snapshot material names are
-##   positional (`material_N`, assigned by the glTF exporter), so a mapping applies only while its `from` evidence still
-##   matches the surface it was derived from; otherwise it is skipped with a warning rather than repainting the wrong
-##   thing (#254/#257). The look tests fail on any mismatch.
+## - The material table maps source material names to style.md §2 finishes. It is applied only with `--look=hq`,
+##   only to StandardMaterial3D surfaces, and never to a material the table does not name. A mapping applies only while
+##   its `from` evidence still matches the surface it was derived from; otherwise it is skipped with a warning (#257).
 
 const Scene = preload("res://addons/gteki/gteki_scene.gd")
 
@@ -125,9 +123,9 @@ const FINGERPRINT_TOLERANCE := 0.01 + 0.000001
 ## Applies `station_id`'s material table to every drawn surface under `root`. A mapping is applied only while the
 ## snapshot material it names still matches the mapping's `from` evidence: the sRGB albedo exactly, metal and roughness
 ## within 0.01, and every recorded sample mesh still carrying that material. A mapping that no longer matches is
-## skipped, warned about and reported in `mismatched` (the look tests fail on it), so a shifted `material_N` cannot
-## silently re-paint the wrong surface. Surfaces whose material the table does not name keep the snapshot material
-## untouched (no override). Returns {applied, surfaces, missing, mismatched, unknown_style}: surfaces the table
+## skipped, warned about and reported in `mismatched` (the look tests fail on it). A name shared by two or more
+## distinct materials is ambiguous, so its mapping is skipped and reported the same way. Surfaces whose material the
+## table does not name keep the snapshot material untouched (no override). Returns {applied, surfaces, missing, mismatched, unknown_style}: surfaces the table
 ## changed, surfaces walked, mapped names absent from the snapshot, mappings skipped because their evidence no longer
 ## matches, and mappings whose style is not in `styles`.
 static func apply_materials(root: Node3D, table: Dictionary, station_id: String) -> Dictionary:
@@ -142,6 +140,11 @@ static func apply_materials(root: Node3D, table: Dictionary, station_id: String)
 		var name := str(key)
 		if not found.has(name):
 			missing.append(name)
+			continue
+		if (found[name].instances as Dictionary).size() > 1:
+			var reason := "name is shared by %d distinct materials" % (found[name].instances as Dictionary).size()
+			mismatched.append("%s: %s" % [name, reason])
+			push_warning("look: %s/%s is skipped, %s" % [station_id, name, reason])
 			continue
 		var mapping: Variant = mappings[key]
 		var style_name := str(mapping.get("style", "")) if mapping is Dictionary else ""
@@ -210,7 +213,9 @@ static func fingerprint_materials(root: Node3D) -> Dictionary:
 					"metal": base.metallic,
 					"roughness": base.roughness,
 					"meshes": {},
+					"instances": {},
 				}
+			found[name].instances[str(base.get_instance_id())] = true
 			found[name].meshes[str(mesh.name)] = true
 	return found
 

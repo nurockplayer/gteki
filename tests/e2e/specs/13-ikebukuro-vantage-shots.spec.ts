@@ -10,6 +10,17 @@ import { hooks, openStation, stationData } from "../lib/gteki.ts";
  * not a visual golden: nothing is compared against a baseline here. Run it once per candidate build (and per
  * tier) and compare the PNGs and the tables side by side.
  *
+ * Frame time (#352, #324, #353). With GTEKI_VANTAGE_FRAMETIME_MS=<ms> set, each view also measures frame pacing
+ * before its screenshot: requestAnimationFrame in the page for that long, recording the performance.now() gap
+ * between consecutive frames (p50, p95, max and the frame count, in ms). No drag, key or pointer event is sent
+ * during that window, and it runs after the draw-call sample so the two never share a frame loop's work.
+ * Caveat: requestAnimationFrame is throttled when Brave's window is occluded, minimised or in a background tab (and
+ * the OS can lower the display's refresh rate in low-power mode), so a run against a hidden window reports
+ * inflated, unusable frame times. Keep the Brave window foreground and leave the pointer alone during a run: no
+ * drag or hover moves the camera between the settle and the screenshot. Every report
+ * records document.visibilityState and document.hasFocus() per view, and any view that is not visible is flagged
+ * in the table and in a report-level warning, so a throttled run cannot be mistaken for a slow build.
+ *
  * Not part of CI (e2e-smoke.yml names its specs) and skipped unless GTEKI_VANTAGE=1. Needs a real GPU: run it on
  * the dev Mac in Brave against a built candidate (`pnpm build` in apps/web first; the config serves it with
  * `vite preview`). Run from tests/e2e, one pass at a time:
@@ -29,7 +40,11 @@ import { hooks, openStation, stationData } from "../lib/gteki.ts";
  *            The distances are re-derived from access_fences.json and printed in the report ("fence m").
  *   exit     x10, x11, x15, x39, x42    the street-level end node of each exit's stair edge (#181 pavement plane check)
  *   control  x35                        the exit used by spec 10 and the I1 route; the known-good street view
+ *   spawn    station.json spawnNodeIds (c_mid, c_e2, n_h, sp_e, w_c, sw_h)    the station's own default spawn nodes,
+ *            read from stationData() so they follow the manifest. The frame-time runs (#352) start here.
  * A node id that is not in the graph is dropped and listed under "dropped" in the report; the run goes on.
+ * GTEKI_VANTAGE_GROUPS=<group,...> keeps only spots in those groups (from the default list, or from
+ * GTEKI_VANTAGE_NODES when that is set too); e.g. GTEKI_VANTAGE_GROUPS=spawn shoots just the six spawn views.
  *
  * Headings. Each spot is shot at four headings. Heading 0 is the bearing (0 = north, 90 = east, compass degrees in
  * station ENU) along the first `verified` edge at the node (else its first edge), read from the edge geometry
@@ -39,16 +54,19 @@ import { hooks, openStation, stationData } from "../lib/gteki.ts";
  * more than 25 degrees off).
  *
  * Per view: wait 2 animation frames after the turn plus GTEKI_VANTAGE_SETTLE_MS (default 600) for the follow
- * camera, count FRAMES rendered frames (default 5), then take the screenshot. Draws and triangles in the table
- * are the p50 over those frames; the max is next to it. A street-level spot waits (up to 8 s) for
- * sceneInfo().street.active and then 1.5 s for the context to finish loading before the first heading.
+ * camera, count FRAMES rendered frames (default 5), sample frame intervals if GTEKI_VANTAGE_FRAMETIME_MS is set,
+ * then take the screenshot. Draws and triangles in the table are the p50 over those frames; the max is next to it.
+ * A street-level spot waits (up to 8 s) for sceneInfo().street.active and then 1.5 s for the context to finish
+ * loading before the first heading.
  *
  * Output (per project, so desktop and phone runs never overwrite each other):
  *   <out>/<group>-<node>-h<bearing>.png    full viewport, CSS pixels x DPR
- *   <out>/vantage-<project>.md             header (label, renderer, tier, viewport), per-view table, per-group
- *                                          max / p50 of draws and triangles, rows over the low-tier draw limit marked
- *   <out>/vantage-<project>.json           the same data, plus sceneInfo() per view and any renderer.info-style
- *                                          fields the build exposes on it (sceneInfo().renderer / .info / .render)
+ *   <out>/vantage-<project>.md             header (label, renderer, tier, viewport, visibility), per-view table
+ *                                          (draws, triangles and frame time), per-group max / p50 of draws and
+ *                                          triangles, rows over the low-tier draw limit marked
+ *   <out>/vantage-<project>.json           the same data, plus sceneInfo() per view, document.visibilityState and
+ *                                          document.hasFocus() per view, and any renderer.info-style fields the
+ *                                          build exposes on it (sceneInfo().renderer / .info / .render)
  *
  * Env: GTEKI_VANTAGE_NODES    comma list of graph node ids; an item may be `group:node` to pick the group
  *                             (otherwise the default group, else gate / exit by node kind and floor, else `node`)
@@ -60,13 +78,17 @@ import { hooks, openStation, stationData } from "../lib/gteki.ts";
  *      GTEKI_VANTAGE_SETTLE_MS extra settle after the turn (default 600)
  *      GTEKI_VANTAGE_LOW_DRAWS draw-call limit marked on the low tier (default 28)
  *      GTEKI_VANTAGE_TIER     assert the explorer tier ("low" or "high")
+ *      GTEKI_VANTAGE_FRAMETIME_MS frame intervals sampled per view before its screenshot (default 0 = off)
+ *      GTEKI_VANTAGE_GROUPS   comma list of groups to keep (gate, rail, exit, control, spawn)
  *
- * Runtime: about 13 spots x 4 headings = 52 views at roughly 2 to 3 s each, plus page load and the street-context
- * waits on the 6 street spots: expect 3 to 6 minutes per project on the dev Mac.
+ * Runtime: about 19 spots x 4 headings = 76 views at roughly 2 to 3 s each, plus page load and the street-context
+ * waits on the 6 street spots: expect 4 to 8 minutes per project on the dev Mac, plus GTEKI_VANTAGE_FRAMETIME_MS
+ * per view when frame times are on.
  */
 test.skip(!process.env.GTEKI_VANTAGE, "set GTEKI_VANTAGE=1 to run the Ikebukuro vantage-shot probe");
 test.use({ trace: "off", video: "off", screenshot: "off" });
 
+/** The listed groups; `spawn` is appended from station.json's spawnNodeIds once the station data is read. */
 const DEFAULT_NODES = [
   "gate:g_jr_c1", "gate:g_jr_c2", "gate:g_jr_s",
   "rail:c_g2", "rail:c_c", "rail:w_c", "rail:x4f",
@@ -77,6 +99,8 @@ const DEFAULT_HEADINGS = ["0", "90", "180", "270"];
 const FRAMES = Number(process.env.GTEKI_VANTAGE_FRAMES ?? 5);
 const SETTLE_MS = Number(process.env.GTEKI_VANTAGE_SETTLE_MS ?? 600);
 const LOW_DRAW_LIMIT = Number(process.env.GTEKI_VANTAGE_LOW_DRAWS ?? 28);
+const FRAMETIME_MS = Number(process.env.GTEKI_VANTAGE_FRAMETIME_MS ?? 0);
+const GROUPS = (process.env.GTEKI_VANTAGE_GROUPS ?? "").split(",").map((s) => s.trim()).filter(Boolean);
 const LOOK_RAD_PER_PX = 0.0042;
 
 /** Counts draw calls and triangles per rendered frame at the WebGL boundary (independent of lib PROBE_SCRIPT; as in spec 10). */
@@ -168,10 +192,52 @@ async function measure(page: Page, frames: number) {
   }, frames);
 }
 
+/** document.visibilityState and document.hasFocus(): a hidden or occluded window throttles rAF and inflates frame times. */
+const visibilityOf = (page: Page) =>
+  page.evaluate(() => ({ visibility: document.visibilityState as string, focused: document.hasFocus() }));
+
+/**
+ * Frame pacing inside the page: the performance.now() gap between consecutive requestAnimationFrame callbacks over
+ * `ms`. No drag, key or pointer event is sent during the window, so the renderer is doing nothing but drawing.
+ * Runs after the draw-call sample, so the two loops never compete for the same frames.
+ */
+async function frameTime(page: Page, ms: number) {
+  const t = await page.evaluate(
+    (dur) =>
+      new Promise<number[]>((resolve) => {
+        // rAF's own frame timestamps (no main-thread jitter); a hidden page gets no rAF at all, so a timer
+        // resolves with whatever was collected instead of hanging the run.
+        const ts: number[] = [];
+        let t0: number | null = null;
+        const tick = (now: number) => {
+          ts.push(now);
+          t0 ??= now;
+          if (now - t0 < dur) requestAnimationFrame(tick);
+          else resolve(ts);
+        };
+        setTimeout(() => resolve(ts), dur + 2000);
+        requestAnimationFrame(tick);
+      }),
+    ms,
+  );
+  const intervals = t.slice(1).map((v, i) => v - t[i]!);
+  if (!intervals.length) return { ftP50: null, ftP95: null, ftMax: null, ftFrames: 0 };
+  return {
+    ftP50: round(pct(intervals, 0.5)!, 1),
+    ftP95: round(pct(intervals, 0.95)!, 1),
+    ftMax: round(Math.max(...intervals), 1),
+    ftFrames: intervals.length,
+  };
+}
+
 interface Row {
   group: string; node: string; nodeKind: string | null; floor: string | null; fenceM: number | null;
   offsetDeg: number | null; absolute: boolean; heading: number; facing: number | null; headingOk: boolean | null;
   draws: number | null; drawsMax: number | null; tris: number | null; trisMax: number | null; frames: number; zeroFrames: number;
+  /** Frame intervals over GTEKI_VANTAGE_FRAMETIME_MS (ms); null when the measurement is off or the view failed. */
+  ftP50: number | null; ftP95: number | null; ftMax: number | null; ftFrames: number | null;
+  /** The document state when the view was measured: a view that is not "visible" was throttled. */
+  visibility: string | null; focused: boolean | null;
   overLowLimit: boolean; streetActive: boolean | null; streetOpacity: number | null;
   walker: { x: number; y: number; z: number } | null; file: string | null; error?: string;
   renderInfo: unknown; sceneInfo: unknown;
@@ -182,23 +248,32 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
   const root = process.env.GTEKI_ROOT;
   if (!root) throw new Error("GTEKI_ROOT must point at the candidate checkout");
 
-  const { graph } = stationData("ikebukuro");
+  const { graph, station } = stationData("ikebukuro");
   const byId = new Map(graph.nodes.map((n) => [n.id, n as typeof n & { kind?: string }]));
 
   // ---- spot list ------------------------------------------------------------------------------------
-  const requested = (process.env.GTEKI_VANTAGE_NODES ? process.env.GTEKI_VANTAGE_NODES.split(",") : DEFAULT_NODES).map((s) => s.trim()).filter(Boolean);
-  const defaultGroup = new Map(DEFAULT_NODES.map((s) => s.split(":") as [string, string]).map(([g, n]) => [n, g]));
+  // The spawn group comes from the manifest (station.json spawnNodeIds), so it follows the station's own spawns.
+  const spawnNodes: string[] = Array.isArray((station as { spawnNodeIds?: string[] }).spawnNodeIds) ? (station as { spawnNodeIds: string[] }).spawnNodeIds : [];
+  const allDefaults = [...DEFAULT_NODES, ...spawnNodes.map((n) => `spawn:${n}`)];
+  const requested = (process.env.GTEKI_VANTAGE_NODES ? process.env.GTEKI_VANTAGE_NODES.split(",") : allDefaults).map((s) => s.trim()).filter(Boolean);
+  // first wins: a bare id keeps its original group (w_c stays rail) even though it is also a spawn
+  const defaultGroup = new Map<string, string>();
+  for (const [g, n] of allDefaults.map((s) => s.split(":") as [string, string])) if (!defaultGroup.has(n)) defaultGroup.set(n, g);
   const spots: { group: string; node: string }[] = [];
   const dropped: string[] = [];
+  const notInGroups: string[] = [];
   for (const item of requested) {
     const [g, n] = item.includes(":") ? (item.split(":") as [string, string]) : [undefined, item];
     const node = byId.get(n!);
     if (!node) { dropped.push(n!); continue; }
     const group = g ?? defaultGroup.get(n!) ?? (node.kind === "ticket_gate" ? "gate" : node.kind === "exit" ? "exit" : "node");
+    if (GROUPS.length && !GROUPS.includes(group)) { notInGroups.push(item); continue; }
     spots.push({ group, node: n! });
   }
   if (dropped.length) console.warn(`vantage: dropped nodes not in the graph: ${dropped.join(", ")}`);
+  if (notInGroups.length) console.warn(`vantage: skipped by GTEKI_VANTAGE_GROUPS=${GROUPS.join(",")}: ${notInGroups.join(", ")}`);
   expect(spots.length, "at least one valid node").toBeGreaterThan(0);
+  expect(Number.isFinite(FRAMETIME_MS) && FRAMETIME_MS >= 0, "GTEKI_VANTAGE_FRAMETIME_MS is a number of ms >= 0").toBe(true);
 
   const headings = (process.env.GTEKI_VANTAGE_HEADINGS ? process.env.GTEKI_VANTAGE_HEADINGS.split(",") : DEFAULT_HEADINGS)
     .map((s) => s.trim()).filter(Boolean)
@@ -253,7 +328,8 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       for (const h of headings) {
         rows.push({
           ...base, offsetDeg: h.deg, absolute: h.absolute, heading: Math.round((h.absolute ? h.deg : eb.deg + h.deg) % 360), facing: null, headingOk: null,
-          draws: null, drawsMax: null, tris: null, trisMax: null, frames: 0, zeroFrames: 0, overLowLimit: false, streetActive: null, streetOpacity: null,
+          draws: null, drawsMax: null, tris: null, trisMax: null, frames: 0, zeroFrames: 0, ftP50: null, ftP95: null, ftMax: null, ftFrames: null,
+          visibility: null, focused: null, overLowLimit: false, streetActive: null, streetOpacity: null,
           walker: null, file: null, error: "walkFromNode returned false (no walkable ground at the node)", renderInfo: null, sceneInfo: null,
         });
       }
@@ -279,6 +355,9 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       await page.waitForTimeout(SETTLE_MS);
 
       const m = await measure(page, FRAMES);
+      // Frame pacing after the draw sample, before the screenshot: nothing touches the page during the window.
+      const ft = FRAMETIME_MS > 0 ? await frameTime(page, FRAMETIME_MS) : { ftP50: null, ftP95: null, ftMax: null, ftFrames: null };
+      const vis = await visibilityOf(page);
       const info = await hooks.sceneInfo(page);
       const av = await hooks.avatar(page);
       // Where the camera looks: avatar minus camera, renderer frame is (x, up, -north). 0 = north, 90 = east.
@@ -296,6 +375,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       rows.push({
         ...base, offsetDeg: h.deg, absolute: h.absolute, heading, facing, headingOk: diff <= 25,
         draws: drawsP50, drawsMax, tris: pct(m.tris, 0.5), trisMax: Math.max(...m.tris), frames: m.draws.length, zeroFrames: m.zeroFrames,
+        ...ft, visibility: vis.visibility, focused: vis.focused,
         overLowLimit: tier === "low" && drawsMax > LOW_DRAW_LIMIT,
         streetActive: info.street.active, streetOpacity: info.street.opacity,
         walker: { x: round(av.x), y: round(av.y), z: round(av.z) }, file, renderInfo, sceneInfo: info,
@@ -308,18 +388,28 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
   const groups = [...new Set(rows.map((r) => r.group))].map((g) => {
     const rs = measured.filter((r) => r.group === g);
     const nums = (k: "draws" | "drawsMax" | "tris" | "trisMax") => rs.map((r) => r[k] as number);
+    const ft = (k: "ftP50" | "ftP95") => rs.map((r) => r[k]).filter((v): v is number => v !== null);
     return {
       group: g, views: rs.length, nodes: [...new Set(rs.map((r) => r.node))],
       drawsMax: rs.length ? Math.max(...nums("drawsMax")) : null, drawsP50: pct(nums("draws"), 0.5),
       trisMax: rs.length ? Math.max(...nums("trisMax")) : null, trisP50: pct(nums("tris"), 0.5),
+      // median of the views' p50 frame intervals; the worst view's p95
+      ftP50: pct(ft("ftP50"), 0.5), ftP95: ft("ftP95").length ? Math.max(...ft("ftP95")) : null,
       overLowLimit: rs.filter((r) => r.overLowLimit).length,
     };
   });
   const failed = rows.filter((r) => r.error);
+  // A view measured in a hidden or occluded window has throttled rAF; its frame time is not the build's.
+  const hiddenViews = rows.filter((r) => (r.visibility !== null && r.visibility !== "visible") || r.focused === false);
+  const warnings = hiddenViews.length
+    ? [`${hiddenViews.length} of ${measured.length} measured views were hidden or unfocused (${[...new Set(hiddenViews.map((r) => `${r.node} h${r.heading}: ${r.visibility}${r.focused === false ? ", unfocused" : ""}`))].join(", ")}): requestAnimationFrame may have been throttled, so their frame times are not comparable to a foreground run.`]
+    : [];
+  for (const w of warnings) console.warn(`vantage: ${w}`);
   const result = {
     probe: "ikebukuro-vantage-shots", label, tier, project, viewport, dpr, loadMs, gl, gpuValid,
     frames: FRAMES, settleMs: SETTLE_MS, lowDrawLimit: LOW_DRAW_LIMIT, headings: headings.map((h) => (h.absolute ? `@${h.deg}` : String(h.deg))),
-    requested, dropped, groups, rows,
+    frametimeMs: FRAMETIME_MS, groupsRequested: GROUPS, visibilityWarnings: warnings,
+    requested, dropped, notInGroups, groups, rows,
   };
   const base = path.join(outDir, `vantage-${project}`);
   fs.writeFileSync(`${base}.json`, JSON.stringify(result, null, 2));
@@ -332,6 +422,11 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
     `- Renderer: ${gl?.renderer ?? "unknown"} (vendor ${gl?.vendor ?? "unknown"}, gpuValid=${gpuValid})`,
     `- Tier: ${tier}; viewport ${viewport ? `${viewport.width}x${viewport.height}` : "?"} CSS px, DPR ${dpr}; page load ${loadMs} ms`,
     `- ${FRAMES} frames per view (p50 shown, max beside it); draws and triangles counted at the WebGL boundary, all passes. Settle ${SETTLE_MS} ms after each turn.`,
+    FRAMETIME_MS > 0
+      ? `- Frame time: rAF intervals over ${FRAMETIME_MS} ms per view, sampled after the draw count and before the screenshot, with no input during the window. ms per frame; lower is better. A foreground window is required for these numbers to mean anything.`
+      : "- Frame time: off (GTEKI_VANTAGE_FRAMETIME_MS=0). Draw counts are unaffected by window visibility; frame time is not.",
+    ...warnings.map((w) => `- **WARNING**: ${w}`),
+    `- Window state: every view records document.visibilityState and document.hasFocus(); a view that was not \`visible\` is flagged \`HIDDEN\` in the table.`,
     `- Headings: edge bearing (first verified edge at the node) ${result.headings.map((h) => (h.startsWith("@") ? `${h.slice(1)} (absolute)` : `+${h}`)).join(", ")}.`,
     tier === "low" ? `- Rows with draws max over ${LOW_DRAW_LIMIT} on the low tier are marked OVER.` : `- Not the low tier: no row is marked against the ${LOW_DRAW_LIMIT}-draw low-tier limit (run phone-chromium for that).`,
     dropped.length ? `- Dropped (not in the graph): ${dropped.join(", ")}` : "- Dropped nodes: none",
@@ -339,16 +434,16 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
     "",
     "## Per group",
     "",
-    "| group | nodes | views | draws max | draws p50 | tris max | tris p50 | rows over limit |",
-    "|---|---|---|---|---|---|---|---|",
-    ...groups.map((g) => `| ${g.group} | ${g.nodes.join(", ")} | ${g.views} | ${cell(g.drawsMax)} | ${cell(g.drawsP50)} | ${cell(g.trisMax)} | ${cell(g.trisP50)} | ${g.overLowLimit} |`),
+    "| group | nodes | views | draws max | draws p50 | tris max | tris p50 | ft p50 ms (median view) | ft p95 ms (worst view) | rows over limit |",
+    "|---|---|---|---|---|---|---|---|---|---|",
+    ...groups.map((g) => `| ${g.group} | ${g.nodes.join(", ")} | ${g.views} | ${cell(g.drawsMax)} | ${cell(g.drawsP50)} | ${cell(g.trisMax)} | ${cell(g.trisP50)} | ${cell(g.ftP50)} | ${cell(g.ftP95)} | ${g.overLowLimit} |`),
     "",
     "## Views",
     "",
-    "| group | node | fence m | heading | facing | draws p50 | draws max | tris p50 | tris max | street.active | file |",
-    "|---|---|---|---|---|---|---|---|---|---|---|",
+    "| group | node | fence m | heading | facing | draws p50 | draws max | tris p50 | tris max | ft p50 ms | ft p95 ms | ft max ms | ft frames | vis | street.active | file |",
+    "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ...rows.map((r) =>
-      `| ${r.group} | ${r.node} | ${cell(r.fenceM)} | ${r.heading} | ${cell(r.facing)}${r.headingOk === false ? " (!)" : ""} | ${cell(r.draws)} | ${cell(r.drawsMax)}${r.overLowLimit ? " OVER" : ""} | ${cell(r.tris)} | ${cell(r.trisMax)} | ${cell(r.streetActive)} | ${r.file ? `[${r.file}](${r.file})` : `ERROR: ${r.error}`} |`),
+      `| ${r.group} | ${r.node} | ${cell(r.fenceM)} | ${r.heading} | ${cell(r.facing)}${r.headingOk === false ? " (!)" : ""} | ${cell(r.draws)} | ${cell(r.drawsMax)}${r.overLowLimit ? " OVER" : ""} | ${cell(r.tris)} | ${cell(r.trisMax)} | ${cell(r.ftP50)} | ${cell(r.ftP95)} | ${cell(r.ftMax)} | ${cell(r.ftFrames)} | ${cell(r.visibility)}${r.visibility !== null && r.visibility !== "visible" ? " HIDDEN" : ""}${r.focused === false ? " (unfocused)" : ""} | ${cell(r.streetActive)} | ${r.file ? `[${r.file}](${r.file})` : `ERROR: ${r.error}`} |`),
     "",
     "`fence m` is the distance from the node to the nearest fence segment in scene/access_fences.json (blank when the file is absent).",
     "",

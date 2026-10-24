@@ -36,6 +36,7 @@ interface Placement {
   incline_deg?: number;
   main_route?: boolean;
   tiers: Record<string, string[]>;
+  quantisation_mm?: { riser_mm: number; top_height_mm: number };
 }
 interface Skipped { anchor: string; kind: string; reason: string }
 interface Anchors {
@@ -145,6 +146,16 @@ describe("kit_catalog.json", () => {
       }
     }
   });
+
+  it("keeps stair risers numeric and encodes the same value in each riser id", () => {
+    for (const a of catalog.assets.filter((entry) => entry.generator === "stair_dressing")) {
+      const riser = a.params.riser_mm as number;
+      expect(typeof riser).toBe("number");
+      expect(Number.isInteger(riser) || Number.isInteger(riser * 10)).toBe(true);
+      const token = Number.isInteger(riser) ? String(riser) : String(Math.round(riser * 10));
+      expect(a.id.match(/_r(\d+)_t/)?.[1], a.id).toBe(token);
+    }
+  });
 });
 
 /** The surveyed quad is the straight incline between the floors: angle = atan2(rise, horizontal run). */
@@ -174,16 +185,34 @@ describe("kit_placements.json", () => {
     expect(placed.summary.stair_flights.covered).toBe(placed.placements.filter((p) => p.kind === "stair").length);
     expect(placed.summary.escalator_lanes.covered).toBe(placed.placements.filter((p) => p.kind === "escalator").length);
     // the planner flags the 196 mm tread of stair068 and every flight where a surveyed nosing would sit more than the
-    // 6 mm strip height off the strip the generator builds: stair013 (uneven risers, ~21 mm) and four long flights where
-    // the whole-millimetre riser drifts 7-9 mm by the top (stair057, on a golden route, sits at exactly 6.0 mm and stays). stair040 (two overlapping survey solids, once read as a
+    // 6 mm strip height off the strips the generator builds: stair013 has genuinely uneven risers (~21 mm) and stays
+    // skipped after both riser precisions; four long flights are covered by the 0.1 mm fallback. stair057 (on a golden
+    // route) sits at exactly 6.0 mm and stays. stair040 (two overlapping survey solids, once read as a
     // 19-step flight with an 82 mm riser) and the 1-step stair059 fragment are now one 10-step flight that is covered
-    const MISMATCH = ["stair011", "stair012", "stair013", "stair014", "stair027"];
-    expect([...skipped]).toEqual([...MISMATCH, "stair068"]);
+    expect([...skipped]).toEqual(["stair013", "stair068"]);
     const reason = (id: string) => placed.summary.skipped.find((s: { anchor: string }) => s.anchor === id)!.reason;
-    for (const id of MISMATCH) expect(reason(id)).toMatch(/^nosing mismatch: a surveyed nosing is \d+\.\d mm off the generated strip/);
+    expect(reason("stair013")).toMatch(/^nosing mismatch:.*both tried/);
     expect(reason("stair068")).toMatch(/implausible tread 196 mm/);
     expect(placements.has("stair040")).toBe(true);
     expect(anchors.stair_flights.find((f) => f.id === "stair040")!.steps).toBe(10);
+  });
+
+  it("keeps every built stair's top drift within the 6 mm strip and the rescued flights under 6 mm", () => {
+    for (const p of placed.placements.filter((placement) => placement.kind === "stair")) {
+      expect(p.quantisation_mm!.top_height_mm).toBeLessThanOrEqual(6);
+    }
+    for (const id of ["stair011", "stair012", "stair014", "stair027"]) {
+      const p = placements.get(id);
+      expect(p).toBeDefined();
+      expect(p!.quantisation_mm!.top_height_mm).toBeLessThan(6);
+      const nosing = byId.get(p!.ids.nosing!)!;
+      const riser = nosing.params.riser_mm as number;
+      expect(Number.isInteger(riser)).toBe(false);
+      expect(Number.isInteger(riser * 10)).toBe(true);
+      expect(nosing.id.match(/_r(\d+)_t/)?.[1]).toBe(String(Math.round(riser * 10)));
+    }
+    expect(placements.has("stair013")).toBe(false);
+    expect(skipped.has("stair013")).toBe(true);
   });
 
   it("puts each origin within 5 mm of the anchor's first-nosing floor point or bottom comb line", () => {
