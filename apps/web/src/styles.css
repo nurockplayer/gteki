@@ -337,3 +337,32 @@ button.on { border-color: var(--accent); color: var(--accent); }
 @media (prefers-reduced-motion: reduce) {
   .rail-ride-progress { transition: none; }
 }
+
+/* Q4: original, neutral station identity. Static art also respects reduced motion. */
+.station-identity-card, .station-overview-identity {
+  font-family: "Noto Sans JP", system-ui, sans-serif;
+  color: var(--text);
+}
+.station-identity-card[hidden], .station-overview-identity[hidden] { display: none; }
+.station-identity-card {
+  position: absolute; z-index: 3; right: 20px; bottom: calc(54px + env(safe-area-inset-bottom));
+  width: min(360px, calc(100vw - 32px)); padding: 18px 22px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--glass-strong); box-shadow: var(--shadow); pointer-events: none;
+}
+.identity-art { display: block; width: 100%; height: 90px; color: var(--muted); margin-bottom: 10px; }
+.identity-ja { display: block; font-size: 30px; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
+.identity-kana { display: block; font-size: 13px; color: var(--muted); }
+.identity-en { display: block; font-size: 16px; line-height: 1.5; }
+.identity-loading { display: block; margin-top: 10px; color: var(--muted); font-size: 12px; }
+.station-overview-identity { margin-bottom: 10px; }
+.station-overview-identity .identity-ja { display: inline; font-size: 20px; margin-right: 8px; }
+.station-overview-identity .identity-kana { display: inline; }
+.station-overview-identity .identity-en { font-size: 14px; }
+.identity-sides { font-size: 12px; line-height: 1.6; margin-top: 4px; overflow-wrap: anywhere; }
+.identity-unconfirmed { font-size: 11px; color: var(--warn); }
+@media (max-width: 600px) {
+  .station-identity-card { right: 16px; padding: 12px 18px; }
+  .station-identity-card .identity-ja { font-size: 24px; }
+  .identity-art { height: 60px; margin-bottom: 4px; }
+}
