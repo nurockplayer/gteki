@@ -116,6 +116,13 @@ const GOLDEN: Record<string, Row[]> = {
     { q: "東武東上線 北改札", top1: "tobu-north-gate" },
     { q: "地下改札", top1: "seibu-b1f-gate" },
   ],
+  "merchant batch 4 (#432)": [
+    { q: "東武百貨店", top1: "shop-ikb-tobudept" },
+    { q: "HARBS", top1: "shop-ikb-lumine-000539" },
+    { q: "JO MALONE LONDON", top1: "shop-ikb-lumine-000527" },
+    { q: "Timberland", top1: "shop-ikb-esola-1147" },
+    { q: "ミラ オーウェン", top1: "shop-ikb-lumine-000463" }, // printed kana alias of Mila Owen
+  ],
 };
 
 describe("Ikebukuro golden search", () => {
@@ -143,7 +150,9 @@ describe("Ikebukuro golden search", () => {
   // Department-store names: no source ties them to an exit here, so searching them must not invent a gate.
   // Seibu names come from the Seibu Railway station page (seibu-ikebukuro-station-2026-10, OD-25); only POIs
   // sourced from that page may carry 西武 / Seibu labels, and the Seibu queries may reach only those POIs.
+  // 百貨店 only on the Tobu Department Store POI, which cites the store's own page (OD-34); Sogo & Seibu stays excluded.
   const SEIBU_SOURCE = "seibu-ikebukuro-station-2026-10";
+  const TOBU_DEPT_SOURCE = "tobu-dept-ikebukuro-2026-10";
   describe("no false gate for names the data does not evidence", () => {
     for (const q of ["そごう", "PARCO", "パルコ", "山手線"]) {
       it(`${JSON.stringify(q)} returns no gate or exit`, () => {
@@ -159,12 +168,18 @@ describe("Ikebukuro golden search", () => {
       }
     });
 
-    it("no POI name or alias carries a PARCO / department-store label, and Seibu labels only on Seibu-sourced POIs", () => {
-      const banned = /parco|パルコ|そごう|百貨店|sogo/i;
+    it("carries PARCO / Sogo labels nowhere, 百貨店 only on the Tobu Department Store POI, and Seibu labels only on Seibu-sourced POIs", () => {
+      const banned = /parco|パルコ|そごう|sogo/i;
+      const departmentStore = /百貨店/;
       const seibu = /西武|seibu/i;
       const offenders = bundle.pois.flatMap((poi) =>
         [...poi.names, ...poi.aliases]
-          .filter(({ text }) => banned.test(text) || (seibu.test(text) && !poi.evidence.sourceIds.includes(SEIBU_SOURCE)))
+          .filter(
+            ({ text }) =>
+              banned.test(text) ||
+              (departmentStore.test(text) && !poi.evidence.sourceIds.includes(TOBU_DEPT_SOURCE)) ||
+              (seibu.test(text) && !poi.evidence.sourceIds.includes(SEIBU_SOURCE)),
+          )
           .map(({ text }) => `${poi.id}: ${text}`),
       );
       expect(offenders).toEqual([]);
