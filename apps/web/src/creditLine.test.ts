@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import type { Asset, Coverage, Edge, Node, Poi, Source } from "@gteki/schema";
 import { composeCreditLine, creditEntries, creditLineFor, drawnSources, entryRightsLabels, groupByAttribution, groupLicenses } from "./creditLine.ts";
@@ -133,5 +134,18 @@ describe("entryRightsLabels", () => {
     expect(entryRightsLabels([a, src("a2", "A"), o], t)).toEqual([t.rightsReusable, t.rightsOwnerOverride]);
     expect(entryRightsLabels([f], t)).toEqual([]);
     for (const label of entryRightsLabels([a, o, f], t)) expect(label).not.toMatch(/[A-Z]{3,}_[A-Z_]+/);
+  });
+});
+
+// The real Ikebukuro manifest must credit the context even though it supplies no graph geometry.
+describe("Ikebukuro N02 context credit", () => {
+  it("appears in the persistent bottom strip and the Credits/coverage source list", () => {
+    const station = JSON.parse(readFileSync(new URL("../../../stations/ikebukuro/gteki/station.json", import.meta.url), "utf8"));
+    const attribution = "出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html）を加工して作成";
+    expect(drawnSources(station).map((s) => s.id)).toContain("ksj-n02-2025");
+    expect(creditLineFor(station)).toContain(attribution);
+    const entry = creditEntries(station.sources).find((g) => g.sources.some((s) => s.id === "ksj-n02-2025"))!;
+    expect(entry.attribution).toBe(attribution);
+    expect(groupLicenses(entry.sources)).toEqual([{ name: "CC BY 4.0", href: "https://creativecommons.org/licenses/by/4.0/" }]);
   });
 });

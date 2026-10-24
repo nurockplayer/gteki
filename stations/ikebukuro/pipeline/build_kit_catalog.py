@@ -75,7 +75,16 @@ WALL_SIDE_SHARE = 0.5         # a side counts as walled when this share of its n
 # build (LightmapOverflow). Lane E's trial build of 128/256 on main 7a2880f: every nosing fit at 128, but 47 of 57
 # rails (wall and post) and all 5 escalators overflowed on the full tier; all fit one step up. Rails take 256 as a
 # kind, not per id, so a regenerated catalog never depends on which flight happened to fit. ~28 MiB per tier.
+# Five wide, thin nosing strips stay below 8 px/m at 128 px even with #335's face-net UVs. Lane E's trial on
+# 7a1db59 at 256 px gave 24-43 px/m with no LightmapOverflow, at ~+1.25 MiB AO per tier; pin those ids below.
 AO_RES = {"nosing": 128, "rails": 256, "escalator": 512}
+AO_RES_BY_ID = {
+    "gteki_ik_stair_n21_r142_t300_w3055_nosing": 256,
+    "gteki_ik_stair_n15_r164_t308_w8376_nosing": 256,
+    "gteki_ik_stair_n19_r168_t328_w4347_nosing": 256,
+    "gteki_ik_stair_n13_r165_t302_w8323_nosing": 256,
+    "gteki_ik_stair_n10_r147_t302_w10522_nosing": 256,
+}
 RAIL_SEGMENTS = 6             # rail_segments param of the rails entries (generator range 6-16, default 10)
 ROUTE_NEAR_M = 1.0            # a golden route polyline within this of the flight's centre line uses the flight
 ROUTE_FALLBACK_M = 4.0        # a route with a stairs edge but no flight within ROUTE_NEAR_M: flights this close to that edge
@@ -402,7 +411,7 @@ def main(argv=None):
         flights = sorted(f["id"] for f, *_ in stair_groups[key])
         nosing_id = f"{base}_nosing"
         entries[nosing_id] = {
-            "id": nosing_id, "generator": "stair_dressing", "ao_res": AO_RES["nosing"], "anchor": "linear_run",
+            "id": nosing_id, "generator": "stair_dressing", "ao_res": AO_RES_BY_ID.get(nosing_id, AO_RES["nosing"]), "anchor": "linear_run",
             "params": {"step_count": n, "riser_mm": r, "tread_mm": t, "width_mm": w, "parts": ["nosing"]},
             "dimension_basis": "station-verified",
             "notes": (f"Nosing strips only (role stairs_ramps). Station-verified from the PLATEAU survey: {cite}. "
@@ -481,6 +490,10 @@ def main(argv=None):
                 "tiers": {"dressing": ["high"]},
                 "incline_deg": angle, "quantisation_mm": err,
             })
+
+    missing_ao_ids = sorted(set(AO_RES_BY_ID) - entries.keys())
+    if missing_ao_ids:
+        sys.exit(f"build_kit_catalog: AO override ids not produced: {', '.join(missing_ao_ids)}")
 
     assets = [entries[k] for k in sorted(entries)]
     catalog = {

@@ -123,6 +123,34 @@
  },
  "sources": [
   {
+   "id": "ksj-n02-2025",
+   "title": "KSJ N02-2025 railway data (stations and railway sections)",
+   "publisher": "MLIT National Land Information (KSJ)",
+   "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html",
+   "downloadUrls": [
+    "https://nlftp.mlit.go.jp/ksj/gml/data/N02/N02-25/N02-25_GML.zip"
+   ],
+   "license": {
+    "name": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+   },
+   "rights": "REUSABLE_WITH_CONDITIONS",
+   "attribution": "出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html）を加工して作成",
+   "modified": true,
+   "retrievedAt": "2026-10-22T12:04:24.314Z",
+   "datasetDate": "2025",
+   "sha256": {
+    "N02-25_GML.zip": "aaf76af133b2e771e538fabc4646d2e443dc1d5a67b221382a28d744e706cc9f",
+    "context/ksj_n02_2025_r700.glb": "28ae48bc9ea9798587d57a9a6649b3ea0a23119ae1705db7530cd4c0b1bf94ec"
+   },
+   "derivation": "tools/gis context-overlay run overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-70f286365793c8e9acf3 (receipt docs/gis/context/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-70f286365793c8e9acf3.json): station and railway geometry, coarse kind and feature hash only, clipped to a 700 m origin disc; no name, code or attribute; rendered 0.02 m above its z basis as a scene-side render offset, not data z",
+   "gteki_role": "context",
+   "navigation_use": "NOT_FOR_ROUTING",
+   "visual_only": true,
+   "verification": "UNVERIFIED",
+   "notes": "Visual-only UNVERIFIED context; NOT_FOR_ROUTING. N02 has no underground versus at-grade field; no track level is asserted. Constant z basis 32.5 m (street floor renderElevationM), no datum assertion or drape. Upstream ZIP: 14,903,774 bytes; derived GLB: 16,728 bytes. CC BY 4.0, credit and change notice required."
+  },
+  {
    "id": "plateau-ubld-13116",
    "title": "PLATEAU 豊島区 2025 地下街モデル (ubld) 53394576 — 池袋駅_B1地下通路",
    "publisher": "国土交通省 Project PLATEAU (source survey: 東京都 2023 LidarSLAM)",
@@ -294,7 +322,7 @@
   },
   {
    "id": "gteki-kit-0-1-0",
-   "title": "GTEki station kit 0.1.0 (Lane E): barrier rail and column modules and a representative gate array",
+   "title": "GTEki station kit 0.1.0 (Lane E): barrier rails, column modules, hanging sign frames and a representative gate array",
    "publisher": "GTEki contributors",
    "url": "https://github.com/nurockplayer/gteki/tree/main/assets/library",
    "license": {
@@ -308,15 +336,17 @@
    "datasetDate": "2026-10",
    "sha256": {
     "kit/high/gteki_barrier_rail_2400_solid.glb": "2a379640f23ce2e0d38c8e5ea6fd17053d2eb944e6f025776f7b08c03ca1191d",
-    "kit/low/gteki_barrier_rail_2400_solid.glb": "97d20a29bab1b0ab8e7e2c9cfa18b3582a6d27503b861b1d71570c97f2340ff6",
+    "kit/low/gteki_barrier_rail_2400_solid.glb": "1a6db2db1ea1c7e46d47fa81575bdc13d95142256c05ebb573fdfc27eaa42591",
     "kit/high/gteki_column_square_600.glb": "65124a674dc0a42a3b6fe348091c6198827a85710d59157479753a51abdc59d6",
-    "kit/low/gteki_column_square_600.glb": "57e0acffd8aa408cdb2602efb55fbd70ff1bc5e0da3fcf02e6eb7912132857c3",
+    "kit/low/gteki_column_square_600.glb": "1cb14a59f97a601d56c555d227a92e4025e7bd08bfe5ca9e00875bc930c86df8",
     "kit/high/gteki_column_round_d600.glb": "fbd44a542e6e7b7e0deaee6d4624ee49a4f0b2aaf6af77d6f1a87bc95a30d001",
-    "kit/low/gteki_column_round_d600.glb": "87105fcd0ba3a310ed4c8e9f427ddca532a3dea8be2bf5e57cad8ba9a85b205d",
+    "kit/low/gteki_column_round_d600.glb": "78eafab3c83e90495fb257a6b599aa825b1951c70bf393a1afbbd996597e80df",
     "kit/high/gteki_gate_array_2.glb": "837827e00581ef8b3026bba3ffed7d16bc2886b4358c0d3e8043d8d214a59cdc",
-    "kit/low/gteki_gate_array_2.glb": "41c7b914e274de83514118a8f9f8a48ab8bee9029447fa06233d7ff54db86d46"
+    "kit/low/gteki_gate_array_2.glb": "ef9ee106810bf17002c273f3aadab8bb1286da2f0b5d7ed8a9438e1191508930",
+    "kit/high/gteki_sign_frame_9slice_h480_d80.glb": "889db7bac82595d051674b30a0d88618e1180cbabd5a0873570a000efe575099",
+    "kit/low/gteki_sign_frame_9slice_h480_d80.glb": "abb2aa5de0d46b423bb2e2ca1e39117f3920fc84e819247295725628ddbfde1d"
    },
-   "notes": "Original project art, generic and unbranded; not a measurement of Ikebukuro. The GLBs' embedded licence strings still read UNDECIDED until the kit's EMBED_SPDX rebuild; REUSE.toml records CC-BY-4.0 for gteki/kit/**. gteki_gate_array_2 is placed once at each of the gate nodes g_jr_c1, g_jr_c2 and g_jr_s as a generic stand-in: 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\". It is never a verified layout of the Ikebukuro gates."
+   "notes": "Original project art, generic and unbranded; not a measurement of Ikebukuro. The earlier rail, column and gate GLBs' embedded licence strings still read UNDECIDED until the kit's EMBED_SPDX rebuild; REUSE.toml records CC-BY-4.0 for gteki/kit/**. gteki_gate_array_2 is placed once at each of the gate nodes g_jr_c1, g_jr_c2 and g_jr_s as a generic stand-in: 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\". It is never a verified layout of the Ikebukuro gates. Hanging sign frames are generic Lane E presentation (CC BY 4.0), not a survey of the real Ikebukuro housings."
   }
  ],
  "floors": [
@@ -1431,6 +1461,19 @@
  ],
  "assets": [
   {
+   "id": "ksj-n02-context",
+   "uri": "context/ksj_n02_2025_r700.glb",
+   "format": "glb",
+   "floorIds": [
+    "street"
+   ],
+   "sourceIds": [
+    "ksj-n02-2025"
+   ],
+   "role": "visual",
+   "derivation": "tools/gis context-overlay run overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-70f286365793c8e9acf3 (receipt docs/gis/context/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-70f286365793c8e9acf3.json): station and railway geometry, coarse kind and feature hash only, clipped to a 700 m origin disc; no name, code or attribute; rendered 0.02 m above its z basis as a scene-side render offset, not data z"
+  },
+  {
    "id": "b1",
    "uri": "assets/ikebukuro_b1.glb",
    "format": "glb",
@@ -1443,7 +1486,7 @@
     "gteki-kit-0-1-0"
    ],
    "role": "visual",
-   "derivation": "PLATEAU CityGML LOD4.1 -> pipeline/extract_plateau_ubld.py (ENU) -> pipeline/blender_build_glb.py (triangulated, metric UV0); renderer frame (x, z, -y), identity transform; collision comes from per-mesh gteki_role tags (floor/stairs_ramps walkable; wall/barriers/transport collide), not from the asset role, because verified exit routes pass through door and portal panels; runtime variant assets/ikebukuro_b1_lit.glb (listed in files, not a second asset, so loaders that load every asset never stack both): the same geometry + generated ceiling LED fixtures (GTEki art direction, not surveyed) -> pipeline/blender_bake_lighting.py: second UV set (TEXCOORD_1) and a Cycles diffuse lightmap (assets/ikebukuro_b1_lightmap.webp / _2k.webp, gamma-2.2 encoded, scale in ikebukuro_b1_lit.meta.json). scene/scene.ts loads the lit variant and falls back to this GLB; kit/{high,low}/*.glb: Lane E kit pieces (see source gteki-kit-0-1-0) copied unmodified by pipeline/sync_kit.py and instanced by scene/kit.ts on the access-fence label stretches and, for the two column pieces, by scene/kit_columns.ts as sleeves on the PLATEAU column footprints in scene/columns.json (finish generic, not surveyed), visual only, no colliders; gteki_gate_array_2 (kit/{high,low}/): ONE generic array per node at g_jr_c1, g_jr_c2 and g_jr_s, anchored on the node with its aisles along the verified edge's arriving direction, visual only, no colliders, not in the walk graph. 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\": the aisle count, direction and side are guesses, not a surveyed layout",
+   "derivation": "PLATEAU CityGML LOD4.1 -> pipeline/extract_plateau_ubld.py (ENU) -> pipeline/blender_build_glb.py (triangulated, metric UV0); renderer frame (x, z, -y), identity transform; collision comes from per-mesh gteki_role tags (floor/stairs_ramps walkable; wall/barriers/transport collide), not from the asset role, because verified exit routes pass through door and portal panels; runtime variant assets/ikebukuro_b1_lit.glb (listed in files, not a second asset, so loaders that load every asset never stack both): the same geometry + generated ceiling LED fixtures (GTEki art direction, not surveyed) -> pipeline/blender_bake_lighting.py: second UV set (TEXCOORD_1) and a Cycles diffuse lightmap (assets/ikebukuro_b1_lightmap.webp / _2k.webp, gamma-2.2 encoded, scale in ikebukuro_b1_lit.meta.json). scene/scene.ts loads the lit variant and falls back to this GLB; kit/{high,low}/*.glb: Lane E kit pieces (see source gteki-kit-0-1-0) copied unmodified by pipeline/sync_kit.py and instanced by scene/kit.ts on the access-fence label stretches and, for the two column pieces, by scene/kit_columns.ts as sleeves on the PLATEAU column footprints in scene/columns.json (finish generic, not surveyed), visual only, no colliders; gteki_gate_array_2 (kit/{high,low}/): ONE generic array per node at g_jr_c1, g_jr_c2 and g_jr_s, anchored on the node with its aisles along the verified edge's arriving direction, visual only, no colliders, not in the walk graph. 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\": the aisle count, direction and side are guesses, not a surveyed layout; scene/kit_signs.ts stretches the generic sign frame around the existing sign faces; presentation only, never walkable or colliders",
    "files": [
     "assets/ikebukuro_b1.meta.json",
     "assets/ikebukuro_b1_lit.glb",
@@ -1457,7 +1500,9 @@
     "kit/high/gteki_column_round_d600.glb",
     "kit/low/gteki_column_round_d600.glb",
     "kit/high/gteki_gate_array_2.glb",
-    "kit/low/gteki_gate_array_2.glb"
+    "kit/low/gteki_gate_array_2.glb",
+    "kit/high/gteki_sign_frame_9slice_h480_d80.glb",
+    "kit/low/gteki_sign_frame_9slice_h480_d80.glb"
    ]
   },
   {
@@ -1491,7 +1536,7 @@
     "toshima-underground-guide-2022"
    ],
    "modified": true,
-   "derivation": "pipeline/build_signage.py: sign positions, facing and arrows from verified edge geometry and routing (gteki/graph.json); placement against PLATEAU ceiling and wall surfaces (build/ubld_enu.json); exit and gate names/labels from gteki/pois.json (names only, no source sign layout reproduced). sourceIds = every verified edge's geometry/access evidence and its end nodes' sourceRefs, plus the evidence of each exit and gate a sign shows (a wide set)"
+   "derivation": "pipeline/build_signage.py: sign positions, facing and arrows from verified edge geometry and routing (gteki/graph.json); placement against PLATEAU ceiling and wall surfaces (build/ubld_enu.json), with continuous 6-10 m full-face sight-line envelopes from the 1.62 m walker eye and default follow camera against the shipped lit GLB walls/ceiling/barriers/light_fixtures and scene/columns.json kit sleeves (nearest clear candidate, otherwise retained and reported blocked); exit and gate names/labels from gteki/pois.json (names only, no source sign layout reproduced). sourceIds = every verified edge's geometry/access evidence and its end nodes' sourceRefs, plus the evidence of each exit and gate a sign shows (a wide set)"
   },
   {
    "id": "crowd-lanes",

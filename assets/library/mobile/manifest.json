@@ -14,8 +14,8 @@
       "family": "passage",
       "variant": "straight_w4_l6",
       "file": "glb/gteki_passage_straight_w4_l6.glb",
-      "sha256": "ff9dda09b69142872c7aee6c3c3bebd9e73fa35f8f6f24e0625a1c89a1de053d",
-      "bytes": 53584,
+      "sha256": "60ba29853859668b44f66ffdd292f43d77cd2759369caa413cb7e0b3fd0367a5",
+      "bytes": 58864,
       "triangles": 432,
       "materials": [
         "gteki_palette"
@@ -110,8 +110,8 @@
       "family": "passage",
       "variant": "straight_w4_l2p4",
       "file": "glb/gteki_passage_straight_w4_l2p4.glb",
-      "sha256": "2206a96a89ac9651af36d7b801a01b38521856b1ae055be2c38860768ba1cb4c",
-      "bytes": 36800,
+      "sha256": "10d5c70e8b134856598210904460210fd58b0f1f8dd40d9ffe7bdfa178481090",
+      "bytes": 40004,
       "triangles": 240,
       "materials": [
         "gteki_palette"
@@ -207,8 +207,8 @@
       "family": "passage",
       "variant": "straight_w4_l6_tile",
       "file": "glb/gteki_passage_straight_w4_l6_tile.glb",
-      "sha256": "38306b4545e90cc4bcd36e92e1d8f7b83c57dd6de355f140d892f42f4ed10a78",
-      "bytes": 45088,
+      "sha256": "830b40eb7309ec4a8438a5687ed5865ebd808f2e96908ceeb9149b717cd38595",
+      "bytes": 48772,
       "triangles": 336,
       "materials": [
         "gteki_palette"
@@ -303,8 +303,8 @@
       "family": "passage",
       "variant": "straight_w8_l6",
       "file": "glb/gteki_passage_straight_w8_l6.glb",
-      "sha256": "8e08e100208e5a77d3c26aa51a853f8e2e7b9ac795f4baa9cadd8be4a948b519",
-      "bytes": 73908,
+      "sha256": "c9c9c2d0d098c7bd15630436681fd9cc40d1c18fa3c291c7bed108f00607e9dd",
+      "bytes": 80416,
       "triangles": 676,
       "materials": [
         "gteki_palette"
@@ -400,8 +400,8 @@
       "family": "passage",
       "variant": "straight_w8_l6_open",
       "file": "glb/gteki_passage_straight_w8_l6_open.glb",
-      "sha256": "d3317614f7e6bc340c24ea294f4febd1eb35acf192538baf4ff786bae214a65a",
-      "bytes": 54572,
+      "sha256": "fcf4a2b4e6f91842b3c24c538c650c2ddc0a101826a279ee7552af8fa84e6c4a",
+      "bytes": 58152,
       "triangles": 452,
       "materials": [
         "gteki_palette"
@@ -496,8 +496,8 @@
       "family": "passage",
       "variant": "end_w4",
       "file": "glb/gteki_passage_end_w4.glb",
-      "sha256": "c3641700d2bb96c8a13458548ea0dc332755657e4d71d1ad164ace985e50a820",
-      "bytes": 54648,
+      "sha256": "faae054a9c21b134a89644ddfca6e9ac36605b427934716cb924d1a183ea6188",
+      "bytes": 60516,
       "triangles": 412,
       "materials": [
         "gteki_palette"
@@ -586,8 +586,8 @@
       "family": "passage",
       "variant": "corner_w4",
       "file": "glb/gteki_passage_corner_w4.glb",
-      "sha256": "93b76b8e25f067297202cce43214b53bddb11c9bd2f2e106b47d67a9f86a18c0",
-      "bytes": 44804,
+      "sha256": "dcf5593bdab14a1b4ab45d00100e5d5923c8428abbdf2a89dfc54f391b8f724c",
+      "bytes": 48640,
       "triangles": 318,
       "materials": [
         "gteki_palette"
@@ -685,8 +685,8 @@
       "family": "passage",
       "variant": "tee_w4",
       "file": "glb/gteki_passage_tee_w4.glb",
-      "sha256": "6b30337f96c4988fad3db3011899516ca370f0915b917d4457bd6570f2423570",
-      "bytes": 34308,
+      "sha256": "fc415d8681f38e5ecb0b57ccc35dea42244ce7578663ee3868ccdac80b8eb102",
+      "bytes": 36796,
       "triangles": 224,
       "materials": [
         "gteki_palette"
@@ -793,8 +793,8 @@
       "family": "passage",
       "variant": "end_w8",
       "file": "glb/gteki_passage_end_w8.glb",
-      "sha256": "e92b0d0a03b1552239acd646752c9a9d6acf133f29f90b4b0e5e2fd404cf5794",
-      "bytes": 117124,
+      "sha256": "d229473442aad74a8c5c18aa39aed91f01357766c859070dc30ca0afb320cb73",
+      "bytes": 128832,
       "triangles": 1144,
       "materials": [
         "gteki_palette"
@@ -884,8 +884,8 @@
       "family": "passage",
       "variant": "cross_w4",
       "file": "glb/gteki_passage_cross_w4.glb",
-      "sha256": "16a0394ce04a40fb042a86bcf90345fb363dd43196e45d1cb245cf7f42b0fd0c",
-      "bytes": 25232,
+      "sha256": "a94e23521a275e34c54f086c64ae7c9bf2420ecc2fc7f65605dacbccffffeb73",
+      "bytes": 26004,
       "triangles": 144,
       "materials": [
         "gteki_palette"
@@ -1002,8 +1002,8 @@
       "family": "gate",
       "variant": "array_4w1",
       "file": "glb/gteki_gate_array_4w1.glb",
-      "sha256": "e88e8b42ab79b3783aafc3692d9f3071787a4aedf6a4b82514ee794361b2842d",
-      "bytes": 198012,
+      "sha256": "25f6fa720044b143d3961602e24481868df68f56cfac6e78469b40ddb480cbb2",
+      "bytes": 219168,
       "triangles": 2270,
       "materials": [
         "gteki_palette"
@@ -1119,8 +1119,8 @@
       "family": "gate",
       "variant": "array_6w1",
       "file": "glb/gteki_gate_array_6w1.glb",
-      "sha256": "50f5c235cdbf8e381a445a5d8257ade1862fa0df9ea6fcfe90384f734026b66a",
-      "bytes": 331048,
+      "sha256": "19cd902ad612b2918c84b7e03efc634db7e93050184efd8d187569d0353c2634",
+      "bytes": 349032,
       "triangles": 3214,
       "materials": [
         "gteki_palette"
@@ -1244,8 +1244,8 @@
       "family": "gate",
       "variant": "array_2",
       "file": "glb/gteki_gate_array_2.glb",
-      "sha256": "41c7b914e274de83514118a8f9f8a48ab8bee9029447fa06233d7ff54db86d46",
-      "bytes": 127068,
+      "sha256": "ef9ee106810bf17002c273f3aadab8bb1286da2f0b5d7ed8a9438e1191508930",
+      "bytes": 136672,
       "triangles": 1326,
       "materials": [
         "gteki_palette"
@@ -1351,8 +1351,8 @@
       "family": "gate",
       "variant": "array_3w1_oneway",
       "file": "glb/gteki_gate_array_3w1_oneway.glb",
-      "sha256": "a970e319404d403def0bdb9943bd2a5ec21fc3e0580be8ed046bb037c50020dc",
-      "bytes": 146584,
+      "sha256": "596843128350ecee09bab528e8b32372aef0c15f6716528f8e3f495db24af0de",
+      "bytes": 156240,
       "triangles": 1566,
       "materials": [
         "gteki_palette"
@@ -1464,8 +1464,8 @@
       "family": "gate",
       "variant": "array_1w",
       "file": "glb/gteki_gate_array_1w.glb",
-      "sha256": "de9f2dd918c6b4642c0784cc6546e4c2c8b5fe5545938ddc0be6c4276bc085d3",
-      "bytes": 90252,
+      "sha256": "4c589712b108792dd793d6cb8994e8982035ea05d8691b26a633777e7106a8ca",
+      "bytes": 94268,
       "triangles": 854,
       "materials": [
         "gteki_palette"
@@ -1569,8 +1569,8 @@
       "family": "vertical",
       "variant": "stairs_straight",
       "file": "glb/gteki_stairs_straight_w2400_r3000.glb",
-      "sha256": "46108f9736131f5b75b5d01bcd529b9d6430e8234ea071ba7b30b311648c9ccd",
-      "bytes": 327696,
+      "sha256": "d600ce0abb588a2ef055fb197f33b6224e5cc9e9595aff9c6705f66a9c648854",
+      "bytes": 322960,
       "triangles": 4676,
       "materials": [
         "gteki_palette",
@@ -1585,7 +1585,7 @@
             "occlusion",
             "orm"
           ],
-          "occlusion_res": 512
+          "occlusion_res": 256
         },
         "gteki_palette_blend": {
           "res": 64,
@@ -1595,7 +1595,7 @@
             "occlusion",
             "orm"
           ],
-          "occlusion_res": 512
+          "occlusion_res": 256
         }
       },
       "bounds_m": {
@@ -1698,8 +1698,8 @@
       "family": "vertical",
       "variant": "stairs_landing",
       "file": "glb/gteki_stairs_landing_w2400_r4000.glb",
-      "sha256": "2a3ad71e5d14ef5cf4000530bed523530e9f4f41e3c8eb3916abd8ecbfd83ad3",
-      "bytes": 447492,
+      "sha256": "dc48fa55ae045685be9bd2c89b0040cb3e62f3a6706144cd8885ddfaaaf5031f",
+      "bytes": 445872,
       "triangles": 6552,
       "materials": [
         "gteki_palette",
@@ -1714,7 +1714,7 @@
             "occlusion",
             "orm"
           ],
-          "occlusion_res": 512
+          "occlusion_res": 256
         },
         "gteki_palette_blend": {
           "res": 64,
@@ -1724,7 +1724,7 @@
             "occlusion",
             "orm"
           ],
-          "occlusion_res": 512
+          "occlusion_res": 256
         }
       },
       "bounds_m": {
@@ -1833,8 +1833,8 @@
       "family": "vertical",
       "variant": "escalator",
       "file": "glb/gteki_escalator_s1000_r5000_up.glb",
-      "sha256": "57d0f87320156ccfa185bf93bfc76530516df555c54e71fd385ffa8037efad85",
-      "bytes": 615948,
+      "sha256": "11c2859a65cda5ead3c293517dcd42a8a9474ab2083a81883699d4013a38cb14",
+      "bytes": 624980,
       "triangles": 7390,
       "materials": [
         "gteki_palette",
@@ -1849,7 +1849,7 @@
             "occlusion",
             "orm"
           ],
-          "occlusion_res": 512
+          "occlusion_res": 256
         },
         "gteki_palette_blend": {
           "res": 64,
@@ -1859,7 +1859,7 @@
             "occlusion",
             "orm"
           ],
-          "occlusion_res": 512
+          "occlusion_res": 256
         }
       },
       "bounds_m": {
@@ -2008,8 +2008,8 @@
       "family": "vertical",
       "variant": "escalator",
       "file": "glb/gteki_escalator_s600_r3500_down.glb",
-      "sha256": "c6cc7c4f75d9fae4f48ea6abbd5b0d3696cf8381b9eb7edb5f78f5065b01502d",
-      "bytes": 572868,
+      "sha256": "dd099fac59a517c5d5c7667c7f42d04754c1a4196b59fe39189ebca152af70d5",
+      "bytes": 617872,
       "triangles": 6870,
       "materials": [
         "gteki_palette"
@@ -2172,8 +2172,8 @@
       "family": "vertical",
       "variant": "lift_portal",
       "file": "glb/gteki_lift_portal_w1000.glb",
-      "sha256": "ab0ad6004ca6f40f0e0a5b82118f8a8c9c88eb6d18184848496fbd828ee8451c",
-      "bytes": 86112,
+      "sha256": "7103310f9495d5a67f612ac56b00e47e495603876a60b1e3a2f7504e8a0d8157",
+      "bytes": 87944,
       "triangles": 1090,
       "materials": [
         "gteki_palette"
@@ -2263,8 +2263,8 @@
       "family": "signage",
       "variant": "hanging_navy_left",
       "file": "glb/gteki_sign_hanging_navy_left.glb",
-      "sha256": "74d51653b2be5f4f2f02433172ab098f66edee5915857d4be896cdb54a3cb441",
-      "bytes": 68168,
+      "sha256": "d52c4eb91b8728ccad8521a9ea300b8044d7091196d99816e1464b0f4182c1c2",
+      "bytes": 73576,
       "triangles": 324,
       "materials": [
         "gteki_palette",
@@ -2341,8 +2341,8 @@
       "family": "signage",
       "variant": "hanging_exit_yellow_up",
       "file": "glb/gteki_sign_hanging_exit_yellow_up.glb",
-      "sha256": "10459f3ed85c16bbd39056680346507fa365b033be9aebff062a81f1c24c2583",
-      "bytes": 56120,
+      "sha256": "a653ad176a322c2c4b3be43c8502c07a7764a7273d3ad57489544f1121dd52bb",
+      "bytes": 61524,
       "triangles": 324,
       "materials": [
         "gteki_palette",
@@ -2410,8 +2410,8 @@
       "family": "signage",
       "variant": "hanging_black_right",
       "file": "glb/gteki_sign_hanging_black_right.glb",
-      "sha256": "4aebe1f9a09dfa65778171988942ba9d2afd9f195c97e0fea1df40ea1b550fef",
-      "bytes": 65284,
+      "sha256": "41a79c7f82262e62636aca8299e0cca59022926dfc5df9bff793e2e4673257de",
+      "bytes": 70688,
       "triangles": 324,
       "materials": [
         "gteki_palette",
@@ -2488,8 +2488,8 @@
       "family": "signage",
       "variant": "hanging_white_none",
       "file": "glb/gteki_sign_hanging_white_none.glb",
-      "sha256": "36643f903190ad1a845c2df4cef903484e4bd2b79d363d68118d635dd4b64ba5",
-      "bytes": 53092,
+      "sha256": "7bfc3489e677a845c4095863db974cbce06514a71ed7c6660e8e3e057ee4ff8d",
+      "bytes": 58496,
       "triangles": 324,
       "materials": [
         "gteki_palette",
@@ -2557,8 +2557,8 @@
       "family": "signage",
       "variant": "frame_9slice_h480_d80",
       "file": "glb/gteki_sign_frame_9slice_h480_d80.glb",
-      "sha256": "6a48a1a5805a2bb0e0877de2bd2b0af2d6dec2e9923419b6d5104f36e0b8938e",
-      "bytes": 37704,
+      "sha256": "abb2aa5de0d46b423bb2e2ca1e39117f3920fc84e819247295725628ddbfde1d",
+      "bytes": 43044,
       "triangles": 264,
       "materials": [
         "gteki_palette"
@@ -2633,8 +2633,8 @@
       "family": "signage",
       "variant": "wall_black",
       "file": "glb/gteki_sign_wall_black.glb",
-      "sha256": "6f52163259569ff23b60b760d0cab57f2f96daa548668c2cbdad48dee007f23b",
-      "bytes": 30692,
+      "sha256": "29dd7a45aae444f5aceebc3413d4fd4f69320ee0ae276642e125388489660a19",
+      "bytes": 35640,
       "triangles": 68,
       "materials": [
         "gteki_palette",
@@ -2702,8 +2702,8 @@
       "family": "signage",
       "variant": "wall_navy_long",
       "file": "glb/gteki_sign_wall_navy_long.glb",
-      "sha256": "835001b37d32a031c10910a0f07c826945a6c9b48f0012b2266b398a24f82936",
-      "bytes": 33688,
+      "sha256": "ba9871ebfdebe5c9880b5ce4f0da01994668b4e26c86ce667112fd646b25dde0",
+      "bytes": 39908,
       "triangles": 68,
       "materials": [
         "gteki_palette",
@@ -2771,8 +2771,8 @@
       "family": "signage",
       "variant": "totem",
       "file": "glb/gteki_sign_totem.glb",
-      "sha256": "7d5773dc85427a82b5d60044efe9b3b3dd5631f2915816c6cac080328c9218a9",
-      "bytes": 80324,
+      "sha256": "e50e694135318f93041e110f29c2ea805d7099c2b75dbce40dd8329f7aafbe76",
+      "bytes": 84440,
       "triangles": 120,
       "materials": [
         "gteki_palette",
@@ -2841,8 +2841,8 @@
       "family": "signage",
       "variant": "totem_dark",
       "file": "glb/gteki_sign_totem_dark.glb",
-      "sha256": "869439b87c46b85c6c837eeeeefcce3fc548fd53e0e2eb54ad494578a2e73285",
-      "bytes": 80960,
+      "sha256": "72a4c9ddfa4dd4b58308ed28ceba8288c20f5c6e891cb0fac729cce7058fd354",
+      "bytes": 85076,
       "triangles": 120,
       "materials": [
         "gteki_palette",
@@ -2911,8 +2911,8 @@
       "family": "signage",
       "variant": "blade_navy",
       "file": "glb/gteki_sign_blade_navy.glb",
-      "sha256": "683ab10a090d04c95082982b1495a6551a64ae26f71b17142218a7a5381a21a8",
-      "bytes": 109108,
+      "sha256": "e7120dc6e0c80a613f25721a57b34da054004cb745aefee533076ce1fd34864d",
+      "bytes": 112928,
       "triangles": 174,
       "materials": [
         "gteki_palette",
@@ -2991,8 +2991,8 @@
       "family": "signage",
       "variant": "blade_yellow_up",
       "file": "glb/gteki_sign_blade_yellow_up.glb",
-      "sha256": "4a81c92f0ba4512bf9291914149a60cd9f34474191be40d6e524bf6a2fd1a994",
-      "bytes": 75560,
+      "sha256": "705f11e56824b5d4637f05eb43c2684b8d84d8bed8c3c134c2beb42de87cf792",
+      "bytes": 79380,
       "triangles": 174,
       "materials": [
         "gteki_palette",
@@ -3062,8 +3062,8 @@
       "family": "props",
       "variant": "bench_4seat",
       "file": "glb/gteki_bench_4seat.glb",
-      "sha256": "15a9f0df8c18abcc488c32322b9dc80bf8820219ec21309e2ac1f6bcd851e619",
-      "bytes": 87168,
+      "sha256": "4ab430c01dfb592ad9dc8bc1f1df09cb2be0a8b618b7ef531949566bcc10c306",
+      "bytes": 105200,
       "triangles": 992,
       "materials": [
         "gteki_palette"
@@ -3122,8 +3122,8 @@
       "family": "props",
       "variant": "bench_3seat_slat",
       "file": "glb/gteki_bench_3seat_slat.glb",
-      "sha256": "fc080d5e17bfb7c1c3d5273ea7a7d7a4d967ab5f2e600161f7d3bd69388935a0",
-      "bytes": 72784,
+      "sha256": "01614c1efa18bca20706bd5ad3196294cb609ab511ff2d6343029df898e45774",
+      "bytes": 88692,
       "triangles": 804,
       "materials": [
         "gteki_palette"
@@ -3182,8 +3182,8 @@
       "family": "props",
       "variant": "bin_trio",
       "file": "glb/gteki_bin_trio.glb",
-      "sha256": "3f3bfbedd035a77fa0aff60761a5cc878954646a36765c695bbf0dbfa64b78da",
-      "bytes": 34868,
+      "sha256": "5cfdca62347bd7151edcd335392072d1d04994aea28d0a0fa99a9e93b0a7c9c1",
+      "bytes": 39248,
       "triangles": 394,
       "materials": [
         "gteki_palette"
@@ -3247,8 +3247,8 @@
       "family": "props",
       "variant": "poster_lightbox_01",
       "file": "glb/gteki_poster_lightbox_01.glb",
-      "sha256": "1baadf3d0f695e9c492e9b4b83101a0c60c3891d6b63741b4fb40b584cf27fbe",
-      "bytes": 118468,
+      "sha256": "d195d1c4af838dfaeb86edd5e1e17f2bc890cd153cd561189a744bcae605f6b9",
+      "bytes": 121084,
       "triangles": 70,
       "materials": [
         "gteki_palette",
@@ -3326,8 +3326,8 @@
       "family": "props",
       "variant": "poster_lightbox_04",
       "file": "glb/gteki_poster_lightbox_04.glb",
-      "sha256": "e066439d9e0c7f9e9eeb43dde257dbc5d70a0c1b2d3229ca73c3cf55eff956bd",
-      "bytes": 145904,
+      "sha256": "d3714ef33fc2485da5a0a7ed89f9b7c80e7431d4a12519ab8136dc5f9ed634c5",
+      "bytes": 148520,
       "triangles": 70,
       "materials": [
         "gteki_palette",
@@ -3405,8 +3405,8 @@
       "family": "props",
       "variant": "poster_lightbox_08",
       "file": "glb/gteki_poster_lightbox_08.glb",
-      "sha256": "bf9d2dc8f157de8f704fe17e97be99c481c6559cbb0692c9dc5fb0c3ed5ac76d",
-      "bytes": 269880,
+      "sha256": "c6ebc94a02c7650514e744dd2d3de28749b60964dc776c4e949ad64b6edeb983",
+      "bytes": 272496,
       "triangles": 70,
       "materials": [
         "gteki_palette",
@@ -3484,8 +3484,8 @@
       "family": "props",
       "variant": "vending_machine",
       "file": "glb/gteki_vending_machine.glb",
-      "sha256": "5645169a5dcfc646110f837912d37861f04d48898b981b3b80b0bc700f45452b",
-      "bytes": 368976,
+      "sha256": "f26390b6b86e6553492adc6ed512d732dae950d17e1a0c18212011de6066adc7",
+      "bytes": 389780,
       "triangles": 4716,
       "materials": [
         "gteki_palette",
@@ -3553,8 +3553,8 @@
       "family": "props",
       "variant": "vending_machine_sand",
       "file": "glb/gteki_vending_machine_sand.glb",
-      "sha256": "88e70bc71e6f5b74284d2228854b285122627437bf30a228cf53858cba1b7dae",
-      "bytes": 368632,
+      "sha256": "587b7ef51e0e9f2114724b342b966e02fec88afd335fa270763af84eeaf144df",
+      "bytes": 389716,
       "triangles": 4716,
       "materials": [
         "gteki_palette",
@@ -3622,8 +3622,8 @@
       "family": "props",
       "variant": "column_round_d600",
       "file": "glb/gteki_column_round_d600.glb",
-      "sha256": "87105fcd0ba3a310ed4c8e9f427ddca532a3dea8be2bf5e57cad8ba9a85b205d",
-      "bytes": 28600,
+      "sha256": "78eafab3c83e90495fb257a6b599aa825b1951c70bf393a1afbbd996597e80df",
+      "bytes": 31856,
       "triangles": 290,
       "materials": [
         "gteki_palette"
@@ -3685,8 +3685,8 @@
       "family": "props",
       "variant": "column_square_600",
       "file": "glb/gteki_column_square_600.glb",
-      "sha256": "57e0acffd8aa408cdb2602efb55fbd70ff1bc5e0da3fcf02e6eb7912132857c3",
-      "bytes": 36312,
+      "sha256": "1cb14a59f97a601d56c555d227a92e4025e7bd08bfe5ca9e00875bc930c86df8",
+      "bytes": 36864,
       "triangles": 406,
       "materials": [
         "gteki_palette"
@@ -3748,8 +3748,8 @@
       "family": "props",
       "variant": "column_round_d600_h3200",
       "file": "glb/gteki_column_round_d600_h3200.glb",
-      "sha256": "3026fd35d596483bd7348445f1e50fe75c74056a561289c3d40d7f63199de951",
-      "bytes": 27712,
+      "sha256": "d8b8232504e01fd7c883028020d15ef0c57cd9e500f05342d0cb38d3b32c663a",
+      "bytes": 31608,
       "triangles": 290,
       "materials": [
         "gteki_palette"
@@ -3874,8 +3874,8 @@
       "family": "props",
       "variant": "tactile_strip_dots_3m",
       "file": "glb/gteki_tactile_strip_dots_3m.glb",
-      "sha256": "ac3a37121796a92e5c42b64d991b70f8cbb0c4e06ef9eb5102815c710b662011",
-      "bytes": 5764,
+      "sha256": "7b23de207f265c7d1b57ab60cde9bdb4582a7259fa33c2878953fbf83fde358f",
+      "bytes": 5728,
       "triangles": 10,
       "materials": [
         "gteki_palette"
@@ -3951,8 +3951,8 @@
       "family": "props",
       "variant": "tactile_strip_bars_3m",
       "file": "glb/gteki_tactile_strip_bars_3m.glb",
-      "sha256": "22d1153c08907b788fb7865a2fe4cc02c8925e0475100f7220050dad5e29a720",
-      "bytes": 5764,
+      "sha256": "15e4bcd3f073ba4b991b2798a35858c20c6465db5a7111c50c7c7740d5286754",
+      "bytes": 5728,
       "triangles": 10,
       "materials": [
         "gteki_palette"
@@ -4028,8 +4028,8 @@
       "family": "props",
       "variant": "barrier_rail_3600_glass",
       "file": "glb/gteki_barrier_rail_3600_glass.glb",
-      "sha256": "ac99f45fe010176539a842264c2296fa7ced7566c75bd576a9e2ef4a62515185",
-      "bytes": 83848,
+      "sha256": "44e25c232a95010e3ec0b540a5247ac7fba4966841e5c003e43c4bc00e137c36",
+      "bytes": 97804,
       "triangles": 1284,
       "materials": [
         "gteki_palette",
@@ -4122,8 +4122,8 @@
       "family": "props",
       "variant": "barrier_rail_2400_solid",
       "file": "glb/gteki_barrier_rail_2400_solid.glb",
-      "sha256": "97d20a29bab1b0ab8e7e2c9cfa18b3582a6d27503b861b1d71570c97f2340ff6",
-      "bytes": 45036,
+      "sha256": "1a6db2db1ea1c7e46d47fa81575bdc13d95142256c05ebb573fdfc27eaa42591",
+      "bytes": 51228,
       "triangles": 592,
       "materials": [
         "gteki_palette"
@@ -4205,8 +4205,8 @@
       "family": "props",
       "variant": "barrier_rail_2400_rails",
       "file": "glb/gteki_barrier_rail_2400_rails.glb",
-      "sha256": "9cf14f66e10334facd7e49abb404a670928c5089b5bd19b354ff3203a540bc7e",
-      "bytes": 57988,
+      "sha256": "3ea7f98859b61af6d59e11b11ff8c4f405eee14a0787556ff5fa2d32db5fcf7b",
+      "bytes": 64560,
       "triangles": 878,
       "materials": [
         "gteki_palette"
@@ -4288,8 +4288,8 @@
       "family": "props",
       "variant": "ticket_kiosk",
       "file": "glb/gteki_ticket_kiosk.glb",
-      "sha256": "89650cbf7da94565aa511e5739153a9f10ad9b872d0f1274d4077c19a11c140a",
-      "bytes": 106116,
+      "sha256": "2465ea3c34af0cbb78ae1dcbf63af89cc967f79b8cbed69a833125a955392c87",
+      "bytes": 107924,
       "triangles": 250,
       "materials": [
         "gteki_palette",
@@ -4353,8 +4353,8 @@
       "family": "vertical",
       "variant": "escalator",
       "file": "glb/gteki_escalator_s1000_r5000_down.glb",
-      "sha256": "4abe3842d9f52407bdc89631232b6a429174ec554ff6f40e19155558f1b65b6e",
-      "bytes": 616264,
+      "sha256": "322185d5a8c26b5de4523b8b83f4b79a0f59ed91b0cc40617304d684aebb5d0d",
+      "bytes": 625388,
       "triangles": 7390,
       "materials": [
         "gteki_palette",
@@ -4369,7 +4369,7 @@
             "occlusion",
             "orm"
           ],
-          "occlusion_res": 512
+          "occlusion_res": 256
         },
         "gteki_palette_blend": {
           "res": 64,
@@ -4379,7 +4379,7 @@
             "occlusion",
             "orm"
           ],
-          "occlusion_res": 512
+          "occlusion_res": 256
         }
       },
       "bounds_m": {
@@ -4528,8 +4528,8 @@
       "family": "dressing",
       "variant": "escalator_dressing",
       "file": "glb/gteki_escalator_dress_s1000_r4000_glass.glb",
-      "sha256": "c3decd928f408985e3f580b8e9e22b102c0b81905379b6e5ab6c6d26ee8fd09e",
-      "bytes": 204712,
+      "sha256": "3143874fc522d9f9e0c29cebcd9af95d1d84f86243629a4c17010a98b0776e91",
+      "bytes": 222244,
       "triangles": 2928,
       "materials": [
         "gteki_palette",
@@ -4633,8 +4633,8 @@
       "family": "dressing",
       "variant": "escalator_dressing",
       "file": "glb/gteki_escalator_dress_s1000_r4000_comb_newel.glb",
-      "sha256": "7b77db771bba50e45335a5627bce393727c274cb16ed7a2e821755e5043f0959",
-      "bytes": 116436,
+      "sha256": "31f5ebef41f4871af4d5dfa4e54d035ec611ddc63201834461812a2ea379c937",
+      "bytes": 126160,
       "triangles": 1352,
       "materials": [
         "gteki_palette"
@@ -4725,8 +4725,8 @@
       "family": "dressing",
       "variant": "escalator_dressing",
       "file": "glb/gteki_escalator_dress_s1000_r4000_glass_treads.glb",
-      "sha256": "30afff14f305c6f9e48f66ebb7c7d6626aaab4bc70b7dd29f18a1a4328d0f95c",
-      "bytes": 390676,
+      "sha256": "64896665457fe7704a0f7ae62630d891c6d766a3971a810cf6ecedc5cb6880af",
+      "bytes": 432652,
       "triangles": 5112,
       "materials": [
         "gteki_palette",
@@ -4831,8 +4831,8 @@
       "family": "dressing",
       "variant": "escalator_dressing",
       "file": "glb/gteki_escalator_dress_s600_r3500_panel.glb",
-      "sha256": "75d88ecc4d42fd1614cb62e3c5404ba3ac23ce99322fecb862570ba3216a368d",
-      "bytes": 173304,
+      "sha256": "ae64e8df03adcd5e53be8b6b979661156b18fda00376ee17eeec44f5ea30c85d",
+      "bytes": 188288,
       "triangles": 2544,
       "materials": [
         "gteki_palette"
@@ -4925,8 +4925,8 @@
       "family": "dressing",
       "variant": "stair_dressing",
       "file": "glb/gteki_stair_nosing_w2400_n18.glb",
-      "sha256": "69a5ccdb4a8f9c825aaea2c73a6dc2a49f3b9b95785ce176133a6f9024e20009",
-      "bytes": 22484,
+      "sha256": "dac7460d6abf1723509e4be5db5961ce9914b87aac69cf1cf9f62759729270c6",
+      "bytes": 28744,
       "triangles": 180,
       "materials": [
         "gteki_palette"
@@ -5017,8 +5017,8 @@
       "family": "dressing",
       "variant": "stair_dressing",
       "file": "glb/gteki_stair_rails_w2400_n18_both.glb",
-      "sha256": "f1eaeffc5977aa4b55d2b2efce9d2c3aad2667a7819d52356d19abfc711dba23",
-      "bytes": 127276,
+      "sha256": "ad676b14f98ea0849923f8f3b41e207db4c5991a128b717683b4ccdbcc20a55d",
+      "bytes": 137824,
       "triangles": 2328,
       "materials": [
         "gteki_palette"
@@ -5110,8 +5110,8 @@
       "family": "dressing",
       "variant": "railing_run",
       "file": "glb/gteki_railing_run_glass_h1100_l4000.glb",
-      "sha256": "5cb38d5524bac674526214c1eb09992712f38eb0fc0b1d0f510973520bddf4fc",
-      "bytes": 27896,
+      "sha256": "075edaf85d18b5e5313ac93a520228f7b06d62fdb09458efbfe182d36a37ecdc",
+      "bytes": 28944,
       "triangles": 194,
       "materials": [
         "gteki_palette",
@@ -5213,8 +5213,8 @@
       "family": "dressing",
       "variant": "railing_run",
       "file": "glb/gteki_railing_run_steel_h1100_l3000x2000.glb",
-      "sha256": "47db46546f7b73e830ca7212bf77eb48c89c629ada5afd4e59dd6926ea125eb8",
-      "bytes": 31204,
+      "sha256": "e62e3178c469121bdb2305427bff2a4a1240736c5064c0395fed5b179973bf9f",
+      "bytes": 30992,
       "triangles": 330,
       "materials": [
         "gteki_palette"
@@ -5309,8 +5309,8 @@
       "family": "dressing",
       "variant": "railing_run",
       "file": "glb/gteki_fare_fence_glass_h1150.glb",
-      "sha256": "ac2a8c9282c4a67f86a0d42a92e6fa24182f1ad3c567ef13040f761dc6e87dec",
-      "bytes": 24008,
+      "sha256": "4cd4d9d3259853b92cd0e7ba2971e9da93f728c2e572dc77f1b632049fe66f3c",
+      "bytes": 27164,
       "triangles": 160,
       "materials": [
         "gteki_palette",
@@ -5409,12 +5409,613 @@
       ]
     },
     {
+      "id": "gteki_luminaire_linear_1200",
+      "family": "luminaire",
+      "variant": "linear_1200",
+      "file": "glb/gteki_luminaire_linear_1200.glb",
+      "sha256": "0ad715cd4b8603fd05e3e7fcbd4a170c5d7f85e6f664acce79044724ce720b7e",
+      "bytes": 11244,
+      "triangles": 50,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 128
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.065,
+          2.76,
+          -0.6
+        ],
+        "max": [
+          0.065,
+          2.8,
+          0.6
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "ceiling",
+      "params": {
+        "length_mm": 1200,
+        "width_mm": 130,
+        "depth_mm": 40,
+        "cap_mm": 20,
+        "rail_mm": 16,
+        "recess_mm": 4,
+        "ceiling_height_mm": 2800
+      },
+      "sockets": [
+        {
+          "name": "ceiling",
+          "position_gltf": [
+            0.0,
+            2.8,
+            -0.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.13,
+          "height": 0.04,
+          "mount": "ceiling"
+        },
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            2.8,
+            0.6
+          ],
+          "yaw_deg": 180.0,
+          "width": 0.13,
+          "height": 0.04
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            2.8,
+            -0.6
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.13,
+          "height": 0.04
+        }
+      ],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/fixtures.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "luminaire",
+        "ceiling"
+      ]
+    },
+    {
+      "id": "gteki_luminaire_panel_600",
+      "family": "luminaire",
+      "variant": "panel_600",
+      "file": "glb/gteki_luminaire_panel_600.glb",
+      "sha256": "36ed4b99d80c04b45cece7187e0b15d7001648f52bb6540af0f3085bb9a5e8f0",
+      "bytes": 9908,
+      "triangles": 42,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 128
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.3,
+          2.788,
+          -0.3
+        ],
+        "max": [
+          0.3,
+          2.8,
+          0.3
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "ceiling",
+      "params": {
+        "width_mm": 600,
+        "length_mm": 600,
+        "frame_mm": 22,
+        "lip_mm": 12,
+        "gasket_mm": 6,
+        "recess_mm": 3,
+        "ceiling_height_mm": 2800
+      },
+      "sockets": [
+        {
+          "name": "ceiling",
+          "position_gltf": [
+            0.0,
+            2.8,
+            -0.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.6,
+          "height": 0.012,
+          "mount": "ceiling"
+        }
+      ],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/fixtures.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "luminaire",
+        "ceiling"
+      ]
+    },
+    {
+      "id": "gteki_luminaire_downlight_d150",
+      "family": "luminaire",
+      "variant": "downlight_d150",
+      "file": "glb/gteki_luminaire_downlight_d150.glb",
+      "sha256": "99f878304e5f748c1f1b9cd90de91e9a16465153f810d12f8c78c7a2ef91fee4",
+      "bytes": 16348,
+      "triangles": 130,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 128
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.075,
+          2.788,
+          -0.075
+        ],
+        "max": [
+          0.075,
+          2.8,
+          0.075
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "ceiling",
+      "params": {
+        "diameter_mm": 150,
+        "aperture_mm": 100,
+        "lip_mm": 12,
+        "gasket_mm": 6,
+        "recess_mm": 4,
+        "segments": 24,
+        "ceiling_height_mm": 2800
+      },
+      "sockets": [
+        {
+          "name": "ceiling",
+          "position_gltf": [
+            0.0,
+            2.8,
+            -0.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.15,
+          "height": 0.012,
+          "mount": "ceiling"
+        }
+      ],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/fixtures.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "luminaire",
+        "ceiling"
+      ]
+    },
+    {
+      "id": "gteki_trim_chair_rail_3000_steel",
+      "family": "trim",
+      "variant": "chair_rail_3000_steel",
+      "file": "glb/gteki_trim_chair_rail_3000_steel.glb",
+      "sha256": "9f231bea1fe1086d1445bad6b8e8c8284a6624f3734d4d7458bd59f140cb33b9",
+      "bytes": 6824,
+      "triangles": 20,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.5,
+          1.1,
+          -0.0
+        ],
+        "max": [
+          1.5,
+          1.14,
+          0.02
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "length_mm": 3000,
+        "height_mm": 40,
+        "depth_mm": 20,
+        "bottom_mm": 1100,
+        "profile": "bullnose",
+        "material": "steel_brushed",
+        "miter_start": "none",
+        "miter_end": "none"
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            -1.5,
+            1.12,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.02,
+          "height": 0.04
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            1.5,
+            1.12,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.02,
+          "height": 0.04
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/fixtures.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "trim",
+        "wall"
+      ]
+    },
+    {
+      "id": "gteki_trim_skirting_3000_steel",
+      "family": "trim",
+      "variant": "skirting_3000_steel",
+      "file": "glb/gteki_trim_skirting_3000_steel.glb",
+      "sha256": "a69afa4c2d034caa9dee55c7c49321974bfe532cbb8e000674a9cb01e0d0c923",
+      "bytes": 8256,
+      "triangles": 12,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.5,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          1.5,
+          0.12,
+          0.012
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "length_mm": 3000,
+        "height_mm": 120,
+        "depth_mm": 12,
+        "bottom_mm": 0,
+        "profile": "flat",
+        "material": "steel_brushed",
+        "miter_start": "none",
+        "miter_end": "none"
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            -1.5,
+            0.06,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.012,
+          "height": 0.12
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            1.5,
+            0.06,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.012,
+          "height": 0.12
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/fixtures.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "trim",
+        "wall"
+      ]
+    },
+    {
+      "id": "gteki_trim_skirting_3000_granite",
+      "family": "trim",
+      "variant": "skirting_3000_granite",
+      "file": "glb/gteki_trim_skirting_3000_granite.glb",
+      "sha256": "d7b1acd799423869f94bb1bfb3ca2b09dd69786d1503eeca0e1de74550b8d0ab",
+      "bytes": 8976,
+      "triangles": 20,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.5,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          1.5,
+          0.12,
+          0.016
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "length_mm": 3000,
+        "height_mm": 120,
+        "depth_mm": 16,
+        "bottom_mm": 0,
+        "profile": "stepped",
+        "material": "floor_granite_dark",
+        "miter_start": "none",
+        "miter_end": "none"
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            -1.5,
+            0.06,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.016,
+          "height": 0.12
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            1.5,
+            0.06,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.016,
+          "height": 0.12
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/fixtures.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "trim",
+        "wall"
+      ]
+    },
+    {
+      "id": "gteki_column_sleeve_600x600_h2800",
+      "family": "cladding",
+      "variant": "600x600_h2800",
+      "file": "glb/gteki_column_sleeve_600x600_h2800.glb",
+      "sha256": "e1bbd93c3cf76ea8daeed666d881f41f7fa3a0ef2b4ed7dca02a28fa20d2024c",
+      "bytes": 31992,
+      "triangles": 200,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.303,
+          0.0,
+          -0.303
+        ],
+        "max": [
+          0.303,
+          2.8,
+          0.303
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "width_mm": 600,
+        "depth_mm": 600,
+        "height_mm": 2800,
+        "plinth_mm": 120,
+        "ceiling_gap_mm": 30,
+        "panel": "enamel",
+        "corner_guard": true,
+        "guard_height_mm": 1500,
+        "module_mm": 1200
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/fixtures.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "cladding",
+        "column"
+      ]
+    },
+    {
+      "id": "gteki_column_sleeve_900x600_h3200_accent",
+      "family": "cladding",
+      "variant": "900x600_h3200_accent",
+      "file": "glb/gteki_column_sleeve_900x600_h3200_accent.glb",
+      "sha256": "b9a03e902c16ff0b6537b2b04aaa35d8de16f52eefcae05ecc7db5609346d738",
+      "bytes": 30888,
+      "triangles": 168,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.45,
+          0.0,
+          -0.3
+        ],
+        "max": [
+          0.45,
+          3.2,
+          0.3
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "width_mm": 900,
+        "depth_mm": 600,
+        "height_mm": 3200,
+        "plinth_mm": 150,
+        "ceiling_gap_mm": 30,
+        "panel": "accent",
+        "corner_guard": false,
+        "guard_height_mm": 1500,
+        "module_mm": 1200
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/fixtures.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "cladding",
+        "column"
+      ]
+    },
+    {
       "id": "gteki_toilet_entrance_male",
       "family": "facilities",
       "variant": "toilet_entrance_male",
       "file": "glb/gteki_toilet_entrance_male.glb",
-      "sha256": "a12f503411592958cb748833256ebf871cd520b8f3c533a63f00715efa373b06",
-      "bytes": 43692,
+      "sha256": "c41ab73cdce79903361265f802ab34ed0f793f173a499702e41f598986ff53b8",
+      "bytes": 44300,
       "triangles": 96,
       "materials": [
         "gteki_palette",
@@ -5519,8 +6120,8 @@
       "family": "facilities",
       "variant": "toilet_entrance_female",
       "file": "glb/gteki_toilet_entrance_female.glb",
-      "sha256": "998639f64b15ef5c3b1db438012fc2028cb01f079bc2d98a819fe7261bf5a7c3",
-      "bytes": 44100,
+      "sha256": "c347a8847d80f0608719f20aba75a3a2eda3e72a0756f32347d4a20031c3f244",
+      "bytes": 44712,
       "triangles": 96,
       "materials": [
         "gteki_palette",
@@ -5625,8 +6226,8 @@
       "family": "facilities",
       "variant": "toilet_entrance_unisex",
       "file": "glb/gteki_toilet_entrance_unisex.glb",
-      "sha256": "e1c94bd928d9403c0be8b1bc3d515d50326250c39d3e787ed4df3746db1dafae",
-      "bytes": 42952,
+      "sha256": "7aa81e4d26be162c1e4cc32940f9339876be1b8d73bbab0237e7e753d7553df0",
+      "bytes": 43828,
       "triangles": 96,
       "materials": [
         "gteki_palette",
@@ -5731,8 +6332,8 @@
       "family": "facilities",
       "variant": "toilet_entrance_accessible",
       "file": "glb/gteki_toilet_entrance_accessible.glb",
-      "sha256": "85ed138d7035237216e40b5ecb62208dc73c6029ecba3157b29002939e7ffc1f",
-      "bytes": 44080,
+      "sha256": "1f2adec7edad3f8c93160de61628982e77fdedf3ac46f45313913735896a3ae8",
+      "bytes": 44968,
       "triangles": 96,
       "materials": [
         "gteki_palette",
@@ -5838,8 +6439,8 @@
       "family": "facilities",
       "variant": "toilet_entrance_pair",
       "file": "glb/gteki_toilet_entrance_pair.glb",
-      "sha256": "a9a049fd8c9d9ce3cc37db5f5f5f9e784d8c5989b323a23642b14baac326f974",
-      "bytes": 61816,
+      "sha256": "652bb6060962a5f84807bca1f36be2ce8f52f205c5915a251833995ca259d99a",
+      "bytes": 63440,
       "triangles": 96,
       "materials": [
         "gteki_palette",
@@ -5945,8 +6546,8 @@
       "family": "facilities",
       "variant": "toilet_entrance_male_maze",
       "file": "glb/gteki_toilet_entrance_male_maze.glb",
-      "sha256": "71b2dfc702426d85f7c288ced2c10939244d1598fc2a8b27526bf2ec5151ebda",
-      "bytes": 46568,
+      "sha256": "abee04c499f99588f7b15a9514d2937e489f34a8abaeab43cd23cc8c93d31d09",
+      "bytes": 48456,
       "triangles": 116,
       "materials": [
         "gteki_palette",
@@ -6048,12 +6649,987 @@
       ]
     },
     {
+      "id": "gteki_platform_edge_l6000_dots",
+      "family": "platform",
+      "variant": "edge_l6000_dots",
+      "file": "glb/gteki_platform_edge_l6000_dots.glb",
+      "sha256": "976185cdc0014264845bdaeb7bedc0630bc3dc6764b48ce58c1dd9e7fcd99ead",
+      "bytes": 8620,
+      "triangles": 34,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          0.0,
+          0.0,
+          -6.0
+        ],
+        "max": [
+          0.6,
+          0.01,
+          -0.0
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "linear",
+      "params": {
+        "length_mm": 6000,
+        "coping_depth_mm": 600,
+        "coping_h_mm": 10,
+        "coping": "granite",
+        "line_offset_mm": 40,
+        "line_w_mm": 100,
+        "tactile": "dots",
+        "tactile_setback_mm": 200,
+        "gap_strip_w_mm": 50,
+        "parts": [
+          "coping",
+          "line",
+          "tactile"
+        ],
+        "strips_mm": [
+          [
+            "coping",
+            0,
+            40
+          ],
+          [
+            "line",
+            40,
+            140
+          ],
+          [
+            "coping",
+            140,
+            200
+          ],
+          [
+            "tactile",
+            200,
+            500
+          ],
+          [
+            "coping",
+            500,
+            600
+          ]
+        ]
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 0.6,
+          "height": 0.01
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -6.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.6,
+          "height": 0.01
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/platform.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "platform",
+        "floor"
+      ]
+    },
+    {
+      "id": "gteki_platform_edge_l3000_innerline",
+      "family": "platform",
+      "variant": "edge_l3000_innerline",
+      "file": "glb/gteki_platform_edge_l3000_innerline.glb",
+      "sha256": "09fd6a9ffe23d8348c99654f77dfcaacbbe3b0c57c3a29b93c9706cf28693557",
+      "bytes": 9816,
+      "triangles": 46,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          0.0,
+          0.0,
+          -3.0
+        ],
+        "max": [
+          0.6,
+          0.01,
+          -0.0
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "linear",
+      "params": {
+        "length_mm": 3000,
+        "coping_depth_mm": 600,
+        "coping_h_mm": 10,
+        "coping": "concrete",
+        "line_offset_mm": 40,
+        "line_w_mm": 100,
+        "tactile": "inner_line",
+        "tactile_setback_mm": 200,
+        "gap_strip_w_mm": 50,
+        "parts": [
+          "coping",
+          "line",
+          "tactile"
+        ],
+        "strips_mm": [
+          [
+            "coping",
+            0,
+            40
+          ],
+          [
+            "line",
+            40,
+            140
+          ],
+          [
+            "coping",
+            140,
+            200
+          ],
+          [
+            "tactile",
+            200,
+            500
+          ],
+          [
+            "coping",
+            500,
+            530
+          ],
+          [
+            "inner_line",
+            530,
+            570
+          ],
+          [
+            "coping",
+            570,
+            600
+          ]
+        ]
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 0.6,
+          "height": 0.01
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -3.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.6,
+          "height": 0.01
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/platform.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "platform",
+        "floor"
+      ]
+    },
+    {
+      "id": "gteki_platform_edge_l6000_gap",
+      "family": "platform",
+      "variant": "edge_l6000_gap",
+      "file": "glb/gteki_platform_edge_l6000_gap.glb",
+      "sha256": "1ca5e76aaf2b4a7a37b398cf699d1f4acd2a9bd2d631450276ee99882aa7e839",
+      "bytes": 13140,
+      "triangles": 74,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.05,
+          0.0,
+          -6.0
+        ],
+        "max": [
+          0.6,
+          0.01,
+          -0.0
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "linear",
+      "params": {
+        "length_mm": 6000,
+        "coping_depth_mm": 600,
+        "coping_h_mm": 10,
+        "coping": "granite",
+        "line_offset_mm": 40,
+        "line_w_mm": 100,
+        "tactile": "inner_line",
+        "tactile_setback_mm": 200,
+        "gap_strip_w_mm": 50,
+        "parts": [
+          "coping",
+          "line",
+          "tactile",
+          "gap_strip"
+        ],
+        "strips_mm": [
+          [
+            "coping",
+            0,
+            40
+          ],
+          [
+            "line",
+            40,
+            140
+          ],
+          [
+            "coping",
+            140,
+            200
+          ],
+          [
+            "tactile",
+            200,
+            500
+          ],
+          [
+            "coping",
+            500,
+            530
+          ],
+          [
+            "inner_line",
+            530,
+            570
+          ],
+          [
+            "coping",
+            570,
+            600
+          ]
+        ]
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 0.65,
+          "height": 0.01
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -6.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.65,
+          "height": 0.01
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/platform.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "platform",
+        "floor"
+      ]
+    },
+    {
+      "id": "gteki_platform_screen_door_l5600",
+      "family": "platform",
+      "variant": "screen_door_l5600",
+      "file": "glb/gteki_platform_screen_door_l5600.glb",
+      "sha256": "e2f8db1fce932be5c4b0cb2008922ae576a200af822befcafa9b634640d9c09c",
+      "bytes": 62940,
+      "triangles": 492,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          0.052,
+          0.0,
+          -5.6
+        ],
+        "max": [
+          0.248,
+          2.4,
+          -0.0
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "length_mm": 5600,
+        "height_mm": 2000,
+        "header_h_mm": 400,
+        "inset_mm": 60,
+        "depth_mm": 180,
+        "opening_mm": 2000,
+        "fixed_panels_per_side": 2,
+        "open_mm": 0
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 0.24,
+          "height": 2.4
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -5.6
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.24,
+          "height": 2.4
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/platform.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "platform"
+      ]
+    },
+    {
+      "id": "gteki_shopfront_glazing_w2400",
+      "family": "shopfront",
+      "variant": "glazing_w2400",
+      "file": "glb/gteki_shopfront_glazing_w2400.glb",
+      "sha256": "3a0f55b3f7f2fde133433ca9f41d16066a38e71359a280974776c7c124464d43",
+      "bytes": 28320,
+      "triangles": 114,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend",
+        "gteki_fascia_art"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_fascia_art": {
+          "res": 512,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.2,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          1.2,
+          2.8,
+          0.14
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "kind": "glazing",
+        "bay_w_mm": 2400,
+        "height_mm": 2800,
+        "fascia_h_mm": 600,
+        "mullion_mm": 60,
+        "frame_depth_mm": 90,
+        "sill_mm": 300,
+        "panes": 0,
+        "door_h_mm": 2100,
+        "shutter_open": 0.0,
+        "housing_h_mm": 250,
+        "fascia": true,
+        "backing": true,
+        "fascia_u": [
+          0.0,
+          1.0
+        ],
+        "fascia_aspect": 4.273
+      },
+      "sockets": [
+        {
+          "name": "left",
+          "position_gltf": [
+            -1.2,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.1,
+          "height": 2.8
+        },
+        {
+          "name": "right",
+          "position_gltf": [
+            1.2,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.1,
+          "height": 2.8
+        }
+      ],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/shopfront.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "shopfront"
+      ]
+    },
+    {
+      "id": "gteki_shopfront_door_w2000",
+      "family": "shopfront",
+      "variant": "door_w2000",
+      "file": "glb/gteki_shopfront_door_w2000.glb",
+      "sha256": "862578e6206126e7b3bc8187a81ff620b916818f9f889e22794cc208be38974a",
+      "bytes": 41436,
+      "triangles": 226,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend",
+        "gteki_fascia_art"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_fascia_art": {
+          "res": 512,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.0,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          1.0,
+          2.8,
+          0.14
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "kind": "door",
+        "bay_w_mm": 2000,
+        "height_mm": 2800,
+        "fascia_h_mm": 600,
+        "mullion_mm": 60,
+        "frame_depth_mm": 90,
+        "sill_mm": 300,
+        "panes": 0,
+        "door_h_mm": 2100,
+        "shutter_open": 0.0,
+        "housing_h_mm": 250,
+        "fascia": true,
+        "backing": true,
+        "fascia_u": [
+          0.0,
+          1.0
+        ],
+        "fascia_aspect": 3.545
+      },
+      "sockets": [
+        {
+          "name": "left",
+          "position_gltf": [
+            -1.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.1,
+          "height": 2.8
+        },
+        {
+          "name": "right",
+          "position_gltf": [
+            1.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.1,
+          "height": 2.8
+        }
+      ],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/shopfront.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "shopfront"
+      ]
+    },
+    {
+      "id": "gteki_shopfront_shutter_w2400_closed",
+      "family": "shopfront",
+      "variant": "shutter_w2400_closed",
+      "file": "glb/gteki_shopfront_shutter_w2400_closed.glb",
+      "sha256": "b3e1630298dd19e52eca123d744ba9137c0e4b22effd44f91f0970efc1f0ff3d",
+      "bytes": 28180,
+      "triangles": 190,
+      "materials": [
+        "gteki_palette",
+        "gteki_fascia_art"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_fascia_art": {
+          "res": 512,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.2,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          1.2,
+          2.8,
+          0.14
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "kind": "shutter",
+        "bay_w_mm": 2400,
+        "height_mm": 2800,
+        "fascia_h_mm": 600,
+        "mullion_mm": 60,
+        "frame_depth_mm": 90,
+        "sill_mm": 300,
+        "panes": 0,
+        "door_h_mm": 2100,
+        "shutter_open": 0.0,
+        "housing_h_mm": 250,
+        "fascia": true,
+        "backing": true,
+        "fascia_u": [
+          0.0,
+          1.0
+        ],
+        "fascia_aspect": 4.273
+      },
+      "sockets": [
+        {
+          "name": "left",
+          "position_gltf": [
+            -1.2,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.1,
+          "height": 2.8
+        },
+        {
+          "name": "right",
+          "position_gltf": [
+            1.2,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.1,
+          "height": 2.8
+        }
+      ],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/shopfront.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "shopfront"
+      ]
+    },
+    {
+      "id": "gteki_shopfront_shutter_w2400_half",
+      "family": "shopfront",
+      "variant": "shutter_w2400_half",
+      "file": "glb/gteki_shopfront_shutter_w2400_half.glb",
+      "sha256": "dd5e8dcee75782a7d7792266848b3202604375201a7d6c763149fda2b5faec33",
+      "bytes": 27644,
+      "triangles": 136,
+      "materials": [
+        "gteki_palette",
+        "gteki_fascia_art"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_fascia_art": {
+          "res": 512,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.2,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          1.2,
+          2.8,
+          0.14
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "kind": "shutter",
+        "bay_w_mm": 2400,
+        "height_mm": 2800,
+        "fascia_h_mm": 600,
+        "mullion_mm": 60,
+        "frame_depth_mm": 90,
+        "sill_mm": 300,
+        "panes": 0,
+        "door_h_mm": 2100,
+        "shutter_open": 0.5,
+        "housing_h_mm": 250,
+        "fascia": true,
+        "backing": true,
+        "fascia_u": [
+          0.0,
+          1.0
+        ],
+        "fascia_aspect": 4.273
+      },
+      "sockets": [
+        {
+          "name": "left",
+          "position_gltf": [
+            -1.2,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.1,
+          "height": 2.8
+        },
+        {
+          "name": "right",
+          "position_gltf": [
+            1.2,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.1,
+          "height": 2.8
+        }
+      ],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/shopfront.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "shopfront"
+      ]
+    },
+    {
+      "id": "gteki_shopfront_fascia_w4800",
+      "family": "shopfront",
+      "variant": "fascia_w4800",
+      "file": "glb/gteki_shopfront_fascia_w4800.glb",
+      "sha256": "67985b549464f96bff38d69bb085aaf260d845f97889f6aa90d4f40b0a0d0b6a",
+      "bytes": 13128,
+      "triangles": 26,
+      "materials": [
+        "gteki_palette",
+        "gteki_fascia_art"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_fascia_art": {
+          "res": 512,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -2.4,
+          2.2,
+          -0.0
+        ],
+        "max": [
+          2.4,
+          2.8,
+          0.14
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "kind": "fascia",
+        "bay_w_mm": 4800,
+        "height_mm": 2800,
+        "fascia_h_mm": 600,
+        "mullion_mm": 60,
+        "frame_depth_mm": 90,
+        "sill_mm": 300,
+        "panes": 0,
+        "door_h_mm": 2100,
+        "shutter_open": 0.0,
+        "housing_h_mm": 250,
+        "fascia": true,
+        "backing": true,
+        "fascia_u": [
+          0.0,
+          1.0
+        ],
+        "fascia_aspect": 8.636
+      },
+      "sockets": [
+        {
+          "name": "left",
+          "position_gltf": [
+            -2.4,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.1,
+          "height": 2.8
+        },
+        {
+          "name": "right",
+          "position_gltf": [
+            2.4,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.1,
+          "height": 2.8
+        }
+      ],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/shopfront.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "shopfront"
+      ]
+    },
+    {
       "id": "gteki_street_canopy_w3000_d3000_posts",
       "family": "street",
       "variant": "canopy_w3000_d3000_posts",
       "file": "glb/gteki_street_canopy_w3000_d3000_posts.glb",
-      "sha256": "666c5a3b146a38c9d10e70c8d1c44efcdf9bae8c1911f48d56d9971c06db7705",
-      "bytes": 72568,
+      "sha256": "82046b6c8a78ab51c918c404d826e93bf5628c37537bea81906247c03a7bb21f",
+      "bytes": 82900,
       "triangles": 434,
       "materials": [
         "gteki_palette",
@@ -6161,8 +7737,8 @@
       "family": "street",
       "variant": "canopy_w4500_d3000_cantilever_curved",
       "file": "glb/gteki_street_canopy_w4500_d3000_cantilever_curved.glb",
-      "sha256": "cc38ebe9e81140dd74c0bdd924c7f3c91e701dc3bad80174c1077bd779bb3769",
-      "bytes": 83016,
+      "sha256": "edc6f1879d5c0bdbd9293a96a54ae1ef635f204207e29a85df46cebc2d98fe4f",
+      "bytes": 92736,
       "triangles": 638,
       "materials": [
         "gteki_palette",
@@ -6270,8 +7846,8 @@
       "family": "street",
       "variant": "bollard_fixed_d114_h900",
       "file": "glb/gteki_street_bollard_fixed_d114_h900.glb",
-      "sha256": "cb0d59330c5814e062fb17ae322ae72e05de0f186d0ad0de8245df48dedf4d0e",
-      "bytes": 18056,
+      "sha256": "c73b53da37e4f6846996ccb46be49883c55ac7b4c70097635f9cfe27a808d0db",
+      "bytes": 18452,
       "triangles": 156,
       "materials": [
         "gteki_palette"
@@ -6327,8 +7903,8 @@
       "family": "street",
       "variant": "bollard_removable_d114_h900",
       "file": "glb/gteki_street_bollard_removable_d114_h900.glb",
-      "sha256": "9b7362512cbbdd8355eb2037ca693c37d8b3a9fc2ba4f8d5140897ec1cfb8d31",
-      "bytes": 20628,
+      "sha256": "1f665fd4d7fa766fbe29b6fefcc873fb230ced51c0d8eb4642f3cb65dae860af",
+      "bytes": 22272,
       "triangles": 192,
       "materials": [
         "gteki_palette"
@@ -6384,8 +7960,8 @@
       "family": "street",
       "variant": "guard_rail_3000",
       "file": "glb/gteki_street_guard_rail_3000.glb",
-      "sha256": "241a4cbe10e1e441ac589aa650bfe9507a528224274ea26a75f3242027e352f6",
-      "bytes": 31076,
+      "sha256": "fe045364322463850e56af1347de5aff0b463c08eebd6fa7b7fdc40566680703",
+      "bytes": 34960,
       "triangles": 352,
       "materials": [
         "gteki_palette"
@@ -6474,8 +8050,8 @@
       "family": "street",
       "variant": "guard_rail_l_3000x2000_stainless",
       "file": "glb/gteki_street_guard_rail_l_3000x2000_stainless.glb",
-      "sha256": "13fb821dff845c26ecb4ab544d8d6e0807d74a29bda658441633109ca2af24db",
-      "bytes": 45972,
+      "sha256": "dcd7bbc9f9f6824db778556dee9c635aa7d5c436766095a4ad6f1b79f3f18d54",
+      "bytes": 54308,
       "triangles": 584,
       "materials": [
         "gteki_palette"
@@ -6569,8 +8145,8 @@
       "family": "street",
       "variant": "lamp_h5000_arm900",
       "file": "glb/gteki_street_lamp_h5000_arm900.glb",
-      "sha256": "9801229d4a27c8c9ae8f2ebb74c722e2f2c3a265ebc0e44404379098ab775474",
-      "bytes": 23224,
+      "sha256": "5e83292505a2a9cfe1b6e24f7c6299aef09a5f277871bf274ef0367d15744273",
+      "bytes": 26156,
       "triangles": 188,
       "materials": [
         "gteki_palette"
@@ -6625,8 +8201,8 @@
       "family": "street",
       "variant": "planter_box_1200x600_h600",
       "file": "glb/gteki_street_planter_box_1200x600_h600.glb",
-      "sha256": "04303747f55ae4eb0ef53532c7be5aa33be4fb96165be58902fad5798f38640a",
-      "bytes": 19228,
+      "sha256": "e2988be7331efc3ebeee1a014a9c522feadcaae3ad8debacac1e4e6828a6ed78",
+      "bytes": 19604,
       "triangles": 200,
       "materials": [
         "gteki_palette"
@@ -6684,8 +8260,8 @@
       "family": "street",
       "variant": "planter_round_d800_h500",
       "file": "glb/gteki_street_planter_round_d800_h500.glb",
-      "sha256": "c767e5c98ddd70700f673b23b671c7644d2c84b52596f67dc51f09e0e45514d7",
-      "bytes": 27784,
+      "sha256": "ebcc6d9cfd5c57bd5ee7ddca7a7e0417e4e2544146c47f407170d00b733bb642",
+      "bytes": 31416,
       "triangles": 312,
       "materials": [
         "gteki_palette"

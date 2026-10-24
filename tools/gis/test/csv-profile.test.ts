@@ -76,6 +76,15 @@ describe('csv-profile', () => {
     expect(p.windows).toEqual([{ station: 'testville', in_window: 2, in_origin_disc: 1, within_500m_of_origin: 1, within_1000m_of_origin: 1, in_window_if_axes_swapped: 0 }]);
   });
 
+  it('profiles 200,000 CSV rows without spreading coordinates into call arguments', () => {
+    const csv = Buffer.from('lat,lon\n' + '35.69,139.71\n35.71,139.69\n'.repeat(100_000));
+    const p = profileCsv(csv, []);
+    expect(p.rows).toBe(200_000);
+    expect(p.coordinates).toMatchObject({ valid_rows: 200_000, blank_rows: 0, invalid_rows: 0 });
+    expect(JSON.stringify(p.coordinates.bbox)).toBe('{"lon_min":139.69,"lat_min":35.69,"lon_max":139.71,"lat_max":35.71}');
+    expect(p.axis_swap).toEqual({ verdict: 'NOT_SWAPPED', as_is_in_japan: 200_000, swapped_in_japan: 0, as_is_in_tokyo_box: 200_000 });
+  });
+
   it('detects swapped axes: the latitude column holding longitudes', () => {
     const p = profileCsv(Buffer.from('name,lat,lon\nA,139.7002,35.7002\nB,139.72,35.72\n'), [STATION]);
     expect(p.axis_swap.verdict).toBe('SWAPPED');
@@ -180,6 +189,62 @@ describe('csv-profile', () => {
     // A feature far away is not counted.
     const far = Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: { type: 'LineString', coordinates: [[139.60, 35.60], [139.61, 35.61]] } }] }));
     expect(geojsonDetail(far, [STATION]).features_touching_window).toEqual({ testville: 0 });
+  });
+
+  it('walks a Feature GeometryCollection line crossing a disc and includes member bounds', () => {
+    const geometry = { type: 'GeometryCollection', geometries: [
+      { type: 'LineString', coordinates: [[139.69, 35.7], [139.71, 35.7]] },
+      { type: 'Point', coordinates: [139.72, 35.72] },
+    ] };
+    const detail = geojsonDetail(Buffer.from(JSON.stringify({ type: 'Feature', geometry })), [STATION]);
+    expect(detail).toMatchObject({
+      features: 1, geometry_types: { GeometryCollection: 1 },
+      bbox: { lon_min: 139.69, lat_min: 35.7, lon_max: 139.72, lat_max: 35.72 },
+      vertices_as_is_in_japan: 3, vertices_swapped_in_japan: 0,
+      features_touching_window: { testville: 1 },
+    });
+  });
+
+  it('walks two collection levels to a polygon enclosing a disc', () => {
+    const geometry = { type: 'GeometryCollection', geometries: [{ type: 'GeometryCollection', geometries: [
+      { type: 'Polygon', coordinates: [[[139.695, 35.695], [139.705, 35.695], [139.705, 35.705], [139.695, 35.705], [139.695, 35.695]]] },
+    ] }] };
+    const detail = geojsonDetail(Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry }] })), [STATION]);
+    expect(detail).toMatchObject({
+      bbox: { lon_min: 139.695, lat_min: 35.695, lon_max: 139.705, lat_max: 35.705 },
+      vertices_as_is_in_japan: 5, features_touching_window: { testville: 1 },
+    });
+  });
+
+  it('counts nested points and swapped vertices once per Feature without joining members', () => {
+    const windows = [{ ...STATION, discs: [STATION.discs[0]] }];
+    const profile = (coordinates: number[][]): Record<string, unknown> => geojsonDetail(Buffer.from(JSON.stringify({
+      type: 'Feature', geometry: { type: 'GeometryCollection', geometries: [{ type: 'GeometryCollection',
+        geometries: coordinates.map((point) => ({ type: 'Point', coordinates: point })),
+      }] },
+    })), windows);
+    expect(profile([[139.69, 35.7], [139.71, 35.7]]).features_touching_window).toEqual({ testville: 0 });
+    expect(profile([[139.7, 35.7], [139.7001, 35.7], [35.7, 139.7]])).toMatchObject({
+      vertices_as_is_in_japan: 2, vertices_swapped_in_japan: 1, features_touching_window: { testville: 1 },
+    });
+  });
+
+  it('evaluates 32 collection levels and marks deeper features unevaluated without partial results', () => {
+    type Geometry = { type: string; coordinates?: number[]; geometries?: Geometry[] };
+    const point: Geometry = { type: 'Point', coordinates: [139.7, 35.7] };
+    const nested = (levels: number): Geometry => {
+      let geometry = point;
+      for (let i = 0; i < levels; i++) geometry = { type: 'GeometryCollection', geometries: [point, geometry] };
+      return geometry;
+    };
+    const profile = (geometry: Geometry): Record<string, unknown> => geojsonDetail(Buffer.from(JSON.stringify({ type: 'Feature', geometry })), [STATION]);
+    const atLimit = profile(nested(32));
+    expect(atLimit.features_touching_window).toEqual({ testville: 1 });
+    expect(atLimit.features_unevaluated).toBeUndefined();
+    expect(profile(nested(33))).toMatchObject({
+      features: 1, features_unevaluated: 1, bbox: null,
+      vertices_as_is_in_japan: 0, vertices_swapped_in_japan: 0, features_touching_window: { testville: 0 },
+    });
   });
 
   it('counts a shapefile polyline whose segment crosses a disc with both endpoints outside', () => {

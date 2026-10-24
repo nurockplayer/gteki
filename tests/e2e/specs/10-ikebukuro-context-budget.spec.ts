@@ -35,8 +35,8 @@ const UNDERGROUND = ["c_mid", "w_c", "sw_h", "n_h"];
 const STREET = (process.env.GTEKI_BUDGET_STREET ?? "x35,x39,x11,x38").split(",").map((s) => s.trim()).filter(Boolean);
 const HEADINGS = [0, 90, 180, 270];
 const FRAMES = Number(process.env.GTEKI_BUDGET_FRAMES ?? 60);
-// What the context may add at street level (its mesh count and triangles per variant, see scene/context.test.ts).
-const CONTEXT_COST = { low: { draws: 8, tris: 31_000 }, high: { draws: 8, tris: 140_000 } };
+// Street context: 8 PLATEAU meshes + 2 N02 meshes (186 tris, within the existing triangle budgets).
+const CONTEXT_COST = { low: { draws: 10, tris: 31_000 }, high: { draws: 10, tris: 140_000 } };
 const LOOK_RAD_PER_PX = 0.0042;
 
 /** Counts draw calls and triangles per rendered frame at the WebGL boundary (independent of lib PROBE_SCRIPT). */
