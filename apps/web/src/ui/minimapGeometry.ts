@@ -51,42 +51,54 @@ export function arrowRotationDeg(pose: ExplorerPose, orientation: MinimapOrienta
 }
 
 /**
- * The route's own line, cut into the runs that stay on one floor: a run needs two consecutive points on
- * `floorId`, so a route that leaves and re-enters the floor yields separate runs (never a line across a level).
+ * The route's own line, cut into the runs that stay on one floor. A pair of consecutive points is drawn
+ * only when both are on `floorId` AND the step ending at the second point stays on one floor: the drawn
+ * geometry of a stair/escalator/elevator is never flattened into a corridor. No points are synthesised.
  */
-export function routeOnFloor(points: readonly PolylinePoint[], floorId: string): Array<Array<{ x: number; y: number }>> {
+export function routeOnFloor(points: readonly PolylinePoint[], floorId: string, steps: readonly RouteStep[]): Array<Array<{ x: number; y: number }>> {
   const runs: Array<Array<{ x: number; y: number }>> = [];
   let run: Array<{ x: number; y: number }> | null = null;
+  const flush = () => {
+    if (run && run.length >= 2) runs.push(run);
+    run = null;
+  };
   for (let i = 0; i < points.length; i++) {
     const point = points[i]!;
-    if (point.floorId !== floorId) {
-      if (run && run.length >= 2) runs.push(run);
-      run = null;
+    if (point.floorId !== floorId) { flush(); continue; }
+    const previous = i > 0 ? points[i - 1]! : null;
+    const step = point.stepIndex >= 0 ? steps[point.stepIndex] : undefined;
+    const leavesFloor = !!step && step.fromFloorId !== step.toFloorId;
+    if (!previous || previous.floorId !== floorId || leavesFloor) {
+      flush();
+      run = [{ x: point.x, y: point.y }];
       continue;
     }
-    if (run === null) {
-      const previous = i > 0 ? points[i - 1]! : null;
-      run = previous && previous.floorId === floorId ? [{ x: previous.x, y: previous.y }] : [];
-    }
+    if (run === null) run = [{ x: previous.x, y: previous.y }];
     run.push({ x: point.x, y: point.y });
   }
-  if (run && run.length >= 2) runs.push(run);
+  flush();
   return runs;
 }
 
+/** A step that changes floor, with the point on the floor it leaves where the change begins. */
+export interface FloorTransition {
+  stepIndex: number;
+  fromFloorId: string;
+  toFloorId: string;
+  mode: RouteStep["mode"];
+  x: number;
+  y: number;
+}
+
 /**
- * The first step that takes the route off `floorId`, and where on this floor it starts. A same-floor
- * stair/escalator is not a floor change. The start point is the last polyline point the previous step
- * ends at (the start point itself when step 0 leaves the floor).
+ * Every floor-changing step of the route (computed once per route, not per frame). A step whose start
+ * point has no polyline evidence is dropped rather than given a made-up position.
  */
-export function nextFloorChange(
-  points: readonly PolylinePoint[],
-  steps: readonly RouteStep[],
-  floorId: string,
-): { x: number; y: number; mode: RouteStep["mode"]; toFloorId: string } | null {
+export function floorTransitions(points: readonly PolylinePoint[], steps: readonly RouteStep[]): FloorTransition[] {
+  const transitions: FloorTransition[] = [];
   for (let i = 0; i < steps.length; i++) {
     const step = steps[i]!;
-    if (step.fromFloorId !== floorId || step.toFloorId === floorId) continue;
+    if (step.fromFloorId === step.toFloorId) continue;
     let start: { x: number; y: number } | null = null;
     if (i === 0) {
       start = points[0] ? { x: points[0].x, y: points[0].y } : null;
@@ -95,9 +107,35 @@ export function nextFloorChange(
         if (points[j]!.stepIndex === i - 1) { start = { x: points[j]!.x, y: points[j]!.y }; break; }
       }
     }
-    return start ? { ...start, mode: step.mode, toFloorId: step.toFloorId } : null;
+    if (start) transitions.push({ stepIndex: i, fromFloorId: step.fromFloorId, toFloorId: step.toFloorId, mode: step.mode, ...start });
   }
-  return null;
+  return transitions;
+}
+
+/** The step index of the on-floor route point nearest the player: how far along this floor's run they are. */
+export function routeProgress(points: readonly PolylinePoint[], floorId: string, east: number, north: number): number {
+  let best = Infinity, stepIndex = -1;
+  for (const point of points) {
+    if (point.floorId !== floorId) continue;
+    const distance = (point.x - east) ** 2 + (point.y - north) ** 2;
+    if (distance < best) { best = distance; stepIndex = point.stepIndex; }
+  }
+  return stepIndex;
+}
+
+/**
+ * The first floor change ahead of the player, and where on this floor it starts. Only steps after
+ * `fromStepIndex` count, so a route that revisits a floor does not point back at a connector already
+ * walked past. A same-floor stair/escalator is not a floor change.
+ */
+export function nextFloorChange(
+  points: readonly PolylinePoint[],
+  steps: readonly RouteStep[],
+  floorId: string,
+  fromStepIndex: number,
+): { x: number; y: number; mode: RouteStep["mode"]; toFloorId: string } | null {
+  const change = floorTransitions(points, steps).find((t) => t.fromFloorId === floorId && t.stepIndex > fromStepIndex);
+  return change ? { x: change.x, y: change.y, mode: change.mode, toFloorId: change.toFloorId } : null;
 }
 
 /** Room kept between a point and the rim for its marker, in viewBox units. */

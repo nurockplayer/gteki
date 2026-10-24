@@ -189,7 +189,7 @@ describe("Minimap route overlay (#220 PR2)", () => {
     map.setRoute(upRoute, upSteps, poi());
     expect(routeLines(map)).toHaveLength(1);
     expect(map.el.querySelector(".minimap-route-line")!.getAttribute("points")).toBe("0,0 20,0");
-    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F: stairs");
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
     // The stairs marker sits at the start of the stairs step, on the current floor.
     expect(display(map, ".minimap-connector-marker")).toBe("");
     expect(display(map, ".minimap-connector-rim")).toBe("none");
@@ -201,9 +201,13 @@ describe("Minimap route overlay (#220 PR2)", () => {
     expect(routeLines(map)).toHaveLength(1);
     // Run geometry is in station coordinates; the group transform is what follows the player.
     expect(map.el.querySelector(".minimap-route-line")!.getAttribute("points")).toBe("20,0 20,-8");
-    // From 1F the recorded destination (the concourse restroom) is on another floor.
-    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("Destination: B1");
-    expect(display(map, ".minimap-destination-marker")).toBe("none");
+    // From 1F the recorded destination (the concourse restroom) is on another floor: no POI dot.
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("Destination floor: B1");
+    expect(map.el.querySelector(".minimap-poi.is-destination")).toBeNull();
+    // The route's own end is drawn, but only as a neutral endpoint.
+    expect(display(map, ".minimap-route-end")).toBe("");
+    expect(map.el.querySelector(".minimap-route-end")!.getAttribute("transform")).toBe("translate(95 91)");
+    expect(display(map, ".minimap-destination-rim")).toBe("none");
   });
 
   it("clears the overlay when the route is cleared, but keeps evidenced POI dots", () => {
@@ -213,39 +217,117 @@ describe("Minimap route overlay (#220 PR2)", () => {
     map.setRoute(null, null, null);
     expect(routeLines(map)).toHaveLength(0);
     expect(map.el.querySelector<HTMLElement>(".minimap-route-label")!.hidden).toBe(true);
-    expect(display(map, ".minimap-destination-marker")).toBe("none");
+    expect(display(map, ".minimap-route-end")).toBe("none");
+    expect(display(map, ".minimap-destination-rim")).toBe("none");
     expect(display(map, ".minimap-connector-marker")).toBe("none");
     expect(map.el.querySelectorAll(".minimap-poi")).toHaveLength(2);
   });
 
-  it("marks an on-floor destination inside the circle and highlights its POI dot", () => {
+  it("highlights an evidenced on-floor destination's POI dot, not the route end", () => {
     const map = create();
     const route = [point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)];
     map.setRoute(route, [step("concourse", "concourse")], poi());
-    expect(display(map, ".minimap-destination-marker")).toBe("");
     expect(display(map, ".minimap-destination-rim")).toBe("none");
-    expect(map.el.querySelector(".minimap-destination-marker")!.getAttribute("transform")).toBe("translate(115 95)");
-    expect(map.el.querySelector(".minimap-destination-marker title")!.textContent).toBe("Restroom");
-    expect(map.el.querySelector(".minimap-poi.is-destination")).not.toBeNull();
+    const dot = map.el.querySelector(".minimap-poi.is-destination");
+    expect(dot).not.toBeNull();
+    expect(dot!.getAttribute("cx")).toBe("20");
+    expect(dot!.getAttribute("cy")).toBe("0");
+    expect(dot!.querySelector("title")!.textContent).toBe("Restroom");
+    // At the same place, the neutral route end yields to the destination dot.
+    expect(display(map, ".minimap-route-end")).toBe("none");
   });
 
-  it("shows a rim chevron for a destination outside the circle", () => {
-    const map = create();
-    const route = [point(0, 0, "concourse", -1), point(200, 0, "concourse", 0)];
-    map.setRoute(route, [step("concourse", "concourse")], poi());
-    expect(display(map, ".minimap-destination-marker")).toBe("none");
-    expect(display(map, ".minimap-destination-rim")).toBe("");
-    expect(map.el.querySelector(".minimap-destination-rim")!.getAttribute("transform")).toBe("translate(179 95) rotate(90)");
+  it("points the rim chevron at the evidenced POI position, else at the route end", () => {
+    const farPoi = poi({ id: "far", displayPosition: { x: 200, y: 0, z: 0 } });
+    const farBundle = createSyntheticBundle();
+    farBundle.pois = [farPoi];
+    const nearRoute = [point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)];
+    const withPoi = create(farBundle);
+    withPoi.setRoute(nearRoute, [step("concourse", "concourse")], farPoi);
+    expect(display(withPoi, ".minimap-destination-rim")).toBe("");
+    expect(withPoi.el.querySelector(".minimap-destination-rim")!.getAttribute("transform")).toBe("translate(179 95) rotate(90)");
+    // The route end is still shown neutrally, inside the circle.
+    expect(display(withPoi, ".minimap-route-end")).toBe("");
+
+    // No evidence for the POI: the chevron follows the route's own end instead.
+    const unevidenced = poi({ id: "unevidenced", connectorNodeIds: [] });
+    const farRoute = [point(0, 0, "concourse", -1), point(200, 0, "concourse", 0)];
+    const unlocatedBundle = createSyntheticBundle();
+    unlocatedBundle.pois = [unevidenced];
+    const withoutPoi = create(unlocatedBundle);
+    withoutPoi.setRoute(farRoute, [step("concourse", "concourse")], unevidenced);
+    expect(withoutPoi.el.querySelector(".minimap-poi.is-destination")).toBeNull();
+    expect(display(withoutPoi, ".minimap-destination-rim")).toBe("");
+    expect(withoutPoi.el.querySelector(".minimap-destination-rim")!.getAttribute("transform")).toBe("translate(179 95) rotate(90)");
+    expect(display(withoutPoi, ".minimap-route-end")).toBe("none");
   });
 
-  it("shows no destination marker for another floor, only the label line", () => {
+  it("shows no destination POI dot for another floor, only the label line", () => {
     const map = create();
     const upperDestination = poi({ id: "upstairs", floorId: "upper" });
     const route = [point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)];
     map.setRoute(route, [step("concourse", "concourse")], upperDestination);
-    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("Destination: 1F");
-    expect(display(map, ".minimap-destination-marker")).toBe("none");
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("Destination floor: 1F");
+    expect(map.el.querySelector(".minimap-poi.is-destination")).toBeNull();
     expect(display(map, ".minimap-destination-rim")).toBe("none");
+  });
+
+  it("draws no destination POI dot unless the POI itself has position, connector and floor evidence", () => {
+    const variants: Array<{ label: string; over: Partial<Poi> }> = [
+      { label: "null position", over: { displayPosition: null } },
+      { label: "no connector", over: { connectorNodeIds: [] } },
+      { label: "null floor", over: { floorId: null } },
+    ];
+    for (const variant of variants) {
+      const target = poi({ id: "target", ...variant.over });
+      const bundle = createSyntheticBundle();
+      bundle.pois = [target];
+      const map = create(bundle);
+      map.setRoute([point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)], [step("concourse", "concourse")], target);
+      expect(map.el.querySelectorAll(".minimap-poi"), variant.label).toHaveLength(0);
+      // The route's own end is still drawn, but as a neutral endpoint with no POI meaning.
+      expect(display(map, ".minimap-route-end"), variant.label).toBe("");
+      expect(display(map, ".minimap-destination-rim"), variant.label).toBe("none");
+    }
+
+    // With evidence, the dot sits at the POI's displayPosition — never at the route end (20, 0).
+    const target = poi({ id: "target", displayPosition: { x: 50, y: 50, z: 0 } });
+    const bundle = createSyntheticBundle();
+    bundle.pois = [target];
+    const map = create(bundle);
+    map.setRoute([point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)], [step("concourse", "concourse")], target);
+    const dots = map.el.querySelectorAll(".minimap-poi");
+    expect(dots).toHaveLength(1);
+    expect(dots[0]!.getAttribute("cx")).toBe("100");
+    expect(dots[0]!.getAttribute("cy")).toBe("-100");
+    expect(dots[0]!.classList.contains("is-destination")).toBe(true);
+    expect(map.el.querySelector(".minimap-route-end")!.getAttribute("transform")).toBe("translate(115 95)");
+  });
+
+  it("points at the later connector after the route comes back to the floor", () => {
+    const bundle = createSyntheticBundle();
+    // The "other" node sits exactly on (20, 10) but belongs to another operator's floor.
+    bundle.nodes = bundle.nodes.filter((node) => node.id !== "other");
+    const map = create(bundle);
+    const points = [
+      point(0, 0, "concourse", -1), point(10, 0, "concourse", 0),
+      point(10, 0, "upper", 1), point(10, 10, "upper", 2),
+      point(10, 10, "concourse", 3), point(20, 10, "concourse", 4),
+      point(20, 10, "upper", 5),
+    ];
+    const steps = [
+      step("concourse", "concourse"), step("concourse", "upper", "stairs"), step("upper", "upper"),
+      step("upper", "concourse", "stairs"), step("concourse", "concourse"), step("concourse", "upper", "escalator"),
+    ];
+    map.setRoute(points, steps, null);
+    expect(map.el.querySelector(".minimap-connector-marker")!.getAttribute("transform")).toBe("translate(115 95)");
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
+
+    pose = { ...pose!, east: 20, north: 10 };
+    tick();
+    // Back on B1F after the detour, the already-walked stairs are no longer the hint.
+    expect(map.el.querySelector(".minimap-connector-marker")!.getAttribute("transform")).toBe("translate(95 95)");
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by escalator");
   });
 
   it("never draws a search-only POI and drops dots when the floor changes", () => {
@@ -272,7 +354,8 @@ describe("Minimap route overlay (#220 PR2)", () => {
     expect(routeLines(map)).toHaveLength(0);
     expect(map.el.querySelectorAll(".minimap-poi")).toHaveLength(0);
     expect(map.el.querySelector<HTMLElement>(".minimap-route-label")!.hidden).toBe(true);
-    expect(display(map, ".minimap-destination-marker")).toBe("none");
+    expect(display(map, ".minimap-route-end")).toBe("none");
+    expect(display(map, ".minimap-destination-rim")).toBe("none");
     map.setStation(createSyntheticBundle(), "en");
     expect(routeLines(map)).toHaveLength(0);
     expect(map.el.querySelector(".minimap-route-label")!.textContent).toBe("");

@@ -302,7 +302,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .minimap-poi[data-category="gate"] { fill: #ffe08a; }
 .minimap-poi[data-category="platform"] { fill: #c4b5fd; }
 .minimap-poi.is-destination { fill: #ffd166; stroke: #fff; stroke-width: 1.2; }
-.minimap-destination-dot { fill: #ffd166; stroke: #0b1822; stroke-width: 1.5; }
+.minimap-route-end-dot { fill: #e5fdff; stroke: #0b1822; stroke-width: 1; }
 .minimap-rim-marker { fill: #ffd166; stroke: #0b1822; stroke-width: 1; }
 .minimap-connector-marker { fill: none; stroke: #ffd166; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .minimap-connector-rim { fill: #9be7ff; }
