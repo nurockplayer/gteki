@@ -71,8 +71,8 @@ Ikebukuro totals today: 38 exits, 9 gates (3 routed), 6 passage and hall POIs, 5
 
 | Line | In station data today | Usable fact sources now | Geometry / network | Layer reachable now | Main blockers |
 | --- | --- | --- | --- | --- | --- |
-| **JR East** | none (`gap:transfers`) | **S03 entities**: 12 JR gate and exit names, 2 of them shared transfer gates with Keio and Odakyu. Toei page: JR line names in its transfer list (Toei's own text) | S03 level and path geometry (CRS UNKNOWN); PLATEAU 13104 `ubld` (coverage UNKNOWN) | (a) AREA_ONLY, if ruling R-1 below allows it. Platforms UNKNOWN (S03 names none) | Ruling R-1 (OD-02 scope); 2020 vintage (S03 predates the 2020-07 東西自由通路, see G5); S03 CRS |
-| **Odakyu** | none | **S03**: 4 gate names plus 5 platform entities (2–6, with service labels) | as JR | (a) AREA_ONLY: gates and platforms | Ruling R-2 (2020 vintage); the Odakyu site is PENDING; the planned 2027-03 IC-only change must not be applied early (dossier S06) |
+| **JR East** | none (`gap:transfers`) | **S03 entities**: 12 JR gate and exit names, 2 of them shared transfer gates with Keio and Odakyu. Toei page: JR line names in its transfer list (Toei's own text) | S03 level and path geometry (CRS UNKNOWN); PLATEAU 13104 `ubld` (coverage UNKNOWN) | (a) AREA_ONLY (R-1 allowed). Platforms UNKNOWN (S03 names none) | 2020 vintage (S03 predates the 2020-07 東西自由通路, see G5); S03 CRS |
+| **Odakyu** | none | **S03**: 4 gate names plus 5 platform entities (2–6, with service labels) | as JR | (a) AREA_ONLY: gates and platforms | 2020 vintage (R-2 note); the Odakyu site is PENDING; the planned 2027-03 IC-only change must not be applied early (dossier S06) |
 | **Keio** (京王線) | none | **S03**: 5 gate names (2 exit-only), plus the shared JR/Keio transfer gate | as JR | (a) AREA_ONLY: gates. Platforms UNKNOWN | Keio site PENDING; 2026-09/10 works notices (dossier S05) postdate S03 |
 | **Keio New Line** (京王新線) **and Toei Shinjuku Line S01** (one shared station, managed by Keio per Toei's page) | none | **S03**: 京王新線口 (2 entities), 新都心口. Toei page: exits 3–5 京王新線口, 6–8 新都心口, 1 and 2 閉鎖中 (2 since 2024-03-30), S01 lift 1 and escalators 14 | as JR | (a) gates and the exit list; platforms UNKNOWN | Toei's exit list mixes S01 and E27 exits, and the page does not say which is which; Keio PENDING; the Toei CSVs PENDING |
 | **Metro Marunouchi M08** | none | **S03**: 丸の内線 東口改札口, 西口改札口, one further gate entity. Metro pages (#26): exit list, のりかえ出口案内 (unread) and accessibility | as JR | (a) gates, exits, lifts | Metro pages not yet read for M08; the dossier warns that the HTML exit list has a stray template entry (S07) |
@@ -110,7 +110,7 @@ S03 is base data of 2020-03. Known later changes in the repo records: the 2020-0
 
 | # | Package | Lines | Ready? | Output | Lane / writer | Worker |
 | --- | --- | --- | --- | --- | --- | --- |
-| **WP1** | **Shinjuku S03 line POIs**: 37 gates, transfer gates and Odakyu platforms as AREA_ONLY (S03 level label in notes) | SJ: JR, Odakyu, Keio, Keio New Line, M08 | Yes for non-JR names now. JR names wait on R-1 | `docs/research/lines/shinjuku-line-pois.json` (format agreed with sjk-search-78: `poi:<operator>-<kind>:<n>`, sources with rights values) + contract | lines-lead → **sjk-search-78** (adds to `import-e27.ts` and regenerates) | Luna (routine extraction script, store read-only), lead review |
+| **WP1** | **Shinjuku S03 line POIs**: 37 gates, transfer gates and Odakyu platforms as AREA_ONLY (S03 level label in notes) | SJ: JR, Odakyu, Keio, Keio New Line, M08 | Yes (R-1 allowed JR names from S03) | `docs/research/lines/shinjuku-line-pois.json` (format agreed with sjk-search-78: `poi:<operator>-<kind>:<n>`, sources with rights values) + contract | lines-lead → **sjk-search-78** (adds to `import-e27.ts` and regenerates) | Luna (routine extraction script, store read-only), lead review |
 | **WP2** | **Ikebukuro Metro** gates (add 南通路東改札 and the Fukutoshin gates), platforms, lifts and escalators by end pair, C-series exits | IK: M25, Y09, F09 | Yes (#26) | `docs/research/lines/ikebukuro-line-pois.json` batch 1 | lines-lead → **ikb-route-15** | DeepSeek ds-research with ego-lite allowed (Metro refuses plain requests), or Luna if pages can be read without a browser |
 | **WP3** | **Ikebukuro Seibu** gates, platforms, lifts, 西武南口 hours | IK: Seibu | Yes (OD-25) | same file, batch 2 | lines-lead → ikb-route-15 | same worker as WP2 |
 | **WP4** | **Shinjuku M08 + S01** from Metro and Toei pages: exits and lifts; reconcile with S03 names; split the Toei exit list only where a source says which line | SJ: M08, S01 | Yes (#26, OD-01 A) | same file as WP1, batch 2 | lines-lead → sjk-search-78 | same worker as WP2 |
@@ -127,7 +127,13 @@ Order of value: Shinjuku JR↔Odakyu/Keio/M08 transfers are the busiest, so WP1 
 
 ## 6. Requests
 
-**Rulings for gteki-1b**
+**Rulings for gteki-1b** (R-1 and R-2 decided by gteki-1b on 2026-10-24, under the Owner's delegation)
+
+- **R-1 decided: allowed.** OD-02 excludes JR East's own data (its floor maps and pages). JR gate names recorded in non-JR sources (S03, the Toshima guide) are facts and may be used. Each such POI cites that non-JR source as its evidence, never a JR page.
+- **R-2 decided: allowed.** S03 POIs carry 「2020年3月時点」 / "as of March 2020", status UNKNOWN, AREA_ONLY, no position, and are never route evidence.
+- **R-3 open:** decided once GIS has checked the terms.
+
+As asked:
 
 - **R-1.** OD-02 ("no JR East data"): does it also exclude JR facility names taken from a **non-JR** source (S03, CC BY; the Toshima guide)? Ikebukuro already ships three JR gate names from the Toshima guide. Recommendation: allowed when the source is not JR East, with the source cited per POI.
 - **R-2.** S03 vintage: may S03 line POIs ship with the 2020-03 dated note and status UNKNOWN (section 4.3)? Recommendation: yes, AREA_ONLY only, with no position and no route until a newer source or a field check confirms them.
