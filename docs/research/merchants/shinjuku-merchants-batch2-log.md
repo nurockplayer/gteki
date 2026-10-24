@@ -1,6 +1,6 @@
 # Shinjuku merchant batch 2 transcription log
 
-Retrieved 2026-10-24 around 09:10 UTC. Raw HTML was fetched with `curl -sL` and parsed in memory by Python `HTMLParser`; raw pages were not saved. Requests were sequential, at least 0.32 seconds apart. Listing pages only: the 578 listed code entries made individual detail-page checks too many requests for this session, so closures and detail-page readings were not verified. Aliases are empty because listings print no reading fields. Closure status is unknown for all entries, not a finding that none are closed.
+Retrieved 2026-10-24 around 09:10 UTC. Raw HTML was fetched with `curl -sL` and parsed in memory by Python `HTMLParser`; raw pages were not saved. Requests were sequential, at least 0.32 seconds apart. This first pass read listing pages only. The detail pages were read afterwards in the lead review (see the end): closures were checked there and printed readings were added as aliases, so the per-floor notes below saying "not checked" / "none checked" describe the first pass only.
 
 All imported entries use `AREA_ONLY`, `floorId: null`, `displayPosition: null`, `connectorNodeIds: []`, and `paid: null`. Listing names preserve decoded HTML text and punctuation.
 
@@ -34,7 +34,7 @@ All imported entries use `AREA_ONLY`, `floorId: null`, `displayPosition: null`, 
 - 4f: https://www.lumine.ne.jp/est/floorguide/?area=area01store01&floor=4f
   - UTC retrieval: 2026-10-24 09:10 (sequential pass; minute precision). Listed 31; imported 31; skipped 0; excluded 0.
   - Excluded: none.
-  - Promotional text dropped: RANDA POP UP STORE → RANDA (dropped promotional suffix "POP UP STORE").
+  - Promotional text dropped: none. (The first pass wrongly shortened RANDA POP UP STORE to RANDA; corrected in the lead review: it is the printed name of a separate location from RANDA.)
   - Closures found: not checked (detail page not requested). Readings found: none checked; listing has no reading field. Method: curl + raw HTML parser. Uncertain name: none observed in listing text.
 - 5f: https://www.lumine.ne.jp/est/floorguide/?area=area01store01&floor=5f
   - UTC retrieval: 2026-10-24 09:10 (sequential pass; minute precision). Listed 20; imported 20; skipped 0; excluded 0.
@@ -211,5 +211,11 @@ All imported entries use `AREA_ONLY`, `floorId: null`, `displayPosition: null`, 
 
 - Rights: OD-34 (2026-10-24, [#377 comment 6382700098](https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098)). The LUMINE / LUMINE EST / NEWoMan terms ban use only beyond private use or what the law allows, so facts only are allowed.
 - Every one of the 576 shop detail pages was read once by plain HTTP (2026-10-24, about 09:45–10:10 UTC). None prints a closure notice (営業終了, 閉店, 閉館). クア・アイナ (`shop-sjk-lumineest-002482`) moved from 8F to 7F, and the batch already has 7F.
-- Printed readings: each detail page prints a kana reading (`detail-head__name--kana`). 527 readings that differ from the name are added as `ja-Hrkt` aliases; 38 are identical to the name and are not repeated.
+- Printed readings: 565 of the 576 detail pages print a kana reading (`detail-head__name--kana`). 527 readings that differ from the name are added as `ja-Hrkt` aliases; 38 are identical to the name and are not repeated. 11 pages print no reading, so those entries have no alias (none invented): shop-sjk-lumineest-002097, -002228, -002221, -002244, -002230, -002242; shop-sjk-lumine-002665; shop-sjk-newoman-001823, -001805, -001802, -001777.
 - ルミネ新宿 is 230, not the inventory's 232: 2 event spaces are left out (see above).
+
+## Lead review, second pass (2026-10-24, after the oracle review)
+
+- shop-sjk-lumineest-003492 is RANDA POP UP STORE as printed (MAP 21), a separate location from RANDA (shop-sjk-lumineest-002173, MAP 18). Name restored; its printed reading alias was already correct.
+- Reading counts: 527 aliases + 38 identical + 11 without a printed reading = 576 (listed above).
+- Rooftop (R) floors are left out on purpose: LUMINE EST R 韓国酒場ビアガーデン and LUMINE 1 R 旅するビアガーデンHello are seasonal beer gardens whose own pages give an end of season on 2026-10-31, a week after this read. They would be closed before or soon after import, so they are treated like the event spaces left out above. No other R-floor entries.
