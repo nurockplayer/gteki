@@ -48,9 +48,10 @@ neighbour. At mip level L a texel spans 2^L atlas texels and the bilinear footpr
 past the sample, so a level stays isolated only while the smallest UV inset is at least 2^(L-1) texels (and the
 smallest cell at least 2^L). `atlases.<kind>.max_isolated_mip` is the deepest such level, measured from the
 packed UVs (Ikebukuro nosing: 2 on full, 1 on mobile, from the bake's 2.5 and 1.25 texel island margins).
-Deeper levels can blend the outer texels of a neighbouring cell. That only happens at strong minification,
-where a cell spans a handful of screen pixels. Clamping a loader's max mip level to the value removes the blend but
-brings back minification shimmer, so treat the field as the strict bound rather than a recommended clamp.
+The bound is per level: trilinear filtering at a LOD between `max_isolated_mip` and the next level already mixes
+in that next level, so a 128 px cell with a 2.5 texel inset can pick up a neighbour's outer texels while it still
+spans about 32 screen pixels. Only a sampler whose max mip level is `max_isolated_mip` never blends cells; that
+clamp brings back minification shimmer, so the field records the strict bound and each loader decides.
 The client assigns the external AO map on channel 1 before merging geometry.
 `--manifest` checks atlas and GLB hashes/byte counts and reachable UV cells; without it, validation is unchanged.
 

@@ -263,10 +263,28 @@ class AtlasTests(unittest.TestCase):
         self.assertEqual(atlas.isolated_mip(128, 0.5), 0)
         self.assertEqual(atlas.isolated_mip(128, 1.0), 1)
         self.assertEqual(atlas.isolated_mip(128, 2.4999), 2)
+        self.assertEqual(atlas.isolated_mip(128, 0.9999995), 0)  # no tolerance on a strict bound
         self.assertEqual(atlas.isolated_mip(128, 1.2499), 1)
         self.assertEqual(atlas.isolated_mip(128, 64.0), 7)
         self.assertEqual(atlas.isolated_mip(4, 64.0), 2)
         self.assertEqual(atlas.min_inset([(0.75, 0.5)], [0, 0, 4, 4], (4, 4)), 1.0)
+
+    def test_atlas_overlap_slack_spares_rounding_slivers_only(self):
+        # a float32-rounded sliver from the Ikebukuro escalator build, and its neighbour
+        sliver = ((0.2345266342163086, 0.7433176040649414), (0.23156213760375977, 0.7439352869987488),
+                  (0.2118086814880371, 0.7480509877204895))
+        neighbour = ((0.2395925521850586, 0.742595374584198), (0.2345266342163086, 0.7433176040649414),
+                     (0.2118086814880371, 0.7480509877204895))
+        slack = validator.ATLAS_OVERLAP_SLACK
+        self.assertEqual(len(validator.uv_overlaps([sliver, neighbour])), 1)
+        self.assertEqual(validator.uv_overlaps([sliver, neighbour], slack=slack), [])
+        # a real overlap of 0.03 x 0.03 texels in a 512 px atlas (below 1e-3 texel^2) must still fail
+        t = 0.03 / 512
+        a = ((0.5, 0.5), (0.5 + t, 0.5), (0.5, 0.5 + t))
+        b = ((0.5 + t, 0.5 + t), (0.5, 0.5 + t), (0.5 + t, 0.5))
+        c = ((0.499, 0.499), (0.502, 0.499), (0.499, 0.502))  # contains a
+        self.assertEqual(validator.uv_overlaps([a, c], slack=slack), [(0, 1)])
+        self.assertEqual(validator.uv_overlaps([a, b], slack=slack), [])  # shared edge only
 
     def test_readme_sampling_guarantee(self):
         readme = Path(atlas.__file__).with_name("README.md").read_text()
@@ -366,7 +384,7 @@ class AtlasTests(unittest.TestCase):
                 self.assertEqual((processed["sha256"], processed["bytes"]), (atlas.digest(data), len(data)))
                 self.assertEqual(processed["ao_atlas"]["kind"], "nosing")
                 self.assertIn("synthetic/0.1", m["atlases"]["nosing"]["provenance"])
-                self.assertIn(m["atlases"]["nosing"]["max_isolated_mip"], range(0, 8))
+                self.assertEqual(m["atlases"]["nosing"]["max_isolated_mip"], 0)  # 4 px cell, 0.5 texel inset
 
     def test_cli_determinism_and_ids(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -197,7 +197,7 @@ def isolated_mip(smallest_cell, inset):
     2**L atlas texels and bilinear reads up to half a level-L texel past the sample point, so the
     UV inset must reach 2**(L-1); box mips also stay inside a cell only while 2**L <= the cell."""
     level = 0
-    while 2 ** (level + 1) <= smallest_cell and inset + 1e-6 >= 2 ** level:
+    while 2 ** (level + 1) <= smallest_cell and inset >= 2 ** level:  # exact: the bound is strict
         level += 1
     return level
 

@@ -22,8 +22,9 @@ ROLES = ("barriers", "transport", "stairs_ramps")  # station bake roles; keep in
 REQUIRED = ("contract id family variant version generator params bounds_m triangles "
             "dimension_basis fidelity navigation provenance license").split()
 # Packing rounds UV1 to float32 in atlas space, which can tip a sliver triangle a few 1e-8 across its
-# neighbour's edge. Overlaps below this many atlas texels^2 are rounding, not overlapping charts.
-ATLAS_OVERLAP_TEXEL2 = 1e-3
+# neighbour's edge. An overlap thinner than this (atlas UV units, 4 float32 ulps at 1.0) is that rounding;
+# any overlap that can cover part of a texel is far thicker and still fails.
+ATLAS_OVERLAP_SLACK = 2.0 ** -22
 IDENTITY = [1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.]
 
 
@@ -152,10 +153,11 @@ def _clip(subject, clipper):
     return out
 
 
-def uv_overlaps(tris, eps=1e-10):
+def uv_overlaps(tris, eps=1e-10, slack=0.0):
     """Index pairs of UV triangles that overlap by more than `eps` of the unit square.
 
-    Lightmap charts must not overlap; triangles that only share an edge or a vertex do not count."""
+    Lightmap charts must not overlap; triangles that only share an edge or a vertex do not count.
+    With `slack`, an overlap whose mean thickness (2 * area / perimeter) is at most `slack` is ignored."""
     ccw = {}
     for i, t in enumerate(tris):
         a = _area(t)
@@ -186,7 +188,9 @@ def uv_overlaps(tris, eps=1e-10):
                     continue  # boxes only touch or are apart
                 poly = _clip(ccw[pair[0]], ccw[pair[1]])
                 if len(poly) >= 3 and _area(poly) > eps:
-                    pairs.add(pair)
+                    perimeter = sum(math.dist(poly[k - 1], poly[k]) for k in range(len(poly)))
+                    if not slack or 2 * _area(poly) > slack * perimeter:
+                        pairs.add(pair)
     return sorted(pairs)
 
 
@@ -424,7 +428,7 @@ class Validator:
         if not isinstance(meta.get("triangles"), int) or isinstance(meta.get("triangles"), bool) or meta["triangles"] < 0:
             self.message("FAIL", "metadata triangles must be a non-negative integer")
         materials = doc.get("materials", [])
-        atlas_entry, overlap_eps = None, 1e-10
+        atlas_entry, overlap_slack = None, 0.0
         if self.manifest is not None:
             if not isinstance(self.manifest, AtlasManifest):
                 self.manifest = AtlasManifest(self.manifest)
@@ -434,7 +438,7 @@ class Validator:
                 self.message("FAIL", "ao_atlas asset still carries occlusionTexture")
             x, y, w, h = atlas_entry["cell"]
             width, height = self.manifest.sizes[atlas_entry["kind"]]
-            overlap_eps = max(overlap_eps, ATLAS_OVERLAP_TEXEL2 / (width * height))
+            overlap_slack = ATLAS_OVERLAP_SLACK
             owned = self.manifest.helper.asset_nodes(doc, stem)
             mesh_indices = {nodes[i]["mesh"] for i in owned if "mesh" in nodes[i]}
             uv_indices = {p["attributes"]["TEXCOORD_1"] for i in mesh_indices
@@ -582,7 +586,7 @@ class Validator:
             if shared_atlas:
                 atlas.append((node, tris))
                 return
-            overlapping = uv_overlaps(tris, overlap_eps)
+            overlapping = uv_overlaps(tris, slack=overlap_slack)
             if overlapping:
                 self.message("FAIL", f"node {node.get('name')!r} lightmap UV (TEXCOORD_1) has "
                              f"{len(overlapping)} overlapping triangle pairs")
@@ -675,7 +679,7 @@ class Validator:
         if shared_atlas:
             # one occlusion map for the whole asset: every visual node lays its islands out in the same
             # UV space, so they must not overlap across nodes (a mesh instanced twice overlaps itself)
-            overlapping = uv_overlaps([tri for _, tris in atlas for tri in tris], overlap_eps)
+            overlapping = uv_overlaps([tri for _, tris in atlas for tri in tris], slack=overlap_slack)
             if overlapping:
                 self.message("FAIL", f"visual nodes share one lightmap atlas (occlusion map) but their UV1 has "
                              f"{len(overlapping)} overlapping triangle pairs")
