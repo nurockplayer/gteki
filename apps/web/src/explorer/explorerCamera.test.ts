@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { WALKER_SPEED } from "@gteki/scene-api";
 import { Explorer } from "./explorer.ts";
 import { FOLLOW, NO_SLOPE, followPose, type CameraHold } from "./followCamera.ts";
+import type { IdentityBoard } from "./identityBoards.ts";
 
 /** Exercise the real camera wiring with CPU raycasts; no renderer or browser is constructed. */
 function cameraStand() {
@@ -19,6 +20,8 @@ function cameraStand() {
     composer: { settings: { reflections: true }, setAvatarFade: vi.fn() },
     qaCamera: {} as CameraHold, qaCameraSnap: false, qaAvatarFade: null as number | null,
     boomActual: 0, cameraFade: 1, fadeStale: false,
+    // The station has no identity boards here, so guide starts never reframe the look.
+    identityBoards: [] as IdentityBoard[], identityPlaced: false,
   };
   return Object.assign(Object.create(Explorer.prototype) as typeof state, state);
 }
