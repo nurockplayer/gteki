@@ -120,3 +120,26 @@ the name somewhere other than in a transfer statement.
   京王電鉄 / 小田急電鉄.
 - No `quote` field anywhere; gate, exit and line names appear only as printed
   labels, and every statement is in my own words.
+
+## lines-lead additions from the images (2026-10-24, gteki-1b instruction)
+
+DeepSeek could not read the diagrams, so lines-lead (Claude Opus 5.5) read them with vision. Images were fetched through ego-lite (read-only) into a scratch folder outside the repo and are not committed. Only facts are taken:
+- printed line labels, direction labels and hours;
+- the direction label that each transfer group points to;
+- the Seibu platform legend.
+
+No car positions, relative placement or layout are taken (OD-03).
+
+- **Tokyo Metro 池袋 (M25, Y09, F09 diagrams)** — 27 entries:
+  - each transfer group with the direction label it points to: 中央通路 (linked to `central-passage`), 東京芸術劇場 / 東武百貨店, 西武百貨店 / サンシャインシティ(方面), Esola池袋, 立教大学;
+  - printed hours: 副都心線連絡通路 始発～0:06 (from M25); F09 routes 始発～23:55 and 始発～0:05.
+- **Tokyo Metro 新宿 (M08 diagrams)** — 6 entries. The key fact is a footnote saying the 都営大江戸線 transfer is a **connection with 新宿西口駅 (E01)**, not with the Toei 新宿 station. The 西武線 label carries the Seibu Shinjuku Line mark (西武新宿 is a separate station; no connection is modelled).
+- **Toei 新宿 (構内図 image)** — 5 entries:
+  - the S01 ↔ E27 transfer (in the map's transfer guide; not in the page text);
+  - direction labels 南口方面 (JR, Odakyu) and 京王線新宿駅へ (Keio).
+- **Seibu 池袋 (station map dated 2026.8.1)** — 8 transfer entries from two B1F direction arrows, and **7 platform POIs** (`newPois`, `seibu-platform-1` to `-7`): 1, 4 and 6 are alighting-only; 2, 3, 5 and 7 depart toward 所沢・飯能・西武秩父. This answers WP3's "Seibu platform numbers not printed": they are printed, but only in the image.
+- **Toei station-level list de-duplicated:** the 7 entries per Toei line became one entry per target line under 「都営新宿線・都営大江戸線（駅全体）」, because the page gives one list for the station.
+- **Source ids** for the Toei and Seibu pages are distinct from #421's and #414's records of the same URLs (`toei-shinjuku-norikae-2026-10`, `seibu-ikebukuro-norikae-2026-10`). Each import then keeps one record per id (sjk-search-78's request).
+- **Candidates for the writers, not applied:**
+  - The Toei map prints the gate name 新都心口 with hours 6:45～22:00. That name is already a tag on Toei exits 6–8 in #421, so it could become a Toei gate POI.
+  - The Seibu map draws 西武南口 in the same style as the 東口 exit labels. In #414 it is `other`, because the text page does not say what it is.
