@@ -26,7 +26,7 @@
 | Who | A person acting for the shop (owner, manager, head office web/e-commerce team). One row per shop per submission. |
 | Light identity check | (1) contact e-mail on the shop's official domain, or (2) the submission cites an official URL that names the shop and the same contact/branch — for chains, the branch page in the operator's own store locator, not the brand homepage. Neither present → queue as `IDENTITY_UNCONFIRMED`. |
 | Contact data | One contact point (e-mail or phone). No name, postal address or employee ID required. Free-text "role" only (e.g. `店長`, `本部`). |
-| Public repo | Contact data never enters `stations/**` or any public file. Only a hash plus timestamp in the approval record (§5). |
+| Public repo | Contact data never enters `stations/**` or any public file. Public approval records carry no contact-derived value at all; a keyed HMAC (key kept private) and the timestamp live only in the private queue (§4). |
 | Retention | Contact kept while the submission is open and 90 days after the decision, then deleted; deleted earlier on request. Withdrawal is logged without the contact. |
 | Chain vs branch | A brand-domain contact proves the brand, not the branch. Branch-specific facts still need the branch page or a field check. |
 
@@ -60,11 +60,11 @@ Position rules that follow from the schema and validator:
 
 The submitter ticks a versioned consent with these effects (wording to be finalised by core-rights-a9):
 
-1. **Grant (facts).** A non-exclusive, royalty-free, irrevocable licence to GTEki and its users to include, modify, publish and sublicense the submitted facts (name, category, facility, floor, position, entrance wording, hours, official URL). Withdrawal is handled separately (item 5).
+1. **Grant (facts).** A worldwide, non-exclusive, royalty-free, irrevocable licence to GTEki and its users to include, modify, publish and sublicense the submitted facts (name, category, facility, floor, position, entrance wording, hours, official URL), for any purpose including commercial use, in any medium. The licence itself cannot be revoked. Withdrawal (item 5) is a separate promise by GTEki to drop the entry from future releases; it does not end the licence for copies already distributed.
 2. **Licence name.** Registered in `REUSE`/`NOTICE` as `LicenseRef-GTEki-merchant-grant`. It is never resolved to Apache-2.0, CC BY 4.0 or CC0.
-3. **Authority.** The submitter declares they are authorised to act for the shop. Recorded: role, hash of the contact, timestamp, terms version.
+3. **Authority and warranty.** The submitter declares they are authorised to act for the shop, that the submitted facts are accurate to their knowledge, and that nothing submitted copies third-party text, images or floor plans. Recorded: role, a keyed HMAC of the contact (never a plain hash in any public record; the key and the contact stay in the private queue), timestamp, terms version.
 4. **Display.** Facts display with the label 「店舗提供」 / "merchant-submitted" and the submission date, never as verified.
-5. **Withdrawal.** On request the entry is removed from the next public release. Already-distributed releases and caches cannot be recalled; the form and spec say so. Withdrawals are logged.
+5. **Withdrawal.** On request GTEki commits to remove the entry from the next public release. Already-distributed releases and caches cannot be recalled; the form and spec say so. Withdrawals are logged.
 6. **Photos (later).** If collected in a later phase: the shop's own copyright, credited to photographer and rights holder, no people and no third-party marks or works, project grant or CC BY 4.0 with an attribution string, no AI-generated images, nothing taken from the web.
 7. **Not accepted.** CC0, GPL/SA-type licences, "automatic consent", shop-authored licence text. Rights labels in the UI come from i18n only.
 
@@ -97,8 +97,8 @@ Rules:
 | `id` | `msub-<stn>-<n>` (e.g. `msub-ikb-001`); never reused |
 | `title` | `Merchant submission <submission id>` |
 | `publisher` | the shop's official name |
-| `url` | the shop's own page; when a shop has none, see open question 5 (a real station's source needs an http(s) landing URL) |
-| `license` | `LicenseRef-GTEki-merchant-grant` (DRAFT, §4) with a link to the terms version |
+| `url` | the shop's own page; when the shop has none, the public approval record URL for that submission (never empty) |
+| `license` | `LicenseRef-GTEki-merchant-grant` (DRAFT, §4); `license.url` points to the public, versioned terms page |
 | `rights` | `REUSABLE_WITH_CONDITIONS` once the grant is accepted (core-rights-a9) |
 | `usage` | `data` for facts used as position data; never `facts-only` for a submission that feeds `displayPosition` |
 | `decision` | the approval record (issue/comment URL + ISO date) |
@@ -143,10 +143,10 @@ The shop and its position are separate records, so a move only updates the ancho
 
 - **Spam:** rate limit per contact and per IP (e.g. 3 submissions/day, 10/month); a shared-secret or invite link for a pilot batch; no bulk import from a shop.
 - **Duplicate:** same name + floor + position within N metres → merged into one queue row for a reviewer, never auto-published twice.
-- **Impersonation:** §2 identity check; a claim on a shop already verified by another contact needs a Lead decision; no public "this shop claimed" badge until the rights owner approves it.
+- **Impersonation:** §2 identity check; a claim on a shop already approved for another contact is decided by the station lead (core-rights-a9 only if the grant's validity is questioned; the Owner if they disagree); no public "this shop claimed" badge until the rights owner approves it.
 - **Banned content:** promotional copy, logos, prices, images with people, third-party marks; rejected at review, not silently edited.
 - **Takedown:** anyone can request removal of a listing; removal from the next release, logged; corrections get the same route.
-- **Data minimisation:** one contact, hashed in the approval record; no analytics on the form beyond abuse counters.
+- **Data minimisation:** one contact, kept only in the private queue with a keyed HMAC; no analytics on the form beyond abuse counters.
 
 ## 8. MVP surface options
 
@@ -169,8 +169,8 @@ The shop and its position are separate records, so a move only updates the ancho
 **core-rights-a9**
 
 4. Final wording of the grant (§4), including whether "irrevocable" plus separate withdrawal is acceptable, and the `LicenseRef` name.
-5. `Source.url` when a shop has no web page: is an empty landing URL acceptable for a real station, or does the source need a project-hosted record URL?
-6. Who signs off an impersonation claim on an already-verified shop.
+5. ~~`Source.url` when a shop has no web page~~ — answered by core-rights-a9: use the submission's public approval record URL, never empty.
+6. ~~Who signs off an impersonation claim~~ — answered by core-rights-a9: the station lead decides identity disputes; core-rights only when the validity of the grant is questioned; the Owner only if the two disagree.
 
 **core-search-6a**
 
