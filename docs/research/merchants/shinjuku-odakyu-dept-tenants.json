@@ -832,13 +832,6 @@
       "category": "和洋菓子"
     },
     {
-      "id": "tenant-sjk-odakyudept-119",
-      "name": "＃新宿地下ラーメン",
-      "aliases": [],
-      "floorLabel": "小田急エース北館",
-      "category": "新宿デリッシュパーク［PARK6］"
-    },
-    {
       "id": "tenant-sjk-odakyudept-120",
       "name": "ジップトップ",
       "aliases": [],
@@ -1420,13 +1413,6 @@
       "category": "新宿デリッシュパーク［PARK1］"
     },
     {
-      "id": "tenant-sjk-odakyudept-203",
-      "name": "POP UP ONE",
-      "aliases": [],
-      "floorLabel": "小田急エース北館",
-      "category": "新宿デリッシュパーク［PARK3］"
-    },
-    {
       "id": "tenant-sjk-odakyudept-204",
       "name": "ポンパドウル",
       "aliases": [],
@@ -1903,5 +1889,20 @@
       "category": "化粧品"
     }
   ],
-  "removed": []
+  "removed": [
+    {
+      "id": "tenant-sjk-odakyudept-119",
+      "name": "＃新宿地下ラーメン",
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK6］",
+      "reason": "pop-up space (rotating vendors), not a permanent brand"
+    },
+    {
+      "id": "tenant-sjk-odakyudept-203",
+      "name": "POP UP ONE",
+      "floorLabel": "小田急エース北館",
+      "category": "新宿デリッシュパーク［PARK3］",
+      "reason": "pop-up space (rotating vendors), not a permanent brand"
+    }
+  ]
 }
