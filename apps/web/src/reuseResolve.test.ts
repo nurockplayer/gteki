@@ -246,7 +246,7 @@ describe("outsideStationData with the project-art exemption", () => {
   const at = (rel: string) => path.join(root, ...rel.split("/"));
   const stationFolder = at("stations/alpha");
   const scene = at("stations/alpha/scene/scene.ts");
-  const station: DiscoveredStation = { dir: "alpha", folder: stationFolder, gtekiDir: path.join(stationFolder, "gteki"), scene, assets: [] };
+  const station: DiscoveredStation = { dir: "alpha", folder: stationFolder, gtekiDir: path.join(stationFolder, "gteki"), scene, tenants: null, assets: [] };
   const art = at("assets/library/manifest.json");
   const vendor = at("assets/library/vendor/lib.json");
   const fonts = at("assets/fonts/JP.woff2");
