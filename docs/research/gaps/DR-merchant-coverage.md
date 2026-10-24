@@ -22,13 +22,13 @@ Owner rule (relayed by director gteki-1b, 2026-10-24): areas whose shop data com
 | Usable | Esola池袋 (#432) | 33 | 33 | done |
 | Usable | 東武百貨店 池袋 (#432) | 1 store + 864 brands | 1 + 864 (tenant dataset) | done |
 | Usable | Seibu station shops / エミオ池袋 (#443) | 13 | 13 | done |
-| Usable | 西武池袋本店 (Sogo & Seibu; OD-31) | not counted | 0 | **open**: site terms not yet read under OD-34 |
+| Pending ruling | 西武池袋本店 (Sogo & Seibu) | not counted | 0 | excluded by the director's earlier ruling; its site terms are being read under OD-34 for a new ruling. No transcription until then |
 | Usable | Station facilities, Tokyo Metro (#431) | 31 | 31 | done |
 | Usable | Facilities printed by the station buildings and Seibu (toilets, ATMs, lockers) | not counted | 0 | **open** |
 | Banned | JR East in-station shops (jreast.co.jp / JR Cross) | GAP | 0 | pushed back (OD-02 A, OD-34) |
 | Banned | Tobu Railway site (tobu.co.jp, §8 business-use ban) | — | 0 | pushed back; corroboration only |
 
-Usable-source areas: **every directory read is transcribed (100% of listed entries)**, except 西武池袋本店 and the building facility lists, which are still open.
+Usable-source areas: **every directory read is transcribed (100% of listed entries)**, except the building facility lists, which are still open. 西武池袋本店 is not counted as usable until the director re-rules it.
 
 ### Shinjuku
 
