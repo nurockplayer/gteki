@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { GTAOPass } from "three/examples/jsm/postprocessing/GTAOPass.js";
-import { FadeAwareGTAOPass } from "./postfx.ts";
+import { FadeAwareGTAOPass, POSTFX_HIGH, qaPostFxSettings } from "./postfx.ts";
 import { AVATAR_DITHER_DISCARD } from "./avatarDither.ts";
 import { createAvatarRig } from "./avatarSelection.ts";
 import { fadeUniform, skinnedAvatarFixture } from "./avatarGlb.fixture.ts";
@@ -156,5 +156,32 @@ describe("FadeAwareGTAOPass", () => {
     expect(mesh.material).toBe(original);
     rig.dispose();
     pass.dispose();
+  });
+});
+
+describe("QA postprocessing settings", () => {
+  it("keeps reflections enabled when the parameter is absent", () => {
+    expect(qaPostFxSettings("").reflections).toBe(true);
+  });
+
+  it.each(["0", "off", "false", "OFF", "False"])("disables reflections for %s", (value) => {
+    expect(qaPostFxSettings(`?qaReflections=${value}`).reflections).toBe(false);
+  });
+
+  it.each(["1", "on", "true", "", "unexpected"])("preserves the default for %s", (value) => {
+    expect(qaPostFxSettings(`?qaReflections=${value}`).reflections).toBe(true);
+  });
+
+  it("changes only reflections and preserves a custom tier", () => {
+    const base = {
+      ...POSTFX_HIGH,
+      bloom: { ...POSTFX_HIGH.bloom, strength: 0.7 },
+      ao: { ...POSTFX_HIGH.ao, radius: 0.8 },
+      grade: { ...POSTFX_HIGH.grade, contrast: 1.4 },
+      msaa: 2,
+    };
+    const result = qaPostFxSettings("?qaReflections=off", base);
+    expect(result).toEqual({ ...base, reflections: false });
+    expect(result).not.toBe(base);
   });
 });

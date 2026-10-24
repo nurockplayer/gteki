@@ -22,9 +22,11 @@ import { LiveRegion, freshnessReason, routeLiveMessage, searchLiveMessage, unkno
 import { MascotSlot, type MascotEvent } from "./mascot.ts";
 import { watchReducedMotion } from "./motion.ts";
 import { railDemoLink } from "./railTravel.ts";
+import { spawnHeading } from "./spawnHeading.ts";
 import { StationIdentityView } from "./identityCard.ts";
 import { RailRideDemo } from "./railRideDemo.ts";
 import { shouldHandleGuideKey } from "./railKeyGuard.ts";
+import { Minimap } from "./minimap.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -95,6 +97,7 @@ export class App {
     profile: el("div", "chips profile"),
     sheet: el("section", "sheet"),
     hud: el("div", "hud"),
+    minimap: new Minimap(() => this.explorer.getPose()),
     coverage: el("dialog", "coverage"),
     toast: el("div", "toast"),
     langBtn: el("button", "ghost lang"),
@@ -134,6 +137,7 @@ export class App {
     // The overview is framed into the part of the view the search panel leaves free (below it on a phone,
     // to its right on a desktop); the panel's own size changes refit it (see Explorer.setPanel).
     this.explorer.setPanel(this.ui.panel);
+    this.explorer.setMinimap(this.ui.minimap.el);
     this.explorer.setGuideTier(readGuideTier());
     this.bindGuideKeys();
     watchReducedMotion((reduce) => {
@@ -164,6 +168,7 @@ export class App {
     });
     this.ui.langBtn.addEventListener("click", () => {
       this.s.lang = this.s.lang === "ja" ? "en" : "ja";
+      this.ui.minimap.setLang(this.s.lang);
       this.layoutText();
       this.refreshAll();
     });
@@ -187,7 +192,7 @@ export class App {
     panel.append(this.identityView.overview, this.ui.banner, fields, this.ui.spawnChips, this.ui.profile, this.ui.more);
 
     this.ui.hint.setAttribute("role", "note");
-    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit);
+    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.minimap.el, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit);
     this.layoutText();
   }
 
@@ -269,6 +274,7 @@ export class App {
     // against the old bundle while the new one loads.
     this.stationReady = false;
     this.s.loaded = null;
+    this.ui.minimap.setStation(null, this.s.lang);
     this.s.router = null;
     this.s.search = null;
     this.s.origin = null;
@@ -301,6 +307,7 @@ export class App {
       if (!current()) return;
       this.identityView.hideCard();
       if (!ready) return;
+      this.ui.minimap.setStation(loaded.bundle, this.s.lang);
       this.toast(this.explorer.sceneError ? `${this.t.sceneFallback}: ${this.explorer.sceneError}` : "", this.explorer.sceneError ? 6000 : 0);
       // Beneath the search fields (the toast fades): the 3D scene failed and the line map is shown instead.
       if (this.explorer.sceneError) this.mascotSay({ kind: "scene_fallback" }, this.ui.panel);
@@ -338,7 +345,7 @@ export class App {
           if (!this.stationReady || this.s.entry?.key !== destination.key || !this.s.loaded) return false;
           // Arrive at a known playable station spawn, NOT at an invented JR platform coordinate.
           const node = this.s.loaded.bundle.spawnNodeIds?.[0];
-          if (node) this.explorer.walkFromNode(this.s.loaded.bundle, node);
+          if (node) this.explorer.walkFromNode(this.s.loaded.bundle, node, spawnHeading(this.s.loaded.bundle, { kind: "node", nodeId: node }, []));
           return true;
         },
         () => { this.railRide = null; },
@@ -711,6 +718,7 @@ export class App {
     this.s.polyline = [];
     this.s.instructions = [];
     this.explorer.clearRoute();
+    this.ui.minimap.setRoute(null, null);
     if (!router || !loaded || !origin || !destination) { this.renderSheet(); return; }
     // One multi-source query: the router ranks entrances by its own cost and keeps "already there";
     // routeBetween also applies the fare policy to the POIs themselves.
@@ -725,6 +733,7 @@ export class App {
       this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination, origin.kind === "poi" ? origin.poi : undefined);
       this.s.activeInstruction = 0;
       this.explorer.showRoute(this.s.polyline);
+      this.ui.minimap.setRoute({ points: this.s.polyline, steps: best.steps }, destination);
       if (this.explorer.currentMode === "overview") this.explorer.focusPoints(this.s.polyline);
     }
     this.renderSheet();
@@ -819,7 +828,7 @@ export class App {
     const walk = el("button", undefined, t.walk);
     walk.addEventListener("click", () => {
       const first = this.s.polyline[0];
-      if (first) this.explorer.walkFrom(first);
+      if (first) this.explorer.walkFrom(first, spawnHeading(this.s.loaded?.bundle ?? null, this.s.origin, this.s.polyline));
     });
     const overview = el("button", "ghost", t.overview);
     overview.addEventListener("click", () => this.explorer.focusPoints(this.s.polyline));
@@ -861,6 +870,8 @@ export class App {
     this.renderIdentity(mode);
     this.renderSpawnChips(this.s.loaded?.bundle);
     this.renderHud();
+    // A collapsed map has no polling timer, so the mode change itself must re-evaluate its visibility (#220).
+    this.ui.minimap.syncVisibility();
   }
 
   /** Inside the panel observed by setPanel: its ResizeObserver already accounts for this header (#114). */
@@ -1350,13 +1361,24 @@ export class App {
       quality: () => this.explorer.qualityLevel,
       mascot: () => this.ui.mascot.info(),
       avatar: () => this.explorer.avatarEnu,
+      camera: () => this.explorer.cameraInfo(),
+      setCamera: (patch: { yaw?: number; pitch?: number; distance?: number } | null) => this.explorer.setCamera(patch),
+      holdAvatarFade: (value: number | null) => this.explorer.holdAvatarFade(value),
       sceneInfo: () => this.explorer.sceneInfo(),
       projectEnu: (points: { x: number; y: number; z: number }[]) => this.explorer.projectEnu(points),
       signFaces: () => this.explorer.signFaces(),
+      identity: () => this.explorer.identity(),
+      setRouteMarkersVisible: (visible: boolean) => this.explorer.setRouteMarkersVisible(visible),
       phase: () => this.explorer.phase,
       audio: () => this.explorer.audioInfo(),
-      walkFromNode: (nodeId: string) => (this.s.loaded ? this.explorer.walkFromNode(this.s.loaded.bundle, nodeId) : false),
+      walkFromNode: (nodeId: string) => (this.s.loaded ? this.explorer.walkFromNode(
+        this.s.loaded.bundle,
+        nodeId,
+        spawnHeading(this.s.loaded.bundle, { kind: "node", nodeId }, []),
+      ) : false),
       simulate: (seconds: number, keys: string[] = []) => this.explorer.simulate(seconds, keys),
+      walkPath: (points: { x: number; z: number; y?: number }[], opts?: { speed?: "walk" | "run"; dt?: number; maxSeconds?: number; onStep?: (i: number) => void }) => this.explorer.walkPath(points, opts),
+      signClearance: (radiusM?: number) => this.explorer.signClearance(radiusM),
     };
   }
 }

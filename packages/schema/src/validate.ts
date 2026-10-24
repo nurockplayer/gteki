@@ -302,6 +302,12 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
   }
 
   for (const id of b.spawnNodeIds ?? []) if (!nodeIds.has(id)) err("spawn.node", `unknown spawn node ${id}`, id);
+  const spawnNodeIds = new Set(b.spawnNodeIds ?? []);
+  for (const [id, heading] of Object.entries(b.spawnHeadings ?? {})) {
+    if (!spawnNodeIds.has(id)) err("spawn.heading.node", `spawn heading references non-spawn node ${id}`, id);
+    if (!Number.isFinite(heading)) err("spawn.heading.value", `spawn heading for ${id} must be finite`, id);
+    else if (heading < -360 || heading > 360) err("spawn.heading.range", `spawn heading for ${id} must be between -360 and 360 degrees`, id);
+  }
 
   const assetIds = new Set<string>();
   for (const a of b.assets ?? []) {
