@@ -64,6 +64,8 @@ export class Minimap {
   private orientation: MinimapOrientation = read(ORIENTATION_KEY) === "north-up" ? "north-up" : "player-up";
   private collapsed = read(COLLAPSED_KEY) === "true";
   private floorId: string | null | undefined;
+  /** The last known floor for route progress; an unknown reading never clears it. */
+  private lastKnownFloor: string | undefined;
   private route: PolylinePoint[] | null = null;
   private steps: RouteStep[] | null = null;
   private destination: Poi | null = null;
@@ -139,6 +141,7 @@ export class Minimap {
     this.bundle = bundle;
     this.lang = lang;
     this.floorId = undefined;
+    this.lastKnownFloor = undefined;
     this.lastPose = "";
     // A route belongs to the station it was computed in; never carry one across.
     this.route = null;
@@ -282,21 +285,28 @@ export class Minimap {
       this.arrow.style.display = floorId === null ? "none" : "";
       this.updateText();
     }
-    // Progress only advances, and only on a new position, floor or route — a turn alone changes
-    // nothing. The hint is the first floor change whose start is at or after the current segment.
-    const position = `${pose.east},${pose.north},${pose.up}`;
-    const moved = position !== this.lastPosition;
-    this.lastPosition = position;
-    if (floorChanged || this.connectorDirty || moved) {
-      const seg = this.route && floorId
-        ? advanceRouteSeg(this.route, this.steps ?? [], floorId, pose.east, pose.north, this.seg, floorChanged)
-        : this.seg;
-      if (floorChanged || this.connectorDirty || seg !== this.seg) {
-        this.seg = seg;
-        this.connectorHint = floorId ? this.transitions.find((t) => t.fromFloorId === floorId && t.startIndex >= seg) ?? null : null;
-        this.renderLabel();
+    // Progress crosses floors only on a known-to-known change. First acquisition (undefined → F)
+    // and a reading that dips to null mid-stairs are not floor changes; while the floor is unknown
+    // neither seg nor the hint moves, so nothing can jump ahead and be impossible to undo.
+    const progressFloorChanged = floorId !== null && this.lastKnownFloor !== undefined && floorId !== this.lastKnownFloor;
+    if (floorId !== null) this.lastKnownFloor = floorId;
+    if (floorId) {
+      // Progress only advances, and only on a new position, floor or route — a turn alone changes
+      // nothing. The hint is the first floor change whose start is at or after the current segment.
+      const position = `${pose.east},${pose.north},${pose.up}`;
+      const moved = position !== this.lastPosition;
+      this.lastPosition = position;
+      if (floorChanged || this.connectorDirty || moved) {
+        const seg = this.route
+          ? advanceRouteSeg(this.route, this.steps ?? [], floorId, pose.east, pose.north, this.seg, progressFloorChanged)
+          : this.seg;
+        if (floorChanged || this.connectorDirty || seg !== this.seg) {
+          this.seg = seg;
+          this.connectorHint = this.transitions.find((t) => t.fromFloorId === floorId && t.startIndex >= seg) ?? null;
+          this.renderLabel();
+        }
+        this.connectorDirty = false;
       }
-      this.connectorDirty = false;
     }
     // Route runs and POIs change only with the route or the floor — never per tick.
     if (floorChanged || this.routeDirty) {

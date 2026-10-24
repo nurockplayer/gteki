@@ -23,6 +23,18 @@ const upRoute: PolylinePoint[] = [
 ];
 const upSteps: RouteStep[] = [step("concourse", "concourse"), step("concourse", "upper", "stairs"), step("upper", "upper")];
 
+/** Concourse → 1F → back down over the same coordinates → on to the escalator. */
+const loopPoints: PolylinePoint[] = [
+  point(0, 0, "concourse", -1), point(10, 0, "concourse", 0),
+  point(10, 0, "upper", 1), point(10, 10, "upper", 2),
+  point(10, 10, "concourse", 3), point(20, 10, "concourse", 4),
+  point(20, 10, "upper", 5),
+];
+const loopSteps: RouteStep[] = [
+  step("concourse", "concourse"), step("concourse", "upper", "stairs"), step("upper", "upper"),
+  step("upper", "concourse", "stairs"), step("concourse", "concourse"), step("concourse", "upper", "escalator"),
+];
+
 describe("Minimap HUD", () => {
   let pose: ExplorerPose | null;
   const maps: Minimap[] = [];
@@ -309,17 +321,7 @@ describe("Minimap route overlay (#220 PR2)", () => {
     // The "other" node sits exactly on (20, 10) but belongs to another operator's floor.
     bundle.nodes = bundle.nodes.filter((node) => node.id !== "other");
     const map = create(bundle);
-    const points = [
-      point(0, 0, "concourse", -1), point(10, 0, "concourse", 0),
-      point(10, 0, "upper", 1), point(10, 10, "upper", 2),
-      point(10, 10, "concourse", 3), point(20, 10, "concourse", 4),
-      point(20, 10, "upper", 5),
-    ];
-    const steps = [
-      step("concourse", "concourse"), step("concourse", "upper", "stairs"), step("upper", "upper"),
-      step("upper", "concourse", "stairs"), step("concourse", "concourse"), step("concourse", "upper", "escalator"),
-    ];
-    map.setRoute({ points, steps }, null);
+    map.setRoute({ points: loopPoints, steps: loopSteps }, null);
     expect(map.el.querySelector(".minimap-connector-marker")!.getAttribute("transform")).toBe("translate(115 95)");
     expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
 
@@ -344,17 +346,7 @@ describe("Minimap route overlay (#220 PR2)", () => {
     const bundle = createSyntheticBundle();
     bundle.nodes = bundle.nodes.filter((node) => node.id !== "other");
     const map = create(bundle);
-    const points = [
-      point(0, 0, "concourse", -1), point(10, 0, "concourse", 0),
-      point(10, 0, "upper", 1), point(10, 10, "upper", 2),
-      point(10, 10, "concourse", 3), point(20, 10, "concourse", 4),
-      point(20, 10, "upper", 5),
-    ];
-    const steps = [
-      step("concourse", "concourse"), step("concourse", "upper", "stairs"), step("upper", "upper"),
-      step("upper", "concourse", "stairs"), step("concourse", "concourse"), step("concourse", "upper", "escalator"),
-    ];
-    map.setRoute({ points, steps }, null);
+    map.setRoute({ points: loopPoints, steps: loopSteps }, null);
     for (const next of [
       { east: 10, north: 0, up: 0 }, { east: 10, north: 0, up: 4 },
       { east: 10, north: 10, up: 4 }, { east: 10, north: 10, up: 0 },
@@ -365,8 +357,49 @@ describe("Minimap route overlay (#220 PR2)", () => {
     }
     expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by escalator");
     // A recomputed route is new evidence: progress starts over at its first segment.
-    map.setRoute({ points, steps }, null);
+    map.setRoute({ points: loopPoints, steps: loopSteps }, null);
     expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
+  });
+
+  it("does not jump when the first floor reading arrives after the route is set", () => {
+    pose = null;
+    const map = create();
+    map.setRoute({ points: loopPoints, steps: loopSteps }, null);
+    expect(display(map, ".minimap-connector-marker")).toBe("none");
+    // The first known floor is not a floor change: progress starts at the route's first segment.
+    pose = { east: 0, north: 0, up: 0, headingDeg: 0, mode: "walk" };
+    tick();
+    expect(map.el.querySelector(".minimap-connector-marker")!.getAttribute("transform")).toBe("translate(115 95)");
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
+    pose = { ...pose, east: 10 };
+    tick();
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
+  });
+
+  it("keeps progress and the hint while the floor reading drops out and returns", () => {
+    const map = create();
+    map.setRoute({ points: loopPoints, steps: loopSteps }, null);
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
+    // Mid-stairs the floor is unknown: nothing moves, and the stairs hint stays.
+    pose = { ...pose!, up: 100 };
+    tick();
+    expect(display(map, ".minimap-connector-marker")).toBe("");
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
+    // Back on the same floor, the earlier stairs are still the hint, not the later escalator.
+    pose = { ...pose!, up: 0 };
+    tick();
+    expect(map.el.querySelector(".minimap-connector-marker")!.getAttribute("transform")).toBe("translate(115 95)");
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
+  });
+
+  it("still crosses floors when the reading returns on a different floor", () => {
+    const map = create();
+    map.setRoute({ points: loopPoints, steps: loopSteps }, null);
+    pose = { ...pose!, up: 100 };
+    tick();
+    pose = { ...pose!, up: 4 };
+    tick();
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To B1 by stairs");
   });
 
   it("drops a route segment whose step data is missing rather than drawing it flat", () => {
