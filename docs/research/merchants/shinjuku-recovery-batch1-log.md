@@ -196,3 +196,10 @@ Terms-ban rejections: none. No site used stated 「一切お断り」.
 4. `retrievedAt` is minute-precision and approximate (±2 min); the whole run was 2026-10-24T10:50Z–11:00Z.
 5. Several shops closed on 2026-10-24 (パステル, ねこねこチーズケーキ) — same day as this run. That may be a
    single-operator closure of the SHINJUKU DELISH PARK confectionery counters and worth a check before the next batch.
+
+## Lead review (2026-10-24, data-research-05)
+
+- Names: six store pages print only the branch name in the body, but the same page's title names the chain. The POI name is now `<chain as in the page title> <branch name as printed>`, and the branch-only name is kept as an alias: rec-001 ゼッテリア, rec-010 クリスピー・クリーム・ドーナツ, rec-013 MIGNON, rec-014 ファミリーマート, rec-017 TSUTSUMI (and rec-006 眼鏡市場, held below).
+- 北館/南館: rec-001 and rec-014 print only 「小田急エース」. Kept as printed; the building stays UNKNOWN.
+- Terms: krispykreme.jp states a private-use exception, so it is the same type as LUMINE (facts only; kept). doutor.co.jp (「当社に無断で使用または複製もしくは転載することを禁止します」) and meganeichiba.jp (第14条 「無断で複製、転載、改変、その他の二次利用をすることはできません」) state no private-use or legal exception. Their 3 POIs (rec-005, rec-015 ドトール; rec-006 眼鏡市場) are held in `removed[]` pending a director ruling under OD-34. Their sources were dropped from the file.
+- Result: 15 POIs in the file, 3 held.
