@@ -4,6 +4,7 @@ import { WALKER_BODY, WALKER_SPEED } from "@gteki/scene-api";
 import { Explorer } from "./explorer.ts";
 import { FOLLOW, NO_SLOPE, SLOPE, descentAimDrop, followPose, type CameraHold } from "./followCamera.ts";
 import { guidePaceSpans, type PaceSpan } from "./guidePace.ts";
+import type { IdentityBoard } from "./identityBoards.ts";
 
 /** Exercise the real camera wiring with CPU raycasts; no renderer or browser is constructed. */
 function cameraStand() {
@@ -21,6 +22,8 @@ function cameraStand() {
     qaCamera: {} as CameraHold, qaCameraSnap: false, qaAvatarFade: null as number | null,
     boomActual: 0, cameraFade: 1, descentDrop: 0, fadeStale: false,
     guide: null as { s: number; spans: readonly PaceSpan[] } | null,
+    // The station has no identity boards here, so guide starts never reframe the look.
+    identityBoards: [] as IdentityBoard[], identityPlaced: false,
   };
   return Object.assign(Object.create(Explorer.prototype) as typeof state, state);
 }

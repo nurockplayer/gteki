@@ -299,11 +299,24 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .minimap-map { display: block; width: 100%; aspect-ratio: 1; }
 .minimap-rim { fill: rgba(11, 24, 34, .8); stroke: #5ef0ff; stroke-width: 1.5; }
 .minimap-graph { fill: none; stroke: #5ef0ff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.minimap-route { fill: none; stroke: #ffd166; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.minimap-poi { fill: #9be7ff; stroke: #0b1822; stroke-width: .8; }
+.minimap-poi[data-category="exit"] { fill: #b6ff9b; }
+.minimap-poi[data-category="toilet"] { fill: #ffb3d9; }
+.minimap-poi[data-category="gate"] { fill: #ffe08a; }
+.minimap-poi[data-category="platform"] { fill: #c4b5fd; }
+.minimap-poi.is-destination { fill: #ffd166; stroke: #fff; stroke-width: 1.2; }
+.minimap-route-end-dot { fill: #e5fdff; stroke: #0b1822; stroke-width: 1; }
+.minimap-rim-marker { fill: #ffd166; stroke: #0b1822; stroke-width: 1; }
+.minimap-connector-marker { fill: none; stroke: #ffd166; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.minimap-connector-rim { fill: #9be7ff; }
 .minimap-arrow { fill: #e5fdff; stroke: #183843; stroke-width: 1.5; }
 .minimap-north { fill: #5ef0ff; font-size: 13px; font-weight: 800; paint-order: stroke; stroke: #0b1822; stroke-width: 3px; }
 .minimap-label { display: grid; gap: 1px; padding: 0 6px; text-align: center; line-height: 15px; }
 .minimap-label span, .minimap-label strong { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .minimap-label strong { color: #5ef0ff; }
+.minimap-route-label { padding: 0 6px; color: #ffd166; font-size: 10px; line-height: 13px; text-align: center; }
+.minimap-route-label div { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .minimap-notice { padding: 0 6px; color: var(--muted); font-size: 10px; line-height: 13px; text-align: center; }
 .minimap-controls { display: flex; justify-content: center; gap: 4px; padding: 0 4px; }
 .minimap-controls button, .minimap-reopen { min-height: 28px; padding: 3px 6px; font-size: 11px; }
