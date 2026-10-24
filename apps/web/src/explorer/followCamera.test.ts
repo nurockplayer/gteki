@@ -394,10 +394,11 @@ describe("stepAvatarFade", () => {
     expect(frames / 60).toBeCloseTo((1 - start) / FOLLOW.fadeRecoverPerS, 1);
   });
 
-  it("snaps on request or when time does not advance", () => {
+  it("snaps on request and holds a recovery while time does not advance", () => {
     expect(stepAvatarFade(0.25, 1, 1 / 60, true)).toBe(1);
-    expect(stepAvatarFade(0.25, 1, 0)).toBe(1);
-    expect(stepAvatarFade(0.25, 1, -1)).toBe(1);
+    expect(stepAvatarFade(0.25, 1, 0)).toBe(0.25);
+    expect(stepAvatarFade(0.25, 1, -1)).toBe(0.25);
+    expect(stepAvatarFade(1, 0.25, 0)).toBe(0.25);
   });
 
   it.each([1 / 60, 0.5, 10])("never overshoots the target with dt=%s", (dt) => {

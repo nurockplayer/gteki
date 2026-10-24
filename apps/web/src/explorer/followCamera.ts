@@ -305,11 +305,12 @@ export function avatarFade(distanceM: number): number {
 /**
  * Pure time step for the distance-driven opacity target. Decreases apply immediately so the body never
  * stays opaque around the camera; recovery is capped at `FOLLOW.fadeRecoverPerS` (0.25 -> 1 in 0.5 s).
- * Placements/reduced motion, an uninitialised current value, and stopped or reversed time snap to target.
+ * Placements/reduced motion and an uninitialised current value snap to target; stopped or reversed time
+ * holds a recovering fade where it is (a zero-length frame must not pop the body back in).
  */
 export function stepAvatarFade(current: number, target: number, dt: number, snap = false): number {
-  if (snap || !Number.isFinite(current) || dt <= 0 || target <= current) return target;
-  return Math.min(target, current + FOLLOW.fadeRecoverPerS * dt);
+  if (snap || !Number.isFinite(current) || target <= current) return target;
+  return Math.min(target, current + FOLLOW.fadeRecoverPerS * Math.max(0, dt));
 }
 
 /** QA-only held follow controls; absent fields leave the ordinary controls running. */
