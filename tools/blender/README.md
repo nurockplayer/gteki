@@ -156,3 +156,28 @@ ONLY=$(python3 -c "import json;print(','.join(a['id'] for a in json.load(open('t
 PROFILE=mobile ONLY=<same ids> tools/blender/build.sh build
 blender -b --factory-startup -P tools/blender/render_preview.py -- --layout tools/blender/showcase/street_demo.json --camera hero --out street_hero.png   # also: canopy, furniture
 ```
+
+## Character pipeline (P0)
+
+The procedural P0 character uses the separate [character contract](../../docs/assets/character-contract.md).
+Run from the repository root (Blender 4.x/5.x, same Blender/exporter version for reproducibility):
+
+```bash
+blender -b --factory-startup --python-exit-code 1 --python tools/blender/character/build_p0_sample.py -- --out /tmp/gteki-p0
+blender -b --factory-startup --python-exit-code 1 --python tools/blender/character/export_character.py -- --blend /tmp/gteki-p0/p0_sample.blend --id p0_sample --tier high --out /tmp/gteki-p0
+# Repeat the exporter command with --tier mobile for the other tier.
+python3 -I tools/blender/character/validate_character.py --tier high --clips idle --drift-advisory /tmp/gteki-p0/p0_sample.high.glb
+python3 -I tools/blender/character/validate_character.py --tier mobile --clips idle --drift-advisory /tmp/gteki-p0/p0_sample.mobile.glb
+```
+
+The builder saves `p0_sample.blend` before exporting both tiers. P0 uses the same small mesh
+for both tiers, explicit single-joint weights, two blink targets and a two-sample `idle`.
+The two identical endpoints hold a small breathing rotation; a breathing excursion needs
+more samples. Flat vertex colours provide eyes, overlapping upper lids and separate brows
+with one opaque Principled material per mesh and no textures. The exporter checks its GLB
+with the stdlib validator before publishing it, removes only redundant bind-value channels,
+and rejects forbidden motion. With `export_apply=True`, some Blender exporters discard
+shape keys; the character exporter then restores the two POSITION targets from source
+blink deltas, matching split vertices by bind position and rejecting ambiguous matches.
+Rigify baking and mobile decimation remain `TODO(E1)`.
+Build into two fresh directories and compare each tier with `cmp` to verify reproducibility.
