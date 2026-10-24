@@ -50,15 +50,27 @@ export function factsOnlyCredit(s: Source, t: Pick<Strings, "factsOnly" | "right
 
 export interface OverrideCredit {
   text: string;
-  decision: { label: string; href: string | null } | null;
+  decisions: { label: string; href: string | null }[];
 }
 
-/** null unless rights is owner override; only an http(s) decision can be linked. */
-export function overrideCredit(s: Source, t: Pick<Strings, "rightsReusable" | "rightsOwnerOverride" | "rightsReference" | "rightsRestricted" | "rightsUnverified" | "rightsDecision">): OverrideCredit | null {
-  if (s.rights !== "PUBLISHED_UNDER_OWNER_OVERRIDE") return null;
+/** null unless a source has owner-override rights; only http(s) decisions can be linked. */
+export function overrideCredits(sources: readonly Source[], t: Pick<Strings, "rightsReusable" | "rightsOwnerOverride" | "rightsReference" | "rightsRestricted" | "rightsUnverified" | "rightsDecision">): OverrideCredit | null {
+  const overrides = sources.filter((s) => s.rights === "PUBLISHED_UNDER_OWNER_OVERRIDE");
+  if (!overrides.length) return null;
+  const seen = new Set<string>();
+  const decisions: OverrideCredit["decisions"] = [];
+  for (const s of overrides) {
+    if (!s.override) continue;
+    const key = JSON.stringify([s.override.decision, s.override.date]);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const href = safeHref(s.override.decision);
+    const reference = href || !/^#\d+$/.test(s.override.decision) ? "" : ` ${s.override.decision}`;
+    decisions.push({ label: `${t.rightsDecision}${reference} ${s.override.date}`, href });
+  }
   return {
-    text: rightsLabel(s.rights, t),
-    decision: s.override ? { label: `${t.rightsDecision} ${s.override.date}`, href: safeHref(s.override.decision) } : null,
+    text: rightsLabel("PUBLISHED_UNDER_OWNER_OVERRIDE", t),
+    decisions,
   };
 }
 

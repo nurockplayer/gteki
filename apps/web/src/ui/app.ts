@@ -11,7 +11,7 @@ import { coverageText, initialLang, pick, strings, type Lang } from "../i18n.ts"
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
 import { stationClock } from "../stationClock.ts";
-import { factsOnlyCredit, overrideCredit, sourceCredit } from "../credits.ts";
+import { factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { nodeLabel, poiLabel } from "./labels.ts";
@@ -1050,7 +1050,7 @@ export class App {
   /**
    * A credit line for one source, or for several sources sharing an attribution: titles (linked), the attribution once,
    * the distinct licences (linked) and the modification notice; facts-only and owner-override sources add their wording
-   * and safe decision link (Coverage dialog and the route card's 出典 both use).
+   * and safe decision link (the Coverage dialog and the route card's 出典 both use this).
    */
   private creditItem(...sources: Source[]): HTMLLIElement {
     const link = (text: string, href: string | null): HTMLElement => {
@@ -1082,11 +1082,17 @@ export class App {
       li.append(el("span", "muted", ` · ${facts.text}`));
       if (facts.decision) li.append(el("span", "muted", " ("), link(facts.decision.label, facts.decision.href), el("span", "muted", ")"));
     }
-    for (const s of sources) {
-      const override = overrideCredit(s, this.t);
-      if (!override) continue;
+    const override = overrideCredits(sources, this.t);
+    if (override) {
       li.append(el("span", "muted", ` · ${override.text}`));
-      if (override.decision) li.append(el("span", "muted", " ("), link(override.decision.label, override.decision.href), el("span", "muted", ")"));
+      if (override.decisions.length) {
+        li.append(el("span", "muted", " ("));
+        override.decisions.forEach((decision, i) => {
+          if (i) li.append(el("span", "muted", ", "));
+          li.append(link(decision.label, decision.href));
+        });
+        li.append(el("span", "muted", ")"));
+      }
     }
     return li;
   }
