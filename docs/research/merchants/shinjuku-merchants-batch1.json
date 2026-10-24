@@ -25,18 +25,21 @@
       "title": "駅構内のお店 新宿西口",
       "publisher": "東京都交通局",
       "url": "https://www.opendata.metro.tokyo.lg.jp/kotsu/other/other_stores_shinjuku-nishiguchi.csv",
-      "license": null,
-      "rights": "REFERENCE_ONLY",
-      "usage": "facts-only",
+      "license": {
+        "name": "CC BY 4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja"
+      },
+      "rights": "REUSABLE_WITH_CONDITIONS",
+      "usage": null,
       "decision": {
         "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896",
         "date": "2026-10-24"
       },
-      "attribution": "駅構内のお店 新宿西口 (facts only, UNVERIFIED; not reproduced)",
-      "modified": false,
-      "retrievedAt": "2026-10-24T08:54:54Z",
+      "attribution": "出典：東京都交通局「駅構内のお店」",
+      "modified": true,
+      "retrievedAt": "2026-10-21T00:13:54.266Z",
       "datasetDate": "2025-01-30",
-      "notes": "1 shop imported from the CSV (catalog last-updated date 2025-01-30). Excluded 2 coin lockers, a photo booth, 3 ATMs, baby-carriage rental service, and a childcare-products vending machine."
+      "notes": "Toei open data CSV (新宿西口), CKAN t000018d0000000039; licence claimed at dataset level. Used: shop-name and location columns of 1 row. GTEki が店名と場所の記述を抽出し、検索用に再構成（「未確認・経路なし」の注記を追加）. CSV sha256 71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6 (docs/gis/acquisitions/tokyo-s10-shinjuku-nishiguchi-csv.json). datasetDate is the catalogue's last-updated date. Shipped under LicenseRef-Toei-S10."
     },
     {
       "id": "tokyometro-shinjuku-shops-2026-10",
@@ -76,7 +79,7 @@
         "sourceIds": [
           "toei-shinjuku-stores-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -108,7 +111,7 @@
         "sourceIds": [
           "toei-shinjuku-nishiguchi-stores-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "method": "Toei open data CSV row (CC BY 4.0), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -140,7 +143,7 @@
         "sourceIds": [
           "tokyometro-shinjuku-shops-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -172,7 +175,7 @@
         "sourceIds": [
           "tokyometro-shinjuku-shops-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -204,7 +207,7 @@
         "sourceIds": [
           "tokyometro-shinjuku-shops-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -236,7 +239,7 @@
         "sourceIds": [
           "tokyometro-shinjuku-shops-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
