@@ -3,6 +3,7 @@ import path from "node:path";
 import type { Plugin } from "vite";
 // Relative (not @gteki/schema) so Vite's config loader bundles the TypeScript source.
 import { dataFileFactsOnlySources, parseStationFiles, validateBundle } from "../../packages/schema/src/index.ts";
+import { isProjectArtModule, loadReuseAnnotations } from "./reuseResolve.ts";
 
 /**
  * Discovers station folders without any station-specific code in the explorer:
@@ -17,6 +18,8 @@ export interface DiscoveredStation {
   folder: string;
   gtekiDir: string;
   scene: string | null;
+  /** The optional gteki/tenants.json (a store brand directory, #419). */
+  tenants: string | null;
   assets: string[];
 }
 
@@ -33,7 +36,7 @@ const PUBLICATION_RULES = new Set([
   "source.attribution", "source.license", "source.url", "source.override", "source.decision",
 ]);
 /** The contract files are loaded as data, not served as assets. */
-const CONTRACT_FILES = new Set(["station.json", "graph.json", "pois.json"]);
+const CONTRACT_FILES = new Set(["station.json", "graph.json", "pois.json", "tenants.json"]);
 
 const isInside = (real: string, fence: string) => real === fence || real.startsWith(fence + path.sep);
 
@@ -65,7 +68,8 @@ export function discoverStations(roots: string[]): DiscoveredStation[] {
       const folder = fs.realpathSync(path.join(root, dir));
       seen.add(dir);
       const scene = ["scene.ts", "scene.js"].map((f) => path.join(gtekiDir, f)).find((f) => fs.existsSync(f)) ?? null;
-      found.push({ dir, folder, gtekiDir, scene, assets: walk(gtekiDir, folder) });
+      const tenants = path.join(gtekiDir, "tenants.json");
+      found.push({ dir, folder, gtekiDir, scene, tenants: fs.existsSync(tenants) ? tenants : null, assets: walk(gtekiDir, folder) });
     }
   }
   return found;
@@ -77,6 +81,21 @@ export function discoverStations(roots: string[]): DiscoveredStation[] {
  */
 export function fsUrl(realPath: string): string {
   return "/@fs" + realPath.split(path.sep).map((seg) => encodeURIComponent(seg)).join("/");
+}
+
+/**
+ * The optional `gteki/tenants.json` (#419) as parsed JSON. `undefined` only means the file does not exist.
+ * A file that exists but cannot be parsed is returned as `{}` (and a `null` file as `null`), so the shape check
+ * refuses it: an unreadable or invalid directory must never be read as "this station has none".
+ */
+export function readOptionalTenants(gtekiDir: string): unknown {
+  const file = path.join(gtekiDir, "tenants.json");
+  if (!fs.existsSync(file)) return undefined;
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8")) as unknown;
+  } catch {
+    return {};
+  }
 }
 
 /**
@@ -92,7 +111,9 @@ export function publishableAssets(stations: DiscoveredStation[]): Map<string, Se
     const read = (name: string): unknown => {
       try { return JSON.parse(fs.readFileSync(path.join(s.gtekiDir, name), "utf8")); } catch { return undefined; }
     };
-    const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"));
+    // Only a missing file is "no directory"; null or any other non-object content fails the shape check.
+    const tenants = readOptionalTenants(s.gtekiDir);
+    const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), tenants);
     if (!parsed.ok) {
       const errors = parsed.issues.filter((i) => i.level === "error");
       failures.push(`${s.dir}: ${errors.slice(0, 5).map((i) => `${i.code}${i.ref ? ` (${i.ref})` : ""}`).join(", ")}${errors.length > 5 ? ` and ${errors.length - 5} more` : ""}`);
@@ -174,8 +195,8 @@ export function declaredStationFiles(stations: DiscoveredStation[]): DeclaredSta
   });
 }
 
-/** Contract files the loader reads as data (station.json, graph.json, pois.json), inside a station's gteki/. */
-const CONTRACT_PATH = /^gteki\/(station|graph|pois)\.json$/;
+/** Contract files the loader reads as data (station.json, graph.json, pois.json, tenants.json), inside a station's gteki/. */
+const CONTRACT_PATH = /^gteki\/(station|graph|pois|tenants)\.json$/;
 
 /** A trailing Vite query such as `?raw`, `?url`, `?v=1&inline`; a real path with a `?` or `#` of its own is left whole. */
 const VITE_QUERY = /\?[\w-]+(?:=[^&#?]*)?(?:&[\w-]+(?:=[^&#?]*)?)*$/;
@@ -215,11 +236,14 @@ const JS_CODE_EXT = /\.[cm]?[jt]sx?$/i;
  * Finds non-code modules reachable from each station scene that live outside every station folder.
  * The graph contains both static and dynamic imports. App modules that no station scene reaches are
  * intentionally out of scope; virtual ids and dependencies are ignored.
+ * `isProjectArt` is the build's exemption (see `isProjectArtFile`): it is the only way a module outside
+ * every station folder is not reported, and it defaults to exempting nothing so the check stays pure.
  */
 export function outsideStationData(
   graph: ReadonlyMap<string, readonly string[]>,
   stationEntries: ReadonlyMap<string, string>,
   stations: readonly DiscoveredStation[],
+  isProjectArt: (filePath: string) => boolean = () => false,
 ): string[] {
   const byId = new Map<string, readonly string[]>(graph);
   const folders = stations.map((s) => ({ dir: s.dir, folder: s.folder }));
@@ -234,7 +258,7 @@ export function outsideStationData(
       const fileId = modulePath(id);
       if (!hasNodeModulesSegment(fileId) && !CODE_EXT.test(fileId) && path.isAbsolute(fileId)) {
         const insideStation = folders.some(({ folder }) => id === folder || id.startsWith(folder + path.sep));
-        if (!insideStation) findings.add(`${stationName}: ${fileId}`);
+        if (!insideStation && !isProjectArt(fileId)) findings.add(`${stationName}: ${fileId}`);
       }
       pending.push(...(byId.get(id) ?? []));
     }
@@ -303,7 +327,8 @@ export function factsOnlyDataLines(stations: DiscoveredStation[]): string[] {
     const read = (name: string): unknown => {
       try { return JSON.parse(fs.readFileSync(path.join(s.gtekiDir, name), "utf8")); } catch { return undefined; }
     };
-    const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"));
+    const tenants = readOptionalTenants(s.gtekiDir);
+    const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), tenants);
     if (!parsed.ok) return [];
     return dataFileFactsOnlySources(parsed.bundle).map((d) => `[gteki] ${s.dir} ${d.path} cites facts-only: ${d.factsOnlySourceIds.join(", ")}`);
   });
@@ -369,6 +394,7 @@ export function gtekiStations(roots: string[]): Plugin {
     manifest: () => import(${f("station.json")}).then((m) => m.default),
     graph: () => import(${f("graph.json")}).then((m) => m.default),
     pois: () => import(${f("pois.json")}).then((m) => m.default),
+    tenants: ${s.tenants ? `() => import(${f("tenants.json")}).then((m) => m.default)` : "null"},
     scene: ${s.scene ? `() => import(${fsPath(s.scene)})` : "null"},
     assets: { ${assets.join(", ")} },
   },`);
@@ -392,7 +418,15 @@ export function gtekiStations(roots: string[]): Plugin {
         graph.set(id, module ? [...module.importedIds, ...module.dynamicallyImportedIds] : []);
       }
       const entries = new Map(stations.flatMap((s) => s.scene ? [[s.dir, fs.realpathSync(s.scene)] as const] : []));
-      for (const finding of outsideStationData(graph, entries, stations)) {
+      // Lane E project art under assets/library/ is reached from a station scene but is not station data.
+      // The director's ruling (#359 follow-up): a bare path is never allowlisted — REUSE must record the
+      // file, by its last matching annotation, as project-authored art ("GTEki contributors", CC-BY-4.0),
+      // for both the reported path and its real path. Read once; an unreadable or unparseable REUSE.toml
+      // exempts nothing, so the gate fails closed.
+      const repoRoot = path.resolve(appRoot, "../..");
+      const reuse = loadReuseAnnotations(repoRoot);
+      const isProjectArt = (file: string): boolean => isProjectArtModule(reuse, repoRoot, file);
+      for (const finding of outsideStationData(graph, entries, stations, isProjectArt)) {
         this.warn(`gteki-stations: station scene reaches data outside every station folder (${finding}); move the data into that station folder and declare it in dataFiles[].`);
       }
       for (const finding of wrappedStationData(stationCodeSources(ids, stations), stations)) {
