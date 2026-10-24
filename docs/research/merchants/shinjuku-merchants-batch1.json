@@ -72,7 +72,7 @@
       "modified": false,
       "retrievedAt": "2026-10-24T08:54:54Z",
       "datasetDate": null,
-      "notes": "44 shops imported from the all-results listing; deduplicated across category views. Category lists ファッション, サービス・その他, レストラン・カフェ, and フード were read; ライフスタイル returned a reader cache miss, and its names were checked against the all-results list. No category icons or markers were removed. Listing name デリパのひろば conflicts with its detail-page title デリパのちか弁; the all-results listing text was used. Page undated."
+      "notes": "43 shops imported (lead review: 2 entries no longer on the directory removed, 1 missed entry added; the first transcription's 44 is superseded). Names taken from the directory's raw HTML; page undated."
     },
     {
       "id": "keio-mall-ekishop-2026-10",
@@ -1680,7 +1680,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -1712,7 +1712,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -1749,7 +1749,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -1781,7 +1781,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -1813,7 +1813,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -1845,7 +1845,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -1877,7 +1877,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -1909,7 +1909,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -1941,7 +1941,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -1973,7 +1973,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2005,7 +2005,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2037,7 +2037,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2069,7 +2069,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2101,7 +2101,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2133,7 +2133,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2165,7 +2165,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2197,7 +2197,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2229,7 +2229,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2261,7 +2261,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2293,7 +2293,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2325,7 +2325,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2357,7 +2357,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2389,7 +2389,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2421,7 +2421,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2453,7 +2453,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2485,7 +2485,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2517,7 +2517,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2549,7 +2549,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -2581,7 +2581,7 @@
         "sourceIds": [
           "keio-mall-ekishop-2026-10"
         ],
-        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
