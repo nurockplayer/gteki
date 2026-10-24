@@ -361,9 +361,9 @@
    "rights": "REFERENCE_ONLY",
    "attribution": "東京メトロ 池袋駅 バリアフリー設備 (facts only; not reproduced)",
    "modified": false,
-   "retrievedAt": "2026-10-24T17:57:00+09:00",
+   "retrievedAt": "2026-10-24T18:48:44+09:00",
    "datasetDate": null,
-   "notes": "ライセンスなし・事実のみ参照（複製なし）。丸ノ内線・有楽町線・副都心線の各バリアフリー設備（エレベーター・エスカレーターの設置場所の端点表記、対応の有無「あり」のみ採用）。運転停止予定とトイレ等は対象外。 Re-read 2026-10-24 (WP2): lift and escalator end pairs per line. The existing station record (retrieved 2026-10-22) keeps its id; the writer updates retrievedAt and these notes.",
+   "notes": "ライセンスなし・事実のみ参照（複製なし）。丸ノ内線・有楽町線・副都心線の各バリアフリー設備（エレベーター・エスカレーターの設置場所の端点表記、対応の有無「あり」のみ採用）。運転停止予定は対象外。トイレ設備は車いす対応トイレ・乳幼児用設備・オストメイトの設置場所表記のみ採用（「なし」の行は除外、#431）。 Re-read 2026-10-24 (WP2): lift and escalator end pairs per line. The existing station record (retrieved 2026-10-22) keeps its id; the writer updates retrievedAt and these notes. Re-read 2026-10-24 (#431): toilet rows; page undated.",
    "usage": "facts-only",
    "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
   },
@@ -617,6 +617,36 @@
    "retrievedAt": "2026-10-24T09:18:40Z",
    "datasetDate": null,
    "notes": "Tenant names, printed floors/categories/store IDs, and store access label only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "seibu-shop-ikebukuro-2026-10",
+   "title": "エミオ 池袋 | エミオを探す | エミオ",
+   "publisher": "株式会社西武不動産プロパティマネジメント",
+   "url": "https://www.seibu-shop.jp/emio/floorguide/?emio=emio01",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896", "date": "2026-10-24" },
+   "attribution": "エミオ 池袋 | エミオを探す | エミオ (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T10:12:37Z",
+   "datasetDate": null,
+   "notes": "Shop names and the facility label (エミオ 池袋) only, under OD-34: facts-only POI attributes, never route evidence. No descriptions, hours, logos or images reproduced. Page undated."
+  },
+  {
+   "id": "seibu-shop-ikebukuro-station-2026-10",
+   "title": "池袋 | 駅ナカ・駅チカニュース | 西武沿線駅ナカ・駅チカ情報ポータル",
+   "publisher": "株式会社西武不動産プロパティマネジメント",
+   "url": "https://www.seibu-shop.jp/floorguide/station/?station=st01",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896", "date": "2026-10-24" },
+   "attribution": "池袋 | 駅ナカ・駅チカニュース | 西武沿線駅ナカ・駅チカ情報ポータル (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T10:12:37Z",
+   "datasetDate": null,
+   "notes": "Shop names, floor labels printed in the shop names and item categories only, under OD-34: facts-only POI attributes, never route evidence. No descriptions, hours, logos or images reproduced. Page undated."
   }
  ],
  "floors": [
@@ -18285,6 +18315,1414 @@
     {
      "lang": "en",
      "text": "Direct connection to Ikebukuro Station West Exit (store wording: 池袋駅西口 直結). Location and entrance not verified for routing. Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-seibu-001261",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ドトールコーヒーショップ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-shop-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-seibu-000597",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "トモニー 池袋駅１階改札内店"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-shop-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-seibu-000598",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "トモニー 池袋駅東口店"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-shop-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-seibu-000514",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "スターバックスコーヒー"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-shop-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-seibu-000513",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "そばダイニング　凛や"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-shop-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-seibu-000515",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "だし茶漬け えん"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-shop-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-seibu-000687",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "メルシーライフオーガニックス"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-shop-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-seibu-000512",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "SWEETS BOX"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-shop-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-seibu-000516",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "マネケン"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-shop-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-seibu-000599",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "トモニー 池袋駅地下改札内店"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-shop-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-seibu-000600",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "トモニー 池袋駅地下改札外店"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-shop-ikebukuro-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-seibu-000901",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "宝くじ 1F"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-shop-ikebukuro-station-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "西武の駅ナカ・駅チカ情報ページ（池袋）に掲載。「1F」は店名の表記で、施設名・フロアは未確認。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Listed on Seibu's station-shop page for 池袋. \"1F\" is part of the printed name; facility and floor are not verified. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-seibu-000902",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "宝くじ 地下"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-shop-ikebukuro-station-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "西武の駅ナカ・駅チカ情報ページ（池袋）に掲載。「地下」は店名の表記で、施設名・フロアは未確認。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Listed on Seibu's station-shop page for 池袋. \"地下\" is part of the printed name; facility and floor are not verified. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-metro-001",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "証明写真"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 丸ノ内線駅事務所付近。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 丸ノ内線駅事務所付近. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-metro-002",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "証明写真"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 36番出入口付近。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 36番出入口付近. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-metro-003",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "証明写真"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 有楽町線駅事務所付近。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 有楽町線駅事務所付近. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-metro-004",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "証明写真"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 C6出入口付近。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, C6出入口付近. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-metro-005",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "証明写真"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 C10出入口付近。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, C10出入口付近. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-metro-006",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "証明写真"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 丸ノ内線・副都心線連絡通路（改札内）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 丸ノ内線・副都心線連絡通路（改札内）. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-metro-007",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "外貨自動両替機・CITV"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 南東口改札外。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 南東口改札外. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-metro-008",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "外貨自動両替機・アクトプロ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 丸ノ内線池袋駅 中央口きっぷうりば横。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 丸ノ内線池袋駅 中央口きっぷうりば横. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-metro-009",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "外貨自動両替機・アクトプロ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 有楽町線池袋駅　南西口改札外。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 有楽町線池袋駅　南西口改札外. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "atm-ikb-metro-001",
+   "category": "atm",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ATM・セブン銀行"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 改札外C4出入口付近。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 改札外C4出入口付近. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "atm-ikb-metro-002",
+   "category": "atm",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ATM・セブン銀行"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 南東口きっぷうりば横。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 南東口きっぷうりば横. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "atm-ikb-metro-003",
+   "category": "atm",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ATM・セブン銀行"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 改札内副都心線連絡通路。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 改札内副都心線連絡通路. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "atm-ikb-metro-004",
+   "category": "atm",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ATM・セブン銀行"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 東口改札外。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 東口改札外. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "atm-ikb-metro-005",
+   "category": "atm",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ATM・セブン銀行"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 南西口きっぷうりば。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 南西口きっぷうりば. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "atm-ikb-metro-006",
+   "category": "atm",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ATM・みずほ銀行"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 南西口きっぷうりば。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 南西口きっぷうりば. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "atm-ikb-metro-007",
+   "category": "atm",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ATM・みずほ銀行"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 中央口きっぷうりば。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 中央口きっぷうりば. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "atm-ikb-metro-008",
+   "category": "atm",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ATM・三井住友銀行"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 8番出入口付近券売機横。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 8番出入口付近券売機横. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "atm-ikb-metro-009",
+   "category": "atm",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ATM・三菱UFJ銀行"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 中央口きっぷうりば。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 中央口きっぷうりば. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "atm-ikb-metro-010",
+   "category": "atm",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ATM・ゆうちょ銀行"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 中央口きっぷうりば。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 中央口きっぷうりば. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "atm-ikb-metro-011",
+   "category": "atm",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ATM・中央労働金庫"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 券売機横（C８付近）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 券売機横（C８付近）. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "atm-ikb-metro-012",
+   "category": "atm",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ATM・千葉銀行"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 南西口きっぷ売場。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 南西口きっぷ売場. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "locker-ikb-metro-001",
+   "category": "locker",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "コインロッカー"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅。事業者は駅全体として路線名（丸ノ内線・有楽町線・副都心線）のみを挙げており、個別の設置場所は記載なし（エリア単位の情報、1か所を示すものではない）。未確認、案内ルートなし。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station. The operator lists only line names (丸ノ内線・有楽町線・副都心線) for the station as a whole and prints no installation place (area-level information, not one location). Unverified, no route."
+    }
+   ]
+  },
+  {
+   "id": "locker-ikb-metro-002",
+   "category": "locker",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "東京メトロッカー＋（Tokyo Metlocker PLUS）"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 42番出入口付近。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 42番出入口付近. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-metro-010",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "モバイルバッテリーレンタル機"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 有楽町線南東口改札外。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 有楽町線南東口改札外. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-metro-011",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "モバイルバッテリーレンタル機"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 副都心線西口改札外。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 副都心線西口改札外. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-metro-012",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "CocoDesk"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 有楽町線駅事務室前1。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 有楽町線駅事務室前1. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-metro-013",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "CocoDesk"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 副都心線（改札内）西通路東改札下　１。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 副都心線（改札内）西通路東改札下　１. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "service-ikb-metro-014",
+   "category": "service",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "CocoDesk"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-shops-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 副都心線（改札内）西通路東改札下　２。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 副都心線（改札内）西通路東改札下　２. Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-metro-001",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "車いす対応トイレ（改札外）"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-accessibility-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 丸ノ内線 中央通路東改札外広場（改札外）。設備: 乳幼児用設備・オストメイト（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 丸ノ内線 中央通路東改札外広場 (outside the fare gates as printed). Facilities: 乳幼児用設備・オストメイト (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-metro-002",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "車いす対応トイレ（改札内）"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-accessibility-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 有楽町線 南通路西改札（改札内）。設備: 乳幼児用設備・オストメイト（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 有楽町線 南通路西改札 (inside the fare gates as printed). Facilities: 乳幼児用設備・オストメイト (operator wording). Location is the operator's wording only (unverified, no route)."
+    }
+   ]
+  },
+  {
+   "id": "toilet-ikb-metro-003",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "車いす対応トイレ（改札内）"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-accessibility-2026-10"
+    ],
+    "method": "facts-only operator facility list (OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東京メトロ 池袋駅 副都心線 西通路東改札内中二階広場（改札内）。設備: 乳幼児用設備・オストメイト（事業者の表記）。位置は事業者の表記のみ（未確認、案内ルートなし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro Ikebukuro Station, 副都心線 西通路東改札内中二階広場 (inside the fare gates as printed). Facilities: 乳幼児用設備・オストメイト (operator wording). Location is the operator's wording only (unverified, no route)."
     }
    ]
   }

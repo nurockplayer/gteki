@@ -6,6 +6,51 @@
 - Scope: counts only. No store names, logos, photos, maps or copy are reproduced here. Official names were used in memory for matching against OSM and are not stored.
 - Source ids follow `context-DR-merchant-sources.md` (DR-MR-01..17). New ids added here: DR-MR-18 to DR-MR-21.
 
+## 0. Coverage by source class (Owner priority, 2026-10-24)
+
+Owner rule (relayed by director gteki-1b, 2026-10-24): areas whose shop data comes from usable public sources are filled first, and areas where every source is banned are pushed back. So coverage is reported for two classes. **Usable-source areas** have official directories that may be used facts-only (OD-31/OD-34) or under an open licence. **Banned areas** have only directories whose terms refuse use (OD-02 A / OD-34); their shops can return only from each shop's own page. Denominators are listed entries in the directories, so every figure is an upper bound on true coverage. PR numbers are research hand-offs; the single writers import them.
+
+### Ikebukuro
+
+| Class | Directory | Listed | Transcribed | Status |
+| --- | --- | --- | --- | --- |
+| Usable | ISP (#407) | 53 | 53 | done |
+| Usable | Tobu Hope Center (#407) | 43 | 43 | done |
+| Usable | Echika池袋 (#407) | 22 | 22 | done |
+| Usable | Tokyo Metro station shops (#407) | 2 | 2 | done |
+| Usable | LUMINE池袋 (#432) | 176 | 176 | done |
+| Usable | Esola池袋 (#432) | 33 | 33 | done |
+| Usable | 東武百貨店 池袋 (#432) | 1 store + 864 brands | 1 + 864 (tenant dataset) | done |
+| Usable | Seibu station shops / エミオ池袋 (#443) | 13 | 13 | done |
+| Usable | Station facilities, Tokyo Metro (#431) | 31 | 31 | done |
+| Usable | Facilities printed by the station buildings and Seibu (toilets, ATMs, lockers) | not counted | 0 | **open** |
+| Banned | JR East in-station shops (jreast.co.jp / JR Cross) | GAP | 0 | pushed back (OD-02 A, OD-34) |
+| Banned | Tobu Railway site (tobu.co.jp, §8 business-use ban) | — | 0 | pushed back; corroboration only |
+| Banned | 西武池袋本店 site (sogo-seibu.jp; terms clause 2 item 8 bans business use; OD-34 re-ruling 2026-10-24) | — | 0 | corroboration only; no brand tenants. The store itself may be one store POI from a non-Sogo source (ward guide map or operators' station maps) |
+
+Usable-source areas: **every directory read is transcribed (100% of listed entries)**, except the building facility lists, which are still open.
+
+### Shinjuku
+
+| Class | Directory | Listed | Transcribed | Status |
+| --- | --- | --- | --- | --- |
+| Usable | Toei 新宿 / 新宿西口 store lists (#418; CC BY 4.0 CSV for 新宿西口) | 2 shops | 2 | done (#418 waits for the GIS REUSE/NOTICE PR) |
+| Usable | Tokyo Metro station shops (#418) | 4 | 4 | done |
+| Usable | LUMINE EST新宿 (#435) | 245 | 245 | done |
+| Usable | LUMINE新宿 1・2 (#435) | 230 | 230 | done |
+| Usable | NEWoMan新宿 (#435) | 101 | 101 | done |
+| Usable | 小田急百貨店 新宿店 (#429) | 1 store + 269 brands | 1 + 269 (tenant dataset) | done |
+| Usable | Station facilities, Tokyo Metro and Toei (#431) | 23 | 23 | done |
+| Usable | 新宿サブナード (OD-31) | about 100 (estimate) | 0 | **open**: site refused connections on 2026-10-24; terms unread |
+| Usable? | 京王百貨店 新宿店 | not counted | 0 | **open**: site under maintenance on 2026-10-24; terms unread |
+| Usable | Facilities printed by the station buildings (toilets, ATMs, lockers) | not counted | 0 | **open** |
+| Banned | 小田急エース (43) / 京王モール (29) directories | 72 | 0 from the directories | pushed back; recovery batch 1 (shops' own pages, about 20) running, no further batches |
+| Banned | JR East in-station shops | GAP | 0 | pushed back |
+
+Usable-source areas: **every directory read is transcribed (583 of 583 listed shop entries, 100%)**. Subnade (about 100) and 京王百貨店 are open because their sites could not be read, not because of a ban. Banned areas: 0 of 72 from the directories; any recovered shops are counted separately.
+
+The sections below are the earlier, all-areas analysis and stay as the record.
+
 ## 1. Short answer (updated 2026-10-24 after OD-33)
 
 - **Denominator:** only shops listed in the official directories we could read (station passages plus directly connected underground malls). Unlisted shops and JR East in-station shops (GAP; OD-02, denominator only) are not in it, so every figure is an upper bound on true coverage.

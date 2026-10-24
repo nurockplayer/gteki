@@ -123,6 +123,17 @@ const GOLDEN: Record<string, Row[]> = {
     { q: "Timberland", top1: "shop-ikb-esola-1147" },
     { q: "ミラ オーウェン", top1: "shop-ikb-lumine-000463" }, // printed kana alias of Mila Owen
   ],
+  "merchant batch 5 (#443)": [
+    { q: "トモニー 池袋駅１階改札内店", top1: "shop-ikb-seibu-000597" },
+    { q: "宝くじ 1F", top1: "shop-ikb-seibu-000901" },
+    { q: "マネケン", top1: "shop-ikb-seibu-000516" }, // exact name unique among all Ikebukuro POI names and aliases
+  ],
+  "facilities batch 1 (#431)": [
+    { q: "車いす対応トイレ（改札外）", top1: "toilet-ikb-metro-001" },
+    { q: "車いす対応トイレ（改札内）", top: ["toilet-ikb-metro-002", "toilet-ikb-metro-003"] }, // printed twice: Yurakucho and Fukutoshin
+    { q: "コインロッカー", top1: "locker-ikb-metro-001" },
+    { q: "ATM・三井住友銀行", top1: "atm-ikb-metro-008" },
+  ],
 };
 
 describe("Ikebukuro golden search", () => {
