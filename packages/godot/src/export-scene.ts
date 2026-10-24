@@ -37,6 +37,8 @@ export interface SceneSidecar {
   spawnPoints: StationScene["spawnPoints"];
   environment: StationScene["environment"];
   counts: Omit<RoleSummary, "warnings">;
+  /** Materials in the same order as the GLB material array; null means the source material was unnamed. */
+  materials: { index: number; name: string | null }[];
   /** TypeScript-computed renderer-frame values the Godot tests compare against (an oracle, not scene truth). */
   reference: {
     spawnPointsRenderer: [number, number, number][];
@@ -66,6 +68,34 @@ export interface ExportResult {
   sidecar: SceneSidecar;
   glb: Uint8Array;
   seconds: number;
+}
+
+/** Read the canonical material order and names back from GLB's JSON chunk. */
+export function materialsFromGlb(glb: ArrayBuffer): { materials: { index: number; name: string | null }[]; duplicates: string[] } {
+  const view = new DataView(glb);
+  if (view.byteLength < 20 || view.getUint32(0, true) !== 0x46546c67) throw new Error("invalid GLB header");
+  let offset = 12;
+  while (offset + 8 <= view.byteLength) {
+    const length = view.getUint32(offset, true);
+    const type = view.getUint32(offset + 4, true);
+    if (offset + 8 + length > view.byteLength) throw new Error("invalid GLB chunk length");
+    if (type === 0x4e4f534a) {
+      const json = JSON.parse(new TextDecoder().decode(new Uint8Array(glb, offset + 8, length))) as { materials?: { name?: unknown }[] };
+      const materials = (json.materials ?? []).map((material, index) => ({
+        index,
+        name: typeof material.name === "string" && material.name.length > 0 ? material.name : null,
+      }));
+      const counts = new Map<string, number>();
+      for (const { name } of materials) if (name !== null) counts.set(name, (counts.get(name) ?? 0) + 1);
+      return { materials, duplicates: [...counts].filter(([, count]) => count > 1).map(([name]) => name).sort() };
+    }
+    offset += 8 + length;
+  }
+  throw new Error("GLB has no JSON chunk");
+}
+
+export function duplicateMaterialWarning(duplicates: string[]): string | null {
+  return duplicates.length > 0 ? `duplicate GLB material names: ${duplicates.join(", ")}` : null;
 }
 
 function git(...args: string[]): string {
@@ -156,6 +186,9 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
   const exported = await captureWarnings(() =>
     exporter.parseAsync(scene.root, { binary: true, onlyVisible: false, includeCustomExtensions: true }) as Promise<ArrayBuffer>);
   for (const w of exported.warnings) warnings.push(`GLTFExporter: ${w.replace(/^THREE\.GLTFExporter:\s*/, "")}`);
+  const glbMaterials = materialsFromGlb(exported.value);
+  const duplicateWarning = duplicateMaterialWarning(glbMaterials.duplicates);
+  if (duplicateWarning !== null) warnings.push(duplicateWarning);
 
   const { warnings: _omit, ...counts } = roles;
   const dirty = git("status", "--porcelain", "--", "stations", "packages", "apps").length > 0;
@@ -175,6 +208,7 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
     spawnPoints: spawns,
     environment: scene.environment ?? {},
     counts,
+    materials: glbMaterials.materials,
     ...(lightmap === null ? {} : { lightmap }),
     reference: {
       spawnPointsRenderer: spawns.map((p) => enuToRenderer(p)),

@@ -31,13 +31,15 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 /** Digest of the flag-off shipping buildScene at main 45250364 (#298 escalator shell), measured with
  * test/helpers/station-digest.ts after main's scene-digest.test.ts passed unchanged on this tree.
  * geometryDigest/bytes equal geometry-lifetime.test.ts. Previous main f143f862 had 136 meshes,
- * 13,284,666 B and geometry f713e721…; #298 adds two visual-only shell batches. Physical lists stay identical. */
+ * 13,284,666 B and geometry f713e721…; #298 adds two visual-only shell batches. Physical lists stay identical.
+ * #370 names the `mat` materials `mat.<key>`, which changes texturesDigest only (was b799e0f8…; re-measured with
+ * and without the naming line, every other field unchanged). */
 const MAIN_BASELINE = {
   station: {
     geometryDigest: "04a401299e738f05b134fee6053a71f95965131d5b1837fceddee863391046c4",
     appearanceDigest: "c45106d83d6500652ae0911b8a037f9020e7a7e38ae05fce61ff495dd0835003",
     nodesDigest: "8716cc4d548465dd836e07e69646928ad33791f37d6fc1a1dc02e2519c9e6ed7",
-    texturesDigest: "b799e0f81a0e2ce49682593e2da04738723a9dc414d4a94f41b3e74b3b50d08c",
+    texturesDigest: "34886c8768f0a00486cfbab005dbcb7e89f6035f23dc38d79ab8658953f2976d",
     meshes: 138,
     bytes: 13_296_864,
   },
