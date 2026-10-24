@@ -150,6 +150,13 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        and a local frame, compared with the E27 graph (separations, headings,
        floor labels), summarised as join metrics and drawn as a figure. The raw
        ZIP is not committed.
+       Committed line-name data (lines-lead WP1, Owner Q2/Q3 and gteki-1b
+       R-1/R-2 of 2026-10-24): docs/research/lines/shinjuku-line-pois.json.
+       Plain gate and platform names only, from com-entity.geojson in the ZIP
+       with sha256 fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31.
+       Change notice: GTEki が名称のみを抽出し、検索用に再構成（位置・形状は
+       使用していません）. No geometry, position or promotional text is taken;
+       the names describe March 2020 data and are not route evidence.
 
    4.8 GSI (国土地理院) items - LicenseRef-GSI-terms
        Two Survey Calculation Site bl2xy control responses

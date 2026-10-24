@@ -295,3 +295,12 @@ path = [
 precedence = "override"
 SPDX-FileCopyrightText = "東京都都市整備局; 国土交通省（ほこナビDP）; modified by GTEki contributors"
 SPDX-License-Identifier = "LicenseRef-S03 AND LicenseRef-Hokonavi-E27-Owner-override"
+
+# --- 4k. S03 line names: Shinjuku searchable line POIs (lines-lead WP1; Owner Q2/Q3, gteki-1b R-1/R-2) ---
+# Plain gate and platform names copied from S03 com-entity.geojson (ZIP sha256 fc3466270c08…4ba31);
+# no geometry, no position. Credit and change notice: NOTICE 4.7.
+[[annotations]]
+path = "docs/research/lines/shinjuku-line-pois.json"
+precedence = "override"
+SPDX-FileCopyrightText = "東京都都市整備局; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-S03"
