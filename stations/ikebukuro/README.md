@@ -253,10 +253,13 @@ extract whose GML sha256 differs from `gteki/station.json`) writes `scene/dressi
 the anchors and PLATEAU GML sha256 plus the flight or lane ids it serves. Each stair flight becomes two
 `stair_dressing` entries so every GLB has one bake role: `..._nosing` (`stairs_ramps`) and `..._rails_{post,wall}`
 (handrails, `barriers`). `step_count` is the surveyed nosing count, `riser_mm` = rise / (steps - 1), `tread_mm` the mean
-nosing run, and riser, tread and width are rounded to whole mm (coarser snapping accumulated up to 40 mm by the top of a long flight); identical flights share one id and are instanced.
+nosing run. Risers keep whole-mm precision when the surveyed nosings fit the built strips; a failing flight retries at
+0.1 mm precision. Tread and width stay rounded to whole mm. IDs encode a one-decimal riser in tenths without a dot
+(`r1553` means 155.3 mm); identical flights share one id and are instanced.
 `rail_mount` is `wall` when the base GLB's wall mesh lies within 0.3 m of both stair sides, else `post`. Flights with
-an implausible riser (outside 100-220 mm) or tread (under 200 mm), surveyed nosings more than 6 mm (the strip height) off the strips the generator builds with the whole-millimetre riser, and single-step flights are skipped and listed with
-their reason. Escalators carry `rise_mm`, `angle_deg` = atan2(rise, quad run) (the surveyed quad is the straight incline between the
+an implausible riser (outside 100-220 mm) or tread (under 200 mm), nosings more than 6 mm off both generated strips, and
+single-step flights are skipped with a reason. This covers stair011, stair012, stair014 and stair027 with the fallback;
+stair013 remains skipped because its risers are uneven. Escalators carry `rise_mm`, `angle_deg` = atan2(rise, quad run) (the surveyed quad is the straight incline between the
 floors, so no `run_mm`), `width_mm` (tread width, read as the clear gap between the truss plates) and the default 800 mm
 landing. The placement origin is the bottom comb, 1.2 m before the quad's lower line along `dir` at the lower floor height
 (the top comb is 1.2 m past the upper line). Direction is not surveyed and is left out of the params. Placements carry `tiers`: nosings draw on `low` and `high`, escalators on `high` only (low waits for a phone measurement), and rails (6 segments) on `high` only and only for `main_route` flights, those a Lane F golden guided route walks (a polyline within 1 m of the flight's centre line at a matching height).
