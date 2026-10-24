@@ -132,6 +132,7 @@ Order of value: Shinjuku JR↔Odakyu/Keio/M08 transfers are the busiest, so WP1 
 - **R-1 decided: allowed.** OD-02 excludes JR East's own data (its floor maps and pages). JR gate names recorded in non-JR sources (S03, the Toshima guide) are facts and may be used. Each such POI cites that non-JR source as its evidence, never a JR page.
 - **R-2 decided: allowed.** S03 POIs carry 「2020年3月時点」 / "as of March 2020", status UNKNOWN, AREA_ONLY, no position, and are never route evidence.
 - **R-3 open:** decided once GIS has checked the terms.
+- **WP5 boundary (lines-lead judgment, 2026-10-24, as gteki-1b asked; gteki-1b may overrule):** JR and Tobu gate labels printed on the Toshima underground guide (2022-01; sha256 `db85abf7…7a15`) are ward facts under #26, the same class as the shipped `tobu-central-gate-1/-2`. JR names rest on R-1. Tobu's own station map and JR pages are never used, not even as an alias or a second source (OD-01 B, OD-02). Drawn placement stays out (OD-03). The map prints no platform numbers. Expected new POIs: JR 北改札 and Tobu 北改札, plus a Seibu name variant (地下改札 / B1F Gate) for `seibu-b1f-gate`.
 
 As asked:
 
