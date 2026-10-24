@@ -88,6 +88,10 @@ describe('S03 positions: entity id join (synthetic only)', () => {
     expect(() => assertUnpointed([{ ...entry, level_id: 12 }], candidates, inputs)).toThrow(/level 12 is not a parsed S03 level/);
     const otherLevel = { levels: [{ id: 11, label: '2F', ordinal: 2, features: [] }], sourceDefects: [] } as unknown as S03Inputs;
     expect(() => assertUnpointed([entry], candidates, otherLevel)).toThrow(/level 2F differs from its declared s03\.levels B1F/);
+    // A declaration and a parsed level that change together still fail on the pinned ordinal.
+    const moved = { levels: [{ id: 11, label: '2F', ordinal: 2, features: [] }], sourceDefects: [] } as unknown as S03Inputs;
+    const movedCandidate = [{ ...selection('poi:keio-gate:1'), levelLabel: '2F' }];
+    expect(() => assertUnpointed([entry], movedCandidate, moved)).toThrow(/declared s03\.levels 2F has ordinal 2; the ruling names ordinal -1/);
     expect(() => assertUnpointed([], candidates, inputs)).toThrow(/0 unpointed candidates/);
     expect(() => assertUnpointed([entry, { ...entry }], candidates, inputs)).toThrow(/2 unpointed candidates/);
   });

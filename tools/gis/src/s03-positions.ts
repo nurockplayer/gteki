@@ -41,7 +41,7 @@ export const SKIPPED_CATEGORY = 'platform';
  * The one candidate the reviewed data leaves unpointed, and why. The count check alone would accept any substitution,
  * so the identity, the reason and the level are pinned here as well.
  */
-export const EXPECTED_UNPOINTED = { poi_id: 'poi:keio-gate:1', reason: 'SOURCE_DEFECT_HOLE_OUTSIDE_SHELL' } as const;
+export const EXPECTED_UNPOINTED = { poi_id: 'poi:keio-gate:1', reason: 'SOURCE_DEFECT_HOLE_OUTSIDE_SHELL', floor_ordinal: -1 } as const;
 
 const sha256 = (bytes: string | Buffer): string => createHash('sha256').update(bytes).digest('hex');
 const record = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -182,6 +182,12 @@ export function assertUnpointed(unpointed: readonly { poi_id: string; reason: st
   if (!level) throw new Error(`${entry.poi_id}: excluded feature level ${entry.level_id} is not a parsed S03 level`);
   if (level.label !== selection.levelLabel)
     throw new Error(`${entry.poi_id}: excluded feature level ${level.label} differs from its declared s03.levels ${selection.levelLabel}`);
+  // The ordinal is pinned too, so a declaration and a parsed level that change together still fail.
+  const declaredOrdinal = S03_FLOOR_ORDINALS[selection.levelLabel];
+  if (declaredOrdinal !== EXPECTED_UNPOINTED.floor_ordinal)
+    throw new Error(`${entry.poi_id}: declared s03.levels ${selection.levelLabel} has ordinal ${declaredOrdinal}; the ruling names ordinal ${EXPECTED_UNPOINTED.floor_ordinal}`);
+  if (level.ordinal !== EXPECTED_UNPOINTED.floor_ordinal)
+    throw new Error(`${entry.poi_id}: excluded feature level ${level.label} has ordinal ${level.ordinal}; the ruling names ordinal ${EXPECTED_UNPOINTED.floor_ordinal}`);
 }
 
 /** Point candidates and platforms against the counts this data must produce; any other outcome stops the run. */
