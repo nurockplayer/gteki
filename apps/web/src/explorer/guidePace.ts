@@ -31,6 +31,8 @@ export interface PaceSpan {
   toS: number;
   maxMps: number;
   scales: boolean;
+  /** Explicit connector identity; dwell-only spans leave this unset. */
+  mode?: EdgeMode;
 }
 
 export function isGuideTier(value: unknown): value is GuideTierId {
@@ -66,8 +68,9 @@ export function guidePaceSpans(polyline: readonly PolylinePoint[], steps: readon
   const cum = cumulativeS(polyline);
   const spans: PaceSpan[] = [];
   for (let i = 1; i < polyline.length; i++) {
-    const cap = CONNECTOR_MPS[steps[polyline[i]!.stepIndex]?.mode as EdgeMode];
-    if (cap !== undefined && cum[i]! > cum[i - 1]!) spans.push({ fromS: cum[i - 1]!, toS: cum[i]!, maxMps: cap, scales: true });
+    const mode = steps[polyline[i]!.stepIndex]?.mode;
+    const cap = mode === undefined ? undefined : CONNECTOR_MPS[mode];
+    if (cap !== undefined && cum[i]! > cum[i - 1]!) spans.push({ fromS: cum[i - 1]!, toS: cum[i]!, maxMps: cap, scales: true, mode });
   }
   for (const ins of instructions) {
     if (ins.kind === "wait") continue;
@@ -78,6 +81,11 @@ export function guidePaceSpans(polyline: readonly PolylinePoint[], steps: readon
     if (toS > fromS) spans.push({ fromS, toS, maxMps: (toS - fromS) / MIN_INSTRUCTION_S, scales: false });
   }
   return spans;
+}
+
+/** Stair lens hint from route semantics, including shallow connectors below the vertical-speed threshold. */
+export function guideOnStairs(s: number, spans: readonly PaceSpan[]): boolean {
+  return spans.some((sp) => (sp.mode === "stairs" || sp.mode === "escalator") && s >= sp.fromS && s < sp.toS);
 }
 
 /** The guide's speed (m/s) at distance `s`: the tier's, capped by every span containing `s`, never below MIN_GUIDE_MPS. */
