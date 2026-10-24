@@ -16,6 +16,7 @@ export async function exportFixture(outDir: string): Promise<void> {
     floors: bundle.floors,
     coverage: bundle.coverage,
     ...(bundle.spawnNodeIds ? { spawnNodeIds: bundle.spawnNodeIds } : {}),
+    ...(bundle.spawnHeadings ? { spawnHeadings: bundle.spawnHeadings } : {}),
     ...(bundle.assets ? { assets: bundle.assets } : {}),
   };
   const graph: GraphFile = {

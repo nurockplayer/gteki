@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { normalizeJa } from "../../search/src/index.ts";
+import { createSyntheticBundle } from "../../navigation/src/fixtures.ts";
 import { buildSearchExport } from "./export-search.ts";
 import { loadBundle } from "./load-bundle.ts";
 import { runSearch } from "./search-query.ts";
@@ -78,6 +79,26 @@ describe.each(STATIONS)("%s search export", (id) => {
       expect(result.normalized, c.query).toBe(c.normalized);
       expect(result.hits.map((h) => ({ poiId: h.poiId, score: h.score })), c.query).toEqual(c.top);
     }
+  });
+});
+
+describe("approximate positions in the search export (#463)", () => {
+  it("exports the ± radius and markers, never a position", () => {
+    const b = createSyntheticBundle();
+    const poi = b.pois.find((p) => p.id === "shop")!;
+    Object.assign(poi, {
+      connectorNodeIds: [], displayPosition: null,
+      approximatePosition: { east: 10, north: -5, uncertaintyM: 25, method: "area_weighted_centroid", navigationUse: "NOT_FOR_ROUTING", floor: "UNVERIFIED" },
+    });
+    const out = buildSearchExport(b);
+    const entry = out.entries.find((e) => e.poiId === "shop")!;
+    // The approximate point never becomes a renderer position: no coordinates leave the schema.
+    expect(entry.position).toBeNull();
+    expect(entry.routable).toBe(false);
+    expect(entry.approximate).toEqual({ uncertaintyM: 25, navigationUse: "NOT_FOR_ROUTING", floor: "UNVERIFIED" });
+    expect(Object.keys(entry.approximate!)).toEqual(["uncertaintyM", "navigationUse", "floor"]);
+    // Every other POI states the absence explicitly.
+    expect(out.entries.filter((e) => e.poiId !== "shop").every((e) => e.approximate === null)).toBe(true);
   });
 });
 

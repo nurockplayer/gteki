@@ -108,7 +108,7 @@ it("provides a tight name region on metadata-only objects with zero draw calls a
 it("tracks Explorer's north-facing spawn path, rather than the scene's unused suggested headings", () => {
   const explorer = readFileSync(new URL("../../../apps/web/src/explorer/explorer.ts", import.meta.url), "utf8");
   expect(explorer).toContain("headingDeg = 0");
-  expect(explorer).toContain("return this.walkFrom({ x: n.position.x, y: n.position.y, z });");
+  expect(explorer).toContain("return this.walkFrom({ x: n.position.x, y: n.position.y, z }, headingDeg);");
   expect(explorer).toContain("private pitch = -0.12;");
   expect(explorer).toContain("private firstPerson = false;");
   expect(explorer).not.toContain(".spawnPoints");

@@ -1,0 +1,24 @@
+{
+  "source_id": "daredemo-tokyo-site",
+  "resolved_url": "https://www.daredemo-tokyo.metro.tokyo.lg.jp/",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-24T08:58:04.730Z",
+  "completed_at": "2026-10-24T08:58:04.860Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "text/html",
+    "content-length": "307",
+    "etag": "\"193-65e6ce258c6d4-gzip\"",
+    "last-modified": "Thu, 22 Oct 2026 12:20:07 GMT",
+    "date": "Sat, 24 Oct 2026 08:58:04 GMT"
+  },
+  "bytes": 403,
+  "sha256": "baf2d03e4a7705a9d5170fe9793b3597e9343a23c471782d4dfaf6f4a57a9629",
+  "store_path": "raw/baf2d03e4a7705a9d5170fe9793b3597e9343a23c471782d4dfaf6f4a57a9629/download.bin",
+  "tool_version": "0.1.0",
+  "git_commit": "724459b8feb165e20d9fb2e7127c656c09099578",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online"
+}
