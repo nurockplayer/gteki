@@ -46,7 +46,7 @@ export interface SignLayout {
   heightM: number;
 }
 
-export const FONT = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Noto Sans CJK JP","Yu Gothic",system-ui,sans-serif';
+export const FONT = '"GTEki Sign JP","Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Noto Sans CJK JP","Yu Gothic",system-ui,sans-serif';
 const PX_PER_M = 300;
 const H = 0.42;
 const ATLAS_W = 4096; // atlas page side (px), lowered to the GPU's MAX_TEXTURE_SIZE where that is smaller

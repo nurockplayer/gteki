@@ -119,13 +119,23 @@ function routeByPoi(bundle: StationBundle, router: Router, options: CliOptions):
     if (!goal) return { ok: false, reason: "unknown_goal", message: `unknown destination POI ${options.goals[0]}` };
     return routeBetween(router, from, goal, options.profile);
   }
-  // POI origin, node goals: resolve the origin's connectors only (a POI never routes from a bare display position).
-  if (from.kind !== "poi" || from.poi.connectorNodeIds.length === 0) return { ok: false, reason: "unknown_start", message: "origin has no verified entrance" };
-  // Same origin fare rule as `routeBetween` (packages/navigation/src/poi.ts; it needs a Poi goal, so it cannot be called
-  // here): under `unpaid_only` a POI that is not known to be outside the paid area fails closed.
-  if (options.profile.fare === "unpaid_only" && from.poi.paid !== false)
-    return { ok: false, reason: "no_path", message: `origin ${from.poi.id} is ${from.poi.paid === true ? "inside" : "not known to be outside"} the paid area` };
-  return router.route(from.poi.connectorNodeIds, options.goals, options.profile, [from.poi.evidence]);
+  return routeBetween(router, from, { kind: "nodes", nodeIds: options.goals }, options.profile);
+}
+
+function argumentShapeError(bundle: StationBundle, options: CliOptions): string | null {
+  const nodeIds = new Set(bundle.nodes.map((node) => node.id));
+  const poiIds = new Set(bundle.pois.map((poi) => poi.id));
+  if (options.fromPoi && !poiIds.has(options.from) && nodeIds.has(options.from))
+    return `--from-poi expects a POI id; ${options.from} is a node id`;
+  if (!options.fromPoi && !nodeIds.has(options.from) && poiIds.has(options.from))
+    return `${options.from} is a POI id; add --from-poi`;
+  for (const goal of options.goals) {
+    if (options.goalPoi && !poiIds.has(goal) && nodeIds.has(goal))
+      return `--goal-poi expects a POI id; ${goal} is a node id`;
+    if (!options.goalPoi && !nodeIds.has(goal) && poiIds.has(goal))
+      return `${goal} is a POI id; add --goal-poi`;
+  }
+  return null;
 }
 
 export async function runRoute(args: string[]): Promise<number> {
@@ -136,6 +146,11 @@ export async function runRoute(args: string[]): Promise<number> {
   }
   const bundle = await loadStation(options.stationDir);
   if (!bundle) return 2;
+  const shapeError = argumentShapeError(bundle, options);
+  if (shapeError) {
+    process.stderr.write(`${shapeError}\n${usage()}\n`);
+    return 2;
+  }
 
   const router = createRouter(bundle);
   const result = options.fromPoi || options.goalPoi ? routeByPoi(bundle, router, options) : router.route(options.from, options.goals, options.profile);

@@ -10,8 +10,8 @@ describe("label visibility", () => {
     expect(onFocusFloor(0, -6)).toBe(false);
   });
 
-  const at = (occluded: LabelOcclusion, distance: number, rest: { onFocusFloor?: boolean; selected?: boolean } = {}) =>
-    labelState({ occluded, distance, onFocusFloor: true, selected: false, ...rest });
+  const at = (occluded: LabelOcclusion, distance: number, rest: { onFocusFloor?: boolean; selected?: boolean; overview?: boolean } = {}) =>
+    labelState({ occluded, distance, onFocusFloor: true, selected: false, overview: false, ...rest });
 
   it("shows unoccluded labels at any distance and fades geometry-occluded ones near the camera", () => {
     expect(at("none", 5)).toBe("shown");
@@ -29,6 +29,11 @@ describe("label visibility", () => {
   it("hides geometry-occluded labels farther than OCCLUDED_FADE_MAX_M", () => {
     expect(at("geometry", OCCLUDED_FADE_MAX_M + 0.1)).toBe("hidden");
     expect(at("geometry", 95)).toBe("hidden");
+  });
+
+  it("fades distant geometry-occluded labels in overview but still hides labels behind signs", () => {
+    expect(at("geometry", 95, { overview: true })).toBe("faded");
+    expect(at("sign", 95, { overview: true })).toBe("hidden");
   });
 
   it("hides unselected labels on other floors whatever blocks them", () => {
