@@ -167,7 +167,7 @@ describe('S03 unclosed source rings: exclude, never repair', () => {
     expect(sourceDefectRecords(openInputs, project)).toEqual([{ kind: 'SOURCE_DEFECT_UNCLOSED_RING', level_id: 11, feature_index: 0, polygon_index: 0, ring_index: 0, endpoint_gap_m: 0 }]);
     expect(openInputs.levels[0]!.polygons).toEqual([]);
     // The private provenance keeps the complete original tuples, so the two endpoints stay distinguishable in z.
-    expect(openInputs.sourceDefects).toEqual([{ kind: 'SOURCE_DEFECT_UNCLOSED_RING', levelId: 11, featureIndex: 0, polygonIndex: 0, ringIndex: 0,
+    expect(openInputs.sourceDefects).toEqual([{ kind: 'SOURCE_DEFECT_UNCLOSED_RING', levelId: 11, featureId: null, featureIndex: 0, polygonIndex: 0, ringIndex: 0,
       first: [139, 35, 0], last: [139, 35, 10] }]);
   });
 });
@@ -212,7 +212,7 @@ describe('S03 hole outside its shell: exclude, never repair', () => {
     const shell3d = [[0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1], [0, 0, 1]];
     const hole3d = [[2, 2, 3], [3, 2, 3], [3, 3, 3], [2, 3, 3], [2, 2, 3]];
     const inputs = parseS03Members(withLevelFeatures([polygonFeature([shell3d, hole3d])]));
-    expect(inputs.sourceDefects).toEqual([{ kind: 'SOURCE_DEFECT_HOLE_OUTSIDE_SHELL', levelId: 11, featureIndex: 0, polygonIndex: 0, ringIndex: 1,
+    expect(inputs.sourceDefects).toEqual([{ kind: 'SOURCE_DEFECT_HOLE_OUTSIDE_SHELL', levelId: 11, featureId: null, featureIndex: 0, polygonIndex: 0, ringIndex: 1,
       vertices: hole3d, shell: shell3d }]);
     // The public record keeps only the horizontal ENU offset.
     expect((sourceDefectRecords(inputs, project)[0] as { max_offset_m: number }).max_offset_m).toBeCloseTo(Math.hypot(2, 2), 12);

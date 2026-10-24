@@ -523,10 +523,14 @@
   availability_deadline: null
   notes: >-
     Bounded Lane D evidence; reuse and navigability are separate. No graph conversion. The publish gate is
-    CONDITIONAL (gteki-1b R-1/R-2, 2026-10-24, under Owner Q2/Q3): only plain gate and platform names ship,
-    search only (AREA_ONLY), with no position, floor, connector or route, the credit
+    CONDITIONAL (gteki-1b R-1/R-2, 2026-10-24, under Owner Q2/Q3): plain gate and platform names ship, search
+    only (AREA_ONLY), with no connector or route, the credit
     出典：東京都都市整備局「新宿駅周辺の施設情報等」 and the NOTICE 4.7 change notice. CRS stays UNKNOWN.
-    Not a rights PASS; geometry and positions stay unshipped until a separate ruling.
+    Platforms (and the one unpointed gate): name-only, AREA_ONLY. WP8 (gteki-1b, 2026-10-24) adds one
+    approximate representative point per gate and transfer: 25 gates/transfers, search display, labelled
+    ±max(5 m, polygon radius), NOT_FOR_ROUTING, floor UNVERIFIED. The one candidate whose feature WP7 excludes
+    (poi:keio-gate:1, SOURCE_DEFECT_HOLE_OUTSIDE_SHELL) stays name-only, with no repair. Other S03 geometry
+    stays unshipped. Not a rights PASS.
   publish_gate: CONDITIONAL
 - source_id: tokyo-s03-spec
   title: S03 仕様書 PDF
