@@ -99,7 +99,7 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "西通路東改札"
+        "locator": "Tokyo Metro accessibility page, lift and escalator tables (gate named as an end point)"
       },
       "notes": [
         {
@@ -133,7 +133,7 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "西通路西改札～Ｃ６番出入口"
+        "locator": "Tokyo Metro accessibility page, lift and escalator tables (gate named as an end point)"
       },
       "notes": [
         {
@@ -167,7 +167,7 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "ホーム（中央・新木場寄り）～南通路東改札"
+        "locator": "Tokyo Metro accessibility page, lift and escalator tables (gate named as an end point)"
       },
       "notes": [
         {
@@ -201,12 +201,12 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "ホーム（終端寄り）～中央通路西改札"
+        "locator": "Tokyo Metro accessibility page, Marunouchi lift table"
       },
       "notes": [
         {
           "lang": "ja",
-          "text": "改札内（出典表記：改札内 エレベーター、対応「あり」）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+          "text": "改札内のエレベーター（出典の設備表で設置ありと表示）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
         },
         {
           "lang": "en",
@@ -235,12 +235,12 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "中央通路東改札～３４番出入口"
+        "locator": "Tokyo Metro accessibility page, Marunouchi lift table"
       },
       "notes": [
         {
           "lang": "ja",
-          "text": "改札外（出典表記：改札外 エレベーター、対応「あり」）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+          "text": "改札外のエレベーター（出典の設備表で設置ありと表示）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
         },
         {
           "lang": "en",
@@ -269,12 +269,12 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "ホーム（和光市寄り）～南通路西改札"
+        "locator": "Tokyo Metro accessibility page, Yurakucho lift table"
       },
       "notes": [
         {
           "lang": "ja",
-          "text": "改札内（出典表記：改札内 エレベーター、対応「あり」）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+          "text": "改札内のエレベーター（出典の設備表で設置ありと表示）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
         },
         {
           "lang": "en",
@@ -303,12 +303,12 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "南通路西改札～４番出入口（エソラ）"
+        "locator": "Tokyo Metro accessibility page, Yurakucho lift table"
       },
       "notes": [
         {
           "lang": "ja",
-          "text": "改札外（出典表記：改札外 エレベーター、対応「あり」）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+          "text": "改札外のエレベーター（出典の設備表で設置ありと表示）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
         },
         {
           "lang": "en",
@@ -337,12 +337,12 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "ホーム（中央）～中二階～西通路東改札"
+        "locator": "Tokyo Metro accessibility page, Fukutoshin lift table"
       },
       "notes": [
         {
           "lang": "ja",
-          "text": "改札内（出典表記：改札内 エレベーター、対応「あり」）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+          "text": "改札内のエレベーター（出典の設備表で設置ありと表示）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
         },
         {
           "lang": "en",
@@ -371,12 +371,12 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "西通路東改札～Ｃ９番出入口"
+        "locator": "Tokyo Metro accessibility page, Fukutoshin lift table"
       },
       "notes": [
         {
           "lang": "ja",
-          "text": "改札外（出典表記：改札外 エレベーター、対応「あり」）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+          "text": "改札外のエレベーター（出典の設備表で設置ありと表示）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
         },
         {
           "lang": "en",
@@ -405,12 +405,12 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "西通路東改札～C１b出入口"
+        "locator": "Tokyo Metro accessibility page, Fukutoshin lift table"
       },
       "notes": [
         {
           "lang": "ja",
-          "text": "改札外（出典表記：改札外 エレベーター、対応「あり」）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+          "text": "改札外のエレベーター（出典の設備表で設置ありと表示）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
         },
         {
           "lang": "en",
@@ -439,7 +439,7 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "中央通路東改札～３５番出入口"
+        "locator": "Tokyo Metro accessibility page, Marunouchi escalator table"
       },
       "notes": [
         {
@@ -473,7 +473,7 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "ホーム（荻窪寄り）～中央通路東改札"
+        "locator": "Tokyo Metro accessibility page, Marunouchi escalator table"
       },
       "notes": [
         {
@@ -507,7 +507,7 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "ホーム（中央・和光市寄り）～南通路西改札"
+        "locator": "Tokyo Metro accessibility page, Yurakucho escalator table"
       },
       "notes": [
         {
@@ -541,7 +541,7 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "ホーム（中央・新木場寄り）～南通路東改札"
+        "locator": "Tokyo Metro accessibility page, Yurakucho escalator table"
       },
       "notes": [
         {
@@ -575,7 +575,7 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "南通路西改札～４番出入口（エソラ）"
+        "locator": "Tokyo Metro accessibility page, Yurakucho escalator table"
       },
       "notes": [
         {
@@ -609,7 +609,7 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "ホーム（新木場寄り）～南通路東改札"
+        "locator": "Tokyo Metro accessibility page, Yurakucho escalator table"
       },
       "notes": [
         {
@@ -643,7 +643,7 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "ホーム（中央・和光市寄り）～西通路西改札"
+        "locator": "Tokyo Metro accessibility page, Fukutoshin escalator table"
       },
       "notes": [
         {
@@ -677,7 +677,7 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "ホーム（中央・和光市寄り）～中二階～西通路東改札始発～24：00"
+        "locator": "Tokyo Metro accessibility page, Fukutoshin escalator table"
       },
       "notes": [
         {
@@ -719,7 +719,7 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "ホーム（中央・渋谷寄り）～中二階～西通路東改札"
+        "locator": "Tokyo Metro accessibility page, Fukutoshin escalator table"
       },
       "notes": [
         {
@@ -753,7 +753,7 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "ホーム（渋谷寄り）～丸ノ内線乗降階連絡通路始発～24：15"
+        "locator": "Tokyo Metro accessibility page, Fukutoshin escalator table"
       },
       "notes": [
         {
@@ -795,7 +795,7 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "西通路東改札～丸ノ内線・有楽町線連絡階"
+        "locator": "Tokyo Metro accessibility page, Fukutoshin escalator table"
       },
       "notes": [
         {
@@ -829,7 +829,7 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "西通路西改札～Ｃ６番出入口"
+        "locator": "Tokyo Metro accessibility page, Fukutoshin escalator table"
       },
       "notes": [
         {
@@ -863,7 +863,7 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "西通路西改札～Ｃ７番出入口"
+        "locator": "Tokyo Metro accessibility page, Fukutoshin escalator table"
       },
       "notes": [
         {
@@ -897,7 +897,7 @@
         ],
         "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "西通路東改札～Ｃ８番出入口"
+        "locator": "Tokyo Metro accessibility page, Fukutoshin escalator table"
       },
       "notes": [
         {
@@ -940,12 +940,12 @@
         ],
         "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
         "checkedDate": "2026-10-24",
-        "quote": "1a*"
+        "locator": "Tokyo Metro printed yardmap, exit list"
       },
       "notes": [
         {
           "lang": "ja",
-          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。出典の凡例：「*がついている出入口は時間制限があります」（時刻は出典に記載なし）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。出典の凡例では、*印の出入口は利用時間に制限があるとされる（時刻は出典に記載なし）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
         },
         {
           "lang": "en",
@@ -983,12 +983,12 @@
         ],
         "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
         "checkedDate": "2026-10-24",
-        "quote": "2a*"
+        "locator": "Tokyo Metro printed yardmap, exit list"
       },
       "notes": [
         {
           "lang": "ja",
-          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。出典の凡例：「*がついている出入口は時間制限があります」（時刻は出典に記載なし）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。出典の凡例では、*印の出入口は利用時間に制限があるとされる（時刻は出典に記載なし）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
         },
         {
           "lang": "en",
@@ -1026,12 +1026,12 @@
         ],
         "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
         "checkedDate": "2026-10-24",
-        "quote": "1b*"
+        "locator": "Tokyo Metro printed yardmap, exit list"
       },
       "notes": [
         {
           "lang": "ja",
-          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。出典の凡例：「*がついている出入口は時間制限があります」（時刻は出典に記載なし）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。出典の凡例では、*印の出入口は利用時間に制限があるとされる（時刻は出典に記載なし）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
         },
         {
           "lang": "en",
@@ -1069,7 +1069,7 @@
         ],
         "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
         "checkedDate": "2026-10-24",
-        "quote": "2b"
+        "locator": "Tokyo Metro printed yardmap, exit list"
       },
       "notes": [
         {
@@ -1112,7 +1112,7 @@
         ],
         "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
         "checkedDate": "2026-10-24",
-        "quote": "3"
+        "locator": "Tokyo Metro printed yardmap, exit list"
       },
       "notes": [
         {
@@ -1155,7 +1155,7 @@
         ],
         "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
         "checkedDate": "2026-10-24",
-        "quote": "C1"
+        "locator": "Tokyo Metro printed yardmap, exit list"
       },
       "notes": [
         {
@@ -1198,16 +1198,16 @@
         ],
         "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
         "checkedDate": "2026-10-24",
-        "quote": "C1b"
+        "locator": "Tokyo Metro printed yardmap, exit list"
       },
       "notes": [
         {
           "lang": "ja",
-          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。出典表記：地上行エレベーターあり。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。出典の出口一覧で、地上へのエレベーターありと表示。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
         },
         {
           "lang": "en",
-          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). As printed: 地上行エレベーターあり (elevator to ground). Location and entrance not verified (search only, no route). Current status unknown."
+          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). The exit list marks it as having a lift to street level. Location and entrance not verified (search only, no route). Current status unknown."
         }
       ]
     },
@@ -1241,7 +1241,7 @@
         ],
         "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
         "checkedDate": "2026-10-24",
-        "quote": "C2"
+        "locator": "Tokyo Metro printed yardmap, exit list"
       },
       "notes": [
         {
@@ -1284,7 +1284,7 @@
         ],
         "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
         "checkedDate": "2026-10-24",
-        "quote": "C3"
+        "locator": "Tokyo Metro printed yardmap, exit list"
       },
       "notes": [
         {
@@ -1327,12 +1327,12 @@
         ],
         "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
         "checkedDate": "2026-10-24",
-        "quote": "C4*"
+        "locator": "Tokyo Metro printed yardmap, exit list"
       },
       "notes": [
         {
           "lang": "ja",
-          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。出典の凡例：「*がついている出入口は時間制限があります」（時刻は出典に記載なし）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。出典の凡例では、*印の出入口は利用時間に制限があるとされる（時刻は出典に記載なし）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
         },
         {
           "lang": "en",
@@ -1370,7 +1370,7 @@
         ],
         "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
         "checkedDate": "2026-10-24",
-        "quote": "C6"
+        "locator": "Tokyo Metro printed yardmap, exit list"
       },
       "notes": [
         {
@@ -1413,7 +1413,7 @@
         ],
         "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
         "checkedDate": "2026-10-24",
-        "quote": "C7"
+        "locator": "Tokyo Metro printed yardmap, exit list"
       },
       "notes": [
         {
@@ -1456,7 +1456,7 @@
         ],
         "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
         "checkedDate": "2026-10-24",
-        "quote": "C8"
+        "locator": "Tokyo Metro printed yardmap, exit list"
       },
       "notes": [
         {
@@ -1499,16 +1499,16 @@
         ],
         "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
         "checkedDate": "2026-10-24",
-        "quote": "C9"
+        "locator": "Tokyo Metro printed yardmap, exit list"
       },
       "notes": [
         {
           "lang": "ja",
-          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。出典表記：地上行エレベーターあり。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+          "text": "出典（構内図印刷ページ、改定日：2026年3月）の出口案内に掲載。出典の出口一覧で、地上へのエレベーターありと表示。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
         },
         {
           "lang": "en",
-          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). As printed: 地上行エレベーターあり (elevator to ground). Location and entrance not verified (search only, no route). Current status unknown."
+          "text": "Listed in the exit list of the printed yardmap (revision 2026年3月). The exit list marks it as having a lift to street level. Location and entrance not verified (search only, no route). Current status unknown."
         }
       ]
     },
@@ -1542,7 +1542,7 @@
         ],
         "method": "facts-only 構内図 print page (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), code as printed in the alias",
         "checkedDate": "2026-10-24",
-        "quote": "C10"
+        "locator": "Tokyo Metro printed yardmap, exit list"
       },
       "notes": [
         {
@@ -1581,7 +1581,7 @@
         ],
         "method": "facts-only 駅情報 page (OD-25), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "1F改札口付近"
+        "locator": "Seibu station page, AED location notice"
       },
       "notes": [
         {
@@ -1620,7 +1620,7 @@
         ],
         "method": "facts-only 駅情報 page (OD-25), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
-        "quote": "B1F改札口付近"
+        "locator": "Seibu station page, AED location notice"
       },
       "notes": [
         {
@@ -1654,12 +1654,12 @@
         ],
         "method": "facts-only 駅情報 page (OD-25), UNVERIFIED, SEARCH_ONLY; category other: the page does not say whether it is an exit or a gate",
         "checkedDate": "2026-10-24",
-        "quote": "西武南口 7:00～22:30"
+        "locator": "Seibu station page, station facility hours section"
       },
       "notes": [
         {
           "lang": "ja",
-          "text": "「駅施設の営業時間」の項目として掲載（出入口か改札かの区分は出典に記載なし）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+          "text": "駅施設の営業時間の一覧に掲載（出入口か改札かの区分は出典に記載なし）。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
         },
         {
           "lang": "en",
@@ -1680,62 +1680,62 @@
     {
       "poiId": "metro-m-central-west-gate",
       "fact": "丸ノ内線 改札内 エレベーター（対応あり）の設置場所: ホーム（終端寄り）～中央通路西改札",
-      "quote": "ホーム（終端寄り）～中央通路西改札",
-      "sourceId": "tokyometro-ikebukuro-accessibility-2026-10"
+      "sourceId": "tokyometro-ikebukuro-accessibility-2026-10",
+      "locator": "Tokyo Metro accessibility page, lift and escalator tables"
     },
     {
       "poiId": "metro-m-central-east-gate",
       "fact": "丸ノ内線 改札外 エレベーター（対応あり）の設置場所: 中央通路東改札～３４番出入口",
-      "quote": "中央通路東改札～３４番出入口",
-      "sourceId": "tokyometro-ikebukuro-accessibility-2026-10"
+      "sourceId": "tokyometro-ikebukuro-accessibility-2026-10",
+      "locator": "Tokyo Metro accessibility page, lift and escalator tables"
     },
     {
       "poiId": "metro-m-central-east-gate",
       "fact": "丸ノ内線 エスカレーター（上り・下り、対応あり）の設置場所: 中央通路東改札～３５番出入口",
-      "quote": "中央通路東改札～３５番出入口",
-      "sourceId": "tokyometro-ikebukuro-accessibility-2026-10"
+      "sourceId": "tokyometro-ikebukuro-accessibility-2026-10",
+      "locator": "Tokyo Metro accessibility page, lift and escalator tables"
     },
     {
       "poiId": "metro-y-south-west-gate",
       "fact": "有楽町線 改札内 エレベーター（対応あり）の設置場所: ホーム（和光市寄り）～南通路西改札",
-      "quote": "ホーム（和光市寄り）～南通路西改札",
-      "sourceId": "tokyometro-ikebukuro-accessibility-2026-10"
+      "sourceId": "tokyometro-ikebukuro-accessibility-2026-10",
+      "locator": "Tokyo Metro accessibility page, lift and escalator tables"
     },
     {
       "poiId": "exit-4",
-      "fact": "構内図印刷ページの出口案内で「地上行エレベーターあり」と表記",
-      "quote": "地上行エレベーターあり",
-      "sourceId": "tokyometro-ikebukuro-yardmap-print-2026-10"
+      "fact": "構内図印刷ページの出口一覧で、地上へのエレベーターがある出口として表示",
+      "sourceId": "tokyometro-ikebukuro-yardmap-print-2026-10",
+      "locator": "Tokyo Metro printed yardmap, exit list"
     },
     {
       "poiId": "exit-34",
       "fact": "丸ノ内線 改札外 エレベーター（対応あり）の端点: 中央通路東改札～３４番出入口",
-      "quote": "中央通路東改札～３４番出入口",
-      "sourceId": "tokyometro-ikebukuro-accessibility-2026-10"
+      "sourceId": "tokyometro-ikebukuro-accessibility-2026-10",
+      "locator": "Tokyo Metro accessibility page, lift and escalator tables"
     },
     {
       "poiId": "exit-35",
-      "fact": "構内図印刷ページの出口案内で「地上行エレベーターあり」と表記",
-      "quote": "地上行エレベーターあり",
-      "sourceId": "tokyometro-ikebukuro-yardmap-print-2026-10"
+      "fact": "構内図印刷ページの出口一覧で、地上へのエレベーターがある出口として表示",
+      "sourceId": "tokyometro-ikebukuro-yardmap-print-2026-10",
+      "locator": "Tokyo Metro printed yardmap, exit list"
     },
     {
       "poiId": "exit-35",
       "fact": "丸ノ内線 エスカレーター（上り・下り、対応あり）の端点: 中央通路東改札～３５番出入口",
-      "quote": "中央通路東改札～３５番出入口",
-      "sourceId": "tokyometro-ikebukuro-accessibility-2026-10"
+      "sourceId": "tokyometro-ikebukuro-accessibility-2026-10",
+      "locator": "Tokyo Metro accessibility page, lift and escalator tables"
     },
     {
       "poiId": "exit-39",
-      "fact": "構内図印刷ページで「39*」と表記（凡例: *がついている出入口は時間制限があります）",
-      "quote": "*がついている出入口は時間制限があります",
-      "sourceId": "tokyometro-ikebukuro-yardmap-print-2026-10"
+      "fact": "構内図印刷ページの出口一覧で39番に*印（凡例では利用時間に制限がある出入口）",
+      "sourceId": "tokyometro-ikebukuro-yardmap-print-2026-10",
+      "locator": "Tokyo Metro printed yardmap, exit list"
     },
     {
       "poiId": "exit-40",
-      "fact": "構内図印刷ページで「40*」と表記（凡例: *がついている出入口は時間制限があります）",
-      "quote": "*がついている出入口は時間制限があります",
-      "sourceId": "tokyometro-ikebukuro-yardmap-print-2026-10"
+      "fact": "構内図印刷ページの出口一覧で40番に*印（凡例では利用時間に制限がある出入口）",
+      "sourceId": "tokyometro-ikebukuro-yardmap-print-2026-10",
+      "locator": "Tokyo Metro printed yardmap, exit list"
     }
   ],
   "notFound": [
@@ -1752,7 +1752,7 @@
     "Metro exit 12 and other numbers absent from the printed 出口案内 list: no POI created"
   ],
   "conflicts": [
-    "Exit code spelling for C9: print page 'C9' (出口案内) vs accessibility page '西通路東改札～Ｃ９番出入口' (full-width digits); not a substantive conflict, POI uses print spelling 'C9'",
-    "Exit code spelling for C1b: print page 'C1b' vs accessibility page '西通路東改札～C１b出入口' (mixed full-width digit 1); POI uses print spelling 'C1b'"
+    "C9: the print page writes the code with half-width digits, the accessibility page with full-width digits. Spelling only; the POI uses C9.",
+    "C1b: the print page writes C1b, the accessibility page writes its 1 as a full-width digit. Spelling only; the POI uses C1b."
   ]
 }
