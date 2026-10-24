@@ -1,5 +1,6 @@
-import type { Source } from "@gteki/schema";
+import type { LocalizedText, Source } from "@gteki/schema";
 import type { Strings } from "./i18n.ts";
+import { coverageText, type Lang } from "./i18n.ts";
 
 /** A source's credit as shown to users: link, licence (with its link) and the modification notice. */
 export interface SourceCredit {
@@ -22,14 +23,25 @@ export function safeHref(url: string | undefined | null): string | null {
 }
 
 /** CC BY and PDL 1.0 attribution must name the licence and say when the data was modified. */
-export function sourceCredit(s: Source): SourceCredit {
+export function sourceCredit(s: Source, lang: Lang = "ja"): SourceCredit {
   return {
     title: s.title,
     href: safeHref(s.url),
-    license: s.license ? { name: s.license.name, href: safeHref(s.license.url) } : null,
+    license: s.license ? { name: coverageText(s.license.name, lang), href: safeHref(s.license.url) } : null,
     attribution: s.attribution,
     modified: s.modified,
   };
+}
+
+/** Render model for an asset provenance row; without a summary it preserves the legacy full text. */
+export function assetDerivationPresentation(
+  derivation: string,
+  summary: LocalizedText[] | undefined,
+  lang: Lang,
+  detailsLabel: string,
+): { text: string; details: string | null; detailsLabel: string | null } {
+  if (!summary?.length) return { text: derivation, details: null, detailsLabel: null };
+  return { text: coverageText(summary, lang), details: derivation, detailsLabel };
 }
 
 /** The extra line a facts-only source carries instead of a licence: the #26 wording and, when safe, the decision link. */
@@ -45,6 +57,32 @@ export function factsOnlyCredit(s: Source, t: Pick<Strings, "factsOnly" | "right
   return {
     text: t.factsOnly,
     decision: s.decision && href ? { label: `${t.rightsDecision} ${s.decision.date}`, href } : null,
+  };
+}
+
+export interface OverrideCredit {
+  text: string;
+  decisions: { label: string; href: string | null }[];
+}
+
+/** null unless a source has owner-override rights; only http(s) decisions can be linked. */
+export function overrideCredits(sources: readonly Source[], t: Pick<Strings, "rightsReusable" | "rightsOwnerOverride" | "rightsReference" | "rightsRestricted" | "rightsUnverified" | "rightsDecision">): OverrideCredit | null {
+  const overrides = sources.filter((s) => s.rights === "PUBLISHED_UNDER_OWNER_OVERRIDE");
+  if (!overrides.length) return null;
+  const seen = new Set<string>();
+  const decisions: OverrideCredit["decisions"] = [];
+  for (const s of overrides) {
+    if (!s.override) continue;
+    const key = JSON.stringify([s.override.decision, s.override.date]);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const href = safeHref(s.override.decision);
+    const reference = href || !/^#\d+$/.test(s.override.decision) ? "" : ` ${s.override.decision}`;
+    decisions.push({ label: `${t.rightsDecision}${reference} ${s.override.date}`, href });
+  }
+  return {
+    text: rightsLabel("PUBLISHED_UNDER_OWNER_OVERRIDE", t),
+    decisions,
   };
 }
 

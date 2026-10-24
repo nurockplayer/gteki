@@ -1,0 +1,31 @@
+{
+  "glyphCount": 871,
+  "sourceBytes": 9590732,
+  "full": {
+    "bytes": 277868,
+    "gzipBytes": 277966,
+    "brotliBytes": 277873,
+    "sha256": "8721e511c271fb82a7d9d685fcfb3734b1ed5bd70bc453ab10d16d04c9d34eb9"
+  },
+  "mobileStatic700": {
+    "bytes": 159812,
+    "gzipBytes": 159880,
+    "brotliBytes": 159817,
+    "sha256": "bdd191ca0ee0aeb5f0bb6e843b8326487241b6482cd4b0b3ea39f6985e3b9432"
+  },
+  "mobileStatic600": {
+    "bytes": 155336,
+    "gzipBytes": 155397,
+    "brotliBytes": 155341,
+    "sha256": "a1a2c36b415288b241d4b186868dab3a4b513de43fbfccc5f83c7abb2e9cac83"
+  },
+  "mobileStatic800": {
+    "bytes": 159204,
+    "gzipBytes": 159262,
+    "brotliBytes": 159209,
+    "sha256": "1ebca87a151a3e5e1540f6afef3cd652fc486148e1654a55fb1c274ce0f1ec86"
+  },
+  "mobilePairBytes": 314540,
+  "unsupportedCodePoints": [],
+  "loadedByBothTiers": "GTEkiSignJP-subset.woff2"
+}

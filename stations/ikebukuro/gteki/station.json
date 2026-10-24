@@ -391,6 +391,36 @@
     "kit/catalog/high/gteki_ik_stair_n9_r173_t329_w2887_rails_wall.glb": "60c21161c9869fa15c88b1cc892458c825db3ba5d94b104c6ad9462fee2b5b09"
    },
    "notes": "Visual only: never walkable, never a collider, never walk-graph or route evidence. The pieces are GTEki's own art; the catalogue entries that sized them are station-verified from the PLATEAU survey (scene/dressing_anchors.json). Provenance: kit main 7258e6b; catalog main 7258e6b stations/ikebukuro/scene/kit_catalog.json. Both tiers were built 119/119 (build, validate --require-occlusion 0 FAIL, Godot 119/119); full manifest sha256 ae50ce902c505c1b..., mobile 51b5b54b4160ca62.... Batch A copies the 5 escalator ids, batch B the 21 stair handrail ids, all desktop tier: every escalator placement lists `high` alone (low waits for a phone measurement) and rails are drawn only on `main_route` flights and on `high`, so there is no phone copy yet. pipeline/sync_kit_catalog.py copies each file byte for byte after checking it against its tier's manifest (sha256 and bytes)."
+  },
+  {
+   "id": "tokyometro-ikebukuro-shops-2026-10",
+   "title": "東京メトロ 池袋駅 施設・店舗",
+   "publisher": "東京地下鉄",
+   "url": "https://www.tokyometro.jp/station/ikebukuro/shop/index.html",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" },
+   "attribution": "東京メトロ 池袋駅 施設・店舗 (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T00:40:00Z",
+   "datasetDate": null,
+   "notes": "Shop names and the facility label (Echika池袋) only, read as facts (#211 DR-MR-01). No text, logos, photos or layout reproduced. Page undated."
+  },
+  {
+   "id": "isp-floorguide-2026-10",
+   "title": "池袋ショッピングパーク フロアガイド",
+   "publisher": "池袋ショッピングパーク",
+   "url": "https://www.web-isp.co.jp/floorguide/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/360#issuecomment-6377632614", "date": "2026-10-24" },
+   "attribution": "池袋ショッピングパーク フロアガイド (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T00:40:00Z",
+   "datasetDate": null,
+   "notes": "Shop names and the zone label (南館) only, under OD-23/OD-31: POI attributes only, never route evidence (#211 DR-MR-04). Page undated."
   }
  ],
  "floors": [

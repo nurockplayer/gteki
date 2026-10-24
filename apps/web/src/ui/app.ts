@@ -10,8 +10,9 @@ import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGu
 import { coverageText, initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
+import { isUnlocatedShop, noRouteText } from "./noRouteText.ts";
 import { stationClock } from "../stationClock.ts";
-import { factsOnlyCredit, rightsLabel, sourceCredit } from "../credits.ts";
+import { assetDerivationPresentation, factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { nodeLabel, poiLabel } from "./labels.ts";
@@ -20,6 +21,7 @@ import { MascotSlot, type MascotEvent } from "./mascot.ts";
 import { watchReducedMotion } from "./motion.ts";
 import { railDemoLink } from "./railTravel.ts";
 import { RailRideDemo } from "./railRideDemo.ts";
+import { shouldHandleGuideKey } from "./railKeyGuard.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -248,7 +250,7 @@ export class App {
     // A later selection supersedes this one: never let a slow station overwrite the one now selected.
     const generation = ++this.openGeneration;
     const current = () => generation === this.openGeneration;
-    this.explorer.cancelPendingLoad();
+    this.explorer.cancelPendingLoad(entry.key);
     this.s.entry = entry;
     this.ui.stationSelect.value = entry.key;
     // Drop the previous station's services now, not after the await: nothing may search or route
@@ -458,7 +460,8 @@ export class App {
       const name = el("span", "result-name", this.poiName(h.poi));
       const meta = el("span", "result-meta");
       const floor = h.poi.floorId ? floorDisplayName(floors.get(h.poi.floorId), this.s.lang) : null;
-      const tags = [floor, h.matched && h.matched !== this.poiName(h.poi) ? `“${h.matched}”` : null, h.routable ? null : this.t.searchOnly].filter(Boolean) as string[];
+      const searchOnly = isUnlocatedShop(h.poi) ? this.t.shopSearchOnly : this.t.searchOnly;
+      const tags = [floor, h.matched && h.matched !== this.poiName(h.poi) ? `“${h.matched}”` : null, h.routable ? null : searchOnly].filter(Boolean) as string[];
       meta.textContent = tags.join(" · ");
       b.append(dot, name, meta);
       // The accessible name carries the visible tags, so "search only" is heard too.
@@ -634,7 +637,7 @@ export class App {
     const profile = this.profile();
     const best: RouteResult | RouteFailure = routeBetween(router, origin, destination, profile);
     this.s.route = best;
-    this.ui.live.announce(routeLiveMessage(this.t, best));
+    this.ui.live.announce(routeLiveMessage(this.t, best, !best.ok && best.reason === "unknown_goal" && isUnlocatedShop(destination) ? this.t.shopNoRoute : undefined));
     // Only after a no_path: re-ask with the user's own options relaxed to say which one refused.
     if (!best.ok && best.reason === "no_path") this.s.noPath = explainNoPathBetween(router, loaded.bundle, origin, destination, profile);
     if (best.ok) {
@@ -659,7 +662,7 @@ export class App {
     if (!r.ok) {
       const card = el("div", "card no-route");
       const view = r.reason === "no_path" && this.s.noPath ? noPathView(t, this.s.noPath) : null;
-      card.append(el("h2", undefined, t.noRoute), el("p", undefined, view?.text ?? t.noRouteWhy[r.reason] ?? r.message));
+      card.append(el("h2", undefined, t.noRoute), el("p", undefined, view?.text ?? noRouteText(t, r, this.s.destination)));
       if (view && view.relax.length > 0) {
         const relax = el("div", "actions");
         const relaxOff = (keys: typeof view.relax) => { for (const k of keys) this.s.profile[k] = false; this.renderProfile(); this.computeRoute(); };
@@ -1003,8 +1006,12 @@ export class App {
     document.addEventListener("compositionend", () => { this.compositionEndMs = performance.now(); }, true);
     window.addEventListener("keydown", (e) => {
       const action = guideKeyActionGuarded(e, this.compositionEndMs, performance.now());
-      if (!action || this.explorer.currentMode !== "guide" || this.ui.coverage.open) return;
-      if ((e.target as HTMLElement | null)?.closest?.("input, textarea, select, [contenteditable]")) return;
+      if (this.explorer.currentMode !== "guide" || !shouldHandleGuideKey(
+        action,
+        e.target as HTMLElement | null,
+        this.ui.coverage.open,
+        this.railRide !== null,
+      )) return;
       e.preventDefault();
       this.jumpGuide(action === "next" ? 1 : -1);
     });
@@ -1049,8 +1056,8 @@ export class App {
 
   /**
    * A credit line for one source, or for several sources sharing an attribution: titles (linked), the attribution once,
-   * the distinct licences (linked) and the modification notice; a facts-only source adds the #26 wording and decision link
-   * (Coverage dialog and the route card's 出典 both use this).
+   * the distinct licences (linked) and the modification notice; facts-only and owner-override sources add their wording
+   * and safe decision link (the Coverage dialog and the route card's 出典 both use this).
    */
   private creditItem(...sources: Source[]): HTMLLIElement {
     const link = (text: string, href: string | null): HTMLElement => {
@@ -1063,13 +1070,13 @@ export class App {
     };
     const li = el("li");
     sources.forEach((s, i) => {
-      const c = sourceCredit(s);
+      const c = sourceCredit(s, this.s.lang);
       if (i) li.append(el("span", "muted", "、"));
       li.append(link(c.title, c.href));
     });
     const attribution = sources[0]?.attribution.replace(/\s+/g, " ").trim() ?? "";
     if (attribution) li.append(el("span", "muted", ` — ${attribution}`));
-    const licenses = groupLicenses(sources);
+    const licenses = groupLicenses(sources, this.s.lang);
     if (licenses.length) {
       li.append(el("span", "muted", " ("));
       licenses.forEach((l, i) => { if (i) li.append(el("span", "muted", ", ")); li.append(link(l.name, l.href)); });
@@ -1081,6 +1088,18 @@ export class App {
       if (!facts) continue;
       li.append(el("span", "muted", ` · ${facts.text}`));
       if (facts.decision) li.append(el("span", "muted", " ("), link(facts.decision.label, facts.decision.href), el("span", "muted", ")"));
+    }
+    const override = overrideCredits(sources, this.t);
+    if (override) {
+      li.append(el("span", "muted", ` · ${override.text}`));
+      if (override.decisions.length) {
+        li.append(el("span", "muted", " ("));
+        override.decisions.forEach((decision, i) => {
+          if (i) li.append(el("span", "muted", ", "));
+          li.append(link(decision.label, decision.href));
+        });
+        li.append(el("span", "muted", ")"));
+      }
     }
     return li;
   }
@@ -1141,7 +1160,8 @@ export class App {
       // facts-only and blank-attribution sources stay single. Rights are plain language (#130), never the internal enum.
       for (const g of creditEntries(b.sources)) {
         const li = this.creditItem(...g.sources);
-        const rights = entryRightsLabels(g.sources, this.t);
+        // creditItem already renders the full owner-override line and decision link; keep other rights labels here.
+        const rights = entryRightsLabels(g.sources, this.t).filter((label) => label !== this.t.rightsOwnerOverride);
         if (rights.length) li.append(el("span", "muted", ` · ${rights.join(" / ")}`));
         src.append(li);
       }
@@ -1150,7 +1170,18 @@ export class App {
       const derived = (b.assets ?? []).filter((a) => a.derivation);
       if (derived.length) {
         const ul = el("ul");
-        for (const a of derived) ul.append(el("li", undefined, `${a.id}: ${a.derivation} — ${a.sourceIds.map((id) => b.sources.find((s) => s.id === id)?.title ?? id).join(", ")}`));
+        for (const a of derived) {
+          const li = el("li");
+          const presentation = assetDerivationPresentation(a.derivation!, a.derivationSummary, this.s.lang, this.t.derivationDetails);
+          li.append(document.createTextNode(`${a.id}: ${presentation.text}`));
+          if (presentation.details !== null) {
+            const details = el("details");
+            details.append(el("summary", undefined, presentation.detailsLabel!), document.createTextNode(presentation.details));
+            li.append(" ", details);
+          }
+          li.append(document.createTextNode(` — ${a.sourceIds.map((id) => b.sources.find((s) => s.id === id)?.title ?? id).join(", ")}`));
+          ul.append(li);
+        }
         d.append(el("h3", undefined, this.t.assetDerivations), ul);
       }
     }

@@ -106,6 +106,33 @@ describe("@gteki/cli", { timeout: 30_000 }, () => {
     }
   });
 
+  it("rejects node and POI argument shape mismatches after loading the station", async () => {
+    const root = await fixtureDir();
+    try {
+      const cases = [
+        { args: [root, "start", "goal", "--from-poi"], message: "--from-poi expects a POI id; start is a node id" },
+        { args: [root, "exit-a1", "goal"], message: "exit-a1 is a POI id; add --from-poi" },
+        { args: [root, "start", "goal", "--goal-poi"], message: "--goal-poi expects a POI id; goal is a node id" },
+        { args: [root, "start", "toilet"], message: "toilet is a POI id; add --goal-poi" },
+      ];
+      for (const { args, message } of cases) {
+        const result = invoke(routeScript, args);
+        expect(result.status).toBe(2);
+        expect(result.stdout).toBe("");
+        expect(result.stderr).toBe(`${message}\nUsage: route.ts <stationDir> <from> <comma-separated goals> [--step-free] [--unpaid-only] [--strict-hours] [--today YYYY-MM-DD] [--from-poi] [--goal-poi]\n`);
+      }
+
+      const unknownFrom = invoke(routeScript, [root, "poi:nope", "goal", "--from-poi"]);
+      expect(unknownFrom.status).toBe(1);
+      expect(JSON.parse(unknownFrom.stdout)).toMatchObject({ result: { ok: false, reason: "unknown_start" } });
+      const unknownGoal = invoke(routeScript, [root, "start", "poi:nope", "--goal-poi"]);
+      expect(unknownGoal.status).toBe(1);
+      expect(JSON.parse(unknownGoal.stdout)).toMatchObject({ result: { ok: false, reason: "unknown_goal" } });
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("applies constrained profiles and fails closed on invalid files", async () => {
     const root = await fixtureDir();
     try {

@@ -31,6 +31,15 @@ describe("StationCaches", () => {
     expect(release).toHaveBeenCalledTimes(1);
   });
 
+  it("releases at abandonment and does not release again when that station later loads", () => {
+    const release = vi.fn();
+    const caches = new StationCaches();
+    caches.remember("a", moduleWith(release));
+    caches.releaseFor("b"); // selected station's load may reject
+    caches.releaseFor("b"); // successful load path is idempotent
+    expect(release).toHaveBeenCalledTimes(1);
+  });
+
   it("never releases between reopens of the same station, and keeps the hook for the eventual change", () => {
     const release = vi.fn();
     const caches = new StationCaches();
@@ -84,6 +93,18 @@ describe("Explorer cache release call site", () => {
       .releaseStationCaches.call(state, nextId);
   };
 
+  const cancel = (state: {
+    stationCaches: StationCaches;
+    loadGeneration: number;
+    clearStation(): void;
+    station: unknown;
+    phase: string;
+    releaseStationCaches(id: string | null): void;
+  }, nextId: string): void => {
+    (Explorer.prototype as unknown as { cancelPendingLoad(this: typeof state, id: string): void })
+      .cancelPendingLoad.call(state, nextId);
+  };
+
   it("releases for a different station and for disposal, not for the same one", () => {
     const release = vi.fn();
     const state = { stationCaches: new StationCaches() };
@@ -100,5 +121,23 @@ describe("Explorer cache release call site", () => {
     state.stationCaches.remember("a", moduleWith(release));
     callSite(state, null);
     expect(release).toHaveBeenCalledTimes(1);
+  });
+
+  it("releases at cancellation only when the selected station differs", () => {
+    const release = vi.fn();
+    const state = {
+      stationCaches: new StationCaches(),
+      loadGeneration: 0,
+      clearStation: vi.fn(),
+      station: {},
+      phase: "scene",
+      releaseStationCaches(nextId: string | null) { this.stationCaches.releaseFor(nextId); },
+    };
+    state.stationCaches.remember("a", moduleWith(release));
+    cancel(state, "a");
+    expect(release).not.toHaveBeenCalled();
+    cancel(state, "b");
+    expect(release).toHaveBeenCalledTimes(1);
+    expect(state.loadGeneration).toBe(2);
   });
 });
