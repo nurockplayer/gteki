@@ -277,7 +277,9 @@ the 小田急 pages cite the second ruling comment as instructed.
 
 ## Lead review, second pass (after the oracle review)
 
-- Tobu lockers: 常温 and 冷蔵 at the same printed place are one POI each (one POI per printed place): locker-ikb-tobudept-005 merged into -003 (B2F 6番地 階段前) and -006 into -004 (B2F 11番地); both types are in notes. Ikebukuro 37.
+- Tobu lockers: 常温 and 冷蔵 at the same printed place are one POI each (one POI per printed place): locker-ikb-tobudept-005 merged into -003 (B2F 6番地 階段前) and -006 into -004 (B2F 11番地); the types were in notes until the 2026-10-24 trim below. Ikebukuro 37.
 - Odakyu AEDs (service-sjk-odakyudept-002…006): name is AED, the floor-guide icon label as printed.
 - LUMINE新宿 information (service-sjk-lumine-001/-002): notes keep the printed 「＜ルミネ1-5F/ルミネ2-2F＞」.
 - Totals above are synced: Ikebukuro 37 + Shinjuku 32 = 69.
+
+2026-10-24: notes trimmed to facts-only (name + printed area + caveat), per oracle review of #461
