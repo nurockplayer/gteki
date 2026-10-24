@@ -177,7 +177,7 @@ The shop and its position are separate records, so a move only updates the ancho
 
 7. ~~Is the method prefix enough?~~ — core-search-6a: yes for Phase 1; Phase 2 should record the source type on the Source (e.g. `Source.kind`).
 8. ~~Photo slot~~ — core-search-6a: a separate images schema proposal, not `Asset`.
-9. ~~Tenant mapping~~ — confirmed by core-search-6a (`storePoiId` → `poiId`, `floorLabel` as worded); see the known blocker in §6.
+9. ~~Tenant mapping~~ — confirmed by core-search-6a (`storePoiId` → `poiId`, `floorLabel` as worded); the rules for tenant evidence are settled by #441 (§6).
 
 **data-research-05**
 
