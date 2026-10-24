@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { asRealStation, createSyntheticBundle, syntheticEdge as edge } from "../../navigation/src/fixtures.ts";
 import { dataFileFactsOnlySources, isOpenAt, parseHm, parseStationFiles, validateBundle } from "./index.ts";
-import type { CoverageArea, CoverageText, DataFile, GraphFile, HoursSpec, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
+import type { ApproximatePosition, CoverageArea, CoverageText, DataFile, GraphFile, HoursSpec, Poi, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
 
 const ev = { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" };
 const DECISION = { url: "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", date: "2026-10-21" };
@@ -371,6 +371,52 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     const empty = real();
     empty.coverage.areas[0]!.sourceIds = [];
     expect(errors(empty)).toContain("coverage.source");
+  });
+
+  it("keeps approximate positions search-display-only: no connectors, no displayPosition, a reusable source (#463)", () => {
+    const approximate = (over: Partial<ApproximatePosition> = {}): ApproximatePosition => ({
+      east: 12.5, north: -3, uncertaintyM: 25, method: "area_weighted_centroid",
+      navigationUse: "NOT_FOR_ROUTING", floor: "UNVERIFIED", ...over,
+    });
+    const place = (over: Partial<Poi> = {}) => {
+      const b = createSyntheticBundle();
+      Object.assign(b.pois[0]!, { connectorNodeIds: [], displayPosition: null, approximatePosition: approximate() }, over);
+      return b;
+    };
+    // A well-formed approximate point round-trips through the shape check and validates clean.
+    const parsed = parseStationFiles(...split(place()));
+    expect(parsed.ok).toBe(true);
+    expect(parsed.bundle?.pois[0]!.approximatePosition).toEqual(approximate());
+    expect(errors(place())).toEqual([]);
+    // Malformed values are shape errors, never silently kept.
+    for (const bad of [
+      { ...approximate(), east: Number.NaN },
+      { ...approximate(), north: Number.POSITIVE_INFINITY },
+      { ...approximate(), uncertaintyM: 0 },
+      { ...approximate(), uncertaintyM: -1 },
+      { ...approximate(), method: "" },
+      { ...approximate(), method: "   " },
+      { ...approximate(), navigationUse: "ROUTING" },
+      { ...approximate(), floor: "VERIFIED" },
+      { ...approximate(), uncertaintyM: "25" },
+    ]) {
+      const shaped = parseStationFiles(...split(place({ approximatePosition: bad as unknown as ApproximatePosition })));
+      expect(shaped.ok, JSON.stringify(bad)).toBe(false);
+      expect(shaped.issues.map((i) => i.code), JSON.stringify(bad)).toContain("shape.type");
+    }
+    // An approximate point can never be routed to or treated as a precise display position.
+    expect(errors(place({ connectorNodeIds: ["a"] }))).toContain("poi.approximate.routing");
+    expect(errors(place({ displayPosition: { x: 0, y: 0, z: 0 } }))).toContain("poi.approximate.display");
+    // On a real station it needs a reusable data source, which may be REUSABLE_WITH_CONDITIONS.
+    const real = (rights: "REUSABLE_WITH_CONDITIONS" | "REFERENCE_ONLY") => {
+      const b = asRealStation(place());
+      b.edges = [];
+      b.sources.push({ ...b.sources[0]!, id: "approx-source", rights });
+      b.pois[0]!.evidence = { sourceIds: ["approx-source"], method: "synthetic-fixture", checkedDate: "2026-10-20" };
+      return b;
+    };
+    expect(errors(real("REUSABLE_WITH_CONDITIONS"))).toEqual([]);
+    expect(errors(real("REFERENCE_ONLY"))).toContain("poi.approximate.rights");
   });
 
   it("keeps unknown and symbolic floor elevations null and rejects unknown elevation sources", () => {
