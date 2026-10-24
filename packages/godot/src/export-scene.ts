@@ -72,6 +72,28 @@ export interface ExportResult {
   seconds: number;
 }
 
+/** How long export waits for a station's background loads (`StationScene.settled`) before failing. */
+export const SETTLE_TIMEOUT_MS = 30_000;
+
+/**
+ * Awaits the station's optional `settled()` (the scene-api field lands with #352; typed locally until then), bounded by
+ * `timeoutMs`. Resolves at once when the station has none. scene-api's contract is that settled() never hangs or
+ * rejects (it resolves once every load has finished, failures included); the timeout is export's own guard, and on
+ * it the export fails with the station id rather than writing a scene whose background content never arrived.
+ */
+export async function settleScene(scene: StationScene & { settled?: () => Promise<void> }, stationId: string, timeoutMs: number): Promise<void> {
+  if (typeof scene.settled !== "function") return;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, fail) => {
+    timer = setTimeout(() => fail(new Error(`station ${stationId}: scene did not settle within ${timeoutMs} ms (background loads still pending); not exporting a partial snapshot`)), timeoutMs);
+  });
+  try {
+    await Promise.race([scene.settled(), timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function git(...args: string[]): string {
   return execFileSync("git", args, { cwd: REPO, encoding: "utf8" }).trim();
 }
@@ -137,6 +159,10 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
 
   const warnings: string[] = [];
   // Dynamic state (escalator steps, doors, crowd) is posed by update(); run it once so the snapshot is the t=0 pose.
+  scene.update?.(0, 0);
+  // Content a station loads in the background (Ikebukuro's kit catalog) is only in the snapshot once it has settled;
+  // a station without `settled` is exported as today. A timeout fails the export rather than writing a partial scene.
+  await settleScene(scene, stationId, SETTLE_TIMEOUT_MS);
   scene.update?.(0, 0);
   scene.root.updateMatrixWorld(true);
   const dropped = dropDynamicObjects(scene.root);
