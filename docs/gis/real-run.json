@@ -180,8 +180,8 @@
     }
   ],
   "invalidated": {
-    "at": "2026-10-23T03:16:10.266Z",
-    "by_command": "gis literals-report",
+    "at": "2026-10-24T02:10:35.380Z",
+    "by_command": "gis acquire tokyo-muni-shinjuku-cultural-properties-csv",
     "reason": "Report-writing command run outside real-run; rerun real-run before summarizing"
   }
 }
