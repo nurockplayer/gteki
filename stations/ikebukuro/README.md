@@ -267,21 +267,24 @@ join the merge; uv (the base-colour map) is dropped from a cluster only when one
 whose material differs visibly (colour, finish, emissive strength, alpha cutoff, vertex colours, base-colour map)
 is left out with a warning. `scene/kit_catalog_atlas.json` records each packed atlas's path and each shipped tier's
 size, bytes and `max_isolated_mip` from Lane E's manifest (`pipeline/sync_kit_catalog.py` writes and `--check` verifies
-it): the escalator atlas and the nosing atlas on the desktop tier, both at `max_isolated_mip` 2 in the final C3 build (recorded, not clamped: the GPU gets the full mip chain).
-The loader records the limit as `gteki_max_isolated_mip` on the texture. three 0.186's `Texture` has no `maxLevel`, so
-the GPU mip chain is not clamped at that level; the value is carried for the renderer/export step that can apply it,
-and `generateMipmaps` stays at three's default. The clusters are a deterministic k-means over
+it): the escalator atlas on the desktop tier and the nosing atlas on both, with `max_isolated_mip` 2 on the desktop
+tier and 1 on the phone tier in the final C3 build (recorded, not clamped: the GPU gets the full mip chain). The loader
+records the limit as `gteki_max_isolated_mip` on the
+texture. three 0.186's `Texture` has no `maxLevel`, so the GPU mip chain is not clamped at that level; the value is
+carried for the renderer/export step that can apply it, and `generateMipmaps` stays at three's default. The clusters are a deterministic k-means over
 the strip origins (at most `NOSING_CLUSTERS` = 8 per tier), so frustum and 50 m distance culling still reject most
-of the station's nosings. This change ships the desktop tier's copies; the phone copies are the stacked follow-up.
+of the station's nosings. Both tiers ship their own copies.
 Cost on the desktop tier: 26 part instances of 26 GLBs, 77 draws before frustum culling and extra passes, 155 712
 triangles (escalators 5 / 35 draws / 66 480; handrails 21 / 42 draws / 89 232), plus the 69 nosings merged into at
-most 8 draws and 25 830 triangles; the phone tier draws none yet. `scene/kit_catalog_loader.test.ts` pins the batches,
-the placement maths, the merge and the credit, and `pipeline/sync_kit_catalog.test.ts` the copies.
+most 8 draws and 25 830 triangles. The phone tier draws batches A and B not at all, and the 69 nosings merged into at
+most 8 draws and 8 610 triangles. `scene/kit_catalog_loader.test.ts` pins the batches, the placement maths, the merge
+and the credit, and `pipeline/sync_kit_catalog.test.ts` the copies.
 
 The 26 desktop catalog GLBs total **10,297,712 bytes** on disk (about 9.82 MiB: escalators 4,536,180, handrails
-5,761,532) plus the desktop escalator atlas at 417,840 bytes; batch C's desktop copies add **1,852,526 bytes** (61
-nosing GLBs totalling 1,783,268 and the 69,258-byte atlas, about 1.77 MiB). The shipped desktop catalog tree is
-**12,568,078 bytes** (about 11.99 MiB). Previously `scene.ts` awaited
+5,761,532) plus the desktop escalator atlas at 417,840 bytes; batch C's copies add **2,811,400 bytes**: **1,852,526**
+on the desktop tier (61 nosing GLBs totalling 1,783,268 and the 69,258-byte atlas, about 1.77 MiB) and **958,874** on
+the phone tier (the mobile GLBs total 929,704 and the 29,170-byte atlas, about 0.91 MiB). The shipped catalog tree is
+**12,568,078 bytes** on the desktop tier (about 11.99 MiB) and **958,874 bytes** on the phone tier (about 0.91 MiB). Previously `scene.ts` awaited
 `loadKitCatalog`, which awaited each GLB serially, before loading sign frames and returning the scene. The explorer
 awaits that return in `buildStationScene`, then attaches the scene, sets up the composer and reaches `phase = "ready"`.
 Thus transfer, GLB parsing and catalog construction all blocked readiness, a plausible contributor to the reported
