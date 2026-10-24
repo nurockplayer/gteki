@@ -867,6 +867,8 @@ export class App {
     this.renderIdentity(mode);
     this.renderSpawnChips(this.s.loaded?.bundle);
     this.renderHud();
+    // A collapsed map has no polling timer, so the mode change itself must re-evaluate its visibility (#220).
+    this.ui.minimap.syncVisibility();
   }
 
   /** Inside the panel observed by setPanel: its ResizeObserver already accounts for this header (#114). */

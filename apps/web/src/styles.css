@@ -318,7 +318,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
   .minimap-controls button { font-size: 10px; padding-inline: 4px; }
   .app:has(.minimap:not([hidden])) .hint { top: calc(60px + env(safe-area-inset-top) + 128px + 120px); }
   .app:has(.minimap:not([hidden])[data-collapsed="true"]) .hint { top: calc(100px + env(safe-area-inset-top)); }
-  .app:is([data-mode="walk"], [data-mode="guide"]):has(.minimap:not([hidden])) .hud-line { right: calc(16px + 128px + 8px); }
+  .app:is([data-mode="walk"], [data-mode="guide"]):has(.minimap:not([hidden]):not([data-collapsed="true"])) .hud-line { right: calc(16px + 128px + 8px); }
 }
 /* Desktop/tablet: the 190px minimap overlaps the instruction band too. A collapsed minimap is
    only its small reopen button, so it keeps no inset. The guide band right of the search panel

@@ -112,6 +112,14 @@ export class Minimap {
   show(): void { this.setCollapsed(false); }
   collapse(): void { this.setCollapsed(true); }
 
+  /**
+   * Re-evaluate whether the map belongs on screen, outside the polling timer. A collapsed map keeps no timer,
+   * so a mode change (overview -> walk/guide) is the only thing that can bring its reopen button back.
+   */
+  syncVisibility(): void {
+    this.refresh();
+  }
+
   dispose(): void {
     this.disposed = true;
     this.syncTimer();

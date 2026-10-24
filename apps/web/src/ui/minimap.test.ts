@@ -102,6 +102,21 @@ describe("Minimap HUD", () => {
     tick(); expect(map.el.hidden).toBe(false);
   });
 
+  it("brings a collapsed map back on a mode change without relying on its stopped timer (#220)", () => {
+    // The repro: collapse, reload (overview), then enter walk mode. The timer is gone, so only the mode
+    // change can re-show the section that holds the reopen button.
+    pose = { east: 0, north: 0, up: 0, headingDeg: 0, mode: "overview" };
+    const map = create();
+    map.collapse();
+    expect(vi.getTimerCount()).toBe(0);
+    expect(map.el.hidden).toBe(true);
+    pose = { ...pose!, mode: "walk" };
+    map.syncVisibility();
+    expect(map.el.hidden).toBe(false);
+    expect(map.el.querySelector<HTMLElement>(".minimap-body")!.hidden).toBe(true);
+    expect(map.el.querySelector<HTMLElement>(".minimap-reopen")!.hidden).toBe(false);
+  });
+
   it("stops its interval while collapsed or hidden, restarts on reopen/visible, and disposes it", () => {
     const map = create();
     expect(vi.getTimerCount()).toBe(1);
