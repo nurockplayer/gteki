@@ -911,8 +911,8 @@ pois.push({
   connectorNodeIds: platformNodes,
   paid: true,
   notes: [
-    { lang: "ja", text: "都営大江戸線 新宿駅（E27）のデータです。JR・京王・小田急・東京メトロ丸ノ内線の改札とホームは、東京都都市整備局の2020年3月時点の資料にある名前だけを検索用に収録しています（位置と経路はありません）。都営新宿線などその他の路線は収録していません。" },
-    { lang: "en", text: "Data for the Toei Oedo Line station (E27). Ticket gates and platforms of JR, Keio, Odakyu and the Tokyo Metro Marunouchi Line are listed by name only, for search, from Tokyo Metropolitan Government data as of March 2020 (no position or route). The Toei Shinjuku Line and other lines are not modelled." },
+    { lang: "ja", text: "都営大江戸線 新宿駅（E27）のデータです。JR・京王・小田急・東京メトロ丸ノ内線の改札とホームは、東京都都市整備局の2020年3月時点の資料にある名前を検索用に収録しています。改札と乗換の一部には同資料の形状から求めたおおよその位置（検索表示のみ、経路案内には不使用）を付けていますが、経路はありません。都営新宿線などその他の路線は収録していません。" },
+    { lang: "en", text: "Data for the Toei Oedo Line station (E27). Ticket gates and platforms of JR, Keio, Odakyu and the Tokyo Metro Marunouchi Line are listed by name, for search, from Tokyo Metropolitan Government data as of March 2020; some gates and transfers also carry an approximate position derived from that data's shapes (search display only, not for routing). There is no route for them. The Toei Shinjuku Line and other lines are not modelled." },
   ],
   evidence: vEv("NWD floor=-6 nodes inside GSI paid (toll=2) walkway on 地下6階", "Track/direction assignment per platform side not in source → not shown"),
 });
@@ -1136,6 +1136,45 @@ const S03_CATEGORIES = new Set<string>(["ticket_gate", "transfer", "platform"]);
 const s03 = JSON.parse(readFileSync(join(HERE, "../../../docs/research/lines/shinjuku-line-pois.json"), "utf8")) as { sources: S03Source[]; pois: S03Poi[] };
 if (s03.sources.length !== 1 || s03.sources[0]!.id !== S03_SOURCE_ID) throw new Error(`S03 import: expected exactly one source ${S03_SOURCE_ID}`);
 const s03Src = s03.sources[0]!;
+
+// #463: approximate representative points for some S03 gates and transfers. GIS derived one point per pointed
+// POI from the source shapes (contract: docs/gis/s03/positions-import-contract.md); the committed derived input
+// carries no name, entity id, level or coordinate reference. These points are search display only: no connector,
+// no displayPosition, floor UNVERIFIED, NOT_FOR_ROUTING.
+type S03ApproxEntry = { poiId: string; east: number; north: number; uncertaintyM: number; method: string; labels: Record<string, string> };
+const S03_APPROX_LABELS: Record<string, string> = {
+  position: "approximate (±max(5 m, polygon radius))",
+  navigation_use: "NOT_FOR_ROUTING",
+  gteki_role: "context",
+  floor: "UNVERIFIED",
+};
+const S03_APPROX_METHODS = new Set(["area_weighted_centroid", "largest_part_closest_point"]);
+const s03Approx = JSON.parse(readFileSync(join(HERE, "../sources/s03-approx-positions.json"), "utf8")) as {
+  contract: string; sourceId: string; inputDigest: string; positions: S03ApproxEntry[];
+};
+if (s03Approx.contract !== "docs/gis/s03/positions-import-contract.md") throw new Error(`S03 positions: unexpected contract ${s03Approx.contract}`);
+if (s03Approx.sourceId !== S03_SOURCE_ID) throw new Error(`S03 positions: expected source ${S03_SOURCE_ID}, got ${s03Approx.sourceId}`);
+const s03PoiById = new Map<string, S03Poi>();
+for (const raw of s03.pois) {
+  if (s03PoiById.has(raw.id)) throw new Error(`S03 import: ${raw.id} appears twice in the line-POI file`);
+  s03PoiById.set(raw.id, raw);
+}
+const s03ApproxById = new Map<string, S03ApproxEntry>();
+const approxLabelKeys = Object.keys(S03_APPROX_LABELS).sort();
+for (const entry of s03Approx.positions) {
+  if (s03ApproxById.has(entry.poiId)) throw new Error(`S03 positions: ${entry.poiId} appears twice in the positions file`);
+  if (entry.poiId === "poi:keio-gate:1") throw new Error("S03 positions: poi:keio-gate:1 is unpointed (SOURCE_DEFECT_HOLE_OUTSIDE_SHELL)");
+  const linePoi = s03PoiById.get(entry.poiId);
+  if (!linePoi) throw new Error(`S03 positions: ${entry.poiId} is not an S03 line POI`);
+  if (linePoi.category !== "ticket_gate" && linePoi.category !== "transfer") throw new Error(`S03 positions: ${entry.poiId} is a ${linePoi.category}; only gates and transfers get a point`);
+  const entryKeys = Object.keys(entry.labels).sort();
+  if (entryKeys.length !== approxLabelKeys.length || entryKeys.some((k, i) => k !== approxLabelKeys[i]) || approxLabelKeys.some((k) => entry.labels[k] !== S03_APPROX_LABELS[k]))
+    throw new Error(`S03 positions: ${entry.poiId} labels differ from the contract`);
+  if (!Number.isFinite(entry.east) || !Number.isFinite(entry.north)) throw new Error(`S03 positions: ${entry.poiId} has a non-finite coordinate`);
+  if (!(entry.uncertaintyM > 0)) throw new Error(`S03 positions: ${entry.poiId} has uncertainty ${entry.uncertaintyM}`);
+  if (!S03_APPROX_METHODS.has(entry.method)) throw new Error(`S03 positions: ${entry.poiId} has unknown method ${entry.method}`);
+  s03ApproxById.set(entry.poiId, entry);
+}
 sources.push({
   id: S03_SOURCE_ID,
   title: s03Src.title,
@@ -1157,8 +1196,9 @@ sources.push({
   modified: s03Src.modified,
   retrievedAt: s03Src.retrievedAt,
   datasetDate: s03Src.datasetDate,
-  notes: `${s03Src.changeNotice}. ZIP sha256 ${s03Src.sha256}. ${s03Src.usage}. Licence claimed at dataset level by catalogue t000008d0000000037; shipped under LicenseRef-S03 (Owner Q2).`,
+  notes: `${s03Src.changeNotice}. Approximate representative points (area-weighted centroids, or the closest boundary point of the largest part) derived by GTEki for ${s03Approx.positions.length} gates and transfers; search display only, NOT_FOR_ROUTING, floor UNVERIFIED (#463). ZIP sha256 ${s03Src.sha256}. ${s03Src.usage}. Licence claimed at dataset level by catalogue t000008d0000000037; shipped under LicenseRef-S03 (Owner Q2).`,
 });
+const usedApprox = new Set<string>();
 for (const raw of s03.pois) {
   if (raw.floorId !== null || raw.displayPosition !== null || raw.paid !== null) throw new Error(`S03 import: ${raw.id} carries a floor, position or paid value`);
   if (raw.connectorNodeIds.length > 0) throw new Error(`S03 import: ${raw.id} has connectorNodeIds`);
@@ -1166,6 +1206,8 @@ for (const raw of s03.pois) {
   if (!S03_CATEGORIES.has(raw.category)) throw new Error(`S03 import: ${raw.id} has category ${raw.category}`);
   if (raw.aliases.length > 0 || raw.names.length !== 1 || raw.names[0]!.lang !== "ja" || !raw.names[0]!.text) throw new Error(`S03 import: ${raw.id} must carry exactly one ja name and no aliases`);
   if (pois.some((p) => p.id === raw.id)) throw new Error(`S03 import: duplicate id ${raw.id}`);
+  const approx = s03ApproxById.get(raw.id);
+  if (approx) usedApprox.add(approx.poiId);
   pois.push({
     id: raw.id,
     category: raw.category as "ticket_gate" | "transfer" | "platform",
@@ -1173,16 +1215,30 @@ for (const raw of s03.pois) {
     aliases: raw.aliases,
     floorId: raw.floorId,
     displayPosition: raw.displayPosition,
+    // #463: search display only, never routing (the schema keeps this key right after displayPosition).
+    ...(approx
+      ? {
+          approximatePosition: {
+            east: approx.east,
+            north: approx.north,
+            uncertaintyM: approx.uncertaintyM,
+            method: approx.method,
+            navigationUse: "NOT_FOR_ROUTING" as const,
+            floor: "UNVERIFIED" as const,
+          },
+        }
+      : {}),
     connectorNodeIds: raw.connectorNodeIds,
     paid: raw.paid,
     evidence: raw.evidence,
     notes: raw.notes,
   });
 }
+if (usedApprox.size !== s03ApproxById.size) throw new Error(`S03 positions: ${s03ApproxById.size - usedApprox.size} entries do not match an appended POI`);
 const coverage = {
   summary: [
-    { lang: "ja", text: "都営大江戸線 新宿駅（E27）の公開歩行空間ネットワーク／構内地図の範囲のみ。他社線の改札・ホームは2020年3月時点の資料の名前のみ（検索用、位置・経路なし）。乗換通路は未収録。高さは推定値（実測ではない）。" },
-    { lang: "en", text: "Only the published Toei Oedo Line Shinjuku (E27) indoor network and floor-plan extent. Other operators' gates and platforms are listed by name only from March 2020 data (search only, no position or route); transfer passages are not included. Heights are estimates, not measurements." },
+    { lang: "ja", text: "都営大江戸線 新宿駅（E27）の公開歩行空間ネットワーク／構内地図の範囲のみ。他社線の改札・ホームは2020年3月時点の資料から名前を収録し、改札と乗換の一部に同資料の形状から求めたおおよその位置を付加（検索表示のみ、±5 m 以上、経路案内には不使用）。乗換通路は未収録。高さは推定値（実測ではない）。" },
+    { lang: "en", text: "Only the published Toei Oedo Line Shinjuku (E27) indoor network and floor-plan extent. Other operators' gates and platforms are listed by name from March 2020 data, with approximate positions for some gates and transfers derived from the same shapes (search display only, ±5 m or more, not for routing); transfer passages are not included. Heights are estimates, not measurements." },
   ],
   areas,
   gaps,

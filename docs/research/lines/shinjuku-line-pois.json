@@ -13,7 +13,7 @@
       "rights": "REUSABLE_WITH_CONDITIONS",
       "attribution": "出典：東京都都市整備局「新宿駅周辺の施設情報等」",
       "modified": true,
-      "changeNotice": "GTEki が名称のみを抽出し、検索用に再構成（位置・形状は使用していません）",
+      "changeNotice": "GTEki が名称を抽出し検索用に再構成。改札・乗換の一部に形状から求めたおおよその代表点を付加（経路案内には不使用）",
       "retrievedAt": "2026-10-21T00:13:55.097Z",
       "datasetDate": "2020-03",
       "sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
@@ -23,7 +23,7 @@
           "gteki-1b R-1/R-2 2026-10-24"
         ]
       },
-      "usage": "facts-only names; no geometry, no position (CRS UNKNOWN)",
+      "usage": "plain names; approximate representative points derived from the source shapes for some gates and transfers (CRS UNKNOWN; not for routing)",
       "downloadUrl": "https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/zip_kiban_shinjuku_terminal_pdf_shisetsu_root",
       "acquisitionReceipt": "docs/gis/acquisitions/tokyo-s03-zip.json"
     }
