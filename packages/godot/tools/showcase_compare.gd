@@ -66,16 +66,34 @@ const APPROXIMATION := {
 ## Ranges reject typos, not physical limits: Environment's AgX contrast useful band is 0.5-2.5, energies 0-16,
 ## exposure_ev adds stops to the layout exposure. gi=none is the default (no GI) and leaves the environment
 ## untouched; gi_energy is only meaningful for sdfgi/voxelgi. probe_ambient applies only to an interior probe.
+## light_scale multiplies every hint spot's energy; spot_range_m and spot_angle_deg replace the hint spots' APPROXIMATION.
+## ssil_intensity needs ssil=true; sdfgi_* need gi=sdfgi; voxelgi_* need gi=voxelgi (checked in parse_args).
 const TUNE_FLOATS := {
 	"agx_contrast": [0.5, 2.5],
+	"agx_white": [1.0, 64.0],
 	"exposure_ev": [-4.0, 4.0],
 	"ambient_energy": [0.0, 16.0],
 	"gi_energy": [0.0, 16.0],
 	"probe_ambient_energy": [0.0, 16.0],
+	"light_scale": [0.1, 8.0],
+	"spot_range_m": [1.0, 60.0],
+	"spot_angle_deg": [10.0, 89.0],
+	"ssil_intensity": [0.0, 16.0],
+	"sdfgi_bounce": [0.0, 1.99],
+	"sdfgi_min_cell": [0.05, 2.0],
+	"voxelgi_propagation": [0.0, 1.0],
 }
 const TUNE_ENUMS := {
 	"gi": ["none", "sdfgi", "voxelgi"],
 	"probe_ambient": ["disabled", "environment", "color"],
+	"voxelgi_subdiv": ["64", "128", "256", "512"],
+}
+const TUNE_BOOLS := ["ssao", "ssil", "sdfgi_occlusion", "sdfgi_sky"]
+const VOXEL_SUBDIVS := {
+	"64": VoxelGI.SUBDIV_64,
+	"128": VoxelGI.SUBDIV_128,
+	"256": VoxelGI.SUBDIV_256,
+	"512": VoxelGI.SUBDIV_512,
 }
 const PROBE_AMBIENT_MODES := {
 	"disabled": ReflectionProbe.AMBIENT_DISABLED,
@@ -150,9 +168,9 @@ static func parse_tuning(key: String, value: String) -> Dictionary:
 		if not value in choices:
 			return {"ok": false, "error": "--tune=%s must be one of %s: %s" % [key, ", ".join(PackedStringArray(choices)), value]}
 		return {"ok": true, "value": value}
-	if key == "ssao":
+	if key in TUNE_BOOLS:
 		if not value in ["true", "false"]:
-			return {"ok": false, "error": "--tune=ssao must be true or false: %s" % value}
+			return {"ok": false, "error": "--tune=%s must be true or false: %s" % [key, value]}
 		return {"ok": true, "value": value == "true"}
 	if key == "probe_ambient_colour":
 		if not TUNE_COLOUR.search(value) or not Color.html_is_valid(value):
@@ -269,6 +287,14 @@ static func parse_args(args: PackedStringArray) -> Dictionary:
 			positional.append(arg)
 	if tuning.has("gi_energy") and not (tuning.get("gi", "none") in ["sdfgi", "voxelgi"]):
 		errors.append("--tune=gi_energy needs --tune=gi=sdfgi or --tune=gi=voxelgi")
+	if tuning.has("ssil_intensity") and tuning.get("ssil", false) != true:
+		errors.append("--tune=ssil_intensity needs --tune=ssil=true")
+	for key in ["sdfgi_bounce", "sdfgi_occlusion", "sdfgi_sky", "sdfgi_min_cell"]:
+		if tuning.has(key) and tuning.get("gi", "none") != "sdfgi":
+			errors.append("--tune=%s needs --tune=gi=sdfgi" % key)
+	for key in ["voxelgi_subdiv", "voxelgi_propagation"]:
+		if tuning.has(key) and tuning.get("gi", "none") != "voxelgi":
+			errors.append("--tune=%s needs --tune=gi=voxelgi" % key)
 	# ReflectionProbe's ambient colour and its energy only reach the renderer in AMBIENT_COLOR mode.
 	for key in ["probe_ambient_energy", "probe_ambient_colour"]:
 		if tuning.has(key) and tuning.get("probe_ambient", "disabled") != "color":
@@ -413,12 +439,26 @@ static func apply_tuning(environment: Environment, tuning: Dictionary, exposure:
 		environment.tonemap_exposure = pow(2.0, exposure + float(tuning.exposure_ev))
 	if tuning.has("ambient_energy"):
 		environment.ambient_light_energy = float(tuning.ambient_energy)
+	if tuning.has("agx_white"):
+		environment.tonemap_agx_white = float(tuning.agx_white)
 	if tuning.has("ssao"):
 		environment.ssao_enabled = bool(tuning.ssao)
+	if tuning.has("ssil"):
+		environment.ssil_enabled = bool(tuning.ssil)
+	if tuning.has("ssil_intensity"):
+		environment.ssil_intensity = float(tuning.ssil_intensity)
 	if tuning.get("gi", "none") == "sdfgi":
 		environment.sdfgi_enabled = true
 		if tuning.has("gi_energy"):
 			environment.sdfgi_energy = float(tuning.gi_energy)
+		if tuning.has("sdfgi_bounce"):
+			environment.sdfgi_bounce_feedback = float(tuning.sdfgi_bounce)
+		if tuning.has("sdfgi_occlusion"):
+			environment.sdfgi_use_occlusion = bool(tuning.sdfgi_occlusion)
+		if tuning.has("sdfgi_sky"):
+			environment.sdfgi_read_sky_light = bool(tuning.sdfgi_sky)
+		if tuning.has("sdfgi_min_cell"):
+			environment.sdfgi_min_cell_size = float(tuning.sdfgi_min_cell)
 
 
 ## The probe keeps APPROXIMATION's disabled ambient unless a sweep overrides it; no probe means nothing to apply.
@@ -456,12 +496,15 @@ static func voxel_gi_box(bounds: AABB) -> AABB:
 
 ## VoxelGI boxes the visible bounds like add_interior_probe, so its extents cover every mesh. bake() runs once the
 ## node is in the tree and before the first rendered frame; it needs a display, so the tests never call this.
-static func add_voxel_gi(parent: Node3D) -> VoxelGI:
+## subdiv is set before bake(), as VoxelGI only reads it then; propagation is applied to data by the caller after bake.
+static func add_voxel_gi(parent: Node3D, tuning: Dictionary = {}) -> VoxelGI:
 	var box := voxel_gi_box(visual_bounds(parent))
 	if box.size == Vector3.ZERO:
 		return null
 	var voxel_gi := VoxelGI.new()
 	voxel_gi.size = box.size
+	if tuning.has("voxelgi_subdiv"):
+		voxel_gi.subdiv = VOXEL_SUBDIVS[tuning.voxelgi_subdiv]
 	parent.add_child(voxel_gi)
 	voxel_gi.global_transform = Transform3D(Basis.IDENTITY, box.get_center())
 	voxel_gi.bake()
@@ -641,20 +684,21 @@ func run() -> void:
 	var counts := {"linear_led": 0, "panel": 0, "indicator": 0}
 	var spot_count := 0
 	var hints_enabled := bool(settings.get("hint_lights", mode != "studio"))
+	var spot_params := hint_spot_params(args.tuning)
 	for hint: Node3D in info.hints:
 		var extras: Dictionary = hint.get_meta("extras")
 		var kind := str(extras.get("kind", "linear_led"))
 		counts[kind] = int(counts.get(kind, 0)) + 1
 		if hints_enabled:
 			for spec in hint_light_specs(extras, hint.global_transform, float(settings.get("hint_power", 1.0))):
-				add_hint_spot(scene, spec)
+				add_hint_spot(scene, spec, spot_params)
 				spot_count += 1
 	var probe := add_interior_probe(scene) if mode == "interior" else null
 	apply_probe_tuning(probe, args.tuning)
 	# VoxelGI is baked here: the scene is in the tree and no frame has been drawn yet.
 	var voxel_gi: VoxelGI = null
 	if args.tuning.get("gi", "none") == "voxelgi":
-		voxel_gi = add_voxel_gi(scene)
+		voxel_gi = add_voxel_gi(scene, args.tuning)
 		if voxel_gi == null:
 			fail("VoxelGI needs visible mesh bounds")
 			return
@@ -663,6 +707,8 @@ func run() -> void:
 			return
 		if args.tuning.has("gi_energy"):
 			voxel_gi.data.energy = float(args.tuning.gi_energy)
+		if args.tuning.has("voxelgi_propagation"):
+			voxel_gi.data.propagation = float(args.tuning.voxelgi_propagation)
 	if DirAccess.make_dir_recursive_absolute(args.out_dir) != OK:
 		fail("Cannot create output directory: %s" % args.out_dir)
 		return
@@ -782,17 +828,27 @@ static func add_studio_lights(parent: Node3D, ground: bool) -> void:
 		parent.add_child(floor_node)
 
 
-static func add_hint_spot(parent: Node3D, spec: Dictionary) -> SpotLight3D:
+## Hint spot overrides from --tune; without them, energy is unscaled and range/angle stay APPROXIMATION's.
+static func hint_spot_params(tuning: Dictionary) -> Dictionary:
+	return {
+		"energy_scale": float(tuning.get("light_scale", 1.0)),
+		"range_m": float(tuning.get("spot_range_m", APPROXIMATION.spot_range_m)),
+		"angle_deg": float(tuning.get("spot_angle_deg", APPROXIMATION.spot_angle_deg)),
+	}
+
+
+## params come from hint_spot_params; an empty dictionary keeps the unscaled APPROXIMATION spot.
+static func add_hint_spot(parent: Node3D, spec: Dictionary, params: Dictionary = {}) -> SpotLight3D:
 	var light := SpotLight3D.new()
 	parent.add_child(light)
 	light.global_position = spec.position
 	# Spots emit along local -Z; -90 degrees about X maps -Z to world -Y.
 	light.global_basis = Basis(Vector3.RIGHT, -PI / 2.0)
 	light.light_color = spec.colour
-	light.light_energy = spec.energy
+	light.light_energy = spec.energy * float(params.get("energy_scale", 1.0))
 	light.light_size = float(spec.size_m) / 2.0
-	light.spot_angle = APPROXIMATION.spot_angle_deg
-	light.spot_range = APPROXIMATION.spot_range_m
+	light.spot_angle = float(params.get("angle_deg", APPROXIMATION.spot_angle_deg))
+	light.spot_range = float(params.get("range_m", APPROXIMATION.spot_range_m))
 	light.spot_attenuation = APPROXIMATION.spot_attenuation
 	light.spot_angle_attenuation = APPROXIMATION.spot_angle_attenuation
 	light.shadow_enabled = true
