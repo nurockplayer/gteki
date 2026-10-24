@@ -21,6 +21,11 @@ PALETTES = ("gteki_palette", "gteki_palette_blend")  # mobile swatch atlases
 ROLES = ("barriers", "transport", "stairs_ramps")  # station bake roles; keep in step with gteki_assets/contract.py ROLES
 REQUIRED = ("contract id family variant version generator params bounds_m triangles "
             "dimension_basis fidelity navigation provenance license").split()
+# Packing rounds UV1 to float32 in atlas space, which can tip a sliver triangle (one whose UV altitude is
+# itself within a few float32 ulps) across its neighbour's edge. For ao_atlas entries such slivers, with a
+# minimum UV altitude at most this (atlas UV units, 4 float32 ulps at 1.0), are left out of the overlap
+# test; every other triangle is tested exactly as before, however thin its overlap.
+ATLAS_OVERLAP_SLACK = 2.0 ** -22
 IDENTITY = [1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.]
 
 
@@ -149,14 +154,15 @@ def _clip(subject, clipper):
     return out
 
 
-def uv_overlaps(tris, eps=1e-10):
+def uv_overlaps(tris, eps=1e-10, slack=0.0):
     """Index pairs of UV triangles that overlap by more than `eps` of the unit square.
 
-    Lightmap charts must not overlap; triangles that only share an edge or a vertex do not count."""
+    Lightmap charts must not overlap; triangles that only share an edge or a vertex do not count.
+    With `slack`, triangles whose minimum altitude (2 * area / longest edge) is at most `slack` are skipped."""
     ccw = {}
     for i, t in enumerate(tris):
         a = _area(t)
-        if abs(a) > 1e-14:
+        if abs(a) > 1e-14 and not (slack and 2 * abs(a) <= slack * max(math.dist(t[k - 1], t[k]) for k in range(3))):
             ccw[i] = tuple(t) if a > 0 else tuple(t[::-1])
     boxes = {i: (min(p[0] for p in t), min(p[1] for p in t), max(p[0] for p in t), max(p[1] for p in t)) for i, t in ccw.items()}
     # 1/64 cells, unless that enumerates millions of them (a huge triangle): then no smaller than the largest triangle
@@ -421,7 +427,7 @@ class Validator:
         if not isinstance(meta.get("triangles"), int) or isinstance(meta.get("triangles"), bool) or meta["triangles"] < 0:
             self.message("FAIL", "metadata triangles must be a non-negative integer")
         materials = doc.get("materials", [])
-        atlas_entry = None
+        atlas_entry, overlap_slack = None, 0.0
         if self.manifest is not None:
             if not isinstance(self.manifest, AtlasManifest):
                 self.manifest = AtlasManifest(self.manifest)
@@ -431,6 +437,7 @@ class Validator:
                 self.message("FAIL", "ao_atlas asset still carries occlusionTexture")
             x, y, w, h = atlas_entry["cell"]
             width, height = self.manifest.sizes[atlas_entry["kind"]]
+            overlap_slack = ATLAS_OVERLAP_SLACK
             owned = self.manifest.helper.asset_nodes(doc, stem)
             mesh_indices = {nodes[i]["mesh"] for i in owned if "mesh" in nodes[i]}
             uv_indices = {p["attributes"]["TEXCOORD_1"] for i in mesh_indices
@@ -578,7 +585,7 @@ class Validator:
             if shared_atlas:
                 atlas.append((node, tris))
                 return
-            overlapping = uv_overlaps(tris)
+            overlapping = uv_overlaps(tris, slack=overlap_slack)
             if overlapping:
                 self.message("FAIL", f"node {node.get('name')!r} lightmap UV (TEXCOORD_1) has "
                              f"{len(overlapping)} overlapping triangle pairs")
@@ -671,7 +678,7 @@ class Validator:
         if shared_atlas:
             # one occlusion map for the whole asset: every visual node lays its islands out in the same
             # UV space, so they must not overlap across nodes (a mesh instanced twice overlaps itself)
-            overlapping = uv_overlaps([tri for _, tris in atlas for tri in tris])
+            overlapping = uv_overlaps([tri for _, tris in atlas for tri in tris], slack=overlap_slack)
             if overlapping:
                 self.message("FAIL", f"visual nodes share one lightmap atlas (occlusion map) but their UV1 has "
                              f"{len(overlapping)} overlapping triangle pairs")
