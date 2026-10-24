@@ -3,7 +3,7 @@ import path from "node:path";
 import type { Plugin } from "vite";
 // Relative (not @gteki/schema) so Vite's config loader bundles the TypeScript source.
 import { dataFileFactsOnlySources, parseStationFiles, validateBundle } from "../../packages/schema/src/index.ts";
-import { isProjectArtFile, loadReuseAnnotations } from "./reuseResolve.ts";
+import { isProjectArtModule, loadReuseAnnotations } from "./reuseResolve.ts";
 
 /**
  * Discovers station folders without any station-specific code in the explorer:
@@ -398,15 +398,12 @@ export function gtekiStations(roots: string[]): Plugin {
       const entries = new Map(stations.flatMap((s) => s.scene ? [[s.dir, fs.realpathSync(s.scene)] as const] : []));
       // Lane E project art under assets/library/ is reached from a station scene but is not station data.
       // The director's ruling (#359 follow-up): a bare path is never allowlisted — REUSE must record the
-      // file, by its last matching annotation, as project-authored art ("GTEki contributors", CC-BY-4.0).
-      // Read once; an unreadable REUSE.toml exempts nothing, so the gate fails closed.
+      // file, by its last matching annotation, as project-authored art ("GTEki contributors", CC-BY-4.0),
+      // for both the reported path and its real path. Read once; an unreadable or unparseable REUSE.toml
+      // exempts nothing, so the gate fails closed.
       const repoRoot = path.resolve(appRoot, "../..");
       const reuse = loadReuseAnnotations(repoRoot);
-      const isProjectArt = (file: string): boolean => {
-        let real = file;
-        try { real = fs.realpathSync(file); } catch { /* a module that no longer exists: judge the reported path */ }
-        return isProjectArtFile(reuse, repoRoot, real);
-      };
+      const isProjectArt = (file: string): boolean => isProjectArtModule(reuse, repoRoot, file);
       for (const finding of outsideStationData(graph, entries, stations, isProjectArt)) {
         this.warn(`gteki-stations: station scene reaches data outside every station folder (${finding}); move the data into that station folder and declare it in dataFiles[].`);
       }
