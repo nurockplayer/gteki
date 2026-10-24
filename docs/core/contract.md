@@ -109,6 +109,8 @@ stations/<id>/gteki/
 
 See [`packages/godot/README.md`](../../packages/godot/README.md): Godot consumes the same station JSON and the TypeScript router's output (`pnpm tsx packages/cli/src/route.ts <stationDir> <from> <goals>` → `gteki.route/0.1` JSON with `result`, node `path`, edge `polyline` and `instructions.{ja,en}`, all with renderer coordinates); it does not reimplement routing truth. `bash packages/godot/run-proof.sh` runs the headless Godot 4 proof (station load, renderer frame, route transport, runtime GLB role classification).
 
+**Identity boards (#342 Q2).** Station board Object3Ds expose `userData.gteki_identity = { front?: [x,y,z], regions?: [{ kind: "name" | "arrow", min: [x,y,z], max: [x,y,z] }] }` in local coordinates (front defaults to +Z; absent regions mean the whole board is name); consumers transform normals/boxes by `matrixWorld`; each readable face may have its own tag.
+
 ## Versioning
 
 Breaking changes bump `gteki.station/<major.minor>` and require both station leads' compatibility check before merge. Additive optional fields keep `0.1`.
