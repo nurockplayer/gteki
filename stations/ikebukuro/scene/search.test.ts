@@ -99,6 +99,11 @@ const GOLDEN: Record<string, Row[]> = {
     { q: "chuo tsuro", top1: "central-passage" },
     { q: "北通道", top1: "north-passage" },
   ],
+  "search-only shops": [
+    { q: "Patio de METRO", top1: "shop-ikb-mr-002" },
+    { q: "パティオ", top1: "shop-ikb-mr-002" },
+    { q: "マツモトキヨシ", top1: "shop-ikb-mr-004" },
+  ],
 };
 
 describe("Ikebukuro golden search", () => {

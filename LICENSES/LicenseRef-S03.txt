@@ -1,0 +1,21 @@
+東京都都市整備局 S03 「新宿駅周辺の施設情報等」 dataset terms
+
+Dataset: Tokyo Open Data Catalog t000008d0000000037
+package_show: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000008d0000000037
+Snapshot SHA-256: f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96
+  (docs/gis/acquisitions/tokyo-s03-catalog.json; rights record docs/gis/rights/tokyo-s03-catalog.json,
+  claim_level DATASET, licence claimed Creative Commons Attribution 4.0)
+Bureau site policy: https://www.toshiseibi.metro.tokyo.lg.jp/policy
+Snapshot SHA-256: cbcbf61622e36d9840b76cadaa0449be9c066cc9f159d6d71381efd5e4ae9fbe
+  (same receipt, supporting_documents id "tokyo-bureau-policy")
+
+Stands for files derived from the S03 data (shisetsu_root.zip, tools/gis/sources/sources.yaml
+source_id "tokyo-s03-zip"). Covers the geometry and factual-fields subset only (Owner, #39
+comment 6324726321; NOTICE 4.7). Promotional prose, linked content and the reference-PDF
+illustration are UNKNOWN and excluded. Not relicensed under the repository's grants.
+Credit: 出典：東京都都市整備局「新宿駅周辺の施設情報等」. File list and the modifications
+made for the committed research files: NOTICE 4.7.
+
+Pointer only: terms as published by the licensor. GTEki does not author or
+paraphrase the official wording. Source of the URLs and hashes: GIS (Lane D),
+docs/gis/acquisitions/tokyo-s03-catalog.json.
