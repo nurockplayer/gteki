@@ -19,12 +19,12 @@ import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollisio
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
 import { castAll, castCamera, cuttableSigns, explorerTargets } from "./raycast.ts";
-import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
+import { DEFAULT_GUIDE_TIER, guideOnStairs, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
-import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -186,8 +186,10 @@ export class Explorer {
   private readonly orbit: OrbitControls;
   private composer: PostFx | null = null;
   private readonly overviewLook = new OverviewLook();
-  /** Stair/escalator/ramp detection from the walker's vertical speed; widens the follow lens (see targetFov). */
+  /** Vertical-speed detection plus explicit guide stair/escalator spans; widens the follow lens (see targetFov). */
   private slope: SlopeState = NO_SLOPE;
+  /** Extra downward aim while descending; the boom and ordinary pose stay unchanged. */
+  private descentDrop = 0;
   /** The boom is squeezed under its comfortable distance (walls, ceilings); also widens the follow lens (see boomSqueezed). */
   private squeezed = false;
   private slopeY = 0;
@@ -1625,7 +1627,7 @@ export class Explorer {
   /**
    * Walk the polyline. `stopAtPoints` are polyline point indices where the guide must stop and pause (waits
    * for opening hours): it never moves past one before being resumed, including several at one spot.
-   * `paceSpans` cap the speed where connectors or short instructions need it (see guidePace.ts).
+   * `paceSpans` cap speed and carry connector modes for the stair lens (see guidePace.ts).
    */
   startGuide(polyline: PolylinePoint[], fromS = 0, stopAtPoints: readonly number[] = [], paceSpans: readonly PaceSpan[] = []): void {
     const pts = polyline.map((p) => R(p.x, p.y, p.z));
@@ -2024,10 +2026,11 @@ export class Explorer {
     snap ||= this.qaCameraSnap;
     this.qaCameraSnap = false;
     // The slope state follows the walker's height; a large one-frame jump, snap, or stopped clock restarts it instead of reading a teleport as a climb.
-    this.slope = snap || dt <= 0 || Math.abs(this.pos.y - this.slopeY) > SLOPE.jump
-      ? NO_SLOPE
-      : stepSlope(this.slope, this.pos.y - this.slopeY, dt);
+    const onStairs = this.mode === "guide" && this.guide !== null && guideOnStairs(this.guide.s, this.guide.spans);
+    const resetSlope = snap || dt <= 0 || Math.abs(this.pos.y - this.slopeY) > SLOPE.jump;
+    this.slope = stepSlope(resetSlope ? NO_SLOPE : this.slope, resetSlope ? 0 : this.pos.y - this.slopeY, resetSlope ? 0 : dt, onStairs);
     this.slopeY = this.pos.y;
+    this.descentDrop = this.firstPerson ? 0 : easeRaise(this.descentDrop, descentAimDrop(this.slope), dt, snap || this.reducedMotion);
     const head = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const dir = new THREE.Vector3(-Math.sin(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), -Math.cos(this.yaw) * Math.cos(this.pitch));
     if (this.firstPerson) {
@@ -2050,6 +2053,7 @@ export class Explorer {
       if (side) shoulder = Math.max(0, side.distance - 0.25);
     }
     const pose = followPose(head, this.yaw, this.pitch, shoulder);
+    if (this.descentDrop > 0) pose.target.y -= this.descentDrop;
     let back = pose.back;
     let dist = this.camDistance;
     let raisedClear = false;
