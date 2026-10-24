@@ -316,6 +316,7 @@ Target: back under the cap after #46 recalibrates it. Not part of this PR.
 | PR | change | mobile delta | offset | reason |
 | --- | --- | --- | --- | --- |
 | #337 | Ikebukuro catalog: 5 wide stair nosings AO 128 -> 256 px (both tiers) | about +1.25 MiB AO per tier | none | 128 px gives < 8 px/m on these strips (Lane E #335 trial on 7a1db59: 24-43 px/m at 256, no LightmapOverflow) |
+| #353 | Ikebukuro identity boards (10); low omits transfer rows | +1.374 MiB GPU low (968×279 identity texture; was 1.699 MiB / 968×345) | none | #342 Q1b station-name boards; separate small texture per director ruling; CPU glyph-width estimate, RGBA8 + mipmaps; high unchanged at 6.426 MiB / 1920×658 |
 
 ### Not changed
 
