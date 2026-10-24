@@ -194,9 +194,10 @@ export function followBoom(
 ): { back: THREE.Vector3; distance: number } {
   const hits = cast(back);
   const d0 = followDistance(wanted, hits);
-  const dWalls = followDistance(wanted, hits.filter((h) => !h.cameraOnly));
   const unchanged = { back, distance: d0 };
-  if (d0 >= dWalls - 0.05) return unchanged;
+  // Only a blocker as the nearest hit is worth sliding under. A wall just behind it (a stair mouth under the street
+  // slab) no longer vetoes this: walls clamp to the pivot too, and the lowered boom below often clears both.
+  if (!hits[0]?.cameraOnly) return unchanged;
   const flat = Math.hypot(back.x, back.z);
   if (flat < 1e-6 || back.y <= FOLLOW.lowestBoom) return unchanged;
   let best: { back: THREE.Vector3; distance: number } | null = null;
@@ -205,7 +206,8 @@ export function followBoom(
     const cos = Math.sqrt(1 - sin * sin);
     const candidate = new THREE.Vector3((back.x / flat) * cos, sin, (back.z / flat) * cos);
     const distance = followDistance(wanted, cast(candidate));
-    if (distance >= FOLLOW.boomKeep * wanted) return { back: candidate, distance };
+    // Good enough to stop early, but only when it actually beats the unlowered boom (a wall may limit both).
+    if (distance >= FOLLOW.boomKeep * wanted && distance >= d0 + FOLLOW.boomGain) return { back: candidate, distance };
     if (!best || distance > best.distance) best = { back: candidate, distance };
   }
   return best && best.distance >= d0 + FOLLOW.boomGain ? best : unchanged;
