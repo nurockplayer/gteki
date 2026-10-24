@@ -372,3 +372,15 @@ path = "stations/shinjuku/sources/s03-approx-positions.json"
 precedence = "override"
 SPDX-FileCopyrightText = "東京都都市整備局; modified by GTEki contributors"
 SPDX-License-Identifier = "LicenseRef-S03"
+
+# --- 4m. Facts-only line POIs for Ikebukuro, WP5 (lines-lead; Toshima guide under #26, JR under R-1) ---
+# Gate labels as printed on 豊島区「池袋駅地下空間案内図」; no image, layout or mark is reproduced (NOTICE 4.9).
+# 豊島区 facts only, director ruling OD-34 (2026-10-25): site policy read 2026-10-25T02:10:49+09:00,
+# https://www.city.toshima.lg.jp/012/kuse/koho/homepage/sitepolicy.html (sha256 9f2f0e5a…9c2d);
+# only the printed gate labels are used, never a document or image.
+[[annotations]]
+path = "docs/research/lines/ikebukuro-line-pois-wp5.json"
+precedence = "override"
+SPDX-FileCopyrightText = "No licence granted: facts-only source (豊島区); compiled by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-facts-only-no-licence"
+
