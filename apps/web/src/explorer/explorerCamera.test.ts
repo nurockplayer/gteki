@@ -18,7 +18,7 @@ function cameraStand() {
     setFov: vi.fn(), avatarRig: { root: new THREE.Group(), setFade: vi.fn() },
     composer: { settings: { reflections: true }, setAvatarFade: vi.fn() },
     qaCamera: {} as CameraHold, qaCameraSnap: false, qaAvatarFade: null as number | null,
-    boomActual: 0, cameraFade: 1,
+    boomActual: 0, cameraFade: 1, fadeStale: false,
   };
   return Object.assign(Object.create(Explorer.prototype) as typeof state, state);
 }
@@ -166,7 +166,7 @@ describe("Explorer wall fallback and QA controls", () => {
     expect(state.composer.setAvatarFade.mock.lastCall).toEqual([state.avatarRig.root, state.cameraFade]);
   });
 
-  it.each(["placement", "reduced motion", "QA camera cut"])("snaps fade recovery for %s", (reason) => {
+  it.each(["placement", "reduced motion", "QA camera cut", "resuming after the overview"])("snaps fade recovery for %s", (reason) => {
     const state = cameraStand();
     setTargets(state, [pocket()]);
     place(state, true);
@@ -174,10 +174,12 @@ describe("Explorer wall fallback and QA controls", () => {
     setTargets(state, []);
     state.reducedMotion = reason === "reduced motion";
     if (reason === "QA camera cut") qa(state).setCamera({ distance: FOLLOW.defaultDistance });
+    state.fadeStale = reason === "resuming after the overview";
     place(state, reason === "placement");
     expect(state.cameraFade).toBe(1);
     expect(state.avatarRig.setFade.mock.lastCall).toEqual([1]);
     expect(state.composer.setAvatarFade.mock.lastCall).toEqual([state.avatarRig.root, 1]);
+    expect(state.fadeStale).toBe(false);
   });
 
   it("fades immediately on entry to first person", () => {

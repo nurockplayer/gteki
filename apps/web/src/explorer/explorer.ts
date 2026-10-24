@@ -273,6 +273,8 @@ export class Explorer {
   private boomRaise = 0;
   private boomActual = 0;
   private cameraFade = 1;
+  /** Set when the follow camera resumes after the overview: the fade left from before it is stale, so it snaps once. */
+  private fadeStale = false;
   /** Empty/null until the QA hooks are explicitly called. */
   private qaCamera: CameraHold = {};
   private qaCameraSnap = false;
@@ -387,7 +389,8 @@ export class Explorer {
   }
 
   private applyAvatarFade(dt: number, snap: boolean): void {
-    this.cameraFade = this.qaAvatarFade ?? stepAvatarFade(this.cameraFade, avatarFade(this.boomActual), dt, snap || this.reducedMotion);
+    this.cameraFade = this.qaAvatarFade ?? stepAvatarFade(this.cameraFade, avatarFade(this.boomActual), dt, snap || this.fadeStale || this.reducedMotion);
+    this.fadeStale = false;
     this.avatarRig?.setFade(this.cameraFade);
     this.composer?.setAvatarFade(this.avatarRig?.root ?? null, this.cameraFade);
   }
@@ -980,6 +983,7 @@ export class Explorer {
 
   setMode(mode: ExplorerMode): void {
     if (this.mode === mode) return;
+    if (this.mode === "overview") this.fadeStale = true;
     this.mode = mode;
     // The overview may have deepened the far plane for its pose; the walking camera keeps its own.
     if (mode !== "overview" && this.camera.far !== CAMERA_FAR_M) { this.camera.far = CAMERA_FAR_M; this.camera.updateProjectionMatrix(); }
