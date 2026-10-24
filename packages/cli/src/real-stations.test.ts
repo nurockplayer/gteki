@@ -79,6 +79,8 @@ describe("@gteki/cli route on the real stations", { timeout: 30_000 }, () => {
     ["ikebukuro", ["jr-central-gate-2", "seibu-1f-gate", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only line POI (#414)
     ["ikebukuro", ["jr-central-gate-2", "jr-north-gate", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only North gate (#420)
     ["ikebukuro", ["jr-central-gate-2", "tobu-north-gate", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only North gate (#420)
+    ["ikebukuro", ["jr-north-gate", "jr-central-gate-2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only North gate as origin (#420)
+    ["ikebukuro", ["tobu-north-gate", "jr-central-gate-2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only North gate as origin (#420)
     ["ikebukuro", ["jr-central-gate-2", "shop-ikb-tobudept", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#432)
     ["ikebukuro", ["jr-central-gate-2", "shop-ikb-lumine-000415", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#432)
     ["ikebukuro", ["jr-central-gate-2", "shop-ikb-esola-1147", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#432)
