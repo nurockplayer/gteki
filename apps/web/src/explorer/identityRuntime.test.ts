@@ -24,7 +24,7 @@ function runtime(boardZ = -10) {
     mode: "overview", camera: new THREE.PerspectiveCamera(50, 9 / 19.5, 0.05, 100),
     cameraTargets: [], skyTargets: [], ray: new THREE.Raycaster(), occluders: [], proxies: new Set(), signMeshes: new Set(), cameraCut: new CameraCut(),
     labelSweep: new OcclusionSweep(), labelSweepDoneAt: -Infinity, labelCamPos: new THREE.Vector3(Infinity, 0, 0), labelCamQuat: new THREE.Quaternion(), labelAt: new THREE.Vector3(), quality: "low",
-    guide: null, guideAllStops: [], guideIdentityHoldS: 0, tier: "run", events: {}, groundAt: vi.fn(() => 0),
+    guide: null, guideAllStops: [], guideIdentityHoldS: 0, guideIdentityCentre: new THREE.Vector3(), guideIdentityOffset: { yaw: 0, pitch: 0 }, identityHead: new THREE.Vector3(), identityToward: new THREE.Vector3(), tier: "run", events: {}, groundAt: vi.fn(() => 0),
     input: { consumeLook: vi.fn(() => ({ dx: 0, dy: 0, zoom: 0 })), move: vi.fn(() => ({ x: 0, y: 0, run: false })) },
     orbit: { target: new THREE.Vector3() }, avatar: new THREE.Group(), routeGroup: new THREE.Group(), routeMarkersVisible: true, world: root, overviewLook: { set: vi.fn() },
     street: { restore: vi.fn() }, setFov: vi.fn(), camDistance: 4,
@@ -148,28 +148,71 @@ describe("initial identity placement", () => {
 describe("guide identity steering hold", () => {
   const route = [{ x: 0, y: 0, z: 0, stepIndex: 0 }, { x: 0, y: 100, z: 0, stepIndex: 0 }];
 
-  it("holds the framed yaw for four seconds while advancing along the route, then resumes steering", () => {
-    const { e } = runtime();
+  /** Yaw that keeps the board framed: its bearing from the head plus the framed offset (the hold's own aim). */
+  const aimOf = (e: any) => {
+    const head = e.pos.clone().add(new THREE.Vector3(0, 1.62, 0));
+    const toward = e.guideIdentityCentre.clone().sub(head);
+    return Math.atan2(-toward.x, -toward.z) + e.guideIdentityOffset.yaw;
+  };
+
+  it("tracks the framed board for four seconds while advancing along the route, then resumes steering", () => {
+    const { e } = runtime(-25);
     e.startGuide(route);
-    const yaw = e.yaw;
-    expect(yaw).toBeGreaterThan(0.05);
+    expect(e.guideIdentityHoldS).toBe(4);
     for (let i = 0; i < 16; i++) {
       e.stepGuide(0.25);
-      expect(e.yaw).toBe(yaw);
+      expect(e.yaw).toBeCloseTo(aimOf(e), 6);
     }
     expect(e.pos.z).toBeLessThan(-10);
-    expect(e.pos.x).toBe(0);
+    expect(e.guideIdentityHoldS).toBe(0);
+    const yaw = e.yaw;
     e.stepGuide(0.125);
     expect(e.yaw).toBeCloseTo(yaw / 2);
   });
 
   it("steers only for the portion of a frame after the hold expires", () => {
-    const { e } = runtime();
+    const { e } = runtime(-25);
     e.startGuide(route);
-    const yaw = e.yaw;
     for (let i = 0; i < 15; i++) e.stepGuide(0.25);
     e.stepGuide(0.375);
-    expect(e.yaw).toBeCloseTo(yaw / 2);
+    expect(e.yaw).toBeCloseTo(aimOf(e) / 2, 6);
+  });
+
+  it("keeps a board 18 m ahead and 3 m to the side in view at every frame of a 3 s run-tier walk", () => {
+    const { e } = runtime(-18);
+    e.pos.set(0, 0, 0);
+    e.startGuide(route);
+    const start = e.pos.z;
+    const centre = e.guideIdentityCentre.clone();
+    expect(e.guideIdentityHoldS).toBe(4);
+    for (let i = 0; i < 180; i++) {
+      e.stepGuide(1 / 60);
+      const pose = followPose(e.pos.clone().add(new THREE.Vector3(0, 1.62, 0)), e.yaw, e.pitch);
+      e.camera.position.copy(pose.pivot).addScaledVector(pose.back, FOLLOW.defaultDistance);
+      e.camera.lookAt(pose.target); e.camera.updateMatrixWorld(true);
+      const ndc = centre.clone().project(e.camera);
+      expect(Math.abs(ndc.x)).toBeLessThanOrEqual(1);
+      expect(ndc.z).toBeLessThanOrEqual(1);
+    }
+    expect(Math.abs(e.pos.z - start)).toBeGreaterThan(9);
+  });
+
+  it("a route that turns away from the board ends the hold early and steering resumes smoothly", () => {
+    const { e } = runtime(-18);
+    // Out 5 m toward the board, then straight back: the look would have to turn well over 100 degrees.
+    e.startGuide([{ x: 0, y: 0, z: 0, stepIndex: 0 }, { x: 0, y: 5, z: 0, stepIndex: 0 }, { x: 0, y: 0, z: 0, stepIndex: 0 }]);
+    expect(e.guideIdentityHoldS).toBe(4);
+    for (let i = 0; i < 200 && e.guideIdentityHoldS > 0; i++) e.stepGuide(1 / 60);
+    expect(e.guideIdentityHoldS).toBe(0);
+    const turnYaw = Math.PI;
+    expect(e.pos.z).toBeGreaterThan(-5.5);
+    let previous = e.yaw;
+    for (let i = 0; i < 30; i++) {
+      e.stepGuide(1 / 60);
+      expect(Math.abs(e.yaw - previous)).toBeLessThan(0.2);
+      previous = e.yaw;
+    }
+    expect(Math.abs(Math.atan2(Math.sin(e.yaw - turnYaw), Math.cos(e.yaw - turnYaw)))).toBeLessThan(1.2);
   });
 
   it.each([{ dx: 10, dy: 0, zoom: 0 }, { dx: 0, dy: 10, zoom: 0 }, { dx: 0, dy: 0, zoom: 10 }])("look input %j ends the hold immediately", (look) => {

@@ -101,6 +101,8 @@ const DECLUTTER_MS = 80;
 const MEASURE_TRIES = 5;
 /** Let the initial station identity framing remain readable before guide yaw steering resumes. */
 const IDENTITY_HOLD_S = 4;
+/** The guide hold stops following the framed board once the look would turn this far from the route heading. */
+const IDENTITY_TRACK_MAX_RAD = THREE.MathUtils.degToRad(100);
 /** Instanced meshes with more instances than this occlude only as registered proxies. */
 const MAX_OCCLUDER_INSTANCES = 1024;
 
@@ -305,6 +307,11 @@ export class Explorer {
   /** Every stop of the running guide (`guide.stops` is consumed as they are reached; a seek restores the ones still ahead). */
   private guideAllStops: { s: number; index: number }[] = [];
   private guideIdentityHoldS = 0;
+  /** The framed board's name centre, and the framed look's offset from that board's bearing: the hold keeps the board in view. */
+  private readonly guideIdentityCentre = new THREE.Vector3();
+  private readonly guideIdentityOffset = { yaw: 0, pitch: 0 };
+  private readonly identityHead = new THREE.Vector3();
+  private readonly identityToward = new THREE.Vector3();
   /** The user's guide speed tier; kept across instruction changes and later guides. */
   private tier: GuideTierId = DEFAULT_GUIDE_TIER;
   private poiLabels: PoiLabel[] = [];
@@ -1156,6 +1163,10 @@ export class Explorer {
     this.pitch = look.pitch;
     // The framed look lands as a snap on the next frame: the camera and slope must not pan from the old pose.
     this.teleported = true;
+    const toward = look.centre.clone().sub(head);
+    this.guideIdentityCentre.copy(look.centre);
+    this.guideIdentityOffset.yaw = angleDelta(Math.atan2(-toward.x, -toward.z), look.yaw);
+    this.guideIdentityOffset.pitch = look.pitch - Math.atan2(toward.y, Math.hypot(toward.x, toward.z));
     return true;
   }
 
@@ -1924,7 +1935,9 @@ export class Explorer {
     if (stopped !== null) g.paused = g.holding = true;
     const p = samplePolyline(g.pts, g.cum, g.s);
     this.pos.set(p.x, p.y, p.z);
-    const steeringDt = Math.max(0, dt - this.guideIdentityHoldS);
+    // During the hold the look follows the framed board instead of the route; the rest of the frame steers as usual.
+    const holdDt = Math.min(dt, this.guideIdentityHoldS);
+    const steeringDt = holdDt > 0 && this.trackGuideIdentity(p, holdDt) ? dt - holdDt : dt;
     this.guideIdentityHoldS = Math.max(0, this.guideIdentityHoldS - dt);
     if (p.tx || p.tz) {
       const targetYaw = Math.atan2(-p.tx, -p.tz);
@@ -1934,6 +1947,31 @@ export class Explorer {
     const stepIndex = g.steps[Math.min(g.steps.length - 1, p.segment + 1)] ?? -1;
     this.events.onGuideProgress?.({ s: g.s, total, stepIndex, done: g.s >= total && !g.holding });
     if (stopped !== null) this.events.onGuideStop?.(stopped);
+  }
+
+  /**
+   * Re-aim the guide look at the framed board for `dt` of hold, keeping the framed offset from its bearing. Ends the hold
+   * (returns false) when the board is out of range, behind the walker, or would turn the look too far from the route.
+   */
+  private trackGuideIdentity(p: { tx: number; tz: number }, dt: number): boolean {
+    const toward = this.identityToward.copy(this.guideIdentityCentre).sub(this.identityHead.set(this.pos.x, this.pos.y + EYE, this.pos.z));
+    const bearingYaw = Math.atan2(-toward.x, -toward.z);
+    const bearingPitch = Math.atan2(toward.y, Math.hypot(toward.x, toward.z));
+    const targetYaw = bearingYaw + this.guideIdentityOffset.yaw;
+    if (toward.length() > IDENTITY_RANGE_M || ((p.tx || p.tz) && this.routeTurnTooFar(p, bearingYaw, targetYaw))) {
+      this.guideIdentityHoldS = 0;
+      return false;
+    }
+    const k = this.reducedMotion ? 1 : Math.min(1, dt * 4);
+    this.yaw += angleDelta(this.yaw, targetYaw) * k;
+    this.pitch = THREE.MathUtils.clamp(this.pitch + (bearingPitch + this.guideIdentityOffset.pitch - this.pitch) * k, LOOK_PITCH.min, LOOK_PITCH.max);
+    return true;
+  }
+
+  /** The board is behind the walker, or the tracked look is more than IDENTITY_TRACK_MAX_RAD from the route heading. */
+  private routeTurnTooFar(p: { tx: number; tz: number }, bearingYaw: number, targetYaw: number): boolean {
+    const routeYaw = Math.atan2(-p.tx, -p.tz);
+    return Math.cos(bearingYaw - routeYaw) < 0 || Math.abs(angleDelta(routeYaw, targetYaw)) > IDENTITY_TRACK_MAX_RAD;
   }
 
   /**
