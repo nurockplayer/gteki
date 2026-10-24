@@ -1,0 +1,24 @@
+{
+  "source_id": "osm-overpass-shinjuku",
+  "resolved_url": "https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A120%5D%3B(nwr(around%3A900%2C35.687%2C139.6994)%5B%22shop%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22amenity%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22indoor%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22level%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22level%3Aref%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22repeat_on%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22railway%22%3D%22station%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22public_transport%22%3D%22station%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22building%22%3D%22train_station%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22railway%22%3D%22subway_entrance%22%5D%3Bnwr(around%3A900%2C35.687%2C139.6994)%5B%22entrance%22%5D%3Bway(around%3A900%2C35.687%2C139.6994)%5B%22building%22%5D%5B%22name%22%5D%3Brelation(around%3A900%2C35.687%2C139.6994)%5B%22building%22%5D%5B%22name%22%5D%3B)%3Bout%20meta%20geom%3B",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-24T10:11:38.161Z",
+  "completed_at": "2026-10-24T10:12:15.144Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/json",
+    "content-length": null,
+    "etag": null,
+    "last-modified": null,
+    "date": "Sat, 24 Oct 2026 10:12:07 GMT"
+  },
+  "bytes": 6616532,
+  "sha256": "06fc414e4ff564c7ae65a037b185cca3c62e2a2a760665df5898e2bf7e6e9322",
+  "store_path": "raw/06fc414e4ff564c7ae65a037b185cca3c62e2a2a760665df5898e2bf7e6e9322/interpreter",
+  "tool_version": "0.1.0",
+  "git_commit": "00420763bb2965e9fbcd82147c7e39bdb5e6df36",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online"
+}
