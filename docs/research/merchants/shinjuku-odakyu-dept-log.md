@@ -70,3 +70,9 @@ The brand list prints no per-brand code, so tenant ids are a 3-digit sequence in
 ## Validation
 
 - `python3 -I -c "import json; json.load(...)"` on both files: parse OK.
+
+## Lead review (2026-10-24)
+
+- `★` is a marker printed between the name and the phone number, not part of the name; it is stripped from every tenant name.
+- The store POI notes now say only what the store prints (operating in 新宿西口ハルク); the absence of entrance labels stays in this log, not in user-facing notes.
+- Generic counter labels (サングラス, 和洋酒, …) are kept as printed rows: the tenant dataset is not imported as POIs, and core-search decides how tenant search treats them.
