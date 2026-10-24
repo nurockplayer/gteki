@@ -607,7 +607,7 @@ describe("loadNosingKit (batch C)", () => {
     expect(texture.channel).toBe(1); // three's uv1, where the catalog GLBs put the atlas UVs
     expect(texture.flipY).toBe(false);
     expect(texture.colorSpace).toBe(THREE.NoColorSpace);
-    expect(texture.userData).toEqual({ gteki_uri: atlasUri, gteki_atlas_kind: "nosing" });
+    expect(texture.userData).toMatchObject({ gteki_uri: atlasUri, gteki_atlas_kind: "nosing", gteki_max_isolated_mip: 7 });
     for (const m of group.children as THREE.Mesh[]) {
       const mat = m.material as THREE.MeshStandardMaterial;
       expect(mat.aoMap).toBe(texture);
@@ -714,6 +714,146 @@ describe("loadNosingKit (batch C)", () => {
     ];
     loaded.dispose();
     expect(spies.every((s) => s.mock.calls.length === 1)).toBe(true);
+  });
+
+  it("keeps the userData the host already set on the atlas texture", async () => {
+    const texture = new THREE.Texture();
+    texture.userData.foo = "kept";
+    const h = nosingHost(undefined, async () => fakeNosing(), texture);
+    const loaded = await loadNosingKit(THREE, h, placements, false);
+    expect(texture.userData).toMatchObject({ foo: "kept", gteki_uri: atlasUri, gteki_atlas_kind: "nosing" });
+    expect(texture.userData.gteki_max_isolated_mip).toBe(7); // the Lane E manifest's desktop limit
+    expect(texture.channel).toBe(1);
+    loaded.dispose();
+  });
+
+  it("stops before the next GLB once disposed and frees what it had loaded", async () => {
+    const h = nosingHost();
+    let release!: (gltf: GLTF) => void;
+    h.loadGlb.mockImplementationOnce(() => new Promise<GLTF>((resolve) => (release = resolve)));
+    let disposed = false;
+    const pending = loadNosingKit(THREE, h, placements, false, () => disposed);
+    await vi.waitFor(() => expect(h.loadGlb).toHaveBeenCalledTimes(1));
+    const gltf = fakeNosing();
+    const mesh = gltf.scene.children[0]!.children[0] as THREE.Mesh;
+    const geometry = vi.spyOn(mesh.geometry, "dispose");
+    const material = vi.spyOn(mesh.material as THREE.Material, "dispose");
+    const texture = vi.spyOn(h.texture, "dispose");
+    disposed = true;
+    release(gltf);
+    const loaded = await pending;
+    expect(h.loadGlb).toHaveBeenCalledTimes(1); // no fetch started after dispose
+    expect(loaded.placements).toEqual([]);
+    expect(loaded.build(THREE, env, toRenderer).stats.parts).toBe(0);
+    expect([geometry, material, texture].every((s) => s.mock.calls.length === 1)).toBe(true);
+    loaded.dispose(); // idempotent: the caller may dispose the abandoned kit again
+  });
+
+  it("drops a part without uv1, keeps a part without uv, and merges the cluster without uv", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const yellow = new THREE.MeshStandardMaterial({ name: "gteki_vertical_safety_yellow", color: 0xe86f00 });
+    const part = (opts: { uv?: boolean; uv1?: boolean }) => {
+      const g = new THREE.BoxGeometry(1, 0.05, 2);
+      if (opts.uv1 !== false) g.setAttribute("uv1", g.getAttribute("uv").clone());
+      if (opts.uv === false) g.deleteAttribute("uv");
+      return new THREE.Mesh(g, yellow);
+    };
+    const scene = new THREE.Group();
+    for (const opts of [{}, { uv1: false }, { uv: false }]) scene.add(part(opts));
+    const placement: CatalogPlacement = {
+      anchor: "hand", kind: "stair", scope: "building", ids: { nosing: NOSING_IDS[0]! },
+      origin: [0, 0, 0], dir: [0, 1], yaw_deg: 0, mirror: false, tiers: { nosing: ["high"] },
+    };
+    const h = nosingHost(undefined, async () => ({ scene, scenes: [scene] } as unknown as GLTF));
+    const loaded = await loadNosingKit(THREE, h, [placement], false);
+    const { group } = loaded.build(THREE, env, toRenderer);
+    expect(group.children).toHaveLength(1);
+    const g = (group.children[0] as THREE.Mesh).geometry;
+    expect(g.getAttribute("position").count).toBe(48); // two boxes; the one without uv1 is dropped
+    expect(g.getAttribute("uv1")).toBeDefined();
+    expect(g.getAttribute("uv")).toBeUndefined(); // one part lacks uv, so the whole cluster does
+    expect((group.children[0] as THREE.Mesh).material).toMatchObject({ aoMap: h.texture });
+    expect(h.texture.channel).toBe(1);
+    expect(warn.mock.calls.some((c) => String(c[0]).includes("lacks uv1"))).toBe(true);
+    loaded.dispose();
+    warn.mockRestore();
+  });
+
+  it("merges indexed and non-indexed parts of a mirrored placement into one cluster", async () => {
+    const yellow = new THREE.MeshStandardMaterial({ name: "gteki_vertical_safety_yellow", color: 0xe86f00 });
+    const box = (indexed: boolean) => {
+      const g = new THREE.BoxGeometry(1, 0.05, 2);
+      g.setAttribute("uv1", g.getAttribute("uv").clone());
+      return new THREE.Mesh(indexed ? g : g.toNonIndexed(), yellow);
+    };
+    const scene = new THREE.Group();
+    scene.add(box(true), box(false));
+    const placement: CatalogPlacement = {
+      anchor: "hand", kind: "stair", scope: "building", ids: { nosing: NOSING_IDS[0]! },
+      origin: [0, 0, 0], dir: [0, 1], yaw_deg: 30, mirror: true, tiers: { nosing: ["high"] },
+    };
+    const h = nosingHost(undefined, async () => ({ scene, scenes: [scene] } as unknown as GLTF));
+    const loaded = await loadNosingKit(THREE, h, [placement], false);
+    const { group, stats } = loaded.build(THREE, env, toRenderer);
+    expect(group.children).toHaveLength(1);
+    expect(stats.triangles).toBe(24); // two 12-triangle boxes
+    const g = (group.children[0] as THREE.Mesh).geometry;
+    expect(g.index).not.toBeNull();
+    const position = g.getAttribute("position"), normal = g.getAttribute("normal"), index = g.index!;
+    expect(index.count).toBe(72);
+    const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), face = new THREE.Vector3();
+    for (let t = 0; t < index.count; t += 3) {
+      a.fromBufferAttribute(position, index.getX(t));
+      b.fromBufferAttribute(position, index.getX(t + 1));
+      c.fromBufferAttribute(position, index.getX(t + 2));
+      face.crossVectors(b.sub(a), c.sub(a)).normalize();
+      expect(face.dot(new THREE.Vector3().fromBufferAttribute(normal, index.getX(t)))).toBeGreaterThan(0.5);
+    }
+    loaded.dispose();
+  });
+
+  it("excludes a part whose material differs visibly instead of merging it under the first", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const yellow = new THREE.MeshStandardMaterial({ name: "gteki_vertical_safety_yellow", color: 0xe86f00, roughness: 0.48 });
+    const other = new THREE.MeshStandardMaterial({ name: "gteki_vertical_safety_yellow", color: 0xe86f00, roughness: 0.2 });
+    const box = (material: THREE.MeshStandardMaterial) => {
+      const g = new THREE.BoxGeometry(1, 0.05, 2);
+      g.setAttribute("uv1", g.getAttribute("uv").clone());
+      return new THREE.Mesh(g, material);
+    };
+    const scene = new THREE.Group();
+    scene.add(box(yellow), box(other));
+    const placement: CatalogPlacement = {
+      anchor: "hand", kind: "stair", scope: "building", ids: { nosing: NOSING_IDS[0]! },
+      origin: [0, 0, 0], dir: [0, 1], yaw_deg: 0, mirror: false, tiers: { nosing: ["high"] },
+    };
+    const h = nosingHost(undefined, async () => ({ scene, scenes: [scene] } as unknown as GLTF));
+    const loaded = await loadNosingKit(THREE, h, [placement], false);
+    const { group } = loaded.build(THREE, env, toRenderer);
+    expect((group.children[0] as THREE.Mesh).geometry.getAttribute("position").count).toBe(24);
+    expect((group.children[0] as THREE.Mesh).material).toMatchObject({ roughness: 0.48 });
+    expect(warn.mock.calls.some((c) => String(c[0]).includes("differs from"))).toBe(true);
+    loaded.dispose();
+    warn.mockRestore();
+  });
+
+  it("settled() waits for the merged nosings, not only for the instanced batches", async () => {
+    vi.useFakeTimers();
+    const h = nosingHost([...nosingUris, atlasUri]);
+    const root = new THREE.Group();
+    const lazy = lazyKitCatalog(THREE, h, placements, false, root, env, toRenderer);
+    try {
+      let resolved = false;
+      const settled = lazy.settled().then(() => { resolved = true; });
+      await vi.runOnlyPendingTimersAsync();
+      await settled;
+      expect(resolved).toBe(true);
+      expect(h.loadGlb).toHaveBeenCalledTimes(61); // every nosing GLB is in before settled() resolves
+      expect(root.children.map((g) => g.name)).toEqual(["ikebukuro_kit_catalog_nosing"]);
+    } finally {
+      lazy.dispose();
+      vi.useRealTimers();
+    }
   });
 
   it("attaches the merged nosing group after the instanced batches in the lazy path", async () => {

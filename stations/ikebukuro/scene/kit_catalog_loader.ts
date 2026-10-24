@@ -25,6 +25,7 @@ import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { SceneContext } from "@gteki/scene-api";
 import { KIT_ENV_INTENSITY, visibleParts } from "./kit.ts";
+import kitCatalogAtlas from "./kit_catalog_atlas.json";
 type ThreeNS = typeof THREE_NS;
 
 export type Tier = "low" | "high";
@@ -94,6 +95,13 @@ export const catalogUri = (id: string, low: boolean) => `kit/catalog/${tierName(
 /** Batch C: the packed AO atlas every nosing of a tier samples, under the same tier folder. */
 export const NOSING_ATLAS = "atlas/nosing_ao.png";
 export const nosingAtlasUri = (low: boolean) => `kit/catalog/${tierName(low)}/${NOSING_ATLAS}`;
+/** Lane E's packed-atlas mip limit per tier (scene/kit_catalog_atlas.json, kept in step by sync_kit_catalog.py).
+ *  `null` when the manifest records no limit: then nothing is clamped. */
+export function nosingAtlasLimit(low: boolean): number | null {
+  const tiers = (kitCatalogAtlas as { nosing?: { tiers?: Record<string, { max_isolated_mip?: number }> } }).nosing?.tiers;
+  const value = tiers?.[tierName(low)]?.max_isolated_mip;
+  return typeof value === "number" ? value : null;
+}
 
 /** One part of one placement that this tier draws. */
 export interface CatalogPart {
@@ -240,17 +248,21 @@ export async function loadKitCatalog(
     },
     dispose() {
       for (const o of owned) o.dispose();
-      for (const gltf of gltfs)
-        gltf.scene.traverse((o) => {
-          const m = o as THREE_NS.Mesh;
-          if (!m.isMesh) return;
-          m.geometry.dispose();
-          const mat = m.material as THREE_NS.MeshStandardMaterial;
-          for (const t of [mat.map, mat.normalMap, mat.roughnessMap, mat.metalnessMap, mat.emissiveMap, mat.aoMap]) t?.dispose();
-          mat.dispose();
-        });
+      for (const gltf of gltfs) disposeGltf(gltf);
     },
   };
+}
+
+/** Free a loaded GLTF's geometries, materials and their maps (shared maps are disposed once per material). */
+function disposeGltf(gltf: GLTF) {
+  gltf.scene.traverse((o) => {
+    const m = o as THREE_NS.Mesh;
+    if (!m.isMesh) return;
+    m.geometry.dispose();
+    const mat = m.material as THREE_NS.MeshStandardMaterial;
+    for (const t of [mat.map, mat.normalMap, mat.roughnessMap, mat.metalnessMap, mat.emissiveMap, mat.aoMap]) t?.dispose();
+    mat.dispose();
+  });
 }
 
 export interface NosingStats {
@@ -273,33 +285,46 @@ export interface LoadedNosingKit {
   dispose(): void;
 }
 
-/** Two catalog materials that may share one merged material: same look, whatever the source map objects. */
-function sameLook(a: THREE_NS.MeshStandardMaterial, b: THREE_NS.MeshStandardMaterial) {
-  return a.name === b.name && a.color.equals(b.color) && a.roughness === b.roughness && a.metalness === b.metalness &&
-    a.emissive.equals(b.emissive) && a.opacity === b.opacity && a.side === b.side && a.transparent === b.transparent;
+/** The same texture object, the same decoded image, or (for GLB-embedded images, which arrive as a fresh ImageBitmap
+ *  per load) an image of the same shape. */
+function sameTexture(a: THREE_NS.Texture | null | undefined, b: THREE_NS.Texture | null | undefined) {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  if (a.source === b.source) return true;
+  const ia = a.image as { src?: string; width?: number; height?: number } | null;
+  const ib = b.image as { src?: string; width?: number; height?: number } | null;
+  if (!ia || !ib) return false;
+  if (ia.src && ib.src && ia.src === ib.src) return true;
+  return typeof ia.width === "number" && ia.width === ib.width && ia.height === ib.height;
 }
 
-/** A clone of a part's geometry with `matrix` baked in. `applyMatrix4` rewrites positions and normals but leaves the
- *  winding, so a mirror (negative determinant) reverses every triangle to keep the face normals pointing outwards. */
+/** Two catalog materials that may share one merged material: same look, whatever the source map objects. Anything
+ *  that differs visibly (colour, finish, emissive strength, alpha cutoff, vertex colours, base-colour map) is not. */
+function sameLook(a: THREE_NS.MeshStandardMaterial, b: THREE_NS.MeshStandardMaterial) {
+  return a.name === b.name && a.color.equals(b.color) && a.roughness === b.roughness && a.metalness === b.metalness &&
+    a.emissive.equals(b.emissive) && a.opacity === b.opacity && a.side === b.side && a.transparent === b.transparent &&
+    a.vertexColors === b.vertexColors && a.emissiveIntensity === b.emissiveIntensity && a.alphaTest === b.alphaTest &&
+    sameTexture(a.map, b.map);
+}
+
+/** A clone of a part's geometry with `matrix` baked in. The clone is always indexed first, so a cluster never mixes
+ *  indexed and non-indexed inputs (mergeGeometries refuses that). `applyMatrix4` rewrites positions and normals but
+ *  leaves the winding, so a mirror (negative determinant) reverses every triangle to keep face normals outwards. */
 function bakedGeometry(THREE: ThreeNS, source: THREE_NS.BufferGeometry, matrix: THREE_NS.Matrix4): THREE_NS.BufferGeometry {
   const g = source.clone();
   g.applyMatrix4(matrix);
+  if (!g.index) {
+    const count = g.getAttribute("position").count;
+    const order = count > 65535 ? new Uint32Array(count) : new Uint16Array(count);
+    for (let i = 0; i < count; i++) order[i] = i;
+    g.setIndex(new THREE.BufferAttribute(order, 1));
+  }
   if (matrix.determinant() < 0) {
-    const index = g.index;
-    if (index) for (let t = 0; t < index.count; t += 3) {
+    const index = g.index!;
+    for (let t = 0; t < index.count; t += 3) {
       const b = index.getX(t + 1);
       index.setX(t + 1, index.getX(t + 2));
       index.setX(t + 2, b);
-    }
-    else {
-      const count = g.getAttribute("position").count;
-      const order = new Uint32Array(count);
-      for (let t = 0; t < count; t += 3) {
-        order[t] = t;
-        order[t + 1] = t + 2;
-        order[t + 2] = t + 1;
-      }
-      g.setIndex(new THREE.BufferAttribute(order, 1));
     }
   }
   return g;
@@ -356,6 +381,7 @@ export async function loadNosingKit(
   host: Host,
   placements: readonly CatalogPlacement[],
   low: boolean,
+  isDisposed: () => boolean = () => false,
 ): Promise<LoadedNosingKit> {
   const wanted = tierParts(placements, low).filter((w) => w.part === "nosing");
   const atlasUri = nosingAtlasUri(low);
@@ -366,15 +392,36 @@ export async function loadNosingKit(
   let atlas: THREE_NS.Texture | null = null;
   let source: THREE_NS.MeshStandardMaterial | null = null;
   const skipAll = () => { for (const w of wanted) skipped.add(w.id); };
+  /** Free everything loaded so far (the caller disposed the kit mid-flight) and hand back an inert kit. */
+  const abandoned = (): LoadedNosingKit => {
+    for (const o of owned) o.dispose();
+    owned.length = 0;
+    for (const gltf of gltfs) disposeGltf(gltf);
+    gltfs.length = 0;
+    atlas = null;
+    return {
+      placements: [], skippedIds: [...skipped].sort(),
+      build: (T: ThreeNS) => ({ group: new T.Group(), stats: { parts: 0, uniqueGlbs: 0, clusters: 0, drawCalls: 0, triangles: 0 } }),
+      dispose() {},
+    };
+  };
   if (wanted.length && host.assetUrl(atlasUri) === null) skipAll(); // no atlas on this tier: batch C is not shipped
   else if (wanted.length) {
     try {
       // AO is data, not colour: no sRGB transfer; the strips' TEXCOORD_1 already addresses the atlas top-down.
       atlas = await host.loadTexture(atlasUri, { colorSpace: "linear", flipY: false });
+      if (isDisposed()) return abandoned();
       atlas.flipY = false;
       atlas.colorSpace = THREE.NoColorSpace;
       atlas.channel = 1; // the catalog GLBs put the atlas UVs in TEXCOORD_1 (three's uv1)
-      atlas.userData = { gteki_uri: atlasUri, gteki_atlas_kind: "nosing" };
+      // Keep whatever the host already recorded on the texture (the Godot export's placeholder reads gteki_uri).
+      const limit = nosingAtlasLimit(low);
+      Object.assign(atlas.userData, { gteki_uri: atlasUri, gteki_atlas_kind: "nosing" });
+      if (limit !== null) {
+        atlas.userData.gteki_max_isolated_mip = limit;
+        // three 0.186's Texture has no maxLevel; keep one here so a renderer patch or a later three can read it.
+        (atlas as unknown as { maxLevel?: number }).maxLevel = limit;
+      }
       atlas.needsUpdate = true;
       owned.push(atlas);
     } catch (err) {
@@ -384,6 +431,7 @@ export async function loadNosingKit(
     }
   }
   if (atlas) for (const id of [...new Set(wanted.map((w) => w.id))].sort()) {
+    if (isDisposed()) return abandoned();
     const uri = catalogUri(id, low);
     if (host.assetUrl(uri) === null) {
       skipped.add(id); // not part of this batch: the station ships other catalog ids only
@@ -393,16 +441,27 @@ export async function loadNosingKit(
       const gltf = await host.loadGlb(uri);
       gltfs.push(gltf);
       const parts = visibleParts(THREE, gltf).filter((p) => {
-        // One merged material: a part with a different look would be wrong under it, so leave it out.
-        if ((p.material as THREE_NS.MeshStandardMaterial).isMeshStandardMaterial) return true;
-        console.warn(`[ikebukuro] kit catalog: ${id}: a part is not MeshStandardMaterial; skipping that part`);
-        return false;
+        // One merged material: a part with a different look would be wrong under it, so leave that part out.
+        const material = p.material as THREE_NS.MeshStandardMaterial;
+        if (!material.isMeshStandardMaterial) {
+          console.warn(`[ikebukuro] kit catalog: ${id}: a part is not MeshStandardMaterial; skipping that part`);
+          return false;
+        }
+        // The merge needs these on every input. uv is batch C's base-colour map: optional, and a cluster drops it
+        // only when one of its parts lacks it.
+        const missing = ["position", "normal", "uv1"].filter((name) => !p.geometry.getAttribute(name));
+        if (missing.length) {
+          console.warn(`[ikebukuro] kit catalog: ${id}: a part lacks ${missing.join("/")}; skipping that part`);
+          return false;
+        }
+        if (source && !sameLook(source, material)) {
+          console.warn(`[ikebukuro] kit catalog: ${id}: material ${material.name} differs from ${source.name}; skipping that part`);
+          return false;
+        }
+        if (!source) source = material; // the first accepted part of the first GLB sets the look
+        return true;
       });
       if (!parts.length) throw new Error(`${uri} has no visible mesh`);
-      const first = parts[0]!.material as THREE_NS.MeshStandardMaterial;
-      if (!source) source = first;
-      else if (!sameLook(source, first))
-        console.warn(`[ikebukuro] kit catalog: ${id}: material ${first.name} differs from ${source.name}; merging under the first`);
       assets.set(id, parts);
     } catch (err) {
       skipped.add(id);
@@ -448,8 +507,9 @@ export async function loadNosingKit(
             stats.triangles += trianglesOf(part.geometry);
           }
         }
-        // mergeGeometries needs one attribute set for every input: keep the sets all of them carry.
-        const keep = ["position", "normal", "uv", "uv1"].filter((name) => geoms.every((g) => g.getAttribute(name)));
+        // mergeGeometries needs one attribute set for every input: position, normal and uv1 are required per part, and
+        // uv (the base-colour map's UVs) is kept only when every part of the cluster carries it.
+        const keep = ["position", "normal", "uv1"].concat(geoms.every((g) => g.getAttribute("uv")) ? ["uv"] : []);
         for (const g of geoms) for (const name of Object.keys(g.attributes)) if (!keep.includes(name)) g.deleteAttribute(name);
         const merged = mergeGeometries(geoms, false);
         for (const g of geoms) g.dispose(); // mergeGeometries copies; the baked clones are throwaway
@@ -474,15 +534,7 @@ export async function loadNosingKit(
     },
     dispose() {
       for (const o of owned) o.dispose();
-      for (const gltf of gltfs)
-        gltf.scene.traverse((o) => {
-          const m = o as THREE_NS.Mesh;
-          if (!m.isMesh) return;
-          m.geometry.dispose();
-          const mat = m.material as THREE_NS.MeshStandardMaterial;
-          for (const t of [mat.map, mat.normalMap, mat.roughnessMap, mat.metalnessMap, mat.emissiveMap, mat.aoMap]) t?.dispose();
-          mat.dispose();
-        });
+      for (const gltf of gltfs) disposeGltf(gltf);
     },
   };
 }
@@ -535,7 +587,7 @@ export function lazyKitCatalog(
       attach(kit);
     }
     if (!nosingIds.length) return;
-    const nosing = await loadNosingKit(THREE, host, placements, low);
+    const nosing = await loadNosingKit(THREE, host, placements, low, () => disposed);
     if (disposed) { nosing.dispose(); return; }
     loaded.push(nosing);
     attach(nosing);

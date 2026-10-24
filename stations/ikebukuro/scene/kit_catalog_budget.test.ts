@@ -50,6 +50,9 @@ function boundsGlb(uri: string): GLTF {
       expect(a.max).toHaveLength(3);
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute("position", new THREE.Float32BufferAttribute([...a.min, ...a.max], 3));
+      // Batch C's merge requires normal and uv1 (TEXCOORD_1 is where the nosing GLBs address the AO atlas).
+      geometry.setAttribute("normal", new THREE.Float32BufferAttribute([0, 1, 0, 0, 1, 0], 3));
+      geometry.setAttribute("uv1", new THREE.Float32BufferAttribute([0, 0, 1, 1], 2));
       geometry.boundingBox = new THREE.Box3(new THREE.Vector3(...a.min), new THREE.Vector3(...a.max));
       geometry.boundingSphere = geometry.boundingBox.getBoundingSphere(new THREE.Sphere());
       obj.add(new THREE.Mesh(geometry, material));

@@ -40,6 +40,10 @@ const ids = [...escalatorIds, ...railIds, ...nosingIds].sort();
 const ATLAS = `${CATALOG_REL}/high/atlas/nosing_ao.png`;
 /** Every file the source record pins: the planned GLBs and the atlas. */
 const shipped = [...ids.map((id) => `${CATALOG_REL}/high/${id}.glb`), ATLAS].sort();
+// The Lane E build output lives outside the repo; when this machine has it, the copy-mode checks can run.
+const LANE_E = "/Users/tachikoma/Developer/gteki/.claude/worktrees/gteki-lane-e-int/tools/blender/.cache/c3_sample_cb3b29b";
+const hasLaneE = fs.existsSync(path.join(LANE_E, "ike_full", "manifest.json"));
+
 const stationJson = JSON.parse(fs.readFileSync(path.join(GTEKI, "station.json"), "utf8")) as {
   sources: { id: string; sha256?: Record<string, string> }[];
 };
@@ -62,6 +66,14 @@ function copyStation(): string {
   return path.join(d, "station.json");
 }
 const run = (...args: string[]) => spawnSync("python3", ["-I", SCRIPT, ...args], { encoding: "utf8" });
+/** A temporary copy of scene/kit_catalog_atlas.json, safe to tamper with. */
+function copyAtlasFacts(): string {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "gteki-catalog-atlas-"));
+  scratch.push(d);
+  const out = path.join(d, "kit_catalog_atlas.json");
+  fs.copyFileSync(path.join(STATION, "scene/kit_catalog_atlas.json"), out);
+  return out;
+}
 const glb = (dest: string, id: string) => path.join(dest, "high", `${id}.glb`);
 const sha = (p: string) => crypto.createHash("sha256").update(fs.readFileSync(p)).digest("hex");
 
@@ -135,6 +147,34 @@ describe("--check negative controls", () => {
     expect(r2.stderr).toContain(`gteki/${ATLAS} is missing`);
   });
 
+  it.skipIf(!python)("fails when the atlas-facts file disagrees with the tier manifest or is missing", () => {
+    const facts = copyAtlasFacts();
+    const doc = JSON.parse(fs.readFileSync(facts, "utf8"));
+    doc.nosing.tiers.high.max_isolated_mip += 1;
+    fs.writeFileSync(facts, JSON.stringify(doc));
+    const r = run("--check", "--atlas-json", facts);
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain("kit_catalog_atlas.json differs from the tier manifests' atlases.nosing");
+
+    fs.rmSync(facts);
+    const r2 = run("--check", "--atlas-json", facts);
+    expect(r2.status).toBe(1);
+    expect(r2.stderr).toContain("kit_catalog_atlas.json is missing");
+  });
+
+  it.skipIf(!python || !hasLaneE)("fails when a planned file has no entry in its tier manifest", () => {
+    const src = fs.mkdtempSync(path.join(os.tmpdir(), "gteki-catalog-src-"));
+    scratch.push(src);
+    fs.cpSync(path.join(LANE_E, "ike_full"), src, { recursive: true });
+    const manifest = path.join(src, "manifest.json");
+    const doc = JSON.parse(fs.readFileSync(manifest, "utf8"));
+    doc.assets = doc.assets.filter((a: { id: string }) => a.id !== nosingIds[0]);
+    fs.writeFileSync(manifest, JSON.stringify(doc));
+    const r = run("--check", "--src-full", src);
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain(`gteki/${CATALOG_REL}/high/${nosingIds[0]}.glb has no entry in the high manifest`);
+  });
+
   it.skipIf(!python)("fails on a copy no placement loads", () => {
     const dest = copyDest();
     fs.copyFileSync(glb(dest, ids[0]!), path.join(dest, "high", "gteki_ik_escalator_stale.glb"));
@@ -175,20 +215,19 @@ describe("--check negative controls", () => {
   });
 });
 
-// The Lane E build output lives outside the repo; when this machine has it, prove copy mode reproduces the committed
-// bytes from the tier manifests and that a second run is a no-op.
-const LANE_E = "/Users/tachikoma/Developer/gteki/.claude/worktrees/gteki-lane-e-int/tools/blender/.cache/c3_sample_cb3b29b";
-const hasLaneE = fs.existsSync(path.join(LANE_E, "ike_full", "manifest.json"));
+// When the Lane E build is present, prove copy mode reproduces the committed bytes and a second run is a no-op.
 describe.skipIf(!python || !hasLaneE)("copy mode against the Lane E C3 sample tree", () => {
   it("reproduces the committed copies byte for byte, the atlas included, and a second run copies nothing", () => {
     const dest = fs.mkdtempSync(path.join(os.tmpdir(), "gteki-catalog-copy-"));
     scratch.push(dest);
-    const first = run("--dest", dest);
+    const facts = copyAtlasFacts();
+    fs.rmSync(facts); // copy mode rewrites it from the manifests
+    const first = run("--dest", dest, "--atlas-json", facts);
     expect(first.stderr).toBe("");
     expect(first.status).toBe(0);
     expect(fs.readdirSync(path.join(dest, "high")).sort()).toEqual([...ids.map((id) => `${id}.glb`), "atlas"].sort());
     for (const rel of shipped) expect(sha(path.join(dest, rel.slice(CATALOG_REL.length + 1))), rel).toBe(record.sha256![rel]);
-    const second = run("--dest", dest);
+    const second = run("--dest", dest, "--atlas-json", facts);
     expect(second.status).toBe(0);
     expect(second.stdout).not.toContain("copied");
   });
