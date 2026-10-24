@@ -1401,14 +1401,14 @@
   expected_bytes: 233350
   license_name: "CC BY 4.0"
   license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
-  attribution_text: unknown
-  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
-  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
-  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  attribution_text: "出典：新宿区『文化財一覧（自治体標準データセット）』（CC BY 4.0、東京都オープンデータカタログサイト経由）。GTEki が加工して作成"
+  commercial_use: { status: conditional, evidence: "docs/gis/research/2026-10-23-shinjuku-cultural-properties-rights.md (dataset-level CC BY 4.0, Tokyo portal terms; attribution and change notice required)" }
+  modification_allowed: { status: conditional, evidence: "docs/gis/research/2026-10-23-shinjuku-cultural-properties-rights.md (dataset-level CC BY 4.0, Tokyo portal terms; attribution and change notice required)" }
+  redistribution_allowed: { status: conditional, evidence: "docs/gis/research/2026-10-23-shinjuku-cultural-properties-rights.md (dataset-level CC BY 4.0, Tokyo portal terms; attribution and change notice required)" }
   content_year: 2023
   availability_deadline: null
-  notes: "Evidence-only (director decision via Owner delegation, reassessment note section 5 and 7; gate HOLD). Nothing is converted, placed or shipped from this source. The CKAN dataset record states CC BY 4.0 at dataset level and the resource licence field is absent; that is recorded in the hashed package_show snapshot, not interpreted as a rights finding. The portal terms page is snapshotted as a hashed supporting document (its content, or a closure notice, is whatever the hash holds). No row value is committed; see docs/gis/research/2026-10-22-municipal-evidence-profile.md for counts, column names and window counts. Dataset t131041d0000000114; CKAN-stated resource size 294,912 bytes; the delivered file is 233,350 bytes (the catalogue size is stale or rounded, observed 2026-10-22). Landmark option (c) candidate list."
-  publish_gate: HOLD
+  notes: "Director ruling 2026-10-23 (gteki-4a; see docs/gis/research/2026-10-23-shinjuku-cultural-properties-rights.md): coordinates, 名称 and 文化財分類 are allowed as visual context only (gteki_role context, NOT_FOR_ROUTING); 説明 is excluded and recorded as UNKNOWN (third-party authorship not excluded); 画像 and URL are empty in every row; no other column is copied. The credit names 新宿区 only, with the change notice. The file declares no CRS: it is projected as JGD2011 geographic (EPSG:6668) and every output records the CRS as UNKNOWN and unasserted. Conversion by `gis context-landmarks`; the publish gate is CONDITIONAL (the lead set it on 2026-10-24 after re-acquiring the Tokyo portal terms, hash unchanged): it ships only under the director's field and credit conditions above, not as a rights PASS. No row value is committed; counts, column names and window counts are in docs/gis/research/2026-10-22-municipal-evidence-profile.md. Dataset t131041d0000000114; the delivered file is 233,350 bytes (the catalogue size 294,912 is stale or rounded)."
+  publish_gate: CONDITIONAL
   supporting_documents:
     - id: package-show
       url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t131041d0000000114
