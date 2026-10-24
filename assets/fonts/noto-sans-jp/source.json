@@ -1,0 +1,17 @@
+{
+  "upstream": "https://github.com/notofonts/noto-cjk/tree/Sans2.004",
+  "tag": "Sans2.004",
+  "url": "https://raw.githubusercontent.com/notofonts/noto-cjk/Sans2.004/Sans/Variable/TTF/Subset/NotoSansJP-VF.ttf",
+  "licenseUrl": "https://raw.githubusercontent.com/notofonts/noto-cjk/Sans2.004/LICENSE",
+  "version": "Version 2.004;hotconv 1.0.118;makeotfexe 2.5.65603",
+  "bytes": 9590732,
+  "sha256": "f4b373b226668ee33a6e54b02823dcd2d1209f17159f777421ae8c2275160369",
+  "copyright": "© 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'.",
+  "reservedFontNames": [
+    "Source"
+  ],
+  "family": "GTEki Sign JP",
+  "postscriptName": "GTEkiSignJP",
+  "license": "OFL-1.1",
+  "licenseSha256": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2"
+}

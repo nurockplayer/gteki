@@ -53,6 +53,8 @@ export const FOLLOW = {
   fadeStart: 1.0,
   /** Lowest avatar opacity (fraction of the screen-door dither kept), reached at `minDistance` or closer. */
   fadeMin: 0.25,
+  /** Opacity recovery per second: restores 0.25 -> 1 in 0.5 s, avoiding a pop when a raised boom clears a lip. */
+  fadeRecoverPerS: 1.5,
   /** Rate (1/s) at which the raise eases toward its wanted value (same damping as the camera position). */
   raiseDamping: 10,
 } as const;
@@ -209,9 +211,10 @@ export function followBoom(
 ): { back: THREE.Vector3; distance: number } {
   const hits = cast(back);
   const d0 = followDistance(wanted, hits);
-  const dWalls = followDistance(wanted, hits.filter((h) => !h.cameraOnly));
   const unchanged = { back, distance: d0 };
-  if (d0 >= dWalls - 0.05) return unchanged;
+  // Only a blocker as the nearest hit is worth sliding under. A wall just behind it (a stair mouth under the street
+  // slab) no longer vetoes this: walls clamp to the pivot too, and the lowered boom below often clears both.
+  if (!hits[0]?.cameraOnly) return unchanged;
   const flat = Math.hypot(back.x, back.z);
   if (flat < 1e-6 || back.y <= FOLLOW.lowestBoom) return unchanged;
   let best: { back: THREE.Vector3; distance: number } | null = null;
@@ -220,7 +223,8 @@ export function followBoom(
     const cos = Math.sqrt(1 - sin * sin);
     const candidate = new THREE.Vector3((back.x / flat) * cos, sin, (back.z / flat) * cos);
     const distance = followDistance(wanted, cast(candidate));
-    if (distance >= FOLLOW.boomKeep * wanted) return { back: candidate, distance };
+    // Good enough to stop early, but only when it actually beats the unlowered boom (a wall may limit both).
+    if (distance >= FOLLOW.boomKeep * wanted && distance >= d0 + FOLLOW.boomGain) return { back: candidate, distance };
     if (!best || distance > best.distance) best = { back: candidate, distance };
   }
   return best && best.distance >= d0 + FOLLOW.boomGain ? best : unchanged;
@@ -315,6 +319,17 @@ export function avatarFade(distanceM: number): number {
   if (!(distanceM < FOLLOW.fadeStart)) return 1;
   const t = Math.min(1, Math.max(0, (FOLLOW.fadeStart - distanceM) / (FOLLOW.fadeStart - FOLLOW.minDistance)));
   return 1 - (1 - FOLLOW.fadeMin) * t * t * (3 - 2 * t);
+}
+
+/**
+ * Pure time step for the distance-driven opacity target. Decreases apply immediately so the body never
+ * stays opaque around the camera; recovery is capped at `FOLLOW.fadeRecoverPerS` (0.25 -> 1 in 0.5 s).
+ * Placements/reduced motion and an uninitialised current value snap to target; stopped or reversed time
+ * holds a recovering fade where it is (a zero-length frame must not pop the body back in).
+ */
+export function stepAvatarFade(current: number, target: number, dt: number, snap = false): number {
+  if (snap || !Number.isFinite(current) || target <= current) return target;
+  return Math.min(target, current + FOLLOW.fadeRecoverPerS * Math.max(0, dt));
 }
 
 /** QA-only held follow controls; absent fields leave the ordinary controls running. */

@@ -20,6 +20,18 @@ const STRINGS = {
     startHere: "ここから出発",
     avatarHere: "現在のアバター位置（仮想）",
     searchOnly: "検索のみ（入口未確認）",
+    shopNoRoute: "この店舗への道案内はまだありません（位置未確認）",
+    shopSearchOnly: "位置未確認・道案内なし",
+    /** An approximate, search-display-only point (#463): the ± radius shown, never used for directions. */
+    approximatePosition: (m: number) => `おおよその位置（±${m} m）・経路案内には使いません`,
+    /** An approximate POI's floor is a label match, not a surveyed floor (#463). */
+    floorUnverified: (label: string) => `${label}（階は未確認）`,
+    /** A store's printed brand directory (#419): unverified, with the date its listing was checked. */
+    tenantAsOf: (date: string) => `店舗情報（${date} 時点・未確認）`,
+    /** The route ends at the store entrance; floors inside the store are not modelled. */
+    tenantFloorsNotGuided: "店内の階は案内しません",
+    /** English-only marker: a store's floor label is quoted exactly as printed, not a station floor. */
+    asPrinted: "（原文どおり）",
     noResults: "該当なし",
     route: "ルート",
     minutes: (m: number) => `約${m}分`,
@@ -124,6 +136,8 @@ const STRINGS = {
     factsOnly: "ライセンスなし・事実のみ参照（複製なし）",
     rightsDecision: "権利判断",
     assetDerivations: "3D素材の加工内容",
+    dataFileDerivations: "データファイルの出典と加工",
+    derivationDetails: "加工の詳細",
     symbolicHeight: "高さは表示用の推定です",
     coverage: "カバー範囲",
     gaps: "未整備・要調査",
@@ -135,6 +149,9 @@ const STRINGS = {
     rightsUnverified: "権利未確認（公開データには使用しない）",
     validationFailed: "駅データが検証に失敗したため表示しません（安全側）",
     loading: "読み込み中…",
+    identitySide: (exit: string, landmark: string) => `${exit}側：${landmark}`,
+    identitySideSeparator: " ・ ",
+    identityUnconfirmed: "未確認",
     sceneFallback: "駅の3Dシーンを読み込めず、経路網表示（L0）に切り替えました",
     controlsHint: "WASD/矢印で移動・Shiftで走る・ドラッグで視点",
     touchHint: "左で移動（端まで倒すと走る）・右ドラッグで視点",
@@ -182,6 +199,17 @@ const STRINGS = {
     startHere: "Start here",
     avatarHere: "Current avatar position (virtual)",
     searchOnly: "Search only (entrance not verified)",
+    shopNoRoute: "No directions to this shop yet (location not verified).",
+    shopSearchOnly: "Location not verified · no directions",
+    /** An approximate, search-display-only point (#463): the ± radius shown, never used for directions. */
+    approximatePosition: (m: number) => `Approximate position (±${m} m) · not used for directions`,
+    /** An approximate POI's floor is a label match, not a surveyed floor (#463). */
+    floorUnverified: (label: string) => `${label} (floor unverified)`,
+    /** A store's printed brand directory (#419): unverified, with the date its listing was checked. */
+    tenantAsOf: (date: string) => `Store directory as printed (${date}, unverified)`,
+    /** The route ends at the store entrance; floors inside the store are not modelled. */
+    tenantFloorsNotGuided: "Floors inside the store are not guided",
+    asPrinted: "(as printed)",
     noResults: "No matches",
     route: "Route",
     minutes: (m: number) => `~${m} min`,
@@ -278,6 +306,8 @@ const STRINGS = {
     factsOnly: "No licence; cited for facts only (not reproduced)",
     rightsDecision: "Rights decision",
     assetDerivations: "3D asset derivations",
+    dataFileDerivations: "Data files: sources and derivations",
+    derivationDetails: "Derivation details",
     symbolicHeight: "Heights are display estimates",
     coverage: "Coverage",
     gaps: "Gaps & survey needs",
@@ -289,6 +319,9 @@ const STRINGS = {
     rightsUnverified: "Rights unverified (not used in published data)",
     validationFailed: "Station data failed validation and is not shown (fail-safe)",
     loading: "Loading…",
+    identitySide: (exit: string, landmark: string) => `${exit} side: ${landmark}`,
+    identitySideSeparator: " · ",
+    identityUnconfirmed: "unconfirmed",
     sceneFallback: "Station 3D scene failed; showing the network view (L0)",
     controlsHint: "WASD/arrows to move · Shift to run · drag to look",
     touchHint: "Left thumb to move (push to the edge to run) · drag right side to look",

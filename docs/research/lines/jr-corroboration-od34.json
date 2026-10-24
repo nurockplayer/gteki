@@ -1,0 +1,280 @@
+{
+  "schema": "gteki.lines-corroboration/0.1-draft",
+  "rule": "OD-34 (1): corroboration only; nothing from jreast.co.jp is copied",
+  "checkedAt": "2026-10-24T20:12:00+09:00",
+  "pages": [
+    {
+      "station": "ikebukuro",
+      "url": "https://www.jreast.co.jp/estation/station/info.aspx?StationCd=108",
+      "retrievedAt": "2026-10-24T20:05:00+09:00",
+      "readable": true
+    },
+    {
+      "station": "shinjuku",
+      "url": "https://www.jreast.co.jp/estation/station/info.aspx?StationCd=866",
+      "retrievedAt": "2026-10-24T20:07:00+09:00",
+      "readable": true
+    },
+    {
+      "station": "shinjuku",
+      "url": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "readable": true
+    }
+  ],
+  "results": [
+    {
+      "poiId": "jr-central-gate-1",
+      "station": "ikebukuro",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/station/info.aspx?StationCd=108",
+      "retrievedAt": "2026-10-24T20:05:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "jr-central-gate-2",
+      "station": "ikebukuro",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/station/info.aspx?StationCd=108",
+      "retrievedAt": "2026-10-24T20:05:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "jr-south-gate",
+      "station": "ikebukuro",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/station/info.aspx?StationCd=108",
+      "retrievedAt": "2026-10-24T20:05:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "jr-north-gate",
+      "station": "ikebukuro",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/station/info.aspx?StationCd=108",
+      "retrievedAt": "2026-10-24T20:05:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-gate:1",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/station/info.aspx?StationCd=866",
+      "retrievedAt": "2026-10-24T20:07:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-gate:2",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/station/info.aspx?StationCd=866",
+      "retrievedAt": "2026-10-24T20:07:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-gate:3",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/station/info.aspx?StationCd=866",
+      "retrievedAt": "2026-10-24T20:07:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-gate:4",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/station/info.aspx?StationCd=866",
+      "retrievedAt": "2026-10-24T20:07:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-gate:5",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/station/info.aspx?StationCd=866",
+      "retrievedAt": "2026-10-24T20:07:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-gate:6",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-gate:7",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/station/info.aspx?StationCd=866",
+      "retrievedAt": "2026-10-24T20:07:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-gate:8",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/station/info.aspx?StationCd=866",
+      "retrievedAt": "2026-10-24T20:07:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-gate:9",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/station/info.aspx?StationCd=866",
+      "retrievedAt": "2026-10-24T20:07:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-gate:10",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/station/info.aspx?StationCd=866",
+      "retrievedAt": "2026-10-24T20:07:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-keio-transfer:1",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-odakyu-transfer:1",
+      "station": "shinjuku",
+      "result": "differs",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "note": "Did not match; current status unknown."
+    },
+    {
+      "poiId": "poi:jreast-odakyu-transfer:2",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-platform:1",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-platform:2",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-platform:3",
+      "station": "shinjuku",
+      "result": "differs",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "note": "Did not match; current status unknown."
+    },
+    {
+      "poiId": "poi:jreast-platform:4",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-platform:7",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-platform:8",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-platform:9",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-platform:10",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-platform:11",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-platform:12",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-platform:13",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-platform:14",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-platform:15",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "note": ""
+    },
+    {
+      "poiId": "poi:jreast-platform:16",
+      "station": "shinjuku",
+      "result": "consistent",
+      "jrPageUrl": "https://www.jreast.co.jp/estation/stations/866.html",
+      "retrievedAt": "2026-10-24T20:10:00+09:00",
+      "note": ""
+    }
+  ],
+  "jrOnlyCount": {
+    "ikebukuro": 1,
+    "shinjuku": 2
+  },
+  "reviewNote": "lines-lead review 2026-10-24: 'differs' notes say only that the name did not match, not what the JR page shows (OD-34 (1): corroboration only). A 'differs' result does not change any name: the names stay as their non-JR source prints them (S03, March 2020); the writer may add a note that a later check did not match and that the current status is unknown. jrOnlyCount items are not added; a non-JR source or a field check (WP10) is needed first. Reviewed by oracle-ego (ChatGPT GPT-6, high) 2026-10-24: one note revealed page content and was neutralised; no other problems."
+}

@@ -21,17 +21,21 @@ function validateEntryName(name: string): void {
   if (posix.normalize(normalized).startsWith('../')) throw new Error(`ZIP entry escapes its root: ${name}`);
 }
 
-export async function readZip(path: string, options: ZipReadOptions = {}): Promise<ZipEntry[]> {
+/** A Buffer lets an evidence caller parse the exact bytes it has re-hashed, without reopening a mutable file. */
+export async function readZip(path: string | Buffer, options: ZipReadOptions = {}): Promise<ZipEntry[]> {
   const maxEntryBytes = options.maxEntryBytes ?? DEFAULT_ENTRY_LIMIT;
   const maxTotalBytes = options.maxTotalBytes ?? DEFAULT_TOTAL_LIMIT;
   if (!Number.isSafeInteger(maxEntryBytes) || maxEntryBytes < 0 || !Number.isSafeInteger(maxTotalBytes) || maxTotalBytes < 0) {
     throw new Error('ZIP size limits must be non-negative safe integers');
   }
   const zip = await new Promise<yauzl.ZipFile>((resolve, reject) => {
-    yauzl.open(path, { lazyEntries: true, decodeStrings: !options.legacyFileNameEncoding, validateEntrySizes: true }, (error, opened) => {
-      if (error || !opened) reject(error ?? new Error(`Unable to open ZIP: ${path}`));
+    const onOpen = (error: Error | null, opened?: yauzl.ZipFile): void => {
+      if (error || !opened) reject(error ?? new Error('Unable to open ZIP'));
       else resolve(opened);
-    });
+    };
+    const settings = { lazyEntries: true, decodeStrings: !options.legacyFileNameEncoding, validateEntrySizes: true };
+    if (Buffer.isBuffer(path)) yauzl.fromBuffer(path, settings, onOpen);
+    else yauzl.open(path, settings, onOpen);
   });
 
   return new Promise<ZipEntry[]>((resolve, reject) => {

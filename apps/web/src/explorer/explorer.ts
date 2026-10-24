@@ -13,6 +13,7 @@ import type { Poi, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
+import { loadSignFont } from "../signFont.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
@@ -20,16 +21,16 @@ import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
 import { castAll, castCamera, cuttableSigns, explorerTargets } from "./raycast.ts";
 import { DEFAULT_GUIDE_TIER, guideOnStairs, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
-import { PostFx } from "./postfx.ts";
+import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
-import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { StationCaches } from "./stationCaches.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
-import { createAvatar, type AvatarRig } from "./avatar.ts";
+import { createAvatarRig, type AvatarSelection } from "./avatarSelection.ts";
 import { avatarMotion } from "./avatarMotion.ts";
 import { contactShadow } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
@@ -44,6 +45,8 @@ import { occludedLineStyle, type OccludedLineStyle } from "./occludedLine.ts";
 import { BLOOM_HEADROOM, OVERLAY_INPUT_MIN, compensate, linearToSrgb, type Vec3 } from "./toneComp.ts";
 
 export type ExplorerMode = "overview" | "walk" | "guide";
+
+export interface ExplorerOptions { avatarGlbUrl?: string }
 
 /** The walker-following sun shadow's fixed inputs (set at attach) and what it currently holds. */
 interface ShadowFit {
@@ -235,7 +238,7 @@ export class Explorer {
   private overlayResidual: number | null = null;
 
   private readonly avatar = new THREE.Group();
-  private avatarRig: AvatarRig | null = null;
+  private avatarRig: AvatarSelection | null = null;
   /** Where the body faces (it turns toward travel; the camera keeps `yaw`). */
   private bodyYaw = 0;
   private readonly lastAvatarPos = new THREE.Vector3();
@@ -275,6 +278,8 @@ export class Explorer {
   private boomRaise = 0;
   private boomActual = 0;
   private cameraFade = 1;
+  /** Set when the follow camera resumes after the overview: the fade left from before it is stale, so it snaps once. */
+  private fadeStale = false;
   /** Empty/null until the QA hooks are explicitly called. */
   private qaCamera: CameraHold = {};
   private qaCameraSnap = false;
@@ -327,7 +332,7 @@ export class Explorer {
   sceneError: string | null = null;
   private disposed = false;
 
-  constructor(private readonly host: HTMLElement, private readonly events: ExplorerEvents = {}) {
+  constructor(private readonly host: HTMLElement, private readonly events: ExplorerEvents = {}, options: ExplorerOptions = {}) {
     this.quality = matchMedia("(pointer: coarse)").matches || Math.min(screen.width, screen.height) < 700 ? "low" : "high";
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.quality === "high" ? 2 : 1.5));
@@ -353,7 +358,7 @@ export class Explorer {
     this.envProbe.visible = false;
     this.scene.add(this.world, this.overlays, this.avatar, this.street.group, this.envProbe);
     this.overlays.add(this.routeGroup, this.poiGroup);
-    this.buildAvatar();
+    this.buildAvatar(options.avatarGlbUrl);
     this.defaultEnvironment();
     this.applyLighting();
 
@@ -367,11 +372,12 @@ export class Explorer {
   }
 
   /** Follow-camera diagnostics for the QA hook. Angles are radians, distances metres. */
-  cameraInfo(): { fov: number; far: number; slopeOn: boolean; boomWanted: number; boomActual: number; raise: number; pitch: number; yaw: number; avatarFade: number; mode: ExplorerMode } {
+  cameraInfo(): { fov: number; far: number; slopeOn: boolean; boomWanted: number; boomActual: number; raise: number; pitch: number; yaw: number; avatarFade: number; reflections: boolean; mode: ExplorerMode } {
     return {
       fov: this.camera.fov, far: this.camera.far, slopeOn: this.slope.on,
       boomWanted: this.camDistance, boomActual: this.boomActual, raise: this.boomRaise,
-      pitch: this.pitch, yaw: this.yaw, avatarFade: this.cameraFade, mode: this.mode,
+      pitch: this.pitch, yaw: this.yaw, avatarFade: this.cameraFade,
+      reflections: this.composer?.settings.reflections ?? false, mode: this.mode,
     };
   }
 
@@ -384,11 +390,12 @@ export class Explorer {
   /** QA-only: hold the shared body/postprocessing fade; null restores the automatic value. */
   holdAvatarFade(value: number | null): void {
     this.qaAvatarFade = fadeHold(value);
-    this.applyAvatarFade();
+    this.applyAvatarFade(0, true);
   }
 
-  private applyAvatarFade(): void {
-    this.cameraFade = this.qaAvatarFade ?? avatarFade(this.boomActual);
+  private applyAvatarFade(dt: number, snap: boolean): void {
+    this.cameraFade = this.qaAvatarFade ?? stepAvatarFade(this.cameraFade, avatarFade(this.boomActual), dt, snap || this.fadeStale || this.reducedMotion);
+    this.fadeStale = false;
     this.avatarRig?.setFade(this.cameraFade);
     this.composer?.setAvatarFade(this.avatarRig?.root ?? null, this.cameraFade);
   }
@@ -575,11 +582,7 @@ export class Explorer {
     this.envProbe.intensity = plan.environmentIntensity;
     this.envProbe.visible = this.probeWanted && this.probeBake === "ready";
     if (this.probeWanted && this.probeBake === "idle") this.bakeEnvProbe();
-    this.avatar.traverse((o) => {
-      const m = (o as THREE.Mesh).material;
-      const next = plan.avatarEnvMap ? envMap : null;
-      if (m instanceof THREE.MeshStandardMaterial && m.envMap !== next) { m.envMap = next; m.needsUpdate = true; }
-    });
+    this.avatarRig?.setEnvMap(plan.avatarEnvMap ? envMap : null);
   }
 
   private coreEnv(): THREE.Texture {
@@ -664,13 +667,13 @@ export class Explorer {
   /** Built once: the composer only references this explorer's scene and camera, so stations reuse it. */
   private setupComposer(): void {
     if (this.composer || this.quality !== "high") return;
-    this.composer = new PostFx(this.renderer, this.scene, this.camera);
+    this.composer = new PostFx(this.renderer, this.scene, this.camera, qaPostFxSettings(location.search));
     this.composer.setBloomThreshold(this.bloomThreshold);
     this.applyOverlayTone();
   }
 
-  private buildAvatar(): void {
-    this.avatarRig = createAvatar({ quality: this.quality });
+  private buildAvatar(glbUrl?: string): void {
+    this.avatarRig = createAvatarRig({ quality: this.quality, glbUrl });
     // A slim marker ring keeps "this is you" readable without outshining the character.
     const ring = new THREE.Mesh(new THREE.RingGeometry(0.46, 0.5, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5ef0ff, transparent: true, opacity: 0.38, depthWrite: false }));
     ring.position.y = 0.02;
@@ -695,8 +698,9 @@ export class Explorer {
    * Abandon any in-flight load and show nothing: called as soon as another station is selected, so a
    * slow previous station can never appear under the new selection (even if the new one fails to load).
    */
-  cancelPendingLoad(): void {
+  cancelPendingLoad(nextId: string): void {
     this.loadGeneration++;
+    this.releaseStationCaches(nextId);
     this.clearStation();
     this.station = null;
     this.phase = "idle";
@@ -709,6 +713,7 @@ export class Explorer {
     // Leaving another station drops its retained caches first; the same station reopening keeps them.
     this.releaseStationCaches(station.key);
     this.clearStation();
+    void this.avatarRig?.loadGlb();
     this.station = station;
     this.stationCaches.remember(station.key, station.scene);
     const bundle = station.bundle;
@@ -829,6 +834,7 @@ export class Explorer {
 
   private async buildStationScene(station: LoadedStation, ctx: SceneContext): Promise<StationScene | null> {
     if (station.sceneImportError) throw new Error(`scene module failed to load: ${station.sceneImportError}`);
+    await loadSignFont();
     if (station.scene) return await station.scene.buildScene(ctx);
     const assets = station.bundle.assets ?? [];
     if (assets.length === 0) return null;
@@ -837,6 +843,7 @@ export class Explorer {
   }
 
   private clearStation(): void {
+    this.avatarRig?.cancelPendingLoad();
     this.street.restore(this.scene);
     this.street.attach(null);
     this.streetY = null;
@@ -981,6 +988,7 @@ export class Explorer {
 
   setMode(mode: ExplorerMode): void {
     if (this.mode === mode) return;
+    if (this.mode === "overview") this.fadeStale = true;
     this.mode = mode;
     // The overview may have deepened the far plane for its pose; the walking camera keeps its own.
     if (mode !== "overview" && this.camera.far !== CAMERA_FAR_M) { this.camera.far = CAMERA_FAR_M; this.camera.updateProjectionMatrix(); }
@@ -1247,7 +1255,7 @@ export class Explorer {
     const focusY = this.mode === "overview" ? null : this.pos.y;
     for (const l of labels) {
       const distance = this.labelAt.setFromMatrixPosition(l.obj.matrixWorld).distanceTo(cam.position);
-      const state = labelState({ occluded: l.occluded, distance, onFocusFloor: onFocusFloor(l.groundY, focusY), selected: l.selected });
+      const state = labelState({ occluded: l.occluded, distance, onFocusFloor: onFocusFloor(l.groundY, focusY), selected: l.selected, overview: this.mode === "overview" });
       if (state === l.state) continue;
       l.state = state;
       l.obj.element.classList.toggle("occluded", state === "faded");
@@ -1671,7 +1679,7 @@ export class Explorer {
     if (this.firstPerson) {
       this.boomActual = 0;
       this.boomRaise = 0;
-      this.applyAvatarFade();
+      this.applyAvatarFade(dt, snap);
       this.camera.position.copy(head);
       this.camera.lookAt(head.clone().add(dir));
       this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
@@ -1730,7 +1738,7 @@ export class Explorer {
     this.camera.lookAt(pose.target);
     // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
     this.boomActual = this.camera.position.distanceTo(pose.pivot);
-    this.applyAvatarFade();
+    this.applyAvatarFade(dt, snap);
   }
 
   private ensureAudio(): boolean {

@@ -142,7 +142,9 @@ export function totalsFor(placed: readonly KitPlacement[], manifest: KitManifest
     triangles += asset.triangles;
     for (const m of asset.materials) batches.add(`${p.floorId}|${materialKey(m)}`);
     for (const [name, plan] of Object.entries(asset.textures)) {
-      const bytes = plan.res * plan.res * (4 / 3) * plan.maps.length * (caps.ktx2 ? 1 : 4);
+      // batchKitPlacements clears aoMap before sharing a material; only retained maps upload.
+      const keptMaps = plan.maps.filter((map) => map !== "occlusion");
+      const bytes = plan.res * plan.res * (4 / 3) * keptMaps.length * (caps.ktx2 ? 1 : 4);
       const key = materialKey(name);
       textures.set(key, Math.max(textures.get(key) ?? 0, bytes));
     }

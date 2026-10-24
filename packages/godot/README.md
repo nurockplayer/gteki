@@ -6,6 +6,14 @@ route computed by the existing TypeScript router. Godot contains no routing
 implementation. All fixture data is synthetic and cannot be used for real station
 directions.
 
+## Handoff (G-5)
+
+Deliberate simplifications, known gaps and the commands a successor needs are collected in
+[docs/g5-handoff.md](docs/g5-handoff.md). G-1 to G-3 are merged; G-4 is partial (the interior is still too dark, #401,
+and the kit AO waits on #352); G-5's evidence walks and first performance table are merged, and that document is its
+last item. GPU work runs only on weekdays 03:00–15:00 JST, single process under `lockf`, with
+`--rendering-method forward_plus` on the command line while `project.godot` stays `gl_compatibility`.
+
 From the workspace root, with its pinned pnpm dependencies installed:
 
 ```sh
@@ -107,7 +115,9 @@ Walkable HQ client work starts by loading both stations in Godot without Godot o
   `gteki_source_role`, so nothing collides twice. Material names, base colours and both UV sets (TEXCOORD_1) are kept.
 - `scene.json` (`gteki.godot-scene/0.1`): `stationId`, `sourceCommit` (+ `sourceDirty`), `walls` and `spawnPoints` in
   ENU exactly as returned, `environment`, `counts` per role, `lightmap` (only when the scene has a baked one: the URI
-  it loaded, channel, colour space, `lightMapIntensity` and the flagged mesh/surface counts — see G-4a), a `reference`
+  it loaded, channel, colour space, `lightMapIntensity` and the flagged mesh/surface counts — see G-4a),
+  `ao_atlas_bindings` (only when the scene uses kit AO atlases: per kind URI, SHA-256, channel, colour space, `flipY`
+  and counts — see below), a `reference`
   block (TypeScript-computed renderer-frame values the Godot tests compare against; an oracle, not scene truth), and
   `warnings`. The counts describe what the GLB can carry: a mesh with no drawable geometry (an empty `BufferGeometry`,
   such as Shinjuku's viewer probe) is skipped by three's exporter, so it is left out of every count and named in a
@@ -117,8 +127,9 @@ The browser-only parts are **shims, listed in `warnings`**: a no-op 2D canvas (b
 em-width estimate, so sign sizes can differ), stubbed PMREM (no reflections), `loadTexture` returning blank textures
 (the lightmap is a blank placeholder in the snapshot itself; G-4a re-loads the real file on the Godot side), no audio.
 All material textures are omitted, so snapshots are **untextured and unlit**: this is geometry, roles and colours, not
-the #94 look (G-4 re-materials). The one exception is the baked lightmap, whose material state is recorded in the
-sidecar and re-applied on the Godot side (G-4a, below). `update()` runs once at `(0, 0)`; `InstancedMesh` (escalator
+the #94 look (G-4 re-materials). The exceptions are the baked lightmap, whose material state is recorded in the
+sidecar and re-applied on the Godot side (G-4a, below), and the kit's shared AO atlases, recorded the same way (Lane E
+#391, below). `update()` runs once at `(0, 0)`; `InstancedMesh` (escalator
 steps, platform-door leaves) is baked into static merged meshes at that pose (Godot 4.7 cannot import
 `EXT_mesh_gpu_instancing`), and the Ikebukuro crowd (`ambient_crowd`) is dropped. The only added dependency is
 `three` (same version as the stations, so the station modules share the exporter's instance); no canvas library.
@@ -126,7 +137,7 @@ steps, platform-door leaves) is baked into static merged meshes at that pose (Go
 ```sh
 bash packages/godot/run-scenes.sh                 # export both stations, then the headless Godot snapshot tests
 bash packages/godot/run-scenes.sh shinjuku        # one station
-godot --path packages/godot res://hq/hq.tscn -- --station=ikebukuro [--lightmap=on|off]   # HQ skeleton (windowed; Tab cycles stations)
+godot --path packages/godot res://hq/hq.tscn -- --station=ikebukuro [--lightmap=on|off] [--ao=on|off] [--ao-light-affect=<0..1>]   # HQ skeleton (windowed; Tab cycles stations)
 godot --headless --path packages/godot res://hq/hq.tscn -- --station=shinjuku --check
 ```
 
@@ -193,6 +204,48 @@ every light does. The real wiring is asserted by the client itself: `run-scenes.
 `light_cull_mask` with `gteki_hq_lights.cull_mask(lightmap_applied)`, requires every drawing station mesh to be on
 `WORLD_LAYER`, and requires a light on `AVATAR_LAYER` whenever a bake is applied. Layer 2 is reserved for the avatar.
 
+## Kit AO atlases (Lane E #391 of #164)
+
+The kit ships ambient occlusion as shared atlases, one 8-bit grey PNG per kind (`kit/catalog/<tier>/atlas/<kind>_ao.png`,
+AO in the R channel, linear data, unused texels 255). The web loader puts it on `material.aoMap` with `channel = 1`
+(TEXCOORD_1 → Godot UV2), `flipY = false` and `colorSpace = NoColorSpace`, and records `gteki_uri` and
+`gteki_atlas_kind` on the texture. The snapshot strips every texture, so the exporter records the material state the
+same way it does the lightmap: each material slot whose `aoMap` carries a kind gets its surface index in
+`userData.gteki_ao_atlas_surfaces` (a glTF extras object, `{"<surface index>": "<kind>"}`), and the sidecar
+`ao_atlas_bindings` block records, per kind, the URI, the SHA-256 of that station file, channel, colour space,
+`flipY`, and the flagged mesh/surface counts. It throws when one kind maps to two URIs, an atlas has no source URI or
+samples a channel other than 1; an `aoMap` without a kit kind is only a warning, because every texture is stripped
+anyway.
+
+`addons/gteki/gteki_ao_atlas.gd` loads each kind's PNG raw from the station's `gteki/` folder (`Image.load_from_file`
+does not convert colour spaces), checks its SHA-256 against the sidecar and reports a mismatch as an issue (nothing is
+applied for that kind rather than sampling the wrong atlas), and gives each flagged surface a mipmapped atlas and a duplicate of the snapshot material (one duplicate per
+snapshot material and kind, so surfaces that shared a material still share one) with `ao_enabled`, `ao_texture`, `ao_on_uv2` and `ao_texture_channel = TEXTURE_CHANNEL_RED`;
+`ao_light_affect` keeps its default (0, AO on indirect light only, as on the web). One `Texture2D` per kind is shared by every surface of that kind, and unflagged
+surfaces (and the shared snapshot material) are never mutated. `gteki_scene.gd` applies it with the lightmap
+(`options.ao_atlas`, default on) and runs it first: the lightmap's `ShaderMaterial` replaces the material on a surface
+that carries both, so the bake stays the governing lighting term there. No station ships a kit AO atlas yet, so no
+sidecar gains an `ao_atlas_bindings` block; Shinjuku's own baked `aoMap` (a station `CanvasTexture`, not a kit atlas)
+is named in its `warnings` because textures are stripped. `tests/run_scene_tests.gd` checks the applier against a
+synthetic atlas in a temp directory.
+
+`hq.gd` takes `--ao=on|off` (default on) and `--ao-light-affect=<0..1>`. Godot's `ao_light_affect` does **not** gate
+indirect AO: AO always darkens ambient/indirect light, whatever the value. What the value controls is how much AO
+*additionally* darkens direct light (0 = ambient only), and Godot's default is 0. That default is the web parity —
+three's `aoMap` affects indirect light only — so parity needs no flag at all. `--ao-light-affect` is therefore a
+diagnostic for the C3 GPU check (how much AO additionally darkens direct light), not a parity control.
+`--ao-light-affect` is passed through `gteki_scene.gd` `options.ao_light_affect` to the applier, written to every AO
+copy, and recorded on the scene as `ao_atlas_light_affect` (`null` when the value was not given and Godot's own value
+was kept, which is also what an invalid value reports instead of applying a partial atlas). The station line names what
+was applied (`AO <kinds> kinds / <n> surfaces, light_affect <value|default>`, or `AO off (<k> kinds recorded)` with
+`--ao=off`), and `--capture`'s `report.json` records `ao` and `ao_light_affect` beside `look` and `gi`, so the C3
+comparison states the AO state its pictures were taken with: `ao_light_affect` is what the copies actually carry
+(`null` when AO was off or Godot's default was kept) and `ao_light_affect_requested` is the value the run asked for
+(`null` when none was given), so `--ao=off --ao-light-affect=0.5` does not read as AO applied at 0.5.
+`tests/run_scene_tests.gd` checks that 0.5 reaches every copy and is recorded, that no value keeps the default and
+records `null`, and that 1.5 or NaN is an issue applying nothing; `tests/run_capture_tests.gd` checks the flag rules
+(defaults, the 0..1 bounds, NaN/inf, incomplete exponents and empty values refused).
+
 ## HQ look profile (G-4b of #164)
 
 `addons/gteki/gteki_look.gd` has two profiles, picked with `--look=` on `hq.tscn`. **`baseline` is the default** and is
@@ -211,30 +264,32 @@ sidecar (`environment`), never from hard-coded values:
   apply the transform twice, leaving the fog almost black). Ikebukuro has fog (25..180 m), Shinjuku does not.
 - Ambient: a station whose bake is applied gets **no ambient** (`AMBIENT_SOURCE_DISABLED`), because the bake is its
   light. An unbaked station (Shinjuku) gets `AMBIENT_SOURCE_COLOR` at §7's studio world grey
-  `(0.55, 0.58, 0.62)` linear, encoded once to sRGB (`linear_to_srgb()`, because Environment colours are sRGB), and
+  `(0.55, 0.58, 0.62)` linear, encoded once to sRGB (`linear_to_srgb()`, because Environment colours are sRGB, verified on Godot 4.7.2), and
   scaled to a 0.25 fill so the client's key + fill stay dominant. The web's Shinjuku rule
   (hemisphere + RoomEnvironment 0.55, §8) is a scene light; Godot gets this ambient plus the same key + fill lights.
 - SDFGI is off; `--gi=sdfgi` turns it on for the GPU review slot. SSAO and SDFGI only render on Forward+/Mobile this
   project runs `gl_compatibility`, where Godot ignores both (it prints a warning for SDFGI); they are set for the visual
   pass, not for the headless gate.
 
-`looks/materials.json` maps snapshot material names to style-bible materials. Each mapping carries a `from` block with
-the snapshot evidence (colour, metal, roughness, surface count, roles, optionally the sample mesh names) and a one-line
-`evidence` note, because the snapshot loses the scene's own material names (three's exporter names unnamed materials
-`material_<n>`). Those names are positional, so the loader re-checks every mapping before applying it: a mapping is
-applied only while its material still has the recorded sRGB albedo exactly, metal and roughness within 0.01, and every
-recorded sample mesh still carries it. A mapping that no longer matches is skipped with a warning instead of repainting
-whatever took the name (#254/#257), and `run_look_tests.gd` fails on it. A station's
+`looks/materials.json` maps source material names (for example `mat.wall`, `mat.nosing`, `mat.accent`) to style-bible
+materials. The exporter keeps those names in the GLB and records every GLB material's index and name in `scene.json`.
+Each mapping carries a `from` block with the snapshot evidence (colour, metal, roughness, surface count, roles,
+optionally the sample mesh names) and a one-line `evidence` note. The loader re-checks every mapping before applying it:
+a mapping is applied only while its material still has the recorded sRGB albedo exactly, metal and roughness within 0.01,
+and every recorded sample mesh still carries it. A mapping that no longer matches is skipped with a warning instead of
+repainting another material (#254/#257); duplicate source names are ambiguous and are skipped the same way. The look
+tests fail on either case. A station's
 `unmapped` array lists every material the table leaves alone and why; anything ambiguous stays there rather than being
-guessed. Shinjuku has 13 mapped materials (floors, walls, ceiling, tactile paving, stair nosings, gate bodies/caps,
+guessed. Materials the source leaves unnamed (the walk proxies, the street level, the luminaire strip) are listed by
+their positional `material_<n>` name; that list is documentation and the loader never applies it. Shinjuku has 13 mapped materials (floors, walls, ceiling, tactile paving, stair nosings, gate bodies/caps,
 steel plates, light housings, the Oedo accent band, handrails); Ikebukuro is listed as entirely unmapped because its lightmap
 shader owns its surfaces and that decision belongs to the lead. The table sets only albedo (sRGB, written to
 `albedo_color` exactly as the glTF importer writes it), roughness and metal; it never touches emission, transparency or
 textures, and it only ever overrides surfaces whose material it names.
 
-Two mappings are **provisional, not E27 facts**: `material_2` (wall field → `steel_painted_light`, a grey painted steel
-per OD-30 via R10 #234) and `material_37` (stair nosings → `vertical_safety_yellow`, a representative style-bible finish;
-R10 found no source). `material_11` maps to `oedo_accent`, a style marked `local: true` with a `note`: GTEki's chosen
+Two mappings are **provisional, not E27 facts**: `mat.wall` (wall field → `steel_painted_light`, a grey painted steel
+per OD-30 via R10 #234) and `mat.nosing` (stair nosings → `vertical_safety_yellow`, a representative style-bible finish;
+R10 found no source). `mat.accent` maps to `oedo_accent`, a style marked `local: true` with a `note`: GTEki's chosen
 Oedo magenta per OD-29 (#222), not the operator's official colour. The optional `local`, `note` and `provisional` fields
 are documentation; the loader ignores them, and the source's faint emission survives because the override duplicates the
 snapshot material.
@@ -398,6 +453,86 @@ walkable ground, the timeout), and the table below lists it. The captures write 
 under `packages/godot/.cache/g5/` (gitignored): each run's `report.json` and its PNGs. The generated
 `docs/evidence/g5-performance.md` is the one file to commit; every line of it is a report's own, labelled with the
 machine and the GPU slot it was measured in.
+
+## Showcase side-by-side (G-4)
+
+From the workspace root in the lead's GPU slot, render the Lane E GLBs through their own cameras. All file arguments
+are absolute; set `CONCOURSE_GLB` and `VERTICAL_GLB` to the absolute paths of the read-only exports:
+
+```sh
+godot --path packages/godot --rendering-method forward_plus --script res://tools/showcase_compare.gd -- \
+  "$CONCOURSE_GLB" "$PWD/packages/godot/.cache/showcase/" --camera=gates_closed \
+  "--ref=gates_closed=$PWD/docs/assets/img/concourse_gates_closed.jpg"
+godot --path packages/godot --rendering-method forward_plus --script res://tools/showcase_compare.gd -- \
+  "$VERTICAL_GLB" "$PWD/packages/godot/.cache/showcase/" --camera=hero \
+  "--ref=hero=$PWD/docs/assets/img/vertical_hero.jpg"
+```
+
+Each run writes a 1600×900 Godot PNG, a 3200×900 `_side.png` (Blender reference left, Godot right), and a layout-specific
+`_report.json` under `packages/godot/.cache/showcase/` (gitignored). Omit `--camera` to render all imported cameras.
+For each camera with a reference, the report's `luminance` block gives the mean linear Rec.709 luminance of the reference
+and Godot images and their `ratio` (godot / reference, null when the reference is black) for `whole`, `top_third`,
+`middle_third` and `bottom_third`. Add regions with a repeatable `--region=<camera>=<name>:<x>,<y>,<w>,<h>` (pixels
+inside 1600×900, names unique and not a default name); they appear under that camera's `luminance` entry.
+
+A run that compares lighting variants can override the approximation without editing code, with a repeatable
+`--tune=<key>=<value>`: `agx_contrast` (0.5–2.5), `exposure_ev` (−4 to 4 stops, added to the layout's exposure),
+`ambient_energy` (0–16), `gi` (`none` by default, `sdfgi`, or `voxelgi`, which bakes a VoxelGI over the visible
+bounds — flat geometry included, each axis grown 0.5 m per side and at least 1 m — before the first frame),
+`gi_energy` (0–16, only with `sdfgi` or `voxelgi`), `probe_ambient` (`disabled` by default, `environment` or
+`color`, only when an interior probe exists), `probe_ambient_colour` (`#rrggbb`, sRGB exactly as written),
+`probe_ambient_energy` (0–16) and `ssao` (`true` by default). G-5 extras: `light_scale` (0.1–8, multiplies every hint
+spot's energy), `spot_range_m` (1–60) and `spot_angle_deg` (10–89) replace the hint spots' range and cone angle; `ssil`
+(`true`/`false`) with `ssil_intensity` (0–16, needs `ssil=true`); with `gi=sdfgi`, `sdfgi_bounce` (0–1.99),
+`sdfgi_occlusion` and `sdfgi_sky` (`true`/`false`) and `sdfgi_min_cell` (0.05–2); with `gi=voxelgi`, `voxelgi_subdiv`
+(`64`, `128`, `256` or `512`, set before the bake) and `voxelgi_propagation` (0–1); `agx_white` (1–64). The probe colour and energy only take effect in
+`AMBIENT_COLOR` mode, so they are argument errors without `probe_ambient=color`; without an explicit colour that
+mode uses `APPROXIMATION.colour_linear` converted to sRGB, like the background. Unknown keys, out-of-range values
+and duplicate keys fail the run like any other argument. The effective overrides are recorded as the report's
+`tuning` object (empty without
+`--tune`). `--tag=<name>` (letters, digits, `_`, `.` and `-`) suffixes the PNG, side PNG and report names —
+`<layout>_<camera>_<tag>.png` and `<layout>_<tag>_report.json` — so variants do not overwrite each other; with
+neither `--tune` nor `--tag` every output name is unchanged. `--report=<absolute path>` writes the report exactly
+there instead (its directory is created if needed), which is how the sweep gives each run its own file.
+
+`tools/showcase_sweep.sh` runs a file of variants sequentially, each under the shared test lock, then prints their
+ratios as one table. Each non-empty line is `<tag> <tune arguments...>`; extra arguments are appended to every run.
+It checks every tag (letters, digits, `_`, `.`, `-`, and not ending in `_side`, which is the side-by-side suffix) and
+rejects duplicates before running anything, gives each run its own `<out_dir>/sweep_<tag>_report.json` through
+`--report` (deleted first, so a run that exits without writing cannot reuse an old report), and stops if that file is
+missing afterwards. A line is a comment only when its first non-blank character is `#`; there are no trailing
+comments, so a `#rrggbb` value keeps its `#`. Never run two sweeps concurrently against the same output directory:
+report files are deleted and checked outside the shared lock.
+
+```sh
+cat > packages/godot/.cache/showcase/concourse.sweep <<'EOF'
+baseline
+sdfgi       --tune=gi=sdfgi --tune=gi_energy=1.0
+exposure    --tune=exposure_ev=0.5 --tune=ambient_energy=2.0
+probe       --tune=probe_ambient=color --tune=probe_ambient_energy=2.0
+probe_warm  --tune=probe_ambient=color --tune=probe_ambient_colour=#ffd9b3 --tune=probe_ambient_energy=1.5
+EOF
+bash packages/godot/tools/showcase_sweep.sh "$CONCOURSE_GLB" "$PWD/packages/godot/.cache/showcase/" \
+  gates_closed "$PWD/docs/assets/img/concourse_gates_closed.jpg" \
+  packages/godot/.cache/showcase/concourse.sweep --region=gates_closed=floor:0,600,1600,300
+```
+
+The table has the tag, then the `whole` and `bottom_third` ratios and every extra region's ratio (`null` for a black
+reference, `-` when a report lacks that region). `tools/showcase_sweep_table.py` prints it and reads only the reports.
+The Godot lighting is an approximation of Blender's hint area lights: wide downward spots replace disks and short
+rows of spots replace long LEDs, sharing each hint's power. Both use Blender's fixed warm colour and ignore
+`colour_temp_k`. The watt-to-energy factor, cone, range, row spacing and studio sun mapping are documented in
+`tools/showcase_compare.gd` and recorded in the report; AgX and SSAO do not imply identical Blender shading. A headless
+invocation prints `showcase_compare needs a display`, exits zero and writes nothing.
+The showcase pass generates missing texture mipmaps once per shared texture (normal maps renormalised; colour mips
+average stored sRGB values, as Godot's own importer does) and uses anisotropic mipmapped filtering; a uniform sky
+preserves the world's colour/strength for ambient and metal reflections, with one room probe in interior layouts. The
+probe keeps the sky (not `interior`) and is the visible bounds (excluding `-colonly`) grown by its 1 m blend distance. Studio sun energy is `3 / PI` to account for Godot's nonphysical light
+normalisation; AgX contrast 1.5 provisionally approximates Blender's Medium High Contrast. Spots use bias 0.06 / normal
+bias 1.5 and an 8192 shadow atlas with four 64-map quadrants (256 slots at 512 px) to reduce wall/column acne. These
+choices and texture/probe counts are recorded in the JSON report; their visual result still needs the lead's GPU slot.
+The argument rules, the sun mapping, the hint-to-spot split and the metadata contract are checked headless by
+`godot --headless --path packages/godot --script res://tests/run_showcase_tests.gd` (no GLB or GPU needed).
 
 ## Search, route and guided walk (G-3 of #164)
 

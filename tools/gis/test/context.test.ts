@@ -10,8 +10,9 @@ import { assertMeshCoverage, bboxIntersectsDisc, HEIGHT_BASIS_FLATTENED, HEIGHT_
 import { bboxIntersectsAnyDisc, buildContextWindow, meshCellBounds, meshCode3, meshesTouchedByWindow, readGraphWindowNodes, type NodeRule } from '../src/context-window.js';
 import { scanContextFeatures, type ContextFeatureRecord, type ContextKind } from '../src/context-scan.js';
 import { loadFrame } from '../src/crs.js';
+import * as crs from '../src/crs.js';
 import { loadSources } from '../src/acquire.js';
-import { isStationEnuFrame, type StationEnuFrame } from '../src/station-enu.js';
+import { isStationEnuFrame, stationOriginSha256, type StationEnuFrame } from '../src/station-enu.js';
 import type { GroundOffsetStats } from '../src/context.js';
 
 const dirs: string[] = [];
@@ -214,6 +215,11 @@ describe('context command wrapper', () => {
     const originalWrite = common.writeJson;
     const written: string[] = [];
     vi.spyOn(common, 'writeJson').mockImplementation(async (path, value) => { const target = path.startsWith(common.docsRoot) ? join(dir, 'docs', relative(common.docsRoot, path)) : path; written.push(relative(dir, target)); return originalWrite(target, value); });
+    const frame = await stationFrame();
+    const stationPath = join(dir, 'station.json');
+    const station = { station: { origin: frame.origin }, floors: [{ ordinal: 0, renderElevationM: 32.5 }], assets: [] as string[] };
+    await writeFile(stationPath, JSON.stringify(station));
+    vi.spyOn(crs, 'loadFrame').mockResolvedValue({ ...frame, station_json_path: relative(common.repoRoot, stationPath) });
     // Two bldg meshes carry the same fixture ids: the second copy must be excluded as duplicate, never emitted twice.
     const summary = await contextGlb('ikebukuro', { sourceIds: ['plateau-13116-bldg-53394576', 'plateau-13116-bldg-53394577', 'plateau-13116-tran-53394576', 'plateau-13116-tran-53394577'], exitRadiusM: 0, kinds: 'bldg,tran' });
     expect(summary).toMatchObject({ station_id: 'ikebukuro', verification: 'UNVERIFIED', navigation_use: 'NOT_FOR_ROUTING', visual_only: true, window: { center_station_xy_m: [0, 0], radius_m: 250 } });
@@ -226,7 +232,11 @@ describe('context command wrapper', () => {
     expect(summary.lod_policy).toMatch(/LOD3 only/);
     expect(summary.validation.status).toBe('PASS');
     expect(summary.peak_rss_bytes).toBeGreaterThan(0);
-    expect(summary.station_json_changed_since_frame).toBeTypeOf('boolean');
+    expect(summary.station_origin_sha256_now).toBe(stationOriginSha256(frame.origin));
+    expect(summary.station_origin_matches_frame).toBe(true);
+    expect(summary).not.toHaveProperty('station_json_sha256_now');
+    expect(summary).not.toHaveProperty('station_json_changed_since_frame');
+    expect(summary.frame.station_json_sha256).toBe(frame.station_json_sha256);
     const glb = await readFile(join(dir, summary.store_path));
     expect(createHash('sha256').update(glb).digest('hex')).toBe(summary.output_sha256);
     expect(written.some((p) => p.startsWith(join('docs', 'gis', 'context')))).toBe(true);
@@ -236,6 +246,21 @@ describe('context command wrapper', () => {
     expect(sidecar.feature_table.rows).toHaveLength(5);
     expect(summary.feature_table).toEqual(sidecar.feature_table); // the receipt carries the same compact feature table
     expect(sidecar.source_manifests[0].publish_gate).toBe('CONDITIONAL');
+    const receipt = JSON.parse(await readFile(join(dir, 'docs', 'gis', 'context', `${summary.run_id}.json`), 'utf8'));
+    for (const value of [sidecar, receipt]) {
+      expect(value).toMatchObject({ station_origin_sha256_now: summary.station_origin_sha256_now, station_origin_matches_frame: true });
+      expect(value).not.toHaveProperty('station_json_sha256_now');
+      expect(value).not.toHaveProperty('station_json_changed_since_frame');
+    }
+    station.assets.push('synthetic-kit.glb');
+    station.floors[0]!.renderElevationM = 33.5; // context uses no station.json floor height
+    await writeFile(stationPath, JSON.stringify(station));
+    const again = await contextGlb('ikebukuro', { sourceIds: Object.keys(paths), exitRadiusM: 0, kinds: 'bldg,tran' });
+    expect(again.run_id).toBe(summary.run_id);
+    expect(again.station_origin_sha256_now).toBe(summary.station_origin_sha256_now);
+    station.station.origin = { ...frame.origin, lat: frame.origin.lat + 0.001 };
+    await writeFile(stationPath, JSON.stringify(station));
+    await expect(contextGlb('ikebukuro', { sourceIds: Object.keys(paths), exitRadiusM: 0, kinds: 'bldg,tran' })).rejects.toThrow(/origin no longer matches frame/);
     // Receipt and sidecar never claim a rights clearance.
     expect(JSON.stringify(summary)).not.toMatch(/"(?:cleared|clearance)"/);
   });
@@ -361,7 +386,7 @@ describe('exit_poi_connectors: graph nodes that exit POIs name as connectors', (
     const base = await readGraphWindowNodes(IKEBUKURO_RULE, { stationId: 'ikebukuro' });
     const { facts, nodes } = await readGraphWindowNodes(POI_RULE, { stationId: 'ikebukuro' });
     expect(base.facts.pois).toBeNull(); // off unless configured
-    expect(facts.pois).toMatchObject({ pois_path: 'stations/ikebukuro/gteki/pois.json', categories: ['exit'], pois_total: 53, exit_pois: 38, exit_pois_with_connectors: 23, connector_nodes: 23, added_beyond_kind_and_floor: ['x13f', 'x36f', 'x4f'] });
+    expect(facts.pois).toMatchObject({ pois_path: 'stations/ikebukuro/gteki/pois.json', categories: ['exit'], pois_total: 476, exit_pois: 53, exit_pois_with_connectors: 23, connector_nodes: 23, added_beyond_kind_and_floor: ['x13f', 'x36f', 'x4f'] });
     expect(facts.pois!.pois_sha256).toBe(createHash('sha256').update(poisBytes).digest('hex'));
     expect(facts.graph_sha256).toBe(base.facts.graph_sha256);
     expect(facts).toMatchObject({ exit_connectors: 20, street_level_nodes: 20, selected_nodes: 23 }); // the kind/floor counts are unchanged

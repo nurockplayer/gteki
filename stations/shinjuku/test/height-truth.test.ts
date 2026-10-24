@@ -21,7 +21,8 @@ describe("symbolic heights stay display-only", () => {
     for (const n of bundle.nodes) expect(n.position.z).toBeNull();
     expect(bundle.station.origin.hM).toBeNull();
     const gap = bundle.coverage.gaps.find((g) => g.id === "gap:heights");
-    expect(gap?.fieldWorkNeeded).toMatch(/SYMBOLIC.*never measured/);
+    const heightsField = gap && typeof gap.fieldWorkNeeded !== "string" ? gap.fieldWorkNeeded.find((t) => t.lang === "en")?.text : gap?.fieldWorkNeeded;
+    expect(heightsField).toMatch(/SYMBOLIC.*never measured/);
   });
 
   it("keeps the height model in the render plan, out of the contract files", () => {

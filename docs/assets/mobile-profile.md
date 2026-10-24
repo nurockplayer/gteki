@@ -85,7 +85,7 @@ The size follows the asset's largest bounds extent, with a cap per tier:
 - On the GPU, a 256² map is about 0.35 MB with mips, and a 512² map about 1.4 MB. Every placed asset type carries its own map.
 - Full gets 1024 px from 6 m up. A 13 m escalator at 512 px packed thin bevel slivers so small that thousands of UV1 triangles collapsed.
 - Mobile steps a map up (512, then 1024 px) only when its charts overflow the unit square with 4 px gaps; `occlusion_res` in the manifest shows the result.
-- A station that places many copies of one long piece can pin a smaller map in its catalog entry: `"ao_res": 128`. Allowed values are 128, 256, 512 and 1024. The value applies to both tiers.
+- A station that places many copies of one long piece can pin a smaller map in its catalog entry: `"ao_res": 128`. Allowed values are 128, 256, 512 and 1024. The value applies to both tiers, and a pinned full asset gets the same face nets and Smart UV floor as mobile (without the island-count test), so a small pin does not leave full mostly gutter.
 
 ## Godot full ↔ mobile
 

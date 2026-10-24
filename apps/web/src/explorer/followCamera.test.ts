@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
+import { DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
   it("stays under a 2.6 m ceiling at the default pitch and distance", () => {
@@ -64,6 +64,31 @@ describe("followBoom", () => {
     const out = followBoom(wanted, b, cast);
     expect(out.back).toBe(b);
     expect(out.distance).toBe(followDistance(wanted, cast()));
+  });
+
+  it("still slides under a blocker that is the nearest hit when a wall sits just behind it (stair mouth under the street slab, #70)", () => {
+    // Shinjuku 056410 facing uphill at z -1.68: street surface 0.19 m up the boom, a wall 0.31 m, both clear below 0.05.
+    const b = back(0.25);
+    const cast = (c: THREE.Vector3): Hit[] => c.y > 0.05
+      ? [{ distance: 0.06 / c.y, cameraOnly: true }, { distance: 0.31, cameraOnly: false }].sort((p, q) => p.distance - q.distance)
+      : [];
+    expect(followDistance(wanted, cast(b))).toBe(0);
+    const out = followBoom(wanted, b, cast);
+    expect(out.distance).toBeGreaterThanOrEqual(FOLLOW.comfortDistance);
+    expect(out.back.y).toBeLessThan(b.y);
+  });
+
+  it("keeps the unlowered boom when a wall limits a lowered one to no better than it (near-equal blocker and wall)", () => {
+    // Blocker 3.40 m, wall 3.42 m on the nominal boom; every lowered boom meets a wall at 2.95 m (>= boomKeep * wanted).
+    const b = back(0.25);
+    const cast = (c: THREE.Vector3): Hit[] => c.y >= b.y - 1e-9
+      ? [{ distance: 3.4, cameraOnly: true }, { distance: 3.42, cameraOnly: false }]
+      : [{ distance: 2.95, cameraOnly: false }];
+    const d0 = followDistance(wanted, cast(b));
+    expect(2.95).toBeGreaterThanOrEqual(FOLLOW.boomKeep * wanted);
+    const out = followBoom(wanted, b, cast);
+    expect(out.back).toBe(b);
+    expect(out.distance).toBe(d0);
   });
 
   it("slides under a hanging blocker instead of pulling the camera in", () => {
@@ -408,6 +433,45 @@ describe("avatarFade", () => {
       expect(f).toBeGreaterThanOrEqual(last - 1e-12);
       last = f;
     }
+  });
+});
+
+describe("stepAvatarFade", () => {
+  it("applies decreases immediately, including while recovering", () => {
+    expect(stepAvatarFade(1, 0.479, 1 / 60)).toBe(0.479);
+    const recovering = stepAvatarFade(0.479, 1, 1 / 60);
+    expect(stepAvatarFade(recovering, FOLLOW.fadeMin, 1 / 60)).toBe(FOLLOW.fadeMin);
+  });
+
+  it.each([0.479, FOLLOW.fadeMin])("recovers from %s over multiple 60 Hz frames within half a second", (start) => {
+    let fade = stepAvatarFade(start, 1, 1 / 60);
+    expect(fade).toBeCloseTo(start + FOLLOW.fadeRecoverPerS / 60, 12);
+    expect(fade).toBeLessThan(1);
+    let frames = 1;
+    while (fade < 1 && frames < 30) {
+      const next = stepAvatarFade(fade, 1, 1 / 60);
+      expect(next - fade).toBeLessThanOrEqual(FOLLOW.fadeRecoverPerS / 60 + 1e-12);
+      fade = next;
+      frames++;
+    }
+    expect(fade).toBe(1);
+    expect(frames / 60).toBeCloseTo((1 - start) / FOLLOW.fadeRecoverPerS, 1);
+  });
+
+  it("snaps on request and holds a recovery while time does not advance", () => {
+    expect(stepAvatarFade(0.25, 1, 1 / 60, true)).toBe(1);
+    expect(stepAvatarFade(0.25, 1, 0)).toBe(0.25);
+    expect(stepAvatarFade(0.25, 1, -1)).toBe(0.25);
+    expect(stepAvatarFade(1, 0.25, 0)).toBe(0.25);
+  });
+
+  it.each([1 / 60, 0.5, 10])("never overshoots the target with dt=%s", (dt) => {
+    expect(stepAvatarFade(0.49, 0.5, dt)).toBe(0.5);
+    expect(stepAvatarFade(0.5, 0.5, dt)).toBe(0.5);
+  });
+
+  it.each([NaN, Infinity, -Infinity])("replaces a non-finite current value %s immediately", (current) => {
+    expect(stepAvatarFade(current, 0.6, 1 / 60)).toBe(0.6);
   });
 });
 

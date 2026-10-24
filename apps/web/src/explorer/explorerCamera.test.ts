@@ -17,9 +17,9 @@ function cameraStand() {
     cameraTargets: [] as THREE.Object3D[], cameraSides: new Set<THREE.Object3D>(), blockerTargets: new Set<THREE.Object3D>(),
     ray: new THREE.Raycaster(), reducedMotion: false, squeezed: false,
     setFov: vi.fn(), avatarRig: { root: new THREE.Group(), setFade: vi.fn() },
-    composer: { setAvatarFade: vi.fn() },
+    composer: { settings: { reflections: true }, setAvatarFade: vi.fn() },
     qaCamera: {} as CameraHold, qaCameraSnap: false, qaAvatarFade: null as number | null,
-    boomActual: 0, cameraFade: 1, descentDrop: 0,
+    boomActual: 0, cameraFade: 1, descentDrop: 0, fadeStale: false,
     guide: null as { s: number; spans: readonly PaceSpan[] } | null,
   };
   return Object.assign(Object.create(Explorer.prototype) as typeof state, state);
@@ -147,6 +147,53 @@ describe("Explorer wall fallback and QA controls", () => {
     expect(state.boomActual).toBeGreaterThanOrEqual(FOLLOW.comfortDistance);
   });
 
+  it("limits fade recovery when a raised boom clears a squeeze in one frame", () => {
+    const state = cameraStand();
+    setTargets(state, [pocket()]);
+    place(state, true);
+    const fade = state.cameraFade;
+    expect(fade).toBeLessThan(1);
+    expect(state.boomActual).toBeLessThan(FOLLOW.fadeStart);
+
+    const lip = new THREE.Mesh(new THREE.BoxGeometry(10, 1.97, 0.2), new THREE.MeshBasicMaterial());
+    lip.position.set(0, 1.97 / 2, 0.6);
+    lip.updateMatrixWorld(true);
+    setTargets(state, [lip]);
+    place(state);
+    expect(state.boomRaise).toBeGreaterThan(0);
+    expect(state.boomActual).toBeGreaterThanOrEqual(FOLLOW.comfortDistance);
+    expect(state.cameraFade).toBeGreaterThan(fade);
+    expect(state.cameraFade - fade).toBeLessThanOrEqual(FOLLOW.fadeRecoverPerS / 60 + 1e-12);
+    expect(state.avatarRig.setFade.mock.lastCall).toEqual([state.cameraFade]);
+    expect(state.composer.setAvatarFade.mock.lastCall).toEqual([state.avatarRig.root, state.cameraFade]);
+  });
+
+  it.each(["placement", "reduced motion", "QA camera cut", "resuming after the overview"])("snaps fade recovery for %s", (reason) => {
+    const state = cameraStand();
+    setTargets(state, [pocket()]);
+    place(state, true);
+    expect(state.cameraFade).toBeLessThan(1);
+    setTargets(state, []);
+    state.reducedMotion = reason === "reduced motion";
+    if (reason === "QA camera cut") qa(state).setCamera({ distance: FOLLOW.defaultDistance });
+    state.fadeStale = reason === "resuming after the overview";
+    place(state, reason === "placement");
+    expect(state.cameraFade).toBe(1);
+    expect(state.avatarRig.setFade.mock.lastCall).toEqual([1]);
+    expect(state.composer.setAvatarFade.mock.lastCall).toEqual([state.avatarRig.root, 1]);
+    expect(state.fadeStale).toBe(false);
+  });
+
+  it("fades immediately on entry to first person", () => {
+    const state = cameraStand();
+    place(state, true);
+    state.firstPerson = true;
+    place(state);
+    expect(state.cameraFade).toBe(FOLLOW.fadeMin);
+    expect(state.avatarRig.setFade.mock.lastCall).toEqual([FOLLOW.fadeMin]);
+    expect(state.composer.setAvatarFade.mock.lastCall).toEqual([state.avatarRig.root, FOLLOW.fadeMin]);
+  });
+
   it("leaves ordinary controls alone until called, holds the requested pose, then releases it", () => {
     const state = cameraStand();
     state.yaw = 0.4;
@@ -162,7 +209,7 @@ describe("Explorer wall fallback and QA controls", () => {
     expect(state.camera.position.distanceTo(held)).toBeLessThan(1e-9);
     expect(qa(state).cameraInfo()).toEqual({
       fov: 50, far: 2000, slopeOn: false, boomWanted: 2, boomActual: 2,
-      raise: 0, pitch: -0.5, yaw: 1, avatarFade: 1, mode: "walk",
+      raise: 0, pitch: -0.5, yaw: 1, avatarFade: 1, reflections: true, mode: "walk",
     });
     qa(state).setCamera(null);
     state.yaw = 0.6;
@@ -181,6 +228,15 @@ describe("Explorer wall fallback and QA controls", () => {
     qa(state).holdAvatarFade(null);
     expect(qa(state).cameraInfo().avatarFade).toBe(1);
     expect(state.avatarRig.setFade.mock.lastCall).toEqual([1]);
+  });
+
+  it("reports reflections only when the postprocessing pass is active", () => {
+    const state = cameraStand();
+    expect(qa(state).cameraInfo().reflections).toBe(true);
+    state.composer.settings.reflections = false;
+    expect(qa(state).cameraInfo().reflections).toBe(false);
+    Object.assign(state, { composer: null }); // Low quality has no composer.
+    expect(qa(state).cameraInfo().reflections).toBe(false);
   });
 });
 

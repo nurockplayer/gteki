@@ -25,6 +25,36 @@ python3 tools/blender/validate_glb.py --require-occlusion assets/library/glb/*.g
 
 Viewer: `pnpm --dir tools/blender/web_preview install && pnpm --dir tools/blender/web_preview dev`, then open `/?asset=<id>` or `/?mode=gallery`.
 
+## Shared AO atlases (C3)
+
+The stdlib packer removes embedded AO from matching GLBs, maps UV1 into aligned
+cells, and writes a separate grayscale atlas plus an updated manifest. Other
+assets are copied unchanged. Use a new, empty output directory outside the input.
+
+```bash
+python3 -I tools/blender/ao_atlas.py --build <cache>/ike_full --out <out>/ike_full --kind 'nosing=gteki_ik_stair_*_nosing'
+python3 -I tools/blender/ao_atlas.py --build <cache>/ike_mobile --out <out>/ike_mobile --kind 'nosing=gteki_ik_stair_*_nosing' --half
+python3 -I tools/blender/validate_glb.py --require-occlusion --manifest <out>/ike_full/manifest.json <out>/ike_full/glb/*.glb
+python3 -I tools/blender/validate_glb.py --require-occlusion --manifest <out>/ike_mobile/manifest.json <out>/ike_mobile/glb/*.glb
+lockf -k /tmp/gteki-local-test.lock python3 -I tools/blender/test_ao_atlas.py
+```
+
+Repeat `--kind` for additional groups (for example, `'escalator=gteki_ik_escalator_*'`);
+overlapping globs fail. `--ids <file>` restricts processing to one id per line.
+Full cells retain every source texel; `--half` averages each 2×2 block with half-up
+rounding before packing. The manifest records atlas hashes, dimensions and cells.
+UV1 stays at least half a texel inside its cell, so bilinear sampling of the full-size level never reads a
+neighbour. At mip level L a texel spans 2^L atlas texels and the bilinear footprint reaches half a level-L texel
+past the sample, so a level stays isolated only while the smallest UV inset is at least 2^(L-1) texels (and the
+smallest cell at least 2^L). `atlases.<kind>.max_isolated_mip` is the deepest such level, measured from the
+packed UVs (Ikebukuro nosing: 2 on full, 1 on mobile, from the bake's 2.5 and 1.25 texel island margins).
+The bound is per level: trilinear filtering at a LOD between `max_isolated_mip` and the next level already mixes
+in that next level, so a 128 px cell with a 2.5 texel inset can pick up a neighbour's outer texels while it still
+spans about 32 screen pixels. Only a sampler whose max mip level is `max_isolated_mip` never blends cells; that
+clamp brings back minification shimmer, so the field records the strict bound and each loader decides.
+The client assigns the external AO map on channel 1 before merging geometry.
+`--manifest` checks atlas and GLB hashes/byte counts and reachable UV cells; without it, validation is unchanged.
+
 Texture budget (`docs/assets/texture-budget.md`): `build.sh validate` also runs
 `texture_budget.py assets/library --check tools/blender/catalog/budget.json`. For a before/after report, run
 `python3 tools/blender/texture_budget.py assets/library --compare <old_library> --layout tools/blender/showcase/concourse_demo.json`.
@@ -156,3 +186,28 @@ ONLY=$(python3 -c "import json;print(','.join(a['id'] for a in json.load(open('t
 PROFILE=mobile ONLY=<same ids> tools/blender/build.sh build
 blender -b --factory-startup -P tools/blender/render_preview.py -- --layout tools/blender/showcase/street_demo.json --camera hero --out street_hero.png   # also: canopy, furniture
 ```
+
+## Character pipeline (P0)
+
+The procedural P0 character uses the separate [character contract](../../docs/assets/character-contract.md).
+Run from the repository root (Blender 4.x/5.x, same Blender/exporter version for reproducibility):
+
+```bash
+blender -b --factory-startup --python-exit-code 1 --python tools/blender/character/build_p0_sample.py -- --out /tmp/gteki-p0
+blender -b --factory-startup --python-exit-code 1 --python tools/blender/character/export_character.py -- --blend /tmp/gteki-p0/p0_sample.blend --id p0_sample --tier high --out /tmp/gteki-p0
+# Repeat the exporter command with --tier mobile for the other tier.
+python3 -I tools/blender/character/validate_character.py --tier high --clips idle --drift-advisory /tmp/gteki-p0/p0_sample.high.glb
+python3 -I tools/blender/character/validate_character.py --tier mobile --clips idle --drift-advisory /tmp/gteki-p0/p0_sample.mobile.glb
+```
+
+The builder saves `p0_sample.blend` before exporting both tiers. P0 uses the same small mesh
+for both tiers, explicit single-joint weights, two blink targets and a two-sample `idle`.
+The two identical endpoints hold a small breathing rotation; a breathing excursion needs
+more samples. Flat vertex colours provide eyes, overlapping upper lids and separate brows
+with one opaque Principled material per mesh and no textures. The exporter checks its GLB
+with the stdlib validator before publishing it, removes only redundant bind-value channels,
+and rejects forbidden motion. With `export_apply=True`, some Blender exporters discard
+shape keys; the character exporter then restores the two POSITION targets from source
+blink deltas, matching split vertices by bind position and rejecting ambiguous matches.
+Rigify baking and mobile decimation remain `TODO(E1)`.
+Build into two fresh directories and compare each tier with `cmp` to verify reproducibility.

@@ -180,8 +180,8 @@
     }
   ],
   "invalidated": {
-    "at": "2026-10-23T03:16:10.266Z",
-    "by_command": "gis literals-report",
+    "at": "2026-10-24T10:14:14.849Z",
+    "by_command": "gis acquire odbl-1-0-text",
     "reason": "Report-writing command run outside real-run; rerun real-run before summarizing"
   }
 }
