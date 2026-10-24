@@ -410,7 +410,7 @@
         "sourceIds": [
           "seibu-shop-ikebukuro-station-2026-10"
         ],
-        "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [
@@ -442,7 +442,7 @@
         "sourceIds": [
           "seibu-shop-ikebukuro-station-2026-10"
         ],
-        "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24"
       },
       "notes": [

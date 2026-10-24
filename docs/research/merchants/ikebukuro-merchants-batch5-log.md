@@ -20,7 +20,7 @@ are transcribed).
 ## Counts
 
 - Rows listed on the two directory pages: 16 (11 on the エミオ池袋 page, 5 on the 池袋 station page).
-- Imported as POIs: 13 (11 エミオ池袋 shops, 2 宝くじ shops at 西武池袋駅).
+- Imported as POIs: 13 (11 エミオ池袋 shops, 2 宝くじ POIs from the 池袋 station page).
 - Excluded: 3, listed below.
 
 ## Excluded entries
@@ -61,9 +61,10 @@ aliases were added. All `aliases` arrays are empty.
   but no floor. The 11 エミオ池袋 POIs therefore carry only the facility in their notes.
   `floorId` is null for every POI (no floor identifiers are available).
 - **宝くじ 1F / 宝くじ 地下**: the station page prints the floor inside the shop name (link text
-  `宝くじ 1F`, `宝くじ 地下`) and prints no facility name. The notes say `西武池袋駅 1F` /
-  `西武池袋駅 地下` with a parenthetical that no facility name is printed; 西武池袋駅 is the page
-  context (the portal's 池袋 station page), not a verbatim facility label.
+  `宝くじ 1F`, `宝くじ 地下`) and prints no facility name. The names are copied as printed; the
+  notes state that `1F` / `地下` are part of the printed name and that facility and floor are
+  unverified — no floor is assigned. `西武池袋駅` is the page context (the portal's 池袋 station
+  page), not a verbatim facility label.
 - **Missing MAP numbers**: the エミオ池袋 list runs 1–10 then 13 (11 and 12 absent); the station
   list runs 0, 2, 3, 4, - (1 absent). The pages print no reason. The missing numbers are not
   treated as closed shops and nothing was inferred for them; they may be map symbols for
@@ -78,8 +79,9 @@ aliases were added. All `aliases` arrays are empty.
 
 - POI ids use the shop code from the detail URL (`scd`), e.g. `shop-ikb-seibu-001261`; all 13
   ids come from printed codes, none from page order.
-- Evidence method is `AREA_ONLY` for every POI (facility or floor label printed on the page);
-  no POI had to fall back to `SEARCH_ONLY`.
+- Evidence method is `AREA_ONLY` for the 11 エミオ池袋 POIs (the facility label `エミオ 池袋` is
+  printed on the page). The 2 宝くじ POIs are `SEARCH_ONLY`: the station page prints only the
+  池袋 station heading, with no facility or floor label, so the `AREA_ONLY` rule is not met.
 - `paid` is null everywhere; 改札内 wording in shop names was not used to derive it.
 - Sources: two `REFERENCE_ONLY` / facts-only entries under OD-34, decision
   https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896 (2026-10-24).
