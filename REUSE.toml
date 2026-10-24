@@ -268,11 +268,11 @@ SPDX-License-Identifier = "CC-BY-4.0"
 
 # OSM: no OSM data is committed (cross-check only), so there is no ODbL annotation.
 
-# --- 4i. KSJ (国土数値情報) context overlays (director ruling on #365) --------------------------
+# --- 4i. KSJ N02-2025 (国土数値情報 鉄道) context overlay (director ruling on #365) -------------
 # The KSJ site terms are cited as published; "CC BY 4.0" on the product page is not treated as a
-# CC BY grant (same handling as PLATEAU). Credit 「国土交通省 国土数値情報（N02 鉄道）を加工して作成」.
+# CC BY grant (same handling as PLATEAU). Credit and modification notice: NOTICE 4.11.
 [[annotations]]
-path = "stations/*/gteki/context/ksj_*.glb"
+path = "stations/*/gteki/context/ksj_n02_2025_*.glb"
 precedence = "override"
 SPDX-FileCopyrightText = "国土交通省 国土数値情報; modified by GTEki contributors"
 SPDX-License-Identifier = "LicenseRef-KSJ"

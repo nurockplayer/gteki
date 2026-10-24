@@ -13,7 +13,8 @@ Stands for files derived from the S03 data (shisetsu_root.zip, tools/gis/sources
 source_id "tokyo-s03-zip"). Covers the geometry and factual-fields subset only (Owner, #39
 comment 6324726321; NOTICE 4.7). Promotional prose, linked content and the reference-PDF
 illustration are UNKNOWN and excluded. Not relicensed under the repository's grants.
-Credit: 出典：東京都都市整備局「新宿駅周辺の施設情報等」 (modification notice: NOTICE 4.7).
+Credit: 出典：東京都都市整備局「新宿駅周辺の施設情報等」. File list and the modifications
+made for the committed research files: NOTICE 4.7.
 
 Pointer only: terms as published by the licensor. GTEki does not author or
 paraphrase the official wording. Source of the URLs and hashes: GIS (Lane D),
