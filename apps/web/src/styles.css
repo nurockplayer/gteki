@@ -85,7 +85,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .result .dot { grid-row: 1 / -1; align-self: center; width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
 .result-meta { font-size: 11px; color: var(--muted); }
 .result-note { grid-column: 2; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
-.field-note { margin: 4px 0 0; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
+.field-note { grid-column: 2 / -1; margin: 0; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
 .field-note[hidden] { display: none; }
 .result.disabled .result-name { color: var(--muted); }
 .result[aria-selected="true"] { background: rgba(94, 240, 255, 0.16); outline: 2px solid var(--accent); outline-offset: -2px; }
