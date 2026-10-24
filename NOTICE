@@ -158,3 +158,15 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
    4.10 OpenStreetMap - nothing committed or shipped
        Cross-check only. No ODbL entry. If OSM-derived data is ever committed,
        an ODbL entry and a share-alike assessment are required first.
+
+5. NOTO SANS JP - SIL Open Font License 1.1 (OFL-1.1)
+   © 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'.
+   Upstream: https://github.com/notofonts/noto-cjk/tree/Sans2.004
+   Pinned release tag: Sans2.004 (already cited by our art pipeline).
+   Font: Sans/Variable/TTF/Subset/NotoSansJP-VF.ttf, version 2.004.
+   Noto Sans JP subset and converted to WOFF2 by GTEki (modified).
+   Family/registration alias: GTEki Sign JP; PostScript name: GTEkiSignJP.
+   The pinned upstream LICENSE is copied verbatim to
+   assets/fonts/noto-sans-jp/OFL.txt; the font's name-table copyright notice
+   above is retained in the subset. See source.json for URL, size and SHA-256,
+   and LICENSES/OFL-1.1.txt for the licence text.
