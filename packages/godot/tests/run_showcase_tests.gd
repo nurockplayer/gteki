@@ -128,13 +128,15 @@ func check_textures() -> void:
 	node.material_overlay = materials[3]
 	scene.add_child(node)
 	var report := Compare.prepare_textures(scene)
-	check(report.textures_processed == 2 and report.mipmaps_generated == 1 and report.mipmap_failures == 0, "shared texture across slots and overrides is processed once")
+	check(report.textures_processed == 3 and report.mipmaps_generated == 2 and report.mipmap_failures == 0, "shared texture is processed once per mip kind (colour, normal) across slots and overrides")
 	var replacement: Texture2D = materials[0].albedo_texture
 	check(replacement != shared and replacement.get_image().has_mipmaps(), "missing mipmaps are generated in a rebuilt texture")
 	check(replacement.get_image().get_pixel(0, 0).is_equal_approx(shared.get_image().get_pixel(0, 0)), "mipmap generation preserves base-level pixels")
 	for material in materials:
 		check(material.albedo_texture == replacement and material.texture_filter == BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, "mesh, surface override, global override and overlay share the filtered replacement")
-	check(materials[0].normal_texture == replacement and materials[1].roughness_texture == ready, "all slots are visited and existing mipmapped textures retained")
+	var normal_replacement: Texture2D = materials[0].normal_texture
+	check(normal_replacement != shared and normal_replacement != replacement and normal_replacement.get_image().has_mipmaps(), "a texture used as a normal map gets its own renormalised mip chain")
+	check(materials[1].roughness_texture == ready, "all slots are visited and existing mipmapped textures retained")
 	check(Compare.prepare_textures(scene).mipmaps_generated == 0, "second texture pass rebuilds nothing")
 	scene.free()
 
@@ -163,8 +165,10 @@ func check_reflections_and_shadows() -> void:
 	var bounds := Compare.visual_bounds(scene)
 	check(bounds.size.is_equal_approx(mesh.size) and bounds.get_center().is_equal_approx(scene.position), "visual bounds exclude collision proxies and hidden subtrees")
 	var probe := Compare.add_interior_probe(scene)
-	check(probe != null and probe.size.is_equal_approx(bounds.size) and probe.global_position.is_equal_approx(bounds.get_center()), "room probe fits visible global AABB")
-	check(probe.update_mode == ReflectionProbe.UPDATE_ONCE and probe.interior and probe.box_projection and probe.ambient_mode == ReflectionProbe.AMBIENT_DISABLED, "interior probe captures once with box projection and preserves sky ambient")
+	var blend: float = Compare.APPROXIMATION.reflection_probe_blend_distance_m
+	check(probe != null and probe.size.is_equal_approx(bounds.size + Vector3.ONE * 2.0 * blend) and probe.global_position.is_equal_approx(bounds.get_center()), "room probe is the visible global AABB grown by its blend distance")
+	check(is_equal_approx(probe.blend_distance, blend), "room probe blend distance comes from APPROXIMATION")
+	check(probe.update_mode == ReflectionProbe.UPDATE_ONCE and not probe.interior and probe.box_projection and probe.ambient_mode == ReflectionProbe.AMBIENT_DISABLED, "room probe captures once with box projection, keeps the sky in reflections and preserves sky ambient")
 	Compare.configure_shadow_atlas(root)
 	check(root.positional_shadow_atlas_size == 8192, "shadow atlas is explicitly 8192 pixels")
 	for quadrant in 4:

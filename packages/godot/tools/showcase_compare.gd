@@ -21,7 +21,9 @@ const HEADLESS_MESSAGE := "showcase_compare needs a display"
 ## Contrast, provisionally, not Blender's exact look. Sources: github.com/godotengine/godot/tree/4.7.2-stable.
 ## Bias 0.06 / normal bias 1.5 raise the spot defaults (0.03 / 1.0) against acne; check detachment in the GPU slot.
 ## 8192 atlas, four 64-slot quadrants = 256 spots at 512 px each, leaving room beyond the observed 121 lights.
-## The uniform sky has no gradient/sun disk; the once-updated interior box reflects visible room bounds only.
+## The uniform sky has no gradient/sun disk. The once-updated room probe is not `interior` (an interior probe drops the
+## sky, so directions without geometry would reflect black) and its box is the visible bounds grown by its blend
+## distance, so surfaces on the bounds still get full probe weight.
 const APPROXIMATION := {
 	"watts_to_energy": 0.02,
 	"linear_led_watts_per_m": 55.0,
@@ -46,7 +48,8 @@ const APPROXIMATION := {
 	"ambient_light_sky_contribution": 1.0,
 	"sky_shader": "shader_type sky;\nuniform vec4 colour : source_color;\nvoid sky() { COLOR = colour.rgb; }\n",
 	"reflection_probe_update_mode": ReflectionProbe.UPDATE_ONCE,
-	"reflection_probe_interior": true,
+	"reflection_probe_interior": false,
+	"reflection_probe_blend_distance_m": 1.0,
 	"reflection_probe_box_projection": true,
 	"reflection_probe_ambient_mode": ReflectionProbe.AMBIENT_DISABLED,
 	"agx_contrast": 1.5,
@@ -125,7 +128,12 @@ static func background(mode: String) -> Dictionary:
 
 
 ## ClassDB on 4.7.2 has no global GLTFState/GLTFDocument mipmap/filter switch; BasisU also changes compression.
-## Visit original mesh materials AND overrides, retaining shared textures via one replacement cache across slots.
+## Visit original mesh materials AND overrides, retaining shared textures via one replacement cache per texture and
+## mip kind. Normal maps are renormalised per level. Colour mips average the stored sRGB values, as Godot's own texture
+## importer does (Image.srgb_to_linear only takes 8-bit formats), so distant high-contrast albedo is slightly darker.
+const NORMAL_SLOTS := [BaseMaterial3D.TEXTURE_NORMAL, BaseMaterial3D.TEXTURE_DETAIL_NORMAL]
+
+
 static func prepare_textures(scene: Node) -> Dictionary:
 	var textures := {}
 	var materials := {}
@@ -151,21 +159,25 @@ static func prepare_textures(scene: Node) -> Dictionary:
 				var texture: Texture2D = material.get_texture(slot)
 				if texture == null:
 					continue
-				if not textures.has(texture):
-					textures[texture] = texture
-					var image := texture.get_image()
+				var normal := slot in NORMAL_SLOTS
+				var key := [texture, normal]
+				if not textures.has(key):
+					textures[key] = texture
+					# A copy: ImageTexture.get_image() can hand back the texture's own Image, which mipmapping would mutate.
+					var source := texture.get_image()
+					var image: Image = source.duplicate() if source != null else null
 					if image == null or image.is_empty():
 						unavailable += 1
 					elif not image.has_mipmaps():
 						var error := image.decompress() if image.is_compressed() else OK
 						if error == OK:
-							error = image.generate_mipmaps()
+							error = image.generate_mipmaps(normal)
 						if error == OK:
-							textures[texture] = ImageTexture.create_from_image(image)
+							textures[key] = ImageTexture.create_from_image(image)
 							generated += 1
 						else:
 							unavailable += 1
-				material.set_texture(slot, textures[texture])
+				material.set_texture(slot, textures[key])
 	return {"textures_processed": textures.size(), "mipmaps_generated": generated, "mipmap_failures": unavailable}
 
 
@@ -199,12 +211,15 @@ static func visual_bounds(scene: Node) -> AABB:
 
 
 ## Preserve sky ambient separately; the probe supplies box-projected room reflections, without ambient override.
+## Grown by the blend distance so the weight is still 1 on the room's own floor and walls.
 static func add_interior_probe(parent: Node3D) -> ReflectionProbe:
 	var bounds := visual_bounds(parent)
 	if not bounds.has_volume():
 		return null
+	bounds = bounds.grow(APPROXIMATION.reflection_probe_blend_distance_m)
 	var probe := ReflectionProbe.new()
 	probe.size = bounds.size
+	probe.blend_distance = APPROXIMATION.reflection_probe_blend_distance_m
 	probe.update_mode = APPROXIMATION.reflection_probe_update_mode
 	probe.interior = APPROXIMATION.reflection_probe_interior
 	probe.box_projection = APPROXIMATION.reflection_probe_box_projection
