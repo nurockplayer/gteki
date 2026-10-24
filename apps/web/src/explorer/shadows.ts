@@ -60,7 +60,7 @@ export interface ShadowCandidate {
 }
 
 export interface StationShadows {
-  /** Meshes that now cast / receive. After applyStationShadows `casters` is every candidate; `setCasters` narrows it. */
+  /** Meshes that now cast / receive, after the attach-time caster mask (`setCasters` at the given floor Y). */
   casters: number;
   receivers: number;
   /** The casting candidates, fixed at attach. */
@@ -78,8 +78,11 @@ export interface StationShadows {
  * the route, the overlays and the avatar are never touched. A mesh that fails the policy has castShadow cleared;
  * a `receiveShadow = true` the station set is always kept. A node with `userData.gteki_shadow === "none"` (a glTF
  * extra lands there too) never casts, nor does anything under it; receiving follows the usual rule.
+ *
+ * The caster mask (`setCasters`) is applied here too, with `floorY` (the walker's feet): the accepted meshes never
+ * cast all at once, so a render before the first `updateShadows` cannot flash the ceilings' shadows.
  */
-export function applyStationShadows(root: THREE.Object3D, quality: "low" | "high", lighting: "default" | "scene"): StationShadows {
+export function applyStationShadows(root: THREE.Object3D, quality: "low" | "high", lighting: "default" | "scene", floorY: number): StationShadows {
   const out: StationShadows = { casters: 0, receivers: 0, candidates: [], tallCandidates: 0, bounds: new THREE.Box3() };
   if (!shadowsActive(quality, lighting)) return out;
   root.updateMatrixWorld(true);
@@ -95,13 +98,14 @@ export function applyStationShadows(root: THREE.Object3D, quality: "low" | "high
     const m = o as THREE.Mesh;
     if (m.isMesh) {
       const f = meshShadowFlags(m);
-      m.castShadow = f.cast && !optedOut;
+      const casts = f.cast && !optedOut;
+      // Left off here: the caster mask below turns on the ones that start below the walker's head.
+      m.castShadow = false;
       if (f.receive) m.receiveShadow = true;
-      if (m.castShadow) out.casters++;
       if (m.receiveShadow) out.receivers++;
-      const hasBox = (m.castShadow || m.receiveShadow) && meshWorldBox(m, box);
+      const hasBox = (casts || m.receiveShadow) && meshWorldBox(m, box);
       if (hasBox) out.bounds.union(box);
-      if (m.castShadow) {
+      if (casts) {
         out.candidates.push({ mesh: m, minY: hasBox ? box.min.y : -Infinity, maxY: hasBox ? box.max.y : -Infinity });
         if (hasBox && box.max.y - box.min.y > TALL_CANDIDATE_SPAN_M) out.tallCandidates++;
       }
@@ -109,17 +113,18 @@ export function applyStationShadows(root: THREE.Object3D, quality: "low" | "high
     for (const c of o.children) visit(c, optedOut);
   };
   visit(root, false);
+  out.casters = setCasters(out.candidates, floorY);
   return out;
 }
+
+/** Nodes already warned about an unknown `gteki_shadow` value. */
+const warnedShadowFlag = new WeakSet<THREE.Object3D>();
 
 /**
  * Narrows the candidates to those that start below `floorY + headroom` (see CAST_HEADROOM_M) and sets each mesh's
  * castShadow; returns how many cast. Allocation-free. A candidate on a level above the walker does not cast; one on a
  * level below does (its ceiling is under the walker's feet, so it only shades the level out of view).
  */
-/** Nodes already warned about an unknown `gteki_shadow` value. */
-const warnedShadowFlag = new WeakSet<THREE.Object3D>();
-
 export function setCasters(candidates: readonly ShadowCandidate[], floorY: number, headroom = CAST_HEADROOM_M): number {
   const limit = floorY + headroom;
   let n = 0;
@@ -130,6 +135,14 @@ export function setCasters(candidates: readonly ShadowCandidate[], floorY: numbe
     if (on) n++;
   }
   return n;
+}
+
+/**
+ * Whether the per-frame caster mask must be recomputed for `floorY`: the floor moved more than `retune` from
+ * `lastFloorY`. False for a non-finite floor Y, which `setCasters` would read as "nothing casts" every frame.
+ */
+export function needsCasterRetune(floorY: number, lastFloorY: number, retune = CAST_RETUNE_M): boolean {
+  return Number.isFinite(floorY) && !(Math.abs(floorY - lastFloorY) <= retune);
 }
 
 /** World box of one mesh from its geometry (or instance) box; false when it has none. */
@@ -146,4 +159,14 @@ function meshWorldBox(mesh: THREE.Mesh, out: THREE.Box3): boolean {
 /** The frustum depth range for a station's drawn geometry: its Y span, padded. */
 export function shadowYRange(bounds: THREE.Box3): [number, number] {
   return [bounds.min.y - SHADOW_Y_PAD_M, bounds.max.y + SHADOW_Y_PAD_M];
+}
+
+/**
+ * The depth range to fit for `bounds`, or null when there is none: an empty box, or one that is not finite. A mesh
+ * with NaN positions passes `Box3.isEmpty()`, and following its range would throw every frame from `followShadow`.
+ */
+export function shadowFitRange(bounds: THREE.Box3): [number, number] | null {
+  if (bounds.isEmpty()) return null;
+  const yRange = shadowYRange(bounds);
+  return Number.isFinite(yRange[0]) && Number.isFinite(yRange[1]) ? yRange : null;
 }
