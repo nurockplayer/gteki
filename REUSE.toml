@@ -303,3 +303,13 @@ path = [
 precedence = "override"
 SPDX-FileCopyrightText = "東京都都市整備局; 国土交通省（ほこナビDP）; modified by GTEki contributors"
 SPDX-License-Identifier = "LicenseRef-S03 AND LicenseRef-Hokonavi-E27-Owner-override"
+
+# --- 4n. Facts-only line POIs for Shinjuku (lines-lead WP4; #26 Tokyo Metro, OD-01 A Toei; NOTICE 4.12) ---
+[[annotations]]
+path = [
+  "docs/research/lines/shinjuku-line-pois-wp4.json",
+  "docs/research/lines/shinjuku-line-pois-wp4-notes.md",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "No licence granted: facts-only sources (東京地下鉄, 東京都交通局); compiled by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-facts-only-no-licence"

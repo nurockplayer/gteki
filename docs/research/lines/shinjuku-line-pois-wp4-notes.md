@@ -55,6 +55,6 @@ None between the pages. Both Metro pages print the same 28 rows and the same rev
 
 ## For lines-lead
 
-- `poi:tokyometro-gate:3` (東改札) and `:4` (西改札) come from the accessibility page's equipment endpoints. PR #411 holds S03-sourced `poi:tokyometro-gate:1` (丸の内線 東口改札口) and `:2` (丸の内線 西口改札口). The wording differs (東改札 vs 東口改札口), so no `factsForExisting` entry was added and nothing was merged; the ids are kept distinct on purpose. Please decide whether they are the same gates.
+- `poi:tokyometro-gate:3` (丸ノ内線 東改札; printed 東改札) and `:4` (丸ノ内線 西改札) come from the accessibility page's equipment end points. PR #411 holds S03-sourced `poi:tokyometro-gate:1` and `:2`, whose names are worded differently. **lines-lead decision:** not merged and no `factsForExisting`; each POI carries a note that it may be the same gate as its S03 counterpart, identity unconfirmed. A field check (WP10) can settle it. The line prefix was added for search, since bare 東改札 / 西改札 would match other operators' gates.
 - This file adds no facts for the existing E27 POIs in `stations/shinjuku/gteki/pois.json`. Toei's per-line counts cannot be attached to specific internal elevator ids without guessing.
 - REUSE annotation is left to lines-lead.

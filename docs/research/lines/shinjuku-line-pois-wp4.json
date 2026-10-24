@@ -2,7 +2,7 @@
   "schema": "gteki.lines-pois/0.1-draft",
   "stationId": "shinjuku",
   "generatedAt": "2026-10-24",
-  "generatedBy": "WP4 transcription (DeepSeek ds-research), lines-lead review pending",
+  "generatedBy": "WP4 transcription (DeepSeek ds-research), reviewed by lines-lead (Metro gate names prefixed with the line; S03 cross-reference noted, not merged)",
   "sources": [
     {
       "id": "tokyometro-shinjuku-station-2026-10",
@@ -1234,10 +1234,15 @@
       "names": [
         {
           "lang": "ja",
+          "text": "丸ノ内線 東改札"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
           "text": "東改札"
         }
       ],
-      "aliases": [],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -1256,8 +1261,16 @@
           "text": "出典ではエレベーターとエスカレーターの設置場所の起点としてこの改札名が使われています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
         },
         {
+          "lang": "ja",
+          "text": "S03（2020年3月）由来の poi:tokyometro-gate:1（PR #411）と同じ改札の可能性がありますが、名称表記が異なり、同一かどうかは未確認です。統合していません。"
+        },
+        {
           "lang": "en",
           "text": "The source page uses this gate name as an endpoint of the listed lift and escalator locations. Location and entrance not verified (search only, no route). Current status unknown."
+        },
+        {
+          "lang": "en",
+          "text": "May be the same gate as poi:tokyometro-gate:1 (S03, March 2020, PR #411); the names differ and identity is not confirmed, so the two are not merged."
         }
       ]
     },
@@ -1269,10 +1282,15 @@
       "names": [
         {
           "lang": "ja",
+          "text": "丸ノ内線 西改札"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
           "text": "西改札"
         }
       ],
-      "aliases": [],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -1291,8 +1309,16 @@
           "text": "出典ではエレベーターとエスカレーターの設置場所の起点としてこの改札名が使われています。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
         },
         {
+          "lang": "ja",
+          "text": "S03（2020年3月）由来の poi:tokyometro-gate:2（PR #411）と同じ改札の可能性がありますが、名称表記が異なり、同一かどうかは未確認です。統合していません。"
+        },
+        {
           "lang": "en",
           "text": "The source page uses this gate name as an endpoint of the listed lift and escalator locations. Location and entrance not verified (search only, no route). Current status unknown."
+        },
+        {
+          "lang": "en",
+          "text": "May be the same gate as poi:tokyometro-gate:2 (S03, March 2020, PR #411); the names differ and identity is not confirmed, so the two are not merged."
         }
       ]
     },
