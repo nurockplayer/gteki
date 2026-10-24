@@ -16,22 +16,31 @@
   [`../owner-decisions-pending.md`](../owner-decisions-pending.md) (OD-23, OD-25, OD-31, OD-32,
   OD-34).
 - **Not in scope:** store visual assets, shop interiors, logos, photos, menus, and the GTEki
-  position of any shop. Hours appear only where a dated first-party source already recorded them
-  (OD-32); everywhere else they stay null.
+  position of any shop. Hours are recorded only under OD-32 as amended on 2026-10-24: a dated
+  first-party page, or an undated official page carrying its retrievedAt and URL plus the UI line
+  「GT-Eki 確認日 YYYY-MM-DD 時点の公式表記。変更されている場合があります」, hidden or marked for
+  re-check once retrievedAt is more than 180 days old; precedence is merchant submission > dated
+  official page > undated official page. Everywhere else they stay null.
 
 ## 1. Rights classes used here
 
 The class is the OD-34 status of the source, not a guess about the operator. **Usable** = OD-34
-(or a still-standing earlier OD) allows facts-only use. **Corroboration only** = a quoted flat ban
-or a business-use ban, so at most "consistent with … (URL, retrieval time)" for a name sourced
-elsewhere. **UNKNOWN** = not read, not covered, or unreachable.
+(or a still-standing earlier OD) allows facts-only use. **Corroboration only** = a business-use
+ban or a permission-based refusal, so at most "consistent with … (URL, retrieval time)" for a name
+sourced elsewhere. **Banned** = a flat ban; nothing is used, not even a cross-check (OD-34 §3/§4).
+**UNKNOWN** = not read, not covered, or unreachable.
 
 - **OD-34, 2026-10-24** (director gteki-1b, [#377 comment 6382700098](https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098)),
   with rounds 2–4 the same day and the **fifth round on 2026-10-25** (odakyu.jp / keio.co.jp,
   KSJ per dataset, Toshima policy), each with the terms entry it cites.
-- **OD-32, 2026-10-24** (same record): hours only from a first-party page with its date and the
-  "may have changed" label; null when undated, older than 180 days, or third-party.
-  `current_status` stays UNKNOWN until a field check.
+- **OD-32, 2026-10-24, as amended the same day** (same record): hours from a first-party page,
+  either dated (with its date and the "may have changed" label) or undated (from a source OD-34
+  allows, with its retrievedAt and URL, the UI line 「GT-Eki 確認日 YYYY-MM-DD 時点の公式表記。
+  変更されている場合があります」 and the official link; hidden or marked for re-check once
+  retrievedAt is older than 180 days). Building-level hours carry 「店舗により異なる場合あり」.
+  Precedence: merchant submission > dated official page > undated official page. Hours stay null
+  when the source is a third-party aggregator or older than 180 days; `current_status` stays
+  UNKNOWN until a field check.
 - Facts are not copyright works; **no licence exists to relicense** any of these sources, and no
   directory text, map, layout, logo, photo or interior image is copied. See §6.
 
@@ -68,15 +77,15 @@ elsewhere. **UNKNOWN** = not read, not covered, or unreachable.
 | `toei-shinjuku-stores-2026-10` | 都営 新宿駅 店舗一覧 | https://www.kotsu.metro.tokyo.jp/other/kanren/stores/shinjuku.html | usable (OD-01 A; OD-34 round 2, 2026-10-24: facts only) | `設置場所` text (concourse/exit vicinity) — area only; some rows search only | shop name, area text |
 | `toei-shinjuku-nishiguchi-stores-2026-10` | 都営 新宿西口 店舗一覧 (open CSV) | https://www.opendata.metro.tokyo.lg.jp/kotsu/other/other_stores_shinjuku-nishiguchi.csv | usable (Toei open data CC BY 4.0; rights record `docs/gis/rights/tokyo-s10-shinjuku-csv.json`) | `設置場所` text — area only | 新宿西口 rows only; not E27 |
 | `tokyometro-shinjuku-shops-2026-10` | 施設・店舗 / Tokyo Metro | https://www.tokyometro.jp/station/shinjuku/shop/index.html | usable (OD-34 §2, 2026-10-24) | exit/gate vicinity or none — area or search only | shop name |
-| `odakyu-dept-shinjuku-2026-10` | 小田急百貨店 新宿店 | https://www.odakyu-dept.co.jp/shinjuku/ | usable (OD-34 round 2, 2026-10-24: copyright line only, no use clause) | store page — area only | one store POI; brand tenants are a facts-only dataset, not POIs |
+| `odakyu-dept-shinjuku-2026-10` | 小田急百貨店 新宿店 | https://www.odakyu-dept.co.jp/shinjuku/ | usable (OD-34 round 2, 2026-10-24: copyright line only, no use clause) | store page names the store only — search only (the POI records SEARCH_ONLY) | one store POI; brand tenants are a facts-only dataset, not POIs |
 | `odakyudept-shinjuku-facilities-2026-10`, `odakyudept-shinjuku-floorguide-2026-10` | 小田急百貨店 facility pages | see `../facilities/shinjuku-facilities-batch2.json` | usable (OD-34 round 2, 2026-10-24) | floor/area label | facility POIs only |
-| `chain-krispykreme-ace-north-sjk-2026-10` | クリスピー・クリーム・ドーナツ store page | https://krispykreme.jp/store/tokyo/odakyuace.html | usable (OD-34 round 4, 2026-10-24: LUMINE-type clause) | store/facility name — search only | one chain row; the Odakyu Ace directory itself stays banned |
+| `chain-krispykreme-ace-north-sjk-2026-10` | クリスピー・クリーム・ドーナツ store page | https://krispykreme.jp/store/tokyo/odakyuace.html | usable (OD-34 round 4, 2026-10-24: LUMINE-type clause) | store page names the facility (小田急エース北館) — area only (the POI records AREA_ONLY) | one chain row; the Odakyu Ace directory itself stays banned |
 | `tokyometro-shinjuku-accessibility-*`, `lumineest-shinjuku-facilities-2026-10`, `lumine-shinjuku-facilities-2026-10`, `newoman-shinjuku-facilities-2026-10` | facility pages | see the facilities batches | usable (OD-34 §2, 2026-10-24) | floor/area label | facility POIs only |
 | `odakyu.jp` | 小田急電鉄 駅設備 | https://www.odakyu.jp/station/shinjuku/ | **corroboration only** (OD-34 fifth round, 2026-10-25; terms clause read in #415 at 2026-10-24T16:41:16Z) | none usable | cross-check only |
 | `keio.co.jp` | 京王電鉄 新宿駅 | https://www.keio.co.jp/train/station/ko01_shinjuku/ | **corroboration only** (OD-34 fifth round, 2026-10-25; terms clause read in #415 at 2026-10-24T16:41:17Z) | none usable | cross-check only |
-| `odakyu-sc.com` (小田急エース), `keiosc.co.jp` (京王モール) | Mall portals | https://www.odakyu-sc.com/sitepolicy/ ; https://www.keiosc.co.jp/sitepolicy/ | **corroboration only** — flat ban (OD-34 §3, 2026-10-24; overturns OD-33 for these two) | none usable | nothing imported, not even a cross-check |
-| `ecute.jp` / JR東日本クロスステーション | ecute shop directories | https://www.ecute.jp/terms/ | **corroboration only** — flat ban (OD-34 §3, 2026-10-24) | none usable | nothing imported |
-| `doutor.co.jp`, `meganeichiba.jp` | chain store pages | — | **corroboration only** — flat ban (OD-34 round 4, 2026-10-24) | none usable | self-service form candidates (#438) |
+| `odakyu-sc.com` (小田急エース), `keiosc.co.jp` (京王モール) | Mall portals | https://www.odakyu-sc.com/sitepolicy/ ; https://www.keiosc.co.jp/sitepolicy/ | **banned** — flat ban (OD-34 §3, 2026-10-24; overturns OD-33 for these two) | none usable | nothing imported, not even a cross-check |
+| `ecute.jp` / JR東日本クロスステーション | ecute shop directories | https://www.ecute.jp/terms/ | **banned** — flat ban (OD-34 §3, 2026-10-24) | none usable | nothing imported |
+| `doutor.co.jp`, `meganeichiba.jp` | chain store pages | — | **banned** — flat ban (OD-34 round 4, 2026-10-24) | none usable | self-service form candidates (#438) |
 | 新宿サブナード official site | — | https://www.subnade.co.jp/ | UNKNOWN (connection refused, #415 GAP) | none established | nothing imported |
 | 京王百貨店 新宿 (`keionet.com`) | — | https://www.keionet.com/shinjuku/ | UNKNOWN (maintenance page, #415 GAP) | none established | nothing imported |
 | chain pages in `shinjuku-recovery-batch1.json` other than krispykreme | ゼッテリア, 箱根そば, 吉野家, DAISO, カラダファクトリー, アトリエはるか, BAKE, ルノアール, MIGNON, ファミリーマート, TSUTSUMI, 日比谷花壇 | see the file's `sources` | UNKNOWN (no per-page ruling; not on the OD-34 usable list) | address/unit text only — area or search only | rows stay UNKNOWN-status facts from chain pages |
@@ -103,6 +112,10 @@ states a shop entrance.
 | `ENTRANCE_VERIFIED` | 0 |
 | `AREA_ONLY` | 727: Ikebukuro 133 (batch 2 118 + batch 5 11 + sample 4), Shinjuku 594 (batch 1 3 + batch 2 576 + recovery 15). Batch 4's 210 are all AREA_ONLY but are in open PR #432, not on `main`, so they are not counted here. |
 | `SEARCH_ONLY` | 9: Ikebukuro 5 (batch 3 2 + batch 5 2 + sample 1), Shinjuku 4 (batch 1 3 + 小田急百貨店 store POI 1). |
+
+The counts follow each record's own `evidence.method`: in the Shinjuku recovery batch the
+Krispy Kreme row is AREA_ONLY (the chain page names 小田急エース北館), and the 小田急百貨店 store row
+is SEARCH_ONLY (the page names the store, not an area).
 
 **Importable small sample** (one source per row, no coordinate). Every row has `checkedDate`
 2026-10-24, category `shop`, `current_status` UNKNOWN and hours null. The area text is what the
@@ -132,13 +145,14 @@ Odakyu Ace and Keio Mall directory row is a flat ban and must not be imported.
   gate names are excluded (OD-01 B); そごう・西武 rows are corroboration only.
 - **Shinjuku: S10 is not E27.** S10 is the Tokyo Metropolitan Government open dataset of station
   shops (CC BY 4.0, factual CSV fields only, no coordinates, no floor field, `設置場所` text).
-  E27 is the MLIT Hokonavi walking-network package for the Toei Oedo Line Shinjuku station
-  (NOTICE 4.3, a marker not a licence). Neither gives a merchant position: S10 is a text location,
-  and E27 is a walking network. The S10 Shinjuku and 新宿西口 resources are separate datasets; the
-  新宿西口 CSV is not E27 merchant geometry.
+  E27 is the MLIT Hokonavi walking-network package for the Toei Oedo Line Shinjuku station,
+  dataset `2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45` (`NOTICE` §4.3, lines 89–114: a marker, not a
+  licence; the resource-level licences are null). Neither gives a merchant position: S10 is a
+  text location, and E27 is a walking network. The S10 Shinjuku and 新宿西口 resources are
+  separate datasets; the 新宿西口 CSV is not E27 merchant geometry.
 - **Subnade and the mall directories** (新宿サブナード, 小田急エース, 京王モール) are their own
-  commercial scopes even where they connect to several operators. Subnade's official site is
-  unreadable; Odakyu Ace and Keio Mall are flat bans.
+  commercial scopes; this repository records no source for which operators connect to them.
+  Subnade's official site is unreadable; Odakyu Ace and Keio Mall are flat bans.
 
 ## 5. Field-check list
 
@@ -179,22 +193,29 @@ interior photo is reproduced in the repository.
   directory text, layout or drawing is reproduced.
 - **CC BY 4.0 sources** (S10, KSJ) keep the printed credit line and a change notice; the credit is
   recorded on the source entry, not on shop records.
-- **Banned / corroboration-only sources** contribute nothing to a stored record; at most a name
-  already sourced elsewhere may cite them as "consistent with … (URL, retrieval time)".
+- **Banned sources** (ecute / JR Cross, 小田急エース, 京王モール, doutor.co.jp, meganeichiba.jp)
+  contribute nothing at all: OD-34 §3 and §4 say an excluded directory may not be used even as a
+  cross-check, so no stored record and no "consistent with" line may cite them.
+- **Corroboration-only sources** (JR East, tobu.co.jp, sogo-seibu.jp, odakyu.jp, keio.co.jp) may
+  appear only as "consistent with … (URL, retrieval time)" for a name already sourced elsewhere;
+  they never supply a fact, a floor or a position.
 
 ## 7. GAPs
 
 1. **新宿サブナード**: official site refuses connections; merchant rows there stay UNKNOWN.
 2. **京王百貨店 新宿**: maintenance page; no rows.
 3. **JR East pages**: 403 at the domain edge; no JR East merchant rows (OD-02 A anyway).
-4. **小田急エース / 京王モール**: flat bans; no directory rows may be imported.
+4. **小田急エース / 京王モール**: flat bans; no directory rows may be imported and no cross-check
+   may cite them (OD-34 §3/§4).
 5. **Chain store pages**: only krispykreme.jp has a ruling (facts only). The other recovery-batch
    chains, and the earlier Starbucks / ORIHICA / DAISO sample rows, stay UNKNOWN until a terms
    read or the self-service route (#438).
 6. **Entrances**: no source in this repository states a shop entrance; ENTRANCE_VERIFIED stays 0
    until the field checks in §5.2 are done.
-7. **Hours dates**: most directory pages are undated, so under OD-32 their hours stay null until a
-   dated first-party page or a field check.
+7. **Hours dates**: most directory pages are undated. OD-32 as amended allows their hours with
+   retrievedAt, URL, the UI line 「GT-Eki 確認日 YYYY-MM-DD 時点の公式表記。変更されている場合が
+   あります」 and an official link, hidden or re-checked after 180 days — but no batch has
+   harvested them yet, so hours stay null until that pass runs.
 8. **`odakyu.jp` and `keio.co.jp`** — **resolved 2026-10-25**: now OD-34 fifth round (a), citing
    the flat-refusal clauses read in #415 at 2026-10-24T16:41:16–17Z. Both stay corroboration only
    and their rights stay UNKNOWN; nothing is imported from either. Keio department store, Subnade
