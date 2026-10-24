@@ -22,6 +22,7 @@ function hardwarePart(geometry: THREE.BufferGeometry, color: string, metalness: 
 
 function hardwareMaterial() {
   const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 1 });
+  material.name = "mat.identityHardware"; // stable GLB name for the Godot looks table (#370 convention)
   material.onBeforeCompile = (shader) => {
     shader.vertexShader = shader.vertexShader
       .replace("#include <common>", "#include <common>\nattribute float identityMetalness;\nvarying float vIdentityMetalness;")
@@ -143,6 +144,7 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
     faces.forEach((g) => g.dispose());
     const texture = track(identityTexture(quality));
     const material = track(identityNearFade(new THREE.MeshBasicMaterial({ map: texture, toneMapped: false })));
+    material.name = "mat.identityFaces";
     const mesh = new THREE.Mesh(track(geometry), material);
     mesh.name = "identity-faces";
     mesh.userData.gteki_role = "sign";

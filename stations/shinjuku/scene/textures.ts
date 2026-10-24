@@ -4,8 +4,9 @@
 import * as THREE from "three";
 import { OEDO_MAGENTA } from "./palette.ts";
 
-// TODO(#342 Q0): switch the identity boards to the pinned Noto Sans JP family here.
-export const IDENTITY_FONT_STACK = "'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif";
+/** #342 Q0: the pinned Noto Sans JP subset (registered by the explorer's loadSignFont), then system fallbacks. */
+export const SIGN_FONT_STACK = "'GTEki Sign JP','Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif";
+export const IDENTITY_FONT_STACK = SIGN_FONT_STACK;
 
 /** Full-resolution canvas coordinates, also used by the CPU projection proxy.
  * Conservative ink/cap-height assumptions: Japanese 0.80 em; Latin capitals 0.72 em.
@@ -293,9 +294,9 @@ export function signTexture(lines: { arrow?: "left" | "right" | "up" | "down" | 
     }
     g.fillStyle = fg;
     g.textBaseline = "alphabetic";
-    g.font = "700 54px 'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif";
+    g.font = `700 54px ${SIGN_FONT_STACK}`;
     g.fillText(l.ja, x, y0 + 66);
-    g.font = "600 34px 'Helvetica Neue','Inter','Arial',sans-serif";
+    g.font = "600 34px 'GTEki Sign JP','Helvetica Neue','Inter','Arial',sans-serif";
     g.globalAlpha = 0.9;
     g.fillText(l.en, x, y0 + 108);
     g.globalAlpha = 1;
