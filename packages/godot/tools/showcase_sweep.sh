@@ -5,8 +5,11 @@ set -euo pipefail
 # Usage:
 #   bash packages/godot/tools/showcase_sweep.sh <absolute.glb> <out_dir> <camera> <absolute reference image> \
 #     <sweep file> [extra showcase arguments ...]
-# Each non-empty line of the sweep file is "<tag> <--tune=... arguments...>"; '#' starts a comment. Every line runs
-# the README's showcase command once, sequentially, under the shared host lock. Each run writes its report to
+# Each non-empty line of the sweep file is "<tag> <--tune=... arguments...>". A line whose first non-blank
+# character is '#' is a comment; there are no trailing comments, so a value like --tune=probe_ambient_colour=#204060
+# keeps its '#'. Every line runs the README's showcase command once, sequentially, under the shared host lock, so
+# never run two sweeps concurrently on the same out_dir: report files are deleted and checked outside the lock.
+# Each run writes its report to
 # <out_dir>/sweep_<tag>_report.json (passed with --report), so a run cannot pick up another run's report. The final
 # table shows each tag's luminance ratios (godot / reference).
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
@@ -44,7 +47,11 @@ out_dir="$(cd "$out_dir" && pwd)"
 lines=()
 seen_tags=" "
 while IFS= read -r line || [[ -n "$line" ]]; do
-  line="${line%%#*}"
+  # Strip leading whitespace only: a '#' anywhere else is data (a #rrggbb colour), not a trailing comment.
+  trimmed="${line#"${line%%[![:space:]]*}"}"
+  if [[ -z "$trimmed" || "${trimmed:0:1}" == "#" ]]; then
+    continue
+  fi
   words=()
   read -r -a words <<< "$line"
   if [[ ${#words[@]} -eq 0 ]]; then

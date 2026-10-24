@@ -442,14 +442,17 @@ there instead (its directory is created if needed), which is how the sweep gives
 ratios as one table. Each non-empty line is `<tag> <tune arguments...>`; extra arguments are appended to every run.
 It checks every tag (letters, digits, `_`, `.`, `-`) and rejects duplicates before running anything, gives each run
 its own `<out_dir>/sweep_<tag>_report.json` through `--report` (deleted first, so a run that exits without writing
-cannot reuse an old report), and stops if that file is missing afterwards:
+cannot reuse an old report), and stops if that file is missing afterwards. A line is a comment only when its first
+non-blank character is `#`; there are no trailing comments, so a `#rrggbb` value keeps its `#`. Never run two sweeps
+concurrently against the same output directory: report files are deleted and checked outside the shared lock.
 
 ```sh
 cat > packages/godot/.cache/showcase/concourse.sweep <<'EOF'
 baseline
 sdfgi       --tune=gi=sdfgi --tune=gi_energy=1.0
 exposure    --tune=exposure_ev=0.5 --tune=ambient_energy=2.0
-probe       --tune=probe_ambient=environment --tune=probe_ambient_energy=2.0
+probe       --tune=probe_ambient=color --tune=probe_ambient_energy=2.0
+probe_warm  --tune=probe_ambient=color --tune=probe_ambient_colour=#ffd9b3 --tune=probe_ambient_energy=1.5
 EOF
 bash packages/godot/tools/showcase_sweep.sh "$CONCOURSE_GLB" "$PWD/packages/godot/.cache/showcase/" \
   gates_closed "$PWD/docs/assets/img/concourse_gates_closed.jpg" \
