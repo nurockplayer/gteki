@@ -17,6 +17,8 @@ export interface DiscoveredStation {
   folder: string;
   gtekiDir: string;
   scene: string | null;
+  /** The optional gteki/tenants.json (a store brand directory, #419). */
+  tenants: string | null;
   assets: string[];
 }
 
@@ -33,7 +35,7 @@ const PUBLICATION_RULES = new Set([
   "source.attribution", "source.license", "source.url", "source.override", "source.decision",
 ]);
 /** The contract files are loaded as data, not served as assets. */
-const CONTRACT_FILES = new Set(["station.json", "graph.json", "pois.json"]);
+const CONTRACT_FILES = new Set(["station.json", "graph.json", "pois.json", "tenants.json"]);
 
 const isInside = (real: string, fence: string) => real === fence || real.startsWith(fence + path.sep);
 
@@ -65,7 +67,8 @@ export function discoverStations(roots: string[]): DiscoveredStation[] {
       const folder = fs.realpathSync(path.join(root, dir));
       seen.add(dir);
       const scene = ["scene.ts", "scene.js"].map((f) => path.join(gtekiDir, f)).find((f) => fs.existsSync(f)) ?? null;
-      found.push({ dir, folder, gtekiDir, scene, assets: walk(gtekiDir, folder) });
+      const tenants = path.join(gtekiDir, "tenants.json");
+      found.push({ dir, folder, gtekiDir, scene, tenants: fs.existsSync(tenants) ? tenants : null, assets: walk(gtekiDir, folder) });
     }
   }
   return found;
@@ -92,7 +95,9 @@ export function publishableAssets(stations: DiscoveredStation[]): Map<string, Se
     const read = (name: string): unknown => {
       try { return JSON.parse(fs.readFileSync(path.join(s.gtekiDir, name), "utf8")); } catch { return undefined; }
     };
-    const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"));
+    // An unreadable optional file is refused, not read as "no directory": `{}` fails the shape check.
+    const tenants = fs.existsSync(path.join(s.gtekiDir, "tenants.json")) ? read("tenants.json") ?? {} : undefined;
+    const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), tenants);
     if (!parsed.ok) {
       const errors = parsed.issues.filter((i) => i.level === "error");
       failures.push(`${s.dir}: ${errors.slice(0, 5).map((i) => `${i.code}${i.ref ? ` (${i.ref})` : ""}`).join(", ")}${errors.length > 5 ? ` and ${errors.length - 5} more` : ""}`);
@@ -174,8 +179,8 @@ export function declaredStationFiles(stations: DiscoveredStation[]): DeclaredSta
   });
 }
 
-/** Contract files the loader reads as data (station.json, graph.json, pois.json), inside a station's gteki/. */
-const CONTRACT_PATH = /^gteki\/(station|graph|pois)\.json$/;
+/** Contract files the loader reads as data (station.json, graph.json, pois.json, tenants.json), inside a station's gteki/. */
+const CONTRACT_PATH = /^gteki\/(station|graph|pois|tenants)\.json$/;
 
 /** A trailing Vite query such as `?raw`, `?url`, `?v=1&inline`; a real path with a `?` or `#` of its own is left whole. */
 const VITE_QUERY = /\?[\w-]+(?:=[^&#?]*)?(?:&[\w-]+(?:=[^&#?]*)?)*$/;
@@ -303,7 +308,8 @@ export function factsOnlyDataLines(stations: DiscoveredStation[]): string[] {
     const read = (name: string): unknown => {
       try { return JSON.parse(fs.readFileSync(path.join(s.gtekiDir, name), "utf8")); } catch { return undefined; }
     };
-    const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"));
+    const tenants = fs.existsSync(path.join(s.gtekiDir, "tenants.json")) ? read("tenants.json") ?? {} : undefined;
+    const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), tenants);
     if (!parsed.ok) return [];
     return dataFileFactsOnlySources(parsed.bundle).map((d) => `[gteki] ${s.dir} ${d.path} cites facts-only: ${d.factsOnlySourceIds.join(", ")}`);
   });
@@ -369,6 +375,7 @@ export function gtekiStations(roots: string[]): Plugin {
     manifest: () => import(${f("station.json")}).then((m) => m.default),
     graph: () => import(${f("graph.json")}).then((m) => m.default),
     pois: () => import(${f("pois.json")}).then((m) => m.default),
+    tenants: ${s.tenants ? `() => import(${f("tenants.json")}).then((m) => m.default)` : "null"},
     scene: ${s.scene ? `() => import(${fsPath(s.scene)})` : "null"},
     assets: { ${assets.join(", ")} },
   },`);

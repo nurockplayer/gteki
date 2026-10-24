@@ -71,8 +71,11 @@ export async function listStations(): Promise<StationEntry[]> {
         const scenePromise = s.scene
           ? s.scene().catch((err: unknown) => { sceneImportError = err instanceof Error ? err.message : String(err); return null; })
           : Promise.resolve(null);
-        const [graph, pois, sceneModule] = await Promise.all([s.graph(), s.pois(), scenePromise]);
-        const parsed = parseStationFiles(manifest, graph, pois);
+        // `tenants` is optional (#419): undefined = the station ships no brand directory.
+        const [graph, pois, tenants, sceneModule] = await Promise.all([
+          s.graph(), s.pois(), s.tenants ? s.tenants() : Promise.resolve(undefined), scenePromise,
+        ]);
+        const parsed = parseStationFiles(manifest, graph, pois, tenants);
         if (!parsed.ok) throw new StationLoadError(s.dir, parsed.issues);
         if (sceneModule !== null && !isSceneModule(sceneModule)) sceneImportError = "scene module does not export buildScene(ctx)";
         const assetUrls = new Map<string, string>();

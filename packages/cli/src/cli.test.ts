@@ -41,6 +41,29 @@ describe("@gteki/cli", { timeout: 30_000 }, () => {
     }
   });
 
+  it("reads the optional store brand directory and refuses an invalid one (#419)", async () => {
+    const root = await fixtureDir();
+    try {
+      const file = stationFile(root, "tenants.json");
+      await writeFile(file, JSON.stringify({ schema: "gteki.tenants/0.1", tenants: [] }), "utf8");
+      expect(invoke(routeScript, [root, "start", "goal"]).status).toBe(0);
+      const invalid = {
+        schema: "gteki.tenants/0.1",
+        tenants: [{
+          id: "tenant-store-1", poiId: "no-such-poi", names: [{ lang: "ja", text: "テスト" }], aliases: [],
+          floorLabel: [{ lang: "ja", text: "1F" }],
+          evidence: { sourceIds: ["demo-synthetic"], method: "field-survey", checkedDate: "2026-10-22" },
+        }],
+      };
+      await writeFile(file, JSON.stringify(invalid), "utf8");
+      const bad = invoke(routeScript, [root, "start", "goal"]);
+      expect(bad.status).toBe(2);
+      expect(bad.stderr).toContain("tenant.poi");
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("routes start to goal and emits ENU plus renderer coordinates", async () => {
     const root = await fixtureDir();
     try {
