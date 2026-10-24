@@ -1,0 +1,461 @@
+{
+  "schema": "gteki.station/0.1",
+  "note": "Ikebukuro batch 5 facts-only merchant transcription (Seibu station shops). Entries are unverified directory listings; locations and entrances are not route evidence.",
+  "sources": [
+    {
+      "id": "seibu-shop-ikebukuro-2026-10",
+      "title": "エミオ 池袋 | エミオを探す | エミオ",
+      "publisher": "株式会社西武不動産プロパティマネジメント",
+      "url": "https://www.seibu-shop.jp/emio/floorguide/?emio=emio01",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896",
+        "date": "2026-10-24"
+      },
+      "attribution": "エミオ 池袋 | エミオを探す | エミオ (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T10:12:37Z",
+      "datasetDate": null,
+      "notes": "Shop names and the facility label (エミオ 池袋) only, under OD-34: facts-only POI attributes, never route evidence. No descriptions, hours, logos or images reproduced. Page undated."
+    },
+    {
+      "id": "seibu-shop-ikebukuro-station-2026-10",
+      "title": "池袋 | 駅ナカ・駅チカニュース | 西武沿線駅ナカ・駅チカ情報ポータル",
+      "publisher": "株式会社西武不動産プロパティマネジメント",
+      "url": "https://www.seibu-shop.jp/floorguide/station/?station=st01",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896",
+        "date": "2026-10-24"
+      },
+      "attribution": "池袋 | 駅ナカ・駅チカニュース | 西武沿線駅ナカ・駅チカ情報ポータル (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T10:12:37Z",
+      "datasetDate": null,
+      "notes": "Shop names, floor labels printed in the shop names and item categories only, under OD-34: facts-only POI attributes, never route evidence. No descriptions, hours, logos or images reproduced. Page undated."
+    }
+  ],
+  "pois": [
+    {
+      "id": "shop-ikb-seibu-001261",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ドトールコーヒーショップ"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-shop-ikebukuro-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-ikb-seibu-000597",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "トモニー 池袋駅１階改札内店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-shop-ikebukuro-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-ikb-seibu-000598",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "トモニー 池袋駅東口店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-shop-ikebukuro-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-ikb-seibu-000514",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "スターバックスコーヒー"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-shop-ikebukuro-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-ikb-seibu-000513",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "そばダイニング　凛や"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-shop-ikebukuro-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-ikb-seibu-000515",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "だし茶漬け えん"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-shop-ikebukuro-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-ikb-seibu-000687",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "メルシーライフオーガニックス"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-shop-ikebukuro-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-ikb-seibu-000512",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "SWEETS BOX"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-shop-ikebukuro-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-ikb-seibu-000516",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "マネケン"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-shop-ikebukuro-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-ikb-seibu-000599",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "トモニー 池袋駅地下改札内店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-shop-ikebukuro-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-ikb-seibu-000600",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "トモニー 池袋駅地下改札外店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-shop-ikebukuro-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "エミオ池袋。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-ikb-seibu-000901",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "宝くじ 1F"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-shop-ikebukuro-station-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "西武池袋駅 1F（施設名の記載なし）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Seibu Ikebukuro Station, 1F (no facility name printed). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-ikb-seibu-000902",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "宝くじ 地下"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "seibu-shop-ikebukuro-station-2026-10"
+        ],
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "西武池袋駅 地下（施設名の記載なし）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Seibu Ikebukuro Station, basement (no facility name printed). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    }
+  ],
+  "removed": []
+}
