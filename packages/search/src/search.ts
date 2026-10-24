@@ -255,8 +255,11 @@ export function createSearchIndex(bundle: StationBundle): SearchIndex {
           for (const form of forms) {
             const raw = scoreText(form, text.normalized);
             if (raw <= 0) continue;
-            const candidateScore = raw - form.penalty - (text.tenant ? TENANT_PENALTY : 0);
-            if (candidateScore <= 0) continue;
+            const score = raw - form.penalty;
+            if (score <= 0) continue;
+            // The tenant penalty ranks a brand below direct matches but never drops it: a typo'd brand (fuzzy, at most 20)
+            // still finds its store, last.
+            const candidateScore = text.tenant ? Math.max(1, score - TENANT_PENALTY) : score;
             const quality = qualityOf(text.normalized, form);
             if (text.tenant) {
               matchedTenants.add(text.tenant.id);

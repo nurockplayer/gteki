@@ -53,6 +53,14 @@ describe("tenant search (#419)", () => {
     expect(hits[1]!.tenant).toMatchObject({ id: "tenant-other-1" });
   });
 
+  it("still finds a store through a mistyped brand, below a mistyped direct match", () => {
+    const bundle = createTenantFixtureBundle();
+    expect(indexFor(bundle).search("Sample Pharmcy")[0]).toMatchObject({ poi: { id: "store" }, tenant: { id: "tenant-store-1" } });
+    bundle.pois.push(syntheticStorePoi("pharmacy", "Sample Pharmacy"));
+    const hits = indexFor(bundle).search("Sample Pharmcy");
+    expect(hits.map((h) => h.poi.id).slice(0, 2)).toEqual(["pharmacy", "store"]);
+  });
+
   it("keeps one hit per store and counts the other brands that matched", () => {
     const bundle = createTenantFixtureBundle();
     bundle.tenants![1]!.names = [{ lang: "ja", text: "デモカフェ" }];
