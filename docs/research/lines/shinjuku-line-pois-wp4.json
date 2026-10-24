@@ -11,16 +11,16 @@
       "url": "https://www.tokyometro.jp/station/shinjuku/index.html",
       "license": null,
       "rights": "REFERENCE_ONLY",
-      "usage": "facts-only",
+      "attribution": "東京メトロ 新宿駅 (facts only; not reproduced)",
       "modified": false,
       "retrievedAt": "2026-10-24T18:02:00+09:00",
       "datasetDate": "2023-12",
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。Read: exit list block (A6-B18, 28 entries, printed 改定日：2023年12月), station facts and transfer section. No text, map or image copied.",
+      "usage": "facts-only",
       "decision": {
-        "refs": [
-          "#26"
-        ]
-      },
-      "notes": "ライセンスなし・事実のみ参照（複製なし）。Read: exit list block (A6-B18, 28 entries, printed 改定日：2023年12月), station facts and transfer section. No text, map or image copied."
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
     },
     {
       "id": "tokyometro-shinjuku-accessibility-2026-10",
@@ -29,16 +29,16 @@
       "url": "https://www.tokyometro.jp/station/shinjuku/accessibility/index.html",
       "license": null,
       "rights": "REFERENCE_ONLY",
-      "usage": "facts-only",
+      "attribution": "東京メトロ 新宿駅 バリアフリー設備 (facts only; not reproduced)",
       "modified": false,
       "retrievedAt": "2026-10-24T18:05:00+09:00",
       "datasetDate": null,
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。Read: 丸ノ内線 equipment table. Elevators: 1 inside the ticket gates, 3 outside; escalators: both directions 1, up only 1, down none. The page also marks elevator-based step-free access as available. Hours printed on two locations only. No date printed on this page.",
+      "usage": "facts-only",
       "decision": {
-        "refs": [
-          "#26"
-        ]
-      },
-      "notes": "ライセンスなし・事実のみ参照（複製なし）。Read: 丸ノ内線 equipment table. Elevators: 1 inside the ticket gates, 3 outside; escalators: both directions 1, up only 1, down none. The page also marks elevator-based step-free access as available. Hours printed on two locations only. No date printed on this page."
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
     },
     {
       "id": "tokyometro-shinjuku-yardmap-print-2026-10",
@@ -47,16 +47,16 @@
       "url": "https://www.tokyometro.jp/station/shinjuku/yardmap/index_print.html",
       "license": null,
       "rights": "REFERENCE_ONLY",
-      "usage": "facts-only",
+      "attribution": "東京メトロ 新宿駅構内図 (facts only; not reproduced)",
       "modified": false,
       "retrievedAt": "2026-10-24T18:07:00+09:00",
       "datasetDate": "2023-12",
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。Read: printed exit table (same 28 rows as the station page; 改定日：2023年12月). The table states that exits marked with an asterisk have time restrictions. No map or image copied.",
+      "usage": "facts-only",
       "decision": {
-        "refs": [
-          "#26"
-        ]
-      },
-      "notes": "ライセンスなし・事実のみ参照（複製なし）。Read: printed exit table (same 28 rows as the station page; 改定日：2023年12月). The table states that exits marked with an asterisk have time restrictions. No map or image copied."
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
     },
     {
       "id": "toei-shinjuku-station-2026-10",
@@ -65,16 +65,16 @@
       "url": "https://www.kotsu.metro.tokyo.jp/subway/stations/shinjuku.html",
       "license": null,
       "rights": "REFERENCE_ONLY",
-      "usage": "facts-only",
+      "attribution": "都営地下鉄 新宿駅 (facts only; not reproduced)",
       "modified": false,
       "retrievedAt": "2026-10-24T18:10:00+09:00",
       "datasetDate": null,
+      "notes": "ライセンスなし・事実のみ参照（複製なし）。Read: マップと出入口 exit list (9 entries) and the per-line barrier-free summary. 新宿線: escalators 14, elevators 1, step-free route secured; 大江戸線: escalators 16, elevators 2, step-free route secured. Lift and escalator locations are not printed. The per-exit coordinate feed was not read or recorded. Rights: OD-01 A (docs/research/owner-decisions-pending.md; decided 2026-10-22 by the director under the Owner's delegation, recorded in PR #178). The per-exit coordinate feed is not used.",
+      "usage": "facts-only",
       "decision": {
-        "refs": [
-          "OD-01 A"
-        ]
-      },
-      "notes": "ライセンスなし・事実のみ参照（複製なし）。Read: マップと出入口 exit list (9 entries) and the per-line barrier-free summary. 新宿線: escalators 14, elevators 1, step-free route secured; 大江戸線: escalators 16, elevators 2, step-free route secured. Lift and escalator locations are not printed. The per-exit coordinate feed was not read or recorded."
+        "url": "https://github.com/nurockplayer/gteki/pull/178",
+        "date": "2026-10-22"
+      }
     }
   ],
   "pois": [
