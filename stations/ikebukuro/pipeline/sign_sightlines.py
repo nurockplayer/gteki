@@ -19,6 +19,7 @@ CELL = 4.0
 EPS = 1e-7
 # apps/web/src/explorer/followCamera.ts FOLLOW and explorer.ts default pitch.
 FOLLOW_DISTANCE, FOLLOW_SHOULDER, FOLLOW_LIFT, DEFAULT_PITCH = 3.45, 0.42, 0.14, -0.12
+FOLLOW_PIECE_M = 0.25
 
 
 def sub(a, b):
@@ -33,7 +34,7 @@ def cross(a, b):
     return (a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0])
 
 
-def scene_polygons(include_fittings=True, include_sleeves=True):
+def scene_polygons(include_fittings=True, include_sleeves=True, *, roles=('wall', 'ceiling', 'barriers', 'light_fixtures')):
     """Read uncompressed glTF triangles, in ENU, without Blender or a renderer."""
     with (ROOT / 'gteki/assets/ikebukuro_b1_lit.glb').open('rb') as f:
         magic, version, _ = struct.unpack('<III', f.read(12))
@@ -61,7 +62,7 @@ def scene_polygons(include_fittings=True, include_sleeves=True):
             continue
         mesh = gltf['meshes'][node['mesh']]
         role = node.get('extras', {}).get('gteki_role', mesh.get('extras', {}).get('gteki_role', node.get('name')))
-        if role not in {'wall', 'ceiling', 'barriers', 'light_fixtures'}:
+        if role not in roles:
             continue
         if role == 'light_fixtures' and not include_fittings:
             continue
@@ -230,6 +231,12 @@ def sightline_volumes(geom, sign, sides=('front', 'back'), distances=(6.0, 10.0)
         toward = -1 if dot(sub(after, before), facing) < 0 else 1
         lo, hi = sorted(max(0, min(acc, at + toward*direction*d)) for d in distances)
         stops = [lo] + [d for d in breaks if lo < d < hi] + [hi]
+        if viewer == 'follow_nominal':
+            # Bound the probe's fixed-length boom in short pieces, rather than
+            # including every shortened boom/shoulder pose of the audit envelope.
+            stops = [a + (b-a)*i/max(1, math.ceil((b-a)/FOLLOW_PIECE_M))
+                     for a, b in zip(stops, stops[1:])
+                     for i in range(max(1, math.ceil((b-a)/FOLLOW_PIECE_M)))] + [hi]
         face = [tuple(center[k] + direction*FACE_OFFSET*scale*facing[k] +
                       x*width/2*right[k] + (z*height/2 if k == 2 else 0)
                       for k in range(3)) for x, z in ((-1,-1),(1,-1),(1,1),(-1,1))]
@@ -237,8 +244,41 @@ def sightline_volumes(geom, sign, sides=('front', 'back'), distances=(6.0, 10.0)
             eyes = [tuple(v + (EYE_M if k == 2 else 0) for k, v in enumerate(point_at(geom, d))) for d in (start, end)]
             if viewer == 'follow':
                 eyes = follow_envelope(eyes, center)
+            elif viewer == 'follow_nominal':
+                eyes = nominal_follow_envelope(eyes, center)
             vertices = face + eyes
             yield side, vertices, hull_planes(vertices)
+
+
+def nominal_follow_envelope(eyes, target):
+    """Tight continuous bound on the fixed boom used by spec 11's aim().
+
+    The heading's curvature is at most 2*b/r**3 for lateral offset b and
+    distance r. The camera path stays within M*length**2/8 of its endpoint
+    chord. Bound that horizontal error without losing eye/boom correlation.
+    """
+    lift = -math.sin(DEFAULT_PITCH) + FOLLOW_LIFT
+    norm = math.hypot(math.cos(DEFAULT_PITCH), lift)
+    horizontal, vertical = FOLLOW_DISTANCE*math.cos(DEFAULT_PITCH)/norm, FOLLOW_DISTANCE*lift/norm
+    cameras = []
+    for e in eyes:
+        dx, dy = target[0]-e[0], target[1]-e[1]
+        length = math.hypot(dx, dy)
+        dx, dy = (dx/length, dy/length) if length > EPS else (0, 1)
+        cameras.append((e[0]-horizontal*dx+FOLLOW_SHOULDER*dy,
+                        e[1]-horizontal*dy-FOLLOW_SHOULDER*dx, e[2]+vertical))
+    a, b = eyes
+    vx, vy = b[0]-a[0], b[1]-a[1]
+    length = math.hypot(vx, vy)
+    if length < EPS:
+        return cameras
+    t = max(0, min(1, ((target[0]-a[0])*vx+(target[1]-a[1])*vy)/length**2))
+    radius = math.hypot(target[0]-a[0]-t*vx, target[1]-a[1]-t*vy)
+    if radius < EPS:
+        return follow_envelope(eyes, target)
+    lateral = abs((target[0]-a[0])*vy-(target[1]-a[1])*vx)/length
+    error = math.hypot(horizontal, FOLLOW_SHOULDER)*lateral*length**2/(4*radius**3)
+    return [(c[0]+x*error, c[1]+y*error, c[2]) for c in cameras for x, y in itertools.product((-1, 1), repeat=2)]
 
 
 def follow_envelope(eyes, target):
