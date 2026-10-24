@@ -1063,11 +1063,11 @@ export class Explorer {
     return true;
   }
 
-  walkFromNode(bundle: StationBundle, nodeId: string): boolean {
+  walkFromNode(bundle: StationBundle, nodeId: string, headingDeg: number): boolean {
     const n = bundle.nodes.find((x) => x.id === nodeId);
     if (!n) return false;
     const z = nodeDisplayZ(n, bundle.floors.find((f) => f.id === n.floorId)).z;
-    return this.walkFrom({ x: n.position.x, y: n.position.y, z });
+    return this.walkFrom({ x: n.position.x, y: n.position.y, z }, headingDeg);
   }
 
   private groundAt(x: number, fromY: number, z: number, maxDrop: number): number | null {
