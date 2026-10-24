@@ -23,6 +23,10 @@ const exits = byCategory("exit");
 /** #411: search-only line POIs cite tokyo-s03-zip and nothing else. */
 const S03_SOURCE = "tokyo-s03-zip";
 const isS03 = (p: Poi) => p.evidence.sourceIds.includes(S03_SOURCE);
+/** #214: facts-only merchant listings (shops). Search-only like S03, but with their own directory sources. */
+const isShop = (p: Poi) => p.category === "shop";
+/** The E27 (Toei NWD / station map / GSI) POIs: everything the station itself evidences. */
+const isE27 = (p: Poi) => !isS03(p) && !isShop(p);
 
 interface PlanFacility { id: string; category: string; x: number; y: number }
 const plan = planJson as unknown as { levels: { label: string; ordinal: number; floorId: string; facilities: PlanFacility[]; spaces: { category: string; rings: Pt[][] }[] }[] };
@@ -34,9 +38,11 @@ describe("POI names", () => {
     expect(issues.filter((i) => i.level === "error")).toEqual([]);
   });
 
-  it("gives every E27 POI a ja and en name, unique per language, and every S03 POI one ja name", () => {
+  it("gives every E27 POI a ja and en name, unique per language, and every S03 or shop POI one ja name", () => {
     // #411: S03 search-only POIs carry a ja name only (copied as printed; no English is invented).
-    const e27 = pois.filter((p) => !isS03(p));
+    // #214: merchant listings are printed names too; they carry no invented English either.
+    const e27 = pois.filter(isE27);
+    for (const p of pois.filter(isShop)) expect(text(p, "ja"), p.id).toBeTruthy();
     for (const lang of ["ja", "en"]) {
       const names = e27.map((p) => text(p, lang));
       expect(names.every(Boolean), lang).toBe(true);
@@ -260,14 +266,19 @@ describe("POI aliases", () => {
         return p.category === "exit" && t.includes(" ") ? `${lang}:${tokens(t)}` : k;
       };
       const allowedNorm = new Map([...allowed].map(([k, v]) => [norm(k), v]));
-      for (const a of p.aliases) expect(allowedNorm.has(norm(`${a.lang}:${a.text}`)), `${p.id} alias ${a.lang}:${a.text}`).toBe(true);
+      // #214: a shop's only aliases are kana readings its directory prints (checked in the shop block below).
+      for (const a of p.aliases) {
+        if (isShop(p)) expect(a.lang, `${p.id} alias ${a.text}`).toBe("ja-Hrkt");
+        else expect(allowedNorm.has(norm(`${a.lang}:${a.text}`)), `${p.id} alias ${a.lang}:${a.text}`).toBe(true);
+      }
     }
   });
 
   it("lets nobody read a JR or other-operator claim out of a name or alias", () => {
     const other = /JR|ＪＲ|山手|京王|小田急|メトロ|丸ノ内|丸ノ内線|新宿線|中央線|Yamanote|Keio|Odakyu|Metro|Marunouchi|西口|南口|東口|Nishiguchi/i;
-    // S03 search-only POIs (#411) are other operators' names by design; they are checked for having no route in the S03 block.
-    for (const p of pois.filter((x) => !isS03(x))) for (const t of [...p.names, ...p.aliases]) expect(t.text, `${p.id} ${t.lang}`).not.toMatch(other);
+    // S03 search-only POIs (#411) and merchant listings (#214) carry other operators' printed names by design;
+    // both are checked for having no route in their own blocks.
+    for (const p of pois.filter(isE27)) for (const t of [...p.names, ...p.aliases]) expect(t.text, `${p.id} ${t.lang}`).not.toMatch(other);
   });
 
   it("makes the station-name anchor say it is the Toei Oedo Line station, and says what is not modelled", () => {
@@ -290,8 +301,9 @@ describe("POI aliases", () => {
 });
 
 describe("facility POIs trace to the GSI facility points", () => {
-  it("keeps to the five categories Shinjuku has a source anchor for (no shops, kiosks, benches or vending)", () => {
-    expect([...new Set(pois.filter((p) => !isS03(p)).map((p) => p.category))].sort()).toEqual(["elevator", "exit", "platform", "ticket_gate", "toilet"]);
+  it("keeps to the five E27 categories Shinjuku has a source anchor for (no kiosks, benches or vending)", () => {
+    // #214 adds shops, but only as facts-only listings from the merchant directories (their own block below).
+    expect([...new Set(pois.filter(isE27).map((p) => p.category))].sort()).toEqual(["elevator", "exit", "platform", "ticket_gate", "toilet"]);
   });
 
   it("has one exit POI per GSI exit point (F108)", () => {
@@ -374,8 +386,10 @@ describe("facility POIs trace to the GSI facility points", () => {
     const ADDED: { id: string; source: string }[] = [];
     // #411: 45 search-only line POIs from tokyo-s03-zip, appended after every E27 POI (see the S03 block below).
     const S03_COUNT = 45;
-    expect(pois.length).toBe(OLD_COUNT + ADDED.length + S03_COUNT);
-    const e27Pois = pois.filter((p) => !isS03(p));
+    // #214: 6 Toei/Tokyo Metro + 576 LUMINE/NEWoMan listings + the Odakyu department store (see the shop block).
+    const SHOP_COUNT = 583;
+    expect(pois.length).toBe(OLD_COUNT + ADDED.length + S03_COUNT + SHOP_COUNT);
+    const e27Pois = pois.filter(isE27);
     expect(e27Pois.length).toBe(OLD_COUNT + ADDED.length);
     const bySource = { exit: 6, ticket_gate: 3, platform: 1, elevator: 3, toilet: 3 } as const;
     for (const [c, n] of Object.entries(bySource)) expect(e27Pois.filter((p) => p.category === c).length, c).toBe(n);
@@ -434,14 +448,15 @@ describe("expected search results (docs/stations/shinjuku/search-expected.md)", 
     },
   );
 
-  // #411: other operators' names resolve only to the S03 search-only POIs, which have no route.
+  // #411: other operators' names resolve only to the search-only S03 POIs and, since #214, the facts-only
+  // merchant listings (e.g. 小田急百貨店, or a shop whose printed name names an exit). None has a route.
   it.each(["JR", "山手線", "中央線", "京王", "京王線", "小田急", "小田急線", "丸ノ内線", "西口", "南口", "東口", "新宿西口"])(
-    "%s returns only search-only S03 POIs (no route)",
+    "%s returns only search-only S03 or shop POIs (no route)",
     (query) => {
       const hits = strong(query);
       expect(hits.length).toBeGreaterThan(0);
       for (const h of hits) {
-        expect(isS03(h.poi), h.poi.id).toBe(true);
+        expect(isS03(h.poi) || isShop(h.poi), h.poi.id).toBe(true);
         expect(h.poi.connectorNodeIds, h.poi.id).toEqual([]);
       }
     },
@@ -457,11 +472,14 @@ describe("S03 search-only line POIs (#411)", () => {
   const index = createSearchIndex(bundle);
   const srcEntry = bundle.sources.find((s) => s.id === S03_SOURCE);
 
-  it("has 45 S03 POIs, all placed after every E27 POI", () => {
+  it("has 45 S03 POIs, after every E27 POI and before the #214 shops", () => {
     expect(s03Pois.length).toBe(45);
-    const lastE27 = Math.max(...pois.flatMap((p, i) => (isS03(p) ? [] : [i])));
+    const lastE27 = Math.max(...pois.flatMap((p, i) => (isE27(p) ? [i] : [])));
     const firstS03 = Math.min(...pois.flatMap((p, i) => (isS03(p) ? [i] : [])));
+    const lastS03 = Math.max(...pois.flatMap((p, i) => (isS03(p) ? [i] : [])));
+    const firstShop = Math.min(...pois.flatMap((p, i) => (isShop(p) ? [i] : [])));
     expect(firstS03).toBeGreaterThan(lastE27);
+    expect(firstShop).toBeGreaterThan(lastS03);
   });
 
   it("gives each S03 POI no floor, position, connector or paid value", () => {
@@ -562,3 +580,49 @@ describe("S03 search-only line POIs (#411)", () => {
     for (const p of pois.filter((x) => x.approximatePosition !== undefined)) expect(graphText.includes(p.id), `${p.id} appears in graph.json`).toBe(false);
   });
 });
+
+describe("merchant shops (#214)", () => {
+  const shops = pois.filter(isShop);
+  const index = createSearchIndex(bundle);
+
+  it("imports the 583 directory listings as search-only shops", () => {
+    expect(shops.length).toBe(583);
+    for (const p of shops) {
+      expect(p.evidence.sourceIds.length, p.id).toBe(1);
+      expect(bundle.sources.some((s) => s.id === p.evidence.sourceIds[0]), p.id).toBe(true);
+      // No position, floor, fare-gate value or connector: a directory listing is not route evidence.
+      expect(p.floorId, p.id).toBeNull();
+      expect(p.displayPosition, p.id).toBeNull();
+      expect(p.connectorNodeIds, p.id).toEqual([]);
+      expect(p.paid, p.id).toBeNull();
+      expect(p.approximatePosition, p.id).toBeUndefined();
+    }
+  });
+
+  it("keeps the printed name and says the location is unverified", () => {
+    for (const p of shops) {
+      expect(p.names.length, p.id).toBe(1);
+      expect(p.names[0]!.lang, p.id).toBe("ja");
+      expect(p.names[0]!.text.trim(), p.id).not.toBe("");
+      const ja = p.notes?.find((n) => n.lang === "ja")?.text ?? "";
+      const en = p.notes?.find((n) => n.lang === "en")?.text ?? "";
+      expect(ja, `${p.id} ja`).toContain("未確認");
+      expect(en, `${p.id} en`).toContain("not verified");
+    }
+  });
+
+  it("keeps the S03 and merchant credit out of plan.json, which neither feeds", () => {
+    const attribution = (planJson as unknown as { attribution: string[] }).attribution;
+    for (const s of bundle.sources.filter((s) => isShopSource(s.id))) expect(attribution, s.id).not.toContain(s.attribution);
+  });
+
+  it("finds a shop by its own printed name (read from pois.json, not written here)", () => {
+    const shop = shops.find((p) => p.names[0]!.text.length >= 4)!;
+    expect(index.search(shop.names[0]!.text, { limit: 10 }).map((h) => h.poi.id)).toContain(shop.id);
+  });
+});
+
+/** The merchant sources (#214): the shops' own directory sources, whatever the batch. */
+function isShopSource(id: string): boolean {
+  return pois.some((p) => isShop(p) && p.evidence.sourceIds.includes(id));
+}

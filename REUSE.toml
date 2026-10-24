@@ -323,15 +323,19 @@ precedence = "override"
 SPDX-FileCopyrightText = "東京都都市整備局; modified by GTEki contributors"
 SPDX-License-Identifier = "LicenseRef-S03"
 
-# --- 4o. S03 line names in the Shinjuku station POIs (import of #411; Owner Q2/Q3, gteki-1b R-1/R-2) ---
-# pois.json keeps its E27 content (4c) and adds 45 S03 gate and platform names: search only,
-# AREA_ONLY, no position, no floor. station.json only cites tokyo-s03-zip and stays under 4c.
-# Credit and change notice: NOTICE 4.7.
+# --- 4o. S03 line names and merchant listings in the Shinjuku station files (imports of #411 and #214) ---
+# The files keep their E27 content (4c) and add 45 S03 gate and platform names (search only, AREA_ONLY,
+# no position, no floor) and 583 facts-only merchant listings (one Toei S10 CC BY 4.0 row plus the
+# directories under NOTICE 4.9), search only, no position or floor. Credits and change notices:
+# NOTICE 4.6, 4.7 and 4.9.
 [[annotations]]
-path = "stations/shinjuku/gteki/pois.json"
+path = [
+  "stations/shinjuku/gteki/pois.json",
+  "stations/shinjuku/gteki/station.json",
+]
 precedence = "override"
-SPDX-FileCopyrightText = "国土交通省（ほこナビDP）; 東京都都市整備局; modified by GTEki contributors"
-SPDX-License-Identifier = "LicenseRef-Hokonavi-E27-Owner-override AND LicenseRef-S03"
+SPDX-FileCopyrightText = "国土交通省（ほこナビDP）; 東京都都市整備局; 東京都交通局; facts-only sources; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-Hokonavi-E27-Owner-override AND LicenseRef-S03 AND LicenseRef-Toei-S10 AND LicenseRef-facts-only-no-licence"
 
 # --- 4n. Facts-only line POIs for Shinjuku (lines-lead WP4; #26 Tokyo Metro, OD-01 A Toei; NOTICE 4.12) ---
 [[annotations]]

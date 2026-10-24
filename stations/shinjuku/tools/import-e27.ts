@@ -1240,6 +1240,33 @@ for (const raw of s03.pois) {
   });
 }
 if (usedApprox.size !== s03ApproxById.size) throw new Error(`S03 positions: ${s03ApproxById.size - usedApprox.size} entries do not match an appended POI`);
+
+// ---------------------------------------------------------------- merchant shops (#214)
+// Facts-only transcription already on main: docs/research/merchants/shinjuku-merchants-batch1.json (Toei +
+// Tokyo Metro, #418), batch2 (LUMINE EST, LUMINE, NEWoMan) and shinjuku-odakyu-dept.json (the department store
+// itself). Contracts: docs/research/merchants/shinjuku-import-contract.md and shinjuku-batch2-contract.md.
+// Every shop is search-only: the sources give no position or entrance, so floorId, displayPosition, paid stay
+// null and connectorNodeIds stays empty. Brand lists are not POIs (#419); see gteki/tenants.json.
+type MerchantFile = { sources: Source[]; pois: Poi[] };
+const MERCHANT_POI_FILES = ["shinjuku-merchants-batch1.json", "shinjuku-merchants-batch2.json", "shinjuku-odakyu-dept.json"];
+const MERCHANT_SOURCE_IDS = new Set<string>();
+for (const file of MERCHANT_POI_FILES) {
+  const m = JSON.parse(readFileSync(join(HERE, "../../../docs/research/merchants", file), "utf8")) as MerchantFile;
+  for (const src of m.sources) {
+    if (sources.some((s) => s.id === src.id)) throw new Error(`merchants: duplicate source ${src.id} in ${file}`);
+    MERCHANT_SOURCE_IDS.add(src.id);
+    // The research hand-off writes `usage: null` for a reusable source; the schema's absent value means the same.
+    const { usage, ...rest } = src;
+    sources.push(usage == null ? (rest as Source) : { ...rest, usage });
+  }
+  for (const poi of m.pois) {
+    if (pois.some((p) => p.id === poi.id)) throw new Error(`merchants: duplicate POI ${poi.id} in ${file}`);
+    if (poi.category !== "shop") throw new Error(`merchants: ${poi.id} is category ${poi.category}, not shop`);
+    if (poi.floorId !== null || poi.displayPosition !== null || poi.connectorNodeIds.length > 0) throw new Error(`merchants: ${poi.id} carries a floor, position or connector`);
+    pois.push(poi);
+  }
+}
+
 const coverage = {
   summary: [
     { lang: "ja", text: "都営大江戸線 新宿駅（E27）の公開歩行空間ネットワーク／構内地図の範囲のみ。他社線の改札・ホームは2020年3月時点の資料から名前を収録し、改札と乗換の一部に同資料の形状から求めたおおよその位置を付加（検索表示のみ、±5 m 以上、経路案内には不使用）。乗換通路は未収録。高さは推定値（実測ではない）。" },
@@ -1326,8 +1353,8 @@ const bundle: StationBundle = {
 // ---------------------------------------------------------------- plan (render geometry)
 const plan = {
   note: "Render-only geometry derived from 構内地図データ（都営地下鉄大江戸線 新宿駅）（国土交通省）, published under the Owner's #16 override; licence basis unconfirmed. Not routing truth. Heights are symbolic.",
-  // S03 (#411) supplies POI names only, nothing in the plan, so its credit is not listed here.
-  attribution: sources.filter((s) => s.id !== S03_SOURCE_ID).map((s) => s.attribution),
+  // S03 (#411) and the merchant sources (#214) supply POIs only, nothing in the plan, so their credit is not listed here.
+  attribution: sources.filter((s) => s.id !== S03_SOURCE_ID && !MERCHANT_SOURCE_IDS.has(s.id)).map((s) => s.attribution),
   levels: mapLevels.map((ml) => {
     const nwdOrd = ml.ordinal === -5 ? -4.5 : ml.ordinal;
     return {
