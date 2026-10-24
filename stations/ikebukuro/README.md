@@ -240,7 +240,7 @@ escalators (`gteki_ik_escalator_*`), one per surveyed lane landing, and batch B 
 lists `high` alone (the phone tier copies wait for a phone measurement) and a rail part is drawn only on the
 `main_route` flights and only on `high`. Batch C is the 61 stair nosing strips (`..._nosing`), drawn on both tiers:
 69 flights, 61 distinct widths. The catalog GLBs are Lane E's built output for the catalog's params (kit
-main `7258e6b`; batch C from Lane E's C3 build); `python3 -I pipeline/sync_kit_catalog.py [--check] [--kinds escalator,rails,nosing]`
+main `7258e6b`; batches A and C from Lane E's final C3 build); `python3 -I pipeline/sync_kit_catalog.py [--check] [--kinds escalator,rails,nosing]`
 copies just the ids some placement loads, byte for byte, and checks each against the tier manifest's sha256 and the
 sha256 the source record pins. `--check` also fails on a stray catalog copy and on a pin no placement backs.
 Provenance: "GTEki contributors, CC BY 4.0" (source `gteki-ikb-catalog-0-1-0`), on top of the anchors' PLATEAU
@@ -249,8 +249,12 @@ local -Z, width along local X, up along +Y, turned about +Y by the placement's `
 +Z is renderer +Y, so the catalog's angle about ENU +Z is the same number). `scope` is PLATEAU's container (building
 or a room suffix), not a playability marker, and every placement lies in the playable multi-level slice, so nothing
 is skipped by it. An id the station does not ship is skipped without a fetch; a GLB that fails to load warns and
-drops only its own anchors, never the scene. The pieces are visual only: no colliders, not in `walkable` or the walk
-graph.
+drops only its own anchors, never the scene. Batch A's escalators carry no per-id AO image either: their TEXCOORD_1
+addresses one packed escalator atlas on the desktop tier (`gteki/kit/catalog/high/atlas/escalator_ao.png`, 1024x1536),
+and `loadKitCatalog` loads it once per tier and kind, sets `aoMap` (`channel = 1`, `flipY = false`,
+`colorSpace = THREE.NoColorSpace`, `aoMapIntensity = 1`) on each cloned material, and disposes it with the kit. If the
+atlas fails to load the loader warns and draws the escalators without AO. The pieces are visual only: no colliders,
+not in `walkable` or the walk graph.
 
 Batch C does not instance one mesh per flight: 61 strips would be 61 draws per tier. Lane E's C3 build carries no
 per-id AO image; each strip's TEXCOORD_1 already addresses one packed AO atlas per tier
@@ -261,11 +265,12 @@ mirror reflections reverse the winding), merges each spatial cluster into one `B
 (`channel = 1`, `flipY = false`, `colorSpace = THREE.NoColorSpace`). A part must carry position, normal and uv1 to
 join the merge; uv (the base-colour map) is dropped from a cluster only when one of its parts lacks it, and a part
 whose material differs visibly (colour, finish, emissive strength, alpha cutoff, vertex colours, base-colour map)
-is left out with a warning. `scene/kit_catalog_atlas.json` records each shipped tier's atlas size, bytes and
-`max_isolated_mip` from Lane E's manifest (`pipeline/sync_kit_catalog.py` writes and `--check` verifies it); the
-loader records the limit as `gteki_max_isolated_mip` on the texture. three 0.186's `Texture` has no `maxLevel`, so
-the GPU mip chain is not clamped at that level yet; the value is carried for the renderer/export step that can apply
-it, and `generateMipmaps` stays at three's default. The clusters are a deterministic k-means over
+is left out with a warning. `scene/kit_catalog_atlas.json` records each packed atlas's path and each shipped tier's
+size, bytes and `max_isolated_mip` from Lane E's manifest (`pipeline/sync_kit_catalog.py` writes and `--check` verifies
+it): the escalator atlas and the nosing atlas on the desktop tier, both at `max_isolated_mip` 2 in the final C3 build (recorded, not clamped: the GPU gets the full mip chain).
+The loader records the limit as `gteki_max_isolated_mip` on the texture. three 0.186's `Texture` has no `maxLevel`, so
+the GPU mip chain is not clamped at that level; the value is carried for the renderer/export step that can apply it,
+and `generateMipmaps` stays at three's default. The clusters are a deterministic k-means over
 the strip origins (at most `NOSING_CLUSTERS` = 8 per tier), so frustum and 50 m distance culling still reject most
 of the station's nosings. This change ships the desktop tier's copies; the phone copies are the stacked follow-up.
 Cost on the desktop tier: 26 part instances of 26 GLBs, 77 draws before frustum culling and extra passes, 155 712
@@ -273,8 +278,10 @@ triangles (escalators 5 / 35 draws / 66 480; handrails 21 / 42 draws / 89 232), 
 most 8 draws and 25 830 triangles; the phone tier draws none yet. `scene/kit_catalog_loader.test.ts` pins the batches,
 the placement maths, the merge and the credit, and `pipeline/sync_kit_catalog.test.ts` the copies.
 
-The 26 desktop catalog GLBs total **10,706,224 bytes** on disk (about 10.21 MiB); batch C's desktop copies add
-**1,852,526 bytes** (61 nosing GLBs totalling 1,783,268 and the 69,258-byte atlas, about 1.77 MiB). Previously `scene.ts` awaited
+The 26 desktop catalog GLBs total **10,297,712 bytes** on disk (about 9.82 MiB: escalators 4,536,180, handrails
+5,761,532) plus the desktop escalator atlas at 417,840 bytes; batch C's desktop copies add **1,852,526 bytes** (61
+nosing GLBs totalling 1,783,268 and the 69,258-byte atlas, about 1.77 MiB). The shipped desktop catalog tree is
+**12,568,078 bytes** (about 11.99 MiB). Previously `scene.ts` awaited
 `loadKitCatalog`, which awaited each GLB serially, before loading sign frames and returning the scene. The explorer
 awaits that return in `buildStationScene`, then attaches the scene, sets up the composer and reaches `phase = "ready"`.
 Thus transfer, GLB parsing and catalog construction all blocked readiness, a plausible contributor to the reported
