@@ -203,3 +203,4 @@ Terms-ban rejections: none. No site used stated 「一切お断り」.
 - 北館/南館: rec-001 and rec-014 print only 「小田急エース」. Kept as printed; the building stays UNKNOWN.
 - Terms: krispykreme.jp states a private-use exception, so it is the same type as LUMINE (facts only; kept). doutor.co.jp (「当社に無断で使用または複製もしくは転載することを禁止します」) and meganeichiba.jp (第14条 「無断で複製、転載、改変、その他の二次利用をすることはできません」) state no private-use or legal exception. Their 3 POIs (rec-005, rec-015 ドトール; rec-006 眼鏡市場) are held in `removed[]` pending a director ruling under OD-34. Their sources were dropped from the file.
 - Result: 15 POIs in the file, 3 held.
+- Director ruling (gteki-1b, 2026-10-24, OD-34): doutor.co.jp is the same wording type as ecute and meganeichiba.jp the same family as the Odakyu/Keio SC 二次利用 bans, so neither is used. The 3 POIs stay in `removed[]` and are candidates for the merchant self-service form (#438). Krispy Kreme (LUMINE type), the naming rule and the 北館/南館 UNKNOWN are confirmed.
