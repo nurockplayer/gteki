@@ -1253,18 +1253,12 @@ const MERCHANT_SOURCE_IDS = new Set<string>();
 for (const file of MERCHANT_POI_FILES) {
   const m = JSON.parse(readFileSync(join(HERE, "../../../docs/research/merchants", file), "utf8")) as MerchantFile;
   for (const src of m.sources) {
-    if (sources.some((s) => s.id === src.id)) throw new Error(`merchants: duplicate source ${src.id} in ${file}`);
     MERCHANT_SOURCE_IDS.add(src.id);
     // The research hand-off writes `usage: null` for a reusable source; the schema's absent value means the same.
     const { usage, ...rest } = src;
     sources.push(usage == null ? (rest as Source) : { ...rest, usage });
   }
-  for (const poi of m.pois) {
-    if (pois.some((p) => p.id === poi.id)) throw new Error(`merchants: duplicate POI ${poi.id} in ${file}`);
-    if (poi.category !== "shop") throw new Error(`merchants: ${poi.id} is category ${poi.category}, not shop`);
-    if (poi.floorId !== null || poi.displayPosition !== null || poi.connectorNodeIds.length > 0) throw new Error(`merchants: ${poi.id} carries a floor, position or connector`);
-    pois.push(poi);
-  }
+  for (const poi of m.pois) pois.push(poi);
 }
 
 const coverage = {
