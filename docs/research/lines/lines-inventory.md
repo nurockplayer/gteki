@@ -2,7 +2,7 @@
 
 - **Lane:** lines-lead (multi-line expansion), reporting to the director gteki-1b. Phase 0 of the Owner's request "start work on each railway line at Ikebukuro and Shinjuku".
 - **Checked:** 2026-10-24 (JST). Basis: `origin/main` at `724459b8`.
-- **Method:** repo records only (dossier, `docs/gis/**`, `docs/research/gaps/**`, decision files, both stations' `gteki/` data). One local read of the S03 ZIP already held in the GIS store (`~/.gteki/gis-store/raw/fc3466…`, acquired by GIS on 2026-10-21) to **count** line-infrastructure entities per operator. No value from it is written here. No web page was fetched, nobody was contacted and no account was made.
+- **Method:** repo records only (dossier, `docs/gis/**`, `docs/research/gaps/**`, decision files, both stations' `gteki/` data). One local read of the S03 ZIP already held in the GIS store (`~/.gteki/gis-store/raw/fc3466…`, acquired by GIS on 2026-10-21) to **count** line-infrastructure entities and features. **Every count, per-operator grouping and feature statistic in section 4.2 is derived from that read and is attributed to the S03 dataset**; what stays out of this file is the data itself — no entity name, coordinate, level value or path is transcribed. No web page was fetched, nobody was contacted and no account was made.
 - **Not in scope:** shops and in-station facilities (toilets, lockers, ATMs, ticket offices) belong to data-research-05. This file covers line infrastructure only: ticket gates, platforms, transfer gates and passages, exits, lifts and escalators.
 - **Separate stations stay separate.** 新宿三丁目 (M09/F13/S02), 西武新宿 (SS01) and 新宿西口 (E01) are not part of 新宿 here. They are joined only by a public connection that a source proves. The same applies to 東池袋 and Echika as places: an Echika exit is listed under the line whose exit it is, and Echika is never treated as a station.
 
@@ -58,7 +58,7 @@
 
 | Line | In station data today | Usable fact sources now | Geometry / network | Layer reachable now | Main blockers |
 | --- | --- | --- | --- | --- | --- |
-| **JR East** (Yamanote, Saikyo, Shonan-Shinjuku) | 3 gates: `jr-central-gate-1`, `jr-central-gate-2`, `jr-south-gate`, routed to the gate on the public side | Toshima guide (gate names), sign guideline (exit names), Metro yard map (transfer-direction facts) | PLATEAU B1 public side only; the JR paid concourse and platforms are not modelled | (a) and (b) for the 3 gates. Further JR gates only as names printed on the Toshima guide, not yet transcribed. Platforms: **no usable source** (OD-02), so they stay UNKNOWN | OD-02 leaves no first-party source; platforms need a non-JR public source or a field check |
+| **JR East** (Yamanote, Saikyo, Shonan-Shinjuku) | 3 gates: `jr-central-gate-1`, `jr-central-gate-2`, `jr-south-gate`, routed to the gate on the public side (shipped station data, recorded here, not re-derived) | Toshima guide: the three gate **names** as printed (its drawn placement is excluded, OD-03); sign guideline (exit names); Metro yard map (transfer-direction facts) | PLATEAU B1 public side only; the JR paid concourse and platforms are not modelled | (a) and (b) for the 3 gates **as shipped**. Which modelled PLATEAU opening each printed name belongs to is **UNKNOWN** — no allowed source says it, and matching drawn positions would use the guide's layout (OD-03). Further JR gates only as names printed on the Toshima guide, not yet transcribed. Platforms: **no usable source** (OD-02), so they stay UNKNOWN | OD-02 leaves no first-party source; platforms need a non-JR public source or a field check; gate-name ↔ opening identity is a field-check item |
 | **Tobu Tojo** (TJ-01) | 2 gates, search-only: `tobu-central-gate-1`, `-2` | Toshima guide (names, including a Tobu north gate drawn beside 中央改札2, not yet transcribed); 東武百貨店 (OD-18) | Gates not identified in PLATEAU (`gap-metro-tobu-gates`) | (a) gates; (b) none | OD-01 B removes the Tobu map; platforms UNKNOWN; field check A2 |
 | **Seibu Ikebukuro** (SI-01) | none (exits 37 and 38, named 西武東口 and 西武口 via OD-22, are routed as exits) | Seibu site (OD-25): 西武南口 (hours 7:00～22:30), 1F gate, B1F gate; drawing labels 西武南口, 東口（南）, 東口（中央）. ISP: 1F gate → 36番階段 (OD-23). Platform numbers: the Seibu page has not been read for them yet | Seibu gates are not in PLATEAU (the 1F gate is above the B1 survey) | (a) gates, exits, platforms once read; (b) none | Read the Seibu page for platforms and lifts; だれでも東京 terms (PENDING) |
 | **Metro Marunouchi M25** | 3 gates, search-only (central passage west, central, east) | Metro pages (#26): in-fare lift ホーム（終端寄り）～中央通路西改札; outside-fare lift and escalator 中央通路東改札～34/35 (the two Metro pages disagree on 34 and 35, FC-IK-02) | Gates not identified in PLATEAU | (a) gates plus platform and lift POIs; (b) none | Field checks A1, A3, FC-IK-02 |
@@ -69,11 +69,13 @@ Ikebukuro totals today: 38 exits, 9 gates (3 routed), 6 passage and hall POIs, 5
 
 ### 3.2 Shinjuku
 
+In the S03 rows below, the operator and the kind (gate or platform) are grouped from the **printed name**, not from a classification field (section 4.2). A name that carries a transfer label states what the gate is called; it does not show that two operators' areas are physically connected.
+
 | Line | In station data today | Usable fact sources now | Geometry / network | Layer reachable now | Main blockers |
 | --- | --- | --- | --- | --- | --- |
-| **JR East** | none (`gap:transfers`) | **S03 entities**: 12 JR gate and exit names, 2 of them shared transfer gates with Keio and Odakyu. Toei page: JR line names in its transfer list (Toei's own text) | S03 level and path geometry (CRS UNKNOWN); PLATEAU 13104 `ubld` (coverage UNKNOWN) | (a) AREA_ONLY (R-1 allowed), gates and platforms: S03 also has 14 JR platform entities (1–4, 7–16) | 2020 vintage (S03 predates the 2020-07 東西自由通路, see G5); S03 CRS |
+| **JR East** | none (`gap:transfers`) | **S03 entities**: 12 JR gate and exit names, 2 of them carrying a transfer label naming Keio or Odakyu (a name only, not a proven connection). Toei page: JR line names in its transfer list (Toei's own text) | S03 level and path geometry (CRS UNKNOWN); PLATEAU 13104 `ubld` (coverage UNKNOWN) | (a) AREA_ONLY (R-1 allowed), gates and platforms: S03 also has 14 JR platform entities (1–4, 7–16) | 2020 vintage (S03 predates the 2020-07 東西自由通路, see G5); S03 CRS |
 | **Odakyu** | none | **S03**: 4 gate names plus 5 platform entities (2–6, with service labels) | as JR | (a) AREA_ONLY: gates and platforms | 2020 vintage (R-2 note); the Odakyu site is PENDING; the planned 2027-03 IC-only change must not be applied early (dossier S06) |
-| **Keio** (京王線) | none | **S03**: 5 gate names (2 exit-only), plus the shared JR/Keio transfer gate | as JR | (a) AREA_ONLY: gates. Platforms UNKNOWN | Keio site PENDING; 2026-09/10 works notices (dossier S05) postdate S03 |
+| **Keio** (京王線) | none | **S03**: 5 gate names (2 exit-only), plus a gate whose name carries a JR/Keio transfer label | as JR | (a) AREA_ONLY: gates. Platforms UNKNOWN | Keio site PENDING; 2026-09/10 works notices (dossier S05) postdate S03 |
 | **Keio New Line** (京王新線) **and Toei Shinjuku Line S01** (one shared station, managed by Keio per Toei's page) | none | **S03**: 京王新線口 (2 entities), 新都心口. Toei page: exits 3–5 京王新線口, 6–8 新都心口, 1 and 2 閉鎖中 (2 since 2024-03-30), S01 lift 1 and escalators 14 | as JR | (a) gates and the exit list; platforms UNKNOWN | Toei's exit list mixes S01 and E27 exits, and the page does not say which is which; Keio PENDING; the Toei CSVs PENDING |
 | **Metro Marunouchi M08** | none | **S03**: 丸の内線 東口改札口, 西口改札口, one further gate entity. Metro pages (#26): exit list, のりかえ出口案内 (unread) and accessibility | as JR | (a) gates, exits, lifts | Metro pages not yet read for M08; the dossier warns that the HTML exit list has a stray template entry (S07) |
 | *(reference)* **Toei Oedo E27** | 16 POIs, routable slice (`gap:exit-numbers` open) | Already shipped. **S03 adds 5 named Toei gate entities**; at least one name matches an E01 gate tag in Toei's E01 feed, so station assignment per entity is UNKNOWN | E27 network (#16 override) | (b) done. Naming the 3 unnamed E27 gates from S03 needs S03 positions | Never merge E01 into E27 by name |
@@ -84,23 +86,23 @@ Shinjuku today: E27 only (16 POIs). Its platform POI note says other operators a
 
 ### 4.1 Ikebukuro, what is already decided and wired
 
-- Gates are identified on PLATEAU only for JR 中央1, 中央2 and 南 (Toshima guide). The other 6 gate POIs stay search-only for the reason in `stations/ikebukuro/docs/coverage-gaps.md`: no document says which opening is which gate.
+- The shipped data routes 3 JR gates (中央1, 中央2, 南 — names as printed on the Toshima guide) to the gate on the public side. That is an existing shipping state, not gate-placement evidence: no allowed source states which modelled PLATEAU opening is which printed name, and identifying them by the guide's drawn positions would use layout, which OD-03 excludes. The name ↔ opening correspondence is therefore **UNKNOWN** and is a field-check item. The other 6 gate POIs stay search-only for the reason in `stations/ikebukuro/docs/coverage-gaps.md`: no document says which opening is which gate.
 - Every new Ikebukuro line POI in Phase 1 is therefore layer (a). It becomes (b) only through the existing field checks (A1–A3, F2, F3, B2, I8, FC-IK-02), which are already in `field-checklist.md` and `docs/research/field-collection-list.md`.
 - Platforms for JR, Tobu and Seibu: no decided-OK source states platform numbers in text today (Seibu's page has not been read for them yet). Platforms are not invented from general knowledge.
 
-### 4.2 S03 line-infrastructure content (counts only)
+### 4.2 S03 line-infrastructure content (derived counts, attributed to S03)
 
-Read locally from the GIS store copy (ZIP sha256 `fc3466270c08593a…`, 2,317,035 B). Names stay out of this file. They go into the Phase 1 data file with the S03 credit 「出典：東京都都市整備局「新宿駅周辺の施設情報等」」 and a change notice (Q2).
+Derived from the local read of the GIS store copy (ZIP sha256 `fc3466270c08593a…`, 2,317,035 B), so the table below is attributed to the S03 dataset 「東京都都市整備局「新宿駅周辺の施設情報等」」 and to nothing else. Names and values stay out of this file; they go into the Phase 1 data file with the S03 credit 「出典：東京都都市整備局「新宿駅周辺の施設情報等」」 and a change notice (Q2).
 
 | Group | Count | Notes |
 | --- | --- | --- |
-| Named entities (`com-entity.geojson`, 423 in all) about lines | 52 | JR 12 gates (2 shared transfer gates) + 14 platforms (1–4, 7–16; first count missed them because their names start with the number), Odakyu 4 gates + 5 platforms, Keio 5 (+1 commercial unit with the same gate name), Keio New Line 3, Metro M08 3 + 1 station entity, Toei 5 (E27 or E01, see 3.2) |
+| Named entities (`com-entity.geojson`, 423 in all) about lines | 52 | JR 12 gates (2 whose names carry a transfer label) + 14 platforms (1–4, 7–16; first count missed them because their names start with the number), Odakyu 4 gates + 5 platforms, Keio 5 (+1 commercial unit with the same gate name), Keio New Line 3, Metro M08 3 + 1 station entity, Toei 5 (E27 or E01, see 3.2). Every per-operator split here is a **grouping by printed name**, not a printed classification |
 | Level features, `barrier: gate` | 37 | Mostly unnamed |
 | Level features, lifts / escalators / stairs | 103 / 284 / 402 | Unnamed, with level label only. Not useful as search POIs until there is a position |
 | Level files | 11 (B5F…4F, M1F, MB2F) | Level labels are S03's own. They are not station floors and not elevations |
 | `v5_nav.json` | 2,506 nodes / 2,653 links | Source references only; 0 edges exported (`routable: false`) |
 
-Category codes on entities are almost all empty (402 of 423), so operator and kind come from the printed name. Entities point to level features by `$id`; resolving an entity's level is part of the extraction.
+Category codes on entities are almost all empty (402 of 423), so every per-operator and per-kind count above — and each labelling of an entity as a gate or a platform — is a grouping by the printed name: an inference, not a source-explicit classification, and one that can be wrong. Two names carry a transfer label (naming Keio or Odakyu); that label is the gate's name and does not show that the two operators' paid areas are physically connected. Entities point to level features by `$id`; resolving an entity's level is part of the extraction.
 
 ### 4.3 What the vintage means
 
@@ -121,7 +123,7 @@ S03 is base data of 2020-03. Known later changes in the repo records: the 2020-0
 | **WP9** | **Keio / Odakyu platforms and facts** from first-party pages or Wayback (OD-28, secondary only) | SJ: Keio, Odakyu | After WP6 | batch for sjk-search-78 | lines-lead → sjk-search-78 | routine worker |
 | **WP10** | **Field items for lines**: add transfer-gate and platform checks to the field list (Ikebukuro A1–A3, F2, F3, FC-IK-02 exist; Shinjuku FC-SJ-05 transfers exists) | both | Doc only | additions to `field-collection-list.md` | lines-lead (data-research owns the file) | none |
 
-Order of value: Shinjuku JR↔Odakyu/Keio/M08 transfers are the busiest, so WP1 comes first. Ikebukuro Metro (three lines, the most gate POIs still missing) is WP2. Every package in Phase 1 adds layer (a) only. Layer (b) for any new line waits on field checks (Ikebukuro) or WP7 (Shinjuku).
+Order of value: WP1 comes first as an explicit **planning judgment** about transfer value, not as a measured ranking — this file cites no ridership or transfer-volume source, so it makes no "busiest" claim. Ikebukuro Metro (three lines, the largest remaining set of missing gate POIs in this inventory) is WP2. Every package in Phase 1 adds layer (a) only. Layer (b) for any new line waits on field checks (Ikebukuro) or WP7 (Shinjuku).
 
 **Writer load.** Both writers already import from a single data file per batch. A per-operator file merged by the build is not proposed now. It is raised only if a writer becomes the bottleneck, and it goes to gteki-1b before any schema change.
 
@@ -149,5 +151,6 @@ As asked:
 
 - It places no POI, states no route and adds no rights clearance. Counts from S03 are counts; the names have not been checked against today's signs.
 - It does not say which Toei exits belong to S01 and which to E27, and it does not assign S03's Toei gate entities to E27 or E01.
+- It does not establish that an S03 gate whose name carries a transfer label is a walkable connection between operators, and it does not establish which PLATEAU opening an Ikebukuro JR gate name belongs to.
 - No platform number is stated for any line without a decided-OK source.
 - Historical closures (e.g. Ikebukuro 1a and C4, Shinjuku Toei exits 1 and 2) are not reopened by any map that still draws them; their status stays as each source states it, otherwise UNKNOWN.
