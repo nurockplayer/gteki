@@ -10,6 +10,7 @@ import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGu
 import { coverageText, initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
+import { isUnlocatedShop, noRouteText } from "./noRouteText.ts";
 import { stationClock } from "../stationClock.ts";
 import { factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
@@ -459,7 +460,8 @@ export class App {
       const name = el("span", "result-name", this.poiName(h.poi));
       const meta = el("span", "result-meta");
       const floor = h.poi.floorId ? floorDisplayName(floors.get(h.poi.floorId), this.s.lang) : null;
-      const tags = [floor, h.matched && h.matched !== this.poiName(h.poi) ? `“${h.matched}”` : null, h.routable ? null : this.t.searchOnly].filter(Boolean) as string[];
+      const searchOnly = isUnlocatedShop(h.poi) ? this.t.shopSearchOnly : this.t.searchOnly;
+      const tags = [floor, h.matched && h.matched !== this.poiName(h.poi) ? `“${h.matched}”` : null, h.routable ? null : searchOnly].filter(Boolean) as string[];
       meta.textContent = tags.join(" · ");
       b.append(dot, name, meta);
       // The accessible name carries the visible tags, so "search only" is heard too.
@@ -635,7 +637,7 @@ export class App {
     const profile = this.profile();
     const best: RouteResult | RouteFailure = routeBetween(router, origin, destination, profile);
     this.s.route = best;
-    this.ui.live.announce(routeLiveMessage(this.t, best));
+    this.ui.live.announce(routeLiveMessage(this.t, best, !best.ok && best.reason === "unknown_goal" && isUnlocatedShop(destination) ? this.t.shopNoRoute : undefined));
     // Only after a no_path: re-ask with the user's own options relaxed to say which one refused.
     if (!best.ok && best.reason === "no_path") this.s.noPath = explainNoPathBetween(router, loaded.bundle, origin, destination, profile);
     if (best.ok) {
@@ -660,7 +662,7 @@ export class App {
     if (!r.ok) {
       const card = el("div", "card no-route");
       const view = r.reason === "no_path" && this.s.noPath ? noPathView(t, this.s.noPath) : null;
-      card.append(el("h2", undefined, t.noRoute), el("p", undefined, view?.text ?? t.noRouteWhy[r.reason] ?? r.message));
+      card.append(el("h2", undefined, t.noRoute), el("p", undefined, view?.text ?? noRouteText(t, r, this.s.destination)));
       if (view && view.relax.length > 0) {
         const relax = el("div", "actions");
         const relaxOff = (keys: typeof view.relax) => { for (const k of keys) this.s.profile[k] = false; this.renderProfile(); this.computeRoute(); };

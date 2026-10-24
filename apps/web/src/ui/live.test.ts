@@ -23,6 +23,8 @@ describe("live messages", () => {
   it("no route: the no-route heading", () => {
     expect(routeLiveMessage(strings("en"), failed)).toBe("No route confirmed in the surveyed data");
     expect(routeLiveMessage(strings("ja"), failed)).toBe("データ上で確認できたルートがありません");
+    // The card's shop explanation is announced too (#212), so sight and sound agree.
+    expect(routeLiveMessage(strings("ja"), failed, strings("ja").shopNoRoute)).toBe(`データ上で確認できたルートがありません${strings("ja").liveSeparator}この店舗への道案内はまだありません（位置未確認）`);
   });
 
   it("announces stale freshness with its reason, and unknown facts by kind (#203 B5)", () => {

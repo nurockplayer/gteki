@@ -14,7 +14,7 @@
 // PARAMS (all unset = the game's own value)
 //   layout=vertical_demo|concourse_demo   camera=<name in layout.cameras>   tier=full|mobile
 //   quality=low|high      force the explorer quality tier (patches matchMedia/screen before construction)
-//   old=1                 preset: tm=aces exp=0 env=0 hemi=1.1 bloomT=1 bloomS=0.32 contrast=1.08 sat=1.06 (each still overridable)
+//   old=1                 preset: tm=aces exp=0 env=0 hemi=1.1 bloomT=1 bloomS=0.32 contrast=1.08 sat=1.06 vig=0.32 (each still overridable)
 //   env=room[:n]|n|0      environment light intensity n (default 1 if given bare); 0 removes scene.environment
 //                         (on the low tier this scales the SH probe that stands in for it, unless envVia=envMap)
 //   envVia=envMap|probe   low tier only: A/B the PMREM environment (the old phone path) against the SH probe
@@ -205,7 +205,7 @@ const hemi: THREE.HemisphereLight = ex.coreLights[0];
 const applied: Record<string, unknown> = {};
 
 // `old=1` preset: the look before #94 step 2. Explicit params still win.
-const OLD: Record<string, string> = { tm: "aces", exp: "0", env: "0", hemi: "1.1", bloomT: "1", bloomS: "0.32", contrast: "1.08", sat: "1.06" };
+const OLD: Record<string, string> = { tm: "aces", exp: "0", env: "0", hemi: "1.1", bloomT: "1", bloomS: "0.32", contrast: "1.08", sat: "1.06", vig: "0.32" };
 const param = (k: string): string | null => q.get(k) ?? (flag("old") === true ? OLD[k] ?? null : null);
 const paramNum = (k: string): number | null => { const v = param(k); if (v === null || v === "") return null; const n = Number(v); return Number.isFinite(n) ? n : null; };
 
