@@ -163,6 +163,10 @@
           {
             "poiId": "exit-35",
             "score": 105
+          },
+          {
+            "poiId": "metro-m-escalator-1",
+            "score": 60
           }
         ]
       },
@@ -325,6 +329,10 @@
           {
             "poiId": "tobu-central-gate-2",
             "score": 100
+          },
+          {
+            "poiId": "tobu-north-gate",
+            "score": 80
           }
         ]
       },
