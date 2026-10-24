@@ -2,7 +2,7 @@
   "schema": "gteki.lines-pois/0.1-draft",
   "stationId": "ikebukuro",
   "generatedAt": "2026-10-24",
-  "generatedBy": "WP5 transcription (Codex gpt-6-luna), lines-lead review pending",
+  "generatedBy": "WP5 transcription (Codex gpt-6-luna), reviewed by lines-lead against the map image",
   "sources": [],
   "sourceNote": "The source already exists in stations/ikebukuro/gteki/station.json as toshima-underground-guide-2022.",
   "pois": [
@@ -75,7 +75,7 @@
         "sourceIds": [
           "toshima-underground-guide-2022"
         ],
-        "method": "facts-only ward guide (#26; JR names under R-1), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only ward guide (#26; Tobu label printed by the ward, never Tobu's own map, OD-01 B / OD-18 as read by gteki-1b 2026-10-24), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-24",
         "locator": "Toshima underground guide 2022-01, map page, Tobu gate label"
       },
