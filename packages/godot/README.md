@@ -421,6 +421,35 @@ For each camera with a reference, the report's `luminance` block gives the mean 
 and Godot images and their `ratio` (godot / reference, null when the reference is black) for `whole`, `top_third`,
 `middle_third` and `bottom_third`. Add regions with a repeatable `--region=<camera>=<name>:<x>,<y>,<w>,<h>` (pixels
 inside 1600×900, names unique and not a default name); they appear under that camera's `luminance` entry.
+
+A run that compares lighting variants can override the approximation without editing code, with a repeatable
+`--tune=<key>=<value>`: `agx_contrast` (0.5–2.5), `exposure_ev` (−4 to 4 stops, added to the layout's exposure),
+`ambient_energy` (0–16), `gi` (`none` by default, `sdfgi`, or `voxelgi`, which bakes a VoxelGI over the visible
+bounds before the first frame), `gi_energy` (0–16, only with `sdfgi` or `voxelgi`), `probe_ambient`
+(`disabled` by default, `environment` or `color`, only when an interior probe exists), `probe_ambient_energy`
+(0–16) and `ssao` (`true` by default). Unknown keys, out-of-range values and duplicate keys fail the run like any
+other argument. The effective overrides are recorded as the report's `tuning` object (empty without `--tune`).
+`--tag=<name>` (letters, digits, `_`, `.` and `-`) suffixes the PNG, side PNG and report names — `<layout>_<camera>_<tag>.png`
+and `<layout>_<tag>_report.json` — so variants do not overwrite each other; with neither `--tune` nor `--tag` every
+output name is unchanged.
+
+`tools/showcase_sweep.sh` runs a file of variants sequentially, each under the shared test lock, then prints their
+ratios as one table. Each non-empty line is `<tag> <tune arguments...>`; extra arguments are appended to every run:
+
+```sh
+cat > packages/godot/.cache/showcase/concourse.sweep <<'EOF'
+baseline
+sdfgi       --tune=gi=sdfgi --tune=gi_energy=1.0
+exposure    --tune=exposure_ev=0.5 --tune=ambient_energy=2.0
+probe       --tune=probe_ambient=environment --tune=probe_ambient_energy=2.0
+EOF
+bash packages/godot/tools/showcase_sweep.sh "$CONCOURSE_GLB" "$PWD/packages/godot/.cache/showcase/" \
+  gates_closed "$PWD/docs/assets/img/concourse_gates_closed.jpg" \
+  packages/godot/.cache/showcase/concourse.sweep --region=gates_closed=floor:0,600,1600,300
+```
+
+The table has the tag, then the `whole` and `bottom_third` ratios and every extra region's ratio (`null` for a black
+reference, `-` when a report lacks that region). `tools/showcase_sweep_table.py` prints it and reads only the reports.
 The Godot lighting is an approximation of Blender's hint area lights: wide downward spots replace disks and short
 rows of spots replace long LEDs, sharing each hint's power. Both use Blender's fixed warm colour and ignore
 `colour_temp_k`. The watt-to-energy factor, cone, range, row spacing and studio sun mapping are documented in

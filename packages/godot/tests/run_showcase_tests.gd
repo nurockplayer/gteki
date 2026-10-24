@@ -30,6 +30,7 @@ func run() -> void:
 	check_hints()
 	check_metadata()
 	check_luminance()
+	check_tuning()
 	check(DisplayServer.get_name() == "headless", "suite runs without a display")
 	check(Compare.HEADLESS_MESSAGE == "showcase_compare needs a display", "headless early-exit message")
 	if failures.is_empty():
@@ -287,3 +288,86 @@ func check_luminance() -> void:
 	]:
 		var bad := Compare.parse_args(PackedStringArray(["/tmp/a", "/tmp/b", "--region=" + spec]))
 		check(not bad.errors.is_empty(), "reject malformed --region value: %s" % spec)
+
+
+func parse_with(extra: Array) -> Dictionary:
+	var args := PackedStringArray(["/tmp/a.glb", "/tmp/out"])
+	for arg: String in extra:
+		args.append(arg)
+	return Compare.parse_args(args)
+
+
+## --tune overrides and --tag: parsing, application to a bare Environment/ReflectionProbe, and file naming.
+## VoxelGI baking needs a display, so add_voxel_gi itself is only exercised in the lead's GPU slot.
+func check_tuning() -> void:
+	var none := parse_with([])
+	check(none.errors.is_empty() and none.tuning.is_empty() and none.tag == "", "no --tune gives an empty tuning dict and no tag")
+	var tuned := parse_with([
+		"--tune=agx_contrast=1.2", "--tune=exposure_ev=-1.5", "--tune=ambient_energy=3.5",
+		"--tune=gi=sdfgi", "--tune=gi_energy=2.0", "--tune=probe_ambient=color",
+		"--tune=probe_ambient_energy=4.0", "--tune=ssao=false", "--tag=sweep_1",
+	])
+	check(tuned.errors.is_empty(), "--tune and --tag parse: %s" % str(tuned.errors))
+	check(tuned.tuning.size() == 8 and is_equal_approx(tuned.tuning.agx_contrast, 1.2) and is_equal_approx(tuned.tuning.exposure_ev, -1.5), "float overrides keep their parsed values")
+	check(is_equal_approx(tuned.tuning.ambient_energy, 3.5) and is_equal_approx(tuned.tuning.gi_energy, 2.0) and is_equal_approx(tuned.tuning.probe_ambient_energy, 4.0), "energy overrides keep their parsed values")
+	check(tuned.tuning.gi == "sdfgi" and tuned.tuning.probe_ambient == "color" and tuned.tuning.ssao == false, "enum and bool overrides keep their parsed types")
+	check(tuned.tag == "sweep_1", "--tag keeps its name")
+	for spec in [
+		"--tune=agx_contrast=0.4", "--tune=agx_contrast=2.6", "--tune=agx_contrast=high",
+		"--tune=exposure_ev=-4.1", "--tune=exposure_ev=4.1", "--tune=ambient_energy=-0.1",
+		"--tune=ambient_energy=16.1", "--tune=probe_ambient_energy=16.5", "--tune=gi=rtx",
+		"--tune=probe_ambient=sky", "--tune=ssao=yes", "--tune=ssao=TRUE", "--tune=sun_energy=2",
+		"--tune", "--tune=", "--tune=ssao", "--tune==1", "--tag=", "--tag=two words", "--tag=bad/tag",
+	]:
+		check(not parse_with([spec]).errors.is_empty(), "reject malformed --tune/--tag value: %s" % spec)
+	check(not parse_with(["--tune=gi_energy=1.0"]).errors.is_empty(), "gi_energy without a GI mode is rejected")
+	check(not parse_with(["--tune=gi=none", "--tune=gi_energy=1.0"]).errors.is_empty(), "gi_energy with gi=none is rejected")
+	check(not parse_with(["--tune=gi=sdfgi", "--tune=gi=voxelgi"]).errors.is_empty(), "duplicate --tune keys are rejected")
+	check(not parse_with(["--tune=agx_contrast=9", "--tune=agx_contrast=1.0"]).errors.is_empty(), "a duplicate is rejected even when the first value was invalid")
+	check(not parse_with(["--tag=a", "--tag=b"]).errors.is_empty(), "duplicate --tag arguments are rejected")
+	for spec in [
+		"--tune=agx_contrast=0.5", "--tune=agx_contrast=2.5", "--tune=exposure_ev=-4",
+		"--tune=exposure_ev=4", "--tune=ambient_energy=0", "--tune=ambient_energy=16",
+		"--tune=gi=none", "--tune=probe_ambient=disabled",
+	]:
+		check(parse_with([spec]).errors.is_empty(), "accept the range boundary: %s" % spec)
+	check(parse_with(["--tune=gi=voxelgi", "--tune=gi_energy=16"]).errors.is_empty(), "gi_energy is accepted with voxelgi")
+	# Application on a bare Environment: exposure_ev adds to the layout exposure, 0 here.
+	var untouched := Environment.new()
+	var environment := Environment.new()
+	Compare.apply_tuning(environment, {})
+	check(not environment.ssao_enabled and not environment.sdfgi_enabled and is_equal_approx(environment.tonemap_agx_contrast, untouched.tonemap_agx_contrast) and is_equal_approx(environment.tonemap_exposure, untouched.tonemap_exposure) and is_equal_approx(environment.ambient_light_energy, untouched.ambient_light_energy), "empty tuning leaves every environment field at its default")
+	environment = Environment.new()
+	Compare.apply_tuning(environment, {"agx_contrast": 0.7, "exposure_ev": -1.0, "ambient_energy": 4.0, "ssao": true})
+	check(is_equal_approx(environment.tonemap_agx_contrast, 0.7), "agx_contrast applies to the environment")
+	check(is_equal_approx(environment.tonemap_exposure, 0.5), "exposure_ev stops the layout exposure down")
+	check(is_equal_approx(environment.ambient_light_energy, 4.0), "ambient_energy applies to the environment")
+	check(environment.ssao_enabled, "ssao=true applies to the environment")
+	environment = Environment.new()
+	Compare.apply_tuning(environment, {"exposure_ev": 1.0}, 0.5)
+	check(is_equal_approx(environment.tonemap_exposure, pow(2.0, 1.5)), "exposure_ev adds to a layout exposure of 0.5 (2^1.5)")
+	environment = Environment.new()
+	Compare.apply_tuning(environment, {"gi": "sdfgi", "gi_energy": 2.0})
+	check(environment.sdfgi_enabled and is_equal_approx(environment.sdfgi_energy, 2.0), "gi=sdfgi enables SDFGI with gi_energy")
+	environment = Environment.new()
+	Compare.apply_tuning(environment, {"gi": "sdfgi"})
+	check(environment.sdfgi_enabled and is_equal_approx(environment.sdfgi_energy, untouched.sdfgi_energy), "sdfgi without gi_energy keeps the engine default energy")
+	environment = Environment.new()
+	Compare.apply_tuning(environment, {"gi": "voxelgi", "gi_energy": 3.0})
+	check(not environment.sdfgi_enabled, "gi=voxelgi does not enable SDFGI")
+	# Probe overrides on a bare probe; VoxelGI itself is the node helper, tested only on the GPU.
+	var probe := ReflectionProbe.new()
+	# A bare probe defaults to AMBIENT_ENVIRONMENT; add_interior_probe is what applies APPROXIMATION's disabled mode.
+	Compare.apply_probe_tuning(probe, {})
+	check(probe.ambient_mode == ReflectionProbe.AMBIENT_ENVIRONMENT, "empty tuning leaves the bare probe's ambient mode untouched")
+	Compare.apply_probe_tuning(probe, {"probe_ambient": "environment", "probe_ambient_energy": 2.5})
+	check(probe.ambient_mode == ReflectionProbe.AMBIENT_ENVIRONMENT and is_equal_approx(probe.ambient_color_energy, 2.5), "probe_ambient=environment and its energy apply to the probe")
+	Compare.apply_probe_tuning(probe, {"probe_ambient": "color"})
+	check(probe.ambient_mode == ReflectionProbe.AMBIENT_COLOR and is_equal_approx(probe.ambient_color_energy, 2.5), "probe_ambient=color keeps the energy already set")
+	# A detached ReflectionProbe owns a scene-cull instance; free it so the suite exits without a leak warning.
+	probe.free()
+	# Names: no tag keeps the G-4 output names; a tag suffixes the PNG, side PNG and report alike.
+	check(Compare.output_stem("concourse", "gates_closed", "") == "concourse_gates_closed", "no tag keeps the G-4 PNG name")
+	check(Compare.output_stem("concourse", "gates_closed", "sdfgi") == "concourse_gates_closed_sdfgi", "a tag suffixes the PNG and side PNG names")
+	check(Compare.report_file_name("concourse", "") == "concourse_report.json", "no tag keeps the G-4 report name")
+	check(Compare.report_file_name("concourse", "sdfgi") == "concourse_sdfgi_report.json", "a tag suffixes the report name")

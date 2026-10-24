@@ -3,6 +3,7 @@ extends SceneTree
 ## Run in the lead's GPU slot; a headless display exits successfully before reading inputs or writing anything.
 ## Usage: --script res://tools/showcase_compare.gd -- <absolute.glb> <absolute out_dir>
 ##        [--camera=<name>] [--ref=<camera>=<absolute image>]... [--region=<camera>=<name>:<x>,<y>,<w>,<h>]...
+##        [--tune=<key>=<value>]... [--tag=<name>]
 ## Imported geometry, materials and camera transforms/FOV stay the GLB's. Lighting approximates render_preview.py;
 ## neither Godot spots nor its AgX implementation reproduce Blender area lights / Medium High Contrast exactly.
 
@@ -61,6 +62,27 @@ const APPROXIMATION := {
 	"sun_energy_factor": 1.0 / PI,
 	"sun_angular_distance_deg": 3.0,
 }
+## G-5 tuning: one-run overrides on top of APPROXIMATION, so the GPU slot can sweep without editing code.
+## Ranges reject typos, not physical limits: Environment's AgX contrast useful band is 0.5-2.5, energies 0-16,
+## exposure_ev adds stops to the layout exposure. gi=none is the default (no GI) and leaves the environment
+## untouched; gi_energy is only meaningful for sdfgi/voxelgi. probe_ambient applies only to an interior probe.
+const TUNE_FLOATS := {
+	"agx_contrast": [0.5, 2.5],
+	"exposure_ev": [-4.0, 4.0],
+	"ambient_energy": [0.0, 16.0],
+	"gi_energy": [0.0, 16.0],
+	"probe_ambient_energy": [0.0, 16.0],
+}
+const TUNE_ENUMS := {
+	"gi": ["none", "sdfgi", "voxelgi"],
+	"probe_ambient": ["disabled", "environment", "color"],
+}
+const PROBE_AMBIENT_MODES := {
+	"disabled": ReflectionProbe.AMBIENT_DISABLED,
+	"environment": ReflectionProbe.AMBIENT_ENVIRONMENT,
+	"color": ReflectionProbe.AMBIENT_COLOR,
+}
+static var TAG_NAME := RegEx.create_from_string("^[A-Za-z0-9_.-]+$")
 
 
 func _initialize() -> void:
@@ -113,12 +135,36 @@ static func absolute_file_path(path: String) -> bool:
 	return path.is_absolute_path() and not path.contains("://")
 
 
+## One --tune=<key>=<value>; returns {"ok": bool, "value": Variant} or {"ok": false, "error": String}.
+## Floats keep their parsed value, enums their string, ssao a bool: the report shows what ran, not the CLI text.
+static func parse_tuning(key: String, value: String) -> Dictionary:
+	if TUNE_FLOATS.has(key):
+		var bounds: Array = TUNE_FLOATS[key]
+		if not value.is_valid_float() or float(value) < bounds[0] or float(value) > bounds[1]:
+			return {"ok": false, "error": "--tune=%s must be a number in [%s, %s]: %s" % [key, bounds[0], bounds[1], value]}
+		return {"ok": true, "value": float(value)}
+	if TUNE_ENUMS.has(key):
+		var choices: Array = TUNE_ENUMS[key]
+		if not value in choices:
+			return {"ok": false, "error": "--tune=%s must be one of %s: %s" % [key, ", ".join(PackedStringArray(choices)), value]}
+		return {"ok": true, "value": value}
+	if key == "ssao":
+		if not value in ["true", "false"]:
+			return {"ok": false, "error": "--tune=ssao must be true or false: %s" % value}
+		return {"ok": true, "value": value == "true"}
+	return {"ok": false, "error": "Unknown --tune key: %s" % key}
+
+
 ## Parse independently of the display and filesystem; validate references against the imported cameras later.
 static func parse_args(args: PackedStringArray) -> Dictionary:
 	var positional: Array[String] = []
 	var camera := ""
 	var refs := {}
 	var regions := {}
+	var tuning := {}
+	var tuned: Array[String] = []
+	var tag := ""
+	var tag_given := false
 	var errors: Array[String] = []
 	for arg in args:
 		if arg.begins_with("--camera="):
@@ -174,19 +220,47 @@ static func parse_args(args: PackedStringArray) -> Dictionary:
 			if refs.has(name):
 				errors.append("Duplicate reference for camera: %s" % name)
 			refs[name] = path
+		elif arg.begins_with("--tune="):
+			# Values never contain '=', so the first separator splits key from value.
+			var spec := arg.trim_prefix("--tune=")
+			var separator := spec.find("=")
+			if separator <= 0:
+				errors.append("--tune must be <key>=<value>: %s" % arg)
+				continue
+			var key := spec.substr(0, separator)
+			if key in tuned:
+				errors.append("Duplicate --tune key: %s" % key)
+				continue
+			tuned.append(key)
+			var parsed_tune := parse_tuning(key, spec.substr(separator + 1))
+			if not parsed_tune.ok:
+				errors.append(parsed_tune.error)
+				continue
+			tuning[key] = parsed_tune.value
+		elif arg.begins_with("--tag="):
+			if tag_given:
+				errors.append("--tag may appear only once")
+				continue
+			tag_given = true
+			tag = arg.trim_prefix("--tag=")
+			if not TAG_NAME.search(tag):
+				errors.append("--tag must be letters, digits, '_', '.' or '-': %s" % tag)
 		elif arg.begins_with("--"):
 			errors.append("Unknown argument: %s" % arg)
 		else:
 			positional.append(arg)
+	if tuning.has("gi_energy") and not (tuning.get("gi", "none") in ["sdfgi", "voxelgi"]):
+		errors.append("--tune=gi_energy needs --tune=gi=sdfgi or --tune=gi=voxelgi")
 	if positional.size() != 2:
-		errors.append("Usage: showcase_compare.gd -- <absolute.glb> <absolute out_dir> [--camera=<name>] [--ref=<camera>=<absolute image>]...")
+		errors.append("Usage: showcase_compare.gd -- <absolute.glb> <absolute out_dir> [--camera=<name>] [--ref=<camera>=<absolute image>]... [--tune=<key>=<value>]... [--tag=<name>]")
 	for path in positional:
 		if not absolute_file_path(path):
 			errors.append("File arguments must be absolute: %s" % path)
 	return {
 		"glb": positional[0] if positional.size() > 0 else "",
 		"out_dir": positional[1] if positional.size() > 1 else "",
-		"camera": camera, "refs": refs, "regions": regions, "errors": errors,
+		"camera": camera, "refs": refs, "regions": regions, "tuning": tuning, "tag": tag,
+		"errors": errors,
 	}
 
 
@@ -306,6 +380,57 @@ static func add_interior_probe(parent: Node3D) -> ReflectionProbe:
 	parent.add_child(probe)
 	probe.global_transform = Transform3D(Basis.IDENTITY, bounds.get_center())
 	return probe
+
+
+## Post-environment overrides, applied after configure_environment so exposure_ev adds to the layout's exposure.
+## `exposure` is that layout exposure, 0 for a bare Environment (the test fixture). An empty tuning changes nothing.
+static func apply_tuning(environment: Environment, tuning: Dictionary, exposure: float = 0.0) -> void:
+	if tuning.has("agx_contrast"):
+		environment.tonemap_agx_contrast = float(tuning.agx_contrast)
+	if tuning.has("exposure_ev"):
+		environment.tonemap_exposure = pow(2.0, exposure + float(tuning.exposure_ev))
+	if tuning.has("ambient_energy"):
+		environment.ambient_light_energy = float(tuning.ambient_energy)
+	if tuning.has("ssao"):
+		environment.ssao_enabled = bool(tuning.ssao)
+	if tuning.get("gi", "none") == "sdfgi":
+		environment.sdfgi_enabled = true
+		if tuning.has("gi_energy"):
+			environment.sdfgi_energy = float(tuning.gi_energy)
+
+
+## The probe keeps APPROXIMATION's disabled ambient unless a sweep overrides it; no probe means nothing to apply.
+static func apply_probe_tuning(probe: ReflectionProbe, tuning: Dictionary) -> void:
+	if probe == null:
+		return
+	if tuning.has("probe_ambient"):
+		probe.ambient_mode = PROBE_AMBIENT_MODES[tuning.probe_ambient]
+	if tuning.has("probe_ambient_energy"):
+		probe.ambient_color_energy = float(tuning.probe_ambient_energy)
+
+
+## VoxelGI boxes the visible bounds like add_interior_probe, so its extents cover every mesh. bake() runs once the
+## node is in the tree and before the first rendered frame; it needs a display, so the tests never call this.
+static func add_voxel_gi(parent: Node3D) -> VoxelGI:
+	var bounds := visual_bounds(parent)
+	if not bounds.has_volume():
+		return null
+	var voxel_gi := VoxelGI.new()
+	voxel_gi.size = bounds.size
+	parent.add_child(voxel_gi)
+	voxel_gi.global_transform = Transform3D(Basis.IDENTITY, bounds.get_center())
+	voxel_gi.bake()
+	return voxel_gi
+
+
+## Tag suffixes keep sweep runs apart; without a tag the names are exactly the G-4 ones.
+static func output_stem(layout: String, camera: String, tag: String) -> String:
+	var stem := "%s_%s" % [layout, camera.validate_filename()]
+	return stem + "_" + tag if not tag.is_empty() else stem
+
+
+static func report_file_name(layout: String, tag: String) -> String:
+	return "%s_%s_report.json" % [layout, tag] if not tag.is_empty() else layout + "_report.json"
 
 
 ## All four quadrants use the same subdivision, so many small spots cannot exhaust a tiny-light quadrant.
@@ -463,7 +588,7 @@ func run() -> void:
 		references[name] = image
 	var mode := str(settings.get("mode", "interior"))
 	var exposure := float(settings.get("exposure", 0.0))
-	configure_environment(scene, mode, exposure)
+	apply_tuning(configure_environment(scene, mode, exposure), args.tuning, exposure)
 	if mode == "studio":
 		add_studio_lights(scene, bool(settings.get("ground", true)))
 	var counts := {"linear_led": 0, "panel": 0, "indicator": 0}
@@ -478,6 +603,19 @@ func run() -> void:
 				add_hint_spot(scene, spec)
 				spot_count += 1
 	var probe := add_interior_probe(scene) if mode == "interior" else null
+	apply_probe_tuning(probe, args.tuning)
+	# VoxelGI is baked here: the scene is in the tree and no frame has been drawn yet.
+	var voxel_gi: VoxelGI = null
+	if args.tuning.get("gi", "none") == "voxelgi":
+		voxel_gi = add_voxel_gi(scene)
+		if voxel_gi == null:
+			fail("VoxelGI needs visible mesh bounds")
+			return
+		if voxel_gi.data == null:
+			fail("VoxelGI bake produced no data")
+			return
+		if args.tuning.has("gi_energy"):
+			voxel_gi.data.energy = float(args.tuning.gi_energy)
 	if DirAccess.make_dir_recursive_absolute(args.out_dir) != OK:
 		fail("Cannot create output directory: %s" % args.out_dir)
 		return
@@ -503,7 +641,7 @@ func run() -> void:
 			fail("Viewport did not produce a 1600x900 image for %s" % name)
 			return
 		image.convert(Image.FORMAT_RGBA8)
-		var stem := "%s_%s" % [layout, name.validate_filename()]
+		var stem := output_stem(layout, name, args.tag)
 		error = image.save_png(str(args.out_dir).path_join(stem + ".png"))
 		if error != OK:
 			fail("Cannot save %s.png: %s" % [stem, error_string(error)])
@@ -525,7 +663,7 @@ func run() -> void:
 	var report := {
 		"contract": "gteki.showcase-compare/0.1",
 		"glb": args.glb, "sha256": FileAccess.get_sha256(args.glb),
-		"layout": layout, "mode": mode, "exposure": exposure,
+		"layout": layout, "mode": mode, "exposure": exposure, "tuning": args.tuning,
 		"cameras": rendered, "refs": refs_used,
 		"luminance": luminance, "luminance_method": LUMINANCE_METHOD,
 		"renderer": RenderingServer.get_current_rendering_method(),
@@ -541,7 +679,7 @@ func run() -> void:
 		"reflection_probe_position_m": [probe.global_position.x, probe.global_position.y, probe.global_position.z] if probe != null else [],
 		"approximation": APPROXIMATION, "settle_render_frames": SETTLE_RENDER_FRAMES,
 	}
-	var report_path := str(args.out_dir).path_join(layout + "_report.json")
+	var report_path := str(args.out_dir).path_join(report_file_name(layout, args.tag))
 	var file := FileAccess.open(report_path, FileAccess.WRITE)
 	if file == null:
 		fail("Cannot write report: %s" % report_path)
