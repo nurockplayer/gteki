@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Source } from "@gteki/schema";
 import { assetDerivationPresentation, factsOnlyCredit, rightsLabel, safeHref, sourceCredit } from "./credits.ts";
+import { entryRightsLabels } from "./creditLine.ts";
 import { strings } from "./i18n.ts";
 
 const glbSource: Source = {
@@ -102,6 +103,22 @@ describe("rights label (#130)", () => {
         expect(label).toBe(t.rightsUnverified);
         expect(label).not.toContain("SOMETHING_NEW");
       }
+    }
+  });
+
+  it("keeps the controlled override wording when an English licence name says CC BY 4.0", () => {
+    const overridden: Source = {
+      ...glbSource,
+      rights: "PUBLISHED_UNDER_OWNER_OVERRIDE",
+      license: {
+        name: [{ lang: "ja", text: "ライセンス未確認" }, { lang: "en", text: "CC BY 4.0" }],
+        url: "https://example.org/terms",
+      },
+    };
+    expect(sourceCredit(overridden, "en").license?.name).toBe("CC BY 4.0");
+    for (const lang of ["ja", "en"] as const) {
+      const t = strings(lang);
+      expect(entryRightsLabels([overridden], t)).toEqual([t.rightsOwnerOverride]);
     }
   });
 });

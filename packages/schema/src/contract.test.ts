@@ -600,6 +600,26 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     }
   });
 
+  it("requires a full derivation record whenever an asset has a summary", () => {
+    const b = createSyntheticBundle();
+    b.assets = [{
+      id: "summary-only", uri: "assets/summary-only.glb", format: "glb", floorIds: [], role: "visual",
+      sourceIds: ["fixture-access"], derivationSummary: [{ lang: "en", text: "Model simplified for display" }],
+    }];
+    const [manifest, graph, pois] = split(b);
+    manifest.assets = b.assets;
+    const missing = parseStationFiles(manifest, graph, pois);
+    expect(missing.ok).toBe(false);
+    expect(missing.issues.map((issue) => issue.code)).toContain("asset.derivationSummary");
+
+    for (const derivation of ["", "  "]) {
+      manifest.assets![0]!.derivation = derivation;
+      const parsed = parseStationFiles(manifest, graph, pois);
+      expect(parsed.ok, JSON.stringify(derivation)).toBe(false);
+      expect(parsed.issues.map((issue) => issue.code), JSON.stringify(derivation)).toContain("asset.derivationSummary");
+    }
+  });
+
   it("requires the #26 decision reference on a real facts-only source", () => {
     const b = asRealStation(createSyntheticBundle());
     b.edges = [];

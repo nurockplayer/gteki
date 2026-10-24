@@ -310,6 +310,8 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (a.derivationSummary !== undefined && (!Array.isArray(a.derivationSummary) || a.derivationSummary.length === 0 || a.derivationSummary.some((entry) =>
       !entry || typeof entry.lang !== "string" || !entry.lang.trim() || typeof entry.text !== "string" || !entry.text.trim(),
     ))) err("asset.derivationSummary", "derivationSummary must contain non-empty localized text", a.id);
+    if (a.derivationSummary !== undefined && (typeof a.derivation !== "string" || !a.derivation.trim()))
+      err("asset.derivationSummary", "derivationSummary requires a non-empty full derivation record", a.id);
   }
 
   // Data files: the same source and rights gate as assets. Contract files are loaded as data and never declared.

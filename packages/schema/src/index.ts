@@ -38,6 +38,10 @@ export interface Source {
   url: string;
   /** Exact resource URL(s) that were downloaded, if any. */
   downloadUrls?: string[];
+  /**
+   * Licence label, either a legacy plain string or localized text. Every localized entry must state the same
+   * licence/status; the UI's controlled rights label is authoritative for the source's rights status.
+   */
   license: { name: string | LocalizedText[]; url: string } | null;
   rights: RightsStatus;
   /**
