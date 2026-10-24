@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { createSyntheticBundle } from "../../../packages/navigation/src/fixtures.ts";
-import { declaredStationFiles, discoverStations, factsOnlyDataLines, inlineDataGateMode, undeclaredInlinedData, type DeclaredStationFiles } from "../stations-plugin.ts";
+import { declaredStationFiles, discoverStations, factsOnlyDataLines, inlineDataGateMode, isInlineDataCode, outsideStationData, undeclaredInlinedData, wrappedStationData, type DeclaredStationFiles, type DiscoveredStation } from "../stations-plugin.ts";
 
 const folder = path.join(path.sep, "repo", "stations", "alpha");
 const at = (rel: string) => path.join(folder, rel);
@@ -13,6 +13,53 @@ const alpha: DeclaredStationFiles = {
   declared: new Set([at("scene/signage.json"), at("gteki/assets/b1.meta.json")]),
   escapes: new Map(),
 };
+const alphaStation: DiscoveredStation = { dir: "alpha", gtekiDir: path.join(folder, "gteki"), scene: at("scene/scene.ts"), assets: [] };
+
+describe("outsideStationData", () => {
+  const outsideJson = path.join(path.sep, "repo", "assets", "shared.json");
+  const scene = at("scene/scene.ts");
+
+  it("flags outside-folder data reached from a station scene, not app-only data", () => {
+    expect(outsideStationData(new Map([
+      [scene, [outsideJson]],
+      [path.join(path.sep, "repo", "apps", "web", "src", "main.ts"), [outsideJson]],
+      [outsideJson, []],
+    ]), new Map([["alpha", scene]]), [alphaStation])).toEqual([`alpha: ${outsideJson}`]);
+    expect(outsideStationData(new Map([
+      [path.join(path.sep, "repo", "apps", "web", "src", "main.ts"), [outsideJson]],
+      [outsideJson, []],
+    ]), new Map([["alpha", scene]]), [alphaStation])).toEqual([]);
+  });
+
+  it("ignores dependencies and virtual modules", () => {
+    const dependency = path.join(path.sep, "repo", "node_modules", "pkg", "data.json");
+    expect(outsideStationData(new Map([
+      [scene, [dependency, "\0virtual:data"]],
+      [dependency, []],
+      ["\0virtual:data", [outsideJson]],
+    ]), new Map([["alpha", scene]]), [alphaStation])).toEqual([]);
+  });
+});
+
+describe("wrappedStationData", () => {
+  const codeId = at("scene/data.ts");
+  const literalOnly = `export default [${Array.from({ length: 5000 }, (_, i) => `{"name":"item-${i}","value":${i}}`).join(",")}]`;
+  const normalCode = `export function calculate(input: number) {\n${Array.from({ length: 7000 }, (_, i) => `  const result${i} = input + ${i};`).join("\n")}\n  return input;\n}`;
+
+  it("flags ?raw code imports and large literal-only TypeScript, but passes normal large code", () => {
+    expect(isInlineDataCode(`${codeId}?raw`, "export default 'raw source';")).toBe(true);
+    expect(isInlineDataCode(codeId, literalOnly)).toBe(true);
+    expect(isInlineDataCode(codeId, normalCode)).toBe(false);
+    expect(wrappedStationData(new Map([
+      [`${codeId}?raw`, "export default 'raw source';"],
+      [at("scene/literal.ts"), literalOnly],
+      [at("scene/normal.ts"), normalCode],
+    ]), [alphaStation])).toEqual([
+      "alpha: scene/data.ts (?raw import)",
+      "alpha: scene/literal.ts (large literal-heavy module)",
+    ]);
+  });
+});
 
 describe("undeclaredInlinedData", () => {
   it("passes a declared inline and refuses an undeclared one", () => {

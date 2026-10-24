@@ -204,6 +204,79 @@ export function undeclaredInlinedData(moduleIds: Iterable<string>, stations: rea
   return [...failures].sort();
 }
 
+const modulePath = (id: string) => id.startsWith("\0") ? id : id.replace(VITE_QUERY, "");
+const hasNodeModulesSegment = (id: string) => id.split(/[\\/]/).includes("node_modules");
+
+/**
+ * Finds non-code modules reachable from each station scene that live outside every station folder.
+ * The graph contains both static and dynamic imports. App modules that no station scene reaches are
+ * intentionally out of scope; virtual ids and dependencies are ignored.
+ */
+export function outsideStationData(
+  graph: ReadonlyMap<string, readonly string[]>,
+  stationEntries: ReadonlyMap<string, string>,
+  stations: readonly DiscoveredStation[],
+): string[] {
+  const byId = new Map<string, readonly string[]>();
+  for (const [id, imports] of graph) byId.set(modulePath(id), imports.map(modulePath));
+  const folders = stations.map((s) => ({ dir: s.dir, folder: path.resolve(path.dirname(s.gtekiDir)) }));
+  const findings = new Set<string>();
+  for (const [stationName, entry] of stationEntries) {
+    const visited = new Set<string>();
+    const pending = [modulePath(entry)];
+    while (pending.length) {
+      const id = pending.pop()!;
+      if (visited.has(id) || id.startsWith("\0")) continue;
+      visited.add(id);
+      if (!hasNodeModulesSegment(id) && !CODE_EXT.test(id) && path.isAbsolute(id)) {
+        const insideStation = folders.some(({ folder }) => id === folder || id.startsWith(folder + path.sep));
+        if (!insideStation) findings.add(`${stationName}: ${id}`);
+      }
+      pending.push(...(byId.get(id) ?? []));
+    }
+  }
+  return [...findings].sort();
+}
+
+/**
+ * Conservative station-code data detector: any `?raw` import qualifies. Otherwise source must
+ * exceed 64 KiB and at least 80% of its bytes must be quoted-string/number tokens or array/object
+ * literal punctuation (`[]{}:,`). This intentionally avoids small generated helpers and ordinary code.
+ */
+export function isInlineDataCode(id: string, code: string): boolean {
+  const normalized = modulePath(id);
+  if (!CODE_EXT.test(normalized)) return false;
+  const queryAt = id.indexOf("?");
+  if (queryAt >= 0 && /(?:^|&)raw(?:&|$)/.test(id.slice(queryAt + 1))) return true;
+  const bytes = Buffer.byteLength(code, "utf8");
+  if (bytes <= 64 * 1024) return false;
+  const dataLike = /(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b\d+(?:\.\d+)?\b|[\[\]{}:,])/g;
+  let covered = 0;
+  for (const match of code.matchAll(dataLike)) covered += Buffer.byteLength(match[0], "utf8");
+  return covered / bytes >= 0.8;
+}
+
+/** Station-owned source modules for which the data-shape heuristic raised a warning. */
+export function wrappedStationData(
+  modules: ReadonlyMap<string, string>,
+  stations: readonly DiscoveredStation[],
+): string[] {
+  const findings = new Set<string>();
+  const folders = stations.map((s) => ({ dir: s.dir, folder: path.resolve(path.dirname(s.gtekiDir)) }));
+  for (const [rawId, code] of modules) {
+    const id = modulePath(rawId);
+    if (id.startsWith("\0") || !path.isAbsolute(id) || hasNodeModulesSegment(id) || !isInlineDataCode(rawId, code)) continue;
+    for (const { dir, folder } of folders) {
+      if (id.startsWith(folder + path.sep)) {
+        const reason = rawId.includes("?") && /(?:^|&)raw(?:&|$)/.test(rawId.slice(rawId.indexOf("?") + 1)) ? "?raw import" : "large literal-heavy module";
+        findings.add(`${dir}: ${path.relative(folder, id).split(path.sep).join("/")} (${reason})`);
+        break;
+      }
+    }
+  }
+  return [...findings].sort();
+}
+
 /**
  * One audit line per declared data file that cites facts-only sources (the #186/#26 allowance), for the build log.
  * Stations that fail to parse are skipped here; `publishableAssets` is what refuses them.
@@ -237,6 +310,9 @@ export function gtekiStations(roots: string[]): Plugin {
   let info: (message: string) => void = () => {};
   /** Real paths a production build may emit from station folders (filled when the virtual module loads). */
   let declaredReal = new Set<string>();
+  let buildStations: DiscoveredStation[] = [];
+  /** Source for station-owned modules only, used by the warning-only wrapped-data heuristic. */
+  const stationCode = new Map<string, string>();
   /**
    * Dev: a direct /@fs URL of the file's current real path, recomputed on every load, so assets that
    * move (e.g. symlink → real folder) never resolve through a stale cached `?url` module.
@@ -256,7 +332,16 @@ export function gtekiStations(roots: string[]): Plugin {
     /** Audit trail: which declared data files cite facts-only sources, once per build. */
     buildStart() {
       if (serve) return;
-      for (const line of factsOnlyDataLines(discoverStations(roots))) info(line);
+      stationCode.clear();
+      buildStations = discoverStations(roots);
+      for (const line of factsOnlyDataLines(buildStations)) info(line);
+    },
+    moduleParsed(module) {
+      if (serve || typeof module.code !== "string") return;
+      const id = modulePath(module.id);
+      if (id.startsWith("\0") || !path.isAbsolute(id) || hasNodeModulesSegment(id)) return;
+      const owned = buildStations.some((s) => id.startsWith(path.resolve(path.dirname(s.gtekiDir)) + path.sep));
+      if (owned) stationCode.set(module.id, module.code);
     },
     resolveId(id) {
       return id === VIRTUAL ? RESOLVED : null;
@@ -294,7 +379,21 @@ export function gtekiStations(roots: string[]): Plugin {
      */
     buildEnd(error) {
       if (serve || error) return;
-      const undeclared = undeclaredInlinedData(this.getModuleIds(), declaredStationFiles(discoverStations(roots)));
+      const stations = discoverStations(roots);
+      const ids = [...this.getModuleIds()];
+      const graph = new Map<string, readonly string[]>();
+      for (const id of ids) {
+        const module = this.getModuleInfo(id);
+        graph.set(id, module ? [...module.importedIds, ...module.dynamicallyImportedIds] : []);
+      }
+      const entries = new Map(stations.flatMap((s) => s.scene ? [[s.dir, s.scene] as const] : []));
+      for (const finding of outsideStationData(graph, entries, stations)) {
+        this.warn(`gteki-stations: station scene reaches data outside every station folder (${finding}); move the data into that station folder and declare it in dataFiles[].`);
+      }
+      for (const finding of wrappedStationData(stationCode, stations)) {
+        this.warn(`gteki-stations: station code may wrap inline data (${finding}); declare it as JSON in dataFiles[] instead of wrapping it in code.`);
+      }
+      const undeclared = undeclaredInlinedData(ids, declaredStationFiles(stations));
       if (undeclared.length === 0) return;
       const message = `gteki-stations: station data inlined into the bundle without a manifest declaration (add it to assets[].files or dataFiles[] with source ids; a symlink leaving the station folder is refused even if declared): ${undeclared.join(", ")}`;
       if (inlineDataGateMode() === "error") this.error(message);
