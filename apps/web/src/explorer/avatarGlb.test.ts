@@ -3,7 +3,10 @@ import * as THREE from "three";
 import { loadGlbAvatar } from "./avatarGlb.ts";
 import { fadeUniform, skinnedAvatarFixture } from "./avatarGlb.fixture.ts";
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 describe("loadGlbAvatar", () => {
   it("loads a generated skin, normalizes its feet/height, and advances idle/walk/run with one mixer", async () => {
@@ -112,6 +115,57 @@ describe("loadGlbAvatar", () => {
     expect(stop).toHaveBeenCalledTimes(1);
     expect(uncache).toHaveBeenCalledExactlyOnceWith(asset.scene);
     expect(asset.skeleton.boneTexture).toBeNull();
+  });
+
+  it("closes each owned ImageBitmap once, because Texture.dispose() does not", async () => {
+    class MockImageBitmap {
+      closed = 0;
+      close(): void { this.closed++; }
+    }
+    vi.stubGlobal("ImageBitmap", MockImageBitmap);
+    const asset = skinnedAvatarFixture();
+    const bitmap = new MockImageBitmap();
+    // Two textures decoded from one image: the bitmap is owned once.
+    asset.textures[0]!.image = bitmap as unknown as HTMLImageElement;
+    asset.textures[1]!.image = bitmap as unknown as HTMLImageElement;
+    const rig = await loadGlbAvatar("/avatar.glb", { quality: "high", loader: { loadAsync: async () => asset } });
+    rig.dispose();
+    expect(bitmap.closed).toBe(1);
+  });
+
+  it("disposes and fades Line and Points primitives, not only meshes", async () => {
+    const asset = skinnedAvatarFixture();
+    const lineGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(20, 0, 5), new THREE.Vector3(20, 170, 5)]);
+    const lineMaterial = new THREE.LineBasicMaterial();
+    const line = new THREE.Line(lineGeometry, lineMaterial);
+    const pointsGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(20, 85, 5)]);
+    const pointsMaterial = new THREE.PointsMaterial();
+    const points = new THREE.Points(pointsGeometry, pointsMaterial);
+    asset.scene.add(line, points);
+    const rig = await loadGlbAvatar("/avatar.glb", { quality: "high", loader: { loadAsync: async () => asset } });
+    // Faded like the mesh: the clones share its uniform, and the source materials stay unpatched.
+    expect(line.material).not.toBe(lineMaterial);
+    expect(points.material).not.toBe(pointsMaterial);
+    const uniform = fadeUniform(line.material as THREE.Material);
+    expect(fadeUniform(points.material as THREE.Material)).toBe(uniform);
+    expect(fadeUniform(lineMaterial)).toBeUndefined();
+    const disposals = [lineGeometry, lineMaterial, pointsGeometry, pointsMaterial, line.material as THREE.Material, points.material as THREE.Material]
+      .map((resource) => vi.spyOn(resource, "dispose"));
+    rig.dispose();
+    for (const dispose of disposals) expect(dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps unlit materials unlit when the station probe is set", async () => {
+    const asset = skinnedAvatarFixture();
+    const unlit = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial());
+    unlit.position.set(20, 85, 5);
+    asset.scene.add(unlit);
+    const rig = await loadGlbAvatar("/avatar.glb", { quality: "high", loader: { loadAsync: async () => asset } });
+    const env = new THREE.Texture();
+    rig.setEnvMap(env);
+    expect((unlit.material as THREE.MeshBasicMaterial).envMap).toBeNull();
+    expect((asset.mesh.material as THREE.MeshStandardMaterial[])[0]!.envMap).toBe(env);
+    rig.dispose();
   });
 
   it("accepts a rig with no clips", async () => {

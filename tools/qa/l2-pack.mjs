@@ -212,10 +212,12 @@ row({
     }),
     check("11 framing", PROJECTS, (p) => {
       const j = ev(p, `${station}-overview.json`); if (!j) return;
-      // #114's overviewFrame().extentShare when the build has it, else 11's label-anchor proxy.
-      const direct = j.framing?.framingDirect?.source === "overviewFrame" ? j.framing.framingDirect.value?.extentShare : undefined;
+      // #109's viewport measure from overviewFrame() when the build has it, else 11's label-anchor proxy.
+      // (extentShare is over the free rect, which exceeds 1 on an occluded phone, so it is not the band's
+      // measure there.)
+      const direct = j.framing?.framingDirect?.source === "overviewFrame" ? j.framing.framingDirect.value?.viewportShare : undefined;
       const sp = typeof direct === "number" ? direct : j.framing?.routable?.spread;
-      const what = typeof direct === "number" ? "routable extent (overviewFrame)" : "routable label spread (proxy)";
+      const what = typeof direct === "number" ? "routable extent / viewport (overviewFrame)" : "routable label spread (proxy)";
       const bad = [];
       if (j.mode !== "overview") bad.push(`opens in ${j.mode}`);
       if (typeof sp !== "number" && !bad.length) return { ok: "gap", text: "no framing measure (no overviewFrame and fewer than two routable labels)" };

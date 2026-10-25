@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Instruction, PolylinePoint } from "@gteki/navigation";
-import { DEFAULT_GUIDE_TIER, GUIDE_TIERS, MIN_GUIDE_MPS, effectivePace, guidePaceSpans, guideSpeedAt, guideTierSpeed, isGuideTier, MIN_INSTRUCTION_S, nextGuideTier, paceReadout, pacedDistance, pacedDuration, polylineLengthM, type GuideTierId, type PaceSpan } from "./guidePace.ts";
+import { DEFAULT_GUIDE_TIER, GUIDE_TIERS, MIN_GUIDE_MPS, effectivePace, guideOnStairs, guidePaceSpans, guideSpeedAt, guideTierSpeed, isGuideTier, MIN_INSTRUCTION_S, nextGuideTier, paceReadout, pacedDistance, pacedDuration, polylineLengthM, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { strings } from "../i18n.ts";
 
 const pt = (x: number, stepIndex: number): PolylinePoint => ({ x, y: 0, z: 0, zKnown: true, stepIndex, floorId: "f" });
@@ -27,6 +27,16 @@ describe("connector pace caps", () => {
   const polyline = [pt(0, -1), ...modes.map((_, i) => pt((i + 1) * 20, i))];
   const spans = guidePaceSpans(polyline, modes.map((mode) => ({ mode })), []);
   const at = (mode: (typeof modes)[number], tier: "walk" | "run" | "fast") => guideSpeedAt(modes.indexOf(mode) * 20 + 10, tier, spans);
+
+  it("carries connector identity for the lens, using half-open spans without mistaking other caps for stairs", () => {
+    expect(spans.map((sp) => sp.mode)).toEqual(["stairs", "escalator", "elevator", "gate"]);
+    expect(guideOnStairs(19.99, spans)).toBe(false);
+    expect(guideOnStairs(20, spans)).toBe(true);
+    expect(guideOnStairs(40, spans)).toBe(true);
+    expect(guideOnStairs(60, spans)).toBe(false);
+    expect(guideOnStairs(90, spans)).toBe(false);
+    expect(guideOnStairs(1, [{ fromS: 0, toS: 2, maxMps: 0.9, scales: true }])).toBe(false);
+  });
 
   it("caps stairs, escalator, elevator and gate; leaves walk, ramp and moving walkway at the tier speed", () => {
     expect(at("stairs", "run")).toBe(0.9);
