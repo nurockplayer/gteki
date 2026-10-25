@@ -1793,10 +1793,118 @@
   },
   "fetch": {
     "endpoint": "https://www.0101.co.jp/contents2/shopinfo/{003|005|074}/shop_introduce_list.json (floor map: /contents2/floormap/{stcd}/floor_map_list.json; entry list: /contents2/shopinfo/{stcd}/shop_list.json)",
-    "requests": 9,
+    "requests": 19,
     "spacing": "sequential, at least 0.8 s apart; curl with its default User-Agent, no custom header",
-    "window": "2026-10-25T08:42:41Z–08:43:23Z",
+    "window": "2026-10-25T08:42:41Z–09:45:01Z",
     "floorSource": "facility_floor_name and shop_category_list on shop_introduce_list.json; the printed kana reading is shop_kana_name from shop_list.json, joined on shop_seq (157/157 matched, no name mismatch)",
-    "notTranscribed": "shop_list.json lists more entries than shop_introduce_list.json per building (172/63, 69/56, 60/38), but shop_list.json carries no floor or category, so those rows cannot be transcribed with a printed floor and are left out rather than guessed."
+    "notTranscribed": "shop_list.json lists more entries than shop_introduce_list.json per building (172/63, 69/56, 60/38), but shop_list.json carries no floor or category, so those rows cannot be transcribed with a printed floor and are left out rather than guessed.",
+    "reconciliation": "Three counts describe 新宿マルイ: (1) shop_list.json lists 172 / 69 / 60 = 301 shop indices; (2) shop_introduce_list.json prints 63 / 56 / 38 = 157 entries with a floor and a category; (3) this file transcribes (2), the list the floor guide draws. (1) is what the site's shop index and shop_list carry, and it has no floor, category, start/end date or shop page: the only fields are shop_seq, shop_code, name, kana, en and updated. (2) is the only feed with facility_floor_name, and /003/info/ renders the per-floor list from it alone (store-info.js: `_.each(o.shop …)` over SHOP_INTRO, matched into floors by facility_floor_seq; SHOP_LIST is only a lookup that supplies the kana and English names). Rows that appear in (1) but not in (2) are not current shop pages: /003/shop-guide/shop-detail.html?shop_id=<shop_seq> answered 200 with an empty title and no shop name, floor or body for 銀座かねまつ (003/797, index updated 2018-04-26) and コムサイズム (074/268, index updated 2024-08-31), while an intro row rendered normally (byあしながおじさん, 003/807, title and 2F). So the 144-row difference is a cumulative index that still carries former tenants, not floors this file dropped. No floor is invented for them; a source that prints their floor would close it.",
+    "fetchLog": [
+      {
+        "utc": "2026-10-25T08:42:41Z",
+        "target": "003-shop_list.json",
+        "status": 200
+      },
+      {
+        "utc": "2026-10-25T08:42:42Z",
+        "target": "003-floor_map_list.json",
+        "status": 200
+      },
+      {
+        "utc": "2026-10-25T08:42:44Z",
+        "target": "005-shop_list.json",
+        "status": 200
+      },
+      {
+        "utc": "2026-10-25T08:42:45Z",
+        "target": "005-floor_map_list.json",
+        "status": 200
+      },
+      {
+        "utc": "2026-10-25T08:42:46Z",
+        "target": "074-shop_list.json",
+        "status": 200
+      },
+      {
+        "utc": "2026-10-25T08:42:47Z",
+        "target": "074-floor_map_list.json",
+        "status": 200
+      },
+      {
+        "utc": "2026-10-25T08:43:20Z",
+        "target": "003-shop_introduce_list.json",
+        "status": 200
+      },
+      {
+        "utc": "2026-10-25T08:43:22Z",
+        "target": "005-shop_introduce_list.json",
+        "status": 200
+      },
+      {
+        "utc": "2026-10-25T08:43:23Z",
+        "target": "074-shop_introduce_list.json",
+        "status": 200
+      },
+      {
+        "utc": "2026-10-25T09:43:52Z",
+        "target": "https://www.0101.co.jp/sitemap/",
+        "status": 200,
+        "note": "looked for a server-rendered shop list"
+      },
+      {
+        "utc": "2026-10-25T09:43:57Z",
+        "target": "/003/shop-guide/floor.html",
+        "status": 200,
+        "note": "113-byte meta refresh to /003/info/; no server-rendered list"
+      },
+      {
+        "utc": "2026-10-25T09:44:02Z",
+        "target": "/003/shop-guide/floor.html (headers only)",
+        "status": 200,
+        "note": "confirms the meta refresh"
+      },
+      {
+        "utc": "2026-10-25T09:44:13Z",
+        "target": "/003/",
+        "status": 200,
+        "note": "found /003/shopsearch/"
+      },
+      {
+        "utc": "2026-10-25T09:44:19Z",
+        "target": "/003/shopsearch/",
+        "status": 200,
+        "note": "a search form, not a full list"
+      },
+      {
+        "utc": "2026-10-25T09:44:27Z",
+        "target": "/assets/js/v1/stores/pages/store-shopsearch.js",
+        "status": 200,
+        "note": "no list endpoint"
+      },
+      {
+        "utc": "2026-10-25T09:44:45Z",
+        "target": "/003/info/",
+        "status": 200,
+        "note": "floor guide template; detail URL is /{stcd}/shop-guide/shop-detail.html?shop_id={shop_seq}"
+      },
+      {
+        "utc": "2026-10-25T09:44:51Z",
+        "target": "/003/shop-guide/shop-detail.html?shop_id=797",
+        "status": 200,
+        "note": "empty title, no shop name; index-only row"
+      },
+      {
+        "utc": "2026-10-25T09:44:52Z",
+        "target": "/003/shop-guide/shop-detail.html?shop_id=807",
+        "status": 200,
+        "note": "renders byあしながおじさん and its floor; intro row"
+      },
+      {
+        "utc": "2026-10-25T09:45:01Z",
+        "target": "/074/shop-guide/shop-detail.html?shop_id=268",
+        "status": 200,
+        "note": "empty title, no コムサイズム; index-only row"
+      }
+    ]
   }
 }
