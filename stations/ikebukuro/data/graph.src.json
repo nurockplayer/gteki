@@ -784,6 +784,21 @@
    "notes": "車イスで利用できるバリアフリートイレ location list only; wheelchair loan and attended shopping rows not transcribed."
   },
   {
+   "id": "seibu-ikebukuro-norikae-2026-10",
+   "title": "池袋駅 ：西武鉄道Webサイト",
+   "publisher": "西武鉄道",
+   "url": "https://www.seiburailway.jp/railway/station/ikebukuro/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" },
+   "attribution": "西武鉄道 池袋駅ページ (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T20:00:00+09:00",
+   "datasetDate": "2026-08",
+   "notes": "ライセンスなし・事実のみ参照（複製なし）。Read the 他社乗換路線 list. Gate and exit wording appears only in the AED notice (1F改札口, B1F改札口) and the station map is an image; neither ties a gate to a transfer. lines-lead also read the station-map image (dated 2026.8.1 on the image) for printed direction-arrow labels and the platform legend only; no position or layout is taken (OD-03). Distinct id from seibu-ikebukuro-station-2026-10 (#414). Rights class: OD-25 (Seibu terms read as the Tokyo Metro class under #26)."
+  },
+  {
    "id": "tokyometro-ikebukuro-station-en-2026-10",
    "title": "Ikebukuro Station | Tokyo Metro",
    "publisher": "東京地下鉄",
@@ -21456,6 +21471,378 @@
     {
      "lang": "en",
      "text": "Seibu Railway Ikebukuro Station, 西武南口. Unverified; no guided route."
+    }
+   ]
+  },
+  {
+   "id": "seibu-platform-1",
+   "category": "platform",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "西武池袋線 1番ホーム"
+    },
+    {
+     "lang": "en",
+     "text": "Seibu Ikebukuro Line Platform 1"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-ikebukuro-norikae-2026-10"
+    ],
+    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY; name composed by GTEki (printed legend gives the number only)",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "降車専用ホーム（出典の凡例）。2026年8月1日付の構内図による。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "Alighting-only platform per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+    },
+    {
+     "lang": "ja",
+     "text": "名称は GTEki が作成（ホーム番号は構内図の凡例、路線名は駅ページの「池袋線」に、#414 の西武改札 POI と同じ検索用の前置き「西武」を付けたもの）。出典の構内図に印刷されているのは番号のみ。位置・入口は未確認（検索のみ、経路なし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Name composed by GTEki: platform number from the station-map legend (dated 2026-08-01); line name = the page's printed 池袋線 with the same 西武 search prefix the #414 Seibu gate POIs use (ikebukuro-line-pois-contract.md §2). The map prints the number only. Location and entrance not verified (search only, no route)."
+    }
+   ]
+  },
+  {
+   "id": "seibu-platform-2",
+   "category": "platform",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "西武池袋線 2番ホーム"
+    },
+    {
+     "lang": "en",
+     "text": "Seibu Ikebukuro Line Platform 2"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-ikebukuro-norikae-2026-10"
+    ],
+    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY; name composed by GTEki (printed legend gives the number only)",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "所沢・飯能・西武秩父方面の乗り場（出典の凡例）。2026年8月1日付の構内図による。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "Departures toward Tokorozawa, Hanno and Seibu-Chichibu per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+    },
+    {
+     "lang": "ja",
+     "text": "名称は GTEki が作成（ホーム番号は構内図の凡例、路線名は駅ページの「池袋線」に、#414 の西武改札 POI と同じ検索用の前置き「西武」を付けたもの）。出典の構内図に印刷されているのは番号のみ。位置・入口は未確認（検索のみ、経路なし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Name composed by GTEki: platform number from the station-map legend (dated 2026-08-01); line name = the page's printed 池袋線 with the same 西武 search prefix the #414 Seibu gate POIs use (ikebukuro-line-pois-contract.md §2). The map prints the number only. Location and entrance not verified (search only, no route)."
+    }
+   ]
+  },
+  {
+   "id": "seibu-platform-3",
+   "category": "platform",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "西武池袋線 3番ホーム"
+    },
+    {
+     "lang": "en",
+     "text": "Seibu Ikebukuro Line Platform 3"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-ikebukuro-norikae-2026-10"
+    ],
+    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY; name composed by GTEki (printed legend gives the number only)",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "所沢・飯能・西武秩父方面の乗り場（出典の凡例）。2026年8月1日付の構内図による。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "Departures toward Tokorozawa, Hanno and Seibu-Chichibu per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+    },
+    {
+     "lang": "ja",
+     "text": "名称は GTEki が作成（ホーム番号は構内図の凡例、路線名は駅ページの「池袋線」に、#414 の西武改札 POI と同じ検索用の前置き「西武」を付けたもの）。出典の構内図に印刷されているのは番号のみ。位置・入口は未確認（検索のみ、経路なし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Name composed by GTEki: platform number from the station-map legend (dated 2026-08-01); line name = the page's printed 池袋線 with the same 西武 search prefix the #414 Seibu gate POIs use (ikebukuro-line-pois-contract.md §2). The map prints the number only. Location and entrance not verified (search only, no route)."
+    }
+   ]
+  },
+  {
+   "id": "seibu-platform-4",
+   "category": "platform",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "西武池袋線 4番ホーム"
+    },
+    {
+     "lang": "en",
+     "text": "Seibu Ikebukuro Line Platform 4"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-ikebukuro-norikae-2026-10"
+    ],
+    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY; name composed by GTEki (printed legend gives the number only)",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "降車専用ホーム（出典の凡例）。2026年8月1日付の構内図による。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "Alighting-only platform per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+    },
+    {
+     "lang": "ja",
+     "text": "名称は GTEki が作成（ホーム番号は構内図の凡例、路線名は駅ページの「池袋線」に、#414 の西武改札 POI と同じ検索用の前置き「西武」を付けたもの）。出典の構内図に印刷されているのは番号のみ。位置・入口は未確認（検索のみ、経路なし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Name composed by GTEki: platform number from the station-map legend (dated 2026-08-01); line name = the page's printed 池袋線 with the same 西武 search prefix the #414 Seibu gate POIs use (ikebukuro-line-pois-contract.md §2). The map prints the number only. Location and entrance not verified (search only, no route)."
+    }
+   ]
+  },
+  {
+   "id": "seibu-platform-5",
+   "category": "platform",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "西武池袋線 5番ホーム"
+    },
+    {
+     "lang": "en",
+     "text": "Seibu Ikebukuro Line Platform 5"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-ikebukuro-norikae-2026-10"
+    ],
+    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY; name composed by GTEki (printed legend gives the number only)",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "所沢・飯能・西武秩父方面の乗り場（出典の凡例）。2026年8月1日付の構内図による。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "Departures toward Tokorozawa, Hanno and Seibu-Chichibu per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+    },
+    {
+     "lang": "ja",
+     "text": "名称は GTEki が作成（ホーム番号は構内図の凡例、路線名は駅ページの「池袋線」に、#414 の西武改札 POI と同じ検索用の前置き「西武」を付けたもの）。出典の構内図に印刷されているのは番号のみ。位置・入口は未確認（検索のみ、経路なし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Name composed by GTEki: platform number from the station-map legend (dated 2026-08-01); line name = the page's printed 池袋線 with the same 西武 search prefix the #414 Seibu gate POIs use (ikebukuro-line-pois-contract.md §2). The map prints the number only. Location and entrance not verified (search only, no route)."
+    }
+   ]
+  },
+  {
+   "id": "seibu-platform-6",
+   "category": "platform",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "西武池袋線 6番ホーム"
+    },
+    {
+     "lang": "en",
+     "text": "Seibu Ikebukuro Line Platform 6"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-ikebukuro-norikae-2026-10"
+    ],
+    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY; name composed by GTEki (printed legend gives the number only)",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "降車専用ホーム（出典の凡例）。2026年8月1日付の構内図による。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "Alighting-only platform per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+    },
+    {
+     "lang": "ja",
+     "text": "名称は GTEki が作成（ホーム番号は構内図の凡例、路線名は駅ページの「池袋線」に、#414 の西武改札 POI と同じ検索用の前置き「西武」を付けたもの）。出典の構内図に印刷されているのは番号のみ。位置・入口は未確認（検索のみ、経路なし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Name composed by GTEki: platform number from the station-map legend (dated 2026-08-01); line name = the page's printed 池袋線 with the same 西武 search prefix the #414 Seibu gate POIs use (ikebukuro-line-pois-contract.md §2). The map prints the number only. Location and entrance not verified (search only, no route)."
+    }
+   ]
+  },
+  {
+   "id": "seibu-platform-7",
+   "category": "platform",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "西武池袋線 7番ホーム"
+    },
+    {
+     "lang": "en",
+     "text": "Seibu Ikebukuro Line Platform 7"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "seibu-ikebukuro-norikae-2026-10"
+    ],
+    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY; name composed by GTEki (printed legend gives the number only)",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "所沢・飯能・西武秩父方面の乗り場（出典の凡例）。2026年8月1日付の構内図による。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "Departures toward Tokorozawa, Hanno and Seibu-Chichibu per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+    },
+    {
+     "lang": "ja",
+     "text": "名称は GTEki が作成（ホーム番号は構内図の凡例、路線名は駅ページの「池袋線」に、#414 の西武改札 POI と同じ検索用の前置き「西武」を付けたもの）。出典の構内図に印刷されているのは番号のみ。位置・入口は未確認（検索のみ、経路なし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Name composed by GTEki: platform number from the station-map legend (dated 2026-08-01); line name = the page's printed 池袋線 with the same 西武 search prefix the #414 Seibu gate POIs use (ikebukuro-line-pois-contract.md §2). The map prints the number only. Location and entrance not verified (search only, no route)."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-lumine",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "ルミネ池袋"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "lumine-ikebukuro-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "運営: 株式会社ルミネ。掲載フロア: B1～10F（出典のフロアガイドに掲載のフロア）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Operator: 株式会社ルミネ. Floors: B1–10F as printed in the source floor guide. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-esola",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "エソラ池袋"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "esola-ikebukuro-floorguide-2026-10"
+    ],
+    "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-24"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "運営: 株式会社メトロプロパティーズ。掲載フロア: B1～8F（出典のフロアガイドに掲載のフロア）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Operator: 株式会社メトロプロパティーズ. Floors: B1–8F as printed in the source floor guide. Location and entrance not verified (search only, no route). Current status unknown."
     }
    ]
   },
