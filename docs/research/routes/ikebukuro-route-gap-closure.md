@@ -1,8 +1,9 @@
-# Ikebukuro route gap closure: second sources for three access facts, and printed hours (G4, G1)
+# Ikebukuro route gap closure: partial corroboration for three access facts, and printed hours (G4, G1)
 
 - **Task:** week 1 item 2 of the 2-week L2 plan, closing gaps in the Ikebukuro first-slice route card (PR [#482](https://github.com/nurockplayer/gteki/pull/482), Issues [#3](https://github.com/nurockplayer/gteki/issues/3), [#165](https://github.com/nurockplayer/gteki/issues/165)).
 - **Checked:** 2026-10-25, from `89128bcc` (`origin/main`). Data read: `stations/ikebukuro/data/graph.src.json` → `accessFacts` (the three facts below).
 - **Scope:** research only. **No station data was changed**; `ds-ikebukuro` imports whatever is verified here.
+- **Verdict in one line:** **G4 is narrowed, not closed** (each of the three facts gains one corroborated clause, none gains a complete second source) and **G1 is narrowed, not closed** (two adjoining facilities print hours; the public passages print none).
 - **Fetching:** plain `curl`, default user agent, ≥0.6 s between requests, 13 requests in total (limit 60). A 403 is recorded as a GAP, not retried or worked around.
 
 ## 1. What was asked
@@ -19,11 +20,13 @@ The PR #482 card records that 145.4 m of its 277.4 m path rests on one 2022 fact
 
 Usable = OD-34 facts-only class (name, direction, floor, exit number, hours printed by the operator); corroboration-only sources are recorded but never used as evidence.
 
-| Access fact | Verdict | Second source (usable) | What it corroborates | What it does **not** cover |
+**Bottom line: none of the three facts gains a complete second source.** Each of the three gets **partial** corroboration of one clause; the rest of each fact still rests on `toshima-underground-guide-2022`. Under OD-18 none of them may be recorded as "confirmed by a second public source", and none of the new sources should be attached to the whole fact (see §5).
+
+| Access fact | Verdict | Second source (usable) | Clause it corroborates | Clause it does **not** cover |
 | --- | --- | --- | --- | --- |
-| `af-central-passage-west` | **SECOND SOURCE FOUND** | `tobu-hope-center-access-2026-10` (東武ホープセンター, facts only) | The underground passage leaves the JR **中央改札** and the Marunouchi **中央通路西改札** and runs **toward 西口**; 中央通路 is a named passage with west gates on it | The exact run past the **Tobu Tojo** gates; the west hall's own name |
-| `af-east-jr-passage-north` | **PARTIAL** | `isp-access-2026-10` (池袋ショッピングパーク, facts only) | A public underground passage runs from JR **北改札** — no stairs up — past いけふくろう to the ISP blocks; i.e. the north side of the JR concourse is on the public underground network | The 75.8 m north-going run and its arrival at 北通路; no source read here describes that alignment |
-| `af-north-passage` | **SECOND SOURCE FOUND** | `isp-access-2026-10` | A short **escalator down** lands directly on **ISP レンガ通り（右：南館、左北館）** — a level change down into the passage between the ISP blocks | The Exit 22 stairwell as the descent's position; 北通路 is not named in that sentence (naming is covered by `toshima-sign-guideline-v1.2` below) |
+| `af-central-passage-west` | **PARTIAL** | `tobu-hope-center-access-2026-10` (東武ホープセンター, facts only) | The underground passage leaves the JR **中央改札** and the Marunouchi **中央通路西改札** and runs **toward 西口** — the "continues west outside the fare gates" clause and 中央通路's existence as a named passage with west gates | The run past the **Tobu Tojo** gates; arrival in the named 西口 underground hall; the 63.1 m alignment of `c_w__w_c` |
+| `af-east-jr-passage-north` | **PARTIAL** | `isp-access-2026-10` (池袋ショッピングパーク, facts only) | JR **北改札** opens onto a continuing public underground passage (no stairs up) that reaches the ISP blocks — the north side of the JR concourse is on the public underground network | The 75.8 m north-going run, its alignment, and its arrival at 北通路; also that JR 北改札 is this fact's southern endpoint |
+| `af-north-passage` | **PARTIAL** | `isp-access-2026-10` | A short **escalator down** lands directly on **ISP レンガ通り（右：南館、左北館）** — i.e. a level change down into the passage between the ISP blocks | That this descent is the one **east of the Exit 22 stairwell**, that it is on 北通路, or that it is the 6.5 m `n_h__n_c` edge; the naming of 北通路 comes only from `toshima-sign-guideline-v1.2`, which does not tie the name to the ISP escalator |
 
 Additional corroboration found while reading, usable in the same class:
 
@@ -33,7 +36,7 @@ Additional corroboration found while reading, usable in the same class:
 
 ### 3.1 `tobu-hope-center-access-2026-10` — 東武ホープセンター「アクセス・駐車場」
 
-URL https://tobuhopecenter.jp/info/access/ · retrieved 2026-10-25T13:42:46+09:00 · sha256 `d4aca3a35076502ec9ad88ded5d7a52378a1f03c14f68ff63f01f902ed328dad` · OD-34 class: **facts only** (東武ホープセンター https://tobuhopecenter.jp/terms/ read 2026-10-24, 「"私的利用"または"引用"などは著作権法上認められた場合を除き利用することを禁止」 — a legal-exception clause, not a flat ban, so facts are usable; no text, map or layout is reproduced).
+URL https://tobuhopecenter.jp/info/access/ · retrieved 2026-10-25T13:42:46+09:00 · sha256 `d4aca3a35076502ec9ad88ded5d7a52378a1f03c14f68ff63f01f902ed328dad` · OD-34 class: **facts only** (東武ホープセンター https://tobuhopecenter.jp/terms/ read 2026-10-24, 「"私的利用"または"引用"などは著作権法上認められた場合を除き利用することを禁止」 — a legal-exception clause, not a flat ban, so facts are usable; only the short quoted lines below are recorded as facts — no map, image or layout is reproduced).
 
 > JR池袋駅より徒歩1分 中央改札を出て地下通路を西口方面へ
 
@@ -95,7 +98,7 @@ URL https://tobuhopecenter.jp/info/ · retrieved 2026-10-25T13:42:48+09:00 · fa
 
 What this does and does not settle:
 
-- **Settled:** the ISP blocks — including レンガ通り, the level-change landing of `af-north-passage` — are a shop floor with printed hours (10:00–21:00 Mon–Sat, 10:00–19:30 Sun/holidays, 年中無休). After those hours that passage cannot be assumed open.
+- **Settled:** the ISP blocks — including レンガ通り, the level-change landing of `af-north-passage` — are a shop floor with printed hours (10:00–21:00 Mon–Sat, 10:00–19:30 Sun/holidays, 年中無休). Whether the passage is physically closed outside them is **not** stated anywhere read; the hours are the shop floor's, and nothing more.
 - **Not settled:** the public passages (中央通路, 北通路) print no hours anywhere read. The facility hours above are **not** passage hours, so they must not be imported as `hours` on `c_w__w_c`, `c_n__n_h` or `n_h__n_c`; the router's `hours: null` and `unknowns: hours` stay correct.
 - **G1 therefore stays open** with a narrower statement: two adjoining underground facilities publish hours; the public passage network has no printed hours in any usable source read here.
 
@@ -109,11 +112,12 @@ What this does and does not settle:
 | `tobu-hope-center-info-2026-10` | 東武ホープセンター 営業時間・施設案内 | 東武ホープセンター | https://tobuhopecenter.jp/info/ | 2026-10-25T13:42:48+09:00 | facts only | 東武ホープセンター「営業時間」(facts only) |
 | `toshima-sign-guideline-v1.2` | 池袋ターミナル案内サインガイドライン Ver1.2（令和2年3月改定）概要版 | 豊島区 | https://www.city.toshima.lg.jp/documents/17300/saingaidorain-gaiyouban_kaitei1-2.pdf | 2026-10-25T13:42:15+09:00 | facts only | 豊島区「池袋ターミナル案内サインガイドラインVer1.2 概要版」(facts only; not reproduced) |
 
-Suggested `sourceIds` additions on the imported facts (one per fact, all resolvable once the rows above are added):
+What `ds-ikebukuro` may do with these sources:
 
-- `af-central-passage-west` → add `tobu-hope-center-access-2026-10` (west run past the JR 中央改札 and the Marunouchi 中央通路西改札). The Tobu Tojo gates stay single-source.
-- `af-north-passage` → add `isp-access-2026-10` (level change down into ISP レンガ通り). `toshima-sign-guideline-v1.2` supports the passage name.
-- `af-east-jr-passage-north` → **no full second source**; `isp-access-2026-10` supports only its southern end (北改札 on the public underground network). It should stay marked as single-source, per OD-18.
+- **Do not add any of them to an access fact's `sourceIds` as a second source.** `sourceIds` lists the sources a fact rests on; a partial clause does not carry the fact, and attaching it would let validation read the whole edge as independently corroborated (OD-18's "confirmed by a second public source" is not met for any of the three).
+- If a citation is wanted, the safe form is a note that names exactly the corroborated clause and its source id — e.g. for `af-north-passage`: "down-flight into ISP レンガ通り corroborated by `isp-access-2026-10`; the Exit 22 stairwell position remains single-source (`toshima-underground-guide-2022`)" — and the fact stays marked single-source.
+- `toshima-sign-guideline-v1.2` supports passage **names** (北通路, 中央通路) and the exit numbers 22 / 38; it is not evidence for any edge's geometry or alignment.
+- `af-central-passage-west`'s Tobu Tojo gate clause, `af-east-jr-passage-north` entirely, and the Exit 22 / ISP correspondence in `af-north-passage` remain single-source. G4 is therefore **not closed**; it is narrowed from three wholly single-source facts to three facts with one corroborated clause each.
 
 ## 6. Not used, and why
 
@@ -154,4 +158,4 @@ No HTML, PDF or image from these pages is committed; only the quoted lines above
 - Quotes are the pages' own text, copied as printed; the 2022 Toshima map's own drawing was not re-read, so nothing here changes the map's facts.
 - Text-layer extraction of the PDF is assumed faithful for the quoted lines; they were read in the `pdftotext -enc UTF-8` output, not visually.
 - The ISP and Hope Center hours are **facility** hours, not passage hours, and are recorded as such (§4).
-- `af-east-jr-passage-north` remains single-source: this document found only partial support (its southern end), not a second description of the 75.8 m run. Per OD-18 it stays marked as not confirmed by a second public source.
+- All three facts stay **single-source**: this document found one corroborated clause each, not a second description of any of the three passages. Per OD-18 none of them is "confirmed by a second public source", so G4 is narrowed, not closed.
