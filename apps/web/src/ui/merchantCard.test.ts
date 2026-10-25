@@ -37,9 +37,19 @@ describe("merchant precision (#213)", () => {
   it("reads the precision the listing's own evidence states", () => {
     expect(merchantPrecision(shop())).toBe("area");
     expect(merchantPrecision(shop({ evidence: { sourceIds: [source.id], method: "facts-only directory listing (#26), UNVERIFIED, SEARCH_ONLY", checkedDate: "2026-10-24" } }))).toBe("search");
-    // A display position is the data owner's own point; the evidence words are then irrelevant.
-    expect(merchantPrecision(shop({ displayPosition: { x: 0, y: 0, z: null } }))).toBe("point");
+    // A display position is a verified point only with a connector: routable, so the evidence words are irrelevant.
+    expect(merchantPrecision(shop({ displayPosition: { x: 0, y: 0, z: null }, connectorNodeIds: ["node-1"] }))).toBe("point");
     expect(merchantPrecision(shop({ evidence: { sourceIds: [source.id], method: "test", checkedDate: "2026-10-24" } }))).toBeNull();
+  });
+
+  it("never calls a search-only shop's display position verified without a connector", () => {
+    const poi = shop({
+      displayPosition: { x: 0, y: 0, z: null },
+      evidence: { sourceIds: [source.id], method: "facts-only directory listing (#26), UNVERIFIED, SEARCH_ONLY", checkedDate: "2026-10-24" },
+    });
+    const card = merchantCardEl(merchantCardModel(poi, [source], "en", null), strings("en"));
+    expect(card.textContent).not.toContain(strings("en").merchant.precision.point);
+    expect(card.textContent).toContain(strings("en").merchant.precision.search);
   });
 });
 
