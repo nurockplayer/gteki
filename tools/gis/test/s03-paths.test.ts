@@ -17,7 +17,7 @@ const EVIDENCE = { source_zip_sha256: 'b'.repeat(64), node_count: 3, link_count:
 const project = (lat: number, lon: number): [number, number] => [lon, lat];
 const hash = (value: number): string => createHash('sha256').update(String(value)).digest('hex');
 const level = (id: number, label: string, ordinal: number): PathInputs['levels'][number] => ({ id, label, ordinal });
-const node = (sourceId: number, levelId: number, native: Point2): S03Inputs['nodes'][number] => ({ index: 0, sourceId, levelId, native });
+const node = (sourceId: number, levelId: number, native: Point2): S03Inputs['nodes'][number] => ({ index: 0, sourceId, levelId, native, geometryId: null });
 const link = (sourceId: number, n1: number, n2: number, direction = 3, dz: number | null = null): S03Link => ({ sourceId, n1, n2, direction, dz });
 
 /** One same-level bidirectional corridor link and one forward-only cross-level link, all synthetic. */
