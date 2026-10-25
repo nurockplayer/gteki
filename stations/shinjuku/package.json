@@ -26,6 +26,7 @@
     "preview": "vite preview --host",
     "typecheck": "tsc -p tsconfig.json",
     "import:e27": "tsx tools/import-e27.ts",
+    "import:tenants": "tsx tools/import-tenants.ts",
     "import:surface": "tsx tools/import-surface.ts",
     "kit:catalog": "tsx tools/kit-catalog.ts",
     "check": "pnpm typecheck && vitest run --root ../.. stations/shinjuku",
