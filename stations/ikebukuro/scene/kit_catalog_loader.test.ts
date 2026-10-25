@@ -290,7 +290,7 @@ describe("loadKitCatalog", () => {
     const frustum = new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
     expect(group.children.every((im) => !frustum.intersectsObject(im))).toBe(true);
     // Even the explorer's fallback sun policy must respect the thin-dressing opt-out.
-    expect(applyStationShadows(group, "high", "default").casters).toBe(0);
+    expect(applyStationShadows(group, "high", "default", Infinity).casters).toBe(0);
     expect(group.children.every((im) => !im.castShadow)).toBe(true);
     loaded.dispose();
   });
