@@ -436,6 +436,7 @@ function buildRouter(bundle: StationBundle, unpruned: boolean): Router {
     const steps: RouteStep[] = [];
     const unknownEdges = new Map<RouteUnknown, string[]>();
     const sourceIds = new Set<string>();
+    const endpointSourceIds = new Set<string>();
     let totalLengthM = 0;
     let estimatedSeconds = 0;
     let floorChanges = 0;
@@ -514,14 +515,18 @@ function buildRouter(bundle: StationBundle, unpruned: boolean): Router {
     for (const nodeId of nodeIds) for (const ref of nodes.get(nodeId)!.sourceRefs) sourceIds.add(ref.sourceId);
     for (const floorId of new Set(nodeIds.map((id) => nodes.get(id)!.floorId)))
       for (const label of floors.get(floorId)?.sourceLabels ?? []) sourceIds.add(label.sourceId);
-    // So is whatever ties the chosen origin/destination (e.g. a POI) to these connector nodes.
+    // Whatever ties the chosen origin/destination (e.g. a POI) to these connector nodes is a dependency of
+    // the route — it feeds freshness and the checked date below — but it is not evidence of the path: a
+    // source that only names an endpoint (Ikebukuro's exit-22 sign guideline, #491) must not be presented as
+    // route evidence, so it is kept in its own list.
     for (const evidence of endpointEvidence) {
-      for (const sourceId of evidence.sourceIds) sourceIds.add(sourceId);
+      for (const sourceId of evidence.sourceIds) endpointSourceIds.add(sourceId);
       if (evidenceCheckedDate === null || evidence.checkedDate > evidenceCheckedDate) evidenceCheckedDate = evidence.checkedDate;
     }
+    const dependencyIds = new Set([...sourceIds, ...endpointSourceIds]);
     let oldestSourceDate: string | null = null;
     const undatedSourceIds: string[] = [];
-    for (const sourceId of [...sourceIds].sort()) {
+    for (const sourceId of [...dependencyIds].sort()) {
       const date = sourceDates.get(sourceId) ?? null;
       if (date === null) undatedSourceIds.push(sourceId);
       else if (oldestSourceDate === null || date < oldestSourceDate) oldestSourceDate = date;
@@ -537,7 +542,7 @@ function buildRouter(bundle: StationBundle, unpruned: boolean): Router {
     if (today) {
       const maxAgeDays = profile.staleAfterDays ?? DEFAULT_STALE_AFTER_DAYS;
       let allFresh = undatedSourceIds.length === 0;
-      for (const sourceId of [...sourceIds].sort()) {
+      for (const sourceId of [...dependencyIds].sort()) {
         const validUntil = sourceValidUntil.get(sourceId);
         if (validUntil) {
           const until = dateInterval(validUntil);
@@ -552,11 +557,12 @@ function buildRouter(bundle: StationBundle, unpruned: boolean): Router {
         if ((today.first - interval.last) / DAY_MS > maxAgeDays) stale = true;
         if ((today.first - interval.first) / DAY_MS > maxAgeDays) allFresh = false;
       }
-      if (stale === null && allFresh && sourceIds.size > 0) stale = false;
+      if (stale === null && allFresh && dependencyIds.size > 0) stale = false;
     }
     return {
       ok: true, profile: structuredClone(profile), nodeIds, steps, totalLengthM, estimatedSeconds, waitSeconds, floorChanges, crossesFareBoundary, unknowns,
-      sourceIds: [...sourceIds].sort(), evidenceCheckedDate, oldestSourceDate, undatedSourceIds, expiredSourceIds, stale, synthetic, timeRestricted, operatorIds,
+      sourceIds: [...sourceIds].sort(), endpointSourceIds: [...endpointSourceIds].sort(),
+      evidenceCheckedDate, oldestSourceDate, undatedSourceIds, expiredSourceIds, stale, synthetic, timeRestricted, operatorIds,
     };
   }
 
