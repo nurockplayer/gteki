@@ -1,0 +1,1802 @@
+{
+  "schema": "gteki.research.tenants/0.1",
+  "note": "Facts-only brand list of the three 新宿マルイ buildings (157 rows), as the floor guide prints it. Not POIs: this is the input for the station tenant files (#419), where a brand search returns the store's POI with the floor. Nothing here ships in the bundle yet. UNVERIFIED. Ordered by building (003 本館, 005 アネックス, 074 メン), then printed floor, then the order the source lists them.",
+  "sourceId": "marui-shinjuku-floorguide-2026-10",
+  "storePoiIds": [
+    "shop-sjk-marui-honkan",
+    "shop-sjk-marui-annex",
+    "shop-sjk-marui-men"
+  ],
+  "retrievedAt": "2026-10-25T08:43:23Z",
+  "tenants": [
+    {
+      "id": "tenant-sjk-marui-003-20387",
+      "name": "HealthyTOKYO CBD Shop ＆ Cafe",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヘルシートウキョウ　シービーディー　ショップ　アンド　カフェ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ・フード",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-20930",
+      "name": "ゴンチャ",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "グルメ・フード",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-9688",
+      "name": "ビオラル",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "グルメ・フード",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-21205",
+      "name": "フィルラボ",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-5876",
+      "name": "Apple",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アップル"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-21496",
+      "name": "Beyond The Vines",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ビヨンドザバインズ"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-9788",
+      "name": "CASETiFY STUDiO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ケースティファイスタジオ"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-21719",
+      "name": "ILEMER",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "イルメール"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-21049",
+      "name": "Wpc. LIMITED SHOP",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ダブリューピーシー　リミテッド　ショップ"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "ファッション・雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-20771",
+      "name": "まじかるちいかわストア",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "マジカルチイカワストア"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-21677",
+      "name": "クロックス",
+      "aliases": [],
+      "floorLabel": "1F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-21497",
+      "name": "ザッカセレクト",
+      "aliases": [],
+      "floorLabel": "1F",
+      "category": "雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-5129",
+      "name": "ルルレモン",
+      "aliases": [],
+      "floorLabel": "1F",
+      "category": "スポーツ・アウトドア",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-21169",
+      "name": "富久栄珈琲（FUKUEI COFFEE　and CHOCOLATE）",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "フクエイコーヒー"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "グルメ・フード",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-21091",
+      "name": "VIVAIA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ビバイア"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-807",
+      "name": "byあしながおじさん",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "バイアシナガオジサン"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-839",
+      "name": "アニエス ベー ボヤージュ",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アニエス　ベー　ボヤージュ"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-20451",
+      "name": "アルページュサローネ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "レディス",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-817",
+      "name": "イーボル",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ファッション・雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-819",
+      "name": "カナル4℃",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "カナルヨンドシー"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-9938",
+      "name": "シューファンタジー新宿マルイ本館店",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "シューファンタジーシンジュクマルイホンカンテン"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-845",
+      "name": "スターバックス リザーブ　カフェ　新宿マルイ本館2階店",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "スターバックス　リザーブ　カフェ"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "グルメ・フード",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-844",
+      "name": "スナイデル",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "レディス",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-3202",
+      "name": "ブラデリスニューヨーク",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "レディス",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-813",
+      "name": "マーレマーレ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-3213",
+      "name": "ラウナレア",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-21552",
+      "name": "新宿三丁目ロフト",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ロフト"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "ファッション・雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-21566",
+      "name": "ONE PIECE BASE SHOP",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ワンピース"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-20907",
+      "name": "Dr.stretch",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ドクターストレッチ"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "サービス　ライフプランニング",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-20544",
+      "name": "MAMEW",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "マミュ"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "コスメ・ビューティ",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-21393",
+      "name": "amepla -アメプラ-",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アメプラ"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-21280",
+      "name": "よつばクリニック",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヨツバクリニック"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "クリニック",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-7755",
+      "name": "アイシティ",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "コンタクトレンズ",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-826",
+      "name": "エポスカードセンター",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-4792",
+      "name": "スリープビューティースタイルｂｙピロースタンド",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "スリープビューティースタイル　バイ　ピロースタンド"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-20727",
+      "name": "ダイヤモンドアイズ/ディーイーフォーメン",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ダイヤモンドアイズ　ディーフォーメン"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "コスメ・ビューティ",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-8873",
+      "name": "ディレイアザコスメ",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "コスメ・ビューティ",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-9758",
+      "name": "トルダス（ｔｒｄｓ）",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "トルダス"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-904",
+      "name": "ネイルズユニーク アス",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ネイルズユニーク　アス"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "コスメ・ビューティ",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-21204",
+      "name": "ビハリスト",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "コスメ・ビューティ",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-900",
+      "name": "ファス",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "コスメ・ビューティ",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-901",
+      "name": "フタバフルーツパーラー",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "グルメ・フード",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-897",
+      "name": "ポアレスラボ",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "コスメ・ビューティ",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-7880",
+      "name": "新宿マルイ眼科クリニック",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "シンジュクマルイガンカクリニック"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-21247",
+      "name": "美容骨膜整体Solea",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ビヨウコツマクセイタイソレア"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "コスメ・ビューティ",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-10002",
+      "name": "ALBA歯科＆矯正歯科　新宿マルイ",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アルバシカアンドキョウセイシカ"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "クリニック",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-8967",
+      "name": "JTBトラベルゲート新宿マルイ本館",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ジェーティービー"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-7754",
+      "name": "move",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ムーヴ"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-945",
+      "name": "サムソナイト",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-910",
+      "name": "ゾフ",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-9556",
+      "name": "KOMEHYO 買取センター",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "コメヒョウ　カイトリセンター"
+        }
+      ],
+      "floorLabel": "7F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-21300",
+      "name": "LOCUST＋",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ローカストプラス"
+        }
+      ],
+      "floorLabel": "7F",
+      "category": "ファッション(レディス＆メンズ)・雑貨",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-6741",
+      "name": "ほけんの窓口",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ホケンノマドグチ"
+        }
+      ],
+      "floorLabel": "7F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-20628",
+      "name": "ディファレンス",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "オーダースーツ",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-10089",
+      "name": "パーソナルジム　eviGym",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "パーソナルジム　エビジム"
+        }
+      ],
+      "floorLabel": "7F",
+      "category": "ジム",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-3797",
+      "name": "ファブリック トウキョウ",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ファブリック　トウキョウ"
+        }
+      ],
+      "floorLabel": "7F",
+      "category": "メンズ",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-9622",
+      "name": "終活と相続のまどぐち",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "シュウカツトソウゾクノマドグチ"
+        }
+      ],
+      "floorLabel": "7F",
+      "category": "サービス　ライフプランニング",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-6063",
+      "name": "鳳占やかた",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ホウウラナイヤカタ"
+        }
+      ],
+      "floorLabel": "7F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-21196",
+      "name": "DIMDIMSUM",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ディムディムサム"
+        }
+      ],
+      "floorLabel": "8F",
+      "category": "グルメ・フード",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-21231",
+      "name": "HMV record shop 新宿",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "エイチエムブイ　レコードショップ　シンジュク"
+        }
+      ],
+      "floorLabel": "8F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-20362",
+      "name": "シアターマーキュリー新宿",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "シアターマーキュリーシンジュク"
+        }
+      ],
+      "floorLabel": "8F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-942",
+      "name": "スターバックスコーヒー",
+      "aliases": [],
+      "floorLabel": "8F",
+      "category": "グルメ・フード",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-003-21847",
+      "name": "洒落カフェ",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "シャレカフェ"
+        }
+      ],
+      "floorLabel": "8F",
+      "category": "グルメ・フード",
+      "storePoiId": "shop-sjk-marui-honkan"
+    },
+    {
+      "id": "tenant-sjk-marui-005-416",
+      "name": "ブルックリン パーラー",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ブルックリン　パーラー"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ・フード",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-21054",
+      "name": "EDITed JAPAN  SHINJUKU",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "エディテッド　ジャパン　シンジュク"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "食品",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-21503",
+      "name": "TOP TOY",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "トップトイ"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-21944",
+      "name": "かんざし屋wargo",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "カンザシヤ"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-4908",
+      "name": "ゴジラ・ストア Tokyo",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ゴジラストアトウキョウ"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-3928",
+      "name": "シナモロールカフェ",
+      "aliases": [],
+      "floorLabel": "1F",
+      "category": "グルメ・フード",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-4906",
+      "name": "北斎グラフィック",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ホクサイグラフィック"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-21001",
+      "name": "水曜日のアリス東京",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "スイヨウビノアリストウキョウ"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-4905",
+      "name": "箸や万作",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ハシヤマンサク"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-21593",
+      "name": "Annivroad by Bushiroad Creative Store",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アニバロード　バイ　ブシロード　クリエイティブストア"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "アニメ・コンテンツ",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-21962",
+      "name": "MEDICOS SHOP / きらら＆FUZオフィシャルストア",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "メディコスショップキララアンドファズオフィシャルストア"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-417",
+      "name": "THE KISS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ザ・キッス"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-20419",
+      "name": "エテルノレシ　新宿マルイ アネックス店",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "エテルノレシ"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-669",
+      "name": "オトメイトストア",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-543",
+      "name": "フラボア",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "レディス＆メンズ",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-559",
+      "name": "ラグタグ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "レディス＆メンズ",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-6974",
+      "name": "銀座デンタルホワイト",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ギンザデンタルホワイト"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "コスメ・ビューティ",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-20659",
+      "name": "BABY CUE新宿アネックス店",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ベイビーキゥー"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-21293",
+      "name": "RIN",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "リン"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-5105",
+      "name": "Re:Bone",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "リボーン"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-8877",
+      "name": "SWEAT.JP",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "スエットドットジェーピー"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-21945",
+      "name": "mine by LAFARY",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "マインバイラファリー"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "レディス",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-20975",
+      "name": "らしんばん新宿マルイアネックス店",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ラシンバン"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "アニメ・コンテンツ",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-21219",
+      "name": "イラスト・マンガ教室egaco東京新宿校",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "イラスト・マンガキョウシツエガコトウキョウシンジュクコウ"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-6657",
+      "name": "ネイルサロン Oh!",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ネイルサロンオー"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ・ビューティ",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-597",
+      "name": "フューメニー",
+      "aliases": [],
+      "floorLabel": "3F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-9732",
+      "name": "ベストライフ",
+      "aliases": [],
+      "floorLabel": "3F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-3509",
+      "name": "ヨギボー ストア",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヨギボー"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-20505",
+      "name": "アメモバ新宿東南口店",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アメモバ"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-4795",
+      "name": "アンパセオ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-600",
+      "name": "オンデーズ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-604",
+      "name": "オンリー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "レディス＆メンズ",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-8876",
+      "name": "ココカラファイン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ドラッグストア",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-617",
+      "name": "セリア",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-5851",
+      "name": "駿河屋",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "スルガヤ"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-9625",
+      "name": "エポスカードセンター",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-8809",
+      "name": "HoshibakoWorks",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ホシバコ"
+        }
+      ],
+      "floorLabel": "7F",
+      "category": "レディス",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-9975",
+      "name": "SPORTS CARDS & CARD GAMES SHOP MINT SHINJUKU",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ミント"
+        }
+      ],
+      "floorLabel": "7F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-21895",
+      "name": "THEキャラSHOP　新宿マルイアネックス店",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ザッキャラショップ　シンジュクマルイアネックステン"
+        }
+      ],
+      "floorLabel": "7F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-3845",
+      "name": "YOSUKE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヨースケ"
+        }
+      ],
+      "floorLabel": "7F",
+      "category": "レディス",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-20825",
+      "name": "fantasy village新宿店",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ファンタジービレッジシンジュクテン"
+        }
+      ],
+      "floorLabel": "7F",
+      "category": "アニメ・コンテンツ",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-6658",
+      "name": "アトリエピエロ",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "レディス＆メンズ",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-5697",
+      "name": "アマベル",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "レディス",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-665",
+      "name": "アリス　アンド　ザ　パイレーツ",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "レディス＆メンズ",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-21862",
+      "name": "アルコバレーノ　マージア",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "レディス",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-685",
+      "name": "アンジェリックプリティ",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "レディス",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-20500",
+      "name": "グラセレクト",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "アニメ・コンテンツ",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-21142",
+      "name": "ドーリーテリア新宿マルイアネックス店",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ドーリーテリアシンジュクマルイアネックステン"
+        }
+      ],
+      "floorLabel": "7F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-689",
+      "name": "ベイビー，ザ　スターズ　シャインブライト",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ベイビー　ザ　スターズ　シャインブライト"
+        }
+      ],
+      "floorLabel": "7F",
+      "category": "レディス",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-9956",
+      "name": "ASIANDINING＆BAR JASMINE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アジアンダイニング　アンド　バー　ジャスミン"
+        }
+      ],
+      "floorLabel": "8F",
+      "category": "グルメ・フード",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-9881",
+      "name": "DISH UP",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "デッシュ　アップ"
+        }
+      ],
+      "floorLabel": "8F",
+      "category": "グルメ・フード",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-4271",
+      "name": "しゃぶ菜",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "シャブサイ"
+        }
+      ],
+      "floorLabel": "8F",
+      "category": "グルメ・フード",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-8846",
+      "name": "コラボパラダイス　シンジュクマルイアネックステン",
+      "aliases": [],
+      "floorLabel": "8F",
+      "category": "グルメ・フード",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-3873",
+      "name": "ドリア＆グラタン なつめ",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ドリアアンドグラタン　ナツメ"
+        }
+      ],
+      "floorLabel": "8F",
+      "category": "グルメ・フード",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-710",
+      "name": "雛鮨",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヒナズシ"
+        }
+      ],
+      "floorLabel": "8F",
+      "category": "グルメ・フード",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-005-9623",
+      "name": "麦と卵",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ムギトタマゴ"
+        }
+      ],
+      "floorLabel": "8F",
+      "category": "グルメ・フード",
+      "storePoiId": "shop-sjk-marui-annex"
+    },
+    {
+      "id": "tenant-sjk-marui-074-3841",
+      "name": "LION HEART",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ライオンハート"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-21632",
+      "name": "ハーレーダビッドソンＳＴＹＬＥ新宿",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ハーレーダビッドソンスタイルシンジュク"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-9922",
+      "name": "ファブリス　イケテイ",
+      "aliases": [],
+      "floorLabel": "1F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-4746",
+      "name": "ヴィヴィアン・ウエストウッド マン",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヴィヴィアン・ウエストウッド　マン"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "メンズ",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-21820",
+      "name": "おたからや",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "オタカラヤ"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-6676",
+      "name": "エポスカードセンター",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-7839",
+      "name": "リーン・ロゼ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-21594",
+      "name": "池田屋",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "イケダヤ"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "ファミリー",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-21710",
+      "name": "RENNEN by HALB",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "レネンバイハルプ"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "メンズ",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-21905",
+      "name": "netkeiba STORE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ネットケイバ　ストア"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-20693",
+      "name": "エクステッドラボ",
+      "aliases": [],
+      "floorLabel": "3F",
+      "category": "メンズ",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-3788",
+      "name": "クインクラシコ",
+      "aliases": [],
+      "floorLabel": "3F",
+      "category": "メンズ",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-406",
+      "name": "タケオキクチ",
+      "aliases": [],
+      "floorLabel": "3F",
+      "category": "メンズ",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-274",
+      "name": "トルネードマート",
+      "aliases": [],
+      "floorLabel": "3F",
+      "category": "メンズ",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-8364",
+      "name": "フープディドゥ",
+      "aliases": [],
+      "floorLabel": "3F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-275",
+      "name": "リエラボ　ニコルクラブフォーメン",
+      "aliases": [],
+      "floorLabel": "3F",
+      "category": "メンズ",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-20596",
+      "name": "Deep see",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ディープ　シー"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-331",
+      "name": "ウインズハウス",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-21242",
+      "name": "グラスオニオン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-3789",
+      "name": "コレクティブ　ユニオンステーション",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "メンズ",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-3251",
+      "name": "ディールデザイン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-3391",
+      "name": "ユーエスボーダー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "メンズ",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-9923",
+      "name": "ロワード",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ファッション雑貨・生活雑貨",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-21830",
+      "name": "晴れ着の丸昌",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ハレギノマルショウ"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "レディス＆メンズ",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-6437",
+      "name": "ガルニエ",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "メンズ",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-390",
+      "name": "ハイストリート　トーキョー",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "メンズ",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-21707",
+      "name": "ハードオフ新宿",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ハードオフ"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-391",
+      "name": "ムッシュニコル キャナルドゥ　コンセプトストア",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ムッシュニコルキャナルドゥコンセプトストア"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "メンズ",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-393",
+      "name": "メンズ　メルローズ",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "メンズ",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-20604",
+      "name": "BABY CUE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ベイビーキュー"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-21821",
+      "name": "らしんばん",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ラシンバン"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-9146",
+      "name": "ドローンスクール新宿",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ドローンスクールシンジュク"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-10010",
+      "name": "マニネイル",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "コスメ・ビューティ",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-8940",
+      "name": "日本カジノスクール / JCS Hold’em",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ニホンカジノスクール　ジェイシーエスホールデム"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-415",
+      "name": "お直し工房　フィット",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "オナオシコウボウ　フィット　リフォーム"
+        }
+      ],
+      "floorLabel": "7F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-9542",
+      "name": "アニメイト新宿",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アニメイトシンジュク"
+        }
+      ],
+      "floorLabel": "7F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-7670",
+      "name": "エンタメ",
+      "aliases": [],
+      "floorLabel": "8F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-074-20883",
+      "name": "シューティングレンジTARGET-１",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "シューティングレンジターゲットワン"
+        }
+      ],
+      "floorLabel": "8F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-men"
+    }
+  ],
+  "removed": [],
+  "coverage": {
+    "003": {
+      "storePoiId": "shop-sjk-marui-honkan",
+      "floors": [
+        "B1F",
+        "1F",
+        "2F",
+        "3F",
+        "4F",
+        "5F",
+        "6F",
+        "7F",
+        "8F"
+      ],
+      "introduceRows": 63,
+      "shopListEntries": 172
+    },
+    "005": {
+      "storePoiId": "shop-sjk-marui-annex",
+      "floors": [
+        "B1F",
+        "1F",
+        "2F",
+        "3F",
+        "4F",
+        "5F",
+        "6F",
+        "7F",
+        "8F"
+      ],
+      "introduceRows": 56,
+      "shopListEntries": 69
+    },
+    "074": {
+      "storePoiId": "shop-sjk-marui-men",
+      "floors": [
+        "1F",
+        "2F",
+        "3F",
+        "4F",
+        "5F",
+        "6F",
+        "7F",
+        "8F"
+      ],
+      "introduceRows": 38,
+      "shopListEntries": 60
+    }
+  },
+  "fetch": {
+    "endpoint": "https://www.0101.co.jp/contents2/shopinfo/{003|005|074}/shop_introduce_list.json (floor map: /contents2/floormap/{stcd}/floor_map_list.json; entry list: /contents2/shopinfo/{stcd}/shop_list.json)",
+    "requests": 9,
+    "spacing": "sequential, at least 0.8 s apart; curl with its default User-Agent, no custom header",
+    "window": "2026-10-25T08:42:41Z–08:43:23Z",
+    "floorSource": "facility_floor_name and shop_category_list on shop_introduce_list.json; the printed kana reading is shop_kana_name from shop_list.json, joined on shop_seq (157/157 matched, no name mismatch)",
+    "notTranscribed": "shop_list.json lists more entries than shop_introduce_list.json per building (172/63, 69/56, 60/38), but shop_list.json carries no floor or category, so those rows cannot be transcribed with a printed floor and are left out rather than guessed."
+  }
+}
