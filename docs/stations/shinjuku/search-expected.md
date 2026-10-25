@@ -75,7 +75,7 @@ All of these return no hit with score >= 30. `Yamanote`, `都営新宿線` and `
 | 東京メトロ / Tokyo Metro | no strong hit. The S03 Marunouchi gate names do not contain 東京メトロ |
 | E01 | Shinjuku-nishiguchi is another station's data. Our exits say 側 (side), never 口 after a direction |
 | 屋根なし | no exit says 「屋根なし」: the E27 roof codes around exits 2 and 4 are mixed (see above). Do not add this word back without a source |
-| 3番出口 / Exit 3 | the E27 exits have no official exit numbers in the dataset; the id `poi:exit:3` is internal. (Since #501, `A1出口` and the other printed exit names do match the search-only WP4 lines — see the WP4 section) |
+| 3番出口 / Exit 3 | the E27 exits have no official exit numbers in the dataset; the id `poi:exit:3` is internal. (Since #501, `A1出口` and the other printed exit names do match the search-only WP4 lines — see the WP4 section. `3番出口` still matches none of them: a query with `<digits>番` only matches that whole number, so `A13番出口` / `B13番出口` do not answer it — `13番出口` does) |
 
 ## Known ranker behaviour (Lane C, not changed here)
 
@@ -111,7 +111,7 @@ Sources: the operators' and stores' own directories (都営 and 東京メトロ 
 
 Sources: the Tokyo Metro Shinjuku (M08) station page, its accessibility page and its printed yard map (改定日 2023年12月) and the Toei Shinjuku station page. All are facts-only references with no licence (`docs/research/lines/shinjuku-line-pois-wp4.json`, PR #421; cleared by #26 for Tokyo Metro and OD-01 A for Toei). The printed names are copied; no position, floor, connector, fare or English is added.
 
-- 43 POIs, appended after every E27, S03 and shop POI: 9 Toei station exits (`poi:toei-exit:a1`, `:1`–`:8`), 28 Metro exits (`poi:tokyometro-exit:a6`–`a18`, `b5`–`b18`, incl. `b12a`/`b12b`), 4 Metro lifts (`poi:tokyometro-lift:1`–`:4`) and 2 Metro escalators (`poi:tokyometro-escalator:1`–`:2`). Names are as printed, e.g. 「A6番出口」 and 「丸ノ内線 エレベーター ホーム（池袋寄り）～東改札」; the only alias is the exit letter/number the name starts with (`A6`).
+- 43 POIs, appended after every E27, S03 and shop POI: 9 Toei station exits (`poi:toei-exit:a1`, `:1`–`:8`), 28 Metro exits (`poi:tokyometro-exit:a6`–`a18`, `b5`–`b18`, incl. `b12a`/`b12b`), 4 Metro lifts (`poi:tokyometro-lift:1`–`:4`) and 2 Metro escalators (`poi:tokyometro-escalator:1`–`:2`). Names are as printed, e.g. 「A6番出口」 and 「丸ノ内線 エレベーター ホーム（池袋寄り）～東改札」. A Metro exit's only alias is the code its printed name starts with (`A6` of `A6番出口`); the Toei exits (「1出口」…) and every lift and escalator carry no alias, because a bare `1`–`8` matches unrelated numbers all over the station (#506). The 6 Metro lift/escalator names are assembled from the printed line, type and 設置場所 fields, and their `evidence.method` says so.
 - `floorId`, `displayPosition`, `paid` and `connectorNodeIds` are empty or null. Routing answers `unknown_goal`; the guided-walk tests skip them.
 - The Toei page prints one station-level exit list and does not say which exits serve the Shinjuku Line (S01) and which the Oedo Line (E27), so **no line is assigned**. Exits 1 and 2 are printed 閉鎖中 / closed; that wording is kept in their notes and they get no route like every other WP4 POI.
 - Two Metro gate names (`丸ノ内線 東改札` / `西改札`) may duplicate the S03 gates `poi:tokyometro-gate:1` / `:2`. They are **held, not imported**, until the WP10 field check (gap table 2026-10-25), so a gate query never returns both spellings.

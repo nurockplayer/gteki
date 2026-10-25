@@ -31,7 +31,8 @@ const WP4_SOURCES = new Set([
   "tokyometro-shinjuku-yardmap-print-2026-10",
   "toei-shinjuku-station-2026-10",
 ]);
-const isWp4 = (p: Poi) => p.category !== "shop" && p.evidence.sourceIds.every((id) => WP4_SOURCES.has(id));
+// Non-empty: `every` is true for an empty source list, which would class an unsourced POI as WP4 and skip the E27 checks.
+const isWp4 = (p: Poi) => p.category !== "shop" && p.evidence.sourceIds.length > 0 && p.evidence.sourceIds.every((id) => WP4_SOURCES.has(id));
 /** The E27 (Toei NWD / station map / GSI) POIs: everything the station itself evidences. */
 const isE27 = (p: Poi) => !isS03(p) && !isShop(p) && !isWp4(p);
 const exits = pois.filter((p) => p.category === "exit" && isE27(p));
@@ -278,8 +279,9 @@ describe("POI aliases", () => {
       for (const a of p.aliases) {
         if (isShop(p)) expect(a.lang, `${p.id} alias ${a.text}`).toBe("ja-Hrkt");
         else if (isWp4(p)) {
-          // #501: the only alias is the exit letter/number the printed name starts with (e.g. A6 of A6番出口).
-          expect(text(p, "ja")!.startsWith(a.text), `${p.id} alias ${a.lang}:${a.text}`).toBe(true);
+          // #501: a Metro exit's only alias is the printed code of a 番出口 name (A6 of A6番出口); nothing else
+          // carries an alias. The exact set is asserted in the WP4 block below.
+          expect(["ja"], `${p.id} alias ${a.lang}`).toContain(a.lang);
         } else expect(allowedNorm.has(norm(`${a.lang}:${a.text}`)), `${p.id} alias ${a.lang}:${a.text}`).toBe(true);
       }
     }
@@ -628,10 +630,16 @@ describe("WP4 line POIs (#501)", () => {
     }
   });
 
-  it("keeps the printed ja name, a printed alias and the unverified note", () => {
+  it("keeps the printed ja name, the printed exit code as the only alias, and the unverified note", () => {
     for (const p of wp4) {
       expect(p.names.length, p.id).toBe(1);
       expect(p.names[0]!.lang, p.id).toBe("ja");
+      // #501 review: an exit keeps only the lettered code its printed name starts with (A6 of A6番出口, A1 of
+      // A1出口); the bare Toei 1–8 aliases were dropped because a lone number matches the whole station (#506),
+      // and no lift or escalator has an alias. Asserted as an exact set, so an empty alias cannot pass.
+      const printed = p.names[0]!.text;
+      const code = p.category === "exit" ? /^(.*?)番?出?口$/.exec(printed)?.[1] : undefined;
+      expect(p.aliases.map((a) => a.text), p.id).toEqual(code && /[a-z]/i.test(code) ? [code] : []);
       const ja = p.notes?.find((n) => n.lang === "ja")?.text ?? "";
       const en = p.notes?.find((n) => n.lang === "en")?.text ?? "";
       expect(ja, `${p.id} ja`).toContain("位置・入口は未確認");
