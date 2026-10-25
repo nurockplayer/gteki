@@ -56,6 +56,9 @@ const CASES: Case[] = [
   { q: "でぐち ちじょう きたがわ", top: "poi:exit:1" },
   { q: "deguchi kita-gawa", among: "poi:exit:1", note: "exit 5 also matches: it is also on the north side" },
   { q: "northwest", order: [{ ids: ["poi:exit:2", "poi:gate:1"], score: 65 }] },
+  // #501: this printed exit name belongs to a search-only WP4 exit; the Metro A10–A18 exits follow at 40 through
+  // the number, below the exact match.
+  { q: "A1出口", top: "poi:toei-exit:a1", score: 100, note: "printed name of the search-only Toei exit" },
   // Facilities
   ...["トイレ", "廁所", "toilet"].map((q): Case => ({ q, top: ["poi:toilet:1", "poi:toilet:2", "poi:toilet:3"] })),
   ...["電梯", "elevator", "エレベーター"].map((q): Case => ({
@@ -66,18 +69,26 @@ const CASES: Case[] = [
 
 /** Negative cases: no hit with score >= 30 (other operators, other stations, exit numbers, 屋根なし). */
 const NO_STRONG_HIT = ["JR新宿", "Yamanote", "東京メトロ", "Tokyo Metro", "都営新宿線", "E01", "屋根なし", "3番出口", "Exit 3"];
-/** #501: the sources of the WP4 line POIs (Toei station page, Tokyo Metro station/accessibility/yard-map pages). */
-const WP4_SOURCES = [
-  "toei-shinjuku-station-2026-10",
+/** #501: the WP4 line POIs (Toei exits, Metro M08 exits/lifts/escalators): printed names, facts-only, no route. */
+const WP4_SOURCES = new Set([
   "tokyometro-shinjuku-station-2026-10",
   "tokyometro-shinjuku-accessibility-2026-10",
   "tokyometro-shinjuku-yardmap-print-2026-10",
-];
+  "toei-shinjuku-station-2026-10",
+]);
+/** #526: the facts-only English line-alias source adds M08 / "Marunouchi Line" to a POI without changing its own source. */
+const LINE_ALIAS_SOURCE = "tokyometro-shinjuku-station-en-2026-10";
+// Non-empty: `every` is true for an empty source list, which would class an unsourced POI as WP4.
+const isWp4 = (p: { category: string; evidence: { sourceIds: string[] } }) =>
+  p.category !== "shop" &&
+  p.evidence.sourceIds.length > 0 &&
+  p.evidence.sourceIds.every((id) => WP4_SOURCES.has(id) || id === LINE_ALIAS_SOURCE);
 /**
- * #411: other operators' names match only the S03 search-only POIs (no connector, so never routable). Every strong hit
- * must be one of them; the E27 platform must not be among them.
+ * #411: other operators' names match only search-only POIs (no connector, so never routable): the S03 names, since
+ * #214 the merchant listings and, since #501, the WP4 line POIs. Every strong hit must be one of them; the E27
+ * platform must not be among them.
  */
-const S03_ONLY = ["JR", "山手線", "中央線", "京王", "京王線", "小田急", "小田急線", "丸ノ内線", "西口", "南口", "東口", "新宿西口"];
+const SEARCH_ONLY = ["JR", "山手線", "中央線", "京王", "京王線", "小田急", "小田急線", "丸ノ内線", "西口", "南口", "東口", "新宿西口"];
 /** The doc's stronger rule for these: no hit at all, not even fuzz. */
 const NO_HIT = ["Yamanote", "都営新宿線", "E01"];
 
@@ -128,29 +139,23 @@ describe("core search on the real Shinjuku POIs (docs/stations/shinjuku/search-e
     for (const h of s) expect(h.poi.connectorNodeIds, h.poi.id).toEqual([]);
   });
 
-  // #411 / #501: S03 names and WP4 line-POI names that contain 出口 or 改札 also match (search only).
-  // The E27 hits stay as the doc has them, and every added hit is search-only.
+  // #411/#501: S03 and WP4 names that contain 出口 or 改札 also match (search only). The E27 hits stay as the doc
+  // has them.
   it.each([
     ["出口", ALL_EXITS],
     ["改札", ["poi:gate:1", "poi:gate:2", "poi:gate:3"]],
   ] as const)("%s keeps the E27 hits and adds only search-only S03 and WP4 POIs", (q, e27Ids) => {
     const s = strong(q);
-    const isSearchOnly = (h: { poi: { connectorNodeIds: string[] } }) => h.poi.connectorNodeIds.length === 0;
-    const e27 = s.filter((h) => !isSearchOnly(h));
+    const isSearchOnlyHit = (h: { poi: { category: string; evidence: { sourceIds: string[] } } }) =>
+      h.poi.evidence.sourceIds.includes("tokyo-s03-zip") || isWp4(h.poi);
+    const e27 = s.filter((h) => !isSearchOnlyHit(h));
     expect(ids(e27)).toEqual([...e27Ids].sort());
-    for (const h of s.filter(isSearchOnly)) {
-      // Every added hit is an S03 name or a WP4 line name, and neither is routable.
-      const sources = h.poi.evidence.sourceIds;
-      expect(
-        sources.includes("tokyo-s03-zip") || sources.some((id) => WP4_SOURCES.includes(id)),
-        `${q}: unexpected search-only hit ${h.poi.id}`,
-      ).toBe(true);
-    }
-    // Search-only hits never push a routable E27 hit down: every E27 hit ranks before the first added hit.
-    const firstAdded = s.findIndex(isSearchOnly);
-    const lastE27 = s.map((h) => !isSearchOnly(h)).lastIndexOf(true);
-    expect(firstAdded, `${q}: search-only hits are expected`).toBeGreaterThanOrEqual(0);
-    expect(firstAdded, q).toBeGreaterThan(lastE27);
+    for (const h of s.filter(isSearchOnlyHit)) expect(h.poi.connectorNodeIds, h.poi.id).toEqual([]);
+    // Search-only hits never push a routable E27 hit down: every E27 hit ranks before the first search-only hit.
+    const firstSearchOnly = s.findIndex(isSearchOnlyHit);
+    const lastE27 = s.map((h) => !isSearchOnlyHit(h)).lastIndexOf(true);
+    expect(firstSearchOnly, `${q}: search-only hits are expected`).toBeGreaterThanOrEqual(0);
+    expect(firstSearchOnly, q).toBeGreaterThan(lastE27);
     if (q === "出口") expect(e27.map((h) => h.score)).toEqual(e27Ids.map(() => 105));
   });
 
@@ -161,7 +166,7 @@ describe("core search on the real Shinjuku POIs (docs/stations/shinjuku/search-e
    */
   const SHOP_ONLY_HITS: Record<string, string[]> = { 小田急: ["shop-sjk-odakyudept"], 東口: ["shop-sjk-metro-004"] };
 
-  it.each(S03_ONLY)("%s returns only search-only POIs (S03 names, WP4 line names and merchant listings; no route)", (q) => {
+  it.each(SEARCH_ONLY)("%s returns only search-only POIs (S03 names, merchant listings and WP4 line POIs; no route)", (q) => {
     const s = strong(q);
     const shops = SHOP_ONLY_HITS[q] ?? [];
     expect(s.length).toBeGreaterThan(0);
@@ -176,11 +181,9 @@ describe("core search on the real Shinjuku POIs (docs/stations/shinjuku/search-e
         // An S03 name cites only the S03 dataset; a WP4 line name cites only its operator sources (station
         // page, plus the yard map for a Metro exit). Either may also cite the facts-only English line-alias
         // source (#526), which adds the M08 / Marunouchi Line aliases to those POIs.
-        const sources = h.poi.evidence.sourceIds.filter(
-          (id) => id !== "tokyometro-shinjuku-station-en-2026-10",
-        );
+        const sources = h.poi.evidence.sourceIds.filter((id) => id !== LINE_ALIAS_SOURCE);
         if (sources.includes("tokyo-s03-zip")) expect(sources, h.poi.id).toEqual(["tokyo-s03-zip"]);
-        else for (const id of sources) expect(WP4_SOURCES, `${h.poi.id}: unexpected source ${id}`).toContain(id);
+        else for (const id of sources) expect(WP4_SOURCES.has(id), `${h.poi.id}: unexpected source ${id}`).toBe(true);
       }
     }
     expect(s.filter((h) => h.poi.category !== "shop").length, `${q}: the search-only names are still expected`).toBeGreaterThan(0);
