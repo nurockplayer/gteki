@@ -406,7 +406,7 @@ describe("elevators and endpoint evidence (PR #15 Codex review 8)", () => {
     expect(texts.filter((t) => /Turn (left|right|back)/.test(t))).toEqual([]);
   });
 
-  it("endpoint POI evidence joins sources, freshness and the checked date", () => {
+  it("endpoint POI evidence joins the endpoint sources, freshness and the checked date, not the path's sources", () => {
     const b = createSyntheticBundle();
     for (const s of b.sources) s.datasetDate = "2026-09-01";
     b.sources.push({ ...b.sources[0]!, id: "poi-survey", datasetDate: "2016-01-01" });
@@ -414,7 +414,8 @@ describe("elevators and endpoint evidence (PR #15 Codex review 8)", () => {
     const plain = ok(createRouter(b).route("start", "goal", { ...base, today: "2026-10-20" }));
     expect(plain.stale).toBe(false);
     const withPoi = ok(createRouter(b).route("start", "goal", { ...base, today: "2026-10-20" }, [poiEvidence]));
-    expect(withPoi.sourceIds).toContain("poi-survey");
+    expect(withPoi.endpointSourceIds).toContain("poi-survey");
+    expect(withPoi.sourceIds).not.toContain("poi-survey");
     expect(withPoi.stale).toBe(true);
     expect(withPoi.evidenceCheckedDate).toBe("2030-01-01");
   });
