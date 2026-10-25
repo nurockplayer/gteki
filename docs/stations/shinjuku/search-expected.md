@@ -2,7 +2,7 @@
 
 Issue #106. This table is the contract for Lane C's per-station, table-driven search test. Lane B already checks every row below against the real `createSearchIndex` (`@gteki/search`) in `stations/shinjuku/test/search-truth.test.ts`; Lane C may copy the table into its own test. Nothing here changes ranking or UI.
 
-**What is modelled.** Only the Toei Oedo Line Shinjuku station (E27), from the MLIT E27 station map and walking network (published under the Owner's #16 override; licence basis unconfirmed, not covered by PDL 1.0). JR, Keio, Odakyu and Tokyo Metro gates and platforms are listed **by name only** as 45 search-only POIs (#411, see the S03 section at the end). They can produce a hit, but never a route. The Toei Shinjuku Line and Shinjuku-nishiguchi (E01) are **not** modelled and must never produce a hit.
+**What is modelled.** Only the Toei Oedo Line Shinjuku station (E27), from the MLIT E27 station map and walking network (published under the Owner's #16 override; licence basis unconfirmed, not covered by PDL 1.0). JR, Keio, Odakyu and Tokyo Metro gates and platforms are listed **by name only** as 45 search-only POIs (#411, see the S03 section at the end). 583 shop listings from the operators' and stores' own directories are search-only shop POIs (#214, see the merchant section at the end). Neither set can produce a route. The Toei Shinjuku Line and Shinjuku-nishiguchi (E01) are **not** modelled and must never produce a hit.
 
 **How the index reads a POI.** `createSearchIndex` matches the query against every `names[].text` and `aliases[].text` of a POI (all languages together), after NFKC, lower-casing, katakana→hiragana and removal of spaces and punctuation. Per text: exact 100, prefix 80, suffix 70, substring 60, all-tokens/all-script-runs 40, ordered-subsequence fuzz up to 40; +5 if the POI has connectors; the best text scores the POI. Fuzz scores below 30 are subsequence noise, not a match: the tests count only hits with score >= 30 as "strong".
 
@@ -21,7 +21,7 @@ The station-name hits ride on `poi:platform:oedo`, the one existing POI that sta
 | 大江戸線 / 都営大江戸線 | ja line | `poi:platform:oedo` | aliases from station.json name 新宿駅（都営大江戸線） |
 | Oedo / oedo line / Toei Oedo Line | en line | `poi:platform:oedo` | aliases from station.json en name |
 | 新宿站 / 大江戶線 / 都營大江戶線 | zh-Hant | `poi:platform:oedo` | zh-Hant aliases from station.json 新宿站（都營大江戶線） |
-| ホーム / 月台 | generic | `poi:platform:oedo` | the E27 platform (B6, paid side); S03 platform names that contain ホーム also match below it (search only) |
+| ホーム / 月台 | generic | `poi:platform:oedo` | the E27 platform (B6, paid side); S03 platform names that contain ホーム also match below it, and so does the shop `shop-sjk-lumine-000193` (SNIDEL HOME, a name suffix; #214) — all search only |
 
 ## Exits (no official exit numbers; every exit is told apart by descriptors)
 
@@ -57,12 +57,12 @@ Only `poi:exit:1` states a roof (all nearby links are roof = 2). `poi:exit:2`, `
 | deguchi kita-gawa | romaji | `poi:exit:1` among the hits (exit 5 also matches: it is also on the north side) | ja-Latn alias |
 | northwest | en | `poi:exit:2` and `poi:gate:1` (65 each) | both are on the north-west side |
 
-## Facilities (from the GSI facility points; no shops, kiosks, benches or vending)
+## Facilities (from the GSI facility points; no shop, kiosk, bench or vending geometry)
 
 | Query | Expected top POI(s) | Why |
 | --- | --- | --- |
 | トイレ / 廁所 / toilet | `poi:toilet:1` women, `poi:toilet:2` unisex, `poi:toilet:3` men (all B3) | The notes are traveller text describing each toilet-space representative point; facility codes and the source cross-check live in `evidence.method` |
-| 電梯 / elevator / エレベーター | `poi:elevator:1`, `:2`, `:3` (and `poi:exit:3` below them: its name says elevator) | The notes describe stops and any station-map confirmation gap for travellers; F012 levels and cross-check results live in `evidence.method` |
+| 電梯 / elevator / エレベーター | `poi:elevator:1`, `:2`, `:3` (and `poi:exit:3` below them: its name says elevator) | The notes describe stops and any station-map confirmation gap for travellers; F012 levels and cross-check results live in `evidence.method`. No shop name contains these words |
 | 改札 / 剪票口 / gate | `poi:gate:1`, `:2`, `:3` (for 改札 the S03 gate names that contain 改札 also match, search only) | The notes give travellers an approximate position; gate-link counts and F106 cluster counts live in `evidence.method` (1, 4 and 1; all 6 points are counted once) |
 
 ## Negative cases (must return no E27 claim)
@@ -94,5 +94,15 @@ Source: `tokyo-s03-zip`, 「出典：東京都都市整備局「新宿駅周辺�
 - Each note says 「2020年3月時点のデータです」 / "As of March 2020 data" and 「検索のみ（入口未確認）」 / "search only, entrance not verified". Current status is unknown.
 - Routing answers `unknown_goal`, so these POIs never produce a route. The guided-walk tests skip them.
 - 「新宿」 and "Shinjuku" still rank the routable Oedo platform (`poi:platform:oedo`) first, although JR platforms 1–4 contain 「湘南新宿ライン」.
-- JR, 山手線, 中央線, 京王, 小田急, 丸ノ内線, 西口, 南口, 東口 and 新宿西口 now return these POIs at score 30 and above (see the negative table). None of them is routable.
+- JR, 山手線, 中央線, 京王, 小田急, 丸ノ内線, 西口, 南口, 東口 and 新宿西口 now return these POIs at score 30 and above (see the negative table). None of them is routable. Two of them also return a merchant listing (#214, next section): 小田急 adds `shop-sjk-odakyudept` and 東口 adds `shop-sjk-metro-004`, both search only.
 - Two gates, `poi:keio-gate:1` and `:2`, share one name in the source. The name is kept as printed and is not disambiguated.
+
+## Merchant directory listings (#214)
+
+Sources: the operators' and stores' own directories (都営 and 東京メトロ station shop lists, ルミネエスト新宿, ルミネ新宿, ニュウマン新宿, 小田急百貨店 新宿店), recorded under `docs/research/merchants/` and credited in `NOTICE`. Most are facts-only references; one 新宿西口 row is 東京都交通局 「駅構内のお店」 (CC BY 4.0). The printed name and, in the notes, the printed floor or area label are kept; nothing else is taken.
+
+- 583 shop POIs, appended after every E27 and S03 POI: 6 都営 / 東京メトロ rows, 576 ルミネエスト・ルミネ・ニュウマン rows and one department store.
+- `floorId`, `displayPosition`, `connectorNodeIds` and `paid` are empty or null: the directories give no position or entrance. The notes say 「位置・入口は未確認（検索のみ。案内ルートなし）」 / "Location and entrance not verified (search only, no route)" and that the current status is unknown.
+- Routing answers `unknown_goal`. A shop never becomes a route target.
+- These queries gain a shop hit (and only these): ホーム (`shop-sjk-lumine-000193`, SNIDEL HOME, 70), 小田急 (`shop-sjk-odakyudept`, 80) and 東口 (`shop-sjk-metro-004`, 60). The E27 platform still ranks first for ホーム, and a shop hit never outranks a routable E27 hit.
+- The brand lists inside department stores are not POIs (#419): they belong to a station tenant file.

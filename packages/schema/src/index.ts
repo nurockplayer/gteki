@@ -261,6 +261,37 @@ export type PoiCategory =
   | "other";
 
 /**
+ * Opening hours exactly as a source printed them (OD-32). This is text, not a timetable: the app shows the
+ * page's own wording and never parses it into open/closed state. `status: "UNKNOWN"` records a page that was
+ * read and printed no hours, so a later check can tell "not looked at" from "looked at, nothing printed".
+ */
+export interface HoursText {
+  /** The page's own wording, line breaks kept. Absent only when the page printed no hours (status UNKNOWN). */
+  text?: string;
+  /** The official page the text was read from (http/https). */
+  sourceUrl: string;
+  /** ISO date (YYYY-MM-DD) the page was read. */
+  retrievedAt: string;
+  /** Whose word it is: the merchant's own listing, a dated official page, or an official page with no date. */
+  basis: "merchant" | "dated-official" | "undated-official";
+  status: "OK" | "UNKNOWN";
+}
+
+/**
+ * Hours that belong to a whole building or a floor range rather than one shop (OD-32), e.g. 「ルミネ池袋
+ * B1～7F 11:00～21:00」. Building-level rows exist because the page prints one block for many shops; they never
+ * override a shop's own hours.
+ */
+export interface BuildingHours extends HoursText {
+  /** The building or facility as its own page names it. */
+  building: LocalizedText[];
+  /** The floor range the row covers, as printed (e.g. "B1～7F"); null for a whole-building row. */
+  floorRange: string | null;
+  /** The page's own caveat, e.g. 「店舗により異なる場合あり」. */
+  note?: LocalizedText[];
+}
+
+/**
  * An approximate representative point (e.g. the area-weighted centroid of the source polygon that names the
  * POI). It exists so search can show roughly where a place is when no surveyed position is available; it is
  * never a routing target and never shown as a precise pin.
@@ -296,6 +327,8 @@ export interface Poi {
   evidence: EvidenceRef;
   /** Human-facing freshness/limits, e.g. operating hours text from source. */
   notes?: LocalizedText[];
+  /** Opening hours as an official page printed them (OD-32); shown with the date it was read. */
+  hours?: HoursText;
 }
 
 export type CoverageStatus = "routable" | "visual_only" | "unverified" | "excluded";
@@ -410,6 +443,8 @@ export interface StationBundle {
   dataFiles?: DataFile[];
   /** Brands listed by stores' own directories (optional `gteki/tenants.json`). Facts only, never routing targets. */
   tenants?: Tenant[];
+  /** Whole-building / floor-range hours printed by an official page (OD-32), shared by many shops. */
+  buildingHours?: BuildingHours[];
 }
 
 /** stations/<id>/gteki/station.json */
@@ -424,6 +459,8 @@ export interface StationManifestFile {
   spawnHeadings?: Record<string, number>;
   assets?: Asset[];
   dataFiles?: DataFile[];
+  /** Whole-building / floor-range hours printed by an official page (OD-32). */
+  buildingHours?: BuildingHours[];
 }
 
 /** stations/<id>/gteki/graph.json */

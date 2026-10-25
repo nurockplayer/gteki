@@ -163,13 +163,13 @@ export const IDENTITY_NUDGE_MAX_PX = 24;
 /**
  * One pass per chip over regions sorted by y0 (the caller sorts once per label re-check).
  * Merge forbidden vertical intervals for this chip's horizontal span, then choose a clear side.
- * An unselected chip is nudged to the nearest clear side when that is within `maxNudge` and stays
- * on screen; past that it is hidden for the frame. A selected chip is always moved, never hidden.
+ * An unselected chip is nudged to the nearest clear side when that is within IDENTITY_NUDGE_MAX_PX and
+ * stays on screen; past that it is hidden for the frame. A selected chip is always moved, never hidden.
  * Disjoint boards must not push an endpoint past the viewport. Offsets are absolute from the
  * original anchor, so repeated passes never accumulate them. The final offset is clamped so a
  * selected chip stays inside the viewport even when the boards leave no room.
  */
-export function protectIdentityChip(chip: ScreenRect, selected: boolean, regionsByTop: readonly ScreenRect[], viewportHeight: number, maxNudge = IDENTITY_NUDGE_MAX_PX): { hidden: boolean; offsetY: number } {
+export function protectIdentityChip(chip: ScreenRect, selected: boolean, regionsByTop: readonly ScreenRect[], viewportHeight: number): { hidden: boolean; offsetY: number } {
   if (!regionsByTop.some((r) => intersectsRect(chip, r))) return { hidden: false, offsetY: 0 };
   const height = chip.y1 - chip.y0;
   let start = Infinity, end = -Infinity;
@@ -185,7 +185,7 @@ export function protectIdentityChip(chip: ScreenRect, selected: boolean, regions
     const above = start - chip.y0, below = end - chip.y0;
     const nearest = Math.abs(above) <= Math.abs(below) ? above : below;
     const onScreen = chip.y0 + nearest >= 0 && chip.y1 + nearest <= viewportHeight;
-    return Math.abs(nearest) <= maxNudge && onScreen ? { hidden: false, offsetY: nearest } : { hidden: true, offsetY: 0 };
+    return Math.abs(nearest) <= IDENTITY_NUDGE_MAX_PX && onScreen ? { hidden: false, offsetY: nearest } : { hidden: true, offsetY: 0 };
   }
   const offsetY = (start >= 0 ? start : end) - chip.y0;
   // Boards that leave no clear span must not push a selected chip past a viewport edge.

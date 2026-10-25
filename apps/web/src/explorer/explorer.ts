@@ -552,13 +552,15 @@ export class Explorer {
    * Where the routable network sits on screen now (CSS px, page coordinates like label rects) and how
    * big it is, measured against the FREE area — the part of the canvas neither the search panel nor the
    * credit line covers: `extentShare` = larger bbox side / the free area's shorter side (about 0.65 right
-   * after the fit: the fit sizes the same network points). `fitShare` is the share of the AABB of those
-   * points, which is what the fit is fed; its 8 corners project outside a diagonal point band, so it can
-   * read larger than `extentShare`. `visibleRect` is that free area itself (page CSS px, so it excludes
-   * the panel and the credit strip), so a spec can check `bbox` lies outside both. Null outside overview
-   * or without a routable network.
+   * after the fit: the fit sizes the same network points). `viewportShare` is the same larger side over
+   * the VIEWPORT's shorter side — #109's acceptance measure: on an occluded phone the fit deliberately
+   * reaches past the free band, so `extentShare` then reads over 1 while `viewportShare` stays at half.
+   * `fitShare` is the share of the AABB of those points, which is what the fit is fed; its 8 corners
+   * project outside a diagonal point band, so it can read larger than `extentShare`. `visibleRect` is
+   * that free area itself (page CSS px, so it excludes the panel and the credit strip), so a spec can
+   * check `bbox` lies outside both. Null outside overview or without a routable network.
    */
-  overviewFrame(): { extentShare: number; fitShare: number | null; bbox: { x0: number; y0: number; x1: number; y1: number }; visibleRect: { x: number; y: number; w: number; h: number } } | null {
+  overviewFrame(): { extentShare: number; viewportShare: number; fitShare: number | null; bbox: { x0: number; y0: number; x1: number; y1: number }; visibleRect: { x: number; y: number; w: number; h: number } } | null {
     if (this.mode !== "overview" || this.routablePts.length === 0) return null;
     const { w, h } = this.viewSize;
     this.camera.updateMatrixWorld();
@@ -570,6 +572,7 @@ export class Explorer {
     const at = this.host.getBoundingClientRect();
     return {
       extentShare: extentShare(net, free.w, free.h),
+      viewportShare: extentShare(net, w, h),
       fitShare: fit ? extentShare(fit, free.w, free.h) : null,
       bbox: { x0: net.x0 + at.left, y0: net.y0 + at.top, x1: net.x1 + at.left, y1: net.y1 + at.top },
       visibleRect: { x: free.x + at.left, y: free.y + at.top, w: free.w, h: free.h },
@@ -1030,8 +1033,15 @@ export class Explorer {
     this.world.updateMatrixWorld(true);
     const visit = (o: THREE.Object3D): void => {
       if (o.userData[STREET_SURFACE_FLAG] === true) return;
-      const geometry = (o as THREE.Mesh).geometry;
-      if (geometry) {
+      // Per object, the maths Box3.setFromObject does: the geometry's bounds through the world matrix, or
+      // an InstancedMesh's own bounds over every instance (an instance can sit outside its geometry's box).
+      // Only the walk differs — a flagged subtree is skipped instead of added to the union.
+      const instanced = o as THREE.InstancedMesh;
+      const geometry = (o as Partial<THREE.Mesh>).geometry;
+      if (instanced.isInstancedMesh) {
+        if (!instanced.boundingBox) instanced.computeBoundingBox();
+        if (instanced.boundingBox) box.union(instanced.boundingBox.clone().applyMatrix4(o.matrixWorld));
+      } else if (geometry) {
         if (!geometry.boundingBox) geometry.computeBoundingBox();
         if (geometry.boundingBox) box.union(geometry.boundingBox.clone().applyMatrix4(o.matrixWorld));
       }
@@ -1148,7 +1158,7 @@ export class Explorer {
     const share = w <= PHONE_MAX_PX && (free.w < w || free.h < h) ? OVERVIEW_MIN_VIEWPORT_SHARE : 0;
     const pose = frameBounds(
       this.framed,
-      { fovDeg: this.camera.fov, aspect: this.camera.aspect, near: this.camera.near, viewport: { w, h }, free, points: this.framedPts ?? undefined, ...(share > 0 ? { minViewportShare: share } : {}) },
+      { fovDeg: this.camera.fov, aspect: this.camera.aspect, near: this.camera.near, viewport: { w, h }, free, points: this.framedPts ?? undefined, minViewportShare: share },
       undefined,
       OVERVIEW_OFFSET,
     );
@@ -1581,7 +1591,9 @@ export class Explorer {
       p.setFromMatrixPosition(l.obj.matrixWorld).project(this.camera);
       if (p.z < -1 || p.z > 1) continue; // behind the camera or past far: the CSS2D renderer hides it
       const size = l.size ?? estimateLabelBox(l.obj.element.textContent ?? "");
-      const x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh;
+      // The chip is drawn nudged off identity boards, so declutter must use where it actually lands.
+      // The chip is drawn nudged off identity boards, so declutter must use where it actually lands.
+      const x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh + l.identityOffsetY;
       if (x + size.w / 2 < 0 || x - size.w / 2 > vw || y + size.h / 2 < 0 || y - size.h / 2 > vh) continue;
       items.push({ id: l.poiId, x, y, w: size.w, h: size.h, klass: l.klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible, measured: l.size !== null });
       byId.set(l.poiId, l);
