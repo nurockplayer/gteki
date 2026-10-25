@@ -59,6 +59,23 @@ export class Minimap {
   private readonly routeLabel = document.createElement("div");
   private readonly arrow = svg("path", { class: "minimap-arrow", d: "M 0,-10 L 7,8 L 0,4 L -7,8 Z" });
   private readonly north = svg("g");
+  private readonly map = svg("svg", { class: "minimap-map", viewBox: "0 0 190 190", role: "button", tabindex: "0" });
+  private readonly overlay = document.createElement("section");
+  private readonly overlayPanel = document.createElement("div");
+  private readonly overlayTitle = document.createElement("div");
+  private readonly overlayClose = document.createElement("button");
+  private readonly overlayMap = svg("svg", { class: "minimap-overlay-map", viewBox: "0 0 190 190", role: "img" });
+  private readonly overlayGraph = svg("g", { class: "minimap-graph" });
+  private readonly overlayRoute = svg("g", { class: "minimap-route" });
+  private readonly overlayPoi = svg("g", { class: "minimap-pois" });
+  private readonly overlayLabel = document.createElement("div");
+  private readonly overlayNotice = document.createElement("div");
+  private readonly overlayArrow = svg("path", { class: "minimap-arrow", d: "M 0,-10 L 7,8 L 0,4 L -7,8 Z" });
+  private readonly overlayNorth = svg("g");
+  /** Edge chevron for a destination beyond the drawn span; same marker language as the HUD rim. */
+  private readonly overlayDestinationRim = svg("path", { class: "minimap-rim-marker minimap-destination-rim", d: "M 0,-6 L 5,4 L -5,4 Z" });
+  private overlayOpen = false;
+  private overlayDirty = true;
   private bundle: StationBundle | null = null;
   private lang: Lang = "ja";
   private orientation: MinimapOrientation = read(ORIENTATION_KEY) === "north-up" ? "north-up" : "player-up";
@@ -88,6 +105,20 @@ export class Minimap {
     this.syncTimer();
     if (!document.hidden && !this.collapsed) this.refresh();
   };
+  /**
+   * Modal keys are document-level: a click on the backdrop can drop focus to the body, and Escape
+   * must still close. Tab is contained to the dialog's one control, so focus cannot reach the app.
+   */
+  private readonly overlayKeydown = (event: KeyboardEvent) => {
+    if (!this.overlayOpen) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      this.closeOverlay();
+    } else if (event.key === "Tab") {
+      event.preventDefault();
+      this.overlayClose.focus();
+    }
+  };
 
   constructor(private readonly getPose: () => ExplorerPose | null) {
     this.el.className = "minimap";
@@ -95,7 +126,6 @@ export class Minimap {
     this.body.className = "minimap-body";
     this.label.className = "minimap-label";
     this.notice.className = "minimap-notice";
-    const map = svg("svg", { class: "minimap-map", viewBox: "0 0 190 190", "aria-hidden": "true" });
     const clipId = `minimap-clip-${++nextClipId}`;
     const defs = svg("defs"), clip = svg("clipPath", { id: clipId });
     clip.append(svg("circle", { cx: "95", cy: "95", r: "92" }));
@@ -110,8 +140,14 @@ export class Minimap {
     const n = svg("text", { x: "95", y: "19", "text-anchor": "middle", class: "minimap-north" });
     n.textContent = "N";
     this.north.append(n);
-    map.append(defs, svg("circle", { cx: "95", cy: "95", r: "93", class: "minimap-rim" }), clipped, this.north, this.arrow);
+    this.map.append(defs, svg("circle", { cx: "95", cy: "95", r: "93", class: "minimap-rim" }), clipped, this.north, this.arrow);
     this.arrow.style.display = "none";
+    this.map.addEventListener("click", () => this.openOverlay());
+    this.map.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      this.openOverlay();
+    });
     this.routeLabel.className = "minimap-route-label";
     this.routeLabel.hidden = true;
     const controls = document.createElement("div");
@@ -130,14 +166,72 @@ export class Minimap {
     this.collapseButton.addEventListener("click", () => this.collapse());
     this.reopen.addEventListener("click", () => this.show());
     controls.append(this.toggle, this.collapseButton);
-    this.body.append(map, this.label, this.routeLabel, this.notice, controls);
+    this.body.append(this.map, this.label, this.routeLabel, this.notice, controls);
     this.el.append(this.body, this.reopen);
+    this.buildOverlay();
     this.applyCollapsed();
     this.updateText();
     document.addEventListener("visibilitychange", this.visibilityChanged);
   }
 
+  /** The expanded map: the same 2D walk-graph drawing as the HUD, shown full-screen on demand. */
+  private buildOverlay(): void {
+    this.overlay.className = "minimap-overlay";
+    this.overlay.hidden = true;
+    this.overlay.setAttribute("role", "dialog");
+    this.overlay.setAttribute("aria-modal", "true");
+    this.overlay.addEventListener("click", (event) => {
+      if (event.target === this.overlay) this.closeOverlay();
+    });
+    this.overlayPanel.className = "minimap-overlay-panel";
+    const header = document.createElement("div");
+    header.className = "minimap-overlay-header";
+    this.overlayTitle.className = "minimap-overlay-title";
+    this.overlayClose.type = "button";
+    this.overlayClose.className = "minimap-overlay-close";
+    this.overlayClose.textContent = "×";
+    this.overlayClose.addEventListener("click", () => this.closeOverlay());
+    header.append(this.overlayTitle, this.overlayClose);
+    this.overlayLabel.className = "minimap-overlay-label";
+    this.overlayLabel.hidden = true;
+    this.overlayNotice.className = "minimap-overlay-notice";
+    const north = svg("text", { x: "95", y: "19", "text-anchor": "middle", class: "minimap-north" });
+    north.textContent = "N";
+    this.overlayNorth.append(north);
+    this.overlayArrow.style.display = "none";
+    this.overlayDestinationRim.style.display = "none";
+    this.overlayMap.append(
+      svg("rect", { x: "0", y: "0", width: "190", height: "190", class: "minimap-overlay-bg" }),
+      this.overlayGraph, this.overlayRoute, this.overlayPoi, this.overlayDestinationRim, this.overlayNorth, this.overlayArrow,
+    );
+    this.overlayPanel.append(header, this.overlayMap, this.overlayLabel, this.overlayNotice);
+    this.overlay.append(this.overlayPanel);
+    document.body.append(this.overlay);
+    document.addEventListener("keydown", this.overlayKeydown);
+  }
+
+  private openOverlay(): void {
+    if (this.overlayOpen || this.el.hidden || this.collapsed || !this.bundle) return;
+    const pose = this.getPose();
+    if (!pose || pose.mode === "overview") return;
+    this.overlayOpen = true;
+    this.overlay.hidden = false;
+    this.overlayDirty = true;
+    // The HUD may be idle on an unchanged pose; force one full refresh so the overlay starts current.
+    this.lastPose = "";
+    this.refresh();
+    this.overlayClose.focus();
+  }
+
+  private closeOverlay(restoreFocus = true): void {
+    if (!this.overlayOpen) return;
+    this.overlayOpen = false;
+    this.overlay.hidden = true;
+    if (restoreFocus && !this.el.hidden) this.map.focus();
+  }
+
   setStation(bundle: StationBundle | null, lang: Lang): void {
+    this.closeOverlay(false);
     this.bundle = bundle;
     this.lang = lang;
     this.floorId = undefined;
@@ -167,6 +261,8 @@ export class Minimap {
     this.arrow.style.display = "none";
     this.arrow.removeAttribute("transform");
     this.north.removeAttribute("transform");
+    // The closed overlay keeps its old DOM untouched; the next open rebuilds it from this state.
+    this.overlayDirty = true;
     this.el.hidden = true;
     this.updateText();
     this.syncTimer();
@@ -193,6 +289,7 @@ export class Minimap {
     this.connectorDirty = true;
     this.labelKey = "";
     this.routeDirty = true;
+    this.overlayDirty = true;
     this.lastPose = "";
     this.lastPosition = "";
     this.refresh();
@@ -202,6 +299,7 @@ export class Minimap {
     this.lang = lang;
     this.updateText();
     this.routeDirty = true;
+    this.overlayDirty = true;
     this.lastPose = "";
     this.refresh();
   }
@@ -219,12 +317,16 @@ export class Minimap {
 
   dispose(): void {
     this.disposed = true;
+    this.closeOverlay(false);
     this.syncTimer();
     document.removeEventListener("visibilitychange", this.visibilityChanged);
+    document.removeEventListener("keydown", this.overlayKeydown);
     this.el.remove();
+    this.overlay.remove();
   }
 
   private setCollapsed(collapsed: boolean): void {
+    if (collapsed) this.closeOverlay(false);
     this.collapsed = collapsed;
     persist(COLLAPSED_KEY, String(collapsed));
     this.applyCollapsed();
@@ -249,6 +351,7 @@ export class Minimap {
     const t = strings(this.lang);
     this.el.setAttribute("aria-label", t.minimap);
     this.notice.textContent = t.minimapSchematic;
+    this.map.setAttribute("aria-label", t.minimapExpand);
     // A stable toggle name: pressed means north is fixed up.
     this.toggle.textContent = t.minimapNorthUp;
     this.toggle.setAttribute("aria-label", t.minimapNorthUp);
@@ -274,7 +377,7 @@ export class Minimap {
     const pose = this.bundle ? this.getPose() : null;
     const visible = !!pose && pose.mode !== "overview";
     if (this.el.hidden === visible) this.el.hidden = !visible;
-    if (!visible || !pose || !this.bundle || this.collapsed) return;
+    if (!visible || !pose || !this.bundle || this.collapsed) { this.closeOverlay(false); return; }
     const key = `${pose.east},${pose.north},${pose.up},${pose.headingDeg},${pose.mode},${this.orientation}`;
     if (key === this.lastPose) return;
     this.lastPose = key;
@@ -282,6 +385,7 @@ export class Minimap {
     const floorChanged = floorId !== this.floorId;
     if (floorChanged) {
       this.floorId = floorId;
+      this.overlayDirty = true;
       const segments = floorId === null ? [] : floorWalkGraph(this.bundle, floorId);
       // Paths stay in north-up station coordinates; movement only changes the group transform.
       const origin: ExplorerPose = { east: 0, north: 0, up: 0, headingDeg: 0, mode: "walk" };
@@ -332,6 +436,8 @@ export class Minimap {
     const northTransform = `rotate(${rotation} ${CENTRE} ${CENTRE})`;
     if (this.north.getAttribute("transform") !== northTransform) this.north.setAttribute("transform", northTransform);
     this.updateMarkers(pose);
+    // Nothing of the overlay is touched while it is closed: no timer of its own, no hidden writes.
+    if (this.overlayOpen) this.renderOverlay(pose);
   }
 
   /** Draw what the current floor evidences, in station coordinates: the route runs and the routable POIs. */
@@ -372,8 +478,8 @@ export class Minimap {
     this.renderLabel();
   }
 
-  /** The two label-strip lines (destination floor, next floor change); rewritten only when they change. */
-  private renderLabel(): void {
+  /** The label-strip lines (destination floor, next floor change), shared by the HUD and the large map. */
+  private labelLines(): string[] {
     const t = strings(this.lang);
     const route = this.route;
     const last = route && route.length > 0 ? route[route.length - 1]! : null;
@@ -385,9 +491,16 @@ export class Minimap {
     if (this.connectorHint) {
       lines.push(t.minimapNextFloor(this.floorName(this.connectorHint.toFloorId), t.minimapMode[this.connectorHint.mode]));
     }
+    return lines;
+  }
+
+  /** The two label-strip lines (destination floor, next floor change); rewritten only when they change. */
+  private renderLabel(): void {
+    const lines = this.labelLines();
     const key = `${this.lang}|${this.floorId}|${lines.join("\n")}`;
     if (key === this.labelKey) return;
     this.labelKey = key;
+    this.overlayDirty = true;
     this.routeLabel.replaceChildren(...lines.map((line) => {
       const div = document.createElement("div");
       div.textContent = line;
@@ -398,6 +511,93 @@ export class Minimap {
       this.connectorTitle.textContent = lines[lines.length - 1]!;
       this.connectorGlyph.setAttribute("d", CONNECTOR_GLYPHS[this.connectorHint.mode] ?? CONNECTOR_GLYPHS.walk!);
     }
+  }
+
+  /**
+   * The expanded map, drawn from the same walk graph, route runs and evidenced POIs as the HUD (same
+   * station coordinates and 95 m span, just rendered at full width). Geometry is rebuilt only when the
+   * floor, route, language or hint changes; each tick moves the world groups. Called only while open.
+   */
+  private renderOverlay(pose: ExplorerPose): void {
+    if (!this.overlayOpen) return;
+    const t = strings(this.lang);
+    const floorId = this.floorId;
+    const origin: ExplorerPose = { east: 0, north: 0, up: 0, headingDeg: 0, mode: "walk" };
+    if (this.overlayDirty) {
+      this.overlayDirty = false;
+      const segments = floorId && this.bundle ? floorWalkGraph(this.bundle, floorId) : [];
+      this.overlayGraph.replaceChildren(...segments.map((segment) => svg("polyline", {
+        "data-mode": segment.mode,
+        points: segment.points.map((point) => {
+          const p = toMinimap(point.east, point.north, origin, "north-up", METRES_PER_PX);
+          return `${p.x},${p.y}`;
+        }).join(" "),
+      })));
+      this.overlayRoute.replaceChildren();
+      this.overlayPoi.replaceChildren();
+      if (floorId && this.bundle) {
+        for (const run of this.route ? routeOnFloor(this.route, floorId, this.steps ?? []) : []) {
+          this.overlayRoute.append(svg("polyline", {
+            class: "minimap-route-line",
+            points: run.map((point) => {
+              const p = toMinimap(point.x, point.y, origin, "north-up", METRES_PER_PX);
+              return `${p.x},${p.y}`;
+            }).join(" "),
+          }));
+        }
+        for (const poi of floorPois(this.bundle, floorId)) {
+          const p = toMinimap(poi.displayPosition!.x, poi.displayPosition!.y, origin, "north-up", METRES_PER_PX);
+          const dot = svg("circle", { cx: String(p.x), cy: String(p.y), r: "2.5", class: "minimap-poi", "data-category": poi.category });
+          if (poi.id === this.destination?.id) dot.classList.add("is-destination");
+          const title = svg("title");
+          title.textContent = poiLabel(this.bundle, poi, this.lang, t);
+          dot.append(title);
+          this.overlayPoi.append(dot);
+        }
+        const last = this.route && this.route.length > 0 ? this.route[this.route.length - 1]! : null;
+        if (last && last.floorId === floorId) {
+          const p = toMinimap(last.x, last.y, origin, "north-up", METRES_PER_PX);
+          this.overlayRoute.append(svg("circle", { cx: String(p.x), cy: String(p.y), r: "3", class: "minimap-route-end-dot" }));
+        }
+      }
+      // Overlay text is written only here, so a closed overlay receives no writes at all.
+      this.overlay.setAttribute("aria-label", t.minimapLargeMap);
+      this.overlayMap.setAttribute("aria-label", t.minimapLargeMap);
+      this.overlayClose.setAttribute("aria-label", t.minimapClose);
+      this.overlayClose.title = t.minimapClose;
+      this.overlayNotice.textContent = t.minimapSchematic;
+      const lines = this.labelLines();
+      this.overlayLabel.replaceChildren(...lines.map((line) => {
+        const div = document.createElement("div");
+        div.textContent = line;
+        return div;
+      }));
+      this.overlayLabel.hidden = lines.length === 0;
+      this.overlayArrow.style.display = floorId === null || !this.bundle ? "none" : "";
+      const station = this.bundle?.station;
+      const floor = this.bundle?.floors.find((f) => f.id === this.floorId);
+      this.overlayTitle.textContent = station
+        ? `${station.id} · ${pick(station.names, this.lang)} — ${floor ? floorDisplayName(floor, this.lang) : t.minimapFloorUnknown}`
+        : t.minimapLargeMap;
+      this.overlayNotice.textContent = t.minimapSchematic;
+    }
+    const rotation = this.orientation === "player-up" ? -pose.headingDeg : 0;
+    const transform = `translate(${CENTRE} ${CENTRE}) rotate(${rotation}) translate(${-pose.east / METRES_PER_PX} ${pose.north / METRES_PER_PX})`;
+    setTransform(this.overlayGraph, transform);
+    setTransform(this.overlayRoute, transform);
+    setTransform(this.overlayPoi, transform);
+    setTransform(this.overlayArrow, `translate(${CENTRE} ${CENTRE}) rotate(${arrowRotationDeg(pose, this.orientation)})`);
+    setTransform(this.overlayNorth, `rotate(${rotation} ${CENTRE} ${CENTRE})`);
+    // The destination keeps a marker even when its point lies beyond the drawn 95 m span.
+    const route = this.route;
+    const last = route && route.length > 0 ? route[route.length - 1]! : null;
+    const routeEnd = floorId && last && last.floorId === floorId
+      ? toMinimap(last.x, last.y, pose, this.orientation, METRES_PER_PX)
+      : null;
+    const destination = this.destinationPoint
+      ? toMinimap(this.destinationPoint.x, this.destinationPoint.y, pose, this.orientation, METRES_PER_PX)
+      : null;
+    this.placeRim(this.overlayDestinationRim, destination ?? routeEnd);
   }
 
   /** Per-tick marker positions: inside the circle at the point, or a rim chevron at its bearing. */
