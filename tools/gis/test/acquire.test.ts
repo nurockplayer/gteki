@@ -36,7 +36,8 @@ afterEach(async () => {
 describe('source acquisition', () => {
   it('loads exactly the bounded source manifest with explicit unknown rights', () => {
     const sources = loadSources();
-    expect(sources).toHaveLength(88);
+    // 89 since the Toei barrier-free CSV records (station info, Shinjuku Line, Oedo, elevator inspection) landed on the manifest.
+    expect(sources).toHaveLength(89);
     // #437 evidence sources: two fixed Overpass GETs and two licence-text snapshots, all gate HOLD with unknown rights.
     for (const station of ['shinjuku', 'ikebukuro']) {
       const overpass = sources.find((source) => source.source_id === `osm-overpass-${station}`)!;
