@@ -89,7 +89,7 @@ Dataset terms: same note, 「商用利用も含め、どなたでも無償で自
 
 **KSJ.** Same national N02-2025 (§3.1).
 
-**歩行空間ネットワーク.** There is **no 品川駅 package** in ほこナビDP: the full `package_list` (43 packages, read 2026-10-25) contains nothing for 品川 or 港区; the nearest are `nwd_shinagawa`-type Aomori entries (`nwd_aizuwakamatsu`, etc.) and the 新宿/渋谷/池袋 set we already use. No E27-type station map either.
+**歩行空間ネットワーク.** There is **no 品川駅 package** in ほこナビDP: the full `package_list` (43 packages, read 2026-10-25) contains nothing for 品川 or 港区 — only the Tokyo stations we already use (新宿, 渋谷/千駄ヶ谷, 池袋, 上野, 大門, 新木場, etc.) and unrelated cities. No E27-type station map either.
 
 **Operators.**
 
