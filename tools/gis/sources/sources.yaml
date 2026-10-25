@@ -1644,17 +1644,43 @@
   expected_bytes: 11405
   license_name: "CC BY 4.0"
   license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
-  attribution_text: unknown
-  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
-  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
-  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-22-municipal-evidence-profile.md }
+  attribution_text: "出典：東京都交通局『都営地下鉄駅基本情報』（CC BY 4.0、東京都オープンデータカタログサイト経由）。GTEki が加工して作成"
+  commercial_use: { status: conditional, evidence: "docs/gis/research/2026-10-25-toei-csv-rights-and-mapping.md (dataset-level CC BY 4.0, Tokyo portal terms; credit and change notice required)" }
+  modification_allowed: { status: conditional, evidence: "docs/gis/research/2026-10-25-toei-csv-rights-and-mapping.md (dataset-level CC BY 4.0, Tokyo portal terms; credit and change notice required)" }
+  redistribution_allowed: { status: conditional, evidence: "docs/gis/research/2026-10-25-toei-csv-rights-and-mapping.md (dataset-level CC BY 4.0, Tokyo portal terms; credit and change notice required)" }
   content_year: 2015
   availability_deadline: null
-  notes: "Evidence-only (director decision via Owner delegation, reassessment note section 5 and 7; gate HOLD). Nothing is converted, placed or shipped from this source. The CKAN dataset record states CC BY 4.0 at dataset level and the resource licence field is absent; that is recorded in the hashed package_show snapshot, not interpreted as a rights finding. The portal terms page is snapshotted as a hashed supporting document (its content, or a closure notice, is whatever the hash holds). No row value is committed; see docs/gis/research/2026-10-22-municipal-evidence-profile.md for counts, column names and window counts. DR-NS-15 (R9). Station facts table; the research note reports no coordinates. The depth-like column meaning is UNKNOWN until read in the profile note."
-  publish_gate: HOLD
+  notes: "Director ruling 2026-10-25 (gteki-1b, #501 comment 6394872033, relayed by the data lead; see docs/gis/research/2026-10-25-toei-csv-rights-and-mapping.md): accepted under the dataset-level CC BY 4.0 claim, credit 東京都交通局 with the change notice. Role: attributes only, never geometry or route evidence. Fields: station name and number, reading, English name, operator, address and the two height values; 連絡先 does not exist in this dataset and does not ship from the barrier-free CSVs either. No import into gteki/ yet, nothing is converted, placed or routed, and no row value is committed here; see docs/gis/research/2026-10-22-municipal-evidence-profile.md for counts and column names. Re-acquired 2026-10-25 with the same sha256 as the 2026-10-22 snapshot; the publish gate is CONDITIONAL — it ships only under the director's field, credit and role conditions, not as a rights PASS. DR-NS-15 (R9)."
+  publish_gate: CONDITIONAL
   supporting_documents:
     - id: package-show
       url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000018d0000000053
+    - id: portal-terms
+      url: https://portal.data.metro.tokyo.lg.jp/terms/
+      capture_http_errors: true
+    - id: cc-by-4-deed-ja
+      url: https://creativecommons.org/licenses/by/4.0/deed.ja
+- source_id: tokyo-toei-elevator-inspection-csv
+  title: "Toei elevator inspection and construction schedule CSV, monthly edition (CKAN t000018d0000000051)"
+  station_ids: [shinjuku]
+  publisher: "東京都交通局"
+  official_url: https://catalog.data.metro.tokyo.lg.jp/dataset/t000018d0000000051
+  resolution: { kind: direct }
+  expected_url: https://www.opendata.metro.tokyo.lg.jp/kotsu/130001_bureau-of-transportation.csv
+  expected_bytes: 31047
+  license_name: "CC BY 4.0"
+  license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
+  attribution_text: "出典：東京都交通局『都営地下鉄各駅エレベーター点検・工事日程データ』（CC BY 4.0、東京都オープンデータカタログサイト経由）。GTEki が加工して作成"
+  commercial_use: { status: conditional, evidence: "docs/gis/research/2026-10-25-toei-csv-rights-and-mapping.md (dataset-level CC BY 4.0, Tokyo portal terms; credit and change notice required)" }
+  modification_allowed: { status: conditional, evidence: "docs/gis/research/2026-10-25-toei-csv-rights-and-mapping.md (dataset-level CC BY 4.0, Tokyo portal terms; credit and change notice required)" }
+  redistribution_allowed: { status: conditional, evidence: "docs/gis/research/2026-10-25-toei-csv-rights-and-mapping.md (dataset-level CC BY 4.0, Tokyo portal terms; credit and change notice required)" }
+  content_year: 2026
+  availability_deadline: null
+  notes: "Director ruling 2026-10-25 (gteki-1b, #501 comment 6394872033, relayed by the data lead; see docs/gis/research/2026-10-25-toei-csv-rights-and-mapping.md): accepted under the dataset-level CC BY 4.0 claim, credit 東京都交通局 with the change notice. Role: attributes only, never geometry or route evidence. The one resource URL is refreshed every month; the 2026-10 edition (catalogue resource 「都営地下鉄各駅エレベーター点検・工事日程データ (2026年10月)」, file last-modified 2026-10-15) is 31,047 bytes and its sha256 changes with each edition, so expected_bytes is a snapshot and not a standing size. It carries 緯度 and 経度 columns, empty in every row of this edition; coordinates are never shipped even if populated, and 停止階 / 設置場所 stay verbatim attributes, not geometry. No import into gteki/ yet, nothing is converted, placed or routed, and no row value is committed here. The publish gate is CONDITIONAL — it ships only under the director's field, credit and role conditions, not as a rights PASS. DR-NS-16."
+  publish_gate: CONDITIONAL
+  supporting_documents:
+    - id: package-show
+      url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000018d0000000051
     - id: portal-terms
       url: https://portal.data.metro.tokyo.lg.jp/terms/
       capture_http_errors: true
@@ -1841,17 +1867,17 @@
   official_url: https://catalog.data.metro.tokyo.lg.jp/dataset/t000018d0000000028
   resolution: { kind: direct }
   expected_url: https://www.opendata.metro.tokyo.lg.jp/kotsu/subway_barrierfree_oedo.csv
-  expected_bytes: null
+  expected_bytes: 5142
   license_name: "CC BY 4.0"
   license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
-  attribution_text: unknown
-  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
-  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
-  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
+  attribution_text: "出典：東京都交通局『地下鉄関連情報　バリアフリー情報』（CC BY 4.0、東京都オープンデータカタログサイト経由）。GTEki が加工して作成"
+  commercial_use: { status: conditional, evidence: "docs/gis/research/2026-10-25-toei-csv-rights-and-mapping.md (dataset-level CC BY 4.0, Tokyo portal terms; credit and change notice required)" }
+  modification_allowed: { status: conditional, evidence: "docs/gis/research/2026-10-25-toei-csv-rights-and-mapping.md (dataset-level CC BY 4.0, Tokyo portal terms; credit and change notice required)" }
+  redistribution_allowed: { status: conditional, evidence: "docs/gis/research/2026-10-25-toei-csv-rights-and-mapping.md (dataset-level CC BY 4.0, Tokyo portal terms; credit and change notice required)" }
   content_year: null
   availability_deadline: null
-  notes: "Evidence-only (lines-lead WP6, DR-NS-16; gate HOLD). Nothing is converted, placed or shipped from this source. The CKAN dataset record states CC BY 4.0 at dataset level; that is recorded in the hashed package_show snapshot, not interpreted as a rights finding. Per-station facility yes/no table; no coordinates or floors per the research note. No row value is committed."
-  publish_gate: HOLD
+  notes: "Director ruling 2026-10-25 (gteki-1b, #501 comment 6394872033, relayed by the data lead; see docs/gis/research/2026-10-25-toei-csv-rights-and-mapping.md): accepted under the dataset-level CC BY 4.0 claim, credit 東京都交通局 with the change notice. Role: attributes only, never geometry or route evidence. Fields: 駅名 and the per-station availability columns (escalator/elevator per span, accessible toilet, platform type, one-route flag, station type). 連絡先 is excluded and does not ship. The file has no coordinates and no floor or position columns. No import into gteki/ yet, nothing is converted, placed or routed, and no row value is committed here. Re-acquired 2026-10-25 with the same sha256 as the 2026-10-24 snapshot; the publish gate is CONDITIONAL — it ships only under the director's field, credit and role conditions, not as a rights PASS. DR-NS-16."
+  publish_gate: CONDITIONAL
   supporting_documents:
     - id: package-show
       url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000018d0000000028
@@ -1867,17 +1893,17 @@
   official_url: https://catalog.data.metro.tokyo.lg.jp/dataset/t000018d0000000028
   resolution: { kind: direct }
   expected_url: https://www.opendata.metro.tokyo.lg.jp/kotsu/subway_barrierfree_shinjyuku.csv
-  expected_bytes: null
+  expected_bytes: 3058
   license_name: "CC BY 4.0"
   license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
-  attribution_text: unknown
-  commercial_use: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
-  modification_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
-  redistribution_allowed: { status: unknown, evidence: docs/gis/research/2026-10-24-lines-wp6-terms.md }
+  attribution_text: "出典：東京都交通局『地下鉄関連情報　バリアフリー情報』（CC BY 4.0、東京都オープンデータカタログサイト経由）。GTEki が加工して作成"
+  commercial_use: { status: conditional, evidence: "docs/gis/research/2026-10-25-toei-csv-rights-and-mapping.md (dataset-level CC BY 4.0, Tokyo portal terms; credit and change notice required)" }
+  modification_allowed: { status: conditional, evidence: "docs/gis/research/2026-10-25-toei-csv-rights-and-mapping.md (dataset-level CC BY 4.0, Tokyo portal terms; credit and change notice required)" }
+  redistribution_allowed: { status: conditional, evidence: "docs/gis/research/2026-10-25-toei-csv-rights-and-mapping.md (dataset-level CC BY 4.0, Tokyo portal terms; credit and change notice required)" }
   content_year: null
   availability_deadline: null
-  notes: "Evidence-only (lines-lead WP6, DR-NS-16; gate HOLD). Nothing is converted, placed or shipped from this source. The CKAN dataset record states CC BY 4.0 at dataset level; that is recorded in the hashed package_show snapshot, not interpreted as a rights finding. Per-station facility yes/no table; no coordinates or floors per the research note. No row value is committed."
-  publish_gate: HOLD
+  notes: "Director ruling 2026-10-25 (gteki-1b, #501 comment 6394872033, relayed by the data lead; see docs/gis/research/2026-10-25-toei-csv-rights-and-mapping.md): accepted under the dataset-level CC BY 4.0 claim, credit 東京都交通局 with the change notice. Role: attributes only, never geometry or route evidence. Fields: 駅名 and the per-station availability columns (escalator/elevator per span, accessible toilet, platform type, one-route flag, station type). 連絡先 is excluded and does not ship. The file has no coordinates and no floor or position columns. No import into gteki/ yet, nothing is converted, placed or routed, and no row value is committed here. Re-acquired 2026-10-25 with the same sha256 as the 2026-10-24 snapshot; the publish gate is CONDITIONAL — it ships only under the director's field, credit and role conditions, not as a rights PASS. DR-NS-16."
+  publish_gate: CONDITIONAL
   supporting_documents:
     - id: package-show
       url: https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000018d0000000028
