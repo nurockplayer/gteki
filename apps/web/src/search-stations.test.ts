@@ -65,7 +65,14 @@ const CASES: Case[] = [
 ];
 
 /** Negative cases: no hit with score >= 30 (other operators, other stations, exit numbers, 屋根なし). */
-const NO_STRONG_HIT = ["JR新宿", "Yamanote", "東京メトロ", "Tokyo Metro", "都営新宿線", "E01", "屋根なし", "3番出口", "Exit 3", "A1出口"];
+const NO_STRONG_HIT = ["JR新宿", "Yamanote", "東京メトロ", "Tokyo Metro", "都営新宿線", "E01", "屋根なし", "3番出口", "Exit 3"];
+/** #501: the sources of the WP4 line POIs (Toei station page, Tokyo Metro station/accessibility/yard-map pages). */
+const WP4_SOURCES = [
+  "toei-shinjuku-station-2026-10",
+  "tokyometro-shinjuku-station-2026-10",
+  "tokyometro-shinjuku-accessibility-2026-10",
+  "tokyometro-shinjuku-yardmap-print-2026-10",
+];
 /**
  * #411: other operators' names match only the S03 search-only POIs (no connector, so never routable). Every strong hit
  * must be one of them; the E27 platform must not be among them.
@@ -111,21 +118,39 @@ describe("core search on the real Shinjuku POIs (docs/stations/shinjuku/search-e
     expect(strong(q)).toEqual([]);
   });
 
-  // #411: S03 names that contain 出口 or 改札 also match (search only). The E27 hits stay as the doc has them.
+  // #501: A1出口 is the printed name of the search-only Toei exit poi:toei-exit:a1; it also matches the Metro
+  // A10–A18 exits at 40 through the number (search-expected.md). Nothing here is routable.
+  it("A1出口 returns the printed WP4 exit first and only search-only POIs", () => {
+    const s = strong("A1出口");
+    expect(s.length).toBeGreaterThan(0);
+    expect(hits("A1出口")[0]?.poi.id).toBe("poi:toei-exit:a1");
+    expect(hits("A1出口")[0]?.score).toBe(100);
+    for (const h of s) expect(h.poi.connectorNodeIds, h.poi.id).toEqual([]);
+  });
+
+  // #411 / #501: S03 names and WP4 line-POI names that contain 出口 or 改札 also match (search only).
+  // The E27 hits stay as the doc has them, and every added hit is search-only.
   it.each([
     ["出口", ALL_EXITS],
     ["改札", ["poi:gate:1", "poi:gate:2", "poi:gate:3"]],
-  ] as const)("%s keeps the E27 hits and adds only search-only S03 POIs", (q, e27Ids) => {
+  ] as const)("%s keeps the E27 hits and adds only search-only S03 and WP4 POIs", (q, e27Ids) => {
     const s = strong(q);
-    const isS03Hit = (h: { poi: { evidence: { sourceIds: string[] } } }) => h.poi.evidence.sourceIds.includes("tokyo-s03-zip");
-    const e27 = s.filter((h) => !isS03Hit(h));
+    const isSearchOnly = (h: { poi: { connectorNodeIds: string[] } }) => h.poi.connectorNodeIds.length === 0;
+    const e27 = s.filter((h) => !isSearchOnly(h));
     expect(ids(e27)).toEqual([...e27Ids].sort());
-    for (const h of s.filter(isS03Hit)) expect(h.poi.connectorNodeIds, h.poi.id).toEqual([]);
-    // Search-only hits never push a routable E27 hit down: every E27 hit ranks before the first S03 hit.
-    const firstS03 = s.findIndex(isS03Hit);
-    const lastE27 = s.map((h) => !isS03Hit(h)).lastIndexOf(true);
-    expect(firstS03, `${q}: S03 hits are expected`).toBeGreaterThanOrEqual(0);
-    expect(firstS03, q).toBeGreaterThan(lastE27);
+    for (const h of s.filter(isSearchOnly)) {
+      // Every added hit is an S03 name or a WP4 line name, and neither is routable.
+      const sources = h.poi.evidence.sourceIds;
+      expect(
+        sources.includes("tokyo-s03-zip") || sources.some((id) => WP4_SOURCES.includes(id)),
+        `${q}: unexpected search-only hit ${h.poi.id}`,
+      ).toBe(true);
+    }
+    // Search-only hits never push a routable E27 hit down: every E27 hit ranks before the first added hit.
+    const firstAdded = s.findIndex(isSearchOnly);
+    const lastE27 = s.map((h) => !isSearchOnly(h)).lastIndexOf(true);
+    expect(firstAdded, `${q}: search-only hits are expected`).toBeGreaterThanOrEqual(0);
+    expect(firstAdded, q).toBeGreaterThan(lastE27);
     if (q === "出口") expect(e27.map((h) => h.score)).toEqual(e27Ids.map(() => 105));
   });
 
@@ -136,22 +161,26 @@ describe("core search on the real Shinjuku POIs (docs/stations/shinjuku/search-e
    */
   const SHOP_ONLY_HITS: Record<string, string[]> = { 小田急: ["shop-sjk-odakyudept"], 東口: ["shop-sjk-metro-004"] };
 
-  it.each(S03_ONLY)("%s returns only search-only POIs (S03 names and merchant listings; no route)", (q) => {
+  it.each(S03_ONLY)("%s returns only search-only POIs (S03 names, WP4 line names and merchant listings; no route)", (q) => {
     const s = strong(q);
     const shops = SHOP_ONLY_HITS[q] ?? [];
     expect(s.length).toBeGreaterThan(0);
     for (const h of s) {
-      // Neither an S03 name nor a merchant listing is ever routable.
+      // Neither an S03 name, a WP4 line name nor a merchant listing is ever routable.
       expect(h.poi.connectorNodeIds, h.poi.id).toEqual([]);
       if (h.poi.category === "shop") {
         // Only the recorded listing may appear, and it cites its own single directory source.
         expect(shops, `${q}: unexpected shop hit ${h.poi.id}`).toContain(h.poi.id);
         expect(h.poi.evidence.sourceIds, h.poi.id).toHaveLength(1);
-      } else {
+      } else if (h.poi.evidence.sourceIds.includes("tokyo-s03-zip")) {
+        // An S03 name cites only the S03 dataset.
         expect(h.poi.evidence.sourceIds, h.poi.id).toEqual(["tokyo-s03-zip"]);
+      } else {
+        // A WP4 line name cites only its operator sources (station page, plus the yard map for a Metro exit).
+        for (const id of h.poi.evidence.sourceIds) expect(WP4_SOURCES, `${h.poi.id}: unexpected source ${id}`).toContain(id);
       }
     }
-    expect(s.filter((h) => h.poi.category !== "shop").length, `${q}: the S03 names are still expected`).toBeGreaterThan(0);
+    expect(s.filter((h) => h.poi.category !== "shop").length, `${q}: the search-only names are still expected`).toBeGreaterThan(0);
     expect(ids(s.filter((h) => h.poi.category === "shop")), q).toEqual([...shops].sort());
   });
 
