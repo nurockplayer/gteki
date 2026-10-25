@@ -671,7 +671,7 @@ describe("loadNosingKit (batch C)", () => {
     expect(group.children.length).toBeGreaterThan(0);
     expect(group.children.length).toBeLessThanOrEqual(NOSING_CLUSTERS); // 8 draws at most, against 61 instanced ones
     expect(group.userData.gteki_role).toBe("kit_catalog");
-    expect(new Set(group.children.map((m) => m.material)).size).toBe(1); // one merged material per tier
+    expect(new Set((group.children as THREE.Mesh[]).map((m) => m.material)).size).toBe(1); // one merged material per tier
     for (const m of group.children as THREE.Mesh[]) {
       expect(m.frustumCulled).toBe(true);
       expect(m.castShadow).toBe(false);
@@ -712,7 +712,7 @@ describe("loadNosingKit (batch C)", () => {
     const h = nosingHost();
     const loaded = await loadNosingKit(THREE, h, placements, false);
     const { group } = loaded.build(THREE, env, toRenderer);
-    const perPiece = fakeNosing().scene.children[0]!.children[0]!.geometry.getAttribute("position").count;
+    const perPiece = (fakeNosing().scene.children[0]!.children[0] as THREE.Mesh).geometry.getAttribute("position").count;
     const verts = (group.children as THREE.Mesh[]).reduce((n, m) => n + m.geometry.getAttribute("position").count, 0);
     expect(verts).toBe(loaded.placements.length * perPiece);
     const piece = fakeNosing().scene.children[0]!.children[0] as THREE.Mesh;
