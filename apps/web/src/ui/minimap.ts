@@ -461,8 +461,9 @@ export class Minimap {
         this.renderLabel();
         this.connectorDirty = false;
       }
-    } else if (floorChanged && this.floorId !== null) {
-      // The player's floor is unknown, but a picked floor still has its own next floor change.
+    } else if ((floorChanged || this.connectorDirty) && this.floorId !== null) {
+      // The player's floor is unknown, but a picked floor still has its own next floor change. The
+      // dirty flag stays set: the segment is recomputed only once a known floor reading returns.
       this.updateConnectorHint();
       this.renderLabel();
     }
