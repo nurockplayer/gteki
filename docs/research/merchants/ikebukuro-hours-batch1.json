@@ -3496,6 +3496,57 @@
       "pageDate": null,
       "status": "UNKNOWN",
       "reason": "no hours printed"
+    },
+    {
+      "poiId": "shop-ikb-mr-001",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1099",
+      "retrievedAt": "2026-10-25T03:36:06Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "8:00-23:00〈LO.22:30〉",
+      "note": "エチカ池袋店（改札外）として表示。POI の区画は未記入"
+    },
+    {
+      "poiId": "shop-ikb-mr-002",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1110",
+      "retrievedAt": "2026-10-25T03:32:56Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "9:00-21:30"
+    },
+    {
+      "poiId": "shop-ikb-mr-003",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1103",
+      "retrievedAt": "2026-10-25T03:32:58Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00-21:00"
+    },
+    {
+      "poiId": "shop-ikb-mr-004",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000088",
+      "retrievedAt": "2026-10-25T03:32:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-mr-005",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000064",
+      "retrievedAt": "2026-10-25T03:32:37Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "毎日 7:00～22:30"
     }
   ]
 }

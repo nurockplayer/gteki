@@ -204,7 +204,7 @@
   "frame": "ENU",
   "datasetVersion": "ikebukuro-b1-slice5.5",
   "synthetic": false,
-  "generatedAt": "2026-10-21T15:00:00+00:00"
+  "generatedAt": "2026-10-24T11:15:58+00:00"
  },
  "sources": [
   {
@@ -242,7 +242,10 @@
    "title": "OpenStreetMap way 715271280 (西武池袋本店) and nearby JR East railway ways",
    "publisher": "OpenStreetMap contributors",
    "url": "https://www.openstreetmap.org/way/715271280",
-   "license": { "name": "ODbL 1.0", "url": "https://opendatacommons.org/licenses/odbl/1-0/" },
+   "license": {
+    "name": "ODbL 1.0",
+    "url": "https://opendatacommons.org/licenses/odbl/1-0/"
+   },
    "rights": "REUSABLE_WITH_CONDITIONS",
    "usage": "facts-only",
    "decision": { "url": "https://github.com/nurockplayer/gteki/issues/342", "date": "2026-10-24" },
@@ -2053,6 +2056,126 @@
    ],
    "modified": true,
    "derivation": "pipeline/extract_columns.py: PLATEAU column footprints and heights found by shape in the barriers triangles (build/ubld_enu.json, welded vertical prisms 1.5 m or taller, up to 3 m across), each with its kit sleeve piece id or null and a reason. sourceIds = PLATEAU"
+  }
+ ],
+ "buildingHours": [
+  {
+   "building": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク"
+    }
+   ],
+   "floorRange": null,
+   "note": [
+    {
+     "lang": "ja",
+     "text": "店舗により異なる場合あり"
+    }
+   ],
+   "text": "全館 10:00～21:00（月～土）\n10:00～19:30（日・祝）",
+   "sourceUrl": "https://www.web-isp.co.jp/facilities/",
+   "retrievedAt": "2026-10-24",
+   "basis": "undated-official",
+   "status": "OK"
+  },
+  {
+   "building": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター"
+    }
+   ],
+   "floorRange": null,
+   "note": [
+    {
+     "lang": "ja",
+     "text": "店舗により異なる場合あり"
+    }
+   ],
+   "text": "10:00～21:00",
+   "sourceUrl": "https://tobuhopecenter.jp/",
+   "retrievedAt": "2026-10-24",
+   "basis": "undated-official",
+   "status": "OK"
+  },
+  {
+   "building": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋"
+    }
+   ],
+   "floorRange": null,
+   "note": [
+    {
+     "lang": "ja",
+     "text": "店舗により異なる場合あり"
+    }
+   ],
+   "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/hours.jsp",
+   "retrievedAt": "2026-10-24",
+   "basis": "undated-official",
+   "status": "UNKNOWN"
+  },
+  {
+   "building": [
+    {
+     "lang": "ja",
+     "text": "エソラ池袋"
+    }
+   ],
+   "floorRange": null,
+   "note": [
+    {
+     "lang": "ja",
+     "text": "店舗により異なる場合あり"
+    }
+   ],
+   "text": "ショップ 10:30～21:30\nレストラン 11:00～23:00\n※店舗により一部異なります",
+   "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/hours.jsp",
+   "retrievedAt": "2026-10-24",
+   "basis": "undated-official",
+   "status": "OK"
+  },
+  {
+   "building": [
+    {
+     "lang": "ja",
+     "text": "ルミネ池袋"
+    }
+   ],
+   "floorRange": null,
+   "note": [
+    {
+     "lang": "ja",
+     "text": "店舗により異なる場合あり"
+    }
+   ],
+   "text": "B1～7F ショッピング 11:00～21:00\n8F～9F レストラン 11:00～22:00",
+   "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/information/hours/",
+   "retrievedAt": "2026-10-24",
+   "basis": "undated-official",
+   "status": "OK"
+  },
+  {
+   "building": [
+    {
+     "lang": "ja",
+     "text": "エミオ池袋"
+    }
+   ],
+   "floorRange": null,
+   "note": [
+    {
+     "lang": "ja",
+     "text": "店舗により異なる場合あり"
+    }
+   ],
+   "sourceUrl": "https://www.seibu-shop.jp/emio/floorguide/?emio=emio01",
+   "retrievedAt": "2026-10-24",
+   "basis": "undated-official",
+   "status": "UNKNOWN"
   }
  ]
 }

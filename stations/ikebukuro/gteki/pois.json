@@ -3073,7 +3073,14 @@
      "lang": "en",
      "text": "Listed on Tokyo Metro's Ikebukuro shop page; facility or area not stated. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "8:00-23:00〈LO.22:30〉",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1099",
+    "retrievedAt": "2026-10-25",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-mr-002",
@@ -3110,7 +3117,14 @@
      "lang": "en",
      "text": "Inside Echika Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "9:00-21:30",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1110",
+    "retrievedAt": "2026-10-25",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-mr-003",
@@ -3142,7 +3156,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00-21:00",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1103",
+    "retrievedAt": "2026-10-25",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-mr-004",
@@ -3174,7 +3195,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000088",
+    "retrievedAt": "2026-10-25",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-mr-005",
@@ -3206,7 +3234,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "毎日 7:00～22:30",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000064",
+    "retrievedAt": "2026-10-25",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000056",
@@ -3238,7 +3273,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000056",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000045",
@@ -3270,7 +3312,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000045",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000046",
@@ -3302,7 +3351,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000046",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000049",
@@ -3334,7 +3390,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000049",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000039",
@@ -3366,7 +3429,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000039",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000078",
@@ -3398,7 +3468,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000078",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000044",
@@ -3430,7 +3507,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000044",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000066",
@@ -3462,7 +3546,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000066",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000036",
@@ -3494,7 +3585,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000036",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000068",
@@ -3526,7 +3624,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000068",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000069",
@@ -3558,7 +3663,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000069",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000041",
@@ -3590,7 +3702,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000041",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000073",
@@ -3622,7 +3741,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000073",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000062",
@@ -3654,7 +3780,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000062",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000082",
@@ -3686,7 +3819,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000082",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000054",
@@ -3718,7 +3858,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000054",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000077",
@@ -3750,7 +3897,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000077",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000048",
@@ -3782,7 +3936,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000048",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000035",
@@ -3814,7 +3975,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000035",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000086",
@@ -3846,7 +4014,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000086",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000081",
@@ -3878,7 +4053,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000081",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000092",
@@ -3910,7 +4092,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月ｰ土 10：00ｰ21：00\n日・祝 10：00ｰ19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000092",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000087",
@@ -3942,7 +4131,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000087",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000084",
@@ -3974,7 +4170,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000084",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000089",
@@ -4006,7 +4209,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000089",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000072",
@@ -4038,7 +4248,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000072",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000085",
@@ -4070,7 +4287,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000085",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000080",
@@ -4102,7 +4326,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000080",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000076",
@@ -4134,7 +4365,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000076",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000063",
@@ -4166,7 +4404,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000063",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000037",
@@ -4198,7 +4443,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, South Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000037",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000040",
@@ -4230,7 +4482,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000040",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000070",
@@ -4262,7 +4521,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000070",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000051",
@@ -4294,7 +4560,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～20：30\n日・祝 10：00～19：30",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000051",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000053",
@@ -4326,7 +4599,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000053",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000052",
@@ -4358,7 +4638,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000052",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000038",
@@ -4390,7 +4677,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000038",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000079",
@@ -4422,7 +4716,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000079",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000034",
@@ -4454,7 +4755,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000034",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000075",
@@ -4486,7 +4794,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000075",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000059",
@@ -4518,7 +4833,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000059",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000057",
@@ -4550,7 +4872,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000057",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000083",
@@ -4582,7 +4911,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000083",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000061",
@@ -4614,7 +4950,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～20：30\n日・祝 10：00～19：30",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000061",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000043",
@@ -4646,7 +4989,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000043",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000042",
@@ -4678,7 +5028,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000042",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000065",
@@ -4710,7 +5067,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "毎日 7:00～22:00",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000065",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000071",
@@ -4742,7 +5106,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000071",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000055",
@@ -4774,7 +5145,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000055",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000047",
@@ -4806,7 +5184,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000047",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000058",
@@ -4838,7 +5223,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, North Hall. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000058",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000050",
@@ -4870,7 +5262,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, Brick Street. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 7：30～21：00\n日・祝 7：30～19：30",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000050",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-isp-000067",
@@ -4902,7 +5301,14 @@
      "lang": "en",
      "text": "Ikebukuro Shopping Park, Brick Street. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "毎日 10:00～19:00\n※年末年始などは、営業時間を変更する場合あり",
+    "sourceUrl": "https://www.web-isp.co.jp/floorguide/detail/?cd=000067",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-001",
@@ -4934,7 +5340,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-002",
@@ -4966,7 +5379,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～22:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-003",
@@ -4998,7 +5418,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-004",
@@ -5030,7 +5457,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-005",
@@ -5062,7 +5496,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "8:00～22:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-006",
@@ -5094,7 +5535,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-007",
@@ -5126,7 +5574,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～22:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-008",
@@ -5158,7 +5613,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-009",
@@ -5190,7 +5652,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-010",
@@ -5222,7 +5691,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日：7:00～22:00\n土日祝：10:00～22:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-011",
@@ -5254,7 +5730,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "9:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-012",
@@ -5286,7 +5769,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "9:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-013",
@@ -5318,7 +5808,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～20:30",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-014",
@@ -5350,7 +5847,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～22:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-015",
@@ -5382,7 +5886,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～22:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-016",
@@ -5414,7 +5925,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-017",
@@ -5446,7 +5964,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-018",
@@ -5478,7 +6003,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-019",
@@ -5510,7 +6042,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "8:00～22:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-020",
@@ -5542,7 +6081,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-021",
@@ -5574,7 +6120,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-022",
@@ -5606,7 +6159,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-023",
@@ -5638,7 +6198,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, South Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/south-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-024",
@@ -5670,7 +6237,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/center-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-025",
@@ -5702,7 +6276,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/center-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-026",
@@ -5734,7 +6315,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/center-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-027",
@@ -5766,7 +6354,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "7:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/center-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-028",
@@ -5798,7 +6393,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/center-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-029",
@@ -5830,7 +6432,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/center-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-030",
@@ -5862,7 +6471,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/center-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-031",
@@ -5894,7 +6510,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/center-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-032",
@@ -5926,7 +6549,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/center-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-033",
@@ -5958,7 +6588,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/center-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-034",
@@ -5990,7 +6627,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/center-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-035",
@@ -6022,7 +6666,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, Center Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/center-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-036",
@@ -6054,7 +6705,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, North Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/north-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-037",
@@ -6086,7 +6744,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, North Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/north-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-038",
@@ -6118,7 +6783,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, North Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/north-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-039",
@@ -6150,7 +6822,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, North Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/north-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-040",
@@ -6182,7 +6861,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, North Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/north-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-041",
@@ -6214,7 +6900,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, North Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/north-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-042",
@@ -6246,7 +6939,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, North Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/north-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-hope-043",
@@ -6278,7 +6978,14 @@
      "lang": "en",
      "text": "Tobu Hope Center, North Zone. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～21:00",
+    "sourceUrl": "https://tobuhopecenter.jp/floorguide/north-zone/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1129",
@@ -6315,7 +7022,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00-21:00\n※最終受付時間20:30",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1129",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1102",
@@ -6352,7 +7066,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00-21:00",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1102",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1105",
@@ -6389,7 +7110,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00-20:00※早朝8時よりご予約可(時間外料金有り)",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1105",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1094",
@@ -6421,7 +7149,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "7:30-21:00",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1094",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1093",
@@ -6453,7 +7188,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00-22:00",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1093",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1107",
@@ -6485,7 +7227,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00-21:00〈LO.20:30〉",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1107",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1085",
@@ -6517,7 +7266,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00-21:00〈LO.20:40〉",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1085",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1095",
@@ -6554,7 +7310,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00−21:00",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1095",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1090",
@@ -6591,7 +7354,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00-23:00〈LO.22:30〉",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1090",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1091",
@@ -6623,7 +7393,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00-21:00",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1091",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1089",
@@ -6655,7 +7432,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 7:00-22:30\n土曜・日曜・祝 8:00-22:30",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1089",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1098",
@@ -6687,7 +7471,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "7:30-23:00\n8/26（水）9：00 リニューアルオープン！",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1098",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1100",
@@ -6724,7 +7515,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00-21:00",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1100",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1092",
@@ -6761,7 +7559,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:30-21:00〈LO.最終入店20:30まで〉",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1092",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1087",
@@ -6793,7 +7598,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "7:30-23:00(平日)\n9:00-22:00(土日祝)",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1087",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1108",
@@ -6825,7 +7637,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 7:30-22:00\n土曜・日曜・祝 10:00-21:00",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1108",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1096",
@@ -6862,7 +7681,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00-21:00",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1096",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1086",
@@ -6899,7 +7725,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00-21:00",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1086",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1101",
@@ -6936,7 +7769,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00-21:00",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1101",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1104",
@@ -6968,7 +7808,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00-21:00",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1104",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1106",
@@ -7000,7 +7847,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00-21:00",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1106",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-echika-1109",
@@ -7032,7 +7886,14 @@
      "lang": "en",
      "text": "Echika Ikebukuro, 改札外. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "7:00-23:00",
+    "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1109",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-metro-001",
@@ -7064,7 +7925,13 @@
      "lang": "en",
      "text": "Tokyo Metro Ikebukuro Station, 池袋南西口店. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "sourceUrl": "https://www.tokyometro.jp/station/ikebukuro/shop/index.html",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "UNKNOWN"
+   }
   },
   {
    "id": "shop-ikb-metro-002",
@@ -7101,7 +7968,13 @@
      "lang": "en",
      "text": "Tokyo Metro Ikebukuro Station. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "sourceUrl": "https://www.tokyometro.jp/station/ikebukuro/shop/index.html",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "UNKNOWN"
+   }
   },
   {
    "id": "metro-f-west-east-gate",
@@ -8742,7 +9615,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000415",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000442",
@@ -8779,7 +9659,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000442",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000552",
@@ -8816,7 +9703,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000552",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000492",
@@ -8853,7 +9747,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000492",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000546",
@@ -8890,7 +9791,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000546",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000488",
@@ -8927,7 +9835,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000488",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000527",
@@ -8964,7 +9879,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000527",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000425",
@@ -9001,7 +9923,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000425",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003370",
@@ -9038,7 +9967,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003370",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000430",
@@ -9075,7 +10011,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000430",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000435",
@@ -9112,7 +10055,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000435",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000404",
@@ -9149,7 +10099,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000404",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000503",
@@ -9186,7 +10143,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000503",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000440",
@@ -9223,7 +10187,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000440",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000474",
@@ -9260,7 +10231,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000474",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002698",
@@ -9297,7 +10275,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002698",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000485",
@@ -9334,7 +10319,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000485",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000409",
@@ -9371,7 +10363,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000409",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003392",
@@ -9408,7 +10407,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 1F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003392",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000533",
@@ -9445,7 +10451,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 1F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 8:00～21:30\n土日祝 9:00～21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000533",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000539",
@@ -9482,7 +10495,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 1F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "イートイン 11:00～20:00(L.O.19:30)\nテイクアウト 11:00～21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000539",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000443",
@@ -9519,7 +10539,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 1F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000443",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000463",
@@ -9556,7 +10583,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 1F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000463",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000496",
@@ -9593,7 +10627,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 1F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000496",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000418",
@@ -9630,7 +10671,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 1F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000418",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002727",
@@ -9667,7 +10715,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 1F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002727",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000494",
@@ -9704,7 +10759,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 2F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000494",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000455",
@@ -9741,7 +10803,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 2F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000455",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000487",
@@ -9778,7 +10847,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 2F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000487",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003239",
@@ -9815,7 +10891,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 2F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003239",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000508",
@@ -9852,7 +10935,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 2F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000508",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003240",
@@ -9889,7 +10979,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 2F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003240",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000475",
@@ -9926,7 +11023,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 2F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000475",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000506",
@@ -9963,7 +11067,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 2F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000506",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000452",
@@ -10000,7 +11111,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 2F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000452",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002728",
@@ -10037,7 +11155,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 2F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002728",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000532",
@@ -10074,7 +11199,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 2F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000532",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000470",
@@ -10111,7 +11243,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 2F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000470",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000530",
@@ -10148,7 +11287,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 2F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "7:30～21:30",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000530",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000541",
@@ -10185,7 +11331,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000541",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000456",
@@ -10222,7 +11375,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000456",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000408",
@@ -10259,7 +11419,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000408",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002729",
@@ -10296,7 +11463,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002729",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000461",
@@ -10333,7 +11507,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000461",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000471",
@@ -10370,7 +11551,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000471",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002566",
@@ -10407,7 +11595,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002566",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000531",
@@ -10444,7 +11639,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000531",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000396",
@@ -10481,7 +11683,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000396",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000411",
@@ -10518,7 +11727,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000411",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000447",
@@ -10555,7 +11771,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000447",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000413",
@@ -10592,7 +11815,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000413",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000490",
@@ -10629,7 +11859,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000490",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000453",
@@ -10666,7 +11903,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000453",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000528",
@@ -10703,7 +11947,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000528",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000424",
@@ -10740,7 +11991,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000424",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003238",
@@ -10777,7 +12035,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003238",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003250",
@@ -10814,7 +12079,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003250",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003236",
@@ -10851,7 +12123,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003236",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000518",
@@ -10888,7 +12167,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000518",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002568",
@@ -10925,7 +12211,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002568",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000457",
@@ -10962,7 +12255,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000457",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003251",
@@ -10999,7 +12299,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003251",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003454",
@@ -11036,7 +12343,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003454",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000436",
@@ -11073,7 +12387,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000436",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000459",
@@ -11110,7 +12431,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000459",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002466",
@@ -11147,7 +12475,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002466",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000473",
@@ -11184,7 +12519,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000473",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003427",
@@ -11221,7 +12563,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003427",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000480",
@@ -11258,7 +12607,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000480",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000465",
@@ -11295,7 +12651,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000465",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003252",
@@ -11332,7 +12695,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003252",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002579",
@@ -11369,7 +12739,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002579",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000484",
@@ -11406,7 +12783,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000484",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000489",
@@ -11443,7 +12827,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000489",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000403",
@@ -11480,7 +12871,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000403",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002567",
@@ -11517,7 +12915,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002567",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000428",
@@ -11554,7 +12959,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000428",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003080",
@@ -11591,7 +13003,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003080",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000491",
@@ -11628,7 +13047,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000491",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000545",
@@ -11665,7 +13091,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000545",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000407",
@@ -11702,7 +13135,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000407",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000542",
@@ -11739,7 +13179,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000542",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000536",
@@ -11776,7 +13223,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "最終受付時間：20:20",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000536",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000478",
@@ -11813,7 +13267,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000478",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000467",
@@ -11850,7 +13311,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000467",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000410",
@@ -11887,7 +13355,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000410",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003426",
@@ -11924,7 +13399,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003426",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000557",
@@ -11961,7 +13443,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000557",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000554",
@@ -11998,7 +13487,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000554",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000451",
@@ -12035,7 +13531,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000451",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003253",
@@ -12072,7 +13575,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003253",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000398",
@@ -12109,7 +13619,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000398",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000562",
@@ -12146,7 +13663,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000562",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000476",
@@ -12183,7 +13707,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000476",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000502",
@@ -12220,7 +13751,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000502",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000423",
@@ -12257,7 +13795,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000423",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000399",
@@ -12294,7 +13839,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000399",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000426",
@@ -12331,7 +13883,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000426",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000422",
@@ -12368,7 +13927,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000422",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000438",
@@ -12405,7 +13971,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000438",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000547",
@@ -12442,7 +14015,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000547",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002569",
@@ -12479,7 +14059,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002569",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000507",
@@ -12516,7 +14103,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日：11:00～21:00\n土日祝：8:00～21:00(8:00～11:00時間外早朝料金有り)",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000507",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002580",
@@ -12553,7 +14147,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002580",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000450",
@@ -12590,7 +14191,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000450",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003082",
@@ -12627,7 +14235,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003082",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000553",
@@ -12664,7 +14279,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000553",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002581",
@@ -12701,7 +14323,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002581",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000462",
@@ -12738,7 +14367,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000462",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000548",
@@ -12775,7 +14411,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000548",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002573",
@@ -12812,7 +14455,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002573",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002571",
@@ -12849,7 +14499,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002571",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000420",
@@ -12886,7 +14543,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000420",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000458",
@@ -12923,7 +14587,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000458",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002570",
@@ -12960,7 +14631,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002570",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000534",
@@ -12997,7 +14675,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000534",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000574",
@@ -13034,7 +14719,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000574",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000469",
@@ -13071,7 +14763,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000469",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000498",
@@ -13108,7 +14807,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000498",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000512",
@@ -13145,7 +14851,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000512",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000516",
@@ -13182,7 +14895,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000516",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000429",
@@ -13219,7 +14939,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000429",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000416",
@@ -13256,7 +14983,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000416",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000419",
@@ -13293,7 +15027,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000419",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000560",
@@ -13330,7 +15071,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000560",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000513",
@@ -13367,7 +15115,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000513",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000555",
@@ -13404,7 +15159,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000555",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002572",
@@ -13441,7 +15203,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002572",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000571",
@@ -13478,7 +15247,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000571",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003455",
@@ -13515,7 +15291,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003455",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000556",
@@ -13552,7 +15335,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000556",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000481",
@@ -13589,7 +15379,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000481",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000397",
@@ -13626,7 +15423,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000397",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000511",
@@ -13663,7 +15467,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000511",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000535",
@@ -13700,7 +15511,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000535",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000559",
@@ -13737,7 +15555,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000559",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000566",
@@ -13774,7 +15599,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000566",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003326",
@@ -13811,7 +15643,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003326",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000400",
@@ -13848,7 +15687,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000400",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002583",
@@ -13885,7 +15731,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002583",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000544",
@@ -13922,7 +15775,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000544",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000437",
@@ -13959,7 +15819,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000437",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000445",
@@ -13996,7 +15863,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000445",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002577",
@@ -14033,7 +15907,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002577",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000520",
@@ -14070,7 +15951,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000520",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003058",
@@ -14107,7 +15995,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00（L.O 21:50）",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003058",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000537",
@@ -14144,7 +16039,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～20:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000537",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002565",
@@ -14181,7 +16083,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002565",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000521",
@@ -14218,7 +16127,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000521",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000573",
@@ -14255,7 +16171,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000573",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003084",
@@ -14292,7 +16215,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003084",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000570",
@@ -14329,7 +16259,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000570",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000561",
@@ -14366,7 +16303,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000561",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000572",
@@ -14403,7 +16347,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000572",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000565",
@@ -14440,7 +16391,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000565",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000514",
@@ -14477,7 +16435,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000514",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000540",
@@ -14514,7 +16479,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 9F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000540",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003485",
@@ -14551,7 +16523,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 9F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003485",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000529",
@@ -14588,7 +16567,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 9F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00 ~ 22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000529",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000525",
@@ -14625,7 +16611,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 9F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000525",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002582",
@@ -14662,7 +16655,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 9F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～20:00(最終受付 19:00)",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002582",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000421",
@@ -14699,7 +16699,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 9F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000421",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000477",
@@ -14736,7 +16743,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 9F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000477",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000563",
@@ -14773,7 +16787,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 9F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～22:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000563",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-003359",
@@ -14810,7 +16831,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 9F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 15:00～22:00(L.O. フード21:00 ／ ドリンク21:30)\n土日祝 11:00～22:00(L.O. フード21:00 ／ ドリンク21:30)",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003359",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000515",
@@ -14847,7 +16875,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 10F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000515",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002576",
@@ -14884,7 +16919,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 10F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002576",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002578",
@@ -14921,7 +16963,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 10F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日・土 11:00～20:00\n日祝 11:00～19:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002578",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002430",
@@ -14958,7 +17007,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 10F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～19:00(最終受付 18:30)",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002430",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002575",
@@ -14995,7 +17051,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 10F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～20:00\nコンタクト受付\n11:00～12:30 (初めての方 12:00まで) ／ 14:00～18:00 (初めての方 17:00まで) ※月曜除く",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002575",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-002574",
@@ -15032,7 +17095,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 10F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "休診日：月曜（祝日は診療）\n受付時間：11:00～12:30／14:00～18:00\n※初めてのコンタクトレンズの患者様\n受付時間：11:00～12:00／14:00～17:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002574",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000401",
@@ -15069,7 +17139,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 10F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00～22:00(日曜のみ10:00～21:00)",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000401",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000543",
@@ -15106,7 +17183,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 10F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 10:00～21:00\n土日祝 9:00～21:00\n(最終受付 パーマ・カラー19:00まで／カット20:00まで)",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000543",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000551",
@@ -15143,7 +17227,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 10F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 10:00～13:00／14:00～21:00\n土日祝 10:00～13:00／14:00～18:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000551",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000569",
@@ -15180,7 +17271,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 10F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 10:00～12:45／15:00～19:45\n土 10:00～13:45\n※日・祝休診",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000569",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-lumine-000510",
@@ -15217,7 +17315,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 10F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "平日 10:00～21:00\n土日祝 10:00～20:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000510",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1147",
@@ -15249,7 +17354,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:30～21:00",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=b1",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1041",
@@ -15281,7 +17393,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00-21:00",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=b1",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1047",
@@ -15318,7 +17437,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:30-21:30〈L.O.20:30〉",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=b1",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1051",
@@ -15355,7 +17481,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:30-20:00",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=b1",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1060",
@@ -15392,7 +17525,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:30-20:30 ※ 土日祝日8:00～予約可",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=b1",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1042",
@@ -15424,7 +17564,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "7:00-23:00",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=b1",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1050",
@@ -15461,7 +17608,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, B1. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:30-21:00",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=b1",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1038",
@@ -15498,7 +17652,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 1F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00-21:00＜L.O.20:30＞",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=1f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1037",
@@ -15530,7 +17691,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 1F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "8:00-21:00＜L.O.20:30＞",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=1f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1045",
@@ -15567,7 +17735,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 1F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:30-21:30",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=1f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1043",
@@ -15599,7 +17774,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 2F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:30-21:00",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=2f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1046",
@@ -15636,7 +17818,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 2F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:30-21:00",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=2f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1144",
@@ -15668,7 +17857,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 2F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:30～21:30",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=2f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1049",
@@ -15705,7 +17901,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 3F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:30-21:30",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=3f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1048",
@@ -15742,7 +17945,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:30-21:30",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=4f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1040",
@@ -15779,7 +17989,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 4F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:30-22:00〈L.O.21:30〉",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=4f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1059",
@@ -15816,7 +18033,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:30-20:00 ※火曜日定休",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=5f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1057",
@@ -15848,7 +18072,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00-13:30、15:30-20:00 ※水曜日休診",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=5f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1053",
@@ -15880,7 +18111,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:30-21:00",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=5f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1058",
@@ -15917,7 +18155,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:30-21:30",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=5f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1054",
@@ -15949,7 +18194,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 5F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:30-21:30",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=5f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1028",
@@ -15981,7 +18233,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00-21:00＜L.O.20:00＞",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=6f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1146",
@@ -16013,7 +18272,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00 - 23:00＜L.O.22:00＞",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=6f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1031",
@@ -16045,7 +18311,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00-22:00",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=6f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1033",
@@ -16082,7 +18355,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00-22:00＜L.O.21:40＞",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=6f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1032",
@@ -16114,7 +18394,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00-22:00",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=6f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1056",
@@ -16146,7 +18433,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 6F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00-18:30",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=6f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1035",
@@ -16178,7 +18472,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00-22:00＜L.O.21:30＞",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=7f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1034",
@@ -16210,7 +18511,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00-22:30＜L.O.22:00＞",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=7f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1030",
@@ -16242,7 +18550,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 7F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00-23:00 ＜L.O.22:00＞",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=7f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1036",
@@ -16274,7 +18589,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00-23:00＜L.O.22:00＞",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=8f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1029",
@@ -16311,7 +18633,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "ランチタイム 11:00-15:30\nディナータイム 17:00-22:00〈L.O.21:30〉",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=8f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-esola-1055",
@@ -16348,7 +18677,14 @@
      "lang": "en",
      "text": "Esola Ikebukuro, 8F. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "8:00-22:00",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=8f",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-tobudept",
@@ -16380,7 +18716,13 @@
      "lang": "en",
      "text": "Direct connection to Ikebukuro Station West Exit (store wording: 池袋駅西口 直結). Location and entrance not verified for routing. Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "sourceUrl": "https://www.tobu-dept.jp/ikebukuro/",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "UNKNOWN"
+   }
   },
   {
    "id": "shop-ikb-seibu-001261",
@@ -16412,7 +18754,14 @@
      "lang": "en",
      "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "6:30A.M.～10:45P.M.",
+    "sourceUrl": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=001261",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-seibu-000597",
@@ -16444,7 +18793,14 @@
      "lang": "en",
      "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月〜金 6:30A.M.～11:30P.M. \n土・日・祝日 6:30A.M.〜11:00P.Ｍ.",
+    "sourceUrl": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000597",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-seibu-000598",
@@ -16476,7 +18832,14 @@
      "lang": "en",
      "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "6:30A.M.～11:00P.M.",
+    "sourceUrl": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000598",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-seibu-000514",
@@ -16508,7 +18871,14 @@
      "lang": "en",
      "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "7:00A.M.～10:30P.M.",
+    "sourceUrl": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000514",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-seibu-000513",
@@ -16540,7 +18910,14 @@
      "lang": "en",
      "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "6:30A.M.～11:00P.M.",
+    "sourceUrl": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000513",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-seibu-000515",
@@ -16572,7 +18949,14 @@
      "lang": "en",
      "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～土 8:00A.M.～10:30P.M.（ラストオーダー10:00P.M.）\n日・祝日 8:00A.M.～10:00P.M.（ラストオーダー 9:40P.M.）",
+    "sourceUrl": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000515",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-seibu-000687",
@@ -16604,7 +18988,14 @@
      "lang": "en",
      "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00A.M.～10:00P.M.",
+    "sourceUrl": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000687",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-seibu-000512",
@@ -16636,7 +19027,14 @@
      "lang": "en",
      "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00A.M.～10:00P.M. \n※店舗入替日は9:00P.M.閉店",
+    "sourceUrl": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000512",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-seibu-000516",
@@ -16668,7 +19066,14 @@
      "lang": "en",
      "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "10:00A.M.～10:00P.M.",
+    "sourceUrl": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000516",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-seibu-000599",
@@ -16700,7 +19105,14 @@
      "lang": "en",
      "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "6:30A.M.～11:00P.M.",
+    "sourceUrl": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000599",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-seibu-000600",
@@ -16732,7 +19144,14 @@
      "lang": "en",
      "text": "Emio Ikebukuro. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "6:30A.M.～11:00P.M.",
+    "sourceUrl": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000600",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-seibu-000901",
@@ -16764,7 +19183,14 @@
      "lang": "en",
      "text": "Listed on Seibu's station-shop page for 池袋. \"1F\" is part of the printed name; facility and floor are not verified. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "8:00A.M.～8:00P.M.\n（定休日：年始のみ）",
+    "sourceUrl": "https://www.seibu-shop.jp/floorguide/detail/?scd=000901",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-seibu-000902",
@@ -16796,7 +19222,14 @@
      "lang": "en",
      "text": "Listed on Seibu's station-shop page for 池袋. \"地下\" is part of the printed name; facility and floor are not verified. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "月～金 8:00A.M.～8:30P.M.\n土・日・祝日 9:00A.M.～8:00P.M.\n（ジャンボ期間中の営業時間変更有り）",
+    "sourceUrl": "https://www.seibu-shop.jp/floorguide/detail/?scd=000902",
+    "retrievedAt": "2026-10-24",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "service-ikb-metro-001",
