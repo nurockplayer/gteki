@@ -237,6 +237,14 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        floor range; no position, floor id, connector or route. ルミネ新宿
        ルミネ1 / ルミネ2 join the store name and the building name, which the
        floor guide prints separately (the note says so).
+       伊勢丹新宿店 本館 / メンズ館 (mistore.jp; OD-34, director ruling
+       2026-10-25 on #522: the グループID規約 scope clause read at
+       imhds.co.jp shows the agreement governs registered ID holders, so the
+       store site is facts only): 2 more search-only shop POIs. Each keeps the
+       printed store name and building name and, in the notes, the printed
+       floor range; no floor-guide wording, shop list, operator name (the
+       terms record does not print it), position, floor id, connector or
+       route.
        Line POI data (lines-lead WP2/WP3, 2026-10-24):
        docs/research/lines/ikebukuro-line-pois.json and its contract. Gate,
        lift, escalator and exit names and end pairs as printed on Tokyo Metro

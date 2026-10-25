@@ -325,11 +325,12 @@ SPDX-License-Identifier = "LicenseRef-S03"
 
 # --- 4o. S03 line names and merchant listings in the Shinjuku station files (imports of #411 and #214) ---
 # The files keep their E27 content (4c) and add 45 S03 gate and platform names (search only, AREA_ONLY,
-# no position, no floor) and 590 facts-only merchant listings (one Toei S10 CC BY 4.0 row plus the
-# directories under NOTICE 4.9), search only, no position or floor. The 7 store-level rows for the
-# printed buildings (LUMINE 1/2, LUMINE EST, NEWoMan, 新宿マルイ 本館/アネックス/メン) carry a name,
-# an operator and a printed floor range in the notes only; the Marui rows come from 0101.co.jp
-# (OD-34, no clause found). Since #501 they also carry 43 facts-only
+# no position, no floor) and 592 facts-only merchant listings (one Toei S10 CC BY 4.0 row plus the
+# directories under NOTICE 4.9), search only, no position or floor. The 9 store-level rows for the
+# printed buildings (LUMINE 1/2, LUMINE EST, NEWoMan, 新宿マルイ 本館/アネックス/メン, 伊勢丹新宿店
+# 本館/メンズ館) carry a name and a printed floor range in the notes only, plus the operator where the
+# source prints one; the Marui rows come from 0101.co.jp (OD-34, no clause found) and the 伊勢丹 rows
+# from mistore.jp (OD-34, #522 scope-clause ruling). Since #501 they also carry 43 facts-only
 # WP4 line POIs (Toei station exits, Tokyo Metro exits/lifts/escalators; names only, source record 4n).
 # Credits and change notices: NOTICE 4.6, 4.7, 4.9 and 4.12.
 [[annotations]]

@@ -401,7 +401,7 @@ describe("facility POIs trace to the GSI facility points", () => {
     const S03_COUNT = 45;
     // #214: 6 Toei/Tokyo Metro + 576 LUMINE/NEWoMan listings + the Odakyu department store, plus the 7 store
     // POIs for the printed buildings (LUMINE 1/2, LUMINE EST, NEWoMan, 新宿マルイ 本館/アネックス/メン).
-    const SHOP_COUNT = 590;
+    const SHOP_COUNT = 592;
     // #501: 9 Toei station exits + 28 Metro M08 exits + 4 lifts + 2 escalators (see the WP4 block); the 2 M08 gates are held.
     const WP4_COUNT = 43;
     expect(pois.length).toBe(OLD_COUNT + ADDED.length + S03_COUNT + SHOP_COUNT + WP4_COUNT);
@@ -682,8 +682,8 @@ describe("merchant shops (#214)", () => {
   const shops = pois.filter(isShop);
   const index = createSearchIndex(bundle);
 
-  it("imports the 583 directory listings and the 7 store POIs as search-only shops", () => {
-    expect(shops.length).toBe(590);
+  it("imports the 583 directory listings and the 9 store POIs as search-only shops", () => {
+    expect(shops.length).toBe(592);
     for (const p of shops) {
       expect(p.evidence.sourceIds.length, p.id).toBe(1);
       expect(bundle.sources.some((s) => s.id === p.evidence.sourceIds[0]), p.id).toBe(true);
@@ -696,24 +696,28 @@ describe("merchant shops (#214)", () => {
     }
   });
 
-  it("keeps one store POI per printed building, with its operator and floor range in the notes", () => {
-    const store: [string, string, string][] = [
-      ["shop-sjk-lumine1", "ルミネ新宿 ルミネ1", "B2F〜8F"],
-      ["shop-sjk-lumine2", "ルミネ新宿 ルミネ2", "1F〜7F"],
-      ["shop-sjk-lumineest", "ルミネエスト新宿", "B2F〜8F"],
-      ["shop-sjk-newoman", "ニュウマン新宿", "1F〜7F"],
-      ["shop-sjk-marui-honkan", "新宿マルイ 本館", "B1F〜8F"],
-      ["shop-sjk-marui-annex", "新宿マルイ アネックス", "B1F〜8F"],
-      ["shop-sjk-marui-men", "新宿マルイ メン", "1F〜8F"],
+  it("keeps one store POI per printed building, with its floor range (and its operator where the source prints one)", () => {
+    // The 伊勢丹 rows carry no operator: the terms record does not print the operating company.
+    const store: [string, string, string, string | undefined][] = [
+      ["shop-sjk-lumine1", "ルミネ新宿 ルミネ1", "B2F〜8F", "運営: 株式会社ルミネ"],
+      ["shop-sjk-lumine2", "ルミネ新宿 ルミネ2", "1F〜7F", "運営: 株式会社ルミネ"],
+      ["shop-sjk-lumineest", "ルミネエスト新宿", "B2F〜8F", "運営: 株式会社ルミネ"],
+      ["shop-sjk-newoman", "ニュウマン新宿", "1F〜7F", "運営: 株式会社ルミネ"],
+      ["shop-sjk-marui-honkan", "新宿マルイ 本館", "B1F〜8F", "運営: 株式会社丸井"],
+      ["shop-sjk-marui-annex", "新宿マルイ アネックス", "B1F〜8F", "運営: 株式会社丸井"],
+      ["shop-sjk-marui-men", "新宿マルイ メン", "1F〜8F", "運営: 株式会社丸井"],
+      ["shop-sjk-isetan-honkan", "伊勢丹新宿店 本館", "B2F・B1F・1F〜7F・RF", undefined],
+      ["shop-sjk-isetan-mens", "伊勢丹新宿店 メンズ館", "B1F・1F〜8F・RF", undefined],
     ];
     expect(store.filter(([id]) => shops.some((p) => p.id === id)).length).toBe(store.length);
-    for (const [id, name, floors] of store) {
+    for (const [id, name, floors, operator] of store) {
       const p = pois.find((x) => x.id === id)!;
       expect(p.names[0]!.text, id).toBe(name);
       expect(p.aliases, id).toEqual([]);
       const ja = p.notes!.find((n) => n.lang === "ja")!.text;
-      expect(ja, id).toContain("運営:");
       expect(ja, id).toContain(floors);
+      if (operator) expect(ja, id).toContain(operator);
+      else expect(ja, id).not.toMatch(/運営: /);
     }
   });
 
