@@ -1085,6 +1085,21 @@
    "retrievedAt": "2026-10-25T18:25:00+09:00",
    "datasetDate": null,
    "notes": "S13 in the data-research source list. ページは協会のセミナー告知で、本文の＜SC概要＞に 名称：池袋パルコ／階数：地下２階～地上８階 などが載る（所在地・開業日・店舗数もあるが未採用）。採用は 名称 と 階数 のみ（事実のみ）。URL の日付トークンは 20211029（印刷された日付ではない）、セミナー開催日は 2021-12-07。datasetDate は null（ページに印刷された日付はない）。サイトに利用規約はなく、公表されているのは個人情報保護方針だけなので引用できる禁止条項はない（#512 で 2026-10-25 に確認）→ OD-34 の facts-only。パルコ自身のサイトは #502（2026-10-25）の判断により corroboration only。"
+  },
+  {
+   "id": "lumine-ikebukuro-access-2026-10",
+   "title": "アクセス │ ルミネ池袋 │ LUMINE",
+   "publisher": "株式会社ルミネ",
+   "url": "https://www.lumine.ne.jp/ikebukuro/access/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/529", "date": "2026-10-25" },
+   "attribution": "アクセス │ ルミネ池袋 │ LUMINE (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-25T13:05:34Z",
+   "datasetDate": null,
+   "notes": "Printed access statement only: the 電車 line for ルミネ池袋. Read in #529's store-entrance research (fetch log #12: 200, 23,957 bytes, 2026-10-25 13:05:34 UTC)."
   }
  ],
  "floors": [
@@ -24520,23 +24535,26 @@
    "aliases": [],
    "floorId": null,
    "displayPosition": null,
-   "connectorNodeIds": [],
-   "paid": null,
+   "connectorNodeIds": [
+    "g_jr_s"
+   ],
+   "paid": false,
    "evidence": {
     "sourceIds": [
-     "lumine-ikebukuro-floorguide-2026-10"
+     "lumine-ikebukuro-floorguide-2026-10",
+     "lumine-ikebukuro-access-2026-10"
     ],
-    "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
-    "checkedDate": "2026-10-24"
+    "method": "printed store-entrance tie: the store's access page prints 「JR池袋駅南改札、正面右手よりすぐ」; connector = the public (outside the fare gates) side of the JR South Gate, the node the JR South Gate POI routes to (facts only). The floor range is the floor guide's, UNVERIFIED. The store's own entrance and the floors inside are not surveyed",
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
      "lang": "ja",
-     "text": "運営: 株式会社ルミネ。掲載フロア: B1～10F（出典のフロアガイドに掲載のフロア）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+     "text": "「JR池袋駅南改札、正面右手よりすぐ」（ルミネ池袋アクセスページの表記）。案内はJR南改札の改札外側（公共側）で終わります。店舗の入口そのものと店内の階は未確認。掲載フロア: B1～10F（フロアガイドの表記）。現在の営業状況は未確認。"
     },
     {
      "lang": "en",
-     "text": "Operator: 株式会社ルミネ. Floors: B1–10F as printed in the source floor guide. Location and entrance not verified (search only, no route). Current status unknown."
+     "text": "「JR池袋駅南改札、正面右手よりすぐ」 (the store's access page wording: straight ahead and immediately to the right of the JR South Gate). The guide ends on the public (outside the fare gates) side of the JR South Gate; the store's own entrance and the floors inside are not verified. Floors printed: B1–10F (floor guide). Current status unknown."
     }
    ]
   },
