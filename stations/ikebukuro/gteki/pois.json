@@ -19092,7 +19092,7 @@
     "sourceIds": [
      "seibu-ikebukuro-norikae-2026-10"
     ],
-    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY",
+    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY; name composed by GTEki (printed legend gives the number only)",
     "checkedDate": "2026-10-24"
    },
    "notes": [
@@ -19103,6 +19103,14 @@
     {
      "lang": "en",
      "text": "Alighting-only platform per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+    },
+    {
+     "lang": "ja",
+     "text": "名称は GTEki が作成（ホーム番号は構内図の凡例、路線名は駅ページの「池袋線」に、#414 の西武改札 POI と同じ検索用の前置き「西武」を付けたもの）。出典の構内図に印刷されているのは番号のみ。位置・入口は未確認（検索のみ、経路なし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Name composed by GTEki: platform number from the station-map legend (dated 2026-08-01); line name = the page's printed 池袋線 with the same 西武 search prefix the #414 Seibu gate POIs use (ikebukuro-line-pois-contract.md §2). The map prints the number only. Location and entrance not verified (search only, no route)."
     }
    ]
   },
@@ -19128,7 +19136,7 @@
     "sourceIds": [
      "seibu-ikebukuro-norikae-2026-10"
     ],
-    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY",
+    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY; name composed by GTEki (printed legend gives the number only)",
     "checkedDate": "2026-10-24"
    },
    "notes": [
@@ -19139,6 +19147,14 @@
     {
      "lang": "en",
      "text": "Departures toward Tokorozawa, Hanno and Seibu-Chichibu per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+    },
+    {
+     "lang": "ja",
+     "text": "名称は GTEki が作成（ホーム番号は構内図の凡例、路線名は駅ページの「池袋線」に、#414 の西武改札 POI と同じ検索用の前置き「西武」を付けたもの）。出典の構内図に印刷されているのは番号のみ。位置・入口は未確認（検索のみ、経路なし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Name composed by GTEki: platform number from the station-map legend (dated 2026-08-01); line name = the page's printed 池袋線 with the same 西武 search prefix the #414 Seibu gate POIs use (ikebukuro-line-pois-contract.md §2). The map prints the number only. Location and entrance not verified (search only, no route)."
     }
    ]
   },
@@ -19164,7 +19180,7 @@
     "sourceIds": [
      "seibu-ikebukuro-norikae-2026-10"
     ],
-    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY",
+    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY; name composed by GTEki (printed legend gives the number only)",
     "checkedDate": "2026-10-24"
    },
    "notes": [
@@ -19175,6 +19191,14 @@
     {
      "lang": "en",
      "text": "Departures toward Tokorozawa, Hanno and Seibu-Chichibu per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+    },
+    {
+     "lang": "ja",
+     "text": "名称は GTEki が作成（ホーム番号は構内図の凡例、路線名は駅ページの「池袋線」に、#414 の西武改札 POI と同じ検索用の前置き「西武」を付けたもの）。出典の構内図に印刷されているのは番号のみ。位置・入口は未確認（検索のみ、経路なし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Name composed by GTEki: platform number from the station-map legend (dated 2026-08-01); line name = the page's printed 池袋線 with the same 西武 search prefix the #414 Seibu gate POIs use (ikebukuro-line-pois-contract.md §2). The map prints the number only. Location and entrance not verified (search only, no route)."
     }
    ]
   },
@@ -19200,7 +19224,7 @@
     "sourceIds": [
      "seibu-ikebukuro-norikae-2026-10"
     ],
-    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY",
+    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY; name composed by GTEki (printed legend gives the number only)",
     "checkedDate": "2026-10-24"
    },
    "notes": [
@@ -19211,6 +19235,14 @@
     {
      "lang": "en",
      "text": "Alighting-only platform per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+    },
+    {
+     "lang": "ja",
+     "text": "名称は GTEki が作成（ホーム番号は構内図の凡例、路線名は駅ページの「池袋線」に、#414 の西武改札 POI と同じ検索用の前置き「西武」を付けたもの）。出典の構内図に印刷されているのは番号のみ。位置・入口は未確認（検索のみ、経路なし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Name composed by GTEki: platform number from the station-map legend (dated 2026-08-01); line name = the page's printed 池袋線 with the same 西武 search prefix the #414 Seibu gate POIs use (ikebukuro-line-pois-contract.md §2). The map prints the number only. Location and entrance not verified (search only, no route)."
     }
    ]
   },
@@ -19236,7 +19268,7 @@
     "sourceIds": [
      "seibu-ikebukuro-norikae-2026-10"
     ],
-    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY",
+    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY; name composed by GTEki (printed legend gives the number only)",
     "checkedDate": "2026-10-24"
    },
    "notes": [
@@ -19247,6 +19279,14 @@
     {
      "lang": "en",
      "text": "Departures toward Tokorozawa, Hanno and Seibu-Chichibu per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+    },
+    {
+     "lang": "ja",
+     "text": "名称は GTEki が作成（ホーム番号は構内図の凡例、路線名は駅ページの「池袋線」に、#414 の西武改札 POI と同じ検索用の前置き「西武」を付けたもの）。出典の構内図に印刷されているのは番号のみ。位置・入口は未確認（検索のみ、経路なし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Name composed by GTEki: platform number from the station-map legend (dated 2026-08-01); line name = the page's printed 池袋線 with the same 西武 search prefix the #414 Seibu gate POIs use (ikebukuro-line-pois-contract.md §2). The map prints the number only. Location and entrance not verified (search only, no route)."
     }
    ]
   },
@@ -19272,7 +19312,7 @@
     "sourceIds": [
      "seibu-ikebukuro-norikae-2026-10"
     ],
-    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY",
+    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY; name composed by GTEki (printed legend gives the number only)",
     "checkedDate": "2026-10-24"
    },
    "notes": [
@@ -19283,6 +19323,14 @@
     {
      "lang": "en",
      "text": "Alighting-only platform per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+    },
+    {
+     "lang": "ja",
+     "text": "名称は GTEki が作成（ホーム番号は構内図の凡例、路線名は駅ページの「池袋線」に、#414 の西武改札 POI と同じ検索用の前置き「西武」を付けたもの）。出典の構内図に印刷されているのは番号のみ。位置・入口は未確認（検索のみ、経路なし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Name composed by GTEki: platform number from the station-map legend (dated 2026-08-01); line name = the page's printed 池袋線 with the same 西武 search prefix the #414 Seibu gate POIs use (ikebukuro-line-pois-contract.md §2). The map prints the number only. Location and entrance not verified (search only, no route)."
     }
    ]
   },
@@ -19308,7 +19356,7 @@
     "sourceIds": [
      "seibu-ikebukuro-norikae-2026-10"
     ],
-    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY",
+    "method": "facts-only Seibu station-map image legend (OD-25), UNVERIFIED, SEARCH_ONLY; name composed by GTEki (printed legend gives the number only)",
     "checkedDate": "2026-10-24"
    },
    "notes": [
@@ -19319,6 +19367,14 @@
     {
      "lang": "en",
      "text": "Departures toward Tokorozawa, Hanno and Seibu-Chichibu per the map legend. From the station map dated 2026-08-01. Location and entrance not verified (search only, no route). Current status unknown."
+    },
+    {
+     "lang": "ja",
+     "text": "名称は GTEki が作成（ホーム番号は構内図の凡例、路線名は駅ページの「池袋線」に、#414 の西武改札 POI と同じ検索用の前置き「西武」を付けたもの）。出典の構内図に印刷されているのは番号のみ。位置・入口は未確認（検索のみ、経路なし）。"
+    },
+    {
+     "lang": "en",
+     "text": "Name composed by GTEki: platform number from the station-map legend (dated 2026-08-01); line name = the page's printed 池袋線 with the same 西武 search prefix the #414 Seibu gate POIs use (ikebukuro-line-pois-contract.md §2). The map prints the number only. Location and entrance not verified (search only, no route)."
     }
    ]
   },
