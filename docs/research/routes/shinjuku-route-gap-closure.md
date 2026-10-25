@@ -136,6 +136,7 @@ None of the five items changes a verdict. The lookup's value is that an independ
 | Toei 構内図 image (`.../shinjuku/i/solid.png`) | Never read (DR-SJ-01); today it returns the Incapsula interstitial. It is the only operator artefact that might label a gate by name, so its status is UNREAD, not "checked and empty". |
 | Closure notice PDF detour drawing | Recorded as not transcribed (DR-SJ-05). A drawing is not a printed name, and reading it would not satisfy a printed-name match. |
 | Toei store lists (`/other/kanren/stores/shinjuku.html`, DR-SJ-03/04) | Facts only under OD-34 round 2, and they print shops, not gates; not queried today. |
+| Toei site policy (`/riyo/`) | Already recorded as an Incapsula block (OD-34 round 5(d)); not retried, and no rights conclusion here depends on it. |
 | S03 search-only gate POIs (JR / Metro / Keio / Odakyu gates in `pois.json`) | Another operator's gates, search-only, never route evidence (card G-09). They show the project already treats 京王新線口 and 新都心口 as Keio-side gate names — an argument against reusing those labels for E27, not a source for an E27 gate name. |
 | JR East, odakyu.jp, keio.co.jp | Corroboration only under OD-34; there is no claim here to corroborate. Keio's copy of the closure notice returned 503 when DR-SJ-05 was made. |
 | らくらくおでかけネット and Yahoo!乗換案内 route strings (DR-SJ-13/14) | Not operator text. They print 「マインズタワー方面改札」 inside a route string, which is a lead only and cannot be used to match or rename a POI. |
