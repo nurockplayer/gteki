@@ -9496,7 +9496,14 @@
      "lang": "en",
      "text": "Hours printed on the page: 西武南口 7:00～22:30 (as read on 2026-10-24; the page carries no date; may have changed)."
     }
-   ]
+   ],
+   "hours": {
+    "text": "7:00～22:30",
+    "sourceUrl": "https://www.seiburailway.jp/railway/station/ikebukuro/",
+    "retrievedAt": "2026-10-25",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "jr-north-gate",
@@ -20253,7 +20260,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, B1. Unverified; no guided route."
     }
-   ]
+   ],
+   "hours": {
+    "text": "11:00～21:00",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/information/",
+    "retrievedAt": "2026-10-25",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "service-ikb-lumine-002",
@@ -20349,7 +20363,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 8F. Unverified; no guided route."
     }
-   ]
+   ],
+   "hours": {
+    "text": "ご利用時間は営業時間に準ずる",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/information/",
+    "retrievedAt": "2026-10-25",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "toilet-ikb-lumine-002",
@@ -20381,7 +20402,14 @@
      "lang": "en",
      "text": "LUMINE Ikebukuro, 10F. Unverified; no guided route."
     }
-   ]
+   ],
+   "hours": {
+    "text": "ご利用時間は営業時間に準ずる",
+    "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/information/",
+    "retrievedAt": "2026-10-25",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "toilet-ikb-esola-001",
@@ -21501,7 +21529,14 @@
      "lang": "en",
      "text": "Seibu Railway Ikebukuro Station, 西武南口. Unverified; no guided route."
     }
-   ]
+   ],
+   "hours": {
+    "text": "7:00～22:30",
+    "sourceUrl": "https://www.seiburailway.jp/railway/station/ikebukuro/",
+    "retrievedAt": "2026-10-25",
+    "basis": "undated-official",
+    "status": "OK"
+   }
   }
  ]
 }
