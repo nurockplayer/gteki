@@ -112,6 +112,12 @@ describe("@gteki/cli route on the real stations", { timeout: 30_000 }, () => {
     ["ikebukuro", ["g_jr_c2", "no-such-node"], "unknown_goal"],
     ["shinjuku", ["poi:platform:oedo", "poi:nope", "--from-poi", "--goal-poi"], "unknown_goal"],
     ["shinjuku", ["poi:nope", "poi:exit:1", "--from-poi", "--goal-poi"], "unknown_start"],
+    ["shinjuku", ["poi:gate:2", "poi:jreast-gate:7", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only JR gate (#411)
+    ["shinjuku", ["poi:gate:2", "poi:keio-gate:1", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only Keio New Line gate (#411)
+    ["shinjuku", ["poi:gate:2", "poi:odakyu-platform:2", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only Odakyu platform (#411)
+    ["shinjuku", ["poi:gate:2", "poi:jreast-keio-transfer:1", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only JR/Keio transfer (#411)
+    ["shinjuku", ["poi:tokyometro-gate:1", "poi:gate:2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only Metro gate as origin (#411)
+    ["shinjuku", ["poi:keio-gate:1", "poi:gate:2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only Keio gate as origin (#411)
   ] as const)("%s %j fails safely: exit 1, empty path and polyline, no instructions", (id, args, reason) => {
     const { status, out } = route(id, [...args]);
     expect(status).toBe(1);
