@@ -176,6 +176,7 @@ describe("Ikebukuro golden search", () => {
   // legend); only POIs sourced from it may carry 西武 / Seibu labels, and the Seibu queries may reach only those POIs.
   // 百貨店 only on the Tobu Department Store POI, which cites the store's own page (OD-34); Sogo & Seibu stays excluded.
   // パルコ only on the PARCO POI, which cites the JCSC facility record (S13, facts-only); PARCO's own site is corroboration only.
+  // 西武池袋本店 only on the Seibu Ikebukuro store POI, which cites the JCSC 2026 opening-SC list (facts-only).
   const SEIBU_SOURCES = ["seibu-ikebukuro-station-2026-10", "seibu-ikebukuro-norikae-2026-10"];
   const fromSeibu = (poi: StationBundle["pois"][number]): boolean =>
     poi.evidence.sourceIds.some((id) => SEIBU_SOURCES.includes(id));
@@ -183,6 +184,10 @@ describe("Ikebukuro golden search", () => {
   const TOBU_DEPT_POI = "shop-ikb-tobudept";
   const PARCO_SOURCE = "jcsc-ikebukuro-parco-facility-2021-10";
   const PARCO_POI = "shop-ikb-parco";
+  const SEIBU_STORE_SOURCE = "jcsc-ikebukuro-links-open-sc";
+  const SEIBU_STORE_POI = "shop-ikb-seibu-honten";
+  const isSeibuStore = (poi: StationBundle["pois"][number]): boolean =>
+    poi.id === SEIBU_STORE_POI && poi.evidence.sourceIds.includes(SEIBU_STORE_SOURCE);
   describe("no false gate for names the data does not evidence", () => {
     for (const q of ["そごう", "PARCO", "パルコ", "山手線"]) {
       it(`${JSON.stringify(q)} returns no gate or exit`, () => {
@@ -191,14 +196,14 @@ describe("Ikebukuro golden search", () => {
       });
     }
 
-    it("the Seibu queries reach only POIs sourced from the Seibu Railway station page", () => {
+    it("the Seibu queries reach only POIs sourced from the Seibu Railway station page or the JCSC Seibu store listing", () => {
       for (const q of ["西武", "西武線", "Seibu", "Seibu Railway"]) {
         const hits = index.search(q);
-        for (const hit of hits) expect(fromSeibu(hit.poi), `${q} -> ${hit.poi.id}`).toBe(true);
+        for (const hit of hits) expect(fromSeibu(hit.poi) || isSeibuStore(hit.poi), `${q} -> ${hit.poi.id}`).toBe(true);
       }
     });
 
-    it("carries PARCO labels only on the JCSC-sourced PARCO POI, Sogo labels nowhere, 百貨店 only on the Tobu Department Store POI, and Seibu labels only on Seibu-sourced POIs", () => {
+    it("carries PARCO labels only on the JCSC-sourced PARCO POI, Sogo labels nowhere, 百貨店 only on the Tobu Department Store POI, and Seibu labels only on Seibu-sourced POIs or the JCSC-sourced Seibu store POI", () => {
       const parco = /parco|パルコ/i;
       const sogo = /そごう|sogo/i;
       const departmentStore = /百貨店/;
@@ -210,7 +215,7 @@ describe("Ikebukuro golden search", () => {
               sogo.test(text) ||
               (parco.test(text) && !(poi.id === PARCO_POI && poi.evidence.sourceIds.includes(PARCO_SOURCE))) ||
               (departmentStore.test(text) && !(poi.id === TOBU_DEPT_POI && poi.evidence.sourceIds.includes(TOBU_DEPT_SOURCE))) ||
-              (seibu.test(text) && !fromSeibu(poi)),
+              (seibu.test(text) && !fromSeibu(poi) && !isSeibuStore(poi)),
           )
           .map(({ text }) => `${poi.id}: ${text}`),
       );
