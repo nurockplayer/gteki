@@ -22229,6 +22229,38 @@
      "text": "池袋パルコ spans B2–8F (Japan Council of Shopping Centers ＜SC概要＞; the source names it 池袋パルコ, does not split 本館 / 別館, and prints no date — 20211029 is a URL token). Location and entrance not verified (search only, no route). Current status unknown."
     }
    ]
+  },
+  {
+   "id": "shop-ikb-seibu-honten",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "西武池袋本店"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "jcsc-ikebukuro-links-open-sc"
+    ],
+    "method": "facts-only opening-SC record (OD-34 class, JCSC), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-26"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "日本ショッピングセンター協会の2026年オープンSC一覧で、LINKS IKEBUKURO（東京都豊島区南池袋1-28-1、注8）のオープン日は2026年6月30日と印刷され、そのキーテナントとして「西武池袋本店」と印刷されている（同店自身の開業日として書かれたものではない）。階数はこの資料に記載なし。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Printed as 西武池袋本店, a key tenant of LINKS IKEBUKURO (東京都豊島区南池袋1-28-1; the row prints the complex's opening date, 2026-06-30; note 8), in the Japan Council of Shopping Centers 2026 opening-SC list. That date is the complex's, not the store's own opening date. Floors are not printed in that source. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
   }
  ]
 }
