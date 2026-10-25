@@ -9,14 +9,15 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
  * The hours text to show, or null. Only a page that really printed hours counts (`status: "OK"` with text), and
- * only while the reading is at most HOURS_MAX_AGE_DAYS old. `retrievedAt` is a YYYY-MM-DD date, so age is
- * measured from the start of that day in UTC.
+ * only while the reading is dated no later than `now` and at most HOURS_MAX_AGE_DAYS old. `retrievedAt` is a
+ * YYYY-MM-DD date, so age is measured from the start of that day in UTC.
  */
 export function printedHours(hours: HoursText | null | undefined, now: Date): string | null {
   if (!hours || hours.status !== "OK") return null;
   const text = (hours.text ?? "").trim();
   if (!text) return null;
   const readAt = Date.parse(`${hours.retrievedAt}T00:00:00Z`);
-  if (!Number.isFinite(readAt) || now.getTime() - readAt > HOURS_MAX_AGE_DAYS * DAY_MS) return null;
+  const nowMs = now.getTime();
+  if (!Number.isFinite(readAt) || nowMs < readAt || nowMs - readAt > HOURS_MAX_AGE_DAYS * DAY_MS) return null;
   return text;
 }

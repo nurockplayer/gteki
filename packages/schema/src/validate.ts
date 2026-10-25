@@ -387,11 +387,14 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
   }
 
   // Printed hours (OD-32): the app shows the page's own wording with the date it was read, so every row says
-  // where it came from, when, whose word it is, and whether the page printed anything at all.
+  // where it came from, when, whose word it is, and whether the page printed anything at all. A reading cannot
+  // come from the future: the app would show a date that has not happened yet.
+  const today = new Date().toISOString().slice(0, 10);
   const checkHours = (h: HoursText, ref: string): void => {
     if (!HOURS_BASES.has(h.basis)) err("hours.basis", `unknown hours basis ${String(h.basis)}`, ref);
     if (h.status !== "OK" && h.status !== "UNKNOWN") err("hours.status", `unknown hours status ${String(h.status)}`, ref);
     if (!isIsoDate(h.retrievedAt)) err("hours.date", `retrievedAt ${h.retrievedAt} is not YYYY-MM-DD`, ref);
+    else if (h.retrievedAt > today) err("hours.date", `retrievedAt ${h.retrievedAt} is later than today (${today})`, ref);
     if (!isHttpUrl(h.sourceUrl)) err("hours.url", "hours need the http(s) page they were read from", ref);
     if (h.status === "OK" && !(h.text ?? "").trim()) err("hours.text", "status OK needs the hours text as printed", ref);
   };
