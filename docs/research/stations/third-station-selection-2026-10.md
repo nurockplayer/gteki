@@ -16,13 +16,13 @@ Rights frame: OD-34 in [`../owner-decisions-pending.md`](../owner-decisions-pend
 | | 東京駅 | 品川駅 | 梅田・大阪駅 |
 |---|---|---|---|
 | PLATEAU city model | **two ward datasets**: 千代田区 2025 (丸の内) + 中央区 2025 (八重洲); both bldg LOD1–2 and both **地下街 LOD4**; the station area is split at the ward line | 港区 2025 (2023 also published); bldg LOD1–3, **no 地下街 model**; the whole station area is in one ward | 大阪市 2020/2022/2024/2025; 2022 bldg LOD1–3, no 地下街 model; the current-year catalogue is empty, so 2025 LOD is UNKNOWN |
-| KSJ N02 railway | N02-2025 (national, 基準日 2025-12-31), PDL 1.0 with credit | same | same |
+| KSJ N02 railway | N02-2025 (national, 基準日 2025-12-31); the dataset page labels it **CC BY 4.0** | same | same |
 | ほこナビ walking network | **`nwd_tokyo`**, content 2019-01-23 (2D network; no floor data stated) | none in the portal (43 packages) | none in the portal |
 | E27-type station indoor map | none | none | none |
 | Facts-only operators | 大丸東京店, 東京メトロ | アトレ品川 | 阪急電鉄 |
 | Corroboration only | JR東日本 | JR東日本 | LUCUA, ホワイティうめだ |
 | Banned | グランスタ (JR東日本クロスステーション) | ecute品川 (JR東日本クロスステーション) | 大阪ステーションシティ, グランフロント大阪 |
-| UNKNOWN or unreachable | 八重洲地下街, 東京駅一番街, KITTE/JPタワー, 三菱地所 丸の内, JR東海 | 京急, JR東海, ウィング高輪, 品川インターシティ | JR西日本, ディアモール大阪, 阪急百貨店, 阪神百貨店, 阪急三番街, 大阪メトロ |
+| UNKNOWN or unreachable | 八重洲地下街, 東京駅一番街, KITTE/JPタワー, 三菱地所 丸の内, JR東海 | 京急, JR東海, ウィング高輪, 品川インターシティ | JR西日本, 阪神電気鉄道, ディアモール大阪, 阪急百貨店, 阪神百貨店, 阪急三番街, 大阪メトロ |
 | Public shop data | floor labels printed (大丸東京店); count UNKNOWN | floor guide exists, JS-only; count UNKNOWN | floor guides exist, JS-only; count UNKNOWN |
 
 ## 2. Station by station
@@ -41,11 +41,11 @@ Source: `https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-131
 The station straddles two wards, and **both have a 2025 dataset with a 地下街 model**:
 
 - 丸の内 side — 千代田区 (above): bldg LOD1/LOD2, ubld LOD1/LOD4.
-- 八重洲 side — 中央区, dataset `plateau-13102-chuo-ku-2025` (2023年度 also published). Its データ目録（v5） lists 建築物モデル LOD1 and LOD2, **地下街モデル LOD1 and LOD4** (ubld), 交通 LOD1–LOD3, 橋梁 LOD1–LOD3, 都市設備 LOD1/LOD3; CityGML 2.5 GB. The 八重洲地下街 is therefore inside a modelled 地下街 footprint, at least as a CityGML/3D Tiles shell.
+- 八重洲 side — 中央区, dataset `plateau-13102-chuo-ku-2025` (2023年度 also published). Its データ目録（v5） lists 建築物モデル LOD1 and LOD2, **地下街モデル LOD1 and LOD4** (ubld), 交通 LOD1–LOD3, 橋梁 LOD1–LOD3, 都市設備 LOD1/LOD3; CityGML 2.5 GB. That establishes a 地下街 model in 中央区; **whether it covers the 八重洲地下街 footprint is UNKNOWN** until the tiles are loaded (the catalogue names the model, not the malls in it).
 
 Sources: `package_show?id=plateau-13101-chiyoda-ku-2025` and `…?id=plateau-13102-chuo-ku-2025`, データ目録 resources, read 2026-10-25.
 
-This is the only one of the three station areas where a **地下街 (ubld) model at LOD4 is confirmed**, and it has two of them (大阪市's current catalogue is empty, so its case stays UNKNOWN). The cost is operational: the area needs two ward datasets (2.1 GB + 2.5 GB CityGML, or their 3D Tiles) stitched at the 千代田区/中央区 line, which runs through the station.
+This is the only one of the three station areas where a **地下街 (ubld) model at LOD4 is published at all**, in both wards (大阪市's current catalogue is empty, so its case stays UNKNOWN). Which underground malls each model actually contains is a loading-time check. The cost is operational: the area needs two ward datasets (2.1 GB + 2.5 GB CityGML, or their 3D Tiles) stitched at the 千代田区/中央区 line, which runs through the station.
 
 Dataset terms, from the package notes of both: 「商用利用も含め、どなたでも無償で自由にご利用いただけます。」 — the same basis as our PLATEAU precedent (commercial use allowed with the PLATEAU credit).
 
@@ -124,10 +124,11 @@ Sources: `package_show?id=plateau-27100-osaka-shi-2025`, `…-2024`, `…-2022`,
 | 大阪ステーションシティ (JR西日本ステーションシティ) | station building | https://osakastationcity.com/info/rule.php | 「…全てのコンテンツ…はＪＲ西日本ステーションシティ株式会社をはじめとする権利者の許可なく、無断で複製、転記、放送、配布、貸与、翻訳、変造、販売することはできません。」 (no legal-exception clause) | **banned** | 2026-10-25 |
 | LUCUA (JR西日本SC開発) | station retail | https://www.lucua.jp/sitepolicy/ | 「これらのコンテンツの個人的な利用に関しては、第三者が閲覧可能な環境に流用しない、または営利目的で利用しない場合にのみ表示・印刷等の複製を認めます。」 | corroboration only (business-use ban) | 2026-10-25 |
 | 阪急電鉄 | 大阪梅田駅, 阪急線 | https://www.hankyu.co.jp/sitepolicy/index.html | 「法的に認められる範囲を超えて、著作権者の事前の許諾なく、これらのコンテンツを利用…することを禁止いたします。」 | facts only | 2026-10-25 |
+| 阪神電気鉄道 | 大阪梅田駅, 阪神線 | — | site terms not read in this task | UNKNOWN | 2026-10-25 |
 | ホワイティうめだ (大阪地下街) | underground mall | https://www.osaka-chikagai.jp/policy/ | 「個人的な利用に関しては、第三者が閲覧可能な環境に流用しない、または営利目的で利用しない場合にのみ表示、複製、印刷を認めます。」 + 禁止事項「営業活動または営利を目的とする行為、またはその準備を目的とする行為。」 | corroboration only | 2026-10-25 |
 | グランフロント大阪 (うめきた) | retail + office | https://www.grandfront-osaka.jp/sitepolicy/ | 「…は当法人の許可なく、無断で複製、転記、放送、配布、貸与、翻訳、変造、販売することはできません。」 (no legal-exception clause) | **banned** | 2026-10-25 |
 | 阪急百貨店 / 阪神百貨店 (H2Oリテイリング) | department stores | — | no terms page found on hankyu-dept.co.jp or hanshin-dept.jp; `/sitepolicy/` 404; the holding company site lists only privacy, social-media and cookie policies | UNKNOWN | 2026-10-25 |
-| ディアモール大阪 (JR西日本SC開発) | underground mall | — | no terms link on the homepage; `/sitepolicy/` 404 | UNKNOWN | 2026-10-25 |
+| ディアモール大阪 (大阪ダイヤモンド地下街株式会社) | underground mall | — | no terms link on the homepage; `/sitepolicy/` 404; only a privacy page, which names 「大阪ダイヤモンド地下街株式会社」 (https://www.diamor.jp/about/privacy/) | UNKNOWN | 2026-10-25 |
 | 阪急三番街 | underground mall | — | `https://www.hankyu-sanbangai.com/` did not answer plain curl | GAP | 2026-10-25 |
 | 大阪メトロ (梅田・東梅田・西梅田) | metro | — | `https://www.osaka-metro.co.jp/` did not answer plain curl | GAP | 2026-10-25 |
 | 大丸梅田店 | department store | https://dmdepart.jp/siteinfo/ (group terms, 大丸東京店 read) | same clause as 大丸東京店 (facts only), but `https://www.daimaru.co.jp/umeda/` returned **403** to plain curl | facts only for the group terms; the 梅田店 pages themselves GAP | 2026-10-25 |
@@ -138,7 +139,13 @@ Sources: `package_show?id=plateau-27100-osaka-shi-2025`, `…-2024`, `…-2022`,
 
 The current edition is **2025年度（令和7年度）版**, データ基準年月日 **2025年12月31日時点**, updated 2026年4月, and it is **national**: 「全国の旅客鉄道・軌道の路線や駅について、形状（線）、鉄道区分…事業者…路線名、運営会社等を整備した」 (`https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html`, 2026-10-25). All three stations are in the same dataset, so N02 adds no difference between them.
 
-Terms: the 国土数値情報ダウンロードサイト 利用規約 (`https://nlftp.mlit.go.jp/ksj/other/agreement.html`, read 2026-10-25) says 「…特記されていない限り国土交通省に属し、権利表記の記載がない限り（「公共データ利用規約（第1.0版）」（PDL1.0）が適用されています。」 and 「本利用規約は、2026年（令和8年）3月23日から施行します。」 Credit wording: 「出典：国土交通省国土数値情報ダウンロードサイト（当該ページのURL）」. This matches our N02-2023 precedent (usable with credit); only the edition changes.
+Terms, two layers:
+
+- The dataset page itself states 「このデータの使用許諾条件 2020年（令和2年）以降：オープンデータ（CC_BY_4.0）／上記以外：商用可」 (`KsjTmplt-N02-2025.html`, read 2026-10-25). For the 2025 edition (基準日 2025-12-31) that is the operative label: **CC BY 4.0**.
+- The site-wide 利用規約 (`https://nlftp.mlit.go.jp/ksj/other/agreement.html`, read 2026-10-25) says 「…特記されていない限り国土交通省に属し、権利表記の記載がない限り（「公共データ利用規約（第1.0版）」（PDL1.0）が適用されています。」 and 「本利用規約は、2026年（令和8年）3月23日から施行します。」 — i.e. PDL 1.0 only where the dataset carries no label of its own, so it does not displace the CC BY 4.0 line above.
+- Credit wording from the same 利用規約: 「出典：国土交通省国土数値情報ダウンロードサイト（当該ページのURL）」.
+
+Either way the data is usable with credit, matching our N02-2023 precedent; the 2025 edition's label is the stronger of the two.
 
 ### 3.2 ほこナビDP inventory
 
@@ -153,9 +160,9 @@ Licence per the portal: PDL 1.0 (same basis as our E27/S02 records, DR-NS-08/09/
 
 ### 3.3 What the rights classes cost at each station
 
-- **東京駅**: one banned retail operator (グランスタ), one corroboration-only (JR East), two facts-only (大丸東京店, 東京メトロ/エチカ) and four UNKNOWN/GAP blocks, one of which — 八重洲地下街 — is the station's largest single shopping floor.
-- **品川駅**: banned ecute and corroboration-only JR East cover most of the retail floor area; facts-only atre is the usable remainder; 京急 (the other railway at the station) and JR東海 have no terms we could read.
-- **梅田・大阪駅**: the two biggest complexes are flat bans (大阪ステーションシティ and グランフロント大阪), the next tier is business-use bans (LUCUA, ホワイティうめだ), and JR West — the station's main operator — plus both department stores and 大阪メトロ are unread. Usable today: 阪急電鉄 facts only, and 大丸梅田店 at group-terms level with a 403 on its own pages.
+- **東京駅**: one banned retail operator (グランスタ), one corroboration-only (JR East), two facts-only (大丸東京店, 東京メトロ/エチカ) and five UNKNOWN/GAP blocks (八重洲地下街, 東京駅一番街, KITTE/JPタワー, 三菱地所 丸の内, JR東海). 八重洲地下街 is the largest of those unknowns.
+- **品川駅**: the retail is ecute (banned) and atre (facts only), with JR East corroboration-only; 京急 (the other railway at the station) and JR東海 have no terms we could read.
+- **梅田・大阪駅**: both flagship complexes are flat bans (大阪ステーションシティ, グランフロント大阪), the next tier is business-use bans (LUCUA, ホワイティうめだ), and JR West — the station's main operator — plus both department stores and 大阪メトロ are unread. Usable today: 阪急電鉄 facts only, and 大丸梅田店 at group-terms level with a 403 on its own pages.
 
 ### 3.4 Shop counts
 
@@ -182,7 +189,7 @@ A browser read (ego-lite) would give the counts; this task's brief does not allo
 
 ## 5. Recommendation
 
-**Open 東京駅 next.** It is the only candidate that offers both of the things our Shinjuku lane actually builds on: a public walking network (`nwd_tokyo`, content 2019-01-23 — old, but present and PDL 1.0) and 地下街 models at LOD4 — two of them, one in 千代田区 (丸の内) and one in 中央区 (八重洲), each on a 2025 PLATEAU dataset that also carries the buildings around the station. Its usable operator set is the strongest of the three: 大丸東京店 is facts-only with floor labels printed in its floor guide, and 東京メトロ plus エチカ are facts-only under OD-34, while JR East is corroboration-only rather than banned. Its holes are bounded and worth the effort — the two ward datasets must be stitched at the line that runs through the station, and 八重洲地下街's terms are unread — but neither is a ban, and both are single-source questions. Against that, 品川駅 has the cleanest single-dataset coverage (one ward, bldg LOD3, no seam) but no walking network, no underground model, an unread 京急 and an ecute-banned retail floor, and much less to explore; 梅田・大阪駅 has the largest and richest station area but loses it to the rights frame: both flagship complexes are flat bans, the next tier is a business-use ban, JR West's terms could not be read at all, and the current PLATEAU catalogue publishes no LOD list. If 東京駅 is taken, the next steps are the 八重洲地下街 terms page and a load test of both ward datasets across the seam; if the terms stay unread, 八重洲 stays a facts-only, corroboration-light side and the station still ships on 丸の内.
+**Open 東京駅 next.** It is the only candidate that offers both of the things our Shinjuku lane actually builds on: a public walking network (`nwd_tokyo`, content 2019-01-23 — old, but present and PDL 1.0) and 地下街 models at LOD4 — two of them, one in 千代田区 (丸の内) and one in 中央区 (八重洲), each on a 2025 PLATEAU dataset that also carries the buildings around the station. Its usable operator set is the strongest of the three: 大丸東京店 is facts-only with floor labels printed in its floor guide, and 東京メトロ plus エチカ are facts-only under OD-34, while JR East is corroboration-only rather than banned. Its holes are bounded and worth the effort — the two ward datasets must be stitched at the line that runs through the station, and 八重洲地下街's terms are unread — but neither is a ban, and both are single-source questions. Against that, 品川駅 has the cleanest single-dataset coverage (one ward, bldg LOD3, no seam) but no walking network, no underground model, an unread 京急 and an ecute-banned retail floor, and much less to explore; 梅田・大阪駅 has the largest and richest station area but loses it to the rights frame: both flagship complexes are flat bans, the next tier is a business-use ban, JR West's terms could not be read at all, and the current PLATEAU catalogue publishes no LOD list. If 東京駅 is taken, the next steps are the 八重洲地下街 terms page and a load test of both ward datasets across the seam; if the terms stay unread, the 八重洲 side stays UNKNOWN and unimported and the station still ships on 丸の内.
 
 ---
 
