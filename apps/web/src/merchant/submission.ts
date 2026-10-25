@@ -1,4 +1,4 @@
-import type { LocalizedText, Source } from "@gteki/schema";
+import type { LocalizedText } from "@gteki/schema";
 
 /**
  * A shop's own submission (#438 Phase 2, option A of docs/research/merchants/merchant-self-service-spec.md):
@@ -166,6 +166,7 @@ export interface MerchantSubmission {
   url: string | null;
   /** One contact point; it must stay out of every public file (§2). */
   contact: { kind: ContactKind; value: string };
+  /** When the shop ticked the box, not when the preview was rebuilt. */
   consent: { termsVersion: string; accepted: true; acceptedAt: string };
 }
 
@@ -176,10 +177,12 @@ export interface MerchantSubmission {
 export function buildSubmission(
   draft: MerchantDraft,
   choices: StationChoices,
-  meta: { stationFolder: string; clientRequestId: string; submittedAt: string },
+  meta: { stationFolder: string; clientRequestId: string; submittedAt: string; consentAcceptedAt: string },
 ): MerchantSubmission {
   // The floor must be one the station itself lists: a submission can never name a floor the picker did not offer.
   if (!choices.floors.some((f) => f.id === draft.floorId)) throw new Error(`buildSubmission: ${draft.floorId || "(none)"} is not one of the station's floors`);
+  // `validateDraft` already demands the consent, so a missing tick time is a broken form, not an empty field.
+  if (!meta.consentAcceptedAt) throw new Error("buildSubmission: the consent was accepted but the form holds no acceptance time");
   const anchor = draft.nearPoiId ? { poiId: draft.nearPoiId, wording: draft.entranceWording.trim() } : null;
   const aliasLines = draft.aliasesText.split("\n").map((line) => line.trim()).filter(Boolean);
   return {
@@ -197,56 +200,6 @@ export function buildSubmission(
     hours: draft.hoursText.trim() ? { text: draft.hoursText.trim(), asOf: draft.hoursAsOf } : null,
     url: draft.url.trim() || null,
     contact: { kind: draft.contactKind, value: draft.contactValue.trim() },
-    consent: { termsVersion: MERCHANT_TERMS_VERSION, accepted: true, acceptedAt: meta.submittedAt },
+    consent: { termsVersion: MERCHANT_TERMS_VERSION, accepted: true, acceptedAt: meta.consentAcceptedAt },
   };
-}
-
-/** What the receiving side adds before the submission can become station data (§5, §6). */
-export interface SubmissionReceipt {
-  /** `msub-<station>-<n>`, assigned by the receiver, never reused. */
-  submissionId: string;
-  /** The public acceptance record: an issue or comment URL for this submission. */
-  decisionUrl: string;
-  decisionDate: string;
-  /** The public, versioned terms page the grant points at (§4.2). */
-  termsUrl: string;
-}
-
-const SUBMISSION_ID = /^msub-[a-z0-9]+-\d{3,}$/;
-
-/**
- * The `Source` one submission becomes (§6). Every value that must not be invented is taken from the
- * receipt, so a missing acceptance record or terms page throws instead of shipping an empty URL.
- */
-export function sourceRecordDraft(sub: MerchantSubmission, receipt: SubmissionReceipt): Source {
-  if (!SUBMISSION_ID.test(receipt.submissionId)) throw new Error(`sourceRecordDraft: "${receipt.submissionId}" is not msub-<station>-<n>`);
-  if (!httpUrl(receipt.decisionUrl)) throw new Error("sourceRecordDraft: the acceptance record must be a public URL");
-  if (!ISO_DATE.test(receipt.decisionDate)) throw new Error(`sourceRecordDraft: decisionDate "${receipt.decisionDate}" is not YYYY-MM-DD`);
-  if (!httpUrl(receipt.termsUrl)) throw new Error("sourceRecordDraft: the grant's terms page must be a public URL");
-  const name = sub.shop.names[0]?.text ?? "";
-  const date = sub.submittedAt.slice(0, 10);
-  return {
-    id: receipt.submissionId,
-    title: `Merchant submission ${receipt.submissionId}`,
-    publisher: name,
-    // The shop's own page when it has one; otherwise the acceptance record, never empty (§6).
-    url: sub.url ?? receipt.decisionUrl,
-    license: { name: MERCHANT_LICENSE_ID, url: receipt.termsUrl },
-    rights: "REUSABLE_WITH_CONDITIONS",
-    usage: "data",
-    decision: { url: receipt.decisionUrl, date: receipt.decisionDate },
-    attribution: `${name} 「店舗提供」 / "merchant-submitted", terms ${sub.consent.termsVersion}`,
-    modified: false,
-    retrievedAt: sub.submittedAt,
-    datasetDate: date,
-    validUntil: null,
-  };
-}
-
-/**
- * The `evidence.method` prefix the UI keys its "merchant-submitted" label on (§6). The station writer
- * sets it when it merges the submission; the form never writes station files itself.
- */
-export function merchantMethod(submissionId: string, checkedDate: string): string {
-  return `merchant-submitted (${submissionId}, ${checkedDate}), UNVERIFIED`;
 }

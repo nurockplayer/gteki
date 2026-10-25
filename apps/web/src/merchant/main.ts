@@ -1,10 +1,11 @@
 import "./form.css";
 import { stations as discovered } from "virtual:gteki-stations";
 import type { Poi, StationManifestFile } from "@gteki/schema";
-import { initialLang, pick, type Lang } from "../i18n.ts";
+import { initialLang, pick } from "../i18n.ts";
+import { newFormState, withConsent, withDraft, withLang, withStation, type FormState } from "./form-state.ts";
 import { consentText, merchantLabels, problemText } from "./labels.ts";
 import {
-  buildSubmission, emptyDraft, MERCHANT_CATEGORIES, MERCHANT_TERMS_VERSION, validateDraft,
+  buildSubmission, MERCHANT_CATEGORIES, MERCHANT_TERMS_VERSION, validateDraft,
   type AnchorChoice, type FloorChoice, type MerchantDraft, type StationChoices,
 } from "./submission.ts";
 
@@ -75,11 +76,6 @@ async function loadStations(): Promise<StationEntry[]> {
   return entries;
 }
 
-function newRequestId(): string {
-  const c = globalThis.crypto;
-  return c && "randomUUID" in c ? c.randomUUID() : `req-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
 /** The JSON document as the shop saves it: stable key order, two-space indent, trailing newline. */
 export function submissionFile(sub: unknown): string {
   return `${JSON.stringify(sub, null, 2)}\n`;
@@ -90,15 +86,17 @@ function mount(): void {
   if (!found) return;
   // A const alias: the render closures below are re-created on every change and must keep the narrowed type.
   const root: HTMLElement = found;
-  let lang: Lang = initialLang();
   let entries: StationEntry[] = [];
   let station: StationEntry | null = null;
-  let draft: MerchantDraft = emptyDraft("");
+  // The page owns one state (language, draft, submission clock): a re-render reads it, never resets it.
+  let state: FormState = newFormState(initialLang());
 
-  const draftOf = (): MerchantDraft => ({ ...draft, stationId: station?.stationId ?? "" });
+  const draftOf = (): MerchantDraft => ({ ...state.draft, stationId: station?.stationId ?? "" });
   const choices = (): StationChoices => station?.choices ?? { floors: [], anchors: [] };
 
   function render(): void {
+    const lang = state.lang;
+    const draft = state.draft;
     const t = merchantLabels(lang);
     root.replaceChildren();
 
@@ -107,8 +105,8 @@ function mount(): void {
     const langButton = el("button", "lang", lang === "ja" ? "English" : "日本語");
     langButton.type = "button";
     langButton.addEventListener("click", () => {
-      lang = lang === "ja" ? "en" : "ja";
-      document.documentElement.lang = lang;
+      state = withLang(state, lang === "ja" ? "en" : "ja");
+      document.documentElement.lang = state.lang;
       render();
     });
     header.append(langButton);
@@ -124,85 +122,85 @@ function mount(): void {
     stationSelect.value = station?.folder ?? "";
     stationSelect.addEventListener("change", () => {
       station = entries.find((e) => e.folder === stationSelect.value) ?? null;
-      draft = { ...emptyDraft(station?.stationId ?? ""), nameLang: draft.nameLang, nameText: draft.nameText, aliasesText: draft.aliasesText, category: draft.category, contactKind: draft.contactKind, contactValue: draft.contactValue, consent: draft.consent };
+      state = withStation(state, station?.stationId ?? "");
       render();
     });
     form.append(labelled(t.station, stationSelect, "station"));
 
     const name = textInput();
     name.value = draft.nameText;
-    name.addEventListener("input", () => { draft = { ...draft, nameText: name.value }; update(); });
+    name.addEventListener("input", () => { state = withDraft(state, { nameText: name.value }); update(); });
     form.append(labelled(t.nameLabel, name, "name"));
 
     const nameLang = textInput();
     nameLang.value = draft.nameLang;
-    nameLang.addEventListener("input", () => { draft = { ...draft, nameLang: nameLang.value.trim() }; update(); });
+    nameLang.addEventListener("input", () => { state = withDraft(state, { nameLang: nameLang.value.trim() }); update(); });
     form.append(labelled(t.nameLangLabel, nameLang, "name-lang"));
 
     const aliases = textArea(3);
     aliases.value = draft.aliasesText;
-    aliases.addEventListener("input", () => { draft = { ...draft, aliasesText: aliases.value }; update(); });
+    aliases.addEventListener("input", () => { state = withDraft(state, { aliasesText: aliases.value }); update(); });
     form.append(labelled(t.aliasesLabel, aliases, "aliases"));
 
     const category = el("select");
     for (const c of MERCHANT_CATEGORIES) category.append(Object.assign(el("option", undefined, t.category[c]), { value: c }));
     category.value = draft.category;
-    category.addEventListener("change", () => { draft = { ...draft, category: category.value as MerchantDraft["category"] }; update(); });
+    category.addEventListener("change", () => { state = withDraft(state, { category: category.value as MerchantDraft["category"] }); update(); });
     form.append(labelled(t.categoryLabel, category, "category"));
 
     const facility = textInput();
     facility.value = draft.facility;
-    facility.addEventListener("input", () => { draft = { ...draft, facility: facility.value }; update(); });
+    facility.addEventListener("input", () => { state = withDraft(state, { facility: facility.value }); update(); });
     form.append(labelled(t.facilityLabel, facility, "facility"));
 
     const floor = el("select");
     floor.append(Object.assign(el("option", undefined, t.floorPlaceholder), { value: "" }));
     for (const f of choices().floors) floor.append(Object.assign(el("option", undefined, pick(f.labels, lang)), { value: f.id }));
     floor.value = draft.floorId;
-    floor.addEventListener("change", () => { draft = { ...draft, floorId: floor.value }; update(); });
+    floor.addEventListener("change", () => { state = withDraft(state, { floorId: floor.value }); update(); });
     form.append(labelled(t.floorLabel, floor, "floor"));
 
     const anchor = el("select");
     anchor.append(Object.assign(el("option", undefined, t.anchorNone), { value: "" }));
     for (const a of choices().anchors) anchor.append(Object.assign(el("option", undefined, pick(a.labels, lang)), { value: a.id }));
     anchor.value = draft.nearPoiId;
-    anchor.addEventListener("change", () => { draft = { ...draft, nearPoiId: anchor.value }; update(); });
+    anchor.addEventListener("change", () => { state = withDraft(state, { nearPoiId: anchor.value }); update(); });
     form.append(labelled(t.anchorLabel, anchor, "anchor"));
 
     const entrance = textInput();
     entrance.value = draft.entranceWording;
-    entrance.addEventListener("input", () => { draft = { ...draft, entranceWording: entrance.value }; update(); });
+    entrance.addEventListener("input", () => { state = withDraft(state, { entranceWording: entrance.value }); update(); });
     form.append(labelled(t.entranceLabel, entrance, "entrance"));
 
     const gates = el("select");
     gates.append(Object.assign(el("option", undefined, t.floorPlaceholder), { value: "" }));
     for (const g of ["inside", "outside", "not_sure"] as const) gates.append(Object.assign(el("option", undefined, t.gates[g]), { value: g }));
     gates.value = draft.insideGates;
-    gates.addEventListener("change", () => { draft = { ...draft, insideGates: gates.value as MerchantDraft["insideGates"] }; update(); });
+    gates.addEventListener("change", () => { state = withDraft(state, { insideGates: gates.value as MerchantDraft["insideGates"] }); update(); });
     form.append(labelled(t.gatesLabel, gates, "gates"));
 
     const hours = textInput();
     hours.value = draft.hoursText;
-    hours.addEventListener("input", () => { draft = { ...draft, hoursText: hours.value }; update(); });
+    hours.addEventListener("input", () => { state = withDraft(state, { hoursText: hours.value }); update(); });
     form.append(labelled(t.hoursLabel, hours, "hours"));
 
     const hoursAsOf = textInput("date");
     hoursAsOf.value = draft.hoursAsOf;
-    hoursAsOf.addEventListener("input", () => { draft = { ...draft, hoursAsOf: hoursAsOf.value }; update(); });
+    hoursAsOf.addEventListener("input", () => { state = withDraft(state, { hoursAsOf: hoursAsOf.value }); update(); });
     form.append(labelled(t.hoursAsOfLabel, hoursAsOf, "hours-as-of"));
 
     const url = textInput("url");
     url.value = draft.url;
-    url.addEventListener("input", () => { draft = { ...draft, url: url.value }; update(); });
+    url.addEventListener("input", () => { state = withDraft(state, { url: url.value }); update(); });
     form.append(labelled(t.urlLabel, url, "url"));
 
     const contactKind = el("select");
     for (const k of ["email", "phone"] as const) contactKind.append(Object.assign(el("option", undefined, t.contactKinds[k]), { value: k }));
     contactKind.value = draft.contactKind;
-    contactKind.addEventListener("change", () => { draft = { ...draft, contactKind: contactKind.value as MerchantDraft["contactKind"] }; update(); });
+    contactKind.addEventListener("change", () => { state = withDraft(state, { contactKind: contactKind.value as MerchantDraft["contactKind"] }); update(); });
     const contactValue = textInput();
     contactValue.value = draft.contactValue;
-    contactValue.addEventListener("input", () => { draft = { ...draft, contactValue: contactValue.value }; update(); });
+    contactValue.addEventListener("input", () => { state = withDraft(state, { contactValue: contactValue.value }); update(); });
     const contactRow = el("div", "field");
     const contactLabel = el("label", undefined, t.contactLabel);
     contactLabel.htmlFor = "contact-value";
@@ -217,7 +215,8 @@ function mount(): void {
     consent.type = "checkbox";
     consent.id = "consent";
     consent.checked = draft.consent;
-    consent.addEventListener("change", () => { draft = { ...draft, consent: consent.checked }; update(); });
+    // The tick time lives in the state's clock, so a later re-render or language switch keeps it.
+    consent.addEventListener("change", () => { state = withConsent(state, consent.checked); update(); });
     const consentRow = el("div", "field consent");
     const consentLabel = el("label", undefined, consentText(lang, MERCHANT_TERMS_VERSION));
     consentLabel.htmlFor = "consent";
@@ -256,7 +255,12 @@ function mount(): void {
           problems.append(list);
         }
         if (found.length === 0) {
-          current = submissionFile(buildSubmission(draftOf(), choices(), { stationFolder: station.folder, clientRequestId: requestId, submittedAt: submittedAt }));
+          current = submissionFile(buildSubmission(draftOf(), choices(), {
+            stationFolder: station.folder,
+            clientRequestId: state.clock.clientRequestId,
+            submittedAt: state.clock.submittedAt,
+            consentAcceptedAt: state.clock.consentAcceptedAt,
+          }));
           previewText.textContent = current;
         }
       }
@@ -264,8 +268,6 @@ function mount(): void {
       download.disabled = current === null;
     }
 
-    const requestId = newRequestId();
-    const submittedAt = new Date().toISOString();
     copy.addEventListener("click", () => {
       if (current === null) return;
       void navigator.clipboard?.writeText(current);
@@ -276,7 +278,7 @@ function mount(): void {
       const blob = new Blob([current], { type: "application/json" });
       const link = el("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `merchant-submission-${station.folder}-${requestId.slice(0, 8)}.json`;
+      link.download = `merchant-submission-${station.folder}-${state.clock.clientRequestId.slice(0, 8)}.json`;
       link.click();
       URL.revokeObjectURL(link.href);
     });

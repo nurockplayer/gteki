@@ -38,7 +38,7 @@ this page is the shape that the form writes and the receiving side reads.
 
 | Field | Rule |
 | --- | --- |
-| `clientRequestId` | The form's own id, so a resent file can be recognised. **Never** used as the source id. |
+| `clientRequestId` | The form's own id, so a resent file can be recognised. **Never** used as the source id. Generated once per form session and kept through every re-render and language switch. |
 | `submittedAt` | The device clock. The receiver records its own receipt time; a disagreement is an anomaly flag (§5.4). |
 | `station.id` / `station.folder` | `station.id` from the station's `station.json`; `folder` names the directory, so the receiver finds the bundle. |
 | `shop.names` | Exactly one entry: the language and the name as printed. No translation, no invented romaji. |
@@ -51,7 +51,7 @@ this page is the shape that the form writes and the receiving side reads.
 | `hours` | Free text plus the date it is from; `null` when the shop gives none. Text without a date, or a date without text, is a validation error: a dated statement is all we publish, never "open now" (OD-32). |
 | `url` | The shop's own page, `http(s)` only, or `null`. |
 | `contact` | One point: e-mail or phone. It must stay out of every public file; the receiver keeps it in the private acceptance record only. |
-| `consent` | The terms version the shop ticked. The receiver refuses a version it does not hold. |
+| `consent` | The terms version the shop ticked, and `acceptedAt`: the moment the box was ticked (kept through re-renders and language switches, cleared by unticking), never the preview time. The receiver refuses a version it does not hold. |
 
 The document has no field for a position, a connector, a route, `paid`, or an open/closed status. A submission
 never creates a route and never claims current status.
@@ -67,9 +67,8 @@ The receiving side (not built) adds four values and derives the rest:
 | Terms page | The public, versioned terms page the grant points at. |
 | Automatic checks | The spec §5 results, stored in the private queue. |
 
-`sourceRecordDraft()` (`apps/web/src/merchant/submission.ts`) turns a receipt into the `Source` one submission
-becomes, and `merchantMethod()` writes the `evidence.method` prefix the UI keys its "merchant-submitted" label
-on. Both refuse a missing acceptance record, terms page or malformed id instead of shipping an empty URL.
+Building the `Source` entry, the `evidence.method` prefix and the submission receipt is the receiving side's
+work (`docs/research/merchants/merchant-self-service-spec.md` §5–§6), not this form's.
 
 The form never writes station files: the station writer merges the submission and leaves `connectorNodeIds`,
 `displayPosition` and `paid` as they are until entrance evidence is aligned.
