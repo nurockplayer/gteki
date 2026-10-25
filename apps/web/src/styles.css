@@ -121,6 +121,10 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .card .pace-note { margin-top: 4px; font-size: 12px; }
 .card .freshness-reason { margin-top: 2px; font-size: 12px; }
 .card .freshness-reason.warn { color: #ffd59a; }
+/* Printed shop hours (OD-32): the page's own line breaks, then the date GT-Eki read it. */
+.poi-hours { margin-top: 8px; }
+.poi-hours .hours-text { font-size: 12px; line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
+.poi-hours .hours-asof { margin-top: 2px; font-size: 11px; }
 .badges { display: flex; flex-wrap: wrap; gap: 5px; margin: 10px 0; }
 .badge { font-size: 11px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); }
 .badge.warn { color: #ffd59a; border-color: rgba(255, 179, 71, 0.5); background: rgba(255, 179, 71, 0.1); }
