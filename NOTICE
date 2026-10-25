@@ -137,6 +137,9 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        抽出し、検索用に再構成（「未確認・経路なし」の注記を追加）. The other
        entries in those files are facts-only references (4.9). Literal values in
        docs/gis/poi/ stay "no licence grant" (REUSE 4g) until #124 is applied.
+       Shipped in stations/shinjuku/gteki/ (#214): the same shop name and
+       location text as one search-only shop POI, no position, floor,
+       connector or route, with the change notice above.
 
    4.7 Tokyo Bureau of Urban Development, S03 「新宿駅周辺の施設情報等」 - LicenseRef-S03
        Station data carries the plain gate and platform names imported from
@@ -213,6 +216,12 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        JSON files record their sources in sources[]; Markdown notes and logs
        cite them inline by URL. No page text, map, image, layout or logo is
        copied.
+       Shipped station data (#214): 583 of those merchant listings (Toei,
+       東京地下鉄, ルミネエスト新宿, ルミネ新宿, ニュウマン新宿, 小田急百貨店 新宿店)
+       now ship as search-only shop POIs in stations/shinjuku/gteki/. Each
+       keeps the printed name and, in its notes, the printed floor or area
+       label; no position, floor id, connector or route, and the current
+       status is stated as unknown.
        Line POI data (lines-lead WP2/WP3, 2026-10-24):
        docs/research/lines/ikebukuro-line-pois.json and its contract. Gate,
        lift, escalator and exit names and end pairs as printed on Tokyo Metro
