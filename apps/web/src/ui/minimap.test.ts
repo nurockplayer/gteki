@@ -569,6 +569,19 @@ describe("Minimap floor picker (#220)", () => {
     expect([...select(map).options].map((option) => option.textContent)).toEqual(["Follow player", "B1", "1F", "B1"]);
   });
 
+  it("draws the picked floor's connector hint when a new route arrives with the player's floor unknown", () => {
+    const map = create();
+    pick(map, "concourse");
+    // Mid-stairs: the player's floor is unknown, so only the picked floor can name the next change.
+    pose = { ...pose!, up: 100 };
+    tick();
+    map.setRoute({ points: upRoute, steps: upSteps }, null);
+    const marker = map.el.querySelector<SVGElement>(".minimap-connector-marker")!;
+    expect(marker.style.display).toBe("");
+    expect(marker.getAttribute("transform")).toBe("translate(115 95)");
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
+  });
+
   it("follows the player's floor until a floor is picked, then returns on follow", () => {
     const map = create();
     expect(level(map)).toBe("B1");
