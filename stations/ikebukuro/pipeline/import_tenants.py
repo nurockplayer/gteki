@@ -13,17 +13,17 @@ and every other directory field are left out. A row without a printed name, floo
 source is skipped and counted.
 
 The evidence cites the floor page the input names, so those pages must be registered as
-facts-only sources. The converter adds any that are missing, reusing the publisher, decision
-record (#377, OD-34) and retrieval time of the store's existing directory source; it inserts
-them next to it in both files and leaves every other byte alone. Both outputs are deterministic,
-so a re-run is a no-op.
+facts-only sources. The converter adds any that are missing after the store's existing
+directory source, reusing its publisher, decision record (#377, OD-34) and retrieval time.
 """
 import json
 import os
-import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from build_station import write_json  # noqa: E402  (the station files' writer: one-space indent, decisions on one line)
+
 ROOT = os.path.dirname(HERE)
 REPO = os.path.dirname(os.path.dirname(ROOT))
 SRC = os.path.join(REPO, "docs", "research", "merchants", "ikebukuro-tobu-dept-tenants.json")
@@ -34,22 +34,9 @@ DIRECTORY_SOURCE = "tobu-dept-ikebukuro-2026-10"  # the store's top page, alread
 METHOD = "facts-only tenant directory listing (OD-34), UNVERIFIED"
 
 
-def render(obj, indent=1):
-    """The station files' layout: one-space indent steps, decisions on one line (build_station.write_json)."""
-    text = json.dumps(obj, ensure_ascii=False, indent=indent)
-    return re.sub(r'"decision": \{\n\s+"url": ("[^"]*"),\n\s+"date": ("[^"]*")\n\s+\}',
-                  r'"decision": { "url": \1, "date": \2 }', text)
-
-
-def write(path, text):
-    tmp = path + ".tmp"
-    try:
-        with open(tmp, "w", encoding="utf-8") as f:
-            f.write(text)
-        os.replace(tmp, path)
-    finally:
-        if os.path.exists(tmp):
-            os.remove(tmp)
+def load(path):
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
 
 
 def tenant(row, poi_id, checked):
@@ -67,13 +54,13 @@ def tenant(row, poi_id, checked):
     return out
 
 
-def register_floor_sources(text, research):
-    """Insert the floor pages the input cites after the store's directory source; return the new text."""
-    data = json.loads(text)
-    top = next((s for s in data["sources"] if s["id"] == DIRECTORY_SOURCE), None)
+def add_floor_sources(file, research):
+    """Register the floor pages the input cites after the store's directory source."""
+    sources = file["sources"]
+    top = next((s for s in sources if s["id"] == DIRECTORY_SOURCE), None)
     if top is None:
         sys.exit(f"FAIL: {DIRECTORY_SOURCE} is not registered as a source")
-    known = {s["id"] for s in data["sources"]}
+    known = {s["id"] for s in sources}
     entries = []
     for s in research["sources"]:
         if s["id"] in known:
@@ -94,30 +81,19 @@ def register_floor_sources(text, research):
             "datasetDate": None,
             "notes": "Tenant names, printed floors/categories and store IDs only; no descriptive directory text reproduced.",
         })
-    if not entries:
-        return text, known, 0
-    # The directory source is not the last entry, so its closing "  }" is followed by the list comma.
-    at = text.index(f'"id": "{DIRECTORY_SOURCE}"')
-    end = text.index("\n  }", at) + len("\n  }")
-    assert text[end] == ",", f"{DIRECTORY_SOURCE} is the last source; cannot insert after it"
-    block = ",\n" + ",\n".join("\n".join("  " + line for line in render(e).split("\n")) for e in entries)
-    out = text[:end] + block + text[end:]
-    # The insertion must only add those sources, in order.
-    expected = []
-    for s in data["sources"]:
-        expected.append(s)
-        if s["id"] == DIRECTORY_SOURCE:
-            expected.extend(entries)
-    assert json.loads(out)["sources"] == expected, "source insertion corrupted the file"
-    return out, known | {e["id"] for e in entries}, len(entries)
+    at = sources.index(top) + 1
+    sources[at:at] = entries
+    return {s["id"] for s in sources}, len(entries)
 
 
 def main():
-    research = json.load(open(SRC, encoding="utf-8"))
-    graph_text, source_ids, added = register_floor_sources(open(GRAPH_SRC, encoding="utf-8").read(), research)
-    station_text, station_ids, station_added = register_floor_sources(open(STATION, encoding="utf-8").read(), research)
+    research = load(SRC)
+    graph_src = load(GRAPH_SRC)
+    station = load(STATION)
+    source_ids, added = add_floor_sources(graph_src, research)
+    station_ids, station_added = add_floor_sources(station, research)
     assert station_ids == source_ids and station_added == added, "station.json and graph.src.json disagree"
-    pois = json.load(open(os.path.join(ROOT, "gteki", "pois.json"), encoding="utf-8"))["pois"]
+    pois = load(os.path.join(ROOT, "gteki", "pois.json"))["pois"]
     poi_id = research["storePoiId"]
     if not any(p["id"] == poi_id and p["category"] == "shop" for p in pois):
         sys.exit(f"FAIL: store POI {poi_id} is not a shop POI in pois.json")
@@ -134,19 +110,19 @@ def main():
             tenants.append(tenant(row, poi_id, checked))
 
     outputs = (
-        (GRAPH_SRC, graph_text),
-        (STATION, station_text),
-        (OUT, render({"schema": "gteki.tenants/0.1", "tenants": tenants})),
+        (GRAPH_SRC, graph_src),
+        (STATION, station),
+        (OUT, {"schema": "gteki.tenants/0.1", "tenants": tenants}),
     )
-    stale = [(p, text) for p, text in outputs
-             if not os.path.exists(p) or open(p, encoding="utf-8").read() != text]
+    stale = [(path, obj) for path, obj in outputs
+             if not os.path.exists(path) or load(path) != obj]
     if "--check" in sys.argv:
         if stale:
             print("FAIL: outputs would change: " + ", ".join(os.path.relpath(p, REPO) for p, _ in stale))
             sys.exit(1)
     else:
-        for path, text in stale:
-            write(path, text)
+        for path, obj in stale:
+            write_json(path, obj, indent=1)
 
     print(f"OK: {len(tenants)} tenants from {len(research['tenants'])} rows, "
           f"{len(skipped)} skipped, {added} floor sources added")
