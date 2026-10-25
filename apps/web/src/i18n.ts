@@ -16,6 +16,9 @@ const STRINGS = {
     minimapFloor: "表示する階",
     minimapFloorFollow: "追従",
     minimapSchematic: "概略歩行経路（実際の構内図ではありません）",
+    minimapExpand: "大地図を開く",
+    minimapLargeMap: "現在の階の大地図",
+    minimapClose: "大地図を閉じる",
     minimapDestination: (floor: string) => `目的地のある階：${floor}`,
     minimapNextFloor: (floor: string, mode: string) => `${mode}${floor}へ`,
     minimapMode: {
@@ -210,6 +213,9 @@ const STRINGS = {
     minimapFloor: "Floor shown",
     minimapFloorFollow: "Follow player",
     minimapSchematic: "Schematic walk graph (not a floor plan)",
+    minimapExpand: "Open large map",
+    minimapLargeMap: "Large map of the current floor",
+    minimapClose: "Close large map",
     minimapDestination: (floor: string) => `Destination floor: ${floor}`,
     minimapNextFloor: (floor: string, mode: string) => `To ${floor} ${mode}`,
     minimapMode: {
