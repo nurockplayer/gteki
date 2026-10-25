@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, clampDistance, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
+import { DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
   it("stays under a 2.6 m ceiling at the default pitch and distance", () => {
@@ -265,6 +265,45 @@ describe("slope lens", () => {
   it("is frame-rate independent", () => {
     const at = (hz: number) => run(NO_SLOPE, 0.5, 0.3, 1 / hz).speed;
     expect(at(30)).toBeCloseTo(at(144), 1);
+  });
+
+  it("keeps signed direction separately so reversing does not cancel the absolute-speed detector", () => {
+    let s = run(NO_SLOPE, -0.4, 1);
+    expect(s.velocity).toBeLessThan(-0.39);
+    s = run(s, 0.4, 0.15);
+    expect(s.velocity).toBeGreaterThan(0);
+    expect(s.speed).toBeGreaterThan(0.39);
+    expect(s.on).toBe(true);
+  });
+
+  it("recognises an explicit stair span even on a snap and keeps the ordinary landing hold", () => {
+    let s = stepSlope(NO_SLOPE, 0, 0, true);
+    expect(s.on).toBe(true);
+    for (let frame = 0; frame < 120; frame++) s = stepSlope(s, 0.05 / 60, 1 / 60, true);
+    expect(s.speed).toBeLessThan(SLOPE.enter);
+    s = run(s, 0, SLOPE.hold - 1 / 60);
+    expect(s.on).toBe(true);
+    s = run(s, 0, 2 / 60);
+    expect(s.on).toBe(false);
+  });
+});
+
+describe("descent aim", () => {
+  it("leaves level/upward motion and non-slope drift unchanged", () => {
+    expect(descentAimDrop(NO_SLOPE)).toBe(0);
+    expect(descentAimDrop({ ...NO_SLOPE, on: true, velocity: 0.5 })).toBe(0);
+    expect(descentAimDrop({ ...NO_SLOPE, velocity: -0.1 })).toBe(0);
+  });
+
+  it("builds a bounded downward aim smoothly with descent speed", () => {
+    let previous = 0;
+    for (let speed = 0; speed <= 2; speed += 0.01) {
+      const drop = descentAimDrop({ ...NO_SLOPE, on: true, velocity: -speed });
+      expect(drop).toBeGreaterThanOrEqual(previous);
+      expect(drop).toBeLessThanOrEqual(DESCENT.maxDrop);
+      previous = drop;
+    }
+    expect(descentAimDrop({ ...NO_SLOPE, on: true, velocity: -0.001 })).toBeLessThan(0.001);
   });
 });
 

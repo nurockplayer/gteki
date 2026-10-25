@@ -1,7 +1,26 @@
 {
   "schema": "gteki.station/0.1",
   "note": "Ikebukuro batch 3 facts-only merchant transcription (Tokyo Metro station shops). Entries are unverified directory listings; locations and entrances are not route evidence.",
-  "sources": [],
+  "sources": [
+    {
+      "id": "tokyometro-ikebukuro-shops-2026-10",
+      "title": "東京メトロ 池袋駅 施設・店舗",
+      "publisher": "東京地下鉄",
+      "url": "https://www.tokyometro.jp/station/ikebukuro/shop/index.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      },
+      "attribution": "東京メトロ 池袋駅 施設・店舗 (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T00:40:00Z",
+      "datasetDate": null,
+      "notes": "Shop names and the facility label (Echika池袋) only, read as facts (#211 DR-MR-01). No text, logos, photos or layout reproduced. Page undated."
+    }
+  ],
   "pois": [
     {
       "id": "shop-ikb-metro-001",
