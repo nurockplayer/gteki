@@ -68,8 +68,18 @@ const CHECKED = "2026-10-20";
  */
 const PUBLICATION_PERIOD_END = "2027-03-12";
 const PERIOD_NOTE = `Publication period (公開提供期限): limited publication for 公共交通オープンデータチャレンジ2026 until ${PUBLICATION_PERIOD_END}, per the dataset page. This is the provider's publication period, not a confirmed end of any licence; reuse of derived data after that date is unconfirmed with the provider (see coverage gap:reuse-after-publication). Licence basis for this resource is unconfirmed: it ships under the Owner's override at the #16 merge, and PDL 1.0 is not treated as covering it (Owner decision #39, Q11 = No).`;
-/** Honest licence value for the E27 resources: validate.ts requires a data source to name a licence with an http(s) link, so link the provider's dataset page. */
-const E27_LICENSE = { name: "Licence unconfirmed — published under the Owner's override (#16)", url: "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45" };
+/**
+ * Honest licence value for the E27 resources: validate.ts requires a data source to name a licence with an
+ * http(s) link, so link the provider's dataset page. Both languages state the same status (#297); the ja
+ * text reuses the credits dialog's controlled wording for this right.
+ */
+const E27_LICENSE = {
+  name: [
+    { lang: "ja", text: "ライセンス未確認・オーナー判断により公開（#16）" },
+    { lang: "en", text: "Licence unconfirmed — published under the Owner's override (#16)" },
+  ],
+  url: "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45",
+};
 // #130: the E27 resources ship under the Owner's recorded override (the #16 merge), not under a confirmed licence.
 const E27_OVERRIDE = { decision: "https://github.com/nurockplayer/gteki/pull/16#issuecomment-6313815757", date: "2026-10-21" };
 const SRC_NWD = "mlit-hokonavi-e27-nwd";
