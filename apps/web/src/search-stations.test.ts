@@ -129,13 +129,30 @@ describe("core search on the real Shinjuku POIs (docs/stations/shinjuku/search-e
     if (q === "出口") expect(e27.map((h) => h.score)).toEqual(e27Ids.map(() => 105));
   });
 
-  it.each(S03_ONLY)("%s returns only search-only S03 POIs (no route)", (q) => {
+  /**
+   * #214: a merchant directory listing whose printed name contains the operator matches these queries too
+   * (小田急百貨店 新宿店, ミスターミニット 新宿東口店). Such a hit is a shop POI: one facts-only directory
+   * source, no connector and no route, exactly like an S03 name.
+   */
+  const SHOP_ONLY_HITS: Record<string, string[]> = { 小田急: ["shop-sjk-odakyudept"], 東口: ["shop-sjk-metro-004"] };
+
+  it.each(S03_ONLY)("%s returns only search-only POIs (S03 names and merchant listings; no route)", (q) => {
     const s = strong(q);
+    const shops = SHOP_ONLY_HITS[q] ?? [];
     expect(s.length).toBeGreaterThan(0);
     for (const h of s) {
-      expect(h.poi.evidence.sourceIds, h.poi.id).toEqual(["tokyo-s03-zip"]);
+      // Neither an S03 name nor a merchant listing is ever routable.
       expect(h.poi.connectorNodeIds, h.poi.id).toEqual([]);
+      if (h.poi.category === "shop") {
+        // Only the recorded listing may appear, and it cites its own single directory source.
+        expect(shops, `${q}: unexpected shop hit ${h.poi.id}`).toContain(h.poi.id);
+        expect(h.poi.evidence.sourceIds, h.poi.id).toHaveLength(1);
+      } else {
+        expect(h.poi.evidence.sourceIds, h.poi.id).toEqual(["tokyo-s03-zip"]);
+      }
     }
+    expect(s.filter((h) => h.poi.category !== "shop").length, `${q}: the S03 names are still expected`).toBeGreaterThan(0);
+    expect(ids(s.filter((h) => h.poi.category === "shop")), q).toEqual([...shops].sort());
   });
 
   it.each(NO_HIT)("%s returns no hit at all", (q) => {
