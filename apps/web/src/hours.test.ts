@@ -19,6 +19,11 @@ describe("printed hours (OD-32)", () => {
     expect(printedHours(hours(), at("2027-04-23"))).toBeNull(); // 181 days later
   });
 
+  it("hides a reading dated after now rather than show a future date", () => {
+    expect(printedHours(hours({ retrievedAt: "2026-10-25" }), at("2026-10-24"))).toBeNull();
+    expect(printedHours(hours({ retrievedAt: "2026-10-24" }), at("2026-10-24"))).toBe("10:00～21:00");
+  });
+
   it("hides rows where the page printed nothing, and unreadable dates", () => {
     expect(printedHours(hours({ status: "UNKNOWN" }), at("2026-10-24"))).toBeNull();
     expect(printedHours(hours({ text: "  " }), at("2026-10-24"))).toBeNull();
