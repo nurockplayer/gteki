@@ -19,6 +19,24 @@
       "retrievedAt": "2026-10-25T08:43:23Z",
       "datasetDate": null,
       "notes": "Building names and printed floor labels only. No copyright, reproduction or content-use clause was found on the pages inspected (OD-34, fifth round, director ruling 2026-10-25 on #502: no quoted ban, facts only allowed); docs/research/merchants/dept-store-terms-2026-10-25.md item 3. The floor guide is JavaScript-only: the floors below are the distinct facility_floor_name values of /contents2/floormap/{003,005,074}/floor_map_list.json, read on 2026-10-25 08:42:41–08:43:23Z. No text, logos, photos, maps or layouts reproduced."
+    },
+    {
+      "id": "isetan-shinjuku-floorguide-2026-10",
+      "title": "伊勢丹新宿店 本館・メンズ館 フロアガイド | mistore.jp",
+      "publisher": "株式会社三越伊勢丹ホールディングス",
+      "url": "https://www.mistore.jp/store/shinjuku/shops.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/522",
+        "date": "2026-10-25"
+      },
+      "attribution": "伊勢丹新宿店 本館 / メンズ館 フロアガイド (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-25T10:16:00Z",
+      "datasetDate": null,
+      "notes": "Printed store name, the two building names and the printed floor labels only; no floor-guide wording, shop list, photo, map or logo is reproduced. Class: facts only (OD-34, director ruling 2026-10-25 on #522, option B on condition of the scope clause); the グループID規約 第1条 and 第2条 scope clause was read with curl from https://www.imhds.co.jp/corporate/group-id/index.html at 2026-10-25T10:44:02Z (HTTP 200, 112,469 bytes) and shows the agreement governs registered グループID holders, not anonymous visitors. The floor guides themselves do not answer a direct request from this host (https://www.mistore.jp/ and /store/shinjuku/shops.html both returned no HTTP response at 10:31Z and 10:32Z), so they were read by proxy (oracle-ego, read-only) in runs 10:11–10:16Z and 10:34–10:44Z; the evidence record is docs/research/merchants/dept-store-terms-2026-10-25.md §7 (added by #522; not on main when these rows were imported). Publisher as printed in that record: the group ID terms name 株式会社三越伊勢丹ホールディングス as 当社 and the site certificate carries O=Isetan Mitsukoshi Holdings Ltd.; the operating company of the store is not printed there, so the POI notes carry no operator."
     }
   ],
   "pois": [
@@ -243,6 +261,70 @@
         {
           "lang": "en",
           "text": "Shinjuku Marui Men (operator: Marui Co., Ltd.; the source footer prints © MARUI CO.,LTD.). The floor guide lists 1F–8F. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-isetan-honkan",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "伊勢丹新宿店 本館"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "isetan-shinjuku-floorguide-2026-10"
+        ],
+        "method": "facts-only floor guide (OD-34 ruling 2026-10-25 on #522, scope clause), proxy read, UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-25"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "伊勢丹新宿店 本館。出典は店舗名「伊勢丹新宿店」と棟名「本館」を別に印字しており、この名前は両方を並べたものです。フロアガイドの掲載階は B2F・B1F・1F〜7F・RF。運営会社名は出典の用語記録に印字がないため記載していません。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。フロアガイドの文言・店舗一覧は写していません。"
+        },
+        {
+          "lang": "en",
+          "text": "Isetan Shinjuku Honkan (main building). The source prints the store name 伊勢丹新宿店 and the building name 本館 separately; this name joins the two. The floor guide lists B2F・B1F・1F–7F・RF. No operator is stated: the terms record does not print the operating company's name. Location and entrance not verified (search only, no route). Current status unknown. No floor-guide wording and no shop list is copied."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-isetan-mens",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "伊勢丹新宿店 メンズ館"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "isetan-shinjuku-floorguide-2026-10"
+        ],
+        "method": "facts-only floor guide (OD-34 ruling 2026-10-25 on #522, scope clause), proxy read, UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-25"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "伊勢丹新宿店 メンズ館。出典は店舗名「伊勢丹新宿店」と棟名「メンズ館」を別に印字しており、この名前は両方を並べたものです。フロアガイドの掲載階は B1F・1F〜8F・RF（ナビの印字は 8F と RF を「8F/RF」と併記）。運営会社名は出典の用語記録に印字がないため記載していません。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。フロアガイドの文言・店舗一覧は写していません。"
+        },
+        {
+          "lang": "en",
+          "text": "Isetan Shinjuku Mens (mens' building). The source prints the store name 伊勢丹新宿店 and the building name メンズ館 separately; this name joins the two. The floor guide lists B1F・1F–8F・RF, with 8F and RF printed as one 「8F/RF」 label in the nav. No operator is stated: the terms record does not print the operating company's name. Location and entrance not verified (search only, no route). Current status unknown. No floor-guide wording and no shop list is copied."
         }
       ]
     }
