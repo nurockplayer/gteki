@@ -4,7 +4,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { create as readFont } from "fontkit";
 import { describe, expect, it } from "vitest";
-import { assertGlyphCoverage, repoRoot, requiredGlyphs } from "./fonts/sign-glyphs.mjs";
+import { assertGlyphCoverage, JOYO_KANJI, repoRoot, requiredGlyphs } from "./fonts/sign-glyphs.mjs";
 import { gtekiStations } from "../apps/web/stations-plugin.ts";
 
 const dir = path.join(repoRoot, "assets/fonts/noto-sans-jp");
@@ -16,6 +16,11 @@ describe("pinned sign font", () => {
   it("covers current station text; new characters require pnpm fonts:subset", () => {
     expect(() => assertGlyphCoverage(requiredGlyphs(), glyphs)).not.toThrow();
     expect([...glyphs]).toEqual([...new Set(glyphs)].sort((a, b) => a.codePointAt(0) - b.codePointAt(0)));
+  });
+
+  it("commits the whole 常用漢字表, once each", () => {
+    expect([...JOYO_KANJI]).toHaveLength(2136);
+    expect(new Set(JOYO_KANJI).size).toBe(2136);
   });
 
   it("finds escaped literals and nested templates, JSON text and a new kanji", () => {
