@@ -7,7 +7,7 @@ import { parseS03EntityId } from './s03-positions.js';
 import { PATH_RECORD_LABELS, PATH_REASON, S03_PATHS_EVIDENCE, S03_PATHS_STATION_PATH, buildPaths, type PathInputs } from './s03-paths.js';
 import { stationEnuProjector } from './station-enu.js';
 import { toolFingerprint } from './provenance.js';
-import { readZip } from './zip.js';
+import { readZip, type ZipEntry } from './zip.js';
 import {
   S03_DATUM, S03_FLOOR_ORDINALS, assertS03Bytes, floorMappingSha256, parseS03Members, residualStats,
   type Point2, type Project,
@@ -63,6 +63,25 @@ export function selectNavGraphMembers<T extends { name: string }>(entries: reado
   if (!members.some(entry => /^v5_nav\.json$/i.test(basename(entry.name)))) throw new Error('S03 nav graph: the input carries no v5_nav.json member');
   // Count Path members specifically, so an unrelated extra archive member cannot read as a Path exclusion.
   return { members, excluded_path_members: entries.filter(entry => PATH_GEOJSON_MEMBER.test(basename(entry.name))).length };
+}
+
+/**
+ * Read the archive with the selector applied inside `readZip`, so every member the graph does not take is skipped by the
+ * reader and never decompressed: a Path GeoJSON member's bytes, corrupt or not, are never opened or parsed. The Path
+ * count comes from the names the reader skipped, since the returned entries no longer carry them; the selection then
+ * re-checks that no Path member survived and that `v5_nav.json` is present.
+ */
+export async function readNavGraphMembers(zipBytes: Buffer): Promise<{ members: ZipEntry[]; excluded_path_members: number }> {
+  let excludedPathMembers = 0;
+  const entries = await readZip(zipBytes, {
+    legacyFileNameEncoding: 'shift_jis',
+    include: (name) => {
+      const base = basename(name);
+      if (PATH_GEOJSON_MEMBER.test(base)) { excludedPathMembers += 1; return false; }
+      return NAV_GRAPH_MEMBER.test(base);
+    },
+  });
+  return { members: selectNavGraphMembers(entries).members, excluded_path_members: excludedPathMembers };
 }
 
 /**
@@ -279,7 +298,7 @@ export function buildNavGraphReceipt(args: {
 export async function s03NavGraph() {
   const stored = await getStoredSource(S03_NAV_GRAPH_SOURCE_ID), zipBytes = await readFile(stored.path);
   assertS03Bytes(zipBytes, stored.record);
-  const { members, excluded_path_members } = selectNavGraphMembers(await readZip(zipBytes, { legacyFileNameEncoding: 'shift_jis' }));
+  const { members, excluded_path_members } = await readNavGraphMembers(zipBytes);
   const inputs = parseS03Members(members);
   const stationBytes = await readFile(join(repoRoot, NAV_GRAPH_STATION_PATH));
   const station = JSON.parse(stationBytes.toString('utf8')) as { station?: { origin?: { lat?: unknown; lon?: unknown; crs?: unknown } } };

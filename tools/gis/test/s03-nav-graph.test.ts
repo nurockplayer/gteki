@@ -5,11 +5,12 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   DROPPED_LEVELS, PATH_GEOJSON_MEMBER, S03_NAV_GRAPH_POLICY, assertNoPathGeojson, buildNavGraph, buildNavGraphReceipt,
-  loadGateTags, navGraphIdentity, selectNavGraphMembers, writeHeldDocument,
+  loadGateTags, navGraphIdentity, readNavGraphMembers, selectNavGraphMembers, writeHeldDocument,
   type NavGraphDigestFacts, type NavGraphInputs, type S03GateTag,
 } from '../src/s03-nav-graph.js';
 import { PATH_REASON } from '../src/s03-paths.js';
 import type { Affine, Point2, S03Inputs, S03Link } from '../src/s03-transform.js';
+import { readZip } from '../src/zip.js';
 
 const nav: Affine = [2, 0, 0, 2, 10, 20], drawing: Affine = [0.01, 0, 0, 0.01, 0, 0];
 /** The transform output is already treated as lon/lat, so station ENU is [lon, lat]. */
@@ -83,6 +84,34 @@ describe('S03 nav graph: level 64677 is dropped whole (synthetic only)', () => {
   });
 });
 
+/**
+ * Minimal in-memory, uncompressed ZIP; a member may declare DEFLATE while carrying bytes that are not a deflate stream.
+ * Only synthetic bytes are passed to it.
+ */
+function fixtureZip(entries: readonly { name: string; data: Buffer; method?: number }[]): Buffer {
+  const locals: Buffer[] = [], centrals: Buffer[] = [];
+  let offset = 0;
+  for (const entry of entries) {
+    const name = Buffer.from(entry.name), local = Buffer.alloc(30), central = Buffer.alloc(46), method = entry.method ?? 0;
+    let crc = 0xffffffff;
+    for (const b of entry.data) {
+      crc ^= b;
+      for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
+    }
+    crc = (crc ^ 0xffffffff) >>> 0;
+    local.writeUInt32LE(0x04034b50); local.writeUInt16LE(20, 4); local.writeUInt16LE(method, 8); local.writeUInt32LE(crc, 14);
+    local.writeUInt32LE(entry.data.length, 18); local.writeUInt32LE(entry.data.length, 22); local.writeUInt16LE(name.length, 26);
+    central.writeUInt32LE(0x02014b50); central.writeUInt16LE(20, 4); central.writeUInt16LE(20, 6); central.writeUInt16LE(method, 10); central.writeUInt32LE(crc, 16);
+    central.writeUInt32LE(entry.data.length, 20); central.writeUInt32LE(entry.data.length, 24); central.writeUInt16LE(name.length, 28); central.writeUInt32LE(offset, 42);
+    const chunk = Buffer.concat([local, name, entry.data]);
+    locals.push(chunk); centrals.push(Buffer.concat([central, name])); offset += chunk.length;
+  }
+  const directory = Buffer.concat(centrals), end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50); end.writeUInt16LE(entries.length, 8); end.writeUInt16LE(entries.length, 10);
+  end.writeUInt32LE(directory.length, 12); end.writeUInt32LE(offset, 16);
+  return Buffer.concat([...locals, directory, end]);
+}
+
 describe('S03 nav graph: Path GeoJSON is never an input', () => {
   it('rejects a Path GeoJSON member with the frame it carries', () => {
     expect(PATH_GEOJSON_MEMBER.test('path-level-geom-1F.geojson')).toBe(true);
@@ -97,6 +126,19 @@ describe('S03 nav graph: Path GeoJSON is never an input', () => {
     // Only Path members are counted; the unrelated README does not inflate the number.
     expect(excluded_path_members).toBe(2);
     expect(() => selectNavGraphMembers([{ name: 's/path-level-geom-1F.geojson' }])).toThrow(/carries no v5_nav\.json member/);
+  });
+  it('never opens a Path member: one whose bytes are not a deflate stream does not fail the graph read', async () => {
+    const zipBytes = fixtureZip([
+      { name: 'nested/v5_nav.json', data: Buffer.from('{}') },
+      { name: 'nested/com-map.geojson', data: Buffer.from('{}') },
+      { name: 'nested/geojson-level-geom-B1F.geojson', data: Buffer.from('{}') },
+      { name: 'nested/path-level-geom-1F.geojson', data: Buffer.from('{not a deflate stream'), method: 8 },
+    ]);
+    // Opened, that member fails to decompress; the graph read must never open it.
+    await expect(readZip(zipBytes, { legacyFileNameEncoding: 'shift_jis' })).rejects.toThrow();
+    const { members, excluded_path_members } = await readNavGraphMembers(zipBytes);
+    expect(members.map(entry => entry.name)).toEqual(['nested/v5_nav.json', 'nested/com-map.geojson', 'nested/geojson-level-geom-B1F.geojson']);
+    expect(excluded_path_members).toBe(1);
   });
 });
 
