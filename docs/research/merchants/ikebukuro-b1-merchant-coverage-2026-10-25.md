@@ -51,14 +51,15 @@ no POI in this table carries a `floorId` (all null) and nothing here asserts a l
 | 西武池袋駅 | seibu-shop.jp station portal | 5 rows: 2 shops + 1 heading + 2 non-shops | 2 (宝くじ 1F, 宝くじ 地下) |
 | 東京メトロ 駅構内店舗 | tokyometro.jp station shop page | 46 | 2 after lead review (LAWSON METRO'S, Wrapped Crepe Korot); 3 dropped as Echika duplicates; 2 dropped as outside the station; 24 names already present; 15 non-shop facilities already present as `atm-*` / `service-*` / `locker-*` POIs |
 
-The three batch-2 areas in this table hold 120 graph POIs (池袋ショッピングパーク 55 + 東武ホープセンター
-43 + エチカ池袋 22), while batch 2's research file has 118 entries. The two differ by exactly two, and
-both are ISP: the web-isp.co.jp floor guide lists 55 shops across 南館 / 北館 / レンガ通り and the graph
-holds 55, but batch 2 transcribed 53 of them. マツモトキヨシ (`shop-ikb-mr-004`) and スターバックス
-コーヒー 南館店 (`shop-ikb-mr-005`) came in with batch 1 (`ikebukuro-import-contract.md`, rows table,
-same `isp-floorguide-2026-10` source and 2026-10-24 check date) and are counted in neither batch 2's
-118 nor the 343 below. 東武ホープセンター (43) and エチカ池袋 (22) match batch 2 exactly. So those
-120 POIs = 118 batch-2 entries + 2 earlier ISP POIs, and no graph POI stays unaccounted for.
+The three batch-2 areas in this table hold 120 graph POIs (池袋ショッピングパーク 55 +
+東武ホープセンター 43 + エチカ池袋 22), while batch 2's research file has 118 entries. The two
+differ by exactly two, and both are ISP: the web-isp.co.jp floor guide lists 55 shops across
+南館 / 北館 / レンガ通り and the graph holds 55, but batch 2 transcribed 53 of them.
+マツモトキヨシ (`shop-ikb-mr-004`) and スターバックス コーヒー 南館店 (`shop-ikb-mr-005`) came in
+with batch 1 (`ikebukuro-import-contract.md`, rows table, same `isp-floorguide-2026-10` source and
+2026-10-24 check date) and are counted in neither batch 2's 118 nor the 343 below.
+東武ホープセンター (43) and エチカ池袋 (22) match batch 2 exactly. So those 120 POIs = 118 batch-2
+entries + 2 earlier ISP POIs, and no graph POI stays unaccounted for.
 
 The four Echika entries not imported: Patio de METRO and Tabio (retained in batch 1), Soup Stock
 Tokyo (duplicate of `shop-ikb-mr-001`), フレッシュネスバーガー (shopid 1088, its own page prints
@@ -81,13 +82,13 @@ The two 西武池袋駅 rows not imported are the 西武バス 池袋駅案内�
 
 ## GAPs
 
-- **Toei**: the Toei Ikebukuro station page returned an Incapsula bot challenge (GAP). Only two
-  GETs were made, on 2026-10-25 and ≥0.6 s apart, with a browser user agent rather than curl's
-  default string — a deviation from the batch fetch rule; the first answered with the challenge
-  and the second with a 404 carrying a challenge body. The probe's exact URL and response bodies
-  were not kept, so this record cannot re-derive the observation and no claim is made about Toei's
-  content. Nothing was bypassed, no Toei Ikebukuro shop or facility rows are read, and none are
-  imported; Toei store lists stay facts-only under OD-34 round 2 when reachable.
+- **Toei**: the Toei Ikebukuro station page returned an Incapsula bot challenge (GAP). The probe
+  made two GETs on 2026-10-25, ≥0.6 s apart, with a browser user agent rather than curl's default
+  string — a deviation from the batch fetch rule. Its exact URL, status codes and response bodies
+  were not recorded, so this line is the whole of what the audit can show and no claim is made
+  about what the page contains. Nothing was bypassed, no Toei Ikebukuro shop or facility rows are
+  read, and none are imported; Toei store lists stay facts-only under OD-34 round 2 when
+  reachable.
 - **No verified entrances**: all 348 shop POIs are search-only. #212's "at least a small batch of
   `shop` POIs is indexed; unproven entrances are search-only" is met; routes and scene placement
   remain GAP until a field check.
