@@ -24,6 +24,11 @@ Base: `origin/main` 7e23fc36 (2026-10-25).
   otherwise recorded as a GAP. `www.mistore.jp` still returns no HTTP response from this host
   (§GAP-1), so the 伊勢丹 access page was read from a Wayback copy of the same URL; the quote is
   the archived page's text and the snapshot date is recorded.
+- **Quotes.** A 「」 string is a continuous stretch of one printed line (or of consecutive printed
+  lines where the source breaks a sentence), with no words added, dropped or reordered. Section
+  headings and line labels (電車でお越しの方, 京王線 …) stay outside the quotation marks. Where a
+  source prints a list or a map legend (東武百貨店), it is marked as a transcription and listed in
+  printed order.
 - **Name matching (this is the whole of the mapping rule).** Each element name printed in the
   source is compared with the POI names in `stations/<station>/gteki/pois.json` after (a) dropping
   spaces, full-width or half-width, and (b) dropping a leading operator/line qualifier printed
@@ -38,36 +43,41 @@ Base: `origin/main` 7e23fc36 (2026-10-25).
 - **Verdicts** (the lead's ruling of 2026-10-25 applied here). **READY** requires both: (a) the
   printed text names the station element **exactly** as an existing POI names it, ignoring only
   operator prefixes and spaces; and (b) the printed text says the store entrance is at or directly
-  from that element — wording such as 直結, 正面, すぐ, 改札前. Anything else is **PARTIAL**, with
-  the reason. **FIELD** = nothing printed that could be used; the reason is given. A station-level
-  claim (「…駅直結」, 「新宿駅南口より徒歩1分」) is not a tie to an element; a walking time is not a
-  connection; a gate listed in a map legend is not a printed entrance tie.
+  from that element — wording such as 直結, 直通, 正面, すぐ, 改札前. Anything else is **PARTIAL**,
+  with the reason. **FIELD** = nothing printed that could be used; the reason is given. A
+  station-level claim (「…駅直結」, 「新宿駅南口より徒歩1分」) is not a tie to an element; a walking
+  time is not a connection; a gate listed in a map legend is not a printed entrance tie.
 - Nothing was inferred from a map, a photo or a distance beyond the printed words. Printed walk
   times are quoted only where the source prints them; no distance or route was computed.
 
 ## Result
 
-14 store POIs: **1 READY**, **11 PARTIAL**, **2 FIELD**. The single READY row is ルミネ池袋
-(「JR池袋駅南改札、正面右手よりすぐ」 → `jr-south-gate`). Four rows first read as READY were
-downgraded to PARTIAL on the lead's ruling of 2026-10-25 (新宿マルイ 本館, ルミネ1, ルミネ2,
-東武百貨店); the reasons are in each row and in §Notes.
+14 store POIs: **3 READY**, **9 PARTIAL**, **2 FIELD**. The READY rows are ルミネ池袋
+(「JR池袋駅南改札、正面右手よりすぐ」 → `jr-south-gate` 「JR 南改札」) and ルミネ新宿
+ルミネ1 / ルミネ2 (「ルミネ口より直通」 → `poi:keio-gate:4` 「京王線　ルミネ口」).
+Two rows first read as READY were downgraded to PARTIAL on the lead's ruling of 2026-10-25
+(新宿マルイ 本館, 東武百貨店); the reasons are in each row and in §Notes. ルミネ1 / ルミネ2
+were downgraded in the same pass and are restored to READY here: the downgrade rested on
+「no POI has the name ルミネ口」, but `poi:keio-gate:4` 「京王線　ルミネ口」 does, so the printed
+「ルミネ口より直通」 is an exact name plus a 直通 tie. That tie is printed for the ルミネ新宿
+complex, not per building (§Notes).
 
 | Store POI (`gteki/pois.json`) | Store (as printed) | Verdict | Printed statement (verbatim) | Named station element (as printed) | Matching POI in `pois.json` | Store floor printed | Source (URL, snapshot) | Date |
 |---|---|---|---|---|---|---|---|---|
-| `shop-sjk-odakyudept` | 小田急百貨店 新宿店 | **PARTIAL** | 「① 地上出口より青梅街道に向かって直進、…約３０ｍ直進すると右手に見える１階正面入口からご入店ください。」「② …渡った先「喫茶ピース」右手の入口からご入店ください。」 | 地上出口 (no name printed) | **no matching POI** | 1階 (1階正面入口) | `https://www.odakyu-dept.co.jp/info/v4l5d000001cquyy-att/20250917.pdf` (2 pp., 株式会社 小田急百貨店, 2025 年 9 月, 改定日 2025-09-27) | 2026-10-25 |
-| `shop-sjk-marui-honkan` | 新宿マルイ 本館 | **PARTIAL** — the printed gate is a waypoint in a ~600 m walking route, not the entrance; 「JR西口改札」 vs POI 「JR西口」 is a 改札/口 near match | 「JR線(新宿駅)から…中央西口を出て右に曲がり、JR西口方面に80mほど進みます。**JR西口改札前**で左に曲がり、40mほど進んで｢地上出口1｣階段手前を右に曲がります。つきあたりにある2号機エレベーターでB2Fに降りて右に曲がり、メトロプロムナードを500mほど進むと、右手に**新宿マルイ本館B1F入口**がございます。」 | JR西口改札 / 地上出口1 | **near**: `poi:jreast-gate:10` 「JR西口」 (改札 vs 口, not the same element). 地上出口1: no matching POI | B1F (本館B1F入口, reached via メトロプロムナード) | `https://www.0101.co.jp/003/access/` | 2026-10-25 |
-| `shop-sjk-marui-annex` | 新宿マルイ アネックス | **PARTIAL** | 「…Ｂ4出口にあるエレベーターで地上に出ます。新宿通りを左に曲がると新宿三丁目交差点がありますので、ＪＴＢを目印として伊勢丹の対角に横断し、新宿通りを80mほど進むと、右手に**新宿マルイアネックス**がございます。」 | B4出口 / 三越方面改札 | **no matching POI** (the bundle's six `exit` POIs carry descriptors, not exit numbers; no gate named 三越方面改札) | not printed | `https://www.0101.co.jp/005/access/` | 2026-10-25 |
+| `shop-sjk-odakyudept` | 小田急百貨店 新宿店 | **PARTIAL** | 「① 地上出口より青梅街道に向かって直進、「ユニクロ」が出店している新宿西口パレットビル前の横断歩道を新宿西口ハルクの館に向かってお進みください。約３０ｍ直進すると右手に見える１階正面入口からご入店ください。」「② 新宿エルタワー前（新宿西口ロータリー入口の交差点）の横断歩道を新宿西口ハルクの館に向かってお進みください。渡った先「喫茶ピース」右手の入口からご入店ください。」 | 地上出口 (no name printed) | **no matching POI** | 1階 (1階正面入口) | `https://www.odakyu-dept.co.jp/info/v4l5d000001cquyy-att/20250917.pdf` (2 pp., 株式会社 小田急百貨店, 2025 年 9 月, 改定日 2025-09-27) | 2026-10-25 |
+| `shop-sjk-marui-honkan` | 新宿マルイ 本館 | **PARTIAL** — the printed gate is a waypoint in a ~600 m walking route, not the entrance; 「JR西口改札」 vs POI 「JR西口」 is a 改札/口 near match | 「JR線(新宿駅)から…車いす25分」(route heading, as printed) 「中央西口を出て右に曲がり、JR西口方面に80mほど進みます。**JR西口改札前**で左に曲がり、40mほど進んで｢地上出口1｣階段手前を右に曲がります。つきあたりにある2号機エレベーターでB2Fに降りて右に曲がり、メトロプロムナードを500mほど進むと、右手に**新宿マルイ本館B1F入口**がございます。」 | JR西口改札 / 地上出口1 | **near**: `poi:jreast-gate:10` 「JR西口」 (改札 vs 口, not the same element). 地上出口1: no matching POI | B1F (本館B1F入口, reached via メトロプロムナード) | `https://www.0101.co.jp/003/access/` | 2026-10-25 |
+| `shop-sjk-marui-annex` | 新宿マルイ アネックス | **PARTIAL** | 「メトロプロムナードを400mほど進んで、B4出口にあるエレベーターで地上に出ます。新宿通りを左に曲がると新宿三丁目交差点がありますので、ＪＴＢを目印として伊勢丹の対角に横断し、新宿通りを80mほど進むと、右手に**新宿マルイアネックス**がございます。」 (quote is the JR route; 三越方面改札 is printed in the 丸ノ内線 新宿三丁目駅 route on the same page) | B4出口 / 三越方面改札 | **no matching POI** (the bundle's six `exit` POIs carry descriptors, not exit numbers; no gate named 三越方面改札) | not printed | `https://www.0101.co.jp/005/access/` | 2026-10-25 |
 | `shop-sjk-marui-men` | 新宿マルイ メン | **FIELD** | — the access page prints the location, 駐車場 and 駐輪場 only (Park One 新宿マルイメン駐車場, 駐車場までのルートのご案内); no train, gate, exit or passage line | — | — | not printed | `https://www.0101.co.jp/074/access/` | 2026-10-25 |
-| `shop-sjk-lumine1` | ルミネ新宿 ルミネ1 | **PARTIAL** — 「新宿駅南口」 is a station-wide 南口 printed for JR, 小田急 and 京王 together, so reading it as the JR gate is inference; 徒歩1分 is a walking time, not a connection. Strongest lead: 「ルミネ口より直通」 (直通 wording) but no POI has that name | 「JR・小田急線・京王線／**新宿駅南口**より徒歩1分」「京王線／**ルミネ口**より直通」「京王新線・都営新宿線・都営大江戸線・／新宿駅京王新線口より徒歩1分」 | 新宿駅南口 / ルミネ口 / 京王新線口 | **no matching POI** for ルミネ口 (the one 直通 statement); 新宿駅南口 would be `poi:jreast-gate:7` 「JR南口」 but the printed 南口 is shared, not JR-specific. 京王新線口: no matching POI | not printed | `https://www.lumine.ne.jp/shinjuku/access/` | 2026-10-25 |
-| `shop-sjk-lumine2` | ルミネ新宿 ルミネ2 | **PARTIAL** — same page, same reasons as ルミネ1 | same page, same three lines (the page gives one 電車 section for both buildings; 所在地 prints both) | 新宿駅南口 / ルミネ口 / 京王新線口 | **no matching POI** for ルミネ口; 新宿駅南口 → `poi:jreast-gate:7` 「JR南口」 only by inference. 京王新線口: no matching POI | not printed | `https://www.lumine.ne.jp/shinjuku/access/` | 2026-10-25 |
-| `shop-sjk-lumineest` | ルミネエスト新宿 | **PARTIAL** | 「電車でお越しの方／**JR新宿駅中央東改札または東改札**から徒歩1分」 | 中央東改札 / 東改札 | **near**: `poi:jreast-gate:5` 「JR中央東口」 and `poi:jreast-gate:9` 「JR東口」 (改札 vs 口) | not printed | `https://www.lumine.ne.jp/est/access/` | 2026-10-25 |
+| `shop-sjk-lumine1` | ルミネ新宿 ルミネ1 | **READY** — 「ルミネ口より直通」 (printed under the line label 京王線) names ルミネ口 exactly and prints 直通. The page gives one 電車 section for both buildings, so this is a printed tie for the ルミネ新宿 complex, not for ルミネ1 alone. The other two lines do not count: 新宿駅南口 is printed once for JR, 小田急 and 京王 together (reading it as the JR gate is inference) and 徒歩1分 is a walking time; 新宿駅京王新線口 is also 徒歩1分 | 「新宿駅南口より徒歩1分」「ルミネ口より直通」「新宿駅京王新線口より徒歩1分」 — each printed under its own line label (JR・小田急線・京王線 / 京王線 / 京王新線・都営新宿線・都営大江戸線・), section heading 電車でお越しの方 | 新宿駅南口 / ルミネ口 / 京王新線口 | **exact**: `poi:keio-gate:4` 「京王線　ルミネ口」 (the 直通 line). 新宿駅南口 would be `poi:jreast-gate:7` 「JR南口」 but the printed 南口 is shared, not JR-specific. **exact name, no tie**: `poi:keio-gate:1` / `:2` 「京王新線　京王新線口」 with 徒歩1分 | not printed | `https://www.lumine.ne.jp/shinjuku/access/` | 2026-10-25 |
+| `shop-sjk-lumine2` | ルミネ新宿 ルミネ2 | **READY** — same page, same reasons as ルミネ1 (complex-level tie, not specific to ルミネ2) | same page, same three statements (the page gives one 電車 section for both buildings; 所在地 prints both) | 新宿駅南口 / ルミネ口 / 京王新線口 | same as ルミネ1: **exact** `poi:keio-gate:4` 「京王線　ルミネ口」 (直通 line); **exact name, no tie** `poi:keio-gate:1` / `:2` 「京王新線　京王新線口」 (徒歩1分); 新宿駅南口 → `poi:jreast-gate:7` 「JR南口」 only by inference | not printed | `https://www.lumine.ne.jp/shinjuku/access/` | 2026-10-25 |
+| `shop-sjk-lumineest` | ルミネエスト新宿 | **PARTIAL** | 「JR新宿駅中央東改札または東改札から徒歩1分」 (section heading 電車でお越しの方) | 中央東改札 / 東改札 | **near**: `poi:jreast-gate:5` 「JR中央東口」 and `poi:jreast-gate:9` 「JR東口」 (改札 vs 口) | not printed | `https://www.lumine.ne.jp/est/access/` | 2026-10-25 |
 | `shop-sjk-newoman` | ニュウマン新宿 | **PARTIAL** | 「JR各線「新宿駅」**ミライナタワー改札・甲州街道改札・新南改札**方面へお越しください。」「都営新宿線・都営大江戸線・京王新線「新宿駅」より徒歩5分。」「東京メトロ副都心線「新宿三丁目駅」より徒歩3分。（**E10出口** 出てすぐ）」 | ミライナタワー改札 / 甲州街道改札 / 新南改札 / E10出口 | **near**: `poi:jreast-gate:3` 「JR 新南口 ミライナタワー改札口」, `poi:jreast-gate:4` 「JR 新南口　甲州街道口」, `poi:jreast-gate:2` 「JR 新南口」 (改札 vs 改札口/口). E10出口: no matching POI | not printed | `https://www.newoman.jp/shinjuku/access/` | 2026-10-25 |
 | `shop-sjk-isetan-honkan` (PR #524, not merged) | 伊勢丹新宿店 本館 | **PARTIAL** | 「東京メトロ丸の内線：**伊勢丹方面改札**〜（徒歩約1分）」「東京メトロ副都心線：**新宿三丁目交差点改札**〜（徒歩約2分）：**伊勢丹正面改札**〜（徒歩約30秒）」「都営新宿線：**新宿三丁目改札**〜（徒歩約3分）」「※伊勢丹正面改札は、午前7時～午後3時は駅からの出場専用。午後3時～終電までは駅への入場専用。」 | 伊勢丹方面改札 / 新宿三丁目交差点改札 / 伊勢丹正面改札 / 新宿三丁目改札 (all 新宿三丁目駅) | **no matching POI** — the bundle holds 新宿駅 only; no 新宿三丁目駅 gate POI exists | not printed | `https://www.mistore.jp/store/shinjuku/access.html` via Wayback snapshot `20261014182417` (`http://web.archive.org/web/20261014182417/https://www.mistore.jp/store/shinjuku/access.html`) — direct read times out, GAP-1 | 2026-10-25 |
 | `shop-sjk-isetan-mens` (PR #524, not merged) | 伊勢丹新宿店 メンズ館 | **PARTIAL** | same page: it prints one 住所 (〒160-0022 東京都新宿区新宿3-14-1) and one 電車 section for 伊勢丹; nothing is printed for メンズ館 separately (the メンズ館 floor guide only links 「アクセス・営業情報」) | 伊勢丹方面改札 / 新宿三丁目交差点改札 / 伊勢丹正面改札 / 新宿三丁目改札 | **no matching POI** (as 本館) | not printed | as 本館; メンズ館 page `https://www.mistore.jp/store/shinjuku/shops_mens.html` via snapshot `20260608083222` | 2026-10-25 |
-| `shop-ikb-tobudept` | 東武百貨店 池袋店 | **PARTIAL** — 「池袋駅西口 直結」 is station-level (and no POI is named 池袋駅西口); the gate names sit in the access map's legend, which does not print a tie from the store entrance to each gate | 「**池袋駅西口 直結**」 followed by the access map's gate legend: 「〈JR〉北改札／中央改札1・2／南改札／メトロポリタン改札 〈西武池袋線〉B1F改札口 〈東京メトロ 有楽町線〉有楽町線南通路西改札 〈東武東上線〉東上線北改札／東上線中央改札1・2／東上線南口改札 〈東京メトロ 丸ノ内線〉丸ノ内線中央連絡西改札 〈東京メトロ 副都心線〉副都心線西通路東改札」 | 池袋駅西口 (station-level) / 北改札, B1F改札口, 有楽町線南通路西改札, 東上線北改札, 副都心線西通路東改札, 南改札, 中央改札1・2 | **name-exact, but no printed entrance tie**: `jr-north-gate` 「JR 北改札」, `jr-south-gate` 「JR 南改札」, `seibu-b1f-gate` 「西武池袋線 B1F改札口」, `metro-y-south-west-gate` 「有楽町線 南通路西改札」, `tobu-north-gate` 「東武東上線 北改札」, `metro-f-west-east-gate` 「副都心線 西通路東改札」. **near**: 中央改札1・2 → `jr-central-gate-1/2`, 東上線中央改札1・2 → `tobu-central-gate-1/2`. No matching POI: 池袋駅西口, メトロポリタン改札, 東上線南口改札, 丸ノ内線中央連絡西改札 | not printed | `https://www.tobu-dept.jp/ikebukuro/access/` | 2026-10-25 |
-| `shop-ikb-lumine` | ルミネ池袋 | **READY** | 「電車でお越しの方／**JR池袋駅南改札**、正面右手よりすぐ」 | 南改札 | **exact**: `jr-south-gate` 「JR 南改札」 | not printed | `https://www.lumine.ne.jp/ikebukuro/access/` | 2026-10-25 |
+| `shop-ikb-tobudept` | 東武百貨店 池袋店 | **PARTIAL** — 「池袋駅西口 直結」 is station-level (and no POI is named 池袋駅西口); the gate names sit in the access map's legend, which does not print a tie from the store entrance to each gate | 「池袋駅西口 直結」; the access map's gate legend is a **transcription** (operator headings and gate names are separate printed lines, listed here in printed order): 〈JR〉 北改札 / 中央改札1・2 / 南改札 / メトロポリタン改札; 〈西武池袋線〉 B1F改札口; 〈東京メトロ 有楽町線〉 有楽町線南通路西改札; 〈東武東上線〉 東上線北改札 / 東上線中央改札1・2 / 東上線南口改札; 〈東京メトロ 丸ノ内線〉 丸ノ内線中央連絡西改札; 〈東京メトロ 副都心線〉 副都心線西通路東改札 | 池袋駅西口 (station-level) / 北改札, B1F改札口, 有楽町線南通路西改札, 東上線北改札, 副都心線西通路東改札, 南改札, 中央改札1・2 | **name-exact, but no printed entrance tie**: `jr-north-gate` 「JR 北改札」, `jr-south-gate` 「JR 南改札」, `seibu-b1f-gate` 「西武池袋線 B1F改札口」, `metro-y-south-west-gate` 「有楽町線 南通路西改札」, `tobu-north-gate` 「東武東上線 北改札」, `metro-f-west-east-gate` 「副都心線 西通路東改札」. **near**: 中央改札1・2 → `jr-central-gate-1/2`, 東上線中央改札1・2 → `tobu-central-gate-1/2`. No matching POI: 池袋駅西口, メトロポリタン改札, 東上線南口改札, 丸ノ内線中央連絡西改札 | not printed | `https://www.tobu-dept.jp/ikebukuro/access/` | 2026-10-25 |
+| `shop-ikb-lumine` | ルミネ池袋 | **READY** | 「JR池袋駅南改札、正面右手よりすぐ」 (section heading 電車でお越しの方) | 南改札 | **exact**: `jr-south-gate` 「JR 南改札」 | not printed | `https://www.lumine.ne.jp/ikebukuro/access/` | 2026-10-25 |
 | `shop-ikb-esola` | エソラ池袋 | **PARTIAL** | 「エソラ池袋 \| **東京メトロ有楽町線池袋駅直結**の駅ビル」 (page title, printed in the HTML `<title>` and `<h1>`) | 東京メトロ有楽町線池袋駅 (the station, no exit/gate/passage named) | **no matching POI** (no POI is the station itself; the two 有楽町線 gate POIs are not named on the page) | not printed | `https://www.metropro-sc.jp/esola-ikebukuro/` | 2026-10-25 |
-| `shop-ikb-parco` | 池袋パルコ | **FIELD** | — 池袋パルコ's own site is **corroboration only** (OD-34, #502 ruling: §1(1) is a quoted use restriction), so it cannot be the evidence; its `/access/` path is a 404 page and `/info/` prints 住所 and 営業時間 only. No facts-only source read here prints an entrance tie for this store | — | — | not printed | `https://ikebukuro.parco.jp/access/` (404), `/info/` | 2026-10-25 |
+| `shop-ikb-parco` | 池袋パルコ | **FIELD** | — 池袋パルコ's own site is **corroboration only** (OD-34, #502 ruling: §1(1) is a quoted use restriction), so it cannot be the evidence; its `/access/` path serves a not-found page (HTTP 200) and `/info/` prints 住所 and 営業時間 only. No facts-only source read here prints an entrance tie for this store | — | — | not printed | `https://ikebukuro.parco.jp/access/` (not-found page), `/info/` | 2026-10-25 |
 
 ## Notes
 
@@ -76,16 +86,25 @@ downgraded to PARTIAL on the lead's ruling of 2026-10-25 (新宿マルイ 本館
   store floor** for them, so nothing beyond the names and the 直結 claim is recorded. Under the
   lead's ruling that is PARTIAL: 直結 is claimed at station level (池袋駅西口, no such POI), and a
   legend is not a printed tie from the store entrance to each gate.
-- **新宿マルイ 本館.** Every train line on that page is the **車いす recommended route**
-  (「最寄駅から車いすをご利用する場合の推奨ルート」), which is a deliberate detour (500 m along
-  メトロプロムナード). 「JR西口改札前」 is a waypoint inside that route, not the entrance; the
-  entrance it prints is 本館B1F入口, reached along メトロプロムナード. 「JR西口改札」 vs POI
-  「JR西口」 is also a 改札/口 near match. PARTIAL on both counts.
+- **新宿マルイ 本館.** The page prints only a **車いす recommended route** per line
+  (「最寄駅から車いすをご利用する場合の推奨ルート」, 5–30 min); the route quoted in the row runs
+  500 m along メトロプロムナード as a deliberate detour. 「JR西口改札前」 is a waypoint inside that
+  route, not the entrance; the entrance it prints is 本館B1F入口, reached along メトロプロムナード.
+  「JR西口改札」 vs POI 「JR西口」 is also a 改札/口 near match. The other routes on the page name
+  「中央西口」 (`poi:jreast-gate:1` 「JR 中央西口（出口専用）」), 「西口地下改札」,
+  「京王西口改札」, 「中央改札口」, 「三越方面改札」 and 「新宿三丁目交差点方面改札」 — all as
+  the first step of a route to the B1F entrance, none printed as the entrance itself, so none is a
+  tie. PARTIAL on both counts.
 - **ルミネ新宿.** One 電車 section serves both ルミネ1 and ルミネ2 (the page prints both buildings'
-  住所), so the same quotes are recorded for both POIs. 「新宿駅南口より徒歩1分」 prints one 南口
-  under 「JR・小田急線・京王線」 together, so reading it as the JR gate is inference, and 徒歩1分 is
-  a walking time rather than a connection. The strongest lead is 「京王線／ルミネ口より直通」 — 直通
-  wording, but no POI has the name ルミネ口. PARTIAL for both buildings.
+  住所), so the same quotes and verdicts are recorded for both POIs. 「ルミネ口より直通」 (printed
+  under the line label 京王線) gives READY: ルミネ口 is `poi:keio-gate:4` 「京王線　ルミネ口」
+  exactly, and 直通 is a printed direct connection from that gate. **The limitation:** the page
+  prints one access section for the complex and does not say which building the direct entrance
+  serves, so the tie is recorded at complex level; a per-building entrance is not printed. The other
+  two statements do not count: 新宿駅南口 is printed once under 「JR・小田急線・京王線」 together, so
+  reading it as the JR gate is inference, and 徒歩1分 is a walking time rather than a connection;
+  「新宿駅京王新線口より徒歩1分」 names `poi:keio-gate:1` / `:2` 「京王新線　京王新線口」 exactly
+  but is again a walking time.
 - **伊勢丹新宿店.** The store's access page answers from 新宿三丁目駅: the four named elements are
   gates of that station, and `stations/shinjuku/gteki/pois.json` holds 新宿駅 POIs only, so none of
   them can be mapped without a 新宿三丁目駅 bundle. The メンズ館 has no access text of its own.
