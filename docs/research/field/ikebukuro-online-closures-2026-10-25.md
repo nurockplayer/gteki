@@ -4,7 +4,7 @@
 - **Question:** close every Ikebukuro item that a lookup can settle; leave only what truly needs one field run.
 - **Scope:** all 11 stops of [`ikebukuro-field-checklist.md`](ikebukuro-field-checklist.md); the ikebukuro rows of [`../lines/gap-table-2026-10-25.md`](../lines/gap-table-2026-10-25.md) marked "field check", "no source" or "NONE"; Tokyo Metro M25 / Y09 / F09 platform numbers; Tobu Tojo platforms; the floors of 西武池袋本店 and 池袋PARCO 本館. One item was added by data-research-05 at 17:47: **lift positions and lift links on the B1 public graph** (`w_c` → `x22`, and the JR gates).
 - **Docs only.** No station data, no POI and no graph change in this PR; the importable results are listed in §4 for a follow-up.
-- **Method:** the brief's source order — (1) facts-only operator pages, (2) 豊島区 / 新宿区 pages and PDFs, (3) Tokyo Metro / Toei / Seibu text pages, (4) Wayback snapshots of blocked or maintenance pages, (5) `oracle-ego` to find any of those. Facts only, printed text only: no position is taken from a map image, a photo or a platform diagram. curl with its default User-Agent, requests spaced ≥0.6 s, ≈115 of the 120-request budget used; no login-gated page was fetched; no form, contact or post.
+- **Method:** the brief's source order — (1) facts-only operator pages, (2) 豊島区 / 新宿区 pages and PDFs, (3) Tokyo Metro / Toei / Seibu text pages, (4) Wayback snapshots of blocked or maintenance pages, (5) `oracle-ego` to find any of those. Facts only, printed text only: no position is taken from a map image, a photo or a platform diagram. curl with its default User-Agent, requests spaced ≥0.6 s, ≈118 of the 120-request budget used; no login-gated page was fetched; no form, contact or post.
 - **Verdicts:** CLOSED 3 · PARTIAL 13 · FIELD 12 (28 items).
 
 ## 1. Verdicts
@@ -38,7 +38,7 @@
 | 25 | 西武池袋本店 floors | gap-table Table B 西武 row | PARTIAL | S16 (2026-06-30): 「改装中の西武池袋本店は地下２階から地上８階に入居し…段階的にオープン。秋以降全面開業する見込みだ。」 with the same article printing 「縮小しリニューアルする西武」. S17 (東京都, 2024-06) prints 5階 as a 紳士雑貨売場. The range is an announcement date, the store is mid-renovation, and the trade-press terms are unread | store POI + floors |
 | 26 | JR East (IK) platform numbers and platform access — the gap table's "no platform source" | gap-table Table A JR row | **FIELD** | S9's JR block prints equipment data only (車椅子対応トイレ B1F); S2's JR section prints 「ホームドアを設置する。※山手線は設置済み」 with no platform number. No printed list of JR platforms at Ikebukuro was found in any source class | platform POIs |
 | 27 | Tobu Tojo gate↔opening — the gap table's "same field check" for Tobu | A2-equivalent (gap-table Tobu row) | **FIELD** | Nothing printed places the Tobu 中央1／中央2 gates or their opening on a named passage; S11 gives only 「中央改札を出て地下通路を西口方面へ」 | gate POIs / `accessFacts` |
-| 28 | 池袋PARCO 本館 floors | gap-table Table B PARCO row | **CLOSED** (rights caveat) | S13: 「名称：池袋パルコ」「所在地:東京都豊島区南池袋１－２８－２」「階数：地下２階～地上８階」 (2021-10-29); S14 prints a B2F tenant, S15 an 8F tenant. PARCO's own site (S14b/S15b class) prints the same range but is corroboration only | store POI + floors — **import waits on the rights line** (DR-RT-06) |
+| 28 | 池袋PARCO 本館 floors | gap-table Table B PARCO row | **CLOSED** | S13: 「名称：池袋パルコ」「所在地:東京都豊島区南池袋１－２８－２」「階数：地下２階～地上８階」 (2021-10-29); S15 prints an 8F tenant; S14's B2F tenant page is corroboration only (S14b flat ban). The PARCO site prints the same range but is corroboration only by the director's ruling of 2026-10-25 on #502 (recorded in [`../merchants/dept-store-terms-2026-10-25.md`](../merchants/dept-store-terms-2026-10-25.md)), so it is not the source used | store POI + floors — facts-only, ready to import |
 
 ## 2. Sources
 
@@ -57,9 +57,9 @@ Artifacts are in the worker's scratch directory (not committed); `sha256` prefix
 - **S10** JREメディア `https://media.jreast.co.jp/articles/5120` and `/5121` (`datePublished` 2025-09-19 for both, `dateModified` 2025-12-19 for both; 5120 also prints 「2025年10月28日」 in its text), `6fcd52db…` and `f5b5e17f…`, 17:42. 5121's title prints 「いけふくろうはどこ？行き方をご紹介！池袋駅 東口(北)の待ち合わせ場所」. Prints 「JR池袋駅の北改札を出たら、右に曲がってください。」「北改札を右に曲がったら「いけふくろう」の看板に沿って、直進してください。」「まっすぐお進みいただくと、右手に「いけふくろう」があります。」「「いけふくろう」正面の階段を上がると、Cafe&Bar RAGE ST池袋東口が右手に見えます。」 and 「階段を上がると、池袋の待ち合わせ場所「いけふくろう」に到着です。」. JR East class: **corroboration only** (OD-34 §1).
 - **S11** 東武ホープセンター アクセス, `https://tobuhopecenter.jp/info/access/`, live 200, `d4aca3a3…`, 17:34. Under the 東武東上線 heading prints 「東武東上線池袋駅より徒歩1分 中央改札を出て地下通路を西口方面へ」. Facts only.
 - **S12** 池袋ショッピングパーク（ISP）アクセス, `https://www.web-isp.co.jp/access/`, live 200, `74388c91…`, 17:34. Prints 「JR北改札 を出て右に進む」 and 「いけふくろうの像の横を通りすぎ、地上へ行く階段は上がらずに地下通路をそのまま道なりに進む」. Facts only.
-- **S13** 一般社団法人日本ショッピングセンター協会 施設概要, `https://www.jcsc.or.jp/pt_events/p_20211029_90046` (url dated 2021-10-29; no separate update date printed), `0e39457c…`, 17:42. Prints 「名称：池袋パルコ」「所在地:東京都豊島区南池袋１－２８－２」「階数：地下２階～地上８階」. Rights UNKNOWN (no OD entry; non-PARCO body, no ban clause read).
+- **S13** 一般社団法人日本ショッピングセンター協会 施設概要, `https://www.jcsc.or.jp/pt_events/p_20211029_90046` (url dated 2021-10-29; no separate update date printed), `0e39457c…`, 17:42. Prints 「名称：池袋パルコ」「所在地:東京都豊島区南池袋１－２８－２」「階数：地下２階～地上８階」. Rights **facts only** (OD-34 class): the site publishes no use terms — its only policy page is `/about_jcsc/privacypolicy`, personal data alone — and neither the event page nor the top page carries a 著作権／無断転載 clause, so no quoted ban exists. Terms check 2026-10-25 17:57: `https://www.jcsc.or.jp/` and `https://www.jcsc.or.jp/about_jcsc/privacypolicy`, `sha256` `jcsc-top.html` and `jcsc-privacypolicy.html`.
 - **S14** 資生堂 店舗ページ `https://www.shiseido.co.jp/sw/navi/shopdetail.html?shopCd=627847`, `62c8c237…`, 17:43 — prints 「…池袋ＰＡＲＣＯ本館Ｂ２Ｆ」. **S14b** 資生堂 サイト利用規約, `38cf9ea6…`, 17:44 — 「自らの個人利用目的以外に利用…無断使用・複製等することを禁止」, a flat ban, so S14 is **corroboration only**.
-- **S15** ひつまぶし名古屋備長 店舗ページ `https://hitsumabushi.co.jp/store_details/Ikebukuro_Parco`, `1257e784…`, 17:43 — prints 「池袋パルコ本館8Ｆ」; no ban clause found on the page.
+- **S15** ひつまぶし名古屋備長 店舗ページ `https://hitsumabushi.co.jp/store_details/Ikebukuro_Parco`, `1257e784…`, 17:43 — prints 「池袋パルコ本館8Ｆ」. Terms check 2026-10-25 17:58: the only policy link is `/privacy`, a personal-data policy with no 著作権／転載 clause (`hitsumabushi-privacy.html`), so S15 is **facts only** — no quoted ban.
 - **S16** ダイヤモンド・チェーンストアオンライン（時事通信配信）`https://diamond-rm.net/flash_news/550074/`, page date 2026/06/30 12:23, `10f729f5…`, 17:49. Prints 「…西武池袋本店の建物を全面改装。ヨドバシの家電量販店と、縮小しリニューアルする西武が主力店舗となる。」 and 「改装中の西武池袋本店は地下２階から地上８階に入居し、日本最大級の化粧品売り場や食品のデパ地下、充実させた海外高級ブランド売り場を段階的にオープン。秋以降全面開業する見込みだ。」. Terms not read.
 - **S17** 東京都『福祉保健』2024年6月号, `https://www.fukushi1.metro.tokyo.lg.jp/soumu/fkhk/2024/2406/index.html`, `19be5e28…`, 17:49. Prints 「西武池袋本店：５階(中央B７)＝紳士雑貨売場」 — a 2024-06 placement, not the current one.
 - **S18** 西武・そごう公式ページ `https://www.sogo-seibu.jp/ikebukuro` — 「地下2階から8階まで」 per the oracle run; **not used as evidence** (corroboration-only class, OD-34 r3) and not re-fetched by this worker.
@@ -77,7 +77,7 @@ Artifacts are in the worker's scratch directory (not committed); `sha256` prefix
 | `exit-22` alias | 東口（北）, former name 「JR 東口」 | S1 | facts only | nothing — confirms what is shipped |
 | Exit aliases 37 / 38 | 東口（中央） / 東口（南）; former names 西武東口 / 西武口 | S1 | facts only | POI exists; alias merge per OD-22 |
 | Exit names 19 / 20a / 4 | 西口（中央） / 西口（北） / 西口（南） | S1 | facts only | 20a's letter suffix must not collide with an id such as `exit-20` |
-| 池袋PARCO 本館 floors | 地下2階–地上8階 (B2–8F, 10 levels); B2F and 8F tenant-confirmed | S13 (S14/S15 tenants) | **UNKNOWN** — DR-RT-06 private-use-only | **director rights line**, then the store POI |
+| 池袋PARCO 本館 floors | 地下2階–地上8階 (B2–8F, 10 levels); 8F tenant-confirmed; B2F by a corroboration-only tenant page | S13 (+S15) | **facts only** — no quoted ban on S13's site, which publishes only a personal-data privacy policy; the PARCO site itself stays corroboration only (director ruling 2026-10-25, #502) | nothing — the store POI can be built from S13 |
 | 西武池袋本店 floors | 地下2階–地上8階 as announced 2026-06-30, staged opening, full opening from autumn 2026 | S16 (+S17 for 5F in 2024-06) | trade-press terms unread | terms read + one re-check after the autumn opening; no POI before that |
 | Metro M25 platform directions | 1番線・2番線 both 荻窪方面 | S7 | **corroboration only** (S7b flat ban) | a second, non-banned source, or a rights ruling |
 | Tobu Tojo platforms | **1–3 番線** (home doors fitted as of 2019-04); 4 and 5 exist but only on S9 (rights UNKNOWN) and S8 (corroboration only) | S2 | facts only for 1–3 only | 4 and 5 need an independently usable source or an explicit rights decision; per-platform destination is printed nowhere — needs the field run |
@@ -120,8 +120,11 @@ Own requests, in order (JST). Every request used curl's default User-Agent, with
 | 31 | 17:49 | `https://diamond-rm.net/flash_news/550074/` | 200 | `10f729f5…` |
 | 32 | 17:49 | `https://www.fukushi1.metro.tokyo.lg.jp/soumu/fkhk/2024/2406/index.html` | 200 | `19be5e28…` |
 | 33 | 17:50 | Wayback CDX `tokyometro.jp/station/ikebukuro*` (re-query for snapshot dates) | 200 | printed in-chat |
+| 34 | 17:57 | `https://www.jcsc.or.jp/` (top page, looking for a use-terms link) | 200 | `3bd87f77…` |
+| 35 | 17:58 | `https://www.jcsc.or.jp/about_jcsc/privacypolicy` | 200 | `9e05a175…` |
+| 36 | 17:58 | `https://hitsumabushi.co.jp/privacy` | 200 | `6a4c8149…` |
 
-Roughly 115 requests against the 120 cap, counting the multi-URL steps above; no source was retried more than the one PDF/direct-page retry logged at rows 9 and 20.
+Roughly 118 requests against the 120 cap, counting the multi-URL steps above; no source was retried more than the one PDF/direct-page retry logged at rows 9 and 20.
 
 ## 6. What is still a field item
 
