@@ -1342,7 +1342,7 @@
         "sourceIds": [
           "tokyometro-shinjuku-accessibility-2026-10"
         ],
-        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY; name composed by GTEki from printed fields (line, type, location)",
         "checkedDate": "2026-10-24",
         "locator": "accessibility page, elevator 設置場所 list, 改札内 row, item 1"
       },
@@ -1377,7 +1377,7 @@
         "sourceIds": [
           "tokyometro-shinjuku-accessibility-2026-10"
         ],
-        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY; name composed by GTEki from printed fields (line, type, location)",
         "checkedDate": "2026-10-24",
         "locator": "accessibility page, elevator 設置場所 list, 改札外 row, item 1"
       },
@@ -1412,7 +1412,7 @@
         "sourceIds": [
           "tokyometro-shinjuku-accessibility-2026-10"
         ],
-        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY; name composed by GTEki from printed fields (line, type, location)",
         "checkedDate": "2026-10-24",
         "locator": "accessibility page, elevator 設置場所 list, 改札外 row, item 2"
       },
@@ -1447,7 +1447,7 @@
         "sourceIds": [
           "tokyometro-shinjuku-accessibility-2026-10"
         ],
-        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY; name composed by GTEki from printed fields (line, type, location)",
         "checkedDate": "2026-10-24",
         "locator": "accessibility page, elevator 設置場所 list, 改札外 row, item 3"
       },
@@ -1482,7 +1482,7 @@
         "sourceIds": [
           "tokyometro-shinjuku-accessibility-2026-10"
         ],
-        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY; name composed by GTEki from printed fields (line, type, location)",
         "checkedDate": "2026-10-24",
         "locator": "accessibility page, escalator 設置場所 list, 上り・下り row"
       },
@@ -1517,7 +1517,7 @@
         "sourceIds": [
           "tokyometro-shinjuku-accessibility-2026-10"
         ],
-        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only Tokyo Metro accessibility page (#26), UNVERIFIED, SEARCH_ONLY; name composed by GTEki from printed fields (line, type, location)",
         "checkedDate": "2026-10-24",
         "locator": "accessibility page, escalator 設置場所 list, 上り row"
       },
@@ -1583,12 +1583,7 @@
           "text": "1出口"
         }
       ],
-      "aliases": [
-        {
-          "lang": "ja",
-          "text": "1"
-        }
-      ],
+      "aliases": [],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -1623,12 +1618,7 @@
           "text": "2出口"
         }
       ],
-      "aliases": [
-        {
-          "lang": "ja",
-          "text": "2"
-        }
-      ],
+      "aliases": [],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -1663,12 +1653,7 @@
           "text": "3出口"
         }
       ],
-      "aliases": [
-        {
-          "lang": "ja",
-          "text": "3"
-        }
-      ],
+      "aliases": [],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -1703,12 +1688,7 @@
           "text": "4出口"
         }
       ],
-      "aliases": [
-        {
-          "lang": "ja",
-          "text": "4"
-        }
-      ],
+      "aliases": [],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -1743,12 +1723,7 @@
           "text": "5出口"
         }
       ],
-      "aliases": [
-        {
-          "lang": "ja",
-          "text": "5"
-        }
-      ],
+      "aliases": [],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -1783,12 +1758,7 @@
           "text": "6出口"
         }
       ],
-      "aliases": [
-        {
-          "lang": "ja",
-          "text": "6"
-        }
-      ],
+      "aliases": [],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -1823,12 +1793,7 @@
           "text": "7出口"
         }
       ],
-      "aliases": [
-        {
-          "lang": "ja",
-          "text": "7"
-        }
-      ],
+      "aliases": [],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -1863,12 +1828,7 @@
           "text": "8出口"
         }
       ],
-      "aliases": [
-        {
-          "lang": "ja",
-          "text": "8"
-        }
-      ],
+      "aliases": [],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
