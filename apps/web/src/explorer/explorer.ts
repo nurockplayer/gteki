@@ -19,12 +19,12 @@ import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollisio
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
 import { castAll, castCamera, cuttableSigns, explorerTargets } from "./raycast.ts";
-import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
+import { DEFAULT_GUIDE_TIER, guideOnStairs, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
-import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -101,6 +101,8 @@ const DECLUTTER_MS = 80;
 const MEASURE_TRIES = 5;
 /** Let the initial station identity framing remain readable before guide yaw steering resumes. */
 const IDENTITY_HOLD_S = 4;
+/** The guide hold stops following the framed board once the look would turn this far from the route heading. */
+const IDENTITY_TRACK_MAX_RAD = THREE.MathUtils.degToRad(100);
 /** Instanced meshes with more instances than this occlude only as registered proxies. */
 const MAX_OCCLUDER_INSTANCES = 1024;
 
@@ -184,8 +186,10 @@ export class Explorer {
   private readonly orbit: OrbitControls;
   private composer: PostFx | null = null;
   private readonly overviewLook = new OverviewLook();
-  /** Stair/escalator/ramp detection from the walker's vertical speed; widens the follow lens (see targetFov). */
+  /** Vertical-speed detection plus explicit guide stair/escalator spans; widens the follow lens (see targetFov). */
   private slope: SlopeState = NO_SLOPE;
+  /** Extra downward aim while descending; the boom and ordinary pose stay unchanged. */
+  private descentDrop = 0;
   /** The boom is squeezed under its comfortable distance (walls, ceilings); also widens the follow lens (see boomSqueezed). */
   private squeezed = false;
   private slopeY = 0;
@@ -305,6 +309,11 @@ export class Explorer {
   /** Every stop of the running guide (`guide.stops` is consumed as they are reached; a seek restores the ones still ahead). */
   private guideAllStops: { s: number; index: number }[] = [];
   private guideIdentityHoldS = 0;
+  /** The framed board's name centre, and the framed look's offset from that board's bearing: the hold keeps the board in view. */
+  private readonly guideIdentityCentre = new THREE.Vector3();
+  private readonly guideIdentityOffset = { yaw: 0, pitch: 0 };
+  private readonly identityHead = new THREE.Vector3();
+  private readonly identityToward = new THREE.Vector3();
   /** The user's guide speed tier; kept across instruction changes and later guides. */
   private tier: GuideTierId = DEFAULT_GUIDE_TIER;
   private poiLabels: PoiLabel[] = [];
@@ -1156,6 +1165,10 @@ export class Explorer {
     this.pitch = look.pitch;
     // The framed look lands as a snap on the next frame: the camera and slope must not pan from the old pose.
     this.teleported = true;
+    const toward = look.centre.clone().sub(head);
+    this.guideIdentityCentre.copy(look.centre);
+    this.guideIdentityOffset.yaw = angleDelta(Math.atan2(-toward.x, -toward.z), look.yaw);
+    this.guideIdentityOffset.pitch = look.pitch - Math.atan2(toward.y, Math.hypot(toward.x, toward.z));
     return true;
   }
 
@@ -1614,7 +1627,7 @@ export class Explorer {
   /**
    * Walk the polyline. `stopAtPoints` are polyline point indices where the guide must stop and pause (waits
    * for opening hours): it never moves past one before being resumed, including several at one spot.
-   * `paceSpans` cap the speed where connectors or short instructions need it (see guidePace.ts).
+   * `paceSpans` cap speed and carry connector modes for the stair lens (see guidePace.ts).
    */
   startGuide(polyline: PolylinePoint[], fromS = 0, stopAtPoints: readonly number[] = [], paceSpans: readonly PaceSpan[] = []): void {
     const pts = polyline.map((p) => R(p.x, p.y, p.z));
@@ -1924,7 +1937,9 @@ export class Explorer {
     if (stopped !== null) g.paused = g.holding = true;
     const p = samplePolyline(g.pts, g.cum, g.s);
     this.pos.set(p.x, p.y, p.z);
-    const steeringDt = Math.max(0, dt - this.guideIdentityHoldS);
+    // During the hold the look follows the framed board instead of the route; the rest of the frame steers as usual.
+    const holdDt = Math.min(dt, this.guideIdentityHoldS);
+    const steeringDt = holdDt > 0 && this.trackGuideIdentity(p, holdDt) ? dt - holdDt : dt;
     this.guideIdentityHoldS = Math.max(0, this.guideIdentityHoldS - dt);
     if (p.tx || p.tz) {
       const targetYaw = Math.atan2(-p.tx, -p.tz);
@@ -1934,6 +1949,31 @@ export class Explorer {
     const stepIndex = g.steps[Math.min(g.steps.length - 1, p.segment + 1)] ?? -1;
     this.events.onGuideProgress?.({ s: g.s, total, stepIndex, done: g.s >= total && !g.holding });
     if (stopped !== null) this.events.onGuideStop?.(stopped);
+  }
+
+  /**
+   * Re-aim the guide look at the framed board for `dt` of hold, keeping the framed offset from its bearing. Ends the hold
+   * (returns false) when the board is out of range, behind the walker, or would turn the look too far from the route.
+   */
+  private trackGuideIdentity(p: { tx: number; tz: number }, dt: number): boolean {
+    const toward = this.identityToward.copy(this.guideIdentityCentre).sub(this.identityHead.set(this.pos.x, this.pos.y + EYE, this.pos.z));
+    const bearingYaw = Math.atan2(-toward.x, -toward.z);
+    const bearingPitch = Math.atan2(toward.y, Math.hypot(toward.x, toward.z));
+    const targetYaw = bearingYaw + this.guideIdentityOffset.yaw;
+    if (toward.length() > IDENTITY_RANGE_M || ((p.tx || p.tz) && this.routeTurnTooFar(p, bearingYaw, targetYaw))) {
+      this.guideIdentityHoldS = 0;
+      return false;
+    }
+    const k = this.reducedMotion ? 1 : Math.min(1, dt * 4);
+    this.yaw += angleDelta(this.yaw, targetYaw) * k;
+    this.pitch = THREE.MathUtils.clamp(this.pitch + (bearingPitch + this.guideIdentityOffset.pitch - this.pitch) * k, LOOK_PITCH.min, LOOK_PITCH.max);
+    return true;
+  }
+
+  /** The board is behind the walker, or the tracked look is more than IDENTITY_TRACK_MAX_RAD from the route heading. */
+  private routeTurnTooFar(p: { tx: number; tz: number }, bearingYaw: number, targetYaw: number): boolean {
+    const routeYaw = Math.atan2(-p.tx, -p.tz);
+    return Math.cos(bearingYaw - routeYaw) < 0 || Math.abs(angleDelta(routeYaw, targetYaw)) > IDENTITY_TRACK_MAX_RAD;
   }
 
   /**
@@ -1986,10 +2026,11 @@ export class Explorer {
     snap ||= this.qaCameraSnap;
     this.qaCameraSnap = false;
     // The slope state follows the walker's height; a large one-frame jump, snap, or stopped clock restarts it instead of reading a teleport as a climb.
-    this.slope = snap || dt <= 0 || Math.abs(this.pos.y - this.slopeY) > SLOPE.jump
-      ? NO_SLOPE
-      : stepSlope(this.slope, this.pos.y - this.slopeY, dt);
+    const onStairs = this.mode === "guide" && this.guide !== null && guideOnStairs(this.guide.s, this.guide.spans);
+    const resetSlope = snap || dt <= 0 || Math.abs(this.pos.y - this.slopeY) > SLOPE.jump;
+    this.slope = stepSlope(resetSlope ? NO_SLOPE : this.slope, resetSlope ? 0 : this.pos.y - this.slopeY, resetSlope ? 0 : dt, onStairs);
     this.slopeY = this.pos.y;
+    this.descentDrop = this.firstPerson ? 0 : easeRaise(this.descentDrop, descentAimDrop(this.slope), dt, snap || this.reducedMotion);
     const head = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const dir = new THREE.Vector3(-Math.sin(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), -Math.cos(this.yaw) * Math.cos(this.pitch));
     if (this.firstPerson) {
@@ -2012,6 +2053,7 @@ export class Explorer {
       if (side) shoulder = Math.max(0, side.distance - 0.25);
     }
     const pose = followPose(head, this.yaw, this.pitch, shoulder);
+    if (this.descentDrop > 0) pose.target.y -= this.descentDrop;
     let back = pose.back;
     let dist = this.camDistance;
     let raisedClear = false;
