@@ -44,7 +44,7 @@ const ESCALATOR_ATLAS = `${CATALOG_REL}/high/atlas/escalator_ao.png`;
 const shipped = [...ids.map((id) => `${CATALOG_REL}/high/${id}.glb`), ATLAS, ESCALATOR_ATLAS].sort();
 // The Lane E build output lives outside the repo; when this machine has it, the copy-mode checks can run.
 const LANE_E = "/Users/tachikoma/Developer/gteki/.claude/worktrees/gteki-lane-e-int/tools/blender/.cache/c3_ike_cb3b29b_54007755";
-const hasLaneE = fs.existsSync(path.join(LANE_E, "ike_full", "manifest.json"));
+const hasLaneE = ["ike_full", "ike_mobile"].every((d) => fs.existsSync(path.join(LANE_E, d, "manifest.json")));
 
 const stationJson = JSON.parse(fs.readFileSync(path.join(GTEKI, "station.json"), "utf8")) as {
   sources: { id: string; sha256?: Record<string, string> }[];

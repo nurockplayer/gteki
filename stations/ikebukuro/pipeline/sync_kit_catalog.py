@@ -209,13 +209,20 @@ def main(argv):
             else:
                 copy_verified(tier, rel, entry, os.path.join(srcs[tier], path.replace("/", os.sep)), dst, f"atlas {kind}")
 
+    # The facts file describes every atlas the station ships, not the kinds this run selected: a copy run with
+    # --kinds escalator must not drop batch C's nosing facts. The tiers still come from the placements' tier filters.
+    shipped_atlas_tiers = {}
+    for tier, pid in plan(catalog, placements, BATCH_KINDS):
+        kind = kinds_of[pid]
+        if kind in ATLAS_PATHS:
+            shipped_atlas_tiers.setdefault(kind, set()).add(tier)
     # The facts file is only known when every tier that ships an atlas has its manifest at hand; otherwise a copy run
     # would blank it, so leave the committed one alone.
-    if atlas_tiers and all(tier in manifest_docs for tiers in atlas_tiers.values() for tier in tiers):
+    if shipped_atlas_tiers and all(tier in manifest_docs for tiers in shipped_atlas_tiers.values() for tier in tiers):
         facts = {}
-        for kind in sorted(atlas_tiers):
+        for kind in sorted(shipped_atlas_tiers):
             tiers = {}
-            for tier in sorted(atlas_tiers[kind]):
+            for tier in sorted(shipped_atlas_tiers[kind]):
                 entry = (manifest_docs[tier].get("atlases") or {}).get(kind) or {}
                 tiers[tier] = {k: entry[k] for k in ("size_px", "bytes", "max_isolated_mip") if k in entry}
             facts[kind] = {"path": ATLAS_PATHS[kind], "tiers": tiers}
