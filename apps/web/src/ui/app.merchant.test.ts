@@ -18,6 +18,7 @@ type Harness = {
   renderCategoryFilter: (b: ReturnType<typeof createSyntheticBundle> | undefined) => void;
   renderResults: (which: "from" | "to") => void;
   renderSheet: () => void;
+  explorer: unknown;
 };
 
 const SOURCE: Source = {
@@ -54,7 +55,9 @@ function app(lang: Lang = "ja") {
   a.s.destinationTenant = null;
   a.s.noPath = null;
   a.s.search = createSearchIndex(bundle);
-  for (const name of ["releaseMascot", "mascotSay"] as const) vi.spyOn(a as never, name).mockImplementation(() => {});
+  // renderSheet refits an automatic overview after the sheet opens or closes (#385); the real App always has one.
+  a.explorer = { refitOverview: vi.fn() } as unknown;
+  for (const name of ["releaseMascot", "mascotSay"] as const) vi.spyOn(a as unknown as Record<string, () => void>, name).mockImplementation(() => {});
   return { a, bundle };
 }
 afterEach(() => { vi.restoreAllMocks(); document.body.replaceChildren(); });
