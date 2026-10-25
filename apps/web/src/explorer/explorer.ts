@@ -552,13 +552,15 @@ export class Explorer {
    * Where the routable network sits on screen now (CSS px, page coordinates like label rects) and how
    * big it is, measured against the FREE area — the part of the canvas neither the search panel nor the
    * credit line covers: `extentShare` = larger bbox side / the free area's shorter side (about 0.65 right
-   * after the fit: the fit sizes the same network points). `fitShare` is the share of the AABB of those
-   * points, which is what the fit is fed; its 8 corners project outside a diagonal point band, so it can
-   * read larger than `extentShare`. `visibleRect` is that free area itself (page CSS px, so it excludes
-   * the panel and the credit strip), so a spec can check `bbox` lies outside both. Null outside overview
-   * or without a routable network.
+   * after the fit: the fit sizes the same network points). `viewportShare` is the same larger side over
+   * the VIEWPORT's shorter side — #109's acceptance measure: on an occluded phone the fit deliberately
+   * reaches past the free band, so `extentShare` then reads over 1 while `viewportShare` stays at half.
+   * `fitShare` is the share of the AABB of those points, which is what the fit is fed; its 8 corners
+   * project outside a diagonal point band, so it can read larger than `extentShare`. `visibleRect` is
+   * that free area itself (page CSS px, so it excludes the panel and the credit strip), so a spec can
+   * check `bbox` lies outside both. Null outside overview or without a routable network.
    */
-  overviewFrame(): { extentShare: number; fitShare: number | null; bbox: { x0: number; y0: number; x1: number; y1: number }; visibleRect: { x: number; y: number; w: number; h: number } } | null {
+  overviewFrame(): { extentShare: number; viewportShare: number; fitShare: number | null; bbox: { x0: number; y0: number; x1: number; y1: number }; visibleRect: { x: number; y: number; w: number; h: number } } | null {
     if (this.mode !== "overview" || this.routablePts.length === 0) return null;
     const { w, h } = this.viewSize;
     this.camera.updateMatrixWorld();
@@ -570,6 +572,7 @@ export class Explorer {
     const at = this.host.getBoundingClientRect();
     return {
       extentShare: extentShare(net, free.w, free.h),
+      viewportShare: extentShare(net, w, h),
       fitShare: fit ? extentShare(fit, free.w, free.h) : null,
       bbox: { x0: net.x0 + at.left, y0: net.y0 + at.top, x1: net.x1 + at.left, y1: net.y1 + at.top },
       visibleRect: { x: free.x + at.left, y: free.y + at.top, w: free.w, h: free.h },

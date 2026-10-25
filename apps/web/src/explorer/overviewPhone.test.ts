@@ -81,6 +81,9 @@ type Stand = {
   framedPts: THREE.Vector3[] | null;
   world: THREE.Object3D;
   routableBox: THREE.Box3 | null;
+  routablePts: THREE.Vector3[];
+  mode: string;
+  host: { getBoundingClientRect(): { left: number; top: number } };
   setMode: () => void;
   freeRect: () => ViewRect;
 };
@@ -94,6 +97,9 @@ function stand(w: number, h: number, free: ViewRect, box: THREE.Box3 | null = nu
     framedPts: points,
     world: new THREE.Group(),
     routableBox: null,
+    routablePts: points ?? [],
+    mode: "overview",
+    host: { getBoundingClientRect: (): { left: number; top: number } => ({ left: 0, top: 0 }) },
     setMode: (): void => {},
     freeRect: () => free,
   });
@@ -125,6 +131,19 @@ describe("the explorer asks for the floor only on an occluded phone (#109)", () 
       const e = stand(w, h, free, box, net.points);
       expect(fitted(e), `${w}x${h}`).toBeCloseTo(expectedFit(e, net), 6);
     }
+  });
+
+  it("overviewFrame reports the viewport share next to the free-rect one", () => {
+    const e = stand(412, 839, { x: 0, y: 356, w: 412, h: 164 }, box, net.points);
+    fitted(e);
+    // The real orbit controls aim the camera at the target; the stand's no-op update leaves that to us.
+    e.camera.lookAt(e.orbit.target);
+    e.camera.updateMatrixWorld(true);
+    const f = (Explorer.prototype as unknown as { overviewFrame(this: Stand): { extentShare: number; viewportShare: number } | null }).overviewFrame.call(e)!;
+    // The floored fit deliberately reaches past the short band: over 1 against the free rect, half the
+    // viewport (#109's acceptance measure) against the screen.
+    expect(f.viewportShare).toBeCloseTo(0.5, 2);
+    expect(f.extentShare).toBeGreaterThan(1.2);
   });
 });
 
