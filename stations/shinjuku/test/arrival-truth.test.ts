@@ -7,7 +7,8 @@ import { floorLabel, narrate } from "../app/src/narrate.ts";
 const { bundle } = loadShinjukuBundle();
 const floors = new Map(bundle.floors.map((f) => [f.id, f]));
 const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
-const exits = bundle.pois.filter((p) => p.category === "exit");
+// Only routable exits (#411, #214 and #501 POIs are search-only and carry no connector).
+const exits = bundle.pois.filter((p) => p.category === "exit" && p.connectorNodeIds.length > 0);
 const name = (p: (typeof exits)[number], lang: string) => p.names.find((n) => n.lang === lang)!.text;
 
 describe("exit arrival truth", () => {

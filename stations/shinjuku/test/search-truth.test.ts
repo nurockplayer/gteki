@@ -19,14 +19,25 @@ const floors = new Map(bundle.floors.map((f) => [f.id, f]));
 const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
 const text = (p: Poi, lang: string) => p.names.find((n) => n.lang === lang)?.text;
 const byCategory = (c: string) => pois.filter((p) => p.category === c);
-const exits = byCategory("exit");
 /** #411: search-only line POIs cite tokyo-s03-zip and nothing else. */
 const S03_SOURCE = "tokyo-s03-zip";
 const isS03 = (p: Poi) => p.evidence.sourceIds.includes(S03_SOURCE);
 /** #214: facts-only merchant listings (shops). Search-only like S03, but with their own directory sources. */
 const isShop = (p: Poi) => p.category === "shop";
+/** #501: WP4 line POIs (Toei station exits, Metro M08 exits/lifts/escalators), facts-only and search-only. */
+const WP4_SOURCES = new Set([
+  "tokyometro-shinjuku-station-2026-10",
+  "tokyometro-shinjuku-accessibility-2026-10",
+  "tokyometro-shinjuku-yardmap-print-2026-10",
+  "toei-shinjuku-station-2026-10",
+  // Line-code and English line-name aliases on the Marunouchi POIs (M08 / Marunouchi Line).
+  "tokyometro-shinjuku-station-en-2026-10",
+]);
+// Non-empty: `every` is true for an empty source list, which would class an unsourced POI as WP4 and skip the E27 checks.
+const isWp4 = (p: Poi) => p.category !== "shop" && p.evidence.sourceIds.length > 0 && p.evidence.sourceIds.every((id) => WP4_SOURCES.has(id));
 /** The E27 (Toei NWD / station map / GSI) POIs: everything the station itself evidences. */
-const isE27 = (p: Poi) => !isS03(p) && !isShop(p);
+const isE27 = (p: Poi) => !isS03(p) && !isShop(p) && !isWp4(p);
+const exits = pois.filter((p) => p.category === "exit" && isE27(p));
 
 interface PlanFacility { id: string; category: string; x: number; y: number }
 const plan = planJson as unknown as { levels: { label: string; ordinal: number; floorId: string; facilities: PlanFacility[]; spaces: { category: string; rings: Pt[][] }[] }[] };
@@ -248,7 +259,11 @@ describe("POI aliases", () => {
       const add = (k: string, why: string) => allowed.set(k, why);
       if (p.category === "platform") for (const [k, why] of Object.entries(PLATFORM_ALIASES)) add(k, why);
       for (const [k, why] of Object.entries(GENERIC_ALIASES[p.category] ?? {})) add(k, why);
-      if (p.category === "exit") {
+      if (p.id === "poi:tokyometro-gate:1" || p.id === "poi:tokyometro-gate:2") {
+        add("en:M08", "printed station number on the Tokyo Metro English Shinjuku page");
+        add("en:Marunouchi Line", "printed English line name on the Tokyo Metro English Shinjuku page");
+      }
+      if (p.category === "exit" && isE27(p)) {
         // Distinguishing aliases are rebuilt from the independently recomputed descriptors (not from the name).
         const d = describeExit(p);
         const lw = WORDS[d.street ? "地上" : "地下1階"]!;
@@ -269,7 +284,11 @@ describe("POI aliases", () => {
       // #214: a shop's only aliases are kana readings its directory prints (checked in the shop block below).
       for (const a of p.aliases) {
         if (isShop(p)) expect(a.lang, `${p.id} alias ${a.text}`).toBe("ja-Hrkt");
-        else expect(allowedNorm.has(norm(`${a.lang}:${a.text}`)), `${p.id} alias ${a.lang}:${a.text}`).toBe(true);
+        else if (isWp4(p)) {
+          // #501: a Metro exit's alias is the printed code of a 番出口 name (A6 of A6番出口); the Marunouchi POIs
+          // also carry the printed M08 and "Marunouchi Line". The exact set is asserted in the WP4 block below.
+          expect(["ja", "en"], `${p.id} alias ${a.lang}`).toContain(a.lang);
+        } else expect(allowedNorm.has(norm(`${a.lang}:${a.text}`)), `${p.id} alias ${a.lang}:${a.text}`).toBe(true);
       }
     }
   });
@@ -328,7 +347,7 @@ describe("facility POIs trace to the GSI facility points", () => {
 
   it("cross-checks every lift POI against the GSI lift points (F012) and reports any mismatch", () => {
     const pts = facilities.filter((f) => f.category === "F012");
-    const lifts = byCategory("elevator");
+    const lifts = byCategory("elevator").filter(isE27);
     // every GSI lift point lies within 4 m of one E27 lift POI, and no E27 lift POI lacks one
     for (const f of pts) expect(lifts.some((p) => near(f, p.displayPosition!) <= 4), `F012 ${f.level} ${f.x},${f.y}`).toBe(true);
     const mismatched: string[] = [];
@@ -388,8 +407,10 @@ describe("facility POIs trace to the GSI facility points", () => {
     const S03_COUNT = 45;
     // #214: 6 Toei/Tokyo Metro + 576 LUMINE/NEWoMan listings + the Odakyu department store, plus the 7 store
     // POIs for the printed buildings (LUMINE 1/2, LUMINE EST, NEWoMan, 新宿マルイ 本館/アネックス/メン).
-    const SHOP_COUNT = 590;
-    expect(pois.length).toBe(OLD_COUNT + ADDED.length + S03_COUNT + SHOP_COUNT);
+    const SHOP_COUNT = 592;
+    // #501: 9 Toei station exits + 28 Metro M08 exits + 4 lifts + 2 escalators (see the WP4 block); the 2 M08 gates are held.
+    const WP4_COUNT = 43;
+    expect(pois.length).toBe(OLD_COUNT + ADDED.length + S03_COUNT + SHOP_COUNT + WP4_COUNT);
     const e27Pois = pois.filter(isE27);
     expect(e27Pois.length).toBe(OLD_COUNT + ADDED.length);
     const bySource = { exit: 6, ticket_gate: 3, platform: 1, elevator: 3, toilet: 3 } as const;
@@ -442,22 +463,23 @@ describe("expected search results (docs/stations/shinjuku/search-expected.md)", 
     expect(strong(query).map((h) => h.poi.id)).toContain(id);
   });
 
-  it.each(["JR新宿", "東京メトロ", "Tokyo Metro", "都営新宿線", "E01", "Yamanote", "3番出口", "Exit 3", "A1出口", "屋根なし"])(
+  it.each(["JR新宿", "東京メトロ", "Tokyo Metro", "都営新宿線", "E01", "Yamanote", "3番出口", "Exit 3", "屋根なし"])(
     "%s returns no Shinjuku POI claim",
     (query) => {
       expect(strong(query)).toEqual([]);
     },
   );
 
-  // #411: other operators' names resolve only to the search-only S03 POIs and, since #214, the facts-only
-  // merchant listings (e.g. 小田急百貨店, or a shop whose printed name names an exit). None has a route.
-  it.each(["JR", "山手線", "中央線", "京王", "京王線", "小田急", "小田急線", "丸ノ内線", "西口", "南口", "東口", "新宿西口"])(
-    "%s returns only search-only S03 or shop POIs (no route)",
+  // #411: other operators' names resolve only to the search-only S03 POIs, since #214 the facts-only merchant
+  // listings (e.g. 小田急百貨店, or a shop whose printed name names an exit) and, since #501, the WP4 line
+  // POIs (Toei station exits, Metro M08 exits/lifts/escalators). None has a route.
+  it.each(["JR", "山手線", "中央線", "京王", "京王線", "小田急", "小田急線", "丸ノ内線", "西口", "南口", "東口", "新宿西口", "A1出口"])(
+    "%s returns only search-only S03, shop or WP4 line POIs (no route)",
     (query) => {
       const hits = strong(query);
       expect(hits.length).toBeGreaterThan(0);
       for (const h of hits) {
-        expect(isS03(h.poi) || isShop(h.poi), h.poi.id).toBe(true);
+        expect(isS03(h.poi) || isShop(h.poi) || isWp4(h.poi), h.poi.id).toBe(true);
         expect(h.poi.connectorNodeIds, h.poi.id).toEqual([]);
       }
     },
@@ -492,8 +514,11 @@ describe("S03 search-only line POIs (#411)", () => {
     }
   });
 
-  it("cites only tokyo-s03-zip", () => {
-    for (const p of s03Pois) expect(p.evidence.sourceIds, p.id).toEqual([S03_SOURCE]);
+  it("cites tokyo-s03-zip, plus the printed line page on the two Marunouchi gates", () => {
+    for (const p of s03Pois) {
+      const lineAlias = p.id === "poi:tokyometro-gate:1" || p.id === "poi:tokyometro-gate:2";
+      expect(p.evidence.sourceIds, p.id).toEqual(lineAlias ? [S03_SOURCE, "tokyometro-shinjuku-station-en-2026-10"] : [S03_SOURCE]);
+    }
   });
 
   it("carries the March 2020 ja and en notes", () => {
@@ -505,8 +530,13 @@ describe("S03 search-only line POIs (#411)", () => {
     }
   });
 
-  it("has no aliases", () => {
-    for (const p of s03Pois) expect(p.aliases, p.id).toEqual([]);
+  it("has no aliases, except the printed line code and English line name on the two Marunouchi gates", () => {
+    for (const p of s03Pois) {
+      const metro = p.id === "poi:tokyometro-gate:1" || p.id === "poi:tokyometro-gate:2";
+      expect(p.aliases, p.id).toEqual(
+        metro ? [{ lang: "en", text: "M08" }, { lang: "en", text: "Marunouchi Line" }] : [],
+      );
+    }
   });
 
   it("registers tokyo-s03-zip as a modified source with the exact attribution", () => {
@@ -582,12 +612,134 @@ describe("S03 search-only line POIs (#411)", () => {
   });
 });
 
+describe("WP4 line POIs (#501)", () => {
+  const wp4 = pois.filter(isWp4);
+  const index = createSearchIndex(bundle);
+  const TOEI_SOURCE = "toei-shinjuku-station-2026-10";
+  const isToei = (p: Poi) => p.evidence.sourceIds.includes(TOEI_SOURCE);
+
+  it("imports the 43 rows the gap table lists: 9 Toei exits, 28 Metro exits, 4 lifts, 2 escalators", () => {
+    expect(wp4.length).toBe(43);
+    const toei = wp4.filter(isToei);
+    expect(toei.length).toBe(9);
+    for (const p of toei) expect(p.category, p.id).toBe("exit");
+    const metro = wp4.filter((p) => !isToei(p));
+    expect(metro.filter((p) => p.category === "exit").length).toBe(28);
+    expect(metro.filter((p) => p.category === "elevator").length).toBe(4);
+    expect(metro.filter((p) => p.category === "escalator").length).toBe(2);
+  });
+
+  it("holds the two WP4 Metro gates for the WP10 field check, and keeps the S03 pair", () => {
+    expect(pois.some((p) => p.id === "poi:tokyometro-gate:3" || p.id === "poi:tokyometro-gate:4")).toBe(false);
+    expect(pois.some((p) => p.id === "poi:tokyometro-gate:1" && isS03(p))).toBe(true);
+    expect(pois.some((p) => p.id === "poi:tokyometro-gate:2" && isS03(p))).toBe(true);
+  });
+
+  it("gives each WP4 POI no floor, position, connector, paid value or approximate point", () => {
+    for (const p of wp4) {
+      expect(p.floorId, p.id).toBeNull();
+      expect(p.displayPosition, p.id).toBeNull();
+      expect(p.connectorNodeIds, p.id).toEqual([]);
+      expect(p.paid, p.id).toBeNull();
+      expect(p.approximatePosition, p.id).toBeUndefined();
+    }
+  });
+
+  it("keeps the printed ja name, the printed exit code, the printed line code and name, and the unverified note", () => {
+    for (const p of wp4) {
+      expect(p.names.length, p.id).toBe(1);
+      expect(p.names[0]!.lang, p.id).toBe("ja");
+      // #501 review: an exit keeps only the lettered code its printed name starts with (A6 of A6番出口, A1 of
+      // A1出口); the bare Toei 1–8 aliases were dropped because a lone number matches the whole station (#506),
+      // and no lift or escalator has an alias. A Marunouchi POI also carries the printed M08 and
+      // "Marunouchi Line"; the Toei exits carry no line and so no line alias. Asserted as an exact set, so an
+      // empty alias cannot pass.
+      const printed = p.names[0]!.text;
+      const code = p.category === "exit" ? /^(.*?)番?出?口$/.exec(printed)?.[1] : undefined;
+      const metro = p.evidence.sourceIds.includes("tokyometro-shinjuku-station-en-2026-10");
+      expect(p.aliases.map((a) => a.text), p.id).toEqual([
+        ...(code && /[a-z]/i.test(code) ? [code] : []),
+        ...(metro ? ["M08", "Marunouchi Line"] : []),
+      ]);
+      const ja = p.notes?.find((n) => n.lang === "ja")?.text ?? "";
+      const en = p.notes?.find((n) => n.lang === "en")?.text ?? "";
+      expect(ja, `${p.id} ja`).toContain("位置・入口は未確認");
+      expect(en, `${p.id} en`).toContain("Location and entrance not verified");
+    }
+  });
+
+  it("keeps Toei exits 1 and 2 printed as closed, with no route", () => {
+    for (const id of ["poi:toei-exit:1", "poi:toei-exit:2"]) {
+      const p = pois.find((x) => x.id === id)!;
+      expect(p, id).toBeDefined();
+      expect(p.notes!.find((n) => n.lang === "ja")!.text, id).toMatch(/閉鎖中/);
+      expect(p.notes!.find((n) => n.lang === "en")!.text, id).toContain("closed");
+      expect(p.connectorNodeIds, id).toEqual([]);
+    }
+  });
+
+  it("registers the five WP4 sources as facts-only with their clearance decision", () => {
+    for (const id of WP4_SOURCES) {
+      const src = bundle.sources.find((s) => s.id === id);
+      expect(src, id).toBeDefined();
+      expect(src!.usage, id).toBe("facts-only");
+      expect(src!.decision, id).toBeDefined();
+      expect(src!.retrievedAt, id).toBeTruthy();
+    }
+  });
+
+  it("finds a WP4 exit by its own printed name (read from pois.json, not written here)", () => {
+    const exit = wp4.find((p) => p.category === "exit" && p.names[0]!.text.length >= 4)!;
+    expect(index.search(exit.names[0]!.text, { limit: 10 }).map((h) => h.poi.id)).toContain(exit.id);
+  });
+
+  it("keeps a routable POI as the top hit for 出口 and Exit", () => {
+    for (const q of ["出口", "Exit"]) expect(index.search(q, { limit: 10 })[0]!.poi.connectorNodeIds.length, q).toBeGreaterThan(0);
+  });
+});
+
+describe("line-code and English line-name aliases (M08 / Marunouchi Line)", () => {
+  const index = createSearchIndex(bundle);
+  const ALIAS_SOURCE = "tokyometro-shinjuku-station-en-2026-10";
+  const metro = pois.filter((p) => p.evidence.sourceIds.includes(ALIAS_SOURCE));
+
+  it("puts M08 and Marunouchi Line on the 36 Marunouchi POIs only", () => {
+    expect(metro.length).toBe(36);
+    expect(metro.filter((p) => p.id.startsWith("poi:tokyometro-exit:")).length).toBe(28);
+    expect(metro.filter((p) => p.category === "ticket_gate").length).toBe(2);
+    expect(metro.filter((p) => p.category === "elevator").length).toBe(4);
+    expect(metro.filter((p) => p.category === "escalator").length).toBe(2);
+    for (const p of metro) {
+      expect(p.aliases, p.id).toContainEqual({ lang: "en", text: "M08" });
+      expect(p.aliases, p.id).toContainEqual({ lang: "en", text: "Marunouchi Line" });
+    }
+    for (const p of pois) {
+      if (metro.includes(p)) continue;
+      expect(p.aliases.some((a) => a.text === "M08" || a.text === "Marunouchi Line"), p.id).toBe(false);
+    }
+  });
+
+  it("finds every Marunouchi POI by M08, m08 and Marunouchi Line", () => {
+    for (const q of ["M08", "m08", "Marunouchi Line"]) {
+      const ids = index.search(q, { limit: 100 }).map((h) => h.poi.id);
+      for (const p of metro) expect(ids, `${q} -> ${p.id}`).toContain(p.id);
+    }
+  });
+
+  it("gives the Toei exits, JR, Keio and Odakyu no line code or English line name", () => {
+    for (const id of ["poi:toei-exit:a1", "poi:toei-exit:1", "poi:jreast-gate:1", "poi:jreast-platform:14", "poi:keio-gate:1", "poi:odakyu-gate:1", "poi:odakyu-platform:2"]) {
+      const p = pois.find((x) => x.id === id)!;
+      expect(p.aliases.some((a) => a.lang === "en"), id).toBe(false);
+    }
+  });
+});
+
 describe("merchant shops (#214)", () => {
   const shops = pois.filter(isShop);
   const index = createSearchIndex(bundle);
 
-  it("imports the 583 directory listings and the 7 store POIs as search-only shops", () => {
-    expect(shops.length).toBe(590);
+  it("imports the 583 directory listings and the 9 store POIs as search-only shops", () => {
+    expect(shops.length).toBe(592);
     for (const p of shops) {
       expect(p.evidence.sourceIds.length, p.id).toBe(1);
       expect(bundle.sources.some((s) => s.id === p.evidence.sourceIds[0]), p.id).toBe(true);
@@ -600,24 +752,28 @@ describe("merchant shops (#214)", () => {
     }
   });
 
-  it("keeps one store POI per printed building, with its operator and floor range in the notes", () => {
-    const store: [string, string, string][] = [
-      ["shop-sjk-lumine1", "ルミネ新宿 ルミネ1", "B2F〜8F"],
-      ["shop-sjk-lumine2", "ルミネ新宿 ルミネ2", "1F〜7F"],
-      ["shop-sjk-lumineest", "ルミネエスト新宿", "B2F〜8F"],
-      ["shop-sjk-newoman", "ニュウマン新宿", "1F〜7F"],
-      ["shop-sjk-marui-honkan", "新宿マルイ 本館", "B1F〜8F"],
-      ["shop-sjk-marui-annex", "新宿マルイ アネックス", "B1F〜8F"],
-      ["shop-sjk-marui-men", "新宿マルイ メン", "1F〜8F"],
+  it("keeps one store POI per printed building, with its floor range (and its operator where the source prints one)", () => {
+    // The 伊勢丹 rows carry no operator: the terms record does not print the operating company.
+    const store: [string, string, string, string | undefined][] = [
+      ["shop-sjk-lumine1", "ルミネ新宿 ルミネ1", "B2F〜8F", "運営: 株式会社ルミネ"],
+      ["shop-sjk-lumine2", "ルミネ新宿 ルミネ2", "1F〜7F", "運営: 株式会社ルミネ"],
+      ["shop-sjk-lumineest", "ルミネエスト新宿", "B2F〜8F", "運営: 株式会社ルミネ"],
+      ["shop-sjk-newoman", "ニュウマン新宿", "1F〜7F", "運営: 株式会社ルミネ"],
+      ["shop-sjk-marui-honkan", "新宿マルイ 本館", "B1F〜8F", "運営: 株式会社丸井"],
+      ["shop-sjk-marui-annex", "新宿マルイ アネックス", "B1F〜8F", "運営: 株式会社丸井"],
+      ["shop-sjk-marui-men", "新宿マルイ メン", "1F〜8F", "運営: 株式会社丸井"],
+      ["shop-sjk-isetan-honkan", "伊勢丹新宿店 本館", "B2F・B1F・1F〜7F・RF", undefined],
+      ["shop-sjk-isetan-mens", "伊勢丹新宿店 メンズ館", "B1F・1F〜8F・RF", undefined],
     ];
     expect(store.filter(([id]) => shops.some((p) => p.id === id)).length).toBe(store.length);
-    for (const [id, name, floors] of store) {
+    for (const [id, name, floors, operator] of store) {
       const p = pois.find((x) => x.id === id)!;
       expect(p.names[0]!.text, id).toBe(name);
       expect(p.aliases, id).toEqual([]);
       const ja = p.notes!.find((n) => n.lang === "ja")!.text;
-      expect(ja, id).toContain("運営:");
       expect(ja, id).toContain(floors);
+      if (operator) expect(ja, id).toContain(operator);
+      else expect(ja, id).not.toMatch(/運営: /);
     }
   });
 

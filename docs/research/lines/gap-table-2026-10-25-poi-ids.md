@@ -1,20 +1,20 @@
-# POI IDs researched but not in `pois.json` or the graph (2026-10-25)
+# POI IDs researched but not in `pois.json` or the graph (2026-10-25, updated 2026-10-26)
 
-Companion to [`gap-table-2026-10-25.md`](gap-table-2026-10-25.md). Basis `origin/main` `cc4fb010`. Every row below was checked against `stations/<id>/gteki/pois.json`: no ID is present.
+Companion to [`gap-table-2026-10-25.md`](gap-table-2026-10-25.md). Basis `origin/main` `2e7323c0` (2026-10-26 02:11 JST). Every row below was checked against `stations/<id>/gteki/pois.json`: **all of them are now shipped with these IDs except the two held M08 gates**. Do not import the shipped IDs again.
 
-## Shinjuku — WP4, 43 POIs ready-to-import + 2 gates held
+## Shinjuku — WP4, 43 POIs shipped (#509) + 2 gates held
 
-File: [`shinjuku-line-pois-wp4.json`](shinjuku-line-pois-wp4.json) (research merged in #421). Rights cleared: Metro OD-34 §2, Toei OD-01 A. Target writer: sjk-search-78.
+File: [`shinjuku-line-pois-wp4.json`](shinjuku-line-pois-wp4.json) (research merged in #421). Rights cleared: Metro OD-34 §2, Toei OD-01 A. Shipped in #509 as search-only POIs (no position, no connector).
 
 - **Held:** Metro M08 gates (2): `poi:tokyometro-gate:3`, `poi:tokyometro-gate:4` — both may be the same physical gates as the shipped S03 pair `poi:tokyometro-gate:1/:2`; identity is unconfirmed, so import them only after the WP10 field check, or they become duplicate gate results.
-- Metro M08 exits, 28: `poi:tokyometro-exit:a6` … `a18`, `b5` … `b18` (incl. `b12a`, `b12b`). 7 are printed closed and 13 carry a time limit (WP4 notes).
-- Metro M08 lifts (4): `poi:tokyometro-lift:1` … `:4`.
-- Metro M08 escalators (2): `poi:tokyometro-escalator:1`, `:2`.
-- Toei 新宿 station exits, 9: `poi:toei-exit:a1`, `poi:toei-exit:1` … `:8`. The source prints one station-level list and does not say which exits belong to S01 and which to E27, so line affiliation is unverified. Exits 1 and 2 are printed 閉鎖中; three carry 京王新線口 and three 新都心口. None is routable.
+- Metro M08 exits, 28: `poi:tokyometro-exit:a6` … `a18`, `b5` … `b18` (incl. `b12a`, `b12b`) — shipped. 7 are printed closed and 13 carry a time limit (WP4 notes).
+- Metro M08 lifts (4): `poi:tokyometro-lift:1` … `:4` — shipped.
+- Metro M08 escalators (2): `poi:tokyometro-escalator:1`, `:2` — shipped.
+- Toei 新宿 station exits, 9: `poi:toei-exit:a1`, `poi:toei-exit:1` … `:8` — shipped. The source prints one station-level list and does not say which exits belong to S01 and which to E27, so line affiliation is unverified. Exits 1 and 2 are printed 閉鎖中; three carry 京王新線口 and three 新都心口. None is routable.
 
-## Ikebukuro — WP11 Seibu platforms, 7 POIs, ready-to-import
+## Ikebukuro — WP11 Seibu platforms, 7 POIs, shipped (#506)
 
-File: [`transfer-facts-wp11.json`](transfer-facts-wp11.json) `newPois` (research merged in #452; rights OD-25, facts only). Platform legend read from the Seibu station map dated 2026-08-01; 1, 4 and 6 are alighting-only. Target writer: ikb-route-15.
+File: [`transfer-facts-wp11.json`](transfer-facts-wp11.json) `newPois` (research merged in #452; rights OD-25, facts only). Platform legend read from the Seibu station map dated 2026-08-01; 1, 4 and 6 are alighting-only. Shipped search-only in #506.
 
 `seibu-platform-1`, `seibu-platform-2`, `seibu-platform-3`, `seibu-platform-4`, `seibu-platform-5`, `seibu-platform-6`, `seibu-platform-7`
 
