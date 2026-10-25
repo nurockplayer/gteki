@@ -28,6 +28,7 @@ import { EnuFrame } from "@gteki/geo";
 import {
   SCHEMA_VERSION,
   validateBundle,
+  type BuildingHours,
   type CoverageArea,
   type CoverageGap,
   type DataFile,
@@ -35,6 +36,7 @@ import {
   type EdgeMode,
   type EvidenceRef,
   type Floor,
+  type HoursText,
   type LocalizedText,
   type Node,
   type Poi,
@@ -1261,6 +1263,48 @@ for (const file of MERCHANT_POI_FILES) {
   for (const poi of m.pois) pois.push(poi);
 }
 
+// ---------------------------------------------------------------- printed shop hours (OD-32)
+// Transcription: docs/research/merchants/shinjuku-hours-batch1.json. Each row is the hours line an official
+// page printed for one shop (matched by poiId) or for a whole building (poiId null → station.json
+// buildingHours). Text stays as printed; nothing is parsed into open/closed state. Rows for shops that are
+// not shipped yet (the recovery batch) have no POI here and are skipped.
+type HoursEntry = {
+  poiId: string | null;
+  building?: string;
+  url: string;
+  retrievedAt: string;
+  pageDate: string | null;
+  status: "OK" | "UNKNOWN";
+  hoursText?: string;
+  basis?: HoursText["basis"];
+  note?: string;
+};
+const hoursResearch = JSON.parse(readFileSync(join(HERE, "../../../docs/research/merchants/shinjuku-hours-batch1.json"), "utf8")) as { entries: HoursEntry[] };
+const hoursOf = (e: HoursEntry): HoursText => ({
+  ...(e.status === "OK" ? { text: e.hoursText! } : {}),
+  sourceUrl: e.url,
+  retrievedAt: e.retrievedAt.slice(0, 10),
+  // A page date alone does not date the hours (OD-32): shop-sjk-odakyudept's 2025-01-15 is a parking notice,
+  // and PUPA's pageDate is the day the page was read. Only an explicit research `basis` makes a row dated.
+  basis: e.basis ?? "undated-official",
+  status: e.status,
+});
+const poiById = new Map(pois.map((p) => [p.id, p]));
+const buildingHours: BuildingHours[] = [];
+for (const e of hoursResearch.entries) {
+  if (e.poiId === null) {
+    buildingHours.push({
+      ...hoursOf(e),
+      building: [{ lang: "ja", text: e.building! }],
+      floorRange: null,
+      ...(e.note ? { note: [{ lang: "ja", text: e.note }] } : {}),
+    });
+    continue;
+  }
+  const poi = poiById.get(e.poiId);
+  if (poi) poi.hours = hoursOf(e);
+}
+
 const coverage = {
   summary: [
     { lang: "ja", text: "都営大江戸線 新宿駅（E27）の公開歩行空間ネットワーク／構内地図の範囲のみ。他社線の改札・ホームは2020年3月時点の資料から名前を収録し、改札と乗換の一部に同資料の形状から求めたおおよその位置を付加（検索表示のみ、±5 m 以上、経路案内には不使用）。乗換通路は未収録。高さは推定値（実測ではない）。" },
@@ -1342,6 +1386,7 @@ const bundle: StationBundle = {
   coverage,
   spawnNodeIds,
   dataFiles,
+  buildingHours,
 };
 
 // ---------------------------------------------------------------- plan (render geometry)

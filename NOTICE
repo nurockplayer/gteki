@@ -222,6 +222,13 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        keeps the printed name and, in its notes, the printed floor or area
        label; no position, floor id, connector or route, and the current
        status is stated as unknown.
+       Printed opening hours (OD-32): 568 of those shop POIs, and 4
+       building-level rows in the station manifest, carry the short hours
+       line an official page printed, exactly as printed, with that page's
+       URL and the date it was read; 15 more shop POIs carry a row with no
+       hours text (the page printed none, gave no usable date, or was
+       unreadable). No dynamic status, last-order note or other page text is
+       copied, and nothing is inferred.
        Line POI data (lines-lead WP2/WP3, 2026-10-24):
        docs/research/lines/ikebukuro-line-pois.json and its contract. Gate,
        lift, escalator and exit names and end pairs as printed on Tokyo Metro
