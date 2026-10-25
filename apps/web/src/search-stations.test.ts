@@ -172,12 +172,15 @@ describe("core search on the real Shinjuku POIs (docs/stations/shinjuku/search-e
         // Only the recorded listing may appear, and it cites its own single directory source.
         expect(shops, `${q}: unexpected shop hit ${h.poi.id}`).toContain(h.poi.id);
         expect(h.poi.evidence.sourceIds, h.poi.id).toHaveLength(1);
-      } else if (h.poi.evidence.sourceIds.includes("tokyo-s03-zip")) {
-        // An S03 name cites only the S03 dataset.
-        expect(h.poi.evidence.sourceIds, h.poi.id).toEqual(["tokyo-s03-zip"]);
       } else {
-        // A WP4 line name cites only its operator sources (station page, plus the yard map for a Metro exit).
-        for (const id of h.poi.evidence.sourceIds) expect(WP4_SOURCES, `${h.poi.id}: unexpected source ${id}`).toContain(id);
+        // An S03 name cites only the S03 dataset; a WP4 line name cites only its operator sources (station
+        // page, plus the yard map for a Metro exit). Either may also cite the facts-only English line-alias
+        // source (#526), which adds the M08 / Marunouchi Line aliases to those POIs.
+        const sources = h.poi.evidence.sourceIds.filter(
+          (id) => id !== "tokyometro-shinjuku-station-en-2026-10",
+        );
+        if (sources.includes("tokyo-s03-zip")) expect(sources, h.poi.id).toEqual(["tokyo-s03-zip"]);
+        else for (const id of sources) expect(WP4_SOURCES, `${h.poi.id}: unexpected source ${id}`).toContain(id);
       }
     }
     expect(s.filter((h) => h.poi.category !== "shop").length, `${q}: the search-only names are still expected`).toBeGreaterThan(0);
