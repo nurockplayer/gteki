@@ -65,9 +65,10 @@ The ISP access page prints an example route from the JR gates, in numbered steps
 > 「いけふくろうの像の横を通りすぎ、地上へ行く階段は上がらずに地下通路をそのまま道なりに進む」
 > 「短いエスカレーターを降りると池袋ショッピングパークのレンガ通りにでます（右：南館、左北館）」
 
-This is a *relative* statement: leaving **JR北改札** and turning right, the statue stands beside the
-path, at a point where a stairway leads up to the street; the walker passes it and stays on the
-underground level. It gives no distance, no bearing and no coordinate.
+This is a *relative* statement, and only one of order: on the route that starts by leaving **JR北改札**
+and turning right, the walker passes the statue and then stays on the underground level instead of
+taking the stairs up to the street. It gives no distance, no bearing, no coordinate, and it does not
+say how near the statue stands to those stairs.
 
 OD-23 limits this source: facts only, no copied text into the product, and **never the sole evidence
 for either end of a route**. The sentences above are recorded here for verification; they are not
@@ -80,8 +81,8 @@ product copy, and this source alone may not turn the statue into a route endpoin
 - the station and side: JR池袋駅 東口;
 - the level: 地下1階 (B1), and, in ISP's words, that the statue is on the underground path rather
   than up the stairs at street level;
-- the vicinity: 「JR改札付近」 (ward), and, relative to one named gate, that the statue is passed
-  immediately after leaving 「JR北改札」 and turning right (ISP);
+- the vicinity: 「JR改札付近」 (ward), and, relative to one named gate, that the statue is passed on
+  the route that starts by leaving 「JR北改札」 and turning right (ISP) — order only, no nearness;
 - an address: 南池袋1-28;
 - the role: 待ち合わせ場所 / 待ち合わせスポット.
 
@@ -104,7 +105,7 @@ Names in `graph.src.json` that could conceivably match, and the verdict for each
 | Printed words | Graph element | Kind | Named by the source? |
 |---|---|---|---|
 | いけふくろう / ふくろう | — | — | no graph element carries this name (0 occurrences) |
-| 「JR北改札」 (ISP) | `jr-north-gate` — 「JR 北改札 / JR North Gate」 | ticket-gate POI, `connectorNodeIds: []` → search-only | **yes, name-identical** — but the POI has no node and cannot be routed to or from |
+| 「JR北改札」 (ISP) | `jr-north-gate` — 「JR 北改札 / JR North Gate」 | ticket-gate POI, `connectorNodeIds: []` → search-only | **yes, the same gate by name** (the graph's string carries a space: 「JR 北改札」) — but the POI has no node and cannot be routed to or from |
 | 「JR改札付近」 (ward) | 4 named gate POIs (中央1, 中央2, 南, 北) | ticket gates | no — the wording is generic and names none of them |
 | 東口 + 地下1階 (ward) | `east-exit-b1` — 「東口（地下）/ East Exit (B1)」 | area POI, connector `c_e2` (a routable junction) | **only at word level**: the ward prints 東口 and 地下1階 but never the bracketed name 「東口（地下）」, and it does not say the statue is inside that area's connector |
 | 「地下通路」 (ISP) | `central-passage` — 「中央通路」, and the east-side passage nodes | area POI / junctions | no — ISP's phrase is generic and does not name 中央通路 |
@@ -117,9 +118,9 @@ another owl must not be transferred to いけふくろう.
 
 **Verdict.** No existing graph node or passage is named by any printed location statement for
 いけふくろう. The one graph element the text names is the **JR 北改札 POI** (`jr-north-gate`), and it
-is search-only. The nearest match that is routable is the **area** `east-exit-b1` (「東口（地下）」),
-and that match is by the words 東口 and 地下1階 only — not by a proper name and not by any statement
-that places the statue at that area's connector. Per the brief, the difference is stated rather than
+is search-only. The only routable element whose name shares a word with the ward's text is the
+**area** POI `east-exit-b1` (「東口（地下）」), and that is a word-level overlap only — not a proper-name
+match, and no statement places the statue at that area's connector. Per the brief, the difference is stated rather than
 inferred: there is no name match to attach the statue to, so nothing is attached.
 
 ## 6. What would close G11
@@ -142,8 +143,10 @@ the landmark, and the route card's G11 stays open.
 - ISP: facts only under OD-23 (all rights reserved, no quotation clause; not covered by OD-18). The
   quotes are for verification only, no text is copied into the product, and ISP is never the sole
   evidence for either end of a route — which is the second reason this card stops at a description.
-- Tokyo Metro, 東武ホープセンター, 西武: facts only under OD-34, but none of them printed anything
-  usable here (two 403s, one 404, two pages with no mention).
+- Tokyo Metro and 東武ホープセンター: facts only under OD-34, but neither printed anything usable here
+  (two 403s and one 404). The Seibu station shop portal is facts only under OD-34's second round; the
+  西武鉄道 station page was read only to check for a mention, no rights class is assigned to it here,
+  and neither mentions the statue.
 - JR東日本: corroboration only under OD-34 (1), and its homepage returned 403, so there is no
   corroboration to record either. No JR East text is used.
 - No image, map tile or photograph was read for position; the right to read a map image is not the
