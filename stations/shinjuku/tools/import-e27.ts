@@ -28,6 +28,7 @@ import { EnuFrame } from "@gteki/geo";
 import {
   SCHEMA_VERSION,
   validateBundle,
+  type BuildingHours,
   type CoverageArea,
   type CoverageGap,
   type DataFile,
@@ -35,6 +36,7 @@ import {
   type EdgeMode,
   type EvidenceRef,
   type Floor,
+  type HoursText,
   type LocalizedText,
   type Node,
   type Poi,
@@ -1257,8 +1259,17 @@ if (usedApprox.size !== s03ApproxById.size) throw new Error(`S03 positions: ${s0
 // itself). Contracts: docs/research/merchants/shinjuku-import-contract.md and shinjuku-batch2-contract.md.
 // Every shop is search-only: the sources give no position or entrance, so floorId, displayPosition, paid stay
 // null and connectorNodeIds stays empty. Brand lists are not POIs (#419); see gteki/tenants.json.
+// shinjuku-dept-stores.json (director, 2026-10-25) adds one store-level POI per printed building: LUMINE 1,
+// LUMINE 2, LUMINE EST, NEWoMan and the three 新宿マルイ buildings. It cites the LUMINE floor-guide sources the
+// batch files already registered, so it declares only its own Marui source; the check below catches a typo.
 type MerchantFile = { sources: Source[]; pois: Poi[] };
-const MERCHANT_POI_FILES = ["shinjuku-merchants-batch1.json", "shinjuku-merchants-batch2.json", "shinjuku-odakyu-dept.json"];
+const MERCHANT_POI_FILES = ["shinjuku-merchants-batch1.json", "shinjuku-merchants-batch2.json", "shinjuku-odakyu-dept.json", "shinjuku-dept-stores.json"];
+// A file may cite sources another file registered only when the pair is listed here, so a POI cannot
+// borrow an unrelated merchant source and pass the check below. The store POIs reuse the LUMINE /
+// NEWoMan floor-guide sources that batch2 already declares.
+const MERCHANT_CROSS_FILE_SOURCES: Record<string, readonly string[]> = {
+  "shinjuku-dept-stores.json": ["lumine-shinjuku-floorguide-2026-10", "lumine-est-shinjuku-floorguide-2026-10", "newoman-shinjuku-floorguide-2026-10"],
+};
 const MERCHANT_SOURCE_IDS = new Set<string>();
 for (const file of MERCHANT_POI_FILES) {
   const m = JSON.parse(readFileSync(join(HERE, "../../../docs/research/merchants", file), "utf8")) as MerchantFile;
@@ -1268,7 +1279,56 @@ for (const file of MERCHANT_POI_FILES) {
     const { usage, ...rest } = src;
     sources.push(usage == null ? (rest as Source) : { ...rest, usage });
   }
-  for (const poi of m.pois) pois.push(poi);
+  const own = new Set(m.sources.map((s) => s.id));
+  const allowed = new Set([...own, ...(MERCHANT_CROSS_FILE_SOURCES[file] ?? [])]);
+  for (const poi of m.pois) {
+    for (const id of poi.evidence.sourceIds)
+      if (!allowed.has(id)) throw new Error(`merchant import: ${poi.id} (${file}) cites ${id}, which this file does not declare`);
+    if (poi.evidence.sourceIds.length === 0) throw new Error(`merchant import: ${poi.id} cites no source`);
+    pois.push(poi);
+  }
+}
+
+// ---------------------------------------------------------------- printed shop hours (OD-32)
+// Transcription: docs/research/merchants/shinjuku-hours-batch1.json. Each row is the hours line an official
+// page printed for one shop (matched by poiId) or for a whole building (poiId null → station.json
+// buildingHours). Text stays as printed; nothing is parsed into open/closed state. Rows for shops that are
+// not shipped yet (the recovery batch) have no POI here and are skipped.
+type HoursEntry = {
+  poiId: string | null;
+  building?: string;
+  url: string;
+  retrievedAt: string;
+  pageDate: string | null;
+  status: "OK" | "UNKNOWN";
+  hoursText?: string;
+  basis?: HoursText["basis"];
+  note?: string;
+};
+const hoursResearch = JSON.parse(readFileSync(join(HERE, "../../../docs/research/merchants/shinjuku-hours-batch1.json"), "utf8")) as { entries: HoursEntry[] };
+const hoursOf = (e: HoursEntry): HoursText => ({
+  ...(e.status === "OK" ? { text: e.hoursText! } : {}),
+  sourceUrl: e.url,
+  retrievedAt: e.retrievedAt.slice(0, 10),
+  // A page date alone does not date the hours (OD-32): shop-sjk-odakyudept's 2025-01-15 is a parking notice,
+  // and PUPA's pageDate is the day the page was read. Only an explicit research `basis` makes a row dated.
+  basis: e.basis ?? "undated-official",
+  status: e.status,
+});
+const poiById = new Map(pois.map((p) => [p.id, p]));
+const buildingHours: BuildingHours[] = [];
+for (const e of hoursResearch.entries) {
+  if (e.poiId === null) {
+    buildingHours.push({
+      ...hoursOf(e),
+      building: [{ lang: "ja", text: e.building! }],
+      floorRange: null,
+      ...(e.note ? { note: [{ lang: "ja", text: e.note }] } : {}),
+    });
+    continue;
+  }
+  const poi = poiById.get(e.poiId);
+  if (poi) poi.hours = hoursOf(e);
 }
 
 // ---------------------------------------------------------------- WP4 line POIs (#501 gap table)
@@ -1391,6 +1451,7 @@ const bundle: StationBundle = {
   coverage,
   spawnNodeIds,
   dataFiles,
+  buildingHours,
 };
 
 // ---------------------------------------------------------------- plan (render geometry)
