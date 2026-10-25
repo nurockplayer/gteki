@@ -18,8 +18,9 @@ Base: `origin/main` 7e23fc36 (2026-10-25).
   Metro or Toei page is cited: `tokyometro.jp` answered 403 and no facts-only station page was
   needed once the stores' own pages had been read.
 - **Fetching.** `curl` only, its default User-Agent, no `-A`/UA header and no other added header,
-  requests ≥0.6 s apart, **34 requests** in total (fetch log below). No logins, no forms, no
-  browser, no ego-lite. Times in the log are UTC (JST = UTC+9).
+  requests ≥0.6 s apart — **47 requests** in total: 34 for the research and 13 re-reading the cited
+  pages to check the quotes after review (§Fetch log, round 2). No logins, no forms, no browser, no
+  ego-lite. Times in the log are UTC (JST = UTC+9).
 - **Fallbacks.** A 403, challenge or timeout is retried through Wayback where a snapshot exists,
   otherwise recorded as a GAP. `www.mistore.jp` still returns no HTTP response from this host
   (§GAP-1), so the 伊勢丹 access page was read from a Wayback copy of the same URL; the quote is
@@ -40,10 +41,12 @@ Base: `origin/main` 7e23fc36 (2026-10-25).
     `中央改札1` vs `中央1改札`). Recorded, but **never** treated as the same element: that would
     be inference.
   - No POI in the bundle has the name → **no matching POI**.
-- **Verdicts** (the lead's ruling of 2026-10-25 applied here). **READY** requires both: (a) the
-  printed text names the station element **exactly** as an existing POI names it, ignoring only
-  operator prefixes and spaces; and (b) the printed text says the store entrance is at or directly
-  from that element — wording such as 直結, 直通, 正面, すぐ, 改札前. Anything else is **PARTIAL**,
+- **Verdicts** (the lead's ruling of 2026-10-25 applied here). **READY** requires all three: (a)
+  the printed text names the station element **exactly** as an existing POI names it, ignoring only
+  operator prefixes and spaces; (b) the printed text says the store entrance is at or directly
+  from that element — wording such as 直結, 直通, 正面, すぐ, 改札前; and (c) the statement attaches
+  to that one store POI — a tie printed for a building complex (ルミネ新宿) is not a per-POI tie.
+  Anything else is **PARTIAL**,
   with the reason. **FIELD** = nothing printed that could be used; the reason is given. A
   station-level claim (「…駅直結」, 「新宿駅南口より徒歩1分」) is not a tie to an element; a walking
   time is not a connection; a gate listed in a map legend is not a printed entrance tie.
@@ -52,15 +55,17 @@ Base: `origin/main` 7e23fc36 (2026-10-25).
 
 ## Result
 
-14 store POIs: **3 READY**, **9 PARTIAL**, **2 FIELD**. The READY rows are ルミネ池袋
-(「JR池袋駅南改札、正面右手よりすぐ」 → `jr-south-gate` 「JR 南改札」) and ルミネ新宿
-ルミネ1 / ルミネ2 (「ルミネ口より直通」 → `poi:keio-gate:4` 「京王線　ルミネ口」).
-Two rows first read as READY were downgraded to PARTIAL on the lead's ruling of 2026-10-25
-(新宿マルイ 本館, 東武百貨店); the reasons are in each row and in §Notes. ルミネ1 / ルミネ2
-were downgraded in the same pass and are restored to READY here: the downgrade rested on
-「no POI has the name ルミネ口」, but `poi:keio-gate:4` 「京王線　ルミネ口」 does, so the printed
-「ルミネ口より直通」 is an exact name plus a 直通 tie. That tie is printed for the ルミネ新宿
-complex, not per building (§Notes).
+14 store POIs: **1 READY**, **11 PARTIAL**, **2 FIELD**. The single READY row is ルミネ池袋
+(「JR池袋駅南改札、正面右手よりすぐ」 → `jr-south-gate` 「JR 南改札」).
+Four rows were read as READY at some point and ended PARTIAL on the lead's rulings of 2026-10-25
+(新宿マルイ 本館, ルミネ1, ルミネ2, 東武百貨店); the reasons are in each row and in §Notes.
+
+ルミネ1 / ルミネ2 are PARTIAL for a reason that was corrected in review: the printed
+「ルミネ口より直通」 **is** an exact namesake of `poi:keio-gate:4` 「京王線　ルミネ口」 (an earlier
+revision wrongly said no POI had that name), but the access page prints one 電車 section for the
+ルミネ新宿 complex and does not say which building that entrance serves. A READY verdict has to
+attach to one store POI, so the tie is recorded as a complex-level lead for the field check, not as
+a routing tie for either building.
 
 | Store POI (`gteki/pois.json`) | Store (as printed) | Verdict | Printed statement (verbatim) | Named station element (as printed) | Matching POI in `pois.json` | Store floor printed | Source (URL, snapshot) | Date |
 |---|---|---|---|---|---|---|---|---|
@@ -68,8 +73,8 @@ complex, not per building (§Notes).
 | `shop-sjk-marui-honkan` | 新宿マルイ 本館 | **PARTIAL** — the printed gate is a waypoint in a ~600 m walking route, not the entrance; 「JR西口改札」 vs POI 「JR西口」 is a 改札/口 near match | 「JR線(新宿駅)から…車いす25分」(route heading, as printed) 「中央西口を出て右に曲がり、JR西口方面に80mほど進みます。**JR西口改札前**で左に曲がり、40mほど進んで｢地上出口1｣階段手前を右に曲がります。つきあたりにある2号機エレベーターでB2Fに降りて右に曲がり、メトロプロムナードを500mほど進むと、右手に**新宿マルイ本館B1F入口**がございます。」 | JR西口改札 / 地上出口1 | **near**: `poi:jreast-gate:10` 「JR西口」 (改札 vs 口, not the same element). 地上出口1: no matching POI | B1F (本館B1F入口, reached via メトロプロムナード) | `https://www.0101.co.jp/003/access/` | 2026-10-25 |
 | `shop-sjk-marui-annex` | 新宿マルイ アネックス | **PARTIAL** | 「メトロプロムナードを400mほど進んで、B4出口にあるエレベーターで地上に出ます。新宿通りを左に曲がると新宿三丁目交差点がありますので、ＪＴＢを目印として伊勢丹の対角に横断し、新宿通りを80mほど進むと、右手に**新宿マルイアネックス**がございます。」 (quote is the JR route; 三越方面改札 is printed in the 丸ノ内線 新宿三丁目駅 route on the same page) | B4出口 / 三越方面改札 | **no matching POI** (the bundle's six `exit` POIs carry descriptors, not exit numbers; no gate named 三越方面改札) | not printed | `https://www.0101.co.jp/005/access/` | 2026-10-25 |
 | `shop-sjk-marui-men` | 新宿マルイ メン | **FIELD** | — the access page prints the location, 駐車場 and 駐輪場 only (Park One 新宿マルイメン駐車場, 駐車場までのルートのご案内); no train, gate, exit or passage line | — | — | not printed | `https://www.0101.co.jp/074/access/` | 2026-10-25 |
-| `shop-sjk-lumine1` | ルミネ新宿 ルミネ1 | **READY** — 「ルミネ口より直通」 (printed under the line label 京王線) names ルミネ口 exactly and prints 直通. The page gives one 電車 section for both buildings, so this is a printed tie for the ルミネ新宿 complex, not for ルミネ1 alone. The other two lines do not count: 新宿駅南口 is printed once for JR, 小田急 and 京王 together (reading it as the JR gate is inference) and 徒歩1分 is a walking time; 新宿駅京王新線口 is also 徒歩1分 | 「新宿駅南口より徒歩1分」「ルミネ口より直通」「新宿駅京王新線口より徒歩1分」 — each printed under its own line label (JR・小田急線・京王線 / 京王線 / 京王新線・都営新宿線・都営大江戸線・), section heading 電車でお越しの方 | 新宿駅南口 / ルミネ口 / 京王新線口 | **exact**: `poi:keio-gate:4` 「京王線　ルミネ口」 (the 直通 line). 新宿駅南口 would be `poi:jreast-gate:7` 「JR南口」 but the printed 南口 is shared, not JR-specific. **exact name, no tie**: `poi:keio-gate:1` / `:2` 「京王新線　京王新線口」 with 徒歩1分 | not printed | `https://www.lumine.ne.jp/shinjuku/access/` | 2026-10-25 |
-| `shop-sjk-lumine2` | ルミネ新宿 ルミネ2 | **READY** — same page, same reasons as ルミネ1 (complex-level tie, not specific to ルミネ2) | same page, same three statements (the page gives one 電車 section for both buildings; 所在地 prints both) | 新宿駅南口 / ルミネ口 / 京王新線口 | same as ルミネ1: **exact** `poi:keio-gate:4` 「京王線　ルミネ口」 (直通 line); **exact name, no tie** `poi:keio-gate:1` / `:2` 「京王新線　京王新線口」 (徒歩1分); 新宿駅南口 → `poi:jreast-gate:7` 「JR南口」 only by inference | not printed | `https://www.lumine.ne.jp/shinjuku/access/` | 2026-10-25 |
+| `shop-sjk-lumine1` | ルミネ新宿 ルミネ1 | **PARTIAL** — `poi:keio-gate:4` 「京王線　ルミネ口」 matches the printed 「ルミネ口」 exactly and 「ルミネ口より直通」 is a 直通 tie, but the page prints one 電車 section for the ルミネ新宿 complex and does not say which building that entrance serves: complex-level tie, no per-building attribution. The other two lines do not count: 新宿駅南口 is printed once for JR, 小田急 and 京王 together (reading it as the JR gate is inference) and 徒歩1分 is a walking time; 新宿駅京王新線口 is also 徒歩1分 | 「新宿駅南口より徒歩1分」「ルミネ口より直通」「新宿駅京王新線口より徒歩1分」 — each printed under its own line label (JR・小田急線・京王線 / 京王線 / 京王新線・都営新宿線・都営大江戸線・), section heading 電車でお越しの方 | 新宿駅南口 / ルミネ口 / 京王新線口 | **exact**: `poi:keio-gate:4` 「京王線　ルミネ口」 (the 直通 line; strongest lead for the field check). 新宿駅南口 would be `poi:jreast-gate:7` 「JR南口」 but the printed 南口 is shared, not JR-specific. **exact name, no tie**: `poi:keio-gate:1` / `:2` 「京王新線　京王新線口」 with 徒歩1分 | not printed | `https://www.lumine.ne.jp/shinjuku/access/` | 2026-10-25 |
+| `shop-sjk-lumine2` | ルミネ新宿 ルミネ2 | **PARTIAL** — same page, same reasons as ルミネ1 (complex-level tie, no per-building attribution) | same page, same three statements (the page gives one 電車 section for both buildings; 所在地 prints both) | 新宿駅南口 / ルミネ口 / 京王新線口 | same as ルミネ1: **exact** `poi:keio-gate:4` 「京王線　ルミネ口」 (直通 line); **exact name, no tie** `poi:keio-gate:1` / `:2` 「京王新線　京王新線口」 (徒歩1分); 新宿駅南口 → `poi:jreast-gate:7` 「JR南口」 only by inference | not printed | `https://www.lumine.ne.jp/shinjuku/access/` | 2026-10-25 |
 | `shop-sjk-lumineest` | ルミネエスト新宿 | **PARTIAL** | 「JR新宿駅中央東改札または東改札から徒歩1分」 (section heading 電車でお越しの方) | 中央東改札 / 東改札 | **near**: `poi:jreast-gate:5` 「JR中央東口」 and `poi:jreast-gate:9` 「JR東口」 (改札 vs 口) | not printed | `https://www.lumine.ne.jp/est/access/` | 2026-10-25 |
 | `shop-sjk-newoman` | ニュウマン新宿 | **PARTIAL** | 「JR各線「新宿駅」**ミライナタワー改札・甲州街道改札・新南改札**方面へお越しください。」「都営新宿線・都営大江戸線・京王新線「新宿駅」より徒歩5分。」「東京メトロ副都心線「新宿三丁目駅」より徒歩3分。（**E10出口** 出てすぐ）」 | ミライナタワー改札 / 甲州街道改札 / 新南改札 / E10出口 | **near**: `poi:jreast-gate:3` 「JR 新南口 ミライナタワー改札口」, `poi:jreast-gate:4` 「JR 新南口　甲州街道口」, `poi:jreast-gate:2` 「JR 新南口」 (改札 vs 改札口/口). E10出口: no matching POI | not printed | `https://www.newoman.jp/shinjuku/access/` | 2026-10-25 |
 | `shop-sjk-isetan-honkan` (PR #524, not merged) | 伊勢丹新宿店 本館 | **PARTIAL** | 「東京メトロ丸の内線：**伊勢丹方面改札**〜（徒歩約1分）」「東京メトロ副都心線：**新宿三丁目交差点改札**〜（徒歩約2分）：**伊勢丹正面改札**〜（徒歩約30秒）」「都営新宿線：**新宿三丁目改札**〜（徒歩約3分）」「※伊勢丹正面改札は、午前7時～午後3時は駅からの出場専用。午後3時～終電までは駅への入場専用。」 | 伊勢丹方面改札 / 新宿三丁目交差点改札 / 伊勢丹正面改札 / 新宿三丁目改札 (all 新宿三丁目駅) | **no matching POI** — the bundle holds 新宿駅 only; no 新宿三丁目駅 gate POI exists | not printed | `https://www.mistore.jp/store/shinjuku/access.html` via Wayback snapshot `20261014182417` (`http://web.archive.org/web/20261014182417/https://www.mistore.jp/store/shinjuku/access.html`) — direct read times out, GAP-1 | 2026-10-25 |
@@ -97,14 +102,14 @@ complex, not per building (§Notes).
   tie. PARTIAL on both counts.
 - **ルミネ新宿.** One 電車 section serves both ルミネ1 and ルミネ2 (the page prints both buildings'
   住所), so the same quotes and verdicts are recorded for both POIs. 「ルミネ口より直通」 (printed
-  under the line label 京王線) gives READY: ルミネ口 is `poi:keio-gate:4` 「京王線　ルミネ口」
-  exactly, and 直通 is a printed direct connection from that gate. **The limitation:** the page
-  prints one access section for the complex and does not say which building the direct entrance
-  serves, so the tie is recorded at complex level; a per-building entrance is not printed. The other
-  two statements do not count: 新宿駅南口 is printed once under 「JR・小田急線・京王線」 together, so
-  reading it as the JR gate is inference, and 徒歩1分 is a walking time rather than a connection;
-  「新宿駅京王新線口より徒歩1分」 names `poi:keio-gate:1` / `:2` 「京王新線　京王新線口」 exactly
-  but is again a walking time.
+  under the line label 京王線) is the strongest lead: ルミネ口 is `poi:keio-gate:4`
+  「京王線　ルミネ口」 exactly, and 直通 is a printed direct connection from that gate. It stays
+  **PARTIAL** because the page prints one access section for the complex and does not say which
+  building the direct entrance serves — the tie has no per-building attribution, so wiring it to
+  both ルミネ1 and ルミネ2 could be wrong for one of them. The other two statements do not count:
+  新宿駅南口 is printed once under 「JR・小田急線・京王線」 together, so reading it as the JR gate is
+  inference, and 徒歩1分 is a walking time rather than a connection; 「新宿駅京王新線口より徒歩1分」
+  names `poi:keio-gate:1` / `:2` 「京王新線　京王新線口」 exactly but is again a walking time.
 - **伊勢丹新宿店.** The store's access page answers from 新宿三丁目駅: the four named elements are
   gates of that station, and `stations/shinjuku/gteki/pois.json` holds 新宿駅 POIs only, so none of
   them can be mapped without a 新宿三丁目駅 bundle. The メンズ館 has no access text of its own.
@@ -178,7 +183,30 @@ no HTTP response (timeout / no answer). All times 2026-10-25 UTC.
 | 33 | 13:09:23 | Wayback API | `…/available?url=mistore.jp/store/shinjuku/shops_mens.html` | 200 | 262 | snapshot `20260608083222` |
 | 34 | 13:09:28 | Wayback copy | `http://web.archive.org/web/20260608083222/https://www.mistore.jp/store/shinjuku/shops_mens.html` | 200 | 119,418 | メンズ館 floor guide; no access text |
 
-Request count: **34** (#23 malformed and discarded; 33 responses read).
+### Round 2 — quote re-verify (after the oracle review)
+
+Same fetch rules (`curl`, default User-Agent, no added headers, requests ≥0.6 s apart). Times are the
+completion times recorded on the saved responses; the purpose of every request is to check that each
+「」 quote in the table is a continuous substring of the cited page.
+
+| # | UTC | Target | URL | Status | Bytes | Note |
+|---|---|---|---|---|---|---|
+| 35 | 13:38:32 | LUMINE | `https://www.lumine.ne.jp/shinjuku/access/` | 200 | 25,740 | quote re-verify (ルミネ1 / ルミネ2) |
+| 36 | 13:38:34 | LUMINE | `https://www.lumine.ne.jp/ikebukuro/access/` | 200 | 23,957 | quote re-verify (ルミネ池袋) |
+| 37 | 13:39:19 | 東武百貨店 | `https://www.tobu-dept.jp/ikebukuro/access/` | 200 | 17,591 | quote re-verify (直結 claim + legend) |
+| 38 | 13:39:22 | NEWoMan | `https://www.newoman.jp/shinjuku/access/` | 200 | 24,574 | quote re-verify |
+| 39 | 13:39:23 | 新宿マルイ | `https://www.0101.co.jp/003/access/` | 200 | 33,665 | quote re-verify (本館) |
+| 40 | 13:39:24 | LUMINE | `https://www.lumine.ne.jp/est/access/` | 200 | 24,993 | quote re-verify (ルミネエスト) |
+| 41 | 13:41:15 | 小田急百貨店 | `https://www.odakyu-dept.co.jp/info/v4l5d000001cquyy-att/20250917.pdf` | 200 | 542,206 | quote re-verify; text read with `pdftotext` |
+| 42 | 13:41:16 | エソラ池袋 | `https://www.metropro-sc.jp/esola-ikebukuro/` | 200 | 62,909 | quote re-verify (title / h1) |
+| 43 | 13:41:38 | 新宿マルイ | `https://www.0101.co.jp/074/access/` | 200 | 26,509 | quote re-verify (メン: parking only, FIELD) |
+| 44 | 13:41:40 | 新宿マルイ | `https://www.0101.co.jp/005/access/` | 200 | 35,214 | quote re-verify (アネックス) |
+| 45 | 13:42:12 | Wayback copy | `http://web.archive.org/web/20261014182417/https://www.mistore.jp/store/shinjuku/access.html` | 200 | 260,576 | quote re-verify (伊勢丹, archived) |
+| 46 | 13:43:17 | 池袋パルコ | `https://ikebukuro.parco.jp/access/` | 200 | 14,675 | quote re-verify; not-found page body (HTTP 200) |
+| 47 | 13:43:18 | 池袋パルコ | `https://ikebukuro.parco.jp/info/` | 200 | 49,714 | quote re-verify; 住所 / 営業時間 only |
+
+Request count: **47** — round 1 **34** (#23 malformed and discarded; 33 responses read) and round 2
+**13** quote re-verify reads. Every request made for this file is listed above.
 
 ## Gap in the record itself
 
