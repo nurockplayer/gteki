@@ -138,6 +138,8 @@ export class App {
     // to its right on a desktop); the panel's own size changes refit it (see Explorer.setPanel).
     this.explorer.setPanel(this.ui.panel);
     this.explorer.setMinimap(this.ui.minimap.el);
+    // On a phone the open route sheet is a bottom occluder of the same kind (#385).
+    this.explorer.setSheet(this.ui.sheet);
     this.explorer.setGuideTier(readGuideTier());
     this.bindGuideKeys();
     watchReducedMotion((reduce) => {
@@ -745,8 +747,14 @@ export class App {
     sheet.innerHTML = "";
     const r = this.s.route;
     const b = this.s.loaded?.bundle;
-    if (!r || !b) { sheet.classList.remove("open"); return; }
-    sheet.classList.add("open");
+    sheet.classList.toggle("open", Boolean(r && b));
+    if (r && b) this.fillSheet(sheet, r, b);
+    // Opening, closing or resizing the sheet changes the phone's free area: refit an automatic overview (#385).
+    this.explorer.refitOverview();
+  }
+
+  /** Fill the open route sheet; `renderSheet` owns the open class and the overview refit. */
+  private fillSheet(sheet: HTMLElement, r: RouteResult | RouteFailure, b: StationBundle): void {
     const t = this.t;
     if (!r.ok) {
       const card = el("div", "card no-route");
