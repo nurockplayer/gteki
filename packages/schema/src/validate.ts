@@ -1,4 +1,4 @@
-import type { Edge, Floor, LocalizedText, Poi, StationBundle } from "./index.ts";
+import type { Edge, Floor, HoursText, LocalizedText, Poi, StationBundle } from "./index.ts";
 import { SCHEMA_VERSION } from "./index.ts";
 import { parseHm } from "./hours.ts";
 
@@ -36,6 +36,8 @@ export function isCanonicalAssetPath(p: string): boolean {
 const COVERAGE_STATUSES = new Set(["routable", "visual_only", "unverified", "excluded"]);
 const ELEVATION_SOURCES = new Set(["measured", "source-derived", "symbolic", "unknown"]);
 const RIGHTS = new Set(["REUSABLE_WITH_CONDITIONS", "PUBLISHED_UNDER_OWNER_OVERRIDE", "REFERENCE_ONLY", "RESTRICTED", "UNVERIFIED"]);
+/** Whose word a printed-hours row is (OD-32): a merchant listing, a dated official page, or an undated one. */
+const HOURS_BASES = new Set(["merchant", "dated-official", "undated-official"]);
 /** Rights values whose data may feed published geometry/data: REUSABLE_WITH_CONDITIONS and the Owner's recorded override (#130). */
 const isShippableRights = (r: unknown) => r === "REUSABLE_WITH_CONDITIONS" || r === "PUBLISHED_UNDER_OWNER_OVERRIDE";
 /**
@@ -384,6 +386,21 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     }
   }
 
+  // Printed hours (OD-32): the app shows the page's own wording with the date it was read, so every row says
+  // where it came from, when, whose word it is, and whether the page printed anything at all.
+  const checkHours = (h: HoursText, ref: string): void => {
+    if (!HOURS_BASES.has(h.basis)) err("hours.basis", `unknown hours basis ${String(h.basis)}`, ref);
+    if (h.status !== "OK" && h.status !== "UNKNOWN") err("hours.status", `unknown hours status ${String(h.status)}`, ref);
+    if (!isIsoDate(h.retrievedAt)) err("hours.date", `retrievedAt ${h.retrievedAt} is not YYYY-MM-DD`, ref);
+    if (!isHttpUrl(h.sourceUrl)) err("hours.url", "hours need the http(s) page they were read from", ref);
+    if (h.status === "OK" && !(h.text ?? "").trim()) err("hours.text", "status OK needs the hours text as printed", ref);
+  };
+  for (const [i, h] of (b.buildingHours ?? []).entries()) {
+    const ref = `buildingHours[${i}]`;
+    checkHours(h, ref);
+    if (h.building.length === 0) err("buildingHours.building", "building hours without a building name", ref);
+  }
+
   const poiIds = new Set<string>();
   const poiById = new Map<string, Poi>();
   for (const p of b.pois) {
@@ -408,6 +425,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
       if (!b.station.synthetic && !p.evidence.sourceIds.some(reusableData))
         err("poi.approximate.rights", "approximatePosition needs at least one REUSABLE_WITH_CONDITIONS or PUBLISHED_UNDER_OWNER_OVERRIDE data source in its evidence", p.id);
     }
+    if (p.hours) checkHours(p.hours, p.id);
     if (p.connectorNodeIds.length === 0) warn("poi.unroutable", "POI has no verified connector; search-only", p.id);
   }
 
