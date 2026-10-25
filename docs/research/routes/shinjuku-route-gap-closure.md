@@ -1,6 +1,6 @@
 # Shinjuku route gap closure: G-09, G-08, G-03
 
-Closes the three source gaps named in the Shinjuku first-slice route card (card #484, `docs/research/routes/shinjuku-first-slice-route.md`, draft PR; the file is not on `main` yet, so it is cited by PR number rather than by path). Work done 2026-10-25; request log in §7.
+Closes the three source gaps named in the Shinjuku first-slice route card (card #484; its file `docs/research/routes/shinjuku-first-slice-route.md` exists only in that draft PR, so the card is cited by PR number). Work done 2026-10-25; request log in §7.
 
 **No station data was changed.** Every sentence below either confirms an existing gap row or records a negative result. Nothing here is a new source for the E27 bundle: no source id is added and no `sourceIds` array is changed.
 
@@ -18,11 +18,11 @@ Sources allowed for this task: 東京都交通局 (facts only), Tokyo Metro, Met
 
 | Gap | Verdict | One line |
 | --- | --- | --- |
-| **G-09** | **GAP — no operator name exists that can be matched by printed name.** | Toei prints gate labels only as remarks on its shared S01/E27 exit list (A1 【マインズタワー方面改札】, exits 3–5 【京王新線口】, exits 6–8 【新都心口】), attaches none of them to the 大江戸線 B1 concourse, and `poi:gate:2` prints only a positional descriptor; a printed-name match therefore does not exist, and assigning one of those labels would be a position inference. |
+| **G-09** | **GAP — no printed-name match exists for the B1 north-side gate.** | Toei prints gate labels only as remarks on its shared S01/E27 exit list (A1 【マインズタワー方面改札】, exits 3–5 【京王新線口】, exits 6–8 【新都心口】), attaches none of them to the 大江戸線 B1 concourse, and `poi:gate:2` prints only a positional descriptor; matching any of those labels to the POI would be a position inference. |
 | **G-08** | **GAP — the notice is the 新宿線's exit 2 and cannot be matched by printed name to any E27 `poi:exit:*`.** | The notice closes 「新宿線新宿駅2番出口」 of 京王新線・都営新宿線 新宿駅 from the first train of 2024-03-30, reason ミヤコ新宿ビル demolition, no end date printed; every E27 exit POI carries "Exit number/name not in source (coverage gap)", so there is no printed number on the E27 side to match, and the shared Toei page does not attribute exit 2 to 大江戸線. The mapping stays UNKNOWN. |
 | **G-03** | **GAP — no printed concourse or passage hours were found.** | The only operator hours on record are exit hours (exits 4–7 6:00–23:00, exit 8 7:00–23:00), which cover neither the B1 north gate nor the passages on the route; no first/last train time was used, so `hours: null` and the router's `hours` warnings stand. |
 
-**Bottom line: none of the three gaps closes.** G-09 and G-08 are now checked rather than assumed: the operator's printed words exist, but in both cases they name the S01/京王新線 side, not the E27 side, and the E27 POIs carry no printed names to match against. G-03 has no operator page to cite at all. The card's G-03, G-08 and G-09 rows remain an accurate statement of what is and is not known.
+**Bottom line: none of the three gaps closes.** G-09 and G-08 are now checked rather than assumed: the operator does print gate-like labels and an exit number, but its text never ties any of them to the E27 side, and the E27 POIs carry no printed names or numbers to match against. G-03 has no operator page to cite at all. The card's G-03, G-08 and G-09 rows remain an accurate statement of what is and is not known.
 
 The one thing this task changes for planning: Toei now refuses plain HTTP clients outright (§3.1), so any future re-check of these three gaps needs a browser read, and must be recorded as a browser read — the 2026-10-22 records cited below cannot be refreshed with `curl`.
 
@@ -113,7 +113,7 @@ What it reported, and how it touches the verdicts:
 2. **マインズタワー口 names an exit, not a gate.** It says a 2026-06 official elevator-inspection document writes 「A1地上出入口(マインズタワー口)～改札口」, i.e. マインズタワー口 is the ground exit's name. If confirmed it strengthens §3.2: マインズタワー方面改札 must not be moved onto `poi:gate:2`.
 3. **Closure notice, agreeing with DR-SJ-05.** It reports the same title, date, reason and scope — closure 「令和6年3月30日（土）始発より」, 「ミヤコ新宿ビル解体工事に伴い」, scope 「２番出口」, no reopening date — and adds that the PDF marks 「迂回路」「閉鎖出口」「京王新線通路」 without declaring the whole passage closed. That agrees with DR-SJ-05's note that the notice states no passage closure in text.
 4. **Exit 1 on the map.** It reports the 構内図 still marking 2番出口 「閉鎖中」 today, but says it could **not** confirm the same mark on 1番出口. This does not contradict DR-SJ-01: that record is the **page's 出入口一覧**, which tags both exits 1 and 2 as 閉鎖中; the 構内図 is a different artefact, and DR-SJ-01 never claimed the map shows exit 1 closed. Whether the map shows exit 1 as open is UNKNOWN.
-5. **Hours: NOT FOUND, plus one trap.** It reports no concourse or passage hours, and warns that the station page's 「営業時間：11時00分～20時00分」 belongs to the **定期券販売情報** (ticket-office) block — not concourse hours. That trap is now on record for G-03: if it is ever seen again, it must not be read as passage hours.
+5. **Hours: NOT FOUND, plus one trap.** It reports no concourse or passage hours, and warns that the station page's 「営業時間：11時00分〜20時00分」 belongs to the **定期券販売情報** (ticket-office) block — not concourse hours. That trap is now on record for G-03: if it is ever seen again, it must not be read as passage hours.
 
 None of the five items changes a verdict. The lookup's value is that an independent browser read also found no gate name and no passage hours — consistent with §3.2 and §3.4 — not that it supplied a source.
 
