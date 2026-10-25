@@ -3,7 +3,26 @@
   "stationId": "ikebukuro",
   "generatedAt": "2026-10-24",
   "generatedBy": "WP5 transcription (Codex gpt-6-luna), reviewed by lines-lead against the map image",
-  "sources": [],
+  "sources": [
+    {
+      "id": "toshima-underground-guide-2022",
+      "title": "池袋駅地下空間案内図 (2022年1月版)",
+      "publisher": "豊島区",
+      "url": "https://www.city.toshima.lg.jp/405/1705251510.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "豊島区「池袋駅地下空間案内図」(facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-20T10:52:00Z",
+      "datasetDate": "2022-01",
+      "notes": "Used only to identify which PLATEAU openings are which named passage, exit or gate. No image, layout or pictogram is reproduced.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
+    }
+  ],
   "sourceNote": "The source already exists in stations/ikebukuro/gteki/station.json as toshima-underground-guide-2022. Site terms (checked 2026-10-25): city.toshima.lg.jp サイトポリシー (https://www.city.toshima.lg.jp/012/kuse/koho/homepage/sitepolicy.html, retrievedAt 2026-10-25T02:10:49+09:00, HTTP 200, 23,634 B, sha256 9f2f0e5a3610c1f6dfc2d08a918220a31706287a698105f4cdf06c4f4a869c2d) forbids unauthorised reproduction or adaptation of the site's documents and images except private-use copies and quotation permitted by copyright law; facts only, director ruling OD-34 2026-10-25.",
   "pois": [
     {
