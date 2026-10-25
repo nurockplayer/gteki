@@ -111,3 +111,51 @@ All four OK building entries carry `"note":"店舗により異なる場合あり
 - No browser, no JavaScript, no oracle/LLM tool, no contact with anyone, no rights decision made.
 - Retrieval times are UTC, recorded per entry (pages read between 2026-10-24T11:46Z and
   2026-10-24T11:58Z).
+
+## Addendum 2026-10-25 — the five batch-1 POIs (`ikebukuro-merchants.sample.json`)
+
+Lead request: add printed hours for `shop-ikb-mr-001` … `shop-ikb-mr-005`, which had no entry in
+the 349 above. Branch `docs/ikb-mr-hours` from `origin/main` (`a126b33b`). Fetch as above: plain
+`curl`, default UA, sequential, ≥0.6 s apart; 16 responses in total (10 sampled on the earlier
+sitting, 6 between 03:32Z and 03:36Z), all HTTP 200, no workaround attempted.
+
+| POI | Shop (research file) | Source | Page | Status | hoursText (as printed) |
+| --- | --- | --- | --- | --- | --- |
+| `shop-ikb-mr-001` | Soup Stock Tokyo | echika-ikebukuro-2026-10 | `shopid=1099` | OK, undated-official | 8:00-23:00〈LO.22:30〉 |
+| `shop-ikb-mr-002` | Patio de METRO | echika-ikebukuro-2026-10 | `shopid=1110` | OK, undated-official | 9:00-21:30 |
+| `shop-ikb-mr-003` | Tabio | echika-ikebukuro-2026-10 | `shopid=1103` | OK, undated-official | 10:00-21:00 |
+| `shop-ikb-mr-004` | マツモトキヨシ | isp-floorguide-2026-10 | `cd=000088` | OK, undated-official | 月～土 10：00～21：00 / 日・祝 10：00～19：30 / ※館営業時間に準ずる |
+| `shop-ikb-mr-005` | スターバックス コーヒー 南館店 | isp-floorguide-2026-10 | `cd=000064` | OK, undated-official | 毎日 7:00～22:30 |
+
+- The three Metro-page POIs have no page of their own (that page is 403, above). Each was matched
+  to an Echika shop page by name; `shopid=1099` is confirmed by the phone number it prints
+  (`03-5952-5707`), identical to the chain's own エチカ池袋店 page. `shopid=1110` and `shopid=1103`
+  print the names Patio de METRO and Tabio.
+- ISP pages print the 南館 zone label and the shop's own name; no inference from the 全館 hours.
+- `shop-ikb-mr-001` carries `"note":"エチカ池袋店（改札外）として表示。POI の区画は未記入"`: the POI
+  records no area, the hours belong to the Echika shop.
+- Chain page `soup-stock-tokyo.com/store/detail/?id=1058` was read as a cross-check only (平日・土・
+  日・祝 all `08:00 - 23:00 (ラストオーダー22:30)`, `定休日 無休`) and is **not** cited by any entry:
+  the site exposes no 利用規約/サイトポリシー page (footer links only プライバシーポリシー and
+  カスタマーハラスメントポリシー; `robots.txt` allows `/store/`). Its rights status is therefore
+  no recorded terms — a decision for the Lead, not made here. No ban was printed, so nothing is
+  reproduced and no page text is copied.
+- The same chain lists a separate ルミネ池袋店 (`id=1069`, 11:00-22:00, Lumine 8F). It is not the
+  station-concourse shop and its hours are not recorded against `shop-ikb-mr-001`.
+- Every page read here is undated. The chain detail page carries JSON-LD `datePublished`
+  2018-10-16, which is not a printed content date and is not used.
+
+**Totals after the addendum: 354 entries — 349 OK (all `undated-official`, `pageDate` null),
+5 UNKNOWN (unchanged; the 2 Metro-page 403s, 東武百貨店 no hours, エチカ池袋 and エミオ池袋
+building rows).**
+
+### GAPs raised by this addendum
+
+- `soup-stock-tokyo.com` has no terms page to read: its rights class is unrecorded. Any later use
+  of it as a source needs a Lead ruling first (OD-34).
+- The batch-1 POIs are keyed by `shop-ikb-mr-00x`; `ikebukuro-merchants-batch3-log.md` says its own
+  imports were numbered `shop-ikb-mr-001 to 007`, while the committed `ikebukuro-merchants-batch3.json`
+  uses `shop-ikb-metro-001` and `shop-ikb-metro-002`. The hours file's two UNKNOWN rows follow the
+  JSON. The log line is stale — left untouched here.
+- This log writes `tobuhopecenter-floorguide-2026-10`; the JSON uses
+  `tobu-hopecenter-floorguide-2026-10`. One of the two is wrong for joins — left untouched here.
