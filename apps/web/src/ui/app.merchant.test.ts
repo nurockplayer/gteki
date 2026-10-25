@@ -13,7 +13,7 @@ import { App } from "./app.ts";
 
 type Harness = {
   s: { lang: Lang; loaded: { bundle: ReturnType<typeof createSyntheticBundle> } | null; route: unknown; noPath: null; destination: Poi | null; destinationTenant: null; search?: unknown; filter: Poi["category"] | null };
-  ui: { sheet: HTMLElement; categoryFilter: HTMLSelectElement; toInput: HTMLInputElement; fromInput: HTMLInputElement };
+  ui: { sheet: HTMLElement; categoryFilter: HTMLSelectElement; toInput: HTMLInputElement; fromInput: HTMLInputElement; toResults: HTMLElement };
   t: ReturnType<typeof strings>;
   renderCategoryFilter: (b: ReturnType<typeof createSyntheticBundle> | undefined) => void;
   renderResults: (which: "from" | "to") => void;
