@@ -12,14 +12,16 @@ export type MerchantPrecision = "point" | "area" | "search";
 
 /**
  * The precision the listing's own evidence text states. The tokens are the data's, not a ranking of ours.
- * A display position is a verified location only when the POI is routable (#213): a listing's own point
- * without a connector has no verified entrance, so it falls back to the evidence wording.
+ * A display position is a verified location only when the POI is routable (#213) and its evidence is not
+ * SEARCH_ONLY: a listing's own point without a connector has no verified entrance, and a connector does not
+ * turn a search-only listing's point into one, so both fall back to the evidence wording.
  */
 export function merchantPrecision(poi: Poi): MerchantPrecision | null {
-  if (poi.displayPosition !== null && poi.connectorNodeIds.length > 0) return "point";
   const method = poi.evidence.method;
+  const searchOnly = /\bSEARCH_ONLY\b/.test(method);
+  if (poi.displayPosition !== null && poi.connectorNodeIds.length > 0 && !searchOnly) return "point";
   if (/\bAREA_ONLY\b/.test(method)) return "area";
-  if (/\bSEARCH_ONLY\b/.test(method)) return "search";
+  if (searchOnly) return "search";
   return null;
 }
 
