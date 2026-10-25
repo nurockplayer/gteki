@@ -37,9 +37,18 @@ describe("merchant precision (#213)", () => {
   it("reads the precision the listing's own evidence states", () => {
     expect(merchantPrecision(shop())).toBe("area");
     expect(merchantPrecision(shop({ evidence: { sourceIds: [source.id], method: "facts-only directory listing (#26), UNVERIFIED, SEARCH_ONLY", checkedDate: "2026-10-24" } }))).toBe("search");
-    // A display position is a verified point only with a connector: routable, so the evidence words are irrelevant.
+    // A routable display position is a verified point, unless the evidence is SEARCH_ONLY (see below).
     expect(merchantPrecision(shop({ displayPosition: { x: 0, y: 0, z: null }, connectorNodeIds: ["node-1"] }))).toBe("point");
     expect(merchantPrecision(shop({ evidence: { sourceIds: [source.id], method: "test", checkedDate: "2026-10-24" } }))).toBeNull();
+  });
+
+  it("does not call a routable shop's position verified when its evidence is search-only", () => {
+    const poi = shop({
+      displayPosition: { x: 0, y: 0, z: null },
+      connectorNodeIds: ["node-1"],
+      evidence: { sourceIds: [source.id], method: "facts-only directory listing (#26), UNVERIFIED, SEARCH_ONLY", checkedDate: "2026-10-24" },
+    });
+    expect(merchantPrecision(poi)).toBe("search");
   });
 
   it("never calls a search-only shop's display position verified without a connector", () => {
