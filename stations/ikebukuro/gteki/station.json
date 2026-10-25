@@ -780,6 +780,21 @@
    "retrievedAt": "2026-10-24T11:04:19Z",
    "datasetDate": null,
    "notes": "車イスで利用できるバリアフリートイレ location list only; wheelchair loan and attended shopping rows not transcribed."
+  },
+  {
+   "id": "seibu-ikebukuro-norikae-2026-10",
+   "title": "池袋駅 ：西武鉄道Webサイト",
+   "publisher": "西武鉄道",
+   "url": "https://www.seiburailway.jp/railway/station/ikebukuro/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" },
+   "attribution": "西武鉄道 池袋駅ページ (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T20:00:00+09:00",
+   "datasetDate": "2026-08",
+   "notes": "ライセンスなし・事実のみ参照（複製なし）。Read the 他社乗換路線 list. Gate and exit wording appears only in the AED notice (1F改札口, B1F改札口) and the station map is an image; neither ties a gate to a transfer. lines-lead also read the station-map image (dated 2026.8.1 on the image) for printed direction-arrow labels and the platform legend only; no position or layout is taken (OD-03). Distinct id from seibu-ikebukuro-station-2026-10 (#414). Rights class: OD-25 (Seibu terms read as the Tokyo Metro class under #26)."
   }
  ],
  "floors": [
