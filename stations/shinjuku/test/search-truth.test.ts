@@ -19,14 +19,23 @@ const floors = new Map(bundle.floors.map((f) => [f.id, f]));
 const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
 const text = (p: Poi, lang: string) => p.names.find((n) => n.lang === lang)?.text;
 const byCategory = (c: string) => pois.filter((p) => p.category === c);
-const exits = byCategory("exit");
 /** #411: search-only line POIs cite tokyo-s03-zip and nothing else. */
 const S03_SOURCE = "tokyo-s03-zip";
 const isS03 = (p: Poi) => p.evidence.sourceIds.includes(S03_SOURCE);
 /** #214: facts-only merchant listings (shops). Search-only like S03, but with their own directory sources. */
 const isShop = (p: Poi) => p.category === "shop";
+/** #501: WP4 line POIs (Toei station exits, Metro M08 exits/lifts/escalators), facts-only and search-only. */
+const WP4_SOURCES = new Set([
+  "tokyometro-shinjuku-station-2026-10",
+  "tokyometro-shinjuku-accessibility-2026-10",
+  "tokyometro-shinjuku-yardmap-print-2026-10",
+  "toei-shinjuku-station-2026-10",
+]);
+// Non-empty: `every` is true for an empty source list, which would class an unsourced POI as WP4 and skip the E27 checks.
+const isWp4 = (p: Poi) => p.category !== "shop" && p.evidence.sourceIds.length > 0 && p.evidence.sourceIds.every((id) => WP4_SOURCES.has(id));
 /** The E27 (Toei NWD / station map / GSI) POIs: everything the station itself evidences. */
-const isE27 = (p: Poi) => !isS03(p) && !isShop(p);
+const isE27 = (p: Poi) => !isS03(p) && !isShop(p) && !isWp4(p);
+const exits = pois.filter((p) => p.category === "exit" && isE27(p));
 
 interface PlanFacility { id: string; category: string; x: number; y: number }
 const plan = planJson as unknown as { levels: { label: string; ordinal: number; floorId: string; facilities: PlanFacility[]; spaces: { category: string; rings: Pt[][] }[] }[] };
@@ -248,7 +257,7 @@ describe("POI aliases", () => {
       const add = (k: string, why: string) => allowed.set(k, why);
       if (p.category === "platform") for (const [k, why] of Object.entries(PLATFORM_ALIASES)) add(k, why);
       for (const [k, why] of Object.entries(GENERIC_ALIASES[p.category] ?? {})) add(k, why);
-      if (p.category === "exit") {
+      if (p.category === "exit" && isE27(p)) {
         // Distinguishing aliases are rebuilt from the independently recomputed descriptors (not from the name).
         const d = describeExit(p);
         const lw = WORDS[d.street ? "地上" : "地下1階"]!;
@@ -269,7 +278,11 @@ describe("POI aliases", () => {
       // #214: a shop's only aliases are kana readings its directory prints (checked in the shop block below).
       for (const a of p.aliases) {
         if (isShop(p)) expect(a.lang, `${p.id} alias ${a.text}`).toBe("ja-Hrkt");
-        else expect(allowedNorm.has(norm(`${a.lang}:${a.text}`)), `${p.id} alias ${a.lang}:${a.text}`).toBe(true);
+        else if (isWp4(p)) {
+          // #501: a Metro exit's only alias is the printed code of a 番出口 name (A6 of A6番出口); nothing else
+          // carries an alias. The exact set is asserted in the WP4 block below.
+          expect(["ja"], `${p.id} alias ${a.lang}`).toContain(a.lang);
+        } else expect(allowedNorm.has(norm(`${a.lang}:${a.text}`)), `${p.id} alias ${a.lang}:${a.text}`).toBe(true);
       }
     }
   });
@@ -328,7 +341,7 @@ describe("facility POIs trace to the GSI facility points", () => {
 
   it("cross-checks every lift POI against the GSI lift points (F012) and reports any mismatch", () => {
     const pts = facilities.filter((f) => f.category === "F012");
-    const lifts = byCategory("elevator");
+    const lifts = byCategory("elevator").filter(isE27);
     // every GSI lift point lies within 4 m of one E27 lift POI, and no E27 lift POI lacks one
     for (const f of pts) expect(lifts.some((p) => near(f, p.displayPosition!) <= 4), `F012 ${f.level} ${f.x},${f.y}`).toBe(true);
     const mismatched: string[] = [];
@@ -389,7 +402,9 @@ describe("facility POIs trace to the GSI facility points", () => {
     // #214: 6 Toei/Tokyo Metro + 576 LUMINE/NEWoMan listings + the Odakyu department store, plus the 7 store
     // POIs for the printed buildings (LUMINE 1/2, LUMINE EST, NEWoMan, 新宿マルイ 本館/アネックス/メン).
     const SHOP_COUNT = 592;
-    expect(pois.length).toBe(OLD_COUNT + ADDED.length + S03_COUNT + SHOP_COUNT);
+    // #501: 9 Toei station exits + 28 Metro M08 exits + 4 lifts + 2 escalators (see the WP4 block); the 2 M08 gates are held.
+    const WP4_COUNT = 43;
+    expect(pois.length).toBe(OLD_COUNT + ADDED.length + S03_COUNT + SHOP_COUNT + WP4_COUNT);
     const e27Pois = pois.filter(isE27);
     expect(e27Pois.length).toBe(OLD_COUNT + ADDED.length);
     const bySource = { exit: 6, ticket_gate: 3, platform: 1, elevator: 3, toilet: 3 } as const;
@@ -442,22 +457,23 @@ describe("expected search results (docs/stations/shinjuku/search-expected.md)", 
     expect(strong(query).map((h) => h.poi.id)).toContain(id);
   });
 
-  it.each(["JR新宿", "東京メトロ", "Tokyo Metro", "都営新宿線", "E01", "Yamanote", "3番出口", "Exit 3", "A1出口", "屋根なし"])(
+  it.each(["JR新宿", "東京メトロ", "Tokyo Metro", "都営新宿線", "E01", "Yamanote", "3番出口", "Exit 3", "屋根なし"])(
     "%s returns no Shinjuku POI claim",
     (query) => {
       expect(strong(query)).toEqual([]);
     },
   );
 
-  // #411: other operators' names resolve only to the search-only S03 POIs and, since #214, the facts-only
-  // merchant listings (e.g. 小田急百貨店, or a shop whose printed name names an exit). None has a route.
-  it.each(["JR", "山手線", "中央線", "京王", "京王線", "小田急", "小田急線", "丸ノ内線", "西口", "南口", "東口", "新宿西口"])(
-    "%s returns only search-only S03 or shop POIs (no route)",
+  // #411: other operators' names resolve only to the search-only S03 POIs, since #214 the facts-only merchant
+  // listings (e.g. 小田急百貨店, or a shop whose printed name names an exit) and, since #501, the WP4 line
+  // POIs (Toei station exits, Metro M08 exits/lifts/escalators). None has a route.
+  it.each(["JR", "山手線", "中央線", "京王", "京王線", "小田急", "小田急線", "丸ノ内線", "西口", "南口", "東口", "新宿西口", "A1出口"])(
+    "%s returns only search-only S03, shop or WP4 line POIs (no route)",
     (query) => {
       const hits = strong(query);
       expect(hits.length).toBeGreaterThan(0);
       for (const h of hits) {
-        expect(isS03(h.poi) || isShop(h.poi), h.poi.id).toBe(true);
+        expect(isS03(h.poi) || isShop(h.poi) || isWp4(h.poi), h.poi.id).toBe(true);
         expect(h.poi.connectorNodeIds, h.poi.id).toEqual([]);
       }
     },
@@ -579,6 +595,86 @@ describe("S03 search-only line POIs (#411)", () => {
     for (const p of pois.filter((x) => !isS03(x))) expect(p.approximatePosition, p.id).toBeUndefined();
     const graphText = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "gteki/graph.json"), "utf8");
     for (const p of pois.filter((x) => x.approximatePosition !== undefined)) expect(graphText.includes(p.id), `${p.id} appears in graph.json`).toBe(false);
+  });
+});
+
+describe("WP4 line POIs (#501)", () => {
+  const wp4 = pois.filter(isWp4);
+  const index = createSearchIndex(bundle);
+  const TOEI_SOURCE = "toei-shinjuku-station-2026-10";
+  const isToei = (p: Poi) => p.evidence.sourceIds.includes(TOEI_SOURCE);
+
+  it("imports the 43 rows the gap table lists: 9 Toei exits, 28 Metro exits, 4 lifts, 2 escalators", () => {
+    expect(wp4.length).toBe(43);
+    const toei = wp4.filter(isToei);
+    expect(toei.length).toBe(9);
+    for (const p of toei) expect(p.category, p.id).toBe("exit");
+    const metro = wp4.filter((p) => !isToei(p));
+    expect(metro.filter((p) => p.category === "exit").length).toBe(28);
+    expect(metro.filter((p) => p.category === "elevator").length).toBe(4);
+    expect(metro.filter((p) => p.category === "escalator").length).toBe(2);
+  });
+
+  it("holds the two WP4 Metro gates for the WP10 field check, and keeps the S03 pair", () => {
+    expect(pois.some((p) => p.id === "poi:tokyometro-gate:3" || p.id === "poi:tokyometro-gate:4")).toBe(false);
+    expect(pois.some((p) => p.id === "poi:tokyometro-gate:1" && isS03(p))).toBe(true);
+    expect(pois.some((p) => p.id === "poi:tokyometro-gate:2" && isS03(p))).toBe(true);
+  });
+
+  it("gives each WP4 POI no floor, position, connector, paid value or approximate point", () => {
+    for (const p of wp4) {
+      expect(p.floorId, p.id).toBeNull();
+      expect(p.displayPosition, p.id).toBeNull();
+      expect(p.connectorNodeIds, p.id).toEqual([]);
+      expect(p.paid, p.id).toBeNull();
+      expect(p.approximatePosition, p.id).toBeUndefined();
+    }
+  });
+
+  it("keeps the printed ja name, the printed exit code as the only alias, and the unverified note", () => {
+    for (const p of wp4) {
+      expect(p.names.length, p.id).toBe(1);
+      expect(p.names[0]!.lang, p.id).toBe("ja");
+      // #501 review: an exit keeps only the lettered code its printed name starts with (A6 of A6番出口, A1 of
+      // A1出口); the bare Toei 1–8 aliases were dropped because a lone number matches the whole station (#506),
+      // and no lift or escalator has an alias. Asserted as an exact set, so an empty alias cannot pass.
+      const printed = p.names[0]!.text;
+      const code = p.category === "exit" ? /^(.*?)番?出?口$/.exec(printed)?.[1] : undefined;
+      expect(p.aliases.map((a) => a.text), p.id).toEqual(code && /[a-z]/i.test(code) ? [code] : []);
+      const ja = p.notes?.find((n) => n.lang === "ja")?.text ?? "";
+      const en = p.notes?.find((n) => n.lang === "en")?.text ?? "";
+      expect(ja, `${p.id} ja`).toContain("位置・入口は未確認");
+      expect(en, `${p.id} en`).toContain("Location and entrance not verified");
+    }
+  });
+
+  it("keeps Toei exits 1 and 2 printed as closed, with no route", () => {
+    for (const id of ["poi:toei-exit:1", "poi:toei-exit:2"]) {
+      const p = pois.find((x) => x.id === id)!;
+      expect(p, id).toBeDefined();
+      expect(p.notes!.find((n) => n.lang === "ja")!.text, id).toMatch(/閉鎖中/);
+      expect(p.notes!.find((n) => n.lang === "en")!.text, id).toContain("closed");
+      expect(p.connectorNodeIds, id).toEqual([]);
+    }
+  });
+
+  it("registers the four WP4 sources as facts-only with their clearance decision", () => {
+    for (const id of WP4_SOURCES) {
+      const src = bundle.sources.find((s) => s.id === id);
+      expect(src, id).toBeDefined();
+      expect(src!.usage, id).toBe("facts-only");
+      expect(src!.decision, id).toBeDefined();
+      expect(src!.retrievedAt, id).toBeTruthy();
+    }
+  });
+
+  it("finds a WP4 exit by its own printed name (read from pois.json, not written here)", () => {
+    const exit = wp4.find((p) => p.category === "exit" && p.names[0]!.text.length >= 4)!;
+    expect(index.search(exit.names[0]!.text, { limit: 10 }).map((h) => h.poi.id)).toContain(exit.id);
+  });
+
+  it("keeps a routable POI as the top hit for 出口 and Exit", () => {
+    for (const q of ["出口", "Exit"]) expect(index.search(q, { limit: 10 })[0]!.poi.connectorNodeIds.length, q).toBeGreaterThan(0);
   });
 });
 

@@ -330,7 +330,9 @@ SPDX-License-Identifier = "LicenseRef-S03"
 # printed buildings (LUMINE 1/2, LUMINE EST, NEWoMan, 新宿マルイ 本館/アネックス/メン, 伊勢丹新宿店
 # 本館/メンズ館) carry a name and a printed floor range in the notes only, plus the operator where the
 # source prints one; the Marui rows come from 0101.co.jp (OD-34, no clause found) and the 伊勢丹 rows
-# from mistore.jp (OD-34, #522 scope-clause ruling). Credits and change notices: NOTICE 4.6, 4.7 and 4.9.
+# from mistore.jp (OD-34, #522 scope-clause ruling). Since #501 they also carry 43 facts-only
+# WP4 line POIs (Toei station exits, Tokyo Metro exits/lifts/escalators; names only, source record 4n).
+# Credits and change notices: NOTICE 4.6, 4.7, 4.9 and 4.12.
 [[annotations]]
 path = [
   "stations/shinjuku/gteki/pois.json",
