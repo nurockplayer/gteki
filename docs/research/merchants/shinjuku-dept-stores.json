@@ -42,7 +42,7 @@
       "id": "tokyometro-shinjuku-exit-list-2026-10",
       "title": "新宿駅・新宿三丁目駅 出入口・周辺地図（出口案内データ） | tokyometro.jp",
       "publisher": "東京地下鉄",
-      "url": "https://www.tokyometro.jp/station/exit.json",
+      "url": "http://web.archive.org/web/20260908151007/https://www.tokyometro.jp/station/exit.json",
       "license": null,
       "rights": "REFERENCE_ONLY",
       "usage": "facts-only",
@@ -54,7 +54,7 @@
       "modified": false,
       "retrievedAt": "2026-10-25T20:59:31Z",
       "datasetDate": null,
-      "notes": "The JSON that the Tokyo Metro station pages load for their exit and neighbourhood map (/station/exit.json). It prints 京王百貨店 as a facility of 新宿駅 exits A14 and A15, 高島屋タイムズスクエア for 新宿駅 A8 / A9 and 新宿三丁目駅 E8, and サブナード for 新宿駅 B10. Only the printed facility labels and exit numbers are taken; no route, floor label or page wording is copied. The live station HTML returns 403 from this host (2026-10-26 05:59 JST), but the live data file returns 200 (445,757 bytes, SHA-256 e05abf041cce32e0efac843f3c67169b03634f45fa02614112700c57eb51693a) and was read directly; the 2016-07-30T20:33:40Z Wayback capture of 新宿駅's print page (map/index_print.html) prints the same three labels (京王百貨店 at A15; サブナード at B10; 高島屋タイムズスクエア at A8 / A9) as a cross-read. Class: facts only, the same class as Tokyo Metro station pages (#26, 2026-10-21 decision). Record: docs/research/merchants/shinjuku-3stores-facts-2026-10-26.md."
+      "notes": "The JSON that the Tokyo Metro station pages load for their exit and neighbourhood map (/station/exit.json), cited via its Wayback capture 20260908151007 (UTC; 445,757 bytes, SHA-256 8524c81cd0d54f96bac3d71251c06f66477ea478114c73d0d2118e43c17f973d, re-read by the lead 2026-10-26 06:05 JST), because Tokyo Metro's live site returns 403 from this host. It prints 京王百貨店 as a facility of 新宿駅 exits A14 and A15, 高島屋タイムズスクエア for 新宿駅 A8 / A9 and 新宿三丁目駅 E8, and サブナード for 新宿駅 B10. Only the printed facility labels and exit numbers are taken; no route, floor label or page wording is copied. The 2016-07-30T20:33:40Z Wayback capture of 新宿駅's print page (map/index_print.html) prints the same three labels (京王百貨店 at A15; サブナード at B10; 高島屋タイムズスクエア at A8 / A9) as a cross-read. A live read of the same file during research (2026-10-26 05:59 JST, HTTP 200, same size) is not the cited basis. Class: facts only, the same class as Tokyo Metro station pages (#26, 2026-10-21 decision). Record: docs/research/merchants/shinjuku-3stores-facts-2026-10-26.md."
     }
   ],
   "pois": [
