@@ -1033,8 +1033,15 @@ export class Explorer {
     this.world.updateMatrixWorld(true);
     const visit = (o: THREE.Object3D): void => {
       if (o.userData[STREET_SURFACE_FLAG] === true) return;
-      const geometry = (o as THREE.Mesh).geometry;
-      if (geometry) {
+      // Per object, the maths Box3.setFromObject does: the geometry's bounds through the world matrix, or
+      // an InstancedMesh's own bounds over every instance (an instance can sit outside its geometry's box).
+      // Only the walk differs — a flagged subtree is skipped instead of added to the union.
+      const instanced = o as THREE.InstancedMesh;
+      const geometry = (o as Partial<THREE.Mesh>).geometry;
+      if (instanced.isInstancedMesh) {
+        if (!instanced.boundingBox) instanced.computeBoundingBox();
+        if (instanced.boundingBox) box.union(instanced.boundingBox.clone().applyMatrix4(o.matrixWorld));
+      } else if (geometry) {
         if (!geometry.boundingBox) geometry.computeBoundingBox();
         if (geometry.boundingBox) box.union(geometry.boundingBox.clone().applyMatrix4(o.matrixWorld));
       }
@@ -1151,7 +1158,7 @@ export class Explorer {
     const share = w <= PHONE_MAX_PX && (free.w < w || free.h < h) ? OVERVIEW_MIN_VIEWPORT_SHARE : 0;
     const pose = frameBounds(
       this.framed,
-      { fovDeg: this.camera.fov, aspect: this.camera.aspect, near: this.camera.near, viewport: { w, h }, free, points: this.framedPts ?? undefined, ...(share > 0 ? { minViewportShare: share } : {}) },
+      { fovDeg: this.camera.fov, aspect: this.camera.aspect, near: this.camera.near, viewport: { w, h }, free, points: this.framedPts ?? undefined, minViewportShare: share },
       undefined,
       OVERVIEW_OFFSET,
     );
