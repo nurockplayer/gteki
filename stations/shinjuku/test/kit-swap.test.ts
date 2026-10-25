@@ -33,15 +33,17 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
  * geometryDigest/bytes equal geometry-lifetime.test.ts. Previous main f143f862 had 136 meshes,
  * 13,284,666 B and geometry f713e721…; #298 adds two visual-only shell batches. Physical lists stay identical.
  * #370 names the `mat` materials `mat.<key>`, which changes texturesDigest only (was b799e0f8…; re-measured with
- * and without the naming line, every other field unchanged). */
+ * and without the naming line, every other field unchanged).
+ * #316 re-measured on the merged tree: the shell roof coverage above the head band adds 205,300 B and
+ * changes geometryDigest; appearance, nodes, textures, meshes and every explorer list are unchanged. */
 const MAIN_BASELINE = {
   station: {
-    geometryDigest: "04a401299e738f05b134fee6053a71f95965131d5b1837fceddee863391046c4",
+    geometryDigest: "af86784d1f7a632f2ee5ef5c2bc87c51644b2bc661a0cfe0493116d8b48206fe",
     appearanceDigest: "c45106d83d6500652ae0911b8a037f9020e7a7e38ae05fce61ff495dd0835003",
     nodesDigest: "8716cc4d548465dd836e07e69646928ad33791f37d6fc1a1dc02e2519c9e6ed7",
     texturesDigest: "34886c8768f0a00486cfbab005dbcb7e89f6035f23dc38d79ab8658953f2976d",
     meshes: 138,
-    bytes: 13_296_864,
+    bytes: 13_502_164,
   },
   lists: {
     listsDigest: "ddd5c84df153fb71c2254a20ec8132134ef0aaa6bb4878cb683da4ffc967913f",
