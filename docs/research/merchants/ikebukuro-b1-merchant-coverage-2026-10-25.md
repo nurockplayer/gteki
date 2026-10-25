@@ -12,7 +12,8 @@ Base: `origin/main` 3d1ba278 (2026-10-25). Graph: 516 POIs, of which 348 `catego
 
 Every entry of the reviewed merchant research was matched against `graph.src.json`: first by
 `id`, then by printed name and alias with full-width/half-width spaces normalised. Research read
-from `origin/main`: batch 2, batch 3, batch 5. Batch 4 was read from
+from `origin/main`: batch 2, batch 3, batch 5, plus batch 1 as `ikebukuro-import-contract.md`
+(its five POIs, `shop-ikb-mr-001`..`005`, are already in the graph). Batch 4 was read from
 `origin/claude/data-research-ikb-merchants-batch4` (its 210 entries already landed on main in
 commit 8706ef79, #432). No source page was fetched for this audit except the Toei probe below;
 the reviewed transcriptions from 2026-10-24 are the evidence.
@@ -21,7 +22,7 @@ the reviewed transcriptions from 2026-10-24 are the evidence.
 
 | Research | Entries | In graph |
 | --- | --- | --- |
-| batch 2 (ISP, 東武ホープセンター, エチカ池袋) | 118 | 118 |
+| batch 2 (ISP 53 + 東武ホープセンター 43 + エチカ池袋 22) | 118 | 118 |
 | batch 3 (東京メトロ 駅構内店舗) | 2 | 2 |
 | batch 5 (西武 エミオ池袋 / 池袋駅) | 13 | 13 |
 | batch 4 (ルミネ池袋, エソラ池袋, 東武百貨店 store POI) | 210 | 210 |
@@ -32,9 +33,13 @@ richer in the graph ("池袋駅西口 直結" plus the store wording).
 
 ## B1 slice
 
-Areas as the sources print them. Only ルミネ池袋 and エソラ池袋 print a floor (B1); the two
-underground malls, エチカ池袋 and the station page print zones or labels only, so no POI in this
-table carries a `floorId` (all null) and nothing here asserts a level of its own.
+Areas as the sources print them. Only ルミネ池袋 (lumine.ne.jp floor guide) and エソラ池袋
+(metropro-sc.jp Esola floor guide) print a floor (B1). The other sources print an area or a zone
+only: 池袋ショッピングパーク (web-isp.co.jp floor guide) prints 南館 / 北館 / レンガ通り,
+東武ホープセンター (tobuhopecenter.jp floor guide) prints サウス / センター / ノース,
+エチカ池袋 (metropro-sc.jp Echika page) prints 改札外, and the 西武池袋駅 shop page
+(seibu-shop.jp) and the 東京メトロ 駅構内店舗 page (tokyometro.jp) print names with no level. So
+no POI in this table carries a `floorId` (all null) and nothing here asserts a level of its own.
 
 | B1 area | Source | Listed | In graph |
 | --- | --- | --- | --- |
@@ -45,6 +50,15 @@ table carries a `floorId` (all null) and nothing here asserts a level of its own
 | 東武ホープセンター (サウス 23 / センター 12 / ノース 8) | tobuhopecenter.jp | 43 | 43 |
 | 西武池袋駅 | seibu-shop.jp station portal | 5 rows: 2 shops + 1 heading + 2 non-shops | 2 (宝くじ 1F, 宝くじ 地下) |
 | 東京メトロ 駅構内店舗 | tokyometro.jp station shop page | 46 | 2 after lead review (LAWSON METRO'S, Wrapped Crepe Korot); 3 dropped as Echika duplicates; 2 dropped as outside the station; 24 names already present; 15 non-shop facilities already present as `atm-*` / `service-*` / `locker-*` POIs |
+
+The three batch-2 areas in this table hold 120 graph POIs (池袋ショッピングパーク 55 + 東武ホープセンター
+43 + エチカ池袋 22), while batch 2's research file has 118 entries. The two differ by exactly two, and
+both are ISP: the web-isp.co.jp floor guide lists 55 shops across 南館 / 北館 / レンガ通り and the graph
+holds 55, but batch 2 transcribed 53 of them. マツモトキヨシ (`shop-ikb-mr-004`) and スターバックス
+コーヒー 南館店 (`shop-ikb-mr-005`) came in with batch 1 (`ikebukuro-import-contract.md`, rows table,
+same `isp-floorguide-2026-10` source and 2026-10-24 check date) and are counted in neither batch 2's
+118 nor the 343 below. 東武ホープセンター (43) and エチカ池袋 (22) match batch 2 exactly. So those
+120 POIs = 118 batch-2 entries + 2 earlier ISP POIs, and no graph POI stays unaccounted for.
 
 The four Echika entries not imported: Patio de METRO and Tabio (retained in batch 1), Soup Stock
 Tokyo (duplicate of `shop-ikb-mr-001`), フレッシュネスバーガー (shopid 1088, its own page prints
@@ -67,11 +81,13 @@ The two 西武池袋駅 rows not imported are the 西武バス 池袋駅案内�
 
 ## GAPs
 
-- **Toei**: the station page was probed on 2026-10-25 (two GETs, ≥0.6 s apart) and returned an
-  Incapsula bot challenge, then 404 with a challenge body. Not bypassed; no Toei Ikebukuro shop
-  or facility rows are read, so none are imported. Toei store lists stay facts-only under OD-34
-  round 2 when reachable. The probe sent a browser user agent rather than curl's default string,
-  a deviation from the batch brief's fetch rule; the challenge came back either way.
+- **Toei**: the Toei Ikebukuro station page returned an Incapsula bot challenge (GAP). Only two
+  GETs were made, on 2026-10-25 and ≥0.6 s apart, with a browser user agent rather than curl's
+  default string — a deviation from the batch fetch rule; the first answered with the challenge
+  and the second with a 404 carrying a challenge body. The probe's exact URL and response bodies
+  were not kept, so this record cannot re-derive the observation and no claim is made about Toei's
+  content. Nothing was bypassed, no Toei Ikebukuro shop or facility rows are read, and none are
+  imported; Toei store lists stay facts-only under OD-34 round 2 when reachable.
 - **No verified entrances**: all 348 shop POIs are search-only. #212's "at least a small batch of
   `shop` POIs is indexed; unproven entrances are search-only" is met; routes and scene placement
   remain GAP until a field check.
@@ -84,7 +100,8 @@ The two 西武池袋駅 rows not imported are the 西武バス 池袋駅案内�
 
 ## Conclusion
 
-The reviewed B1 merchant sources are already fully imported (343 entries, 0 missing). No POI is
+The reviewed B1 merchant sources are already fully imported (343 entries, 0 missing, plus the five
+batch-1 POIs that predate the audit — two of them the extra ISP rows in the B1 table). No POI is
 added or changed by this batch; `stations/ikebukuro/gteki/*` is untouched. The remaining B1
 volume is the department-store tenant datasets, which a rights decision (OD-34(5)) keeps out of
 the POI graph, and Toei, which is bot-challenged.
