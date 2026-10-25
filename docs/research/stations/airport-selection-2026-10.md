@@ -71,7 +71,7 @@ Note on 京急: the earlier 東京駅/品川駅 report recorded keikyu.co.jp as 
 
 ### 2.2 成田空港
 
-**3D/GIS coverage.** **No PLATEAU dataset exists for 成田市 or 芝山町.** Checked four ways on 2026-10-25: `package_show` for `plateau-12211-narita-shi-2025` and `plateau-12409-shibayama-machi-2025` (both 404), and `package_search` for 成田, 芝山, `12211` and `12409` — none of the returned packages is a PLATEAU city model (they are 法務省地図, 農業ポリゴン and similar). So Narita has **no 3D city model, no building LOD list and no 地下街 model** in PLATEAU.
+**3D/GIS coverage.** **No PLATEAU city dataset for 成田市 or 芝山町 was found in the official list (checked 2026-10-25).** Checked four ways: `package_show` for `plateau-12211-narita-shi-2025` and `plateau-12409-shibayama-machi-2025` (both 404), and `package_search` for 成田, 芝山, `12211` and `12409` — none of the returned packages is a PLATEAU city model (they are 法務省地図, 農業ポリゴン and similar). So Narita has **no 3D city model, no building LOD list and no 地下街 model** in PLATEAU.
 
 **KSJ.** Same national C28 空港 and N02 鉄道 layers as 羽田 (§3.1): the airport area, terminal-building point features and the station data come from KSJ, not from PLATEAU.
 
@@ -93,10 +93,10 @@ Source: `https://www.geospatial.jp/ckan/api/3/action/package_show?id=mlit-indoor
 |---|---|---|---|---|---|
 | NAA (成田国際空港株式会社) | all three terminals, shops, maps, access information | https://www.narita-airport.jp/ja/copyright/ | 著作権: 「当サイト上の文字、写真、イラストなどのあらゆるコンテンツの著作権は、原則として当社に帰属します。これらのコンテンツの全部または一部について、「私的使用」または「引用」など著作権法上認められている場合以外の転載、複製、改変、翻訳、公衆送信等をすることはできません。」; 禁止事項 14: 「当サイトを利用した営利活動又は営利を目的とする行為」 | **corroboration only** (the 著作権 clause keeps the 私的使用 exception, but the 禁止事項 list bans business use — the same structure as 西武池袋本店 clause 2 item 8 in OD-34's third round) | 2026-10-25 |
 | NAA corporate site | company information | https://www.naa.jp/ | no clause: the site returned **403** to plain curl (GAP in verification) | UNKNOWN (does not change the site classification above) | 2026-10-25 |
-| JR東日本 | 成田空港駅, 空港第2ビル駅 (成田線/成田エクスプレス) | https://www.jreast.co.jp/ | OD-34 (1) ruling (corroboration only); the site returns 403 and was not re-read | corroboration only | 2026-10-24 (OD-34) |
+| JR東日本 | 成田空港駅, 空港第2ビル駅 (成田線/成田エクスプレス) | https://www.jreast.co.jp/ | OD-34 (1), decided 2026-10-24: 「corroboration only ("consistent with the JR East page (URL, retrieval time)" for a name from another source; no transcription, aliases, screenshots, copies, or sole-source use)」 — the site returned **403** on 2026-10-25 (recorded in the 東京駅 report; not re-requested here), so no clause was read | corroboration only (OD-34 (1) ruling) | 2026-10-24 (OD-34) |
 | 京成電鉄 | 成田空港駅 and 空港第2ビル駅 (京成本線/成田スカイアクセス) | https://www.keisei.co.jp/ | no terms page found: the footer links only クッキーポリシー and 個人情報保護方針 (the rest of the footer is loaded from `/include/html/footer_sitemap.php`, read 2026-10-25, which lists no サイトポリシー); `/keisei/sitepolicy/`, `/sitepolicy/`, `/keisei/site_policy.php` and `/keisei/policy/index.php` all return 404 (GAP in verification) | UNKNOWN | 2026-10-25 |
 
-JR East's class comes from the OD-34 (1) **Owner amendment** (corroboration only), not from a clause read in this task: the site returns 403 to plain curl. A flat-refusal clause on that site, if someone reads it later, would be a new rights question for the lead; it does not change the frame this report is built on.
+JR East's class is the OD-34 (1) ruling quoted above, not a clause read in this report: the site returned 403 on 2026-10-25 (recorded in the 東京駅 report; not re-requested here). Under OD-34 it stays corroboration only on the Owner amendment, and no further question is raised.
 
 **Stations.** 成田空港駅 is a 京成 station page (title 成田空港駅) that prints 開業日 1991年3月19日, 所在地 千葉県成田市三里塚御料牧場1-1 and 「当駅は、成田空港第１ターミナルの地下１階にございます。」 — a printed station-to-terminal connection. But 京成's rights are UNKNOWN (no terms page), so under the OD-34 frame nothing from that page is imported; the station itself is in KSJ N02. For 空港第2ビル, no 京成 station page was found (`narita-airport-terminal-2.php` and `narita-airport-2.php` both 404, and the 電車と駅の情報 index lists only 成田空港 among the airport stations): GAP. JR East's own station pages are corroboration only and were not read (403 on the site, as recorded in OD-34 (1)).
 
@@ -110,7 +110,7 @@ JR East's class comes from the OD-34 (1) **Owner amendment** (corroboration only
 
 **N02 鉄道** 2025年度版, 基準日 2025年12月31日, updated 2026年4月, national (§2.1 quote). Its 使用許諾条件 line: 「2020年（令和2年）以降：オープンデータ（CC_BY_4.0）」／「上記以外：商用可」 — for this edition, **CC BY 4.0**. `https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html`, read 2026-10-25.
 
-Both datasets cover both airports nationally, so KSJ adds no difference between 羽田 and 成田; the difference is that KSJ is the *only* structured source either airport has.
+Both datasets cover both airports nationally, so KSJ adds no difference between 羽田 and 成田. KSJ is the only structured **station and airport-area** source either airport has; at 成田 it is joined by the MLIT indoor dataset (§2.2), which KSJ does not duplicate.
 
 ### 3.2 ほこナビDP inventory
 
@@ -141,9 +141,9 @@ Neither airport's directory can be read from the served HTML: 羽田's shop sear
 
 ## 5. Recommendation
 
-**Order: 東京駅 → 成田空港 → 羽田空港.** If the Owner wants an airport first, **成田 is the airport to open**. Facts and reasoning; the Owner decides.
+**Order (provisional): 東京駅 → 成田空港 → 羽田空港.** Provisional because the 成田 and 東京駅 indoor-map coverage is UNKNOWN until those packages are downloaded (which needs a sign-up); the Owner decides. If the Owner wants an airport first, **成田 is the airport to open**. Facts and reasoning; the Owner decides.
 
-- **東京駅 first**, on rights and data both. It is the only candidate with a public walking network (`nwd_tokyo`, 2019), 地下街 LOD4 models in both wards and three facts-only operators — and it also has a 東京駅周辺屋内地図 on geospatial.jp, which the earlier report missed because it checked ほこナビ only. Its weakness is the size of its unknown set (six unread operators, two of them the main rail operators) and one banned retail floor.
+- **東京駅 first**, on rights and data both. It is the only candidate with a **ほこナビ outdoor** walking network (`nwd_tokyo`, 2019) — the airports have none, though 成田 has the separate MLIT indoor network — and it has 地下街 LOD4 models in both wards and three facts-only operators, plus a 東京駅周辺屋内地図 on geospatial.jp that the earlier report missed because it checked ほこナビ only. Its weakness is the size of its unknown set (six unread operators, two of them the main rail operators) and one banned retail floor.
 - **成田空港 second.** It is the only airport with the kind of base our Shinjuku slice is built on: a published **indoor floor map, walking network and public-facility POIs** (`mlit-indoor-narita-airport-r2`, MLIT, 2021, OGL), alongside both KSJ layers (C28 airport + terminal points, N02 with 京成 and JR stations). Its rights are weak but workable: NAA is corroboration only, so the airport's own directory cannot be imported, while shop names may still come from the chains' own pages under OD-34 (4), and the facility POIs come from the MLIT dataset, not from NAA. Its costs: no PLATEAU and no 3D model, the indoor dataset's coverage is UNKNOWN and needs a registered login to download, and 京成's terms are unread so the rail operator's own pages stay out.
 - **羽田空港 third.** It has the cleanest operator rights of any candidate researched so far — a single facts-only policy covering all three terminals plus facts-only 京急 — a current PLATEAU dataset (大田区 2025, buildings to LOD2.2, no 地下街) and both KSJ layers. But it has **no public walking network, indoors or outdoors, that this research can find**, no indoor map, and no underground model, so a route layer would have to be authored from nothing. Rights decide what may be used; data decides what exists. 羽田 wins the first and loses the second, and for a transport map the missing network is the larger hole.
 
