@@ -24,8 +24,11 @@ const SPECS = {
   position: { x: "number", y: "number", z: "number|null" },
   edge: { id: "string", from: "string", to: "string", direction: "string", mode: "string", lengthM: "number|null", paid: "tri", crossesFareBoundary: "tri", wheelchair: "tri", steps: "tri", hours: "object|null", closed: "boolean", verification: "string", geometryEvidence: "object", accessEvidence: "object|null", geometry: "array?", geometryZ: "string?", attributes: "object?" },
   evidence: { sourceIds: "array", method: "string", checkedDate: "string", note: "string?" },
-  poi: { id: "string", category: "string", names: "array", aliases: "array", floorId: "string|null", displayPosition: "object|null", approximatePosition: "object?", connectorNodeIds: "array", paid: "tri", evidence: "object", notes: "array?" },
+  poi: { id: "string", category: "string", names: "array", aliases: "array", floorId: "string|null", displayPosition: "object|null", approximatePosition: "object?", connectorNodeIds: "array", paid: "tri", evidence: "object", notes: "array?", hours: "object?" },
   approximatePosition: { east: "number", north: "number", uncertaintyM: "number", method: "string", navigationUse: "string", floor: "string" },
+  // Printed hours (OD-32): text as the page printed it, where it came from, when it was read, whose word it is.
+  hours: { text: "string?", sourceUrl: "string", retrievedAt: "string", basis: "string", status: "string" },
+  buildingHours: { text: "string?", sourceUrl: "string", retrievedAt: "string", basis: "string", status: "string", building: "array", floorRange: "string|null", note: "array?" },
   text: { lang: "string", text: "string" },
   operator: { id: "string", names: "array" },
   code: { operatorId: "string", code: "string" },
@@ -178,7 +181,7 @@ function idOf(item: unknown): string {
  */
 export function checkShape(manifest: unknown, graph: unknown, pois: unknown, tenants?: unknown): ValidationIssue[] {
   const c = new ShapeChecker();
-  if (c.check(manifest, { schema: "string", station: "object", sources: "array", floors: "array", coverage: "object", spawnNodeIds: "array?", spawnHeadings: "object?", assets: "array?", dataFiles: "array?" }, "station.json")) {
+  if (c.check(manifest, { schema: "string", station: "object", sources: "array", floors: "array", coverage: "object", spawnNodeIds: "array?", spawnHeadings: "object?", assets: "array?", dataFiles: "array?", buildingHours: "array?" }, "station.json")) {
     const m = manifest as Record<string, unknown>;
     c.finiteNumberRecord(m.spawnHeadings, "spawnHeadings");
     if (c.check(m.station, SPECS.station, "station.json.station")) {
@@ -225,6 +228,10 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown, ten
       });
     }
     c.strings(m.spawnNodeIds, "spawnNodeIds");
+    c.each(m.buildingHours, SPECS.buildingHours, "buildingHours", (hours, where) => {
+      c.texts(hours.building, `${where}.building`);
+      c.texts(hours.note, `${where}.note`);
+    });
     c.each(m.dataFiles, SPECS.dataFile, "dataFiles", (file, where) => c.strings(file.sourceIds, `${where}.sourceIds`));
     c.each(m.assets, SPECS.asset, "assets", (asset, where) => {
       c.texts(asset.derivationSummary, `${where}.derivationSummary`);
@@ -263,6 +270,7 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown, ten
       c.strings(poi.connectorNodeIds, `${where}.connectorNodeIds`);
       if (poi.displayPosition !== null) c.check(poi.displayPosition, SPECS.position, `${where}.displayPosition`);
       if (poi.approximatePosition !== undefined) c.approximatePosition(poi.approximatePosition, `${where}.approximatePosition`);
+      if (poi.hours !== undefined) c.check(poi.hours, SPECS.hours, `${where}.hours`);
     });
   }
   if (tenants !== undefined && c.check(tenants, { schema: "string", tenants: "array" }, "tenants.json")) {
@@ -293,6 +301,7 @@ export function composeBundle(manifest: StationManifestFile, graph: GraphFile, p
   if (manifest.spawnHeadings) bundle.spawnHeadings = manifest.spawnHeadings;
   if (manifest.assets) bundle.assets = manifest.assets;
   if (manifest.dataFiles) bundle.dataFiles = manifest.dataFiles;
+  if (manifest.buildingHours) bundle.buildingHours = manifest.buildingHours;
   if (tenantsFile) bundle.tenants = tenantsFile.tenants;
   return bundle;
 }
