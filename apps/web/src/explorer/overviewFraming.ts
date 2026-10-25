@@ -18,6 +18,13 @@ export const OVERVIEW_OFFSET = new THREE.Vector3(0.55, 0.85, 0.75).normalize();
 /** The slice's on-screen extent as a share of each axis of the free area (accepted range 0.5 to 0.8). */
 export const OVERVIEW_FILL = 0.65;
 
+/**
+ * The least share of the viewport's shorter side an occluded phone overview keeps (#109): the band between
+ * the panel and the route card is short, and the plain fill would shrink the map to about a quarter of the
+ * screen. The map then reaches past the band, under the panel and the card, rather than into a speck.
+ */
+export const OVERVIEW_MIN_VIEWPORT_SHARE = 0.5;
+
 /** A slice smaller than this (m, per ground axis) is framed as if it were this big, so a point never zooms to the floor. */
 export const MIN_SLICE_M = 24;
 
@@ -178,6 +185,13 @@ export interface FrameView {
    * Default: the box's 8 corners.
    */
   points?: readonly THREE.Vector3[];
+  /**
+   * A floor for both fit axes, as a share of the viewport's shorter side (#109). Free by default. A phone
+   * whose panel and route card leave only a short band still gets a readable map: the outline then grows
+   * past that band rather than shrinking to a speck in it. The larger of the two projected sides is at
+   * least this share of `min(viewport.w, viewport.h)`, so the map is never clipped sideways.
+   */
+  minViewportShare?: number;
 }
 
 export interface FramePose { target: THREE.Vector3; position: THREE.Vector3; distance: number }
@@ -235,8 +249,11 @@ export function frameBounds(box: Aabb, view: FrameView, fill = OVERVIEW_FILL, of
 
   // Extent units are viewport heights: the free width in those units is (free.w / vw) * aspect.
   // Each axis gets its own goal; the axis that first reaches its goal sets the distance.
-  const goalW = Math.max(1e-6, fill * (free.w / vw) * view.aspect);
-  const goalH = Math.max(1e-6, fill * (free.h / vh));
+  // A floor in the same units keeps a short free band (a phone between its panel and route card) from
+  // shrinking the map to a speck: the outline reaches past the band, so the caller only asks for it then.
+  const minPx = (view.minViewportShare ?? 0) * Math.min(vw, vh);
+  const goalW = Math.max(1e-6, fill * (free.w / vw) * view.aspect, minPx / vh);
+  const goalH = Math.max(1e-6, fill * (free.h / vh), minPx / vh);
   const target = centre.clone();
   // The outline the fit sizes and centres: the caller's points (the routable network) when given, else the
   // grown box's corners.

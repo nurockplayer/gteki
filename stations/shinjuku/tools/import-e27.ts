@@ -68,8 +68,18 @@ const CHECKED = "2026-10-20";
  */
 const PUBLICATION_PERIOD_END = "2027-03-12";
 const PERIOD_NOTE = `Publication period (公開提供期限): limited publication for 公共交通オープンデータチャレンジ2026 until ${PUBLICATION_PERIOD_END}, per the dataset page. This is the provider's publication period, not a confirmed end of any licence; reuse of derived data after that date is unconfirmed with the provider (see coverage gap:reuse-after-publication). Licence basis for this resource is unconfirmed: it ships under the Owner's override at the #16 merge, and PDL 1.0 is not treated as covering it (Owner decision #39, Q11 = No).`;
-/** Honest licence value for the E27 resources: validate.ts requires a data source to name a licence with an http(s) link, so link the provider's dataset page. */
-const E27_LICENSE = { name: "Licence unconfirmed — published under the Owner's override (#16)", url: "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45" };
+/**
+ * Honest licence value for the E27 resources: validate.ts requires a data source to name a licence with an
+ * http(s) link, so link the provider's dataset page. Both languages state the same status (#297); the ja
+ * text reuses the credits dialog's controlled wording for this right.
+ */
+const E27_LICENSE = {
+  name: [
+    { lang: "ja", text: "ライセンス未確認・オーナー判断により公開（#16）" },
+    { lang: "en", text: "Licence unconfirmed — published under the Owner's override (#16)" },
+  ],
+  url: "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45",
+};
 // #130: the E27 resources ship under the Owner's recorded override (the #16 merge), not under a confirmed licence.
 const E27_OVERRIDE = { decision: "https://github.com/nurockplayer/gteki/pull/16#issuecomment-6313815757", date: "2026-10-21" };
 const SRC_NWD = "mlit-hokonavi-e27-nwd";
@@ -1240,6 +1250,27 @@ for (const raw of s03.pois) {
   });
 }
 if (usedApprox.size !== s03ApproxById.size) throw new Error(`S03 positions: ${s03ApproxById.size - usedApprox.size} entries do not match an appended POI`);
+
+// ---------------------------------------------------------------- merchant shops (#214)
+// Facts-only transcription already on main: docs/research/merchants/shinjuku-merchants-batch1.json (Toei +
+// Tokyo Metro, #418), batch2 (LUMINE EST, LUMINE, NEWoMan) and shinjuku-odakyu-dept.json (the department store
+// itself). Contracts: docs/research/merchants/shinjuku-import-contract.md and shinjuku-batch2-contract.md.
+// Every shop is search-only: the sources give no position or entrance, so floorId, displayPosition, paid stay
+// null and connectorNodeIds stays empty. Brand lists are not POIs (#419); see gteki/tenants.json.
+type MerchantFile = { sources: Source[]; pois: Poi[] };
+const MERCHANT_POI_FILES = ["shinjuku-merchants-batch1.json", "shinjuku-merchants-batch2.json", "shinjuku-odakyu-dept.json"];
+const MERCHANT_SOURCE_IDS = new Set<string>();
+for (const file of MERCHANT_POI_FILES) {
+  const m = JSON.parse(readFileSync(join(HERE, "../../../docs/research/merchants", file), "utf8")) as MerchantFile;
+  for (const src of m.sources) {
+    MERCHANT_SOURCE_IDS.add(src.id);
+    // The research hand-off writes `usage: null` for a reusable source; the schema's absent value means the same.
+    const { usage, ...rest } = src;
+    sources.push(usage == null ? (rest as Source) : { ...rest, usage });
+  }
+  for (const poi of m.pois) pois.push(poi);
+}
+
 const coverage = {
   summary: [
     { lang: "ja", text: "都営大江戸線 新宿駅（E27）の公開歩行空間ネットワーク／構内地図の範囲のみ。他社線の改札・ホームは2020年3月時点の資料から名前を収録し、改札と乗換の一部に同資料の形状から求めたおおよその位置を付加（検索表示のみ、±5 m 以上、経路案内には不使用）。乗換通路は未収録。高さは推定値（実測ではない）。" },
@@ -1326,8 +1357,8 @@ const bundle: StationBundle = {
 // ---------------------------------------------------------------- plan (render geometry)
 const plan = {
   note: "Render-only geometry derived from 構内地図データ（都営地下鉄大江戸線 新宿駅）（国土交通省）, published under the Owner's #16 override; licence basis unconfirmed. Not routing truth. Heights are symbolic.",
-  // S03 (#411) supplies POI names only, nothing in the plan, so its credit is not listed here.
-  attribution: sources.filter((s) => s.id !== S03_SOURCE_ID).map((s) => s.attribution),
+  // S03 (#411) and the merchant sources (#214) supply POIs only, nothing in the plan, so their credit is not listed here.
+  attribution: sources.filter((s) => s.id !== S03_SOURCE_ID && !MERCHANT_SOURCE_IDS.has(s.id)).map((s) => s.attribution),
   levels: mapLevels.map((ml) => {
     const nwdOrd = ml.ordinal === -5 ? -4.5 : ml.ordinal;
     return {
