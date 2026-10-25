@@ -21,9 +21,11 @@ test.use({ trace: "off" });
  * Recorded only: the full label list with rects, faded-label overlaps, label counts per category,
  * `__gteki.labels()`, camera position, the screenshot's stats, and (when the app offers them) a direct
  * measure of the routable slice's projected extent.
- *   - Framing: #114 (fc4e5c6) adds `__gteki.overviewFrame()` → `{ extentShare, fitShare, bbox }` (null outside
- *     overview): `extentShare` is the routable network's projected extent over the shorter viewport side,
- *     measured on its actual edge points, and is asserted in the band when the hook exists. Without it (main
+ *   - Framing: #114 (fc4e5c6) adds `__gteki.overviewFrame()` → `{ extentShare, viewportShare, fitShare, bbox }`
+ *     (null outside overview): `viewportShare` (since #109 part b: the larger projected side over the
+ *     viewport's shorter side) is asserted in the band when the hook exists; `extentShare` is the same over
+ *     the free area, which exceeds 1 on an occluded phone and is recorded only. Both are measured on the
+ *     network's actual edge points. Without it (main
  *     before #114) framing falls back to a proxy from label anchors: `labelSpread` from `labelUiOverlaps`
  *     (all visible labels) and the spread of the *routable* labels (those not marked `search-only`, i.e.
  *     anchored on a graph node). Anchors lie inside the slice, so the spread is a lower bound of its extent:
@@ -153,10 +155,12 @@ for (const key of STATIONS) {
     // 4. C1: labels never above the UI.
     expect.soft(smoke.uiOverlaps.filter((o) => o.labelOnTop), "POI labels painted over UI controls").toEqual([]);
     // 1. Framing: the direct measure when the app has it, else the label-anchor proxy.
-    const extentShare = framingDirect?.source === "overviewFrame" ? framingDirect.value?.extentShare : undefined;
-    if (typeof extentShare === "number") {
-      expect.soft(extentShare, "routable network extent / shorter viewport side (overviewFrame)").toBeGreaterThanOrEqual(FRAMING.min);
-      expect.soft(extentShare, "routable network extent / shorter viewport side (overviewFrame)").toBeLessThanOrEqual(FRAMING.max);
+    // `viewportShare` is #109's measure: the free-rect share can read over 1 when the map deliberately
+    // reaches past a short phone band, so the band is checked against the viewport's shorter side.
+    const viewportShare = framingDirect?.source === "overviewFrame" ? framingDirect.value?.viewportShare : undefined;
+    if (typeof viewportShare === "number") {
+      expect.soft(viewportShare, "routable network extent / shorter viewport side (overviewFrame)").toBeGreaterThanOrEqual(FRAMING.min);
+      expect.soft(viewportShare, "routable network extent / shorter viewport side (overviewFrame)").toBeLessThanOrEqual(FRAMING.max);
     } else if (spreadRoutable.spread !== null) {
       expect.soft(spreadRoutable.spread, "spread of routable label anchors / shorter viewport side (proxy for the slice)").toBeGreaterThanOrEqual(FRAMING.min);
       expect.soft(spreadRoutable.spread, "spread of routable label anchors / shorter viewport side (proxy for the slice)").toBeLessThanOrEqual(FRAMING.max);
