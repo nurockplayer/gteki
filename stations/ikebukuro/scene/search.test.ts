@@ -140,6 +140,12 @@ const GOLDEN: Record<string, Row[]> = {
     { q: "ベビー休憩室", top: ["service-ikb-tobudept-007", "service-ikb-tobudept-008"] },
     { q: "お忘れ物取扱所", top1: "service-ikb-seibu-003" }, // #455, Seibu lost-property office; exact name unique among all Ikebukuro POI names and aliases
   ],
+  "line and store POIs (#501)": [
+    { q: "西武池袋線 3番ホーム", top1: "seibu-platform-3" },
+    { q: "Seibu Ikebukuro Line Platform 7", top1: "seibu-platform-7" },
+    { q: "ルミネ池袋", top1: "shop-ikb-lumine" },
+    { q: "エソラ池袋", top1: "shop-ikb-esola" },
+  ],
 };
 
 describe("Ikebukuro golden search", () => {
@@ -165,10 +171,13 @@ describe("Ikebukuro golden search", () => {
   });
 
   // Department-store names: no source ties them to an exit here, so searching them must not invent a gate.
-  // Seibu names come from the Seibu Railway station page (seibu-ikebukuro-station-2026-10, OD-25); only POIs
-  // sourced from that page may carry 西武 / Seibu labels, and the Seibu queries may reach only those POIs.
+  // Seibu names come from the Seibu Railway station page, recorded twice as distinct reads of that one page:
+  // seibu-ikebukuro-station-2026-10 (#414, OD-25) and seibu-ikebukuro-norikae-2026-10 (#452, the platform
+  // legend); only POIs sourced from it may carry 西武 / Seibu labels, and the Seibu queries may reach only those POIs.
   // 百貨店 only on the Tobu Department Store POI, which cites the store's own page (OD-34); Sogo & Seibu stays excluded.
-  const SEIBU_SOURCE = "seibu-ikebukuro-station-2026-10";
+  const SEIBU_SOURCES = ["seibu-ikebukuro-station-2026-10", "seibu-ikebukuro-norikae-2026-10"];
+  const fromSeibu = (poi: StationBundle["pois"][number]): boolean =>
+    poi.evidence.sourceIds.some((id) => SEIBU_SOURCES.includes(id));
   const TOBU_DEPT_SOURCE = "tobu-dept-ikebukuro-2026-10";
   const TOBU_DEPT_POI = "shop-ikb-tobudept";
   describe("no false gate for names the data does not evidence", () => {
@@ -182,7 +191,7 @@ describe("Ikebukuro golden search", () => {
     it("the Seibu queries reach only POIs sourced from the Seibu Railway station page", () => {
       for (const q of ["西武", "西武線", "Seibu", "Seibu Railway"]) {
         const hits = index.search(q);
-        for (const hit of hits) expect(hit.poi.evidence.sourceIds, `${q} -> ${hit.poi.id}`).toContain(SEIBU_SOURCE);
+        for (const hit of hits) expect(fromSeibu(hit.poi), `${q} -> ${hit.poi.id}`).toBe(true);
       }
     });
 
@@ -196,7 +205,7 @@ describe("Ikebukuro golden search", () => {
             ({ text }) =>
               banned.test(text) ||
               (departmentStore.test(text) && !(poi.id === TOBU_DEPT_POI && poi.evidence.sourceIds.includes(TOBU_DEPT_SOURCE))) ||
-              (seibu.test(text) && !poi.evidence.sourceIds.includes(SEIBU_SOURCE)),
+              (seibu.test(text) && !fromSeibu(poi)),
           )
           .map(({ text }) => `${poi.id}: ${text}`),
       );
