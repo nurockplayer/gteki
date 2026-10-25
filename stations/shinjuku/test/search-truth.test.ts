@@ -386,8 +386,9 @@ describe("facility POIs trace to the GSI facility points", () => {
     const ADDED: { id: string; source: string }[] = [];
     // #411: 45 search-only line POIs from tokyo-s03-zip, appended after every E27 POI (see the S03 block below).
     const S03_COUNT = 45;
-    // #214: 6 Toei/Tokyo Metro + 576 LUMINE/NEWoMan listings + the Odakyu department store (see the shop block).
-    const SHOP_COUNT = 583;
+    // #214: 6 Toei/Tokyo Metro + 576 LUMINE/NEWoMan listings + the Odakyu department store, plus the 7 store
+    // POIs for the printed buildings (LUMINE 1/2, LUMINE EST, NEWoMan, 新宿マルイ 本館/アネックス/メン).
+    const SHOP_COUNT = 590;
     expect(pois.length).toBe(OLD_COUNT + ADDED.length + S03_COUNT + SHOP_COUNT);
     const e27Pois = pois.filter(isE27);
     expect(e27Pois.length).toBe(OLD_COUNT + ADDED.length);
@@ -585,8 +586,8 @@ describe("merchant shops (#214)", () => {
   const shops = pois.filter(isShop);
   const index = createSearchIndex(bundle);
 
-  it("imports the 583 directory listings as search-only shops", () => {
-    expect(shops.length).toBe(583);
+  it("imports the 583 directory listings and the 7 store POIs as search-only shops", () => {
+    expect(shops.length).toBe(590);
     for (const p of shops) {
       expect(p.evidence.sourceIds.length, p.id).toBe(1);
       expect(bundle.sources.some((s) => s.id === p.evidence.sourceIds[0]), p.id).toBe(true);
@@ -596,6 +597,27 @@ describe("merchant shops (#214)", () => {
       expect(p.connectorNodeIds, p.id).toEqual([]);
       expect(p.paid, p.id).toBeNull();
       expect(p.approximatePosition, p.id).toBeUndefined();
+    }
+  });
+
+  it("keeps one store POI per printed building, with its operator and floor range in the notes", () => {
+    const store: [string, string, string][] = [
+      ["shop-sjk-lumine1", "ルミネ新宿 ルミネ1", "B2F〜8F"],
+      ["shop-sjk-lumine2", "ルミネ新宿 ルミネ2", "1F〜7F"],
+      ["shop-sjk-lumineest", "ルミネエスト新宿", "B2F〜8F"],
+      ["shop-sjk-newoman", "ニュウマン新宿", "1F〜7F"],
+      ["shop-sjk-marui-honkan", "新宿マルイ 本館", "B1F〜8F"],
+      ["shop-sjk-marui-annex", "新宿マルイ アネックス", "B1F〜8F"],
+      ["shop-sjk-marui-men", "新宿マルイ メン", "1F〜8F"],
+    ];
+    expect(store.filter(([id]) => shops.some((p) => p.id === id)).length).toBe(store.length);
+    for (const [id, name, floors] of store) {
+      const p = pois.find((x) => x.id === id)!;
+      expect(p.names[0]!.text, id).toBe(name);
+      expect(p.aliases, id).toEqual([]);
+      const ja = p.notes!.find((n) => n.lang === "ja")!.text;
+      expect(ja, id).toContain("運営:");
+      expect(ja, id).toContain(floors);
     }
   });
 
