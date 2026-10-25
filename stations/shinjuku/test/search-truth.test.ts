@@ -30,6 +30,8 @@ const WP4_SOURCES = new Set([
   "tokyometro-shinjuku-accessibility-2026-10",
   "tokyometro-shinjuku-yardmap-print-2026-10",
   "toei-shinjuku-station-2026-10",
+  // Line-code and English line-name aliases on the Marunouchi POIs (M08 / Marunouchi Line).
+  "tokyometro-shinjuku-station-en-2026-10",
 ]);
 // Non-empty: `every` is true for an empty source list, which would class an unsourced POI as WP4 and skip the E27 checks.
 const isWp4 = (p: Poi) => p.category !== "shop" && p.evidence.sourceIds.length > 0 && p.evidence.sourceIds.every((id) => WP4_SOURCES.has(id));
@@ -257,6 +259,10 @@ describe("POI aliases", () => {
       const add = (k: string, why: string) => allowed.set(k, why);
       if (p.category === "platform") for (const [k, why] of Object.entries(PLATFORM_ALIASES)) add(k, why);
       for (const [k, why] of Object.entries(GENERIC_ALIASES[p.category] ?? {})) add(k, why);
+      if (p.id === "poi:tokyometro-gate:1" || p.id === "poi:tokyometro-gate:2") {
+        add("en:M08", "printed station number on the Tokyo Metro English Shinjuku page");
+        add("en:Marunouchi Line", "printed English line name on the Tokyo Metro English Shinjuku page");
+      }
       if (p.category === "exit" && isE27(p)) {
         // Distinguishing aliases are rebuilt from the independently recomputed descriptors (not from the name).
         const d = describeExit(p);
@@ -279,9 +285,9 @@ describe("POI aliases", () => {
       for (const a of p.aliases) {
         if (isShop(p)) expect(a.lang, `${p.id} alias ${a.text}`).toBe("ja-Hrkt");
         else if (isWp4(p)) {
-          // #501: a Metro exit's only alias is the printed code of a 番出口 name (A6 of A6番出口); nothing else
-          // carries an alias. The exact set is asserted in the WP4 block below.
-          expect(["ja"], `${p.id} alias ${a.lang}`).toContain(a.lang);
+          // #501: a Metro exit's alias is the printed code of a 番出口 name (A6 of A6番出口); the Marunouchi POIs
+          // also carry the printed M08 and "Marunouchi Line". The exact set is asserted in the WP4 block below.
+          expect(["ja", "en"], `${p.id} alias ${a.lang}`).toContain(a.lang);
         } else expect(allowedNorm.has(norm(`${a.lang}:${a.text}`)), `${p.id} alias ${a.lang}:${a.text}`).toBe(true);
       }
     }
@@ -508,8 +514,11 @@ describe("S03 search-only line POIs (#411)", () => {
     }
   });
 
-  it("cites only tokyo-s03-zip", () => {
-    for (const p of s03Pois) expect(p.evidence.sourceIds, p.id).toEqual([S03_SOURCE]);
+  it("cites tokyo-s03-zip, plus the printed line page on the two Marunouchi gates", () => {
+    for (const p of s03Pois) {
+      const lineAlias = p.id === "poi:tokyometro-gate:1" || p.id === "poi:tokyometro-gate:2";
+      expect(p.evidence.sourceIds, p.id).toEqual(lineAlias ? [S03_SOURCE, "tokyometro-shinjuku-station-en-2026-10"] : [S03_SOURCE]);
+    }
   });
 
   it("carries the March 2020 ja and en notes", () => {
@@ -521,8 +530,13 @@ describe("S03 search-only line POIs (#411)", () => {
     }
   });
 
-  it("has no aliases", () => {
-    for (const p of s03Pois) expect(p.aliases, p.id).toEqual([]);
+  it("has no aliases, except the printed line code and English line name on the two Marunouchi gates", () => {
+    for (const p of s03Pois) {
+      const metro = p.id === "poi:tokyometro-gate:1" || p.id === "poi:tokyometro-gate:2";
+      expect(p.aliases, p.id).toEqual(
+        metro ? [{ lang: "en", text: "M08" }, { lang: "en", text: "Marunouchi Line" }] : [],
+      );
+    }
   });
 
   it("registers tokyo-s03-zip as a modified source with the exact attribution", () => {
@@ -631,16 +645,22 @@ describe("WP4 line POIs (#501)", () => {
     }
   });
 
-  it("keeps the printed ja name, the printed exit code as the only alias, and the unverified note", () => {
+  it("keeps the printed ja name, the printed exit code, the printed line code and name, and the unverified note", () => {
     for (const p of wp4) {
       expect(p.names.length, p.id).toBe(1);
       expect(p.names[0]!.lang, p.id).toBe("ja");
       // #501 review: an exit keeps only the lettered code its printed name starts with (A6 of A6番出口, A1 of
       // A1出口); the bare Toei 1–8 aliases were dropped because a lone number matches the whole station (#506),
-      // and no lift or escalator has an alias. Asserted as an exact set, so an empty alias cannot pass.
+      // and no lift or escalator has an alias. A Marunouchi POI also carries the printed M08 and
+      // "Marunouchi Line"; the Toei exits carry no line and so no line alias. Asserted as an exact set, so an
+      // empty alias cannot pass.
       const printed = p.names[0]!.text;
       const code = p.category === "exit" ? /^(.*?)番?出?口$/.exec(printed)?.[1] : undefined;
-      expect(p.aliases.map((a) => a.text), p.id).toEqual(code && /[a-z]/i.test(code) ? [code] : []);
+      const metro = p.evidence.sourceIds.includes("tokyometro-shinjuku-station-en-2026-10");
+      expect(p.aliases.map((a) => a.text), p.id).toEqual([
+        ...(code && /[a-z]/i.test(code) ? [code] : []),
+        ...(metro ? ["M08", "Marunouchi Line"] : []),
+      ]);
       const ja = p.notes?.find((n) => n.lang === "ja")?.text ?? "";
       const en = p.notes?.find((n) => n.lang === "en")?.text ?? "";
       expect(ja, `${p.id} ja`).toContain("位置・入口は未確認");
@@ -658,7 +678,7 @@ describe("WP4 line POIs (#501)", () => {
     }
   });
 
-  it("registers the four WP4 sources as facts-only with their clearance decision", () => {
+  it("registers the five WP4 sources as facts-only with their clearance decision", () => {
     for (const id of WP4_SOURCES) {
       const src = bundle.sources.find((s) => s.id === id);
       expect(src, id).toBeDefined();
@@ -675,6 +695,42 @@ describe("WP4 line POIs (#501)", () => {
 
   it("keeps a routable POI as the top hit for 出口 and Exit", () => {
     for (const q of ["出口", "Exit"]) expect(index.search(q, { limit: 10 })[0]!.poi.connectorNodeIds.length, q).toBeGreaterThan(0);
+  });
+});
+
+describe("line-code and English line-name aliases (M08 / Marunouchi Line)", () => {
+  const index = createSearchIndex(bundle);
+  const ALIAS_SOURCE = "tokyometro-shinjuku-station-en-2026-10";
+  const metro = pois.filter((p) => p.evidence.sourceIds.includes(ALIAS_SOURCE));
+
+  it("puts M08 and Marunouchi Line on the 36 Marunouchi POIs only", () => {
+    expect(metro.length).toBe(36);
+    expect(metro.filter((p) => p.id.startsWith("poi:tokyometro-exit:")).length).toBe(28);
+    expect(metro.filter((p) => p.category === "ticket_gate").length).toBe(2);
+    expect(metro.filter((p) => p.category === "elevator").length).toBe(4);
+    expect(metro.filter((p) => p.category === "escalator").length).toBe(2);
+    for (const p of metro) {
+      expect(p.aliases, p.id).toContainEqual({ lang: "en", text: "M08" });
+      expect(p.aliases, p.id).toContainEqual({ lang: "en", text: "Marunouchi Line" });
+    }
+    for (const p of pois) {
+      if (metro.includes(p)) continue;
+      expect(p.aliases.some((a) => a.text === "M08" || a.text === "Marunouchi Line"), p.id).toBe(false);
+    }
+  });
+
+  it("finds every Marunouchi POI by M08, m08 and Marunouchi Line", () => {
+    for (const q of ["M08", "m08", "Marunouchi Line"]) {
+      const ids = index.search(q, { limit: 100 }).map((h) => h.poi.id);
+      for (const p of metro) expect(ids, `${q} -> ${p.id}`).toContain(p.id);
+    }
+  });
+
+  it("gives the Toei exits, JR, Keio and Odakyu no line code or English line name", () => {
+    for (const id of ["poi:toei-exit:a1", "poi:toei-exit:1", "poi:jreast-gate:1", "poi:jreast-platform:14", "poi:keio-gate:1", "poi:odakyu-gate:1", "poi:odakyu-platform:2"]) {
+      const p = pois.find((x) => x.id === id)!;
+      expect(p.aliases.some((a) => a.lang === "en"), id).toBe(false);
+    }
   });
 });
 

@@ -1370,6 +1370,49 @@ for (const raw of wp4Imported) {
   });
 }
 
+// ---------------------------------------------------------------- line-code and English line-name aliases
+// Gap (ds-core findings, 10-25): searching a station-numbering code (M08) or an operator's printed English
+// line name ("Marunouchi Line") found nothing, because the line POIs carried no code or romaji alias.
+// Tokyo Metro's English Shinjuku page prints both; it is registered here as a facts-only source (decision #26)
+// and was read through the Wayback snapshot noted on the source record, since the live host answers 403 to a
+// plain fetch from this environment (recorded as a GAP in its notes). Only lines our data already states get an
+// alias: the 34 WP4 Metro POIs (line "marunouchi") and the two S03 Metro gates, whose printed name starts
+// 丸の内線. Toei's nine station exits carry no line (the page does not split S01 from E27), so they get none.
+// JR East, Keio and Odakyu pages are corroboration only (OD-34), so their codes and English line names stay
+// GAPs; so does any Toei code or English name, because the Toei page cannot be read here.
+const LINE_ALIAS_SOURCE = "tokyometro-shinjuku-station-en-2026-10";
+sources.push({
+  id: LINE_ALIAS_SOURCE,
+  title: "Shinjuku Station/M08 | Route/Station Information | Tokyo Metro Line",
+  publisher: "東京地下鉄",
+  url: "https://www.tokyometro.jp/lang_en/station/shinjuku/index.html",
+  license: null,
+  rights: "REFERENCE_ONLY",
+  usage: "facts-only",
+  decision: { url: "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", date: "2026-10-21" },
+  attribution: "東京メトロ 新宿駅 (English station page) (facts only; not reproduced)",
+  modified: false,
+  retrievedAt: "2026-10-25T21:45:00+09:00",
+  datasetDate: null,
+  notes: "ライセンスなし・事実のみ参照（複製なし）。駅名・英語路線名・駅番号のみ採用: Marunouchi Line と M08（ページ表記）。ライブのホストは他の東京メトロページと同じくこの環境から 403 を返すため、Wayback の 2026-04-15 スナップショット (http://web.archive.org/web/20260415001230/https://www.tokyometro.jp/lang_en/station/shinjuku/index.html) で読んだ。403 は GAP として記録。",
+});
+const LINE_ALIASES: Record<string, { code: string; en: string }> = { marunouchi: { code: "M08", en: "Marunouchi Line" } };
+const s03MetroGateIds = ["poi:tokyometro-gate:1", "poi:tokyometro-gate:2"];
+const marunouchiIds = [...wp4Imported.filter((p) => p.line === "marunouchi").map((p) => p.id), ...s03MetroGateIds];
+if (marunouchiIds.length !== 36) throw new Error(`line aliases: expected 36 Marunouchi POIs, found ${marunouchiIds.length}`);
+for (const id of marunouchiIds) {
+  const poi = pois.find((p) => p.id === id);
+  if (!poi) throw new Error(`line aliases: ${id} is not a POI`);
+  const alias = LINE_ALIASES.marunouchi!;
+  poi.aliases.push({ lang: "en", text: alias.code }, { lang: "en", text: alias.en });
+  poi.evidence = { ...poi.evidence, sourceIds: [...poi.evidence.sourceIds, LINE_ALIAS_SOURCE], checkedDate: "2026-10-25" };
+}
+// The two S03 gates state their line only in the printed name; fail if that ever stops matching.
+for (const id of s03MetroGateIds) {
+  const poi = pois.find((p) => p.id === id)!;
+  if (!poi.names[0]!.text.startsWith("丸の内線")) throw new Error(`line aliases: ${id} no longer names 丸の内線`);
+}
+
 const coverage = {
   summary: [
     { lang: "ja", text: "都営大江戸線 新宿駅（E27）の公開歩行空間ネットワーク／構内地図の範囲のみ。他社線の改札・ホームは2020年3月時点の資料から名前を収録し、改札と乗換の一部に同資料の形状から求めたおおよその位置を付加（検索表示のみ、±5 m 以上、経路案内には不使用）。他社の出口・エレベーター・エスカレーターは各事業者の公開ページから名前のみ収録（検索のみ）。乗換通路は未収録。高さは推定値（実測ではない）。" },
@@ -1458,7 +1501,7 @@ const bundle: StationBundle = {
 const plan = {
   note: "Render-only geometry derived from 構内地図データ（都営地下鉄大江戸線 新宿駅）（国土交通省）, published under the Owner's #16 override; licence basis unconfirmed. Not routing truth. Heights are symbolic.",
   // S03 (#411), the merchant sources (#214) and the WP4 line sources (#501) supply POIs only, nothing in the plan, so their credit is not listed here.
-  attribution: sources.filter((s) => s.id !== S03_SOURCE_ID && !MERCHANT_SOURCE_IDS.has(s.id) && !WP4_SOURCE_IDS.has(s.id)).map((s) => s.attribution),
+  attribution: sources.filter((s) => s.id !== S03_SOURCE_ID && s.id !== LINE_ALIAS_SOURCE && !MERCHANT_SOURCE_IDS.has(s.id) && !WP4_SOURCE_IDS.has(s.id)).map((s) => s.attribution),
   levels: mapLevels.map((ml) => {
     const nwdOrd = ml.ordinal === -5 ? -4.5 : ml.ordinal;
     return {
