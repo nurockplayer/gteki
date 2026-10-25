@@ -9,7 +9,7 @@ const stationDir = (id: string) => fileURLToPath(new URL(`../../../stations/${id
 interface RouteOutput {
   contract: string;
   stationId: string;
-  result: { ok: boolean; nodeIds?: string[]; reason?: string; message?: string };
+  result: { ok: boolean; nodeIds?: string[]; reason?: string; message?: string; sourceIds?: string[]; endpointSourceIds?: string[] };
   path: { nodeId: string; renderer: number[]; heightSymbolic: boolean }[];
   polyline: { renderer: number[]; zKnown: boolean; stepIndex: number }[];
   instructions: { ja: { kind: string; text: string }[]; en: { kind: string; text: string }[] };
@@ -42,6 +42,17 @@ describe("@gteki/cli route on the real stations", { timeout: 30_000 }, () => {
     expect(byPoi.out.result.nodeIds![0]).toBe("g_jr_c2");
     expect(byPoi.out.result.nodeIds!.at(-1)).toBe("x35");
     expect(byPoi.out.instructions.ja.length).toBeGreaterThan(2);
+  });
+
+  it("Ikebukuro: the draft sign guideline that names Exit 22 is not route evidence (#491)", () => {
+    const { status, stderr, out } = route("ikebukuro", ["west-exit-b1", "exit-22", "--from-poi", "--goal-poi"]);
+    expect(status, stderr).toBe(0);
+    // Exit 22's Japanese name (東口（北）= 22) rests on the draft guideline, which may never be presented as
+    // route evidence (OD-22, #222): it belongs to the endpoint's name sources, not the path's.
+    expect(out.result.endpointSourceIds).toContain("toshima-terminal-sign-guideline-draft-v1.3");
+    expect(out.result.sourceIds).not.toContain("toshima-terminal-sign-guideline-draft-v1.3");
+    expect(out.result.sourceIds!.length).toBeGreaterThan(0);
+    expect(out.result.nodeIds!.at(-1)).toBe("x22");
   });
 
   it("Shinjuku: Oedo platform -> street exit by POI ids; heights stay symbolic (zKnown false)", () => {
