@@ -158,6 +158,8 @@ Plain `curl`, ≥0.8 s apart, **9 HTTP requests** of the 40 allowed. Times JST, 
 | 8 | 13:57 | `https://www.metro-pro.jp/` | Mozilla/5.0 | 200 (12,476 bytes); no `新宿`, no `改札` |
 | 9 | 13:58 | `https://www.kotsu.metro.tokyo.jp/pickup_information/news/subway/2024/sub_i_2024012911347_h.html` | curl default | 848-byte block page, 「Request unsuccessful. Incapsula incident ID: 561000810075932564-186797860135703625」 |
 
+**User-Agent deviation from the brief.** The brief asked for curl's default User-Agent; requests 1–8 were sent with `-A 'Mozilla/5.0'` instead, and only request 9 used curl's own default. That one default-UA request still received a block page (the 848-byte incident page), so Toei's refusal is not UA-dependent; requests 6–8 (Tokyo Metro, Metro Properties) were not repeated with the default UA.
+
 Non-HTTP attempts, recorded so they are not repeated:
 
 - `https://www.metro-properties.com/` (twice) — DNS resolves to `mc-4487b244-…westeurope.cloudapp.azure.com`; TLS fails with "no alternative certificate subject name matches target host name". No HTTP request completed. **This is not the operator's domain**; OD-34 records `https://www.metro-pro.jp/`.
