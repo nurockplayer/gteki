@@ -1257,8 +1257,17 @@ if (usedApprox.size !== s03ApproxById.size) throw new Error(`S03 positions: ${s0
 // itself). Contracts: docs/research/merchants/shinjuku-import-contract.md and shinjuku-batch2-contract.md.
 // Every shop is search-only: the sources give no position or entrance, so floorId, displayPosition, paid stay
 // null and connectorNodeIds stays empty. Brand lists are not POIs (#419); see gteki/tenants.json.
+// shinjuku-dept-stores.json (director, 2026-10-25) adds one store-level POI per printed building: LUMINE 1,
+// LUMINE 2, LUMINE EST, NEWoMan and the three 新宿マルイ buildings. It cites the LUMINE floor-guide sources the
+// batch files already registered, so it declares only its own Marui source; the check below catches a typo.
 type MerchantFile = { sources: Source[]; pois: Poi[] };
-const MERCHANT_POI_FILES = ["shinjuku-merchants-batch1.json", "shinjuku-merchants-batch2.json", "shinjuku-odakyu-dept.json"];
+const MERCHANT_POI_FILES = ["shinjuku-merchants-batch1.json", "shinjuku-merchants-batch2.json", "shinjuku-odakyu-dept.json", "shinjuku-dept-stores.json"];
+// A file may cite sources another file registered only when the pair is listed here, so a POI cannot
+// borrow an unrelated merchant source and pass the check below. The store POIs reuse the LUMINE /
+// NEWoMan floor-guide sources that batch2 already declares.
+const MERCHANT_CROSS_FILE_SOURCES: Record<string, readonly string[]> = {
+  "shinjuku-dept-stores.json": ["lumine-shinjuku-floorguide-2026-10", "lumine-est-shinjuku-floorguide-2026-10", "newoman-shinjuku-floorguide-2026-10"],
+};
 const MERCHANT_SOURCE_IDS = new Set<string>();
 for (const file of MERCHANT_POI_FILES) {
   const m = JSON.parse(readFileSync(join(HERE, "../../../docs/research/merchants", file), "utf8")) as MerchantFile;
@@ -1268,7 +1277,14 @@ for (const file of MERCHANT_POI_FILES) {
     const { usage, ...rest } = src;
     sources.push(usage == null ? (rest as Source) : { ...rest, usage });
   }
-  for (const poi of m.pois) pois.push(poi);
+  const own = new Set(m.sources.map((s) => s.id));
+  const allowed = new Set([...own, ...(MERCHANT_CROSS_FILE_SOURCES[file] ?? [])]);
+  for (const poi of m.pois) {
+    for (const id of poi.evidence.sourceIds)
+      if (!allowed.has(id)) throw new Error(`merchant import: ${poi.id} (${file}) cites ${id}, which this file does not declare`);
+    if (poi.evidence.sourceIds.length === 0) throw new Error(`merchant import: ${poi.id} cites no source`);
+    pois.push(poi);
+  }
 }
 
 const coverage = {
