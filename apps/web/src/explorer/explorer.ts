@@ -26,12 +26,12 @@ import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
-import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
+import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { collectIdentityBoards, identityBoardObjects, identityFront, identityNameBehind, identityNameCentre, identityNameCorners, identityNameSamples, identityRegionRect, intersectsRect, protectIdentityChip, withinObject, type IdentityBoard, type ScreenRect } from "./identityBoards.ts";
 import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming } from "./identityFraming.ts";
 import { StationCaches } from "./stationCaches.ts";
-import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
+import { STREET, STREET_SURFACE_FLAG, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatarRig, type AvatarSelection } from "./avatarSelection.ts";
 import { avatarMotion } from "./avatarMotion.ts";
 import { contactShadow } from "./contactShadow.ts";
@@ -105,6 +105,8 @@ const IDENTITY_HOLD_S = 4;
 const IDENTITY_TRACK_MAX_RAD = THREE.MathUtils.degToRad(100);
 /** Instanced meshes with more instances than this occlude only as registered proxies. */
 const MAX_OCCLUDER_INSTANCES = 1024;
+/** The phone layout's breakpoint (CSS px) in styles.css (`@media (max-width: 720px)`); #109 uses it for framing. */
+const PHONE_MAX_PX = 720;
 
 /** A mesh that can hide labels behind it. */
 interface Occluder {
@@ -357,6 +359,8 @@ export class Explorer {
   private panelEl: HTMLElement | null = null;
   /** The persistent credit line along the canvas bottom; the overview keeps clear of it too. */
   private creditEl: HTMLElement | null = null;
+  /** The route sheet: a full-width bottom sheet on a phone, so the overview keeps clear of it there (#385). */
+  private sheetEl: HTMLElement | null = null;
   private minimapEl: HTMLElement | null = null;
   /** Refits the overview when an occluder's size changes: the panel collapsing, the credit line wrapping. */
   private occluderResize: ResizeObserver | null = null;
@@ -548,13 +552,15 @@ export class Explorer {
    * Where the routable network sits on screen now (CSS px, page coordinates like label rects) and how
    * big it is, measured against the FREE area — the part of the canvas neither the search panel nor the
    * credit line covers: `extentShare` = larger bbox side / the free area's shorter side (about 0.65 right
-   * after the fit: the fit sizes the same network points). `fitShare` is the share of the AABB of those
-   * points, which is what the fit is fed; its 8 corners project outside a diagonal point band, so it can
-   * read larger than `extentShare`. `visibleRect` is that free area itself (page CSS px, so it excludes
-   * the panel and the credit strip), so a spec can check `bbox` lies outside both. Null outside overview
-   * or without a routable network.
+   * after the fit: the fit sizes the same network points). `viewportShare` is the same larger side over
+   * the VIEWPORT's shorter side — #109's acceptance measure: on an occluded phone the fit deliberately
+   * reaches past the free band, so `extentShare` then reads over 1 while `viewportShare` stays at half.
+   * `fitShare` is the share of the AABB of those points, which is what the fit is fed; its 8 corners
+   * project outside a diagonal point band, so it can read larger than `extentShare`. `visibleRect` is
+   * that free area itself (page CSS px, so it excludes the panel and the credit strip), so a spec can
+   * check `bbox` lies outside both. Null outside overview or without a routable network.
    */
-  overviewFrame(): { extentShare: number; fitShare: number | null; bbox: { x0: number; y0: number; x1: number; y1: number }; visibleRect: { x: number; y: number; w: number; h: number } } | null {
+  overviewFrame(): { extentShare: number; viewportShare: number; fitShare: number | null; bbox: { x0: number; y0: number; x1: number; y1: number }; visibleRect: { x: number; y: number; w: number; h: number } } | null {
     if (this.mode !== "overview" || this.routablePts.length === 0) return null;
     const { w, h } = this.viewSize;
     this.camera.updateMatrixWorld();
@@ -566,6 +572,7 @@ export class Explorer {
     const at = this.host.getBoundingClientRect();
     return {
       extentShare: extentShare(net, free.w, free.h),
+      viewportShare: extentShare(net, w, h),
       fitShare: fit ? extentShare(fit, free.w, free.h) : null,
       bbox: { x0: net.x0 + at.left, y0: net.y0 + at.top, x1: net.x1 + at.left, y1: net.y1 + at.top },
       visibleRect: { x: free.x + at.left, y: free.y + at.top, w: free.w, h: free.h },
@@ -1002,18 +1009,46 @@ export class Explorer {
   }
 
   /**
-   * Frame a box (default: the routable slice, else the whole scene) in overview mode, so it fills
-   * about OVERVIEW_FILL of the viewport's shorter side (see overviewFraming.ts). The viewing direction
-   * is kept; a resize refits until the user moves the camera.
+   * Frame a box (default: the routable slice, else the station scene without the street surfaces it
+   * draws) in overview mode, so it fills about OVERVIEW_FILL of the viewport's shorter side (see
+   * overviewFraming.ts). The viewing direction is kept; a resize refits until the user moves the camera.
    */
   frameAll(box?: THREE.Box3): void {
-    const b = (box ?? this.routableBox ?? new THREE.Box3().setFromObject(this.world)).clone();
+    const b = (box ?? this.routableBox ?? this.contextBox()).clone();
     if (b.isEmpty()) b.set(new THREE.Vector3(-50, -10, -50), new THREE.Vector3(50, 10, 50));
     this.setMode("overview");
     this.framed = b;
     this.framedPts = box ? null : this.routablePts;
     this.camera.near = 0.1;
     this.fitOverview();
+  }
+
+  /**
+   * Bounds of the station scene without the street surfaces it draws itself (#109): those describe the
+   * roads around the station (hundreds of metres across here), so framing them would shrink the station
+   * into a speck on the routeless fallback. Objects carrying STREET_SURFACE_FLAG are skipped whole.
+   */
+  private contextBox(): THREE.Box3 {
+    const box = new THREE.Box3();
+    this.world.updateMatrixWorld(true);
+    const visit = (o: THREE.Object3D): void => {
+      if (o.userData[STREET_SURFACE_FLAG] === true) return;
+      // Per object, the maths Box3.setFromObject does: the geometry's bounds through the world matrix, or
+      // an InstancedMesh's own bounds over every instance (an instance can sit outside its geometry's box).
+      // Only the walk differs — a flagged subtree is skipped instead of added to the union.
+      const instanced = o as THREE.InstancedMesh;
+      const geometry = (o as Partial<THREE.Mesh>).geometry;
+      if (instanced.isInstancedMesh) {
+        if (!instanced.boundingBox) instanced.computeBoundingBox();
+        if (instanced.boundingBox) box.union(instanced.boundingBox.clone().applyMatrix4(o.matrixWorld));
+      } else if (geometry) {
+        if (!geometry.boundingBox) geometry.computeBoundingBox();
+        if (geometry.boundingBox) box.union(geometry.boundingBox.clone().applyMatrix4(o.matrixWorld));
+      }
+      for (const c of o.children) visit(c);
+    };
+    visit(this.world);
+    return box;
   }
 
   /**
@@ -1039,6 +1074,17 @@ export class Explorer {
     this.refitOverview();
   }
 
+  /**
+   * Name the route sheet. On a phone it opens as a bottom sheet spanning the canvas width, so the overview
+   * must keep clear of it (#385); a desktop sheet is a left column narrower than the canvas and is ignored,
+   * and while it is closed (or transparent in walk/guide) it blocks nothing. A resize of it refits too.
+   */
+  setSheet(el: HTMLElement | null): void {
+    this.sheetEl = el;
+    this.watchOccluders();
+    this.refitOverview();
+  }
+
   /** Name the top-right minimap occluder; hidden maps leave the canvas free. */
   setMinimap(el: HTMLElement | null): void {
     this.minimapEl = el;
@@ -1050,7 +1096,7 @@ export class Explorer {
   private watchOccluders(): void {
     this.occluderResize?.disconnect();
     this.occluderResize = null;
-    const els = [this.panelEl, this.creditEl, this.minimapEl].filter((e): e is HTMLElement => e !== null);
+    const els = [this.panelEl, this.creditEl, this.sheetEl, this.minimapEl].filter((e): e is HTMLElement => e !== null);
     if (els.length === 0 || typeof ResizeObserver === "undefined") return;
     this.occluderResize = new ResizeObserver(() => this.refitOverview());
     for (const e of els) this.occluderResize.observe(e);
@@ -1062,8 +1108,9 @@ export class Explorer {
   }
 
   /**
-   * The canvas area no UI covers (CSS px, canvas-relative): panel, credit line and minimap. Their page
-   * rects are measured here, on a resize or an occluder change — never per frame.
+   * The canvas area no UI covers (CSS px, canvas-relative): panel, the bottom band (credit line and the
+   * phone's open route sheet) and minimap. Their page rects are measured here, on a resize or an occluder
+   * change — never per frame.
    */
   private freeRect(): ViewRect {
     const { w, h } = this.viewSize;
@@ -1071,10 +1118,12 @@ export class Explorer {
     // display:none (walk/guide on a phone), a collapsed element or none at all leaves the canvas free.
     const measured = el && el.getClientRects().length > 0 ? el.getBoundingClientRect() : null;
     const cornerRect = this.minimapEl && this.minimapEl.getClientRects().length > 0 ? this.minimapEl.getBoundingClientRect() : null;
-    const host = (measured || this.creditEl || cornerRect) ? this.host.getBoundingClientRect() : null;
+    const host = (measured || this.creditEl || this.sheetEl || cornerRect) ? this.host.getBoundingClientRect() : null;
     const panel = measured && host ? { x: measured.left - host.left, y: measured.top - host.top, w: measured.width, h: measured.height } : null;
     const corner = cornerRect && host ? { x: cornerRect.left - host.left, y: cornerRect.top - host.top, w: cornerRect.width, h: cornerRect.height } : null;
-    return freeArea({ w, h }, panel, this.creditInset(host), corner);
+    // Both are full-width bands along the same canvas bottom: the taller one sets where the free area ends.
+    const bottom = Math.max(this.creditInset(host), this.sheetInset(host));
+    return freeArea({ w, h }, panel, bottom, corner);
   }
 
   /** The canvas-bottom band the credit line blocks (CSS px): it spans the width, so only its top edge counts. */
@@ -1085,13 +1134,31 @@ export class Explorer {
     return Math.min(this.viewSize.h, Math.max(0, host.bottom - Math.max(host.top, p.top)));
   }
 
+  /**
+   * The canvas-bottom band the route sheet blocks (CSS px), by the same rule as the credit line. Only an open
+   * sheet in overview counts (walk and guide hide it), and only when it spans the canvas width — the phone's
+   * bottom sheet. A desktop sheet is a narrow left column, so desktop framing is unchanged.
+   */
+  private sheetInset(host: DOMRect | null): number {
+    const el = this.sheetEl;
+    if (!host || !el || this.mode !== "overview" || el.getClientRects().length === 0) return 0;
+    const p = el.getBoundingClientRect();
+    // 1 px of slack for sub-pixel layout: left:0/right:0 still rounds to the canvas width.
+    if (p.width < host.width - 1) return 0;
+    return Math.min(this.viewSize.h, Math.max(0, host.bottom - Math.max(host.top, p.top)));
+  }
+
   /** Put the camera on the fit of `framed` for the current aspect, inside the panel-free area. */
   private fitOverview(): void {
     if (!this.framed) return;
     const { w, h } = this.viewSize;
+    const free = this.freeRect();
+    // #109: with the panel or the open route card covering a phone, the free band is short and the plain
+    // fill leaves the station at 0.26 of the viewport's shorter side. There, keep at least half of it.
+    const share = w <= PHONE_MAX_PX && (free.w < w || free.h < h) ? OVERVIEW_MIN_VIEWPORT_SHARE : 0;
     const pose = frameBounds(
       this.framed,
-      { fovDeg: this.camera.fov, aspect: this.camera.aspect, near: this.camera.near, viewport: { w, h }, free: this.freeRect(), points: this.framedPts ?? undefined },
+      { fovDeg: this.camera.fov, aspect: this.camera.aspect, near: this.camera.near, viewport: { w, h }, free, points: this.framedPts ?? undefined, minViewportShare: share },
       undefined,
       OVERVIEW_OFFSET,
     );
@@ -1445,12 +1512,14 @@ export class Explorer {
     const { w, h } = this.viewSize;
     this.camera.updateMatrixWorld();
     const regions: ScreenRect[] = [];
-    if (this.mode !== "overview" && this.identityBoards.length) {
+    if (this.identityBoards.length) {
       // Visibility rays read occluder bounds: bring them current even when no POI sweep is pending.
       this.refreshOccluders();
       for (const board of this.identityBoards) {
         if (!inScene(board.object, this.scene) || !objectVisible(board.object)) continue;
         board.object.updateWorldMatrix(true, false);
+        // A name that faces away is not readable, so it reserves no screen (#400).
+        if (identityFront(board).dot(this.camera.position.clone().sub(identityNameCentre(board))) <= 0) continue;
         const rects = board.regions.map((region) => identityRegionRect(region.box, board.object, this.camera, w, h)).filter((r): r is ScreenRect => r !== null);
         // A board no ray reaches still projects a rect, but it protects empty screen: skip it (#342).
         if (!rects.length || !this.identityBoardVisible(board)) continue;
