@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build_signage as placement
-from sign_sightlines import ROOT, EYE_M, DEFAULT_PITCH, FOLLOW_DISTANCE, FOLLOW_LIFT, FOLLOW_SHOULDER, Sightlines, follow_envelope, sign_edge
+from sign_sightlines import ROOT, EYE_M, DEFAULT_PITCH, FOLLOW_DISTANCE, FOLLOW_LIFT, FOLLOW_SHOULDER, Sightlines, follow_envelope, nominal_follow_envelope, hull_planes, dot, sign_edge
 from report_sign_sightlines import ROUND1_ORIGINAL
 
 
@@ -37,6 +37,24 @@ class GeometryTests(unittest.TestCase):
         self.assertLess(max(p[2] for p in bounds), 2.50)
         self.assertAlmostEqual(max(p[0] for p in bounds), 0.42)
         self.assertLess(min(p[1] for p in bounds), 7)
+
+    def test_nominal_envelope_contains_intermediate_camera_poses(self):
+        lift = -math.sin(DEFAULT_PITCH)+FOLLOW_LIFT
+        norm = math.hypot(math.cos(DEFAULT_PITCH), lift)
+        horizontal, vertical = FOLLOW_DISTANCE*math.cos(DEFAULT_PITCH)/norm, FOLLOW_DISTANCE*lift/norm
+        for a, b, target in (((0, 0, 1.62), (0, 0.25, 1.62), (1, 8, 2.49)),
+                             ((0, 0, 1.62), (0.25, 0, 1.7), (-8, 2, 2.49)),
+                             ((0, 0, 1.62), (0, -0.25, 1.62), (0, 8, 2.49))):
+            bounds = nominal_follow_envelope([a, b], target)
+            face = [(target[0]+x, target[1], target[2]+z*0.21) for x, z in ((-1,-1), (1,-1), (1,1), (-1,1))]
+            planes = hull_planes(bounds+face)
+            for i in range(33):
+                eye = tuple(x+(y-x)*i/32 for x, y in zip(a, b))
+                yaw = math.atan2(target[1]-eye[1], target[0]-eye[0])
+                camera = (eye[0]-horizontal*math.cos(yaw)+FOLLOW_SHOULDER*math.sin(yaw),
+                          eye[1]-horizontal*math.sin(yaw)-FOLLOW_SHOULDER*math.cos(yaw), eye[2]+vertical)
+                self.assertTrue(all(dot(n, camera) <= d+1e-7 for n, d in planes), (a, b, i))
+            self.assertGreater(min(p[2] for p in bounds), max(a[2], b[2]))
 
     def test_eye_and_follow_parameters_match_the_runtime(self):
         repo = ROOT.parent.parent
