@@ -57,6 +57,7 @@ export class Minimap {
   private readonly connectorRim = svg("path", { class: "minimap-rim-marker minimap-connector-rim", d: "M 0,-6 L 5,4 L -5,4 Z" });
   private readonly connectorTitle = svg("title");
   private readonly routeLabel = document.createElement("div");
+  private readonly floorSelect = document.createElement("select");
   private readonly arrow = svg("path", { class: "minimap-arrow", d: "M 0,-10 L 7,8 L 0,4 L -7,8 Z" });
   private readonly north = svg("g");
   private readonly map = svg("svg", { class: "minimap-map", viewBox: "0 0 190 190", role: "button", tabindex: "0" });
@@ -80,7 +81,13 @@ export class Minimap {
   private lang: Lang = "ja";
   private orientation: MinimapOrientation = read(ORIENTATION_KEY) === "north-up" ? "north-up" : "player-up";
   private collapsed = read(COLLAPSED_KEY) === "true";
+  /** The floor actually drawn; in follow mode it tracks the player, otherwise it is the picked floor. */
   private floorId: string | null | undefined;
+  /** Follow the player's floor; picking another floor pins the map until follow is chosen again. */
+  private followFloor = true;
+  private pickedFloorId: string | null = null;
+  /** Station id + language of the options currently in the picker. */
+  private floorOptionsKey = "";
   /** The last known floor for route progress; an unknown reading never clears it. */
   private lastKnownFloor: string | undefined;
   private route: PolylinePoint[] | null = null;
@@ -155,6 +162,13 @@ export class Minimap {
     this.toggle.className = "minimap-orientation";
     this.collapseButton.className = "minimap-collapse";
     this.reopen.className = "minimap-reopen";
+    this.floorSelect.className = "minimap-floor";
+    // An empty value is the follow state; any floor id pins that floor's graph and route run.
+    this.floorSelect.addEventListener("change", () => {
+      this.followFloor = this.floorSelect.value === "";
+      this.pickedFloorId = this.followFloor ? null : this.floorSelect.value;
+      this.refresh();
+    });
     for (const button of [this.toggle, this.collapseButton, this.reopen]) button.type = "button";
     this.toggle.addEventListener("click", () => {
       this.orientation = this.orientation === "player-up" ? "north-up" : "player-up";
@@ -166,7 +180,7 @@ export class Minimap {
     this.collapseButton.addEventListener("click", () => this.collapse());
     this.reopen.addEventListener("click", () => this.show());
     controls.append(this.toggle, this.collapseButton);
-    this.body.append(this.map, this.label, this.routeLabel, this.notice, controls);
+    this.body.append(this.map, this.floorSelect, this.label, this.routeLabel, this.notice, controls);
     this.el.append(this.body, this.reopen);
     this.buildOverlay();
     this.applyCollapsed();
@@ -235,6 +249,10 @@ export class Minimap {
     this.bundle = bundle;
     this.lang = lang;
     this.floorId = undefined;
+    // The floor list belongs to the station; a new station starts in follow mode with fresh options.
+    this.followFloor = true;
+    this.pickedFloorId = null;
+    this.floorOptionsKey = "";
     this.lastKnownFloor = undefined;
     this.lastPose = "";
     // A route belongs to the station it was computed in; never carry one across.
@@ -350,6 +368,7 @@ export class Minimap {
   private updateText(): void {
     const t = strings(this.lang);
     this.el.setAttribute("aria-label", t.minimap);
+    this.floorSelect.setAttribute("aria-label", t.minimapFloor);
     this.notice.textContent = t.minimapSchematic;
     this.map.setAttribute("aria-label", t.minimapExpand);
     // A stable toggle name: pressed means north is fixed up.
@@ -370,6 +389,27 @@ export class Minimap {
       level.textContent = floor ? floorDisplayName(floor, this.lang) : t.minimapFloorUnknown;
       this.label.append(name, level);
     }
+    this.syncFloorOptions();
+  }
+
+  /** The picker's choices: follow, then the station's own floors in bundle order. Rebuilt only per station/language. */
+  private syncFloorOptions(): void {
+    const key = `${this.bundle?.station.id ?? ""}|${this.lang}`;
+    if (key === this.floorOptionsKey) return;
+    this.floorOptionsKey = key;
+    const t = strings(this.lang);
+    const follow = document.createElement("option");
+    follow.value = "";
+    follow.textContent = t.minimapFloorFollow;
+    const floors = this.bundle?.floors.map((floor) => {
+      const option = document.createElement("option");
+      option.value = floor.id;
+      option.textContent = floorDisplayName(floor, this.lang);
+      return option;
+    }) ?? [];
+    this.floorSelect.replaceChildren(follow, ...floors);
+    this.floorSelect.value = this.followFloor ? "" : this.pickedFloorId ?? "";
+    this.floorSelect.hidden = !this.bundle;
   }
 
   private refresh(): void {
@@ -378,49 +418,47 @@ export class Minimap {
     const visible = !!pose && pose.mode !== "overview";
     if (this.el.hidden === visible) this.el.hidden = !visible;
     if (!visible || !pose || !this.bundle || this.collapsed) { this.closeOverlay(false); return; }
-    const key = `${pose.east},${pose.north},${pose.up},${pose.headingDeg},${pose.mode},${this.orientation}`;
+    const pick = this.followFloor ? "follow" : this.pickedFloorId;
+    const key = `${pose.east},${pose.north},${pose.up},${pose.headingDeg},${pose.mode},${this.orientation},${pick}`;
     if (key === this.lastPose) return;
     this.lastPose = key;
-    const floorId = currentFloorId(this.bundle, pose.up, pose.east, pose.north);
-    const floorChanged = floorId !== this.floorId;
+    const playerFloorId = currentFloorId(this.bundle, pose.up, pose.east, pose.north);
+    // Follow mode draws the player's floor; a picked floor replaces it until follow is chosen again.
+    const drawnFloorId = this.followFloor ? playerFloorId : this.pickedFloorId;
+    const floorChanged = drawnFloorId !== this.floorId;
     if (floorChanged) {
-      this.floorId = floorId;
+      this.floorId = drawnFloorId;
       this.overlayDirty = true;
-      const segments = floorId === null ? [] : floorWalkGraph(this.bundle, floorId);
-      // Paths stay in north-up station coordinates; movement only changes the group transform.
-      const origin: ExplorerPose = { east: 0, north: 0, up: 0, headingDeg: 0, mode: "walk" };
-      this.graph.replaceChildren(...segments.map((segment) => svg("polyline", {
-        "data-mode": segment.mode,
-        points: segment.points.map((point) => {
-          const p = toMinimap(point.east, point.north, origin, "north-up", METRES_PER_PX);
-          return `${p.x},${p.y}`;
-        }).join(" "),
-      })));
-      this.arrow.style.display = floorId === null ? "none" : "";
+      this.drawFloorGraph();
+      this.arrow.style.display = drawnFloorId === null ? "none" : "";
       this.updateText();
     }
     // Progress crosses floors only on a known-to-known change. First acquisition (undefined → F)
     // and a reading that dips to null mid-stairs are not floor changes; while the floor is unknown
     // neither seg nor the hint moves, so nothing can jump ahead and be impossible to undo.
-    const progressFloorChanged = floorId !== null && this.lastKnownFloor !== undefined && floorId !== this.lastKnownFloor;
-    if (floorId !== null) this.lastKnownFloor = floorId;
-    if (floorId) {
+    const progressFloorChanged = playerFloorId !== null && this.lastKnownFloor !== undefined && playerFloorId !== this.lastKnownFloor;
+    if (playerFloorId !== null) this.lastKnownFloor = playerFloorId;
+    if (playerFloorId) {
       // Progress only advances, and only on a new position, floor or route — a turn alone changes
       // nothing. The hint is the first floor change whose start is at or after the current segment.
       const position = `${pose.east},${pose.north},${pose.up}`;
       const moved = position !== this.lastPosition;
       this.lastPosition = position;
-      if (floorChanged || this.connectorDirty || moved) {
+      if (floorChanged || progressFloorChanged || this.connectorDirty || moved) {
         const seg = this.route
-          ? advanceRouteSeg(this.route, this.steps ?? [], floorId, pose.east, pose.north, this.seg, progressFloorChanged)
+          ? advanceRouteSeg(this.route, this.steps ?? [], playerFloorId, pose.east, pose.north, this.seg, progressFloorChanged)
           : this.seg;
-        if (floorChanged || this.connectorDirty || seg !== this.seg) {
+        if (floorChanged || progressFloorChanged || this.connectorDirty || seg !== this.seg) {
           this.seg = seg;
-          this.connectorHint = this.transitions.find((t) => t.fromFloorId === floorId && t.startIndex >= seg) ?? null;
+          this.updateConnectorHint();
           this.renderLabel();
         }
         this.connectorDirty = false;
       }
+    } else if (floorChanged && this.floorId !== null) {
+      // The player's floor is unknown, but a picked floor still has its own next floor change.
+      this.updateConnectorHint();
+      this.renderLabel();
     }
     // Route runs and POIs change only with the route or the floor — never per tick.
     if (floorChanged || this.routeDirty) {
@@ -438,6 +476,25 @@ export class Minimap {
     this.updateMarkers(pose);
     // Nothing of the overlay is touched while it is closed: no timer of its own, no hidden writes.
     if (this.overlayOpen) this.renderOverlay(pose);
+  }
+
+  /** The drawn floor's walk graph, in north-up station coordinates; movement only changes the group transform. */
+  private drawFloorGraph(): void {
+    const floorId = this.floorId;
+    const segments = floorId && this.bundle ? floorWalkGraph(this.bundle, floorId) : [];
+    const origin: ExplorerPose = { east: 0, north: 0, up: 0, headingDeg: 0, mode: "walk" };
+    this.graph.replaceChildren(...segments.map((segment) => svg("polyline", {
+      "data-mode": segment.mode,
+      points: segment.points.map((point) => {
+        const p = toMinimap(point.east, point.north, origin, "north-up", METRES_PER_PX);
+        return `${p.x},${p.y}`;
+      }).join(" "),
+    })));
+  }
+
+  /** The next floor change ahead of the route progress, on the floor the map is drawing. */
+  private updateConnectorHint(): void {
+    this.connectorHint = this.transitions.find((t) => t.fromFloorId === this.floorId && t.startIndex >= this.seg) ?? null;
   }
 
   /** Draw what the current floor evidences, in station coordinates: the route runs and the routable POIs. */
