@@ -98,6 +98,8 @@ Automated checks only gate regressions. For each station, the reviewer:
 4. Lists deliberate simplifications versus defects.
 5. Records the reviewer's model and effort, only if that model actually ran.
 
+The per-station rubric (criteria, the four required evidence items, which row is automated and which is human, how the independent review is run) is in [l2-acceptance.md](l2-acceptance.md). `tools/qa/l2-pack.sh <station> <workdir> <base-ref> [merge-ref ...] [-- <playwright args>]` runs one station's tests from `01`-`05`, `09` and `11`-`13` (the `04` wall probe only; `12` is Ikebukuro's) on `desktop-chromium` and `phone-webkit`, then `tools/qa/l2-pack.mjs` writes `tests/e2e/artifacts/l2-pack-<station>/l2-review.md` and `l2-pack.json` (rubric with automated rows filled in, human rows `needs eyes`, contact sheets). It reports evidence and never says PASS for a human row.
+
 ## Verdict vocabulary
 
 G0–G4 use **PASS / GAP / HOLD / FAIL** per [acceptance.md](../acceptance.md):

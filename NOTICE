@@ -124,23 +124,35 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        basis: PDL 1.0 under https://www.mlit.go.jp/link.html; applicability
        UNKNOWN. Credit: 「出典：国土交通省／加工して作成」. Not relicensed.
 
-   4.6 Tokyo Metropolitan Bureau of Transportation, S10 「駅構内のお店」
-       Nothing ships in station data; literal values sit in docs/gis/poi/ and
-       are marked "no licence grant" until #124 is applied (GIS PR #128).
+   4.6 Tokyo Metropolitan Bureau of Transportation, S10 「駅構内のお店」 - LicenseRef-Toei-S10
        Recorded licence: CC BY 4.0 at dataset level
        (https://creativecommons.org/licenses/by/4.0/legalcode.ja). Owner credit
        (#39 comment 6324726321): 出典：東京都交通局「駅構内のお店」. Plain names,
        times and locations only; no logos, photos, trademarks or promotional
-       prose. The modification notice text is a placeholder in the records
-       (「GTEki が［実際の編集・加工内容］」): UNKNOWN until written.
+       prose.
+       Committed: docs/research/merchants/shinjuku-merchants-batch1.json and its
+       log (#418): one row of the 新宿西口 CSV (sha256 71930f167c2fa181…
+       c547a6, docs/gis/acquisitions/tokyo-s10-shinjuku-nishiguchi-csv.json),
+       shop name and location text. Change notice: GTEki が店名と場所の記述を
+       抽出し、検索用に再構成（「未確認・経路なし」の注記を追加）. The other
+       entries in those files are facts-only references (4.9). Literal values in
+       docs/gis/poi/ stay "no licence grant" (REUSE 4g) until #124 is applied.
+       Shipped in stations/shinjuku/gteki/ (#214): the same shop name and
+       location text as one search-only shop POI, no position, floor,
+       connector or route, with the change notice above.
 
    4.7 Tokyo Bureau of Urban Development, S03 「新宿駅周辺の施設情報等」 - LicenseRef-S03
-       Nothing ships in station data; same status as 4.6. Recorded licence: CC BY
-       4.0 at dataset level, for the geometry and factual-fields subset only.
+       Station data carries the plain gate and platform names imported from
+       #411 and, for 25 gates and transfers, approximate representative points
+       derived from the source shapes under #463 (see the last paragraph
+       below); nothing else from S03 ships.
+       Recorded licence: CC BY 4.0, stated at dataset level, for the geometry
+       and factual-fields subset only.
        Owner credit: 出典：東京都都市整備局「新宿駅周辺の施設情報等」.
        Promotional prose, linked content and the reference-PDF illustration are
-       UNKNOWN and excluded. Modification notice for station data: placeholder,
-       UNKNOWN (nothing ships there).
+       UNKNOWN and excluded. Modification notice for station data:
+       GTEki が名称を抽出し検索用に再構成。改札・乗換の一部に形状から求めた
+       おおよその代表点を付加（経路案内には不使用）.
        Committed research files derived from S03 together with E27 (4.3), both
        terms applying: docs/stations/shinjuku/research/
        2026-10-21-tokyo-terminal-join-summary.json and
@@ -150,6 +162,29 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        and a local frame, compared with the E27 graph (separations, headings,
        floor labels), summarised as join metrics and drawn as a figure. The raw
        ZIP is not committed.
+       Committed line-name data (lines-lead WP1, Owner Q2/Q3 and gteki-1b
+       R-1/R-2 of 2026-10-24): docs/research/lines/shinjuku-line-pois.json.
+       Plain gate and platform names only, from com-entity.geojson in the ZIP
+       with sha256 fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31.
+       Change notice: GTEki が名称のみを抽出し、検索用に再構成（位置・形状は
+       使用していません）. No geometry, position or promotional text is taken
+       for that names file; the names describe March 2020 data and are not
+       route evidence.
+       Derived position data (GIS #463): stations/shinjuku/sources/
+       s03-approx-positions.json holds 25 approximate representative points
+       derived by GTEki from the level geometry in the same ZIP (area-weighted
+       centroids, or the closest boundary point of the largest part). It
+       carries only the POI id, the station-frame east/north in metres, the
+       uncertainty, the method and the record labels; no name, entity id,
+       longitude or latitude. The points are search display only, ±5 m or
+       more, NOT_FOR_ROUTING, floor UNVERIFIED, and never route evidence.
+       Shipped in stations/shinjuku/gteki/pois.json (imports of #411 and
+       #463): the same 45 plain gate and platform names with their notes,
+       search only (AREA_ONLY; no floor, connector or route), 22 gates and 3
+       transfers of them with the approximate points above. The file also
+       carries E27-derived content under LicenseRef-Hokonavi-E27-Owner-override
+       (4.3); both sets of terms apply. Credit:
+       出典：東京都都市整備局「新宿駅周辺の施設情報等」; change notice as above.
 
    4.8 GSI (国土地理院) items - LicenseRef-GSI-terms
        Two Survey Calculation Site bl2xy control responses
@@ -158,16 +193,73 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        invent one. If the PLATEAU border layer ever ships, keep 「測量法に基づく国土地理院長承認（複製）R 6JHf 503」.
 
    4.9 Facts-only sources - LicenseRef-facts-only-no-licence
-       豊島区「池袋駅地下空間案内図」 and 東京地下鉄 池袋駅構内図: facts (exit
+       豊島区「池袋駅地下空間案内図」, 東京地下鉄 池袋駅構内図 and its accessibility
+       page, and 西武鉄道 池袋駅ページ: facts (exit
        numbers, gate names, which passage is public) in GTEki's own words in the
        Ikebukuro graph and POIs. No licence exists to relicense; no image,
        layout, tracing, pictogram or logo is copied. Credit as recorded:
        「豊島区「池袋駅地下空間案内図」(facts only; not reproduced)」 and
-       「東京メトロ 池袋駅構内図 (facts only; not reproduced)」.
+       「東京メトロ 池袋駅構内図 (facts only; not reproduced)」 and
+       「東京メトロ 池袋駅 バリアフリー設備 (facts only; not reproduced)」 and
+       「西武鉄道 池袋駅ページ (facts only; not reproduced)」.
+       豊島区 pages: facts only, director ruling OD-34 (2026-10-25). The site
+       policy (https://www.city.toshima.lg.jp/012/kuse/koho/homepage/sitepolicy.html,
+       retrieved 2026-10-25T02:10:49+09:00) forbids unauthorised reproduction or
+       adaptation of its documents and images except private-use copies and
+       quotation permitted by copyright law; nothing is reproduced.
+       Research data (gteki-1b ruling 2026-10-24): every file under
+       docs/research/merchants/, docs/research/lines/ and
+       docs/research/facilities/ carries this identifier unless a later REUSE
+       block names a dataset licence. Those files restate facts (names, floors,
+       exits, gate and facility labels) from operator and venue pages in
+       GTEki's own words, with the page URL and retrieval time as evidence.
+       JSON files record their sources in sources[]; Markdown notes and logs
+       cite them inline by URL. No page text, map, image, layout or logo is
+       copied.
+       Shipped station data (#214): 583 of those merchant listings (Toei,
+       東京地下鉄, ルミネエスト新宿, ルミネ新宿, ニュウマン新宿, 小田急百貨店 新宿店)
+       now ship as search-only shop POIs in stations/shinjuku/gteki/. Each
+       keeps the printed name and, in its notes, the printed floor or area
+       label; no position, floor id, connector or route, and the current
+       status is stated as unknown.
+       Printed opening hours (OD-32): 568 of those shop POIs, and 4
+       building-level rows in the station manifest, carry the short hours
+       line an official page printed, exactly as printed, with that page's
+       URL and the date it was read; 15 more shop POIs carry a row with no
+       hours text (the page printed none, gave no usable date, or was
+       unreadable). No dynamic status, last-order note or other page text is
+       copied, and nothing is inferred.
+       Store POIs (director, 2026-10-25): 7 more search-only shop POIs, one per
+       printed building — ルミネ新宿 ルミネ1, ルミネ新宿 ルミネ2, ルミネエスト新宿,
+       ニュウマン新宿 (株式会社ルミネ floor guides) and 新宿マルイ 本館 / アネックス /
+       メン (株式会社丸井, 0101.co.jp; no terms clause found, OD-34). Each keeps the
+       printed building name and, in its notes, the operator and the printed
+       floor range; no position, floor id, connector or route. ルミネ新宿
+       ルミネ1 / ルミネ2 join the store name and the building name, which the
+       floor guide prints separately (the note says so).
+       伊勢丹新宿店 本館 / メンズ館 (mistore.jp; OD-34, director ruling
+       2026-10-25 on #522: the グループID規約 scope clause read at
+       imhds.co.jp shows the agreement governs registered ID holders, so the
+       store site is facts only): 2 more search-only shop POIs. Each keeps the
+       printed store name and building name and, in the notes, the printed
+       floor range; no floor-guide wording, shop list, operator name (the
+       terms record does not print it), position, floor id, connector or
+       route.
+       Line POI data (lines-lead WP2/WP3, 2026-10-24):
+       docs/research/lines/ikebukuro-line-pois.json and its contract. Gate,
+       lift, escalator and exit names and end pairs as printed on Tokyo Metro
+       pages (#26) and the Seibu Railway station page (OD-25), with
+       evidence given as a page locator in GTEki's own words. The exit-closure
+       note in the contract cites the 豊島区 2022-01 update notice of the guide
+       credited above. No other page text, map or image is copied.
 
-   4.10 OpenStreetMap - nothing committed or shipped
-       Cross-check only. No ODbL entry. If OSM-derived data is ever committed,
-       an ODbL entry and a share-alike assessment are required first.
+   4.10 OpenStreetMap - evidence only; no OSM objects or attributes ship
+       Shipped station data contains no OSM-derived objects or attributes.
+       Research summaries under docs/gis/osm/ (#437) keep aggregate counts and
+       tag keys computed from Overpass extracts, with an automated check that
+       no OSM tag value is copied into them.
+       If OSM-derived data is ever committed, an ODbL entry and a share-alike
+       assessment are required first.
 
    4.11 MLIT 国土数値情報 N02-2025 (鉄道) - LicenseRef-KSJ
        Ships: stations/ikebukuro/gteki/context/ksj_n02_2025_r700.glb, the
@@ -183,6 +275,25 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        a 700 m disc around the station origin, projected to the station-local
        ENU frame, clipped to that disc and drawn as flat ribbons (railway 1.5 m,
        station 3 m); no source name, code or other attribute is copied.
+
+   4.12 Facts-only line POIs for Shinjuku - LicenseRef-facts-only-no-licence
+       docs/research/lines/shinjuku-line-pois-wp4.json and its notes file
+       (lines-lead WP4, 2026-10-24): exit codes, gate names and lift and
+       escalator end-pair labels as printed on the Tokyo Metro 新宿駅 pages
+       (#26) and the Toei 新宿駅 station page (OD-01 A). Evidence is a page
+       locator in GTEki's own words; no other page text, map, image or the
+       Toei per-exit coordinate feed is copied. Credit as recorded:
+       「東京メトロ 新宿駅 (facts only; not reproduced)」 and
+       「都営地下鉄 新宿駅 (facts only; not reproduced)」.
+
+   4.13 Facts-only transfer facts - LicenseRef-facts-only-no-licence
+       docs/research/lines/transfer-facts-wp11.json and its notes file
+       (lines-lead WP11, 2026-10-24): transfer lines, direction labels,
+       posted hours and the Seibu platform legend as printed on Tokyo Metro
+       (#26), Toei (OD-01 A, OD-34) and Seibu Railway (OD-25) pages and their
+       station diagrams. Facts are stated in GTEki's own words; no diagram,
+       image, layout or car position is reproduced. Credit as recorded per
+       source (facts only; not reproduced).
 
 5. NOTO SANS JP - SIL Open Font License 1.1 (OFL-1.1)
    © 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'.

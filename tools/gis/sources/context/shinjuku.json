@@ -85,6 +85,31 @@
     },
     "notes": "station.json has origin.hM null (the vertical anchor is undecided, which is why the PLATEAU building context stays BLOCKED), so no station-enu frame exists; the overlay uses the horizontal origin only and a symbolic street z = 0. Window = origin disc of radius_m (no graph node rule is configured)."
   },
+  "landmarks": {
+    "source_id": "tokyo-muni-shinjuku-cultural-properties-csv",
+    "frame": {
+      "mode": "origin-only",
+      "station_json": "stations/shinjuku/gteki/station.json"
+    },
+    "z": {
+      "mode": "constant",
+      "z_m": 0,
+      "basis": "symbolic street z = 0 (no datum asserted)",
+      "datum_asserted": false,
+      "check": {
+        "path": "stations/shinjuku/gteki/station.json",
+        "floor_ordinal": 0,
+        "field": "renderElevationM"
+      }
+    },
+    "window": { "kind": "origin_disc", "radius_m": 700 },
+    "fields": { "lat": "緯度", "lon": "経度", "name": "名称", "class": "文化財分類" },
+    "credit": {
+      "ja": "出典：新宿区『文化財一覧（自治体標準データセット）』（CC BY 4.0、東京都オープンデータカタログサイト経由）。GTEki が加工して作成",
+      "en": "Source: Shinjuku City, \"文化財一覧（自治体標準データセット）\" (CC BY 4.0, via the Tokyo Open Data Catalog). Modified by GTEki."
+    },
+    "notes": "Director ruling 2026-10-23 (docs/gis/research/2026-10-23-shinjuku-cultural-properties-rights.md): coordinates, 名称 and 文化財分類 ship as visual context only (NOT_FOR_ROUTING); 説明 stays excluded and UNKNOWN. Same station frame and z as the overlay section: horizontal ENU at the station.json origin, symbolic street z = 0 re-checked against floor 0 on every run."
+  },
   "profile": {
     "window": { "kind": "origin_disc", "radius_m": 700 }
   }

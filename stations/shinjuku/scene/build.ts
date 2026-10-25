@@ -12,8 +12,10 @@ import { ceilingTexture, signTexture, tactileTexture, tileTextures, wallTexture,
 import { prepareLayout } from "./build-cache.ts";
 import { gateMachines, accessSigns, ACCESS_WORDING } from "./fare-fence.ts";
 import surfaceJson from "../data/surface.json";
-import bakedSurface from "../data/surface-baked.ts";
+import bakedSurface from "../data/surface-baked.json" with { type: "json" };
 import { buildSurface, surfaceWalls, trimSurfaceCeilingFixtures, type SurfaceData } from "./surface.ts";
+import { PlaceholderLedger } from "./kit/ledger.ts";
+import type { KitSwap, KitSwapReport, LiftAnchor } from "./kit/types.ts";
 import { withSurfaceMemo } from "./surface-layout.ts";
 import { surfaceSeed } from "./surface-bake.ts";
 
@@ -36,11 +38,20 @@ export interface BuiltStation {
   setViewer?(pos: XYZ): void;
   /** QA readout of the decorative train cycle per platform track. */
   trainStatus(): { tt: number; present: boolean; doorsOpen: boolean }[];
+  /** Present only when the optional Lane E kit swap ran (Issue #94). */
+  kitSwap?: KitSwapReport;
   dispose(): void;
 }
 
 export interface BuildOptions {
   quality: "low" | "high";
+  /**
+   * Optional Lane E kit swap (Issue #94). Absent = the station is built exactly as before. Present, it is
+   * applied once after every placeholder exists and before the static finishes merge; it adds visual
+   * meshes and hides the placeholder triangles it replaces, and changes no collider, wall, floor,
+   * camera blocker or fence.
+   */
+  kit?: KitSwap;
   /** Reuse the built layout and fences across builds of equal bundle and plan (the shared explorer's
    * reopen). Output is byte-identical; see build-cache.ts. */
   reuseLayout?: boolean;
@@ -48,7 +59,7 @@ export interface BuildOptions {
    * load-time guard against a stale generated fence table; root CI (`root-test`, #148) also fails on one.
    * false is for tests that exercise the unchecked path. */
   verifyRestrictedInput?: boolean;
-  /** false derives the street layer's polygons instead of reading data/surface-baked.ts. Default true; the
+  /** false derives the street layer's polygons instead of reading data/surface-baked.json. Default true; the
    * baked table is used only if it was made from exactly this surface, bundle and plan (surface-bake.ts). */
   useBakedSurface?: boolean;
 }
@@ -128,6 +139,16 @@ function runPanel(w: WallSeg, r: Run): WallSeg {
   return { ...w, surfaceBase: { a, b }, profile: { bottomA: a - 0.12, bottomB: b - 0.12, topA: a + 0.9, topB: b + 0.9 } };
 }
 
+/** #316: headroom over the steps; only surfaces above this band can close the void above a walker. */
+export const HEAD_BAND = 2.4;
+/** #49: the shell roof sits this far above the run's steps. */
+export const SHELL_RISE = 3.4;
+/** The street slab underside; the shell stays strictly below it (see streetLimit). */
+export const STREET_UNDERSIDE = -0.18;
+
+/** A level ceiling or a pitched soffit, as `soffitHeight` reads both. */
+type Finish = Parameters<typeof soffitHeight>[0];
+
 /** #49: generic finish for an unmodelled void, not a surveyed station reproduction.
  * These panels belong only to the visible root; never append them to the layout/wall lists.
  */
@@ -148,12 +169,12 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
       slope: { x: dx * (r.b.z - r.a.z) / l2, y: dy * (r.b.z - r.a.z) / l2 } };
   };
   // Reserve the complete existing walking footprints, including holes and sloping runs.
-  // 2.4 m leaves headroom for people and fixtures; the sides also clear the floor thickness.
+  // The head band leaves headroom for people and fixtures; the sides also clear the floor thickness.
   const surfaces = [...layout.levels.flatMap((lv) => lv.slabs), ...layout.pads, ...layout.linkStrips, ...layout.streetPads,
     ...layout.runs.map((r) => pitched(r, 0.04, 0.08))];
   const voids = surfaces.map((s) => {
     const points = s.rings.flat();
-    return { rings: s.rings, bottom: (p: XY) => soffitHeight(s, p) - 0.2, top: (p: XY) => soffitHeight(s, p) + 2.4,
+    return { rings: s.rings, bottom: (p: XY) => soffitHeight(s, p) - 0.2, top: (p: XY) => soffitHeight(s, p) + HEAD_BAND,
       minX: Math.min(...points.map((p) => p.x)), maxX: Math.max(...points.map((p) => p.x)),
       minY: Math.min(...points.map((p) => p.y)), maxY: Math.max(...points.map((p) => p.y)) };
   });
@@ -165,7 +186,7 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     const minY = Math.min(a.y, b.y) - 0.9, maxY = Math.max(a.y, b.y) + 0.9;
     const za = layout.nodeZ.get(e.from)!, zb = layout.nodeZ.get(e.to)!;
     voids.push({ rings: [[{ x: minX, y: minY }, { x: maxX, y: minY }, { x: maxX, y: maxY }, { x: minX, y: maxY }]],
-      bottom: () => Math.min(za, zb) - 0.2, top: () => Math.max(za, zb) + 2.4, minX, maxX, minY, maxY });
+      bottom: () => Math.min(za, zb) - 0.2, top: () => Math.max(za, zb) + HEAD_BAND, minX, maxX, minY, maxY });
   }
   // Clip arbitrary (possibly holed) roof polygons to an affine height half-plane.
   const heightMask = (polys: polygonClipping.MultiPolygon, value: (p: XY) => number): polygonClipping.MultiPolygon => {
@@ -187,26 +208,41 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
   };
   // Mirror finishUnderground's streetUnderside without changing its bake fingerprint.
   // Leave 1 mm below it so Float32 vertices remain strictly underground.
-  const streetLimit = -0.18 - 0.001;
+  const streetLimit = STREET_UNDERSIDE - 0.001;
   const existingRoofs = [...layout.levels.flatMap((lv) => lv.ceilings), ...layout.soffits];
   const walls: { wall: WallSeg; covered: XY[][][] }[] = [], roofs: THREE.BufferGeometry[] = [];
   for (const r of layout.runs.filter((r) => r.mode === "escalator")) {
     // Outside the truss (+0.15 m) and balustrade (+0.08 m). The 0.6 m end overlap
     // joins the inclined finish to landing ceilings without closing either run mouth.
     const roof = pitched(r, 0.45, 0.6);
-    roof.z += 3.4;
+    roof.z += SHELL_RISE;
     // Existing finish wins wherever its footprint covers the shell and its
     // affine underside is at or below the shell top. Remove the side there too:
     // otherwise its upper strip can become the first drawn roof seen by the camera.
+    // #316: only a surface above the walker's head band can close that void, so
+    // undersides (run-underside:*, shaft-invert:*) and lower ceilings never count.
+    const headTop = (p: XY) => soffitHeight(roof, p) - SHELL_RISE + HEAD_BAND;
+    // A finish levelling off at the street slab underside already caps the exit,
+    // so it wins even where it sits just above the shell top (the street clip
+    // keeps the shell below it); otherwise its lower shell roof is the first
+    // drawn roof and the exit camera meets it before the cap.
+    const atStreetFinish = (s: Finish) => !s.slope && Math.abs(s.z - STREET_UNDERSIDE) < 1e-6;
+    const covers = (existing: Finish): polygonClipping.MultiPolygon => {
+      let footprint: polygonClipping.MultiPolygon = [polygon(existing.rings)];
+      if (!atStreetFinish(existing)) footprint = heightMask(footprint, (p) => soffitHeight(roof, p) - soffitHeight(existing, p));
+      footprint = heightMask(footprint, (p) => soffitHeight(existing, p) - headTop(p));
+      return footprint;
+    };
     let panels: polygonClipping.MultiPolygon = [polygon(roof.rings)];
     const covered: XY[][][] = [];
     for (const existing of existingRoofs) {
       let cut = polygonClipping.intersection([polygon(roof.rings)], polygon(existing.rings));
-      cut = heightMask(cut, (p) => soffitHeight(roof, p) - soffitHeight(existing, p));
+      if (!atStreetFinish(existing)) cut = heightMask(cut, (p) => soffitHeight(roof, p) - soffitHeight(existing, p));
+      cut = heightMask(cut, (p) => soffitHeight(existing, p) - headTop(p));
       if (!cut.length) continue;
       // Keep the existing footprint for side cutting: intersecting it with the
       // shell strip would put both side walls exactly on the cutter boundary.
-      covered.push(...heightMask([polygon(existing.rings)], (p) => soffitHeight(roof, p) - soffitHeight(existing, p)).map(ringsOf));
+      covered.push(...covers(existing).map(ringsOf));
       panels = polygonClipping.difference(panels, cut);
     }
     panels = heightMask(panels, (p) => streetLimit - soffitHeight(roof, p));
@@ -239,9 +275,13 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
       return [[[along(w.a), p.bottomA], [along(w.b), p.bottomB], [along(w.b), p.topB], [along(w.a), p.topA]]];
     });
     if (!pieces.length) continue;
-    // The physical wall cutter splits into conservative height bands. Union those coplanar
-    // pieces for rendering, removing subdivision vertices rather than retaining thousands of quads.
-    const panels = heightMask(polygonClipping.union(pieces[0]!, ...pieces.slice(1)), (p) => streetLimit - p.y);
+    // The cutter leaves ~1e-5 m numeric noise on these near-coincident edges, which makes
+    // polygon-clipping emit self-overlapping rings that earcut later drops whole panels
+    // from (#316). Snapping to 0.1 mm first is what repairs the fill; heightMask's
+    // intersection already dissolves overlapping and edge-adjacent bands, so the extra
+    // render-time union (#298) is redundant and must not be reintroduced as a fix.
+    const panels = heightMask(pieces.map((poly) => poly.map((ring) =>
+      ring.map(([x, y]) => [Math.round(x! * 1e4) / 1e4, Math.round(y! * 1e4) / 1e4]) as polygonClipping.Ring)), (p) => streetLimit - p.y);
     for (const poly of panels) {
       const rings = ringsOf(poly).map((closed) => {
         const ring = closed.slice(0, -1); // polygon-clipping repeats the first vertex
@@ -460,6 +500,9 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   root.name = "shinjuku-e27";
   const disposables: { dispose(): void }[] = [];
   const track = <T extends { dispose(): void }>(x: T) => (disposables.push(x), x);
+  // Bookkeeping for the optional kit swap: records which placeholder triangles belong to which anchor.
+  // Recording only reads geometry, so a build without a kit swap is byte-identical.
+  const ledger = opts.kit ? new PlaceholderLedger(track) : null;
   const aniso = opts.quality === "high" ? 8 : 4;
 
   // ---- materials
@@ -505,6 +548,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     trainWindow: track(new THREE.MeshStandardMaterial({ color: "#1c232a", roughness: 0.08, metalness: 0.2, emissive: "#fff2d6", emissiveIntensity: 0.35 })),
     trainDoor: track(new THREE.MeshStandardMaterial({ color: "#b8bdc1", roughness: 0.25, metalness: 0.8 })),
   };
+  for (const [key, m] of Object.entries(mat)) m.name = `mat.${key}`;
   for (const m of [mat.floor, mat.floorPaid, mat.floorPlatform, mat.wall, mat.ceiling]) guardBumpNormals(m);
   for (const m of [mat.floor, mat.floorPaid, mat.floorPlatform]) {
     m.map!.repeat.set(1, 1);
@@ -596,7 +640,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
 
   // ---- underground fixtures, kept in a separate helper for the surface lane's hook
   buildUndergroundLighting(bundle, layout, levelGroups, root, track);
-  buildElevatorPortals(bundle, layout, root, mat, track);
+  const liftAnchors = buildElevatorPortals(bundle, layout, root, mat, track, ledger);
 
   // ---- existing surface ceiling lights (street scene is owned by W2)
   {
@@ -718,7 +762,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
             const nose = new THREE.BoxGeometry(0.075, 0.014, r.width - 0.06);
             nose.rotateY(yaw);
             nose.translate(ex + u.x * 0.03, top + 0.006, -(ey + u.y * 0.03));
-            nosingGeos.push(nose);
+            nosingGeos.push(ledger ? ledger.tag("stair-nosing", r.edgeId, nose) : nose);
           }
         }
       } else {
@@ -780,13 +824,15 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     }
     const add = (geos: THREE.BufferGeometry[], m: THREE.Material, name?: string) => {
       const geo = merged(geos);
-      if (!geo) return;
+      if (!geo) return undefined;
       const mesh = new THREE.Mesh(track(geo), m);
       if (name) mesh.name = name;
       root.add(mesh);
+      return mesh;
     };
     add(stairGeos, mat.stair, "walkable");
-    add(nosingGeos, mat.nosing);
+    const nosingMesh = add(nosingGeos, mat.nosing);
+    if (nosingMesh) ledger?.bind("stair-nosing", nosingMesh, nosingGeos);
     add(sideGeos, mat.wall);
     add(balustradeGeos, mat.glass);
     add(handGeos, mat.steel);
@@ -804,20 +850,21 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     const okGeos: THREE.BufferGeometry[] = [];
     for (const gl of protection.gates) {
       const yaw = Math.atan2(gl.dir.y, gl.dir.x);
+      const tag = <G extends THREE.BufferGeometry>(g: G): G => (ledger ? ledger.tag("gate-machines", gl.edgeId, g) : g);
       for (const c of gateMachines(gl)) {
         const body = new THREE.BoxGeometry(1.5, 0.95, 0.2);
         body.rotateY(yaw);
         body.translate(c.x, gl.center.z + 0.475, -c.y);
-        bodyGeos.push(body);
+        bodyGeos.push(tag(body));
         const top = new THREE.BoxGeometry(1.52, 0.04, 0.22);
         top.rotateY(yaw);
         top.translate(c.x, gl.center.z + 0.97, -c.y);
-        topGeos.push(top);
+        topGeos.push(tag(top));
         for (const end of [-1, 1]) {
           const ic = new THREE.BoxGeometry(0.16, 0.012, 0.16);
           ic.rotateY(yaw);
           ic.translate(c.x + gl.dir.x * 0.55 * end, gl.center.z + 0.995, -(c.y + gl.dir.y * 0.55 * end));
-          (end > 0 ? icGeos : okGeos).push(ic);
+          (end > 0 ? icGeos : okGeos).push(tag(ic));
         }
         propWalls.push({ a: { x: c.x - gl.dir.x * 0.75, y: c.y - gl.dir.y * 0.75 }, b: { x: c.x + gl.dir.x * 0.75, y: c.y + gl.dir.y * 0.75 }, zMin: gl.center.z - 0.1, zMax: gl.center.z + 1.0, side: 1, kind: "wall", bodyMin: gl.center.z - 0.5 });
       }
@@ -829,7 +876,10 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       [okGeos, mat.gateOk],
     ] as const) {
       const geo = merged(geos);
-      if (geo) root.add(new THREE.Mesh(track(geo), m));
+      if (!geo) continue;
+      const mesh = new THREE.Mesh(track(geo), m);
+      root.add(mesh);
+      ledger?.bind("gate-machines", mesh, geos);
     }
   }
 
@@ -953,6 +1003,10 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
 
   // ---- wayfinding signs from the verified graph
   const signs = buildSigns(bundle, layout, root, track, opts.quality);
+  // ---- optional Lane E kit swap (Issue #94): off unless a KitSwap was passed in
+  const kitSwap = opts.kit && ledger
+    ? opts.kit.apply({ THREE, bundle, plan, layout, protection, liftAnchors, root, ledger, levelGroups, track }) ?? undefined
+    : undefined;
   addWallBackFaces(root, mat.wall, track);
   bakeFloorLightPools(layout, root, [mat.floor, mat.floorPaid, mat.floorPlatform], track);
   // Batch names say what is inside. The steel batch is the stair handrails and brackets, escalator trusses and
@@ -1257,6 +1311,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     update(dt, t) { update(dt, t); surface.update(dt, t); },
     setViewer: surface.setViewer,
     trainStatus,
+    ...(kitSwap ? { kitSwap } : {}),
     dispose() {
       for (const d of disposables) d.dispose();
       root.traverse((o) => {
@@ -1303,9 +1358,11 @@ function buildElevatorPortals(
   bundle: StationBundle, layout: Layout, root: THREE.Group,
   mat: { wall: THREE.Material; steel: THREE.Material; darkSteel: THREE.Material; gateOk: THREE.Material; accent: THREE.Material },
   track: <T extends { dispose(): void }>(x: T) => T,
-) {
+  ledger: PlaceholderLedger | null = null,
+): LiftAnchor[] {
   const buckets = new Map<THREE.Material, THREE.BufferGeometry[]>();
   const portals: { nodeIds: string[]; center: XYZ; a: XY; b: XY }[] = [];
+  const anchors: LiftAnchor[] = [];
   const nodes = bundle.nodes.filter((n) => n.kind === "elevator" && (layout.nodeZ.get(n.id) ?? 0) < -0.5);
   const groups: (typeof nodes)[] = [];
   for (const n of nodes) {
@@ -1387,7 +1444,7 @@ function buildElevatorPortals(
       const g = new THREE.BoxGeometry(width, h, depth).rotateY(yaw);
       g.translate(p.x + u.x * x + normal.x * inset, z + height, -(p.y + u.y * x + normal.y * inset));
       const list = buckets.get(m) ?? [];
-      list.push(g);
+      list.push(ledger ? ledger.tag("lift-portals", String(portals.length), g) : g);
       buckets.set(m, list);
     };
     // Recess, paired door leaves, narrow joints, brushed surround, sill and call plate.
@@ -1406,6 +1463,7 @@ function buildElevatorPortals(
     // Abstract two-bar status indicator: no invented floor number/direction/status claim.
     for (const x of [-0.045, 0.045]) box(x, 2.43, 0.022, 0.05, 0.045, mat.gateOk);
     box(0, 2.58, 1.64, 0.045, 0.025, mat.accent);
+    anchors.push({ role: "lift", key: String(portals.length), nodeIds: group.map((n) => n.id), wallPoint: { x: p.x, y: p.y }, z, u: { x: u.x, y: u.y }, normal, floorId: lv.floorId });
     portals.push({ nodeIds: group.map((n) => n.id), center: { ...p, z }, a: w.a, b: w.b });
   }
   for (const [material, geos] of buckets) {
@@ -1413,7 +1471,9 @@ function buildElevatorPortals(
     mesh.name = "elevator-portal:finish";
     mesh.userData.portals = portals;
     root.add(mesh);
+    ledger?.bind("lift-portals", mesh, geos);
   }
+  return anchors;
 }
 
 /**

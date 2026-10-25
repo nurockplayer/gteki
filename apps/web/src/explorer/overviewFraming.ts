@@ -18,6 +18,13 @@ export const OVERVIEW_OFFSET = new THREE.Vector3(0.55, 0.85, 0.75).normalize();
 /** The slice's on-screen extent as a share of each axis of the free area (accepted range 0.5 to 0.8). */
 export const OVERVIEW_FILL = 0.65;
 
+/**
+ * The least share of the viewport's shorter side an occluded phone overview keeps (#109): the band between
+ * the panel and the route card is short, and the plain fill would shrink the map to about a quarter of the
+ * screen. The map then reaches past the band, under the panel and the card, rather than into a speck.
+ */
+export const OVERVIEW_MIN_VIEWPORT_SHARE = 0.5;
+
 /** A slice smaller than this (m, per ground axis) is framed as if it were this big, so a point never zooms to the floor. */
 export const MIN_SLICE_M = 24;
 
@@ -84,29 +91,44 @@ export interface ViewRect { x: number; y: number; w: number; h: number }
  * four rectangles the panel's edges leave and keeps the one with the largest usable short side — which is
  * also the one that lets the slice be framed biggest. A panel over the whole canvas (or none at all) leaves
  * the canvas as it is. `bottomInsetPx` is the height of the strip; no rectangle reaches into it.
+ * An optional top-right `corner` is clipped to the canvas; if it intersects the chosen area, keep
+ * the better of the area left of it or below it (short side first, then area).
  */
-export function freeArea(viewport: { w: number; h: number }, panel: ViewRect | null, bottomInsetPx = 0): ViewRect {
+export function freeArea(viewport: { w: number; h: number }, panel: ViewRect | null, bottomInsetPx = 0, corner: ViewRect | null = null): ViewRect {
   // The strip blocks the whole width, so the usable canvas simply ends above it.
   const h = Math.max(1, viewport.h - Math.max(0, bottomInsetPx));
   const full: ViewRect = { x: 0, y: 0, w: viewport.w, h };
-  if (!panel) return full;
-  // The panel may hang off the canvas (safe areas, a slide-in): only its part over the canvas blocks.
-  const x0 = Math.max(0, panel.x), y0 = Math.max(0, panel.y);
-  const x1 = Math.min(viewport.w, panel.x + panel.w), y1 = Math.min(h, panel.y + panel.h);
-  if (x1 <= x0 || y1 <= y0) return full;
-  const candidates: ViewRect[] = [
-    { x: 0, y: y1, w: viewport.w, h: h - y1 },                    // below a top bar
-    { x: x1, y: 0, w: viewport.w - x1, h },                       // right of a left column
-    { x: 0, y: 0, w: viewport.w, h: y0 },                         // above a bottom bar
-    { x: 0, y: 0, w: x0, h },                                     // left of a right column
-  ];
+  const key = (c: ViewRect) => Math.min(c.w, c.h) * 1e6 + c.w * c.h;
+  const pick = (candidates: ViewRect[], fallback: ViewRect): ViewRect => {
+    let best = fallback, bestKey = -Infinity;
+    for (const c of candidates) {
+      if (c.w <= 0 || c.h <= 0) continue;
+      const k = key(c);
+      if (k > bestKey) { bestKey = k; best = c; }
+    }
+    return best;
+  };
   let best = full;
-  let bestKey = -Infinity;
-  for (const c of candidates) {
-    if (c.w <= 0 || c.h <= 0) continue;
-    // Largest short side first (the fit target), then the larger area.
-    const key = Math.min(c.w, c.h) * 1e6 + c.w * c.h;
-    if (key > bestKey) { bestKey = key; best = c; }
+  if (panel) {
+    // Only the panel's part over the canvas blocks.
+    const x0 = Math.max(0, panel.x), y0 = Math.max(0, panel.y);
+    const x1 = Math.min(viewport.w, panel.x + panel.w), y1 = Math.min(h, panel.y + panel.h);
+    if (x1 > x0 && y1 > y0) best = pick([
+      { x: 0, y: y1, w: viewport.w, h: h - y1 }, // below a top bar
+      { x: x1, y: 0, w: viewport.w - x1, h },    // right of a left column
+      { x: 0, y: 0, w: viewport.w, h: y0 },      // above a bottom bar
+      { x: 0, y: 0, w: x0, h },                 // left of a right column
+    ], full);
+  }
+  if (corner) {
+    const x0 = Math.max(0, corner.x), y0 = Math.max(0, corner.y);
+    const x1 = Math.min(viewport.w, corner.x + corner.w), y1 = Math.min(h, corner.y + corner.h);
+    if (x1 > x0 && y1 > y0 && x0 < best.x + best.w && x1 > best.x && y0 < best.y + best.h && y1 > best.y) {
+      best = pick([
+        { ...best, w: Math.max(0, x0 - best.x) },
+        { ...best, y: y1, h: Math.max(0, best.y + best.h - y1) },
+      ], best);
+    }
   }
   return best;
 }
@@ -163,6 +185,13 @@ export interface FrameView {
    * Default: the box's 8 corners.
    */
   points?: readonly THREE.Vector3[];
+  /**
+   * A floor for both fit axes, as a share of the viewport's shorter side (#109). Free by default. A phone
+   * whose panel and route card leave only a short band still gets a readable map: the outline then grows
+   * past that band rather than shrinking to a speck in it. The larger of the two projected sides is at
+   * least this share of `min(viewport.w, viewport.h)`, so the map is never clipped sideways.
+   */
+  minViewportShare?: number;
 }
 
 export interface FramePose { target: THREE.Vector3; position: THREE.Vector3; distance: number }
@@ -220,8 +249,11 @@ export function frameBounds(box: Aabb, view: FrameView, fill = OVERVIEW_FILL, of
 
   // Extent units are viewport heights: the free width in those units is (free.w / vw) * aspect.
   // Each axis gets its own goal; the axis that first reaches its goal sets the distance.
-  const goalW = Math.max(1e-6, fill * (free.w / vw) * view.aspect);
-  const goalH = Math.max(1e-6, fill * (free.h / vh));
+  // A floor in the same units keeps a short free band (a phone between its panel and route card) from
+  // shrinking the map to a speck: the outline reaches past the band, so the caller only asks for it then.
+  const minPx = (view.minViewportShare ?? 0) * Math.min(vw, vh);
+  const goalW = Math.max(1e-6, fill * (free.w / vw) * view.aspect, minPx / vh);
+  const goalH = Math.max(1e-6, fill * (free.h / vh), minPx / vh);
   const target = centre.clone();
   // The outline the fit sizes and centres: the caller's points (the routable network) when given, else the
   // grown box's corners.

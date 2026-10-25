@@ -82,7 +82,7 @@ const GOLDEN: Record<string, Row[]> = {
     { q: "まるのうち", top: METRO },
     { q: "Marunouchi", top: METRO },
     { q: "丸之內線", top: METRO },
-    { q: "西改札", top: ["metro-m-central-west-gate", "metro-y-south-west-gate"] },
+    { q: "西改札", top: ["metro-m-central-west-gate", "metro-y-south-west-gate", "metro-f-west-west-gate"] }, // + Fukutoshin West Passage West Gate (#414)
     { q: "南通路西改札", top1: "metro-y-south-west-gate" },
     { q: "marunouchi-sen chuo-tsuro higashi kaisatsu", top1: "metro-m-central-east-gate" },
   ],
@@ -102,7 +102,49 @@ const GOLDEN: Record<string, Row[]> = {
   "search-only shops": [
     { q: "Patio de METRO", top1: "shop-ikb-mr-002" },
     { q: "パティオ", top1: "shop-ikb-mr-002" },
-    { q: "マツモトキヨシ", top1: "shop-ikb-mr-004" },
+    { q: "マツモトキヨシ", top: ["shop-ikb-mr-004", "shop-ikb-echika-1108"] }, // two branches: ISP 南館 and Echika (#407)
+    { q: "カフェカルディーノ", top1: "shop-ikb-isp-000066" },
+    { q: "青山フラワーマーケット", top1: "shop-ikb-hope-001" },
+    { q: "リンツ ショコラ ブティック", top1: "shop-ikb-echika-1104" },
+  ],
+  "search-only line POIs (#414, #420)": [
+    { q: "C1番出口", top1: "exit-c1" },
+    { q: "副都心線 西通路東改札", top1: "metro-f-west-east-gate" },
+    { q: "西武池袋線 1F改札口", top1: "seibu-1f-gate" },
+    { q: "北改札", top: ["jr-north-gate", "tobu-north-gate"] }, // printed for both JR and Tobu on the ward guide
+    { q: "JR 北改札", top1: "jr-north-gate" },
+    { q: "東武東上線 北改札", top1: "tobu-north-gate" },
+    { q: "地下改札", top1: "seibu-b1f-gate" },
+  ],
+  "merchant batch 4 (#432)": [
+    { q: "東武百貨店", top1: "shop-ikb-tobudept" },
+    { q: "HARBS", top1: "shop-ikb-lumine-000539" },
+    { q: "JO MALONE LONDON", top1: "shop-ikb-lumine-000527" },
+    { q: "Timberland", top1: "shop-ikb-esola-1147" },
+    { q: "ミラ オーウェン", top1: "shop-ikb-lumine-000463" }, // printed kana alias of Mila Owen
+  ],
+  "merchant batch 5 (#443)": [
+    { q: "トモニー 池袋駅１階改札内店", top1: "shop-ikb-seibu-000597" },
+    { q: "宝くじ 1F", top1: "shop-ikb-seibu-000901" },
+    { q: "マネケン", top1: "shop-ikb-seibu-000516" }, // exact name unique among all Ikebukuro POI names and aliases
+  ],
+  "facilities batch 1 (#431)": [
+    { q: "車いす対応トイレ（改札外）", top1: "toilet-ikb-metro-001" },
+    { q: "車いす対応トイレ（改札内）", top: ["toilet-ikb-metro-002", "toilet-ikb-metro-003"] }, // printed twice: Yurakucho and Fukutoshin
+    { q: "コインロッカー", top1: "locker-ikb-metro-001" },
+    { q: "ATM・三井住友銀行", top1: "atm-ikb-metro-008" },
+  ],
+  "facilities batches 2-3 (#453, #455)": [
+    { q: "インフォメーション", top1: "service-ikb-lumine-001" }, // LUMINE B1; exact name unique among all Ikebukuro POI names and aliases
+    // No Tōbu facility name is unique (12 バリアフリートイレ, 5 コインロッカー（有料）, ...), so the two printed ベビー休憩室 are asserted as a set.
+    { q: "ベビー休憩室", top: ["service-ikb-tobudept-007", "service-ikb-tobudept-008"] },
+    { q: "お忘れ物取扱所", top1: "service-ikb-seibu-003" }, // #455, Seibu lost-property office; exact name unique among all Ikebukuro POI names and aliases
+  ],
+  "line and store POIs (#501)": [
+    { q: "西武池袋線 3番ホーム", top1: "seibu-platform-3" },
+    { q: "Seibu Ikebukuro Line Platform 7", top1: "seibu-platform-7" },
+    { q: "ルミネ池袋", top1: "shop-ikb-lumine" },
+    { q: "エソラ池袋", top1: "shop-ikb-esola" },
   ],
 };
 
@@ -128,19 +170,50 @@ describe("Ikebukuro golden search", () => {
     for (const id of EAST) expect(ids("西口").slice(0, 4)).not.toContain(id);
   });
 
-  // The data has no Seibu gate (only the operator in station.json), so searching it must not invent one.
-  // Same for department-store names: no source ties them to an exit here.
+  // Department-store names: no source ties them to an exit here, so searching them must not invent a gate.
+  // Seibu names come from the Seibu Railway station page, recorded twice as distinct reads of that one page:
+  // seibu-ikebukuro-station-2026-10 (#414, OD-25) and seibu-ikebukuro-norikae-2026-10 (#452, the platform
+  // legend); only POIs sourced from it may carry 西武 / Seibu labels, and the Seibu queries may reach only those POIs.
+  // 百貨店 only on the Tobu Department Store POI, which cites the store's own page (OD-34); Sogo & Seibu stays excluded.
+  // パルコ only on the PARCO POI, which cites the JCSC facility record (S13, facts-only); PARCO's own site is corroboration only.
+  const SEIBU_SOURCES = ["seibu-ikebukuro-station-2026-10", "seibu-ikebukuro-norikae-2026-10"];
+  const fromSeibu = (poi: StationBundle["pois"][number]): boolean =>
+    poi.evidence.sourceIds.some((id) => SEIBU_SOURCES.includes(id));
+  const TOBU_DEPT_SOURCE = "tobu-dept-ikebukuro-2026-10";
+  const TOBU_DEPT_POI = "shop-ikb-tobudept";
+  const PARCO_SOURCE = "jcsc-ikebukuro-parco-facility-2021-10";
+  const PARCO_POI = "shop-ikb-parco";
   describe("no false gate for names the data does not evidence", () => {
-    for (const q of ["西武", "西武線", "Seibu", "Seibu Railway", "そごう", "PARCO", "パルコ", "山手線"]) {
+    for (const q of ["そごう", "PARCO", "パルコ", "山手線"]) {
       it(`${JSON.stringify(q)} returns no gate or exit`, () => {
         const hits = index.search(q).filter((hit) => hit.poi.category === "ticket_gate" || hit.poi.category === "exit");
         expect(hits).toEqual([]);
       });
     }
 
-    it("no POI name or alias carries a Seibu / PARCO / department-store label", () => {
-      const banned = /西武|seibu|parco|パルコ|そごう|百貨店|sogo/i;
-      const offenders = bundle.pois.flatMap((poi) => [...poi.names, ...poi.aliases].filter(({ text }) => banned.test(text)).map(({ text }) => `${poi.id}: ${text}`));
+    it("the Seibu queries reach only POIs sourced from the Seibu Railway station page", () => {
+      for (const q of ["西武", "西武線", "Seibu", "Seibu Railway"]) {
+        const hits = index.search(q);
+        for (const hit of hits) expect(fromSeibu(hit.poi), `${q} -> ${hit.poi.id}`).toBe(true);
+      }
+    });
+
+    it("carries PARCO labels only on the JCSC-sourced PARCO POI, Sogo labels nowhere, 百貨店 only on the Tobu Department Store POI, and Seibu labels only on Seibu-sourced POIs", () => {
+      const parco = /parco|パルコ/i;
+      const sogo = /そごう|sogo/i;
+      const departmentStore = /百貨店/;
+      const seibu = /西武|seibu/i;
+      const offenders = bundle.pois.flatMap((poi) =>
+        [...poi.names, ...poi.aliases]
+          .filter(
+            ({ text }) =>
+              sogo.test(text) ||
+              (parco.test(text) && !(poi.id === PARCO_POI && poi.evidence.sourceIds.includes(PARCO_SOURCE))) ||
+              (departmentStore.test(text) && !(poi.id === TOBU_DEPT_POI && poi.evidence.sourceIds.includes(TOBU_DEPT_SOURCE))) ||
+              (seibu.test(text) && !fromSeibu(poi)),
+          )
+          .map(({ text }) => `${poi.id}: ${text}`),
+      );
       expect(offenders).toEqual([]);
     });
   });

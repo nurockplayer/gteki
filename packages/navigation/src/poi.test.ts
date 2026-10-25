@@ -55,7 +55,7 @@ describe("routeBetween applies the fare policy to the POIs themselves", () => {
     const nodeGoals = ["goal"];
     const nodeResult = routeBetween(router, { kind: "poi", poi: origin }, { kind: "nodes", nodeIds: nodeGoals }, unpaid);
     expect(nodeResult.ok).toBe(true);
-    if (nodeResult.ok) expect(nodeResult.sourceIds).toEqual(expect.arrayContaining(origin.evidence.sourceIds));
+    if (nodeResult.ok) expect(nodeResult.endpointSourceIds).toEqual(expect.arrayContaining(origin.evidence.sourceIds));
     expect(routeBetween(router, { kind: "poi", poi: origin }, { kind: "nodes", nodeIds: [] }, { fare: "ticketed", stepFree: false }))
       .toMatchObject({ ok: false, reason: "unknown_goal" });
   });
@@ -70,7 +70,7 @@ describe("routeBetween applies the fare policy to the POIs themselves", () => {
       .toEqual(router.route(origin.connectorNodeIds, nodeIds, profile, [origin.evidence]));
   });
 
-  it("keeps unknown_start / unknown_goal for POIs without connectors and joins both POIs' evidence", () => {
+  it("keeps unknown_start / unknown_goal for POIs without connectors and keeps both POIs' evidence out of the path's sources", () => {
     const b = createSyntheticBundle();
     // Sources cited only by the POIs, so the result can carry them only through routeBetween.
     for (const id of ["origin-poi-source", "destination-poi-source"]) b.sources.push({ ...b.sources[0]!, id });
@@ -82,10 +82,31 @@ describe("routeBetween applies the fare policy to the POIs themselves", () => {
     expect(routeBetween(router, { kind: "poi", poi: exit }, shop, unpaid)).toMatchObject({ reason: "unknown_goal" });
     const r = routeBetween(router, { kind: "poi", poi: exit }, toilet, { fare: "ticketed", stepFree: false });
     if (!r.ok) throw new Error(r.message);
-    expect(r.sourceIds).toEqual(expect.arrayContaining(["origin-poi-source", "destination-poi-source"]));
+    // Endpoint name evidence is a dependency of the route, not evidence of the path it takes (#491).
+    expect(r.endpointSourceIds).toEqual(expect.arrayContaining(["origin-poi-source", "destination-poi-source"]));
+    expect(r.sourceIds).not.toContain("origin-poi-source");
+    expect(r.sourceIds).not.toContain("destination-poi-source");
     const node = routeBetween(router, { kind: "node", nodeId: "start" }, toilet, { fare: "ticketed", stepFree: false });
     if (!node.ok) throw new Error(node.message);
-    expect(node.sourceIds).toContain("destination-poi-source");
+    expect(node.endpointSourceIds).toContain("destination-poi-source");
+    expect(node.sourceIds).not.toContain("destination-poi-source");
     expect(node.sourceIds).not.toContain("origin-poi-source");
+  });
+
+  it("keeps a POI with only an approximate display point unroutable: no connectors means unknown_goal", () => {
+    const b = createSyntheticBundle();
+    const router = createRouter(b);
+    const exit = b.pois.find((p) => p.id === "exit-a1")!;
+    // The approximate point is search display only (#463); it never becomes a routing target.
+    const approximate = {
+      ...b.pois.find((p) => p.id === "shop")!,
+      approximatePosition: {
+        east: 10, north: 0, uncertaintyM: 25, method: "area_weighted_centroid",
+        navigationUse: "NOT_FOR_ROUTING" as const, floor: "UNVERIFIED" as const,
+      },
+    };
+    expect(approximate.connectorNodeIds).toEqual([]);
+    expect(routeBetween(router, { kind: "poi", poi: exit }, approximate, unpaid)).toMatchObject({ ok: false, reason: "unknown_goal" });
+    expect(routeBetween(router, { kind: "poi", poi: approximate }, exit, unpaid)).toMatchObject({ ok: false, reason: "unknown_start" });
   });
 });

@@ -8,6 +8,8 @@
  * scene relied on, and everything dropped or degraded, is listed in the sidecar `warnings`.
  */
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -18,8 +20,8 @@ import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.j
 import { enuToRenderer } from "@gteki/geo";
 import { parseStationFiles } from "@gteki/schema";
 import { glbPrimitivePlugin, type SceneContext, type StationScene, type StationSceneModule } from "@gteki/scene-api";
-import { headlessThree, installHeadlessDom, newShimUsage, stubRenderer, type ShimUsage } from "./headless-dom.ts";
-import { bakeInstancedMeshes, categoryOf, dropDynamicObjects, stripTextures, tagLightmaps, tagSceneRoles, type LightmapInfo, type RoleSummary } from "./scene-roles.ts";
+import { headlessGltfTextures, headlessThree, installHeadlessDom, newShimUsage, stubRenderer, type ShimUsage } from "./headless-dom.ts";
+import { bakeInstancedMeshes, categoryOf, dropDynamicObjects, stripTextures, tagAoAtlases, tagLightmaps, tagSceneRoles, type AoAtlasBinding, type LightmapInfo, type RoleSummary } from "./scene-roles.ts";
 
 export const SIDECAR_SCHEMA = "gteki.godot-scene/0.1" as const;
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -37,6 +39,8 @@ export interface SceneSidecar {
   spawnPoints: StationScene["spawnPoints"];
   environment: StationScene["environment"];
   counts: Omit<RoleSummary, "warnings">;
+  /** Materials in the same order as the GLB material array; null means the source material was unnamed. */
+  materials: { index: number; name: string | null }[];
   /** TypeScript-computed renderer-frame values the Godot tests compare against (an oracle, not scene truth). */
   reference: {
     spawnPointsRenderer: [number, number, number][];
@@ -47,6 +51,8 @@ export interface SceneSidecar {
   };
   /** The scene's baked lightmap, when it has one (three material state recorded before textures are stripped). */
   lightmap?: LightmapInfo;
+  /** The kit's shared AO atlases by kind, when the scene uses any (recorded before textures are stripped). */
+  ao_atlas_bindings?: Record<string, AoAtlasBinding>;
   /** Everything a shim degraded or the exporter dropped. Empty only if nothing was. */
   warnings: string[];
 }
@@ -66,6 +72,57 @@ export interface ExportResult {
   sidecar: SceneSidecar;
   glb: Uint8Array;
   seconds: number;
+}
+
+/** How long export waits for a station's background loads (`StationScene.settled`) before failing. Generous on purpose:
+ * the guard is against a hang, and Ikebukuro loads ~87 catalog GLBs serially on a shared, busy host. */
+export const SETTLE_TIMEOUT_MS = 120_000;
+
+/**
+ * Awaits the station's optional `settled()` (the scene-api field lands with #352; typed locally until then), bounded by
+ * `timeoutMs`. Resolves at once when the station has none. scene-api's contract is that settled() never hangs or
+ * rejects (it resolves once every load has finished, failures included); the timeout is export's own guard, and on
+ * it the export fails with the station id rather than writing a scene whose background content never arrived.
+ */
+export async function settleScene(scene: StationScene & { settled?: () => Promise<void> }, stationId: string, timeoutMs: number): Promise<void> {
+  if (typeof scene.settled !== "function") return;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, fail) => {
+    timer = setTimeout(() => fail(new Error(`station ${stationId}: scene did not settle within ${timeoutMs} ms (background loads still pending); not exporting a partial snapshot`)), timeoutMs);
+  });
+  try {
+    await Promise.race([scene.settled(), timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** Read the canonical material order and names back from GLB's JSON chunk. */
+export function materialsFromGlb(glb: ArrayBuffer): { materials: { index: number; name: string | null }[]; duplicates: string[] } {
+  const view = new DataView(glb);
+  if (view.byteLength < 20 || view.getUint32(0, true) !== 0x46546c67) throw new Error("invalid GLB header");
+  let offset = 12;
+  while (offset + 8 <= view.byteLength) {
+    const length = view.getUint32(offset, true);
+    const type = view.getUint32(offset + 4, true);
+    if (offset + 8 + length > view.byteLength) throw new Error("invalid GLB chunk length");
+    if (type === 0x4e4f534a) {
+      const json = JSON.parse(new TextDecoder().decode(new Uint8Array(glb, offset + 8, length))) as { materials?: { name?: unknown }[] };
+      const materials = (json.materials ?? []).map((material, index) => ({
+        index,
+        name: typeof material.name === "string" && material.name.length > 0 ? material.name : null,
+      }));
+      const counts = new Map<string, number>();
+      for (const { name } of materials) if (name !== null) counts.set(name, (counts.get(name) ?? 0) + 1);
+      return { materials, duplicates: [...counts].filter(([, count]) => count > 1).map(([name]) => name).sort() };
+    }
+    offset += 8 + length;
+  }
+  throw new Error("GLB has no JSON chunk");
+}
+
+export function duplicateMaterialWarning(duplicates: string[]): string | null {
+  return duplicates.length > 0 ? `duplicate GLB material names: ${duplicates.join(", ")}` : null;
 }
 
 function git(...args: string[]): string {
@@ -103,11 +160,12 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
     bundle: parsed.bundle,
     enuToRenderer: (p) => enuToRenderer(p),
     assetUrl: (uri) => pathToFileURL(inStation(uri)).href,
-    // Same loader set-up as the explorer's (Meshopt, glbPrimitivePlugin), minus the browser fetch.
+    // Same loader set-up as the explorer's (Meshopt, glbPrimitivePlugin), minus the browser fetch and image decoding
+    // (headlessGltfTextures: embedded images become blank placeholders, as the snapshot strips textures anyway).
     loadGlb: async (uri): Promise<GLTF> => {
       const buf = await readFile(inStation(uri));
       const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
-      const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).register(glbPrimitivePlugin);
+      const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).register(glbPrimitivePlugin).register(headlessGltfTextures(usage));
       return new Promise<GLTF>((ok, fail) => loader.parse(ab, "", ok, fail));
     },
     // Image decoding needs a browser: a blank texture stands in (the file must still exist). The URI is kept on the
@@ -134,6 +192,10 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
   const warnings: string[] = [];
   // Dynamic state (escalator steps, doors, crowd) is posed by update(); run it once so the snapshot is the t=0 pose.
   scene.update?.(0, 0);
+  // Content a station loads in the background (Ikebukuro's kit catalog) is only in the snapshot once it has settled;
+  // a station without `settled` is exported as today. A timeout fails the export rather than writing a partial scene.
+  await settleScene(scene, stationId, SETTLE_TIMEOUT_MS);
+  scene.update?.(0, 0);
   scene.root.updateMatrixWorld(true);
   const dropped = dropDynamicObjects(scene.root);
   if (dropped.length > 0) warnings.push(`ambient/skinned objects not exported (animated content, no static meaning): ${[...new Set(dropped)].join(", ")}`);
@@ -141,13 +203,20 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
   if (baked > 0) warnings.push(`${baked} InstancedMesh object(s) (escalator steps, platform-door leaves) baked into static merged meshes at their update(0, 0) pose; Godot 4.7 has no EXT_mesh_gpu_instancing import, per-instance colours and per-frame animation are not exported`);
   const roles = tagSceneRoles(scene);
   warnings.push(...roles.warnings);
-  // Before stripTextures: the lightmap lives on the material and would otherwise vanish with every other texture.
+  // Before stripTextures: the lightmap and kit AO atlases live on the material and would otherwise vanish with every
+  // other texture. The hash pins the exact station file, so the Godot side can refuse a stale atlas.
   const lightmap = tagLightmaps(scene.root);
+  const aoAtlases = tagAoAtlases(scene.root);
+  const aoAtlasBindings: Record<string, AoAtlasBinding> = {};
+  for (const [kind, atlas] of Object.entries(aoAtlases.bindings)) aoAtlasBindings[kind] = { ...atlas, sha256: createHash("sha256").update(readFileSync(inStation(atlas.uri))).digest("hex") };
+  warnings.push(...aoAtlases.warnings);
+  const atlasKinds = Object.keys(aoAtlasBindings).length;
   const stripped = stripTextures(scene.root);
-  warnings.push(`all material textures omitted (${stripped} slot(s)); only base colours, names and UVs (incl. TEXCOORD_1) are kept, so the snapshot is untextured and unlit${lightmap === null ? "" : "; the baked lightmap is described in the lightmap block and re-applied by the Godot client (G-4a)"}`);
+  warnings.push(`all material textures omitted (${stripped} slot(s)); only base colours, names and UVs (incl. TEXCOORD_1) are kept, so the snapshot is untextured and unlit${lightmap === null ? "" : "; the baked lightmap is described in the lightmap block and re-applied by the Godot client (G-4a)"}${atlasKinds === 0 ? "" : `; ${atlasKinds} kit AO atlas kind(s) are described in ao_atlas_bindings and re-applied by the Godot client (Lane E #391)`}`);
   if (usage.canvases > 0) warnings.push(`${usage.canvases} canvas(es) were no-op 2D contexts (blank): procedural textures and sign faces are placeholders, and ${usage.measuredTexts} measureText call(s) used an em-width estimate that may size signs differently from the browser`);
   if (usage.imageDataReads > 0) warnings.push(`${usage.imageDataReads} canvas getImageData read(s) returned zeros`);
   if (usage.pmremEnvironments > 0) warnings.push(`${usage.pmremEnvironments} PMREM environment map(s) stubbed (no GPU): reflections absent`);
+  if (usage.glbEmbeddedImages + usage.glbExternalImages > 0) warnings.push(`GLB images loaded via ctx.loadGlb were blank placeholders, not decoded (Node has no image decoder): ${usage.glbEmbeddedImages} embedded, ${usage.glbExternalImages} external URI image source(s)`);
   if (usage.placeholderTextures.length > 0) warnings.push(`textures loaded via ctx.loadTexture are blank placeholders, not decoded: ${usage.placeholderTextures.join(", ")}`);
   warnings.push("ctx.audio undefined: no station audio");
   if (roles.replacedByCollision > 0) warnings.push(`${roles.replacedByCollision} drawn mesh(es) carry walkable/collider roles in the source but the scene collides through its own proxies; exported as role "visual" (original in extras.gteki_source_role)`);
@@ -156,6 +225,9 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
   const exported = await captureWarnings(() =>
     exporter.parseAsync(scene.root, { binary: true, onlyVisible: false, includeCustomExtensions: true }) as Promise<ArrayBuffer>);
   for (const w of exported.warnings) warnings.push(`GLTFExporter: ${w.replace(/^THREE\.GLTFExporter:\s*/, "")}`);
+  const glbMaterials = materialsFromGlb(exported.value);
+  const duplicateWarning = duplicateMaterialWarning(glbMaterials.duplicates);
+  if (duplicateWarning !== null) warnings.push(duplicateWarning);
 
   const { warnings: _omit, ...counts } = roles;
   const dirty = git("status", "--porcelain", "--", "stations", "packages", "apps").length > 0;
@@ -175,7 +247,9 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
     spawnPoints: spawns,
     environment: scene.environment ?? {},
     counts,
+    materials: glbMaterials.materials,
     ...(lightmap === null ? {} : { lightmap }),
+    ...(atlasKinds === 0 ? {} : { ao_atlas_bindings: aoAtlasBindings }),
     reference: {
       spawnPointsRenderer: spawns.map((p) => enuToRenderer(p)),
       wallSamplesRenderer: wallSamples,

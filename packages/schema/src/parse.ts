@@ -1,5 +1,5 @@
-import type { GraphFile, PoiFile, StationBundle, StationManifestFile } from "./index.ts";
-import { SCHEMA_VERSION } from "./index.ts";
+import type { GraphFile, PoiFile, StationBundle, StationManifestFile, TenantFile } from "./index.ts";
+import { SCHEMA_VERSION, TENANTS_SCHEMA_VERSION } from "./index.ts";
 import { validateBundle, type ValidationIssue } from "./validate.ts";
 
 /**
@@ -14,7 +14,9 @@ type Kind = "string" | "number" | "boolean" | "array" | "object" | "tri" | "stri
 type Spec = Record<string, Kind | `${Kind}?`>;
 
 const SPECS = {
-  station: { id: "string", names: "array", codes: "array?", operators: "array", origin: "object", frame: "string", datasetVersion: "string", generatedAt: "string", synthetic: "boolean" },
+  station: { id: "string", names: "array", identity: "object?", codes: "array?", operators: "array", origin: "object", frame: "string", datasetVersion: "string", generatedAt: "string", synthetic: "boolean" },
+  identity: { names: "array", sides: "array?" },
+  identitySide: { side: "string", exit: "array", landmark: "array", evidence: "object", verification: "string" },
   origin: { lat: "number", lon: "number", hM: "number|null", datum: "string", crs: "string" },
   source: { id: "string", title: "string", publisher: "string", url: "string", license: "object|null", rights: "string", attribution: "string", modified: "boolean", retrievedAt: "string|null", datasetDate: "string|null", downloadUrls: "array?", usage: "string?", decision: "object?", override: "object?", sha256: "object?", validUntil: "string|null?", notes: "string?" },
   floor: { id: "string", operatorId: "string", sourceLabels: "array", ordinal: "number|null", intermediate: "boolean", elevationM: "number|null", elevationSource: "string", renderElevationM: "number", displayNames: "array?" },
@@ -22,7 +24,11 @@ const SPECS = {
   position: { x: "number", y: "number", z: "number|null" },
   edge: { id: "string", from: "string", to: "string", direction: "string", mode: "string", lengthM: "number|null", paid: "tri", crossesFareBoundary: "tri", wheelchair: "tri", steps: "tri", hours: "object|null", closed: "boolean", verification: "string", geometryEvidence: "object", accessEvidence: "object|null", geometry: "array?", geometryZ: "string?", attributes: "object?" },
   evidence: { sourceIds: "array", method: "string", checkedDate: "string", note: "string?" },
-  poi: { id: "string", category: "string", names: "array", aliases: "array", floorId: "string|null", displayPosition: "object|null", connectorNodeIds: "array", paid: "tri", evidence: "object", notes: "array?" },
+  poi: { id: "string", category: "string", names: "array", aliases: "array", floorId: "string|null", displayPosition: "object|null", approximatePosition: "object?", connectorNodeIds: "array", paid: "tri", evidence: "object", notes: "array?", hours: "object?" },
+  approximatePosition: { east: "number", north: "number", uncertaintyM: "number", method: "string", navigationUse: "string", floor: "string" },
+  // Printed hours (OD-32): text as the page printed it, where it came from, when it was read, whose word it is.
+  hours: { text: "string?", sourceUrl: "string", retrievedAt: "string", basis: "string", status: "string" },
+  buildingHours: { text: "string?", sourceUrl: "string", retrievedAt: "string", basis: "string", status: "string", building: "array", floorRange: "string|null", note: "array?" },
   text: { lang: "string", text: "string" },
   operator: { id: "string", names: "array" },
   code: { operatorId: "string", code: "string" },
@@ -39,6 +45,7 @@ const SPECS = {
   coverage: { summary: "array", areas: "array", gaps: "array", freshness: "string|null" },
   asset: { id: "string", uri: "string", uriMobile: "string?", format: "string", floorIds: "array", role: "string", sourceIds: "array", transform: "array?", derivation: "string?", derivationSummary: "array?", files: "array?" },
   dataFile: { id: "string", path: "string", sourceIds: "array", modified: "boolean", authored: "boolean?", derivation: "string?" },
+  tenant: { id: "string", poiId: "string", names: "array", aliases: "array", floorLabel: "array", category: "array?", evidence: "object" },
 } satisfies Record<string, Spec>;
 
 function kindOf(v: unknown): string {
@@ -96,6 +103,14 @@ class ShapeChecker {
     });
   }
 
+  finiteNumberRecord(value: unknown, where: string): void {
+    if (kindOf(value) !== "object") return;
+    for (const [key, number] of Object.entries(value as Record<string, unknown>)) {
+      if (typeof number !== "number" || !Number.isFinite(number))
+        this.issues.push({ level: "error", code: "shape.type", message: `${where}.${key}: expected finite number, got ${kindOf(number)}`, ref: where });
+    }
+  }
+
   texts(list: unknown, where: string): void {
     this.each(list, SPECS.text, where);
   }
@@ -112,6 +127,20 @@ class ShapeChecker {
 
   evidence(value: unknown, where: string): void {
     if (this.check(value, SPECS.evidence, where)) this.strings((value as Record<string, unknown>).sourceIds, `${where}.sourceIds`);
+  }
+
+  /** Search-display-only approximation: a positive ± radius, a stated method, and the two fixed markers. */
+  approximatePosition(value: unknown, where: string): void {
+    if (!this.check(value, SPECS.approximatePosition, where)) return;
+    const a = value as Record<string, unknown>;
+    if (typeof a.uncertaintyM === "number" && !(a.uncertaintyM > 0))
+      this.issues.push({ level: "error", code: "shape.type", message: `${where}.uncertaintyM: expected a number > 0, got ${String(a.uncertaintyM)}`, ref: where });
+    if (typeof a.method === "string" && a.method.trim() === "")
+      this.issues.push({ level: "error", code: "shape.type", message: `${where}.method: expected a non-empty string`, ref: where });
+    if (a.navigationUse !== "NOT_FOR_ROUTING")
+      this.issues.push({ level: "error", code: "shape.type", message: `${where}.navigationUse: expected "NOT_FOR_ROUTING", got ${JSON.stringify(a.navigationUse)}`, ref: where });
+    if (a.floor !== "UNVERIFIED")
+      this.issues.push({ level: "error", code: "shape.type", message: `${where}.floor: expected "UNVERIFIED", got ${JSON.stringify(a.floor)}`, ref: where });
   }
 
   /** `hours` is a discriminated union: an unrecognised or incomplete object is an error, never "open". */
@@ -144,15 +173,30 @@ function idOf(item: unknown): string {
   return kindOf(item) === "object" && typeof (item as { id?: unknown }).id === "string" ? `=${(item as { id: string }).id}` : "";
 }
 
-/** Structural check of the three station files. Returns issues; empty = shape-valid. */
-export function checkShape(manifest: unknown, graph: unknown, pois: unknown): ValidationIssue[] {
+/**
+ * Structural check of the station files. Returns issues; empty = shape-valid.
+ * `tenants` is the optional `gteki/tenants.json`: only `undefined` (the file does not exist) means "no
+ * directory". A file that exists with `null` or any other non-object content is a shape error, so an invalid
+ * file can never be read as an absent one.
+ */
+export function checkShape(manifest: unknown, graph: unknown, pois: unknown, tenants?: unknown): ValidationIssue[] {
   const c = new ShapeChecker();
-  if (c.check(manifest, { schema: "string", station: "object", sources: "array", floors: "array", coverage: "object", spawnNodeIds: "array?", assets: "array?", dataFiles: "array?" }, "station.json")) {
+  if (c.check(manifest, { schema: "string", station: "object", sources: "array", floors: "array", coverage: "object", spawnNodeIds: "array?", spawnHeadings: "object?", assets: "array?", dataFiles: "array?", buildingHours: "array?" }, "station.json")) {
     const m = manifest as Record<string, unknown>;
+    c.finiteNumberRecord(m.spawnHeadings, "spawnHeadings");
     if (c.check(m.station, SPECS.station, "station.json.station")) {
       const st = m.station as Record<string, unknown>;
       c.check(st.origin, SPECS.origin, "station.json.station.origin");
       c.texts(st.names, "station.names");
+      if (st.identity !== undefined && c.check(st.identity, SPECS.identity, "station.identity")) {
+        const identity = st.identity as Record<string, unknown>;
+        c.texts(identity.names, "station.identity.names");
+        c.each(identity.sides, SPECS.identitySide, "station.identity.sides", (side, where) => {
+          c.texts(side.exit, `${where}.exit`);
+          c.texts(side.landmark, `${where}.landmark`);
+          c.evidence(side.evidence, `${where}.evidence`);
+        });
+      }
       c.each(st.operators, SPECS.operator, "station.operators", (op, where) => c.texts(op.names, `${where}.names`));
       c.each(st.codes, SPECS.code, "station.codes");
     }
@@ -184,6 +228,10 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
       });
     }
     c.strings(m.spawnNodeIds, "spawnNodeIds");
+    c.each(m.buildingHours, SPECS.buildingHours, "buildingHours", (hours, where) => {
+      c.texts(hours.building, `${where}.building`);
+      c.texts(hours.note, `${where}.note`);
+    });
     c.each(m.dataFiles, SPECS.dataFile, "dataFiles", (file, where) => c.strings(file.sourceIds, `${where}.sourceIds`));
     c.each(m.assets, SPECS.asset, "assets", (asset, where) => {
       c.texts(asset.derivationSummary, `${where}.derivationSummary`);
@@ -221,13 +269,24 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
       c.texts(poi.notes, `${where}.notes`);
       c.strings(poi.connectorNodeIds, `${where}.connectorNodeIds`);
       if (poi.displayPosition !== null) c.check(poi.displayPosition, SPECS.position, `${where}.displayPosition`);
+      if (poi.approximatePosition !== undefined) c.approximatePosition(poi.approximatePosition, `${where}.approximatePosition`);
+      if (poi.hours !== undefined) c.check(poi.hours, SPECS.hours, `${where}.hours`);
+    });
+  }
+  if (tenants !== undefined && c.check(tenants, { schema: "string", tenants: "array" }, "tenants.json")) {
+    c.each((tenants as Record<string, unknown>).tenants, SPECS.tenant, "tenants", (tenant, where) => {
+      c.evidence(tenant.evidence, `${where}.evidence`);
+      c.texts(tenant.names, `${where}.names`);
+      c.texts(tenant.aliases, `${where}.aliases`);
+      c.texts(tenant.floorLabel, `${where}.floorLabel`);
+      c.texts(tenant.category, `${where}.category`);
     });
   }
   return c.issues;
 }
 
-/** Join the three files. Caller must have passed `checkShape`. */
-export function composeBundle(manifest: StationManifestFile, graph: GraphFile, pois: PoiFile): StationBundle {
+/** Join the station files. Caller must have passed `checkShape`. */
+export function composeBundle(manifest: StationManifestFile, graph: GraphFile, pois: PoiFile, tenantsFile?: TenantFile | null): StationBundle {
   const bundle: StationBundle = {
     schema: manifest.schema,
     station: manifest.station,
@@ -239,8 +298,11 @@ export function composeBundle(manifest: StationManifestFile, graph: GraphFile, p
     coverage: manifest.coverage,
   };
   if (manifest.spawnNodeIds) bundle.spawnNodeIds = manifest.spawnNodeIds;
+  if (manifest.spawnHeadings) bundle.spawnHeadings = manifest.spawnHeadings;
   if (manifest.assets) bundle.assets = manifest.assets;
   if (manifest.dataFiles) bundle.dataFiles = manifest.dataFiles;
+  if (manifest.buildingHours) bundle.buildingHours = manifest.buildingHours;
+  if (tenantsFile) bundle.tenants = tenantsFile.tenants;
   return bundle;
 }
 
@@ -252,18 +314,21 @@ export type ParseResult =
  * Shape check → compose → truth-rule validation. Any error yields `ok: false` and no bundle,
  * so a malformed or rule-breaking station never reaches the router (fail closed).
  */
-export function parseStationFiles(manifest: unknown, graph: unknown, pois: unknown): ParseResult {
-  const shape = checkShape(manifest, graph, pois);
+export function parseStationFiles(manifest: unknown, graph: unknown, pois: unknown, tenants?: unknown): ParseResult {
+  const shape = checkShape(manifest, graph, pois, tenants);
   if (shape.length > 0) return { ok: false, bundle: null, issues: shape };
   const m = manifest as StationManifestFile;
   const g = graph as GraphFile;
   const p = pois as PoiFile;
+  const t = tenants === undefined ? null : (tenants as TenantFile);
   const issues: ValidationIssue[] = [];
   for (const [label, file] of [["graph.json", g], ["pois.json", p]] as const) {
     if (file.schema !== SCHEMA_VERSION) issues.push({ level: "error", code: "schema.version", message: `${label}: expected ${SCHEMA_VERSION}, got ${file.schema}` });
     if (file.stationId !== m.station.id) issues.push({ level: "error", code: "file.station", message: `${label}: stationId ${file.stationId} ≠ ${m.station.id}` });
   }
-  const bundle = composeBundle(m, g, p);
+  if (t && t.schema !== TENANTS_SCHEMA_VERSION)
+    issues.push({ level: "error", code: "schema.version", message: `tenants.json: expected ${TENANTS_SCHEMA_VERSION}, got ${t.schema}` });
+  const bundle = composeBundle(m, g, p, t);
   issues.push(...validateBundle(bundle));
   return issues.some((i) => i.level === "error") ? { ok: false, bundle: null, issues } : { ok: true, bundle, issues };
 }

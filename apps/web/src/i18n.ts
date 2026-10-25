@@ -7,6 +7,24 @@ export type Lang = "ja" | "en";
 
 const STRINGS = {
   ja: {
+    minimap: "ミニマップ",
+    minimapPlayerUp: "キャラクターの向きが上",
+    minimapNorthUp: "北を上に固定",
+    minimapCollapse: "ミニマップを折りたたむ",
+    minimapShow: "ミニマップを表示",
+    minimapFloorUnknown: "階不明",
+    minimapFloor: "表示する階",
+    minimapFloorFollow: "追従",
+    minimapSchematic: "概略歩行経路（実際の構内図ではありません）",
+    minimapExpand: "大地図を開く",
+    minimapLargeMap: "現在の階の大地図",
+    minimapClose: "大地図を閉じる",
+    minimapDestination: (floor: string) => `目的地のある階：${floor}`,
+    minimapNextFloor: (floor: string, mode: string) => `${mode}${floor}へ`,
+    minimapMode: {
+      walk: "歩いて", stairs: "階段で", escalator: "エスカレーターで", elevator: "エレベーターで",
+      ramp: "スロープで", moving_walkway: "動く歩道で", gate: "改札を通って",
+    },
     tagline: "駅を探して、歩いて下見する",
     station: "駅",
     from: "出発地",
@@ -22,6 +40,33 @@ const STRINGS = {
     searchOnly: "検索のみ（入口未確認）",
     shopNoRoute: "この店舗への道案内はまだありません（位置未確認）",
     shopSearchOnly: "位置未確認・道案内なし",
+    /** Search category filter (#213): the label, the unfiltered choice and the category names. */
+    categoryFilter: "種類",
+    categoryAll: "すべて",
+    categoryNames: {
+      shop: "店舗", service: "サービス", atm: "ATM", locker: "コインロッカー", toilet: "トイレ",
+      exit: "出口", ticket_gate: "改札", platform: "ホーム", escalator: "エスカレーター", elevator: "エレベーター",
+      stairs: "階段", transfer: "乗り換え", other: "その他",
+    } as Record<string, string>,
+    /** The merchant card (#213): only what the listing states. */
+    merchant: {
+      source: "出典",
+      sourceUnknown: "出典の記録なし",
+      checked: "最終確認",
+      precision: { point: "位置確認済み", area: "おおよその区域のみ", search: "店舗位置は未確認" },
+    },
+    /** An approximate, search-display-only point (#463): the ± radius shown, never used for directions. */
+    approximatePosition: (m: number) => `おおよその位置（±${m} m）・経路案内には使いません`,
+    /** An approximate POI's floor is a label match, not a surveyed floor (#463). */
+    floorUnverified: (label: string) => `${label}（階は未確認）`,
+    /** A shop's printed hours (OD-32): the page's own wording, read on this date. */
+    hoursAsOf: (date: string) => `GT-Eki 確認日 ${date} 時点の公式表記`,
+    /** A store's printed brand directory (#419): unverified, with the date its listing was checked. */
+    tenantAsOf: (date: string) => `店舗情報（${date} 時点・未確認）`,
+    /** The route ends at the store entrance; floors inside the store are not modelled. */
+    tenantFloorsNotGuided: "店内の階は案内しません",
+    /** English-only marker: a store's floor label is quoted exactly as printed, not a station floor. */
+    asPrinted: "（原文どおり）",
     noResults: "該当なし",
     route: "ルート",
     minutes: (m: number) => `約${m}分`,
@@ -118,6 +163,8 @@ const STRINGS = {
     /** GTEki-made wayfinding signs are generated from the graph, not surveyed positions (#203 B14). */
     generatedSigns: "看板は経路データから自動配置しています（実際の現地の看板位置ではありません）",
     sources: "出典",
+    /** #491 / OD-22: endpoint sources name the origin/destination; they are never evidence of the path. */
+    nameEvidence: "POI名の出典（経路の根拠ではありません）",
     credits: "出典",
     creditsLabel: "データの出典表示",
     /** Modification disclosure required by PDL / CC BY when a source was processed. */
@@ -126,6 +173,7 @@ const STRINGS = {
     factsOnly: "ライセンスなし・事実のみ参照（複製なし）",
     rightsDecision: "権利判断",
     assetDerivations: "3D素材の加工内容",
+    dataFileDerivations: "データファイルの出典と加工",
     derivationDetails: "加工の詳細",
     symbolicHeight: "高さは表示用の推定です",
     coverage: "カバー範囲",
@@ -138,6 +186,9 @@ const STRINGS = {
     rightsUnverified: "権利未確認（公開データには使用しない）",
     validationFailed: "駅データが検証に失敗したため表示しません（安全側）",
     loading: "読み込み中…",
+    identitySide: (exit: string, landmark: string) => `${exit}側：${landmark}`,
+    identitySideSeparator: " ・ ",
+    identityUnconfirmed: "未確認",
     sceneFallback: "駅の3Dシーンを読み込めず、経路網表示（L0）に切り替えました",
     controlsHint: "WASD/矢印で移動・Shiftで走る・ドラッグで視点",
     touchHint: "左で移動（端まで倒すと走る）・右ドラッグで視点",
@@ -172,6 +223,24 @@ const STRINGS = {
     language: "English",
   },
   en: {
+    minimap: "Minimap",
+    minimapPlayerUp: "Player facing up",
+    minimapNorthUp: "North up",
+    minimapCollapse: "Collapse minimap",
+    minimapShow: "Show minimap",
+    minimapFloorUnknown: "Floor unknown",
+    minimapFloor: "Floor shown",
+    minimapFloorFollow: "Follow player",
+    minimapSchematic: "Schematic walk graph (not a floor plan)",
+    minimapExpand: "Open large map",
+    minimapLargeMap: "Large map of the current floor",
+    minimapClose: "Close large map",
+    minimapDestination: (floor: string) => `Destination floor: ${floor}`,
+    minimapNextFloor: (floor: string, mode: string) => `To ${floor} ${mode}`,
+    minimapMode: {
+      walk: "on foot", stairs: "by stairs", escalator: "by escalator", elevator: "by elevator",
+      ramp: "by ramp", moving_walkway: "on the moving walkway", gate: "through the ticket gate",
+    },
     tagline: "Find it in the station, then walk it",
     station: "Station",
     from: "From",
@@ -187,6 +256,32 @@ const STRINGS = {
     searchOnly: "Search only (entrance not verified)",
     shopNoRoute: "No directions to this shop yet (location not verified).",
     shopSearchOnly: "Location not verified · no directions",
+    /** Search category filter (#213): the label, the unfiltered choice and the category names. */
+    categoryFilter: "Category",
+    categoryAll: "All",
+    categoryNames: {
+      shop: "Shop", service: "Service", atm: "ATM", locker: "Coin locker", toilet: "Toilet",
+      exit: "Exit", ticket_gate: "Ticket gate", platform: "Platform", escalator: "Escalator", elevator: "Elevator",
+      stairs: "Stairs", transfer: "Transfer", other: "Other",
+    } as Record<string, string>,
+    /** The merchant card (#213): only what the listing states. */
+    merchant: {
+      source: "Source",
+      sourceUnknown: "No source recorded",
+      checked: "Last checked",
+      precision: { point: "Location verified", area: "Approximate area only", search: "Shop location unconfirmed" },
+    },
+    /** An approximate, search-display-only point (#463): the ± radius shown, never used for directions. */
+    approximatePosition: (m: number) => `Approximate position (±${m} m) · not used for directions`,
+    /** An approximate POI's floor is a label match, not a surveyed floor (#463). */
+    floorUnverified: (label: string) => `${label} (floor unverified)`,
+    /** A shop's printed hours (OD-32): the page's own wording, read on this date. */
+    hoursAsOf: (date: string) => `Official wording as read by GT-Eki on ${date}`,
+    /** A store's printed brand directory (#419): unverified, with the date its listing was checked. */
+    tenantAsOf: (date: string) => `Store directory as printed (${date}, unverified)`,
+    /** The route ends at the store entrance; floors inside the store are not modelled. */
+    tenantFloorsNotGuided: "Floors inside the store are not guided",
+    asPrinted: "(as printed)",
     noResults: "No matches",
     route: "Route",
     minutes: (m: number) => `~${m} min`,
@@ -276,6 +371,7 @@ const STRINGS = {
     stairFootLabel: (name: string) => `${name} (stair foot)`,
     generatedSigns: "Signs are placed from the route data, not at the real sign positions",
     sources: "Sources",
+    nameEvidence: "POI name evidence (not route evidence)",
     credits: "Credits",
     creditsLabel: "Data credits",
     modified: "modified",
@@ -283,6 +379,7 @@ const STRINGS = {
     factsOnly: "No licence; cited for facts only (not reproduced)",
     rightsDecision: "Rights decision",
     assetDerivations: "3D asset derivations",
+    dataFileDerivations: "Data files: sources and derivations",
     derivationDetails: "Derivation details",
     symbolicHeight: "Heights are display estimates",
     coverage: "Coverage",
@@ -295,6 +392,9 @@ const STRINGS = {
     rightsUnverified: "Rights unverified (not used in published data)",
     validationFailed: "Station data failed validation and is not shown (fail-safe)",
     loading: "Loading…",
+    identitySide: (exit: string, landmark: string) => `${exit} side: ${landmark}`,
+    identitySideSeparator: " · ",
+    identityUnconfirmed: "unconfirmed",
     sceneFallback: "Station 3D scene failed; showing the network view (L0)",
     controlsHint: "WASD/arrows to move · Shift to run · drag to look",
     touchHint: "Left thumb to move (push to the edge to run) · drag right side to look",

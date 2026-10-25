@@ -16,6 +16,7 @@ import fs from "node:fs";
 import { describe, expect, it } from "vitest";
 import { parseStationFiles, type Edge, type StationBundle } from "@gteki/schema";
 import { createRouter, describeRoute, routeBetween } from "../../../packages/navigation/src/index.ts";
+import { createSearchIndex } from "../../../packages/search/src/index.ts";
 
 const read = (f: string): unknown => JSON.parse(fs.readFileSync(new URL(`../gteki/${f}`, import.meta.url), "utf8"));
 /** A fresh parse each call, so a test may mutate its bundle freely. */
@@ -112,7 +113,7 @@ describe("no path / refusals", () => {
 
   it("a search-only POI (no verified connector) refuses to route rather than guessing an entrance", () => {
     const searchOnly = bundle.pois.filter((p) => p.connectorNodeIds.length === 0);
-    expect(searchOnly.length).toBe(26); // 6 gates (incl. Yurakucho South Passage West Gate), 15 exit numbers per the gap list, and 5 shops (#212)
+    expect(searchOnly.length).toBe(493); // 6 gates (incl. Yurakucho South Passage West Gate), 15 exit numbers per the gap list, 349 shops (#212, #407, #432, #443) plus 1 store POI and 7 Seibu platforms (#501), and 42 line POIs (#414) and 2 North gates (#420), and 31 facilities (#431), and 40 more facilities (#453, #455), and 1 PARCO store POI (JCSC S13)
     const exit35 = bundle.pois.find((p) => p.id === "exit-35")!;
     const gate = bundle.pois.find((p) => p.id === "jr-central-gate-2")!;
     const tobu = bundle.pois.find((p) => p.id === "tobu-central-gate-2")!;
@@ -134,6 +135,34 @@ describe("no path / refusals", () => {
     const b = load();
     edgeOf(b, "e_low__x35").closed = true;
     expect(createRouter(b).route(FROM, TO, TICKETED)).toMatchObject({ ok: false, reason: "no_path" });
+  });
+});
+
+// #529 store entrance: ルミネ池袋's access page prints 「JR池袋駅南改札、正面右手よりすぐ」, so the store routes to
+// the JR South Gate's own public-side connector and the arrival note quotes that wording without claiming a door.
+describe("store entrance: ルミネ池袋 (#529)", () => {
+  const bundle = load();
+  const store = bundle.pois.find((p) => p.id === "shop-ikb-lumine")!;
+  const southGate = bundle.pois.find((p) => p.id === "jr-south-gate")!;
+
+  it("routes from a street-level exit to the store, ending on the gate's node, and brand search keeps working", () => {
+    expect(store.connectorNodeIds).toEqual(southGate.connectorNodeIds);
+    expect(store.connectorNodeIds).toEqual(["g_jr_s"]);
+    const exit22 = bundle.pois.find((p) => p.id === "exit-22")!;
+    const r = routeBetween(createRouter(bundle), { kind: "poi", poi: exit22 }, store, TICKETED);
+    if (!r.ok) throw new Error(r.message);
+    expect(r.nodeIds.at(-1)).toBe("g_jr_s");
+    const arrive = describeRoute(bundle, r, "ja", store).at(-1)!;
+    expect(arrive.kind).toBe("arrive");
+    expect(arrive.text).toContain("JR池袋駅南改札、正面右手よりすぐ");
+    expect(arrive.text).toContain("店内の階は未確認");
+    // No tenant listing is attached to the store, and the LUMINE listings still search to their own POIs.
+    const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), read("tenants.json"));
+    if (!parsed.ok || !parsed.bundle) throw new Error("Ikebukuro bundle with tenants failed to parse");
+    expect((parsed.bundle.tenants ?? []).filter((t) => t.poiId === "shop-ikb-lumine")).toEqual([]);
+    const index = createSearchIndex(parsed.bundle);
+    expect(index.search("ルミネ池袋")[0]?.poi.id).toBe("shop-ikb-lumine");
+    expect(index.search("HARBS")[0]?.poi.id).toBe("shop-ikb-lumine-000539");
   });
 });
 

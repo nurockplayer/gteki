@@ -1,0 +1,3552 @@
+{
+  "schema": "gteki.research.hours/0.1",
+  "note": "ikebukuro shop hours (OD-32 as amended 2026-10-24): official pages, dated or undated; text as printed; current status never asserted.",
+  "entries": [
+    {
+      "poiId": "shop-ikb-isp-000056",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000056",
+      "retrievedAt": "2026-10-24T11:51:11Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000045",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000045",
+      "retrievedAt": "2026-10-24T11:51:12Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000046",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000046",
+      "retrievedAt": "2026-10-24T11:51:13Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000049",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000049",
+      "retrievedAt": "2026-10-24T11:51:14Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000039",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000039",
+      "retrievedAt": "2026-10-24T11:51:15Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000078",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000078",
+      "retrievedAt": "2026-10-24T11:51:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000044",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000044",
+      "retrievedAt": "2026-10-24T11:51:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000066",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000066",
+      "retrievedAt": "2026-10-24T11:51:17Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000036",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000036",
+      "retrievedAt": "2026-10-24T11:51:18Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000068",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000068",
+      "retrievedAt": "2026-10-24T11:51:19Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000069",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000069",
+      "retrievedAt": "2026-10-24T11:51:20Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000041",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000041",
+      "retrievedAt": "2026-10-24T11:51:21Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000073",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000073",
+      "retrievedAt": "2026-10-24T11:51:22Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000062",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000062",
+      "retrievedAt": "2026-10-24T11:51:23Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000082",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000082",
+      "retrievedAt": "2026-10-24T11:51:24Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000054",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000054",
+      "retrievedAt": "2026-10-24T11:51:25Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000077",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000077",
+      "retrievedAt": "2026-10-24T11:51:26Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000048",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000048",
+      "retrievedAt": "2026-10-24T11:51:27Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000035",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000035",
+      "retrievedAt": "2026-10-24T11:51:27Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000086",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000086",
+      "retrievedAt": "2026-10-24T11:51:28Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000081",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000081",
+      "retrievedAt": "2026-10-24T11:51:29Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000092",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000092",
+      "retrievedAt": "2026-10-24T11:51:30Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月ｰ土 10：00ｰ21：00\n日・祝 10：00ｰ19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000087",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000087",
+      "retrievedAt": "2026-10-24T11:51:31Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000084",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000084",
+      "retrievedAt": "2026-10-24T11:51:32Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000089",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000089",
+      "retrievedAt": "2026-10-24T11:51:33Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000072",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000072",
+      "retrievedAt": "2026-10-24T11:51:34Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000085",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000085",
+      "retrievedAt": "2026-10-24T11:51:34Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000080",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000080",
+      "retrievedAt": "2026-10-24T11:51:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000076",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000076",
+      "retrievedAt": "2026-10-24T11:51:36Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000063",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000063",
+      "retrievedAt": "2026-10-24T11:51:37Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000037",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000037",
+      "retrievedAt": "2026-10-24T11:51:38Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000040",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000040",
+      "retrievedAt": "2026-10-24T11:51:39Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000070",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000070",
+      "retrievedAt": "2026-10-24T11:51:40Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000051",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000051",
+      "retrievedAt": "2026-10-24T11:51:41Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～20：30\n日・祝 10：00～19：30"
+    },
+    {
+      "poiId": "shop-ikb-isp-000053",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000053",
+      "retrievedAt": "2026-10-24T11:51:41Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000052",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000052",
+      "retrievedAt": "2026-10-24T11:51:42Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000038",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000038",
+      "retrievedAt": "2026-10-24T11:51:43Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000079",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000079",
+      "retrievedAt": "2026-10-24T11:51:44Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000034",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000034",
+      "retrievedAt": "2026-10-24T11:51:45Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000075",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000075",
+      "retrievedAt": "2026-10-24T11:51:46Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000059",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000059",
+      "retrievedAt": "2026-10-24T11:51:47Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000057",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000057",
+      "retrievedAt": "2026-10-24T11:51:48Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000083",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000083",
+      "retrievedAt": "2026-10-24T11:51:49Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000061",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000061",
+      "retrievedAt": "2026-10-24T11:51:49Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～20：30\n日・祝 10：00～19：30"
+    },
+    {
+      "poiId": "shop-ikb-isp-000043",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000043",
+      "retrievedAt": "2026-10-24T11:51:50Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000042",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000042",
+      "retrievedAt": "2026-10-24T11:51:51Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000065",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000065",
+      "retrievedAt": "2026-10-24T11:51:52Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "毎日 7:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-isp-000071",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000071",
+      "retrievedAt": "2026-10-24T11:51:53Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000055",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000055",
+      "retrievedAt": "2026-10-24T11:51:54Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000047",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000047",
+      "retrievedAt": "2026-10-24T11:51:55Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000058",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000058",
+      "retrievedAt": "2026-10-24T11:51:55Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-isp-000050",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000050",
+      "retrievedAt": "2026-10-24T11:51:56Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 7：30～21：00\n日・祝 7：30～19：30"
+    },
+    {
+      "poiId": "shop-ikb-isp-000067",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000067",
+      "retrievedAt": "2026-10-24T11:51:57Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "毎日 10:00～19:00\n※年末年始などは、営業時間を変更する場合あり"
+    },
+    {
+      "poiId": "shop-ikb-hope-001",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-002",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-003",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-004",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-005",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "8:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-006",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-007",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-008",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-009",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-010",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日：7:00～22:00\n土日祝：10:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-011",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "9:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-012",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "9:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-013",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～20:30"
+    },
+    {
+      "poiId": "shop-ikb-hope-014",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-015",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-016",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-017",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-018",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-019",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "8:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-020",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-021",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-022",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-023",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/south-zone/",
+      "retrievedAt": "2026-10-24T11:50:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-024",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/center-zone/",
+      "retrievedAt": "2026-10-24T11:57:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-025",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/center-zone/",
+      "retrievedAt": "2026-10-24T11:57:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-026",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/center-zone/",
+      "retrievedAt": "2026-10-24T11:57:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-027",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/center-zone/",
+      "retrievedAt": "2026-10-24T11:57:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "7:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-028",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/center-zone/",
+      "retrievedAt": "2026-10-24T11:57:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-029",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/center-zone/",
+      "retrievedAt": "2026-10-24T11:57:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-030",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/center-zone/",
+      "retrievedAt": "2026-10-24T11:57:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-031",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/center-zone/",
+      "retrievedAt": "2026-10-24T11:57:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-032",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/center-zone/",
+      "retrievedAt": "2026-10-24T11:57:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-033",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/center-zone/",
+      "retrievedAt": "2026-10-24T11:57:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-034",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/center-zone/",
+      "retrievedAt": "2026-10-24T11:57:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-035",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/center-zone/",
+      "retrievedAt": "2026-10-24T11:57:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-036",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/north-zone/",
+      "retrievedAt": "2026-10-24T11:57:17Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-037",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/north-zone/",
+      "retrievedAt": "2026-10-24T11:57:17Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-038",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/north-zone/",
+      "retrievedAt": "2026-10-24T11:57:17Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-039",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/north-zone/",
+      "retrievedAt": "2026-10-24T11:57:17Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-040",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/north-zone/",
+      "retrievedAt": "2026-10-24T11:57:17Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-041",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/north-zone/",
+      "retrievedAt": "2026-10-24T11:57:17Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-042",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/north-zone/",
+      "retrievedAt": "2026-10-24T11:57:17Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-hope-043",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/floorguide/north-zone/",
+      "retrievedAt": "2026-10-24T11:57:17Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-echika-1129",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1129",
+      "retrievedAt": "2026-10-24T11:51:58Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00-21:00\n※最終受付時間20:30"
+    },
+    {
+      "poiId": "shop-ikb-echika-1102",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1102",
+      "retrievedAt": "2026-10-24T11:52:00Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00-21:00"
+    },
+    {
+      "poiId": "shop-ikb-echika-1105",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1105",
+      "retrievedAt": "2026-10-24T11:52:01Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00-20:00※早朝8時よりご予約可(時間外料金有り)"
+    },
+    {
+      "poiId": "shop-ikb-echika-1094",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1094",
+      "retrievedAt": "2026-10-24T11:52:02Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "7:30-21:00"
+    },
+    {
+      "poiId": "shop-ikb-echika-1093",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1093",
+      "retrievedAt": "2026-10-24T11:52:03Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00-22:00"
+    },
+    {
+      "poiId": "shop-ikb-echika-1107",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1107",
+      "retrievedAt": "2026-10-24T11:52:04Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00-21:00〈LO.20:30〉"
+    },
+    {
+      "poiId": "shop-ikb-echika-1085",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1085",
+      "retrievedAt": "2026-10-24T11:52:05Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00-21:00〈LO.20:40〉"
+    },
+    {
+      "poiId": "shop-ikb-echika-1095",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1095",
+      "retrievedAt": "2026-10-24T11:52:07Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00−21:00"
+    },
+    {
+      "poiId": "shop-ikb-echika-1090",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1090",
+      "retrievedAt": "2026-10-24T11:52:08Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00-23:00〈LO.22:30〉"
+    },
+    {
+      "poiId": "shop-ikb-echika-1091",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1091",
+      "retrievedAt": "2026-10-24T11:52:09Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00-21:00"
+    },
+    {
+      "poiId": "shop-ikb-echika-1089",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1089",
+      "retrievedAt": "2026-10-24T11:52:10Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 7:00-22:30\n土曜・日曜・祝 8:00-22:30"
+    },
+    {
+      "poiId": "shop-ikb-echika-1098",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1098",
+      "retrievedAt": "2026-10-24T11:52:11Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "7:30-23:00\n8/26（水）9：00 リニューアルオープン！"
+    },
+    {
+      "poiId": "shop-ikb-echika-1100",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1100",
+      "retrievedAt": "2026-10-24T11:52:13Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00-21:00"
+    },
+    {
+      "poiId": "shop-ikb-echika-1092",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1092",
+      "retrievedAt": "2026-10-24T11:52:14Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:30-21:00〈LO.最終入店20:30まで〉"
+    },
+    {
+      "poiId": "shop-ikb-echika-1087",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1087",
+      "retrievedAt": "2026-10-24T11:52:15Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "7:30-23:00(平日)\n9:00-22:00(土日祝)"
+    },
+    {
+      "poiId": "shop-ikb-echika-1108",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1108",
+      "retrievedAt": "2026-10-24T11:52:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 7:30-22:00\n土曜・日曜・祝 10:00-21:00"
+    },
+    {
+      "poiId": "shop-ikb-echika-1096",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1096",
+      "retrievedAt": "2026-10-24T11:52:17Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00-21:00"
+    },
+    {
+      "poiId": "shop-ikb-echika-1086",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1086",
+      "retrievedAt": "2026-10-24T11:52:19Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00-21:00"
+    },
+    {
+      "poiId": "shop-ikb-echika-1101",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1101",
+      "retrievedAt": "2026-10-24T11:52:20Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00-21:00"
+    },
+    {
+      "poiId": "shop-ikb-echika-1104",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1104",
+      "retrievedAt": "2026-10-24T11:52:21Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00-21:00"
+    },
+    {
+      "poiId": "shop-ikb-echika-1106",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1106",
+      "retrievedAt": "2026-10-24T11:52:22Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00-21:00"
+    },
+    {
+      "poiId": "shop-ikb-echika-1109",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1109",
+      "retrievedAt": "2026-10-24T11:52:24Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "7:00-23:00"
+    },
+    {
+      "poiId": "shop-ikb-metro-001",
+      "sourceId": "tokyometro-ikebukuro-shops-2026-10",
+      "url": "https://www.tokyometro.jp/station/ikebukuro/shop/index.html",
+      "retrievedAt": "2026-10-24T11:48:09Z",
+      "pageDate": null,
+      "status": "UNKNOWN",
+      "reason": "page unreadable (403)"
+    },
+    {
+      "poiId": "shop-ikb-metro-002",
+      "sourceId": "tokyometro-ikebukuro-shops-2026-10",
+      "url": "https://www.tokyometro.jp/station/ikebukuro/shop/index.html",
+      "retrievedAt": "2026-10-24T11:48:09Z",
+      "pageDate": null,
+      "status": "UNKNOWN",
+      "reason": "page unreadable (403)"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000415",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000415",
+      "retrievedAt": "2026-10-24T11:52:24Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000442",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000442",
+      "retrievedAt": "2026-10-24T11:52:25Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000552",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000552",
+      "retrievedAt": "2026-10-24T11:52:27Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000492",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000492",
+      "retrievedAt": "2026-10-24T11:52:28Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000546",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000546",
+      "retrievedAt": "2026-10-24T11:52:29Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000488",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000488",
+      "retrievedAt": "2026-10-24T11:52:30Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000527",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000527",
+      "retrievedAt": "2026-10-24T11:52:31Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000425",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000425",
+      "retrievedAt": "2026-10-24T11:52:32Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003370",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003370",
+      "retrievedAt": "2026-10-24T11:52:33Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000430",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000430",
+      "retrievedAt": "2026-10-24T11:52:34Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000435",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000435",
+      "retrievedAt": "2026-10-24T11:52:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000404",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000404",
+      "retrievedAt": "2026-10-24T11:52:36Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000503",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000503",
+      "retrievedAt": "2026-10-24T11:52:37Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000440",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000440",
+      "retrievedAt": "2026-10-24T11:52:38Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000474",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000474",
+      "retrievedAt": "2026-10-24T11:52:39Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002698",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002698",
+      "retrievedAt": "2026-10-24T11:52:40Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000485",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000485",
+      "retrievedAt": "2026-10-24T11:52:41Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000409",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000409",
+      "retrievedAt": "2026-10-24T11:52:43Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003392",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003392",
+      "retrievedAt": "2026-10-24T11:52:44Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000533",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000533",
+      "retrievedAt": "2026-10-24T11:52:45Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 8:00～21:30\n土日祝 9:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000539",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000539",
+      "retrievedAt": "2026-10-24T11:52:46Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "イートイン 11:00～20:00(L.O.19:30)\nテイクアウト 11:00～21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000443",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000443",
+      "retrievedAt": "2026-10-24T11:52:47Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000463",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000463",
+      "retrievedAt": "2026-10-24T11:52:48Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000496",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000496",
+      "retrievedAt": "2026-10-24T11:52:49Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000418",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000418",
+      "retrievedAt": "2026-10-24T11:52:50Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002727",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002727",
+      "retrievedAt": "2026-10-24T11:52:51Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000494",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000494",
+      "retrievedAt": "2026-10-24T11:52:53Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000455",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000455",
+      "retrievedAt": "2026-10-24T11:52:54Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000487",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000487",
+      "retrievedAt": "2026-10-24T11:52:55Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003239",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003239",
+      "retrievedAt": "2026-10-24T11:52:56Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000508",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000508",
+      "retrievedAt": "2026-10-24T11:52:57Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003240",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003240",
+      "retrievedAt": "2026-10-24T11:52:58Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000475",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000475",
+      "retrievedAt": "2026-10-24T11:52:59Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000506",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000506",
+      "retrievedAt": "2026-10-24T11:53:00Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000452",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000452",
+      "retrievedAt": "2026-10-24T11:53:01Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002728",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002728",
+      "retrievedAt": "2026-10-24T11:53:02Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000532",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000532",
+      "retrievedAt": "2026-10-24T11:53:03Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000470",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000470",
+      "retrievedAt": "2026-10-24T11:53:05Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000530",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000530",
+      "retrievedAt": "2026-10-24T11:53:06Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "7:30～21:30"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000541",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000541",
+      "retrievedAt": "2026-10-24T11:53:07Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000456",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000456",
+      "retrievedAt": "2026-10-24T11:53:08Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000408",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000408",
+      "retrievedAt": "2026-10-24T11:53:09Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002729",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002729",
+      "retrievedAt": "2026-10-24T11:53:10Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000461",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000461",
+      "retrievedAt": "2026-10-24T11:53:11Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000471",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000471",
+      "retrievedAt": "2026-10-24T11:53:11Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002566",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002566",
+      "retrievedAt": "2026-10-24T11:53:12Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000531",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000531",
+      "retrievedAt": "2026-10-24T11:53:13Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000396",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000396",
+      "retrievedAt": "2026-10-24T11:53:13Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000411",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000411",
+      "retrievedAt": "2026-10-24T11:53:14Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000447",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000447",
+      "retrievedAt": "2026-10-24T11:53:15Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000413",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000413",
+      "retrievedAt": "2026-10-24T11:53:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000490",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000490",
+      "retrievedAt": "2026-10-24T11:53:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000453",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000453",
+      "retrievedAt": "2026-10-24T11:53:17Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000528",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000528",
+      "retrievedAt": "2026-10-24T11:53:18Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000424",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000424",
+      "retrievedAt": "2026-10-24T11:53:19Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003238",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003238",
+      "retrievedAt": "2026-10-24T11:53:20Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003250",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003250",
+      "retrievedAt": "2026-10-24T11:53:20Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003236",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003236",
+      "retrievedAt": "2026-10-24T11:53:21Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000518",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000518",
+      "retrievedAt": "2026-10-24T11:53:22Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002568",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002568",
+      "retrievedAt": "2026-10-24T11:53:22Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000457",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000457",
+      "retrievedAt": "2026-10-24T11:53:23Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003251",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003251",
+      "retrievedAt": "2026-10-24T11:53:24Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003454",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003454",
+      "retrievedAt": "2026-10-24T11:53:24Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000436",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000436",
+      "retrievedAt": "2026-10-24T11:53:25Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000459",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000459",
+      "retrievedAt": "2026-10-24T11:53:26Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002466",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002466",
+      "retrievedAt": "2026-10-24T11:53:26Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000473",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000473",
+      "retrievedAt": "2026-10-24T11:53:27Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003427",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003427",
+      "retrievedAt": "2026-10-24T11:53:28Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000480",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000480",
+      "retrievedAt": "2026-10-24T11:53:29Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000465",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000465",
+      "retrievedAt": "2026-10-24T11:53:30Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003252",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003252",
+      "retrievedAt": "2026-10-24T11:53:31Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002579",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002579",
+      "retrievedAt": "2026-10-24T11:53:32Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000484",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000484",
+      "retrievedAt": "2026-10-24T11:53:33Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000489",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000489",
+      "retrievedAt": "2026-10-24T11:53:34Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000403",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000403",
+      "retrievedAt": "2026-10-24T11:53:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002567",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002567",
+      "retrievedAt": "2026-10-24T11:53:36Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000428",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000428",
+      "retrievedAt": "2026-10-24T11:53:37Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003080",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003080",
+      "retrievedAt": "2026-10-24T11:53:38Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000491",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000491",
+      "retrievedAt": "2026-10-24T11:53:39Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000545",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000545",
+      "retrievedAt": "2026-10-24T11:53:40Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000407",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000407",
+      "retrievedAt": "2026-10-24T11:53:41Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000542",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000542",
+      "retrievedAt": "2026-10-24T11:53:42Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000536",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000536",
+      "retrievedAt": "2026-10-24T11:53:43Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "最終受付時間：20:20"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000478",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000478",
+      "retrievedAt": "2026-10-24T11:53:43Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000467",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000467",
+      "retrievedAt": "2026-10-24T11:53:44Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000410",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000410",
+      "retrievedAt": "2026-10-24T11:53:45Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003426",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003426",
+      "retrievedAt": "2026-10-24T11:53:45Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000557",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000557",
+      "retrievedAt": "2026-10-24T11:53:46Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000554",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000554",
+      "retrievedAt": "2026-10-24T11:53:47Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000451",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000451",
+      "retrievedAt": "2026-10-24T11:53:47Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003253",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003253",
+      "retrievedAt": "2026-10-24T11:53:48Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000398",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000398",
+      "retrievedAt": "2026-10-24T11:53:49Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000562",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000562",
+      "retrievedAt": "2026-10-24T11:53:49Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000476",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000476",
+      "retrievedAt": "2026-10-24T11:53:50Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000502",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000502",
+      "retrievedAt": "2026-10-24T11:53:51Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000423",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000423",
+      "retrievedAt": "2026-10-24T11:53:51Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000399",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000399",
+      "retrievedAt": "2026-10-24T11:53:52Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000426",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000426",
+      "retrievedAt": "2026-10-24T11:53:53Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000422",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000422",
+      "retrievedAt": "2026-10-24T11:53:54Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000438",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000438",
+      "retrievedAt": "2026-10-24T11:53:54Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000547",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000547",
+      "retrievedAt": "2026-10-24T11:53:55Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002569",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002569",
+      "retrievedAt": "2026-10-24T11:53:56Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000507",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000507",
+      "retrievedAt": "2026-10-24T11:53:56Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日：11:00～21:00\n土日祝：8:00～21:00(8:00～11:00時間外早朝料金有り)"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002580",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002580",
+      "retrievedAt": "2026-10-24T11:53:57Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000450",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000450",
+      "retrievedAt": "2026-10-24T11:53:58Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003082",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003082",
+      "retrievedAt": "2026-10-24T11:53:58Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000553",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000553",
+      "retrievedAt": "2026-10-24T11:53:59Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002581",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002581",
+      "retrievedAt": "2026-10-24T11:54:00Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000462",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000462",
+      "retrievedAt": "2026-10-24T11:54:00Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000548",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000548",
+      "retrievedAt": "2026-10-24T11:54:01Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002573",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002573",
+      "retrievedAt": "2026-10-24T11:54:02Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002571",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002571",
+      "retrievedAt": "2026-10-24T11:54:02Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000420",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000420",
+      "retrievedAt": "2026-10-24T11:54:03Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000458",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000458",
+      "retrievedAt": "2026-10-24T11:54:04Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002570",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002570",
+      "retrievedAt": "2026-10-24T11:54:04Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000534",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000534",
+      "retrievedAt": "2026-10-24T11:54:05Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000574",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000574",
+      "retrievedAt": "2026-10-24T11:54:06Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000469",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000469",
+      "retrievedAt": "2026-10-24T11:54:06Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000498",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000498",
+      "retrievedAt": "2026-10-24T11:54:07Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000512",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000512",
+      "retrievedAt": "2026-10-24T11:54:08Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000516",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000516",
+      "retrievedAt": "2026-10-24T11:54:08Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000429",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000429",
+      "retrievedAt": "2026-10-24T11:54:09Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000416",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000416",
+      "retrievedAt": "2026-10-24T11:54:10Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000419",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000419",
+      "retrievedAt": "2026-10-24T11:54:10Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000560",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000560",
+      "retrievedAt": "2026-10-24T11:54:11Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000513",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000513",
+      "retrievedAt": "2026-10-24T11:54:12Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000555",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000555",
+      "retrievedAt": "2026-10-24T11:54:12Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002572",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002572",
+      "retrievedAt": "2026-10-24T11:54:13Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000571",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000571",
+      "retrievedAt": "2026-10-24T11:54:14Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003455",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003455",
+      "retrievedAt": "2026-10-24T11:54:14Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000556",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000556",
+      "retrievedAt": "2026-10-24T11:54:15Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000481",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000481",
+      "retrievedAt": "2026-10-24T11:54:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000397",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000397",
+      "retrievedAt": "2026-10-24T11:54:16Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000511",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000511",
+      "retrievedAt": "2026-10-24T11:54:17Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000535",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000535",
+      "retrievedAt": "2026-10-24T11:54:18Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000559",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000559",
+      "retrievedAt": "2026-10-24T11:54:18Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000566",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000566",
+      "retrievedAt": "2026-10-24T11:54:19Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003326",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003326",
+      "retrievedAt": "2026-10-24T11:54:20Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000400",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000400",
+      "retrievedAt": "2026-10-24T11:54:20Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002583",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002583",
+      "retrievedAt": "2026-10-24T11:54:21Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000544",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000544",
+      "retrievedAt": "2026-10-24T11:54:22Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000437",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000437",
+      "retrievedAt": "2026-10-24T11:54:22Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000445",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000445",
+      "retrievedAt": "2026-10-24T11:54:23Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002577",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002577",
+      "retrievedAt": "2026-10-24T11:54:24Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000520",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000520",
+      "retrievedAt": "2026-10-24T11:54:24Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003058",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003058",
+      "retrievedAt": "2026-10-24T11:54:25Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00（L.O 21:50）"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000537",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000537",
+      "retrievedAt": "2026-10-24T11:54:26Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～20:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002565",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002565",
+      "retrievedAt": "2026-10-24T11:54:26Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000521",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000521",
+      "retrievedAt": "2026-10-24T11:54:27Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000573",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000573",
+      "retrievedAt": "2026-10-24T11:54:28Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003084",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003084",
+      "retrievedAt": "2026-10-24T11:54:29Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000570",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000570",
+      "retrievedAt": "2026-10-24T11:54:30Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000561",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000561",
+      "retrievedAt": "2026-10-24T11:54:32Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000572",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000572",
+      "retrievedAt": "2026-10-24T11:54:33Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000565",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000565",
+      "retrievedAt": "2026-10-24T11:54:34Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000514",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000514",
+      "retrievedAt": "2026-10-24T11:54:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000540",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000540",
+      "retrievedAt": "2026-10-24T11:54:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003485",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003485",
+      "retrievedAt": "2026-10-24T11:54:36Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000529",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000529",
+      "retrievedAt": "2026-10-24T11:54:37Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00 ~ 22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000525",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000525",
+      "retrievedAt": "2026-10-24T11:54:37Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002582",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002582",
+      "retrievedAt": "2026-10-24T11:54:38Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～20:00(最終受付 19:00)"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000421",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000421",
+      "retrievedAt": "2026-10-24T11:54:39Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000477",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000477",
+      "retrievedAt": "2026-10-24T11:54:39Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000563",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000563",
+      "retrievedAt": "2026-10-24T11:54:40Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～22:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-003359",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=003359",
+      "retrievedAt": "2026-10-24T11:54:41Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 15:00～22:00(L.O. フード21:00 ／ ドリンク21:30)\n土日祝 11:00～22:00(L.O. フード21:00 ／ ドリンク21:30)"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000515",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000515",
+      "retrievedAt": "2026-10-24T11:54:42Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002576",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002576",
+      "retrievedAt": "2026-10-24T11:54:42Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 11:00 ~ 21:00\n土日祝 11:00 ~ 21:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002578",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002578",
+      "retrievedAt": "2026-10-24T11:54:43Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日・土 11:00～20:00\n日祝 11:00～19:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002430",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002430",
+      "retrievedAt": "2026-10-24T11:54:44Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～19:00(最終受付 18:30)"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002575",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002575",
+      "retrievedAt": "2026-10-24T11:54:44Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00～20:00\nコンタクト受付\n11:00～12:30 (初めての方 12:00まで) ／ 14:00～18:00 (初めての方 17:00まで) ※月曜除く"
+    },
+    {
+      "poiId": "shop-ikb-lumine-002574",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=002574",
+      "retrievedAt": "2026-10-24T11:54:45Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "休診日：月曜（祝日は診療）\n受付時間：11:00～12:30／14:00～18:00\n※初めてのコンタクトレンズの患者様\n受付時間：11:00～12:00／14:00～17:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000401",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000401",
+      "retrievedAt": "2026-10-24T11:54:46Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～22:00(日曜のみ10:00～21:00)"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000543",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000543",
+      "retrievedAt": "2026-10-24T11:54:46Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 10:00～21:00\n土日祝 9:00～21:00\n(最終受付 パーマ・カラー19:00まで／カット20:00まで)"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000551",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000551",
+      "retrievedAt": "2026-10-24T11:54:47Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 10:00～13:00／14:00～21:00\n土日祝 10:00～13:00／14:00～18:00"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000569",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000569",
+      "retrievedAt": "2026-10-24T11:54:48Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 10:00～12:45／15:00～19:45\n土 10:00～13:45\n※日・祝休診"
+    },
+    {
+      "poiId": "shop-ikb-lumine-000510",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/detail/?scd=000510",
+      "retrievedAt": "2026-10-24T11:54:49Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "平日 10:00～21:00\n土日祝 10:00～20:00"
+    },
+    {
+      "poiId": "shop-ikb-esola-1147",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=b1",
+      "retrievedAt": "2026-10-24T11:50:34Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:30～21:00"
+    },
+    {
+      "poiId": "shop-ikb-esola-1041",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=b1",
+      "retrievedAt": "2026-10-24T11:50:34Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00-21:00"
+    },
+    {
+      "poiId": "shop-ikb-esola-1047",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=b1",
+      "retrievedAt": "2026-10-24T11:50:34Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:30-21:30〈L.O.20:30〉"
+    },
+    {
+      "poiId": "shop-ikb-esola-1051",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=b1",
+      "retrievedAt": "2026-10-24T11:50:34Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:30-20:00"
+    },
+    {
+      "poiId": "shop-ikb-esola-1060",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=b1",
+      "retrievedAt": "2026-10-24T11:50:34Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:30-20:30 ※ 土日祝日8:00～予約可"
+    },
+    {
+      "poiId": "shop-ikb-esola-1042",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=b1",
+      "retrievedAt": "2026-10-24T11:50:34Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "7:00-23:00"
+    },
+    {
+      "poiId": "shop-ikb-esola-1050",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=b1",
+      "retrievedAt": "2026-10-24T11:50:34Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:30-21:00"
+    },
+    {
+      "poiId": "shop-ikb-esola-1038",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=1f",
+      "retrievedAt": "2026-10-24T11:57:06Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00-21:00＜L.O.20:30＞"
+    },
+    {
+      "poiId": "shop-ikb-esola-1037",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=1f",
+      "retrievedAt": "2026-10-24T11:57:06Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "8:00-21:00＜L.O.20:30＞"
+    },
+    {
+      "poiId": "shop-ikb-esola-1045",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=1f",
+      "retrievedAt": "2026-10-24T11:57:06Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:30-21:30"
+    },
+    {
+      "poiId": "shop-ikb-esola-1043",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=2f",
+      "retrievedAt": "2026-10-24T11:57:08Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:30-21:00"
+    },
+    {
+      "poiId": "shop-ikb-esola-1046",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=2f",
+      "retrievedAt": "2026-10-24T11:57:08Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:30-21:00"
+    },
+    {
+      "poiId": "shop-ikb-esola-1144",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=2f",
+      "retrievedAt": "2026-10-24T11:57:08Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:30～21:30"
+    },
+    {
+      "poiId": "shop-ikb-esola-1049",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=3f",
+      "retrievedAt": "2026-10-24T11:57:09Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:30-21:30"
+    },
+    {
+      "poiId": "shop-ikb-esola-1048",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=4f",
+      "retrievedAt": "2026-10-24T11:57:10Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:30-21:30"
+    },
+    {
+      "poiId": "shop-ikb-esola-1040",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=4f",
+      "retrievedAt": "2026-10-24T11:57:10Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:30-22:00〈L.O.21:30〉"
+    },
+    {
+      "poiId": "shop-ikb-esola-1059",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=5f",
+      "retrievedAt": "2026-10-24T11:57:11Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:30-20:00 ※火曜日定休"
+    },
+    {
+      "poiId": "shop-ikb-esola-1057",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=5f",
+      "retrievedAt": "2026-10-24T11:57:11Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00-13:30、15:30-20:00 ※水曜日休診"
+    },
+    {
+      "poiId": "shop-ikb-esola-1053",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=5f",
+      "retrievedAt": "2026-10-24T11:57:11Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:30-21:00"
+    },
+    {
+      "poiId": "shop-ikb-esola-1058",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=5f",
+      "retrievedAt": "2026-10-24T11:57:11Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:30-21:30"
+    },
+    {
+      "poiId": "shop-ikb-esola-1054",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=5f",
+      "retrievedAt": "2026-10-24T11:57:11Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:30-21:30"
+    },
+    {
+      "poiId": "shop-ikb-esola-1028",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=6f",
+      "retrievedAt": "2026-10-24T11:57:13Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00-21:00＜L.O.20:00＞"
+    },
+    {
+      "poiId": "shop-ikb-esola-1146",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=6f",
+      "retrievedAt": "2026-10-24T11:57:13Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00 - 23:00＜L.O.22:00＞"
+    },
+    {
+      "poiId": "shop-ikb-esola-1031",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=6f",
+      "retrievedAt": "2026-10-24T11:57:13Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00-22:00"
+    },
+    {
+      "poiId": "shop-ikb-esola-1033",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=6f",
+      "retrievedAt": "2026-10-24T11:57:13Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00-22:00＜L.O.21:40＞"
+    },
+    {
+      "poiId": "shop-ikb-esola-1032",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=6f",
+      "retrievedAt": "2026-10-24T11:57:13Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00-22:00"
+    },
+    {
+      "poiId": "shop-ikb-esola-1056",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=6f",
+      "retrievedAt": "2026-10-24T11:57:13Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00-18:30"
+    },
+    {
+      "poiId": "shop-ikb-esola-1035",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=7f",
+      "retrievedAt": "2026-10-24T11:57:14Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00-22:00＜L.O.21:30＞"
+    },
+    {
+      "poiId": "shop-ikb-esola-1034",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=7f",
+      "retrievedAt": "2026-10-24T11:57:14Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00-22:30＜L.O.22:00＞"
+    },
+    {
+      "poiId": "shop-ikb-esola-1030",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=7f",
+      "retrievedAt": "2026-10-24T11:57:14Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00-23:00 ＜L.O.22:00＞"
+    },
+    {
+      "poiId": "shop-ikb-esola-1036",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=8f",
+      "retrievedAt": "2026-10-24T11:57:15Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00-23:00＜L.O.22:00＞"
+    },
+    {
+      "poiId": "shop-ikb-esola-1029",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=8f",
+      "retrievedAt": "2026-10-24T11:57:15Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "ランチタイム 11:00-15:30\nディナータイム 17:00-22:00〈L.O.21:30〉"
+    },
+    {
+      "poiId": "shop-ikb-esola-1055",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=8f",
+      "retrievedAt": "2026-10-24T11:57:15Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "8:00-22:00"
+    },
+    {
+      "poiId": "shop-ikb-tobudept",
+      "sourceId": "tobu-dept-ikebukuro-2026-10",
+      "url": "https://www.tobu-dept.jp/ikebukuro/",
+      "retrievedAt": "2026-10-24T11:55:30Z",
+      "pageDate": null,
+      "status": "UNKNOWN",
+      "reason": "no hours printed"
+    },
+    {
+      "poiId": "shop-ikb-seibu-001261",
+      "sourceId": "seibu-shop-ikebukuro-2026-10",
+      "url": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=001261",
+      "retrievedAt": "2026-10-24T11:55:31Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "6:30A.M.～10:45P.M."
+    },
+    {
+      "poiId": "shop-ikb-seibu-000597",
+      "sourceId": "seibu-shop-ikebukuro-2026-10",
+      "url": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000597",
+      "retrievedAt": "2026-10-24T11:55:32Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月〜金 6:30A.M.～11:30P.M. \n土・日・祝日 6:30A.M.〜11:00P.Ｍ."
+    },
+    {
+      "poiId": "shop-ikb-seibu-000598",
+      "sourceId": "seibu-shop-ikebukuro-2026-10",
+      "url": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000598",
+      "retrievedAt": "2026-10-24T11:55:33Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "6:30A.M.～11:00P.M."
+    },
+    {
+      "poiId": "shop-ikb-seibu-000514",
+      "sourceId": "seibu-shop-ikebukuro-2026-10",
+      "url": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000514",
+      "retrievedAt": "2026-10-24T11:55:33Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "7:00A.M.～10:30P.M."
+    },
+    {
+      "poiId": "shop-ikb-seibu-000513",
+      "sourceId": "seibu-shop-ikebukuro-2026-10",
+      "url": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000513",
+      "retrievedAt": "2026-10-24T11:55:34Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "6:30A.M.～11:00P.M."
+    },
+    {
+      "poiId": "shop-ikb-seibu-000515",
+      "sourceId": "seibu-shop-ikebukuro-2026-10",
+      "url": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000515",
+      "retrievedAt": "2026-10-24T11:55:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 8:00A.M.～10:30P.M.（ラストオーダー10:00P.M.）\n日・祝日 8:00A.M.～10:00P.M.（ラストオーダー 9:40P.M.）"
+    },
+    {
+      "poiId": "shop-ikb-seibu-000687",
+      "sourceId": "seibu-shop-ikebukuro-2026-10",
+      "url": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000687",
+      "retrievedAt": "2026-10-24T11:55:36Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "11:00A.M.～10:00P.M."
+    },
+    {
+      "poiId": "shop-ikb-seibu-000512",
+      "sourceId": "seibu-shop-ikebukuro-2026-10",
+      "url": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000512",
+      "retrievedAt": "2026-10-24T11:55:37Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00A.M.～10:00P.M. \n※店舗入替日は9:00P.M.閉店"
+    },
+    {
+      "poiId": "shop-ikb-seibu-000516",
+      "sourceId": "seibu-shop-ikebukuro-2026-10",
+      "url": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000516",
+      "retrievedAt": "2026-10-24T11:55:38Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00A.M.～10:00P.M."
+    },
+    {
+      "poiId": "shop-ikb-seibu-000599",
+      "sourceId": "seibu-shop-ikebukuro-2026-10",
+      "url": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000599",
+      "retrievedAt": "2026-10-24T11:55:39Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "6:30A.M.～11:00P.M."
+    },
+    {
+      "poiId": "shop-ikb-seibu-000600",
+      "sourceId": "seibu-shop-ikebukuro-2026-10",
+      "url": "https://www.seibu-shop.jp/emio/floorguide/detail/?scd=000600",
+      "retrievedAt": "2026-10-24T11:55:40Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "6:30A.M.～11:00P.M."
+    },
+    {
+      "poiId": "shop-ikb-seibu-000901",
+      "sourceId": "seibu-shop-ikebukuro-station-2026-10",
+      "url": "https://www.seibu-shop.jp/floorguide/detail/?scd=000901",
+      "retrievedAt": "2026-10-24T11:55:41Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "8:00A.M.～8:00P.M.\n（定休日：年始のみ）"
+    },
+    {
+      "poiId": "shop-ikb-seibu-000902",
+      "sourceId": "seibu-shop-ikebukuro-station-2026-10",
+      "url": "https://www.seibu-shop.jp/floorguide/detail/?scd=000902",
+      "retrievedAt": "2026-10-24T11:55:41Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～金 8:00A.M.～8:30P.M.\n土・日・祝日 9:00A.M.～8:00P.M.\n（ジャンボ期間中の営業時間変更有り）"
+    },
+    {
+      "poiId": null,
+      "building": "池袋ショッピングパーク",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/facilities/",
+      "retrievedAt": "2026-10-24T11:50:36Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "全館 10:00～21:00（月～土）\n10:00～19:30（日・祝）",
+      "note": "店舗により異なる場合あり"
+    },
+    {
+      "poiId": null,
+      "building": "東武ホープセンター",
+      "sourceId": "tobu-hopecenter-floorguide-2026-10",
+      "url": "https://tobuhopecenter.jp/",
+      "retrievedAt": "2026-10-24T11:50:37Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00～21:00",
+      "note": "店舗により異なる場合あり"
+    },
+    {
+      "poiId": null,
+      "building": "エチカ池袋",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/hours.jsp",
+      "retrievedAt": "2026-10-24T11:46:32Z",
+      "pageDate": null,
+      "status": "UNKNOWN",
+      "reason": "no hours printed"
+    },
+    {
+      "poiId": null,
+      "building": "エソラ池袋",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/hours.jsp",
+      "retrievedAt": "2026-10-24T11:50:39Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "ショップ 10:30～21:30\nレストラン 11:00～23:00\n※店舗により一部異なります",
+      "note": "店舗により異なる場合あり"
+    },
+    {
+      "poiId": null,
+      "building": "ルミネ池袋",
+      "sourceId": "lumine-ikebukuro-floorguide-2026-10",
+      "url": "https://www.lumine.ne.jp/ikebukuro/information/hours/",
+      "retrievedAt": "2026-10-24T11:50:38Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "B1～7F ショッピング 11:00～21:00\n8F～9F レストラン 11:00～22:00",
+      "note": "店舗により異なる場合あり"
+    },
+    {
+      "poiId": null,
+      "building": "エミオ池袋",
+      "sourceId": "seibu-shop-ikebukuro-2026-10",
+      "url": "https://www.seibu-shop.jp/emio/floorguide/?emio=emio01",
+      "retrievedAt": "2026-10-24T11:50:40Z",
+      "pageDate": null,
+      "status": "UNKNOWN",
+      "reason": "no hours printed"
+    },
+    {
+      "poiId": "shop-ikb-mr-001",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1099",
+      "retrievedAt": "2026-10-25T03:36:06Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "8:00-23:00〈LO.22:30〉",
+      "note": "エチカ池袋店（改札外）として表示。POI の区画は未記入"
+    },
+    {
+      "poiId": "shop-ikb-mr-002",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1110",
+      "retrievedAt": "2026-10-25T03:32:56Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "9:00-21:30"
+    },
+    {
+      "poiId": "shop-ikb-mr-003",
+      "sourceId": "echika-ikebukuro-2026-10",
+      "url": "https://www.metropro-sc.jp/echika-ikebukuro/shop/index.jsp?bf=1&fmt=6&shopid=1103",
+      "retrievedAt": "2026-10-25T03:32:58Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "10:00-21:00"
+    },
+    {
+      "poiId": "shop-ikb-mr-004",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000088",
+      "retrievedAt": "2026-10-25T03:32:35Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "月～土 10：00～21：00\n日・祝 10：00～19：30\n※館営業時間に準ずる"
+    },
+    {
+      "poiId": "shop-ikb-mr-005",
+      "sourceId": "isp-floorguide-2026-10",
+      "url": "https://www.web-isp.co.jp/floorguide/detail/?cd=000064",
+      "retrievedAt": "2026-10-25T03:32:37Z",
+      "pageDate": null,
+      "status": "OK",
+      "basis": "undated-official",
+      "hoursText": "毎日 7:00～22:30"
+    }
+  ]
+}

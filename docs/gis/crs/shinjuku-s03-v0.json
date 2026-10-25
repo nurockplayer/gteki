@@ -1,0 +1,150 @@
+{
+  "frame": {
+    "frame_id": "shinjuku-s03-v0",
+    "source_id": "tokyo-s03-zip",
+    "source_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+    "source_bytes": 2317035,
+    "specification": {
+      "source_id": "tokyo-s03-spec",
+      "sha256": "c9258624d2eeacb3759f9c5c8e84c757c3caef1274574153206509ed55273095",
+      "section": "printed p.8 / PDF page 9, 3.2.4 CRS; printed p.7 / PDF page 8, 3.2.3 local coordinates",
+      "statement_absent_crs": "CRS が存在しない場合、データは WGS84 緯度経度座標で提供されます。",
+      "statement_null_crs": "CRS が null の場合、座標は推定できません。",
+      "statement_local": "ローカル座標は、会場に対してローカルに定義された座標のセットです。座標系は、北向きではなく自然な向きで定義されます。"
+    },
+    "verification": "UNVERIFIED",
+    "declared_crs": null,
+    "member_frames": {
+      "geojson-level-geom": {
+        "members": 11,
+        "crs_key": "absent",
+        "frame": "WGS84 longitude/latitude (standard GeoJSON; the spec's absent-CRS sentence applies)",
+        "positions": 90784
+      },
+      "path-level-geom": {
+        "members": 11,
+        "crs_key": "present, null",
+        "frame": "UNKNOWN local frame; drawing-local is an unverified hypothesis; a null CRS means the coordinates cannot be inferred",
+        "verification": "UNVERIFIED: this pass did not check that these coordinates share the frame ref_frame.transform consumes"
+      },
+      "com-map": {
+        "members": 1,
+        "crs_key": "absent",
+        "frame": "drawing metadata only; drawings[0].ref_frame.transform defines drawing-local to longitude/latitude"
+      },
+      "v5_nav": {
+        "members": 1,
+        "crs_key": "absent",
+        "frame": "venue-local mx/my, not drawing-local; not a standard GeoJSON geometry member, so the absent-CRS sentence does not classify it; affine 1 takes it to drawing-local, affine 2 to longitude/latitude; the projection behind mx/my is UNKNOWN except for the two affines"
+      }
+    },
+    "geographic_envelope": {
+      "longitude_min": 139.6965262,
+      "longitude_max": 139.7037375,
+      "latitude_min": 35.686519,
+      "latitude_max": 35.6953073,
+      "positions": 90784,
+      "matches": "docs/gis/HANDOFF.md:70 and gap SJ-06 rounded envelope"
+    },
+    "transform": {
+      "order": "nav affine, then drawing affine, then horizontal ENU; no fitted correction",
+      "drawing_id": 35814,
+      "level_ids": [64672, 64673, 64674, 64688, 64675, 64676, 64689, 64677, 64678, 64679, 64680],
+      "nav_member_sha256": "469d34033cbe0052569298a0478021ae399391de08f4f6d16efddc5b9d8da651",
+      "map_member_sha256": "0481b174b2bafe24be32de8432eee67e745cc57ea526462a26c9168bf737c3d8",
+      "nav_coefficients_sha256": "0a154848be6c786ebd36e3e545c1e988cfb9d628a294bed23224a6bd046f5838",
+      "drawing_coefficients_sha256": "78dbe40fb37f277b48f4274d380e467cff8e3ff57f587b262673781b11a36e8e",
+      "coefficient_hash_encoding": "UTF-8 JSON array in source order",
+      "tuple_order": "[a,b,c,d,e,f]; u=a*x+c*y+e, v=b*x+d*y+f; the drawing result is (u,v) = (longitude,latitude)",
+      "applies_to": "v5_nav.json only; Path GeoJSON members have a separate UNKNOWN local frame (drawing-local is an unverified hypothesis) and must not go through this pair"
+    },
+    "station_frame": {
+      "frame_id": "shinjuku-station-enu-v0",
+      "station_json_path": "stations/shinjuku/gteki/station.json",
+      "origin": { "lat": 35.687, "lon": 139.6994, "hM": null, "datum": "JGD2011", "crs": "EPSG:6668" },
+      "frame_artifact_source_crs": "EPSG:6697 (the station frame artifact's own source CRS for PLATEAU context geometry; NOT a CRS for S03 data, whose datum stays UNKNOWN)",
+      "ellipsoid": "GRS80",
+      "horizontal": "geodetic -> ECEF -> ENU at the origin, evaluated at height 0 for the horizontal result only; x east, y north; no additional curvature correction beyond that exact projection",
+      "axis_order": "source latitude,longitude; station x east, y north, z up; renderer x east, y up, z -north",
+      "heights": "none in S03; z stays null; no floor elevation asserted",
+      "frame_artifact": "tools/gis/frames/shinjuku-station-enu-v0.json"
+    },
+    "datum": {
+      "declared": null,
+      "status": "UNKNOWN",
+      "assumed_for_projection": "WGS84 lon/lat used as JGD2011 geographic; no realization/epoch correction",
+      "asserted": false
+    },
+    "gteki_role": "evidence",
+    "navigation_use": "NOT_FOR_ROUTING",
+    "purpose": "CRS evidence for the S03 archive and the handoff frame for the WP7 path transform; not a routing frame and not a survey control"
+  },
+  "checks": {
+    "composite": {
+      "linear_part": "diagonal in float64: longitude depends only on mx, latitude only on my with a sign inversion",
+      "nav_similarity_scale": 3.227648,
+      "nav_rotation_deg_ccw_from_east": 99.381985,
+      "drawing_angle_deg_published": -99.382,
+      "drawing_local2m_m": 0.300535,
+      "metadata_scale_m_per_unit": 0.970021,
+      "measured_metres_per_unit": { "along_mx_east": 0.971123, "along_my_north": 0.966881 },
+      "anisotropy_share": 0.0044,
+      "applied": false,
+      "latitude_of_metre_conversion_deg": 35.69,
+      "rule": "GRS80 radii of curvature at the stated latitude; derived only, never applied to a transform"
+    },
+    "node_transform": {
+      "nodes": 2506,
+      "inside_level_envelope": 2506,
+      "links": 2653,
+      "rule": "both affines in the stated order, then counted against the level-geometry envelope"
+    },
+    "check_a": {
+      "nodes": 2506,
+      "inside": 2463,
+      "inside_share": 0.982841,
+      "status": "FAIL",
+      "threshold": "95% overall and on each assessed level",
+      "reason": "level 64677 is below the per-level threshold; the overall FAIL follows from it",
+      "failing_levels": { "64677": { "inside": 333, "nodes": 363, "share": 0.917355 } },
+      "residual_outliers": { "64678": { "inside": 282, "nodes": 295, "share": 0.955932, "note": "passes its own threshold; its 13 outside nodes are residual outliers, not a level failure" } }
+    },
+    "check_b": {
+      "pairs": { "1_m": 4, "2_m": 8, "3_m": 12, "5_m": 15 },
+      "reciprocal_pairs_before_threshold": 22,
+      "residuals_within_5m_m": { "min": 0.14570160991858472, "median": 1.8538693092193543, "p90": 3.366510600320434, "max": 3.4180810581662393 },
+      "mean_delta_s03_minus_e27_m": { "east": 0.9342940405920708, "north": 0.12743302328363862, "length": 0.9429446058539529, "applied": false },
+      "reference": "docs/stations/shinjuku/research/2026-10-21-tokyo-terminal-join.md:59",
+      "reproduced": true
+    },
+    "negative_control": {
+      "swapped_affine_order_inside": 0,
+      "nodes": 2506,
+      "status": "as intended"
+    },
+    "source_defects_excluded_whole": [
+      { "level_id": 64676, "feature_index": 195, "kind": "SOURCE_DEFECT_UNCLOSED_RING", "gap_m": 3.0285524667988115 },
+      { "level_id": 64676, "feature_index": 384, "kind": "SOURCE_DEFECT_HOLE_OUTSIDE_SHELL", "offset_m": 0.511531472 },
+      { "level_id": 64679, "feature_index": 0, "kind": "SOURCE_DEFECT_UNCLOSED_RING", "gap_m": 48.922969786 }
+    ],
+    "receipt": "docs/gis/s03/transform-check-92b28d4d3986c27d8203.json"
+  },
+  "decided_2026_10_24": [
+    "Datum UNKNOWN and not asserted; the absent-CRS statement is used for projection only (docs/gis/s03/positions-import-contract.md:7).",
+    "Transform method: nav affine, drawing affine, horizontal ENU, no fitted correction; reproduces the join study.",
+    "Only 25 approximate gate and transfer points and 19 platform names may be derived and labelled; no other S03 geometry ships (docs/gis/decisions/2026-10-24-s03-positions-ruling.md:10).",
+    "Three source features are excluded whole, never repaired or moved.",
+    "Level labels are not elevations.",
+    "This note is not a rights PASS: the derived outputs stay CONDITIONAL with licence fields UNKNOWN, and the source gate stays HOLD."
+  ],
+  "open": [
+    "WGS84 realization/epoch and any WGS84 to JGD2011 horizontal offset are UNKNOWN; none is applied.",
+    "Absolute accuracy and station alignment are not established; the only control is the E27 overlap sample.",
+    "Why level 64677 fails containment, and why 64678 has 13 outside nodes while passing, is unresolved; only 64677 fails and the overall FAIL follows from it.",
+    "The source projection behind mx/my and its linear unit are UNKNOWN; the 0.44% anisotropy is derived only.",
+    "Publication of nav paths, path geometry or opening hours is not covered by any ruling; paths stay HOLD.",
+    "Physical heights are absent from S03."
+  ],
+  "credit": "出典：東京都都市整備局「新宿駅周辺の施設情報等」",
+  "verification": "UNVERIFIED"
+}

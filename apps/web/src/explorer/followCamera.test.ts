@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachFov, avatarFade, boomSqueezed, clampDistance, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
+import { DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
   it("stays under a 2.6 m ceiling at the default pitch and distance", () => {
@@ -22,10 +22,11 @@ describe("follow camera", () => {
     }
   });
 
-  it("keeps clearance before an obstruction but never collapses below the minimum", () => {
+  it("keeps clearance before an obstruction even when the preferred minimum is blocked", () => {
     expect(clampDistance(3, null)).toBe(3);
     expect(clampDistance(3, 2)).toBeCloseTo(2 - FOLLOW.clearance);
-    expect(clampDistance(3, 0.1)).toBe(FOLLOW.minDistance);
+    expect(clampDistance(3, 0.1)).toBe(0);
+    expect(clampDistance(3, 0.7)).toBeCloseTo(0.4);
   });
 });
 
@@ -63,6 +64,31 @@ describe("followBoom", () => {
     const out = followBoom(wanted, b, cast);
     expect(out.back).toBe(b);
     expect(out.distance).toBe(followDistance(wanted, cast()));
+  });
+
+  it("still slides under a blocker that is the nearest hit when a wall sits just behind it (stair mouth under the street slab, #70)", () => {
+    // Shinjuku 056410 facing uphill at z -1.68: street surface 0.19 m up the boom, a wall 0.31 m, both clear below 0.05.
+    const b = back(0.25);
+    const cast = (c: THREE.Vector3): Hit[] => c.y > 0.05
+      ? [{ distance: 0.06 / c.y, cameraOnly: true }, { distance: 0.31, cameraOnly: false }].sort((p, q) => p.distance - q.distance)
+      : [];
+    expect(followDistance(wanted, cast(b))).toBe(0);
+    const out = followBoom(wanted, b, cast);
+    expect(out.distance).toBeGreaterThanOrEqual(FOLLOW.comfortDistance);
+    expect(out.back.y).toBeLessThan(b.y);
+  });
+
+  it("keeps the unlowered boom when a wall limits a lowered one to no better than it (near-equal blocker and wall)", () => {
+    // Blocker 3.40 m, wall 3.42 m on the nominal boom; every lowered boom meets a wall at 2.95 m (>= boomKeep * wanted).
+    const b = back(0.25);
+    const cast = (c: THREE.Vector3): Hit[] => c.y >= b.y - 1e-9
+      ? [{ distance: 3.4, cameraOnly: true }, { distance: 3.42, cameraOnly: false }]
+      : [{ distance: 2.95, cameraOnly: false }];
+    const d0 = followDistance(wanted, cast(b));
+    expect(2.95).toBeGreaterThanOrEqual(FOLLOW.boomKeep * wanted);
+    const out = followBoom(wanted, b, cast);
+    expect(out.back).toBe(b);
+    expect(out.distance).toBe(d0);
   });
 
   it("slides under a hanging blocker instead of pulling the camera in", () => {
@@ -141,7 +167,7 @@ describe("followBoom", () => {
     expect(out.distance).toBeGreaterThanOrEqual(d0 + FOLLOW.boomGain);
     expect(out.distance).toBe(followDistance(wanted, cast(out.back)));
     // Never reports a distance past what is clear along the chosen boom.
-    for (const h of cast(out.back)) expect(out.distance).toBeLessThanOrEqual(Math.max(FOLLOW.minDistance, h.distance - FOLLOW.clearance) + 1e-9);
+    for (const h of cast(out.back)) expect(out.distance).toBeLessThanOrEqual(Math.max(0, h.distance - FOLLOW.clearance) + 1e-9);
   });
 });
 
@@ -240,6 +266,45 @@ describe("slope lens", () => {
     const at = (hz: number) => run(NO_SLOPE, 0.5, 0.3, 1 / hz).speed;
     expect(at(30)).toBeCloseTo(at(144), 1);
   });
+
+  it("keeps signed direction separately so reversing does not cancel the absolute-speed detector", () => {
+    let s = run(NO_SLOPE, -0.4, 1);
+    expect(s.velocity).toBeLessThan(-0.39);
+    s = run(s, 0.4, 0.15);
+    expect(s.velocity).toBeGreaterThan(0);
+    expect(s.speed).toBeGreaterThan(0.39);
+    expect(s.on).toBe(true);
+  });
+
+  it("recognises an explicit stair span even on a snap and keeps the ordinary landing hold", () => {
+    let s = stepSlope(NO_SLOPE, 0, 0, true);
+    expect(s.on).toBe(true);
+    for (let frame = 0; frame < 120; frame++) s = stepSlope(s, 0.05 / 60, 1 / 60, true);
+    expect(s.speed).toBeLessThan(SLOPE.enter);
+    s = run(s, 0, SLOPE.hold - 1 / 60);
+    expect(s.on).toBe(true);
+    s = run(s, 0, 2 / 60);
+    expect(s.on).toBe(false);
+  });
+});
+
+describe("descent aim", () => {
+  it("leaves level/upward motion and non-slope drift unchanged", () => {
+    expect(descentAimDrop(NO_SLOPE)).toBe(0);
+    expect(descentAimDrop({ ...NO_SLOPE, on: true, velocity: 0.5 })).toBe(0);
+    expect(descentAimDrop({ ...NO_SLOPE, velocity: -0.1 })).toBe(0);
+  });
+
+  it("builds a bounded downward aim smoothly with descent speed", () => {
+    let previous = 0;
+    for (let speed = 0; speed <= 2; speed += 0.01) {
+      const drop = descentAimDrop({ ...NO_SLOPE, on: true, velocity: -speed });
+      expect(drop).toBeGreaterThanOrEqual(previous);
+      expect(drop).toBeLessThanOrEqual(DESCENT.maxDrop);
+      previous = drop;
+    }
+    expect(descentAimDrop({ ...NO_SLOPE, on: true, velocity: -0.001 })).toBeLessThan(0.001);
+  });
 });
 
 describe("squeeze lens", () => {
@@ -298,12 +363,16 @@ describe("constrainedPitch", () => {
     expect(n).toBe(0);
   });
 
-  it("falls back to the shortened boom when no raise reaches the comfortable distance", () => {
+  it("takes the best shortened raised boom when a tall wall prevents comfortable distance", () => {
     const { cast, calls } = scene(0.5, 5, 5); // a tall wall: no pitch gets over it
     const current = followDistance(wanted, cast(back0));
     calls.n = 0;
-    expect(constrainedPitch(wanted, back0, current, cast, new THREE.Vector3())).toBe(0);
+    const raise = constrainedPitch(wanted, back0, current, cast, new THREE.Vector3());
+    expect(raise).toBeCloseTo(FOLLOW.maxRaise, 12);
     expect(calls.n).toBe(FOLLOW.raiseSteps);
+    const distance = followDistance(wanted, cast(raisedBack(back0, raise, new THREE.Vector3())));
+    expect(distance).toBeGreaterThan(current + FOLLOW.raiseGain);
+    expect(distance).toBeLessThan(FOLLOW.comfortDistance);
   });
 
   /** Elevation raise (radians) of a candidate boom over `back0`. */
@@ -364,5 +433,172 @@ describe("avatarFade", () => {
       expect(f).toBeGreaterThanOrEqual(last - 1e-12);
       last = f;
     }
+  });
+});
+
+describe("stepAvatarFade", () => {
+  it("applies decreases immediately, including while recovering", () => {
+    expect(stepAvatarFade(1, 0.479, 1 / 60)).toBe(0.479);
+    const recovering = stepAvatarFade(0.479, 1, 1 / 60);
+    expect(stepAvatarFade(recovering, FOLLOW.fadeMin, 1 / 60)).toBe(FOLLOW.fadeMin);
+  });
+
+  it.each([0.479, FOLLOW.fadeMin])("recovers from %s over multiple 60 Hz frames within half a second", (start) => {
+    let fade = stepAvatarFade(start, 1, 1 / 60);
+    expect(fade).toBeCloseTo(start + FOLLOW.fadeRecoverPerS / 60, 12);
+    expect(fade).toBeLessThan(1);
+    let frames = 1;
+    while (fade < 1 && frames < 30) {
+      const next = stepAvatarFade(fade, 1, 1 / 60);
+      expect(next - fade).toBeLessThanOrEqual(FOLLOW.fadeRecoverPerS / 60 + 1e-12);
+      fade = next;
+      frames++;
+    }
+    expect(fade).toBe(1);
+    expect(frames / 60).toBeCloseTo((1 - start) / FOLLOW.fadeRecoverPerS, 1);
+  });
+
+  it("snaps on request and holds a recovery while time does not advance", () => {
+    expect(stepAvatarFade(0.25, 1, 1 / 60, true)).toBe(1);
+    expect(stepAvatarFade(0.25, 1, 0)).toBe(0.25);
+    expect(stepAvatarFade(0.25, 1, -1)).toBe(0.25);
+    expect(stepAvatarFade(1, 0.25, 0)).toBe(0.25);
+  });
+
+  it.each([1 / 60, 0.5, 10])("never overshoots the target with dt=%s", (dt) => {
+    expect(stepAvatarFade(0.49, 0.5, dt)).toBe(0.5);
+    expect(stepAvatarFade(0.5, 0.5, dt)).toBe(0.5);
+  });
+
+  it.each([NaN, Infinity, -Infinity])("replaces a non-finite current value %s immediately", (current) => {
+    expect(stepAvatarFade(current, 0.6, 1 / 60)).toBe(0.6);
+  });
+});
+
+describe("solved raise after a slab squeeze", () => {
+  const back = new THREE.Vector3(0, 0.14, 1).normalize();
+  // A slab lip behind the walker: the shallow boom hits its edge, the steeper boom clears it.
+  const cast = (b: THREE.Vector3) => b.y / b.z < 0.6 ? [{ distance: 0.8, cameraOnly: false }] : [];
+
+  it("takes the solved raise on the first seek/restart frame, independent of the old pose", () => {
+    for (const oldRaise of [0, FOLLOW.maxRaise]) {
+      const solved = solveRaisedBoom(FOLLOW.defaultDistance, back, cast, oldRaise, 1 / 60, true);
+      expect(solved.raise).toBeGreaterThan(0);
+      expect(solved.distance).toBe(FOLLOW.defaultDistance);
+      expect(solved.back.y / solved.back.z).toBeGreaterThanOrEqual(0.6);
+    }
+  });
+
+  it("does not ease through the lip while walking when the solved raised boom clears it", () => {
+    const solved = solveRaisedBoom(FOLLOW.defaultDistance, back, cast, 0, 1 / 60);
+    expect(solved.distance).toBe(FOLLOW.defaultDistance);
+    expect(solved.raise).toBeGreaterThan(0);
+    expect(cast(solved.back)).toEqual([]);
+  });
+
+  it("clears stale raise immediately on a seek to open space and eases it during walking", () => {
+    expect(solveRaisedBoom(3, back, () => [], 0.5, 1 / 60, true).raise).toBe(0);
+    const walking = solveRaisedBoom(3, back, () => [], 0.5, 1 / 60);
+    expect(walking.raise).toBeGreaterThan(0);
+    expect(walking.raise).toBeLessThan(0.5);
+  });
+});
+
+describe("boom contraction", () => {
+  it("ramps distance and fade monotonically over multiple 60 Hz frames after a sudden occluder", () => {
+    const hit = 1.05;
+    const target = clampDistance(FOLLOW.defaultDistance, hit);
+    let distance: number = FOLLOW.defaultDistance;
+    let fade = avatarFade(distance);
+    let rampFrames = 0;
+    for (let frame = 0; frame < 60; frame++) {
+      const next = approachBoom(distance, target, hit, 0.05, 1 / 60);
+      const nextFade = avatarFade(next);
+      expect(next).toBeLessThanOrEqual(distance);
+      expect(next).toBeLessThanOrEqual(hit - 0.05 - FOLLOW.nearEpsilon + 1e-12);
+      expect(nextFade).toBeLessThanOrEqual(fade);
+      if (nextFade < fade) rampFrames++;
+      if (frame > 0) expect(distance - next).toBeLessThanOrEqual(FOLLOW.contractSpeed / 60 + 1e-12);
+      distance = next;
+      fade = nextFade;
+    }
+    expect(rampFrames).toBeGreaterThanOrEqual(3);
+    expect(distance).toBeCloseTo(target);
+    expect(fade).toBeCloseTo(avatarFade(target));
+  });
+
+  it("only cuts to the safety margin first, then contracts at the bounded speed", () => {
+    const first = approachBoom(3, 0.6, 0.9, 0.05, 1 / 60);
+    expect(first).toBeCloseTo(0.83);
+    expect(approachBoom(first, 0.6, 0.9, 0.05, 1 / 60)).toBeCloseTo(first - FOLLOW.contractSpeed / 60);
+  });
+
+  it.each([0.98, FOLLOW.defaultDistance])("settles at full clearance even when the caller's target is %s", (target) => {
+    const hit = 1.05;
+    let distance = approachBoom(FOLLOW.defaultDistance, target, hit, 0.05, 1 / 60);
+    expect(distance).toBeCloseTo(hit - 0.05 - FOLLOW.nearEpsilon);
+    for (let frame = 1; frame <= 60; frame++) {
+      const next = approachBoom(distance, target, hit, 0.05, 1 / 60);
+      expect(next).toBeLessThanOrEqual(distance);
+      expect(distance - next).toBeLessThanOrEqual(FOLLOW.contractSpeed / 60 + 1e-12);
+      distance = next;
+    }
+    expect(distance).toBeCloseTo(hit - FOLLOW.clearance, 9);
+    expect(hit - distance).toBeGreaterThanOrEqual(FOLLOW.clearance - 1e-9);
+  });
+
+  it("snaps for reduced motion/placements, keeps extension damping, and ignores negative time", () => {
+    expect(approachBoom(3, 0.75, 1.05, 0.05, 1 / 60, true)).toBe(0.75);
+    expect(approachBoom(0.7, 0.8, null, 0.05, 1 / 60)).toBe(0.8);
+    expect(approachBoom(0.9, 0.7, null, 0.05, -1)).toBe(0.9);
+  });
+
+  it("is independent of frame rate while contracting inside the safety band", () => {
+    const run = (hz: number) => {
+      let d = 0.98;
+      for (let i = 0; i < hz / 5; i++) d = approachBoom(d, 0.6, 1.05, 0.05, 1 / hz);
+      return d;
+    };
+    expect(run(30)).toBeCloseTo(run(60), 9);
+    expect(run(60)).toBeCloseTo(run(120), 9);
+  });
+});
+
+describe("close wall fallback", () => {
+  it("permits a closer shoulder pose with near-plane clearance when the minimum is blocked", () => {
+    for (const hit of [0.1, 0.4, 0.7]) {
+      const target = followDistance(3, [{ distance: hit, cameraOnly: false }]);
+      const actual = approachBoom(3, target, hit, 0.05, 1 / 60, true);
+      expect(actual).toBeLessThan(FOLLOW.minDistance);
+      expect(actual).toBeGreaterThanOrEqual(0);
+      expect(hit - actual).toBeGreaterThanOrEqual(0.05 + FOLLOW.nearEpsilon);
+    }
+  });
+
+  it("bounds the boom by a larger near plane as well as the preferred clearance", () => {
+    expect(approachBoom(3, 0.5, 0.8, 0.4, 1 / 60, true)).toBeCloseTo(0.38);
+    expect(approachBoom(3, 0, 0.01, 0.05, 1 / 60, true)).toBe(0);
+  });
+});
+
+describe("QA camera holds", () => {
+  it("merges only supplied finite controls, clamps them, and releases with null", () => {
+    const initial = { yaw: 1, pitch: -0.2, distance: 2 };
+    expect(patchCameraHold(initial, { pitch: -0.5 })).toEqual({ ...initial, pitch: -0.5 });
+    expect(initial.pitch).toBe(-0.2);
+    expect(patchCameraHold(initial, { yaw: NaN, pitch: Infinity, distance: -Infinity })).toEqual(initial);
+    expect(patchCameraHold({}, { yaw: 10, pitch: 9, distance: -1 })).toEqual({ yaw: 10, pitch: 0.5, distance: 0 });
+    expect(patchCameraHold({}, { pitch: -9, distance: 20 })).toEqual({ pitch: -1.1, distance: 9 });
+    expect(patchCameraHold(initial, null)).toEqual({});
+  });
+
+  it("allows a reproducible mid fade and releases or sanitizes invalid overrides", () => {
+    expect(fadeHold(0.5)).toBe(0.5);
+    expect(fadeHold(0)).toBe(0);
+    expect(fadeHold(-1)).toBe(0);
+    expect(fadeHold(2)).toBe(1);
+    expect(fadeHold(null)).toBeNull();
+    expect(fadeHold(NaN)).toBeNull();
+    expect(fadeHold(Infinity)).toBeNull();
   });
 });

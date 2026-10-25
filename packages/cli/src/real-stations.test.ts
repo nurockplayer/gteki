@@ -9,7 +9,7 @@ const stationDir = (id: string) => fileURLToPath(new URL(`../../../stations/${id
 interface RouteOutput {
   contract: string;
   stationId: string;
-  result: { ok: boolean; nodeIds?: string[]; reason?: string; message?: string };
+  result: { ok: boolean; nodeIds?: string[]; reason?: string; message?: string; sourceIds?: string[]; endpointSourceIds?: string[] };
   path: { nodeId: string; renderer: number[]; heightSymbolic: boolean }[];
   polyline: { renderer: number[]; zKnown: boolean; stepIndex: number }[];
   instructions: { ja: { kind: string; text: string }[]; en: { kind: string; text: string }[] };
@@ -44,6 +44,17 @@ describe("@gteki/cli route on the real stations", { timeout: 30_000 }, () => {
     expect(byPoi.out.instructions.ja.length).toBeGreaterThan(2);
   });
 
+  it("Ikebukuro: the draft sign guideline that names Exit 22 is not route evidence (#491)", () => {
+    const { status, stderr, out } = route("ikebukuro", ["west-exit-b1", "exit-22", "--from-poi", "--goal-poi"]);
+    expect(status, stderr).toBe(0);
+    // Exit 22's Japanese name (東口（北）= 22) rests on the draft guideline, which may never be presented as
+    // route evidence (OD-22, #222): it belongs to the endpoint's name sources, not the path's.
+    expect(out.result.endpointSourceIds).toContain("toshima-terminal-sign-guideline-draft-v1.3");
+    expect(out.result.sourceIds).not.toContain("toshima-terminal-sign-guideline-draft-v1.3");
+    expect(out.result.sourceIds!.length).toBeGreaterThan(0);
+    expect(out.result.nodeIds!.at(-1)).toBe("x22");
+  });
+
   it("Shinjuku: Oedo platform -> street exit by POI ids; heights stay symbolic (zKnown false)", () => {
     const { status, stderr, out } = route("shinjuku", ["poi:platform:oedo", "poi:exit:1", "--from-poi", "--goal-poi"]);
     expect(status, stderr).toBe(0);
@@ -70,10 +81,43 @@ describe("@gteki/cli route on the real stations", { timeout: 30_000 }, () => {
     ["ikebukuro", ["jr-central-gate-2", "shop-ikb-mr-003", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#212)
     ["ikebukuro", ["jr-central-gate-2", "shop-ikb-mr-004", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#212)
     ["ikebukuro", ["jr-central-gate-2", "shop-ikb-mr-005", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#212)
+    ["ikebukuro", ["jr-central-gate-2", "shop-ikb-hope-001", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#407)
+    ["ikebukuro", ["jr-central-gate-2", "shop-ikb-echika-1129", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#407)
+    ["ikebukuro", ["jr-central-gate-2", "shop-ikb-metro-001", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#407)
     ["ikebukuro", ["jr-central-gate-2", "tobu-central-gate-2", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only POI: no verified entrance
+    ["ikebukuro", ["jr-central-gate-2", "exit-c1", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only line POI (#414)
+    ["ikebukuro", ["jr-central-gate-2", "metro-f-west-east-gate", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only line POI (#414)
+    ["ikebukuro", ["jr-central-gate-2", "seibu-1f-gate", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only line POI (#414)
+    ["ikebukuro", ["jr-central-gate-2", "jr-north-gate", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only North gate (#420)
+    ["ikebukuro", ["jr-central-gate-2", "tobu-north-gate", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only North gate (#420)
+    ["ikebukuro", ["jr-north-gate", "jr-central-gate-2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only North gate as origin (#420)
+    ["ikebukuro", ["tobu-north-gate", "jr-central-gate-2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only North gate as origin (#420)
+    ["ikebukuro", ["jr-central-gate-2", "shop-ikb-tobudept", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#432)
+    ["ikebukuro", ["jr-central-gate-2", "shop-ikb-lumine-000415", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#432)
+    ["ikebukuro", ["jr-central-gate-2", "shop-ikb-esola-1147", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#432)
+    ["ikebukuro", ["jr-central-gate-2", "shop-ikb-seibu-000597", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#443)
+    ["ikebukuro", ["jr-central-gate-2", "shop-ikb-seibu-000901", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#443)
+    ["ikebukuro", ["jr-central-gate-2", "toilet-ikb-metro-001", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only facility (#431)
+    ["ikebukuro", ["jr-central-gate-2", "atm-ikb-metro-001", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only facility (#431)
+    ["ikebukuro", ["jr-central-gate-2", "locker-ikb-metro-001", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only facility (#431)
+    ["ikebukuro", ["jr-central-gate-2", "toilet-ikb-metro-002", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only facility (#431)
+    ["ikebukuro", ["jr-central-gate-2", "toilet-ikb-metro-003", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only facility (#431)
+    ["ikebukuro", ["toilet-ikb-metro-001", "jr-central-gate-2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only facility as origin (#431)
+    ["ikebukuro", ["atm-ikb-metro-001", "jr-central-gate-2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only facility as origin (#431)
+    ["ikebukuro", ["locker-ikb-metro-001", "jr-central-gate-2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only facility as origin (#431)
+    ["ikebukuro", ["jr-central-gate-2", "toilet-ikb-esola-001", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only facility (#453)
+    ["ikebukuro", ["jr-central-gate-2", "locker-ikb-tobudept-001", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only facility (#453)
+    ["ikebukuro", ["jr-central-gate-2", "service-ikb-seibu-003", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only facility (#455)
+    ["ikebukuro", ["toilet-ikb-lumine-001", "jr-central-gate-2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only facility as origin (#453)
     ["ikebukuro", ["g_jr_c2", "no-such-node"], "unknown_goal"],
     ["shinjuku", ["poi:platform:oedo", "poi:nope", "--from-poi", "--goal-poi"], "unknown_goal"],
     ["shinjuku", ["poi:nope", "poi:exit:1", "--from-poi", "--goal-poi"], "unknown_start"],
+    ["shinjuku", ["poi:gate:2", "poi:jreast-gate:7", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only JR gate (#411)
+    ["shinjuku", ["poi:gate:2", "poi:keio-gate:1", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only Keio New Line gate (#411)
+    ["shinjuku", ["poi:gate:2", "poi:odakyu-platform:2", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only Odakyu platform (#411)
+    ["shinjuku", ["poi:gate:2", "poi:jreast-keio-transfer:1", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only JR/Keio transfer (#411)
+    ["shinjuku", ["poi:tokyometro-gate:1", "poi:gate:2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only Metro gate as origin (#411)
+    ["shinjuku", ["poi:keio-gate:1", "poi:gate:2", "--from-poi", "--goal-poi"], "unknown_start"], // search-only Keio gate as origin (#411)
   ] as const)("%s %j fails safely: exit 1, empty path and polyline, no instructions", (id, args, reason) => {
     const { status, out } = route(id, [...args]);
     expect(status).toBe(1);

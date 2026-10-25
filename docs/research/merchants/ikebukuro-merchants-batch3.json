@@ -1,0 +1,96 @@
+{
+  "schema": "gteki.station/0.1",
+  "note": "Ikebukuro batch 3 facts-only merchant transcription (Tokyo Metro station shops). Entries are unverified directory listings; locations and entrances are not route evidence.",
+  "sources": [
+    {
+      "id": "tokyometro-ikebukuro-shops-2026-10",
+      "title": "東京メトロ 池袋駅 施設・店舗",
+      "publisher": "東京地下鉄",
+      "url": "https://www.tokyometro.jp/station/ikebukuro/shop/index.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      },
+      "attribution": "東京メトロ 池袋駅 施設・店舗 (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T00:40:00Z",
+      "datasetDate": null,
+      "notes": "Shop names and the facility label (Echika池袋) only, read as facts (#211 DR-MR-01). No text, logos, photos or layout reproduced. Page undated."
+    }
+  ],
+  "pois": [
+    {
+      "id": "shop-ikb-metro-001",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "LAWSON METRO'S"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-shops-2026-10"
+        ],
+        "method": "facts-only directory listing (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ池袋駅 池袋南西口店。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Ikebukuro Station, 池袋南西口店. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-ikb-metro-002",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "Wrapped Crepe Korot"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ラップドクレープコロット"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-ikebukuro-shops-2026-10"
+        ],
+        "method": "facts-only directory listing (#26), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "東京メトロ池袋駅。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Tokyo Metro Ikebukuro Station. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    }
+  ],
+  "removed": []
+}

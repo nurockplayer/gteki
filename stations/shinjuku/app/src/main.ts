@@ -19,6 +19,7 @@ import { CROWD_LIMIT, createCrowd } from "./crowd.ts";
 import { placeProjectedLabel, type HudRect } from "./hud-layout.ts";
 import { createStartupTimings, paintStartupFrame } from "./hud-startup.ts";
 import { installMovementKeys } from "./movement-keys.ts";
+import { searchOnlyText, searchRowSub } from "./search-card.ts";
 
 const startup = createStartupTimings();
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -435,7 +436,7 @@ function renderResults(q: string) {
     const fl = h.poi.floorId ? floorLabel(floorById.get(h.poi.floorId)).short : "";
     li.innerHTML = `<span class="ico ${cls}">${ico}</span><span class="meta"><b></b><small></small></span>${h.routable ? "" : '<span class="badge">案内不可 search-only</span>'}`;
     li.querySelector("b")!.textContent = nm.ja;
-    li.querySelector("small")!.textContent = `${nm.en}${fl ? " · " + fl : ""}`;
+    li.querySelector("small")!.textContent = searchRowSub(h.poi, fl);
     li.onclick = () => choose({ kind: "poi", poi: h.poi });
     li.tabIndex = 0;
     li.setAttribute("role", "button");
@@ -539,9 +540,12 @@ function computeRoute() {
   $("route-error").classList.add("hidden");
   if (!toPick || toPick.kind !== "poi") return;
   const goal = toPick.poi;
-  if (!goal.connectorNodeIds.length) return showRouteError("この目的地は位置情報のみで、検証済みの入口がありません。This destination has no verified entrance node (search-only).");
+  if (!goal.connectorNodeIds.length) return showRouteError(searchOnlyText(goal, "destination"));
   let origin: RouteEndpoint;
-  if (fromPick.kind === "poi") origin = { kind: "poi", poi: fromPick.poi };
+  if (fromPick.kind === "poi") {
+    if (!fromPick.poi.connectorNodeIds.length) return showRouteError(searchOnlyText(fromPick.poi, "origin"));
+    origin = { kind: "poi", poi: fromPick.poi };
+  }
   else {
     const here = nearestNode(player);
     if (!here) return showRouteError("現在地から経路に接続できません。出発地を選んでください / Can't connect your position to the network — choose a start point");

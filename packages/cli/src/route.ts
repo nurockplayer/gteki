@@ -69,12 +69,20 @@ async function loadStation(stationDir: string): Promise<StationBundle | null> {
       values.push(undefined);
     }
   }
+  // The optional brand directory (#419): absent is normal, unreadable is refused like the other files.
+  let tenants: unknown;
+  try {
+    tenants = JSON.parse(await readFile(resolve(stationDir, "gteki", "tenants.json"), "utf8")) as unknown;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT")
+      issues.push(`tenants.json: ${error instanceof Error ? error.message : String(error)}`);
+  }
   if (issues.length > 0) {
     process.stderr.write(`${issues.join("\n")}\n`);
     return null;
   }
 
-  const parsed = parseStationFiles(values[0], values[1], values[2]);
+  const parsed = parseStationFiles(values[0], values[1], values[2], tenants);
   if (!parsed.ok) {
     process.stderr.write(`${parsed.issues.map(({ level, code, message }) => `${level} ${code}: ${message}`).join("\n")}\n`);
     return null;

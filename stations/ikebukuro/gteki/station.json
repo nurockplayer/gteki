@@ -2,6 +2,91 @@
  "schema": "gteki.station/0.1",
  "station": {
   "id": "ikebukuro",
+  "identity": {
+   "names": [
+    {
+     "lang": "ja",
+     "text": "池袋"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "いけぶくろ"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro"
+    }
+   ],
+   "sides": [
+    {
+     "side": "west",
+     "exit": [
+      {
+       "lang": "ja",
+       "text": "西口"
+      },
+      {
+       "lang": "en",
+       "text": "West Exit"
+      }
+     ],
+     "landmark": [
+      {
+       "lang": "ja",
+       "text": "東武百貨店"
+      },
+      {
+       "lang": "en",
+       "text": "Tobu department store"
+      }
+     ],
+     "evidence": {
+      "sourceIds": [
+       "identity-tobu-access",
+       "identity-toshima-fun"
+      ],
+      "method": "public-page-facts-only",
+      "checkedDate": "2026-10-24",
+      "note": "Department-store orientation only; no gate names or route connections. See docs/research/gaps/DR-IK-identity-sides.md."
+     },
+     "verification": "confirmed"
+    },
+    {
+     "side": "east",
+     "exit": [
+      {
+       "lang": "ja",
+       "text": "東口"
+      },
+      {
+       "lang": "en",
+       "text": "East Exit"
+      }
+     ],
+     "landmark": [
+      {
+       "lang": "ja",
+       "text": "西武池袋本店"
+      },
+      {
+       "lang": "en",
+       "text": "Seibu Ikebukuro main store"
+      }
+     ],
+     "evidence": {
+      "sourceIds": [
+       "identity-toshima-fun",
+       "identity-osm-seibu-ikebukuro",
+       "toshima-terminal-sign-guideline-draft-v1.3"
+      ],
+      "method": "public-page-facts-only",
+      "checkedDate": "2026-10-24",
+      "note": "Department-store orientation only; no gate names or route connections. Supporting only (does not name the store): 豊島区「池袋ターミナル案内サインガイドライン（案（草案）Ver1.3）」資料3-3 p20, https://www.city.toshima.lg.jp/documents/56546/20260519131956.pdf, retrieved 2026-10-22, gives Seibu-named East Exit entrances 東口（中央）37「西武東口」, 東口（南）38「西武口」 (OD-22: exit-name source, never route evidence). Confirmed by the booklet and OpenStreetMap way 715271280 (v2): every vertex of 西武池袋本店 lies east of the easternmost JR East track at its latitude (centroid about 94 m east). See docs/research/gaps/DR-IK-identity-sides.md."
+     },
+     "verification": "confirmed"
+    }
+   ]
+  },
   "names": [
    {
     "lang": "ja",
@@ -123,6 +208,54 @@
  },
  "sources": [
   {
+   "id": "identity-tobu-access",
+   "title": "東武百貨店 池袋店 アクセス",
+   "publisher": "東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/access/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/342", "date": "2026-10-24" },
+   "attribution": "東武百貨店 — 東武百貨店 池袋店 アクセス",
+   "modified": false,
+   "retrievedAt": "2026-10-24T00:00:00+09:00",
+   "datasetDate": null,
+   "notes": "OD-18 and #342 ruling 10: store directly connected to the West Exit; independently confirmed by the Toshima tourism association booklet. No Tobu Railway gate names, text, maps or layout copied."
+  },
+  {
+   "id": "identity-toshima-fun",
+   "title": "豊島、もっと楽しく FUN 池袋 (2025年3月), PDF page 2",
+   "publisher": "一般社団法人豊島区観光協会（協力：豊島区）",
+   "url": "https://www.city.toshima.lg.jp/documents/55769/1_toshimafun_ja.pdf",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/342", "date": "2026-10-24" },
+   "attribution": "一般社団法人豊島区観光協会（協力：豊島区） — 豊島、もっと楽しく FUN 池袋 (2025年3月), PDF page 2",
+   "modified": false,
+   "retrievedAt": "2026-10-24T00:00:00+09:00",
+   "datasetDate": "2025-03",
+   "notes": "PDF page 2 prose locates Seibu Ikebukuro on the east and Tobu department store on the west. Facts-only orientation under #342; not geometry or route evidence. East is confirmed together with OpenStreetMap (the ward draft sign guideline is supporting only); west together with the Tobu department store page. All artwork, prose and layout remain reference-only."
+  },
+  {
+   "id": "identity-osm-seibu-ikebukuro",
+   "title": "OpenStreetMap way 715271280 (西武池袋本店) and nearby JR East railway ways",
+   "publisher": "OpenStreetMap contributors",
+   "url": "https://www.openstreetmap.org/way/715271280",
+   "license": {
+    "name": "ODbL 1.0",
+    "url": "https://opendatacommons.org/licenses/odbl/1-0/"
+   },
+   "rights": "REUSABLE_WITH_CONDITIONS",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/342", "date": "2026-10-24" },
+   "attribution": "© OpenStreetMap contributors (ODbL)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T00:53:00+09:00",
+   "datasetDate": "2026-02-26",
+   "notes": "Cross-check only; no OSM data is shipped. Read via the OSM API 2026-10-24: way 715271280 version 2 (edited 2026-02-26), name 西武池袋本店, shop=mall; its 48 vertices span lon 139.71107-139.71233 and all lie east of the easternmost JR East (東日本旅客鉄道) railway=rail way at the same latitude; centroid 35.72827, 139.71167, about 94 m east of it. Facts-only east-side orientation for the station identity label (#342 Q4); not geometry or route evidence. Freshness check: OSM is crowd-edited, so re-check when way 715271280 moves past version 2."
+  },
+  {
    "id": "ksj-n02-2025",
    "title": "KSJ N02-2025 railway data (stations and railway sections)",
    "publisher": "MLIT National Land Information (KSJ)",
@@ -198,7 +331,7 @@
    "modified": false,
    "retrievedAt": "2026-10-22T00:00:00+09:00",
    "datasetDate": "2026-03",
-   "notes": "Draft (案, 草案) Ver1.3, 第14回 委員会 (2026-03-25), 資料3-3 p20 text layer only (p21 figure not read); listed on https://www.city.toshima.lg.jp/405/kuse/shingi/kaigichiran/006335.html. Used only for the names-to-number mapping of main exits (東口(北)=22, 東口(中央)=37, 東口(南)=38, 西口(北)=20a, 西口(中央)=19, 西口(南)=4), never as route evidence (OD-22, PR #222). Freshness check: replace when the final guideline is published.",
+   "notes": "Draft (案, 草案) Ver1.3, 第14回 委員会 (2026-03-25), 資料3-3 p20 text layer only (p21 figure not read); listed on https://www.city.toshima.lg.jp/405/kuse/shingi/kaigichiran/006335.html. Used only for the names-to-number mapping of main exits (東口(北)=22, 東口(中央)=37, 東口(南)=38, 西口(北)=20a, 西口(中央)=19, 西口(南)=4), never as route evidence (OD-22, PR #222); also cited as supporting (not confirming) evidence for the east-side station identity label (#342 Q4), which is not route evidence. Freshness check: replace when the final guideline is published.",
    "usage": "facts-only",
    "decision": { "url": "https://github.com/nurockplayer/gteki/issues/165#issuecomment-6340635823", "date": "2026-10-22" }
   },
@@ -219,16 +352,16 @@
   },
   {
    "id": "tokyometro-ikebukuro-accessibility-2026-10",
-   "title": "東京メトロ 池袋駅 バリアフリー設備",
+   "title": "バリアフリー設備 | 池袋駅/M25/Y09/F09 | 東京メトロ",
    "publisher": "東京地下鉄",
    "url": "https://www.tokyometro.jp/station/ikebukuro/accessibility/index.html",
    "license": null,
    "rights": "REFERENCE_ONLY",
    "attribution": "東京メトロ 池袋駅 バリアフリー設備 (facts only; not reproduced)",
    "modified": false,
-   "retrievedAt": "2026-10-22T00:00:00+09:00",
+   "retrievedAt": "2026-10-24T18:48:44+09:00",
    "datasetDate": null,
-   "notes": "ライセンスなし・事実のみ参照（複製なし）。Owner decision #26 (FACTS_ONLY_REFERENCE). Terms: all rights reserved, no use beyond private use/quotation without permission (https://www.tokyometro.jp/terms/index.html). Read only for names and lift/escalator connections; no text block, map or graphic is copied. Fact used: under the 改札外 lift and escalator lists, 南通路西改札～４番出入口（エソラ）. Hours not stated. Same record as DR-IK-02 / M-acc in docs/research/gaps/DR-IK-station-facts.md (PR #177).",
+   "notes": "ライセンスなし・事実のみ参照（複製なし）。丸ノ内線・有楽町線・副都心線の各バリアフリー設備（エレベーター・エスカレーターの設置場所の端点表記、対応の有無「あり」のみ採用）。運転停止予定は対象外。トイレ設備は車いす対応トイレ・乳幼児用設備・オストメイトの設置場所表記のみ採用（「なし」の行は除外、#431）。 Re-read 2026-10-24 (WP2): lift and escalator end pairs per line. The existing station record (retrieved 2026-10-22) keeps its id; the writer updates retrievedAt and these notes. Re-read 2026-10-24 (#431): toilet rows; page undated.",
    "usage": "facts-only",
    "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
   },
@@ -377,6 +510,591 @@
    "retrievedAt": "2026-10-24T00:40:00Z",
    "datasetDate": null,
    "notes": "Shop names and the zone label (南館) only, under OD-23/OD-31: POI attributes only, never route evidence (#211 DR-MR-04). Page undated."
+  },
+  {
+   "id": "echika-ikebukuro-2026-10",
+   "title": "エチカ池袋 フロアガイド・ショップ一覧",
+   "publisher": "株式会社メトロプロパティーズ",
+   "url": "https://www.metropro-sc.jp/echika-ikebukuro/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/360#issuecomment-6377632614", "date": "2026-10-24" },
+   "attribution": "エチカ池袋 フロアガイド・ショップ一覧 (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T02:56:55Z",
+   "datasetDate": null,
+   "notes": "Shop names and the printed zone label (改札外) only; descriptions and visual material not reproduced. Pages undated."
+  },
+  {
+   "id": "tobu-hopecenter-floorguide-2026-10",
+   "title": "東武ホープセンター フロアガイド",
+   "publisher": "東武ホープセンター",
+   "url": "https://tobuhopecenter.jp/floorguide/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311", "date": "2026-10-24" },
+   "attribution": "東武ホープセンター フロアガイド (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T02:56:55Z",
+   "datasetDate": null,
+   "notes": "Shop names and printed zone labels only; descriptions and visual material not reproduced. Pages undated."
+  },
+  {
+   "id": "tokyometro-ikebukuro-yardmap-print-2026-10",
+   "title": "構内図 | 池袋駅/M25/Y09/F09 | 東京メトロ",
+   "publisher": "東京地下鉄",
+   "url": "https://www.tokyometro.jp/station/ikebukuro/yardmap/index_print.html",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "attribution": "東京メトロ 池袋駅構内図 (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T17:57:00+09:00",
+   "datasetDate": "2026-03",
+   "notes": "ライセンスなし・事実のみ参照（複製なし）。出口案内の出入口番号・時間制限表記（*）・地上行エレベーターの表記のみ採用。近隣施設名・構内図画像は対象外。 改定日：2026年3月（ページ表記）。",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
+  },
+  {
+   "id": "seibu-ikebukuro-station-2026-10",
+   "title": "池袋駅 ：西武鉄道Webサイト",
+   "publisher": "西武鉄道",
+   "url": "https://www.seiburailway.jp/railway/station/ikebukuro/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "attribution": "西武鉄道 池袋駅ページ (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T11:15:58Z",
+   "datasetDate": null,
+   "notes": "ライセンスなし・事実のみ参照（複製なし）。駅の案内文の改札口名、駅施設の営業時間（西武南口）を確認。エレベーター・エスカレーター位置は画像のみで本文に無し。 Rights: OD-25 (docs/research/owner-decisions-pending.md; decided 2026-10-22 by the director under the Owner's delegation, recorded in PR #222): same class as Tokyo Metro, facts-only under #26. batch 3 で採取した設備：駅からのお知らせ本文の AED（1F改札口付近・B1F改札口付近）のみ。トイレ・授乳室等の位置は構内図画像のみで本文に無し（GAP）。",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
+  },
+  {
+   "id": "lumine-ikebukuro-floorguide-2026-10",
+   "title": "フロアガイド │ ルミネ池袋 │ LUMINE",
+   "publisher": "株式会社ルミネ",
+   "url": "https://www.lumine.ne.jp/ikebukuro/floorguide/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "フロアガイド │ ルミネ池袋 │ LUMINE (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Shop names, printed floor/category labels, store codes, and printed readings only; listings are unverified and not route evidence."
+  },
+  {
+   "id": "esola-ikebukuro-floorguide-2026-10",
+   "title": "フロアガイドB1｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル",
+   "publisher": "株式会社メトロプロパティーズ",
+   "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=b1",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "フロアガイドB1｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Shop names, printed floor/category labels, store codes, and printed kana readings only; listings are unverified and not route evidence."
+  },
+  {
+   "id": "tobu-dept-ikebukuro-2026-10",
+   "title": "東武百貨店 池袋店トップ",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "東武百貨店 池袋店トップ (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Tenant names, printed floors/categories/store IDs, and store access label only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "tobu-dept-ikebukuro-2026-10-B2F",
+   "title": "東武百貨店 池袋店 フロアガイド B2F",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/B2F",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "東武百貨店 池袋店 フロアガイド B2F (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Tenant names, printed floors/categories and store IDs only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "tobu-dept-ikebukuro-2026-10-B1F",
+   "title": "東武百貨店 池袋店 フロアガイド B1F",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/B1F",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "東武百貨店 池袋店 フロアガイド B1F (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Tenant names, printed floors/categories and store IDs only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "tobu-dept-ikebukuro-2026-10-1F",
+   "title": "東武百貨店 池袋店 フロアガイド 1F",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/1F",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "東武百貨店 池袋店 フロアガイド 1F (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Tenant names, printed floors/categories and store IDs only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "tobu-dept-ikebukuro-2026-10-2F",
+   "title": "東武百貨店 池袋店 フロアガイド 2F",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/2F",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "東武百貨店 池袋店 フロアガイド 2F (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Tenant names, printed floors/categories and store IDs only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "tobu-dept-ikebukuro-2026-10-3F",
+   "title": "東武百貨店 池袋店 フロアガイド 3F",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/3F",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "東武百貨店 池袋店 フロアガイド 3F (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Tenant names, printed floors/categories and store IDs only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "tobu-dept-ikebukuro-2026-10-4F",
+   "title": "東武百貨店 池袋店 フロアガイド 4F",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/4F",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "東武百貨店 池袋店 フロアガイド 4F (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Tenant names, printed floors/categories and store IDs only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "tobu-dept-ikebukuro-2026-10-5F",
+   "title": "東武百貨店 池袋店 フロアガイド 5F",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/5F",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "東武百貨店 池袋店 フロアガイド 5F (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Tenant names, printed floors/categories and store IDs only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "tobu-dept-ikebukuro-2026-10-6F",
+   "title": "東武百貨店 池袋店 フロアガイド 6F",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/6F",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "東武百貨店 池袋店 フロアガイド 6F (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Tenant names, printed floors/categories and store IDs only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "tobu-dept-ikebukuro-2026-10-7F",
+   "title": "東武百貨店 池袋店 フロアガイド 7F",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/7F",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "東武百貨店 池袋店 フロアガイド 7F (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Tenant names, printed floors/categories and store IDs only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "tobu-dept-ikebukuro-2026-10-8F",
+   "title": "東武百貨店 池袋店 フロアガイド 8F",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/8F",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "東武百貨店 池袋店 フロアガイド 8F (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Tenant names, printed floors/categories and store IDs only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "tobu-dept-ikebukuro-2026-10-9F",
+   "title": "東武百貨店 池袋店 フロアガイド 9F",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/9F",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "東武百貨店 池袋店 フロアガイド 9F (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Tenant names, printed floors/categories and store IDs only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "tobu-dept-ikebukuro-2026-10-10F",
+   "title": "東武百貨店 池袋店 フロアガイド 10F",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/10F",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "東武百貨店 池袋店 フロアガイド 10F (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Tenant names, printed floors/categories and store IDs only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "tobu-dept-ikebukuro-2026-10-11F",
+   "title": "東武百貨店 池袋店 フロアガイド 11F",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/11F",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "東武百貨店 池袋店 フロアガイド 11F (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Tenant names, printed floors/categories and store IDs only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "tobu-dept-ikebukuro-2026-10-12F",
+   "title": "東武百貨店 池袋店 フロアガイド 12F",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/12F",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "東武百貨店 池袋店 フロアガイド 12F (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Tenant names, printed floors/categories and store IDs only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "tobu-dept-ikebukuro-2026-10-13F",
+   "title": "東武百貨店 池袋店 フロアガイド 13F",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/13F",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "東武百貨店 池袋店 フロアガイド 13F (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Tenant names, printed floors/categories and store IDs only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "tobu-dept-ikebukuro-2026-10-14F",
+   "title": "東武百貨店 池袋店 フロアガイド 14F",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/14F",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "東武百貨店 池袋店 フロアガイド 14F (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Tenant names, printed floors/categories and store IDs only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "tobu-dept-ikebukuro-2026-10-15F",
+   "title": "東武百貨店 池袋店 フロアガイド 15F",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/15F",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "東武百貨店 池袋店 フロアガイド 15F (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T09:18:40Z",
+   "datasetDate": null,
+   "notes": "Tenant names, printed floors/categories and store IDs only; no descriptive directory text reproduced."
+  },
+  {
+   "id": "seibu-shop-ikebukuro-2026-10",
+   "title": "エミオ 池袋 | エミオを探す | エミオ",
+   "publisher": "株式会社西武不動産プロパティマネジメント",
+   "url": "https://www.seibu-shop.jp/emio/floorguide/?emio=emio01",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896", "date": "2026-10-24" },
+   "attribution": "エミオ 池袋 | エミオを探す | エミオ (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T10:12:37Z",
+   "datasetDate": null,
+   "notes": "Shop names and the facility label (エミオ 池袋) only, under OD-34: facts-only POI attributes, never route evidence. No descriptions, hours, logos or images reproduced. Page undated."
+  },
+  {
+   "id": "seibu-shop-ikebukuro-station-2026-10",
+   "title": "池袋 | 駅ナカ・駅チカニュース | 西武沿線駅ナカ・駅チカ情報ポータル",
+   "publisher": "株式会社西武不動産プロパティマネジメント",
+   "url": "https://www.seibu-shop.jp/floorguide/station/?station=st01",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896", "date": "2026-10-24" },
+   "attribution": "池袋 | 駅ナカ・駅チカニュース | 西武沿線駅ナカ・駅チカ情報ポータル (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T10:12:37Z",
+   "datasetDate": null,
+   "notes": "Shop names, floor labels printed in the shop names and item categories only, under OD-34: facts-only POI attributes, never route evidence. No descriptions, hours, logos or images reproduced. Page undated."
+  },
+  {
+   "id": "lumine-ikebukuro-facilities-2026-10",
+   "title": "サービス・施設案内 │ ルミネ池袋 │ LUMINE",
+   "publisher": "ルミネ",
+   "url": "https://www.lumine.ne.jp/ikebukuro/information/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "サービス・施設案内 │ ルミネ池袋 │ LUMINE (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T11:04:19Z",
+   "datasetDate": null,
+   "notes": "館内のご案内 rows only (インフォメーション / 授乳室 / 多目的トイレ). Shop counters, delivery and card services not transcribed. Page undated."
+  },
+  {
+   "id": "esola-ikebukuro-facilities-3f-2026-10",
+   "title": "フロアガイド3F｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル",
+   "publisher": "メトロプロパティーズ",
+   "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=3f",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "フロアガイド3F｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T11:04:19Z",
+   "datasetDate": null,
+   "notes": "Facility icons printed for the floor (トイレ(女子)) only; shop rows not transcribed. The セブン銀行＜ATM＞ row on this page is inside an HTML comment and is not displayed."
+  },
+  {
+   "id": "esola-ikebukuro-facilities-4f-2026-10",
+   "title": "フロアガイド4F｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル",
+   "publisher": "メトロプロパティーズ",
+   "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=4f",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "フロアガイド4F｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T11:04:19Z",
+   "datasetDate": null,
+   "notes": "Facility icons printed for the floor (トイレ, 授乳室) only; shop rows not transcribed. The セブン銀行＜ATM＞ row on this page is inside an HTML comment and is not displayed."
+  },
+  {
+   "id": "esola-ikebukuro-facilities-6f-2026-10",
+   "title": "フロアガイド6F｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル",
+   "publisher": "メトロプロパティーズ",
+   "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=6f",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "フロアガイド6F｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T11:04:19Z",
+   "datasetDate": null,
+   "notes": "Facility icons printed for the floor (トイレ) only; shop rows not transcribed. The セブン銀行＜ATM＞ row on this page is inside an HTML comment and is not displayed."
+  },
+  {
+   "id": "esola-ikebukuro-facilities-7f-2026-10",
+   "title": "フロアガイド7F｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル",
+   "publisher": "メトロプロパティーズ",
+   "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=7f",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "フロアガイド7F｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T11:04:19Z",
+   "datasetDate": null,
+   "notes": "Facility icons printed for the floor (トイレ, 車いす対応トイレ) only; shop rows not transcribed. The セブン銀行＜ATM＞ row on this page is inside an HTML comment and is not displayed."
+  },
+  {
+   "id": "esola-ikebukuro-facilities-8f-2026-10",
+   "title": "フロアガイド8F｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル",
+   "publisher": "メトロプロパティーズ",
+   "url": "https://www.metropro-sc.jp/esola-ikebukuro/shop/floor.jsp?fid=8f",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "フロアガイド8F｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T11:04:19Z",
+   "datasetDate": null,
+   "notes": "Facility icons printed for the floor (トイレ) only; shop rows not transcribed. The セブン銀行＜ATM＞ row on this page is inside an HTML comment and is not displayed."
+  },
+  {
+   "id": "tobudept-ikebukuro-facilities-2026-10",
+   "title": "店内・施設のサービス｜インフォメーション｜東武百貨店",
+   "publisher": "東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/information/detail/6",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "店内・施設のサービス｜インフォメーション｜東武百貨店 (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T11:04:19Z",
+   "datasetDate": null,
+   "notes": "Facility rows only (店内案内所 / AED / コインロッカー). Salon, photo studio, cleaning, card and gift-certificate rows not transcribed."
+  },
+  {
+   "id": "tobudept-ikebukuro-facilities-kids-2026-10",
+   "title": "お子様連れのお客様へのサービス｜インフォメーション｜東武百貨店",
+   "publisher": "東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/information/detail/7",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "お子様連れのお客様へのサービス｜インフォメーション｜東武百貨店 (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T11:04:19Z",
+   "datasetDate": null,
+   "notes": "ベビー休憩室 rows only. The 化粧室 feature lists (ベビーチェア / ベビーシート / お子様用補助便座) were read as features and not turned into POIs."
+  },
+  {
+   "id": "tobudept-ikebukuro-facilities-access-2026-10",
+   "title": "ご高齢・お体の不自由なお客様へのサービス｜インフォメーション｜東武百貨店",
+   "publisher": "東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/information/detail/8",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "attribution": "ご高齢・お体の不自由なお客様へのサービス｜インフォメーション｜東武百貨店 (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T11:04:19Z",
+   "datasetDate": null,
+   "notes": "車イスで利用できるバリアフリートイレ location list only; wheelchair loan and attended shopping rows not transcribed."
+  },
+  {
+   "id": "seibu-ikebukuro-norikae-2026-10",
+   "title": "池袋駅 ：西武鉄道Webサイト",
+   "publisher": "西武鉄道",
+   "url": "https://www.seiburailway.jp/railway/station/ikebukuro/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" },
+   "attribution": "西武鉄道 池袋駅ページ (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-24T20:00:00+09:00",
+   "datasetDate": "2026-08",
+   "notes": "ライセンスなし・事実のみ参照（複製なし）。Read the 他社乗換路線 list. Gate and exit wording appears only in the AED notice (1F改札口, B1F改札口) and the station map is an image; neither ties a gate to a transfer. lines-lead also read the station-map image (dated 2026.8.1 on the image) for printed direction-arrow labels and the platform legend only; no position or layout is taken (OD-03). Distinct id from seibu-ikebukuro-station-2026-10 (#414). Rights class: OD-25 (Seibu terms read as the Tokyo Metro class under #26)."
+  },
+  {
+   "id": "tokyometro-ikebukuro-station-en-2026-10",
+   "title": "Ikebukuro Station | Tokyo Metro",
+   "publisher": "東京地下鉄",
+   "url": "https://www.tokyometro.jp/lang_en/station/ikebukuro/index.html",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" },
+   "attribution": "東京メトロ 池袋駅 (English station page) (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-25T18:30:00+09:00",
+   "datasetDate": null,
+   "notes": "ライセンスなし・事実のみ参照（複製なし）。駅名・英語路線名・駅番号のみ採用: Marunouchi Line / Yurakucho Line / Fukutoshin Line と M25 / Y09 / F09（ページ表記）。ライブのホストは他の東京メトロページと同じくこの環境から 403 を返すため、Wayback の 2025-10-07 スナップショット (http://web.archive.org/web/20251007182755/https://www.tokyometro.jp/lang_en/station/ikebukuro/index.html) で読んだ。403 は GAP として記録。"
+  },
+  {
+   "id": "jcsc-ikebukuro-parco-facility-2021-10",
+   "title": "まちづくり・地域活性化セミナー ＜SC概要＞ 池袋パルコ",
+   "publisher": "一般社団法人日本ショッピングセンター協会",
+   "url": "https://www.jcsc.or.jp/pt_events/p_20211029_90046",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/512", "date": "2026-10-25" },
+   "attribution": "一般社団法人日本ショッピングセンター協会「まちづくり・地域活性化セミナー」＜SC概要＞ (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-25T18:25:00+09:00",
+   "datasetDate": null,
+   "notes": "S13 in the data-research source list. ページは協会のセミナー告知で、本文の＜SC概要＞に 名称：池袋パルコ／階数：地下２階～地上８階 などが載る（所在地・開業日・店舗数もあるが未採用）。採用は 名称 と 階数 のみ（事実のみ）。URL の日付トークンは 20211029（印刷された日付ではない）、セミナー開催日は 2021-12-07。datasetDate は null（ページに印刷された日付はない）。サイトに利用規約はなく、公表されているのは個人情報保護方針だけなので引用できる禁止条項はない（#512 で 2026-10-25 に確認）→ OD-34 の facts-only。パルコ自身のサイトは #502（2026-10-25）の判断により corroboration only。"
+  },
+  {
+   "id": "lumine-ikebukuro-access-2026-10",
+   "title": "アクセス │ ルミネ池袋 │ LUMINE",
+   "publisher": "株式会社ルミネ",
+   "url": "https://www.lumine.ne.jp/ikebukuro/access/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/529", "date": "2026-10-25" },
+   "attribution": "アクセス │ ルミネ池袋 │ LUMINE (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-25T13:05:34Z",
+   "datasetDate": null,
+   "notes": "Printed access statement only: the 電車 line for ルミネ池袋. Read in #529's store-entrance research (fetch log #12: 200, 23,957 bytes, 2026-10-25 13:05:34 UTC)."
   }
  ],
  "floors": [
@@ -1501,7 +2219,17 @@
     "ksj-n02-2025"
    ],
    "role": "visual",
-   "derivation": "tools/gis context-overlay run overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-70f286365793c8e9acf3 (receipt docs/gis/context/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-70f286365793c8e9acf3.json): station and railway geometry, coarse kind and feature hash only, clipped to a 700 m origin disc; no name, code or attribute; rendered 0.02 m above its z basis as a scene-side render offset, not data z"
+   "derivation": "tools/gis context-overlay run overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-70f286365793c8e9acf3 (receipt docs/gis/context/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-70f286365793c8e9acf3.json): station and railway geometry, coarse kind and feature hash only, clipped to a 700 m origin disc; no name, code or attribute; rendered 0.02 m above its z basis as a scene-side render offset, not data z",
+   "derivationSummary": [
+    {
+     "lang": "ja",
+     "text": "国土数値情報（鉄道データ）から、駅周辺約700 mの駅と線路の形を切り出した表示です。名称や属性は含まず、地図上の目安としてのみ使い、経路には使いません。"
+    },
+    {
+     "lang": "en",
+     "text": "Station and railway shapes within about 700 m, cut from Japan's National Land Numerical Information (railway data). No names or attributes; a rough map context only, never used for routing."
+    }
+   ]
   },
   {
    "id": "b1",
@@ -1517,6 +2245,16 @@
    ],
    "role": "visual",
    "derivation": "PLATEAU CityGML LOD4.1 -> pipeline/extract_plateau_ubld.py (ENU) -> pipeline/blender_build_glb.py (triangulated, metric UV0); renderer frame (x, z, -y), identity transform; collision comes from per-mesh gteki_role tags (floor/stairs_ramps walkable; wall/barriers/transport collide), not from the asset role, because verified exit routes pass through door and portal panels; runtime variant assets/ikebukuro_b1_lit.glb (listed in files, not a second asset, so loaders that load every asset never stack both): the same geometry + generated ceiling LED fixtures (GTEki art direction, not surveyed) -> pipeline/blender_bake_lighting.py: second UV set (TEXCOORD_1) and a Cycles diffuse lightmap (assets/ikebukuro_b1_lightmap.webp / _2k.webp, gamma-2.2 encoded, scale in ikebukuro_b1_lit.meta.json). scene/scene.ts loads the lit variant and falls back to this GLB; kit/{high,low}/*.glb: Lane E kit pieces (see source gteki-kit-0-1-0) copied unmodified by pipeline/sync_kit.py and instanced by scene/kit.ts on the access-fence label stretches and, for the two column pieces, by scene/kit_columns.ts as sleeves on the PLATEAU column footprints in scene/columns.json (finish generic, not surveyed), visual only, no colliders; gteki_gate_array_2 (kit/{high,low}/): ONE generic array per node at g_jr_c1, g_jr_c2 and g_jr_s, anchored on the node with its aisles along the verified edge's arriving direction, visual only, no colliders, not in the walk graph. 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\": the aisle count, direction and side are guesses, not a surveyed layout; scene/kit_signs.ts stretches the generic sign frame around the existing sign faces; presentation only, never walkable or colliders",
+   "derivationSummary": [
+    {
+     "lang": "ja",
+     "text": "国土交通省 PLATEAU の地下街3Dモデルを加工して作成した、池袋駅地下1階の表示です。照明（明暗も表示用に計算したもの）、改札機の並び、柱の仕上げ、案内板の枠などは GTEki が表示用に加えたもので、実際の位置や数を測ったものではありません。経路には使いません。"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro Station's B1 floor, made by modifying the PLATEAU (MLIT) 3D model of the underground area. Lights (and their computed shading), ticket-gate rows, column finishes and sign frames are GTEki additions for display; their positions and counts were not surveyed. Never used for routing."
+    }
+   ],
    "files": [
     "assets/ikebukuro_b1.meta.json",
     "assets/ikebukuro_b1_lit.glb",
@@ -1550,6 +2288,16 @@
    ],
    "role": "visual",
    "derivation": "PLATEAU bldg (LOD1 low / LOD2 high) and tran (road geometry only) -> tools/gis: `gis context-glb ikebukuro --variant low --merge tiles:380` (assets/ikebukuro_context_low.glb, 8 meshes, 30,418 tris; receipt docs/gis/context/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-tiles380-daebc9ca51cbeea3c90a.json) and `gis context-glb ikebukuro --variant high --merge tiles:380` (assets/ikebukuro_context_high.glb, 8 meshes, 139,525 tris; receipt docs/gis/context/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-high-tiles380-015891c342423501b9d1.json); the high file is listed in files, not a second asset, so loaders that load every asset never stack both. Committed bytes equal the receipts: ikebukuro_context_low.glb sha256 0629b00cf18a57f816d341c871052fd19f835e39ffdfc445058a216346d5487c (2,266,864 B), ikebukuro_context_high.glb sha256 ad55b6da91ae7c8960db789cc6e654043735736bbf5e813f904c15a6519dcdb6 (9,488,428 B). Station ENU frame, TP heights, whole features, no textures, no tran attributes. Roads ship as geometry only under the Owner's risk acceptance (docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md). Every node is gteki_role=context, named ctx_bldg_* or ctx_road_*, NOT_FOR_ROUTING, visual_only: never walkable, never a collider, never a camera blocker. scene/scene.ts loads the variant matching ctx.quality in the background and shows it only when the camera is near street level.",
+   "derivationSummary": [
+    {
+     "lang": "ja",
+     "text": "国土交通省 PLATEAU の建物と道路の形（テクスチャなし）を使った、駅周辺の3D表示です。名称や属性は含まず、表示専用で、経路には使いません。"
+    },
+    {
+     "lang": "en",
+     "text": "A 3D view of the buildings and roads around the station, using PLATEAU (MLIT) building and road shapes without textures. No names or attributes; for display only, never used for routing."
+    }
+   ],
    "files": [
     "assets/ikebukuro_context_high.glb"
    ]
@@ -1623,6 +2371,126 @@
    ],
    "modified": true,
    "derivation": "pipeline/extract_columns.py: PLATEAU column footprints and heights found by shape in the barriers triangles (build/ubld_enu.json, welded vertical prisms 1.5 m or taller, up to 3 m across), each with its kit sleeve piece id or null and a reason. sourceIds = PLATEAU"
+  }
+ ],
+ "buildingHours": [
+  {
+   "building": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク"
+    }
+   ],
+   "floorRange": null,
+   "note": [
+    {
+     "lang": "ja",
+     "text": "店舗により異なる場合あり"
+    }
+   ],
+   "text": "全館 10:00～21:00（月～土）\n10:00～19:30（日・祝）",
+   "sourceUrl": "https://www.web-isp.co.jp/facilities/",
+   "retrievedAt": "2026-10-24",
+   "basis": "undated-official",
+   "status": "OK"
+  },
+  {
+   "building": [
+    {
+     "lang": "ja",
+     "text": "東武ホープセンター"
+    }
+   ],
+   "floorRange": null,
+   "note": [
+    {
+     "lang": "ja",
+     "text": "店舗により異なる場合あり"
+    }
+   ],
+   "text": "10:00～21:00",
+   "sourceUrl": "https://tobuhopecenter.jp/",
+   "retrievedAt": "2026-10-24",
+   "basis": "undated-official",
+   "status": "OK"
+  },
+  {
+   "building": [
+    {
+     "lang": "ja",
+     "text": "エチカ池袋"
+    }
+   ],
+   "floorRange": null,
+   "note": [
+    {
+     "lang": "ja",
+     "text": "店舗により異なる場合あり"
+    }
+   ],
+   "sourceUrl": "https://www.metropro-sc.jp/echika-ikebukuro/shop/hours.jsp",
+   "retrievedAt": "2026-10-24",
+   "basis": "undated-official",
+   "status": "UNKNOWN"
+  },
+  {
+   "building": [
+    {
+     "lang": "ja",
+     "text": "エソラ池袋"
+    }
+   ],
+   "floorRange": null,
+   "note": [
+    {
+     "lang": "ja",
+     "text": "店舗により異なる場合あり"
+    }
+   ],
+   "text": "ショップ 10:30～21:30\nレストラン 11:00～23:00\n※店舗により一部異なります",
+   "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/hours.jsp",
+   "retrievedAt": "2026-10-24",
+   "basis": "undated-official",
+   "status": "OK"
+  },
+  {
+   "building": [
+    {
+     "lang": "ja",
+     "text": "ルミネ池袋"
+    }
+   ],
+   "floorRange": null,
+   "note": [
+    {
+     "lang": "ja",
+     "text": "店舗により異なる場合あり"
+    }
+   ],
+   "text": "B1～7F ショッピング 11:00～21:00\n8F～9F レストラン 11:00～22:00",
+   "sourceUrl": "https://www.lumine.ne.jp/ikebukuro/information/hours/",
+   "retrievedAt": "2026-10-24",
+   "basis": "undated-official",
+   "status": "OK"
+  },
+  {
+   "building": [
+    {
+     "lang": "ja",
+     "text": "エミオ池袋"
+    }
+   ],
+   "floorRange": null,
+   "note": [
+    {
+     "lang": "ja",
+     "text": "店舗により異なる場合あり"
+    }
+   ],
+   "sourceUrl": "https://www.seibu-shop.jp/emio/floorguide/?emio=emio01",
+   "retrievedAt": "2026-10-24",
+   "basis": "undated-official",
+   "status": "UNKNOWN"
   }
  ]
 }

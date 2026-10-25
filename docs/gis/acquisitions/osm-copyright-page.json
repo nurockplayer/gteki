@@ -1,0 +1,24 @@
+{
+  "source_id": "osm-copyright-page",
+  "resolved_url": "https://www.openstreetmap.org/copyright",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-24T10:13:13.161Z",
+  "completed_at": "2026-10-24T10:13:14.063Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "text/html; charset=utf-8",
+    "content-length": "6484",
+    "etag": "W/\"377505cba7f141cfefd29bb96fba385d-br\"",
+    "last-modified": null,
+    "date": "Sat, 24 Oct 2026 10:13:14 GMT"
+  },
+  "bytes": 21314,
+  "sha256": "377505cba7f141cfefd29bb96fba385dfbe575a30adc2ac9315b59b39a6ee1d6",
+  "store_path": "raw/377505cba7f141cfefd29bb96fba385dfbe575a30adc2ac9315b59b39a6ee1d6/copyright",
+  "tool_version": "0.1.0",
+  "git_commit": "00420763bb2965e9fbcd82147c7e39bdb5e6df36",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online"
+}

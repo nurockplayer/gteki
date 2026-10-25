@@ -1,0 +1,160 @@
+# DR: department-store terms and floor guides (2026-10-25)
+
+## 1. Header
+
+- Date: 2026-10-25. Times below are UTC (JST = UTC+9).
+- Purpose: input for **OD-34** and the gap table in #501 (Owner priority 2). For each named store this records the official site's terms or site-policy wording, a classification under OD-34, and the official floor guide or shop list: whether it is plain HTML, the printed floor range and a rough shop count. No shop lists are copied.
+- Method (this covers the 07:xx–08:xx passes only; the §7 follow-up of 2026-10-25 used oracle-ego, see there): `curl` only, default User-Agent, no added headers, requests spaced ≥0.6 s apart, **58 requests** in total. No browser, no sign-ins, no forms. A 403, challenge page, JS-only page, timeout or refused connection is recorded as a GAP. No page from an OD-34-excluded site was read.
+- Director's ruling applied here (relayed 2026-10-25, [#501 comment 6394872033](https://github.com/nurockplayer/gteki/issues/501#issuecomment-6394872033)): a clause that only restricts copying (private use only) means **facts-only is OK**; a clause that expressly bans commercial use means **corroboration only**; without a quoted clause it is **not** a ban. Extended by the director's ruling of the same date on #502: a quoted restriction on *use* for any purpose other than private use also counts as a ban (corroboration only), even without the words 営利 or 商用.
+
+## 2. Table
+
+| # | Store / source | Terms or site-policy URL | Read (UTC) | Clause (verbatim, as read) | Private-use or law-allowed exception | OD-34 class | Official floor guide / shop list URL | Plain HTML? | Printed floors | Rough shop count |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 伊勢丹新宿店 | `https://www.isetan.mistore.jp/shinjuku.html` → 301 → `https://www.mistore.jp/store/shinjuku.html` | attempted 07:26–07:32 | none read | — | **UNKNOWN** (read failed) — **superseded by §7: facts only** (scope clause quoted in §7.2, ruling in §7.3) | same host (store site) | GAP — see §7.4 | GAP — see §7.4 | GAP |
+| 2 | 高島屋新宿店 | `https://www.takashimaya.co.jp/shinjuku/` | attempted 07:26–07:31 | none read | — | **UNKNOWN** (read failed) | same host (store site) | GAP | GAP | GAP |
+| 3 | 新宿マルイ 本館 / アネックス / メン | `https://www.0101.co.jp/policy/` (privacy) and `/user_guide/` (当サイトについて: browsers, cookies, JavaScript); the footer also links `/cookie/`, not fetched | 07:32–07:33 | No copyright, reproduction or content-use clause was found on the pages inspected. The site map (`/sitemap/`) lists no 利用規約 page; the only rights statement is the footer 「© MARUI CO.,LTD.」 | n/a (no clause found) | **Facts only OK** — no quoted ban clause | `https://www.0101.co.jp/003/info/`, `/005/info/`, `/074/info/` (フロアガイド) | **No** — `/003/info/` (the page fetched) is an empty template filled by JavaScript from `/contents2/floormap/{stcd}/floor_map_list.json` and `/contents2/shopinfo/{stcd}/shop_list.json`; the other two use the same script and template (not fetched as HTML) | 本館: B1F–8F; アネックス: B1F–8F; メン: 1F–8F (distinct `facility_floor_name` values in each `floor_map_list.json`) | 本館 172; アネックス 69; メン 60 (length of `shop_list.shop` in each `shop_list.json`) |
+| 4 | 京王百貨店 新宿店 | `https://www.keionet.com/` | 07:26:32 | Site-wide maintenance page (`<title>メンテナンス中</title>`): 「現在、システムメンテナンスを実施しております。」「システムの安定運用およびセキュリティ向上を目的としたメンテナンスを実施しております。」 No terms link. | — | **UNKNOWN** (read failed; unchanged from #415) | `https://www.keionet.com/shinjuku/floor/` (from the 2026-10-24 attempt) | GAP | GAP | GAP |
+| 5 | 新宿サブナード | `https://www.subnade.co.jp/legal/` (and `/` ) | 07:26–07:35, five attempts | none read | — | **UNKNOWN** (read failed; unchanged from #415) | `https://www.subnade.co.jp/floorguide/` | GAP | GAP | GAP |
+| 6 | 池袋PARCO | `https://www.parco.co.jp/terms/` | 07:34:41 | §1 知的財産権等について: 「本サイトの利用者（以下「利用者」といいます）は、本サイトで提供する情報・サービス等について、(1)当社の事前の承諾を得ずに、私的利用以外の目的で利用すること、及び、(2)当社の事前の承諾（権利者である第三者が存在する場合には、当社を通じた当該第三者の承諾を含みます）を得ずに、著作権法で定める私的利用の範囲を超えて複製、送信、頒布、譲渡、貸与、翻訳、翻案する等の行為を行うこと、はできません。」 Page date: `Updated Feb. 24, 2021` | No — §1(1) covers any purpose other than 私的利用 | **Corroboration only** — §1(1) restricts *use* 「私的利用以外の目的で」 without consent, a quoted ban that covers our purpose (director ruling 2026-10-25, #502; see note 6). Nothing is imported from the PARCO site as primary evidence | `https://ikebukuro.parco.jp/floor/`; shop list `https://ikebukuro.parco.jp/shop/?category_search=alpha` | **Yes** (floor guide and shop list both server-rendered) | 本館: B2F, B1F, 1F, M2F, 2F–8F; P'PARCO: B2F–8F | 151 shop cards in the alphabetical shop list (all buildings; no per-building split on that page) |
+| 7 | だれでも東京 (portal) | `https://www.daredemo-tokyo.metro.tokyo.lg.jp/` | 07:28:42 | Portal returns a maintenance page (403 bytes): 「サイトメンテナンスのためご利用いただけません。」 No terms link. `/terms/`, `/sitepolicy/`, `/policy/`, `/riyou/` all returned 404 (196 bytes) at 07:35 | — | **UNKNOWN** (read failed; unchanged from #415) | not applicable (not a store) | — | — | — |
+
+## 3. Notes
+
+- **伊勢丹 (1).** `www.isetan.mistore.jp` answers 301 and redirects every path tried (`/shinjuku.html`, `/sitepolicy/`, `/terms/`) to `www.mistore.jp`. `www.mistore.jp` completed the TCP connection and the TLS handshake (certificate CN=www.mistore.jp, O=Isetan Mitsukoshi Holdings Ltd.) and then returned no HTTP response within 15–45 s on both HTTP and HTTPS, GET and HEAD. No clause was read, so nothing can be classified. **Superseded by §7.**
+- **高島屋 (2).** Same failure shape: TCP and TLS succeed (`23.217.205.166`), no HTTP response within 15–45 s on GET or HEAD, HTTP or HTTPS.
+- **新宿マルイ (3).** The three buildings are printed on the site as 「新宿マルイ 本館」 (`/003/`), 「新宿マルイ アネックス」 (`/005/`) and 「新宿マルイ メン」 (`/074/`). The only policy pages linked from the footer and listed in the site map are the privacy policy, the cookie policy and 当サイトについて (environment/JavaScript settings). No 利用規約 or copyright/reproduction clause was found on the store site, so per the director's ruling this is not a ban; facts only are allowed. The floor guide is JavaScript-only, so the floor range and counts above were read from the JSON the page loads (`floor_map_list.json`: distinct `facility_floor_name`; `shop_list.json`: length of `shop_list.shop`), all three fetched 2026-10-25 07:33:58–07:34:03Z. Only the 本館 HTML page was fetched; the アネックス and メン pages are the same template driven by the same script.
+- **京王 (4).** `www.keionet.com` returned a maintenance page on 2026-10-25; unchanged from the 2026-10-24 read (#415, `DR-terms-and-retries-2026-10-24.md` GAP-1). Nothing was read.
+- **新宿サブナード (5).** `www.subnade.co.jp` refused TCP connections on port 443 on all five attempts (three on `/` at 07:26:33, 07:27:37 and 07:28:41; one each on `/legal/` and `/floorguide/` at ~07:34:50), 15–40 ms. Unchanged from #415 GAP-2.
+- **池袋PARCO (6).** Re-quoted from `https://www.parco.co.jp/terms/` (fresh read 2026-10-25; DR-RT-06's wording matches; page date `Updated Feb. 24, 2021`). §1 has two limbs: (1) no use of the site's information or services for purposes other than 私的利用 without prior consent, and (2) no reproduction, transmission, distribution, transfer, lending, translation or adaptation beyond the private-use range set by the Copyright Act without consent. Limb (1) is a **use** restriction, not only a copying one, and it covers any purpose other than private use, which includes ours. Per the director's ruling of 2026-10-25 on #502, a quoted use restriction of this kind is the same class as the Tobu commercial-use ban and Keio's 「一切お断り」 — the absence of the words 営利 or 商用 does not change that — so 池袋PARCO is **corroboration only**: nothing is imported from `parco.co.jp` as primary evidence, and pages may be cited as corroboration in research notes. PARCO's shops and floors may come only from other facts-only sources (the Toshima guide, tenants' own sites after a terms check, or a field check); the PARCO page is corroboration only. The old access URL `parco.jp/ikebukuro/access/` is still 404; the current host is `ikebukuro.parco.jp`.
+- **だれでも東京 (7).** The portal URL is `www.daredemo-tokyo.metro.tokyo.lg.jp` (the bare `daredemotokyo.jp` does not resolve). The site is in maintenance and the guessed policy paths return 404, so no terms page could be found or read.
+
+## 4. Fetch log
+
+Every request in this task, in order. Status is the final HTTP code after redirects; `000` = no HTTP response (timeout / refused / DNS).
+
+| # | UTC | Target | URL | Status | Bytes | Note |
+|---|---|---|---|---|---|---|
+| 1 | 07:26:11 | 伊勢丹 | `https://www.isetan.mistore.jp/shinjuku.html` | 301 | 0 | → `www.mistore.jp`, which never answered |
+| 2 | 07:26:30 | 高島屋 | `https://www.takashimaya.co.jp/shinjuku/` | 000 | 0 | connection reset/timeout |
+| 3 | 07:26:31 | マルイ | `https://www.0101.co.jp/` | 200 | 56,594 | store list |
+| 4 | 07:26:32 | 京王 | `https://www.keionet.com/` | 200 | 1,939 | maintenance page |
+| 5 | 07:26:33 | サブナード | `https://www.subnade.co.jp/` | 000 | 0 | connection refused |
+| 6 | 07:26:34 | だれでも東京 | `https://daredemotokyo.jp/` | 000 | 0 | DNS: host does not resolve |
+| 7 | 07:26:47 | 伊勢丹 | `https://www.isetan.mistore.jp/shinjuku.html` | 301 | 0 | retry |
+| 8 | 07:27:06 | 高島屋 | `https://www.takashimaya.co.jp/shinjuku/` | 000 | 0 | retry |
+| 9 | 07:27:37 | サブナード | `https://www.subnade.co.jp/` | 000 | 0 | retry, refused |
+| 10 | 07:27:51 | 伊勢丹 | `https://www.isetan.mistore.jp/shinjuku.html` | 301 | 0 | retry with -L; redirect target timed out |
+| 11 | 07:28:10 | 高島屋 | `https://www.takashimaya.co.jp/shinjuku/` | 000 | 0 | retry with -L, IPv4 |
+| 12 | 07:28:41 | サブナード | `https://www.subnade.co.jp/` | 000 | 0 | retry |
+| 13 | 07:28:42 | だれでも東京 | `https://www.daredemo-tokyo.metro.tokyo.lg.jp/` | 200 | 403 | maintenance page |
+| 14 | ~07:29 | 伊勢丹 | `https://www.mistore.jp/store/shinjuku.html` | 000 | 0 | direct GET, timeout |
+| 15 | ~07:29 | 高島屋 | `https://www.takashimaya.co.jp/shinjuku/` | 000 | 0 | direct GET, timeout |
+| 16 | ~07:30 | 伊勢丹 | `https://www.mistore.jp/store/shinjuku.html` | 000 | 0 | IPv4, 45 s timeout |
+| 17 | ~07:31 | 高島屋 | `https://www.takashimaya.co.jp/shinjuku/` | 000 | 0 | IPv4, 45 s timeout |
+| 18 | ~07:31 | 伊勢丹 / 高島屋 / マルイ | `https://www.mistore.jp/`, `https://www.takashimaya.co.jp/`, `https://www.0101.co.jp/` (HEAD) | 000 / 000 / 200 | 0 / 0 / — | confirms マルイ reachable, the other two not |
+| 19 | ~07:32 | 伊勢丹 / 高島屋 | same hosts over HTTP port 80 (HEAD) | 000 / 000 | 0 | no response on port 80 either |
+| 20 | ~07:32 | 伊勢丹 | `https://www.isetan.mistore.jp/sitepolicy/`, `/terms/` (HEAD) | 301 / 301 | 0 | both redirect off-host |
+| 21 | 07:32:33 | マルイ | `https://www.0101.co.jp/policy/` | 200 | 44,488 | privacy policy only |
+| 22 | 07:32:34 | マルイ | `https://www.0101.co.jp/003/` | 200 | 61,834 | 新宿マルイ 本館 store page |
+| 23 | 07:32:48 | マルイ | `https://www.0101.co.jp/003/info/` | 200 | 29,047 | floor guide, JS template |
+| 24 | 07:32:54 | マルイ | `https://www.0101.co.jp/terms/` | 200 | 56,594 | redirects to the homepage |
+| 25 | 07:32:55 | マルイ | `https://www.0101.co.jp/sitepolicy/` | 200 | 56,594 | redirects to the homepage |
+| 26 | 07:33:04 | マルイ | `https://www.0101.co.jp/user_guide/` | 200 | 27,822 | 当サイトについて: no use clause |
+| 27 | 07:33:21 | マルイ | `/assets/js/v1/stores/pages/store-info.js` | 200 | 7,266 | shows the JSON data source |
+| 28 | 07:33:22 | マルイ | `https://www.0101.co.jp/sitemap/` | 200 | 63,465 | no 利用規約 link |
+| 29 | 07:33:31 | マルイ | `/assets/js/v1/stores/constant.js` | 200 | 74,510 | JSON path templates |
+| 30 | 07:33:37 | マルイ | `/assets/js/v1/stores/functions.js` | 200 | 882 | loader |
+| 31 | 07:33:46–52 | マルイ | `/contents2/floormap/floor_map_list/{stcd}/floor_map_list.json` etc. (6 malformed URLs) | 200 | 56,594 each | redirected to the homepage; discarded, not used |
+| 32 | 07:33:58–07:34:03 | マルイ | `/contents2/floormap/{003,005,074}/floor_map_list.json` and `/contents2/shopinfo/{stcd}/shop_list.json` (6) | 200 | 5,180 / 61,644 / 4,688 / 24,573 / 4,469 / 21,417 | floors and counts |
+| 33 | 07:34:41 | 池袋PARCO | `https://www.parco.co.jp/terms/` | 200 | 36,312 | ご利用規約 |
+| 34 | ~07:34:50 | サブナード | `https://www.subnade.co.jp/legal/`, `/floorguide/` | 000 / 000 | 0 | refused, 15–18 ms |
+| 35 | ~07:35:00 | 高島屋 | `https://www.takashimaya.co.jp/` | 000 | 0 | verbose probe: TLS ok, HTTP request never answered |
+| 36 | ~07:35:05 | 伊勢丹 | `https://www.mistore.jp/` | 000 | 0 | verbose probe: TLS ok, HTTP request never answered |
+| 37 | 07:35:14 | だれでも東京 | `https://www.daredemo-tokyo.metro.tokyo.lg.jp/terms/` | 404 | 196 | |
+| 38 | 07:35:20–22 | だれでも東京 | `/sitepolicy/`, `/policy/`, `/riyou/` | 404 | 196 | |
+| 39 | 07:35:32 | 池袋PARCO | `https://ikebukuro.parco.jp/` | 200 | 71,464 | current host |
+| 40 | 07:35:41 | 池袋PARCO | `https://ikebukuro.parco.jp/floor/` | 200 | 56,292 | floor guide, plain HTML |
+| 41 | 07:35:51 | 池袋PARCO | `https://ikebukuro.parco.jp/shop/?category_search=alpha` | 200 | 126,454 | 151 shop cards |
+
+Request count: 13 in the scripted batch + 45 manual = **58** (some log rows group related requests: 6 malformed Marui URLs in one row, 6 correct JSON files in one row, 3 404 probes in one row).
+
+How the Marui numbers were obtained (2026-10-25): `floor_map_list.json` → `floor_map_list.floor_map[]`, distinct `facility_floor_name`; `shop_list.json` → `shop_list.shop[]`, counted. Values: 003 → `[B1F,1F,2F,3F,4F,5F,6F,7F,8F]`, 172 shops; 005 → the same nine labels, 69 shops; 074 → `[1F,2F,3F,4F,5F,6F,7F,8F]`, 60 shops. The files carry `updated` timestamps of 2026-10-14, 2026-10-11 and 2026-10-17 respectively. PARCO's floors are the heading text of the server-rendered `/floor/` page; its 151 is the count of distinct `/shop/detail/?cd=` links on `/shop/?category_search=alpha`.
+
+## 5. GAP list
+
+| ID | Gap | Detail | What would close it |
+|---|---|---|---|
+| DS-GAP-1 | 伊勢丹新宿店 terms and floor guide | `www.mistore.jp` completes TCP and TLS but never returns an HTTP response (GET and HEAD, HTTP and HTTPS, IPv4, 15–45 s). `www.isetan.mistore.jp` 301s to it. No clause, no floor guide, no count. **Superseded as a rights-read gap by §7.5** (the terms and floor guides were read by proxy on 2026-10-25); the direct-network part stays open. | Retry a direct read from a network the site answers. |
+| DS-GAP-2 | 高島屋新宿店 terms and floor guide | Same failure on `www.takashimaya.co.jp` (TLS ok, no HTTP response). | Retry later; no alternate official host was found. |
+| DS-GAP-3 | 京王百貨店 新宿店 | Site-wide maintenance page on 2026-10-25 (same as 2026-10-24). | Retry after maintenance ends. |
+| DS-GAP-4 | 新宿サブナード | TCP connection refused on port 443 on every attempt. | Retry when the host answers. |
+| DS-GAP-5 | だれでも東京 terms | Portal is in maintenance (403-byte page); the policy paths tried return 404. | Retry once the portal is back; the terms URL is not known until a page links it. |
+
+## 6. Effect on OD-34
+
+- **New facts-only source (no quoted ban clause):** 新宿マルイ's store site (0101.co.jp) — no use clause was found. It fits the director's 2026-10-25 ruling; nothing is imported from it in this pass.
+- **Corroboration only:** 池袋PARCO — §1(1) is a quoted use restriction covering any non-private purpose, the same class as Tobu and Keio (director ruling 2026-10-25, #502). Nothing is imported from the PARCO site as primary evidence.
+- **Unchanged UNKNOWN:** 高島屋新宿店, 京王百貨店 新宿店, 新宿サブナード, だれでも東京 (伊勢丹新宿店 is no longer in this list — see §7). Per OD-34 (fifth round, item d), a site whose terms could not be read stays UNKNOWN and nothing is imported from it.
+- **Floor-guide readability:** 池袋PARCO's floor guide is plain HTML (curl-read). 伊勢丹新宿店's two guides were readable in the §7 proxy browser, but whether the floor labels are in the raw HTML was not established, so they are not claimed as plain HTML. 新宿マルイ's is JavaScript-only, so its floors and counts come from the JSON the page loads. The other four could not be read.
+
+## 7. 伊勢丹 follow-up (2026-10-25)
+
+Follow-up to **DS-GAP-1**, run in the read order the director set on 2026-10-25 ([#501](https://github.com/nurockplayer/gteki/issues/501)): oracle-ego first, read-only ego-lite second, FIELD/GAP third. Read times are UTC (JST = UTC+9). **This section supersedes the 伊勢丹 entries in §2 row 1, §3, §5's DS-GAP-1 row and §6 of this file.**
+
+**Method and why it had to be a proxy read.** The site is still unreachable from this host: `curl` with the default User-Agent and no added headers got no HTTP response from `https://www.mistore.jp/` (20 s, 2026-10-25T10:31Z) and from `https://www.mistore.jp/store/shinjuku.html` (18 s, 10:32Z) — 2 requests, both status `000`, the same failure as §4 rows 14–20 and 36. The pages were therefore read by **oracle-ego** (ChatGPT, newest GPT at max effort, browsing in its own session: read-only, no sign-in, no forms, no uploads) in two runs, 10:11–10:16Z and 10:34–10:44Z. The reader reports that every page below loaded for it. The quotes below are what that reader returned; where it said its quote-length limit cut a clause to the key sentence, the entry is marked **quoted as returned** and nothing is presented as a full-clause reprint.
+
+**Scope-clause pass (2026-10-25T10:44Z), run for the director's ruling on #522.** The group's corporate host, unlike `www.mistore.jp`, answers this host: `https://www.imhds.co.jp/corporate/group-id/index.html` was fetched with `curl`, default User-Agent, no added headers — 1 request, HTTP 200, 112,469 bytes at 10:44:02Z. The page prints 附則 「2019年1月28日 制定・施行」 and revisions 「2019年7月30日」「2022年4月1日」「2023年3月25日」「2023年11月1日」「2026年10月5日 改訂」. **The 第1条 and 第2条 quotes in 7.2 are taken verbatim from that response**, not from the reader. An oracle-ego run for the same question failed before sending (`submit failed`, exit 5, run `20261025-194401-21463-isetan-groupid-scope`; `ego.log`: `model picker button not found`); no Codex fallback was used.
+
+### 7.1 Pages found
+
+| Page | URL | 制定 / 改訂 as printed | What it is |
+|---|---|---|---|
+| 伊勢丹新宿店 store page | `https://www.mistore.jp/store/shinjuku.html` | none printed | store page (via `www.isetan.mistore.jp` 301) |
+| 利用規約 page linked from the store page footer | `https://www.mistore.jp/shopping/help/guide/terms_h.html` | none printed | a **hub of membership and service terms** (三越伊勢丹 WEB 会員規約, 個人情報, MI ポイント, アプリ 等). Not a site terms/copyright page for public content |
+| 三越伊勢丹ホールディングス・グループID規約 | `https://www.imhds.co.jp/corporate/group-id/index.html` | 「2019年1月28日 制定・施行」, revisions 「2019年7月30日」「2022年4月1日」「2023年3月25日」「2023年11月1日」「2026年10月5日 改訂」 | the agreement that actually carries a use restriction (7.2). The footer's terms hub still links the **old** address `https://www.imhds.co.jp/group_id/index.html`, whose page prints only the 2019 date; the current text is the `/corporate/group-id/` URL above |
+| 伊勢丹新宿店 本館フロアガイド | `https://www.mistore.jp/store/shinjuku/shops.html` | none printed | floor guide, 本館 |
+| 伊勢丹新宿店 メンズ館フロアガイド | `https://www.mistore.jp/store/shinjuku/shops_mens.html` | none printed | floor guide, メンズ館 |
+
+### 7.2 Clauses (source of each quote noted per bullet)
+
+- **グループID規約 第9条 (禁止事項) 第1項 — covers 店舗の情報.** The information the clause lists is 「店舗の情報および商品等の情報、生活情報、アフターサービス、各種ご優待」, and it extends to anything learned through the service. The operative sentence, quoted as returned: 「お客さま個人の私的利用の範囲を超えて利用してはならないものとします。」
+- **グループID規約 第11条 (知的財産権等) 第2項.** Quoted as returned: 「書面による事前承諾なしに」 …「お客さま個人の私的利用の範囲を超えて、複製等の利用をしてはならないものとします。」 — copying or use beyond personal private use requires the right holder's prior written consent.
+- **グループID規約 第1条 (目的) — the scope clause, quoted verbatim from the 2026-10-05 revision (curl, 2026-10-25T10:44Z).** 第1項 first sentence: 「三越伊勢丹ホールディングス・グループIDは、お客さまが、株式会社三越伊勢丹ホールディングス（以下「当社」といいます。）およびそのグループ各社（海外の会社を除きます。）（以下総称して「当社グループ」といいます。）が提供する各種サービス（商品購入、特典応募等の取引を含みます。）ならびに当社グループが提携する企業（以下「提携企業」といいます。）が提供する各種サービスのうち、当社が指定するサービス（以下これらを合わせて「本サービス」といいます。）を利用するにあたって、共通のグループIDをご使用いただくことにより、当社グループおよび提携企業から、それぞれのお客さまに応じて、より適した様々な情報の提供を可能にし、お客さまの利便性およびお客さまへのサービスの質を向上させることを目的とするものです。」 Second sentence, which states what the agreement governs: 「三越伊勢丹ホールディングス・グループID規約（以下「本規約」といいます。）は、グループIDの登録、利用、個人情報の取り扱いその他グループIDに関する事項について定めるものです。」
+- **グループID規約 第2条 (定義), quoted verbatim from the same response.** 「本規約において使用される用語の定義は以下の通りとします。」 第1号: 「「三越伊勢丹ホールディングス・グループID」とは、お客さまが本サービスを利用する際に使用するために登録したメールアドレスをいい、以下、「グループID」といいます。」 第2号: 「「本サイト」とは、お客さまの登録、情報提供その他の事項について当社グループが運営するアプリおよびウェブサイトをいいます。」 第3号: 「「サービス提供者」とは、本サービスを提供する、当社グループおよび提携企業をいいます。」
+- **The two articles read together (analysis, not a quote).** 本規約 governs 「グループIDの登録、利用、個人情報の取り扱いその他グループIDに関する事項」 (第1条); グループID is by definition the address a お客さま registers in order to use 本サービス (第2条 第1号); and 第3条 第1項 makes accepting 本規約 part of お客さまの登録 (registration is applied for 「本規約を承諾することにより」). The articles define no wider subject: the agreement has no 適用範囲 article (the 17 articles are 目的, 定義, お客さまの登録, グループIDおよびパスワード, お客さまの情報, 本サービスの利用等, 登録情報の変更, 本サービスの利用停止または登録の抹消等, 禁止事項, 本サイトおよび本サービスの運営、中断・停止および内容の変更, 知的財産権等, 反社会的勢力の排除, 免責事項, 調査協力, 準拠法, 協議および合意管轄, 規約の変更等), and the only clauses that mention use of 本サイト address お客さま (第17条 第4項 「本規約変更後の本サイトまたは本サービスの最初の利用をもって、当該変更に同意したものとみなします。」). No provision identified in the text expressly extends these Group ID obligations to a visitor who has not registered.
+- **WEB 会員規約 第23条 第2項** (inside the `terms_h.html` hub). Quoted as returned: 「他の会員による掲載、投稿内容を含む本コミュニティサービスの内容を転載、転用、編集、複製その他一切の利用行為を行ってはならないものとします。」 This binds **member community content**, not the public store pages, so it does not reach the floor guide.
+- **Anonymous-visitor site policy: none found.** No 利用規約 / サイトポリシー / 著作権 page for anonymous visitors, separate from the membership and Group ID terms, was found linked from the store site. This is a negative result from one reader, not proof that none exists.
+
+### 7.3 Class under OD-34
+
+- **Director's ruling (relayed 2026-10-25, #522): option B, on condition of the scope clause.** If the evidence file quotes the グループID規約's scope clause (第1条 or the definitions clause) and it shows that the agreement's subject is Group ID holders or users of 本サービス, the store becomes **facts-only**; if the scope clause covers all website users, the earlier reading (option A, corroboration only) stands.
+- **The scope clause meets the condition.** 第1条 states the agreement 「は、グループIDの登録、利用、個人情報の取り扱いその他グループIDに関する事項について定めるものです。」 and 第2条 defines グループID as the email address 「お客さまが本サービスを利用する際に使用するために登録した」もの, with 第3条 making acceptance of the agreement part of registration. Its subject is therefore ID holders and users of 本サービス, not anonymous visitors (quotes and analysis in 7.2). **Class: facts only.** The word provisional is dropped — this is the settled class for the store site.
+- **What this allows.** The store POI and the floors may be built from facts: the store name, the printed floor labels (7.4) and the location. The floor guide's wording and images are **not** copied, and no shop list or tenant name is taken from `mistore.jp`. 第9条 第1項 (7.2) stays recorded as the reason the store's own wording is not reused, but under this scope it does not bind an anonymous read of the public pages.
+
+### 7.4 Floor guide
+
+| Building | URL | Printed floors | Plain HTML? |
+|---|---|---|---|
+| 本館 | `https://www.mistore.jp/store/shinjuku/shops.html` | B2F, B1F, 1F–7F, RF — 10 labels | **Not established.** The floors and their use descriptions were readable in the proxy browser without opening the interactive map; whether the raw HTTP response already contains them or they are JavaScript-inserted was not inspected, and no raw response could be fetched from this host. The reader's own note: the interactive map may need JavaScript |
+| メンズ館 | `https://www.mistore.jp/store/shinjuku/shops_mens.html` | B1F, 1F–8F, RF — 10 labels, with 8F and RF merged as 「8F/RF」 in the nav | **Not established**, same as 本館 |
+
+Shop count: not recorded. The brief for this pass asked for floors only, and no shop list was copied.
+
+### 7.5 GAP status
+
+| ID | Status after this pass |
+|---|---|
+| DS-GAP-1 (伊勢丹新宿店 terms and floor guide) | **Closed as a rights-read gap.** The terms, their dates and the floor guides were read (by proxy, method above), the scope clause was read directly (10:44Z) and the store was classified **facts only** under the director's #522 ruling. The **network** part stays open: `www.mistore.jp` still returns no HTTP response to a direct request from this host, so a local re-read of these pages is impossible until it answers. The absence of an anonymous-visitor site policy is recorded as a negative result, not as a gap to close. |
+
+### 7.6 Fetch log (this pass)
+
+| # | UTC | Target | Method | Status | Note |
+|---|---|---|---|---|---|
+| 1 | 10:31 | 伊勢丹 | curl, default UA | 000 | `https://www.mistore.jp/`, no HTTP response in 20 s |
+| 2 | 10:32 | 伊勢丹 | curl, default UA | 000 | `https://www.mistore.jp/store/shinjuku.html`, no HTTP response in 18 s |
+| 3 | 10:11–10:16 | 伊勢丹 | oracle-ego run 1 | 0 | store page, 利用規約 hub, Group ID terms, both floor guides; the run followed an unknown number of further links |
+| 4 | 10:18–10:31 | — | oracle-ego follow-up, resumed on run 1's page | failed | the run never got an answer: `fork failed: resource temporarily unavailable` on the host (process limit), repeated. No page read; retried as row 5 |
+| 5 | 10:34–10:44 | 伊勢丹 | oracle-ego run 2 | 0 | same pages, for plain-text URLs and the clauses; the run's own page loads are inside ChatGPT's browser and are not counted here |
+| 6 | 10:44:02 | グループID規約 (scope clause) | oracle-ego, `--slug isetan-groupid-scope` | **5** | submit failed before sending (`model picker button not found`), run `20261025-194401-21463-isetan-groupid-scope`; no answer, no Codex fallback |
+| 7 | 10:44:02 | グループID規約 (scope clause) | curl, default UA | 200 | `https://www.imhds.co.jp/corporate/group-id/index.html`, 112,469 bytes; 第1条 and 第2条 taken from this response |

@@ -1,0 +1,109 @@
+{
+  "run_id": "landmarks-shinjuku-r700-origin-only-8e4e12f86927b9174aef",
+  "command": "context-landmarks",
+  "policy_version": "context-landmarks-v1",
+  "station_id": "shinjuku",
+  "gteki_role": "context",
+  "navigation_use": "NOT_FOR_ROUTING",
+  "visual_only": true,
+  "verification": "UNVERIFIED",
+  "note": "Point landmarks as visual context only (coordinates, name and class). No description, URL, image, address, phone, owner or other column is copied, hashed per field or written to any output. The name and class are shipped verbatim under the director ruling of 2026-10-23; the receipt carries them only as a per-value hash histogram. The selection is a closed disc around the station frame origin (distance <= radius); nothing here is a route, exit, floor or opening time.",
+  "crs": {
+    "declared": null,
+    "status": "UNKNOWN",
+    "assumed_for_projection": "JGD2011 geographic (EPSG:6668); JGD2011 and WGS84 differ by well under 1 m here",
+    "asserted": false
+  },
+  "frame": {
+    "mode": "origin-only",
+    "note": "horizontal ENU at the station.json origin (evaluated at height 0; no vertical anchor exists and none is asserted); same x/y as the station-enu frame would give to well under a millimetre",
+    "station_json_path": "stations/shinjuku/gteki/station.json",
+    "station_origin_sha256": "816473fd5c95a86b868f06faad0b32d84d4d61fb82e90e996f0b0c6462a5ade7",
+    "origin_crs": "EPSG:6668"
+  },
+  "window": {
+    "kind": "origin_disc",
+    "radius_m": 700,
+    "center": "station frame origin",
+    "selection_rule": "closed disc (distance <= radius)",
+    "z_m": 0,
+    "z_basis": "symbolic street z = 0 (no datum asserted)"
+  },
+  "z_basis": {
+    "mode": "constant",
+    "z_m": 0,
+    "basis": "symbolic street z = 0 (no datum asserted)",
+    "datum_asserted": false,
+    "drape": "none",
+    "baked_offset_m": 0,
+    "evidence_path": "stations/shinjuku/gteki/station.json",
+    "evidence_value_sha256": "3bd62d06acb6a8d914a2d5b5cb56980cd30e0a603e97ddf1174a826ac2b390ae",
+    "evidence_field": "floors[ordinal 0].renderElevationM"
+  },
+  "rows_in_source": 233,
+  "rows_invalid_coordinates": 0,
+  "outside_window": 228,
+  "selected": 5,
+  "name_null": 0,
+  "class_null": 0,
+  "classes": {
+    "942f80d75a17c900f15530c4c18858584dfb748a20261113aee6bc36b6852fd0": 3,
+    "f2e8d4624f9e5a6b4efc70bb94f04b737e8ef206f11eacb43be6f37cd4ca762a": 2
+  },
+  "row_hashes_sha256": "cc702d810bb548b7b8dd3c56cfd1c443fa876f14a75a280ce6170b88478434e5",
+  "bbox_local_ENU": {
+    "min": [
+      163.828,
+      207.493,
+      0
+    ],
+    "max": [
+      421.807,
+      564.754,
+      0
+    ]
+  },
+  "source": {
+    "source_id": "tokyo-muni-shinjuku-cultural-properties-csv",
+    "source_sha256": "c22c4b4a9d2094a4469abeffac10f2aad03f0bd5f7fb688b35cdea0194f648e4",
+    "bytes": 233350,
+    "license_name": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+    "publish_gate": "CONDITIONAL"
+  },
+  "credit": {
+    "ja": "出典：新宿区『文化財一覧（自治体標準データセット）』（CC BY 4.0、東京都オープンデータカタログサイト経由）。GTEki が加工して作成",
+    "en": "Source: Shinjuku City, \"文化財一覧（自治体標準データセット）\" (CC BY 4.0, via the Tokyo Open Data Catalog). Modified by GTEki."
+  },
+  "text_fields": {
+    "説明": "UNKNOWN: excluded (third-party authorship not excluded; director ruling 2026-10-23)",
+    "URL": "excluded (0/233 filled)",
+    "画像": "excluded (0/233 filled)"
+  },
+  "leak_guard": {
+    "scope": "row-derived content of the store GeoJSON, the provenance and this receipt; every column value except name and class, and every column value here",
+    "row_values_scanned_in_store_outputs": 1387,
+    "row_values_scanned_in_receipt": 1628,
+    "credit_occurrences_masked": {
+      "store_geojson": 12,
+      "store_provenance": 2,
+      "receipt": 2
+    },
+    "shipped_field_values_masked": 10,
+    "credit_masking": "the mandated credit strings and the shipped name/class values are masked before scanning; no source value is exempted"
+  },
+  "outputs": {
+    "geojson": {
+      "store_path": "out/landmarks-shinjuku-r700-origin-only-8e4e12f86927b9174aef.geojson",
+      "sha256": "422febec84e433c565e03d2ce063529d3c265a917d2379eb2259ed29f2759535",
+      "bytes": 5090
+    },
+    "provenance": {
+      "store_path": "out/landmarks-shinjuku-r700-origin-only-8e4e12f86927b9174aef.provenance.json",
+      "sha256": "fdbbada291313846bb906991143eedea8ccb64319bdd9de5146a671de2d3652c",
+      "bytes": 3535
+    }
+  },
+  "tool_input_sha256": "4ff5d82ccf7dd2cd9e08f448fd27475199130f1e146ee053f1315aaa8c99af67",
+  "tool_version": "0.1.0"
+}
