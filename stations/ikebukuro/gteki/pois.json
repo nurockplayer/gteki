@@ -22146,23 +22146,26 @@
    "aliases": [],
    "floorId": null,
    "displayPosition": null,
-   "connectorNodeIds": [],
-   "paid": null,
+   "connectorNodeIds": [
+    "g_jr_s"
+   ],
+   "paid": false,
    "evidence": {
     "sourceIds": [
-     "lumine-ikebukuro-floorguide-2026-10"
+     "lumine-ikebukuro-floorguide-2026-10",
+     "lumine-ikebukuro-access-2026-10"
     ],
-    "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
-    "checkedDate": "2026-10-24"
+    "method": "printed store-entrance tie: the store's access page prints 「JR池袋駅南改札、正面右手よりすぐ」; connector = the public (outside the fare gates) side of the JR South Gate, the node the JR South Gate POI routes to (facts only). The floor range is the floor guide's, UNVERIFIED. The store's own entrance and the floors inside are not surveyed",
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
      "lang": "ja",
-     "text": "運営: 株式会社ルミネ。掲載フロア: B1～10F（出典のフロアガイドに掲載のフロア）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+     "text": "「JR池袋駅南改札、正面右手よりすぐ」（ルミネ池袋アクセスページの表記）。案内はJR南改札の改札外側（公共側）で終わります。店舗の入口そのものと店内の階は未確認。掲載フロア: B1～10F（フロアガイドの表記）。現在の営業状況は未確認。"
     },
     {
      "lang": "en",
-     "text": "Operator: 株式会社ルミネ. Floors: B1–10F as printed in the source floor guide. Location and entrance not verified (search only, no route). Current status unknown."
+     "text": "「JR池袋駅南改札、正面右手よりすぐ」 (the store's access page wording: straight ahead and immediately to the right of the JR South Gate). The guide ends on the public (outside the fare gates) side of the JR South Gate; the store's own entrance and the floors inside are not verified. Floors printed: B1–10F (floor guide). Current status unknown."
     }
    ]
   },
