@@ -1,4 +1,4 @@
-# Ikebukuro first-slice route evidence card: 西口（地下） → 22番出口（東口（北））
+# Ikebukuro first-slice route evidence card: 西口（地下） → 22番出口（推定対応）
 
 **Card for the bounded L2 route slice (2-week plan, week 1, item 1; #3, #165). Written 2026-10-25 by `ds-research` for data-research-05. Base commit `f8743e63` (`origin/main`, 2026-10-25). Docs only: no station data was changed by this card.**
 
@@ -7,7 +7,7 @@ This card records one positive route and one negative case, both taken from the 
 ## 1. Why this pair
 
 - **Start**: `west-exit-b1` — 西口（地下） / West Exit (B1), connector node `w_c`.
-- **Destination**: `exit-22` — 22番出口 / 東口（北） / East Exit (North), connector node `x22`.
+- **Destination**: `exit-22` — 22番出口（推定対応）/ 東口（北）/ East Exit (North): a PLATEAU stair-top closure **provisionally matched to Exit 22** rather than a one-to-one fixed exit (G5), connector node `x22`.
 - It crosses the whole station on the public B1 level and arrives at **street level**, which is the arrival moment L2 item 1 asks for and the two existing recorded walks do not have (`stations/ikebukuro/docs/l2-evidence.md` §1: both end underground or at a stair foot).
 - Every one of its 9 edges carries both a PLATEAU geometry check and an `accessFacts` entry whose `sourceIds` resolve in `sources` (§4). In the graph, no edge on the path is marked paid, closed or synthetic — graph fields, not a current operating-condition check (G7).
 - It is short enough to record in one take (277.4 m, about 4 minutes at the router's pace) and uses five different access facts, so one recording exercises most of the station's evidence classes.
@@ -126,7 +126,7 @@ This is the behaviour the acceptance contract asks for ("a negative route case f
 
 Scale of the negative class in this bundle: **32 of 516 POIs are routable** (23 exits, 3 ticket gates, 6 area POIs) and the other 484 are search-only — 348 shops, 14 escalator, 7 lift, 29 service, 12 ATM, 7 locker, 23 toilet, 30 exits, 13 ticket gates and 1 other POI (`seibu-minami-guchi`). All 484 have an empty `connectorNodeIds`, and `routeBetween` (`packages/navigation/src/poi.ts:20`) refuses any such goal with `unknown_goal` before the search starts, so the refusal shown above is that shared code path, not a property of this one POI.
 
-A second, softer case the product must *warn* on rather than refuse: `exit-36` (`x36f`) is routed only to its stair foot — 93 of the 992 ordered POI pairs in #203 end at a stair foot (Exits 4, 13, 36). This card's destination `exit-22` is **not** one of them: `x22` is the street-floor stair top, and the route's single floor change is the Exit 22 stairwell itself.
+A second, softer case the product must *warn* on rather than refuse: `exit-36` (`x36f`) is routed only to its stair foot — 93 of the 992 ordered POI pairs in #203 end at a stair foot (Exits 4, 13, 36). This card's destination `exit-22` is **not** one of them: `x22` is the street-floor stair top (the closure provisionally matched to Exit 22), and the route's single floor change is that stairwell.
 
 ## 6. Freshness
 
@@ -134,7 +134,7 @@ A second, softer case the product must *warn* on rather than refuse: `exit-36` (
 |---|---|---|
 | Geometry (PLATEAU ubld, survey year) | `datasetDate` 2023 (creationDate 2024-03-15) | Older than the router's 730-day default as of 2026-10-25; a field visit cannot clear this (`gap-freshness`, #203 A8) |
 | Access facts from the Toshima underground guide | `datasetDate` 2022-01 | The route's `oldestSourceDate`; drives `stale: true` |
-| Tokyo Metro yard map | `datasetDate` 2026-03 | Current |
+| Tokyo Metro yard map | `datasetDate` 2026-03 | 2026-03 source; later changes unverified |
 | Draft sign guideline (names only) | 2026-03 | Draft (案); replace when the final guideline is published |
 | Edge geometry checks | `checkedDate` 2026-10-22 | Latest check, recorded on every edge |
 | Edge/POI access checks | `checkedDate` 2026-10-20 (edges), 2026-10-21 (start POI) | Route `evidenceCheckedDate` 2026-10-22 |
@@ -144,9 +144,9 @@ The route's own freshness verdict is `stale: true`, `expiredSourceIds: []`, `und
 ## 7. Geographic limits
 
 - Frame: station-local ENU metres, snapped from the PLATEAU grid; `gridBBox` [-190, 180, -190, 186].
-- This path spans x −107.0 … 80.0 m, y 41.5 … 122.0 m, z 27.91 … 32.42 m (33 polyline vertices). It stays inside the surveyed free B1 passage network and the Exit 22 stairwell.
+- This path spans x −107.0 … 80.0 m, y 41.5 … 122.0 m, z 27.91 … 32.42 m (33 polyline vertices). It stays inside the surveyed free B1 passage network and the stairwell provisionally matched to Exit 22.
 - Modelled here: public B1 passages outside fare gates and the PLATEAU stair closures they meet. **Not modelled**: fare-paid concourses and platforms (JR East, Tobu, Seibu, Tokyo Metro), shop interiors, the street surface, Echika and the Fukutoshin C exits.
-- The card therefore claims arrival **at the Exit 22 stair top**, not a walkable street beyond it (G13).
+- The card therefore claims arrival at a PLATEAU stair-top closure provisionally matched to Exit 22, not a walkable street beyond it (G13).
 - Hours are unknown on every edge: no night-time or 24-hour claim is made (`gap-hours`).
 
 ## 8. Gap list
@@ -165,7 +165,7 @@ Each item is a place where this route's evidence, freshness, redistribution righ
 10. **G10 — A draft, non-route source appears in the route's `sourceIds`.** `toshima-terminal-sign-guideline-draft-v1.3` enters only through POI `exit-22`'s name mapping (東口（北）=22) and is marked "never as route evidence" (OD-22, PR #222). A route card that lists it flatly among route evidence would overstate it; it supports the alias, not the path.
 11. **G11 — The いけふくろう landmark cannot start this slice.** There is no node, POI, `accessFacts` entry or source-backed position for it anywhere in the repo (the only record is #342 ruling 7: a factual name and location marker are allowed, no replica). L2 item 1 wants a walk "from at least one actual in-scene landmark"; until a source gives its position, the start is the 西口（地下） **area** POI, not a point landmark. This is a data gap for the L2 walkthrough, not a rights problem.
 12. **G12 — Both endpoints are area-level or alias-level evidence.** `west-exit-b1` is a single-source (2022) area name whose connector is "a junction inside that area"; `exit-22`'s second name 東口（北） comes from the draft guideline and the two official maps, while its position is the stair-top closure. Accurate as written, but the card should not present either endpoint as a surveyed point.
-13. **G13 — The street end is a stair-top closure, not surveyed street.** `x22` is a `street` node whose only `sourceRef` is the ubld model's `walkable-grid-cell`, at z 32.42 m. The ubld survey covers B1; the street floor's own `_note`/`sourceLabels` disagree (#203 A8). Arrival is at the Exit 22 stair top; walking on from there is outside this route's evidence.
+13. **G13 — The street end is a stair-top closure, not surveyed street.** `x22` is a `street` node whose only `sourceRef` is the ubld model's `walkable-grid-cell`, at z 32.42 m. The ubld survey covers B1; the street floor's own `_note`/`sourceLabels` disagree (#203 A8). Arrival is at the stair-top closure provisionally matched to Exit 22; walking on from there is outside this route's evidence.
 14. **G14 — Cosmetic citation drift on the negative-case POI.** `shop-ikb-lumine-000496`'s evidence method still cites OD-23/OD-31/OD-33, while its source decision is the LUMINE terms check in #377 (OD-34, which partly supersedes OD-33). The refusal is correct; only the citation should be updated.
 
 ## 9. Reproduce
