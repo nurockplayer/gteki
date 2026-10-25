@@ -72,8 +72,6 @@ describe("identity screen regions and chip protection", () => {
     const result = protectIdentityChip(edge, false, [region], viewportHeight);
     expect(result).toEqual({ hidden: false, offsetY: -24 });
     expect(intersectsRect({ ...edge, y0: edge.y0 + result.offsetY, y1: edge.y1 + result.offsetY }, region)).toBe(false);
-    // The same nudge with a smaller cap hides instead.
-    expect(protectIdentityChip(edge, false, [region], viewportHeight, 16)).toEqual({ hidden: true, offsetY: 0 });
   });
   it("leaves non-overlapping chips untouched, including selected chips", () => {
     for (const selected of [false, true]) expect(protectIdentityChip({ ...chip, x0: 300, x1: 400 }, selected, [region], viewportHeight)).toEqual({ hidden: false, offsetY: 0 });

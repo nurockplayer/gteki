@@ -121,6 +121,10 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .card .pace-note { margin-top: 4px; font-size: 12px; }
 .card .freshness-reason { margin-top: 2px; font-size: 12px; }
 .card .freshness-reason.warn { color: #ffd59a; }
+/* Printed shop hours (OD-32): the page's own line breaks, then the date GT-Eki read it. */
+.poi-hours { margin-top: 8px; }
+.poi-hours .hours-text { font-size: 12px; line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
+.poi-hours .hours-asof { margin-top: 2px; font-size: 11px; }
 .badges { display: flex; flex-wrap: wrap; gap: 5px; margin: 10px 0; }
 .badge { font-size: 11px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); }
 .badge.warn { color: #ffd59a; border-color: rgba(255, 179, 71, 0.5); background: rgba(255, 179, 71, 0.1); }
@@ -295,7 +299,9 @@ button.on { border-color: var(--accent); color: var(--accent); }
   width: var(--minimap-size); color: var(--text); font-size: 11px;
 }
 .minimap[hidden], .minimap [hidden], .app[data-mode="overview"] .minimap { display: none; }
-.minimap-body { display: grid; gap: 4px; padding-bottom: 6px; border-radius: 95px 95px 12px 12px; background: var(--glass-strong); border: 1px solid rgba(94, 240, 255, .35); box-shadow: var(--shadow); }
+.minimap-body { position: relative; display: grid; gap: 4px; padding-bottom: 6px; border-radius: 95px 95px 12px 12px; background: var(--glass-strong); border: 1px solid rgba(94, 240, 255, .35); box-shadow: var(--shadow); }
+/* Floor picker (#220): a pill over the map's lower rim, so it adds no height to the HUD. */
+.minimap-floor { position: absolute; top: calc(var(--minimap-size) - 31px); left: 50%; transform: translateX(-50%); max-width: calc(var(--minimap-size) - 56px); min-height: 22px; padding: 1px 6px; font-size: 10px; background: rgba(11, 24, 34, .92); border: 1px solid rgba(94, 240, 255, .35); border-radius: 11px; }
 .minimap-map { display: block; width: 100%; aspect-ratio: 1; }
 .minimap-rim { fill: rgba(11, 24, 34, .8); stroke: #5ef0ff; stroke-width: 1.5; }
 .minimap-graph { fill: none; stroke: #5ef0ff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
@@ -346,6 +352,28 @@ button.on { border-color: var(--accent); color: var(--accent); }
 @media (min-width: 721px) and (max-width: 905px) {
   .app[data-mode="guide"]:has(.minimap:not([hidden]):not([data-collapsed="true"])) .hud-line { top: calc(60px + env(safe-area-inset-top) + 190px + 120px); }
 }
+/* Tap/click the HUD map for the full-width one (#220 follow-up). */
+.minimap-map { cursor: zoom-in; }
+.minimap-map:focus-visible { outline: 2px solid #5ef0ff; outline-offset: 2px; }
+.minimap-overlay {
+  position: fixed; inset: 0; z-index: 30; display: grid; place-items: center;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  background: rgba(4, 12, 18, .78);
+}
+.minimap-overlay[hidden] { display: none; }
+.minimap-overlay-panel {
+  width: min(100%, 640px); max-height: 100%; overflow: auto; display: grid; gap: 8px;
+  padding: 12px; border-radius: 16px; background: var(--glass-strong);
+  border: 1px solid rgba(94, 240, 255, .35); box-shadow: var(--shadow);
+}
+.minimap-overlay-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.minimap-overlay-title { color: #5ef0ff; font-weight: 700; line-height: 18px; }
+.minimap-overlay-close { min-width: 36px; min-height: 36px; font-size: 18px; line-height: 1; }
+.minimap-overlay-map { display: block; width: min(100%, 70vh); margin: 0 auto; aspect-ratio: 1; }
+.minimap-overlay-bg { fill: rgba(11, 24, 34, .8); }
+.minimap-overlay-label { color: #ffd166; font-size: 12px; line-height: 16px; text-align: center; }
+.minimap-overlay-label div { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.minimap-overlay-notice { color: var(--muted); font-size: 11px; line-height: 14px; text-align: center; }
 
 /* ---- JR Saikyo interstation ride demo (unsurveyed boarding location) ---- */
 .rail-launch {
