@@ -41,7 +41,7 @@ export interface HeldGraphEdge {
 }
 export interface HeldGraphDocument {
   policy_version: string; digest: string; run_id: string; source_id: string;
-  source_record?: { sha256?: unknown }; publish_gate?: unknown;
+  source_record?: { sha256?: unknown }; publish_gate?: unknown; digest_inputs?: { publish_gate?: unknown };
   publication?: { routing?: unknown };
   nodes: HeldGraphNode[]; edges: HeldGraphEdge[];
 }
@@ -68,6 +68,9 @@ export function assertHeldGraph(document: unknown): HeldGraphDocument {
     if (!record(edge) || !finite(edge.link_id) || !finite(edge.from_node) || !finite(edge.to_node) || !finite(edge.length_m)
       || !Array.isArray(edge.reason_codes) || ![1, 2, 3].includes(edge.direction as number))
       throw new Error('S03 nav route: a held graph edge is malformed');
+  // Dijkstra needs non-negative weights: a negative length would spin the predecessor chain instead of ending it.
+  for (const edge of document.edges as { length_m: number }[])
+    if (edge.length_m < 0) throw new Error('S03 nav route: a held graph edge has a negative length');
   return document as unknown as HeldGraphDocument;
 }
 
@@ -171,14 +174,16 @@ export interface OperatorPairCount {
   operators: string; gate_pairs: number; reachable_pairs: number; routable_pairs: number;
 }
 /**
- * Counts per unordered operator pair over the in-scope gate nodes. `reachable_pairs` ignores reason codes (topology
- * only), `routable_pairs` uses clean edges alone, so a held graph reports reachability with zero routable pairs.
+ * Counts per unordered operator pair over the in-scope gate nodes. A pair is checked in both directions, so a one-way
+ * link counts the same whichever node id is lower. `reachable_pairs` ignores reason codes (topology only);
+ * `routable_pairs` is the router's own verdict, i.e. a shortest path exists in some direction and carries no reason code.
  */
 export function gatePairCounts(document: HeldGraphDocument): { gate_nodes: { operator_id: string; nodes: number }[]; scope_nodes: number; pairs: OperatorPairCount[] } {
   const gates = gateNodesInScope(document);
-  const adjacency = buildAdjacency(document.edges), clean = buildAdjacency(document.edges, { cleanOnly: true });
+  const adjacency = buildAdjacency(document.edges);
   const ids = [...gates.keys()].sort((a, b) => a - b);
-  const reaches = (map: ReadonlyMap<number, readonly RouteArc[]>, from: number, to: number): boolean => shortestPath(map, from, to) !== null;
+  const paths = (from: number, to: number): ShortestPath[] => [shortestPath(adjacency, from, to), shortestPath(adjacency, to, from)]
+    .filter((path): path is ShortestPath => path !== null);
   const pairs: OperatorPairCount[] = [];
   for (let i = 0; i < NAV_GRAPH_OPERATORS.length; i++) for (let j = i; j < NAV_GRAPH_OPERATORS.length; j++) {
     const first = NAV_GRAPH_OPERATORS[i]!, second = NAV_GRAPH_OPERATORS[j]!;
@@ -191,8 +196,9 @@ export function gatePairCounts(document: HeldGraphDocument): { gate_nodes: { ope
         : (operatorsFirst.includes(first) && operatorsSecond.includes(second)) || (operatorsFirst.includes(second) && operatorsSecond.includes(first));
       if (!matches) continue;
       gatePairs += 1;
-      if (reaches(adjacency, ids[a]!, ids[b]!)) reachable += 1;
-      if (reaches(clean, ids[a]!, ids[b]!)) routable += 1;
+      const both = paths(ids[a]!, ids[b]!);
+      if (both.length) reachable += 1;
+      if (both.some(path => path.reason_codes.length === 0)) routable += 1;
     }
     pairs.push({ operators: `${first}-${second}`, gate_pairs: gatePairs, reachable_pairs: reachable, routable_pairs: routable });
   }
@@ -239,7 +245,9 @@ export async function s03NavGraphRoute(options: NavRouteOptions, storeRoot: stri
   const counts = gatePairCounts(document);
   const routes = options.from !== undefined && options.to !== undefined ? [routeGatePair(document, options.from, options.to)] : [];
   const sourceSha = record(document.source_record) && typeof document.source_record.sha256 === 'string' ? document.source_record.sha256 : null;
-  const publishGate = typeof document.publish_gate === 'string' ? document.publish_gate : null;
+  // `s03-nav-graph` records the source's publish gate under the digest inputs; the top-level field is the fallback.
+  const publishGate = typeof document.digest_inputs?.publish_gate === 'string' ? document.digest_inputs.publish_gate
+    : typeof document.publish_gate === 'string' ? document.publish_gate : null;
   const reasonCodes = Object.fromEntries(Object.values(PATH_REASON).map(code => [code, document.edges.filter(edge => edge.reason_codes.includes(code)).length]));
   const identity = { policy_version: S03_NAV_ROUTE_POLICY, graph_run_id: document.run_id, graph_digest: document.digest,
     graph_sha256: graphSha, from: options.from ?? null, to: options.to ?? null };

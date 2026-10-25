@@ -62,6 +62,22 @@ describe('S03 nav route: routing on the held graph (synthetic only)', () => {
     const counts = gatePairCounts(held({ edges: [EDGE(101, 1, 2, 5, [PATH_REASON.CRS_UNCONFIRMED]), EDGE(102, 2, 3, 7)] }));
     expect(counts.pairs.find(pair => pair.operators === 'jreast-keio')).toMatchObject({ reachable_pairs: 1, routable_pairs: 0 });
   });
+  it('refuses a negative edge length instead of spinning the path reconstruction', () => {
+    expect(() => assertHeldGraph(held({ edges: [EDGE(101, 1, 2, -1)] }))).toThrow(/negative length/);
+  });
+  it('counts a one-way pair the same whichever node id is lower', () => {
+    // Edge 101 is `d` 1 (node 1 to node 2), so only the 1 -> 3 orientation walks it; the pair still counts once.
+    const counts = gatePairCounts(held({ edges: [EDGE(101, 1, 2, 5, [], 1), EDGE(102, 2, 3, 7, [], 3)] }));
+    expect(counts.pairs.find(pair => pair.operators === 'jreast-keio')).toMatchObject({ reachable_pairs: 1, routable_pairs: 1 });
+  });
+  it('counts a pair routable only where the shortest path the router takes is clean', () => {
+    // 1-2-4 is shorter but reason-coded; 1-3-4 is clean but longer, so the router refuses and the count agrees.
+    const document: HeldGraphDocument = { ...held(),
+      nodes: [NODE(1, gate('poi:jreast-gate:1', ['jreast'])), NODE(2, null), NODE(3, null), NODE(4, gate('poi:keio-gate:1', ['keio']))],
+      edges: [EDGE(101, 1, 2, 1), EDGE(102, 2, 4, 1, [PATH_REASON.CRS_UNCONFIRMED]), EDGE(103, 1, 3, 10), EDGE(104, 3, 4, 10)] };
+    expect(routeGatePair(document, 'poi:jreast-gate:1', 'poi:keio-gate:1')).toMatchObject({ outcome: 'REFUSED' });
+    expect(gatePairCounts(document).pairs.find(pair => pair.operators === 'jreast-keio')).toMatchObject({ reachable_pairs: 1, routable_pairs: 0 });
+  });
   it('does not walk a one-way edge backwards, and refuses an unknown gate', () => {
     // Edge 101 is `d` 1: node 1 to node 2 only, so the Keio gate cannot walk it back towards the JR gate.
     expect(routeGatePair(held({ edges: [EDGE(101, 1, 2, 5, [], 1), EDGE(102, 2, 3, 7, [], 3)] }), 'poi:keio-gate:1', 'poi:jreast-gate:1'))
