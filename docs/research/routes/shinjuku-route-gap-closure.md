@@ -1,6 +1,6 @@
 # Shinjuku route gap closure: G-09, G-08, G-03
 
-Closes the three source gaps named in the Shinjuku first-slice route card (card #484; its file `docs/research/routes/shinjuku-first-slice-route.md` exists only in that draft PR, so the card is cited by PR number). Work done 2026-10-25; request log in §7.
+Investigates the three source gaps named in the Shinjuku first-slice route card (card #484; its file `docs/research/routes/shinjuku-first-slice-route.md` exists only in that draft PR, so the card is cited by PR number) and records what could and could not be established. **None of the three closes.** Work done 2026-10-25; request log in §7.
 
 **No station data was changed.** Every sentence below either confirms an existing gap row or records a negative result. Nothing here is a new source for the E27 bundle: no source id is added and no `sourceIds` array is changed.
 
@@ -66,7 +66,7 @@ Two facts from the same record matter here: the 大江戸線 block of the page "
 
 - `poi:gate:2` prints 「改札（地下1階・北側）」 / "Ticket gates (B1, north side)". None of the three operator labels appears in it. There is therefore **no printed-name match**.
 - The nearest candidate is 【マインズタワー方面改札】, the only printed label that could conceivably belong to an E27 gate. It fails the test twice: the POI does not print it, and the operator text does not state that this gate serves 大江戸線 (A1's line is exactly what DR-SX-01 leaves UNKNOWN). Adopting it would require deciding that A1, its gate label and the B1 north-side gate are the same facility — a position/geometry inference, which this task forbids.
-- 【京王新線口】 and 【新都心口】 are worse candidates still: the repo already uses exactly those words as Keio gate names (`poi:keio-gate:1` 「京王新線　京王新線口」, `poi:keio-gate:2` 「京王新線　京王新線口」, `poi:keio-gate:3` 「京王新線　新都心口」), so attaching either label to an E27 gate would give two different gates one printed name.
+- 【京王新線口】 and 【新都心口】 are weaker candidates still: the repo already uses exactly those words as Keio gate names (`poi:keio-gate:1` 「京王新線　京王新線口」, `poi:keio-gate:2` 「京王新線　京王新線口」, `poi:keio-gate:3` 「京王新線　新都心口」), so attaching either to an E27 gate would create a naming collision. Two gates sharing a name is not impossible, so this is a reason for care, not proof; the decisive point remains that the operator never prints either label for an E27 gate.
 
 **The one artefact not checked:** the 構内図 is an image (`.../shinjuku/i/solid.png`), recorded on 2026-10-22 as not read; today it returns the 212-byte interstitial (§3.1). So the statement this document supports is "**no operator text read prints a name for the E27 B1 north-side gate**", not "no such name exists". A gate label on the 構内図 image would still have to be tied to `poi:gate:2` by something other than position to satisfy this gap, since the POI prints no name to match it against.
 
@@ -91,7 +91,7 @@ Two facts from the same record matter here: the 大江戸線 block of the page "
 - To match 「2番出口」 to `poi:exit:2` the only shared token is the digit in the **internal id**. The id is not a printed name, and the POI's own evidence note says the source carries no exit number. Using the id digit would be precisely the kind of inference this task excludes, so it was **not** used.
 - The notice's own scope is a further obstacle: it is titled and written for the **新宿線 / 京王新線** station. The shared Toei page does not attribute exits 1–8 to a line except through the gate labels, and exit 2 has none — so even the operator's own text does not put exit 2 on the E27 side.
 
-**Verdict: GAP, recorded as the finding.** The notice's exit names/numbers **cannot** be matched by printed name to any E27 `poi:exit:*`; the mapping stays UNKNOWN. Two consequences were already on the card and are unchanged: no exit POI may be tagged closed, and the router carries no closure state, so a route to a street exit would still be presented as usable. What would close it is an operator page or map that prints the exit numbers of the **大江戸線** station's exits, so that 「2番出口」 becomes attributable to E27 at all.
+**Verdict: GAP, recorded as the finding.** The notice's exit names/numbers **cannot** be matched by printed name to any E27 `poi:exit:*`; the mapping stays UNKNOWN. Two consequences were already on the card and are unchanged: no exit POI may be tagged closed, and the router carries no closure state, so a route to a street exit would still be presented as usable. What would close it is two things together: an operator page or map that prints the exit numbers of the **大江戸線** station's exits, **and** a source-supported identification of which E27 `poi:exit:*` is that physical exit. An exit number merely attributed to E27 is not enough — none of the six POIs prints a number, so picking one by its id suffix would repeat exactly the inference §4(2) forbids.
 
 ### 3.4 G-03 — no printed concourse or passage hours
 
@@ -105,7 +105,7 @@ Two facts from the same record matter here: the 大江戸線 block of the page "
 
 ### 3.5 Secondary web lookup (`oracle-ego`), UNVERIFIED
 
-Because Toei refuses plain HTTP, one `oracle-ego` lookup (ChatGPT with web browsing; run dir `~/.local/state/oracle-ego/runs/20261025-135541-42365-ds-sjk-gap-lookup`) was asked the same three questions. **Its reply is a lead, not evidence.** The first pass named the documents it read but gave no URLs, so none of it can be quoted with a URL and date as the brief requires; a follow-up was asked for exact URLs, and every item below stays **UNVERIFIED** until one exists.
+Because Toei refuses plain HTTP, one `oracle-ego` lookup (ChatGPT with web browsing; run dir `~/.local/state/oracle-ego/runs/20261025-135541-42365-ds-sjk-gap-lookup`) was asked the same three questions. **Its reply is a lead, not evidence.** The first pass named the documents it read but gave no URLs, so none of it can be quoted with a URL and date as the brief requires. A follow-up asking for exact URLs did not run — the shared oracle browser space was at its page budget (§8) — so every item below stays **UNVERIFIED** until a URL exists.
 
 What it reported, and how it touches the verdicts:
 
@@ -134,7 +134,7 @@ None of the five items changes a verdict. The lookup's value is that an independ
 | Artefact | Why not |
 | --- | --- |
 | Toei 構内図 image (`.../shinjuku/i/solid.png`) | Never read (DR-SJ-01); today it returns the Incapsula interstitial. It is the only operator artefact that might label a gate by name, so its status is UNREAD, not "checked and empty". |
-| Closure notice PDF detour drawing | Recorded as not transcribed (DR-SJ-05). A drawing is not a printed name, and reading it would not satisfy a printed-name match. |
+| Closure notice PDF detour drawing | Recorded as not transcribed (DR-SJ-05). It is not transcribed here, so it establishes no POI match; a drawing could in principle carry printed numbers or names, which would still need a source-supported identification of the specific POI. |
 | Toei store lists (`/other/kanren/stores/shinjuku.html`, DR-SJ-03/04) | Facts only under OD-34 round 2, and they print shops, not gates; not queried today. |
 | Toei site policy (`/riyo/`) | Already recorded as an Incapsula block (OD-34 round 5(d)); not retried, and no rights conclusion here depends on it. |
 | S03 search-only gate POIs (JR / Metro / Keio / Odakyu gates in `pois.json`) | Another operator's gates, search-only, never route evidence (card G-09). They show the project already treats 京王新線口 and 新都心口 as Keio-side gate names — an argument against reusing those labels for E27, not a source for an E27 gate name. |
@@ -169,5 +169,6 @@ Non-HTTP attempts, recorded so they are not repeated:
 - **"No printed gate name" means "none in the text read".** The 構内図 image was never read; if it labels gates, this document does not know it.
 - The 848-byte incident page and the uniform 212-byte shell are treated as a challenge/block under the brief's rule. No attempt was made to work around the block, and this worker used no browser or logged-in access; the one browser-based read of Toei pages here is the `oracle-ego` lookup in §3.5, whose report is unverified and must not be cited as a source.
 - §3.5's items are ChatGPT's account of pages it opened. They are recorded because they point the same way as the primary records and name a useful trap (ticket-office hours), **not** because they are confirmed. Nothing in §2 or §4 depends on them.
+- **Two `oracle-ego` submissions exited 5 at submit time** with `PageBudgetError: Page budget reached (8/8) in space "oracle-review"` — run dirs `~/.local/state/oracle-ego/runs/20261025-140643-61266-ds-sjk-gap-closure-review` and `…/20261025-140718-61715-ds-sjk-gap-urls`. Nothing was sent to ChatGPT by those submits. The budget was held by stale kept pages from earlier runs; this worker closed only its own kept page (`p46`, from the lookup in §3.5) and did not touch the others.
 - **Desk check only.** Nothing here was observed in the station, and no OSM, blog or photo source was used to bridge any of the three gaps.
 - **No station data, importer or test was touched.** This file is the whole change.
