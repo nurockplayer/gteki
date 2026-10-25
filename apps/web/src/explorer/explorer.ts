@@ -26,12 +26,12 @@ import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
-import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
+import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { collectIdentityBoards, identityBoardObjects, identityFront, identityNameBehind, identityNameCentre, identityNameCorners, identityNameSamples, identityRegionRect, intersectsRect, protectIdentityChip, withinObject, type IdentityBoard, type ScreenRect } from "./identityBoards.ts";
 import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming } from "./identityFraming.ts";
 import { StationCaches } from "./stationCaches.ts";
-import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
+import { STREET, STREET_SURFACE_FLAG, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatarRig, type AvatarSelection } from "./avatarSelection.ts";
 import { avatarMotion } from "./avatarMotion.ts";
 import { contactShadow } from "./contactShadow.ts";
@@ -105,6 +105,8 @@ const IDENTITY_HOLD_S = 4;
 const IDENTITY_TRACK_MAX_RAD = THREE.MathUtils.degToRad(100);
 /** Instanced meshes with more instances than this occlude only as registered proxies. */
 const MAX_OCCLUDER_INSTANCES = 1024;
+/** The phone layout's breakpoint (CSS px) in styles.css (`@media (max-width: 720px)`); #109 uses it for framing. */
+const PHONE_MAX_PX = 720;
 
 /** A mesh that can hide labels behind it. */
 interface Occluder {
@@ -1004,18 +1006,39 @@ export class Explorer {
   }
 
   /**
-   * Frame a box (default: the routable slice, else the whole scene) in overview mode, so it fills
-   * about OVERVIEW_FILL of the viewport's shorter side (see overviewFraming.ts). The viewing direction
-   * is kept; a resize refits until the user moves the camera.
+   * Frame a box (default: the routable slice, else the station scene without the street surfaces it
+   * draws) in overview mode, so it fills about OVERVIEW_FILL of the viewport's shorter side (see
+   * overviewFraming.ts). The viewing direction is kept; a resize refits until the user moves the camera.
    */
   frameAll(box?: THREE.Box3): void {
-    const b = (box ?? this.routableBox ?? new THREE.Box3().setFromObject(this.world)).clone();
+    const b = (box ?? this.routableBox ?? this.contextBox()).clone();
     if (b.isEmpty()) b.set(new THREE.Vector3(-50, -10, -50), new THREE.Vector3(50, 10, 50));
     this.setMode("overview");
     this.framed = b;
     this.framedPts = box ? null : this.routablePts;
     this.camera.near = 0.1;
     this.fitOverview();
+  }
+
+  /**
+   * Bounds of the station scene without the street surfaces it draws itself (#109): those describe the
+   * roads around the station (hundreds of metres across here), so framing them would shrink the station
+   * into a speck on the routeless fallback. Objects carrying STREET_SURFACE_FLAG are skipped whole.
+   */
+  private contextBox(): THREE.Box3 {
+    const box = new THREE.Box3();
+    this.world.updateMatrixWorld(true);
+    const visit = (o: THREE.Object3D): void => {
+      if (o.userData[STREET_SURFACE_FLAG] === true) return;
+      const geometry = (o as THREE.Mesh).geometry;
+      if (geometry) {
+        if (!geometry.boundingBox) geometry.computeBoundingBox();
+        if (geometry.boundingBox) box.union(geometry.boundingBox.clone().applyMatrix4(o.matrixWorld));
+      }
+      for (const c of o.children) visit(c);
+    };
+    visit(this.world);
+    return box;
   }
 
   /**
@@ -1119,9 +1142,13 @@ export class Explorer {
   private fitOverview(): void {
     if (!this.framed) return;
     const { w, h } = this.viewSize;
+    const free = this.freeRect();
+    // #109: with the panel or the open route card covering a phone, the free band is short and the plain
+    // fill leaves the station at 0.26 of the viewport's shorter side. There, keep at least half of it.
+    const share = w <= PHONE_MAX_PX && (free.w < w || free.h < h) ? OVERVIEW_MIN_VIEWPORT_SHARE : 0;
     const pose = frameBounds(
       this.framed,
-      { fovDeg: this.camera.fov, aspect: this.camera.aspect, near: this.camera.near, viewport: { w, h }, free: this.freeRect(), points: this.framedPts ?? undefined },
+      { fovDeg: this.camera.fov, aspect: this.camera.aspect, near: this.camera.near, viewport: { w, h }, free, points: this.framedPts ?? undefined, ...(share > 0 ? { minViewportShare: share } : {}) },
       undefined,
       OVERVIEW_OFFSET,
     );
