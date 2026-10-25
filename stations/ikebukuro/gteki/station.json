@@ -1082,6 +1082,21 @@
    "notes": "S13 in the data-research source list. ページは協会のセミナー告知で、本文の＜SC概要＞に 名称：池袋パルコ／階数：地下２階～地上８階 などが載る（所在地・開業日・店舗数もあるが未採用）。採用は 名称 と 階数 のみ（事実のみ）。URL の日付トークンは 20211029（印刷された日付ではない）、セミナー開催日は 2021-12-07。datasetDate は null（ページに印刷された日付はない）。サイトに利用規約はなく、公表されているのは個人情報保護方針だけなので引用できる禁止条項はない（#512 で 2026-10-25 に確認）→ OD-34 の facts-only。パルコ自身のサイトは #502（2026-10-25）の判断により corroboration only。"
   },
   {
+   "id": "lumine-ikebukuro-access-2026-10",
+   "title": "アクセス │ ルミネ池袋 │ LUMINE",
+   "publisher": "株式会社ルミネ",
+   "url": "https://www.lumine.ne.jp/ikebukuro/access/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/529", "date": "2026-10-25" },
+   "attribution": "アクセス │ ルミネ池袋 │ LUMINE (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-25T13:05:34Z",
+   "datasetDate": null,
+   "notes": "Printed access statement only: the 電車 line for ルミネ池袋. Read in #529's store-entrance research (fetch log #12: 200, 23,957 bytes, 2026-10-25 13:05:34 UTC)."
+  },
+  {
    "id": "jcsc-ikebukuro-links-open-sc",
    "title": "2026年オープンSC（一覧表） LINKS IKEBUKURO",
    "publisher": "一般社団法人日本ショッピングセンター協会",
