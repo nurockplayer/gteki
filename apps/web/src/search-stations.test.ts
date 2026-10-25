@@ -182,6 +182,8 @@ describe("core search on the real Shinjuku POIs (docs/stations/shinjuku/search-e
         // page, plus the yard map for a Metro exit). Either may also cite the facts-only English line-alias
         // source (#526), which adds the M08 / Marunouchi Line aliases to those POIs.
         const sources = h.poi.evidence.sourceIds.filter((id) => id !== LINE_ALIAS_SOURCE);
+        // The alias source never replaces the original citation: every hit still cites its S03 or WP4 source.
+        expect(sources.length, `${h.poi.id}: cites no original source`).toBeGreaterThan(0);
         if (sources.includes("tokyo-s03-zip")) expect(sources, h.poi.id).toEqual(["tokyo-s03-zip"]);
         else for (const id of sources) expect(WP4_SOURCES.has(id), `${h.poi.id}: unexpected source ${id}`).toBe(true);
       }
