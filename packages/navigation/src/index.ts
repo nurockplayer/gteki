@@ -76,8 +76,14 @@ export interface RouteResult {
   crossesFareBoundary: boolean | null;
   /** Facts along the route that are UNKNOWN; UI must show them. */
   unknowns: { kind: RouteUnknown; edgeIds: string[] }[];
-  /** Sources the route depends on: edge geometry/access/hours evidence and traversed nodes' sourceRefs. */
+  /** Sources the route depends on: edge geometry/access/hours evidence and traversed nodes' and floors' sources. */
   sourceIds: string[];
+  /**
+   * Sources that tie the chosen endpoints (a POI's name, entrance or floor) to the path, kept apart from the
+   * path's own evidence: a source that only names an endpoint is not route evidence, and a card that lists
+   * `sourceIds` flatly must not present it as such (#491, Ikebukuro card G10).
+   */
+  endpointSourceIds: string[];
   /** Latest checkedDate across the route's evidence (geometry, access and hours). */
   evidenceCheckedDate: string | null;
   /** Oldest known source datasetDate the route depends on (the weakest dated link); null = no dated source. */
@@ -119,7 +125,8 @@ export interface Router {
    * Cheapest route from any start to any goal, ranked by the router's cost (not walking length).
    * Unknown ids are ignored; `start_equals_goal` when any start already is a goal.
    * `endpointEvidence` is what ties the caller's origin/destination to these nodes (e.g. both POIs'
-   * `evidence`); it joins the route's sources, freshness and checked date.
+   * `evidence`); its sources go to `endpointSourceIds` (never `sourceIds`) and join the route's freshness
+   * and checked date.
    */
   route(fromNodeIds: string | string[], toNodeIds: string | string[], profile?: RouteProfile, endpointEvidence?: readonly EvidenceRef[]): RouteResult | RouteFailure;
   /** True when this edge may be used under the profile (exposed for UI/debug overlays). */
