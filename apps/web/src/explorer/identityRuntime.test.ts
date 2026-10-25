@@ -301,9 +301,10 @@ describe("identity QA and chip integration", () => {
       expect(s.height).not.toHaveBeenCalled();
       expect(s.translate).not.toHaveBeenCalled();
     }
+    // #400: overview protects the same name, so the mode change neither resets nor rewrites the offset.
     e.mode = "overview";
     e.updateIdentityLabels();
-    for (const s of spies) { expect(s.translate).toHaveBeenCalledExactlyOnceWith(""); s.translate.mockClear(); }
+    for (const s of spies) expect(s.translate).not.toHaveBeenCalled();
     for (let i = 0; i < 5; i++) e.updateIdentityLabels();
     for (const s of spies) {
       expect(s.width).not.toHaveBeenCalled();
@@ -481,7 +482,7 @@ describe("identity QA and chip integration", () => {
     expect([...first, ...second].map((g: THREE.Group) => g.visible)).toEqual([true, true, true, true]);
   });
 
-  it("hides unselected overlap in labelInfo, offsets endpoints and resets on overview", () => {
+  it("hides unselected overlap in labelInfo, offsets endpoints and keeps protecting in overview", () => {
     const { e, board } = runtime();
     e.mode = "walk";
     e.camera.position.set(-2, 2, 0); e.camera.lookAt(board.position); e.camera.updateMatrixWorld(true);
@@ -499,9 +500,9 @@ describe("identity QA and chip integration", () => {
     e.identityLabelsDirty = true; // setPois invalidates protection even with a still camera
     e.updateLabels();
     expect(protect).toHaveBeenCalledOnce();
+    // #400: overview is protected too — a chip is never drawn over a readable name in any mode.
     e.mode = "overview"; e.updateIdentityLabels();
-    expect(plain.identityHidden).toBe(false); expect(endpoint.identityOffsetY).toBe(0);
-    expect((endpoint.obj.element as { style: unknown }).style).toMatchObject({ translate: "" });
+    expect(plain.identityHidden).toBe(true); expect(endpoint.identityOffsetY).toBeLessThan(0);
   });
 
   it("protects chips only for identity boards the camera can actually see (#342)", () => {
@@ -515,6 +516,21 @@ describe("identity QA and chip integration", () => {
     const wall = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
     wall.position.set(-2, 2, -5); root.add(wall); root.updateMatrixWorld(true);
     e.buildOccluders(root); e.refreshOccluders();
+    e.updateIdentityLabels();
+    expect(chip.identityHidden).toBe(false);
+  });
+
+  it("does not push chips for a name that faces away or sits behind the camera (#400)", () => {
+    const { e, board } = runtime();
+    e.mode = "walk";
+    const chip = labelAt(board, false); e.poiLabels = [chip];
+    // The board's face is +Z; a camera on its back side still projects a rect, but the name is unreadable.
+    e.camera.position.set(board.position.x, board.position.y, board.position.z - 10);
+    e.camera.lookAt(board.position); e.camera.updateMatrixWorld(true);
+    e.updateIdentityLabels();
+    expect(chip.identityHidden).toBe(false);
+    // Facing the board but with the board behind the camera: nothing to protect either.
+    e.camera.position.set(-2, 2, 0); e.camera.lookAt(-2, 2, 10); e.camera.updateMatrixWorld(true);
     e.updateIdentityLabels();
     expect(chip.identityHidden).toBe(false);
   });

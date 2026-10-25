@@ -1445,12 +1445,14 @@ export class Explorer {
     const { w, h } = this.viewSize;
     this.camera.updateMatrixWorld();
     const regions: ScreenRect[] = [];
-    if (this.mode !== "overview" && this.identityBoards.length) {
+    if (this.identityBoards.length) {
       // Visibility rays read occluder bounds: bring them current even when no POI sweep is pending.
       this.refreshOccluders();
       for (const board of this.identityBoards) {
         if (!inScene(board.object, this.scene) || !objectVisible(board.object)) continue;
         board.object.updateWorldMatrix(true, false);
+        // A name that faces away is not readable, so it reserves no screen (#400).
+        if (identityFront(board).dot(this.camera.position.clone().sub(identityNameCentre(board))) <= 0) continue;
         const rects = board.regions.map((region) => identityRegionRect(region.box, board.object, this.camera, w, h)).filter((r): r is ScreenRect => r !== null);
         // A board no ray reaches still projects a rect, but it protects empty screen: skip it (#342).
         if (!rects.length || !this.identityBoardVisible(board)) continue;
