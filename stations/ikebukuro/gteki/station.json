@@ -2577,6 +2577,15 @@
    ],
    "modified": true,
    "derivation": "pipeline/build_kit_catalog.py: for every surveyed stair flight and escalator lane in scene/dressing_anchors.json (PLATEAU ubld installations and their landings), the Lane E catalog ids of its parts plus the ENU origin, travel direction, yaw and the quality tiers that draw each part; visual only, never route evidence. main_route is a selection read from the golden routes' walked edges in gteki/graph.json. Batch A loads the 5 escalators on the desktop tier; the loader skips any id whose GLB the station does not ship."
+  },
+  {
+   "id": "kit-catalog-atlas",
+   "path": "scene/kit_catalog_atlas.json",
+   "sourceIds": [
+    "gteki-ikb-catalog-0-1-0"
+   ],
+   "modified": true,
+   "derivation": "tools/blender/ao_atlas.py: packs the per-id Cycles AO bakes of the Lane E catalog (0.1.0, ike_catalog_cb3b29b) into one PNG per tier and records each atlas's pixel size, byte length and maximum isolated mip here; scene/kit_catalog_loader.ts samples it through TEXCOORD_1 for the catalog pieces whose GLBs carry no per-id AO image. Visual only, never route evidence."
   }
  ],
  "buildingHours": [
