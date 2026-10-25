@@ -63,8 +63,17 @@ describe("identity screen regions and chip protection", () => {
   const region = { x0: 100, y0: 100, x1: 250, y1: 150 };
   const chip = { x0: 125, y0: 120, x1: 225, y1: 146 };
   const viewportHeight = 845;
-  it("hides an intersecting unselected chip", () => {
+  it("hides an intersecting unselected chip when the nearest clear side is past the max nudge", () => {
     expect(protectIdentityChip(chip, false, [region], viewportHeight)).toEqual({ hidden: true, offsetY: 0 });
+  });
+  it("nudges an unselected chip to the nearest clear side within the max nudge", () => {
+    // 2 px overlap at the top of the region: the clear position above is 24 px up, the cap itself.
+    const edge = { ...chip, y0: 96, y1: 122 };
+    const result = protectIdentityChip(edge, false, [region], viewportHeight);
+    expect(result).toEqual({ hidden: false, offsetY: -24 });
+    expect(intersectsRect({ ...edge, y0: edge.y0 + result.offsetY, y1: edge.y1 + result.offsetY }, region)).toBe(false);
+    // The same nudge with a smaller cap hides instead.
+    expect(protectIdentityChip(edge, false, [region], viewportHeight, 16)).toEqual({ hidden: true, offsetY: 0 });
   });
   it("leaves non-overlapping chips untouched, including selected chips", () => {
     for (const selected of [false, true]) expect(protectIdentityChip({ ...chip, x0: 300, x1: 400 }, selected, [region], viewportHeight)).toEqual({ hidden: false, offsetY: 0 });

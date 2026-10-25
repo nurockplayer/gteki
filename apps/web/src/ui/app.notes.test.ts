@@ -37,6 +37,8 @@ function app(lang: Lang = "ja") {
   const a = new App(root) as unknown as Harness;
   a.s.lang = lang;
   a.s.loaded = { bundle: createSyntheticBundle([]) };
+  // renderSheet refits an automatic overview after the sheet opens or closes (#385); the real App always has one.
+  a.explorer = { refitOverview: vi.fn() } as unknown;
   for (const name of ["releaseMascot", "mascotSay"] as const) vi.spyOn(a, name).mockImplementation(() => {});
   return a;
 }
