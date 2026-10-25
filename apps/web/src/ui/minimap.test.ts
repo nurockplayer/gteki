@@ -670,6 +670,10 @@ describe("Minimap large map (#220 follow-up)", () => {
     close.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
     expect(document.activeElement).toBe(close);
     expect(overlay.hidden).toBe(false);
+    // An automatic dismissal (here: a station switch) hands focus back to the map, not the body.
+    map.setStation(createSyntheticBundle(), "en");
+    expect(overlay.hidden).toBe(true);
+    expect(document.activeElement).toBe(trigger);
   });
 
   it("draws the same floor, route and destination as the minimap", () => {
@@ -735,5 +739,21 @@ describe("Minimap large map (#220 follow-up)", () => {
     const rim = overlayOf().querySelector<SVGElement>(".minimap-destination-rim")!;
     expect(rim.style.display).toBe("");
     expect(rim.getAttribute("transform")).toBe("translate(179 95) rotate(90)");
+  });
+
+  it("draws a corner destination as a dot with no edge chevron", () => {
+    // 99 px from the centre: outside the HUD's 85 px circle, but on screen in the square large map.
+    const corner = poi({ id: "corner", displayPosition: { x: 35, y: -35, z: 0 } });
+    const bundle = createSyntheticBundle();
+    bundle.pois = [corner];
+    const map = create(bundle);
+    const route = [point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)];
+    map.setRoute({ points: route, steps: [step("concourse", "concourse")] }, corner);
+    open(map);
+    const overlay = overlayOf();
+    const dot = overlay.querySelector(".minimap-poi.is-destination")!;
+    expect(dot.getAttribute("cx")).toBe("70");
+    expect(dot.getAttribute("cy")).toBe("70");
+    expect(overlay.querySelector<SVGElement>(".minimap-destination-rim")!.style.display).toBe("none");
   });
 });
