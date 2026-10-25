@@ -1,5 +1,5 @@
 {
-  "fixture_count": 2569,
+  "fixture_count": 2460,
   "lightmap_size": 4096,
   "texel_density": {
     "metres_per_texel": 0.09689710910370933,
@@ -10,7 +10,7 @@
   "bake_samples": 64,
   "encoding": {
     "decode": "value = (png_byte / 255)^2.2 * scale (top 0.2% clipped)",
-    "scale": 15.585908460617066,
+    "scale": 15.543629121780397,
     "sampling": "gamma 2.2 (an sRGB texture decode is a close fit)",
     "denoise_sigma_texels": 1.5,
     "exr": null
@@ -21,12 +21,12 @@
   "image_stats": {
     "covered_linear_rgb": {
       "min": 0.0,
-      "mean": 0.7930604815483093,
-      "max": 53.871009826660156
+      "mean": 0.7624890208244324,
+      "max": 53.83415985107422
     },
     "covered_png_rgb_0_255": {
       "min": 0,
-      "mean": 57.68666668238097,
+      "mean": 56.338066908481146,
       "max": 255
     },
     "covered_pixel_fraction_including_margin": 0.5563095808029175
@@ -35,16 +35,16 @@
   "denoising": "mask-aware Gaussian, sigma 1.5 texels (numpy)",
   "verification": "headless GLB re-import: 2 UV maps, fixture mesh and original extras",
   "file_sizes_bytes": {
-    "ikebukuro_b1_lit.glb": 5272300,
-    "ikebukuro_b1_lightmap.png": 12212300,
-    "ikebukuro_b1_fixtures.json": 436710
+    "ikebukuro_b1_lit.glb": 5201668,
+    "ikebukuro_b1_lightmap.png": 12223512,
+    "ikebukuro_b1_fixtures.json": 418188
   },
   "shipped_lightmaps": {
     "ikebukuro_b1_lightmap.webp": {
-      "bytes": 1123256
+      "bytes": 1106786
     },
     "ikebukuro_b1_lightmap_2k.webp": {
-      "bytes": 510628
+      "bytes": 499304
     }
   }
 }
