@@ -1524,7 +1524,9 @@ export class Explorer {
       p.setFromMatrixPosition(l.obj.matrixWorld).project(this.camera);
       if (p.z < -1 || p.z > 1) continue; // behind the camera or past far: the CSS2D renderer hides it
       const size = l.size ?? estimateLabelBox(l.obj.element.textContent ?? "");
-      const x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh;
+      // The chip is drawn nudged off identity boards, so declutter must use where it actually lands.
+      // The chip is drawn nudged off identity boards, so declutter must use where it actually lands.
+      const x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh + l.identityOffsetY;
       if (x + size.w / 2 < 0 || x - size.w / 2 > vw || y + size.h / 2 < 0 || y - size.h / 2 > vh) continue;
       items.push({ id: l.poiId, x, y, w: size.w, h: size.h, klass: l.klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible, measured: l.size !== null });
       byId.set(l.poiId, l);
