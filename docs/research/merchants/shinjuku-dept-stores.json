@@ -1,0 +1,251 @@
+{
+  "schema": "gteki.station/0.1",
+  "note": "Store-level POIs for the Shinjuku department stores and station buildings (director, 2026-10-25). Facts only: printed building name, operator and printed floor range. Not route evidence; no shop is re-linked. UNVERIFIED, SEARCH_ONLY.",
+  "sources": [
+    {
+      "id": "marui-shinjuku-floorguide-2026-10",
+      "title": "新宿マルイ 本館 フロアガイド（アネックス・メン も同一の仕組み） | 0101.co.jp",
+      "publisher": "株式会社丸井",
+      "url": "https://www.0101.co.jp/003/info/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/502",
+        "date": "2026-10-25"
+      },
+      "attribution": "新宿マルイ 本館 / アネックス / メン フロアガイド (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-25T08:43:23Z",
+      "datasetDate": null,
+      "notes": "Building names and printed floor labels only. No copyright, reproduction or content-use clause was found on the pages inspected (OD-34, fifth round, director ruling 2026-10-25 on #502: no quoted ban, facts only allowed); docs/research/merchants/dept-store-terms-2026-10-25.md item 3. The floor guide is JavaScript-only: the floors below are the distinct facility_floor_name values of /contents2/floormap/{003,005,074}/floor_map_list.json, read on 2026-10-25 08:42:41–08:43:23Z. No text, logos, photos, maps or layouts reproduced."
+    }
+  ],
+  "pois": [
+    {
+      "id": "shop-sjk-lumine1",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ルミネ新宿 ルミネ1"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "lumine-shinjuku-floorguide-2026-10"
+        ],
+        "method": "facts-only floor guide (OD-34), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-25"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ルミネ新宿 ルミネ1（運営: 株式会社ルミネ。出典フッターの著作権表示は ©LUMINE Co., Ltd.）。出典は店舗名「ルミネ新宿」と棟名「ルミネ1」を別に印字しており、この名前は両方を並べたものです。フロアガイドの掲載階は B2F〜8F（ほかに R 屋上階）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "LUMINE Shinjuku LUMINE1 (operator: LUMINE Co., Ltd.; the source footer prints ©LUMINE Co., Ltd.). The source prints the store name ルミネ新宿 and the building name ルミネ1 separately; this name joins the two. The floor guide lists B2F–8F, plus a rooftop floor R. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-lumine2",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ルミネ新宿 ルミネ2"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "lumine-shinjuku-floorguide-2026-10"
+        ],
+        "method": "facts-only floor guide (OD-34), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-25"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ルミネ新宿 ルミネ2（運営: 株式会社ルミネ。出典フッターの著作権表示は ©LUMINE Co., Ltd.）。出典は店舗名「ルミネ新宿」と棟名「ルミネ2」を別に印字しており、この名前は両方を並べたものです。フロアガイドの掲載階は 1F〜7F。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "LUMINE Shinjuku LUMINE2 (operator: LUMINE Co., Ltd.; the source footer prints ©LUMINE Co., Ltd.). The source prints the store name ルミネ新宿 and the building name ルミネ2 separately; this name joins the two. The floor guide lists 1F–7F. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-lumineest",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ルミネエスト新宿"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "lumine-est-shinjuku-floorguide-2026-10"
+        ],
+        "method": "facts-only floor guide (OD-34), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-25"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ルミネエスト新宿（運営: 株式会社ルミネ。出典フッターの著作権表示は ©LUMINE Co., Ltd.）。フロアガイドの掲載階は B2F〜8F（ほかに R 屋上階）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "LUMINE EST Shinjuku (operator: LUMINE Co., Ltd.; the source footer prints ©LUMINE Co., Ltd.). The floor guide lists B2F–8F, plus a rooftop floor R. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-newoman",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ニュウマン新宿"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "newoman-shinjuku-floorguide-2026-10"
+        ],
+        "method": "facts-only floor guide (OD-34), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-25"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "ニュウマン新宿（運営: 株式会社ルミネ。出典フッターの著作権表示は ©LUMINE Co., Ltd.）。フロアガイドの掲載階は 1F〜7F と M2F、ほかにエキナカ・エキソト・フードホールの区画。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "NEWoMan Shinjuku (operator: LUMINE Co., Ltd.; the source footer prints ©LUMINE Co., Ltd.). The floor guide lists 1F–7F and M2F, plus the エキナカ (in-station), エキソト (outside the gates) and フードホール (food hall) areas. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-marui-honkan",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "新宿マルイ 本館"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "marui-shinjuku-floorguide-2026-10"
+        ],
+        "method": "facts-only floor guide (OD-34 ruling 2026-10-25, no clause found), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-25"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "新宿マルイ 本館（運営: 株式会社丸井。出典フッターの著作権表示は © MARUI CO.,LTD.）。フロアガイドの掲載階は B1F〜8F。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Shinjuku Marui Honkan (operator: Marui Co., Ltd.; the source footer prints © MARUI CO.,LTD.). The floor guide lists B1F–8F. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-marui-annex",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "新宿マルイ アネックス"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "marui-shinjuku-floorguide-2026-10"
+        ],
+        "method": "facts-only floor guide (OD-34 ruling 2026-10-25, no clause found), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-25"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "新宿マルイ アネックス（運営: 株式会社丸井。出典フッターの著作権表示は © MARUI CO.,LTD.）。フロアガイドの掲載階は B1F〜8F。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Shinjuku Marui Annex (operator: Marui Co., Ltd.; the source footer prints © MARUI CO.,LTD.). The floor guide lists B1F–8F. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-marui-men",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "新宿マルイ メン"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "marui-shinjuku-floorguide-2026-10"
+        ],
+        "method": "facts-only floor guide (OD-34 ruling 2026-10-25, no clause found), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-25"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "新宿マルイ メン（運営: 株式会社丸井。出典フッターの著作権表示は © MARUI CO.,LTD.）。フロアガイドの掲載階は 1F〜8F。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Shinjuku Marui Men (operator: Marui Co., Ltd.; the source footer prints © MARUI CO.,LTD.). The floor guide lists 1F–8F. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    }
+  ],
+  "removed": []
+}
