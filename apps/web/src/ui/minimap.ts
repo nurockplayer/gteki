@@ -83,8 +83,7 @@ export class Minimap {
   private collapsed = read(COLLAPSED_KEY) === "true";
   /** The floor actually drawn; in follow mode it tracks the player, otherwise it is the picked floor. */
   private floorId: string | null | undefined;
-  /** Follow the player's floor; picking another floor pins the map until follow is chosen again. */
-  private followFloor = true;
+  /** A picked floor pins the map; null follows the player's floor. */
   private pickedFloorId: string | null = null;
   /** Station id + language of the options currently in the picker. */
   private floorOptionsKey = "";
@@ -165,8 +164,7 @@ export class Minimap {
     this.floorSelect.className = "minimap-floor";
     // An empty value is the follow state; any floor id pins that floor's graph and route run.
     this.floorSelect.addEventListener("change", () => {
-      this.followFloor = this.floorSelect.value === "";
-      this.pickedFloorId = this.followFloor ? null : this.floorSelect.value;
+      this.pickedFloorId = this.floorSelect.value === "" ? null : this.floorSelect.value;
       this.refresh();
     });
     for (const button of [this.toggle, this.collapseButton, this.reopen]) button.type = "button";
@@ -239,18 +237,24 @@ export class Minimap {
 
   private closeOverlay(restoreFocus = true): void {
     if (!this.overlayOpen) return;
+    const hadFocus = this.overlay.contains(document.activeElement);
     this.overlayOpen = false;
     this.overlay.hidden = true;
-    if (restoreFocus && !this.el.hidden) this.map.focus();
+    // An automatic dismissal (station switch, collapse, overview) must not drop focus to the body.
+    if (restoreFocus || hadFocus) this.focusMapControl();
+  }
+
+  /** Hand focus back to whichever minimap control is on screen; overview leaves nothing to focus. */
+  private focusMapControl(): void {
+    if (this.el.hidden) return;
+    (this.collapsed ? this.reopen : this.map).focus();
   }
 
   setStation(bundle: StationBundle | null, lang: Lang): void {
-    this.closeOverlay(false);
     this.bundle = bundle;
     this.lang = lang;
     this.floorId = undefined;
     // The floor list belongs to the station; a new station starts in follow mode with fresh options.
-    this.followFloor = true;
     this.pickedFloorId = null;
     this.floorOptionsKey = "";
     this.lastKnownFloor = undefined;
@@ -280,11 +284,12 @@ export class Minimap {
     this.arrow.removeAttribute("transform");
     this.north.removeAttribute("transform");
     // The closed overlay keeps its old DOM untouched; the next open rebuilds it from this state.
-    this.overlayDirty = true;
     this.el.hidden = true;
     this.updateText();
     this.syncTimer();
     this.refresh();
+    // Dismiss after the new visibility is settled, so a focused overlay hands off to a shown control.
+    this.closeOverlay(false);
   }
 
   /**
@@ -344,10 +349,11 @@ export class Minimap {
   }
 
   private setCollapsed(collapsed: boolean): void {
-    if (collapsed) this.closeOverlay(false);
     this.collapsed = collapsed;
     persist(COLLAPSED_KEY, String(collapsed));
     this.applyCollapsed();
+    // After the state change, so a dismissal hands focus to the control still on screen (reopen).
+    if (collapsed) this.closeOverlay(false);
     this.lastPose = "";
     this.syncTimer();
     this.refresh();
@@ -408,7 +414,7 @@ export class Minimap {
       return option;
     }) ?? [];
     this.floorSelect.replaceChildren(follow, ...floors);
-    this.floorSelect.value = this.followFloor ? "" : this.pickedFloorId ?? "";
+    this.floorSelect.value = this.pickedFloorId ?? "";
     this.floorSelect.hidden = !this.bundle;
   }
 
@@ -418,13 +424,13 @@ export class Minimap {
     const visible = !!pose && pose.mode !== "overview";
     if (this.el.hidden === visible) this.el.hidden = !visible;
     if (!visible || !pose || !this.bundle || this.collapsed) { this.closeOverlay(false); return; }
-    const pick = this.followFloor ? "follow" : this.pickedFloorId;
+    const pick = this.pickedFloorId;
     const key = `${pose.east},${pose.north},${pose.up},${pose.headingDeg},${pose.mode},${this.orientation},${pick}`;
     if (key === this.lastPose) return;
     this.lastPose = key;
     const playerFloorId = currentFloorId(this.bundle, pose.up, pose.east, pose.north);
     // Follow mode draws the player's floor; a picked floor replaces it until follow is chosen again.
-    const drawnFloorId = this.followFloor ? playerFloorId : this.pickedFloorId;
+    const drawnFloorId = this.pickedFloorId ?? playerFloorId;
     const floorChanged = drawnFloorId !== this.floorId;
     if (floorChanged) {
       this.floorId = drawnFloorId;
@@ -444,15 +450,15 @@ export class Minimap {
       const position = `${pose.east},${pose.north},${pose.up}`;
       const moved = position !== this.lastPosition;
       this.lastPosition = position;
-      if (floorChanged || progressFloorChanged || this.connectorDirty || moved) {
-        const seg = this.route
-          ? advanceRouteSeg(this.route, this.steps ?? [], playerFloorId, pose.east, pose.north, this.seg, progressFloorChanged)
-          : this.seg;
-        if (floorChanged || progressFloorChanged || this.connectorDirty || seg !== this.seg) {
-          this.seg = seg;
-          this.updateConnectorHint();
-          this.renderLabel();
-        }
+      // A picked floor changes what is drawn, not where the player is on the route: only a progress
+      // change may advance the segment, while a floor change still refreshes that floor's hint.
+      const progressDirty = progressFloorChanged || this.connectorDirty || moved;
+      if (progressDirty && this.route) {
+        this.seg = advanceRouteSeg(this.route, this.steps ?? [], playerFloorId, pose.east, pose.north, this.seg, progressFloorChanged);
+      }
+      if (floorChanged || progressDirty) {
+        this.updateConnectorHint();
+        this.renderLabel();
         this.connectorDirty = false;
       }
     } else if (floorChanged && this.floorId !== null) {
@@ -576,7 +582,6 @@ export class Minimap {
    * floor, route, language or hint changes; each tick moves the world groups. Called only while open.
    */
   private renderOverlay(pose: ExplorerPose): void {
-    if (!this.overlayOpen) return;
     const t = strings(this.lang);
     const floorId = this.floorId;
     const origin: ExplorerPose = { east: 0, north: 0, up: 0, headingDeg: 0, mode: "walk" };
@@ -636,7 +641,6 @@ export class Minimap {
       this.overlayTitle.textContent = station
         ? `${station.id} · ${pick(station.names, this.lang)} — ${floor ? floorDisplayName(floor, this.lang) : t.minimapFloorUnknown}`
         : t.minimapLargeMap;
-      this.overlayNotice.textContent = t.minimapSchematic;
     }
     const rotation = this.orientation === "player-up" ? -pose.headingDeg : 0;
     const transform = `translate(${CENTRE} ${CENTRE}) rotate(${rotation}) translate(${-pose.east / METRES_PER_PX} ${pose.north / METRES_PER_PX})`;
@@ -654,7 +658,7 @@ export class Minimap {
     const destination = this.destinationPoint
       ? toMinimap(this.destinationPoint.x, this.destinationPoint.y, pose, this.orientation, METRES_PER_PX)
       : null;
-    this.placeRim(this.overlayDestinationRim, destination ?? routeEnd);
+    this.placeRim(this.overlayDestinationRim, destination ?? routeEnd, "square");
   }
 
   /** Per-tick marker positions: inside the circle at the point, or a rim chevron at its bearing. */
@@ -690,20 +694,29 @@ export class Minimap {
     setTransform(marker, `translate(${Math.round(CENTRE + at.x)} ${Math.round(CENTRE + at.y)})`);
   }
 
-  private placeRim(rim: SVGElement, at: { x: number; y: number } | null): void {
+  /**
+   * The edge chevron for a target beyond the drawn span. The HUD is a circle (clip and rim); the large
+   * map fills a square, so a target near a corner is on screen there and earns no chevron.
+   */
+  private placeRim(rim: SVGElement, at: { x: number; y: number } | null, bounds: "circle" | "square" = "circle"): void {
     if (!at) {
       setDisplay(rim, "none");
       return;
     }
     const bearing = rimBearing(at, RIM_RADIUS);
-    if (bearing.inside) {
+    const inside = bounds === "square"
+      ? Math.abs(at.x) <= RIM_MARKER_RADIUS && Math.abs(at.y) <= RIM_MARKER_RADIUS
+      : bearing.inside;
+    if (inside) {
       setDisplay(rim, "none");
       return;
     }
     setDisplay(rim, "");
     const radians = bearing.angleDeg * Math.PI / 180;
-    const x = CENTRE + Math.sin(radians) * RIM_MARKER_RADIUS;
-    const y = CENTRE - Math.cos(radians) * RIM_MARKER_RADIUS;
+    // Square: one scale for both axes keeps the chevron on the edge along its true bearing.
+    const scale = RIM_MARKER_RADIUS / Math.max(Math.abs(at.x), Math.abs(at.y));
+    const x = CENTRE + (bounds === "square" ? at.x * scale : Math.sin(radians) * RIM_MARKER_RADIUS);
+    const y = CENTRE + (bounds === "square" ? at.y * scale : -Math.cos(radians) * RIM_MARKER_RADIUS);
     setTransform(rim, `translate(${Math.round(x)} ${Math.round(y)}) rotate(${Math.round(bearing.angleDeg)})`);
   }
 
