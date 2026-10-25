@@ -795,18 +795,18 @@
   },
   {
    "id": "jcsc-ikebukuro-parco-facility-2021-10",
-   "title": "施設概要 池袋パルコ (2021-10-29)",
+   "title": "まちづくり・地域活性化セミナー ＜SC概要＞ 池袋パルコ",
    "publisher": "一般社団法人日本ショッピングセンター協会",
    "url": "https://www.jcsc.or.jp/pt_events/p_20211029_90046",
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
    "decision": { "url": "https://github.com/nurockplayer/gteki/pull/512", "date": "2026-10-25" },
-   "attribution": "一般社団法人日本ショッピングセンター協会「施設概要 池袋パルコ」(facts only; not reproduced)",
+   "attribution": "一般社団法人日本ショッピングセンター協会「まちづくり・地域活性化セミナー」＜SC概要＞ (facts only; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-25T18:25:00+09:00",
    "datasetDate": "2021-10-29",
-   "notes": "S13 in the data-research source list. 名称「池袋パルコ」と階数「地下２階～地上８階」のみ採用（事実のみ）。サイトに利用規約はなく、公表されているのは個人情報保護方針だけなので引用できる禁止条項はない（#512 で 2026-10-25 に確認）→ OD-34 の facts-only。パルコ自身のサイトは #502（2026-10-25）の判断により corroboration only。"
+   "notes": "S13 in the data-research source list. ページは協会のセミナー告知で、本文の＜SC概要＞に 名称：池袋パルコ／階数：地下２階～地上８階 などが載る（所在地・開業日・店舗数もあるが未採用）。採用は 名称 と 階数 のみ（事実のみ）。URL の日付は 2021-10-29、セミナー開催日は 2021-12-07。サイトに利用規約はなく、公表されているのは個人情報保護方針だけなので引用できる禁止条項はない（#512 で 2026-10-25 に確認）→ OD-34 の facts-only。パルコ自身のサイトは #502（2026-10-25）の判断により corroboration only。"
   }
  ],
  "floors": [
