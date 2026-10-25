@@ -163,6 +163,8 @@ const STRINGS = {
     /** GTEki-made wayfinding signs are generated from the graph, not surveyed positions (#203 B14). */
     generatedSigns: "看板は経路データから自動配置しています（実際の現地の看板位置ではありません）",
     sources: "出典",
+    /** #491 / OD-22: endpoint sources name the origin/destination; they are never evidence of the path. */
+    nameEvidence: "POI名の出典（経路の根拠ではありません）",
     credits: "出典",
     creditsLabel: "データの出典表示",
     /** Modification disclosure required by PDL / CC BY when a source was processed. */
@@ -369,6 +371,7 @@ const STRINGS = {
     stairFootLabel: (name: string) => `${name} (stair foot)`,
     generatedSigns: "Signs are placed from the route data, not at the real sign positions",
     sources: "Sources",
+    nameEvidence: "POI name evidence (not route evidence)",
     credits: "Credits",
     creditsLabel: "Data credits",
     modified: "modified",

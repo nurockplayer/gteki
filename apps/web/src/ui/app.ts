@@ -927,15 +927,24 @@ export class App {
 
     const prov = el("details", "provenance");
     prov.append(el("summary", undefined, `${t.sources} · ${t.oldestSource} ${r.oldestSourceDate ?? "?"}${r.evidenceCheckedDate ? `${t.dateJoiner}${t.deskCheckedOn} ${r.evidenceCheckedDate}` : ""}`));
-    const srcList = el("ul");
-    for (const id of r.sourceIds) {
-      const s = b.sources.find((x) => x.id === id);
-      if (!s) continue;
-      const li = this.creditItem(s);
-      if (s.datasetDate) li.append(el("span", "muted", ` · ${s.datasetDate}`));
-      srcList.append(li);
+    const creditRows = (ids: Iterable<string>) => {
+      const list = el("ul");
+      for (const id of ids) {
+        const s = b.sources.find((x) => x.id === id);
+        if (!s) continue;
+        const li = this.creditItem(s);
+        if (s.datasetDate) li.append(el("span", "muted", ` · ${s.datasetDate}`));
+        list.append(li);
+      }
+      return list;
+    };
+    prov.append(creditRows(r.sourceIds));
+    // Endpoint sources name the origin/destination (e.g. an exit alias); they are never evidence of the path
+    // (#491, OD-22), so they are listed apart instead of beside the path's sources.
+    const nameIds = r.endpointSourceIds.filter((id) => !r.sourceIds.includes(id));
+    if (nameIds.length) {
+      prov.append(el("p", "muted", t.nameEvidence), creditRows(nameIds));
     }
-    prov.append(srcList);
     card.append(prov);
     sheet.append(card);
     const merchant = this.merchantCard();
