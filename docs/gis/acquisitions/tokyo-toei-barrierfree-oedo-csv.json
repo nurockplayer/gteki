@@ -2,24 +2,24 @@
   "source_id": "tokyo-toei-barrierfree-oedo-csv",
   "resolved_url": "https://www.opendata.metro.tokyo.lg.jp/kotsu/subway_barrierfree_oedo.csv",
   "resolution_evidence": null,
-  "requested_at": "2026-10-24T08:58:03.155Z",
-  "completed_at": "2026-10-24T08:58:03.346Z",
+  "requested_at": "2026-10-25T07:44:43.679Z",
+  "completed_at": "2026-10-25T07:44:44.049Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "text/csv",
-    "content-length": null,
-    "etag": "W/\"1416-64864798500a8\"",
+    "content-length": "5142",
+    "etag": "\"1416-64864798500a8\"",
     "last-modified": "Thu, 15 Jan 2026 03:03:52 GMT",
-    "date": "Sat, 24 Oct 2026 08:58:03 GMT"
+    "date": "Sun, 25 Oct 2026 07:44:43 GMT"
   },
   "bytes": 5142,
   "sha256": "83962d45a32b560f7b2628ea6d1b1b11758ec0042c905373ce0ef4c6e0f70e98",
   "store_path": "raw/83962d45a32b560f7b2628ea6d1b1b11758ec0042c905373ce0ef4c6e0f70e98/subway_barrierfree_oedo.csv",
-  "tool_version": "0.1.0",
-  "git_commit": "724459b8feb165e20d9fb2e7127c656c09099578",
-  "expected_bytes": null,
+  "tool_version": "manual-curl",
+  "git_commit": "9dbd4ce8f80c80516c478622e676a062053ee7f8",
+  "expected_bytes": 5142,
   "expected_url_match": true,
-  "size_check": "NOT_SPECIFIED",
+  "size_check": "MATCH",
   "mode": "online",
   "supporting_documents": [
     {
