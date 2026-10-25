@@ -1,0 +1,53 @@
+{
+  "source_id": "tokyo-toei-elevator-inspection-csv",
+  "resolved_url": "https://www.opendata.metro.tokyo.lg.jp/kotsu/130001_bureau-of-transportation.csv",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-25T07:49:01.807Z",
+  "completed_at": "2026-10-25T07:49:01.972Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "text/csv",
+    "content-length": "31047",
+    "etag": "\"7947-65ddace280d68\"",
+    "last-modified": "Thu, 15 Oct 2026 06:03:23 GMT",
+    "date": "Sun, 25 Oct 2026 07:49:01 GMT"
+  },
+  "bytes": 31047,
+  "sha256": "0475121e8a9416d3bc71fe55028664aa788a46bceb281511f7658a72863af59a",
+  "store_path": "raw/0475121e8a9416d3bc71fe55028664aa788a46bceb281511f7658a72863af59a/130001_bureau-of-transportation.csv",
+  "tool_version": "manual-curl",
+  "git_commit": "9dbd4ce8f80c80516c478622e676a062053ee7f8",
+  "expected_bytes": 31047,
+  "expected_url_match": true,
+  "size_check": "MATCH",
+  "mode": "online",
+  "supporting_documents": [
+    {
+      "id": "package-show",
+      "requested_url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000018d0000000051",
+      "url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000018d0000000051",
+      "http_status": 200,
+      "sha256": "78003dbda91168ec0e785486462371709f48456781d1f7bf11c1fcf4f0de45c6",
+      "bytes": 4445,
+      "store_path": "raw/78003dbda91168ec0e785486462371709f48456781d1f7bf11c1fcf4f0de45c6/package_show"
+    },
+    {
+      "id": "portal-terms",
+      "requested_url": "https://portal.data.metro.tokyo.lg.jp/terms/",
+      "url": "https://portal.data.metro.tokyo.lg.jp/terms/",
+      "http_status": 200,
+      "sha256": "74e591bc0092beaed0921015d3b2b0b9bf90c70e67508b036155f6e5400cd67a",
+      "bytes": 44403,
+      "store_path": "raw/74e591bc0092beaed0921015d3b2b0b9bf90c70e67508b036155f6e5400cd67a/terms"
+    },
+    {
+      "id": "cc-by-4-deed-ja",
+      "requested_url": "https://creativecommons.org/licenses/by/4.0/deed.ja",
+      "url": "https://creativecommons.org/licenses/by/4.0/deed.ja",
+      "http_status": 200,
+      "sha256": "cf5b3d5b092076f0c146b9c41d7bca8a5ad5171660b7033cd8125ba5ac6d0382",
+      "bytes": 33449,
+      "store_path": "raw/cf5b3d5b092076f0c146b9c41d7bca8a5ad5171660b7033cd8125ba5ac6d0382/deed.ja"
+    }
+  ]
+}
