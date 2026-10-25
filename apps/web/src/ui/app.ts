@@ -12,6 +12,8 @@ import { coverageText, initialLang, pick, strings, type Lang } from "../i18n.ts"
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
 import { isUnlocatedShop, noRouteText, poiNoteText } from "./noRouteText.ts";
+import { categoriesIn } from "./categoryFilter.ts";
+import { merchantCardEl, merchantCardModel } from "./merchantCard.ts";
 import { stationClock } from "../stationClock.ts";
 import { assetDerivationPresentation, dataFileCredits, dataFileRowText, factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
@@ -49,6 +51,8 @@ interface State {
   route: RouteResult | RouteFailure | null;
   /** Which enabled option made the last `no_path` refuse (null = not a no_path). */
   noPath: NoPathCause | null;
+  /** The search category filter (#213): one of the loaded station's categories, or null for no filter. */
+  filter: Poi["category"] | null;
   polyline: PolylinePoint[];
   instructions: Instruction[];
   activeInstruction: number;
@@ -79,7 +83,7 @@ export class App {
   private readonly s: State = {
     lang: initialLang(), entries: [], entry: null, loaded: null, router: null, search: null,
     origin: null, destination: null, destinationTenant: null, profile: { stepFree: false, unpaidOnly: false, strictHours: false },
-    route: null, noPath: null, polyline: [], instructions: [], activeInstruction: 0,
+    route: null, noPath: null, filter: null, polyline: [], instructions: [], activeInstruction: 0,
   };
   private explorer!: Explorer;
   private readonly identityView = new StationIdentityView();
@@ -93,6 +97,7 @@ export class App {
     toNote: el("p", "field-note"),
     fromResults: el("div", "results"),
     toResults: el("div", "results"),
+    categoryFilter: el("select", "category-filter"),
     spawnChips: el("div", "chips"),
     profile: el("div", "chips profile"),
     sheet: el("section", "sheet"),
@@ -189,7 +194,18 @@ export class App {
     swap.addEventListener("click", () => this.swap());
     const fields = el("div", "fields");
     fields.append(fromRow, toRow, swap);
-    panel.append(this.identityView.overview, this.ui.banner, fields, this.ui.spawnChips, this.ui.profile, this.ui.more);
+    // #213: narrow both search lists to one POI category. Only the loaded station's own categories are offered.
+    this.ui.categoryFilter.addEventListener("change", () => {
+      const v = this.ui.categoryFilter.value;
+      this.s.filter = v === "" ? null : v as Poi["category"];
+      // A list that is on screen is rebuilt, so the change is visible without closing it first.
+      if (document.activeElement === this.ui.toInput) this.renderResults("to");
+      else if (document.activeElement === this.ui.fromInput) this.renderResults("from");
+      else { this.closeResults("to"); this.closeResults("from"); }
+    });
+    const filterRow = el("div", "filter-row");
+    filterRow.append(this.ui.categoryFilter);
+    panel.append(this.identityView.overview, this.ui.banner, fields, filterRow, this.ui.spawnChips, this.ui.profile, this.ui.more);
 
     this.ui.hint.setAttribute("role", "note");
     this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.minimap.el, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit);
@@ -205,6 +221,7 @@ export class App {
     this.ui.railBtn.textContent = this.s.lang === "ja" ? "電車に乗る（デモ・未調査）" : "Ride train (demo, not surveyed)";
     this.ui.railBtn.title = this.s.lang === "ja" ? "埼京線 乗車デモ（仮設ホーム）" : "JR Saikyo ride demo (temporary platform)";
     this.ui.more.setAttribute("aria-label", t.options);
+    this.ui.categoryFilter.setAttribute("aria-label", t.categoryFilter);
     this.ui.fromInput.placeholder = t.fromPlaceholder;
     this.ui.toInput.placeholder = t.toPlaceholder;
     this.root.querySelectorAll<HTMLElement>("[data-label]").forEach((n) => { n.textContent = t[n.dataset.label as "from" | "to"]; });
@@ -280,6 +297,8 @@ export class App {
     this.s.origin = null;
     this.s.destination = null;
     this.s.destinationTenant = null;
+    // The filter names a category of the previous station's bundle: start the new station unfiltered.
+    this.s.filter = null;
     this.s.route = null;
     this.s.polyline = [];
     this.s.instructions = [];
@@ -388,6 +407,7 @@ export class App {
     this.renderCredit();
     const b = this.s.loaded?.bundle;
     this.renderBanner(b);
+    this.renderCategoryFilter(b);
     this.renderSpawnChips(b);
     this.renderProfile();
     // The lists show the previous language / selection: drop them.
@@ -400,6 +420,27 @@ export class App {
     if (b) this.explorer.showPois(b, (p) => poiLabel(b, p, this.s.lang, this.t), [this.s.destination?.id, this.s.origin?.kind === "poi" ? this.s.origin.poi.id : undefined].filter(Boolean) as string[]);
     this.computeRoute();
     this.syncPanelMascot();
+  }
+
+  /**
+   * The search category filter (#213): "all" plus the categories this station's bundle actually has, in a
+   * fixed order. A category the station does not have is never offered; a leftover filter is dropped.
+   */
+  private renderCategoryFilter(b: StationBundle | undefined): void {
+    const select = this.ui.categoryFilter;
+    const categories = b ? categoriesIn(b.pois) : [];
+    if (this.s.filter !== null && !categories.includes(this.s.filter)) this.s.filter = null;
+    select.replaceChildren();
+    const all = el("option", undefined, this.t.categoryAll);
+    all.value = "";
+    select.append(all);
+    for (const c of categories) {
+      const o = el("option", undefined, this.t.categoryNames[c] ?? c);
+      o.value = c;
+      select.append(o);
+    }
+    select.value = this.s.filter ?? "";
+    select.hidden = categories.length === 0;
   }
 
   private renderBanner(b: StationBundle | undefined): void {
@@ -509,7 +550,11 @@ export class App {
     this.closeResults(which);
     if (!this.s.search || !this.s.loaded) return;
     const q = input.value.trim();
-    const hits: SearchHit[] = q ? this.s.search.search(q, { limit: 8, lang: this.s.lang }) : this.s.loaded.bundle.pois.slice(0, 8).map((poi) => ({ poi, score: 0, matched: "", routable: poi.connectorNodeIds.length > 0 }));
+    // The category filter narrows both lists to one POI category (#213); no filter searches every category.
+    const categories = this.s.filter ? [this.s.filter] : undefined;
+    const hits: SearchHit[] = q
+      ? this.s.search.search(q, { limit: 8, lang: this.s.lang, categories })
+      : this.s.loaded.bundle.pois.filter((poi) => !this.s.filter || poi.category === this.s.filter).slice(0, 8).map((poi) => ({ poi, score: 0, matched: "", routable: poi.connectorNodeIds.length > 0 }));
     this.ui.live.announce(searchLiveMessage(this.t, hits.length));
     if (hits.length === 0) {
       const none = el("div", "result empty", this.t.noResults);
@@ -776,6 +821,9 @@ export class App {
         card.append(relax);
       }
       sheet.append(card);
+      // The shop's own recorded facts (source, checked date, precision) sit beside the no-route card (#213).
+      const merchant = this.merchantCard();
+      if (merchant) sheet.append(merchant);
       // A sibling of the frozen card, so the card's own text and structure stay untouched.
       this.mascotSay({ kind: "no_path", reason: r.reason }, sheet);
       return;
@@ -861,6 +909,16 @@ export class App {
     prov.append(srcList);
     card.append(prov);
     sheet.append(card);
+    const merchant = this.merchantCard();
+    if (merchant) sheet.append(merchant);
+  }
+
+  /** The merchant card (#213) for a shop destination, or null: only a shop carries a directory listing. */
+  private merchantCard(): HTMLElement | null {
+    const poi = this.s.destination;
+    const b = this.s.loaded?.bundle;
+    if (!poi || poi.category !== "shop" || !b) return null;
+    return merchantCardEl(merchantCardModel(poi, b.sources, this.s.lang, this.floorLabel(poi)), this.t);
   }
 
   // ---- Modes / HUD -----------------------------------------------------------------

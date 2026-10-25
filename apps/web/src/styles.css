@@ -114,6 +114,22 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .card h2 { font-size: 15px; margin: 0 0 6px; }
 .card.no-route h2, .card.error h2 { color: var(--warn); }
 .card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+/* Two cards in the sheet (route + merchant, #213) are separated by a rule, not by a gap. */
+.sheet > .card + .card { border-top: 1px solid var(--line); }
+/* ---- search category filter (#213) ---- */
+.filter-row { display: flex; gap: 6px; margin-top: 8px; }
+.filter-row:empty { display: none; }
+.category-filter {
+  max-width: 100%; padding: 6px 10px; border-radius: 999px; font-size: 12px;
+  background: var(--glass); border: 1px solid var(--line); color: var(--text);
+}
+/* ---- merchant card (#213) ---- */
+.card.merchant .merchant-meta { color: var(--text); font-size: 12px; }
+.card.merchant .merchant-note { margin-top: 4px; }
+.card.merchant .merchant-no-route { margin-top: 4px; color: #ffd59a; }
+.card.merchant .merchant-source { margin-top: 6px; font-size: 12px; }
+.card.merchant .merchant-source a { color: var(--accent); }
+.card.merchant .merchant-checked { margin-top: 2px; font-size: 12px; }
 .issues { font-size: 11px; font-family: ui-monospace, monospace; color: #ffc9c9; max-height: 40vh; overflow: auto; padding-left: 18px; }
 .route-head { display: flex; align-items: baseline; gap: 12px; color: var(--muted); font-size: 13px; }
 .route-head .big { font-size: 26px; color: var(--text); font-weight: 800; letter-spacing: -0.01em; }
