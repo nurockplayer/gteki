@@ -201,10 +201,9 @@ export class App {
     this.ui.categoryFilter.addEventListener("change", () => {
       const v = this.ui.categoryFilter.value;
       this.s.filter = v === "" ? null : v as Poi["category"];
-      // A list that is on screen is rebuilt, so the change is visible without closing it first.
-      if (document.activeElement === this.ui.toInput) this.renderResults("to");
-      else if (document.activeElement === this.ui.fromInput) this.renderResults("from");
-      else { this.closeResults("to"); this.closeResults("from"); }
+      // The change comes from the select, which holds focus, so no result list can still be on screen.
+      this.closeResults("to");
+      this.closeResults("from");
     });
     const filterRow = el("div", "filter-row");
     filterRow.append(this.ui.categoryFilter);
