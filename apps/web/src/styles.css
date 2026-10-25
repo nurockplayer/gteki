@@ -295,7 +295,9 @@ button.on { border-color: var(--accent); color: var(--accent); }
   width: var(--minimap-size); color: var(--text); font-size: 11px;
 }
 .minimap[hidden], .minimap [hidden], .app[data-mode="overview"] .minimap { display: none; }
-.minimap-body { display: grid; gap: 4px; padding-bottom: 6px; border-radius: 95px 95px 12px 12px; background: var(--glass-strong); border: 1px solid rgba(94, 240, 255, .35); box-shadow: var(--shadow); }
+.minimap-body { position: relative; display: grid; gap: 4px; padding-bottom: 6px; border-radius: 95px 95px 12px 12px; background: var(--glass-strong); border: 1px solid rgba(94, 240, 255, .35); box-shadow: var(--shadow); }
+/* Floor picker (#220): a pill over the map's lower rim, so it adds no height to the HUD. */
+.minimap-floor { position: absolute; top: calc(var(--minimap-size) - 31px); left: 50%; transform: translateX(-50%); max-width: calc(var(--minimap-size) - 56px); min-height: 22px; padding: 1px 6px; font-size: 10px; background: rgba(11, 24, 34, .92); border: 1px solid rgba(94, 240, 255, .35); border-radius: 11px; }
 .minimap-map { display: block; width: 100%; aspect-ratio: 1; }
 .minimap-rim { fill: rgba(11, 24, 34, .8); stroke: #5ef0ff; stroke-width: 1.5; }
 .minimap-graph { fill: none; stroke: #5ef0ff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }

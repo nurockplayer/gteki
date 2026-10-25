@@ -516,3 +516,91 @@ describe("Minimap route overlay (#220 PR2)", () => {
     observer.disconnect();
   });
 });
+
+describe("Minimap floor picker (#220)", () => {
+  let pose: ExplorerPose | null;
+  const maps: Minimap[] = [];
+  // One edge per floor, so the drawn floor is readable from the graph itself.
+  const floorsBundle = () => createSyntheticBundle([syntheticEdge("conc-edge", "start", "a"), syntheticEdge("upper-edge", "upper", "upper-2")]);
+  function create(bundle: StationBundle = floorsBundle()) {
+    const map = new Minimap(() => pose);
+    maps.push(map);
+    document.body.append(map.el);
+    map.setStation(bundle, "en");
+    return map;
+  }
+  const tick = () => vi.advanceTimersByTime(90);
+  const select = (map: Minimap) => map.el.querySelector<HTMLSelectElement>(".minimap-floor")!;
+  const graphPoints = (map: Minimap) => [...map.el.querySelectorAll(".minimap-graph polyline")].map((p) => p.getAttribute("points"));
+  const routePoints = (map: Minimap) => [...map.el.querySelectorAll(".minimap-route-line")].map((p) => p.getAttribute("points"));
+  const level = (map: Minimap) => map.el.querySelector(".minimap-label strong")!.textContent;
+  /** Choose a floor in the picker the way a click would: set the value, then fire its change event. */
+  const pick = (map: Minimap, value: string) => {
+    const el = select(map);
+    el.value = value;
+    el.dispatchEvent(new Event("change"));
+  };
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    localStorage.clear();
+    vi.spyOn(document, "hidden", "get").mockReturnValue(false);
+    pose = { east: 0, north: 0, up: 0, headingDeg: 0, mode: "walk" };
+  });
+  afterEach(() => {
+    for (const map of maps.splice(0)) map.dispose();
+    document.body.replaceChildren();
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+  });
+
+  it("picking a floor draws that floor's walk graph and route run", () => {
+    const map = create();
+    map.setRoute({ points: upRoute, steps: upSteps }, null);
+    expect(select(map).value).toBe("");
+    expect(graphPoints(map)).toEqual(["0,0 20,0"]);
+    expect(routePoints(map)).toEqual(["0,0 20,0"]);
+    expect(level(map)).toBe("B1");
+    pick(map, "upper");
+    expect(graphPoints(map)).toEqual(["20,0 40,0"]);
+    expect(routePoints(map)).toEqual(["20,0 20,-8"]);
+    expect(level(map)).toBe("1F");
+    // The choices come from the station's own floor list, follow first.
+    expect([...select(map).options].map((option) => option.textContent)).toEqual(["Follow player", "B1", "1F", "B1"]);
+  });
+
+  it("follows the player's floor until a floor is picked, then returns on follow", () => {
+    const map = create();
+    expect(level(map)).toBe("B1");
+    pose = { ...pose!, up: 4 };
+    tick();
+    expect(level(map)).toBe("1F");
+    expect(graphPoints(map)).toEqual(["20,0 40,0"]);
+    // A pick pins the floor: later player floor changes do not move the map.
+    pick(map, "concourse");
+    expect(level(map)).toBe("B1");
+    expect(graphPoints(map)).toEqual(["0,0 20,0"]);
+    pose = { ...pose!, up: 0 };
+    tick();
+    pose = { ...pose!, up: 4 };
+    tick();
+    expect(level(map)).toBe("B1");
+    // Choosing follow returns to the player's floor straight away, with no tick needed.
+    pick(map, "");
+    expect(level(map)).toBe("1F");
+    expect(graphPoints(map)).toEqual(["20,0 40,0"]);
+  });
+
+  it("resets to follow and rebuilds the choices on station switch", () => {
+    const map = create();
+    pick(map, "upper");
+    expect(level(map)).toBe("1F");
+    map.setStation(createSyntheticBundle([syntheticEdge("conc-edge", "start", "a")]), "en");
+    expect(select(map).value).toBe("");
+    expect(level(map)).toBe("B1");
+    expect(graphPoints(map)).toEqual(["0,0 20,0"]);
+    expect([...select(map).options].map((option) => option.textContent)).toEqual(["Follow player", "B1", "1F", "B1"]);
+    map.setStation(null, "en");
+    expect(select(map).hidden).toBe(true);
+  });
+});
