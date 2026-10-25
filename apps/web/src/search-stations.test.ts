@@ -125,6 +125,16 @@ describe("core search on the real Shinjuku POIs (docs/stations/shinjuku/search-e
     expect(strong(q)).toEqual([]);
   });
 
+  // #501: A1出口 is the printed name of the search-only Toei exit poi:toei-exit:a1; it also matches the Metro
+  // A10–A18 exits at 40 through the number (search-expected.md). Nothing here is routable.
+  it("A1出口 returns the printed WP4 exit first and only search-only POIs", () => {
+    const s = strong("A1出口");
+    expect(s.length).toBeGreaterThan(0);
+    expect(hits("A1出口")[0]?.poi.id).toBe("poi:toei-exit:a1");
+    expect(hits("A1出口")[0]?.score).toBe(100);
+    for (const h of s) expect(h.poi.connectorNodeIds, h.poi.id).toEqual([]);
+  });
+
   // #411/#501: S03 and WP4 names that contain 出口 or 改札 also match (search only). The E27 hits stay as the doc
   // has them.
   it.each([
@@ -157,7 +167,7 @@ describe("core search on the real Shinjuku POIs (docs/stations/shinjuku/search-e
     const shops = SHOP_ONLY_HITS[q] ?? [];
     expect(s.length).toBeGreaterThan(0);
     for (const h of s) {
-      // None of an S03 name, a merchant listing or a WP4 line POI is ever routable.
+      // Neither an S03 name, a WP4 line name nor a merchant listing is ever routable.
       expect(h.poi.connectorNodeIds, h.poi.id).toEqual([]);
       if (h.poi.category === "shop") {
         // Only the recorded listing may appear, and it cites its own single directory source.
@@ -167,10 +177,11 @@ describe("core search on the real Shinjuku POIs (docs/stations/shinjuku/search-e
         // #501: a printed line name on a facts-only source; its exact sources are asserted in the station's WP4 block.
         expect(h.poi.evidence.sourceIds.every((id) => WP4_SOURCES.has(id)), h.poi.id).toBe(true);
       } else {
+        // An S03 name cites only the S03 dataset.
         expect(h.poi.evidence.sourceIds, h.poi.id).toEqual(["tokyo-s03-zip"]);
       }
     }
-    expect(s.filter((h) => h.poi.category !== "shop").length, `${q}: the S03 names are still expected`).toBeGreaterThan(0);
+    expect(s.filter((h) => h.poi.category !== "shop").length, `${q}: the search-only names are still expected`).toBeGreaterThan(0);
     expect(ids(s.filter((h) => h.poi.category === "shop")), q).toEqual([...shops].sort());
   });
 
