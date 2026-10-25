@@ -168,9 +168,12 @@ describe("Ikebukuro golden search", () => {
   // Seibu names come from the Seibu Railway station page (seibu-ikebukuro-station-2026-10, OD-25); only POIs
   // sourced from that page may carry 西武 / Seibu labels, and the Seibu queries may reach only those POIs.
   // 百貨店 only on the Tobu Department Store POI, which cites the store's own page (OD-34); Sogo & Seibu stays excluded.
+  // パルコ only on the PARCO POI, which cites the JCSC facility record (S13, facts-only); PARCO's own site is corroboration only.
   const SEIBU_SOURCE = "seibu-ikebukuro-station-2026-10";
   const TOBU_DEPT_SOURCE = "tobu-dept-ikebukuro-2026-10";
   const TOBU_DEPT_POI = "shop-ikb-tobudept";
+  const PARCO_SOURCE = "jcsc-ikebukuro-parco-facility-2021-10";
+  const PARCO_POI = "shop-ikb-parco";
   describe("no false gate for names the data does not evidence", () => {
     for (const q of ["そごう", "PARCO", "パルコ", "山手線"]) {
       it(`${JSON.stringify(q)} returns no gate or exit`, () => {
@@ -186,15 +189,17 @@ describe("Ikebukuro golden search", () => {
       }
     });
 
-    it("carries PARCO / Sogo labels nowhere, 百貨店 only on the Tobu Department Store POI, and Seibu labels only on Seibu-sourced POIs", () => {
-      const banned = /parco|パルコ|そごう|sogo/i;
+    it("carries PARCO labels only on the JCSC-sourced PARCO POI, Sogo labels nowhere, 百貨店 only on the Tobu Department Store POI, and Seibu labels only on Seibu-sourced POIs", () => {
+      const parco = /parco|パルコ/i;
+      const sogo = /そごう|sogo/i;
       const departmentStore = /百貨店/;
       const seibu = /西武|seibu/i;
       const offenders = bundle.pois.flatMap((poi) =>
         [...poi.names, ...poi.aliases]
           .filter(
             ({ text }) =>
-              banned.test(text) ||
+              sogo.test(text) ||
+              (parco.test(text) && !(poi.id === PARCO_POI && poi.evidence.sourceIds.includes(PARCO_SOURCE))) ||
               (departmentStore.test(text) && !(poi.id === TOBU_DEPT_POI && poi.evidence.sourceIds.includes(TOBU_DEPT_SOURCE))) ||
               (seibu.test(text) && !poi.evidence.sourceIds.includes(SEIBU_SOURCE)),
           )

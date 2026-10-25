@@ -19357,6 +19357,38 @@
      "text": "Seibu Railway Ikebukuro Station, 西武南口. Unverified; no guided route."
     }
    ]
+  },
+  {
+   "id": "shop-ikb-parco",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "池袋パルコ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "jcsc-ikebukuro-parco-facility-2021-10"
+    ],
+    "method": "facts-only facility record (OD-34 class, S13), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-25"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "本館は地下2階〜地上8階（日本ショッピングセンター協会の施設概要、2021-10-29 の表記）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Main building spans B2–8F (Japan Council of Shopping Centers facility record, printed 2021-10-29). Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
   }
  ]
 }
