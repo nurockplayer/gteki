@@ -49,8 +49,12 @@ describe("Shinjuku gteki/ contract files", () => {
     for (const s of e27) {
       expect(s.rights, s.id).toBe("PUBLISHED_UNDER_OWNER_OVERRIDE");
       expect(s.override, s.id).toEqual({ decision: "https://github.com/nurockplayer/gteki/pull/16#issuecomment-6313815757", date: "2026-10-21" });
-      expect(s.license?.name, s.id).toMatch(/unconfirmed/i);
-      expect(s.license?.name, s.id).not.toMatch(/PDL|CC[ -]?BY/i);
+      // #297: every language states the same unconfirmed status, and none claims PDL or CC BY.
+      for (const [lang, status] of [["ja", /未確認/], ["en", /unconfirmed/i]] as const) {
+        const text = textOf(s.license?.name, lang);
+        expect(text, `${s.id} ${lang}`).toMatch(status);
+        expect(text, `${s.id} ${lang}`).not.toMatch(/PDL|CC[ -]?BY/i);
+      }
     }
   });
 
