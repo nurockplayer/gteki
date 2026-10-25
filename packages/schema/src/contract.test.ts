@@ -490,6 +490,16 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     expect(errors(shared({ status: "OK", text: undefined }))).toContain("hours.text");
   });
 
+  it("refuses a printed-hours reading dated in the future (OD-32)", () => {
+    const b = createSyntheticBundle();
+    Object.assign(b.pois[0]!, { hours: { text: "10:00～21:00", sourceUrl: "https://example.org/shop", retrievedAt: "2999-01-01", basis: "undated-official", status: "OK" } });
+    expect(errors(b)).toContain("hours.date");
+    // A reading from today is fine: only dates after today are refused.
+    const today = new Date().toISOString().slice(0, 10);
+    Object.assign(b.pois[0]!, { hours: { text: "10:00～21:00", sourceUrl: "https://example.org/shop", retrievedAt: today, basis: "undated-official", status: "OK" } });
+    expect(errors(b)).not.toContain("hours.date");
+  });
+
   it("keeps unknown and symbolic floor elevations null and rejects unknown elevation sources", () => {
     for (const elevationSource of ["unknown", "symbolic"] as const) {
       const b = createSyntheticBundle();
