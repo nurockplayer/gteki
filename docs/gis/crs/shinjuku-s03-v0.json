@@ -24,8 +24,8 @@
       "path-level-geom": {
         "members": 11,
         "crs_key": "present, null",
-        "frame": "drawing-local per the spec; a null CRS means the coordinates cannot be inferred",
-        "verification": "UNVERIFIED: this pass did not check that these coordinates share the drawing-local frame ref_frame.transform consumes"
+        "frame": "UNKNOWN local frame; drawing-local is an unverified hypothesis; a null CRS means the coordinates cannot be inferred",
+        "verification": "UNVERIFIED: this pass did not check that these coordinates share the frame ref_frame.transform consumes"
       },
       "com-map": {
         "members": 1,
@@ -56,7 +56,7 @@
       "drawing_coefficients_sha256": "78dbe40fb37f277b48f4274d380e467cff8e3ff57f587b262673781b11a36e8e",
       "coefficient_hash_encoding": "UTF-8 JSON array in source order",
       "tuple_order": "[a,b,c,d,e,f]; u=a*x+c*y+e, v=b*x+d*y+f; the drawing result is (u,v) = (longitude,latitude)",
-      "applies_to": "v5_nav.json only; Path GeoJSON members have a separate unchecked local frame and must not go through this pair"
+      "applies_to": "v5_nav.json only; Path GeoJSON members have a separate UNKNOWN local frame (drawing-local is an unverified hypothesis) and must not go through this pair"
     },
     "station_frame": {
       "frame_id": "shinjuku-station-enu-v0",

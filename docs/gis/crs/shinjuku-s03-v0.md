@@ -1,6 +1,6 @@
 # shinjuku-s03-v0
 
-Four coordinate frames appear in one archive across its member types: standard level GeoJSON in WGS84 lon/lat; Path GeoJSON in a declared local frame that is **UNVERIFIED** in this pass; `v5_nav.json` in its own venue-local `mx`/`my` frame; and the drawing-local frame between them, reached from `v5_nav` by the first affine. The two affines that take the nav frame to geographic coordinates are scoped to `v5_nav.json` only. The nav member is **not geographic** and declares no CRS.
+Four coordinate frames appear in one archive across its member types: standard level GeoJSON in WGS84 lon/lat; Path GeoJSON in an **UNKNOWN local frame** — drawing-local is an **unverified hypothesis**; `v5_nav.json` in its own venue-local `mx`/`my` frame; and the drawing-local frame between them, reached from `v5_nav` by the first affine. The two affines that take the nav frame to geographic coordinates are scoped to `v5_nav.json` only. The nav member is **not geographic** and declares no CRS.
 
 Source: `tokyo-s03-zip` (2,317,035 B, SHA-256 `fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31`), drawing `35814`, specification `tokyo-s03-spec` (499,924 B, SHA-256 `c9258624d2eeacb3759f9c5c8e84c757c3caef1274574153206509ed55273095`).
 
@@ -11,7 +11,7 @@ Source: `tokyo-s03-zip` (2,317,035 B, SHA-256 `fc3466270c08593a300e652c7997021f8
 | Member pattern | Count | `crs` key | Frame |
 | --- | ---: | --- | --- |
 | `geojson-level-geom-*.geojson` | 11 | absent | WGS84 lon/lat (standard GeoJSON; the spec's absent-CRS sentence applies) |
-| `path-level-geom-*.geojson` | 11 | present, `null` | drawing-local per the spec; a null CRS means the coordinates cannot be inferred, and this pass did not check that they share the drawing-local frame `ref_frame.transform` consumes — **UNVERIFIED** |
+| `path-level-geom-*.geojson` | 11 | present, `null` | **UNKNOWN local frame; drawing-local is an unverified hypothesis.** A null CRS means the coordinates cannot be inferred, and this pass did not check that they share the frame `ref_frame.transform` consumes — **UNVERIFIED** |
 | `com-map.geojson` | 1 | absent | drawing metadata only; `drawings[0].ref_frame.transform` defines drawing-local → lon/lat |
 | `v5_nav.json` | 1 | absent | venue-local `mx`/`my`; not a standard GeoJSON geometry member, so the absent-CRS sentence does not classify it; affine 1 takes it to drawing-local, affine 2 to lon/lat |
 
@@ -89,7 +89,7 @@ Open:
 What ds-sjk-2 needs, and nothing else:
 
 1. **Inputs, by hash.** ZIP `fc3466270c08593a…`; `v5_nav.json` `469d34033cbe0052…`; `com-map.geojson` `0481b174b2fafe24…`; drawing id 35814; the 11 level-member hashes in receipt `transform.level_member_sha256`; filenames are Shift_JIS (`legacyFileNameEncoding: 'shift_jis'`, `tools/gis/src/s03-transform.ts:762`, `tools/gis/src/zip.ts:10`).
-2. **Order and tuple convention, scoped to `v5_nav.json` only.** `v5_nav.json d[0].t` (raw nav frame → drawing-local), then `com-map.geojson drawings[0].ref_frame.transform` (drawing-local → longitude/latitude), both `[a,b,c,d,e,f]` with `u=a*x+c*y+e`, `v=b*x+d*y+f`; the second result is `(u, v) = (longitude, latitude)`. Do not swap the two affines (the reversed order yields 0/2506 inside and out-of-range coordinates), and do not pass `mx`/`my` to any projection inverse. **Do not feed Path GeoJSON coordinates through this recipe**: their `crs: null` local frame is unchecked and may already be drawing-local, so reusing the pair would transform them twice.
+2. **Order and tuple convention, scoped to `v5_nav.json` only.** `v5_nav.json d[0].t` (raw nav frame → drawing-local), then `com-map.geojson drawings[0].ref_frame.transform` (drawing-local → longitude/latitude), both `[a,b,c,d,e,f]` with `u=a*x+c*y+e`, `v=b*x+d*y+f`; the second result is `(u, v) = (longitude, latitude)`. Do not swap the two affines (the reversed order yields 0/2506 inside and out-of-range coordinates), and do not pass `mx`/`my` to any projection inverse. **Do not feed Path GeoJSON coordinates through this recipe**: their local frame is UNKNOWN with `crs: null` — drawing-local is an unverified hypothesis — so reusing the pair would transform them twice if they already are drawing-local.
 3. **Geographic interpretation.** Treat the output as WGS84 lon/lat and project it as JGD2011 geographic on GRS80. Apply **no** datum/epoch correction, shift, rotation or scale.
 4. **Station ENU.** `stationEnuProjector({lat: 35.687, lon: 139.6994, hM: 0})` — or `stationHorizontal` with `tools/gis/frames/shinjuku-station-enu-v0.json` — evaluated at height 0 for the horizontal result only; `x` east, `y` north; renderer `(x, z, -y)`. S03 heights do not exist: `z` stays null, no floor elevation is derived from `zlevel` or from node level ids.
 5. **Node and link model.** 2,506 nodes `n[]` (`id`, `mx`, `my`, `l[].lid` levels); 2,653 links `l[]` with `n1`/`n2`, `d` = direction (1 forward, 2 reverse, 3 both) and `dz` only across levels; no stair/lift/escalator field exists (`docs/gis/research/2026-10-24-s03-transform-check.md:122`).
