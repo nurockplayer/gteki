@@ -176,7 +176,8 @@ describe("--check negative controls", () => {
     expect(r2.stderr).toContain(`gteki/${ATLAS} is missing`);
   });
 
-  it.skipIf(!python)("fails when the atlas-facts file disagrees with the tier manifest or is missing", () => {
+  // The script only compares the facts file when every atlas tier's manifest is at hand, so this needs Lane E too.
+  it.skipIf(!python || !hasLaneE)("fails when the atlas-facts file disagrees with the tier manifest or is missing", () => {
     const facts = copyAtlasFacts();
     const doc = JSON.parse(fs.readFileSync(facts, "utf8"));
     doc.nosing.tiers.high.max_isolated_mip += 1;
