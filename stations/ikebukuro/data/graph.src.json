@@ -1055,6 +1055,36 @@
    "retrievedAt": "2026-10-24T20:00:00+09:00",
    "datasetDate": "2026-08",
    "notes": "ライセンスなし・事実のみ参照（複製なし）。Read the 他社乗換路線 list. Gate and exit wording appears only in the AED notice (1F改札口, B1F改札口) and the station map is an image; neither ties a gate to a transfer. lines-lead also read the station-map image (dated 2026.8.1 on the image) for printed direction-arrow labels and the platform legend only; no position or layout is taken (OD-03). Distinct id from seibu-ikebukuro-station-2026-10 (#414). Rights class: OD-25 (Seibu terms read as the Tokyo Metro class under #26)."
+  },
+  {
+   "id": "tokyometro-ikebukuro-station-en-2026-10",
+   "title": "Ikebukuro Station | Tokyo Metro",
+   "publisher": "東京地下鉄",
+   "url": "https://www.tokyometro.jp/lang_en/station/ikebukuro/index.html",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" },
+   "attribution": "東京メトロ 池袋駅 (English station page) (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-25T18:30:00+09:00",
+   "datasetDate": null,
+   "notes": "ライセンスなし・事実のみ参照（複製なし）。駅名・英語路線名・駅番号のみ採用: Marunouchi Line / Yurakucho Line / Fukutoshin Line と M25 / Y09 / F09（ページ表記）。ライブのホストは他の東京メトロページと同じくこの環境から 403 を返すため、Wayback の 2025-10-07 スナップショット (http://web.archive.org/web/20251007182755/https://www.tokyometro.jp/lang_en/station/ikebukuro/index.html) で読んだ。403 は GAP として記録。"
+  },
+  {
+   "id": "jcsc-ikebukuro-parco-facility-2021-10",
+   "title": "まちづくり・地域活性化セミナー ＜SC概要＞ 池袋パルコ",
+   "publisher": "一般社団法人日本ショッピングセンター協会",
+   "url": "https://www.jcsc.or.jp/pt_events/p_20211029_90046",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/512", "date": "2026-10-25" },
+   "attribution": "一般社団法人日本ショッピングセンター協会「まちづくり・地域活性化セミナー」＜SC概要＞ (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-25T18:25:00+09:00",
+   "datasetDate": null,
+   "notes": "S13 in the data-research source list. ページは協会のセミナー告知で、本文の＜SC概要＞に 名称：池袋パルコ／階数：地下２階～地上８階 などが載る（所在地・開業日・店舗数もあるが未採用）。採用は 名称 と 階数 のみ（事実のみ）。URL の日付トークンは 20211029（印刷された日付ではない）、セミナー開催日は 2021-12-07。datasetDate は null（ページに印刷された日付はない）。サイトに利用規約はなく、公表されているのは個人情報保護方針だけなので引用できる禁止条項はない（#512 で 2026-10-25 に確認）→ OD-34 の facts-only。パルコ自身のサイトは #502（2026-10-25）の判断により corroboration only。"
   }
  ],
  "floors": [
@@ -4214,6 +4244,14 @@
     {
      "lang": "zh-Hant",
      "text": "丸之內線 中央通道西剪票口"
+    },
+    {
+     "lang": "en",
+     "text": "M25"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line"
     }
    ],
    "floorId": "b1",
@@ -4222,10 +4260,11 @@
    "paid": false,
    "evidence": {
     "sourceIds": [
-     "toshima-underground-guide-2022"
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "gate exists per official map; exact opening not yet identified in PLATEAU",
-    "checkedDate": "2026-10-20"
+    "checkedDate": "2026-10-25"
    }
   },
   {
@@ -4309,6 +4348,10 @@
     {
      "lang": "zh-Hant",
      "text": "有樂町線 南通道西剪票口"
+    },
+    {
+     "lang": "en",
+     "text": "Y09"
     }
    ],
    "floorId": "b1",
@@ -4318,10 +4361,11 @@
    "evidence": {
     "sourceIds": [
      "toshima-underground-guide-2022",
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "gate name per the Toshima guide; a lift and escalator connection to Exit 4 (エソラ) outside the fare gates (改札外) per Tokyo Metro's accessibility page (facts only). Search-only: the gate machines sit inside surveyed floor with no gate-line opening (gap-south-west), so no node or edge is authored",
-    "checkedDate": "2026-10-22"
+    "checkedDate": "2026-10-25"
    }
   },
   {
@@ -4393,6 +4437,14 @@
     {
      "lang": "zh-Hant",
      "text": "丸之內線 中央通道中央剪票口"
+    },
+    {
+     "lang": "en",
+     "text": "M25"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line"
     }
    ],
    "floorId": "b1",
@@ -4401,10 +4453,11 @@
    "paid": false,
    "evidence": {
     "sourceIds": [
-     "toshima-underground-guide-2022"
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "gate exists per official map; exact opening not yet identified in PLATEAU",
-    "checkedDate": "2026-10-20"
+    "checkedDate": "2026-10-25"
    }
   },
   {
@@ -4476,6 +4529,14 @@
     {
      "lang": "zh-Hant",
      "text": "丸之內線 中央通道東剪票口"
+    },
+    {
+     "lang": "en",
+     "text": "M25"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line"
     }
    ],
    "floorId": "b1",
@@ -4484,10 +4545,11 @@
    "paid": false,
    "evidence": {
     "sourceIds": [
-     "toshima-underground-guide-2022"
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "gate exists per official map; exact opening not yet identified in PLATEAU",
-    "checkedDate": "2026-10-20"
+    "checkedDate": "2026-10-25"
    }
   },
   {
@@ -10329,17 +10391,27 @@
      "text": "副都心線 西通路東改札"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "F09"
+    },
+    {
+     "lang": "en",
+     "text": "Fukutoshin Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10361,17 +10433,27 @@
      "text": "副都心線 西通路西改札"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "F09"
+    },
+    {
+     "lang": "en",
+     "text": "Fukutoshin Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10393,17 +10475,27 @@
      "text": "有楽町線 南通路東改札"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Y09"
+    },
+    {
+     "lang": "en",
+     "text": "Yurakucho Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10425,17 +10517,27 @@
      "text": "丸ノ内線 エレベーター ホーム（終端寄り）～中央通路西改札"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "M25"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10457,17 +10559,27 @@
      "text": "丸ノ内線 エレベーター 中央通路東改札～３４番出入口"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "M25"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10489,17 +10601,27 @@
      "text": "有楽町線 エレベーター ホーム（和光市寄り）～南通路西改札"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Y09"
+    },
+    {
+     "lang": "en",
+     "text": "Yurakucho Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10521,17 +10643,27 @@
      "text": "有楽町線 エレベーター 南通路西改札～４番出入口（エソラ）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Y09"
+    },
+    {
+     "lang": "en",
+     "text": "Yurakucho Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10553,17 +10685,27 @@
      "text": "副都心線 エレベーター ホーム（中央）～中二階～西通路東改札"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "F09"
+    },
+    {
+     "lang": "en",
+     "text": "Fukutoshin Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10585,17 +10727,27 @@
      "text": "副都心線 エレベーター 西通路東改札～Ｃ９番出入口"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "F09"
+    },
+    {
+     "lang": "en",
+     "text": "Fukutoshin Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10617,17 +10769,27 @@
      "text": "副都心線 エレベーター 西通路東改札～C１b出入口"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "F09"
+    },
+    {
+     "lang": "en",
+     "text": "Fukutoshin Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10649,17 +10811,27 @@
      "text": "丸ノ内線 エスカレーター（上り・下り） 中央通路東改札～３５番出入口"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "M25"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10681,17 +10853,27 @@
      "text": "丸ノ内線 エスカレーター（上り） ホーム（荻窪寄り）～中央通路東改札"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "M25"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10713,17 +10895,27 @@
      "text": "有楽町線 エスカレーター（上り・下り） ホーム（中央・和光市寄り）～南通路西改札"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Y09"
+    },
+    {
+     "lang": "en",
+     "text": "Yurakucho Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10745,17 +10937,27 @@
      "text": "有楽町線 エスカレーター（上り・下り） ホーム（中央・新木場寄り）～南通路東改札"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Y09"
+    },
+    {
+     "lang": "en",
+     "text": "Yurakucho Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10777,17 +10979,27 @@
      "text": "有楽町線 エスカレーター（上り・下り） 南通路西改札～４番出入口（エソラ）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Y09"
+    },
+    {
+     "lang": "en",
+     "text": "Yurakucho Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10809,17 +11021,27 @@
      "text": "有楽町線 エスカレーター（上り） ホーム（新木場寄り）～南通路東改札"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Y09"
+    },
+    {
+     "lang": "en",
+     "text": "Yurakucho Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10841,17 +11063,27 @@
      "text": "副都心線 エスカレーター（上り・下り） ホーム（中央・和光市寄り）～西通路西改札"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "F09"
+    },
+    {
+     "lang": "en",
+     "text": "Fukutoshin Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10873,17 +11105,27 @@
      "text": "副都心線 エスカレーター（上り・下り） ホーム（中央・和光市寄り）～中二階～西通路東改札"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "F09"
+    },
+    {
+     "lang": "en",
+     "text": "Fukutoshin Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10913,17 +11155,27 @@
      "text": "副都心線 エスカレーター（上り・下り） ホーム（中央・渋谷寄り）～中二階～西通路東改札"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "F09"
+    },
+    {
+     "lang": "en",
+     "text": "Fukutoshin Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10945,17 +11197,27 @@
      "text": "副都心線 エスカレーター（上り・下り） ホーム（渋谷寄り）～丸ノ内線乗降階連絡通路"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "F09"
+    },
+    {
+     "lang": "en",
+     "text": "Fukutoshin Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -10985,17 +11247,27 @@
      "text": "副都心線 エスカレーター（上り・下り） 西通路東改札～丸ノ内線・有楽町線連絡階"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "F09"
+    },
+    {
+     "lang": "en",
+     "text": "Fukutoshin Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -11017,17 +11289,27 @@
      "text": "副都心線 エスカレーター（上り・下り） 西通路西改札～Ｃ６番出入口"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "F09"
+    },
+    {
+     "lang": "en",
+     "text": "Fukutoshin Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -11049,17 +11331,27 @@
      "text": "副都心線 エスカレーター（上り・下り） 西通路西改札～Ｃ７番出入口"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "F09"
+    },
+    {
+     "lang": "en",
+     "text": "Fukutoshin Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -11081,17 +11373,27 @@
      "text": "副都心線 エスカレーター（上り） 西通路東改札～Ｃ８番出入口"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "F09"
+    },
+    {
+     "lang": "en",
+     "text": "Fukutoshin Line"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tokyometro-ikebukuro-accessibility-2026-10"
+     "tokyometro-ikebukuro-accessibility-2026-10",
+     "tokyometro-ikebukuro-station-en-2026-10"
     ],
     "method": "facts-only バリアフリー設備 page (#26), UNVERIFIED, SEARCH_ONLY",
-    "checkedDate": "2026-10-24"
+    "checkedDate": "2026-10-25"
    },
    "notes": [
     {
@@ -11732,6 +12034,14 @@
     {
      "lang": "ja",
      "text": "1F改札口"
+    },
+    {
+     "lang": "en",
+     "text": "SI01"
+    },
+    {
+     "lang": "en",
+     "text": "Seibu Railway"
     }
    ],
    "floorId": null,
@@ -11777,6 +12087,14 @@
     {
      "lang": "en",
      "text": "B1F Gate"
+    },
+    {
+     "lang": "en",
+     "text": "SI01"
+    },
+    {
+     "lang": "en",
+     "text": "Seibu Railway"
     }
    ],
    "floorId": null,
@@ -24251,6 +24569,38 @@
     {
      "lang": "en",
      "text": "Operator: 株式会社メトロプロパティーズ. Floors: B1–8F as printed in the source floor guide. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-parco",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "池袋パルコ"
+    }
+   ],
+   "aliases": [],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "jcsc-ikebukuro-parco-facility-2021-10"
+    ],
+    "method": "facts-only facility record (OD-34 class, S13), UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-10-25"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "池袋パルコは地下2階〜地上8階（日本ショッピングセンター協会の＜SC概要＞の表記。資料の名称は「池袋パルコ」で、本館・別館の区別は書かれていない。ページに印刷された日付はなく、URL の日付トークンは 20211029）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "池袋パルコ spans B2–8F (Japan Council of Shopping Centers ＜SC概要＞; the source names it 池袋パルコ, does not split 本館 / 別館, and prints no date — 20211029 is a URL token). Location and entrance not verified (search only, no route). Current status unknown."
     }
    ]
   }

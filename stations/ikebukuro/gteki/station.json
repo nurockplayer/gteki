@@ -1050,6 +1050,36 @@
    "retrievedAt": "2026-10-24T20:00:00+09:00",
    "datasetDate": "2026-08",
    "notes": "ライセンスなし・事実のみ参照（複製なし）。Read the 他社乗換路線 list. Gate and exit wording appears only in the AED notice (1F改札口, B1F改札口) and the station map is an image; neither ties a gate to a transfer. lines-lead also read the station-map image (dated 2026.8.1 on the image) for printed direction-arrow labels and the platform legend only; no position or layout is taken (OD-03). Distinct id from seibu-ikebukuro-station-2026-10 (#414). Rights class: OD-25 (Seibu terms read as the Tokyo Metro class under #26)."
+  },
+  {
+   "id": "tokyometro-ikebukuro-station-en-2026-10",
+   "title": "Ikebukuro Station | Tokyo Metro",
+   "publisher": "東京地下鉄",
+   "url": "https://www.tokyometro.jp/lang_en/station/ikebukuro/index.html",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" },
+   "attribution": "東京メトロ 池袋駅 (English station page) (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-25T18:30:00+09:00",
+   "datasetDate": null,
+   "notes": "ライセンスなし・事実のみ参照（複製なし）。駅名・英語路線名・駅番号のみ採用: Marunouchi Line / Yurakucho Line / Fukutoshin Line と M25 / Y09 / F09（ページ表記）。ライブのホストは他の東京メトロページと同じくこの環境から 403 を返すため、Wayback の 2025-10-07 スナップショット (http://web.archive.org/web/20251007182755/https://www.tokyometro.jp/lang_en/station/ikebukuro/index.html) で読んだ。403 は GAP として記録。"
+  },
+  {
+   "id": "jcsc-ikebukuro-parco-facility-2021-10",
+   "title": "まちづくり・地域活性化セミナー ＜SC概要＞ 池袋パルコ",
+   "publisher": "一般社団法人日本ショッピングセンター協会",
+   "url": "https://www.jcsc.or.jp/pt_events/p_20211029_90046",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/512", "date": "2026-10-25" },
+   "attribution": "一般社団法人日本ショッピングセンター協会「まちづくり・地域活性化セミナー」＜SC概要＞ (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-25T18:25:00+09:00",
+   "datasetDate": null,
+   "notes": "S13 in the data-research source list. ページは協会のセミナー告知で、本文の＜SC概要＞に 名称：池袋パルコ／階数：地下２階～地上８階 などが載る（所在地・開業日・店舗数もあるが未採用）。採用は 名称 と 階数 のみ（事実のみ）。URL の日付トークンは 20211029（印刷された日付ではない）、セミナー開催日は 2021-12-07。datasetDate は null（ページに印刷された日付はない）。サイトに利用規約はなく、公表されているのは個人情報保護方針だけなので引用できる禁止条項はない（#512 で 2026-10-25 に確認）→ OD-34 の facts-only。パルコ自身のサイトは #502（2026-10-25）の判断により corroboration only。"
   }
  ],
  "floors": [
