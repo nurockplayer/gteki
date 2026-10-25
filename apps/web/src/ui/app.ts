@@ -9,6 +9,7 @@ import { guideStops } from "../explorer/guideStops.ts";
 import { firstStopFor, guideKeyActionGuarded, instructionStartsM, jumpTarget, StepClock } from "../explorer/guideSteps.ts";
 import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, paceReadout, polylineLengthM, type GuideTierId, type PaceSpan } from "../explorer/guidePace.ts";
 import { coverageText, initialLang, pick, strings, type Lang } from "../i18n.ts";
+import { printedHours } from "../hours.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
 import { isUnlocatedShop, noRouteText, poiNoteText } from "./noRouteText.ts";
@@ -143,6 +144,8 @@ export class App {
     // to its right on a desktop); the panel's own size changes refit it (see Explorer.setPanel).
     this.explorer.setPanel(this.ui.panel);
     this.explorer.setMinimap(this.ui.minimap.el);
+    // On a phone the open route sheet is a bottom occluder of the same kind (#385).
+    this.explorer.setSheet(this.ui.sheet);
     this.explorer.setGuideTier(readGuideTier());
     this.bindGuideKeys();
     watchReducedMotion((reduce) => {
@@ -513,6 +516,20 @@ export class App {
     box.hidden = text === "";
   }
 
+  /**
+   * A shop's printed hours (OD-32): the page's own wording, then the date GT-Eki read it. Hidden when the page
+   * printed nothing (status UNKNOWN) or the reading is older than HOURS_MAX_AGE_DAYS, so an old timetable is
+   * never shown as if it were current.
+   */
+  private hoursBlock(poi: Poi | null): HTMLElement | null {
+    const hours = poi?.hours;
+    const text = printedHours(hours, new Date());
+    if (!hours || !text) return null;
+    const box = el("div", "poi-hours");
+    box.append(el("p", "hours-text", text), el("p", "muted hours-asof", this.t.hoursAsOf(hours.retrievedAt)));
+    return box;
+  }
+
   /** The floor label for display; an approximate POI's floor is a label match, not a surveyed floor (#463). */
   private floorLabel(poi: Poi): string | null {
     if (!poi.floorId) return null;
@@ -790,8 +807,14 @@ export class App {
     sheet.innerHTML = "";
     const r = this.s.route;
     const b = this.s.loaded?.bundle;
-    if (!r || !b) { sheet.classList.remove("open"); return; }
-    sheet.classList.add("open");
+    sheet.classList.toggle("open", Boolean(r && b));
+    if (r && b) this.fillSheet(sheet, r, b);
+    // Opening, closing or resizing the sheet changes the phone's free area: refit an automatic overview (#385).
+    this.explorer.refitOverview();
+  }
+
+  /** Fill the open route sheet; `renderSheet` owns the open class and the overview refit. */
+  private fillSheet(sheet: HTMLElement, r: RouteResult | RouteFailure, b: StationBundle): void {
     const t = this.t;
     if (!r.ok) {
       const card = el("div", "card no-route");
@@ -804,6 +827,9 @@ export class App {
       const endpointNote = r.reason === "unknown_goal" ? poiNoteText(this.s.destination, this.s.lang)
         : r.reason === "unknown_start" ? poiNoteText(origin, this.s.lang) : null;
       if (endpointNote) card.append(el("p", "muted", endpointNote));
+      // A search-only shop's card still says what its page printed for opening hours (OD-32).
+      const hours = this.hoursBlock(this.s.destination);
+      if (hours) card.append(hours);
       if (view && view.relax.length > 0) {
         const relax = el("div", "actions");
         const relaxOff = (keys: typeof view.relax) => { for (const k of keys) this.s.profile[k] = false; this.renderProfile(); this.computeRoute(); };
@@ -849,6 +875,9 @@ export class App {
       const asOf = tenantAsOfNote(destTenant, t);
       card.append(el("p", "muted tenant-floors", asOf ? `${t.tenantFloorsNotGuided} · ${asOf}` : t.tenantFloorsNotGuided));
     }
+    // The destination's printed hours, if its page printed any and the reading is still recent (OD-32).
+    const destHours = this.hoursBlock(this.s.destination);
+    if (destHours) card.append(destHours);
 
     const badges = el("div", "badges");
     const badge = (text: string, cls: string, title?: string) => { const x = el("span", `badge ${cls}`, text); if (title) x.title = title; badges.append(x); };

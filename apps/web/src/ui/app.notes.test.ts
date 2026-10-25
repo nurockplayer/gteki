@@ -37,6 +37,8 @@ function app(lang: Lang = "ja") {
   const a = new App(root) as unknown as Harness;
   a.s.lang = lang;
   a.s.loaded = { bundle: createSyntheticBundle([]) };
+  // renderSheet refits an automatic overview after the sheet opens or closes (#385); the real App always has one.
+  a.explorer = { refitOverview: vi.fn() } as unknown;
   for (const name of ["releaseMascot", "mascotSay"] as const) vi.spyOn(a, name).mockImplementation(() => {});
   return a;
 }
@@ -181,5 +183,47 @@ describe("approximate positions in search results (#463)", () => {
     expect(a.ui.toNote.hidden).toBe(false);
     expect(a.ui.toNote.textContent).toContain("B1（階は未確認）");
     expect(a.ui.toNote.textContent).toContain(LINE);
+  });
+});
+
+describe("printed shop hours on the destination card (OD-32)", () => {
+  const HOURS = {
+    text: "月～土 10:00～21:00\n日・祝 10:00～19:30", sourceUrl: "https://example.org/shop",
+    retrievedAt: "2026-10-24", basis: "undated-official", status: "OK",
+  } as const;
+
+  /** A search-only shop (no verified entrance) whose page printed hours: the case OD-32 imports. */
+  function shop(over: Partial<Poi> = {}): Poi {
+    return { ...poi("p1", false), hours: HOURS, ...over };
+  }
+
+  function cardAt(a: Harness, when: string): HTMLElement {
+    vi.setSystemTime(new Date(`${when}T00:00:00Z`));
+    a.s.destination = shop();
+    a.s.route = { ok: false, reason: "unknown_goal", message: "" };
+    a.renderSheet();
+    return a.ui.sheet;
+  }
+
+  it("shows the page's wording and the date it was read, then hides it once the reading is over 180 days old", () => {
+    vi.useFakeTimers();
+    try {
+      const fresh = cardAt(app("ja"), "2026-10-24");
+      expect(fresh.querySelector(".poi-hours")?.textContent).toContain(HOURS.text);
+      expect(fresh.querySelector(".hours-asof")?.textContent).toBe("GT-Eki 確認日 2026-10-24 時点の公式表記");
+      // 180 days later it is still shown; 181 days later it is not.
+      expect(cardAt(app("ja"), "2027-04-22").querySelector(".poi-hours")).not.toBeNull();
+      expect(cardAt(app("ja"), "2027-04-23").querySelector(".poi-hours")).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("hides hours the page never printed", () => {
+    const a = app();
+    a.s.destination = shop({ hours: { ...HOURS, status: "UNKNOWN" } });
+    a.s.route = { ok: false, reason: "unknown_goal", message: "" };
+    a.renderSheet();
+    expect(a.ui.sheet.querySelector(".poi-hours")).toBeNull();
   });
 });

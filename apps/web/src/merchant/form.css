@@ -1,0 +1,145 @@
+/* The merchant form page (#438): a plain document, not the explorer — same ink and accent, no viewer chrome. */
+:root {
+  color-scheme: dark;
+  --ink: #e8eef7;
+  --muted: #9aa8bd;
+  --bg: #0b1018;
+  --panel: #121a26;
+  --line: #24303f;
+  --accent: #5ef0ff;
+  --warn: #ffb86b;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.6 "GTEki Sign JP", "Noto Sans JP", system-ui, sans-serif;
+}
+
+#merchant {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.merchant-header {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.merchant-header h1 {
+  font-size: 1.35rem;
+  margin: 0 0 0.5rem;
+}
+
+.merchant-header .lede {
+  margin: 0 0 0.5rem;
+}
+
+.merchant-header .note {
+  margin: 0;
+  color: var(--warn);
+}
+
+.merchant-header .lang {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.merchant-form {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.field label {
+  color: var(--muted);
+}
+
+.field .row {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: 0.5rem;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+}
+
+.field.consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.field.consent input {
+  width: auto;
+  margin-top: 0.35rem;
+}
+
+button {
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.problems ul {
+  margin: 0.25rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--warn);
+}
+
+.problems .ok {
+  color: var(--muted);
+}
+
+.preview h2 {
+  font-size: 1rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.preview .json {
+  max-height: 24rem;
+  overflow: auto;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.loading {
+  color: var(--muted);
+}
