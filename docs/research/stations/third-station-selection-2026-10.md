@@ -1,12 +1,12 @@
 # Third-station selection: 東京駅 vs 品川駅 vs 梅田・大阪駅
 
 Status: research report, for the Owner to decide from. Nothing here is a decision.
-Date: 2026-10-25. Every page was read on 2026-10-25 (JST) unless its row says otherwise; three operator terms pages (東京メトロ, アトレ品川, ecute品川) are dated 2026-10-24 under OD-34 and were not re-read. Author: data research (DeepSeek worker, for data-research-05).
+Date: 2026-10-25. Every page was read on 2026-10-25 (JST) unless its row says otherwise; three operator terms pages (東京メトロ, アトレ品川, ecute品川) are dated 2026-10-24 under OD-34 and were not re-read. Author: data research (DeepSeek worker, for data-research-05). Amended 2026-10-25: §6 and the 東京駅 rows were added after a geospatial.jp indoor-map pass; §6 says what changed.
 Rights frame: OD-34 in [`../owner-decisions-pending.md`](../owner-decisions-pending.md). The four classes below are OD-34's: **facts only** (no ban, or only a copy/reprint request or a copyright line), **corroboration only** (business-use ban), **banned** (flat refusal of reuse), **UNKNOWN** (no quoted clause found — not a finding of risk). A class is only assigned when this report can show a quoted clause, its URL and the date it was read; anything else is UNKNOWN. **GAP** is not a class: it is the verification status of a page that could not be read (403, connection failure, JS-only, or no terms page), and such a source stays UNKNOWN.
 
 ## Method and limits
 
-- Pages were read with plain `curl` (default UA), requests ≥0.6 s apart; about 77 requests in total, including the CKAN metadata queries. Dataset facts come from the public CKAN APIs of geospatial.jp (PLATEAU) and ckan.hokonavi.go.jp (ほこナビDP), plus the 国土数値情報ダウンロードサイト. Two further pages were read on 2026-10-25 while fixing this report: the メトロプロパティーズ terms page (200) and the JR East homepage (403).
+- Pages were read with plain `curl` (default UA), requests ≥0.6 s apart; about 77 requests in the first pass plus **14 in the §6 pass** (about 91 in total), including the CKAN metadata queries. Dataset facts come from the public CKAN APIs of geospatial.jp (PLATEAU and the MLIT indoor map) and ckan.hokonavi.go.jp (ほこナビDP), plus the 国土数値情報ダウンロードサイト. Two further pages were read on 2026-10-25 while fixing this report: the メトロプロパティーズ terms page (200) and the JR East homepage (403).
 - A 403, a connection failure, a JS-only page or a site with no terms page is recorded as a **GAP in verification**; the rights class stays **UNKNOWN**. Nothing was bypassed; no one was contacted; no sign-ins, forms or uploads.
 - Every claim below carries a URL and the date seen. Anything without a quoted clause or figure is marked UNKNOWN.
 - Shop counts are UNKNOWN for all three stations: the floor guides are rendered by JavaScript and print no count in the served HTML (§3.4). Floor labels themselves were only readable at 大丸東京店.
@@ -18,7 +18,7 @@ Rights frame: OD-34 in [`../owner-decisions-pending.md`](../owner-decisions-pend
 | PLATEAU city model | **two ward datasets**: 千代田区 2025 (丸の内) + 中央区 2025 (八重洲); both bldg LOD1–2 and both **地下街 LOD4**; the station area is split at the ward line; which malls the two ubld models contain is UNKNOWN until loaded | 港区 2025 (2023 also published); bldg LOD1–3, **no 地下街 model**; the whole station area is in one ward | 大阪市 2020/2022/2024/2025; 2022 bldg LOD1–3, no 地下街 model; the current-year catalogue is empty, so 2025 LOD is UNKNOWN |
 | KSJ N02 railway | N02-2025 (national, 基準日 2025-12-31); the dataset page labels it **CC BY 4.0** | same | same |
 | ほこナビ walking network | **`nwd_tokyo`**, last updated 2019-01-23 (2D network; no floor data stated) | none in the portal (43 packages) | none in the portal |
-| E27-type station indoor map | none | none | none |
+| E27-type station indoor map | **`mlit-indoor-tokyo-r2`** on geospatial.jp (令和2年度更新版, published 2021-01-27; GSI 階層別屋内地理空間情報データ仕様書（案）, 平成30年3月): indoor base map + 歩行空間ネットワーク + facility POIs; **floors, areas and operators UNKNOWN** (§6) | none | none |
 | Facts-only operators | 大丸東京店, 東京メトロ, メトロプロパティーズ (エチカ) | アトレ品川 | 阪急電鉄, 大丸梅田店 (group terms only) |
 | Corroboration only | — | — | LUCUA, ホワイティうめだ |
 | Banned | グランスタ (JR東日本クロスステーション) | ecute品川 (JR東日本クロスステーション) | 大阪ステーションシティ, グランフロント大阪 |
@@ -60,7 +60,9 @@ Dataset terms, from the package notes of both: 「商用利用も含め、どな
 | link.geojson | 3,871,735 |
 | node.geojson | 2,043,790 |
 
-Source: `https://ckan.hokonavi.go.jp/api/3/action/package_show?id=nwd_tokyo`, read 2026-10-25. It is a 2D walking network (2024-07 network spec, per the package notes); the page states no floor data. The date above is the package's **最終更新日** (last updated), not a documented survey or content date, so the network's own survey and content dates are UNKNOWN; the package gives the date of its last update and nothing for the passages themselves. It is older than the Shinjuku E27 snapshot we ship (2025-09). A second, wider package `nwd_chiyoda_chuo` (皇居外苑・日本武道館を含む千代田区、中央区周辺, 最終更新日 2018/06/20) also exists and may overlap the station area. There is **no** E27-type station-indoor map (GSI hierarchical spec) for 東京駅 in the portal; the only station maps are 都営大江戸線 stations.
+Source: `https://ckan.hokonavi.go.jp/api/3/action/package_show?id=nwd_tokyo`, read 2026-10-25. It is a 2D walking network (2024-07 network spec, per the package notes); the page states no floor data. The date above is the package's **最終更新日** (last updated), not a documented survey or content date, so the network's own survey and content dates are UNKNOWN; the package gives the date of its last update and nothing for the passages themselves. It is older than the Shinjuku E27 snapshot we ship (2025-09). A second, wider package `nwd_chiyoda_chuo` (皇居外苑・日本武道館を含む千代田区、中央区周辺, 最終更新日 2018/06/20) also exists and may overlap the station area. There is **no** E27-type station-indoor map in ほこナビDP; the only station maps there are 都営大江戸線 stations. geospatial.jp carries a separate **東京駅周辺屋内地図** built on the GSI 階層別屋内地理空間情報データ仕様書（案） — see §6.
+
+**屋内地図 (geospatial.jp).** `mlit-indoor-tokyo-r2`, 「東京駅周辺屋内地図オープンデータ（令和２年度更新版）」, published **2021-01-27**, carries a base map of passages and rooms, 歩行空間ネットワークデータ and トイレ・エレベータ等公共設備POI, as a Shapefile and a GeoPDF. It is the only public indoor-map series for the station area found in either catalogue, and its licence is open (政府標準利用規約 2.0, CC BY-compatible). What it actually covers — floors, area, operators, whether the network reaches the JR concourses — is **UNKNOWN**: the pages describe the contents by type only. Licence quotes, GAPs and the fetch log are in §6.
 
 **Operators.**
 
@@ -186,14 +188,97 @@ A browser read (ego-lite) would give the counts; this task's brief does not allo
 6. **梅田 — JR West's terms are unread.** The station's main operator is UNKNOWN, which is worse than a ban: a ban at least settles it.
 7. **梅田 — 大阪市 PLATEAU current-year catalogue is empty** (119 B), so the 2025 LOD set (and the presence or absence of a 地下街 model) is UNKNOWN; only the 2022 (v3) list was readable.
 8. **梅田 — the two flagship complexes are flat bans** (大阪ステーションシティ, グランフロント大阪), and 阪急/阪神百貨店, ディアモール and 大阪メトロ are unread or unreachable.
-9. **All three — no E27-type indoor map and no shop counts**; counts need a browser read of the floor guides.
+9. **Indoor maps and shop counts.** 品川駅 and 梅田・大阪駅 have no E27-type indoor map; 東京駅 has one on geospatial.jp (`mlit-indoor-tokyo-r2`, §6) whose floors and area are UNKNOWN. No shop count could be read at any of the three; counts need a browser read of the floor guides.
 10. **All three — the station concourse itself is not modelled** by PLATEAU (aerial-survey buildings only), so a station-interior visual would follow the same approach as Shinjuku/Ikebukuro, not a new data source.
 
 ## 5. Recommendation
 
-**Open 東京駅 next**, subject to the load test in the next paragraph. It is the only candidate that offers both of the things our Shinjuku lane actually builds on: a public walking network (`nwd_tokyo` — last updated 2019-01-23, its content date UNKNOWN, but present and PDL 1.0) and 地下街 models at LOD4 — two of them, one in 千代田区 (丸の内 side) and one in 中央区 (八重洲 side), each on a 2025 PLATEAU dataset that also carries the buildings around the station. Its usable operator set is the strongest of the three, though weaker than a first reading suggests: 大丸東京店 is facts-only with floor labels printed in its floor guide, and 東京メトロ plus メトロプロパティーズ (エチカ) are facts-only under OD-34 — three of ten operators. JR East and five other operators at the station (JR東海, 八重洲地下街, 東京駅一番街, KITTE/JPタワー, 三菱地所 丸の内) are UNKNOWN, so the usable set covers a minority of the station. Its known holes are bounded — the two ward datasets must be stitched at the line that runs through the station, a stitching cost 品川駅 does not have, and 八重洲地下街's terms are unread. Against that, 品川駅 has the cleanest single-dataset coverage (one ward, bldg LOD3, no seam) but no walking network, no underground model, an unread 京急 and an ecute-banned retail floor, and much less to explore; 梅田・大阪駅 has the largest and richest station area but loses it to the rights frame: both flagship complexes are flat bans, the next tier is a business-use ban, JR West's terms could not be read at all, and the current PLATEAU catalogue publishes no LOD list.
+**Open 東京駅 next**, subject to the load test in the next paragraph. It is the only candidate that offers both of the things our Shinjuku lane actually builds on — a public walking network (`nwd_tokyo` — last updated 2019-01-23, its content date UNKNOWN, but present and PDL 1.0) and 地下街 models at LOD4 — two of them, one in 千代田区 (丸の内 side) and one in 中央区 (八重洲 side), each on a 2025 PLATEAU dataset that also carries the buildings around the station — and, unlike the other two, a published indoor base map with its own walking network and facility POIs (`mlit-indoor-tokyo-r2`, MLIT, 2021, open data; §6). That third asset is existence-and-licence only: its floors and area are UNKNOWN until someone reads the archive. Its usable operator set is the strongest of the three, though weaker than a first reading suggests: 大丸東京店 is facts-only with floor labels printed in its floor guide, and 東京メトロ plus メトロプロパティーズ (エチカ) are facts-only under OD-34 — three of ten operators. JR East and five other operators at the station (JR東海, 八重洲地下街, 東京駅一番街, KITTE/JPタワー, 三菱地所 丸の内) are UNKNOWN, so the usable set covers a minority of the station. Its known holes are bounded — the two ward datasets must be stitched at the line that runs through the station, a stitching cost 品川駅 does not have, and 八重洲地下街's terms are unread. Against that, 品川駅 has the cleanest single-dataset coverage (one ward, bldg LOD3, no seam) but no walking network, no underground model, an unread 京急 and an ecute-banned retail floor, and much less to explore; 梅田・大阪駅 has the largest and richest station area but loses it to the rights frame: both flagship complexes are flat bans, the next tier is a business-use ban, JR West's terms could not be read at all, and the current PLATEAU catalogue publishes no LOD list.
 
-What this evidence does **not** establish is that a usable 東京駅 slice can be built on the 丸の内 side itself. Whether either ubld model contains the malls and passages a route would need, and whether the two ward footprints join across the line through the station, is UNKNOWN until both datasets are loaded. So the recommendation is an ordering, not a delivery plan. If the load test shows usable interior coverage on the 丸の内 side with route continuity across the seam, the 丸の内 side is where the station's first slice starts. If it shows the 丸の内 model lacks the passages a route needs, the first slice would have to start on the 八重洲 side instead — and that depends on the 八重洲地下街 terms, which are still unread, so the station would then wait on them rather than ship. The next steps are the load test of both ward datasets (it decides which side can carry a first slice) and the 八重洲地下街 terms page (it decides whether the 八重洲 side may be used at all).
+What this evidence does **not** establish is that a usable 東京駅 slice can be built on the 丸の内 side itself. Whether either ubld model contains the malls and passages a route would need, and whether the two ward footprints join across the line through the station, is UNKNOWN until both datasets are loaded. So the recommendation is an ordering, not a delivery plan. If the load test shows usable interior coverage on the 丸の内 side with route continuity across the seam, the 丸の内 side is where the station's first slice starts. If it shows the 丸の内 model lacks the passages a route needs, the first slice would have to start on the 八重洲 side instead — and that depends on the 八重洲地下街 terms, which are still unread, so the station would then wait on them rather than ship. The next steps are the load test of both ward datasets (it decides which side can carry a first slice), the 八重洲地下街 terms page (it decides whether the 八重洲 side may be used at all), and a coverage read of `mlit-indoor-tokyo-r2` (it decides whether the station's indoor map can carry a route layer — §6 could establish only what the dataset is, not what it covers).
+
+---
+
+## 6. 東京駅周辺屋内地図 on geospatial.jp (added 2026-10-25)
+
+This section was added after the rest of the report. It establishes what the dataset **is**, what its licence allows, and where verification stops; it does not add coverage that the public pages do not state.
+
+### 6.1 Dataset and edition
+
+`mlit-indoor-tokyo-r2`, 「東京駅周辺屋内地図オープンデータ（令和２年度更新版）」, published by 国土交通省 不動産・建設経済局情報活用推進課 for the 高精度測位社会プロジェクト. Package id `eb79c194-3f26-4c41-9b48-6664f4684ebc`; created **2021-01-25**, catalogue metadata last modified **2024-10-05**. The package notes print the publication date:
+
+> 令和 3年 1月27日：「東京駅周辺屋内地図オープンデータ（令和2年度更新版）」公開
+
+An earlier edition is also published: `mlit-indoor-tokyo`, 「東京駅周辺屋内地図オープンデータ（令和元年度版）」 — 「平成30年8月31日：「東京駅周辺屋内地図オープンデータ」公開」, 「令和元年5月31日：JR東京駅のデータを一部追加」, renamed 令和元年度版 on 2021-01-27. Its page points to r2 as the latest edition.
+
+### 6.2 What the dataset says it contains
+
+Package notes: 「通路や部屋の範囲などの基盤となる地図、歩行空間ネットワークデータ、トイレ・エレベータ等公共設備POIのデータを公開しています。」 — a base map of passages and rooms, walking-space network data, and public-facility POIs.
+
+- **Layer files** (「地物凡例」 resource): `Floor.shp`, `Space.shp`, `Fixture.shp`, `Opening.shp`, `Drawing.shp`, `TWSI_Point.shp`, `TWSI_Line.shp`.
+- **Facility POIs** (「設備凡例」 resource): the F-series list (F001–F108, with gaps), including トイレ（男性／女性／多機能）, 階段, エレベーター, エスカレーター, スロープ, 施設出入口, 出口, 階段昇降機／段差解消機.
+- **Spec.** The page states 「本データは国土地理院の「階層別屋内地理空間情報データ仕様書（案）」（平成30年3月）を基に作成しております。」 — the same hierarchical indoor data spec as the E27 station maps. The 製品仕様書 resource is that 43-page spec (平成30年3月改訂版, PDF created 2018-05-11); it is generic across 駅・空港・地下街・競技場 and defines the four-part Shapefile structure, 階層名/階層数 and the layer categories, but it does not describe this dataset's floors or extent.
+- **Formats published:** Shapefile (ZIP), GeoPDF (ZIP), and a whole-area PDF map. No GeoJSON, CityGML or IMDF resource is listed.
+
+### 6.3 Coverage: what is stated, what is not
+
+- **Floors:** the notes, the dataset page and the spec state **no floor range** and no floor list. The whole-area PDF is a map, and this task's brief forbids maps and images as sources, so it was not used; floor extents stay UNKNOWN.
+- **Areas:** the title and notes say 「東京駅周辺」 only. The publisher's tags name 東京駅, 大手町駅, 二重橋前駅, 日比谷駅, 有楽町駅, 銀座駅, 東京国際フォーラム and 中央区; they are tags, not a coverage statement, so which of them the data includes is UNKNOWN.
+- **Operators and facilities:** none is named as covered. The spec's examples mention JR東京駅, 東京メトロ丸ノ内線大手町駅, GRANSTA, 八重洲地下街, 東京駅一番街 and KITTE GRANCHE, but they illustrate file naming and facility types, not this dataset's contents. Whether JR East, 東京メトロ, 八重洲地下街 or any other operator's premises are inside it is UNKNOWN.
+- **Walking network:** the notes state 歩行空間ネットワークデータ is included. Whether it is indoor-only, which entrances it connects, and how it relates to ほこナビ's 2D `nwd_tokyo` are UNKNOWN.
+- **Data year:** the edition date is 令和2年度更新版, published 2021-01-27. The survey date behind the contents is not stated: UNKNOWN.
+
+So the dataset's existence, layer types, formats, edition and licence are established; floors, area, operators, network extent and survey date are GAPs.
+
+### 6.4 Licence
+
+Catalogue fields: `license_title` **政府標準利用規約**, `license_id` **ogl**. The dataset's own 利用規約 PDF (2 pages, sha256 `b7ee685282912b971656490f51df9ac2d2b7d204fab10933833344fec977d89e`) is the quoted source, read 2026-10-25 at `https://www.geospatial.jp/ckan/dataset/eb79c194-3f26-4c41-9b48-6664f4684ebc/resource/8428e025-d4db-4d30-917e-fc0bc4d1b866/download/license.pdf`:
+
+- Grant: 「「東京駅周辺屋内地図オープンデータ」で公開している情報（以下「コンテンツ」といいます。）は、どなたでも以下の１）～６）に従って、複製、公衆送信、翻訳・変形等の翻案等、自由に利用できます。商用利用も可能です。」
+- Attribution: 「コンテンツを利用する際は出典を記載してください。」 — example 「出典：国土交通省 高精度測位社会プロジェクト」.
+- Modification: 「コンテンツを編集・加工等して利用する場合は、上記出典とは別に、編集・加工等を行ったことを記載してください。なお、編集・加工した情報を、あたかも国（又は府省等）が作成したかのような態様で公表・利用してはいけません。」 — example 「東京駅周辺屋内地図データ」（国土交通省）（https://www.geospatial.jp/ckan/dataset/mlit-indoor-tokyo-r2）を加工して作成.
+- Third-party rights: 「第三者が著作権を有しているコンテンツや、第三者が著作権以外の権利…を有しているコンテンツについては、特に権利処理済であることが明示されているものを除き、利用者の責任で、当該第三者から利用の許諾を得てください。」
+- Excluded from the rule: 「組織や特定の事業を表すシンボルマーク、ロゴ、キャラクターデザイン」.
+- Version and compatibility: 「本利用ルールは、令和３年１月２７日に定めたものです。本利用ルールは、政府標準利用規約（第 2.0 版）に準拠しています。」 and 「本利用ルールは、クリエイティブ・コモンズ・ライセンスの表示 4.0 国際…と互換性があり、本利用ルールが適用されるコンテンツは CC BY に従うことでも利用することができます。」
+
+**OD-34 classification: facts only** — and the licence is stronger than that floor. This is an open-data licence, not an operator's site policy: commercial use, redistribution and adaptation are expressly allowed with credit, on the same footing as the PLATEAU note (「商用利用も含め、どなたでも無償で自由にご利用いただけます。」) and ほこナビDP's PDL 1.0. So it may be shipped as data with 「出典：国土交通省 高精度測位社会プロジェクト」 (plus a modification note if edited), not merely cited as facts. The one condition that carries real weight is the third-party-rights clause: where the data embeds someone else's content, that content's clearance is the user's responsibility, exactly as with PLATEAU. Logos and character designs are outside the licence.
+
+### 6.5 Access and GAPs
+
+- The package notes and every resource description say 「データのダウンロードは、ユーザ登録の後、 ログイン状態で行ってください。」 and the package extra `ダウンロード` = `ログイン`. **No account was created and no sign-in was made.**
+- In the event, the Shapefile resource URL redirected to a signed `gsic-opendata.s3.amazonaws.com` URL and an unauthenticated GET returned the ZIP (**200, 2,586,638 bytes**) on 2026-10-25. **That GET was outside this task's approved verification method**; it is recorded here only as an audit note, the archive was **not opened** and was deleted, and nothing from it was read or used. Per the brief, anything a download would confirm is recorded as GAP. The GeoPDF GET was aborted by the client's 5 MB cap before download (curl exit 63). HEAD on either resource returns **403** from S3 (the presigned URL is signed for GET only), so HEAD is not a usable access check.
+- **GAPs:** actual layer contents; exact floor range and floor names; the covered area and which tagged stations/facilities it includes; which operators' premises are inside; whether the walking network is indoor-only and how it joins `nwd_tokyo`; and the survey date. The catalogue prints no archive sizes; the only size this pass observed is the Shapefile response above.
+- The サンプル画像 and the 全体版 PDF are images/maps and were not used as sources.
+
+### 6.6 What changed in this report
+
+Only the 東京駅 assessment, and only where the new facts bear on it:
+
+1. **§1** — the "E27-type station indoor map" row for 東京駅 changes from `none` to `mlit-indoor-tokyo-r2`, with floors/areas/operators UNKNOWN.
+2. **§2.1** — the sentence "there is no E27-type station-indoor map for 東京駅 in the portal" was a statement about ほこナビDP; it now says so, and a new 屋内地図 paragraph points to this section.
+3. **§4 gap 9** — no longer says 東京駅 lacks an indoor map; it says 東京駅 has one whose coverage is unverified.
+4. **§5** — the dataset is added as a third Tokyo asset and as a next step (a coverage read). The recommendation order (東京駅 first) is unchanged; the indoor map strengthens it only on existence and licence.
+
+Nothing else changed: the PLATEAU, KSJ, ほこナビ, operator-terms and shop-count findings are untouched.
+
+### 6.7 Fetch log (2026-10-25, 15:47–15:49 JST; plain `curl`, default UA, ≥0.6 s apart)
+
+| # | URL | HTTP |
+|---|---|---|
+| 1 | `…/ckan/api/3/action/package_show?id=mlit-indoor-tokyo-r2` | 200 |
+| 2 | `…/ckan/api/3/action/package_show?id=mlit-indoor-tokyo` | 200 |
+| 3 | `…/ckan/api/3/action/package_search?q=東京駅周辺&rows=50` | 200 (3 packages) |
+| 4 | `…/ckan/api/3/action/package_search?q=屋内&rows=50` | 200 |
+| 5 | `https://www.geospatial.jp/ckan/dataset/eb79c194-3f26-4c41-9b48-6664f4684ebc/resource/8428e025-d4db-4d30-917e-fc0bc4d1b866/download/license.pdf` | 200, 73,507 B |
+| 6 | `…/resource/f9d93724-b0d8-45c0-831b-8f8a153fe54a/download/specification.pdf` | 200, 714,043 B |
+| 7 | `…/resource/a43f06b5-0726-4dfa-935b-2adc13233f23/download/setsubi.pdf` | 200, 385,530 B |
+| 8 | `…/resource/455b5130-45e5-4da5-b404-fe070ffc5a34/download/chibutsu.pdf` | 200, 453,054 B |
+| 9 | `…/resource/0b3347e8-7fcd-451f-9914-0aebcc721f0d/download/.pdf` (全体版) | 200, 514,370 B |
+| 10 | `https://www.geospatial.jp/ckan/dataset/mlit-indoor-tokyo-r2` | 200 |
+| 11 | `…/resource/d441c885-6a15-476b-836d-cddd9a5fa006/download/shapefile.zip` | 200 → signed S3, 2,586,638 B (archive not opened) |
+| 12 | `…/resource/8a8c2adc-1ad5-4510-910b-82ccd2902273/download/geopdf.zip` | aborted at client 5 MB cap (curl 63) |
+| 13 | HEAD `…/shapefile.zip` | 403 (S3; presigned for GET only) |
+| 14 | HEAD `…/geopdf.zip` | 403 (S3; presigned for GET only) |
 
 ---
 
@@ -206,6 +291,12 @@ What this evidence does **not** establish is that a usable 東京駅 slice can b
 | PLATEAU 港区 2025 / 2023 | `https://www.geospatial.jp/ckan/dataset/plateau-13103-minato-ku-2025`, `…-2023` | dataset id, LOD list, no ubld |
 | PLATEAU 大阪市 2020/2022/2024/2025 | `https://www.geospatial.jp/ckan/dataset/plateau-27100-osaka-shi-2025`, `…-2024`, `…-2022`, `…-2020` | dataset ids, 2022 LOD list, empty current catalogues |
 | PLATEAU 中央区 2025 / 2023 | `https://www.geospatial.jp/ckan/dataset/plateau-13102-chuo-ku-2025`, `…-2023` | dataset id, LOD list, ubld LOD4 |
+| 東京駅周辺屋内地図 r2 | `https://www.geospatial.jp/ckan/dataset/mlit-indoor-tokyo-r2` (via `package_show`) | title, edition, publication date, layers named, formats, tags, licence fields |
+| 東京駅周辺屋内地図 r1 | `https://www.geospatial.jp/ckan/dataset/mlit-indoor-tokyo` (via `package_show`) | earlier edition, 2018/2019/2021 dates |
+| 屋内地図 利用規約 | `…/resource/8428e025-d4db-4d30-917e-fc0bc4d1b866/download/license.pdf` | quoted licence clauses, OGL 2.0 / CC BY-compatible (sha256 `b7ee…`) |
+| 屋内地図 製品仕様書 | `…/resource/f9d93724-b0d8-45c0-831b-8f8a153fe54a/download/specification.pdf` | GSI 階層別屋内 spec (平成30年3月), Shapefile structure, floors fields |
+| 屋内地図 地物/設備凡例 | `…/resource/455b5130-45e5-4da5-b404-fe070ffc5a34/download/chibutsu.pdf`, `…/a43f06b5-0726-4dfa-935b-2adc13233f23/download/setsubi.pdf` | layer files, POI categories |
+| 屋内地図 全体版 PDF | `…/resource/0b3347e8-7fcd-451f-9914-0aebcc721f0d/download/.pdf` | map; identified only, not used as a source |
 | ほこナビDP package list | `https://ckan.hokonavi.go.jp/api/3/action/package_list` | 43 packages, none for 品川/大阪 |
 | ほこナビ `nwd_tokyo` | `https://ckan.hokonavi.go.jp/dataset/nwd_tokyo` (via `package_show`) | 最終更新日, file sizes |
 | ほこナビ `nwd_chiyoda_chuo` | `https://ckan.hokonavi.go.jp/dataset/nwd_chiyoda_chuo` | overlapping package |
