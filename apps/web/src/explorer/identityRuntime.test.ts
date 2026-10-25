@@ -505,6 +505,27 @@ describe("identity QA and chip integration", () => {
     expect(plain.identityHidden).toBe(true); expect(endpoint.identityOffsetY).toBeLessThan(0);
   });
 
+  it("declutters an overview chip where its identity nudge actually draws it (#400)", () => {
+    const { e, board } = runtime();
+    e.camera.position.set(-2, 2, 0); e.camera.lookAt(board.position); e.camera.updateMatrixWorld(true);
+    const a = { ...labelAt(board, false), poiId: "poi:a", klass: 3, routable: true };
+    const b = { ...labelAt(board, false), poiId: "poi:b", klass: 3, routable: true };
+    b.obj.position.y -= 0.7; b.obj.updateMatrixWorld(true);
+    e.poiLabels = [a, b];
+    const screenY = (l: typeof a) => (-l.obj.getWorldPosition(new THREE.Vector3()).project(e.camera).y * 0.5 + 0.5) * e.viewSize.h;
+    const [ya, yb] = [screenY(a), screenY(b)];
+    // Far enough apart to coexist (26 px box plus the 3 px pad and 4 px hold), so nothing is hidden yet.
+    expect(Math.abs(ya - yb)).toBeGreaterThan(40);
+    e.declutterDirty = true; e.declutterAt = -Infinity;
+    e.updateDeclutter(0);
+    expect([a.decluttered, b.decluttered]).toEqual([false, false]);
+    // The identity pass nudges a onto b; declutter must hide one where a is now drawn, not at its anchor.
+    a.identityOffsetY = yb - ya;
+    e.declutterDirty = true;
+    e.updateDeclutter(1000);
+    expect([a.decluttered, b.decluttered].filter(Boolean)).toHaveLength(1);
+  });
+
   it("protects chips only for identity boards the camera can actually see (#342)", () => {
     const { e, board, root } = runtime();
     e.mode = "walk";
