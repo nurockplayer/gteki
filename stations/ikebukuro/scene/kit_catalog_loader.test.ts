@@ -653,7 +653,7 @@ describe("loadNosingKit (batch C)", () => {
   const nosingHost = (files: string[] = [...nosingUris, nosingAtlas], make: (uri: string) => Promise<GLTF> = async () => fakeNosing(), texture = new THREE.Texture()) => ({
     assetUrl: vi.fn((uri: string) => (files.includes(uri) ? `/blob/${uri}` : null)),
     loadGlb: vi.fn(make),
-    loadTexture: vi.fn(async () => texture),
+    loadTexture: vi.fn(async (_uri: string, _options?: unknown) => texture),
     texture,
   });
   beforeEach(() => {
@@ -698,7 +698,7 @@ describe("loadNosingKit (batch C)", () => {
     const { group, stats } = loaded.build(THREE, env, toRenderer);
     expect(stats).toMatchObject({ parts: 69, uniqueGlbs: 61 });
     expect(group.children.length).toBeLessThanOrEqual(NOSING_CLUSTERS);
-    expect(new Set(group.children.map((m) => m.material)).size).toBe(1);
+    expect(new Set((group.children as THREE.Mesh[]).map((m) => m.material)).size).toBe(1);
     expect(h.loadTexture.mock.calls[0]![0]).toBe(nosingAtlasUri(true));
     expect(texture.userData.gteki_max_isolated_mip).toBe(1); // the phone tier's Lane E limit
     expect((group.children[0] as THREE.Mesh).material).toMatchObject({ aoMap: texture });
