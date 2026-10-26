@@ -74,10 +74,9 @@ pnpm check:godot                  # headless Godot: loader colliders + every ver
 pnpm audit:assets                 # G0: sha256, size and declaring manifest entry of every shipped file; fails on undeclared/missing
 ```
 
-Lightmap provenance: `ikebukuro_b1_lit.meta.json` records `source_glb_sha256` `e0188c50…`, while the shipped
-`ikebukuro_b1.glb` is `aef077a6…`. Commit 93023f3 rebuilt the generic GLB and changed the `mat_portals` material only
-(glTF JSON apart from `materials`, and the BIN buffer, are byte-identical); the bake replaces every material, so the
-lightmap is not stale. `scene/lit_provenance.test.ts` pins this pair and fails on any change, forcing a re-bake or a re-documentation.
+Lightmap provenance: `ikebukuro_b1_lit.meta.json` records `source_glb_sha256` `aef077a6…`, the shipped
+`ikebukuro_b1.glb` itself (rebaked for #308; the earlier e0188c50/aef077a6 pair from the material-only rebuild 93023f3 is
+gone). `scene/lit_provenance.test.ts` pins it and fails on any change, forcing a re-bake or a re-documentation.
 
 `build_station.py` exits non-zero if any edge fails geometry validation or if a POI points at a
 missing node. An edge is `verified` only when **both** of these hold:
