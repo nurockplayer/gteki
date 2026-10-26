@@ -294,7 +294,10 @@ for (const script of ["build_identity.py", "check_identity_rhythm.py", "check_id
     expect(rows.map((r) => r.spawn)).toEqual(station.spawnNodeIds);
     for (const row of rows) {
       expect(row.status).toBe(row.count >= 2 ? "proxy met (equipment)" : "proxy not met (equipment)");
-      if (["c_mid", "w_c", "sw_h"].includes(row.spawn)) expect(row.count, row.spawn).toBeGreaterThanOrEqual(2);
+      if (["c_mid", "sw_h"].includes(row.spawn)) expect(row.count, row.spawn).toBeGreaterThanOrEqual(2);
+      // w_c (heading 340, spawn eye) has no equipment centre inside the proxy's vertical cone: the ceiling
+      // LED housings sit about 1.85 m above the eye and no sign is in view. Pinned at 0 so any change shows.
+      if (row.spawn === "w_c") expect(row.count, row.spawn).toBe(0);
     }
     evidence.equipment = rows;
   }
