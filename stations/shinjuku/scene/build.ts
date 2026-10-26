@@ -20,6 +20,7 @@ import { withSurfaceMemo } from "./surface-layout.ts";
 import { surfaceSeed } from "./surface-bake.ts";
 
 import { OEDO_MAGENTA } from "./palette.ts";
+import { buildIdentityBoards } from "./identity.ts";
 export { OEDO_MAGENTA };
 
 const v3 = (p: XYZ) => new THREE.Vector3(p.x, p.z, -p.y);
@@ -31,7 +32,10 @@ export interface BuiltStation {
   /** Extra collision walls created by props (gate machines, platform doors). */
   propWalls: WallSeg[];
   escalators: { run: Run; steps: THREE.InstancedMesh; speed: number }[];
+  /** Wayfinding metadata groups, one per graph node. */
   signs: THREE.Object3D[];
+  /** Original station identity metadata groups, separate from graph wayfinding. */
+  identityBoards: THREE.Object3D[];
   levelGroups: Map<string, THREE.Group>;
   update(dt: number, t: number): void;
   /** W2: ENU camera position controls render-only street visibility. */
@@ -1001,8 +1005,12 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     }
   }
 
-  // ---- wayfinding signs from the verified graph
-  const signs = buildSigns(bundle, layout, root, track, opts.quality);
+  // ---- collision world (also supplies the app's normal spawn for identity placement)
+  const world = new WalkWorld(layout);
+  world.addWalls(propWalls);
+
+  // ---- wayfinding signs from the verified graph and original station identity
+  const { signs, identityBoards } = buildSigns(bundle, layout, world, root, track, opts.quality);
   // ---- optional Lane E kit swap (Issue #94): off unless a KitSwap was passed in
   const kitSwap = opts.kit && ledger
     ? opts.kit.apply({ THREE, bundle, plan, layout, protection, liftAnchors, root, ledger, levelGroups, track }) ?? undefined
@@ -1015,10 +1023,6 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   mergeRootFinishes(root, [[mat.steel, "static-steel-finishes"], [mat.glass, "static-glass-finishes"]], track, true);
   mergeRootFinishes(root, [[mat.darkSteel, "static-dark-steel-finishes"], [mat.gateOk, "static-gate-ok-finishes"], [mat.accent, "static-accent-finishes"]], track);
   installTightCulling(root);
-
-  // ---- collision world
-  const world = new WalkWorld(layout);
-  world.addWalls(propWalls);
 
   // ---- platform edge helper
   function buildPlatformEdge(walls: WallSeg[], z: number, g: THREE.Group) {
@@ -1307,6 +1311,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     propWalls,
     escalators,
     signs,
+    identityBoards,
     levelGroups,
     update(dt, t) { update(dt, t); surface.update(dt, t); },
     setViewer: surface.setViewer,
@@ -1658,7 +1663,7 @@ function raySeg(o: XY, d: XY, a: XY, b: XY): number | null {
 }
 
 // ---------------------------------------------------------------- signs
-function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, track: <T extends { dispose(): void }>(x: T) => T, quality: BuildOptions["quality"]): THREE.Object3D[] {
+function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, root: THREE.Group, track: <T extends { dispose(): void }>(x: T) => T, quality: BuildOptions["quality"]): Pick<BuiltStation, "signs" | "identityBoards"> {
   const router = createRouter(bundle);
   const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
   const adj = new Map<string, string[]>();
@@ -1837,11 +1842,12 @@ function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, tr
     mesh.userData.faceCount = page.rects.length;
     root.add(mesh);
   }
+  const identityBoards = buildIdentityBoards(bundle, layout, world, root, track, quality);
   for (const [geos, color, metalness] of [[caseGeos, "#2b2d30", 0.4], [rodGeos, "#888888", 0.8]] as const) {
     const geo = merged(geos);
     if (geo) { const m = new THREE.Mesh(track(geo), track(new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness }))); if (geos === caseGeos) m.name = "sign-cases"; root.add(m); }
   }
   // keep centroid helper referenced for tree-shaking clarity
   void centroid;
-  return out;
+  return { signs: out, identityBoards };
 }
