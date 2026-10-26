@@ -39,6 +39,15 @@ describe("applyFieldReceipt", () => {
     expect(applyFieldReceipt(result.src, result.pois, result.station, receipt)).toEqual(result);
   });
 
+  it("writes nothing for a receipt with only OPEN items", () => {
+    const openOnly = structuredClone(receipt);
+    openOnly.items = openOnly.items.filter((item: any) => item.status === "OPEN");
+    const result = applyFieldReceipt(src, pois, station, openOnly);
+    expect(result.applied).toEqual([]);
+    expect(result.src).toEqual(src);
+    expect(result.station).toEqual(station);
+  });
+
   it("rejects invalid timestamps and unknown connector nodes", () => {
     for (const observedAt of ["2026-10-27T10:12", "2026-10-27T10:12Z"]) {
       const bad = structuredClone(receipt);

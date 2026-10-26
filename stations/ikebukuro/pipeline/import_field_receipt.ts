@@ -100,10 +100,14 @@ export function applyFieldReceipt(srcInput: any, poisInput: any, stationInput: a
   const station = clone(stationInput);
   validate(receipt, src, pois);
 
-  const latest = receipt.items.reduce((a, b) => Date.parse(a.observedAt) >= Date.parse(b.observedAt) ? a : b);
+  // Provenance comes from CLOSED items only; a receipt with none changes nothing.
+  const closed = receipt.items.filter((item) => item.status === "CLOSED");
+  const skippedOpen: SkippedItem[] = receipt.items.filter((item) => item.status === "OPEN").map(({ item }) => ({ item, reason: "OPEN" }));
+  if (!closed.length) return { src, pois, station, applied: [] as number[], skipped: skippedOpen };
+  const latest = closed.reduce((a, b) => Date.parse(a.observedAt) >= Date.parse(b.observedAt) ? a : b);
   const date = latest.observedAt.slice(0, 10);
   const sourceId = `field-ikebukuro-${date}`;
-  const itemNumbers = receipt.items.map(({ item }) => item).join(", ");
+  const itemNumbers = closed.map(({ item }) => item).join(", ");
   const source = {
     id: sourceId,
     title: `GTEki field run ${date} (#533)`,
@@ -144,6 +148,9 @@ export function applyFieldReceipt(srcInput: any, poisInput: any, stationInput: a
 async function main(): Promise<void> {
   const receiptPath = process.argv[2];
   if (!receiptPath) throw new Error("usage: node stations/ikebukuro/pipeline/import_field_receipt.ts <receipt.json>");
+  // Only a real receipt may be written into the station data; the test fixture is not an observation.
+  if (!path.resolve(receiptPath).includes(`${path.sep}docs${path.sep}research${path.sep}field${path.sep}receipts${path.sep}`))
+    throw new Error("refusing a receipt outside docs/research/field/receipts/");
   const here = path.dirname(fileURLToPath(import.meta.url));
   const stationDir = path.resolve(here, "..");
   const srcPath = path.join(stationDir, "data", "graph.src.json");
