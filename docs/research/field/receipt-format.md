@@ -7,7 +7,7 @@ A receipt records text read from public signage during a field run. Store it at
 {
  "version": 1,
  "station": "ikebukuro",
- "fieldRun": "docs/research/lines/field-run-2026-10-26.md",
+ "fieldRun": "docs/research/lines/field-run-2026-10-26.md", "sourceKind": "team_field", "observer": "owner",
  "items": [
   {
    "item": 25,
@@ -29,3 +29,6 @@ A receipt records text read from public signage during a field run. Store it at
 - `stepFree` is `level`, `steps:<n>`, `lift`, `escalator`, or `null`.
 - `floorLabel` is optional or `null`.
 - Photos are never committed under the field-run rules. Record only the text read from them.
+- `sourceKind` must be `team_field`: the GTEki team's own reading of public signage, published as facts only under the project's CC BY 4.0 (director ruling 2026-10-26 19:1x JST). Crowd or third-party contributions are rejected until a contributor licence and a rights review exist.
+- `observer` is a role (for example `owner`), never a person's name.
+- Only the facts copied from a plate (its text, the gate↔opening tie, the floor plate) are published. Photos stay private evidence: never shipped or committed, EXIF GPS stripped before storage, and faces blurred if a photo is ever shown.

@@ -54,6 +54,12 @@ describe("applyFieldReceipt", () => {
       bad.items[0].observedAt = observedAt;
       expect(() => applyFieldReceipt(src, pois, station, bad)).toThrow(/item 25.*observedAt/);
     }
+    const crowd = structuredClone(receipt);
+    crowd.sourceKind = "crowd";
+    expect(() => applyFieldReceipt(src, pois, station, crowd)).toThrow(/sourceKind/);
+    const named = structuredClone(receipt);
+    named.observer = "Taro Yamada";
+    expect(() => applyFieldReceipt(src, pois, station, named)).toThrow(/observer/);
     const badNode = structuredClone(receipt);
     badNode.items[0].nodeId = "unknown-node";
     expect(() => applyFieldReceipt(src, pois, station, badNode)).toThrow(/item 25.*unknown node/);

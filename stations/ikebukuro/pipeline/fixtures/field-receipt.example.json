@@ -2,6 +2,8 @@
  "version": 1,
  "station": "ikebukuro",
  "fieldRun": "docs/research/lines/field-run-2026-10-26.md",
+ "sourceKind": "team_field",
+ "observer": "owner",
  "items": [
   {
    "item": 25,

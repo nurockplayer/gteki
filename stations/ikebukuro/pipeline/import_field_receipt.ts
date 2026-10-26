@@ -18,6 +18,10 @@ type FieldReceipt = {
   version: number;
   station: string;
   fieldRun: string;
+  /** Director 2026-10-26: only the GTEki team's own field readings for now; crowd contributions need a contributor licence first. */
+  sourceKind: "team_field";
+  /** Role only, never a name (e.g. "owner"). */
+  observer: string;
   items: ReceiptItem[];
 };
 
@@ -38,6 +42,8 @@ function fail(item: unknown, message: string): never {
 function validate(receipt: FieldReceipt, src: any, pois: any): void {
   if (receipt?.version !== 1) fail("?", "version must be 1");
   if (receipt?.station !== "ikebukuro") fail("?", 'station must be "ikebukuro"');
+  if (receipt.sourceKind !== "team_field") fail("?", 'sourceKind must be "team_field" (crowd contributions are not accepted yet)');
+  if (typeof receipt.observer !== "string" || !/^[a-z][a-z-]*$/.test(receipt.observer)) fail("?", "observer must be a role such as \"owner\", not a name");
   if (!Array.isArray(receipt.items)) fail("?", "items must be an array");
   if (receipt.items.length === 0) fail("?", "items must contain at least one item");
   for (const item of receipt.items) {
@@ -120,7 +126,7 @@ export function applyFieldReceipt(srcInput: any, poisInput: any, stationInput: a
     modified: false,
     retrievedAt: latest.observedAt,
     datasetDate: null,
-    notes: `On-site reading of public signage for #533 items ${itemNumbers}. Photos stay private (field-run rules).`,
+    notes: `On-site reading of public signage by the ${receipt.observer} (${receipt.sourceKind}) for #533 items ${itemNumbers}. Photos stay private (field-run rules).`,
   };
   for (const target of [src, station]) {
     if (!Array.isArray(target.sources)) target.sources = [];
