@@ -1,8 +1,8 @@
 """Stdlib-only generated-fitting exclusion, shared by Blender and CPU tests.
 
-No fitting box may intersect a painted face's viewing volume from the walker's eye (the follow camera's wider
-envelope would drop ~8.5% of the fittings instead of ~1.8%). Signs
-are loaded from the committed station display data, never from the old bake.
+Keep painted faces clear from the walker's eye and spec 11's nominal follow
+camera at 6-10 m along the edge. The broader follow envelope remains available
+for structural audits. Signs come from committed display data, not the old bake.
 """
 import math
 
@@ -29,7 +29,7 @@ def cells(low, high):
 
 
 class FittingExclusion:
-    def __init__(self, signs, edges, viewers=('eye',)):
+    def __init__(self, signs, edges, viewers=('eye', 'follow_nominal')):
         self.volumes, self.grid = [], {}
         for sign in signs:
             geom = sign_edge(sign, edges)['geometry']

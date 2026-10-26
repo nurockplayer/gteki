@@ -34,19 +34,16 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
  * 13,284,666 B and geometry f713e721…; #298 adds two visual-only shell batches. Physical lists stay identical.
  * #370 names the `mat` materials `mat.<key>`, which changes texturesDigest only (was b799e0f8…; re-measured with
  * and without the naming line, every other field unchanged).
- * #342 Q1a (#348) adds the identity boards: two meshes (faces, hardware), 13,319,392 B and geometry b53fa699…
- * as geometry-lifetime.test.ts; re-measured on main ce67809d + #348. The explorer lists stay identical.
- * #342 platform ruling adds one cross-platform board in the same meshes: +5,632 B / +64 triangles;
- * geometry 8f65a92e… and nodes 792b970f… recaptured from the failing exact-tree assertions.
- * The nodes digest also includes the explicit design-placement labels; all explorer lists stay identical. */
+ * #316 re-measured on the merged tree: the shell roof coverage above the head band adds 205,300 B and
+ * changes geometryDigest; appearance, nodes, textures, meshes and every explorer list are unchanged. */
 const MAIN_BASELINE = {
   station: {
-    geometryDigest: "8f65a92e7fb8a796c4e10586bd201e34d0f08da95b8fbb17447f6154dab98021",
-    appearanceDigest: "b22d80d5524de069aa3eba2927b2fb04cc0b9ff521c031b890d51e4c3ca56bd8",
-    nodesDigest: "792b970f730f09f856511da9fd6f5d3bf705fcb13f441a4179e1f49ecfad555c",
-    texturesDigest: "6fcae65a3d08734ee7ff61aef64011704954a5eb7d6dbbc97bc279d2f9fc855b",
-    meshes: 140,
-    bytes: 13_325_024,
+    geometryDigest: "af86784d1f7a632f2ee5ef5c2bc87c51644b2bc661a0cfe0493116d8b48206fe",
+    appearanceDigest: "c45106d83d6500652ae0911b8a037f9020e7a7e38ae05fce61ff495dd0835003",
+    nodesDigest: "8716cc4d548465dd836e07e69646928ad33791f37d6fc1a1dc02e2519c9e6ed7",
+    texturesDigest: "34886c8768f0a00486cfbab005dbcb7e89f6035f23dc38d79ab8658953f2976d",
+    meshes: 138,
+    bytes: 13_502_164,
   },
   lists: {
     listsDigest: "ddd5c84df153fb71c2254a20ec8132134ef0aaa6bb4878cb683da4ffc967913f",

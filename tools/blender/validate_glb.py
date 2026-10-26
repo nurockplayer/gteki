@@ -21,6 +21,11 @@ PALETTES = ("gteki_palette", "gteki_palette_blend")  # mobile swatch atlases
 ROLES = ("barriers", "transport", "stairs_ramps")  # station bake roles; keep in step with gteki_assets/contract.py ROLES
 REQUIRED = ("contract id family variant version generator params bounds_m triangles "
             "dimension_basis fidelity navigation provenance license").split()
+# Packing rounds UV1 to float32 in atlas space, which can tip a sliver triangle (one whose UV altitude is
+# itself within a few float32 ulps) across its neighbour's edge. For ao_atlas entries such slivers, with a
+# minimum UV altitude at most this (atlas UV units, 4 float32 ulps at 1.0), are left out of the overlap
+# test; every other triangle is tested exactly as before, however thin its overlap.
+ATLAS_OVERLAP_SLACK = 2.0 ** -22
 IDENTITY = [1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.]
 
 
@@ -119,6 +124,38 @@ def _area3(p, q, r):
 # A lightmap triangle whose geometry covers at least 1 mm^2 must keep some UV area; slivers below
 # that (stair-nosing seams) may collapse when UVs are snapped to the 1/65536 grid.
 COLLAPSED_UV_AREA, VISIBLE_GEOMETRY_M2 = 1e-12, 1e-6
+# Diagnostic WARN only: a triangle at least 1 cm^2 and 5 mm across in 3D whose 3D-to-UV1 mapping stretches
+# one direction more than 10x the other (singular values) gets its AO from the few texels along a line.
+THIN_UV_MIN_AREA_M2, THIN_UV_MIN_ALTITUDE_M, THIN_UV_SQUASH = 1e-4, 0.005, 0.1
+
+
+def _longest_edge(a, b, c):
+    """Longest edge of a 2D or 3D triangle."""
+    return max(math.dist(a, b), math.dist(b, c), math.dist(c, a))
+
+
+def _uv_anisotropy(p, uv):
+    """sigma_min / sigma_max of the affine map from a 3D triangle's plane to its UV triangle (1 = conformal)."""
+    ab, ac = [[q[k] - p[0][k] for k in range(3)] for q in p[1:]]
+    length = math.hypot(*ab)
+    e1 = [c / length for c in ab]
+    x_c = sum(ac[k] * e1[k] for k in range(3))
+    y_c = math.hypot(*[ac[k] - x_c * e1[k] for k in range(3)])  # > 0: callers pass visible triangles
+    du = [[q[k] - uv[0][k] for k in range(2)] for q in uv[1:]]
+    # J maps the plane basis (e1, e2) to UV: columns J e1 = du_b / length, J e2 = (du_c - x_c J e1) / y_c
+    j1 = [du[0][k] / length for k in range(2)]
+    j2 = [(du[1][k] - x_c * j1[k]) / y_c for k in range(2)]
+    a, b, c, d = j1[0], j2[0], j1[1], j2[1]
+    frob, det = a * a + b * b + c * c + d * d, abs(a * d - b * c)
+    root = math.sqrt(max(frob * frob - 4 * det * det, 0.0))
+    smax, smin = math.sqrt((frob + root) / 2), math.sqrt(max((frob - root) / 2, 0.0))
+    return smin / smax if smax > 0 else 0.0
+
+
+def _min_altitude(a, b, c, area):
+    """Smallest altitude of a 2D or 3D triangle: 2 * area / longest edge."""
+    longest = _longest_edge(a, b, c)
+    return 2 * area / longest if longest > 0 else 0.0
 
 
 def _cross(o, a, b):
@@ -149,14 +186,15 @@ def _clip(subject, clipper):
     return out
 
 
-def uv_overlaps(tris, eps=1e-10):
+def uv_overlaps(tris, eps=1e-10, slack=0.0):
     """Index pairs of UV triangles that overlap by more than `eps` of the unit square.
 
-    Lightmap charts must not overlap; triangles that only share an edge or a vertex do not count."""
+    Lightmap charts must not overlap; triangles that only share an edge or a vertex do not count.
+    With `slack`, triangles whose minimum altitude (2 * area / longest edge) is at most `slack` are skipped."""
     ccw = {}
     for i, t in enumerate(tris):
         a = _area(t)
-        if abs(a) > 1e-14:
+        if abs(a) > 1e-14 and not (slack and 2 * abs(a) <= slack * max(math.dist(t[k - 1], t[k]) for k in range(3))):
             ccw[i] = tuple(t) if a > 0 else tuple(t[::-1])
     boxes = {i: (min(p[0] for p in t), min(p[1] for p in t), max(p[0] for p in t), max(p[1] for p in t)) for i, t in ccw.items()}
     # 1/64 cells, unless that enumerates millions of them (a huge triangle): then no smaller than the largest triangle
@@ -421,7 +459,7 @@ class Validator:
         if not isinstance(meta.get("triangles"), int) or isinstance(meta.get("triangles"), bool) or meta["triangles"] < 0:
             self.message("FAIL", "metadata triangles must be a non-negative integer")
         materials = doc.get("materials", [])
-        atlas_entry = None
+        atlas_entry, overlap_slack = None, 0.0
         if self.manifest is not None:
             if not isinstance(self.manifest, AtlasManifest):
                 self.manifest = AtlasManifest(self.manifest)
@@ -431,6 +469,7 @@ class Validator:
                 self.message("FAIL", "ao_atlas asset still carries occlusionTexture")
             x, y, w, h = atlas_entry["cell"]
             width, height = self.manifest.sizes[atlas_entry["kind"]]
+            overlap_slack = ATLAS_OVERLAP_SLACK
             owned = self.manifest.helper.asset_nodes(doc, stem)
             mesh_indices = {nodes[i]["mesh"] for i in owned if "mesh" in nodes[i]}
             uv_indices = {p["attributes"]["TEXCOORD_1"] for i in mesh_indices
@@ -526,7 +565,7 @@ class Validator:
                     atlas.append((node, mesh_tris[node["mesh"]]))
                 return
             tris = mesh_tris[node["mesh"]] = []
-            collapsed = 0
+            collapsed = thin = 0
             for primitive in meshes[node["mesh"]].get("primitives", []):
                 mode = primitive.get("mode", 4)
                 if mode not in (4, 5, 6):
@@ -569,16 +608,33 @@ class Validator:
                     tris.append(tri)
                     # Keep the pre-atlas collapse threshold in per-id UV units.
                     area_scale = width * height / (w * h) if atlas_entry is not None else 1
-                    if (positions and abs(_area(tri)) * area_scale <= COLLAPSED_UV_AREA
+                    if not positions:
+                        continue
+                    if (abs(_area(tri)) * area_scale <= COLLAPSED_UV_AREA
                             and _area3(*(positions[i] for i in corners)) >= VISIBLE_GEOMETRY_M2):
                         collapsed += 1
+                        continue
+                    # Squashed sliver: visible in 3D, but its UV1 is much narrower across than along,
+                    # compared with its 3D shape. Atlas cells go back to cell-local units (map frame).
+                    corners3 = tuple(positions[i] for i in corners)
+                    area3 = _area3(*corners3)
+                    alt3 = _min_altitude(*corners3, area3)
+                    if area3 < THIN_UV_MIN_AREA_M2 or alt3 < THIN_UV_MIN_ALTITUDE_M:
+                        continue
+                    map_scale = (width / w, height / h) if atlas_entry is not None else (1, 1)
+                    map_tri = tuple((u * map_scale[0], v * map_scale[1]) for u, v in tri)
+                    if _uv_anisotropy(corners3, map_tri) < THIN_UV_SQUASH:
+                        thin += 1
             if collapsed:
                 self.message("FAIL", f"node {node.get('name')!r} has {collapsed} lightmap UV (TEXCOORD_1) triangles "
                              "collapsed to a point or line although their geometry is at least 1 mm^2")
+            if thin:
+                self.message("WARN", f"node {node.get('name')!r} has {thin} lightmap UV (TEXCOORD_1) triangles "
+                             "stretched over 10x more in one direction than the other although they are at least 1 cm^2 and 5 mm across in 3D")
             if shared_atlas:
                 atlas.append((node, tris))
                 return
-            overlapping = uv_overlaps(tris)
+            overlapping = uv_overlaps(tris, slack=overlap_slack)
             if overlapping:
                 self.message("FAIL", f"node {node.get('name')!r} lightmap UV (TEXCOORD_1) has "
                              f"{len(overlapping)} overlapping triangle pairs")
@@ -671,7 +727,7 @@ class Validator:
         if shared_atlas:
             # one occlusion map for the whole asset: every visual node lays its islands out in the same
             # UV space, so they must not overlap across nodes (a mesh instanced twice overlaps itself)
-            overlapping = uv_overlaps([tri for _, tris in atlas for tri in tris])
+            overlapping = uv_overlaps([tri for _, tris in atlas for tri in tris], slack=overlap_slack)
             if overlapping:
                 self.message("FAIL", f"visual nodes share one lightmap atlas (occlusion map) but their UV1 has "
                              f"{len(overlapping)} overlapping triangle pairs")
@@ -904,6 +960,36 @@ def self_test():
     assert lightmapped(None, uv_bytes=vec3, type="VEC3") == "FAIL"  # six valid UVs, wrong type only
     assert lightmapped(apart, count=5) == "FAIL"  # one UV per vertex
     assert lightmapped(tuple(c + 2 * (k % 2 == 0) for k, c in enumerate(apart))) == "FAIL"  # outside the unit square
+
+    def thin(pos, uvs):
+        """One visual triangle with the given positions and TEXCOORD_1; returns the validation result."""
+        tri = copy.deepcopy(doc)
+        data = struct.pack("<9f", *pos) + struct.pack("<6f", *uvs)
+        lo, hi = [min(pos[k::3]) for k in range(3)], [max(pos[k::3]) for k in range(3)]
+        tri["buffers"][0]["byteLength"] = len(data)
+        tri["bufferViews"] = [dict(buffer=0, byteLength=36), dict(buffer=0, byteOffset=36, byteLength=24)]
+        tri["accessors"] = [dict(bufferView=0, componentType=5126, count=3, type="VEC3", min=lo, max=hi),
+                            dict(bufferView=1, componentType=5126, count=3, type="VEC2")]
+        tri["meshes"].append(dict(primitives=[dict(attributes=dict(POSITION=0, TEXCOORD_1=1), material=0)]))
+        tri["nodes"][1]["mesh"] = 1
+        tri["nodes"][0]["extras"]["gteki"]["bounds_m"] = dict(min=lo, max=hi)
+        return Validator("tiny.glb", encode_glb(tri, data)).check()
+
+    # visible 10 cm x 10 cm triangle: a fat UV1 chart gives no thin WARN; a 1e-4 x 0.5 UV1 sliver gives
+    # the WARN and no FAIL; the same sliver on a 2 mm triangle is below the 1 cm^2 floor and gives nothing
+    visible = (0, 0, 0, .1, 0, 0, 0, .1, 0)
+    thin_warn = "stretched over 10x more in one direction"
+    assert not any(thin_warn in m["message"] for m in thin(visible, (0, 0, .5, 0, 0, .5))["messages"])
+    sliver = thin(visible, (0, 0, 1e-4, 0, 0, .5))
+    assert sliver["status"] == "WARN" and [m["level"] for m in sliver["messages"]] == ["WARN"], sliver
+    assert "has 1 lightmap UV (TEXCOORD_1) triangles stretched over 10x more" in sliver["messages"][0]["message"]
+    assert not any(thin_warn in m["message"] for m in thin(tuple(c * .02 for c in visible), (0, 0, 1e-4, 0, 0, .5))["messages"])
+    # a correctly shaped UV chart at 1/100 scale is not squashed, however small (scale-invariant)
+    assert not any(thin_warn in m["message"] for m in thin(visible, (0, 0, .005, 0, 0, .005))["messages"])
+    # same edge lengths and altitudes in 3D and UV, but AB shrinks 10x and AC grows 10x (review case): 100x
+    assert any(thin_warn in m["message"] for m in thin((0, 0, 0, .1, 0, 0, 0, .01, 0), (0, 0, .01, 0, 0, .1))["messages"])
+    # a sheared but conformal chart (rotated and scaled copy of the 3D triangle) gives nothing
+    assert not any(thin_warn in m["message"] for m in thin((0, 0, 0, .1, 0, 0, .07, .05, 0), (.5, .5, .5, .6, .45, .57))["messages"])
     def occluded(uv_a, uv_b, coord=1, attrs_b=("POSITION", "TEXCOORD_1"), same_mesh=False, side=256, strength=None,
                  second_material=False, require=False):
         """Two visual triangles (meshes A and B) whose material carries an occlusionTexture on `coord`."""
@@ -945,7 +1031,7 @@ def self_test():
     assert Validator("tiny.glb", encode_glb(doc, binary)).check()["status"] == "PASS"
     assert Validator("tiny.glb", encode_glb(doc, binary), require_occlusion=True).check()["status"] == "FAIL"  # ... unless asked
     print("PASS self-test: valid, broken, truncated, NaN, out-of-range index, sparse, transformed, strip and fan GLBs, "
-          "root identity, extensions, triangle count, gteki_role (allowed value, root and VIS_* agree), below floor, texCoord (core, extension, transform, extras), palette mipmaps, mobile finish PNG normal, lightmap (overlap, strips, fans, range, NaN, collapsed, mobile UV1), occlusion (texCoord, TEXCOORD_1, joint atlas overlap, strength, size, shared map)")
+          "root identity, extensions, triangle count, gteki_role (allowed value, root and VIS_* agree), below floor, texCoord (core, extension, transform, extras), palette mipmaps, mobile finish PNG normal, lightmap (overlap, strips, fans, range, NaN, collapsed, thin slivers, mobile UV1), occlusion (texCoord, TEXCOORD_1, joint atlas overlap, strength, size, shared map)")
 
 
 def main():

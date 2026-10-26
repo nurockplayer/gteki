@@ -1,0 +1,800 @@
+{
+  "schema": "gteki.station/0.1",
+  "note": "Shinjuku shop recovery batch 1 (OD-34 follow-up). Shops in 小田急エース / 京王モール accepted ONLY from each shop's or chain's own official store page. Directory sites for the two malls were never opened. Every entry is UNVERIFIED and AREA_ONLY: no route, no entrance, no floor geometry; current operating status unknown.",
+  "sources": [
+    {
+      "id": "chain-zetteria-ace-sjk-2026-10",
+      "title": "新宿小田急エース店｜店舗情報｜ゼッテリア",
+      "publisher": "ゼッテリア",
+      "url": "https://maps.zetteria.jp/shop/shop2312.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "新宿小田急エース店｜店舗情報｜ゼッテリア (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T10:50:00Z",
+      "datasetDate": null,
+      "notes": "Chain page prints the shop name 新宿小田急エース店 and address 東京都新宿区西新宿1; no 北館/南館 wording, no closure notice."
+    },
+    {
+      "id": "chain-hakonesoba-ace-north-sjk-2026-10",
+      "title": "箱根そば本陣　小田急エース北館店 - 店舗紹介 | 店舗紹介｜小田急レストランシステム",
+      "publisher": "小田急レストランシステム",
+      "url": "https://www.odakyu-restaurant.jp/shop/hakonesoba/hakonesoba-honjin/ace-north.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "箱根そば本陣　小田急エース北館店 - 店舗紹介 | 店舗紹介｜小田急レストランシステム (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T10:51:00Z",
+      "datasetDate": null,
+      "notes": "Address prints 小田急エース北館, 西新宿一丁目西口地下街1号; access line says underground direct link from Shinjuku Station."
+    },
+    {
+      "id": "chain-hakonesoba-ace-south-sjk-2026-10",
+      "title": "箱根そば本陣　小田急エース南館店 - 店舗紹介 | 店舗紹介｜小田急レストランシステム",
+      "publisher": "小田急レストランシステム",
+      "url": "https://www.odakyu-restaurant.jp/shop/hakonesoba/hakonesoba-honjin/ace-south.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "箱根そば本陣　小田急エース南館店 - 店舗紹介 | 店舗紹介｜小田急レストランシステム (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T10:53:00Z",
+      "datasetDate": null,
+      "notes": "Address prints 小田急エース南館, 西新宿一丁目西口地下街1号; no closure or relocation notice."
+    },
+    {
+      "id": "chain-yoshinoya-keiomall-sjk-2026-10",
+      "title": "吉野家 新宿京王モール店 | 吉野家 店舗検索 | 吉野家公式",
+      "publisher": "吉野家",
+      "url": "https://stores.yoshinoya.com/yoshinoya/spot/detail?code=ysn_061476",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "吉野家 新宿京王モール店 | 吉野家 店舗検索 | 吉野家公式 (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T10:52:00Z",
+      "datasetDate": null,
+      "notes": "Shop name prints 京王モール; address is 西新宿1丁目1南口地下街, with no block or floor; no closure notice."
+    },
+    {
+      "id": "chain-daiso-keiomall-annex-sjk-2026-10",
+      "title": "DAISO 京王モールアネックス店 | 店舗検索 | DAISO（ダイソー）公式企業サイト",
+      "publisher": "DAISO（ダイソー）",
+      "url": "https://www.daiso-sangyo.co.jp/shop/detail/002645",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "DAISO 京王モールアネックス店 | 店舗検索 | DAISO（ダイソー）公式企業サイト (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T10:57:00Z",
+      "datasetDate": null,
+      "notes": "Address prints 東京都新宿区西新宿1丁目19番地京王モールアネックス内; no closure notice."
+    },
+    {
+      "id": "chain-karadafactory-keiomall-annex-sjk-2026-10",
+      "title": "【公式】カラダファクトリー 新宿京王モールアネックス店｜新宿区（東京都）｜整体・骨盤矯正・もみほぐしのカラダファクトリー",
+      "publisher": "カラダファクトリー",
+      "url": "https://salon.karada39.com/detail/942/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "【公式】カラダファクトリー 新宿京王モールアネックス店｜新宿区（東京都）｜整体・骨盤矯正・もみほぐしのカラダファクトリー (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T10:57:30Z",
+      "datasetDate": null,
+      "notes": "Address prints 西新宿1丁目19 京王モールアネックスB1F; body text also places the shop in the annex basement; no closure notice."
+    },
+    {
+      "id": "chain-haruka-keiomall-annex-sjk-2026-10",
+      "title": "新宿京王モールアネックス店｜ ヘアセット・眉カット・ネイル・まつげパーマ｜アトリエはるか",
+      "publisher": "アトリエはるか",
+      "url": "https://www.haruka.co.jp/salon/082/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "新宿京王モールアネックス店｜ ヘアセット・眉カット・ネイル・まつげパーマ｜アトリエはるか (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T10:58:00Z",
+      "datasetDate": null,
+      "notes": "Shop name and address print 京王モール アネックス (西新宿1-19); page notes the mall and the annex are different streets."
+    },
+    {
+      "id": "chain-krispykreme-ace-north-sjk-2026-10",
+      "title": "小田急エース北館店 - クリスピー・クリーム・ドーナツ",
+      "publisher": "クリスピー・クリーム・ドーナツ",
+      "url": "https://krispykreme.jp/store/tokyo/odakyuace.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "小田急エース北館店 - クリスピー・クリーム・ドーナツ (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T10:58:00Z",
+      "datasetDate": null,
+      "notes": "Address prints 西新宿1丁目西口地下街1号 小田急エース北館; page has no branch announcements; no closure notice."
+    },
+    {
+      "id": "chain-pressbuttersand-ace-sjk-2026-10",
+      "title": "店舗を選ぶ | 【公式】BAKE | テイクアウト（お持ち帰り）ネット予約",
+      "publisher": "BAKE",
+      "url": "https://bake.take-eats.jp/select-shop-info/3549",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "店舗を選ぶ | 【公式】BAKE | テイクアウト（お持ち帰り）ネット予約 (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T10:58:30Z",
+      "datasetDate": null,
+      "notes": "Address prints 西新宿一丁目西口地下街1号 小田急エース 北館; shop name includes 新宿小田急エース店; no closure notice."
+    },
+    {
+      "id": "chain-renoir-keiomall-sjk-2026-10",
+      "title": "Cafeルノアール 新宿京王モール店 | 店舗検索 | 銀座ルノアール",
+      "publisher": "株式会社銀座ルノアール",
+      "url": "https://www.ginza-renoir.co.jp/shopsearch/shops/tokyo/shinjuku-ku/caferenoir-shinjuku-keio-mall.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "Cafeルノアール 新宿京王モール店 | 店舗検索 | 銀座ルノアール (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T10:59:00Z",
+      "datasetDate": null,
+      "notes": "Address prints 西新宿1-南口地下街1 京王モール第A-5区画; no closure or relocation notice."
+    },
+    {
+      "id": "chain-mignon-ace-south-sjk-2026-10",
+      "title": "【新宿小田急エース店】オープンのお知らせ – ミニヨン ミニクロワッサン | MIGNON mini croissant",
+      "publisher": "MIGNON mini croissant",
+      "url": "https://mignon-mini-croissant.com/open-shinjuku-2022/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "【新宿小田急エース店】オープンのお知らせ – ミニヨン ミニクロワッサン | MIGNON mini croissant (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T10:59:00Z",
+      "datasetDate": null,
+      "notes": "Official shop-list entry and opening notice print 新宿小田急エース店 at 西新宿1丁目西口地下街1号 小田急エース南館."
+    },
+    {
+      "id": "chain-familymart-ace-sjk-2026-10",
+      "title": "小田急エース店｜店舗検索 | ファミリーマート",
+      "publisher": "ファミリーマート",
+      "url": "https://store.family.co.jp/points/21520",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "小田急エース店｜店舗検索 | ファミリーマート (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T10:59:30Z",
+      "datasetDate": null,
+      "notes": "Shop name prints 小田急エース店; address 西新宿1丁目 西口地下街1号 with no 北館/南館 wording; no closure notice."
+    },
+    {
+      "id": "chain-sagatani-keiomall-sjk-2026-10",
+      "title": "十割蕎麦 さがたに 新宿京王モール店 | 関東エリア | 株式会社フォーユー",
+      "publisher": "株式会社フォーユー",
+      "url": "http://foryou-group.co.jp/brandfc/kantou/entry-86.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "十割蕎麦 さがたに 新宿京王モール店 | 関東エリア | 株式会社フォーユー (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T10:59:50Z",
+      "datasetDate": null,
+      "notes": "Address prints 西新宿1-1 京王モールB-4区画; no closure or relocation notice for this shop."
+    },
+    {
+      "id": "chain-tsutsumi-keiomall-sjk-2026-10",
+      "title": "新宿京王モール店 | TSUTSUMI - ジュエリーツツミ公式サイト",
+      "publisher": "TSUTSUMI（ジュエリーツツミ）",
+      "url": "https://www.tsutsumi.co.jp/shop/detail/tokyo/1624.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "新宿京王モール店 | TSUTSUMI - ジュエリーツツミ公式サイト (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T10:59:55Z",
+      "datasetDate": null,
+      "notes": "Shop name and address print 京王モールB1F (西新宿1-1); page prints the branch name without the chain name; no closure notice."
+    },
+    {
+      "id": "chain-hibiyakadan-ace-sjk-2026-10",
+      "title": "【公式】日比谷花壇 新宿小田急エース店 | 日比谷花壇",
+      "publisher": "日比谷花壇",
+      "url": "https://shop.hibiyakadan.com/detail/80640/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+        "date": "2026-10-24"
+      },
+      "attribution": "【公式】日比谷花壇 新宿小田急エース店 | 日比谷花壇 (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-24T11:00:00Z",
+      "datasetDate": null,
+      "notes": "Address prints 西新宿1丁目1 小田急エース; access line says 小田急エース南館; no closure notice for this shop."
+    }
+  ],
+  "pois": [
+    {
+      "id": "shop-sjk-rec-001",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ゼッテリア 新宿小田急エース店"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "新宿小田急エース店"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "chain-zetteria-ace-sjk-2026-10"
+        ],
+        "method": "facts-only chain store page (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース（店舗公式ページの表記。北館・南館の記載なし）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "小田急エース (as printed on the shop's own page; no 北館/南館 wording). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-rec-002",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "箱根そば本陣　小田急エース北館店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "chain-hakonesoba-ace-north-sjk-2026-10"
+        ],
+        "method": "facts-only chain store page (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース北館（店舗公式ページの表記）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "小田急エース北館 (as printed on the shop's own page). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-rec-003",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "箱根そば本陣　小田急エース南館店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "chain-hakonesoba-ace-south-sjk-2026-10"
+        ],
+        "method": "facts-only chain store page (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース南館（店舗公式ページの表記）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "小田急エース南館 (as printed on the shop's own page). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-rec-004",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "吉野家 新宿京王モール店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "chain-yoshinoya-keiomall-sjk-2026-10"
+        ],
+        "method": "facts-only chain store page (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール（店舗公式ページの表記。区画の記載なし）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "京王モール (as printed on the shop's own page; no block printed). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-rec-007",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "DAISO 京王モールアネックス店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "chain-daiso-keiomall-annex-sjk-2026-10"
+        ],
+        "method": "facts-only chain store page (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モールアネックス（店舗公式ページの表記）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "京王モールアネックス (as printed on the shop's own page). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-rec-008",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "カラダファクトリー 新宿京王モールアネックス店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "chain-karadafactory-keiomall-annex-sjk-2026-10"
+        ],
+        "method": "facts-only chain store page (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モールアネックスB1F（店舗公式ページの表記）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "京王モールアネックスB1F (as printed on the shop's own page). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-rec-009",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "アトリエはるか 新宿京王モール アネックス店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "chain-haruka-keiomall-annex-sjk-2026-10"
+        ],
+        "method": "facts-only chain store page (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール アネックス（店舗公式ページの表記）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "京王モール アネックス (as printed on the shop's own page). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-rec-010",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "クリスピー・クリーム・ドーナツ 小田急エース北館店"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "小田急エース北館店"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "chain-krispykreme-ace-north-sjk-2026-10"
+        ],
+        "method": "facts-only chain store page (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース北館（店舗公式ページの表記）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "小田急エース北館 (as printed on クリスピー・クリーム・ドーナツ's own store page). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-rec-011",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "PRESS BUTTER SAND 新宿小田急エース店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "chain-pressbuttersand-ace-sjk-2026-10"
+        ],
+        "method": "facts-only chain store page (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース 北館（店舗公式ページの表記）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "小田急エース 北館 (as printed on the shop's own page). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-rec-012",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "Cafeルノアール 新宿京王モール店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "chain-renoir-keiomall-sjk-2026-10"
+        ],
+        "method": "facts-only chain store page (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モール第A-5区画（店舗公式ページの表記）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "京王モール第A-5区画 (as printed on the shop's own page). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-rec-013",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "MIGNON 新宿小田急エース店"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "新宿小田急エース店"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "chain-mignon-ace-south-sjk-2026-10"
+        ],
+        "method": "facts-only chain store page (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース南館（店舗公式ページの表記）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "小田急エース南館 (as printed on MIGNON's own page). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-rec-014",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "ファミリーマート 小田急エース店"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "小田急エース店"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "chain-familymart-ace-sjk-2026-10"
+        ],
+        "method": "facts-only chain store page (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース（ファミリーマートの店舗公式ページの表記。北館・南館の記載なし）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "小田急エース (as printed on ファミリーマート's own store page; no 北館/南館 wording). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-rec-016",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "十割蕎麦 さがたに 新宿京王モール店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "chain-sagatani-keiomall-sjk-2026-10"
+        ],
+        "method": "facts-only chain store page (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モールB-4区画（店舗公式ページの表記）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "京王モールB-4区画 (as printed on the shop's own page). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-rec-017",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "TSUTSUMI 新宿京王モール店"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "新宿京王モール店"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "chain-tsutsumi-keiomall-sjk-2026-10"
+        ],
+        "method": "facts-only chain store page (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王モールB1F（店舗公式ページの表記）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "京王モールB1F (as printed on TSUTSUMI's own store page). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-rec-018",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "日比谷花壇 新宿小田急エース店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "chain-hibiyakadan-ace-sjk-2026-10"
+        ],
+        "method": "facts-only chain store page (OD-34), UNVERIFIED, AREA_ONLY",
+        "checkedDate": "2026-10-24"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "小田急エース南館（店舗公式ページの表記）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "小田急エース南館 (as printed on the shop's own page). Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    }
+  ],
+  "removed": [
+    {
+      "id": "shop-sjk-rec-005",
+      "name": "ドトールコーヒーショップ 新宿京王モール店",
+      "reason": "not used (OD-34, director ruling 2026-10-24): the chain site's terms ban unauthorised reuse with no stated exception; candidate for the merchant self-service form (#438)"
+    },
+    {
+      "id": "shop-sjk-rec-006",
+      "name": "眼鏡市場 新宿京王モール店",
+      "reason": "not used (OD-34, director ruling 2026-10-24): the chain site's terms ban unauthorised reuse with no stated exception; candidate for the merchant self-service form (#438)"
+    },
+    {
+      "id": "shop-sjk-rec-015",
+      "name": "ドトールコーヒーショップ 新宿京王モールアネックス店",
+      "reason": "not used (OD-34, director ruling 2026-10-24): the chain site's terms ban unauthorised reuse with no stated exception; candidate for the merchant self-service form (#438)"
+    }
+  ]
+}

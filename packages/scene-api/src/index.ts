@@ -49,6 +49,14 @@ export interface SpawnPoint {
   label?: string;
 }
 
+/** Opt-in `Object3D.userData.gteki_identity`; coordinates are local to the tagged mesh/group. */
+export interface IdentityBoardTag {
+  /** Outward normal of the readable face; defaults to +Z. Must be finite and nonzero. */
+  front?: [number, number, number];
+  /** Omitted: the whole object's local bounds are the name region. */
+  regions?: { kind: "name" | "arrow"; min: [number, number, number]; max: [number, number, number] }[];
+}
+
 export interface StationScene {
   root: THREE.Object3D;
   /** Surfaces the walker can stand on (raycast from above). Empty = no free walking. */

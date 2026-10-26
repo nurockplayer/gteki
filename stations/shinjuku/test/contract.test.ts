@@ -16,12 +16,29 @@ describe("Shinjuku gteki/ contract files", () => {
     expect((bundle.station.codes ?? []).map((c) => c.code)).toContain("E27");
   });
 
-  it("gives every POI a distinct display name in each language (search results stay distinguishable)", () => {
+  it("gives every E27 POI a distinct ja and en name, and every S03 or shop POI a ja name (search results stay distinguishable)", () => {
+    // #411: S03 search-only POIs have ja names only, and one source name is printed twice (kept as printed).
+    // #214: merchant listings are printed names as well (no invented English), and shops are not E27 POIs.
+    // #501: the WP4 line POIs (Toei exits, Metro exits/lifts/escalators) are printed names too, ja only.
+    const WP4_SOURCES = new Set([
+      "tokyometro-shinjuku-station-2026-10",
+      "tokyometro-shinjuku-accessibility-2026-10",
+      "tokyometro-shinjuku-yardmap-print-2026-10",
+      "toei-shinjuku-station-2026-10",
+      "tokyometro-shinjuku-station-en-2026-10",
+    ]);
+    const e27 = bundle.pois.filter((p) => !p.evidence.sourceIds.includes("tokyo-s03-zip") && p.category !== "shop" && !p.evidence.sourceIds.every((id) => WP4_SOURCES.has(id)));
+    for (const p of bundle.pois.filter((p) => p.category === "shop")) expect(p.names.some((n) => n.lang === "ja" && n.text.trim() !== ""), p.id).toBe(true);
     for (const lang of ["ja", "en"]) {
-      const names = bundle.pois.map((p) => p.names.find((n) => n.lang === lang)?.text);
+      const names = e27.map((p) => p.names.find((n) => n.lang === lang)?.text);
       expect(names.every(Boolean)).toBe(true);
       expect(new Set(names).size).toBe(names.length);
     }
+    const s03 = bundle.pois.filter((p) => p.evidence.sourceIds.includes("tokyo-s03-zip"));
+    const s03Ja = s03.map((p) => p.names.find((n) => n.lang === "ja")?.text);
+    expect(s03Ja.every(Boolean)).toBe(true);
+    // One S03 name is printed for two gates; asserted by id (S03 names stay out of Apache-2.0 files).
+    expect(s03.filter((p, i) => s03Ja.indexOf(s03Ja[i]) !== s03Ja.lastIndexOf(s03Ja[i])).map((p) => p.id)).toEqual(["poi:keio-gate:1", "poi:keio-gate:2"]);
   });
 
   it("cites the render-only PLATEAU street context under the catalogue licence with the Owner's Option A credit (#161)", () => {
@@ -40,8 +57,12 @@ describe("Shinjuku gteki/ contract files", () => {
     for (const s of e27) {
       expect(s.rights, s.id).toBe("PUBLISHED_UNDER_OWNER_OVERRIDE");
       expect(s.override, s.id).toEqual({ decision: "https://github.com/nurockplayer/gteki/pull/16#issuecomment-6313815757", date: "2026-10-21" });
-      expect(s.license?.name, s.id).toMatch(/unconfirmed/i);
-      expect(s.license?.name, s.id).not.toMatch(/PDL|CC[ -]?BY/i);
+      // #297: every language states the same unconfirmed status, and none claims PDL or CC BY.
+      for (const [lang, status] of [["ja", /未確認/], ["en", /unconfirmed/i]] as const) {
+        const text = textOf(s.license?.name, lang);
+        expect(text, `${s.id} ${lang}`).toMatch(status);
+        expect(text, `${s.id} ${lang}`).not.toMatch(/PDL|CC[ -]?BY/i);
+      }
     }
   });
 

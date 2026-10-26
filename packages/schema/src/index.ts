@@ -13,6 +13,7 @@
  *
  * File layout (station-owned; shared core only reads): stations/<id>/gteki/
  *   station.json → StationManifestFile, graph.json → GraphFile, pois.json → PoiFile,
+ *   optional tenants.json → TenantFile (a store's own brand directory; #419),
  *   optional scene.ts (see @gteki/scene-api). `composeBundle` joins them into a StationBundle.
  */
 
@@ -259,6 +260,51 @@ export type PoiCategory =
   | "transfer"
   | "other";
 
+/**
+ * Opening hours exactly as a source printed them (OD-32). This is text, not a timetable: the app shows the
+ * page's own wording and never parses it into open/closed state. `status: "UNKNOWN"` records a page that was
+ * read and printed no hours, so a later check can tell "not looked at" from "looked at, nothing printed".
+ */
+export interface HoursText {
+  /** The page's own wording, line breaks kept. Absent only when the page printed no hours (status UNKNOWN). */
+  text?: string;
+  /** The official page the text was read from (http/https). */
+  sourceUrl: string;
+  /** ISO date (YYYY-MM-DD) the page was read. */
+  retrievedAt: string;
+  /** Whose word it is: the merchant's own listing, a dated official page, or an official page with no date. */
+  basis: "merchant" | "dated-official" | "undated-official";
+  status: "OK" | "UNKNOWN";
+}
+
+/**
+ * Hours that belong to a whole building or a floor range rather than one shop (OD-32), e.g. 「ルミネ池袋
+ * B1～7F 11:00～21:00」. Building-level rows exist because the page prints one block for many shops; they never
+ * override a shop's own hours.
+ */
+export interface BuildingHours extends HoursText {
+  /** The building or facility as its own page names it. */
+  building: LocalizedText[];
+  /** The floor range the row covers, as printed (e.g. "B1～7F"); null for a whole-building row. */
+  floorRange: string | null;
+  /** The page's own caveat, e.g. 「店舗により異なる場合あり」. */
+  note?: LocalizedText[];
+}
+
+/**
+ * An approximate representative point (e.g. the area-weighted centroid of the source polygon that names the
+ * POI). It exists so search can show roughly where a place is when no surveyed position is available; it is
+ * never a routing target and never shown as a precise pin.
+ */
+export interface ApproximatePosition {
+  east: number;           // metres, station frame x
+  north: number;          // metres, station frame y
+  uncertaintyM: number;   // > 0, the ± radius shown to users
+  method: string;         // how it was derived, e.g. "area_weighted_centroid"
+  navigationUse: "NOT_FOR_ROUTING";
+  floor: "UNVERIFIED";    // the POI's floorId is a label match, not surveyed
+}
+
 export interface Poi {
   id: string;
   category: PoiCategory;
@@ -268,6 +314,12 @@ export interface Poi {
   floorId: string | null;
   /** Display location (may be a centroid); NOT a routing target. */
   displayPosition: Vec3N | null;
+  /**
+   * Approximate representative point for search display only (e.g. a centroid of a source polygon): station
+   * frame metres, east/north on the ENU plane, no height. NOT a routing target, never a connector, never a
+   * displayPosition, never drawn as a precise pin.
+   */
+  approximatePosition?: ApproximatePosition;
   /** Verified graph nodes that physically give access to the POI. Empty => not routable. */
   connectorNodeIds: string[];
   /** Whether this POI is inside the fare-paid area. */
@@ -275,6 +327,8 @@ export interface Poi {
   evidence: EvidenceRef;
   /** Human-facing freshness/limits, e.g. operating hours text from source. */
   notes?: LocalizedText[];
+  /** Opening hours as an official page printed them (OD-32); shown with the date it was read. */
+  hours?: HoursText;
 }
 
 export type CoverageStatus = "routable" | "visual_only" | "unverified" | "excluded";
@@ -383,8 +437,14 @@ export interface StationBundle {
   coverage: Coverage;
   /** Suggested user-choosable start nodes (no indoor positioning is claimed). */
   spawnNodeIds?: string[];
+  /** Compass heading in degrees: 0 = north, 90 = east, clockwise. */
+  spawnHeadings?: Record<string, number>;
   assets?: Asset[];
   dataFiles?: DataFile[];
+  /** Brands listed by stores' own directories (optional `gteki/tenants.json`). Facts only, never routing targets. */
+  tenants?: Tenant[];
+  /** Whole-building / floor-range hours printed by an official page (OD-32), shared by many shops. */
+  buildingHours?: BuildingHours[];
 }
 
 /** stations/<id>/gteki/station.json */
@@ -395,8 +455,12 @@ export interface StationManifestFile {
   floors: Floor[];
   coverage: Coverage;
   spawnNodeIds?: string[];
+  /** Compass heading in degrees: 0 = north, 90 = east, clockwise. */
+  spawnHeadings?: Record<string, number>;
   assets?: Asset[];
   dataFiles?: DataFile[];
+  /** Whole-building / floor-range hours printed by an official page (OD-32). */
+  buildingHours?: BuildingHours[];
 }
 
 /** stations/<id>/gteki/graph.json */
@@ -412,6 +476,39 @@ export interface PoiFile {
   schema: typeof SCHEMA_VERSION;
   stationId: string;
   pois: Poi[];
+}
+
+/** stations/<id>/gteki/tenants.json (optional, #419). */
+export const TENANTS_SCHEMA_VERSION = "gteki.tenants/0.1" as const;
+
+/**
+ * A brand listed by a store's own directory. Facts only: never a routing target, never positioned.
+ * Everything the directory states beyond name, floor and category (hours, "open now", logos, layouts) is left out.
+ */
+export interface Tenant {
+  /** `tenant-<store>-<n>`, stable, never reused. */
+  id: string;
+  /** The store POI that lists it (an existing POI in this bundle, category "shop"). */
+  poiId: string;
+  /** Brand name exactly as printed (`ja`, whatever the script). No invented translation. */
+  names: LocalizedText[];
+  /** Only variants the source itself prints (e.g. its kana). */
+  aliases: LocalizedText[];
+  /**
+   * The store's own floor label as printed ("8F", "B1", "本館 2F"). Free text, NOT a station `floorId`:
+   * store floors are never equated with station floors (docs/core/contract.md).
+   */
+  floorLabel: LocalizedText[];
+  /** The directory's category as printed, if any (婦人服, レストラン …). Display/filter only. */
+  category?: LocalizedText[];
+  /** The directory that prints this listing; `facts-only` sources only (the UI marks it unverified). */
+  evidence: EvidenceRef;
+}
+
+/** stations/<id>/gteki/tenants.json */
+export interface TenantFile {
+  schema: typeof TENANTS_SCHEMA_VERSION;
+  tenants: Tenant[];
 }
 
 export { ASSET_FILE_EXT, DATA_FILE_EXT, dataFileFactsOnlySources, isCanonicalAssetPath, validateBundle, type ValidationIssue } from "./validate.ts";

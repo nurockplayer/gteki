@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { asRealStation, createSyntheticBundle, syntheticEdge as edge } from "../../navigation/src/fixtures.ts";
 import { dataFileFactsOnlySources, isOpenAt, parseHm, parseStationFiles, validateBundle } from "./index.ts";
-import type { CoverageArea, CoverageText, DataFile, GraphFile, HoursSpec, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
+import type { ApproximatePosition, BuildingHours, CoverageArea, CoverageText, DataFile, GraphFile, HoursSpec, HoursText, Poi, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
 
 const ev = { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" };
 const DECISION = { url: "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", date: "2026-10-21" };
@@ -11,7 +11,12 @@ const warnings = (b: StationBundle) => validateBundle(b).filter((i) => i.level =
 function split(b: StationBundle): [StationManifestFile, GraphFile, PoiFile] {
   const { nodes, edges, pois, ...rest } = b;
   return [
-    { schema: rest.schema, station: rest.station, sources: rest.sources, floors: rest.floors, coverage: rest.coverage },
+    {
+      schema: rest.schema, station: rest.station, sources: rest.sources, floors: rest.floors, coverage: rest.coverage,
+      ...(rest.spawnNodeIds ? { spawnNodeIds: rest.spawnNodeIds } : {}),
+      ...(rest.spawnHeadings ? { spawnHeadings: rest.spawnHeadings } : {}),
+      ...(rest.buildingHours ? { buildingHours: rest.buildingHours } : {}),
+    },
     { schema: b.schema, stationId: b.station.id, nodes, edges },
     { schema: b.schema, stationId: b.station.id, pois },
   ];
@@ -134,6 +139,28 @@ describe("parseStationFiles (fail-closed JSON loading)", () => {
     const parsed = parseStationFiles(...split(createSyntheticBundle()));
     expect(parsed.ok).toBe(true);
     expect(parsed.bundle?.edges).toHaveLength(3);
+  });
+
+  it("parses optional spawn headings and validates their spawn-node keys", () => {
+    const b = createSyntheticBundle();
+    b.spawnNodeIds = ["start"];
+    b.spawnHeadings = { start: 90 };
+    const parsed = parseStationFiles(...split(b));
+    expect(parsed.ok).toBe(true);
+    expect(parsed.bundle?.spawnHeadings).toEqual({ start: 90 });
+
+    b.spawnHeadings = { missing: 90 };
+    expect(parseStationFiles(...split(b)).issues.map((issue) => issue.code)).toContain("spawn.heading.node");
+  });
+
+  it("rejects non-number spawn headings and leaves absent headings absent", () => {
+    const b = createSyntheticBundle();
+    const [manifest, graph, pois] = split(b);
+    const parsed = parseStationFiles(manifest, graph, pois);
+    expect(parsed.ok).toBe(true);
+    expect(parsed.bundle).not.toHaveProperty("spawnHeadings");
+    (manifest as unknown as { spawnHeadings: unknown }).spawnHeadings = { start: "east" };
+    expect(parseStationFiles(manifest, graph, pois).issues.map((issue) => issue.code)).toContain("shape.type");
   });
 
   it("refuses a missing tri-state instead of defaulting it", () => {
@@ -371,6 +398,106 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     const empty = real();
     empty.coverage.areas[0]!.sourceIds = [];
     expect(errors(empty)).toContain("coverage.source");
+  });
+
+  it("keeps approximate positions search-display-only: no connectors, no displayPosition, a reusable source (#463)", () => {
+    const approximate = (over: Partial<ApproximatePosition> = {}): ApproximatePosition => ({
+      east: 12.5, north: -3, uncertaintyM: 25, method: "area_weighted_centroid",
+      navigationUse: "NOT_FOR_ROUTING", floor: "UNVERIFIED", ...over,
+    });
+    const place = (over: Partial<Poi> = {}) => {
+      const b = createSyntheticBundle();
+      Object.assign(b.pois[0]!, { connectorNodeIds: [], displayPosition: null, approximatePosition: approximate() }, over);
+      return b;
+    };
+    // A well-formed approximate point round-trips through the shape check and validates clean.
+    const parsed = parseStationFiles(...split(place()));
+    expect(parsed.ok).toBe(true);
+    expect(parsed.bundle?.pois[0]!.approximatePosition).toEqual(approximate());
+    expect(errors(place())).toEqual([]);
+    // Malformed values are shape errors, never silently kept.
+    for (const bad of [
+      { ...approximate(), east: Number.NaN },
+      { ...approximate(), north: Number.POSITIVE_INFINITY },
+      { ...approximate(), uncertaintyM: 0 },
+      { ...approximate(), uncertaintyM: -1 },
+      { ...approximate(), method: "" },
+      { ...approximate(), method: "   " },
+      { ...approximate(), navigationUse: "ROUTING" },
+      { ...approximate(), floor: "VERIFIED" },
+      { ...approximate(), uncertaintyM: "25" },
+    ]) {
+      const shaped = parseStationFiles(...split(place({ approximatePosition: bad as unknown as ApproximatePosition })));
+      expect(shaped.ok, JSON.stringify(bad)).toBe(false);
+      expect(shaped.issues.map((i) => i.code), JSON.stringify(bad)).toContain("shape.type");
+    }
+    // An approximate point can never be routed to or treated as a precise display position.
+    expect(errors(place({ connectorNodeIds: ["a"] }))).toContain("poi.approximate.routing");
+    expect(errors(place({ displayPosition: { x: 0, y: 0, z: 0 } }))).toContain("poi.approximate.display");
+    // On a real station it needs a reusable data source, which may be REUSABLE_WITH_CONDITIONS.
+    const real = (rights: "REUSABLE_WITH_CONDITIONS" | "REFERENCE_ONLY") => {
+      const b = asRealStation(place());
+      b.edges = [];
+      b.sources.push({ ...b.sources[0]!, id: "approx-source", rights });
+      b.pois[0]!.evidence = { sourceIds: ["approx-source"], method: "synthetic-fixture", checkedDate: "2026-10-20" };
+      return b;
+    };
+    expect(errors(real("REUSABLE_WITH_CONDITIONS"))).toEqual([]);
+    expect(errors(real("REFERENCE_ONLY"))).toContain("poi.approximate.rights");
+  });
+
+  it("keeps printed hours honest: where they came from, when they were read, and whether anything was printed (OD-32)", () => {
+    const hours = (over: Partial<HoursText> = {}): HoursText => ({
+      text: "月～土 10:00～21:00\n日・祝 10:00～19:30", sourceUrl: "https://example.org/shop", retrievedAt: "2026-10-24",
+      basis: "undated-official", status: "OK", ...over,
+    });
+    const place = (over: Partial<Poi> = {}) => {
+      const b = createSyntheticBundle();
+      Object.assign(b.pois[0]!, over);
+      return b;
+    };
+    // A well-formed row round-trips through the shape check and validates clean.
+    const parsed = parseStationFiles(...split(place({ hours: hours() })));
+    expect(parsed.ok).toBe(true);
+    expect(parsed.bundle?.pois[0]!.hours).toEqual(hours());
+    expect(errors(place({ hours: hours() }))).toEqual([]);
+    // A page that printed nothing says so; empty text passed off as hours is refused.
+    expect(errors(place({ hours: hours({ status: "UNKNOWN", text: undefined }) }))).toEqual([]);
+    expect(errors(place({ hours: hours({ text: "   " }) }))).toContain("hours.text");
+    // The provenance the app shows with the text: a real date, a link to the page, and whose word it is.
+    expect(errors(place({ hours: hours({ retrievedAt: "2026-10" }) }))).toContain("hours.date");
+    expect(errors(place({ hours: hours({ sourceUrl: "example.org/shop" }) }))).toContain("hours.url");
+    expect(errors(place({ hours: hours({ basis: "guess" as HoursText["basis"] }) }))).toContain("hours.basis");
+    expect(errors(place({ hours: hours({ status: "MAYBE" as HoursText["status"] }) }))).toContain("hours.status");
+    // Shape: a missing field is an error, never an implicit default.
+    const shaped = parseStationFiles(...split(place({ hours: { text: "10:00～21:00" } as unknown as HoursText })));
+    expect(shaped.ok).toBe(false);
+    expect(shaped.issues.map((i) => i.code)).toContain("shape.missing");
+    // Building-level rows are shared hours for many shops, so they need a building name and the same provenance.
+    const building = (over: Partial<BuildingHours> = {}): BuildingHours => ({
+      building: [{ lang: "ja", text: "ルミネ池袋" }], floorRange: "B1～7F", note: [{ lang: "ja", text: "店舗により異なる場合あり" }], ...hours(), ...over,
+    });
+    const shared = (over: Partial<BuildingHours> = {}) => {
+      const b = createSyntheticBundle();
+      b.buildingHours = [building(over)];
+      return b;
+    };
+    const built = parseStationFiles(...split(shared()));
+    expect(built.ok).toBe(true);
+    expect(built.bundle?.buildingHours).toEqual([building()]);
+    expect(errors(shared())).toEqual([]);
+    expect(errors(shared({ building: [] }))).toContain("buildingHours.building");
+    expect(errors(shared({ status: "OK", text: undefined }))).toContain("hours.text");
+  });
+
+  it("refuses a printed-hours reading dated in the future (OD-32)", () => {
+    const b = createSyntheticBundle();
+    Object.assign(b.pois[0]!, { hours: { text: "10:00～21:00", sourceUrl: "https://example.org/shop", retrievedAt: "2999-01-01", basis: "undated-official", status: "OK" } });
+    expect(errors(b)).toContain("hours.date");
+    // A reading from today is fine: only dates after today are refused.
+    const today = new Date().toISOString().slice(0, 10);
+    Object.assign(b.pois[0]!, { hours: { text: "10:00～21:00", sourceUrl: "https://example.org/shop", retrievedAt: today, basis: "undated-official", status: "OK" } });
+    expect(errors(b)).not.toContain("hours.date");
   });
 
   it("keeps unknown and symbolic floor elevations null and rejects unknown elevation sources", () => {
