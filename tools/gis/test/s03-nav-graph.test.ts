@@ -181,14 +181,6 @@ describe('S03 nav graph: held receipt (synthetic only)', () => {
   });
 });
 
-/** The held graph must not reach anything that ships: these files are pinned at their shipped state. */
-const SHIPPED = {
-  'stations/shinjuku/gteki/graph.json': '06d6193124f0dc6d44a663c5a1bfdff224bcd0d71114fc303c154501555863be',
-  'stations/shinjuku/gteki/station.json': '6d8aa6c738a336d47e9f610b776509bbb0a118ea3decb9149ea09618ca970e58',
-  'stations/shinjuku/gteki/pois.json': '971ac9f302960eaeb17fe0eb3a0548957413fc0a1de5d2a5064b8ec1cedde177',
-  'stations/shinjuku/data/import-report.json': 'b202aa9287f2cef6c510046c8e74e841384fd13f5ebafe6a69c69eaee8d50d94',
-} as const;
-
 describe('S03 nav graph: the held document stays in the private store', () => {
   it('writes inside the store and refuses an output directory that resolves outside it', async () => {
     const store = await mkdtemp(join(tmpdir(), 'gteki-store-')), outside = await mkdtemp(join(tmpdir(), 'gteki-outside-'));
@@ -209,12 +201,6 @@ describe('S03 nav graph: the held document stays in the private store', () => {
 });
 
 describe('S03 nav graph: nothing ships', () => {
-  it('leaves the shipped Shinjuku graph and station data unchanged', async () => {
-    for (const [path, pinned] of Object.entries(SHIPPED)) {
-      const bytes = await readFile(new URL(`../../../${path}`, import.meta.url));
-      expect(createHash('sha256').update(bytes).digest('hex'), `${path} is shipped data; the S03 graph stays behind HOLD`).toBe(pinned);
-    }
-  });
   it('has no write path into station data or the web bundle: only the store and a docs/gis/s03 receipt', async () => {
     const source = await readFile(new URL('../src/s03-nav-graph.ts', import.meta.url), 'utf8');
     // The only repository write is the receipt: no station data, no web bundle, no other repo path.

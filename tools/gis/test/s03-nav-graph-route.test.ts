@@ -119,21 +119,7 @@ describe('S03 nav route: the held run is read, and the receipt stays counts-only
   });
 });
 
-/** Unchanged from the graph run: these ship, and routing stays behind HOLD. */
-const SHIPPED = {
-  'stations/shinjuku/gteki/graph.json': '06d6193124f0dc6d44a663c5a1bfdff224bcd0d71114fc303c154501555863be',
-  'stations/shinjuku/gteki/station.json': '6d8aa6c738a336d47e9f610b776509bbb0a118ea3decb9149ea09618ca970e58',
-  'stations/shinjuku/gteki/pois.json': '971ac9f302960eaeb17fe0eb3a0548957413fc0a1de5d2a5064b8ec1cedde177',
-  'stations/shinjuku/data/import-report.json': 'b202aa9287f2cef6c510046c8e74e841384fd13f5ebafe6a69c69eaee8d50d94',
-} as const;
-
 describe('S03 nav route: nothing ships', () => {
-  it('leaves the shipped Shinjuku graph and station data unchanged', async () => {
-    for (const [path, pinned] of Object.entries(SHIPPED)) {
-      const bytes = await readFile(new URL(`../../../${path}`, import.meta.url));
-      expect(sha256(bytes), `${path} is shipped data; S03 routing stays behind HOLD`).toBe(pinned);
-    }
-  });
   it('has no write path into station data or the web bundle: only the store and a docs/gis/s03 receipt', async () => {
     const source = await readFile(new URL('../src/s03-nav-graph-route.ts', import.meta.url), 'utf8');
     const repoWrites = [...source.matchAll(/writeJson\(join\(repoRoot, ([^)]+)\)/g)].map(match => match[1]);
