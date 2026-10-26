@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { parseStationFiles, validateBundle } from "@gteki/schema";
 import { applyFieldReceipt } from "./import_field_receipt.ts";
 
 const stationDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -46,6 +47,15 @@ describe("applyFieldReceipt", () => {
     expect(result.applied).toEqual([]);
     expect(result.src).toEqual(src);
     expect(result.station).toEqual(station);
+  });
+
+  it("leaves a bundle the schema accepts and routes the store to its connector", () => {
+    const result = applyFieldReceipt(src, pois, station, receipt);
+    const graph = JSON.parse(fs.readFileSync(path.join(stationDir, "gteki", "graph.json"), "utf8"));
+    const tenants = JSON.parse(fs.readFileSync(path.join(stationDir, "gteki", "tenants.json"), "utf8"));
+    const parsed = parseStationFiles(result.station, graph, result.pois, tenants);
+    expect(parsed.ok).toBe(true);
+    expect(validateBundle(parsed.bundle!).filter((issue) => issue.level === "error")).toEqual([]);
   });
 
   it("rejects invalid timestamps and unknown connector nodes", () => {

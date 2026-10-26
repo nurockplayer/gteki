@@ -121,8 +121,9 @@ export function applyFieldReceipt(srcInput: any, poisInput: any, stationInput: a
     url: `https://github.com/nurockplayer/gteki/blob/main/${receipt.fieldRun}`,
     license: { name: "CC BY 4.0", url: "https://creativecommons.org/licenses/by/4.0/" },
     rights: "REUSABLE_WITH_CONDITIONS",
-    usage: "facts-only",
-    attribution: "GTEki contributors, field observation (facts only; photos not published)",
+    // Our own observation, shipped under the project's CC BY 4.0 (director 2026-10-26 19:1x JST): data, not a facts-only citation,
+    // so no `usage` and no #26 decision record (schema validate.ts requires one only for facts-only sources).
+    attribution: "GTEki contributors, CC BY 4.0 (field observation; photos not published)",
     modified: false,
     retrievedAt: latest.observedAt,
     datasetDate: null,
