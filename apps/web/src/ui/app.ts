@@ -643,7 +643,8 @@ export class App {
       });
       box.append(b);
     });
-    if (!q) {
+    // The examples name other categories, so they are left out under a category filter.
+    if (!q && !this.s.filter) {
       const examples = exampleQueries(this.s.loaded.bundle.pois, this.s.lang, this.t.toiletWord);
       if (examples.length) {
         const hint = el("div", "result-hint", this.t.suggestTry(examples.join(this.s.lang === "ja" ? "、" : ", ")));

@@ -38,6 +38,11 @@ describe("empty suggestions", () => {
     expect(groups.map((group) => group.key)).toEqual(["recent"]);
   });
 
+  it("lists a filtered category even when the field's own order leaves it out", () => {
+    const groups = emptySuggestions(fixture, "from", { filter: "shop", recentIds: [] });
+    expect(groups.flatMap((group) => group.pois).map((item) => item.id)).toEqual(["shop"]);
+  });
+
   it("puts valid recents first, deduplicates them from popular results, and skips unknown ids", () => {
     const groups = emptySuggestions(fixture, "to", { filter: null, recentIds: ["missing", "gate", "gate", "search-exit-0"] });
     expect(groups[0]).toMatchObject({ key: "recent", pois: [{ id: "gate" }] });

@@ -18,7 +18,8 @@ export function emptySuggestions(
   const order = which === "from" ? FROM_ORDER : TO_ORDER;
   const allowed = new Set(order);
   const byId = new Map(pois.map((poi) => [poi.id, poi]));
-  const eligible = (poi: Poi) => poi.connectorNodeIds.length > 0 && allowed.has(poi.category) && (!opts.filter || poi.category === opts.filter);
+  // An active category filter wins over the field's category list (a "shop" filter still lists shops in From).
+  const eligible = (poi: Poi) => poi.connectorNodeIds.length > 0 && (opts.filter ? poi.category === opts.filter : allowed.has(poi.category));
   const recent: Poi[] = [];
   const recentIds = new Set<string>();
   for (const id of opts.recentIds) {
@@ -30,7 +31,7 @@ export function emptySuggestions(
   }
   const popular = pois
     .map((poi, index) => ({ poi, index, categoryIndex: order.indexOf(poi.category) }))
-    .filter(({ poi, categoryIndex }) => categoryIndex >= 0 && !recentIds.has(poi.id) && eligible(poi))
+    .filter(({ poi }) => !recentIds.has(poi.id) && eligible(poi))
     .sort((a, b) => a.categoryIndex - b.categoryIndex || a.index - b.index)
     .slice(0, limit - recent.length)
     .map(({ poi }) => poi);

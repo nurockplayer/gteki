@@ -371,10 +371,10 @@ SuggestGroup	interface	apps/web/src/ui/emptySuggestions.ts	4
 FROM_ORDER	const	apps/web/src/ui/emptySuggestions.ts	7
 TO_ORDER	const	apps/web/src/ui/emptySuggestions.ts	8
 emptySuggestions	function	apps/web/src/ui/emptySuggestions.ts	11
-pushRecent	function	apps/web/src/ui/emptySuggestions.ts	44
-readRecent	function	apps/web/src/ui/emptySuggestions.ts	49
-writeRecent	function	apps/web/src/ui/emptySuggestions.ts	56
-exampleQueries	function	apps/web/src/ui/emptySuggestions.ts	65
+pushRecent	function	apps/web/src/ui/emptySuggestions.ts	45
+readRecent	function	apps/web/src/ui/emptySuggestions.ts	50
+writeRecent	function	apps/web/src/ui/emptySuggestions.ts	57
+exampleQueries	function	apps/web/src/ui/emptySuggestions.ts	66
 identityNamesOf	function	apps/web/src/ui/identityCard.ts	7
 StationIdentityView	class	apps/web/src/ui/identityCard.ts	54
 poiLabel	function	apps/web/src/ui/labels.ts	13
