@@ -15,6 +15,9 @@ Read this first, then open the note for your area, then open exactly the files a
 
 One line per area: what it owns · where it lives · its note. "no note yet" means the owning lead hasn't written one.
 
+### Repo root
+- Worker rules: what Codex and other workers read first (map first, brief scope, orb-test, times with zone, no checkout in the shared clone, no big files) · `AGENTS.md` · no note (the file is the rules)
+
 ### App (`apps/web`)
 - Explorer: the 3D station view. Scene load, walk/camera, route rendering, POI labels, minimap hookup · `apps/web/src/explorer/` · [[web-explorer]]
 - UI shell: app frame, search combobox, minimap, identity/merchant cards, rail travel, live region · `apps/web/src/ui/` · [[web-ui]]
