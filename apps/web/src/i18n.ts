@@ -68,6 +68,11 @@ const STRINGS = {
     /** English-only marker: a store's floor label is quoted exactly as printed, not a station floor. */
     asPrinted: "（原文どおり）",
     noResults: "該当なし",
+    suggestRecent: "最近選んだ場所",
+    suggestPopularFrom: "よく使う出発地（改札など）",
+    suggestPopularTo: "人気の目的地",
+    suggestTry: (q: string) => "試しに入力：" + q,
+    toiletWord: "トイレ",
     route: "ルート",
     minutes: (m: number) => `約${m}分`,
     waiting: (m: number) => `うち待ち約${m}分`,
@@ -200,6 +205,13 @@ const STRINGS = {
     routeFound: (m: number, min: number) => `ルートが見つかりました：${m}m、約${min}分`,
     liveSeparator: "。",
     coverageStatus: { routable: "経路あり", visual_only: "表示のみ", unverified: "未確認", excluded: "対象外" } as Record<string, string>,
+    firstRun: {
+      step1: "『出発地』で今いる改札などを選ぶ",
+      step2: "『目的地』で行きたい場所を選ぶ",
+      step3: "ルートを確認して『ガイド開始』",
+      tryRoute: "ルートを試す",
+      close: "閉じる",
+    },
     /** Guide mascot lines (#132): fixed text per event kind, never interpolated with route facts. */
     mascot: {
       arrival: "着いたよ！おつかれさま！",
@@ -283,6 +295,11 @@ const STRINGS = {
     tenantFloorsNotGuided: "Floors inside the store are not guided",
     asPrinted: "(as printed)",
     noResults: "No matches",
+    suggestRecent: "Recent",
+    suggestPopularFrom: "Common starting points (gates)",
+    suggestPopularTo: "Popular destinations",
+    suggestTry: (q: string) => "Try typing: " + q,
+    toiletWord: "Toilet",
     route: "Route",
     minutes: (m: number) => `~${m} min`,
     waiting: (m: number) => `incl. ~${m} min waiting`,
@@ -406,6 +423,13 @@ const STRINGS = {
     routeFound: (m: number, min: number) => `Route found: ${m} m, about ${min} minute${min === 1 ? "" : "s"}`,
     liveSeparator: ". ",
     coverageStatus: { routable: "routable", visual_only: "visual only", unverified: "unverified", excluded: "excluded" } as Record<string, string>,
+    firstRun: {
+      step1: "Pick where you are in “From” (e.g. a ticket gate)",
+      step2: "Pick where you want to go in “To”",
+      step3: "Check the route, then start the guide",
+      tryRoute: "Try a route",
+      close: "Close",
+    },
     /** Guide mascot lines (#132): fixed text per event kind, never interpolated with route facts. */
     mascot: {
       arrival: "We're here! Nice work!",

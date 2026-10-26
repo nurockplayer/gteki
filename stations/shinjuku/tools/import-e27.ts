@@ -48,6 +48,7 @@ import { runWidth } from "../scene/layout.ts";
 import { floorLabel } from "../app/src/narrate.ts";
 import { SURFACE_CREDIT } from "./import-surface.ts";
 import { loadRawE27, normId, pointInPolygon, RAW_DIR, type GeoFeature, type PolyG, type RawSpaceP } from "./e27-raw.ts";
+import { applyFieldReceipts, loadReceipts } from "./field-receipts.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT = join(HERE, "../data");
@@ -1285,6 +1286,7 @@ for (const file of MERCHANT_POI_FILES) {
     for (const id of poi.evidence.sourceIds)
       if (!allowed.has(id)) throw new Error(`merchant import: ${poi.id} (${file}) cites ${id}, which this file does not declare`);
     if (poi.evidence.sourceIds.length === 0) throw new Error(`merchant import: ${poi.id} cites no source`);
+    if (poi.connectorNodeIds.length > 0) throw new Error(`merchant import: ${poi.id} (${file}) has connectorNodeIds; a store connector comes only from a field receipt (docs/research/field/receipts)`);
     pois.push(poi);
   }
 }
@@ -1431,6 +1433,13 @@ const spawnNodeIds = (["ticket_gate", "platform", "exit"] as const).flatMap((cat
   return poi?.connectorNodeIds[0] ? [poi.connectorNodeIds[0]] : [];
 });
 
+// Walk-entry headings (degrees, 0 = north, clockwise; docs/core/contract.md), measured by the visual lead
+// against the #348 identity boards. Only the default spawn (B1 gate 1) has one: 70 faces the 「新宿」 spawn board
+// 3.25 m away, front side, clear line of sight (#342 Q2: the old default faced away from it). The platform spawn
+// needs none (its walk-entry heading already frames the #348 platform board) and the street spawn waits for a re-measure.
+const SPAWN_HEADING_BY_NODE: Record<string, number> = { "n:fe13251e6885410b870179837c3832cf": 70 };
+const spawnHeadings = Object.fromEntries(spawnNodeIds.flatMap((id) => (id in SPAWN_HEADING_BY_NODE ? [[id, SPAWN_HEADING_BY_NODE[id]!]] : [])));
+
 // Non-code data the web bundle inlines (#186). Declared here so station.json carries the same
 // source and rights gate as assets; each derivation names the script that writes the file.
 const dataFiles: DataFile[] = [
@@ -1493,9 +1502,15 @@ const bundle: StationBundle = {
   pois,
   coverage,
   spawnNodeIds,
+  spawnHeadings,
   dataFiles,
   buildingHours,
 };
+
+// ---------------------------------------------------------------- field receipts (#533, #554)
+// CLOSED team_field observations add a store or gate connector; nothing else may (see the merchant guard above).
+const fieldApplied = applyFieldReceipts(pois, sources, new Set(nodes.map((n) => n.id)), loadReceipts(join(HERE, "../../../docs/research/field/receipts"), "shinjuku"));
+if (fieldApplied.length) console.log(`field receipts: applied #533 items ${fieldApplied.join(", ")}`);
 
 // ---------------------------------------------------------------- plan (render geometry)
 const plan = {

@@ -31,7 +31,7 @@ const finite = (value: unknown): value is number => typeof value === 'number' &&
 
 /** A node as the held `s03-nav-graph` document carries it. */
 export interface HeldGraphNode {
-  source_id: number; level_id: number; level_label: string; floor_ordinal: number;
+  source_id: number; level_id: number; level_label: string; level_z: number | null;
   lon: number; lat: number; east_m: number; north_m: number; gate: S03GateTag | null;
 }
 /** An edge as the held `s03-nav-graph` document carries it. */
@@ -225,7 +225,7 @@ export function buildRouteReceipt(args: {
     requested_routes: { total: args.routes.length, outcomes: outcomes.map(outcome => ({ outcome, count: args.routes.filter(route => route.outcome === outcome).length })) },
     reason_codes: Object.values(PATH_REASON).map(code => ({ code, count: args.reason_codes[code] ?? 0 })).filter(entry => entry.count > 0),
     route_rule: 'Only edges between gate-tagged nodes of the JR East, Odakyu and Keio areas are routed: the endpoints are the nodes whose own reviewed tag names one of those operators, the path is the shortest walk length over the held graph edges, and `d` 1/2 are one-way. Every node, edge and result is labelled NOT_FOR_ROUTING and UNVERIFIED.',
-    refusal_rule: 'Any edge the path takes that carries a reason code refuses the route and lists the codes; a held graph carries CRS_UNCONFIRMED on every edge, so a real run reports reachability with zero ROUTED pairs.',
+    refusal_rule: 'Any edge the path takes that carries a reason code refuses the route and lists the codes; a held graph carries CHECK_B_RESIDUAL_UNVERIFIED on every edge, while FLOOR_ORDINAL_UNVERIFIED clears where both ends have printed z, so a real run reports reachability with zero ROUTED pairs.',
     receipt_rule: 'This receipt carries counts, run identity and reason codes only: no coordinate, no node or link id, no gate name, no level label and no route geometry.',
   };
 }
@@ -261,7 +261,7 @@ export async function s03NavGraphRoute(options: NavRouteOptions, storeRoot: stri
     publication: { graph: 'HOLD', paths: 'HOLD', routing: 'HOLD', release_condition: NAV_ROUTE_RELEASE_CONDITION },
     counts, reason_codes: reasonCodes,
     nodes: document.nodes.map(node => ({ source_id: node.source_id, level_id: node.level_id, level_label: node.level_label,
-      floor_ordinal: node.floor_ordinal, lon: node.lon, lat: node.lat, east_m: node.east_m, north_m: node.north_m,
+      level_z: node.level_z, lon: node.lon, lat: node.lat, east_m: node.east_m, north_m: node.north_m,
       gate: node.gate, ...NAV_ROUTE_LABELS })),
     edges: document.edges.map(edge => ({ ...edge, ...NAV_ROUTE_LABELS })),
     routes: routes.map(route => ({ ...route, ...NAV_ROUTE_LABELS })),

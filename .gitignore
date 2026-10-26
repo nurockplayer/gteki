@@ -18,3 +18,6 @@ __pycache__/
 
 # Godot HQ client: generated scene snapshots (never committed)
 /packages/godot/.cache/
+
+# Obsidian workspace state for the project map
+docs/map/.obsidian/

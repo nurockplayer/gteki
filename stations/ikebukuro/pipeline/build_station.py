@@ -334,6 +334,8 @@ def build_instant(src):
     # Sources used only by the visual street/N02 context are not route evidence: adding or refetching
     # them must not move the edges' geometry checkedDate.
     context_only = {i for a in src.get("assets", []) if a["id"] in ("street-context", "ksj-n02-context") for i in a["sourceIds"]}
+    context_only.update(s["id"] for s in src["sources"]
+                        if s.get("gteki_role") == "context" and s.get("navigation_use") == "NOT_FOR_ROUTING")
     stamps = [datetime.datetime.fromisoformat(s["retrievedAt"].replace("Z", "+00:00")) for s in src["sources"]
               if s.get("retrievedAt") and s["id"] not in context_only]
     # Date-only checks were made in Japan: they start at local midnight, never at a later UTC midnight.

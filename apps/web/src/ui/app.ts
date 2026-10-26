@@ -30,6 +30,8 @@ import { StationIdentityView } from "./identityCard.ts";
 import { RailRideDemo } from "./railRideDemo.ts";
 import { shouldHandleGuideKey } from "./railKeyGuard.ts";
 import { Minimap } from "./minimap.ts";
+import { emptySuggestions, exampleQueries, pushRecent, readRecent, writeRecent } from "./emptySuggestions.ts";
+import { demoPair, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -60,6 +62,10 @@ interface State {
 }
 
 const GUIDE_TIER_KEY = "gteki.guideTier";
+
+function safeStorage(): Storage | null {
+  try { return localStorage; } catch { return null; }
+}
 
 function readGuideTier(): GuideTierId {
   try {
@@ -99,6 +105,9 @@ export class App {
     fromResults: el("div", "results"),
     toResults: el("div", "results"),
     categoryFilter: el("select", "category-filter"),
+    firstRun: el("div", "first-run"),
+    firstRunTry: el("button", "first-run-try"),
+    firstRunClose: el("button", "first-run-close", "×"),
     spawnChips: el("div", "chips"),
     profile: el("div", "chips profile"),
     sheet: el("section", "sheet"),
@@ -207,7 +216,25 @@ export class App {
     });
     const filterRow = el("div", "filter-row");
     filterRow.append(this.ui.categoryFilter);
-    panel.append(this.identityView.overview, this.ui.banner, fields, filterRow, this.ui.spawnChips, this.ui.profile, this.ui.more);
+    this.ui.firstRun.hidden = true;
+    this.ui.firstRunClose.type = "button";
+    this.ui.firstRunClose.addEventListener("click", () => {
+      this.firstRunDismissed = true;
+      markFirstRunDone(safeStorage());
+      this.syncPanelMascot();
+    });
+    this.ui.firstRunTry.type = "button";
+    this.ui.firstRunTry.addEventListener("click", () => {
+      const pair = this.s.loaded ? demoPair(this.s.loaded.key, this.s.loaded.bundle.pois) : null;
+      if (!pair) return;
+      this.firstRunDismissed = true;
+      markFirstRunDone(safeStorage());
+      this.setOrigin({ kind: "poi", poi: pair.from });
+      this.setDestination(pair.to);
+    });
+    const firstRunSteps = el("ol", "first-run-steps");
+    this.ui.firstRun.append(this.ui.firstRunClose, firstRunSteps, this.ui.firstRunTry);
+    panel.append(this.identityView.overview, this.ui.banner, fields, filterRow, this.ui.firstRun, this.ui.spawnChips, this.ui.profile, this.ui.more);
 
     this.ui.hint.setAttribute("role", "note");
     this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.minimap.el, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit);
@@ -223,6 +250,10 @@ export class App {
     this.ui.railBtn.textContent = this.s.lang === "ja" ? "電車に乗る（デモ・未調査）" : "Ride train (demo, not surveyed)";
     this.ui.railBtn.title = this.s.lang === "ja" ? "埼京線 乗車デモ（仮設ホーム）" : "JR Saikyo ride demo (temporary platform)";
     this.ui.more.setAttribute("aria-label", t.options);
+    const steps = this.ui.firstRun.querySelector<HTMLOListElement>(".first-run-steps")!;
+    steps.replaceChildren(...([t.firstRun.step1, t.firstRun.step2, t.firstRun.step3].map((text) => el("li", undefined, text))));
+    this.ui.firstRunTry.textContent = t.firstRun.tryRoute;
+    this.ui.firstRunClose.setAttribute("aria-label", t.firstRun.close);
     this.ui.categoryFilter.setAttribute("aria-label", t.categoryFilter);
     this.ui.fromInput.placeholder = t.fromPlaceholder;
     this.ui.toInput.placeholder = t.toPlaceholder;
@@ -568,9 +599,20 @@ export class App {
     const q = input.value.trim();
     // The category filter narrows both lists to one POI category (#213); no filter searches every category.
     const categories = this.s.filter ? [this.s.filter] : undefined;
+    const groups = q ? null : emptySuggestions(this.s.loaded.bundle.pois, which, {
+      filter: this.s.filter, recentIds: readRecent(safeStorage(), this.s.entry!.key),
+    });
+    const groupHeaders = new Map<number, string>();
+    let suggestionIndex = 0;
+    for (const group of groups ?? []) {
+      groupHeaders.set(suggestionIndex, group.key === "recent"
+        ? this.t.suggestRecent
+        : which === "from" ? this.t.suggestPopularFrom : this.t.suggestPopularTo);
+      suggestionIndex += group.pois.length;
+    }
     const hits: SearchHit[] = q
       ? this.s.search.search(q, { limit: 8, lang: this.s.lang, categories })
-      : this.s.loaded.bundle.pois.filter((poi) => !this.s.filter || poi.category === this.s.filter).slice(0, 8).map((poi) => ({ poi, score: 0, matched: "", routable: poi.connectorNodeIds.length > 0 }));
+      : (groups ?? []).flatMap((group) => group.pois.map((poi) => ({ poi, score: 0, matched: "", routable: true })));
     this.ui.live.announce(searchLiveMessage(this.t, hits.length));
     if (hits.length === 0) {
       const none = el("div", "result empty", this.t.noResults);
@@ -582,6 +624,13 @@ export class App {
       return;
     }
     hits.forEach((h, i) => {
+      const groupHeader = groupHeaders.get(i);
+      if (groupHeader) {
+        const header = el("div", "result-group", groupHeader);
+        header.setAttribute("role", "presentation");
+        header.setAttribute("aria-hidden", "true");
+        box.append(header);
+      }
       const b = el("button", `result cat-${h.poi.category}${h.routable ? "" : " disabled"}`);
       const dot = el("span", "dot");
       dot.setAttribute("aria-hidden", "true");
@@ -612,12 +661,23 @@ export class App {
       b.addEventListener("click", () => {
         this.closeResults(which);
         input.blur();
+        const key = this.s.entry?.key;
+        if (key) writeRecent(safeStorage(), key, pushRecent(readRecent(safeStorage(), key), h.poi.id));
         // A brand is not a destination of its own: the store carries the route (#419).
         if (which === "from") this.setOrigin({ kind: "poi", poi: h.poi });
         else this.setDestination(h.poi, h.tenant ? this.findTenant(h.tenant.id) : null);
       });
       box.append(b);
     });
+    // The examples name other categories, so they are left out under a category filter.
+    if (!q && !this.s.filter) {
+      const examples = exampleQueries(this.s.loaded.bundle.pois, this.s.lang, this.t.toiletWord);
+      if (examples.length) {
+        const hint = el("div", "result-hint", this.t.suggestTry(examples.join(this.s.lang === "ja" ? "、" : ", ")));
+        hint.setAttribute("role", "presentation");
+        box.append(hint);
+      }
+    }
     this.setCombo(which, { open: true, count: hits.length, active: -1 });
   }
 
@@ -651,14 +711,20 @@ export class App {
 
   /**
    * The mascot's two panel states. start_hint (dog, under the fields) shows while the station is ready with no
-   * destination, no route and no results list open; it never displaces another line. scene_fallback is only
-   * re-said here so it follows the language.
+   * destination, no route and no results list open; the first-run card shares that gate. The mascot never
+   * displaces another line. scene_fallback is only re-said here so it follows the language.
    */
+  /** Set once the first-run card is closed or used; covers a session where storage cannot keep the flag. */
+  private firstRunDismissed = false;
+
   private syncPanelMascot(): void {
     const m = this.ui.mascot;
+    const want = this.stationReady && !this.s.destination && !this.s.route && !this.combo.from.open && !this.combo.to.open;
+    const pair = this.s.loaded ? demoPair(this.s.loaded.key, this.s.loaded.bundle.pois) : null;
+    this.ui.firstRun.hidden = !(want && !this.firstRunDismissed && shouldShowFirstRun(safeStorage()));
+    this.ui.firstRunTry.hidden = !pair;
     const key = m.info().lineKey;
     if (key === "scene_fallback") { this.mascotSay({ kind: "scene_fallback" }, this.ui.panel); return; }
-    const want = this.stationReady && !this.s.destination && !this.s.route && !this.combo.from.open && !this.combo.to.open;
     if (want && (key === null || key === "start_hint")) {
       this.mascotSay({ kind: "start_hint" }, this.ui.panel, this.ui.spawnChips);
     } else if (!want && key === "start_hint") {
@@ -684,6 +750,8 @@ export class App {
   /** `tenant` is set only when the destination was picked through a store's brand directory (#419). */
   private setDestination(p: Poi, tenant: Tenant | null = null): void {
     if (!this.ownsPoi(p)) return;
+    this.firstRunDismissed = true;
+    markFirstRunDone(safeStorage());
     this.s.destination = p;
     this.s.destinationTenant = tenant;
     this.refreshAll();

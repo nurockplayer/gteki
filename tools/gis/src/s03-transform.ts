@@ -249,7 +249,9 @@ export interface S03Link { sourceId: number; n1: number; n2: number; direction: 
 export interface S03FeatureGeometry { featureIndex: number; featureId: number | null; polygons: Polygon2[] }
 export interface S03Level {
   /** `label` is the source level label that the asserted ordinal map was applied to; it never enters a public receipt. */
-  id: number; label: string; ordinal: number; polygons: Polygon2[]; nonPolygonFeatures: number; memberSha256: string;
+  id: number; label: string; ordinal: number;
+  /** the level's printed v5_nav `z` ordering value (spec §4.5); null when the member omits it */
+  z: number | null; polygons: Polygon2[]; nonPolygonFeatures: number; memberSha256: string;
   featuresTotal: number; featuresUsed: number; featuresExcludedUnclosedRing: number; featuresExcludedHoleOutsideShell: number;
   features: S03FeatureGeometry[];
 }
@@ -257,6 +259,8 @@ export interface S03Inputs {
   navTransform: Affine; drawingTransform: Affine; drawingId: number;
   nodes: S03Node[]; levels: S03Level[]; links: S03Link[]; sourceValues: Set<string>; sourceDefects: S03SourceDefect[];
   topology: { rings_checked: number; rings_skipped_large: number; hole_shell_touches: number };
+  /** The printed `facility` of each level-geometry feature, keyed `${levelId}:${featureId}` (a node's level and `gid`). */
+  facilities: ReadonlyMap<string, string>;
   navSha256: string; mapSha256: string;
 }
 /** Asserted comparison ordinals from WP7: source level label to our floor ordinal. Never a physical elevation; source zlevel is deliberately unused. */
@@ -345,6 +349,7 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
   };
   const horizontal = (positions: readonly (readonly number[])[]): Point2[] => positions.map(([lon, lat]) => [lon!, lat!] as Point2);
   const topology = { rings_checked: 0, rings_skipped_large: 0, hole_shell_touches: 0 };
+  const facilities = new Map<string, string>();
   const sourceDefects: S03SourceDefect[] = [];
   const levels: S03Level[] = (md.levels as unknown[]).map(raw => {
     if (!record(raw) || !id(raw.id) || !record(raw.properties) || typeof raw.properties.name !== 'string') fail(mapName, 'invalid level id/properties');
@@ -364,6 +369,14 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
       const rawFeatureId = (rawFeature as JsonObject).id;
       if (rawFeatureId !== undefined && !id(rawFeatureId)) fail(member, `feature ${featureIndex} has an invalid id`);
       const featureId = rawFeatureId === undefined ? null : rawFeatureId as number;
+      // The printed facility (stairs / escalator / elevator) is read for every feature, excluded ones included, because a node's gid names it.
+      const rawProperties = (rawFeature as JsonObject).properties;
+      const printedFacility = record(rawProperties) ? rawProperties.facility : undefined;
+      if (featureId !== null && typeof printedFacility === 'string') {
+        const key = `${level.id}:${featureId}`;
+        if (facilities.has(key) && facilities.get(key) !== printedFacility) fail(member, `feature ${featureId} carries two facilities`);
+        facilities.set(key, printedFacility);
+      }
       const geometry = (rawFeature as JsonObject).geometry as JsonObject;
       const parts: unknown[] = [];
       if (geometry.type === 'Polygon') parts.push(geometry.coordinates);
@@ -438,10 +451,16 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
     });
     // A level whose polygon features were all excluded stays in the output with null inside metrics; a level with no polygon feature at all still fails.
     if (!polygons.length && !featuresExcludedUnclosedRing && !featuresExcludedHoleOutsideShell) fail(member, 'no polygons to test');
-    return { id: level.id, label, ordinal: S03_FLOOR_ORDINALS[label]!, polygons, nonPolygonFeatures, memberSha256: sha256(members.get(member)!.data),
+    return { id: level.id, label, ordinal: S03_FLOOR_ORDINALS[label]!, z: null, polygons, nonPolygonFeatures, memberSha256: sha256(members.get(member)!.data),
       featuresTotal: features.length, featuresUsed, featuresExcludedUnclosedRing, featuresExcludedHoleOutsideShell, features: usedFeatures };
   });
   if (!Array.isArray(nd.l) || nd.l.length !== levels.length || new Set(nd.l.map(l => record(l) ? l.id : null)).size !== levels.length || nd.l.some(l => !record(l) || !levelIds.has(l.id as number))) fail(navName, 'drawing levels do not match com-map.geojson');
+  // The printed `z` is S03's own ordering value for its levels (spec S1 §3.2.3/§4.5); a member without it leaves z null.
+  for (const entry of nd.l as Array<{ id: number; z?: unknown }>) {
+    if (entry.z === undefined) continue;
+    if (!finite(entry.z)) fail(navName, `level ${entry.id} has a non-finite z`);
+    levels.find(level => level.id === entry.id)!.z = entry.z as number;
+  }
   if (!Array.isArray(nav.n) || !nav.n.length) fail(navName, 'missing nodes');
   const nodeIds = new Set<number>();
   const nodes: S03Node[] = (nav.n as unknown[]).map((n, index) => {
@@ -465,7 +484,7 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
     if (!Number.isSafeInteger(link.n1) || !Number.isSafeInteger(link.n2) || !nodeIds.has(link.n1) || !nodeIds.has(link.n2)) fail(navName, `link endpoints at index ${index} are not nodes`);
     return { sourceId: link.id, n1: link.n1, n2: link.n2, direction: link.d, dz: typeof link.dz === 'number' ? link.dz : null };
   });
-  return { navTransform, drawingTransform, drawingId, nodes, levels, links, sourceValues, sourceDefects, topology, navSha256: sha256(members.get(navName)!.data), mapSha256: sha256(members.get(mapName)!.data) };
+  return { navTransform, drawingTransform, drawingId, nodes, levels, links, sourceValues, sourceDefects, topology, facilities, navSha256: sha256(members.get(navName)!.data), mapSha256: sha256(members.get(mapName)!.data) };
 }
 
 /**
@@ -494,23 +513,53 @@ export function sourceDefectRecords(inputs: S03Inputs, project: Project) {
 }
 /** Policy fixed before looking at results: >=95% inside, both overall and on every assessed level with nodes. */
 export const OVERWHELMING_INSIDE_SHARE = 0.95;
+/** A level's footprint in projected ENU: its polygons and one bounding box per polygon, precomputed to reduce the containment checks. */
+export interface Footprint { polygons: Point2[][][]; bounds: number[][] }
+export function levelFootprint(polygons: readonly Polygon2[], project: Project): Footprint {
+  const projected = polygons.map(poly => poly.map(ring => ring.map(([lon, lat]) => project(lat, lon))));
+  const bounds = projected.map(poly => {
+    const outer = poly[0]!;
+    return [Math.min(...outer.map(p => p[0])), Math.min(...outer.map(p => p[1])), Math.max(...outer.map(p => p[0])), Math.max(...outer.map(p => p[1]))];
+  });
+  return { polygons: projected, bounds };
+}
+/** The containment rule Check A applies: inside a polygon's closed surface, with the bounding box as a fast reject. */
+export function footprintContains(xy: Point2, footprint: Footprint): boolean {
+  return footprint.polygons.some((poly, i) => {
+    const b = footprint.bounds[i]!;
+    return xy[0] >= b[0]! - 1e-9 && xy[0] <= b[2]! + 1e-9 && xy[1] >= b[1]! - 1e-9 && xy[1] <= b[3]! + 1e-9 && pointInPolygon(xy, poly);
+  });
+}
+export type NodeCheckA = 'PASS' | 'FAIL' | 'UNASSESSED';
+/**
+ * Check A per node: each node is tested against the footprint of its own level, with the same rule checkInternal uses.
+ * A node on a level without a usable polygon is UNASSESSED; a node that does not transform into geographic range is FAIL,
+ * as checkInternal counts it outside.
+ */
+export function nodeCheckA(inputs: Pick<S03Inputs, 'navTransform' | 'drawingTransform' | 'nodes' | 'levels'>, project: Project): Map<number, NodeCheckA> {
+  const footprints = new Map(inputs.levels.map(level => [level.id, levelFootprint(level.polygons, project)] as const));
+  const result = new Map<number, NodeCheckA>();
+  for (const node of inputs.nodes) {
+    const footprint = footprints.get(node.levelId);
+    if (!footprint || !footprint.polygons.length) { result.set(node.sourceId, 'UNASSESSED'); continue; }
+    const ll = transformS03(node.native, inputs.navTransform, inputs.drawingTransform);
+    if (!lonLat(ll)) { result.set(node.sourceId, 'FAIL'); continue; }
+    result.set(node.sourceId, footprintContains(project(ll[1], ll[0]), footprint) ? 'PASS' : 'FAIL');
+  }
+  return result;
+}
 export function checkInternal(inputs: S03Inputs, project: Project, swapped = false) {
   const perLevel = inputs.levels.map(level => {
     const nodes = inputs.nodes.filter(n => n.levelId === level.id);
     const coverage = { features_total: level.featuresTotal, features_used: level.featuresUsed, features_excluded_unclosed_ring: level.featuresExcludedUnclosedRing,
       features_excluded_hole_outside_shell: level.featuresExcludedHoleOutsideShell, non_polygon_features_excluded: level.nonPolygonFeatures };
-    const polygons = level.polygons.map(poly => poly.map(ring => ring.map(([lon, lat]) => project(lat, lon))));
+    const footprint = levelFootprint(level.polygons, project), polygons = footprint.polygons;
     if (!polygons.length) {
       // Every polygon feature on this level was excluded as a source defect. Nothing is invented and the level stays visible.
       return [level.id, { ...coverage, node_count: nodes.length, polygon_count: 0, inside_count: null, inside_share: null,
         outside_count: null, outside_unprojectable_count: null, outside_edge_distance_m: residualStats([]),
         reason: 'No usable polygon: every polygon feature on this level was excluded for a source defect (SOURCE_DEFECT_UNCLOSED_RING or SOURCE_DEFECT_HOLE_OUTSIDE_SHELL); inside metrics are null.' }] as const;
     }
-    // Precomputed bboxes reduce the ground-level polygon checks without changing the closed-surface rule.
-    const bounds = polygons.map(poly => {
-      const outer = poly[0]!;
-      return [Math.min(...outer.map(p => p[0])), Math.min(...outer.map(p => p[1])), Math.max(...outer.map(p => p[0])), Math.max(...outer.map(p => p[1]))];
-    });
     let inside = 0, invalid = 0;
     const distances: number[] = [];
     for (const node of nodes) {
@@ -518,11 +567,7 @@ export function checkInternal(inputs: S03Inputs, project: Project, swapped = fal
       // The reversed transform can leave geographic space. No metric distance is asserted for such a point.
       if (!lonLat(ll)) { invalid++; continue; }
       const xy = project(ll[1], ll[0]);
-      const contained = polygons.some((poly, i) => {
-        const b = bounds[i]!;
-        return xy[0] >= b[0]! - 1e-9 && xy[0] <= b[2]! + 1e-9 && xy[1] >= b[1]! - 1e-9 && xy[1] <= b[3]! + 1e-9 && pointInPolygon(xy, poly);
-      });
-      if (contained) inside++;
+      if (footprintContains(xy, footprint)) inside++;
       else {
         let nearest = Infinity;
         for (const poly of polygons) nearest = Math.min(nearest, distanceToPolygonEdge(xy, poly));

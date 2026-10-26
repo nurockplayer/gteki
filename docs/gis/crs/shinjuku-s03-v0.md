@@ -101,4 +101,6 @@ What ds-sjk-2 needs, and nothing else:
 
 This note is not a rights PASS and does not widen the publish gate; the derived outputs it discusses stay `CONDITIONAL` with licence fields UNKNOWN, as decided on 2026-10-24.
 
-UNVERIFIED. This note establishes which frames the archive contains and how they chain to the station ENU; it does not certify datum, absolute accuracy or station alignment.
+**Update 2026-10-26 (CRS verified, v5_nav frame only).** The S03 spec prints the v5_nav coordinates as Mercator (§4.4 「メルカトル座標からマップ座標への変換」, §4.6 「メルカトル座標内」). Spherical Mercator at a **fitted** 2²⁵-per-world scale reproduces the nav→drawing affine chain to ≤ 0.123 m (median 0.088 m) on all 2,506 nodes; both affines are read from the source ZIP (coefficient hashes above), so the check is not circular. Director's ruling 2026-10-26 11:5x JST (relayed by gteki-31): this closes `CRS_UNCONFIRMED`. Note: [`s03-reason-codes-desk-2026-10-26.md`](../../research/lines/s03-reason-codes-desk-2026-10-26.md) §1 (#546). It shows internal consistency only: datum, absolute accuracy and station alignment (Check B) stay open, and the login-gated MLIT R2 file stays a GAP that is not fetched. The `path-level-geom` frame is unaffected and stays UNKNOWN.
+
+Original status (2026-10-24): UNVERIFIED. This note establishes which frames the archive contains and how they chain to the station ENU; it does not certify datum, absolute accuracy or station alignment.

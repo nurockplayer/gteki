@@ -9,8 +9,8 @@ import { stationEnuProjector } from './station-enu.js';
 import { toolFingerprint } from './provenance.js';
 import { readZip, type ZipEntry } from './zip.js';
 import {
-  S03_DATUM, S03_FLOOR_ORDINALS, assertS03Bytes, floorMappingSha256, parseS03Members, residualStats,
-  type Point2, type Project,
+  S03_DATUM, S03_FLOOR_ORDINALS, assertS03Bytes, floorMappingSha256, nodeCheckA, parseS03Members, residualStats,
+  type NodeCheckA, type Point2, type Project, type S03Level,
 } from './s03-transform.js';
 
 /**
@@ -26,6 +26,8 @@ export const S03_NAV_GRAPH_SOURCE_ID = 'tokyo-s03-zip';
 export const NAV_GRAPH_STATION_PATH = S03_PATHS_STATION_PATH;
 /** The reviewed 45-POI line record: the only source that says which operator a `v5_nav.json` node's geometry belongs to. */
 export const NAV_GRAPH_GATE_SOURCE_PATH = 'docs/research/lines/shinjuku-line-pois.json';
+/** The S03 CRS frame record; only its `frame.verification` is read, and CRS_UNCONFIRMED clears only when it reads VERIFIED. */
+export const NAV_GRAPH_CRS_PATH = 'docs/gis/crs/shinjuku-s03-v0.json';
 export const NAV_GRAPH_CREDIT = '出典：東京都都市整備局「新宿駅周辺の施設情報等」';
 export const NAV_GRAPH_LABELS = PATH_RECORD_LABELS;
 /** The one level dropped whole: it fails Check A at 0.917355 against the 95% rule (docs/gis/crs/shinjuku-s03-v0.md). */
@@ -37,6 +39,8 @@ export const PATH_GEOJSON_MEMBER = /^path-level-geom-.*\.geojson$/i;
 export const NAV_GRAPH_MEMBER = /^(?:v5_nav\.json|com-map\.geojson|com-entity\.geojson|geojson-level-geom-.*\.geojson)$/i;
 /** The three operator areas the graph is built for; a tag on another operator is kept and counted, not dropped. */
 export const NAV_GRAPH_OPERATORS = ['jreast', 'odakyu', 'keio'] as const;
+/** The cross-level devices the S03 level geometry prints (S1 §4.7 facility); any other printed value is not a device and keeps the code. */
+export const NAV_GRAPH_DEVICES = ['stairs', 'escalator', 'elevator'] as const;
 
 const sha256 = (bytes: string | Buffer): string => createHash('sha256').update(bytes).digest('hex');
 const record = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -129,30 +133,41 @@ export function loadGateTags(document: unknown): Map<number, S03GateTag> {
 }
 
 export interface NavGraphNode {
-  source_id: number; level_id: number; level_label: string; floor_ordinal: number;
-  lon: number; lat: number; east_m: number; north_m: number; gate: S03GateTag | null;
+  source_id: number; level_id: number; level_label: string; level_z: number | null;
+  lon: number; lat: number; east_m: number; north_m: number; gate: S03GateTag | null; check_a: NodeCheckA;
 }
+/** Check A per level: nodes by their own footprint test, edges charged to the level of their from-node (the dropped-level rule). */
+export interface CheckALevel { level_id: number; nodes_pass: number; nodes_fail: number; nodes_unassessed: number; edges_pass: number; edges_fail: number }
 export interface NavGraphEdge {
   link_id: number; from_node: number; to_node: number; direction: number; dz_m: number | null;
   length_m: number; level_relation: 'same_level' | 'cross_level'; reason_codes: string[];
+  /** The printed facility both cross-level ends share (stairs / escalator / elevator), or null while it is unknown. */
+  device: string | null;
 }
 export interface DroppedLevel { level_id: number; reason: string; nodes: number; edges: number; evidence: { inside_count: number; node_count: number; inside_share: number } }
 export interface BuiltNavGraph {
   nodes: NavGraphNode[]; edges: NavGraphEdge[];
   counts: {
     source_nodes: number; nodes: number; source_links: number; edges: number;
-    dropped_nodes: number; dropped_edges: number; tagged_nodes: number; untagged_nodes: number;
+    dropped_nodes: number; dropped_edges: number; self_loop_dropped: number; tagged_nodes: number; untagged_nodes: number;
     isolated_nodes: number; same_level_edges: number; cross_level_edges: number;
     directions: { direction: number; count: number }[];
   };
   dropped: DroppedLevel[];
+  check_a: { nodes: Record<NodeCheckA, number>; edges: { pass: number; fail: number }; levels: CheckALevel[] };
   /** Nothing else is dropped: every remaining link stays with its reason codes. This says so in the receipt. */
   other_drops: readonly never[];
   line_counts: { operator_id: string; nodes: number; edges: number }[];
 }
 
 /** The graph inputs: the path transform's inputs plus the geometry-id tags, so nodes and edges come from v5_nav only. */
-export interface NavGraphInputs extends PathInputs { gateTags: ReadonlyMap<number, S03GateTag> }
+export interface NavGraphInputs extends PathInputs {
+  gateTags: ReadonlyMap<number, S03GateTag>; levels: S03Level[];
+  /** The printed facility of each level-geometry feature, keyed `${levelId}:${featureId}`. */
+  facilities: ReadonlyMap<string, string>;
+  /** True only when the CRS frame record reads VERIFIED; then CRS_UNCONFIRMED clears from the edges. */
+  crsVerified: boolean;
+}
 
 /**
  * Build the held walk graph. Levels, nodes and links are the path transform's own: the same affines, the same projection,
@@ -162,13 +177,21 @@ export interface NavGraphInputs extends PathInputs { gateTags: ReadonlyMap<numbe
  */
 export function buildNavGraph(inputs: NavGraphInputs, project: Project): BuiltNavGraph {
   const paths = buildPaths(inputs, project);
+  const checkA = nodeCheckA(inputs, project);
   const geometryById = new Map(inputs.nodes.map(node => [node.sourceId, node.geometryId]));
   const nodeIdByHash = new Map(inputs.nodes.map(node => [sha256(String(node.sourceId)), node.sourceId]));
   const linkIdByHash = new Map(inputs.links.map(link => [sha256(String(link.sourceId)), link.sourceId]));
   const levelById = new Map(paths.nodes.map(node => [node.source_id, node.level_id]));
+  const zByLevel = new Map(inputs.levels.map(level => [level.id, level.z]));
   const droppedLevels = DROPPED_LEVELS.map(dropped => dropped.level_id);
   const dropped = new Set(paths.nodes.filter(node => droppedLevels.includes(node.level_id)).map(node => node.source_id));
   const edges: NavGraphEdge[] = [], droppedEdgeOwner: number[] = [];
+  let selfLoopsDropped = 0;
+  // A node's facility is the one its own level's feature prints under its gid; the level is part of the key.
+  const facilityOf = (node: number): string | null => {
+    const gid = geometryById.get(node), levelId = levelById.get(node);
+    return gid === null || gid === undefined || levelId === undefined ? null : inputs.facilities.get(`${levelId}:${gid}`) ?? null;
+  };
   for (const segment of paths.segments) {
     // buildPaths resolved both endpoints against its own v5_nav node table, so a miss here is a wiring error.
     const from = nodeIdByHash.get(segment.from_node_sha256), to = nodeIdByHash.get(segment.to_node_sha256);
@@ -178,16 +201,35 @@ export function buildNavGraph(inputs: NavGraphInputs, project: Project): BuiltNa
       droppedEdgeOwner.push(droppedLevels.includes(fromLevel!) ? fromLevel! : toLevel!);
       continue;
     }
+    // Count self-loops in the surviving graph only; links on a dropped level are charged to that level above.
+    if (from === to) { selfLoopsDropped++; continue; }
     const linkId = linkIdByHash.get(segment.link_id_sha256);
     if (linkId === undefined) throw new Error('S03 nav graph: a segment is not a v5_nav link');
+    // Check A clears its code only when both endpoints pass their own footprint test.
+    const bothInside = checkA.get(from) === 'PASS' && checkA.get(to) === 'PASS';
+    const fromLevel = levelById.get(from)!, toLevel = levelById.get(to)!;
+    // Floor order is S03's own level id and printed z; dz is kept as a source attribute only (#552: 40 1F↔2F links print ±3).
+    const levelRelation: NavGraphEdge['level_relation'] = fromLevel !== toLevel ? 'cross_level' : 'same_level';
+    const zKnown = zByLevel.get(fromLevel) != null && zByLevel.get(toLevel) != null;
+    // A cross-level link takes its device only when both ends print the same facility; that clears CROSS_LEVEL_DEVICE_UNKNOWN.
+    const facilityFrom = facilityOf(from), facilityTo = facilityOf(to);
+    const device = levelRelation === 'cross_level' && facilityFrom !== null && facilityFrom === facilityTo
+      && (NAV_GRAPH_DEVICES as readonly string[]).includes(facilityFrom) ? facilityFrom : null;
+    // CRS_UNCONFIRMED clears only on a VERIFIED frame. ONE_WAY clears because a one-way link is routed in its printed direction; the adjacency never walks it backwards.
     edges.push({ link_id: linkId, from_node: from, to_node: to, direction: segment.direction, dz_m: segment.dz_m,
-      length_m: segment.length_m, level_relation: segment.level_relation, reason_codes: [...segment.reason_codes] });
+      length_m: segment.length_m, level_relation: levelRelation, device,
+      reason_codes: segment.reason_codes.filter(code => !(bothInside && code === PATH_REASON.CHECK_A_CONTAINMENT_FAIL)
+        && !(inputs.crsVerified && code === PATH_REASON.CRS_UNCONFIRMED)
+        && !(device !== null && code === PATH_REASON.CROSS_LEVEL_DEVICE_UNKNOWN)
+        && !(levelRelation === 'same_level' && code === PATH_REASON.CROSS_LEVEL_DEVICE_UNKNOWN)
+        && !(zKnown && code === PATH_REASON.FLOOR_ORDINAL_UNVERIFIED)
+        && code !== PATH_REASON.ONE_WAY) });
   }
   // Link order keeps the private document readable and the output independent of the path transform's hash ordering.
   edges.sort((a, b) => a.link_id - b.link_id);
   const nodes: NavGraphNode[] = paths.nodes.filter(node => !dropped.has(node.source_id)).map(node => ({
-    source_id: node.source_id, level_id: node.level_id, level_label: node.level_label, floor_ordinal: node.floor_ordinal,
-    lon: node.lon, lat: node.lat, east_m: node.east_m, north_m: node.north_m,
+    source_id: node.source_id, level_id: node.level_id, level_label: node.level_label, level_z: zByLevel.get(node.level_id) ?? null,
+    lon: node.lon, lat: node.lat, east_m: node.east_m, north_m: node.north_m, check_a: checkA.get(node.source_id)!,
     gate: geometryById.get(node.source_id) === null || geometryById.get(node.source_id) === undefined
       ? null : inputs.gateTags.get(geometryById.get(node.source_id)!) ?? null,
   }));
@@ -202,7 +244,7 @@ export function buildNavGraph(inputs: NavGraphInputs, project: Project): BuiltNa
     nodes, edges,
     counts: {
       source_nodes: inputs.nodes.length, nodes: nodes.length, source_links: inputs.links.length, edges: edges.length,
-      dropped_nodes: dropped.size, dropped_edges: droppedEdgeOwner.length,
+      dropped_nodes: dropped.size, dropped_edges: droppedEdgeOwner.length, self_loop_dropped: selfLoopsDropped,
       tagged_nodes: taggedNodes, untagged_nodes: nodes.length - taggedNodes,
       isolated_nodes: nodes.filter(node => !incident.has(node.source_id)).length,
       same_level_edges: edges.filter(edge => edge.level_relation === 'same_level').length,
@@ -210,12 +252,29 @@ export function buildNavGraph(inputs: NavGraphInputs, project: Project): BuiltNa
       directions: [1, 2, 3].map(direction => ({ direction, count: edges.filter(edge => edge.direction === direction).length })),
     },
     // A dropped edge is charged to the dropped level one of its endpoints sits on, so the counts per level add up.
+    check_a: checkASummary(nodes, edges, levelById),
     dropped: DROPPED_LEVELS.map(level => ({ ...level,
       nodes: paths.nodes.filter(node => node.level_id === level.level_id).length,
       edges: droppedEdgeOwner.filter(owner => owner === level.level_id).length })),
     other_drops: [],
     line_counts: lineCounts(nodes, edges, nodeById),
   };
+}
+
+/** Check A counts: a node passes or fails its own footprint; an edge passes only when it no longer carries the code, i.e. both ends pass. */
+function checkASummary(nodes: readonly NavGraphNode[], edges: readonly NavGraphEdge[], levelById: ReadonlyMap<number, number>): BuiltNavGraph['check_a'] {
+  const count = (values: readonly NodeCheckA[], value: NodeCheckA) => values.filter(entry => entry === value).length;
+  const levels = [...new Set(nodes.map(node => node.level_id))].sort((a, b) => a - b).map(levelId => {
+    const levelNodes = nodes.filter(node => node.level_id === levelId).map(node => node.check_a);
+    const levelEdges = edges.filter(edge => levelById.get(edge.from_node) === levelId);
+    return { level_id: levelId, nodes_pass: count(levelNodes, 'PASS'), nodes_fail: count(levelNodes, 'FAIL'), nodes_unassessed: count(levelNodes, 'UNASSESSED'),
+      edges_pass: levelEdges.filter(edge => !edge.reason_codes.includes(PATH_REASON.CHECK_A_CONTAINMENT_FAIL)).length,
+      edges_fail: levelEdges.filter(edge => edge.reason_codes.includes(PATH_REASON.CHECK_A_CONTAINMENT_FAIL)).length };
+  });
+  const nodeChecks = nodes.map(node => node.check_a);
+  return { nodes: { PASS: count(nodeChecks, 'PASS'), FAIL: count(nodeChecks, 'FAIL'), UNASSESSED: count(nodeChecks, 'UNASSESSED') },
+    edges: { pass: edges.filter(edge => !edge.reason_codes.includes(PATH_REASON.CHECK_A_CONTAINMENT_FAIL)).length,
+      fail: edges.filter(edge => edge.reason_codes.includes(PATH_REASON.CHECK_A_CONTAINMENT_FAIL)).length }, levels };
 }
 
 /**
@@ -240,7 +299,7 @@ function lineCounts(nodes: readonly NavGraphNode[], edges: readonly NavGraphEdge
 
 export interface NavGraphDigestFacts {
   policy_version: string; tool_input_sha256: string; zip_sha256: string; station_json_sha256: string;
-  floor_mapping_sha256: string; gate_source_sha256: string; crs: string; publish_gate: string; sources_yaml_sha256: string;
+  floor_mapping_sha256: string; floor_rule: string; bundle_floor_tie: string; gate_source_sha256: string; crs: string; crs_verification: string; publish_gate: string; sources_yaml_sha256: string;
 }
 export function navGraphIdentity(facts: NavGraphDigestFacts) {
   const digest = sha256(JSON.stringify(facts)).slice(0, 20);
@@ -263,11 +322,13 @@ export function buildNavGraphReceipt(args: {
     gteki_role: 'evidence',
     navigation_use: 'NOT_FOR_ROUTING',
     verification: 'UNVERIFIED',
-    crs: { declared: args.crs, status: args.crs === 'UNKNOWN' ? 'UNKNOWN' : 'DECLARED_UNVERIFIED', confirmed: false,
-      rule: 'The S03 navigation members declare no CRS. The datum stays UNKNOWN until the data research establishes it and a director ruling accepts it; a graph built here routes nothing.' },
+    crs: { declared: args.crs, verification: args.digest_inputs.crs_verification, status: args.crs === 'UNKNOWN' ? 'UNKNOWN' : 'DECLARED_UNVERIFIED', confirmed: false,
+      rule: 'The S03 navigation members declare no CRS. CRS_UNCONFIRMED is cleared from the edges only when docs/gis/crs/shinjuku-s03-v0.json reads frame.verification VERIFIED; the datum stays UNKNOWN as declared, and a graph built here routes nothing.' },
     counts: args.result.counts,
     line_counts: args.result.line_counts,
     dropped_levels: args.result.dropped,
+    check_a: { ...args.result.check_a,
+      rule: 'Check A per node: each node is tested against the footprint of its own level (the same polygons and containment rule as the transform check). An edge keeps CHECK_A_CONTAINMENT_FAIL unless both its endpoints pass; a node on a level with no usable polygon is UNASSESSED and keeps the code. Per-level edge counts charge an edge to the level of its from-node.' },
     other_drops: args.result.other_drops,
     edge_length_m: residualStats(args.result.edges.map(edge => edge.length_m)),
     reason_codes: Object.values(PATH_REASON).map(code => ({ code, count: args.result.edges.filter(edge => edge.reason_codes.includes(code)).length }))
@@ -281,8 +342,8 @@ export function buildNavGraphReceipt(args: {
       release_condition: 'CRS evidence for the path frame is obtained AND the data lead signs off; until then nothing here is published, placed, routed on or bundled.',
       rule: 'The 2026-10-24 ruling covers 25 approximate points and 19 platform names only. This graph is written to the private store and this receipt; no record enters stations/**, route results or the web bundle.' },
     node_rule: 'One node per v5_nav.json node not on a dropped level: both affines applied to mx/my, then projected with the station ENU frame (GRS80, horizontal only, height 0). A node is tagged only from its own level-entry geometry id joined to a reviewed gate, transfer or platform entry; no line, operator or gate field exists on a node or link, so every untagged node stays UNKNOWN. Nothing is attributed by name text or proximity.',
-    edge_rule: 'One edge per v5_nav.json link whose endpoints both survive the level drop: direction 1/2/3, dz, the straight-line ENU length, the level relation and the reason codes come from the path transform, so a cross-level edge keeps CROSS_LEVEL_DEVICE_UNKNOWN and a one-way edge keeps ONE_WAY. Self-loops and zero-length edges are kept and flagged, never dropped.',
-    drop_rule: 'Level 64677 is dropped whole with its nodes and every edge touching one, because it fails Check A at 0.917355 against the fixed 95% rule. No other record is dropped; every surviving link keeps its reason codes.',
+    edge_rule: 'One edge per v5_nav.json link whose endpoints both survive the level drop: direction 1/2/3, dz, the straight-line ENU length, the level relation (from level ids, not dz) and the reason codes come from the path transform, except CHECK_A_CONTAINMENT_FAIL (cleared where both endpoints pass their own footprint test), CRS_UNCONFIRMED (cleared when the frame reads VERIFIED), CROSS_LEVEL_DEVICE_UNKNOWN (cleared, with the printed facility as `device`, where both cross-level ends print the same facility) and ONE_WAY (cleared: a one-way link is walked only in its printed direction). A cross-level edge whose ends print different facilities keeps CROSS_LEVEL_DEVICE_UNKNOWN. Self-loops are dropped and counted in counts.self_loop_dropped; zero-length edges are kept and flagged.',
+    drop_rule: 'Level 64677 is dropped whole with its nodes and every edge touching one, because it fails Check A at 0.917355 against the fixed 95% rule. Self-loop links are dropped and counted (counts.self_loop_dropped). No other link is dropped; every surviving link keeps its remaining reason codes.',
     labels_rule: 'Every node and edge record carries navigation_use NOT_FOR_ROUTING, verification UNVERIFIED and gteki_role evidence, on the document and on each record.',
     public_receipt_rule: 'This receipt carries counts, dropped numeric level ids, reason codes, length statistics and member counts only: no coordinate, no node or link id, no gate name and no level label. Numeric level ids follow the s03-transform-check precedent.',
     inputs: args.inputs.map(input => ({ role: input.role, path: input.path, sha256: input.sha256 })),
@@ -310,7 +371,10 @@ export async function s03NavGraph() {
   const project: Project = (lat, lon) => { const p = frame(lat, lon, 0); return [p[0], p[1]] as Point2; };
   const gateBytes = await readFile(join(repoRoot, NAV_GRAPH_GATE_SOURCE_PATH));
   const gateTags = loadGateTags(JSON.parse(gateBytes.toString('utf8')));
-  const result = buildNavGraph({ ...inputs, gateTags }, project);
+  const crsBytes = await readFile(join(repoRoot, NAV_GRAPH_CRS_PATH));
+  const crsRecord = JSON.parse(crsBytes.toString('utf8')) as { frame?: { verification?: unknown } };
+  const crsVerification = typeof crsRecord.frame?.verification === 'string' ? crsRecord.frame.verification : 'MISSING';
+  const result = buildNavGraph({ ...inputs, gateTags, crsVerified: crsVerification === 'VERIFIED' }, project);
   // The quoted residuals are tied to one ZIP and one population; anything else stops the run rather than shipping stale evidence.
   if (stored.record.sha256 !== S03_PATHS_EVIDENCE.source_zip_sha256)
     throw new Error(`S03 nav graph: the stored ZIP ${stored.record.sha256} is not the ${S03_PATHS_EVIDENCE.source_zip_sha256} the recorded residuals were measured on; rerun s03-transform-check first`);
@@ -320,7 +384,9 @@ export async function s03NavGraph() {
   const digestInputs: NavGraphDigestFacts = { policy_version: S03_NAV_GRAPH_POLICY, tool_input_sha256: await toolFingerprint(),
     zip_sha256: stored.record.sha256, station_json_sha256: sha256(stationBytes),
     floor_mapping_sha256: floorMappingSha256(Object.entries(S03_FLOOR_ORDINALS).map(([id, ordinal]) => ({ id, ordinal }))),
-    gate_source_sha256: sha256(gateBytes), crs: 'UNKNOWN', publish_gate: stored.source.publish_gate, sources_yaml_sha256: sha256(sourcesBytes) };
+    floor_rule: 'Floor order inside S03 is each node\'s level id and the level\'s printed v5_nav z; dz is an unexplained source attribute (#552) and never sets the level relation. FLOOR_ORDINAL_UNVERIFIED clears where both ends have a printed z.',
+    bundle_floor_tie: 'UNVERIFIED',
+    gate_source_sha256: sha256(gateBytes), crs: 'UNKNOWN', crs_verification: crsVerification, publish_gate: stored.source.publish_gate, sources_yaml_sha256: sha256(sourcesBytes) };
   const identity = navGraphIdentity(digestInputs);
   const privatePath = `out/s03/${identity.run_id}.json`;
   const privateDocument = {
@@ -332,7 +398,7 @@ export async function s03NavGraph() {
     gate_source: { path: NAV_GRAPH_GATE_SOURCE_PATH, sha256: sha256(gateBytes),
       rule: 'A node is tagged only where its own level-entry geometry id is the entity id of a reviewed gate, transfer or platform entry. The source writes no line, operator or gate field on a node or link; an untagged node stays UNKNOWN.' },
     publication: { graph: 'HOLD', paths: 'HOLD', routing: 'HOLD' },
-    counts: result.counts, line_counts: result.line_counts, dropped_levels: result.dropped, other_drops: result.other_drops,
+    counts: result.counts, line_counts: result.line_counts, dropped_levels: result.dropped, check_a: result.check_a, other_drops: result.other_drops,
     reason_codes: Object.values(PATH_REASON).map(code => ({ code, count: result.edges.filter(edge => edge.reason_codes.includes(code)).length })).filter(entry => entry.count > 0),
     edge_length_m: residualStats(result.edges.map(edge => edge.length_m)),
     nodes: result.nodes.map(node => ({ ...node, labels: NAV_GRAPH_LABELS })),
@@ -343,7 +409,8 @@ export async function s03NavGraph() {
     publish_gate: stored.source.publish_gate, zip_sha256: stored.record.sha256, crs: 'UNKNOWN', result, excluded_path_members,
     transform: { drawing_id: inputs.drawingId, nav_member_sha256: inputs.navSha256, map_member_sha256: inputs.mapSha256 },
     inputs: [{ role: 'station', path: NAV_GRAPH_STATION_PATH, sha256: sha256(stationBytes) },
-      { role: 'gate_identity', path: NAV_GRAPH_GATE_SOURCE_PATH, sha256: sha256(gateBytes) }],
+      { role: 'gate_identity', path: NAV_GRAPH_GATE_SOURCE_PATH, sha256: sha256(gateBytes) },
+      { role: 'crs_frame', path: NAV_GRAPH_CRS_PATH, sha256: sha256(crsBytes) }],
     private_output: { path: privatePath, sha256: sha256(privateText), bytes: Buffer.byteLength(privateText) } });
   assertNoSourceValues(JSON.stringify(receipt), inputs.sourceValues, 'The public S03 nav graph receipt');
   await writeHeldDocument(getStoreRoot(), privatePath, privateDocument);

@@ -94,6 +94,8 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .result.disabled .result-name { color: var(--muted); }
 .result[aria-selected="true"] { background: rgba(94, 240, 255, 0.16); outline: 2px solid var(--accent); outline-offset: -2px; }
 .result.empty { display: block; padding: 10px 12px; color: var(--muted); }
+.result-group { padding: 6px 12px 2px; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+.result-hint { padding: 8px 12px; color: var(--muted); font-size: 12px; }
 .cat-exit .dot { background: var(--ok); } .cat-ticket_gate .dot { background: var(--gate); } .cat-platform .dot { background: #9b8cff; }
 .cat-toilet .dot, .cat-locker .dot { background: #ff9ad5; } .cat-elevator .dot { background: var(--accent); } .cat-transfer .dot { background: #ffa3a3; }
 
@@ -197,6 +199,12 @@ button.on { border-color: var(--accent); color: var(--accent); }
 /* ---- guide mascots (#132): placeholder art; transform/opacity animation only, off for reduced motion and the phone tier ---- */
 .mascot { display: flex; align-items: center; gap: 8px; pointer-events: none; }
 .mascot[hidden], .mascot-bubble[hidden] { display: none; }
+.first-run { position: relative; margin-top: 10px; padding: 10px 38px 10px 12px; border-radius: 10px; background: var(--glass-strong); border: 1px solid var(--line); font-size: 12px; line-height: 1.45; }
+.first-run[hidden], .first-run-try[hidden] { display: none; }
+.first-run-steps { margin: 0; padding-left: 20px; }
+.first-run-steps li + li { margin-top: 3px; }
+.first-run-try { margin-top: 8px; padding: 6px 10px; font-size: 12px; }
+.first-run-close { position: absolute; top: 4px; right: 4px; padding: 3px 8px; border: 0; background: transparent; font-size: 16px; line-height: 1; }
 .mascot-figure { flex: 0 0 auto; width: 48px; height: 48px; transform-origin: 50% 100%; }
 .mascot-figure svg { display: block; width: 100%; height: 100%; }
 .mascot-bubble { max-width: 20em; padding: 6px 12px; border-radius: 12px; background: var(--glass-strong); border: 1px solid rgba(94, 240, 255, 0.4); font-size: 13px; line-height: 1.45; }

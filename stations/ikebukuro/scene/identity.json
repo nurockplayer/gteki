@@ -1,0 +1,335 @@
+{
+  "schema": "gteki.identity/0.1",
+  "boards": [
+    {
+      "id": "identity-c_mid",
+      "anchor": {
+        "nodeId": "c_mid"
+      },
+      "kind": "station-name",
+      "text": {
+        "ja": "池袋",
+        "kana": "いけぶくろ",
+        "en": "Ikebukuro",
+        "transfer": "JR 山手線 Yamanote JY13 · 埼京線 Saikyo JA12 · 湘南新宿ライン Shonan-Shinjuku JS21 · 丸ノ内線 Marunouchi M25 · 有楽町線 Yurakucho Y09 · 副都心線 Fukutoshin F09"
+      },
+      "sourceIds": [
+        "osm-ikebukuro-station-refs-2026-10",
+        "plateau-ubld-13116"
+      ],
+      "textVerification": "VERIFIED",
+      "position": {
+        "x": -22.612,
+        "y": 69.721,
+        "z": 30.195
+      },
+      "facing": {
+        "x": -0.9848,
+        "y": 0.1736
+      },
+      "widthM": 1.2,
+      "heightM": 0.513,
+      "ceilingZ": 30.5,
+      "mount": "ceiling",
+      "headingDeg": 100,
+      "placement": "GTEki-authored, not a surveyed sign location"
+    },
+    {
+      "id": "identity-c_e2",
+      "anchor": {
+        "nodeId": "c_e2"
+      },
+      "kind": "station-name",
+      "text": {
+        "ja": "池袋",
+        "kana": "いけぶくろ",
+        "en": "Ikebukuro",
+        "transfer": "JR 山手線 Yamanote JY13 · 埼京線 Saikyo JA12 · 湘南新宿ライン Shonan-Shinjuku JS21 · 丸ノ内線 Marunouchi M25 · 有楽町線 Yurakucho Y09 · 副都心線 Fukutoshin F09"
+      },
+      "sourceIds": [
+        "osm-ikebukuro-station-refs-2026-10",
+        "plateau-ubld-13116"
+      ],
+      "textVerification": "VERIFIED",
+      "position": {
+        "x": 63.109,
+        "y": 33.205,
+        "z": 30.93
+      },
+      "facing": {
+        "x": -0.9848,
+        "y": 0.1736
+      },
+      "widthM": 1.2,
+      "heightM": 0.54,
+      "ceilingZ": 31.31,
+      "mount": "ceiling",
+      "headingDeg": 100,
+      "placement": "GTEki-authored, not a surveyed sign location"
+    },
+    {
+      "id": "identity-n_h",
+      "anchor": {
+        "nodeId": "n_h"
+      },
+      "kind": "station-name",
+      "text": {
+        "ja": "池袋",
+        "kana": "いけぶくろ",
+        "en": "Ikebukuro",
+        "transfer": "JR 山手線 Yamanote JY13 · 埼京線 Saikyo JA12 · 湘南新宿ライン Shonan-Shinjuku JS21 · 丸ノ内線 Marunouchi M25 · 有楽町線 Yurakucho Y09 · 副都心線 Fukutoshin F09"
+      },
+      "sourceIds": [
+        "osm-ikebukuro-station-refs-2026-10",
+        "plateau-ubld-13116"
+      ],
+      "textVerification": "VERIFIED",
+      "position": {
+        "x": 67.017,
+        "y": 112.947,
+        "z": 30.16
+      },
+      "facing": {
+        "x": -0.8541,
+        "y": 0.5202
+      },
+      "widthM": 0.6,
+      "heightM": 0.378,
+      "ceilingZ": 30.867,
+      "mount": "wall",
+      "headingDeg": 95,
+      "placement": "GTEki-authored, not a surveyed sign location"
+    },
+    {
+      "id": "identity-sp_e",
+      "anchor": {
+        "nodeId": "sp_e"
+      },
+      "kind": "station-name",
+      "text": {
+        "ja": "池袋",
+        "kana": "いけぶくろ",
+        "en": "Ikebukuro",
+        "transfer": "JR 山手線 Yamanote JY13 · 埼京線 Saikyo JA12 · 湘南新宿ライン Shonan-Shinjuku JS21 · 丸ノ内線 Marunouchi M25 · 有楽町線 Yurakucho Y09 · 副都心線 Fukutoshin F09"
+      },
+      "sourceIds": [
+        "osm-ikebukuro-station-refs-2026-10",
+        "plateau-ubld-13116"
+      ],
+      "textVerification": "VERIFIED",
+      "position": {
+        "x": 13.176,
+        "y": -63.39,
+        "z": 30.13
+      },
+      "facing": {
+        "x": -0.9925,
+        "y": 0.1219
+      },
+      "widthM": 1.2,
+      "heightM": 0.54,
+      "ceilingZ": 30.67,
+      "mount": "ceiling",
+      "headingDeg": 92,
+      "placement": "GTEki-authored, not a surveyed sign location"
+    },
+    {
+      "id": "identity-w_c",
+      "anchor": {
+        "nodeId": "w_c"
+      },
+      "kind": "station-name",
+      "text": {
+        "ja": "池袋",
+        "kana": "いけぶくろ",
+        "en": "Ikebukuro",
+        "transfer": "JR 山手線 Yamanote JY13 · 埼京線 Saikyo JA12 · 湘南新宿ライン Shonan-Shinjuku JS21 · 丸ノ内線 Marunouchi M25 · 有楽町線 Yurakucho Y09 · 副都心線 Fukutoshin F09"
+      },
+      "sourceIds": [
+        "osm-ikebukuro-station-refs-2026-10",
+        "plateau-ubld-13116"
+      ],
+      "textVerification": "VERIFIED",
+      "position": {
+        "x": -108.094,
+        "y": 125.007,
+        "z": 30.46
+      },
+      "facing": {
+        "x": 0.342,
+        "y": -0.9397
+      },
+      "widthM": 3.4,
+      "heightM": 0.54,
+      "ceilingZ": 31.428,
+      "mount": "ceiling",
+      "headingDeg": 340,
+      "placement": "GTEki-authored, not a surveyed sign location"
+    },
+    {
+      "id": "identity-sw_h",
+      "anchor": {
+        "nodeId": "sw_h"
+      },
+      "kind": "station-name",
+      "text": {
+        "ja": "池袋",
+        "kana": "いけぶくろ",
+        "en": "Ikebukuro",
+        "transfer": "JR 山手線 Yamanote JY13 · 埼京線 Saikyo JA12 · 湘南新宿ライン Shonan-Shinjuku JS21 · 丸ノ内線 Marunouchi M25 · 有楽町線 Yurakucho Y09 · 副都心線 Fukutoshin F09"
+      },
+      "sourceIds": [
+        "osm-ikebukuro-station-refs-2026-10",
+        "plateau-ubld-13116"
+      ],
+      "textVerification": "VERIFIED",
+      "position": {
+        "x": -112.369,
+        "y": -30.958,
+        "z": 29.865
+      },
+      "facing": {
+        "x": -0.9397,
+        "y": 0.342
+      },
+      "widthM": 1.8,
+      "heightM": 0.513,
+      "ceilingZ": 30.17,
+      "mount": "ceiling",
+      "headingDeg": 110,
+      "placement": "GTEki-authored, not a surveyed sign location"
+    },
+    {
+      "id": "identity-c_e1",
+      "anchor": {
+        "nodeId": "c_e1"
+      },
+      "kind": "station-name",
+      "text": {
+        "ja": "池袋",
+        "kana": "いけぶくろ",
+        "en": "Ikebukuro",
+        "transfer": "JR 山手線 Yamanote JY13 · 埼京線 Saikyo JA12 · 湘南新宿ライン Shonan-Shinjuku JS21 · 丸ノ内線 Marunouchi M25 · 有楽町線 Yurakucho Y09 · 副都心線 Fukutoshin F09"
+      },
+      "sourceIds": [
+        "osm-ikebukuro-station-refs-2026-10",
+        "plateau-ubld-13116"
+      ],
+      "textVerification": "VERIFIED",
+      "position": {
+        "x": 31.818,
+        "y": 44.858,
+        "z": 30.285
+      },
+      "facing": {
+        "x": -0.9848,
+        "y": 0.1736
+      },
+      "widthM": 1.01,
+      "heightM": 0.382,
+      "ceilingZ": 30.518,
+      "mount": "ceiling",
+      "headingDeg": 100,
+      "placement": "GTEki-authored, not a surveyed sign location"
+    },
+    {
+      "id": "identity-c_n",
+      "anchor": {
+        "nodeId": "c_n"
+      },
+      "kind": "station-name",
+      "text": {
+        "ja": "池袋",
+        "kana": "いけぶくろ",
+        "en": "Ikebukuro",
+        "transfer": "JR 山手線 Yamanote JY13 · 埼京線 Saikyo JA12 · 湘南新宿ライン Shonan-Shinjuku JS21 · 丸ノ内線 Marunouchi M25 · 有楽町線 Yurakucho Y09 · 副都心線 Fukutoshin F09"
+      },
+      "sourceIds": [
+        "osm-ikebukuro-station-refs-2026-10",
+        "plateau-ubld-13116"
+      ],
+      "textVerification": "VERIFIED",
+      "position": {
+        "x": 47.594,
+        "y": 41.861,
+        "z": 30.64
+      },
+      "facing": {
+        "x": -0.9962,
+        "y": 0.0872
+      },
+      "widthM": 1.2,
+      "heightM": 0.27,
+      "ceilingZ": 31.31,
+      "mount": "ceiling",
+      "headingDeg": 95,
+      "placement": "GTEki-authored, not a surveyed sign location"
+    },
+    {
+      "id": "identity-sp_m",
+      "anchor": {
+        "nodeId": "sp_m"
+      },
+      "kind": "station-name",
+      "text": {
+        "ja": "池袋",
+        "kana": "いけぶくろ",
+        "en": "Ikebukuro",
+        "transfer": "JR 山手線 Yamanote JY13 · 埼京線 Saikyo JA12 · 湘南新宿ライン Shonan-Shinjuku JS21 · 丸ノ内線 Marunouchi M25 · 有楽町線 Yurakucho Y09 · 副都心線 Fukutoshin F09"
+      },
+      "sourceIds": [
+        "osm-ikebukuro-station-refs-2026-10",
+        "plateau-ubld-13116"
+      ],
+      "textVerification": "VERIFIED",
+      "position": {
+        "x": -64.802,
+        "y": -40.112,
+        "z": 29.865
+      },
+      "facing": {
+        "x": -0.9994,
+        "y": 0.0349
+      },
+      "widthM": 3.4,
+      "heightM": 0.513,
+      "ceilingZ": 30.17,
+      "mount": "ceiling",
+      "headingDeg": 92,
+      "placement": "GTEki-authored, not a surveyed sign location"
+    },
+    {
+      "id": "meeting-ikefukuro",
+      "anchor": {
+        "edgeId": "n_c__n_e"
+      },
+      "kind": "meeting-point",
+      "text": {
+        "ja": "いけふくろう",
+        "en": "Ikefukuro meeting point",
+        "location": "B1 北通路 東側 · JR 北改札・22番出口付近",
+        "locationEn": "B1 North Passage east · near JR North Gate / Exit 22",
+        "status": "位置は概略 / Approximate location"
+      },
+      "sourceIds": [
+        "ikefukuro-location-references-2026-10",
+        "plateau-ubld-13116"
+      ],
+      "textVerification": "APPROXIMATE",
+      "position": {
+        "x": 91.063,
+        "y": 112.342,
+        "z": 31.0
+      },
+      "facing": {
+        "x": -0.9781,
+        "y": 0.2079
+      },
+      "widthM": 3.4,
+      "heightM": 0.54,
+      "ceilingZ": 31.5,
+      "headingDeg": 102,
+      "placement": "GTEki-authored, not a surveyed sign location"
+    }
+  ]
+}
