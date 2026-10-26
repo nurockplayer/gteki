@@ -16,7 +16,7 @@ function mergeList<T extends { id: string }>(publicItems: T[], additions: { file
   const seen = new Map<string, string>();
   for (const { file, items } of additions) for (const item of items) {
     const previous = seen.get(item.id);
-    if (previous && previous !== file) problems.push(`${label} id ${item.id} appears in both ${previous} and ${file}`);
+    if (previous) problems.push(previous === file ? `${label} id ${item.id} appears twice in ${file}` : `${label} id ${item.id} appears in both ${previous} and ${file}`);
     else seen.set(item.id, file);
   }
   const merged = publicItems.slice();
@@ -102,6 +102,10 @@ export function buildOverlay(opts: { repoRoot: string; privateDir: string; stati
   const additionsRoot = path.join(opts.privateDir, "additions");
   const stationNames = opts.stations ?? (fs.existsSync(additionsRoot) ? fs.readdirSync(additionsRoot).filter((name) => fs.statSync(path.join(additionsRoot, name)).isDirectory()).sort() : []);
   const written: string[] = [];
+  // A full run also drops overlay stations whose additions were removed, so a stale overlay never loads.
+  const overlayRoot = path.join(opts.privateDir, "overlay");
+  if (!opts.stations && fs.existsSync(overlayRoot))
+    for (const name of fs.readdirSync(overlayRoot)) if (!stationNames.includes(name)) fs.rmSync(path.join(overlayRoot, name), { recursive: true, force: true });
   for (const station of stationNames) {
     const publicDir = path.join(opts.repoRoot, "stations", station, "gteki");
     if (!fs.existsSync(path.join(publicDir, "station.json"))) throw new Error(`additions/${station} has no public station folder`);

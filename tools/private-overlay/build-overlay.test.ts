@@ -80,6 +80,9 @@ describe("private overlay builder", () => {
       { file: "graph.json", nodes: [node("duplicate")], edges: [] },
       { file: "graph.s03.json", nodes: [node("duplicate")], edges: [] },
     ] }))).toThrow(/graph\.json.*graph\.s03\.json/);
+    expect(() => mergeStation(publicFiles(), additions({ graphParts: [
+      { file: "graph.s03.json", nodes: [node("twice"), node("twice")], edges: [] },
+    ] }))).toThrow(/twice appears twice in graph\.s03\.json/);
   });
 
   it("requires private tier notes on every added source", () => {
@@ -98,6 +101,10 @@ describe("private overlay builder", () => {
     expect(buildOverlay({ repoRoot: root, privateDir })).toEqual(["demo"]);
     for (const file of ["station.json", "graph.json", "pois.json"])
       expect(fs.existsSync(path.join(privateDir, "overlay", "demo", "gteki", file))).toBe(true);
+    // Removing a station's additions drops its overlay on the next full run.
+    fs.mkdirSync(path.join(privateDir, "overlay", "gone", "gteki"), { recursive: true });
+    buildOverlay({ repoRoot: root, privateDir });
+    expect(fs.existsSync(path.join(privateDir, "overlay", "gone"))).toBe(false);
     fs.mkdirSync(path.join(privateDir, "additions", "missing"));
     expect(() => buildOverlay({ repoRoot: root, privateDir })).toThrow(/additions\/missing.*no public station folder/);
   });
