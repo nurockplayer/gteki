@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-type ReceiptItem = {
+export type ReceiptItem = {
   item: number;
   status: "CLOSED" | "OPEN";
   poiId?: string;
@@ -14,7 +14,7 @@ type ReceiptItem = {
   stepFree?: "level" | `steps:${number}` | "lift" | "escalator" | null;
 };
 
-type FieldReceipt = {
+export type FieldReceipt = {
   version: number;
   station: string;
   fieldRun: string;
@@ -39,9 +39,9 @@ function fail(item: unknown, message: string): never {
   throw new Error(`item ${String(item ?? "?")}: ${message}`);
 }
 
-function validate(receipt: FieldReceipt, src: any, pois: any): void {
+export function validateReceipt(receipt: FieldReceipt, station: string, hasPoi: (id: unknown) => boolean, hasNode: (id: unknown) => boolean): void {
   if (receipt?.version !== 1) fail("?", "version must be 1");
-  if (receipt?.station !== "ikebukuro") fail("?", 'station must be "ikebukuro"');
+  if (receipt?.station !== station) fail("?", `station must be "${station}"`);
   if (receipt.sourceKind !== "team_field") fail("?", 'sourceKind must be "team_field" (crowd contributions are not accepted yet)');
   if (typeof receipt.observer !== "string" || !/^[a-z][a-z-]*$/.test(receipt.observer)) fail("?", "observer must be a role such as \"owner\", not a name");
   if (!Array.isArray(receipt.items)) fail("?", "items must be an array");
@@ -56,9 +56,8 @@ function validate(receipt: FieldReceipt, src: any, pois: any): void {
     }
     if (item.status === "CLOSED") {
       if (typeof item.paid !== "boolean") fail(number, "paid must be a boolean for CLOSED items");
-      if (!src.pois?.some((poi: any) => poi.id === item.poiId)) fail(number, `unknown source POI ${String(item.poiId)}`);
-      if (!pois.pois?.some((poi: any) => poi.id === item.poiId)) fail(number, `unknown gteki POI ${String(item.poiId)}`);
-      if (!src.nodes?.some((node: any) => node.id === item.nodeId)) fail(number, `unknown node ${String(item.nodeId)}`);
+      if (!hasPoi(item.poiId)) fail(number, `unknown POI ${String(item.poiId)}`);
+      if (!hasNode(item.nodeId)) fail(number, `unknown node ${String(item.nodeId)}`);
     }
   }
 }
@@ -68,7 +67,7 @@ function appendUnique(values: unknown, value: string): string[] {
   return current.includes(value) ? current : [...current, value];
 }
 
-function updatePoi(poi: any, item: ReceiptItem, sourceId: string): any {
+export function updatePoi(poi: any, item: ReceiptItem, sourceId: string): any {
   const date = item.observedAt.slice(0, 10);
   const sentenceJa = `入口は現地で確認（#533 項目${item.item}、${item.observedAt}）：「${item.observedText}」。`;
   const sentenceEn = `Entrance checked on site (#533 item ${item.item}, ${item.observedAt}): 「${item.observedText}」.`;
@@ -104,31 +103,12 @@ export function applyFieldReceipt(srcInput: any, poisInput: any, stationInput: a
   const src = clone(srcInput);
   const pois = clone(poisInput);
   const station = clone(stationInput);
-  validate(receipt, src, pois);
+  validateReceipt(receipt, "ikebukuro", (id) => src.pois?.some((p: any) => p.id === id) && pois.pois?.some((p: any) => p.id === id), (id) => src.nodes?.some((n: any) => n.id === id));
 
-  // Provenance comes from CLOSED items only; a receipt with none changes nothing.
-  const closed = receipt.items.filter((item) => item.status === "CLOSED");
   const skippedOpen: SkippedItem[] = receipt.items.filter((item) => item.status === "OPEN").map(({ item }) => ({ item, reason: "OPEN" }));
-  if (!closed.length) return { src, pois, station, applied: [] as number[], skipped: skippedOpen };
-  const latest = closed.reduce((a, b) => Date.parse(a.observedAt) >= Date.parse(b.observedAt) ? a : b);
-  const date = latest.observedAt.slice(0, 10);
-  const sourceId = `field-ikebukuro-${date}`;
-  const itemNumbers = closed.map(({ item }) => item).join(", ");
-  const source = {
-    id: sourceId,
-    title: `GTEki field run ${date} (#533)`,
-    publisher: "GTEki contributors",
-    url: `https://github.com/nurockplayer/gteki/blob/main/${receipt.fieldRun}`,
-    license: { name: "CC BY 4.0", url: "https://creativecommons.org/licenses/by/4.0/" },
-    rights: "REUSABLE_WITH_CONDITIONS",
-    // Our own observation, shipped under the project's CC BY 4.0 (director 2026-10-26 19:1x JST): data, not a facts-only citation,
-    // so no `usage` and no #26 decision record (schema validate.ts requires one only for facts-only sources).
-    attribution: "GTEki contributors, CC BY 4.0 (field observation; photos not published)",
-    modified: false,
-    retrievedAt: latest.observedAt,
-    datasetDate: null,
-    notes: `On-site reading of public signage by the ${receipt.observer} (${receipt.sourceKind}) for #533 items ${itemNumbers}. Photos stay private (field-run rules).`,
-  };
+  const provenance = fieldSource(receipt, "ikebukuro");
+  if (!provenance) return { src, pois, station, applied: [] as number[], skipped: skippedOpen };
+  const { sourceId, source } = provenance;
   for (const target of [src, station]) {
     if (!Array.isArray(target.sources)) target.sources = [];
     const index = target.sources.findIndex((entry: any) => entry.id === sourceId);
@@ -150,6 +130,33 @@ export function applyFieldReceipt(srcInput: any, poisInput: any, stationInput: a
     applied.push(item.item);
   }
   return { src, pois, station, applied, skipped };
+}
+
+export function fieldSource(receipt: FieldReceipt, station: string): { sourceId: string; source: Record<string, unknown>; closed: ReceiptItem[]; skipped: SkippedItem[] } | null {
+  // Provenance comes from CLOSED items only; a receipt with none changes nothing.
+  const closed = receipt.items.filter((item) => item.status === "CLOSED");
+  const skipped = receipt.items.filter((item) => item.status === "OPEN").map(({ item }) => ({ item, reason: "OPEN" }));
+  if (!closed.length) return null;
+  const latest = closed.reduce((a, b) => Date.parse(a.observedAt) >= Date.parse(b.observedAt) ? a : b);
+  const date = latest.observedAt.slice(0, 10);
+  const sourceId = `field-${station}-${date}`;
+  const itemNumbers = closed.map(({ item }) => item).join(", ");
+  const source = {
+    id: sourceId,
+    title: `GTEki field run ${date} (#533)`,
+    publisher: "GTEki contributors",
+    url: `https://github.com/nurockplayer/gteki/blob/main/${receipt.fieldRun}`,
+    license: { name: "CC BY 4.0", url: "https://creativecommons.org/licenses/by/4.0/" },
+    rights: "REUSABLE_WITH_CONDITIONS",
+    // Our own observation, shipped under the project's CC BY 4.0 (director 2026-10-26 19:1x JST): data, not a facts-only citation,
+    // so no `usage` and no #26 decision record (schema validate.ts requires one only for facts-only sources).
+    attribution: "GTEki contributors, CC BY 4.0 (field observation; photos not published)",
+    modified: false,
+    retrievedAt: latest.observedAt,
+    datasetDate: null,
+    notes: `On-site reading of public signage by the ${receipt.observer} (${receipt.sourceKind}) for #533 items ${itemNumbers}. Photos stay private (field-run rules).`,
+  };
+  return { sourceId, source, closed, skipped };
 }
 
 async function main(): Promise<void> {
