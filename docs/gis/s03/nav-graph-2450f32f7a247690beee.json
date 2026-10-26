@@ -1,0 +1,286 @@
+{
+  "policy_version": "s03-nav-graph-v1",
+  "digest_inputs": {
+    "policy_version": "s03-nav-graph-v1",
+    "tool_input_sha256": "91c59bc4aad8918c00baf7eb84567a9fe04088c9e82f15dea362f5e221ff79d7",
+    "zip_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+    "station_json_sha256": "b98993a687a72539462aded3ce2647a68b867ecb693316c99c244248a58cbf92",
+    "floor_mapping_sha256": "062f61527031ac513b322b6c5b03d3744c907838a201e9419eb29270c7c3c6ea",
+    "floor_rule": "Floor order inside S03 is each node's level id and the level's printed v5_nav z; dz is an unexplained source attribute (#552) and never sets the level relation. FLOOR_ORDINAL_UNVERIFIED clears where both ends have a printed z.",
+    "bundle_floor_tie": "UNVERIFIED",
+    "gate_source_sha256": "abf486b8925caa7b1232a766904c8ff863f30714ba5f110ff630e27fad9c79fc",
+    "crs": "UNKNOWN",
+    "crs_verification": "VERIFIED",
+    "publish_gate": "CONDITIONAL",
+    "sources_yaml_sha256": "df3fd7d7033d552b8187f1a3bf62a3e5471b61d3690cf75bfd29a74933cf6217"
+  },
+  "digest": "2450f32f7a247690beee",
+  "run_id": "nav-graph-2450f32f7a247690beee",
+  "source_id": "tokyo-s03-zip",
+  "source_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+  "publish_gate": "CONDITIONAL",
+  "gteki_role": "evidence",
+  "navigation_use": "NOT_FOR_ROUTING",
+  "verification": "UNVERIFIED",
+  "crs": {
+    "declared": "UNKNOWN",
+    "verification": "VERIFIED",
+    "status": "UNKNOWN",
+    "confirmed": false,
+    "rule": "The S03 navigation members declare no CRS. CRS_UNCONFIRMED is cleared from the edges only when docs/gis/crs/shinjuku-s03-v0.json reads frame.verification VERIFIED; the datum stays UNKNOWN as declared, and a graph built here routes nothing."
+  },
+  "counts": {
+    "source_nodes": 2506,
+    "nodes": 2143,
+    "source_links": 2653,
+    "edges": 2249,
+    "dropped_nodes": 363,
+    "dropped_edges": 399,
+    "self_loop_dropped": 5,
+    "tagged_nodes": 29,
+    "untagged_nodes": 2114,
+    "isolated_nodes": 7,
+    "same_level_edges": 2144,
+    "cross_level_edges": 105,
+    "directions": [
+      {
+        "direction": 1,
+        "count": 4
+      },
+      {
+        "direction": 2,
+        "count": 5
+      },
+      {
+        "direction": 3,
+        "count": 2240
+      }
+    ]
+  },
+  "line_counts": [
+    {
+      "operator_id": "jreast",
+      "nodes": 14,
+      "edges": 19
+    },
+    {
+      "operator_id": "odakyu",
+      "nodes": 2,
+      "edges": 4
+    },
+    {
+      "operator_id": "keio",
+      "nodes": 11,
+      "edges": 14
+    },
+    {
+      "operator_id": "tokyometro",
+      "nodes": 2,
+      "edges": 4
+    }
+  ],
+  "dropped_levels": [
+    {
+      "level_id": 64677,
+      "reason": "CHECK_A_CONTAINMENT_FAIL",
+      "evidence": {
+        "inside_count": 333,
+        "node_count": 363,
+        "inside_share": 0.917355
+      },
+      "nodes": 363,
+      "edges": 399
+    }
+  ],
+  "check_a": {
+    "nodes": {
+      "PASS": 2130,
+      "FAIL": 13,
+      "UNASSESSED": 0
+    },
+    "edges": {
+      "pass": 2227,
+      "fail": 22
+    },
+    "levels": [
+      {
+        "level_id": 64672,
+        "nodes_pass": 27,
+        "nodes_fail": 0,
+        "nodes_unassessed": 0,
+        "edges_pass": 29,
+        "edges_fail": 0
+      },
+      {
+        "level_id": 64673,
+        "nodes_pass": 50,
+        "nodes_fail": 0,
+        "nodes_unassessed": 0,
+        "edges_pass": 63,
+        "edges_fail": 0
+      },
+      {
+        "level_id": 64674,
+        "nodes_pass": 420,
+        "nodes_fail": 0,
+        "nodes_unassessed": 0,
+        "edges_pass": 427,
+        "edges_fail": 0
+      },
+      {
+        "level_id": 64675,
+        "nodes_pass": 278,
+        "nodes_fail": 0,
+        "nodes_unassessed": 0,
+        "edges_pass": 309,
+        "edges_fail": 0
+      },
+      {
+        "level_id": 64676,
+        "nodes_pass": 710,
+        "nodes_fail": 0,
+        "nodes_unassessed": 0,
+        "edges_pass": 714,
+        "edges_fail": 0
+      },
+      {
+        "level_id": 64678,
+        "nodes_pass": 282,
+        "nodes_fail": 13,
+        "nodes_unassessed": 0,
+        "edges_pass": 285,
+        "edges_fail": 22
+      },
+      {
+        "level_id": 64679,
+        "nodes_pass": 96,
+        "nodes_fail": 0,
+        "nodes_unassessed": 0,
+        "edges_pass": 112,
+        "edges_fail": 0
+      },
+      {
+        "level_id": 64680,
+        "nodes_pass": 118,
+        "nodes_fail": 0,
+        "nodes_unassessed": 0,
+        "edges_pass": 133,
+        "edges_fail": 0
+      },
+      {
+        "level_id": 64688,
+        "nodes_pass": 52,
+        "nodes_fail": 0,
+        "nodes_unassessed": 0,
+        "edges_pass": 57,
+        "edges_fail": 0
+      },
+      {
+        "level_id": 64689,
+        "nodes_pass": 97,
+        "nodes_fail": 0,
+        "nodes_unassessed": 0,
+        "edges_pass": 98,
+        "edges_fail": 0
+      }
+    ],
+    "rule": "Check A per node: each node is tested against the footprint of its own level (the same polygons and containment rule as the transform check). An edge keeps CHECK_A_CONTAINMENT_FAIL unless both its endpoints pass; a node on a level with no usable polygon is UNASSESSED and keeps the code. Per-level edge counts charge an edge to the level of its from-node."
+  },
+  "other_drops": [],
+  "edge_length_m": {
+    "count": 2249,
+    "min_m": 0.007714337733966684,
+    "median_m": 4.598192159586521,
+    "p90_m": 12.894230424159293,
+    "max_m": 145.91854965945691
+  },
+  "reason_codes": [
+    {
+      "code": "CHECK_A_CONTAINMENT_FAIL",
+      "count": 22
+    },
+    {
+      "code": "CHECK_B_RESIDUAL_UNVERIFIED",
+      "count": 2249
+    },
+    {
+      "code": "CROSS_LEVEL_DEVICE_UNKNOWN",
+      "count": 1
+    }
+  ],
+  "members": {
+    "excluded_path_geojson": 11,
+    "rule": "The Path GeoJSON members of the archive are never read here: their frame is UNKNOWN (crs: null), so they are excluded before parsing and a Path member in the selection fails the run closed."
+  },
+  "transform": {
+    "drawing_id": 35814,
+    "nav_member_sha256": "469d34033cbe0052569298a0478021ae399391de08f4f6d16efddc5b9d8da651",
+    "map_member_sha256": "0481b174b2fafe24be32de8432eee67e745cc57ea526462a26c9168bf737c3d8",
+    "order": "nav affine, then drawing affine, then horizontal station ENU; no fitted correction",
+    "scope": "v5_nav.json only: nodes and links come from that member alone; the Path GeoJSON members carry their own UNKNOWN local frame"
+  },
+  "evidence": {
+    "source_zip_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+    "node_count": 2506,
+    "link_count": 2653,
+    "check_a": {
+      "node_count": 2506,
+      "inside_count": 2463,
+      "inside_share": 0.982841,
+      "status": "FAIL",
+      "failing_levels": [
+        {
+          "level_id": 64677,
+          "inside_share": 0.917355
+        }
+      ]
+    },
+    "check_b": {
+      "pairs_within_5m": 15,
+      "median_m": 1.853869309,
+      "p90_m": 3.3665106,
+      "max_m": 3.418081058,
+      "mean_offset_m": {
+        "east": 0.934294041,
+        "north": 0.127433023
+      },
+      "mean_offset_applied": false
+    }
+  },
+  "publication": {
+    "graph": "HOLD",
+    "paths": "HOLD",
+    "routing": "HOLD",
+    "release_condition": "CRS evidence for the path frame is obtained AND the data lead signs off; until then nothing here is published, placed, routed on or bundled.",
+    "rule": "The 2026-10-24 ruling covers 25 approximate points and 19 platform names only. This graph is written to the private store and this receipt; no record enters stations/**, route results or the web bundle."
+  },
+  "node_rule": "One node per v5_nav.json node not on a dropped level: both affines applied to mx/my, then projected with the station ENU frame (GRS80, horizontal only, height 0). A node is tagged only from its own level-entry geometry id joined to a reviewed gate, transfer or platform entry; no line, operator or gate field exists on a node or link, so every untagged node stays UNKNOWN. Nothing is attributed by name text or proximity.",
+  "edge_rule": "One edge per v5_nav.json link whose endpoints both survive the level drop: direction 1/2/3, dz, the straight-line ENU length, the level relation (from level ids, not dz) and the reason codes come from the path transform, except CHECK_A_CONTAINMENT_FAIL (cleared where both endpoints pass their own footprint test), CRS_UNCONFIRMED (cleared when the frame reads VERIFIED), CROSS_LEVEL_DEVICE_UNKNOWN (cleared, with the printed facility as `device`, where both cross-level ends print the same facility) and ONE_WAY (cleared: a one-way link is walked only in its printed direction). A cross-level edge whose ends print different facilities keeps CROSS_LEVEL_DEVICE_UNKNOWN. Self-loops are dropped and counted in counts.self_loop_dropped; zero-length edges are kept and flagged.",
+  "drop_rule": "Level 64677 is dropped whole with its nodes and every edge touching one, because it fails Check A at 0.917355 against the fixed 95% rule. Self-loop links are dropped and counted (counts.self_loop_dropped). No other link is dropped; every surviving link keeps its remaining reason codes.",
+  "labels_rule": "Every node and edge record carries navigation_use NOT_FOR_ROUTING, verification UNVERIFIED and gteki_role evidence, on the document and on each record.",
+  "public_receipt_rule": "This receipt carries counts, dropped numeric level ids, reason codes, length statistics and member counts only: no coordinate, no node or link id, no gate name and no level label. Numeric level ids follow the s03-transform-check precedent.",
+  "inputs": [
+    {
+      "role": "station",
+      "path": "stations/shinjuku/gteki/station.json",
+      "sha256": "b98993a687a72539462aded3ce2647a68b867ecb693316c99c244248a58cbf92"
+    },
+    {
+      "role": "gate_identity",
+      "path": "docs/research/lines/shinjuku-line-pois.json",
+      "sha256": "abf486b8925caa7b1232a766904c8ff863f30714ba5f110ff630e27fad9c79fc"
+    },
+    {
+      "role": "crs_frame",
+      "path": "docs/gis/crs/shinjuku-s03-v0.json",
+      "sha256": "c7c91acc8ea065b15b394a19af6636b5dbf81571f20576b736df5ee6a3b05cd2"
+    }
+  ],
+  "outputs": {
+    "private": {
+      "store_path": "out/s03/nav-graph-2450f32f7a247690beee.json",
+      "sha256": "f0a73eec7d6a594a6bea5296f163141cc0445cfdb117e52abc9b6408306e5c00",
+      "bytes": 1963558
+    }
+  }
+}

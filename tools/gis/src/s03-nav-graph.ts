@@ -133,7 +133,7 @@ export function loadGateTags(document: unknown): Map<number, S03GateTag> {
 }
 
 export interface NavGraphNode {
-  source_id: number; level_id: number; level_label: string; floor_ordinal: number;
+  source_id: number; level_id: number; level_label: string; level_z: number | null;
   lon: number; lat: number; east_m: number; north_m: number; gate: S03GateTag | null; check_a: NodeCheckA;
 }
 /** Check A per level: nodes by their own footprint test, edges charged to the level of their from-node (the dropped-level rule). */
@@ -182,6 +182,7 @@ export function buildNavGraph(inputs: NavGraphInputs, project: Project): BuiltNa
   const nodeIdByHash = new Map(inputs.nodes.map(node => [sha256(String(node.sourceId)), node.sourceId]));
   const linkIdByHash = new Map(inputs.links.map(link => [sha256(String(link.sourceId)), link.sourceId]));
   const levelById = new Map(paths.nodes.map(node => [node.source_id, node.level_id]));
+  const zByLevel = new Map(inputs.levels.map(level => [level.id, level.z]));
   const droppedLevels = DROPPED_LEVELS.map(dropped => dropped.level_id);
   const dropped = new Set(paths.nodes.filter(node => droppedLevels.includes(node.level_id)).map(node => node.source_id));
   const edges: NavGraphEdge[] = [], droppedEdgeOwner: number[] = [];
@@ -206,22 +207,28 @@ export function buildNavGraph(inputs: NavGraphInputs, project: Project): BuiltNa
     if (linkId === undefined) throw new Error('S03 nav graph: a segment is not a v5_nav link');
     // Check A clears its code only when both endpoints pass their own footprint test.
     const bothInside = checkA.get(from) === 'PASS' && checkA.get(to) === 'PASS';
+    const fromLevel = levelById.get(from)!, toLevel = levelById.get(to)!;
+    // Floor order is S03's own level id and printed z; dz is kept as a source attribute only (#552: 40 1F↔2F links print ±3).
+    const levelRelation: NavGraphEdge['level_relation'] = fromLevel !== toLevel ? 'cross_level' : 'same_level';
+    const zKnown = zByLevel.get(fromLevel) != null && zByLevel.get(toLevel) != null;
     // A cross-level link takes its device only when both ends print the same facility; that clears CROSS_LEVEL_DEVICE_UNKNOWN.
     const facilityFrom = facilityOf(from), facilityTo = facilityOf(to);
-    const device = segment.level_relation === 'cross_level' && facilityFrom !== null && facilityFrom === facilityTo
+    const device = levelRelation === 'cross_level' && facilityFrom !== null && facilityFrom === facilityTo
       && (NAV_GRAPH_DEVICES as readonly string[]).includes(facilityFrom) ? facilityFrom : null;
     // CRS_UNCONFIRMED clears only on a VERIFIED frame. ONE_WAY clears because a one-way link is routed in its printed direction; the adjacency never walks it backwards.
     edges.push({ link_id: linkId, from_node: from, to_node: to, direction: segment.direction, dz_m: segment.dz_m,
-      length_m: segment.length_m, level_relation: segment.level_relation, device,
+      length_m: segment.length_m, level_relation: levelRelation, device,
       reason_codes: segment.reason_codes.filter(code => !(bothInside && code === PATH_REASON.CHECK_A_CONTAINMENT_FAIL)
         && !(inputs.crsVerified && code === PATH_REASON.CRS_UNCONFIRMED)
         && !(device !== null && code === PATH_REASON.CROSS_LEVEL_DEVICE_UNKNOWN)
+        && !(levelRelation === 'same_level' && code === PATH_REASON.CROSS_LEVEL_DEVICE_UNKNOWN)
+        && !(zKnown && code === PATH_REASON.FLOOR_ORDINAL_UNVERIFIED)
         && code !== PATH_REASON.ONE_WAY) });
   }
   // Link order keeps the private document readable and the output independent of the path transform's hash ordering.
   edges.sort((a, b) => a.link_id - b.link_id);
   const nodes: NavGraphNode[] = paths.nodes.filter(node => !dropped.has(node.source_id)).map(node => ({
-    source_id: node.source_id, level_id: node.level_id, level_label: node.level_label, floor_ordinal: node.floor_ordinal,
+    source_id: node.source_id, level_id: node.level_id, level_label: node.level_label, level_z: zByLevel.get(node.level_id) ?? null,
     lon: node.lon, lat: node.lat, east_m: node.east_m, north_m: node.north_m, check_a: checkA.get(node.source_id)!,
     gate: geometryById.get(node.source_id) === null || geometryById.get(node.source_id) === undefined
       ? null : inputs.gateTags.get(geometryById.get(node.source_id)!) ?? null,
@@ -292,7 +299,7 @@ function lineCounts(nodes: readonly NavGraphNode[], edges: readonly NavGraphEdge
 
 export interface NavGraphDigestFacts {
   policy_version: string; tool_input_sha256: string; zip_sha256: string; station_json_sha256: string;
-  floor_mapping_sha256: string; gate_source_sha256: string; crs: string; crs_verification: string; publish_gate: string; sources_yaml_sha256: string;
+  floor_mapping_sha256: string; floor_rule: string; bundle_floor_tie: string; gate_source_sha256: string; crs: string; crs_verification: string; publish_gate: string; sources_yaml_sha256: string;
 }
 export function navGraphIdentity(facts: NavGraphDigestFacts) {
   const digest = sha256(JSON.stringify(facts)).slice(0, 20);
@@ -335,7 +342,7 @@ export function buildNavGraphReceipt(args: {
       release_condition: 'CRS evidence for the path frame is obtained AND the data lead signs off; until then nothing here is published, placed, routed on or bundled.',
       rule: 'The 2026-10-24 ruling covers 25 approximate points and 19 platform names only. This graph is written to the private store and this receipt; no record enters stations/**, route results or the web bundle.' },
     node_rule: 'One node per v5_nav.json node not on a dropped level: both affines applied to mx/my, then projected with the station ENU frame (GRS80, horizontal only, height 0). A node is tagged only from its own level-entry geometry id joined to a reviewed gate, transfer or platform entry; no line, operator or gate field exists on a node or link, so every untagged node stays UNKNOWN. Nothing is attributed by name text or proximity.',
-    edge_rule: 'One edge per v5_nav.json link whose endpoints both survive the level drop: direction 1/2/3, dz, the straight-line ENU length, the level relation and the reason codes come from the path transform, except CHECK_A_CONTAINMENT_FAIL (cleared where both endpoints pass their own footprint test), CRS_UNCONFIRMED (cleared when the frame reads VERIFIED), CROSS_LEVEL_DEVICE_UNKNOWN (cleared, with the printed facility as `device`, where both cross-level ends print the same facility) and ONE_WAY (cleared: a one-way link is walked only in its printed direction). A cross-level edge whose ends print different facilities keeps CROSS_LEVEL_DEVICE_UNKNOWN. Self-loops are dropped and counted in counts.self_loop_dropped; zero-length edges are kept and flagged.',
+    edge_rule: 'One edge per v5_nav.json link whose endpoints both survive the level drop: direction 1/2/3, dz, the straight-line ENU length, the level relation (from level ids, not dz) and the reason codes come from the path transform, except CHECK_A_CONTAINMENT_FAIL (cleared where both endpoints pass their own footprint test), CRS_UNCONFIRMED (cleared when the frame reads VERIFIED), CROSS_LEVEL_DEVICE_UNKNOWN (cleared, with the printed facility as `device`, where both cross-level ends print the same facility) and ONE_WAY (cleared: a one-way link is walked only in its printed direction). A cross-level edge whose ends print different facilities keeps CROSS_LEVEL_DEVICE_UNKNOWN. Self-loops are dropped and counted in counts.self_loop_dropped; zero-length edges are kept and flagged.',
     drop_rule: 'Level 64677 is dropped whole with its nodes and every edge touching one, because it fails Check A at 0.917355 against the fixed 95% rule. Self-loop links are dropped and counted (counts.self_loop_dropped). No other link is dropped; every surviving link keeps its remaining reason codes.',
     labels_rule: 'Every node and edge record carries navigation_use NOT_FOR_ROUTING, verification UNVERIFIED and gteki_role evidence, on the document and on each record.',
     public_receipt_rule: 'This receipt carries counts, dropped numeric level ids, reason codes, length statistics and member counts only: no coordinate, no node or link id, no gate name and no level label. Numeric level ids follow the s03-transform-check precedent.',
@@ -377,6 +384,8 @@ export async function s03NavGraph() {
   const digestInputs: NavGraphDigestFacts = { policy_version: S03_NAV_GRAPH_POLICY, tool_input_sha256: await toolFingerprint(),
     zip_sha256: stored.record.sha256, station_json_sha256: sha256(stationBytes),
     floor_mapping_sha256: floorMappingSha256(Object.entries(S03_FLOOR_ORDINALS).map(([id, ordinal]) => ({ id, ordinal }))),
+    floor_rule: 'Floor order inside S03 is each node\'s level id and the level\'s printed v5_nav z; dz is an unexplained source attribute (#552) and never sets the level relation. FLOOR_ORDINAL_UNVERIFIED clears where both ends have a printed z.',
+    bundle_floor_tie: 'UNVERIFIED',
     gate_source_sha256: sha256(gateBytes), crs: 'UNKNOWN', crs_verification: crsVerification, publish_gate: stored.source.publish_gate, sources_yaml_sha256: sha256(sourcesBytes) };
   const identity = navGraphIdentity(digestInputs);
   const privatePath = `out/s03/${identity.run_id}.json`;
