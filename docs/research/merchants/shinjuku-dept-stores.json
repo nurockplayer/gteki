@@ -1,6 +1,6 @@
 {
   "schema": "gteki.station/0.1",
-  "note": "Store-level POIs for the Shinjuku department stores and station buildings (director, 2026-10-25). Facts only: printed building name, operator and printed floor range. Not route evidence; no shop is re-linked. UNVERIFIED, SEARCH_ONLY.",
+  "note": "Store-level POIs for the Shinjuku department stores and station buildings (director, 2026-10-25). Facts only: printed building name, operator and printed floor range where a facts-only source prints them. Not route evidence; no shop is re-linked. UNVERIFIED, SEARCH_ONLY.",
   "sources": [
     {
       "id": "marui-shinjuku-floorguide-2026-10",
@@ -37,6 +37,24 @@
       "retrievedAt": "2026-10-25T10:16:00Z",
       "datasetDate": null,
       "notes": "Printed store name, the two building names and the printed floor labels only; no floor-guide wording, shop list, photo, map or logo is reproduced. Class: facts only (OD-34, director ruling 2026-10-25 on #522, option B on condition of the scope clause); the グループID規約 第1条 and 第2条 scope clause was read with curl from https://www.imhds.co.jp/corporate/group-id/index.html at 2026-10-25T10:44:02Z (HTTP 200, 112,469 bytes) and shows the agreement governs registered グループID holders, not anonymous visitors. The floor guides themselves do not answer a direct request from this host (https://www.mistore.jp/ and /store/shinjuku/shops.html both returned no HTTP response at 10:31Z and 10:32Z), so they were read by proxy (oracle-ego, read-only) in runs 10:11–10:16Z and 10:34–10:44Z; the evidence record is docs/research/merchants/dept-store-terms-2026-10-25.md §7 (added by #522; not on main when these rows were imported). Publisher as printed in that record: the group ID terms name 株式会社三越伊勢丹ホールディングス as 当社 and the site certificate carries O=Isetan Mitsukoshi Holdings Ltd.; the operating company of the store is not printed there, so the POI notes carry no operator."
+    },
+    {
+      "id": "tokyometro-shinjuku-exit-list-2026-10",
+      "title": "新宿駅・新宿三丁目駅 出入口・周辺地図（出口案内データ） | tokyometro.jp",
+      "publisher": "東京地下鉄",
+      "url": "http://web.archive.org/web/20260908151007/https://www.tokyometro.jp/station/exit.json",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      },
+      "attribution": "東京メトロ 新宿駅・新宿三丁目駅 出入口・周辺地図 (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-25T20:59:31Z",
+      "datasetDate": null,
+      "notes": "The JSON that the Tokyo Metro station pages load for their exit and neighbourhood map (/station/exit.json), cited via its Wayback capture 20260908151007 (UTC; 445,757 bytes, SHA-256 8524c81cd0d54f96bac3d71251c06f66477ea478114c73d0d2118e43c17f973d, re-read by the lead 2026-10-26 06:05 JST), because Tokyo Metro's live site returns 403 from this host. It prints 京王百貨店 as a facility of 新宿駅 exits A14 and A15, 高島屋タイムズスクエア for 新宿駅 A8 / A9 and 新宿三丁目駅 E8, and サブナード for 新宿駅 B10. Only the printed facility labels and exit numbers are taken; no route, floor label or page wording is copied. The 2016-07-30T20:33:40Z Wayback capture of 新宿駅's print page (map/index_print.html) prints the same three labels (京王百貨店 at A15; サブナード at B10; 高島屋タイムズスクエア at A8 / A9) as a cross-read. A live read of the same file during research (2026-10-26 05:59 JST, HTTP 200, same size) is not the cited basis. Class: facts only, the same class as Tokyo Metro station pages (#26, 2026-10-21 decision). Record: docs/research/merchants/shinjuku-3stores-facts-2026-10-26.md."
     }
   ],
   "pois": [
@@ -325,6 +343,102 @@
         {
           "lang": "en",
           "text": "Isetan Shinjuku Mens (mens' building). The source prints the store name 伊勢丹新宿店 and the building name メンズ館 separately; this name joins the two. The floor guide lists B1F・1F–8F・RF, with 8F and RF printed as one 「8F/RF」 label in the nav. No operator is stated: the terms record does not print the operating company's name. Location and entrance not verified (search only, no route). Current status unknown. No floor-guide wording and no shop list is copied."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-keio",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "京王百貨店"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-exit-list-2026-10"
+        ],
+        "method": "facts-only station exit list (OD-34), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-26"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "京王百貨店（出典は東京メトロ新宿駅の出入口・周辺地図で、A14・A15 出入口の周辺施設として「京王百貨店」と印字。英語表記は Keio Dept. Store）。出典は「京王百貨店」とのみ印字し、「新宿店」は印字していません。フロアの印字はありません。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Keio Department Store (the source, Tokyo Metro's Shinjuku Station exit and neighbourhood map, prints 京王百貨店 among the facilities of exits A14 and A15; the English label is Keio Dept. Store). The source prints 京王百貨店 only, not 新宿店. No floors are printed. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-takashimaya",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "高島屋タイムズスクエア"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-exit-list-2026-10"
+        ],
+        "method": "facts-only station exit list (OD-34), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-26"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "高島屋タイムズスクエア（出典は東京メトロの出入口・周辺地図で、新宿駅 A8・A9 と新宿三丁目駅 E8 の周辺施設として「高島屋タイムズスクエア」と印字。英語表記は Takashimaya Times Square）。出典が印字するのは複合施設の名称で、百貨店の店名「高島屋新宿店」は事実のみの出典に印字がありません。フロアの印字はありません。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Takashimaya Times Square (the source, Tokyo Metro's exit and neighbourhood map, prints 高島屋タイムズスクエア for Shinjuku Station exits A8 / A9 and Shinjuku-sanchome Station exit E8; the English label is Takashimaya Times Square). The printed name is the complex's; the department store's own name 高島屋新宿店 is not printed by a facts-only source. No floors are printed. Location and entrance not verified (search only, no route). Current status unknown."
+        }
+      ]
+    },
+    {
+      "id": "shop-sjk-subnade",
+      "category": "shop",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "サブナード"
+        }
+      ],
+      "aliases": [],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "tokyometro-shinjuku-exit-list-2026-10"
+        ],
+        "method": "facts-only station exit list (OD-34), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-26"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "サブナード（出典は東京メトロ新宿駅の出入口・周辺地図で、B10 出入口の周辺施設として「サブナード」と印字。英語表記は Subnade）。出典は「サブナード」とのみ印字し、「新宿」は印字していません。フロアの印字はありません。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+        },
+        {
+          "lang": "en",
+          "text": "Subnade (the source, Tokyo Metro's Shinjuku Station exit and neighbourhood map, prints サブナード among the facilities of exit B10; the English label is Subnade). The source prints サブナード only, not 新宿. No floors are printed. Location and entrance not verified (search only, no route). Current status unknown."
         }
       ]
     }
