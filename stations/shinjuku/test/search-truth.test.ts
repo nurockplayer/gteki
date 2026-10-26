@@ -405,9 +405,10 @@ describe("facility POIs trace to the GSI facility points", () => {
     const ADDED: { id: string; source: string }[] = [];
     // #411: 45 search-only line POIs from tokyo-s03-zip, appended after every E27 POI (see the S03 block below).
     const S03_COUNT = 45;
-    // #214: 6 Toei/Tokyo Metro + 576 LUMINE/NEWoMan listings + the Odakyu department store, plus the 7 store
-    // POIs for the printed buildings (LUMINE 1/2, LUMINE EST, NEWoMan, 新宿マルイ 本館/アネックス/メン).
-    const SHOP_COUNT = 592;
+    // #214: 6 Toei/Tokyo Metro + 576 LUMINE/NEWoMan listings + the Odakyu department store, plus the 12 store
+    // POIs for the printed buildings (LUMINE 1/2, LUMINE EST, NEWoMan, 新宿マルイ 本館/アネックス/メン,
+    // 伊勢丹新宿店 本館/メンズ館, 京王百貨店, 高島屋タイムズスクエア, サブナード).
+    const SHOP_COUNT = 595;
     // #501: 9 Toei station exits + 28 Metro M08 exits + 4 lifts + 2 escalators (see the WP4 block); the 2 M08 gates are held.
     const WP4_COUNT = 43;
     expect(pois.length).toBe(OLD_COUNT + ADDED.length + S03_COUNT + SHOP_COUNT + WP4_COUNT);
@@ -434,6 +435,8 @@ describe("expected search results (docs/stations/shinjuku/search-expected.md)", 
     ["新宿", [P]], ["しんじゅく", [P]], ["シンジュク", [P]], ["Shinjuku", [P]], ["shinjuku station", [P]], ["shinjuku eki", [P]],
     ["新宿駅", [P]], ["E27", [P]], ["e27", [P]], ["大江戸線", [P]], ["都営大江戸線", [P]], ["Oedo", [P]], ["oedo line", [P]], ["Toei Oedo Line", [P]],
     ["新宿站", [P]], ["大江戶線", [P]], ["都營大江戶線", [P]],
+    // #539: the 京王百貨店 store POI is not a substring of the longer gate name, so the S03 gate still ranks first.
+    ["京王百貨店口", ["poi:keio-gate:5"]],
     // exits told apart by descriptor
     ["屋根あり", ["poi:exit:1"]], ["roofed", ["poi:exit:1"]], 
     ["escalator", ["poi:exit:4"]], ["エスカレーター", ["poi:exit:4"]], ["手扶梯", ["poi:exit:4"]],
@@ -738,8 +741,8 @@ describe("merchant shops (#214)", () => {
   const shops = pois.filter(isShop);
   const index = createSearchIndex(bundle);
 
-  it("imports the 583 directory listings and the 9 store POIs as search-only shops", () => {
-    expect(shops.length).toBe(592);
+  it("imports the 583 directory listings and the 12 store POIs as search-only shops", () => {
+    expect(shops.length).toBe(595);
     for (const p of shops) {
       expect(p.evidence.sourceIds.length, p.id).toBe(1);
       expect(bundle.sources.some((s) => s.id === p.evidence.sourceIds[0]), p.id).toBe(true);
@@ -752,9 +755,10 @@ describe("merchant shops (#214)", () => {
     }
   });
 
-  it("keeps one store POI per printed building, with its floor range (and its operator where the source prints one)", () => {
-    // The 伊勢丹 rows carry no operator: the terms record does not print the operating company.
-    const store: [string, string, string, string | undefined][] = [
+  it("keeps one store POI per printed building, with its floor range and operator where the source prints them", () => {
+    // The 伊勢丹 rows carry no operator: the terms record does not print the operating company. The
+    // 京王百貨店 / 高島屋タイムズスクエア / サブナード rows print neither a floor nor an operator.
+    const store: [string, string, string | undefined, string | undefined][] = [
       ["shop-sjk-lumine1", "ルミネ新宿 ルミネ1", "B2F〜8F", "運営: 株式会社ルミネ"],
       ["shop-sjk-lumine2", "ルミネ新宿 ルミネ2", "1F〜7F", "運営: 株式会社ルミネ"],
       ["shop-sjk-lumineest", "ルミネエスト新宿", "B2F〜8F", "運営: 株式会社ルミネ"],
@@ -764,6 +768,9 @@ describe("merchant shops (#214)", () => {
       ["shop-sjk-marui-men", "新宿マルイ メン", "1F〜8F", "運営: 株式会社丸井"],
       ["shop-sjk-isetan-honkan", "伊勢丹新宿店 本館", "B2F・B1F・1F〜7F・RF", undefined],
       ["shop-sjk-isetan-mens", "伊勢丹新宿店 メンズ館", "B1F・1F〜8F・RF", undefined],
+      ["shop-sjk-keio", "京王百貨店", undefined, undefined],
+      ["shop-sjk-takashimaya", "高島屋タイムズスクエア", undefined, undefined],
+      ["shop-sjk-subnade", "サブナード", undefined, undefined],
     ];
     expect(store.filter(([id]) => shops.some((p) => p.id === id)).length).toBe(store.length);
     for (const [id, name, floors, operator] of store) {
@@ -771,7 +778,8 @@ describe("merchant shops (#214)", () => {
       expect(p.names[0]!.text, id).toBe(name);
       expect(p.aliases, id).toEqual([]);
       const ja = p.notes!.find((n) => n.lang === "ja")!.text;
-      expect(ja, id).toContain(floors);
+      if (floors) expect(ja, id).toContain(floors);
+      else expect(ja, id).not.toMatch(/\d+F/);
       if (operator) expect(ja, id).toContain(operator);
       else expect(ja, id).not.toMatch(/運営: /);
     }
