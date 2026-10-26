@@ -3,6 +3,7 @@
 // charcoal panel, white type, exit numbers on yellow badges (the common
 // Japanese exit colour convention). No operator logos or typefaces.
 import type * as THREE_NS from "three";
+import type { IdentityBoardTag } from "@gteki/scene-api";
 
 type Arrow = "up" | "left" | "right";
 
@@ -31,12 +32,6 @@ export interface IdentityBoard {
   ceilingZ: number;
   mount?: "ceiling" | "wall";
 }
-
-// replace with IdentityBoardTag from @gteki/scene-api once #347 lands
-type IdentityBoardTag = {
-  front?: [number, number, number];
-  regions?: { kind: "name" | "arrow"; min: [number, number, number]; max: [number, number, number] }[];
-};
 
 /** Conservative cap-height proxy (0.7 em), not measured glyph ink or a recognition study. */
 export const IDENTITY_TYPE = { jaEm: 0.56, enEm: 0.40, cap: 0.7 } as const;
