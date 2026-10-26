@@ -9,7 +9,7 @@ import { expect, it } from "vitest";
 import { WALKER_BODY } from "@gteki/scene-api";
 import { FOLLOW, FOV, followPose } from "../../../apps/web/src/explorer/followCamera.ts";
 import { CAMERA_FAR_M } from "../../../apps/web/src/explorer/overviewFraming.ts";
-import { CULL_M, catalogVisibility, loadKitCatalog, type CatalogPlacement } from "./kit_catalog_loader.ts";
+import { CULL_M, NOSING_CLUSTERS, catalogVisibility, loadKitCatalog, loadNosingKit, type CatalogPlacement } from "./kit_catalog_loader.ts";
 import placementsFile from "./kit_placements.json";
 import graph from "../gteki/graph.json";
 
@@ -50,6 +50,9 @@ function boundsGlb(uri: string): GLTF {
       expect(a.max).toHaveLength(3);
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute("position", new THREE.Float32BufferAttribute([...a.min, ...a.max], 3));
+      // Batch C's merge requires normal and uv1 (TEXCOORD_1 is where the nosing GLBs address the AO atlas).
+      geometry.setAttribute("normal", new THREE.Float32BufferAttribute([0, 1, 0, 0, 1, 0], 3));
+      geometry.setAttribute("uv1", new THREE.Float32BufferAttribute([0, 0, 1, 1], 2));
       geometry.boundingBox = new THREE.Box3(new THREE.Vector3(...a.min), new THREE.Vector3(...a.max));
       geometry.boundingSphere = geometry.boundingBox.getBoundingSphere(new THREE.Sphere());
       obj.add(new THREE.Mesh(geometry, material));
@@ -89,21 +92,32 @@ it("estimates spec-13 catalog draws before/after distance culling at every defau
   for (const m of spawns.matchAll(/nodeId: "([^"]+)"/g)) spots.push({ group: "spawn", id: m[1]! });
   expect(spots).toHaveLength(19); // 13 defaults (including control:x35), plus all 6 spawn nodes
   expect(spots.filter((s) => s.group === "spawn")).toHaveLength(6);
-  const kit = await loadKitCatalog(THREE, {
-    assetUrl: (uri) => fs.existsSync(path.join(STATION, "gteki", uri)) ? uri : null,
-    loadGlb: async (uri) => boundsGlb(uri),
-  }, (placementsFile as unknown as { placements: CatalogPlacement[] }).placements, false);
+  const host = {
+    assetUrl: (uri: string) => fs.existsSync(path.join(STATION, "gteki", uri)) ? uri : null,
+    loadGlb: async (uri: string) => boundsGlb(uri),
+    loadTexture: async () => new THREE.Texture(),
+  };
+  const kit = await loadKitCatalog(THREE, host, (placementsFile as unknown as { placements: CatalogPlacement[] }).placements, false);
+  // Batch C (desktop tier; the phone copies are the stacked follow-up): 69 strips merged into a few meshes.
+  const nosing = await loadNosingKit(THREE, host, (placementsFile as unknown as { placements: CatalogPlacement[] }).placements, false);
   const env = new THREE.Texture();
   try {
     const { group, stats } = kit.build(THREE, env, toRenderer);
     expect(stats.parts).toBe(26);
     expect(group.children.length).toBeGreaterThan(0);
+    const nosingBuilt = nosing.build(THREE, env, toRenderer);
+    expect(nosingBuilt.stats.parts).toBe(69);
+    expect(nosingBuilt.stats.clusters).toBe(nosingBuilt.group.children.length);
+    expect(nosingBuilt.group.children.length).toBeLessThanOrEqual(NOSING_CLUSTERS); // against 61 one-per-id draws
     const visibility = catalogVisibility(THREE);
     visibility.add(group);
+    const nosingVisibility = catalogVisibility(THREE);
+    nosingVisibility.add(nosingBuilt.group);
     group.updateMatrixWorld(true);
+    nosingBuilt.group.updateMatrixWorld(true);
     const camera = new THREE.PerspectiveCamera(FOV.follow, 1440 / 900, 0.05, CAMERA_FAR_M);
     const frustum = new THREE.Frustum(), projection = new THREE.Matrix4();
-    const rows: { group: string; node: string; heading: number; before: number; after: number }[] = [];
+    const rows: { group: string; node: string; heading: number; before: number; after: number; nosingBefore: number; nosingAfter: number }[] = [];
     for (const spot of spots) for (const offset of [0, 90, 180, 270]) {
       const p = byId.get(spot.id)!.position;
       expect(p.z).not.toBeNull();
@@ -115,35 +129,41 @@ it("estimates spec-13 catalog draws before/after distance culling at every defau
       camera.updateMatrixWorld(true);
       frustum.setFromProjectionMatrix(projection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
       const before = group.children.filter((m) => frustum.intersectsObject(m)).length;
+      const nosingBefore = nosingBuilt.group.children.filter((m) => frustum.intersectsObject(m)).length;
       visibility.update(camera);
+      nosingVisibility.update(camera);
       const after = group.children.filter((m) => m.visible && frustum.intersectsObject(m)).length;
+      const nosingAfter = nosingBuilt.group.children.filter((m) => m.visible && frustum.intersectsObject(m)).length;
       expect(after).toBeLessThanOrEqual(before);
-      rows.push({ group: spot.group, node: spot.id, heading, before: before * 2, after: after * 2 });
+      expect(nosingAfter).toBeLessThanOrEqual(nosingBefore);
+      rows.push({ group: spot.group, node: spot.id, heading, before: before * 2, after: after * 2, nosingBefore: nosingBefore * 2, nosingAfter: nosingAfter * 2 });
     }
     expect(rows).toHaveLength(76);
     const report = `CPU catalog draw estimate: ${group.children.length} meshes, CULL_M=${CULL_M}; x2 = colour + GTAO depth/normal.\n` +
+      `Nosing (batch C, high tier): 69 strips in ${nosingBuilt.group.children.length} merged cluster meshes (61 draws if instanced), same CULL_M; x2.\n` +
       "Accessor-box spheres; 1440x900, FOV 50, settled unobstructed follow pose; no ground snap, camera collision or wall occlusion. GPU totals need spec 13.\n" +
-      "group | views | before p50 | before max | after p50 | after max\n" +
+      "group | views | before p50 | before max | after p50 | after max | nosing before p50 | nosing after p50\n" +
       ["gate", "rail", "exit", "spawn", "control"].map((name) => {
         const mine = rows.filter((r) => r.group === name);
-        const summary = (key: "before" | "after") => {
+        const summary = (key: "before" | "after" | "nosingBefore" | "nosingAfter") => {
           const draws = mine.map((r) => r[key]).sort((a, b) => a - b);
           return `${draws[Math.floor(draws.length * 0.5)]} | ${draws.at(-1)}`; // spec 13's p50 convention
         };
-        return `${name} | ${mine.length} | ${summary("before")} | ${summary("after")}`;
+        return `${name} | ${mine.length} | ${summary("before")} | ${summary("after")} | ${summary("nosingBefore")} | ${summary("nosingAfter")}`;
       }).join("\n");
     console.info(report);
     // Keep the numbers available even when the test runner suppresses stdout from passing tests.
     const out = path.join(ROOT, ".qa", "ikebukuro-catalog-budget.txt");
     fs.mkdirSync(path.dirname(out), { recursive: true });
-    fs.writeFileSync(out, report + "\n\nCatalog draws x2 by viewpoint:\nnode | group | heading | before | after\n" +
-      rows.map((r) => `${r.node} | ${r.group} | ${r.heading} | ${r.before} | ${r.after}`).join("\n") + "\n");
+    fs.writeFileSync(out, report + "\n\nCatalog draws x2 by viewpoint:\nnode | group | heading | before | after | nosing before | nosing after\n" +
+      rows.map((r) => `${r.node} | ${r.group} | ${r.heading} | ${r.before} | ${r.after} | ${r.nosingBefore} | ${r.nosingAfter}`).join("\n") + "\n");
     for (const name of ["rail", "spawn"]) {
       const mine = rows.filter((r) => r.group === name);
       expect(mine.some((r) => r.after < r.before), `${name}: a distant frustum candidate is removed`).toBe(true);
     }
   } finally {
     kit.dispose();
+    nosing.dispose();
     env.dispose();
   }
 });
