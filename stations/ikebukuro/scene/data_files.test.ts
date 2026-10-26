@@ -59,6 +59,8 @@ const EXPECTED: Record<string, { script: string; sources: () => string[]; author
   "scene/finishes.json": { script: "GTEki-authored", sources: () => [], authored: true },
   "scene/kit/kit.json": { script: "GTEki-authored", sources: () => [], authored: true },
   "scene/columns.json": { script: "pipeline/extract_columns.py", sources: () => [PLATEAU] },
+  // The catalog's ids, origins and tiers come from the survey anchors; the golden-route flag only selects flights.
+  "scene/kit_placements.json": { script: "pipeline/build_kit_catalog.py", sources: () => [PLATEAU] },
 };
 
 const declared: DataFile[] = src.dataFiles;
