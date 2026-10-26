@@ -6,10 +6,15 @@ import { sanitizeAvatarFade } from "./avatarDither.ts";
 /** #339 X1: Lane E's E1 asset will occupy this path; a missing asset safely keeps the procedural rig. */
 export const DEFAULT_AVATAR_GLB_URL = "/avatars/commuter.glb";
 
+/** #339 dev-only candidates: `?avatar=mpfb` loads the MPFB2-route commuter GLB (Lane E candidate A). */
+const AVATAR_CANDIDATES = new Map<string, string>([["mpfb", "/avatars/gteki-commuter-mpfb.glb"]]);
+
 /** URL reads belong to app.ts; accept only relative paths resolving within the app's origin. */
 export function avatarGlbUrl(params: URLSearchParams, pageUrl: string): string | undefined {
-  if (params.get("avatar") !== "glb") return undefined;
-  const path = params.get("avatarUrl") ?? DEFAULT_AVATAR_GLB_URL;
+  const mode = params.get("avatar");
+  const candidate = mode === null ? undefined : AVATAR_CANDIDATES.get(mode);
+  if (mode !== "glb" && candidate === undefined) return undefined;
+  const path = params.get("avatarUrl") ?? candidate ?? DEFAULT_AVATAR_GLB_URL;
   if (!path || path !== path.trim() || /^[a-z][a-z\d+.-]*:|^\/\/|^[?#]/i.test(path) || /[\\\u0000-\u0020\u007f]/.test(path)) return undefined;
   try {
     const base = new URL(pageUrl);

@@ -1,0 +1,35 @@
+{
+  "file": "apps/web/public/avatars/gteki-commuter-mpfb.glb",
+  "issue": "#339",
+  "candidate": "A: MPFB2 route (quiet commuter)",
+  "sha256": "a4e16ed3be18b475f54bb698b950e717b1bdcc7b88ef929e015823a6b660a4f2",
+  "bytes": 425736,
+  "license_spdx": "CC-BY-4.0",
+  "attribution": "GTEki contributors",
+  "base_mesh": {
+    "source_url": "https://github.com/makehumancommunity/mpfb2/archive/refs/tags/v2.0.18.tar.gz",
+    "archive_sha256": "2909fdf3de140d7ba13b024f3316e8c9862b312d80b39469dfeaba25af30d1c8",
+    "file": "src/mpfb/data/3dobjs/base.obj",
+    "file_sha256": "8e761e6624b8f54536409135d1636da63b32486a90d4897f84e121d144f6fb4c",
+    "license_spdx": "CC0-1.0",
+    "licence_line": "C. The license for the bundled assets: \"The assets are CC0 1.0 ... The base mesh and proxies ... Rigs, poses and expressions ... JSON data with mesh information\" (LICENSE.md section C; LICENSE.ASSETS.md is CC0 1.0 Universal, sha256 f6089cba01cb570a24712b41ab8a586ccd3cc5ef53dc266ca50b95c288956d2c)",
+    "author": "MakeHuman community (MPFB2 project)",
+    "date_fetched": "2026-10-26 09:36 JST",
+    "shipped_code": "none; the GPLv3 add-on code is not shipped or used"
+  },
+  "edits": [
+    "Scaled 0.1 (MPFB units to metres); rotated to Blender frame (Z up, front +Y); feet on floor",
+    "Triangulated and Decimate collapse, ratio 0.22 (19158 verts to fit the 10k triangle budget)",
+    "Material slots by region (skin, hair, navy-charcoal coat, trousers, shoes), flat colours, no textures",
+    "Solid backpack box (VIS_daypack) on bone daypack, muted green-grey, not skinned",
+    "Armature of 24 joints named after the character contract (UE-style names, subset), rest pose A-like",
+    "Skin weights: inverse-distance to bone segments, top 4 bones per vertex (Blender heat weighting failed on the decimated mesh)",
+    "Clips idle (4.0 s), walk (1.0 s), run (0.6 s) authored procedurally with sinusoidal keyframes at 30 fps, in place, frame N equal to frame 0",
+    "No blink morphs, no face detail beyond the base mesh, no hair cards"
+  ],
+  "clip_authorship": "Authored by GTEki contributors in Blender from code (no motion capture, no third-party clips); CC-BY-4.0",
+  "generator": "Blender 5.2.2 LTS (headless, -b) with glTF 2.0 exporter; build script kept in the Lane E scratch only",
+  "triangles": 8143,
+  "texture_bytes": 0,
+  "budget": "phone tier: <=10k triangles, <=1 MB textures (0 used)"
+}

@@ -45,6 +45,15 @@ precedence = "override"
 SPDX-FileCopyrightText = "GTEki contributors"
 SPDX-License-Identifier = "CC-BY-4.0"
 
+# #339 candidate A (MPFB2 route): edited derivative of the CC0 MPFB2 base mesh; the edits (decimation,
+# commuter materials, skeleton, weights, clips) are original work under CC-BY-4.0 per the rights audit
+# (docs/assets/character-rights-audit.md section 1). Sidecar records the CC0 base hashes and licence line.
+[[annotations]]
+path = ["apps/web/public/avatars/gteki-commuter-mpfb.glb", "apps/web/public/avatars/gteki-commuter-mpfb.provenance.json"]
+precedence = "override"
+SPDX-FileCopyrightText = "GTEki contributors"
+SPDX-License-Identifier = "CC-BY-4.0"
+
 # --- 3. AI-generated 2D images: CC0-1.0 ----------------------------------------------------
 # Generated 2026-10-20 with OpenAI image generation through Codex; prompts, hashes and the
 # "AI-generated" label are in assets/library/source/posters/provenance.json. Fictional only:

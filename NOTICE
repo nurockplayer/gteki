@@ -20,6 +20,11 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
 
      GTEki contributors, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
+2b. CHARACTER (#339 candidate A) - CC BY 4.0, base mesh CC0 1.0
+   apps/web/public/avatars/gteki-commuter-mpfb.glb is an edited derivative of the MPFB2
+   core base mesh (MakeHuman community, CC0 1.0; mpfb2 v2.0.18, see its provenance sidecar).
+   The GPLv3 MPFB2 add-on code is not shipped.
+
 3. AI-GENERATED 2D IMAGES - CC0 1.0
    The AI-generated poster images in assets/library/source/posters/ (and any
    future AI-generated 2D image) are dedicated to the public domain under
