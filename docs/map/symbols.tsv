@@ -443,6 +443,7 @@ tenantResultTags	function	apps/web/src/ui/tenantDisplay.ts	21
 tenantCheckedDate	function	apps/web/src/ui/tenantDisplay.ts	29
 tenantAsOfNote	function	apps/web/src/ui/tenantDisplay.ts	37
 tenantDestinationTitle	function	apps/web/src/ui/tenantDisplay.ts	42
+unverifiedSources	function	apps/web/src/ui/unverifiedSteps.ts	5
 gteki:fonts:subset	script	package.json	7
 gteki:map:gen	script	package.json	8
 gteki:typecheck	script	package.json	9
@@ -452,6 +453,8 @@ gteki:test:heavy:box	script	package.json	12
 gteki:check	script	package.json	13
 gteki:dev	script	package.json	14
 gteki:build	script	package.json	15
+gteki:build:private	script	package.json	16
+gteki:dev:private	script	package.json	17
 @gteki/cli:test	script	packages/cli/package.json	7
 exportFixture	function	packages/cli/src/export-fixture.ts	7
 parseArgs	function	packages/cli/src/route.ts	30

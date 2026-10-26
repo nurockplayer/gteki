@@ -12,7 +12,9 @@
     "test:heavy:box": "node tools/test-box.mjs",
     "check": "pnpm typecheck && pnpm test",
     "dev": "pnpm --filter @gteki/web dev",
-    "build": "pnpm --filter @gteki/web build"
+    "build": "pnpm --filter @gteki/web build",
+    "build:private": "sh tools/private-overlay/run.sh build",
+    "dev:private": "sh tools/private-overlay/run.sh dev"
   },
   "devDependencies": {
     "@babel/parser": "7.28.5",
