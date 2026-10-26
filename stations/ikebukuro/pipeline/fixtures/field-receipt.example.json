@@ -1,0 +1,26 @@
+{
+ "version": 1,
+ "station": "ikebukuro",
+ "fieldRun": "docs/research/lines/field-run-2026-10-26.md",
+ "items": [
+  {
+   "item": 25,
+   "status": "CLOSED",
+   "poiId": "shop-ikb-esola",
+   "nodeId": "x4f",
+   "paid": false,
+   "observedText": "EXAMPLE — not an observation",
+   "observedAt": "2026-10-27T10:12+09:00",
+   "floorLabel": "B1F",
+   "stepFree": "level"
+  },
+  {
+   "item": 27,
+   "status": "OPEN",
+   "poiId": "shop-ikb-parco",
+   "paid": false,
+   "observedText": "EXAMPLE — not an observation",
+   "observedAt": "2026-10-27T10:20+09:00"
+  }
+ ]
+}
