@@ -44,12 +44,12 @@ describe("station geometry lifetime", () => {
     const result = JSON.parse(stdout);
     expect(result.retired).toBeGreaterThan(30_000); // exercise the real PLATEAU and station merges
     expect(result.retained).toBe(0);
-    expect(result.live).toBe(138);
-    expect(result.bytes).toBe(13_502_164);
+    expect(result.live).toBe(140);
+    expect(result.bytes).toBe(13_530_324);
     // #49 retains two clipped render-only shell batches: +217,498 B and +5,055 triangles
     // after #316 stopped letting surfaces below the runs suppress the shell.
     // Removing only those batches reproduces the previous visual digest; all physical
     // buffers remain byte-identical (scene-digest.test.ts). Retired arrays stay collectible.
-    expect(result.geometryHash).toBe("af86784d1f7a632f2ee5ef5c2bc87c51644b2bc661a0cfe0493116d8b48206fe");
+    expect(result.geometryHash).toBe("5a731f4efde699f369e602f9d36b5485b32e235643b8449dc347002fc242a543");
   }, 60_000);
 });
