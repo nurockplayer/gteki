@@ -225,7 +225,7 @@ export function buildRouteReceipt(args: {
     requested_routes: { total: args.routes.length, outcomes: outcomes.map(outcome => ({ outcome, count: args.routes.filter(route => route.outcome === outcome).length })) },
     reason_codes: Object.values(PATH_REASON).map(code => ({ code, count: args.reason_codes[code] ?? 0 })).filter(entry => entry.count > 0),
     route_rule: 'Only edges between gate-tagged nodes of the JR East, Odakyu and Keio areas are routed: the endpoints are the nodes whose own reviewed tag names one of those operators, the path is the shortest walk length over the held graph edges, and `d` 1/2 are one-way. Every node, edge and result is labelled NOT_FOR_ROUTING and UNVERIFIED.',
-    refusal_rule: 'Any edge the path takes that carries a reason code refuses the route and lists the codes; a held graph carries CRS_UNCONFIRMED on every edge, so a real run reports reachability with zero ROUTED pairs.',
+    refusal_rule: 'Any edge the path takes that carries a reason code refuses the route and lists the codes; a held graph carries CHECK_B_RESIDUAL_UNVERIFIED and FLOOR_ORDINAL_UNVERIFIED on every edge, so a real run reports reachability with zero ROUTED pairs.',
     receipt_rule: 'This receipt carries counts, run identity and reason codes only: no coordinate, no node or link id, no gate name, no level label and no route geometry.',
   };
 }

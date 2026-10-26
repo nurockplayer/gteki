@@ -78,6 +78,16 @@ describe('S03 nav route: routing on the held graph (synthetic only)', () => {
     expect(routeGatePair(document, 'poi:jreast-gate:1', 'poi:keio-gate:1')).toMatchObject({ outcome: 'REFUSED' });
     expect(gatePairCounts(document).pairs.find(pair => pair.operators === 'jreast-keio')).toMatchObject({ reachable_pairs: 1, routable_pairs: 0 });
   });
+  it('routes a one-way link in its printed direction, in both directions', () => {
+    // `d` 1 is node 1 to node 2 and then node 2 to node 3: the JR gate reaches the Keio gate, never the reverse.
+    expect(routeGatePair(held({ edges: [EDGE(101, 1, 2, 5, [], 1), EDGE(102, 2, 3, 7, [], 1)] }), 'poi:jreast-gate:1', 'poi:keio-gate:1'))
+      .toMatchObject({ outcome: 'ROUTED', nodes: [1, 2, 3], link_ids: [101, 102] });
+    // `d` 2 reverses both links: the Keio gate walks back to the JR gate, and the forward direction is refused as unreachable.
+    expect(routeGatePair(held({ edges: [EDGE(101, 1, 2, 5, [], 2), EDGE(102, 2, 3, 7, [], 2)] }), 'poi:keio-gate:1', 'poi:jreast-gate:1'))
+      .toMatchObject({ outcome: 'ROUTED', nodes: [3, 2, 1], link_ids: [102, 101] });
+    expect(routeGatePair(held({ edges: [EDGE(101, 1, 2, 5, [], 2), EDGE(102, 2, 3, 7, [], 2)] }), 'poi:jreast-gate:1', 'poi:keio-gate:1'))
+      .toMatchObject({ outcome: 'UNREACHABLE' });
+  });
   it('does not walk a one-way edge backwards, and refuses an unknown gate', () => {
     // Edge 101 is `d` 1: node 1 to node 2 only, so the Keio gate cannot walk it back towards the JR gate.
     expect(routeGatePair(held({ edges: [EDGE(101, 1, 2, 5, [], 1), EDGE(102, 2, 3, 7, [], 3)] }), 'poi:keio-gate:1', 'poi:jreast-gate:1'))
