@@ -494,23 +494,53 @@ export function sourceDefectRecords(inputs: S03Inputs, project: Project) {
 }
 /** Policy fixed before looking at results: >=95% inside, both overall and on every assessed level with nodes. */
 export const OVERWHELMING_INSIDE_SHARE = 0.95;
+/** A level's footprint in projected ENU: its polygons and one bounding box per polygon, precomputed to reduce the containment checks. */
+export interface Footprint { polygons: Point2[][][]; bounds: number[][] }
+export function levelFootprint(polygons: readonly Polygon2[], project: Project): Footprint {
+  const projected = polygons.map(poly => poly.map(ring => ring.map(([lon, lat]) => project(lat, lon))));
+  const bounds = projected.map(poly => {
+    const outer = poly[0]!;
+    return [Math.min(...outer.map(p => p[0])), Math.min(...outer.map(p => p[1])), Math.max(...outer.map(p => p[0])), Math.max(...outer.map(p => p[1]))];
+  });
+  return { polygons: projected, bounds };
+}
+/** The containment rule Check A applies: inside a polygon's closed surface, with the bounding box as a fast reject. */
+export function footprintContains(xy: Point2, footprint: Footprint): boolean {
+  return footprint.polygons.some((poly, i) => {
+    const b = footprint.bounds[i]!;
+    return xy[0] >= b[0]! - 1e-9 && xy[0] <= b[2]! + 1e-9 && xy[1] >= b[1]! - 1e-9 && xy[1] <= b[3]! + 1e-9 && pointInPolygon(xy, poly);
+  });
+}
+export type NodeCheckA = 'PASS' | 'FAIL' | 'UNASSESSED';
+/**
+ * Check A per node: each node is tested against the footprint of its own level, with the same rule checkInternal uses.
+ * A node on a level without a usable polygon is UNASSESSED; a node that does not transform into geographic range is FAIL,
+ * as checkInternal counts it outside.
+ */
+export function nodeCheckA(inputs: Pick<S03Inputs, 'navTransform' | 'drawingTransform' | 'nodes' | 'levels'>, project: Project): Map<number, NodeCheckA> {
+  const footprints = new Map(inputs.levels.map(level => [level.id, levelFootprint(level.polygons, project)] as const));
+  const result = new Map<number, NodeCheckA>();
+  for (const node of inputs.nodes) {
+    const footprint = footprints.get(node.levelId);
+    if (!footprint || !footprint.polygons.length) { result.set(node.sourceId, 'UNASSESSED'); continue; }
+    const ll = transformS03(node.native, inputs.navTransform, inputs.drawingTransform);
+    if (!lonLat(ll)) { result.set(node.sourceId, 'FAIL'); continue; }
+    result.set(node.sourceId, footprintContains(project(ll[1], ll[0]), footprint) ? 'PASS' : 'FAIL');
+  }
+  return result;
+}
 export function checkInternal(inputs: S03Inputs, project: Project, swapped = false) {
   const perLevel = inputs.levels.map(level => {
     const nodes = inputs.nodes.filter(n => n.levelId === level.id);
     const coverage = { features_total: level.featuresTotal, features_used: level.featuresUsed, features_excluded_unclosed_ring: level.featuresExcludedUnclosedRing,
       features_excluded_hole_outside_shell: level.featuresExcludedHoleOutsideShell, non_polygon_features_excluded: level.nonPolygonFeatures };
-    const polygons = level.polygons.map(poly => poly.map(ring => ring.map(([lon, lat]) => project(lat, lon))));
+    const footprint = levelFootprint(level.polygons, project), polygons = footprint.polygons;
     if (!polygons.length) {
       // Every polygon feature on this level was excluded as a source defect. Nothing is invented and the level stays visible.
       return [level.id, { ...coverage, node_count: nodes.length, polygon_count: 0, inside_count: null, inside_share: null,
         outside_count: null, outside_unprojectable_count: null, outside_edge_distance_m: residualStats([]),
         reason: 'No usable polygon: every polygon feature on this level was excluded for a source defect (SOURCE_DEFECT_UNCLOSED_RING or SOURCE_DEFECT_HOLE_OUTSIDE_SHELL); inside metrics are null.' }] as const;
     }
-    // Precomputed bboxes reduce the ground-level polygon checks without changing the closed-surface rule.
-    const bounds = polygons.map(poly => {
-      const outer = poly[0]!;
-      return [Math.min(...outer.map(p => p[0])), Math.min(...outer.map(p => p[1])), Math.max(...outer.map(p => p[0])), Math.max(...outer.map(p => p[1]))];
-    });
     let inside = 0, invalid = 0;
     const distances: number[] = [];
     for (const node of nodes) {
@@ -518,11 +548,7 @@ export function checkInternal(inputs: S03Inputs, project: Project, swapped = fal
       // The reversed transform can leave geographic space. No metric distance is asserted for such a point.
       if (!lonLat(ll)) { invalid++; continue; }
       const xy = project(ll[1], ll[0]);
-      const contained = polygons.some((poly, i) => {
-        const b = bounds[i]!;
-        return xy[0] >= b[0]! - 1e-9 && xy[0] <= b[2]! + 1e-9 && xy[1] >= b[1]! - 1e-9 && xy[1] <= b[3]! + 1e-9 && pointInPolygon(xy, poly);
-      });
-      if (contained) inside++;
+      if (footprintContains(xy, footprint)) inside++;
       else {
         let nearest = Infinity;
         for (const poly of polygons) nearest = Math.min(nearest, distanceToPolygonEdge(xy, poly));
