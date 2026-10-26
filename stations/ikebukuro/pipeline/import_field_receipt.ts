@@ -74,6 +74,7 @@ function updatePoi(poi: any, item: ReceiptItem, sourceId: string): any {
     const oldPhrase = note.lang === "ja" ? JA_SEARCH_ONLY : note.lang === "en" ? EN_SEARCH_ONLY : null;
     if (!sentence) return note;
     const text = typeof note.text === "string" ? note.text : "";
+    if (text.includes(sentence)) return note;
     return { ...note, text: text.includes(oldPhrase!) ? text.replace(oldPhrase!, sentence) : `${text}${text ? " " : ""}${sentence}` };
   }) : [];
   for (const [lang, sentence] of [["ja", sentenceJa], ["en", sentenceEn]] as const) {
