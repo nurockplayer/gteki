@@ -9,6 +9,7 @@ import { buildFloorIndex, noseDistances, wallFloorAttribute } from "./geomattrs.
 import { buildSigns, LOW_TEXEL_SCALE, type SignSpec } from "./signs.ts";
 import { type AccessFences, buildAccessFences } from "./fences.ts";
 import { type KitGraph, type KitManifest, loadKit } from "./kit.ts";
+import { type CatalogPlacement, lazyKitCatalog } from "./kit_catalog_loader.ts";
 import { type ColumnsFile, loadColumnKit } from "./kit_columns.ts";
 import { loadSignKit } from "./kit_signs.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
@@ -21,6 +22,7 @@ import signage from "./signage.json";
 import walkBridges from "./walk_bridges.json";
 import accessFences from "./access_fences.json";
 import kitManifest from "./kit/kit.json";
+import kitPlacements from "./kit_placements.json";
 import columnsFile from "./columns.json";
 import graph from "../gteki/graph.json";
 import litMeta from "../gteki/assets/ikebukuro_b1_lit.meta.json";
@@ -494,6 +496,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
 
   root.add(kit.build(THREE, env, toRenderer).group);
   root.add(columnKit.build(THREE, env, toRenderer).group);
+  // Surveyed stair/escalator dressing is visual only. Load after the attached scene's first frame, one GLB at a time.
+  const catalogKit = lazyKitCatalog(THREE, ctx, (kitPlacements as unknown as { placements: CatalogPlacement[] }).placements, low, root, env, toRenderer);
 
   // Low quality paints signs at LOW_TEXEL_SCALE (~168 px/m) instead of 300: under a third of the texture memory, still legible at phone size.
   const signs = buildSigns(THREE, (signage as { signs: SignSpec[] }).signs, toRenderer, ctx.renderer.capabilities.getMaxAnisotropy(), low ? LOW_TEXEL_SCALE : 1, ctx.renderer.capabilities.maxTextureSize,
@@ -524,7 +528,10 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     cameraBlockers: contextBlockers.meshes,
     spawnPoints,
     environment: { lighting: lightmap ? "scene" : "default", background: 0x0e0d0b, fog: { color: 0x1b1915, near: 25, far: low ? 120 : 180 }, exposure: 1.0 },
-    update: (dt, elapsed) => {
+    settled: () => catalogKit.settled(),
+    update: (dt, elapsed, camera) => {
+      catalogKit.start();
+      if (camera) catalogKit.update(camera);
       crowd.update(dt, elapsed);
       ambience?.update({ nearby: crowd.nearby(), openness: 0.8 });
       if (context && cameraTrack) {
@@ -548,6 +555,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       finishes.dispose();
       kit.dispose();
       columnKit.dispose();
+      catalogKit.dispose();
       signKit.dispose();
       signs.dispose();
       envTarget.dispose();
