@@ -12,10 +12,12 @@ updated: 2026-10-26 JST
 - `apps/web/src/ui/app.ts:83-1479` — class App, the whole shell.
 - `apps/web/src/ui/app.ts:131-161` — start(): builds the Explorer (click and guide callbacks), sets the panel, minimap and sheet elements, lists stations, opens the station named in the URL or the first real one.
 - `apps/web/src/ui/app.ts:165-215` — layout(): the DOM tree (viewport, panel, sheet, HUD, minimap, toast, credit footer).
+- `apps/web/src/ui/firstRun.ts:3-26` — FIRST_RUN_KEY, shouldShowFirstRun(), markFirstRunDone(), DEMO_PAIRS and demoPair().
 - `apps/web/src/ui/app.ts:233-266` — field(): one search combobox (from or to) with its note and results list.
 - `apps/web/src/ui/app.ts:283-353` — openStation(): loads a station through the registry, creates the router and search index, calls `Explorer.loadStation`, then restores from and to.
-- `apps/web/src/ui/app.ts:568-654` — renderResults(): typed hits or grouped, routable empty-query suggestions, recent picks, hints and tenant tags.
-- `apps/web/src/ui/app.ts:667-683` — setCombo(): combobox open state and ARIA.
+- `apps/web/src/ui/app.ts:594-682` — renderResults(): typed hits or grouped, routable empty-query suggestions, recent picks, hints and tenant tags.
+- `apps/web/src/ui/app.ts:694-710` — setCombo(): combobox open state and ARIA.
+- `apps/web/src/ui/app.ts:720-734` — syncPanelMascot(): shares the start_hint visibility condition with the first-visit guide card.
 - `apps/web/src/ui/app.ts:675-702` — setOrigin(), setDestination(), swap().
 - `apps/web/src/ui/app.ts:775-801` — computeRoute(): `routeBetween`, then the explorer's showRoute and the minimap's setRoute.
 - `apps/web/src/ui/app.ts:803-951` — renderSheet(), fillSheet(): the route sheet (steps, no-route text, hours, credits).

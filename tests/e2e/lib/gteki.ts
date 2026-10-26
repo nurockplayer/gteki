@@ -74,6 +74,8 @@ export function watch(page: Page): Diagnostics {
 
 /** Open a station through the public URL and wait until its scene (or its L0 fallback) is ready. */
 export async function openStation(page: Page, key: StationKey, query = ""): Promise<{ loadMs: number; phase: string }> {
+  // Keep first-visit onboarding out of specs unless a test opts into it explicitly.
+  await page.addInitScript(() => { try { localStorage.setItem("gteki.firstRunDone", "1"); } catch {} });
   await page.addInitScript(PROBE_SCRIPT);
   const t0 = Date.now();
   await page.goto(`/?station=${key}&lang=en${query}`);

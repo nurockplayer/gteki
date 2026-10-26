@@ -205,6 +205,13 @@ const STRINGS = {
     routeFound: (m: number, min: number) => `ルートが見つかりました：${m}m、約${min}分`,
     liveSeparator: "。",
     coverageStatus: { routable: "経路あり", visual_only: "表示のみ", unverified: "未確認", excluded: "対象外" } as Record<string, string>,
+    firstRun: {
+      step1: "『出発地』で今いる改札などを選ぶ",
+      step2: "『目的地』で行きたい場所を選ぶ",
+      step3: "ルートを確認して『ガイド開始』",
+      tryRoute: "ルートを試す",
+      close: "閉じる",
+    },
     /** Guide mascot lines (#132): fixed text per event kind, never interpolated with route facts. */
     mascot: {
       arrival: "着いたよ！おつかれさま！",
@@ -416,6 +423,13 @@ const STRINGS = {
     routeFound: (m: number, min: number) => `Route found: ${m} m, about ${min} minute${min === 1 ? "" : "s"}`,
     liveSeparator: ". ",
     coverageStatus: { routable: "routable", visual_only: "visual only", unverified: "unverified", excluded: "excluded" } as Record<string, string>,
+    firstRun: {
+      step1: "Pick where you are in “From” (e.g. a ticket gate)",
+      step2: "Pick where you want to go in “To”",
+      step3: "Check the route, then start the guide",
+      tryRoute: "Try a route",
+      close: "Close",
+    },
     /** Guide mascot lines (#132): fixed text per event kind, never interpolated with route facts. */
     mascot: {
       arrival: "We're here! Nice work!",
