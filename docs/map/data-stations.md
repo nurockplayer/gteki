@@ -1,7 +1,7 @@
 ---
 area: data/stations
 owner: data-research lead
-updated: 2026-10-26 20:40 JST
+updated: 2026-10-26 20:26 JST
 ---
 
 # Station data: Ikebukuro and Shinjuku
