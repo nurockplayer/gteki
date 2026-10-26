@@ -257,6 +257,8 @@ export interface S03Inputs {
   navTransform: Affine; drawingTransform: Affine; drawingId: number;
   nodes: S03Node[]; levels: S03Level[]; links: S03Link[]; sourceValues: Set<string>; sourceDefects: S03SourceDefect[];
   topology: { rings_checked: number; rings_skipped_large: number; hole_shell_touches: number };
+  /** The printed `facility` of each level-geometry feature, keyed `${levelId}:${featureId}` (a node's level and `gid`). */
+  facilities: ReadonlyMap<string, string>;
   navSha256: string; mapSha256: string;
 }
 /** Asserted comparison ordinals from WP7: source level label to our floor ordinal. Never a physical elevation; source zlevel is deliberately unused. */
@@ -345,6 +347,7 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
   };
   const horizontal = (positions: readonly (readonly number[])[]): Point2[] => positions.map(([lon, lat]) => [lon!, lat!] as Point2);
   const topology = { rings_checked: 0, rings_skipped_large: 0, hole_shell_touches: 0 };
+  const facilities = new Map<string, string>();
   const sourceDefects: S03SourceDefect[] = [];
   const levels: S03Level[] = (md.levels as unknown[]).map(raw => {
     if (!record(raw) || !id(raw.id) || !record(raw.properties) || typeof raw.properties.name !== 'string') fail(mapName, 'invalid level id/properties');
@@ -364,6 +367,14 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
       const rawFeatureId = (rawFeature as JsonObject).id;
       if (rawFeatureId !== undefined && !id(rawFeatureId)) fail(member, `feature ${featureIndex} has an invalid id`);
       const featureId = rawFeatureId === undefined ? null : rawFeatureId as number;
+      // The printed facility (stairs / escalator / elevator) is read for every feature, excluded ones included, because a node's gid names it.
+      const rawProperties = (rawFeature as JsonObject).properties;
+      const printedFacility = record(rawProperties) ? rawProperties.facility : undefined;
+      if (featureId !== null && typeof printedFacility === 'string') {
+        const key = `${level.id}:${featureId}`;
+        if (facilities.has(key) && facilities.get(key) !== printedFacility) fail(member, `feature ${featureId} carries two facilities`);
+        facilities.set(key, printedFacility);
+      }
       const geometry = (rawFeature as JsonObject).geometry as JsonObject;
       const parts: unknown[] = [];
       if (geometry.type === 'Polygon') parts.push(geometry.coordinates);
@@ -465,7 +476,7 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
     if (!Number.isSafeInteger(link.n1) || !Number.isSafeInteger(link.n2) || !nodeIds.has(link.n1) || !nodeIds.has(link.n2)) fail(navName, `link endpoints at index ${index} are not nodes`);
     return { sourceId: link.id, n1: link.n1, n2: link.n2, direction: link.d, dz: typeof link.dz === 'number' ? link.dz : null };
   });
-  return { navTransform, drawingTransform, drawingId, nodes, levels, links, sourceValues, sourceDefects, topology, navSha256: sha256(members.get(navName)!.data), mapSha256: sha256(members.get(mapName)!.data) };
+  return { navTransform, drawingTransform, drawingId, nodes, levels, links, sourceValues, sourceDefects, topology, facilities, navSha256: sha256(members.get(navName)!.data), mapSha256: sha256(members.get(mapName)!.data) };
 }
 
 /**
