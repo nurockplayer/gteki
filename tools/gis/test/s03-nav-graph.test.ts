@@ -17,7 +17,7 @@ const nav: Affine = [2, 0, 0, 2, 10, 20], drawing: Affine = [0.01, 0, 0, 0.01, 0
 const project = (lat: number, lon: number): Point2 => [lon, lat];
 const hash = (value: number | string): string => createHash('sha256').update(String(value)).digest('hex');
 /** A level with one rectangular footprint (GeoJSON lon/lat ring), or none when `ring` is null. */
-const level = (id: number, label: string, ordinal: number, ring: Point2[] | null): S03Level => ({ id, label, ordinal,
+const level = (id: number, label: string, ordinal: number, ring: Point2[] | null, z: number | null = null): S03Level => ({ id, label, ordinal, z,
   polygons: ring ? [[ring]] : [], nonPolygonFeatures: 0, memberSha256: hash(id), featuresTotal: ring ? 1 : 0, featuresUsed: ring ? 1 : 0,
   featuresExcludedUnclosedRing: 0, featuresExcludedHoleOutsideShell: 0, features: [] });
 const rect = (east: number, north: number): Point2[] => [[0, 0], [east, 0], [east, north], [0, north], [0, 0]];
@@ -36,17 +36,32 @@ const base = (): NavGraphInputs => ({
   nodes: [node(101, 11, [2, 3]), node(102, 11, [3, 3]), node(103, 12, [4, 3]), node(104, 11, [5, 3], 901),
     node(105, 11, [6, 3], 902), node(106, 64677, [7, 3], 903)],
   links: [link(201, 101, 102, 3), link(202, 102, 103, 1), link(203, 103, 104, 3), link(204, 104, 105, 2), link(205, 105, 106, 3)],
-  levels: [level(11, 'B1F', -1, rect(0.21, 1)), level(12, '1F', 1, rect(1, 1)), level(64677, '2F', 2, null)],
+  levels: [level(11, 'B1F', -1, rect(0.21, 1), -2), level(12, '1F', 1, rect(1, 1), 0), level(64677, '2F', 2, null, 1)],
   gateTags: new Map([[901, gate('poi:keio-gate:1', ['keio'], 'keio-new', '京王新線　京王新線口')]]),
   facilities: new Map(), crsVerified: false,
 });
 
 describe('S03 nav graph: nodes and edges come from v5_nav through the affine pair (synthetic only)', () => {
+  it('takes floor order from level id and z, not dz', () => {
+    const input = base();
+    input.links = input.links.map(entry => entry.sourceId === 201 ? { ...entry, dz: 3 } : entry);
+    const graph = buildNavGraph(input, project);
+    const sameLevel = graph.edges.find(edge => edge.link_id === 201)!;
+    expect(sameLevel.level_relation).toBe('same_level');
+    expect(sameLevel.reason_codes).not.toContain(PATH_REASON.CROSS_LEVEL_DEVICE_UNKNOWN);
+    for (const edge of graph.edges.filter(edge => edge.level_relation === 'cross_level'))
+      expect(edge.reason_codes).not.toContain(PATH_REASON.FLOOR_ORDINAL_UNVERIFIED);
+
+    const missingZ = base();
+    missingZ.levels = missingZ.levels.map(entry => entry.id === 11 ? { ...entry, z: null } : entry);
+    expect(buildNavGraph(missingZ, project).edges.find(edge => edge.link_id === 201)!.reason_codes)
+      .toContain(PATH_REASON.FLOOR_ORDINAL_UNVERIFIED);
+  });
   it('applies the nav then drawing affine and projects into station ENU', () => {
     const graph = buildNavGraph(base(), project);
     // transformS03([2, 3]) = nav ([14, 26]) then drawing ([0.14, 0.26]); project returns [lon, lat].
     expect(graph.nodes.map(entry => entry.source_id)).toEqual([101, 102, 103, 104, 105]);
-    expect(graph.nodes[0]).toMatchObject({ source_id: 101, level_id: 11, level_label: 'B1F', floor_ordinal: -1, east_m: 0.14, north_m: 0.26 });
+    expect(graph.nodes[0]).toMatchObject({ source_id: 101, level_id: 11, level_label: 'B1F', level_z: -2, east_m: 0.14, north_m: 0.26 });
     expect(graph.nodes[3]!.east_m).toBeCloseTo(0.20, 12);
     expect(graph.nodes[0]!.lon).toBeCloseTo(0.14, 12);
     expect(graph.nodes[0]!.lat).toBeCloseTo(0.26, 12);
@@ -103,7 +118,7 @@ describe('S03 nav graph: CRS_UNCONFIRMED, device, ONE_WAY and SELF_LOOP (synthet
     expect(codesOf(true).some(codes => codes.includes(PATH_REASON.CRS_UNCONFIRMED))).toBe(false);
     // Every other code stays on the edge when the frame is verified.
     expect(buildNavGraph({ ...base(), crsVerified: true }, project).edges.find(edge => edge.link_id === 201)!.reason_codes)
-      .toEqual([PATH_REASON.CHECK_B_RESIDUAL_UNVERIFIED, PATH_REASON.FLOOR_ORDINAL_UNVERIFIED]);
+      .toEqual([PATH_REASON.CHECK_B_RESIDUAL_UNVERIFIED]);
   });
   it('sets the device and clears CROSS_LEVEL_DEVICE_UNKNOWN where both ends print the same facility, and keeps it where they differ', () => {
     // Link 203 joins node 103 (gid 910, 1F) to node 104 (gid 901, B1F): the same facility clears the code, a different one keeps it.
@@ -213,7 +228,7 @@ describe('S03 nav graph: Path GeoJSON is never an input', () => {
 });
 
 const facts = (): NavGraphDigestFacts => ({ policy_version: S03_NAV_GRAPH_POLICY, tool_input_sha256: 'a'.repeat(64), zip_sha256: 'b'.repeat(64),
-  station_json_sha256: 'c'.repeat(64), floor_mapping_sha256: 'd'.repeat(64), gate_source_sha256: 'e'.repeat(64), crs: 'UNKNOWN',
+  station_json_sha256: 'c'.repeat(64), floor_mapping_sha256: 'd'.repeat(64), floor_rule: 'test', bundle_floor_tie: 'UNVERIFIED', gate_source_sha256: 'e'.repeat(64), crs: 'UNKNOWN',
   publish_gate: 'CONDITIONAL', sources_yaml_sha256: 'f'.repeat(64), crs_verification: 'UNVERIFIED' });
 const receipt = (result = buildNavGraph(base(), project)) => {
   const identity = navGraphIdentity(facts());

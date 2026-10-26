@@ -13,7 +13,7 @@ import { PATH_REASON } from '../src/s03-paths.js';
 const sha256 = (value: string | Buffer): string => createHash('sha256').update(value).digest('hex');
 const gate = (poiId: string, operators: string[]): S03GateTag => ({ poi_id: poiId, operator_ids: operators, line: null, name: poiId });
 const NODE = (sourceId: number, gateTag: S03GateTag | null) => ({
-  source_id: sourceId, level_id: 11, level_label: 'B1F', floor_ordinal: -1, lon: 0, lat: 0, east_m: sourceId * 10, north_m: 0, gate: gateTag,
+  source_id: sourceId, level_id: 11, level_label: 'B1F', level_z: -2, lon: 0, lat: 0, east_m: sourceId * 10, north_m: 0, gate: gateTag,
 });
 const EDGE = (linkId: number, from: number, to: number, length: number, reason_codes: string[] = [], direction = 3) =>
   ({ link_id: linkId, from_node: from, to_node: to, direction, dz_m: null, length_m: length, level_relation: 'same_level' as const, reason_codes });
