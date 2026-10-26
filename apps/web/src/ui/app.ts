@@ -10,7 +10,7 @@ import { firstStopFor, guideKeyActionGuarded, instructionStartsM, jumpTarget, St
 import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, paceReadout, polylineLengthM, type GuideTierId, type PaceSpan } from "../explorer/guidePace.ts";
 import { coverageText, initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { printedHours } from "../hours.ts";
-import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
+import { listStations, PRIVATE_BUILD, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
 import { isUnlocatedShop, noRouteText, poiNoteText } from "./noRouteText.ts";
 import { categoriesIn } from "./categoryFilter.ts";
@@ -178,6 +178,11 @@ export class App {
     const top = el("header", "topbar");
     const brand = el("div", "brand");
     brand.append(el("span", "logo", "GTEki"), el("span", "tagline", this.t.tagline));
+    if (PRIVATE_BUILD) {
+      const badge = el("span", "private-badge", "PRIVATE");
+      badge.title = "非公開ビルド（OD-35）";
+      brand.append(badge);
+    }
     this.ui.stationSelect.setAttribute("aria-label", this.t.station);
     this.ui.stationSelect.addEventListener("change", () => {
       const entry = this.s.entries.find((e) => e.key === this.ui.stationSelect.value);

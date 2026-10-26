@@ -42,13 +42,30 @@ describe("station discovery", () => {
     expect(found[0]!.gtekiDir.startsWith(a)).toBe(true);
   });
 
+  it("selects matching overlay contract data but keeps scene and assets public", () => {
+    const root = tree();
+    const overlay = fs.mkdtempSync(path.join(os.tmpdir(), "gteki-overlay-"));
+    const alpha = path.join(overlay, "alpha", "gteki");
+    const ghost = path.join(overlay, "ghost", "gteki");
+    fs.mkdirSync(alpha, { recursive: true });
+    fs.mkdirSync(ghost, { recursive: true });
+    for (const name of ["station.json", "graph.json", "pois.json"]) fs.writeFileSync(path.join(alpha, name), "{}");
+    fs.writeFileSync(path.join(ghost, "station.json"), "{}");
+    const found = discoverStations([root], overlay);
+    expect(found.map((s) => s.dir)).toEqual(["alpha"]);
+    expect(found[0]!.dataDir).toBe(fs.realpathSync(alpha));
+    expect(found[0]!.scene).toBe(path.join(root, "alpha", "gteki", "scene.ts"));
+    expect(found[0]!.gtekiDir).toBe(path.join(root, "alpha", "gteki"));
+    expect(discoverStations([root])[0]!.dataDir).toBe(fs.realpathSync(path.join(root, "alpha", "gteki")));
+  });
+
   it("finds the optional brand directory but never treats it as an asset (#419)", () => {
     const root = tree();
     expect(discoverStations([root])[0]!.tenants).toBeNull();
     const file = path.join(root, "alpha", "gteki", "tenants.json");
     fs.writeFileSync(file, JSON.stringify({ schema: "gteki.tenants/0.1", tenants: [] }));
     const found = discoverStations([root]);
-    expect(found[0]!.tenants).toBe(file);
+    expect(found[0]!.tenants).toBe(fs.realpathSync(file));
     expect(found[0]!.assets).not.toContain("tenants.json");
   });
 });

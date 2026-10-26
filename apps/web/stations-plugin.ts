@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { Plugin } from "vite";
 // Relative (not @gteki/schema) so Vite's config loader bundles the TypeScript source.
-import { dataFileFactsOnlySources, parseStationFiles, validateBundle } from "../../packages/schema/src/index.ts";
+import { dataFileFactsOnlySources, parseStationFiles, PUBLICATION_RULE_CODES, validateBundle } from "../../packages/schema/src/index.ts";
 import { isProjectArtModule, loadReuseAnnotations } from "./reuseResolve.ts";
 
 /**
@@ -17,6 +17,8 @@ export interface DiscoveredStation {
   /** Real path of stations/<dir>/, kept separate from gtekiDir because gteki/ may itself be a symlink. */
   folder: string;
   gtekiDir: string;
+  /** Real path containing station contract JSON; public when no private overlay is selected. */
+  dataDir: string;
   scene: string | null;
   /** The optional gteki/tenants.json (a store brand directory, #419). */
   tenants: string | null;
@@ -26,15 +28,6 @@ export interface DiscoveredStation {
 /** Emitted code and stylesheets (and their maps); every other emitted file is data that needs a declared origin. */
 const CODE_EXT = /\.([cm]?[jt]sx?|css|scss|sass|less|html?|map)$/i;
 const ASSET_EXT = /\.(glb|gltf|bin|png|jpe?g|webp|ktx2|hdr|ogg|mp3|m4a|json)$/i;
-/**
- * Validation rules that decide what may be published. Validation exempts synthetic fixtures from them;
- * a production build never does, so nothing derived from a non-reusable source ships.
- */
-const PUBLICATION_RULES = new Set([
-  "node.source.rights", "edge.geometry.rights", "floor.elevation.rights", "poi.position.rights",
-  "coverage.polygon.rights", "asset.rights", "asset.source", "data.rights", "data.source", "data.path", "data.dup", "data.derivation",
-  "source.attribution", "source.license", "source.url", "source.override", "source.decision",
-]);
 /** The contract files are loaded as data, not served as assets. */
 const CONTRACT_FILES = new Set(["station.json", "graph.json", "pois.json", "tenants.json"]);
 
@@ -57,7 +50,7 @@ function walk(dir: string, fence: string, base = dir, depth = 0): string[] {
   });
 }
 
-export function discoverStations(roots: string[]): DiscoveredStation[] {
+export function discoverStations(roots: string[], overlay: string | null = null): DiscoveredStation[] {
   const seen = new Set<string>();
   const found: DiscoveredStation[] = [];
   for (const root of roots) {
@@ -67,9 +60,11 @@ export function discoverStations(roots: string[]): DiscoveredStation[] {
       if (seen.has(dir) || !fs.existsSync(path.join(gtekiDir, "station.json"))) continue;
       const folder = fs.realpathSync(path.join(root, dir));
       seen.add(dir);
+      const overlayDir = overlay ? path.join(overlay, dir, "gteki") : null;
+      const dataDir = overlayDir && fs.existsSync(path.join(overlayDir, "station.json")) ? fs.realpathSync(overlayDir) : fs.realpathSync(gtekiDir);
       const scene = ["scene.ts", "scene.js"].map((f) => path.join(gtekiDir, f)).find((f) => fs.existsSync(f)) ?? null;
-      const tenants = path.join(gtekiDir, "tenants.json");
-      found.push({ dir, folder, gtekiDir, scene, tenants: fs.existsSync(tenants) ? tenants : null, assets: walk(gtekiDir, folder) });
+      const tenants = path.join(dataDir, "tenants.json");
+      found.push({ dir, folder, gtekiDir, dataDir, scene, tenants: fs.existsSync(tenants) ? tenants : null, assets: walk(gtekiDir, folder) });
     }
   }
   return found;
@@ -104,16 +99,16 @@ export function readOptionalTenants(gtekiDir: string): unknown {
  * station fails `parseStationFiles`, declares a file that isn't there, or holds an asset file it
  * doesn't declare (rights are only checked for declared assets).
  */
-export function publishableAssets(stations: DiscoveredStation[]): Map<string, Set<string>> {
+export function publishableAssets(stations: DiscoveredStation[], opts: { privateBuild?: boolean } = {}): Map<string, Set<string>> {
   const failures: string[] = [];
   const allowed = new Map<string, Set<string>>();
   for (const s of stations) {
     const read = (name: string): unknown => {
-      try { return JSON.parse(fs.readFileSync(path.join(s.gtekiDir, name), "utf8")); } catch { return undefined; }
+      try { return JSON.parse(fs.readFileSync(path.join(s.dataDir, name), "utf8")); } catch { return undefined; }
     };
     // Only a missing file is "no directory"; null or any other non-object content fails the shape check.
-    const tenants = readOptionalTenants(s.gtekiDir);
-    const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), tenants);
+    const tenants = readOptionalTenants(s.dataDir);
+    const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), tenants, { privateTier: opts.privateBuild });
     if (!parsed.ok) {
       const errors = parsed.issues.filter((i) => i.level === "error");
       failures.push(`${s.dir}: ${errors.slice(0, 5).map((i) => `${i.code}${i.ref ? ` (${i.ref})` : ""}`).join(", ")}${errors.length > 5 ? ` and ${errors.length - 5} more` : ""}`);
@@ -121,8 +116,8 @@ export function publishableAssets(stations: DiscoveredStation[]): Map<string, Se
     }
     // Publication applies the rights rules to every station, synthetic or not.
     const asPublished = { ...parsed.bundle, station: { ...parsed.bundle.station, synthetic: false } };
-    for (const i of validateBundle(asPublished))
-      if (i.level === "error" && PUBLICATION_RULES.has(i.code)) failures.push(`${s.dir}: ${i.code}${i.ref ? ` (${i.ref})` : ""}: ${i.message}`);
+    if (!opts.privateBuild) for (const i of validateBundle(asPublished))
+      if (i.level === "error" && PUBLICATION_RULE_CODES.has(i.code)) failures.push(`${s.dir}: ${i.code}${i.ref ? ` (${i.ref})` : ""}: ${i.message}`);
     const declared = new Set((parsed.bundle.assets ?? []).flatMap((a) => [a.uri, ...(a.uriMobile ? [a.uriMobile] : []), ...(a.files ?? [])]));
     const found = new Set(s.assets);
     const missing = [...declared].filter((f) => !found.has(f));
@@ -182,7 +177,7 @@ export function declaredStationFiles(stations: DiscoveredStation[]): DeclaredSta
   return stations.map((s) => {
     const folder = s.folder;
     let manifest: { assets?: { uri?: unknown; uriMobile?: unknown; files?: unknown }[]; dataFiles?: { path?: unknown }[] } = {};
-    try { manifest = JSON.parse(fs.readFileSync(path.join(s.gtekiDir, "station.json"), "utf8")); } catch { /* invalid: publishableAssets refuses it */ }
+    try { manifest = JSON.parse(fs.readFileSync(path.join(s.dataDir, "station.json"), "utf8")); } catch { /* invalid: publishableAssets refuses it */ }
     const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
     const real = (p: string) => { try { return fs.realpathSync(p); } catch { return null; } };
     const declared = new Set<string>();
@@ -322,13 +317,13 @@ export function wrappedStationData(
  * One audit line per declared data file that cites facts-only sources (the #186/#26 allowance), for the build log.
  * Stations that fail to parse are skipped here; `publishableAssets` is what refuses them.
  */
-export function factsOnlyDataLines(stations: DiscoveredStation[]): string[] {
+export function factsOnlyDataLines(stations: DiscoveredStation[], privateBuild = false): string[] {
   return stations.flatMap((s) => {
     const read = (name: string): unknown => {
-      try { return JSON.parse(fs.readFileSync(path.join(s.gtekiDir, name), "utf8")); } catch { return undefined; }
+      try { return JSON.parse(fs.readFileSync(path.join(s.dataDir, name), "utf8")); } catch { return undefined; }
     };
-    const tenants = readOptionalTenants(s.gtekiDir);
-    const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), tenants);
+    const tenants = readOptionalTenants(s.dataDir);
+    const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), tenants, { privateTier: privateBuild });
     if (!parsed.ok) return [];
     return dataFileFactsOnlySources(parsed.bundle).map((d) => `[gteki] ${s.dir} ${d.path} cites facts-only: ${d.factsOnlySourceIds.join(", ")}`);
   });
@@ -345,7 +340,9 @@ export function inlineDataGateMode(env: Record<string, string | undefined> = pro
 const VIRTUAL = "virtual:gteki-stations";
 const RESOLVED = "\0" + VIRTUAL;
 
-export function gtekiStations(roots: string[]): Plugin {
+export function gtekiStations(roots: string[], opts: { overlay?: string | null } = {}): Plugin {
+  const overlay = opts.overlay ?? null;
+  const privateBuild = Boolean(overlay);
   const fsPath = (p: string) => JSON.stringify(p.split(path.sep).join("/"));
   let serve = false;
   let appRoot = "";
@@ -371,22 +368,22 @@ export function gtekiStations(roots: string[]): Plugin {
     /** Audit trail: which declared data files cite facts-only sources, once per build. */
     buildStart() {
       if (serve) return;
-      for (const line of factsOnlyDataLines(discoverStations(roots))) info(line);
+      for (const line of factsOnlyDataLines(discoverStations(roots, overlay), privateBuild)) info(line);
     },
     resolveId(id) {
       return id === VIRTUAL ? RESOLVED : null;
     },
     load(id) {
       if (id !== RESOLVED) return null;
-      const stations = discoverStations(roots);
+      const stations = discoverStations(roots, overlay);
       // A production build publishes what it emits: only valid stations, and only their declared files.
-      const published = serve ? null : publishableAssets(stations);
+      const published = serve ? null : publishableAssets(stations, { privateBuild });
       if (published) {
         declaredReal = new Set(stations.flatMap((s) => [...(published.get(s.dir) ?? [])].map((f) => fs.realpathSync(path.join(s.gtekiDir, f)))));
       }
       const lines = ["export const stations = ["];
       for (const s of stations) {
-        const f = (name: string) => fsPath(path.join(s.gtekiDir, name));
+        const f = (name: string) => fsPath(path.join(s.dataDir, name));
         const files = published ? s.assets.filter((a) => published.get(s.dir)?.has(a)) : s.assets;
         const assets = files.map((a) => `${JSON.stringify(a)}: ${assetLoader(path.join(s.gtekiDir, a))}`);
         lines.push(`  {
@@ -400,6 +397,7 @@ export function gtekiStations(roots: string[]): Plugin {
   },`);
       }
       lines.push("];");
+      lines.push(`export const privateBuild = ${privateBuild};`);
       return lines.join("\n");
     },
     /**
@@ -410,7 +408,7 @@ export function gtekiStations(roots: string[]): Plugin {
      */
     buildEnd(error) {
       if (serve || error) return;
-      const stations = discoverStations(roots);
+      const stations = discoverStations(roots, overlay);
       const ids = [...this.getModuleIds()];
       const graph = new Map<string, readonly string[]>();
       for (const id of ids) {
@@ -446,8 +444,10 @@ export function gtekiStations(roots: string[]): Plugin {
      */
     generateBundle(_options, bundle) {
       if (serve) return;
+      if (privateBuild) this.emitFile({ type: "asset", fileName: "private-build.txt", source: "GTEki private build (OD-35). Do not deploy.\n" });
       const refused = new Set<string>();
       for (const output of Object.values(bundle)) {
+        if (output.fileName === "private-build.txt") continue;
         // Everything but code and stylesheets is data (svg, gif, avif, fonts, wasm, …), whatever its extension.
         if (output.type !== "asset" || CODE_EXT.test(output.fileName)) continue;
         const originals = (output.originalFileNames ?? []).filter((o) => !CODE_EXT.test(o.split("?")[0]!));
@@ -462,13 +462,16 @@ export function gtekiStations(roots: string[]): Plugin {
     },
     configureServer(server) {
       for (const root of roots) if (fs.existsSync(root)) server.watcher.add(root);
+      if (overlay && fs.existsSync(overlay)) server.watcher.add(overlay);
       const invalidate = (file: string) => {
-        if (!roots.some((r) => file.startsWith(r)) || !/station\.json$|scene\.[jt]s$|assets/.test(file)) return;
+        const watched = roots.some((r) => file.startsWith(r)) || Boolean(overlay && file.startsWith(overlay));
+        if (!watched || !/station\.json$|graph\.json$|pois\.json$|tenants\.json$|scene\.[jt]s$|assets/.test(file)) return;
         const mod = server.moduleGraph.getModuleById(RESOLVED);
         if (mod) server.moduleGraph.invalidateModule(mod);
         server.ws.send({ type: "full-reload" });
       };
       server.watcher.on("add", invalidate);
+      server.watcher.on("change", invalidate);
       server.watcher.on("unlink", invalidate);
     },
   };

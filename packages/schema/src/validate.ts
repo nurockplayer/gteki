@@ -9,6 +9,12 @@ export interface ValidationIssue {
   ref?: string;
 }
 
+export const PUBLICATION_RULE_CODES: ReadonlySet<string> = new Set([
+  "node.source.rights", "edge.geometry.rights", "floor.elevation.rights", "poi.position.rights",
+  "coverage.polygon.rights", "asset.rights", "asset.source", "data.rights", "data.source", "data.path", "data.dup", "data.derivation",
+  "source.attribution", "source.license", "source.url", "source.override", "source.decision",
+]);
+
 const ROUTABLE_MODES = new Set(["walk", "stairs", "escalator", "elevator", "ramp", "moving_walkway", "gate"]);
 const VERTICAL_MODES = new Set(["stairs", "escalator", "elevator", "ramp"]);
 const NODE_KINDS = new Set(["junction", "exit", "ticket_gate", "platform", "elevator", "stair_end", "escalator_end", "ramp_end", "facility", "unknown"]);

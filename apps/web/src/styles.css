@@ -45,6 +45,7 @@ button, input, select { font: inherit; color: inherit; }
 .topbar > * { pointer-events: auto; }
 .brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
 .logo { font-weight: 800; letter-spacing: 0.04em; font-size: 20px; color: var(--accent); text-shadow: 0 0 18px rgba(94, 240, 255, 0.45); }
+.private-badge { color: #ffb2b2; border: 1px solid #ff6666; border-radius: 999px; padding: 2px 6px; font-size: 9px; font-weight: 800; letter-spacing: 0.08em; line-height: 1.2; }
 .tagline { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .station-select {
   margin-left: auto; max-width: 46vw; padding: 8px 12px; border-radius: 10px;

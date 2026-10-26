@@ -20,7 +20,7 @@ import sjkPois from "../../../../stations/shinjuku/gteki/pois.json" with { type:
 import sjkTenants from "../../../../stations/shinjuku/gteki/tenants.json" with { type: "json" };
 
 vi.mock("../explorer/explorer.ts", () => ({ Explorer: class {} }));
-vi.mock("../registry.ts", () => ({ listStations: vi.fn(), StationLoadError: class extends Error {} }));
+vi.mock("../registry.ts", () => ({ listStations: vi.fn(), PRIVATE_BUILD: false, StationLoadError: class extends Error {} }));
 import { App } from "./app.ts";
 
 type Harness = {
