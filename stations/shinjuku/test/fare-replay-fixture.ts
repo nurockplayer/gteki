@@ -31,7 +31,7 @@ export function accessFixture(width: number, publicBeyond: boolean, restricted =
   const wall = new THREE.Mesh(geometry, material); wall.name = "wall collider (invisible)";
   const root = new THREE.Group(); root.add(floor, wall); root.updateMatrixWorld(true);
   const scene = { root, walkable: [floor], colliders: [wall], walls, dispose() {} } as StationScene;
-  const built: BuiltStation = { root, world, layout, propWalls: [fence], escalators: [], signs: [], levelGroups: new Map(), update() {}, dispose() {}, trainStatus: () => [] };
+  const built: BuiltStation = { root, world, layout, propWalls: [fence], escalators: [], signs: [], identityBoards: [], levelGroups: new Map(), update() {}, dispose() {}, trainStatus: () => [] };
   return { scene, built, plan, fence, dispose() { floor.geometry.dispose(); geometry.dispose(); material.dispose(); } };
 }
 
