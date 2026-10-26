@@ -14,8 +14,8 @@ updated: 2026-10-26 JST
 - `apps/web/src/ui/app.ts:165-215` — layout(): the DOM tree (viewport, panel, sheet, HUD, minimap, toast, credit footer).
 - `apps/web/src/ui/app.ts:233-266` — field(): one search combobox (from or to) with its note and results list.
 - `apps/web/src/ui/app.ts:283-353` — openStation(): loads a station through the registry, creates the router and search index, calls `Explorer.loadStation`, then restores from and to.
-- `apps/web/src/ui/app.ts:563-622` — renderResults(): search hits (`this.s.search.search`) rendered as options with tenant tags.
-- `apps/web/src/ui/app.ts:634-650` — setCombo(): combobox open state and ARIA.
+- `apps/web/src/ui/app.ts:568-654` — renderResults(): typed hits or grouped, routable empty-query suggestions, recent picks, hints and tenant tags.
+- `apps/web/src/ui/app.ts:667-683` — setCombo(): combobox open state and ARIA.
 - `apps/web/src/ui/app.ts:675-702` — setOrigin(), setDestination(), swap().
 - `apps/web/src/ui/app.ts:775-801` — computeRoute(): `routeBetween`, then the explorer's showRoute and the minimap's setRoute.
 - `apps/web/src/ui/app.ts:803-951` — renderSheet(), fillSheet(): the route sheet (steps, no-route text, hours, credits).
@@ -37,6 +37,7 @@ updated: 2026-10-26 JST
 - `apps/web/src/ui/live.ts:25-36` — routeLiveMessage(); `39-41` searchLiveMessage(); `49-71` class LiveRegion, announce().
 - `apps/web/src/ui/mascot.ts:51-82` — mascotLine(); `141-224` class MascotSlot.
 - `apps/web/src/ui/categoryFilter.ts:13-16` — categoriesIn(), the shop category filter's options.
+- `apps/web/src/ui/emptySuggestions.ts:3-8` — SuggestGroup types and from/to category order; `11-41` emptySuggestions(); `44-58` pushRecent(), readRecent(), writeRecent(); `64-69` exampleQueries().
 - `apps/web/src/ui/tenantDisplay.ts:11-27` — tenantLabel(), tenantResultTags().
 - `apps/web/src/ui/noRouteText.ts:6-28` — isUnlocatedShop(), poiNoteText(), noRouteText().
 - `apps/web/src/ui/motion.ts:11` — watchReducedMotion(), the reduced-motion query.

@@ -30,6 +30,7 @@ import { StationIdentityView } from "./identityCard.ts";
 import { RailRideDemo } from "./railRideDemo.ts";
 import { shouldHandleGuideKey } from "./railKeyGuard.ts";
 import { Minimap } from "./minimap.ts";
+import { emptySuggestions, exampleQueries, pushRecent, readRecent, writeRecent } from "./emptySuggestions.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -60,6 +61,10 @@ interface State {
 }
 
 const GUIDE_TIER_KEY = "gteki.guideTier";
+
+function safeStorage(): Storage | null {
+  try { return localStorage; } catch { return null; }
+}
 
 function readGuideTier(): GuideTierId {
   try {
@@ -568,9 +573,20 @@ export class App {
     const q = input.value.trim();
     // The category filter narrows both lists to one POI category (#213); no filter searches every category.
     const categories = this.s.filter ? [this.s.filter] : undefined;
+    const groups = q ? null : emptySuggestions(this.s.loaded.bundle.pois, which, {
+      filter: this.s.filter, recentIds: readRecent(safeStorage(), this.s.entry!.key),
+    });
+    const groupHeaders = new Map<number, string>();
+    let suggestionIndex = 0;
+    for (const group of groups ?? []) {
+      groupHeaders.set(suggestionIndex, group.key === "recent"
+        ? this.t.suggestRecent
+        : which === "from" ? this.t.suggestPopularFrom : this.t.suggestPopularTo);
+      suggestionIndex += group.pois.length;
+    }
     const hits: SearchHit[] = q
       ? this.s.search.search(q, { limit: 8, lang: this.s.lang, categories })
-      : this.s.loaded.bundle.pois.filter((poi) => !this.s.filter || poi.category === this.s.filter).slice(0, 8).map((poi) => ({ poi, score: 0, matched: "", routable: poi.connectorNodeIds.length > 0 }));
+      : (groups ?? []).flatMap((group) => group.pois.map((poi) => ({ poi, score: 0, matched: "", routable: true })));
     this.ui.live.announce(searchLiveMessage(this.t, hits.length));
     if (hits.length === 0) {
       const none = el("div", "result empty", this.t.noResults);
@@ -582,6 +598,13 @@ export class App {
       return;
     }
     hits.forEach((h, i) => {
+      const groupHeader = groupHeaders.get(i);
+      if (groupHeader) {
+        const header = el("div", "result-group", groupHeader);
+        header.setAttribute("role", "presentation");
+        header.setAttribute("aria-hidden", "true");
+        box.append(header);
+      }
       const b = el("button", `result cat-${h.poi.category}${h.routable ? "" : " disabled"}`);
       const dot = el("span", "dot");
       dot.setAttribute("aria-hidden", "true");
@@ -612,12 +635,23 @@ export class App {
       b.addEventListener("click", () => {
         this.closeResults(which);
         input.blur();
+        const key = this.s.entry?.key;
+        if (key) writeRecent(safeStorage(), key, pushRecent(readRecent(safeStorage(), key), h.poi.id));
         // A brand is not a destination of its own: the store carries the route (#419).
         if (which === "from") this.setOrigin({ kind: "poi", poi: h.poi });
         else this.setDestination(h.poi, h.tenant ? this.findTenant(h.tenant.id) : null);
       });
       box.append(b);
     });
+    // The examples name other categories, so they are left out under a category filter.
+    if (!q && !this.s.filter) {
+      const examples = exampleQueries(this.s.loaded.bundle.pois, this.s.lang, this.t.toiletWord);
+      if (examples.length) {
+        const hint = el("div", "result-hint", this.t.suggestTry(examples.join(this.s.lang === "ja" ? "、" : ", ")));
+        hint.setAttribute("role", "presentation");
+        box.append(hint);
+      }
+    }
     this.setCombo(which, { open: true, count: hits.length, active: -1 });
   }
 
