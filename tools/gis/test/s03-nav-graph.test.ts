@@ -184,9 +184,9 @@ describe('S03 nav graph: held receipt (synthetic only)', () => {
 /** The held graph must not reach anything that ships: these files are pinned at their shipped state. */
 const SHIPPED = {
   'stations/shinjuku/gteki/graph.json': '06d6193124f0dc6d44a663c5a1bfdff224bcd0d71114fc303c154501555863be',
-  'stations/shinjuku/gteki/station.json': '6d8aa6c738a336d47e9f610b776509bbb0a118ea3decb9149ea09618ca970e58',
-  'stations/shinjuku/gteki/pois.json': '971ac9f302960eaeb17fe0eb3a0548957413fc0a1de5d2a5064b8ec1cedde177',
-  'stations/shinjuku/data/import-report.json': 'b202aa9287f2cef6c510046c8e74e841384fd13f5ebafe6a69c69eaee8d50d94',
+  'stations/shinjuku/gteki/station.json': 'c6162a11dbca27befb9870bb0c8a0727bc7c594901f296dec20d65ecb8c3350d',
+  'stations/shinjuku/gteki/pois.json': '7c5677817782ee0ec22496da05e2b3a0caaafced4fef845b40b046706903efb8',
+  'stations/shinjuku/data/import-report.json': '555b6f4b008fbb53647d35f2b3181b5f7ac57f9af83c396e369534487c16b5f8',
 } as const;
 
 describe('S03 nav graph: the held document stays in the private store', () => {

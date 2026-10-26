@@ -245,6 +245,16 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        floor range; no floor-guide wording, shop list, operator name (the
        terms record does not print it), position, floor id, connector or
        route.
+       京王百貨店 / 高島屋タイムズスクエア / サブナード (東京メトロ 新宿駅・
+       新宿三丁目駅 出入口・周辺地図, exit.json; facts only under OD-34 and the
+       #26 decision of 2026-10-21 for Tokyo Metro station pages): 3 more
+       search-only shop POIs (#539). Each keeps only the facility label the
+       exit map prints; the map prints no floor and no operator, so the notes
+       carry neither, and no page wording, position, floor id, connector or
+       route is taken. 高島屋タイムズスクエア is the printed complex name, not
+       the department store's own name, and the note says so. Credit as
+       recorded: 「東京メトロ 新宿駅・新宿三丁目駅 出入口・周辺地図 (facts
+       only; not reproduced)」.
        Line POI data (lines-lead WP2/WP3, 2026-10-24):
        docs/research/lines/ikebukuro-line-pois.json and its contract. Gate,
        lift, escalator and exit names and end pairs as printed on Tokyo Metro
