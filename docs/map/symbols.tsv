@@ -453,6 +453,8 @@ gteki:test:heavy:box	script	package.json	12
 gteki:check	script	package.json	13
 gteki:dev	script	package.json	14
 gteki:build	script	package.json	15
+gteki:build:private	script	package.json	16
+gteki:dev:private	script	package.json	17
 @gteki/cli:test	script	packages/cli/package.json	7
 exportFixture	function	packages/cli/src/export-fixture.ts	7
 parseArgs	function	packages/cli/src/route.ts	30
@@ -2020,6 +2022,10 @@ ZipReadOptions	type	tools/gis/src/zip.ts	10
 readZip	function	tools/gis/src/zip.ts	25
 repoRoot	const	tools/map/gen-symbols.mjs	9
 generateSymbols	function	tools/map/gen-symbols.mjs	148
+StationFiles	interface	tools/private-overlay/build-overlay.ts	7
+Additions	interface	tools/private-overlay/build-overlay.ts	8
+mergeStation	function	tools/private-overlay/build-overlay.ts	35
+buildOverlay	function	tools/private-overlay/build-overlay.ts	101
 Obj	interface	tools/qa/avatar-baseline/procedural.ts	9
 Motion	interface	tools/qa/avatar-baseline/procedural.ts	20
 AvatarUnderTest	interface	tools/qa/avatar-baseline/procedural.ts	22
