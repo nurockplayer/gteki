@@ -149,3 +149,4 @@ By the login rule, **no file of S4 was requested**. So S4 cannot supply S03's CR
 3. **Floor tie:** field item 30 gets a look-for (the 「大江戸線改札B」 name) as the only seam evidence. The S03 ↔ bundle floor mapping stays UNVERIFIED until then.
 4. **§2.2 and §3.1 (46 links):** locate privately, then decide whether any becomes a field item. They do not block routing inside S03 levels once the CRS is ruled, but each still carries its code.
 5. **S4:** recorded GAP; Owner decision on registration.
+6. **Check B control scouting (2026-10-26 18:30 JST):** [independent-control findings](s03-check-b-control-2026-10-26.md): Metro exit names have no coordinates; PLATEAU/KSJ station geometry has no exact S03 feature-name match; 0 eligible measured pairs, residual statistics N/A, no supported threshold. `CHECK_B_RESIDUAL_UNVERIFIED` stays for the director's ruling.
