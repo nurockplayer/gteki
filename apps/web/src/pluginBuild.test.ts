@@ -109,6 +109,38 @@ describe("production build publication allowlist", () => {
     await expect(run(p)).rejects.toThrow(/asset\.source \(b1\): asset without source provenance/);
   }, 30_000);
 
+  it("builds private overlay contract data and keeps the public rights refusal", async () => {
+    const p = project(`export const buildScene = () => null;`);
+    const overlay = path.join(p.root, "overlay");
+    const dir = path.join(overlay, "alpha", "gteki");
+    fs.mkdirSync(dir, { recursive: true });
+    const manifestFile = path.join(p.station, "gteki", "station.json");
+    const manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8"));
+    manifest.station.names = [{ lang: "en", text: "Overlay distinguishing name" }];
+    manifest.sources[0].rights = "RESTRICTED";
+    const graph = JSON.parse(fs.readFileSync(path.join(p.station, "gteki", "graph.json"), "utf8"));
+    graph.nodes[0].sourceRefs = [{ sourceId: manifest.sources[0].id, featureId: "private-plan" }];
+    fs.writeFileSync(path.join(dir, "station.json"), JSON.stringify(manifest));
+    fs.writeFileSync(path.join(dir, "graph.json"), JSON.stringify(graph));
+    fs.copyFileSync(path.join(p.station, "gteki", "pois.json"), path.join(dir, "pois.json"));
+    const gateMessages: string[] = [];
+    const customLogger = { ...({} as Logger), hasWarned: false, clearScreen() {}, hasErrorLogged: () => false, error() {}, warnOnce() {}, info(m: string) { gateMessages.push(m); }, warn(m: string) { gateMessages.push(m); } } as Logger;
+    await build({ root: p.app, configFile: false, logLevel: "silent", customLogger,
+      plugins: [gtekiStations([path.join(p.root, "stations")], { overlay })],
+      build: { assetsInlineLimit: 0, outDir: path.join(p.root, "private-dist") } });
+    const dist = path.join(p.root, "private-dist");
+    expect(fs.readFileSync(path.join(dist, "private-build.txt"), "utf8")).toContain("Do not deploy");
+    const js = fs.readdirSync(path.join(dist, "assets")).filter((f) => f.endsWith(".js"))
+      .map((f) => fs.readFileSync(path.join(dist, "assets", f), "utf8")).join("\n");
+    expect(js).toContain("Overlay distinguishing name");
+    expect(js).not.toContain(overlay);
+    expect(gateMessages.some((m) => m.includes(overlay))).toBe(false);
+
+    fs.writeFileSync(manifestFile, JSON.stringify(manifest));
+    fs.writeFileSync(path.join(p.station, "gteki", "graph.json"), JSON.stringify(graph));
+    await expect(run(p)).rejects.toThrow(/node\.source\.rights/);
+  }, 30_000);
+
   it("refuses to publish sources without credit metadata, synthetic or not", async () => {
     const p = project(`export const buildScene = () => null;`);
     const manifest = path.join(p.station, "gteki", "station.json");

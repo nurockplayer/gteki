@@ -6,7 +6,7 @@ import { LiveRegion } from "./live.ts";
 import { StationIdentityView } from "./identityCard.ts";
 
 vi.mock("../explorer/explorer.ts", () => ({ Explorer: class {} }));
-vi.mock("../registry.ts", () => ({ listStations: vi.fn(), StationLoadError: class extends Error {} }));
+vi.mock("../registry.ts", () => ({ listStations: vi.fn(), PRIVATE_BUILD: false, StationLoadError: class extends Error {} }));
 import { App } from "./app.ts";
 
 type Harness = {

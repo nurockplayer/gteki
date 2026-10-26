@@ -15,7 +15,7 @@ Fail-closed rules: an edge is usable only if `verification` is `verified` (or `s
 - `packages/navigation/src/index.ts:117-121` — `RouteFailure`: reason (`no_path`, `search_limit`, `unknown_start`, `unknown_goal`, `start_equals_goal`) and message.
 - `packages/navigation/src/index.ts:123-134` — `Router` interface: `route()` and `isTraversable()`.
 - `packages/navigation/src/router.ts:187-204` — `WAIT_COST_PER_SECOND`, `WORK_BUDGET` (2,000,000 units; past it the answer is `search_limit`, never `no_path`), `GUIDE_BUDGET`, `PRUNE_SLACK`.
-- `packages/navigation/src/router.ts:238-240` — `createRouter()`: the public entry point.
+- `packages/navigation/src/router.ts:238-240` — `createRouter()`: the public entry point; `allowUnverified` opts private builds into `unverified` and `geometry_only` edges while the default remains fail-closed.
 - `packages/navigation/src/router.ts:250-717` — `buildRouter()`: adjacency (edges whose endpoints do not measure are dropped), `allowed()`, `openThroughout()`, `lowerBounds()`, `route()`.
 - `packages/navigation/src/router.ts:131-149` — `measureEdge()`: edge length from its geometry or node-to-node.
 - `packages/navigation/src/router.ts:286-297` — `allowed()`: verification, closures, avoidModes, stepFree, fare, unknown hours.
