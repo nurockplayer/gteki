@@ -31,6 +31,7 @@ import { RailRideDemo } from "./railRideDemo.ts";
 import { shouldHandleGuideKey } from "./railKeyGuard.ts";
 import { Minimap } from "./minimap.ts";
 import { emptySuggestions, exampleQueries, pushRecent, readRecent, writeRecent } from "./emptySuggestions.ts";
+import { demoPair, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -104,6 +105,9 @@ export class App {
     fromResults: el("div", "results"),
     toResults: el("div", "results"),
     categoryFilter: el("select", "category-filter"),
+    firstRun: el("div", "first-run"),
+    firstRunTry: el("button", "first-run-try"),
+    firstRunClose: el("button", "first-run-close", "×"),
     spawnChips: el("div", "chips"),
     profile: el("div", "chips profile"),
     sheet: el("section", "sheet"),
@@ -212,7 +216,25 @@ export class App {
     });
     const filterRow = el("div", "filter-row");
     filterRow.append(this.ui.categoryFilter);
-    panel.append(this.identityView.overview, this.ui.banner, fields, filterRow, this.ui.spawnChips, this.ui.profile, this.ui.more);
+    this.ui.firstRun.hidden = true;
+    this.ui.firstRunClose.type = "button";
+    this.ui.firstRunClose.addEventListener("click", () => {
+      this.firstRunDismissed = true;
+      markFirstRunDone(safeStorage());
+      this.syncPanelMascot();
+    });
+    this.ui.firstRunTry.type = "button";
+    this.ui.firstRunTry.addEventListener("click", () => {
+      const pair = this.s.loaded ? demoPair(this.s.loaded.key, this.s.loaded.bundle.pois) : null;
+      if (!pair) return;
+      this.firstRunDismissed = true;
+      markFirstRunDone(safeStorage());
+      this.setOrigin({ kind: "poi", poi: pair.from });
+      this.setDestination(pair.to);
+    });
+    const firstRunSteps = el("ol", "first-run-steps");
+    this.ui.firstRun.append(this.ui.firstRunClose, firstRunSteps, this.ui.firstRunTry);
+    panel.append(this.identityView.overview, this.ui.banner, fields, filterRow, this.ui.firstRun, this.ui.spawnChips, this.ui.profile, this.ui.more);
 
     this.ui.hint.setAttribute("role", "note");
     this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.minimap.el, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit);
@@ -228,6 +250,10 @@ export class App {
     this.ui.railBtn.textContent = this.s.lang === "ja" ? "電車に乗る（デモ・未調査）" : "Ride train (demo, not surveyed)";
     this.ui.railBtn.title = this.s.lang === "ja" ? "埼京線 乗車デモ（仮設ホーム）" : "JR Saikyo ride demo (temporary platform)";
     this.ui.more.setAttribute("aria-label", t.options);
+    const steps = this.ui.firstRun.querySelector<HTMLOListElement>(".first-run-steps")!;
+    steps.replaceChildren(...([t.firstRun.step1, t.firstRun.step2, t.firstRun.step3].map((text) => el("li", undefined, text))));
+    this.ui.firstRunTry.textContent = t.firstRun.tryRoute;
+    this.ui.firstRunClose.setAttribute("aria-label", t.firstRun.close);
     this.ui.categoryFilter.setAttribute("aria-label", t.categoryFilter);
     this.ui.fromInput.placeholder = t.fromPlaceholder;
     this.ui.toInput.placeholder = t.toPlaceholder;
@@ -685,14 +711,20 @@ export class App {
 
   /**
    * The mascot's two panel states. start_hint (dog, under the fields) shows while the station is ready with no
-   * destination, no route and no results list open; it never displaces another line. scene_fallback is only
-   * re-said here so it follows the language.
+   * destination, no route and no results list open; the first-run card shares that gate. The mascot never
+   * displaces another line. scene_fallback is only re-said here so it follows the language.
    */
+  /** Set once the first-run card is closed or used; covers a session where storage cannot keep the flag. */
+  private firstRunDismissed = false;
+
   private syncPanelMascot(): void {
     const m = this.ui.mascot;
+    const want = this.stationReady && !this.s.destination && !this.s.route && !this.combo.from.open && !this.combo.to.open;
+    const pair = this.s.loaded ? demoPair(this.s.loaded.key, this.s.loaded.bundle.pois) : null;
+    this.ui.firstRun.hidden = !(want && !this.firstRunDismissed && shouldShowFirstRun(safeStorage()));
+    this.ui.firstRunTry.hidden = !pair;
     const key = m.info().lineKey;
     if (key === "scene_fallback") { this.mascotSay({ kind: "scene_fallback" }, this.ui.panel); return; }
-    const want = this.stationReady && !this.s.destination && !this.s.route && !this.combo.from.open && !this.combo.to.open;
     if (want && (key === null || key === "start_hint")) {
       this.mascotSay({ kind: "start_hint" }, this.ui.panel, this.ui.spawnChips);
     } else if (!want && key === "start_hint") {
@@ -718,6 +750,8 @@ export class App {
   /** `tenant` is set only when the destination was picked through a store's brand directory (#419). */
   private setDestination(p: Poi, tenant: Tenant | null = null): void {
     if (!this.ownsPoi(p)) return;
+    this.firstRunDismissed = true;
+    markFirstRunDone(safeStorage());
     this.s.destination = p;
     this.s.destinationTenant = tenant;
     this.refreshAll();
