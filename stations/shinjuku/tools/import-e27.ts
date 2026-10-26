@@ -28,6 +28,7 @@ import { EnuFrame } from "@gteki/geo";
 import {
   SCHEMA_VERSION,
   validateBundle,
+  type BuildingHours,
   type CoverageArea,
   type CoverageGap,
   type DataFile,
@@ -35,6 +36,7 @@ import {
   type EdgeMode,
   type EvidenceRef,
   type Floor,
+  type HoursText,
   type LocalizedText,
   type Node,
   type Poi,
@@ -68,8 +70,18 @@ const CHECKED = "2026-10-20";
  */
 const PUBLICATION_PERIOD_END = "2027-03-12";
 const PERIOD_NOTE = `Publication period (公開提供期限): limited publication for 公共交通オープンデータチャレンジ2026 until ${PUBLICATION_PERIOD_END}, per the dataset page. This is the provider's publication period, not a confirmed end of any licence; reuse of derived data after that date is unconfirmed with the provider (see coverage gap:reuse-after-publication). Licence basis for this resource is unconfirmed: it ships under the Owner's override at the #16 merge, and PDL 1.0 is not treated as covering it (Owner decision #39, Q11 = No).`;
-/** Honest licence value for the E27 resources: validate.ts requires a data source to name a licence with an http(s) link, so link the provider's dataset page. */
-const E27_LICENSE = { name: "Licence unconfirmed — published under the Owner's override (#16)", url: "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45" };
+/**
+ * Honest licence value for the E27 resources: validate.ts requires a data source to name a licence with an
+ * http(s) link, so link the provider's dataset page. Both languages state the same status (#297); the ja
+ * text reuses the credits dialog's controlled wording for this right.
+ */
+const E27_LICENSE = {
+  name: [
+    { lang: "ja", text: "ライセンス未確認・オーナー判断により公開（#16）" },
+    { lang: "en", text: "Licence unconfirmed — published under the Owner's override (#16)" },
+  ],
+  url: "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45",
+};
 // #130: the E27 resources ship under the Owner's recorded override (the #16 merge), not under a confirmed licence.
 const E27_OVERRIDE = { decision: "https://github.com/nurockplayer/gteki/pull/16#issuecomment-6313815757", date: "2026-10-21" };
 const SRC_NWD = "mlit-hokonavi-e27-nwd";
@@ -1240,10 +1252,171 @@ for (const raw of s03.pois) {
   });
 }
 if (usedApprox.size !== s03ApproxById.size) throw new Error(`S03 positions: ${s03ApproxById.size - usedApprox.size} entries do not match an appended POI`);
+
+// ---------------------------------------------------------------- merchant shops (#214)
+// Facts-only transcription already on main: docs/research/merchants/shinjuku-merchants-batch1.json (Toei +
+// Tokyo Metro, #418), batch2 (LUMINE EST, LUMINE, NEWoMan) and shinjuku-odakyu-dept.json (the department store
+// itself). Contracts: docs/research/merchants/shinjuku-import-contract.md and shinjuku-batch2-contract.md.
+// Every shop is search-only: the sources give no position or entrance, so floorId, displayPosition, paid stay
+// null and connectorNodeIds stays empty. Brand lists are not POIs (#419); see gteki/tenants.json.
+// shinjuku-dept-stores.json (director, 2026-10-25) adds one store-level POI per printed building: LUMINE 1,
+// LUMINE 2, LUMINE EST, NEWoMan and the three 新宿マルイ buildings. It cites the LUMINE floor-guide sources the
+// batch files already registered, so it declares only its own Marui source; the check below catches a typo.
+type MerchantFile = { sources: Source[]; pois: Poi[] };
+const MERCHANT_POI_FILES = ["shinjuku-merchants-batch1.json", "shinjuku-merchants-batch2.json", "shinjuku-odakyu-dept.json", "shinjuku-dept-stores.json"];
+// A file may cite sources another file registered only when the pair is listed here, so a POI cannot
+// borrow an unrelated merchant source and pass the check below. The store POIs reuse the LUMINE /
+// NEWoMan floor-guide sources that batch2 already declares.
+const MERCHANT_CROSS_FILE_SOURCES: Record<string, readonly string[]> = {
+  "shinjuku-dept-stores.json": ["lumine-shinjuku-floorguide-2026-10", "lumine-est-shinjuku-floorguide-2026-10", "newoman-shinjuku-floorguide-2026-10"],
+};
+const MERCHANT_SOURCE_IDS = new Set<string>();
+for (const file of MERCHANT_POI_FILES) {
+  const m = JSON.parse(readFileSync(join(HERE, "../../../docs/research/merchants", file), "utf8")) as MerchantFile;
+  for (const src of m.sources) {
+    MERCHANT_SOURCE_IDS.add(src.id);
+    // The research hand-off writes `usage: null` for a reusable source; the schema's absent value means the same.
+    const { usage, ...rest } = src;
+    sources.push(usage == null ? (rest as Source) : { ...rest, usage });
+  }
+  const own = new Set(m.sources.map((s) => s.id));
+  const allowed = new Set([...own, ...(MERCHANT_CROSS_FILE_SOURCES[file] ?? [])]);
+  for (const poi of m.pois) {
+    for (const id of poi.evidence.sourceIds)
+      if (!allowed.has(id)) throw new Error(`merchant import: ${poi.id} (${file}) cites ${id}, which this file does not declare`);
+    if (poi.evidence.sourceIds.length === 0) throw new Error(`merchant import: ${poi.id} cites no source`);
+    pois.push(poi);
+  }
+}
+
+// ---------------------------------------------------------------- printed shop hours (OD-32)
+// Transcription: docs/research/merchants/shinjuku-hours-batch1.json. Each row is the hours line an official
+// page printed for one shop (matched by poiId) or for a whole building (poiId null → station.json
+// buildingHours). Text stays as printed; nothing is parsed into open/closed state. Rows for shops that are
+// not shipped yet (the recovery batch) have no POI here and are skipped.
+type HoursEntry = {
+  poiId: string | null;
+  building?: string;
+  url: string;
+  retrievedAt: string;
+  pageDate: string | null;
+  status: "OK" | "UNKNOWN";
+  hoursText?: string;
+  basis?: HoursText["basis"];
+  note?: string;
+};
+const hoursResearch = JSON.parse(readFileSync(join(HERE, "../../../docs/research/merchants/shinjuku-hours-batch1.json"), "utf8")) as { entries: HoursEntry[] };
+const hoursOf = (e: HoursEntry): HoursText => ({
+  ...(e.status === "OK" ? { text: e.hoursText! } : {}),
+  sourceUrl: e.url,
+  retrievedAt: e.retrievedAt.slice(0, 10),
+  // A page date alone does not date the hours (OD-32): shop-sjk-odakyudept's 2025-01-15 is a parking notice,
+  // and PUPA's pageDate is the day the page was read. Only an explicit research `basis` makes a row dated.
+  basis: e.basis ?? "undated-official",
+  status: e.status,
+});
+const poiById = new Map(pois.map((p) => [p.id, p]));
+const buildingHours: BuildingHours[] = [];
+for (const e of hoursResearch.entries) {
+  if (e.poiId === null) {
+    buildingHours.push({
+      ...hoursOf(e),
+      building: [{ lang: "ja", text: e.building! }],
+      floorRange: null,
+      ...(e.note ? { note: [{ lang: "ja", text: e.note }] } : {}),
+    });
+    continue;
+  }
+  const poi = poiById.get(e.poiId);
+  if (poi) poi.hours = hoursOf(e);
+}
+
+// ---------------------------------------------------------------- WP4 line POIs (#501 gap table)
+// Research: docs/research/lines/shinjuku-line-pois-wp4.json (PR #421), transcribed from the Tokyo Metro
+// Shinjuku (M08) station/accessibility/print pages and the Toei Shinjuku station page. Search-only: the
+// sources print these exits, lifts and escalators by name only, so floorId, displayPosition and paid stay
+// null and connectorNodeIds stays empty. The Toei page prints one station-level exit list that does not say
+// whether an exit serves the Shinjuku Line (S01) or the Oedo Line (E27), so no line is assigned.
+// Held, not imported: poi:tokyometro-gate:3 / :4, which may duplicate the shipped S03 pair :1 / :2; their
+// identity waits for the WP10 field check (gap-table-2026-10-25-poi-ids.md).
+type Wp4Poi = Poi & { operatorId: string; line: string | null };
+const WP4_FILE = "shinjuku-line-pois-wp4.json";
+const WP4_HELD = new Set(["poi:tokyometro-gate:3", "poi:tokyometro-gate:4"]);
+const WP4_CATEGORIES = new Set<string>(["exit", "elevator", "escalator"]);
+const wp4 = JSON.parse(readFileSync(join(HERE, "../../../docs/research/lines", WP4_FILE), "utf8")) as { sources: Source[]; pois: Wp4Poi[] };
+const WP4_SOURCE_IDS = new Set(wp4.sources.map((s) => s.id));
+const wp4Imported = wp4.pois.filter((p) => !WP4_HELD.has(p.id));
+if (wp4.pois.length - wp4Imported.length !== WP4_HELD.size) throw new Error(`WP4 import: expected ${WP4_HELD.size} held gates, found ${wp4.pois.length - wp4Imported.length}`);
+for (const src of wp4.sources) sources.push(src);
+for (const raw of wp4Imported) {
+  if (raw.floorId !== null || raw.displayPosition !== null || raw.paid !== null) throw new Error(`WP4 import: ${raw.id} carries a floor, position or paid value`);
+  if (raw.connectorNodeIds.length > 0) throw new Error(`WP4 import: ${raw.id} has connectorNodeIds`);
+  if (raw.evidence.sourceIds.length === 0 || raw.evidence.sourceIds.some((id) => !WP4_SOURCE_IDS.has(id))) throw new Error(`WP4 import: ${raw.id} cites a source outside the WP4 file`);
+  if (!WP4_CATEGORIES.has(raw.category)) throw new Error(`WP4 import: ${raw.id} has category ${raw.category}`);
+  if (raw.names.length !== 1 || raw.names[0]!.lang !== "ja" || !raw.names[0]!.text) throw new Error(`WP4 import: ${raw.id} must carry exactly one ja name`);
+  if (raw.aliases.some((a) => !raw.names[0]!.text.startsWith(a.text))) throw new Error(`WP4 import: ${raw.id} has an alias not printed in its name`);
+  if (pois.some((p) => p.id === raw.id)) throw new Error(`WP4 import: duplicate id ${raw.id}`);
+  pois.push({
+    id: raw.id,
+    category: raw.category as "exit" | "elevator" | "escalator",
+    names: raw.names,
+    aliases: raw.aliases,
+    floorId: null,
+    displayPosition: null,
+    connectorNodeIds: [],
+    paid: null,
+    evidence: raw.evidence,
+    notes: raw.notes,
+  });
+}
+
+// ---------------------------------------------------------------- line-code and English line-name aliases
+// Gap (ds-core findings, 10-25): searching a station-numbering code (M08) or an operator's printed English
+// line name ("Marunouchi Line") found nothing, because the line POIs carried no code or romaji alias.
+// Tokyo Metro's English Shinjuku page prints both; it is registered here as a facts-only source (decision #26)
+// and was read through the Wayback snapshot noted on the source record, since the live host answers 403 to a
+// plain fetch from this environment (recorded as a GAP in its notes). Only lines our data already states get an
+// alias: the 34 WP4 Metro POIs (line "marunouchi") and the two S03 Metro gates, whose printed name starts
+// 丸の内線. Toei's nine station exits carry no line (the page does not split S01 from E27), so they get none.
+// JR East, Keio and Odakyu pages are corroboration only (OD-34), so their codes and English line names stay
+// GAPs; so does any Toei code or English name, because the Toei page cannot be read here.
+const LINE_ALIAS_SOURCE = "tokyometro-shinjuku-station-en-2026-10";
+sources.push({
+  id: LINE_ALIAS_SOURCE,
+  title: "Shinjuku Station/M08 | Route/Station Information | Tokyo Metro Line",
+  publisher: "東京地下鉄",
+  url: "https://www.tokyometro.jp/lang_en/station/shinjuku/index.html",
+  license: null,
+  rights: "REFERENCE_ONLY",
+  usage: "facts-only",
+  decision: { url: "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", date: "2026-10-21" },
+  attribution: "東京メトロ 新宿駅 (English station page) (facts only; not reproduced)",
+  modified: false,
+  retrievedAt: "2026-10-25T21:45:00+09:00",
+  datasetDate: null,
+  notes: "ライセンスなし・事実のみ参照（複製なし）。駅名・英語路線名・駅番号のみ採用: Marunouchi Line と M08（ページ表記）。ライブのホストは他の東京メトロページと同じくこの環境から 403 を返すため、Wayback の 2026-04-15 スナップショット (http://web.archive.org/web/20260415001230/https://www.tokyometro.jp/lang_en/station/shinjuku/index.html) で読んだ。403 は GAP として記録。",
+});
+const LINE_ALIASES: Record<string, { code: string; en: string }> = { marunouchi: { code: "M08", en: "Marunouchi Line" } };
+const s03MetroGateIds = ["poi:tokyometro-gate:1", "poi:tokyometro-gate:2"];
+const marunouchiIds = [...wp4Imported.filter((p) => p.line === "marunouchi").map((p) => p.id), ...s03MetroGateIds];
+if (marunouchiIds.length !== 36) throw new Error(`line aliases: expected 36 Marunouchi POIs, found ${marunouchiIds.length}`);
+for (const id of marunouchiIds) {
+  const poi = pois.find((p) => p.id === id);
+  if (!poi) throw new Error(`line aliases: ${id} is not a POI`);
+  const alias = LINE_ALIASES.marunouchi!;
+  poi.aliases.push({ lang: "en", text: alias.code }, { lang: "en", text: alias.en });
+  poi.evidence = { ...poi.evidence, sourceIds: [...poi.evidence.sourceIds, LINE_ALIAS_SOURCE], checkedDate: "2026-10-25" };
+}
+// The two S03 gates state their line only in the printed name; fail if that ever stops matching.
+for (const id of s03MetroGateIds) {
+  const poi = pois.find((p) => p.id === id)!;
+  if (!poi.names[0]!.text.startsWith("丸の内線")) throw new Error(`line aliases: ${id} no longer names 丸の内線`);
+}
+
 const coverage = {
   summary: [
-    { lang: "ja", text: "都営大江戸線 新宿駅（E27）の公開歩行空間ネットワーク／構内地図の範囲のみ。他社線の改札・ホームは2020年3月時点の資料から名前を収録し、改札と乗換の一部に同資料の形状から求めたおおよその位置を付加（検索表示のみ、±5 m 以上、経路案内には不使用）。乗換通路は未収録。高さは推定値（実測ではない）。" },
-    { lang: "en", text: "Only the published Toei Oedo Line Shinjuku (E27) indoor network and floor-plan extent. Other operators' gates and platforms are listed by name from March 2020 data, with approximate positions for some gates and transfers derived from the same shapes (search display only, ±5 m or more, not for routing); transfer passages are not included. Heights are estimates, not measurements." },
+    { lang: "ja", text: "都営大江戸線 新宿駅（E27）の公開歩行空間ネットワーク／構内地図の範囲のみ。他社線の改札・ホームは2020年3月時点の資料から名前を収録し、改札と乗換の一部に同資料の形状から求めたおおよその位置を付加（検索表示のみ、±5 m 以上、経路案内には不使用）。他社の出口・エレベーター・エスカレーターは各事業者の公開ページから名前のみ収録（検索のみ）。乗換通路は未収録。高さは推定値（実測ではない）。" },
+    { lang: "en", text: "Only the published Toei Oedo Line Shinjuku (E27) indoor network and floor-plan extent. Other operators' gates and platforms are listed by name from March 2020 data, with approximate positions for some gates and transfers derived from the same shapes (search display only, ±5 m or more, not for routing). Other operators' exits, lifts and escalators are listed by name only from their own published pages (search only). Transfer passages are not included. Heights are estimates, not measurements." },
   ],
   areas,
   gaps,
@@ -1321,13 +1494,14 @@ const bundle: StationBundle = {
   coverage,
   spawnNodeIds,
   dataFiles,
+  buildingHours,
 };
 
 // ---------------------------------------------------------------- plan (render geometry)
 const plan = {
   note: "Render-only geometry derived from 構内地図データ（都営地下鉄大江戸線 新宿駅）（国土交通省）, published under the Owner's #16 override; licence basis unconfirmed. Not routing truth. Heights are symbolic.",
-  // S03 (#411) supplies POI names only, nothing in the plan, so its credit is not listed here.
-  attribution: sources.filter((s) => s.id !== S03_SOURCE_ID).map((s) => s.attribution),
+  // S03 (#411), the merchant sources (#214) and the WP4 line sources (#501) supply POIs only, nothing in the plan, so their credit is not listed here.
+  attribution: sources.filter((s) => s.id !== S03_SOURCE_ID && s.id !== LINE_ALIAS_SOURCE && !MERCHANT_SOURCE_IDS.has(s.id) && !WP4_SOURCE_IDS.has(s.id)).map((s) => s.attribution),
   levels: mapLevels.map((ml) => {
     const nwdOrd = ml.ordinal === -5 ? -4.5 : ml.ordinal;
     return {

@@ -19,5 +19,10 @@ export default defineConfig({
     dedupe: ["three"],
   },
   server: { fs: { allow: [repo, ...extraRoots] } },
-  build: { target: "es2022", chunkSizeWarningLimit: 1500 },
+  build: {
+    target: "es2022",
+    chunkSizeWarningLimit: 1500,
+    // Two pages: the explorer and the merchant form (#438), which must not load the explorer's bundle.
+    rollupOptions: { input: { main: path.join(here, "index.html"), merchant: path.join(here, "merchant.html") } },
+  },
 });

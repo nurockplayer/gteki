@@ -250,6 +250,17 @@ describe("Minimap route overlay (#220 PR2)", () => {
     expect(map.el.querySelectorAll(".minimap-poi")).toHaveLength(2);
   });
 
+  it("clears the connector hint when the route is cleared while the floor is unknown", () => {
+    const map = create();
+    map.setRoute({ points: loopPoints, steps: loopSteps }, null);
+    // An unknown floor leaves refresh() no floor to recompute the hint for.
+    pose = { ...pose!, up: 100 };
+    tick();
+    expect(display(map, ".minimap-connector-marker")).toBe("");
+    map.setRoute(null, null);
+    expect(display(map, ".minimap-connector-marker")).toBe("none");
+  });
+
   it("highlights an evidenced on-floor destination's POI dot, not the route end", () => {
     const map = create();
     const route = [point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)];
@@ -503,5 +514,259 @@ describe("Minimap route overlay (#220 PR2)", () => {
     tick();
     expect(observer.takeRecords()).toHaveLength(0);
     observer.disconnect();
+  });
+});
+
+describe("Minimap floor picker (#220)", () => {
+  let pose: ExplorerPose | null;
+  const maps: Minimap[] = [];
+  // One edge per floor, so the drawn floor is readable from the graph itself.
+  const floorsBundle = () => createSyntheticBundle([syntheticEdge("conc-edge", "start", "a"), syntheticEdge("upper-edge", "upper", "upper-2")]);
+  function create(bundle: StationBundle = floorsBundle()) {
+    const map = new Minimap(() => pose);
+    maps.push(map);
+    document.body.append(map.el);
+    map.setStation(bundle, "en");
+    return map;
+  }
+  const tick = () => vi.advanceTimersByTime(90);
+  const select = (map: Minimap) => map.el.querySelector<HTMLSelectElement>(".minimap-floor")!;
+  const graphPoints = (map: Minimap) => [...map.el.querySelectorAll(".minimap-graph polyline")].map((p) => p.getAttribute("points"));
+  const routePoints = (map: Minimap) => [...map.el.querySelectorAll(".minimap-route-line")].map((p) => p.getAttribute("points"));
+  const level = (map: Minimap) => map.el.querySelector(".minimap-label strong")!.textContent;
+  /** Choose a floor in the picker the way a click would: set the value, then fire its change event. */
+  const pick = (map: Minimap, value: string) => {
+    const el = select(map);
+    el.value = value;
+    el.dispatchEvent(new Event("change"));
+  };
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    localStorage.clear();
+    vi.spyOn(document, "hidden", "get").mockReturnValue(false);
+    pose = { east: 0, north: 0, up: 0, headingDeg: 0, mode: "walk" };
+  });
+  afterEach(() => {
+    for (const map of maps.splice(0)) map.dispose();
+    document.body.replaceChildren();
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+  });
+
+  it("picking a floor draws that floor's walk graph and route run", () => {
+    const map = create();
+    map.setRoute({ points: upRoute, steps: upSteps }, null);
+    expect(select(map).value).toBe("");
+    expect(graphPoints(map)).toEqual(["0,0 20,0"]);
+    expect(routePoints(map)).toEqual(["0,0 20,0"]);
+    expect(level(map)).toBe("B1");
+    pick(map, "upper");
+    expect(graphPoints(map)).toEqual(["20,0 40,0"]);
+    expect(routePoints(map)).toEqual(["20,0 20,-8"]);
+    expect(level(map)).toBe("1F");
+    // The choices come from the station's own floor list, follow first.
+    expect([...select(map).options].map((option) => option.textContent)).toEqual(["Follow player", "B1", "1F", "B1"]);
+  });
+
+  it("draws the picked floor's connector hint when a new route arrives with the player's floor unknown", () => {
+    const map = create();
+    pick(map, "concourse");
+    // Mid-stairs: the player's floor is unknown, so only the picked floor can name the next change.
+    pose = { ...pose!, up: 100 };
+    tick();
+    map.setRoute({ points: upRoute, steps: upSteps }, null);
+    const marker = map.el.querySelector<SVGElement>(".minimap-connector-marker")!;
+    expect(marker.style.display).toBe("");
+    expect(marker.getAttribute("transform")).toBe("translate(115 95)");
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
+  });
+
+  it("follows the player's floor until a floor is picked, then returns on follow", () => {
+    const map = create();
+    expect(level(map)).toBe("B1");
+    pose = { ...pose!, up: 4 };
+    tick();
+    expect(level(map)).toBe("1F");
+    expect(graphPoints(map)).toEqual(["20,0 40,0"]);
+    // A pick pins the floor: later player floor changes do not move the map.
+    pick(map, "concourse");
+    expect(level(map)).toBe("B1");
+    expect(graphPoints(map)).toEqual(["0,0 20,0"]);
+    pose = { ...pose!, up: 0 };
+    tick();
+    pose = { ...pose!, up: 4 };
+    tick();
+    expect(level(map)).toBe("B1");
+    // Choosing follow returns to the player's floor straight away, with no tick needed.
+    pick(map, "");
+    expect(level(map)).toBe("1F");
+    expect(graphPoints(map)).toEqual(["20,0 40,0"]);
+  });
+
+  it("resets to follow and rebuilds the choices on station switch", () => {
+    const map = create();
+    pick(map, "upper");
+    expect(level(map)).toBe("1F");
+    map.setStation(createSyntheticBundle([syntheticEdge("conc-edge", "start", "a")]), "en");
+    expect(select(map).value).toBe("");
+    expect(level(map)).toBe("B1");
+    expect(graphPoints(map)).toEqual(["0,0 20,0"]);
+    expect([...select(map).options].map((option) => option.textContent)).toEqual(["Follow player", "B1", "1F", "B1"]);
+    map.setStation(null, "en");
+    expect(select(map).hidden).toBe(true);
+  });
+});
+
+describe("Minimap large map (#220 follow-up)", () => {
+  let pose: ExplorerPose | null;
+  const maps: Minimap[] = [];
+  function create(bundle: StationBundle = createSyntheticBundle()) {
+    const map = new Minimap(() => pose);
+    maps.push(map);
+    document.body.append(map.el);
+    map.setStation(bundle, "en");
+    return map;
+  }
+  const tick = () => vi.advanceTimersByTime(90);
+  const overlayOf = () => document.querySelector<HTMLElement>(".minimap-overlay")!;
+  const triggerOf = (map: Minimap) => map.el.querySelector<SVGElement>(".minimap-map")!;
+  const open = (map: Minimap) => triggerOf(map).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    localStorage.clear();
+    vi.spyOn(document, "hidden", "get").mockReturnValue(false);
+    pose = { east: 0, north: 0, up: 0, headingDeg: 0, mode: "walk" };
+  });
+  afterEach(() => {
+    for (const map of maps.splice(0)) map.dispose();
+    document.body.replaceChildren();
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+  });
+
+  it("opens on tap or Enter and closes on tap outside, the close button and Escape", () => {
+    const map = create();
+    const overlay = overlayOf();
+    const trigger = triggerOf(map);
+    expect(overlay.hidden).toBe(true);
+    expect(trigger.getAttribute("role")).toBe("button");
+    expect(trigger.getAttribute("aria-label")).toBe("Open large map");
+
+    open(map);
+    expect(overlay.hidden).toBe(false);
+    expect(overlay.getAttribute("role")).toBe("dialog");
+    expect(overlay.getAttribute("aria-modal")).toBe("true");
+    expect(overlay.querySelector(".minimap-overlay-close")!.getAttribute("aria-label")).toBe("Close large map");
+    expect(document.activeElement).toBe(overlay.querySelector(".minimap-overlay-close"));
+
+    // A tap on the panel is not a tap outside it.
+    overlay.querySelector(".minimap-overlay-panel")!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(overlay.hidden).toBe(false);
+    overlay.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(overlay.hidden).toBe(true);
+    expect(document.activeElement).toBe(trigger);
+
+    open(map);
+    overlay.querySelector<HTMLButtonElement>(".minimap-overlay-close")!.click();
+    expect(overlay.hidden).toBe(true);
+
+    open(map);
+    overlay.querySelector(".minimap-overlay-close")!.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    expect(overlay.hidden).toBe(true);
+
+    trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    expect(overlay.hidden).toBe(false);
+    // Tab stays on the dialog's only focusable control instead of reaching the obscured app.
+    const close = overlay.querySelector(".minimap-overlay-close")!;
+    close.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
+    expect(document.activeElement).toBe(close);
+    expect(overlay.hidden).toBe(false);
+    // An automatic dismissal (here: a station switch) hands focus back to the map, not the body.
+    map.setStation(createSyntheticBundle(), "en");
+    expect(overlay.hidden).toBe(true);
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it("draws the same floor, route and destination as the minimap", () => {
+    const map = create();
+    map.setRoute({ points: upRoute, steps: upSteps }, poi());
+    open(map);
+    const overlay = overlayOf();
+    const points = (root: ParentNode, selector: string) => [...root.querySelectorAll(selector)].map((node) => node.getAttribute("points"));
+    expect(points(overlay, ".minimap-graph polyline")).toEqual(points(map.el, ".minimap-graph polyline"));
+    expect(points(overlay, ".minimap-route-line")).toEqual(points(map.el, ".minimap-route-line"));
+    expect(points(overlay, ".minimap-route-line")).toEqual(["0,0 20,0"]);
+    // Same world transform as the HUD, so the route sits exactly where the minimap draws it.
+    expect(overlay.querySelector(".minimap-graph")!.getAttribute("transform")).toBe(map.el.querySelector(".minimap-graph")!.getAttribute("transform"));
+    expect(overlay.querySelector(".minimap-route")!.getAttribute("transform")).toBe(map.el.querySelector(".minimap-route")!.getAttribute("transform"));
+    const miniDot = map.el.querySelector(".minimap-poi.is-destination")!;
+    const bigDot = overlay.querySelector(".minimap-poi.is-destination")!;
+    expect(bigDot.getAttribute("cx")).toBe(miniDot.getAttribute("cx"));
+    expect(bigDot.getAttribute("cy")).toBe(miniDot.getAttribute("cy"));
+    expect(overlay.querySelector(".minimap-overlay-title")!.textContent).toContain("synthetic-station");
+    expect(overlay.querySelector(".minimap-overlay-title")!.textContent).toContain("B1");
+    expect(overlay.textContent).toContain("Schematic walk graph (not a floor plan)");
+    expect(overlay.querySelector(".minimap-arrow")!.getAttribute("transform")).toContain("rotate(0)");
+  });
+
+  it("updates while open and stops writing to the large map once closed", () => {
+    const map = create();
+    map.setRoute({ points: upRoute, steps: upSteps }, poi());
+    open(map);
+    const overlay = overlayOf();
+    const bigGraph = overlay.querySelector(".minimap-graph")!;
+    const bigRoute = overlay.querySelector(".minimap-route")!;
+    const bigArrow = overlay.querySelector(".minimap-arrow")!;
+
+    // While open, movement moves the overlay's world with the pose.
+    pose = { ...pose!, east: 2, north: 3 };
+    tick();
+    expect(bigGraph.getAttribute("transform")).toContain("translate(-4 6)");
+
+    overlay.querySelector<HTMLButtonElement>(".minimap-overlay-close")!.click();
+    const observer = new MutationObserver(() => {});
+    observer.observe(overlay.querySelector(".minimap-overlay-map")!, { subtree: true, attributes: true, childList: true, characterData: true });
+    const frozen = [bigGraph.getAttribute("transform"), bigRoute.getAttribute("transform"), bigArrow.getAttribute("transform")];
+    pose = { ...pose!, east: 20, north: 10 };
+    tick();
+    expect([bigGraph.getAttribute("transform"), bigRoute.getAttribute("transform"), bigArrow.getAttribute("transform")]).toEqual(frozen);
+    expect(observer.takeRecords()).toHaveLength(0);
+    // A station switch while the map is closed leaves the hidden overlay untouched too.
+    map.setStation(createSyntheticBundle(), "en");
+    expect(observer.takeRecords()).toHaveLength(0);
+    // The HUD itself did follow the pose, so the timer really ran.
+    expect(map.el.querySelector(".minimap-graph")!.getAttribute("transform")).not.toBe(frozen[0]);
+    observer.disconnect();
+  });
+
+  it("marks an off-screen destination at the edge of the large map", () => {
+    const far = poi({ id: "far", displayPosition: { x: 200, y: 0, z: 0 } });
+    const bundle = createSyntheticBundle();
+    bundle.pois = [far];
+    const map = create(bundle);
+    const route = [point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)];
+    map.setRoute({ points: route, steps: [step("concourse", "concourse")] }, far);
+    open(map);
+    const rim = overlayOf().querySelector<SVGElement>(".minimap-destination-rim")!;
+    expect(rim.style.display).toBe("");
+    expect(rim.getAttribute("transform")).toBe("translate(179 95) rotate(90)");
+  });
+
+  it("draws a corner destination as a dot with no edge chevron", () => {
+    // 99 px from the centre: outside the HUD's 85 px circle, but on screen in the square large map.
+    const corner = poi({ id: "corner", displayPosition: { x: 35, y: -35, z: 0 } });
+    const bundle = createSyntheticBundle();
+    bundle.pois = [corner];
+    const map = create(bundle);
+    const route = [point(0, 0, "concourse", -1), point(10, 0, "concourse", 0)];
+    map.setRoute({ points: route, steps: [step("concourse", "concourse")] }, corner);
+    open(map);
+    const overlay = overlayOf();
+    const dot = overlay.querySelector(".minimap-poi.is-destination")!;
+    expect(dot.getAttribute("cx")).toBe("70");
+    expect(dot.getAttribute("cy")).toBe("70");
+    expect(overlay.querySelector<SVGElement>(".minimap-destination-rim")!.style.display).toBe("none");
   });
 });

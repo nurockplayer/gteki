@@ -13,7 +13,12 @@ const STRINGS = {
     minimapCollapse: "ミニマップを折りたたむ",
     minimapShow: "ミニマップを表示",
     minimapFloorUnknown: "階不明",
+    minimapFloor: "表示する階",
+    minimapFloorFollow: "追従",
     minimapSchematic: "概略歩行経路（実際の構内図ではありません）",
+    minimapExpand: "大地図を開く",
+    minimapLargeMap: "現在の階の大地図",
+    minimapClose: "大地図を閉じる",
     minimapDestination: (floor: string) => `目的地のある階：${floor}`,
     minimapNextFloor: (floor: string, mode: string) => `${mode}${floor}へ`,
     minimapMode: {
@@ -35,10 +40,27 @@ const STRINGS = {
     searchOnly: "検索のみ（入口未確認）",
     shopNoRoute: "この店舗への道案内はまだありません（位置未確認）",
     shopSearchOnly: "位置未確認・道案内なし",
+    /** Search category filter (#213): the label, the unfiltered choice and the category names. */
+    categoryFilter: "種類",
+    categoryAll: "すべて",
+    categoryNames: {
+      shop: "店舗", service: "サービス", atm: "ATM", locker: "コインロッカー", toilet: "トイレ",
+      exit: "出口", ticket_gate: "改札", platform: "ホーム", escalator: "エスカレーター", elevator: "エレベーター",
+      stairs: "階段", transfer: "乗り換え", other: "その他",
+    } as Record<string, string>,
+    /** The merchant card (#213): only what the listing states. */
+    merchant: {
+      source: "出典",
+      sourceUnknown: "出典の記録なし",
+      checked: "最終確認",
+      precision: { point: "位置確認済み", area: "おおよその区域のみ", search: "店舗位置は未確認" },
+    },
     /** An approximate, search-display-only point (#463): the ± radius shown, never used for directions. */
     approximatePosition: (m: number) => `おおよその位置（±${m} m）・経路案内には使いません`,
     /** An approximate POI's floor is a label match, not a surveyed floor (#463). */
     floorUnverified: (label: string) => `${label}（階は未確認）`,
+    /** A shop's printed hours (OD-32): the page's own wording, read on this date. */
+    hoursAsOf: (date: string) => `GT-Eki 確認日 ${date} 時点の公式表記`,
     /** A store's printed brand directory (#419): unverified, with the date its listing was checked. */
     tenantAsOf: (date: string) => `店舗情報（${date} 時点・未確認）`,
     /** The route ends at the store entrance; floors inside the store are not modelled. */
@@ -141,6 +163,8 @@ const STRINGS = {
     /** GTEki-made wayfinding signs are generated from the graph, not surveyed positions (#203 B14). */
     generatedSigns: "看板は経路データから自動配置しています（実際の現地の看板位置ではありません）",
     sources: "出典",
+    /** #491 / OD-22: endpoint sources name the origin/destination; they are never evidence of the path. */
+    nameEvidence: "POI名の出典（経路の根拠ではありません）",
     credits: "出典",
     creditsLabel: "データの出典表示",
     /** Modification disclosure required by PDL / CC BY when a source was processed. */
@@ -205,7 +229,12 @@ const STRINGS = {
     minimapCollapse: "Collapse minimap",
     minimapShow: "Show minimap",
     minimapFloorUnknown: "Floor unknown",
+    minimapFloor: "Floor shown",
+    minimapFloorFollow: "Follow player",
     minimapSchematic: "Schematic walk graph (not a floor plan)",
+    minimapExpand: "Open large map",
+    minimapLargeMap: "Large map of the current floor",
+    minimapClose: "Close large map",
     minimapDestination: (floor: string) => `Destination floor: ${floor}`,
     minimapNextFloor: (floor: string, mode: string) => `To ${floor} ${mode}`,
     minimapMode: {
@@ -227,10 +256,27 @@ const STRINGS = {
     searchOnly: "Search only (entrance not verified)",
     shopNoRoute: "No directions to this shop yet (location not verified).",
     shopSearchOnly: "Location not verified · no directions",
+    /** Search category filter (#213): the label, the unfiltered choice and the category names. */
+    categoryFilter: "Category",
+    categoryAll: "All",
+    categoryNames: {
+      shop: "Shop", service: "Service", atm: "ATM", locker: "Coin locker", toilet: "Toilet",
+      exit: "Exit", ticket_gate: "Ticket gate", platform: "Platform", escalator: "Escalator", elevator: "Elevator",
+      stairs: "Stairs", transfer: "Transfer", other: "Other",
+    } as Record<string, string>,
+    /** The merchant card (#213): only what the listing states. */
+    merchant: {
+      source: "Source",
+      sourceUnknown: "No source recorded",
+      checked: "Last checked",
+      precision: { point: "Location verified", area: "Approximate area only", search: "Shop location unconfirmed" },
+    },
     /** An approximate, search-display-only point (#463): the ± radius shown, never used for directions. */
     approximatePosition: (m: number) => `Approximate position (±${m} m) · not used for directions`,
     /** An approximate POI's floor is a label match, not a surveyed floor (#463). */
     floorUnverified: (label: string) => `${label} (floor unverified)`,
+    /** A shop's printed hours (OD-32): the page's own wording, read on this date. */
+    hoursAsOf: (date: string) => `Official wording as read by GT-Eki on ${date}`,
     /** A store's printed brand directory (#419): unverified, with the date its listing was checked. */
     tenantAsOf: (date: string) => `Store directory as printed (${date}, unverified)`,
     /** The route ends at the store entrance; floors inside the store are not modelled. */
@@ -325,6 +371,7 @@ const STRINGS = {
     stairFootLabel: (name: string) => `${name} (stair foot)`,
     generatedSigns: "Signs are placed from the route data, not at the real sign positions",
     sources: "Sources",
+    nameEvidence: "POI name evidence (not route evidence)",
     credits: "Credits",
     creditsLabel: "Data credits",
     modified: "modified",

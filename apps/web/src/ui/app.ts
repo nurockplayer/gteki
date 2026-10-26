@@ -9,9 +9,12 @@ import { guideStops } from "../explorer/guideStops.ts";
 import { firstStopFor, guideKeyActionGuarded, instructionStartsM, jumpTarget, StepClock } from "../explorer/guideSteps.ts";
 import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, paceReadout, polylineLengthM, type GuideTierId, type PaceSpan } from "../explorer/guidePace.ts";
 import { coverageText, initialLang, pick, strings, type Lang } from "../i18n.ts";
+import { printedHours } from "../hours.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
 import { isUnlocatedShop, noRouteText, poiNoteText } from "./noRouteText.ts";
+import { categoriesIn } from "./categoryFilter.ts";
+import { merchantCardEl, merchantCardModel } from "./merchantCard.ts";
 import { stationClock } from "../stationClock.ts";
 import { assetDerivationPresentation, dataFileCredits, dataFileRowText, factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
@@ -49,6 +52,8 @@ interface State {
   route: RouteResult | RouteFailure | null;
   /** Which enabled option made the last `no_path` refuse (null = not a no_path). */
   noPath: NoPathCause | null;
+  /** The search category filter (#213): one of the loaded station's categories, or null for no filter. */
+  filter: Poi["category"] | null;
   polyline: PolylinePoint[];
   instructions: Instruction[];
   activeInstruction: number;
@@ -79,7 +84,7 @@ export class App {
   private readonly s: State = {
     lang: initialLang(), entries: [], entry: null, loaded: null, router: null, search: null,
     origin: null, destination: null, destinationTenant: null, profile: { stepFree: false, unpaidOnly: false, strictHours: false },
-    route: null, noPath: null, polyline: [], instructions: [], activeInstruction: 0,
+    route: null, noPath: null, filter: null, polyline: [], instructions: [], activeInstruction: 0,
   };
   private explorer!: Explorer;
   private readonly identityView = new StationIdentityView();
@@ -93,6 +98,7 @@ export class App {
     toNote: el("p", "field-note"),
     fromResults: el("div", "results"),
     toResults: el("div", "results"),
+    categoryFilter: el("select", "category-filter"),
     spawnChips: el("div", "chips"),
     profile: el("div", "chips profile"),
     sheet: el("section", "sheet"),
@@ -138,6 +144,8 @@ export class App {
     // to its right on a desktop); the panel's own size changes refit it (see Explorer.setPanel).
     this.explorer.setPanel(this.ui.panel);
     this.explorer.setMinimap(this.ui.minimap.el);
+    // On a phone the open route sheet is a bottom occluder of the same kind (#385).
+    this.explorer.setSheet(this.ui.sheet);
     this.explorer.setGuideTier(readGuideTier());
     this.bindGuideKeys();
     watchReducedMotion((reduce) => {
@@ -189,7 +197,17 @@ export class App {
     swap.addEventListener("click", () => this.swap());
     const fields = el("div", "fields");
     fields.append(fromRow, toRow, swap);
-    panel.append(this.identityView.overview, this.ui.banner, fields, this.ui.spawnChips, this.ui.profile, this.ui.more);
+    // #213: narrow both search lists to one POI category. Only the loaded station's own categories are offered.
+    this.ui.categoryFilter.addEventListener("change", () => {
+      const v = this.ui.categoryFilter.value;
+      this.s.filter = v === "" ? null : v as Poi["category"];
+      // The change comes from the select, which holds focus, so no result list can still be on screen.
+      this.closeResults("to");
+      this.closeResults("from");
+    });
+    const filterRow = el("div", "filter-row");
+    filterRow.append(this.ui.categoryFilter);
+    panel.append(this.identityView.overview, this.ui.banner, fields, filterRow, this.ui.spawnChips, this.ui.profile, this.ui.more);
 
     this.ui.hint.setAttribute("role", "note");
     this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.minimap.el, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit);
@@ -205,6 +223,7 @@ export class App {
     this.ui.railBtn.textContent = this.s.lang === "ja" ? "電車に乗る（デモ・未調査）" : "Ride train (demo, not surveyed)";
     this.ui.railBtn.title = this.s.lang === "ja" ? "埼京線 乗車デモ（仮設ホーム）" : "JR Saikyo ride demo (temporary platform)";
     this.ui.more.setAttribute("aria-label", t.options);
+    this.ui.categoryFilter.setAttribute("aria-label", t.categoryFilter);
     this.ui.fromInput.placeholder = t.fromPlaceholder;
     this.ui.toInput.placeholder = t.toPlaceholder;
     this.root.querySelectorAll<HTMLElement>("[data-label]").forEach((n) => { n.textContent = t[n.dataset.label as "from" | "to"]; });
@@ -280,6 +299,8 @@ export class App {
     this.s.origin = null;
     this.s.destination = null;
     this.s.destinationTenant = null;
+    // The filter names a category of the previous station's bundle: start the new station unfiltered.
+    this.s.filter = null;
     this.s.route = null;
     this.s.polyline = [];
     this.s.instructions = [];
@@ -388,6 +409,7 @@ export class App {
     this.renderCredit();
     const b = this.s.loaded?.bundle;
     this.renderBanner(b);
+    this.renderCategoryFilter(b);
     this.renderSpawnChips(b);
     this.renderProfile();
     // The lists show the previous language / selection: drop them.
@@ -400,6 +422,27 @@ export class App {
     if (b) this.explorer.showPois(b, (p) => poiLabel(b, p, this.s.lang, this.t), [this.s.destination?.id, this.s.origin?.kind === "poi" ? this.s.origin.poi.id : undefined].filter(Boolean) as string[]);
     this.computeRoute();
     this.syncPanelMascot();
+  }
+
+  /**
+   * The search category filter (#213): "all" plus the categories this station's bundle actually has, in a
+   * fixed order. A category the station does not have is never offered; a leftover filter is dropped.
+   */
+  private renderCategoryFilter(b: StationBundle | undefined): void {
+    const select = this.ui.categoryFilter;
+    const categories = b ? categoriesIn(b.pois) : [];
+    if (this.s.filter !== null && !categories.includes(this.s.filter)) this.s.filter = null;
+    select.replaceChildren();
+    const all = el("option", undefined, this.t.categoryAll);
+    all.value = "";
+    select.append(all);
+    for (const c of categories) {
+      const o = el("option", undefined, this.t.categoryNames[c] ?? c);
+      o.value = c;
+      select.append(o);
+    }
+    select.value = this.s.filter ?? "";
+    select.hidden = categories.length === 0;
   }
 
   private renderBanner(b: StationBundle | undefined): void {
@@ -472,6 +515,20 @@ export class App {
     box.hidden = text === "";
   }
 
+  /**
+   * A shop's printed hours (OD-32): the page's own wording, then the date GT-Eki read it. Hidden when the page
+   * printed nothing (status UNKNOWN) or the reading is older than HOURS_MAX_AGE_DAYS, so an old timetable is
+   * never shown as if it were current.
+   */
+  private hoursBlock(poi: Poi | null): HTMLElement | null {
+    const hours = poi?.hours;
+    const text = printedHours(hours, new Date());
+    if (!hours || !text) return null;
+    const box = el("div", "poi-hours");
+    box.append(el("p", "hours-text", text), el("p", "muted hours-asof", this.t.hoursAsOf(hours.retrievedAt)));
+    return box;
+  }
+
   /** The floor label for display; an approximate POI's floor is a label match, not a surveyed floor (#463). */
   private floorLabel(poi: Poi): string | null {
     if (!poi.floorId) return null;
@@ -509,7 +566,11 @@ export class App {
     this.closeResults(which);
     if (!this.s.search || !this.s.loaded) return;
     const q = input.value.trim();
-    const hits: SearchHit[] = q ? this.s.search.search(q, { limit: 8, lang: this.s.lang }) : this.s.loaded.bundle.pois.slice(0, 8).map((poi) => ({ poi, score: 0, matched: "", routable: poi.connectorNodeIds.length > 0 }));
+    // The category filter narrows both lists to one POI category (#213); no filter searches every category.
+    const categories = this.s.filter ? [this.s.filter] : undefined;
+    const hits: SearchHit[] = q
+      ? this.s.search.search(q, { limit: 8, lang: this.s.lang, categories })
+      : this.s.loaded.bundle.pois.filter((poi) => !this.s.filter || poi.category === this.s.filter).slice(0, 8).map((poi) => ({ poi, score: 0, matched: "", routable: poi.connectorNodeIds.length > 0 }));
     this.ui.live.announce(searchLiveMessage(this.t, hits.length));
     if (hits.length === 0) {
       const none = el("div", "result empty", this.t.noResults);
@@ -745,8 +806,14 @@ export class App {
     sheet.innerHTML = "";
     const r = this.s.route;
     const b = this.s.loaded?.bundle;
-    if (!r || !b) { sheet.classList.remove("open"); return; }
-    sheet.classList.add("open");
+    sheet.classList.toggle("open", Boolean(r && b));
+    if (r && b) this.fillSheet(sheet, r, b);
+    // Opening, closing or resizing the sheet changes the phone's free area: refit an automatic overview (#385).
+    this.explorer.refitOverview();
+  }
+
+  /** Fill the open route sheet; `renderSheet` owns the open class and the overview refit. */
+  private fillSheet(sheet: HTMLElement, r: RouteResult | RouteFailure, b: StationBundle): void {
     const t = this.t;
     if (!r.ok) {
       const card = el("div", "card no-route");
@@ -759,6 +826,9 @@ export class App {
       const endpointNote = r.reason === "unknown_goal" ? poiNoteText(this.s.destination, this.s.lang)
         : r.reason === "unknown_start" ? poiNoteText(origin, this.s.lang) : null;
       if (endpointNote) card.append(el("p", "muted", endpointNote));
+      // A search-only shop's card still says what its page printed for opening hours (OD-32).
+      const hours = this.hoursBlock(this.s.destination);
+      if (hours) card.append(hours);
       if (view && view.relax.length > 0) {
         const relax = el("div", "actions");
         const relaxOff = (keys: typeof view.relax) => { for (const k of keys) this.s.profile[k] = false; this.renderProfile(); this.computeRoute(); };
@@ -776,6 +846,9 @@ export class App {
         card.append(relax);
       }
       sheet.append(card);
+      // The shop's own recorded facts (source, checked date, precision) sit beside the no-route card (#213).
+      const merchant = this.merchantCard();
+      if (merchant) sheet.append(merchant);
       // A sibling of the frozen card, so the card's own text and structure stay untouched.
       this.mascotSay({ kind: "no_path", reason: r.reason }, sheet);
       return;
@@ -801,6 +874,9 @@ export class App {
       const asOf = tenantAsOfNote(destTenant, t);
       card.append(el("p", "muted tenant-floors", asOf ? `${t.tenantFloorsNotGuided} · ${asOf}` : t.tenantFloorsNotGuided));
     }
+    // The destination's printed hours, if its page printed any and the reading is still recent (OD-32).
+    const destHours = this.hoursBlock(this.s.destination);
+    if (destHours) card.append(destHours);
 
     const badges = el("div", "badges");
     const badge = (text: string, cls: string, title?: string) => { const x = el("span", `badge ${cls}`, text); if (title) x.title = title; badges.append(x); };
@@ -850,17 +926,36 @@ export class App {
 
     const prov = el("details", "provenance");
     prov.append(el("summary", undefined, `${t.sources} · ${t.oldestSource} ${r.oldestSourceDate ?? "?"}${r.evidenceCheckedDate ? `${t.dateJoiner}${t.deskCheckedOn} ${r.evidenceCheckedDate}` : ""}`));
-    const srcList = el("ul");
-    for (const id of r.sourceIds) {
-      const s = b.sources.find((x) => x.id === id);
-      if (!s) continue;
-      const li = this.creditItem(s);
-      if (s.datasetDate) li.append(el("span", "muted", ` · ${s.datasetDate}`));
-      srcList.append(li);
+    const creditRows = (ids: Iterable<string>) => {
+      const list = el("ul");
+      for (const id of ids) {
+        const s = b.sources.find((x) => x.id === id);
+        if (!s) continue;
+        const li = this.creditItem(s);
+        if (s.datasetDate) li.append(el("span", "muted", ` · ${s.datasetDate}`));
+        list.append(li);
+      }
+      return list;
+    };
+    prov.append(creditRows(r.sourceIds));
+    // Endpoint sources name the origin/destination (e.g. an exit alias); they are never evidence of the path
+    // (#491, OD-22), so they are listed apart instead of beside the path's sources.
+    const nameIds = r.endpointSourceIds.filter((id) => !r.sourceIds.includes(id));
+    if (nameIds.length) {
+      prov.append(el("p", "muted", t.nameEvidence), creditRows(nameIds));
     }
-    prov.append(srcList);
     card.append(prov);
     sheet.append(card);
+    const merchant = this.merchantCard();
+    if (merchant) sheet.append(merchant);
+  }
+
+  /** The merchant card (#213) for a shop destination, or null: only a shop carries a directory listing. */
+  private merchantCard(): HTMLElement | null {
+    const poi = this.s.destination;
+    const b = this.s.loaded?.bundle;
+    if (!poi || poi.category !== "shop" || !b) return null;
+    return merchantCardEl(merchantCardModel(poi, b.sources, this.s.lang, this.floorLabel(poi)), this.t);
   }
 
   // ---- Modes / HUD -----------------------------------------------------------------

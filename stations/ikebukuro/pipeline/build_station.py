@@ -518,6 +518,10 @@ def main():
         "assets": src.get("assets", []),
         "dataFiles": src.get("dataFiles", []),
     }
+    # Printed hours for a whole building or floor range (OD-32): shared by many shops, so they live on the
+    # station, not on one POI. Omitted while there are none.
+    if src.get("buildingHours"):
+        station["buildingHours"] = src["buildingHours"]
     graph = {
         "schema": "gteki.station/0.1",
         "stationId": src["station"]["id"],

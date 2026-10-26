@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { asRealStation, createSyntheticBundle, syntheticEdge as edge } from "../../navigation/src/fixtures.ts";
 import { dataFileFactsOnlySources, isOpenAt, parseHm, parseStationFiles, validateBundle } from "./index.ts";
-import type { ApproximatePosition, CoverageArea, CoverageText, DataFile, GraphFile, HoursSpec, Poi, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
+import type { ApproximatePosition, BuildingHours, CoverageArea, CoverageText, DataFile, GraphFile, HoursSpec, HoursText, Poi, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
 
 const ev = { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" };
 const DECISION = { url: "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", date: "2026-10-21" };
@@ -15,6 +15,7 @@ function split(b: StationBundle): [StationManifestFile, GraphFile, PoiFile] {
       schema: rest.schema, station: rest.station, sources: rest.sources, floors: rest.floors, coverage: rest.coverage,
       ...(rest.spawnNodeIds ? { spawnNodeIds: rest.spawnNodeIds } : {}),
       ...(rest.spawnHeadings ? { spawnHeadings: rest.spawnHeadings } : {}),
+      ...(rest.buildingHours ? { buildingHours: rest.buildingHours } : {}),
     },
     { schema: b.schema, stationId: b.station.id, nodes, edges },
     { schema: b.schema, stationId: b.station.id, pois },
@@ -443,6 +444,60 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     };
     expect(errors(real("REUSABLE_WITH_CONDITIONS"))).toEqual([]);
     expect(errors(real("REFERENCE_ONLY"))).toContain("poi.approximate.rights");
+  });
+
+  it("keeps printed hours honest: where they came from, when they were read, and whether anything was printed (OD-32)", () => {
+    const hours = (over: Partial<HoursText> = {}): HoursText => ({
+      text: "月～土 10:00～21:00\n日・祝 10:00～19:30", sourceUrl: "https://example.org/shop", retrievedAt: "2026-10-24",
+      basis: "undated-official", status: "OK", ...over,
+    });
+    const place = (over: Partial<Poi> = {}) => {
+      const b = createSyntheticBundle();
+      Object.assign(b.pois[0]!, over);
+      return b;
+    };
+    // A well-formed row round-trips through the shape check and validates clean.
+    const parsed = parseStationFiles(...split(place({ hours: hours() })));
+    expect(parsed.ok).toBe(true);
+    expect(parsed.bundle?.pois[0]!.hours).toEqual(hours());
+    expect(errors(place({ hours: hours() }))).toEqual([]);
+    // A page that printed nothing says so; empty text passed off as hours is refused.
+    expect(errors(place({ hours: hours({ status: "UNKNOWN", text: undefined }) }))).toEqual([]);
+    expect(errors(place({ hours: hours({ text: "   " }) }))).toContain("hours.text");
+    // The provenance the app shows with the text: a real date, a link to the page, and whose word it is.
+    expect(errors(place({ hours: hours({ retrievedAt: "2026-10" }) }))).toContain("hours.date");
+    expect(errors(place({ hours: hours({ sourceUrl: "example.org/shop" }) }))).toContain("hours.url");
+    expect(errors(place({ hours: hours({ basis: "guess" as HoursText["basis"] }) }))).toContain("hours.basis");
+    expect(errors(place({ hours: hours({ status: "MAYBE" as HoursText["status"] }) }))).toContain("hours.status");
+    // Shape: a missing field is an error, never an implicit default.
+    const shaped = parseStationFiles(...split(place({ hours: { text: "10:00～21:00" } as unknown as HoursText })));
+    expect(shaped.ok).toBe(false);
+    expect(shaped.issues.map((i) => i.code)).toContain("shape.missing");
+    // Building-level rows are shared hours for many shops, so they need a building name and the same provenance.
+    const building = (over: Partial<BuildingHours> = {}): BuildingHours => ({
+      building: [{ lang: "ja", text: "ルミネ池袋" }], floorRange: "B1～7F", note: [{ lang: "ja", text: "店舗により異なる場合あり" }], ...hours(), ...over,
+    });
+    const shared = (over: Partial<BuildingHours> = {}) => {
+      const b = createSyntheticBundle();
+      b.buildingHours = [building(over)];
+      return b;
+    };
+    const built = parseStationFiles(...split(shared()));
+    expect(built.ok).toBe(true);
+    expect(built.bundle?.buildingHours).toEqual([building()]);
+    expect(errors(shared())).toEqual([]);
+    expect(errors(shared({ building: [] }))).toContain("buildingHours.building");
+    expect(errors(shared({ status: "OK", text: undefined }))).toContain("hours.text");
+  });
+
+  it("refuses a printed-hours reading dated in the future (OD-32)", () => {
+    const b = createSyntheticBundle();
+    Object.assign(b.pois[0]!, { hours: { text: "10:00～21:00", sourceUrl: "https://example.org/shop", retrievedAt: "2999-01-01", basis: "undated-official", status: "OK" } });
+    expect(errors(b)).toContain("hours.date");
+    // A reading from today is fine: only dates after today are refused.
+    const today = new Date().toISOString().slice(0, 10);
+    Object.assign(b.pois[0]!, { hours: { text: "10:00～21:00", sourceUrl: "https://example.org/shop", retrievedAt: today, basis: "undated-official", status: "OK" } });
+    expect(errors(b)).not.toContain("hours.date");
   });
 
   it("keeps unknown and symbolic floor elevations null and rejects unknown elevation sources", () => {

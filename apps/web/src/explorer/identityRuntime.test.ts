@@ -24,7 +24,7 @@ function runtime(boardZ = -10) {
     mode: "overview", camera: new THREE.PerspectiveCamera(50, 9 / 19.5, 0.05, 100),
     cameraTargets: [], skyTargets: [], ray: new THREE.Raycaster(), occluders: [], proxies: new Set(), signMeshes: new Set(), cameraCut: new CameraCut(),
     labelSweep: new OcclusionSweep(), labelSweepDoneAt: -Infinity, labelCamPos: new THREE.Vector3(Infinity, 0, 0), labelCamQuat: new THREE.Quaternion(), labelAt: new THREE.Vector3(), quality: "low",
-    guide: null, guideAllStops: [], guideIdentityHoldS: 0, tier: "run", events: {}, groundAt: vi.fn(() => 0),
+    guide: null, guideAllStops: [], guideIdentityHoldS: 0, guideIdentityCentre: new THREE.Vector3(), guideIdentityOffset: { yaw: 0, pitch: 0 }, identityHead: new THREE.Vector3(), identityToward: new THREE.Vector3(), tier: "run", events: {}, groundAt: vi.fn(() => 0),
     input: { consumeLook: vi.fn(() => ({ dx: 0, dy: 0, zoom: 0 })), move: vi.fn(() => ({ x: 0, y: 0, run: false })) },
     orbit: { target: new THREE.Vector3() }, avatar: new THREE.Group(), routeGroup: new THREE.Group(), routeMarkersVisible: true, world: root, overviewLook: { set: vi.fn() },
     street: { restore: vi.fn() }, setFov: vi.fn(), camDistance: 4,
@@ -148,28 +148,71 @@ describe("initial identity placement", () => {
 describe("guide identity steering hold", () => {
   const route = [{ x: 0, y: 0, z: 0, stepIndex: 0 }, { x: 0, y: 100, z: 0, stepIndex: 0 }];
 
-  it("holds the framed yaw for four seconds while advancing along the route, then resumes steering", () => {
-    const { e } = runtime();
+  /** Yaw that keeps the board framed: its bearing from the head plus the framed offset (the hold's own aim). */
+  const aimOf = (e: any) => {
+    const head = e.pos.clone().add(new THREE.Vector3(0, 1.62, 0));
+    const toward = e.guideIdentityCentre.clone().sub(head);
+    return Math.atan2(-toward.x, -toward.z) + e.guideIdentityOffset.yaw;
+  };
+
+  it("tracks the framed board for four seconds while advancing along the route, then resumes steering", () => {
+    const { e } = runtime(-25);
     e.startGuide(route);
-    const yaw = e.yaw;
-    expect(yaw).toBeGreaterThan(0.05);
+    expect(e.guideIdentityHoldS).toBe(4);
     for (let i = 0; i < 16; i++) {
       e.stepGuide(0.25);
-      expect(e.yaw).toBe(yaw);
+      expect(e.yaw).toBeCloseTo(aimOf(e), 6);
     }
     expect(e.pos.z).toBeLessThan(-10);
-    expect(e.pos.x).toBe(0);
+    expect(e.guideIdentityHoldS).toBe(0);
+    const yaw = e.yaw;
     e.stepGuide(0.125);
     expect(e.yaw).toBeCloseTo(yaw / 2);
   });
 
   it("steers only for the portion of a frame after the hold expires", () => {
-    const { e } = runtime();
+    const { e } = runtime(-25);
     e.startGuide(route);
-    const yaw = e.yaw;
     for (let i = 0; i < 15; i++) e.stepGuide(0.25);
     e.stepGuide(0.375);
-    expect(e.yaw).toBeCloseTo(yaw / 2);
+    expect(e.yaw).toBeCloseTo(aimOf(e) / 2, 6);
+  });
+
+  it("keeps a board 18 m ahead and 3 m to the side in view at every frame of a 3 s run-tier walk", () => {
+    const { e } = runtime(-18);
+    e.pos.set(0, 0, 0);
+    e.startGuide(route);
+    const start = e.pos.z;
+    const centre = e.guideIdentityCentre.clone();
+    expect(e.guideIdentityHoldS).toBe(4);
+    for (let i = 0; i < 180; i++) {
+      e.stepGuide(1 / 60);
+      const pose = followPose(e.pos.clone().add(new THREE.Vector3(0, 1.62, 0)), e.yaw, e.pitch);
+      e.camera.position.copy(pose.pivot).addScaledVector(pose.back, FOLLOW.defaultDistance);
+      e.camera.lookAt(pose.target); e.camera.updateMatrixWorld(true);
+      const ndc = centre.clone().project(e.camera);
+      expect(Math.abs(ndc.x)).toBeLessThanOrEqual(1);
+      expect(ndc.z).toBeLessThanOrEqual(1);
+    }
+    expect(Math.abs(e.pos.z - start)).toBeGreaterThan(9);
+  });
+
+  it("a route that turns away from the board ends the hold early and steering resumes smoothly", () => {
+    const { e } = runtime(-18);
+    // Out 5 m toward the board, then straight back: the look would have to turn well over 100 degrees.
+    e.startGuide([{ x: 0, y: 0, z: 0, stepIndex: 0 }, { x: 0, y: 5, z: 0, stepIndex: 0 }, { x: 0, y: 0, z: 0, stepIndex: 0 }]);
+    expect(e.guideIdentityHoldS).toBe(4);
+    for (let i = 0; i < 200 && e.guideIdentityHoldS > 0; i++) e.stepGuide(1 / 60);
+    expect(e.guideIdentityHoldS).toBe(0);
+    const turnYaw = Math.PI;
+    expect(e.pos.z).toBeGreaterThan(-5.5);
+    let previous = e.yaw;
+    for (let i = 0; i < 30; i++) {
+      e.stepGuide(1 / 60);
+      expect(Math.abs(e.yaw - previous)).toBeLessThan(0.2);
+      previous = e.yaw;
+    }
+    expect(Math.abs(Math.atan2(Math.sin(e.yaw - turnYaw), Math.cos(e.yaw - turnYaw)))).toBeLessThan(1.2);
   });
 
   it.each([{ dx: 10, dy: 0, zoom: 0 }, { dx: 0, dy: 10, zoom: 0 }, { dx: 0, dy: 0, zoom: 10 }])("look input %j ends the hold immediately", (look) => {
@@ -258,9 +301,10 @@ describe("identity QA and chip integration", () => {
       expect(s.height).not.toHaveBeenCalled();
       expect(s.translate).not.toHaveBeenCalled();
     }
+    // #400: overview protects the same name, so the mode change neither resets nor rewrites the offset.
     e.mode = "overview";
     e.updateIdentityLabels();
-    for (const s of spies) { expect(s.translate).toHaveBeenCalledExactlyOnceWith(""); s.translate.mockClear(); }
+    for (const s of spies) expect(s.translate).not.toHaveBeenCalled();
     for (let i = 0; i < 5; i++) e.updateIdentityLabels();
     for (const s of spies) {
       expect(s.width).not.toHaveBeenCalled();
@@ -438,7 +482,7 @@ describe("identity QA and chip integration", () => {
     expect([...first, ...second].map((g: THREE.Group) => g.visible)).toEqual([true, true, true, true]);
   });
 
-  it("hides unselected overlap in labelInfo, offsets endpoints and resets on overview", () => {
+  it("hides unselected overlap in labelInfo, offsets endpoints and keeps protecting in overview", () => {
     const { e, board } = runtime();
     e.mode = "walk";
     e.camera.position.set(-2, 2, 0); e.camera.lookAt(board.position); e.camera.updateMatrixWorld(true);
@@ -456,9 +500,30 @@ describe("identity QA and chip integration", () => {
     e.identityLabelsDirty = true; // setPois invalidates protection even with a still camera
     e.updateLabels();
     expect(protect).toHaveBeenCalledOnce();
+    // #400: overview is protected too — a chip is never drawn over a readable name in any mode.
     e.mode = "overview"; e.updateIdentityLabels();
-    expect(plain.identityHidden).toBe(false); expect(endpoint.identityOffsetY).toBe(0);
-    expect((endpoint.obj.element as { style: unknown }).style).toMatchObject({ translate: "" });
+    expect(plain.identityHidden).toBe(true); expect(endpoint.identityOffsetY).toBeLessThan(0);
+  });
+
+  it("declutters an overview chip where its identity nudge actually draws it (#400)", () => {
+    const { e, board } = runtime();
+    e.camera.position.set(-2, 2, 0); e.camera.lookAt(board.position); e.camera.updateMatrixWorld(true);
+    const a = { ...labelAt(board, false), poiId: "poi:a", klass: 3, routable: true };
+    const b = { ...labelAt(board, false), poiId: "poi:b", klass: 3, routable: true };
+    b.obj.position.y -= 0.7; b.obj.updateMatrixWorld(true);
+    e.poiLabels = [a, b];
+    const screenY = (l: typeof a) => (-l.obj.getWorldPosition(new THREE.Vector3()).project(e.camera).y * 0.5 + 0.5) * e.viewSize.h;
+    const [ya, yb] = [screenY(a), screenY(b)];
+    // Far enough apart to coexist (26 px box plus the 3 px pad and 4 px hold), so nothing is hidden yet.
+    expect(Math.abs(ya - yb)).toBeGreaterThan(40);
+    e.declutterDirty = true; e.declutterAt = -Infinity;
+    e.updateDeclutter(0);
+    expect([a.decluttered, b.decluttered]).toEqual([false, false]);
+    // The identity pass nudges a onto b; declutter must hide one where a is now drawn, not at its anchor.
+    a.identityOffsetY = yb - ya;
+    e.declutterDirty = true;
+    e.updateDeclutter(1000);
+    expect([a.decluttered, b.decluttered].filter(Boolean)).toHaveLength(1);
   });
 
   it("protects chips only for identity boards the camera can actually see (#342)", () => {
@@ -472,6 +537,21 @@ describe("identity QA and chip integration", () => {
     const wall = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
     wall.position.set(-2, 2, -5); root.add(wall); root.updateMatrixWorld(true);
     e.buildOccluders(root); e.refreshOccluders();
+    e.updateIdentityLabels();
+    expect(chip.identityHidden).toBe(false);
+  });
+
+  it("does not push chips for a name that faces away or sits behind the camera (#400)", () => {
+    const { e, board } = runtime();
+    e.mode = "walk";
+    const chip = labelAt(board, false); e.poiLabels = [chip];
+    // The board's face is +Z; a camera on its back side still projects a rect, but the name is unreadable.
+    e.camera.position.set(board.position.x, board.position.y, board.position.z - 10);
+    e.camera.lookAt(board.position); e.camera.updateMatrixWorld(true);
+    e.updateIdentityLabels();
+    expect(chip.identityHidden).toBe(false);
+    // Facing the board but with the board behind the camera: nothing to protect either.
+    e.camera.position.set(-2, 2, 0); e.camera.lookAt(-2, 2, 10); e.camera.updateMatrixWorld(true);
     e.updateIdentityLabels();
     expect(chip.identityHidden).toBe(false);
   });

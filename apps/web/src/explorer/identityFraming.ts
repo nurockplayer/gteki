@@ -16,7 +16,7 @@ export const IDENTITY_RANGE_M = 30;
 export const LOOK_PITCH = { min: -1.1, max: 0.5 } as const;
 
 /** Pure placement: choose a nearby readable board and frame its name at the follow lens. */
-export function identityFraming(head: THREE.Vector3, yaw: number, _pitch: number, boards: readonly FramingBoard[], aspect: number, fovDeg: number, guideHeading?: number, free: NdcRect = { x0: -1, y0: -1, x1: 1, y1: 1 }): { yaw: number; pitch: number } | null {
+export function identityFraming(head: THREE.Vector3, yaw: number, _pitch: number, boards: readonly FramingBoard[], aspect: number, fovDeg: number, guideHeading?: number, free: NdcRect = { x0: -1, y0: -1, x1: 1, y1: 1 }): { yaw: number; pitch: number; centre: THREE.Vector3 } | null {
   const camera = new THREE.PerspectiveCamera(fovDeg, aspect, 0.05, 100);
   const tanV = Math.tan(THREE.MathUtils.degToRad(fovDeg / 2)), tanH = tanV * camera.aspect;
   const left = Math.max(-1, free.x0), right = Math.min(1, free.x1);
@@ -57,7 +57,7 @@ export function identityFraming(head: THREE.Vector3, yaw: number, _pitch: number
     if (board.front.dot(camera.position.clone().sub(board.centre).normalize()) <= 0.2) continue;
     if (board.visible && !board.visible(camera.position.clone(), board.centre.clone())) continue;
     // Keep yaw continuous around the current camera heading.
-    return { yaw: yaw + Math.atan2(Math.sin(y - yaw), Math.cos(y - yaw)), pitch: p };
+    return { yaw: yaw + Math.atan2(Math.sin(y - yaw), Math.cos(y - yaw)), pitch: p, centre: board.centre };
   }
   return null;
 }
