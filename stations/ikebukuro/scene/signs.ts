@@ -3,6 +3,7 @@
 // charcoal panel, white type, exit numbers on yellow badges (the common
 // Japanese exit colour convention). No operator logos or typefaces.
 import type * as THREE_NS from "three";
+import type { IdentityBoardTag } from "@gteki/scene-api";
 
 type Arrow = "up" | "left" | "right";
 
@@ -16,7 +17,40 @@ interface SignContent {
   places?: { id: string; ja: string | null; en: string | null; distanceM?: number }[];
 }
 
+export interface IdentityBoard {
+  id: string;
+  anchor: { nodeId?: string; edgeId?: string };
+  kind: "station-name" | "meeting-point";
+  text: { ja: string; kana?: string; en: string; transfer?: string; location?: string; locationEn?: string; status?: string };
+  sourceIds: string[];
+  textVerification: "VERIFIED" | "APPROXIMATE";
+  placement: "GTEki-authored, not a surveyed sign location";
+  position: { x: number; y: number; z: number };
+  facing: { x: number; y: number };
+  widthM: number;
+  heightM: number;
+  ceilingZ: number;
+  mount?: "ceiling" | "wall";
+}
+
+/** Conservative cap-height proxy (0.7 em), not measured glyph ink or a recognition study. */
+export const IDENTITY_TYPE = { jaEm: 0.56, enEm: 0.40, cap: 0.7 } as const;
+const IDENTITY_ART = { widthM: 3.4, heightM: 0.54 } as const;
+
+export function identityTypography(board: IdentityBoard, nameScale = board.widthM > 2 ? 0.8 : 1.12) {
+  const artScale = Math.min(board.widthM / IDENTITY_ART.widthM, board.heightM / IDENTITY_ART.heightM);
+  const jaM = IDENTITY_ART.heightM * IDENTITY_TYPE.jaEm * artScale * nameScale;
+  const enM = IDENTITY_ART.heightM * IDENTITY_TYPE.enEm * artScale * nameScale;
+  const kanaM = IDENTITY_ART.heightM * 0.15 * artScale * nameScale;
+  const jpWidth = 2*jaM, enWidth = 9*0.56*enM, gap = 0.08*artScale*nameScale;
+  const jaX = 0.5-(jpWidth+enWidth+gap)/2/board.widthM;
+  const enX = jaX+(jpWidth+gap)/board.widthM;
+  const y = (fraction: number) => 0.5+((fraction-0.5)*nameScale-(nameScale > 1 ? 0.03 : 0))*IDENTITY_ART.heightM*artScale/board.heightM;
+  return { jaM, enM, kanaM, artScale, jaX, enX, jaY: y(0.43), enY: y(0.50), kanaY: y(0.18) };
+}
+
 export interface SignSpec extends SignContent {
+  identity?: IdentityBoard;
   id: string;
   position: { x: number; y: number; z: number };
   facing: { x: number; y: number };
@@ -105,6 +139,74 @@ type Part = { w: number; draw: (g: CanvasRenderingContext2D, x: number) => void 
 type Theme = { panel: string; rule: string; divider: string };
 const THEME_DIRECTION: Theme = { panel: "#1c222b", rule: "#2b3340", divider: "#4a5361" };
 const THEME_PLACE: Theme = { panel: "#124a68", rule: "#2f7fa6", divider: "#5b93b3" };
+
+/** Original GTEki layout: two name columns above plain JR and Metro transfer rows.
+ *  No operator colour, ring, badge, pictogram or copied sign composition. */
+function paintIdentity(board: IdentityBoard, pxPerM: number, nameScale: number, transfers: boolean) {
+  const c = document.createElement("canvas");
+  c.width = Math.round(board.widthM * pxPerM);
+  const fullHeight = Math.round(board.heightM * pxPerM);
+  c.height = fullHeight;
+  const g = c.getContext("2d")!;
+  // Paint in physical units, so pixel rounding never changes glyph aspect or metadata bounds.
+  const w = board.widthM, h = board.heightM;
+  g.setTransform(c.width/w, 0, 0, fullHeight/h, 0, 0);
+  const type = identityTypography(board, nameScale);
+  const bounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+  g.fillStyle = board.kind === "meeting-point" ? THEME_PLACE.panel : "#263d48";
+  g.fillRect(0, 0, w, h);
+  g.fillStyle = "#ffffff";
+  g.textAlign = "left";
+  g.textBaseline = "middle";
+  const line = (text: string, x: number, y: number, em: number, weight = 500, name = false) => {
+    let fontPx = h * em;
+    g.font = `${weight} ${fontPx}px ${FONT}`;
+    // Fit transfer/location rows by reducing both axes equally, never fillText's horizontal squeeze.
+    if (!name) {
+      fontPx *= Math.min(1, (1-x-0.04)*w / Math.max(1e-6, g.measureText(text).width));
+      g.font = `${weight} ${fontPx}px ${FONT}`;
+    }
+    g.fillText(text, x * w, y * h);
+    if (name) {
+      const m = g.measureText(text);
+      bounds.minX = Math.min(bounds.minX, x*w - (m.actualBoundingBoxLeft ?? 0));
+      bounds.maxX = Math.max(bounds.maxX, x*w + (m.actualBoundingBoxRight ?? m.width));
+      bounds.minY = Math.min(bounds.minY, y*h - (m.actualBoundingBoxAscent ?? fontPx/2));
+      bounds.maxY = Math.max(bounds.maxY, y*h + (m.actualBoundingBoxDescent ?? fontPx/2));
+    }
+    return fontPx/h*board.heightM*IDENTITY_TYPE.cap;
+  };
+  const transferCapM: number[] = [];
+  if (board.kind === "station-name") {
+    line(board.text.ja, type.jaX, type.jaY, type.jaM/board.heightM, 700, true);
+    line(board.text.kana!, type.enX, type.kanaY, type.kanaM/board.heightM, 500, true);
+    line(board.text.en, type.enX, type.enY, type.enM/board.heightM, 600, true);
+    if (transfers) {
+      const rows = board.text.transfer!.split(" · ");
+      // The name em box ends at 0.71 h. Two rows use all remaining height with a small interline gap.
+      transferCapM.push(line(rows.slice(0, 3).join(" · "), 0.04, 0.78, 0.13));
+      transferCapM.push(line(rows.slice(3).join(" · "), 0.04, 0.93, 0.13));
+    }
+  } else {
+    line(board.text.ja, 0.04, 0.22, 0.25, 700, true);
+    line(board.text.en, 0.38, 0.23, 0.16, 500, true);
+    line(board.text.location!, 0.04, 0.49, 0.13);
+    line(board.text.locationEn!, 0.04, 0.68, 0.105);
+    line(board.text.status!, 0.04, 0.89, 0.10);
+  }
+  let canvas = c;
+  if (!transfers && board.kind === "station-name") {
+    canvas = document.createElement("canvas");
+    canvas.width = c.width;
+    // Retain every measured name glyph plus one texel; crop only the unused transfer band.
+    canvas.height = Math.min(fullHeight, Math.max(Math.ceil(fullHeight*0.72), Math.ceil(bounds.maxY/h*fullHeight)+1));
+    canvas.getContext("2d")!.drawImage(c, 0, 0);
+  }
+  const croppedH = h*canvas.height/fullHeight;
+  return { canvas, widthM: board.widthM, h: croppedH, centerY: (h-croppedH)/2, transferCapM, bg: board.kind === "meeting-point" ? THEME_PLACE.panel : "#263d48",
+    nameRegion: { min: [(bounds.minX/w-0.5)*board.widthM, (0.5-bounds.maxY/h)*board.heightM],
+      max: [(bounds.maxX/w-0.5)*board.widthM, (0.5-bounds.minY/h)*board.heightM] } };
+}
 
 /** "~140 m": the distance still to go, small type under an exit badge / after a gate's English name. */
 const distLabel = (m: number) => `~${m} m`;
@@ -332,6 +434,28 @@ function packAtlas(faces: HTMLCanvasElement[], backgrounds: string[], scale: num
   return { pages, slots, rowsPerPage: pageRows.map((_, pi) => rowsOn(pi)), rowsUsed: pageRows, rowH };
 }
 
+/** Separate, tightly cropped shelves. WebGL2 supports mipmaps on these non-power-of-two canvases. */
+function packIdentity(art: ReturnType<typeof paintIdentity>[]) {
+  if (!art.length) return { pages: [], slots: [] };
+  const slots: { page: number; x: number; y: number; w: number; h: number }[] = [];
+  let y = GUTTER;
+  for (const a of art) {
+    slots.push({ page: 0, x: GUTTER, y, w: a.canvas.width, h: a.canvas.height });
+    y += a.canvas.height + GUTTER;
+  }
+  const page = document.createElement("canvas");
+  page.width = Math.max(...art.map((a) => a.canvas.width)) + 2*GUTTER;
+  page.height = y;
+  const g = page.getContext("2d")!;
+  art.forEach((a, i) => {
+    const s = slots[i]!;
+    g.fillStyle = a.bg;
+    g.fillRect(0, s.y-GUTTER/2, page.width, s.h+GUTTER);
+    g.drawImage(a.canvas, s.x, s.y);
+  });
+  return { pages: [page], slots };
+}
+
 /** Concatenate indexed geometries (position, normal, optional uv) into one, after each one's matrix.
  *  Normals matter even with unlit materials: the GTAO post pass reads them. */
 function merge(THREE: typeof THREE_NS, parts: { geo: THREE_NS.BufferGeometry; matrix: THREE_NS.Matrix4 }[], withUv: boolean) {
@@ -357,7 +481,7 @@ function merge(THREE: typeof THREE_NS, parts: { geo: THREE_NS.BufferGeometry; ma
 
 /**
  * Build all signs as one group, positioned in the renderer frame via toRenderer.
- * Faces share atlas textures and all geometry is merged, so ~100 signs cost about three draw calls.
+ * Direction faces share the original atlas; identity art has one small texture and one merged face batch.
  */
 export function buildSigns(
   THREE: typeof THREE_NS,
@@ -367,11 +491,25 @@ export function buildSigns(
   texelScale = 1,
   maxTextureSize = ATLAS_W,
   frame?: { facePlaneM: number },
+  identityBoards: IdentityBoard[] = [],
 ) {
   const group = new THREE.Group();
   group.name = "ikebukuro_signs";
-  type Face = { id: string; side: "front" | "back"; scale: number; canvas: HTMLCanvasElement; widthM: number; h: number; bg: string; local: THREE_NS.Matrix4; sign: THREE_NS.Matrix4 };
+  type Face = { id: string; side: "front" | "back"; scale: number; canvas: HTMLCanvasElement; widthM: number; h: number; bg: string; local: THREE_NS.Matrix4; sign: THREE_NS.Matrix4; solid?: boolean };
   const faces: Face[] = [];
+  const identityFaces: Face[] = [];
+  // Repeated text is painted once. Artwork is scaled uniformly inside each board's own aspect;
+  // the remaining face area uses a solid-colour quad in the same batch, so no glyph is stretched.
+  const artKey = (b: IdentityBoard) => b.kind === "meeting-point" ? "meeting-point" : b.widthM > 2 ? "wide" : "compact";
+  const identityArt = new Map<string, ReturnType<typeof paintIdentity>>();
+  for (const b of identityBoards) {
+    const key = artKey(b);
+    if (identityArt.has(key)) continue;
+    // Compact boards magnify the same artwork less on screen; reserve density for the nearby wide panel.
+    const lowDensity = key === "wide" ? 280 : key === "compact" ? 160 : 140;
+    const density = Math.min(lowDensity*(texelScale < 1 ? 1 : 2), (maxTextureSize-2*GUTTER)/IDENTITY_ART.widthM);
+    identityArt.set(key, paintIdentity({ ...b, widthM: IDENTITY_ART.widthM, heightM: IDENTITY_ART.heightM }, density, key === "compact" ? 1.12 : key === "wide" ? 0.8 : 1, texelScale >= 1));
+  }
   const layouts: SignLayout[] = [];
   const boxes: { geo: THREE_NS.BufferGeometry; matrix: THREE_NS.Matrix4 }[] = [];
   const face = (content: SignContent[], maxW: number, theme: Theme) => {
@@ -379,15 +517,22 @@ export function buildSigns(
     const widthM = Math.min(fit.widthM, maxW);
     return { canvas: fit.canvas, widthM, h: H * (widthM / fit.widthM), bg: theme.panel }; // last resort: scale a single item down
   };
-  for (const s of specs) {
+  const allSpecs: SignSpec[] = [...specs, ...identityBoards.map((b) => ({
+    id: b.id, position: b.position, facing: b.facing, ceilingZ: b.ceilingZ, exits: [], gates: [], identity: b,
+  }))];
+  for (const s of allSpecs) {
     const scale = s.scale ?? 1;
     const maxW = (s.maxWidthM ?? Infinity) / scale;
     const theme = s.kind === "place" ? THEME_PLACE : THEME_DIRECTION;
-    const front = face([s], maxW, theme);
+    const art = s.identity ? identityArt.get(artKey(s.identity))! : null;
+    const artScale = s.identity ? Math.min(s.identity.widthM / IDENTITY_ART.widthM, s.identity.heightM / IDENTITY_ART.heightM) : 1;
+    const identityFront = s.identity && art ? { ...art, widthM: s.identity.widthM, h: s.identity.heightM,
+      nameRegion: { min: art.nameRegion.min.map((v) => v*artScale), max: art.nameRegion.max.map((v) => v*artScale) } } : null;
+    const front = identityFront ?? face([s], maxW, theme);
     const backBlocks = (s.back ?? []).filter((b) => b.exits.length > 0 || b.gates.length > 0 || (b.places?.length ?? 0) > 0);
     const back = backBlocks.length ? face(backBlocks, maxW, theme) : null;
     const width = Math.max(front.widthM, back?.widthM ?? 0);
-    layouts.push({ id: s.id, position: s.position, facing: s.facing, ceilingZ: s.ceilingZ, scale,
+    if (!s.identity) layouts.push({ id: s.id, position: s.position, facing: s.facing, ceilingZ: s.ceilingZ, scale,
       widthM: width * scale, heightM: Math.max(front.h, back?.h ?? 0) * scale });
     // Plane faces +Z in local space; rotate so it faces the ENU 'facing' vector.
     const f = toRenderer(s.facing.x, s.facing.y, 0).sub(toRenderer(0, 0, 0));
@@ -399,10 +544,35 @@ export function buildSigns(
     // A loaded kit supplies the trim. Its face plane is recessed at +-0.028 m (outer depth 0.08 m):
     // move faces 1 mm inside it and the backing another 1 mm behind, rather than covering the rim at +-0.041.
     // Offsets are world metres even for a scaled low-ceiling sign. Without a kit, keep the original box and face offsets.
-    const faceZ = frame ? (frame.facePlaneM - 0.001) / scale : 0.041;
-    boxes.push({ geo: new THREE.BoxGeometry(frame ? width : width + 0.06, frame ? H : H + 0.06,
-      frame ? 2 * (faceZ - 0.001 / scale) : 0.08), matrix: signM });
-    faces.push({ ...front, id: s.id, side: "front", scale, local: new THREE.Matrix4().makeTranslation(0, 0, faceZ), sign: signM });
+    const useFrame = s.identity ? undefined : frame;
+    const faceZ = useFrame ? (useFrame.facePlaneM - 0.001) / scale : 0.041;
+    if (s.identity && identityFront) {
+      const proxy = new THREE.Object3D();
+      proxy.name = s.id;
+      proxy.applyMatrix4(signM);
+      // Metadata only: no Mesh/geometry, draw call, collider or walking surface.
+      const tag: IdentityBoardTag = {
+        front: [0, 0, 1],
+        regions: [{ kind: "name",
+          min: [identityFront.nameRegion.min[0]!, identityFront.nameRegion.min[1]!, faceZ - 0.002],
+          max: [identityFront.nameRegion.max[0]!, identityFront.nameRegion.max[1]!, faceZ + 0.002] }],
+      };
+      proxy.userData = { gteki_role: "sign", gteki_identity: tag };
+      group.add(proxy);
+    }
+    const housingH = s.identity ? front.h * (0.60 / 0.54) : useFrame ? H : H + 0.06;
+    boxes.push({ geo: new THREE.BoxGeometry(useFrame ? width : width + 0.06, housingH,
+      useFrame ? 2 * (faceZ - 0.001 / scale) : 0.08), matrix: signM });
+    if (s.identity?.mount !== "wall" && s.identity) {
+      const gap = Math.max(0, s.identity.ceilingZ - s.position.z - housingH/2);
+      for (const side of [-1, 1]) boxes.push({ geo: new THREE.BoxGeometry(0.015, gap, 0.015),
+        matrix: signM.clone().multiply(new THREE.Matrix4().makeTranslation(side*(width/2-0.12), housingH/2+gap/2, 0)) });
+    }
+    const frontFace: Face = { ...front, id: s.id, side: "front", scale, local: new THREE.Matrix4().makeTranslation(0, 0, faceZ), sign: signM };
+    if (art) {
+      identityFaces.push({ ...frontFace, solid: true });
+      identityFaces.push({ ...frontFace, widthM: art.widthM*artScale, h: art.h*artScale, local: new THREE.Matrix4().makeTranslation(0, art.centerY*artScale, faceZ+0.001) });
+    } else faces.push(frontFace);
     if (back) faces.push({ ...back, id: s.id, side: "back", scale, local: new THREE.Matrix4().makeRotationY(Math.PI).setPosition(0, 0, -faceZ), sign: signM });
   }
 
@@ -413,18 +583,20 @@ export function buildSigns(
   // Below full resolution (the phone tier) pages are capped at LOW_PAGE_HEIGHTS; full resolution is unchanged.
   const { pages, slots, rowsPerPage, rowsUsed, rowH } = packAtlas(faces.map((x) => x.canvas), faces.map((x) => x.bg), texelScale,
     Math.min(ATLAS_W, maxTextureSize), texelScale < 1 ? LOW_PAGE_HEIGHTS : undefined);
+  const packedIdentity = packIdentity([...identityArt.values()]);
   const textures: THREE_NS.Texture[] = [];
-  pages.forEach((page, pi) => {
+  const addPage = (page: HTMLCanvasElement, pageFaces: Face[], pageSlots: typeof slots, pi: number, name: string) => {
     const tex = new THREE.CanvasTexture(page);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = anisotropy;
     textures.push(tex);
-    const parts = faces.flatMap((fc, i) => {
-      if (slots[i]!.page !== pi) return [];
+    const parts = pageFaces.flatMap((fc, i) => {
+      const slot = pageSlots[i]!;
+      if (slot.page !== pi) return [];
       const geo = new THREE.PlaneGeometry(fc.widthM, fc.h);
       // Remap the plane's 0..1 UVs onto this face's atlas rectangle (CanvasTexture flips Y).
-      const u0 = slots[i]!.x / page.width, u1 = (slots[i]!.x + slots[i]!.w) / page.width;
-      const vTop = 1 - slots[i]!.y / page.height, vBot = 1 - (slots[i]!.y + slots[i]!.h) / page.height;
+      const u0 = (slot.x + (fc.solid ? 1 : 0)) / page.width, u1 = fc.solid ? u0 : (slot.x + slot.w) / page.width;
+      const vTop = 1 - (slot.y + (fc.solid ? 1 : 0)) / page.height, vBot = fc.solid ? vTop : 1 - (slot.y + slot.h) / page.height;
       const uv = geo.getAttribute("uv") as THREE_NS.BufferAttribute;
       for (let k = 0; k < uv.count; k++) uv.setXY(k, u0 + uv.getX(k) * (u1 - u0), vBot + uv.getY(k) * (vTop - vBot));
       return [{ geo, matrix: fc.sign.clone().multiply(fc.local) }];
@@ -432,10 +604,16 @@ export function buildSigns(
     // Internally lit sign face (unlit material, mild boost).
     const mat = new THREE.MeshBasicMaterial({ map: tex, toneMapped: false });
     mat.color.setScalar(1.1);
-    group.add(new THREE.Mesh(merge(THREE, parts, true), mat));
-  });
+    const mesh = new THREE.Mesh(merge(THREE, parts, true), mat);
+    mesh.name = name;
+    group.add(mesh);
+  };
+  pages.forEach((page, pi) => addPage(page, faces, slots, pi, `sign-faces-${pi}`));
+  const artList = [...identityArt.values()];
+  const identitySlots = identityFaces.map((f) => packedIdentity.slots[artList.findIndex((a) => a.canvas === f.canvas)]!);
+  packedIdentity.pages.forEach((page, pi) => addPage(page, identityFaces, identitySlots, pi, "identity-faces"));
   // Face sizes (m, before the sign's own scale) for the QA probe's on-screen measurements; not read by the app.
-  group.userData = { gteki_role: "sign", faces: faces.map((f) => ({ id: f.id, side: f.side, scale: f.scale, widthM: f.widthM, heightM: f.h, canvasPx: { w: f.canvas.width, h: f.canvas.height } })) };
+  group.userData = { gteki_role: "sign", faces: [...faces, ...identityFaces.filter((f) => !f.solid)].map((f) => ({ id: f.id, side: f.side, scale: f.scale, widthM: f.widthM, heightM: f.h, canvasPx: { w: f.canvas.width, h: f.canvas.height } })) };
 
   return {
     group,
@@ -443,6 +621,8 @@ export function buildSigns(
     /** Atlas page sizes (px), for tests and the harness: on the low tier one 4096 x 2048 page, plus a 4096 x <= 1024
      *  overflow page only when the faces need it. */
     pages: pages.map((p) => ({ w: p.width, h: p.height })),
+    identityPages: packedIdentity.pages.map((p) => ({ w: p.width, h: p.height })),
+    identityArt: artList.map((a) => ({ widthM: a.widthM, heightM: a.h, centerY: a.centerY, canvasPx: { w: a.canvas.width, h: a.canvas.height }, transferCapM: a.transferCapM })),
     /** Shelf rows used per page, rows each page holds at its cap, and the row pitch / gutter (px): how much budget is left. */
     rows: { used: rowsUsed, perPage: rowsPerPage, rowH, gutter: GUTTER },
     dispose() {
