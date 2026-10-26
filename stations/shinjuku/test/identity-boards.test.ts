@@ -19,6 +19,8 @@ const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;
 const corners = (box: LocalBox) => [box.min[0], box.max[0]].flatMap((x) =>
   [box.min[1], box.max[1]].flatMap((y) => [box.min[2], box.max[2]].map((z) => new THREE.Vector3(x, y, z))));
+// Only this station's own (Toei E27) ticket gates get identity boards; other operators' gate POIs in the shared data are out of scope.
+const e27Gates = bundle.pois.filter((p) => p.category === "ticket_gate" && p.id.startsWith("poi:gate:"));
 const worldFront = (board: THREE.Object3D) =>
   new THREE.Vector3(...board.userData.gteki_identity.front as [number, number, number]).transformDirection(board.matrixWorld);
 
@@ -88,7 +90,7 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
     const boards = station.identityBoards;
     expect(station.signs.every((o) => o.name.startsWith("sign:") && !o.userData.gteki_identity)).toBe(true);
     expect(boards.every((o) => !station.signs.includes(o))).toBe(true);
-    expect(boards.map((o) => o.name)).toEqual(["identity:spawn", ...bundle.pois.filter((p) => p.category === "ticket_gate").map((p) => `identity:gate:${p.id}`), "identity:platform:poi:platform:oedo"]);
+    expect(boards.map((o) => o.name)).toEqual(["identity:spawn", ...e27Gates.map((p) => `identity:gate:${p.id}`), "identity:platform:poi:platform:oedo"]);
     const tagged: THREE.Object3D[] = [];
     station.root.traverse((o) => { if (o.userData.gteki_identity) tagged.push(o); });
     expect(tagged).toHaveLength(boards.length * 2);
@@ -274,7 +276,7 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
   });
 
   it("faces within 20 degrees of each matched gate line normal or its reverse", () => {
-    const findings = bundle.pois.filter((p) => p.category === "ticket_gate").map((poi) => {
+    const findings = e27Gates.map((poi) => {
       const board = station.identityBoards.find((o) => o.name === `identity:gate:${poi.id}`)!;
       expect(board, poi.id).toBeDefined();
       const z = station.layout.nodeZ.get(poi.connectorNodeIds[0]!)!;
