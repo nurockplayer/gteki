@@ -162,6 +162,8 @@ const STRINGS = {
     paceNote: (walk: number, stairs: number) => `所要時間は徒歩${walk} m/s・階段${stairs} m/sで計算（ガイドは独自の速度で進みます）`,
     /** A known stairs edge: not "wheelchair access unknown" (#203 B8). */
     routeStairs: "階段あり",
+    routeUnverified: "未検証の区間あり",
+    unverifiedStep: (src: string) => src ? `未検証（${src}）` : "未検証",
     /** A graph node with no POI is never shown by its raw id (#203 B11). */
     unnamedPoint: "名称未登録の地点",
     stairFootLabel: (name: string) => `${name}（階段下）`,
@@ -384,6 +386,8 @@ const STRINGS = {
     dateJoiner: " · ",
     paceNote: (walk: number, stairs: number) => `Time assumes walking ${walk} m/s and stairs ${stairs} m/s; the guide moves at its own pace`,
     routeStairs: "Stairs",
+    routeUnverified: "Includes unverified sections",
+    unverifiedStep: (src: string) => src ? `Unverified (${src})` : "Unverified",
     unnamedPoint: "Unnamed point",
     stairFootLabel: (name: string) => `${name} (stair foot)`,
     generatedSigns: "Signs are placed from the route data, not at the real sign positions",

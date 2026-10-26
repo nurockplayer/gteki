@@ -13,6 +13,7 @@ import { printedHours } from "../hours.ts";
 import { listStations, PRIVATE_BUILD, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
 import { isUnlocatedShop, noRouteText, poiNoteText } from "./noRouteText.ts";
+import { unverifiedSources } from "./unverifiedSteps.ts";
 import { categoriesIn } from "./categoryFilter.ts";
 import { merchantCardEl, merchantCardModel } from "./merchantCard.ts";
 import { stationClock } from "../stationClock.ts";
@@ -358,7 +359,7 @@ export class App {
       if (!current()) return;
       this.identityView.showCard(loaded.bundle.station.identity, entry.label, this.s.lang);
       this.s.loaded = loaded;
-      this.s.router = createRouter(loaded.bundle);
+      this.s.router = createRouter(loaded.bundle, { allowUnverified: PRIVATE_BUILD });
       this.s.search = createSearchIndex(loaded.bundle);
       const ready = await this.explorer.loadStation(loaded, this.s.router);
       if (!current()) return;
@@ -954,6 +955,7 @@ export class App {
     const badges = el("div", "badges");
     const badge = (text: string, cls: string, title?: string) => { const x = el("span", `badge ${cls}`, text); if (title) x.title = title; badges.append(x); };
     if (r.synthetic) badge(t.syntheticShort, "warn", t.synthetic);
+    if (unverifiedSources(b, r.steps) !== null) badge(t.routeUnverified, "warn");
     for (const u of r.unknowns) badge(`${unknownLabel(t, u.kind)} ×${u.edgeIds.length}`, "unknown");
     // Waiting for an opening window is part of the time, and is said so.
     if (r.waitSeconds > 0) badge(t.waiting(Math.max(1, Math.round(r.waitSeconds / 60))), "info");
@@ -988,6 +990,11 @@ export class App {
     this.s.instructions.forEach((ins, i) => {
       const li = el("li", `ins ins-${ins.kind}${i === this.s.activeInstruction ? " active" : ""}`);
       li.append(el("span", "ins-icon"), el("span", "ins-text", ins.text));
+      const src = unverifiedSources(b, r.steps, ins.stepIndexes);
+      if (src !== null) {
+        li.classList.add("unverified");
+        li.append(el("span", "ins-unverified", t.unverifiedStep(src.join(this.s.lang === "ja" ? "、" : ", "))));
+      }
       li.addEventListener("click", () => {
         // Frame the whole described segment, from the junction where it starts.
         const pts = instructionPoints(this.s.polyline, ins);

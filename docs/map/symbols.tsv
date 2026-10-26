@@ -300,11 +300,11 @@ angleDelta	function	apps/web/src/explorer/walker.ts	99
 HOURS_MAX_AGE_DAYS	const	apps/web/src/hours.ts	7
 printedHours	function	apps/web/src/hours.ts	15
 Lang	type	apps/web/src/i18n.ts	6
-Strings	type	apps/web/src/i18n.ts	457
-strings	function	apps/web/src/i18n.ts	459
-pick	function	apps/web/src/i18n.ts	464
-coverageText	function	apps/web/src/i18n.ts	473
-initialLang	function	apps/web/src/i18n.ts	478
+Strings	type	apps/web/src/i18n.ts	461
+strings	function	apps/web/src/i18n.ts	463
+pick	function	apps/web/src/i18n.ts	468
+coverageText	function	apps/web/src/i18n.ts	477
+initialLang	function	apps/web/src/i18n.ts	482
 FormClock	interface	apps/web/src/merchant/form-state.ts	9
 FormState	interface	apps/web/src/merchant/form-state.ts	18
 newFormState	function	apps/web/src/merchant/form-state.ts	32
@@ -350,7 +350,7 @@ SIGN_FONT_TIMEOUT_MS	const	apps/web/src/signFont.ts	4
 loadSignFont	function	apps/web/src/signFont.ts	9
 StationClock	interface	apps/web/src/stationClock.ts	5
 stationClock	function	apps/web/src/stationClock.ts	17
-App	class	apps/web/src/ui/app.ts	89
+App	class	apps/web/src/ui/app.ts	90
 CATEGORY_ORDER	const	apps/web/src/ui/categoryFilter.ts	7
 categoriesIn	function	apps/web/src/ui/categoryFilter.ts	13
 ComboState	interface	apps/web/src/ui/combobox.ts	3
