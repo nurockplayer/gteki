@@ -56,6 +56,7 @@ const EXPECTED: Record<string, { script: string; sources: () => string[]; author
   "scene/access_fences.json": { script: "pipeline/build_access.py", sources: () => [PLATEAU, ...routableAreas()] },
   "scene/crowd_lanes.json": { script: "pipeline/build_station.py", sources: () => [PLATEAU, ...routableAreas(), ...verifiedEdges()] },
   "scene/signage.json": { script: "pipeline/build_signage.py", sources: () => [PLATEAU, ...verifiedEdges(), ...shownPois()] },
+  "scene/identity.json": { script: "pipeline/build_identity.py", sources: () => read("scene/identity.json").boards.flatMap((b: Evidence) => b.sourceIds) },
   "scene/finishes.json": { script: "GTEki-authored", sources: () => [], authored: true },
   "scene/kit/kit.json": { script: "GTEki-authored", sources: () => [], authored: true },
   "scene/columns.json": { script: "pipeline/extract_columns.py", sources: () => [PLATEAU] },
