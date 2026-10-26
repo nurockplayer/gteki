@@ -9,8 +9,8 @@ import { stationEnuProjector } from './station-enu.js';
 import { toolFingerprint } from './provenance.js';
 import { readZip, type ZipEntry } from './zip.js';
 import {
-  S03_DATUM, S03_FLOOR_ORDINALS, assertS03Bytes, floorMappingSha256, parseS03Members, residualStats,
-  type Point2, type Project,
+  S03_DATUM, S03_FLOOR_ORDINALS, assertS03Bytes, floorMappingSha256, nodeCheckA, parseS03Members, residualStats,
+  type NodeCheckA, type Point2, type Project, type S03Level,
 } from './s03-transform.js';
 
 /**
@@ -130,8 +130,10 @@ export function loadGateTags(document: unknown): Map<number, S03GateTag> {
 
 export interface NavGraphNode {
   source_id: number; level_id: number; level_label: string; floor_ordinal: number;
-  lon: number; lat: number; east_m: number; north_m: number; gate: S03GateTag | null;
+  lon: number; lat: number; east_m: number; north_m: number; gate: S03GateTag | null; check_a: NodeCheckA;
 }
+/** Check A per level: nodes by their own footprint test, edges charged to the level of their from-node (the dropped-level rule). */
+export interface CheckALevel { level_id: number; nodes_pass: number; nodes_fail: number; nodes_unassessed: number; edges_pass: number; edges_fail: number }
 export interface NavGraphEdge {
   link_id: number; from_node: number; to_node: number; direction: number; dz_m: number | null;
   length_m: number; level_relation: 'same_level' | 'cross_level'; reason_codes: string[];
@@ -146,13 +148,14 @@ export interface BuiltNavGraph {
     directions: { direction: number; count: number }[];
   };
   dropped: DroppedLevel[];
+  check_a: { nodes: Record<NodeCheckA, number>; edges: { pass: number; fail: number }; levels: CheckALevel[] };
   /** Nothing else is dropped: every remaining link stays with its reason codes. This says so in the receipt. */
   other_drops: readonly never[];
   line_counts: { operator_id: string; nodes: number; edges: number }[];
 }
 
 /** The graph inputs: the path transform's inputs plus the geometry-id tags, so nodes and edges come from v5_nav only. */
-export interface NavGraphInputs extends PathInputs { gateTags: ReadonlyMap<number, S03GateTag> }
+export interface NavGraphInputs extends PathInputs { gateTags: ReadonlyMap<number, S03GateTag>; levels: S03Level[] }
 
 /**
  * Build the held walk graph. Levels, nodes and links are the path transform's own: the same affines, the same projection,
@@ -162,6 +165,7 @@ export interface NavGraphInputs extends PathInputs { gateTags: ReadonlyMap<numbe
  */
 export function buildNavGraph(inputs: NavGraphInputs, project: Project): BuiltNavGraph {
   const paths = buildPaths(inputs, project);
+  const checkA = nodeCheckA(inputs, project);
   const geometryById = new Map(inputs.nodes.map(node => [node.sourceId, node.geometryId]));
   const nodeIdByHash = new Map(inputs.nodes.map(node => [sha256(String(node.sourceId)), node.sourceId]));
   const linkIdByHash = new Map(inputs.links.map(link => [sha256(String(link.sourceId)), link.sourceId]));
@@ -180,14 +184,17 @@ export function buildNavGraph(inputs: NavGraphInputs, project: Project): BuiltNa
     }
     const linkId = linkIdByHash.get(segment.link_id_sha256);
     if (linkId === undefined) throw new Error('S03 nav graph: a segment is not a v5_nav link');
+    // Check A clears its code only when both endpoints pass their own footprint test; every other code stays as the path transform set it.
+    const bothInside = checkA.get(from) === 'PASS' && checkA.get(to) === 'PASS';
     edges.push({ link_id: linkId, from_node: from, to_node: to, direction: segment.direction, dz_m: segment.dz_m,
-      length_m: segment.length_m, level_relation: segment.level_relation, reason_codes: [...segment.reason_codes] });
+      length_m: segment.length_m, level_relation: segment.level_relation,
+      reason_codes: segment.reason_codes.filter(code => !(bothInside && code === PATH_REASON.CHECK_A_CONTAINMENT_FAIL)) });
   }
   // Link order keeps the private document readable and the output independent of the path transform's hash ordering.
   edges.sort((a, b) => a.link_id - b.link_id);
   const nodes: NavGraphNode[] = paths.nodes.filter(node => !dropped.has(node.source_id)).map(node => ({
     source_id: node.source_id, level_id: node.level_id, level_label: node.level_label, floor_ordinal: node.floor_ordinal,
-    lon: node.lon, lat: node.lat, east_m: node.east_m, north_m: node.north_m,
+    lon: node.lon, lat: node.lat, east_m: node.east_m, north_m: node.north_m, check_a: checkA.get(node.source_id)!,
     gate: geometryById.get(node.source_id) === null || geometryById.get(node.source_id) === undefined
       ? null : inputs.gateTags.get(geometryById.get(node.source_id)!) ?? null,
   }));
@@ -210,12 +217,29 @@ export function buildNavGraph(inputs: NavGraphInputs, project: Project): BuiltNa
       directions: [1, 2, 3].map(direction => ({ direction, count: edges.filter(edge => edge.direction === direction).length })),
     },
     // A dropped edge is charged to the dropped level one of its endpoints sits on, so the counts per level add up.
+    check_a: checkASummary(nodes, edges, levelById),
     dropped: DROPPED_LEVELS.map(level => ({ ...level,
       nodes: paths.nodes.filter(node => node.level_id === level.level_id).length,
       edges: droppedEdgeOwner.filter(owner => owner === level.level_id).length })),
     other_drops: [],
     line_counts: lineCounts(nodes, edges, nodeById),
   };
+}
+
+/** Check A counts: a node passes or fails its own footprint; an edge passes only when it no longer carries the code, i.e. both ends pass. */
+function checkASummary(nodes: readonly NavGraphNode[], edges: readonly NavGraphEdge[], levelById: ReadonlyMap<number, number>): BuiltNavGraph['check_a'] {
+  const count = (values: readonly NodeCheckA[], value: NodeCheckA) => values.filter(entry => entry === value).length;
+  const levels = [...new Set(nodes.map(node => node.level_id))].sort((a, b) => a - b).map(levelId => {
+    const levelNodes = nodes.filter(node => node.level_id === levelId).map(node => node.check_a);
+    const levelEdges = edges.filter(edge => levelById.get(edge.from_node) === levelId);
+    return { level_id: levelId, nodes_pass: count(levelNodes, 'PASS'), nodes_fail: count(levelNodes, 'FAIL'), nodes_unassessed: count(levelNodes, 'UNASSESSED'),
+      edges_pass: levelEdges.filter(edge => !edge.reason_codes.includes(PATH_REASON.CHECK_A_CONTAINMENT_FAIL)).length,
+      edges_fail: levelEdges.filter(edge => edge.reason_codes.includes(PATH_REASON.CHECK_A_CONTAINMENT_FAIL)).length };
+  });
+  const nodeChecks = nodes.map(node => node.check_a);
+  return { nodes: { PASS: count(nodeChecks, 'PASS'), FAIL: count(nodeChecks, 'FAIL'), UNASSESSED: count(nodeChecks, 'UNASSESSED') },
+    edges: { pass: edges.filter(edge => !edge.reason_codes.includes(PATH_REASON.CHECK_A_CONTAINMENT_FAIL)).length,
+      fail: edges.filter(edge => edge.reason_codes.includes(PATH_REASON.CHECK_A_CONTAINMENT_FAIL)).length }, levels };
 }
 
 /**
@@ -268,6 +292,8 @@ export function buildNavGraphReceipt(args: {
     counts: args.result.counts,
     line_counts: args.result.line_counts,
     dropped_levels: args.result.dropped,
+    check_a: { ...args.result.check_a,
+      rule: 'Check A per node: each node is tested against the footprint of its own level (the same polygons and containment rule as the transform check). An edge keeps CHECK_A_CONTAINMENT_FAIL unless both its endpoints pass; a node on a level with no usable polygon is UNASSESSED and keeps the code. Per-level edge counts charge an edge to the level of its from-node.' },
     other_drops: args.result.other_drops,
     edge_length_m: residualStats(args.result.edges.map(edge => edge.length_m)),
     reason_codes: Object.values(PATH_REASON).map(code => ({ code, count: args.result.edges.filter(edge => edge.reason_codes.includes(code)).length }))
@@ -281,7 +307,7 @@ export function buildNavGraphReceipt(args: {
       release_condition: 'CRS evidence for the path frame is obtained AND the data lead signs off; until then nothing here is published, placed, routed on or bundled.',
       rule: 'The 2026-10-24 ruling covers 25 approximate points and 19 platform names only. This graph is written to the private store and this receipt; no record enters stations/**, route results or the web bundle.' },
     node_rule: 'One node per v5_nav.json node not on a dropped level: both affines applied to mx/my, then projected with the station ENU frame (GRS80, horizontal only, height 0). A node is tagged only from its own level-entry geometry id joined to a reviewed gate, transfer or platform entry; no line, operator or gate field exists on a node or link, so every untagged node stays UNKNOWN. Nothing is attributed by name text or proximity.',
-    edge_rule: 'One edge per v5_nav.json link whose endpoints both survive the level drop: direction 1/2/3, dz, the straight-line ENU length, the level relation and the reason codes come from the path transform, so a cross-level edge keeps CROSS_LEVEL_DEVICE_UNKNOWN and a one-way edge keeps ONE_WAY. Self-loops and zero-length edges are kept and flagged, never dropped.',
+    edge_rule: 'One edge per v5_nav.json link whose endpoints both survive the level drop: direction 1/2/3, dz, the straight-line ENU length, the level relation and the reason codes come from the path transform, except CHECK_A_CONTAINMENT_FAIL, which is cleared where both endpoints pass their own footprint test. So a cross-level edge keeps CROSS_LEVEL_DEVICE_UNKNOWN and a one-way edge keeps ONE_WAY. Self-loops and zero-length edges are kept and flagged, never dropped.',
     drop_rule: 'Level 64677 is dropped whole with its nodes and every edge touching one, because it fails Check A at 0.917355 against the fixed 95% rule. No other record is dropped; every surviving link keeps its reason codes.',
     labels_rule: 'Every node and edge record carries navigation_use NOT_FOR_ROUTING, verification UNVERIFIED and gteki_role evidence, on the document and on each record.',
     public_receipt_rule: 'This receipt carries counts, dropped numeric level ids, reason codes, length statistics and member counts only: no coordinate, no node or link id, no gate name and no level label. Numeric level ids follow the s03-transform-check precedent.',
@@ -332,7 +358,7 @@ export async function s03NavGraph() {
     gate_source: { path: NAV_GRAPH_GATE_SOURCE_PATH, sha256: sha256(gateBytes),
       rule: 'A node is tagged only where its own level-entry geometry id is the entity id of a reviewed gate, transfer or platform entry. The source writes no line, operator or gate field on a node or link; an untagged node stays UNKNOWN.' },
     publication: { graph: 'HOLD', paths: 'HOLD', routing: 'HOLD' },
-    counts: result.counts, line_counts: result.line_counts, dropped_levels: result.dropped, other_drops: result.other_drops,
+    counts: result.counts, line_counts: result.line_counts, dropped_levels: result.dropped, check_a: result.check_a, other_drops: result.other_drops,
     reason_codes: Object.values(PATH_REASON).map(code => ({ code, count: result.edges.filter(edge => edge.reason_codes.includes(code)).length })).filter(entry => entry.count > 0),
     edge_length_m: residualStats(result.edges.map(edge => edge.length_m)),
     nodes: result.nodes.map(node => ({ ...node, labels: NAV_GRAPH_LABELS })),
