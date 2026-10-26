@@ -249,7 +249,9 @@ export interface S03Link { sourceId: number; n1: number; n2: number; direction: 
 export interface S03FeatureGeometry { featureIndex: number; featureId: number | null; polygons: Polygon2[] }
 export interface S03Level {
   /** `label` is the source level label that the asserted ordinal map was applied to; it never enters a public receipt. */
-  id: number; label: string; ordinal: number; polygons: Polygon2[]; nonPolygonFeatures: number; memberSha256: string;
+  id: number; label: string; ordinal: number;
+  /** the level's printed v5_nav `z` ordering value (spec §4.5); null when the member omits it */
+  z: number | null; polygons: Polygon2[]; nonPolygonFeatures: number; memberSha256: string;
   featuresTotal: number; featuresUsed: number; featuresExcludedUnclosedRing: number; featuresExcludedHoleOutsideShell: number;
   features: S03FeatureGeometry[];
 }
@@ -449,10 +451,16 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
     });
     // A level whose polygon features were all excluded stays in the output with null inside metrics; a level with no polygon feature at all still fails.
     if (!polygons.length && !featuresExcludedUnclosedRing && !featuresExcludedHoleOutsideShell) fail(member, 'no polygons to test');
-    return { id: level.id, label, ordinal: S03_FLOOR_ORDINALS[label]!, polygons, nonPolygonFeatures, memberSha256: sha256(members.get(member)!.data),
+    return { id: level.id, label, ordinal: S03_FLOOR_ORDINALS[label]!, z: null, polygons, nonPolygonFeatures, memberSha256: sha256(members.get(member)!.data),
       featuresTotal: features.length, featuresUsed, featuresExcludedUnclosedRing, featuresExcludedHoleOutsideShell, features: usedFeatures };
   });
   if (!Array.isArray(nd.l) || nd.l.length !== levels.length || new Set(nd.l.map(l => record(l) ? l.id : null)).size !== levels.length || nd.l.some(l => !record(l) || !levelIds.has(l.id as number))) fail(navName, 'drawing levels do not match com-map.geojson');
+  // The printed `z` is S03's own ordering value for its levels (spec S1 §3.2.3/§4.5); a member without it leaves z null.
+  for (const entry of nd.l as Array<{ id: number; z?: unknown }>) {
+    if (entry.z === undefined) continue;
+    if (!finite(entry.z)) fail(navName, `level ${entry.id} has a non-finite z`);
+    levels.find(level => level.id === entry.id)!.z = entry.z as number;
+  }
   if (!Array.isArray(nav.n) || !nav.n.length) fail(navName, 'missing nodes');
   const nodeIds = new Set<number>();
   const nodes: S03Node[] = (nav.n as unknown[]).map((n, index) => {
