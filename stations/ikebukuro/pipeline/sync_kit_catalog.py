@@ -66,9 +66,6 @@ ATLAS_PATHS = {"escalator": "atlas/escalator_ao.png", "nosing": "atlas/nosing_ao
 ATLAS_JSON = os.path.join(STATION, "scene", "kit_catalog_atlas.json")
 BATCH_KINDS = ("escalator", "rails", "nosing")  # batch A + B + C
 KINDS = ("escalator", "rails", "nosing")
-# Batch C lands in two stacked PRs to keep each under the 100-file review limit: the desktop tier first, the phone
-# copies in the follow-up. The follow-up widens this to both tiers and deletes it.
-SHIPPED_TIERS = ("high",)
 
 
 def sha256_of(path):
@@ -87,7 +84,7 @@ def kind_of(entry):
     raise SystemExit(f"sync_kit_catalog: {entry['id']}: unknown generator {entry['generator']!r}")
 
 
-def plan(catalog, placements, kinds, tiers=SHIPPED_TIERS):
+def plan(catalog, placements, kinds, tiers=TIERS):
     """(tier, id) -> anchors that load it on that tier, for the selected kinds and shipped tiers."""
     kinds_of = {a["id"]: kind_of(a) for a in catalog["assets"]}
     out = {}
