@@ -48,6 +48,7 @@ import { runWidth } from "../scene/layout.ts";
 import { floorLabel } from "../app/src/narrate.ts";
 import { SURFACE_CREDIT } from "./import-surface.ts";
 import { loadRawE27, normId, pointInPolygon, RAW_DIR, type GeoFeature, type PolyG, type RawSpaceP } from "./e27-raw.ts";
+import { applyFieldReceipts, loadReceipts } from "./field-receipts.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT = join(HERE, "../data");
@@ -1285,6 +1286,7 @@ for (const file of MERCHANT_POI_FILES) {
     for (const id of poi.evidence.sourceIds)
       if (!allowed.has(id)) throw new Error(`merchant import: ${poi.id} (${file}) cites ${id}, which this file does not declare`);
     if (poi.evidence.sourceIds.length === 0) throw new Error(`merchant import: ${poi.id} cites no source`);
+    if (poi.connectorNodeIds.length > 0) throw new Error(`merchant import: ${poi.id} (${file}) has connectorNodeIds; a store connector comes only from a field receipt (docs/research/field/receipts)`);
     pois.push(poi);
   }
 }
@@ -1504,6 +1506,11 @@ const bundle: StationBundle = {
   dataFiles,
   buildingHours,
 };
+
+// ---------------------------------------------------------------- field receipts (#533, #554)
+// CLOSED team_field observations add a store or gate connector; nothing else may (see the merchant guard above).
+const fieldApplied = applyFieldReceipts(pois, sources, new Set(nodes.map((n) => n.id)), loadReceipts(join(HERE, "../../../docs/research/field/receipts"), "shinjuku"));
+if (fieldApplied.length) console.log(`field receipts: applied #533 items ${fieldApplied.join(", ")}`);
 
 // ---------------------------------------------------------------- plan (render geometry)
 const plan = {

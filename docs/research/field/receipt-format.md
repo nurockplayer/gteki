@@ -32,3 +32,4 @@ A receipt records text read from public signage during a field run. Store it at
 - `sourceKind` must be `team_field`: the GTEki team's own reading of public signage, published as facts only under the project's CC BY 4.0 (director ruling 2026-10-26 19:1x JST). Crowd or third-party contributions are rejected until a contributor licence and a rights review exist.
 - `observer` is a role (for example `owner`), never a person's name.
 - Only the facts copied from a plate (its text, the gate↔opening tie, the floor plate) are published. Photos stay private evidence: never shipped or committed, EXIF GPS stripped before storage, and faces blurred if a photo is ever shown.
+- Connectors are additive: every CLOSED item adds its node, because a store can have several entrances. To correct a wrong tie, edit or delete the earlier receipt item; a later receipt does not supersede it.
