@@ -9,7 +9,7 @@ export interface Additions {
   sources?: Source[];
   floors?: Floor[];
   pois?: Poi[];
-  graphParts: { file: string; nodes: Node[]; edges: Edge[] }[];
+  graphParts: { file: string; nodes: Node[]; edges: Edge[]; floors?: Floor[] }[];
 }
 
 function mergeList<T extends { id: string }>(publicItems: T[], additions: { file: string; items: T[] }[], label: string, problems: string[]): T[] {
@@ -39,6 +39,7 @@ export function mergeStation(pub: StationFiles, add: Additions): StationFiles {
   const floorFiles = (add.floors ?? []).length ? [{ file: "floors.json", items: add.floors! }] : [];
   const poiFiles = (add.pois ?? []).length ? [{ file: "pois.json", items: add.pois! }] : [];
   const graphParts = [...add.graphParts].sort((a, b) => a.file < b.file ? -1 : a.file > b.file ? 1 : 0);
+  floorFiles.push(...graphParts.filter(part => part.floors?.length).map(({ file, floors }) => ({ file, items: floors! })));
   const manifest: StationManifestFile = {
     ...pub.manifest,
     sources: mergeList(pub.manifest.sources, sourceFiles, "source", problems),
@@ -79,11 +80,16 @@ function readAdditions(dir: string): Additions {
   add.sources = optional("sources.json", "sources");
   add.floors = optional("floors.json", "floors");
   add.pois = optional("pois.json", "pois");
-  const graphFile = path.join(dir, "graph.json");
-  if (fs.existsSync(graphFile)) add.graphParts.push({ file: "graph.json", nodes: readArray(graphFile, "nodes"), edges: readArray(graphFile, "edges") });
-  for (const name of fs.readdirSync(dir).filter((entry) => /^graph\..+\.json$/.test(entry)).sort()) {
+  const readGraphPart = (name: string) => {
     const file = path.join(dir, name);
-    add.graphParts.push({ file: name, nodes: readArray(file, "nodes"), edges: readArray(file, "edges") });
+    const part = readJson(file) as { floors?: Floor[] };
+    return { file: name, nodes: readArray<Node>(file, "nodes"), edges: readArray<Edge>(file, "edges"),
+      ...(part.floors === undefined ? {} : { floors: readArray<Floor>(file, "floors") }) };
+  };
+  const graphFile = path.join(dir, "graph.json");
+  if (fs.existsSync(graphFile)) add.graphParts.push(readGraphPart("graph.json"));
+  for (const name of fs.readdirSync(dir).filter((entry) => /^graph\..+\.json$/.test(entry)).sort()) {
+    add.graphParts.push(readGraphPart(name));
   }
   return add;
 }

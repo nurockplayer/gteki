@@ -5,6 +5,9 @@ import { afterEach, describe, expect, it } from "vitest";
 import type { Edge, Floor, Node, Poi, Source } from "../../packages/schema/src/index.ts";
 import { parseStationFiles } from "../../packages/schema/src/index.ts";
 import { createDemoFiles } from "../../apps/web/src/demo.ts";
+import { createRouter } from "../../packages/navigation/src/index.ts";
+import { buildPrivateSeam } from "../gis/src/s03-private-seam.ts";
+import type { HeldGraphDocument } from "../gis/src/s03-nav-graph-route.ts";
 import { buildOverlay, mergeStation, type Additions, type StationFiles } from "./build-overlay.ts";
 
 const tempDirs: string[] = [];
@@ -89,6 +92,45 @@ describe("private overlay builder", () => {
     expect(() => mergeStation(publicFiles(), additions({ sources: [{ ...source(), notes: "not tiered" }] }))).toThrow(/private-source.*\[tier P\]/);
   });
 
+  it("merges graph-part floors by id and rejects duplicates across addition files", () => {
+    const pub = publicFiles();
+    const replacement = { ...pub.manifest.floors[0], renderElevationM: 9, elevationM: 9 };
+    const result = mergeStation(pub, additions({ sources: [source()], graphParts: [
+      { file: "graph.s03.json", nodes: [], edges: [], floors: [replacement, floor()] },
+    ] }));
+    expect(result.manifest.floors.map(f => f.id)).toEqual([...pub.manifest.floors.map(f => f.id), floor().id]);
+    expect(result.manifest.floors[0].renderElevationM).toBe(9);
+    expect(() => mergeStation(pub, additions({ sources: [source()], floors: [floor()], graphParts: [
+      { file: "graph.s03.json", nodes: [], edges: [], floors: [floor()] },
+    ] }))).toThrow(/floors\.json.*graph\.s03\.json/);
+  });
+
+  it("validates generated private additions and routes across a seam into their new floor", () => {
+    const pub = publicFiles();
+    pub.manifest.sources.push(source("tokyo-s03-zip"));
+    const runId = `nav-graph-${"a".repeat(20)}`;
+    const held: HeldGraphDocument = { policy_version: "synthetic", digest: "a".repeat(20), run_id: runId,
+      source_id: "tokyo-s03-zip", nodes: [
+        { source_id: 1, level_id: 10, level_label: "B1F", level_z: -6, lon: 0, lat: 0, east_m: -1, north_m: 0, gate: null },
+        { source_id: 2, level_id: 10, level_label: "B1F", level_z: -6, lon: 0, lat: 0, east_m: -1000, north_m: 0, gate: null },
+        { source_id: 3, level_id: 20, level_label: "2F", level_z: 8, lon: 0, lat: 0, east_m: -2000, north_m: 0, gate: null },
+      ], edges: [
+        { link_id: 11, from_node: 1, to_node: 2, direction: 3, dz_m: null, length_m: 999, level_relation: "same_level", reason_codes: ["HELD_TEST"] },
+        { link_id: 12, from_node: 3, to_node: 2, direction: 2, dz_m: null, length_m: 1000, level_relation: "cross_level", device: "elevator", reason_codes: [] },
+        { link_id: 13, from_node: 1, to_node: 3, direction: 1, dz_m: null, length_m: 1999, level_relation: "cross_level", reason_codes: [] },
+      ] };
+    const part = buildPrivateSeam(held, pub, { runId, today: "2026-10-27" });
+    const merged = mergeStation(pub, additions({ graphParts: [{ file: "graph.s03.json", ...part }] }));
+    const parsed = parseStationFiles(merged.manifest, merged.graph, merged.pois, undefined, { privateTier: true });
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) throw new Error(JSON.stringify(parsed.issues));
+    const route = createRouter(parsed.bundle, { allowUnverified: true }).route("b1-c", "p:sjk:s03:n:3");
+    expect(route.ok).toBe(true);
+    if (!route.ok) throw new Error(JSON.stringify(route));
+    expect(route.steps.some(step => step.edgeId.startsWith("p:sjk:s03:e:seam:"))).toBe(true);
+    expect(route.steps.at(-1)?.toFloorId).toBe("p:sjk:s03:f:20");
+  });
+
   it("writes overlay files and rejects an additions station without public data", () => {
     const root = tempDir();
     const privateDir = path.join(root, "private");
@@ -98,7 +140,12 @@ describe("private overlay builder", () => {
     const [manifest, graph, pois] = createDemoFiles();
     for (const [name, value] of [["station.json", manifest], ["graph.json", graph], ["pois.json", pois]] as const)
       fs.writeFileSync(path.join(stationDir, name), `${JSON.stringify(value)}\n`);
+    fs.writeFileSync(path.join(privateDir, "additions", "demo", "graph.s03.json"), JSON.stringify({
+      nodes: [], edges: [], floors: [{ ...manifest.floors[0], id: "private-file-floor" }],
+    }));
     expect(buildOverlay({ repoRoot: root, privateDir })).toEqual(["demo"]);
+    const overlayManifest = JSON.parse(fs.readFileSync(path.join(privateDir, "overlay", "demo", "gteki", "station.json"), "utf8"));
+    expect(overlayManifest.floors.at(-1).id).toBe("private-file-floor");
     for (const file of ["station.json", "graph.json", "pois.json"])
       expect(fs.existsSync(path.join(privateDir, "overlay", "demo", "gteki", file))).toBe(true);
     // Removing a station's additions drops its overlay on the next full run.
