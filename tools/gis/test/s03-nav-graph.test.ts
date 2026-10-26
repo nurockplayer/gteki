@@ -9,14 +9,18 @@ import {
   type NavGraphDigestFacts, type NavGraphInputs, type S03GateTag,
 } from '../src/s03-nav-graph.js';
 import { PATH_REASON } from '../src/s03-paths.js';
-import type { Affine, Point2, S03Inputs, S03Link } from '../src/s03-transform.js';
+import type { Affine, Point2, S03Inputs, S03Level, S03Link } from '../src/s03-transform.js';
 import { readZip } from '../src/zip.js';
 
 const nav: Affine = [2, 0, 0, 2, 10, 20], drawing: Affine = [0.01, 0, 0, 0.01, 0, 0];
 /** The transform output is already treated as lon/lat, so station ENU is [lon, lat]. */
 const project = (lat: number, lon: number): Point2 => [lon, lat];
 const hash = (value: number | string): string => createHash('sha256').update(String(value)).digest('hex');
-const level = (id: number, label: string, ordinal: number): NavGraphInputs['levels'][number] => ({ id, label, ordinal });
+/** A level with one rectangular footprint (GeoJSON lon/lat ring), or none when `ring` is null. */
+const level = (id: number, label: string, ordinal: number, ring: Point2[] | null): S03Level => ({ id, label, ordinal,
+  polygons: ring ? [[ring]] : [], nonPolygonFeatures: 0, memberSha256: hash(id), featuresTotal: ring ? 1 : 0, featuresUsed: ring ? 1 : 0,
+  featuresExcludedUnclosedRing: 0, featuresExcludedHoleOutsideShell: 0, features: [] });
+const rect = (east: number, north: number): Point2[] => [[0, 0], [east, 0], [east, north], [0, north], [0, 0]];
 const node = (sourceId: number, levelId: number, native: Point2, geometryId: number | null = null): S03Inputs['nodes'][number] =>
   ({ index: 0, sourceId, levelId, native, geometryId });
 const link = (sourceId: number, n1: number, n2: number, direction = 3, dz: number | null = null): S03Link => ({ sourceId, n1, n2, direction, dz });
@@ -32,7 +36,7 @@ const base = (): NavGraphInputs => ({
   nodes: [node(101, 11, [2, 3]), node(102, 11, [3, 3]), node(103, 12, [4, 3]), node(104, 11, [5, 3], 901),
     node(105, 11, [6, 3], 902), node(106, 64677, [7, 3], 903)],
   links: [link(201, 101, 102, 3), link(202, 102, 103, 1), link(203, 103, 104, 3), link(204, 104, 105, 2), link(205, 105, 106, 3)],
-  levels: [level(11, 'B1F', -1), level(12, '1F', 1), level(64677, '2F', 2)],
+  levels: [level(11, 'B1F', -1, rect(0.21, 1)), level(12, '1F', 1, rect(1, 1)), level(64677, '2F', 2, null)],
   gateTags: new Map([[901, gate('poi:keio-gate:1', ['keio'], 'keio-new', '京王新線　京王新線口')]]),
 });
 
@@ -67,6 +71,27 @@ describe('S03 nav graph: nodes and edges come from v5_nav through the affine pai
     ] });
     expect(tags.get(28993986)).toEqual(gate('poi:jreast-gate:1', ['jreast'], null, 'JR 中央西口（出口専用）'));
     expect(tags.get(29070276)).toEqual(gate('poi:keio-gate:4', ['keio'], 'keio', '京王線　ルミネ口'));
+  });
+});
+
+describe('S03 nav graph: Check A per node and per edge (synthetic only)', () => {
+  it('clears CHECK_A_CONTAINMENT_FAIL only where both ends are inside their own footprint', () => {
+    const graph = buildNavGraph(base(), project);
+    // Node 105 sits at east 0.22, past B1F's footprint edge at 0.21: it alone fails, the rest pass.
+    expect(Object.fromEntries(graph.nodes.map(entry => [entry.source_id, entry.check_a]))).toEqual({ 101: 'PASS', 102: 'PASS', 103: 'PASS', 104: 'PASS', 105: 'FAIL' });
+    const codes = (linkId: number) => graph.edges.find(edge => edge.link_id === linkId)!.reason_codes;
+    // Both ends inside: the code is cleared and every other code stays.
+    expect(codes(201)).not.toContain(PATH_REASON.CHECK_A_CONTAINMENT_FAIL);
+    expect(codes(201)).toEqual(expect.arrayContaining([PATH_REASON.CRS_UNCONFIRMED, PATH_REASON.CHECK_B_RESIDUAL_UNVERIFIED]));
+    expect(codes(203)).not.toContain(PATH_REASON.CHECK_A_CONTAINMENT_FAIL);
+    // One end outside (105): the code stays on that edge.
+    expect(codes(204)).toContain(PATH_REASON.CHECK_A_CONTAINMENT_FAIL);
+    expect(graph.check_a).toMatchObject({ nodes: { PASS: 4, FAIL: 1, UNASSESSED: 0 }, edges: { pass: 3, fail: 1 } });
+    // Per level, an edge is charged to the level of its from-node: 201, 202 and 204 start on B1F, 203 on 1F.
+    expect(graph.check_a.levels).toEqual([
+      { level_id: 11, nodes_pass: 3, nodes_fail: 1, nodes_unassessed: 0, edges_pass: 2, edges_fail: 1 },
+      { level_id: 12, nodes_pass: 1, nodes_fail: 0, nodes_unassessed: 0, edges_pass: 1, edges_fail: 0 },
+    ]);
   });
 });
 
