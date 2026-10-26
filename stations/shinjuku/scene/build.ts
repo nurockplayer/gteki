@@ -7,7 +7,7 @@ import polygonClipping from "polygon-clipping";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { StationBundle } from "@gteki/schema";
 import { createRouter } from "@gteki/navigation";
-import { centroid, cutWallsByVoids, pointInRings, soffitHeight, STREET_PAD, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
+import { centroid, cutWallsByVoids, pointInRings, roomFloorFill, soffitHeight, STREET_PAD, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
 import { ceilingTexture, signTexture, tactileTexture, tileTextures, wallTexture, SIGN_ROW_HEIGHT, type SignIcon } from "./textures.ts";
 import { prepareLayout } from "./build-cache.ts";
 import { gateMachines, accessSigns, ACCESS_WORDING } from "./fare-fence.ts";
@@ -576,6 +576,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   }[] = [];
 
   const fasciaGeos: THREE.BufferGeometry[] = [];
+  const roomFill = roomFloorFill(layout, plan);
   // ---- per level: slabs, ceilings, walls, railings, lights
   for (const lv of layout.levels) {
     const g = new THREE.Group();
@@ -596,6 +597,13 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       const mesh = new THREE.Mesh(track(geo), m);
       mesh.receiveShadow = true;
       mesh.name = "walkable";
+      g.add(mesh);
+    }
+    // Rooms cut out of the floor outline (#221): render-only floor, not walkable (no walk proxy).
+    const roomFloor = merged(roomFill.filter((s) => Math.abs(s.z - lv.z) < 0.01).map((s) => slabGeometry(s.rings, s.z, 2.4)));
+    if (roomFloor) {
+      const mesh = new THREE.Mesh(track(roomFloor), isPlatform ? mat.floorPlatform : mat.floor);
+      mesh.name = "room floor (render only)";
       g.add(mesh);
     }
     const ceil = merged([...lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 2.4, true)), ...layout.soffits.filter((s) => s.floorId === lv.floorId && !(s.spaceId.startsWith("elevator-cap:") && s.z > -0.5)).map(soffitGeometry)]);

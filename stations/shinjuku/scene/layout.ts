@@ -1225,6 +1225,35 @@ function cropUndergroundRoof(s: Soffit, top: number): Soffit[] {
   return out.length ? [{ ...s, rings: out }] : [];
 }
 
+/**
+ * Floor under rooms carved out of a walkable floor outline (#221). The source outline has the room
+ * as an inner ring, but a room (restricted, office, toilet) is not a walkable slab, so the hole showed
+ * as a black void. This returns the part of each such room that no walkable polygon at its level covers,
+ * minus stair/escalator openings. Render-only: it is not in lv.slabs, so WalkWorld and the walk proxies
+ * are unchanged. Not called by buildLayout, so the layout output itself is byte-identical.
+ */
+export function roomFloorFill(layout: Layout, plan: Plan): SlabPoly[] {
+  const out: SlabPoly[] = [];
+  for (const lv of layout.levels) {
+    const rooms = lv.rooms.filter((r) => r.role === "room" || r.role === "office" || r.role === "toilet");
+    if (!rooms.length) continue;
+    const planLevel = plan.levels.find((p) => p.label === lv.label);
+    // Only rooms inside a public floor outline: a room outside every floor outline is not a hole.
+    const floorOutlines = (planLevel?.spaces ?? []).filter((s) => spaceRole(s) === "floor").map((s) => s.rings[0]!);
+    const walk = [...lv.slabs, ...layout.pads, ...layout.linkStrips, ...layout.streetPads].filter((s) => Math.abs(s.z - lv.z) < 0.01);
+    const cover: ClipPolygon[] = walk.map((s) => clipPoly(s.rings));
+    for (const { space } of rooms) {
+      const room = clipPoly(space.rings);
+      const c = centroid(space.rings[0]!);
+      if (!floorOutlines.some((ring) => pointInRing(c, ring))) continue;
+      const gap = cover.length ? polygonClipping.difference(room, ...cover) : [room];
+      const pieces: SlabPoly[] = gap.map((poly, i) => ({ spaceId: `room-floor:${space.id}:${i}`, rings: xyRings(poly), z: lv.z, kind: "slab", fare: null, category: space.category }));
+      out.push(...cutStairwells(pieces, layout.runs));
+    }
+  }
+  return out;
+}
+
 export function centroid(r: XY[]): XY {
   let x = 0;
   let y = 0;

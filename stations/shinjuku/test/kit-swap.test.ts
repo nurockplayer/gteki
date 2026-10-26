@@ -36,15 +36,17 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
  * and without the naming line, every other field unchanged).
  * #316 re-measured on the merged tree: the shell roof coverage above the head band adds 205,300 B and
  * changes geometryDigest; appearance, nodes, textures, meshes and every explorer list are unchanged.
- * #342 identity boards add 2 meshes and 28,160 B (geometry, appearance, nodes and textures re-measured; lists unchanged). */
+ * #342 identity boards add 2 meshes and 28,160 B (geometry, appearance, nodes and textures re-measured; lists unchanged).
+ * #221 render-only room floors (B1, B3, B6 under restricted/office rooms cut out of the floor outline) add 3 meshes and 12,174 B;
+ * walkable, colliders, cameraBlockers and every explorer list are unchanged. */
 const MAIN_BASELINE = {
   station: {
-    geometryDigest: "5a731f4efde699f369e602f9d36b5485b32e235643b8449dc347002fc242a543",
-    appearanceDigest: "b22d80d5524de069aa3eba2927b2fb04cc0b9ff521c031b890d51e4c3ca56bd8",
-    nodesDigest: "792b970f730f09f856511da9fd6f5d3bf705fcb13f441a4179e1f49ecfad555c",
-    texturesDigest: "6fcae65a3d08734ee7ff61aef64011704954a5eb7d6dbbc97bc279d2f9fc855b",
-    meshes: 140,
-    bytes: 13_530_324,
+    geometryDigest: "fc9a245d9c18bae32702ec3d9fd7bbdfb7fe8e050d60b55f0d3fb2ae0a201d19",
+    appearanceDigest: "fcdd2bb0a6b2f124bfe156de5874c90a902f33d6e868d0d316d0c93ed47b6a8a",
+    nodesDigest: "979ffa9a136ec32435aaefe1c59f8d6702c8796a36ca2511a8e2a7ec70b6e030",
+    texturesDigest: "3a9915b58b9eee2711a82b07722e443082b663be0b1c5e3b23a2283c175b96f4",
+    meshes: 143,
+    bytes: 13_542_498,
   },
   lists: {
     listsDigest: "ddd5c84df153fb71c2254a20ec8132134ef0aaa6bb4878cb683da4ffc967913f",

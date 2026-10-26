@@ -472,7 +472,7 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
         expect(Array.isArray(hardware.material)).toBe(false);
         let draws = 0;
         built.root.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh) draws += Array.isArray(m.material) ? m.material.length : 1; });
-        expect(draws).toBe(140); // 139 before the fade; only the hardware draw is new.
+        expect(draws).toBe(143); // 139 before the fade; the hardware draw is new; #221 adds 3 room-floor meshes.
         console.log(JSON.stringify({ quality, identityTexture: entry, totalTextureBytes: budget.totalBytes, meshMaterialDraws: draws }));
       } finally { if (built !== station) built.dispose(); }
     }, 60_000);
