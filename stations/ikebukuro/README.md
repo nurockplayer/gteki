@@ -263,6 +263,81 @@ floors, so no `run_mm`), `width_mm` (tread width, read as the clear gap between 
 landing. The placement origin is the bottom comb, 1.2 m before the quad's lower line along `dir` at the lower floor height
 (the top comb is 1.2 m past the upper line). Direction is not surveyed and is left out of the params. Placements carry `tiers`: nosings draw on `low` and `high`, escalators on `high` only (low waits for a phone measurement), and rails (6 segments) on `high` only and only for `main_route` flights, those a Lane F golden guided route walks (a polyline within 1 m of the flight's centre line at a matching height).
 
+**Kit catalog (station-specific dressing), batches A-C.** `scene/kit_catalog_loader.ts` reads
+`scene/kit_placements.json` and instances the Lane E catalog GLBs on the surveyed anchors: batch A is the 5
+escalators (`gteki_ik_escalator_*`), one per surveyed lane landing, and batch B the 21 stair handrails
+(`..._rails_{post,wall}`) of the `main_route` flights. Both batches are desktop tier only: every escalator placement
+lists `high` alone (the phone tier copies wait for a phone measurement) and a rail part is drawn only on the
+`main_route` flights and only on `high`. Batch C is the 61 stair nosing strips (`..._nosing`), drawn on both tiers:
+69 flights, 61 distinct widths. The catalog GLBs are Lane E's built output for the catalog's params (kit
+main `7258e6b`; batches A and C from Lane E's final C3 build); `python3 -I pipeline/sync_kit_catalog.py [--check] [--kinds escalator,rails,nosing]`
+copies just the ids some placement loads, byte for byte, and checks each against the tier manifest's sha256 and the
+sha256 the source record pins. `--check` also fails on a stray catalog copy and on a pin no placement backs.
+Provenance: "GTEki contributors, CC BY 4.0" (source `gteki-ikb-catalog-0-1-0`), on top of the anchors' PLATEAU
+credit. Frame: the piece's origin is the bottom comb (the floor under the first nosing for a flight), travel along
+local -Z, width along local X, up along +Y, turned about +Y by the placement's `yaw_deg` in the renderer frame (ENU
++Z is renderer +Y, so the catalog's angle about ENU +Z is the same number). `scope` is PLATEAU's container (building
+or a room suffix), not a playability marker, and every placement lies in the playable multi-level slice, so nothing
+is skipped by it. An id the station does not ship is skipped without a fetch; a GLB that fails to load warns and
+drops only its own anchors, never the scene. Batch A's escalators carry no per-id AO image either: their TEXCOORD_1
+addresses one packed escalator atlas on the desktop tier (`gteki/kit/catalog/high/atlas/escalator_ao.png`, 1024x1536),
+and `loadKitCatalog` loads it once per tier and kind, sets `aoMap` (`channel = 1`, `flipY = false`,
+`colorSpace = THREE.NoColorSpace`, `aoMapIntensity = 1`) on each cloned material, and disposes it with the kit. If the
+atlas fails to load the loader warns and draws the escalators without AO. The pieces are visual only: no colliders,
+not in `walkable` or the walk graph.
+
+Batch C does not instance one mesh per flight: 61 strips would be 61 draws per tier. Lane E's C3 build carries no
+per-id AO image; each strip's TEXCOORD_1 already addresses one packed AO atlas per tier
+(`gteki/kit/catalog/<tier>/atlas/nosing_ao.png`, 1024x1280 on the desktop tier and 512x640 on the phone tier, from
+the per-id Cycles AO bakes). The loader bakes every placement into a cloned geometry (position, normal, uv, uv1;
+mirror reflections reverse the winding), merges each spatial cluster into one `BufferGeometry` with
+`BufferGeometryUtils.mergeGeometries`, and draws them with one material whose `aoMap` is that atlas
+(`channel = 1`, `flipY = false`, `colorSpace = THREE.NoColorSpace`). A part must carry position, normal and uv1 to
+join the merge; uv (the base-colour map) is dropped from a cluster only when one of its parts lacks it, and a part
+whose material differs visibly (colour, finish, emissive strength, alpha cutoff, vertex colours, base-colour map)
+is left out with a warning. `scene/kit_catalog_atlas.json` records each packed atlas's path and each shipped tier's
+size, bytes and `max_isolated_mip` from Lane E's manifest (`pipeline/sync_kit_catalog.py` writes and `--check` verifies
+it): the escalator atlas and the nosing atlas on the desktop tier, both at `max_isolated_mip` 2 in the final C3 build (recorded, not clamped: the GPU gets the full mip chain).
+The loader records the limit as `gteki_max_isolated_mip` on the texture. three 0.186's `Texture` has no `maxLevel`, so
+the GPU mip chain is not clamped at that level; the value is carried for the renderer/export step that can apply it,
+and `generateMipmaps` stays at three's default. The clusters are a deterministic k-means over
+the strip origins (at most `NOSING_CLUSTERS` = 8 per tier), so frustum and 50 m distance culling still reject most
+of the station's nosings. This change ships the desktop tier's copies; the phone copies are the stacked follow-up.
+Cost on the desktop tier: 26 part instances of 26 GLBs, 77 draws before frustum culling and extra passes, 155 712
+triangles (escalators 5 / 35 draws / 66 480; handrails 21 / 42 draws / 89 232), plus the 69 nosings merged into at
+most 8 draws and 25 830 triangles; the phone tier draws none yet. `scene/kit_catalog_loader.test.ts` pins the batches,
+the placement maths, the merge and the credit, and `pipeline/sync_kit_catalog.test.ts` the copies.
+
+The 26 desktop catalog GLBs total **10,297,712 bytes** on disk (about 9.82 MiB: escalators 4,536,180, handrails
+5,761,532) plus the desktop escalator atlas at 417,840 bytes; batch C's desktop copies add **1,852,526 bytes** (61
+nosing GLBs totalling 1,783,268 and the 69,258-byte atlas, about 1.77 MiB). The shipped desktop catalog tree is
+**12,568,078 bytes** (about 11.99 MiB). Previously `scene.ts` awaited
+`loadKitCatalog`, which awaited each GLB serially, before loading sign frames and returning the scene. The explorer
+awaits that return in `buildStationScene`, then attaches the scene, sets up the composer and reaches `phase = "ready"`.
+Thus transfer, GLB parsing and catalog construction all blocked readiness, a plausible contributor to the reported
+single-sample 2.1 s → 5.0 s page-load change; those timings do not isolate the cost. Catalog loading now starts in a
+task scheduled by the attached scene's first update, after that frame's synchronous render. Concurrency remains
+one catalog GLB in flight; each successful instanced GLB attaches immediately, and the merged nosings attach once,
+after the last nosing GLB is in. Teardown cancels the scheduled task, stops subsequent fetches, detaches/disposes
+loaded pieces and disposes an in-flight result without attaching it.
+
+Three.js 0.186.1's `InstancedMesh.computeBoundingSphere` and `computeBoundingBox` union the geometry bounds
+transformed by every instance matrix; `Frustum.intersectsObject` uses that instance sphere. The catalog already
+computed spheres and used the default `frustumCulled = true`; there was no unconditional-render flag to remove.
+It now explicitly keeps culling enabled and computes both bounds after setting matrices. Each placement gets its
+own InstancedMesh per visible source mesh, sharing source geometry and lit materials. Every shipped id currently
+has one placement, so this adds no meshes today and prevents a reused id from creating a station-wide sphere later.
+Like the other kits' constructors, catalog pieces start with `castShadow = receiveShadow = false`; thin rails and
+balustrades also opt out with `gteki_shadow = "none"` so the explorer's default-lighting fallback cannot enable
+casting. That policy may still enable receiving; the normal baked scene uses scene lighting and has no core sun.
+
+Expected draw impact: bounds wholly outside the camera frustum produce no catalog draws in either the colour or
+GTAO depth/normal pass; catalog meshes never add sun-shadow draws. Visible catalog meshes still enter the GTAO
+depth/normal pass used by AO and floor reflections (`apps/web/src/explorer/postfx.ts`), so 77 is a single-pass
+budget, not a ceiling on total draws. Frustum culling does not reject pieces hidden behind walls or guarantee that
+a sphere intersecting the view contains visible triangles. No GPU or page-load timings were measured for this fix;
+the reported +131 draws still needs the original camera/lighting configuration to distinguish those cases.
+
 **How the bake will take a kit GLB in** (not built yet; `blender_bake_lighting.py` is unchanged):
 
 1. A Lane E generator places pieces on the anchors: origin at the nosing midpoint or landing point, rotated about
