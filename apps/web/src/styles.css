@@ -154,6 +154,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .actions .primary { flex: 1; }
 .instructions { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; counter-reset: ins; }
 .ins { display: grid; grid-template-columns: 26px 1fr; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 9px; cursor: pointer; font-size: 13px; }
+.ins-unverified { grid-column: 2; color: #ffd59a; font-size: 11px; }
 .ins:hover { background: rgba(255, 255, 255, 0.05); }
 .ins.active { background: rgba(94, 240, 255, 0.12); color: #dffcff; }
 .ins-icon { width: 22px; height: 22px; border-radius: 6px; background: rgba(255, 255, 255, 0.08); display: grid; place-items: center; font-size: 13px; }

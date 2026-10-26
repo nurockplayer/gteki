@@ -235,8 +235,8 @@ function dateInterval(date: string): { first: number; last: number } | null {
   return { first: first.getTime(), last: first.getTime() };
 }
 
-export function createRouter(bundle: StationBundle): Router {
-  return buildRouter(bundle, false);
+export function createRouter(bundle: StationBundle, options: { allowUnverified?: boolean } = {}): Router {
+  return buildRouter(bundle, false, options.allowUnverified === true);
 }
 
 /**
@@ -244,10 +244,10 @@ export function createRouter(bundle: StationBundle): Router {
  * as the exact reference the pruned search is checked against. Not part of the package's public API.
  */
 export function createRouterForTest(bundle: StationBundle, options: { unpruned: boolean }): Router {
-  return buildRouter(bundle, options.unpruned);
+  return buildRouter(bundle, options.unpruned, false);
 }
 
-function buildRouter(bundle: StationBundle, unpruned: boolean): Router {
+function buildRouter(bundle: StationBundle, unpruned: boolean, allowUnverified: boolean): Router {
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
   const sourceDates = new Map(bundle.sources.map((source) => [source.id, source.datasetDate]));
@@ -286,7 +286,8 @@ function buildRouter(bundle: StationBundle, unpruned: boolean): Router {
   function allowed(edge: Edge, profile: RouteProfile, avoided: Set<string>, closed: Set<string>): boolean {
     if (
       edge.verification !== "verified" &&
-      !(edge.verification === "synthetic" && bundle.station.synthetic === true)
+      !(edge.verification === "synthetic" && bundle.station.synthetic === true) &&
+      !(allowUnverified && (edge.verification === "unverified" || edge.verification === "geometry_only"))
     ) return false;
     if (edge.closed || closed.has(edge.id) || avoided.has(edge.mode)) return false;
     const access = accessOf(edge);

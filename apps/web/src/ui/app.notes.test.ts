@@ -6,7 +6,7 @@ import { createSyntheticBundle } from "../../../../packages/navigation/src/fixtu
 import { strings, type Lang } from "../i18n.ts";
 
 vi.mock("../explorer/explorer.ts", () => ({ Explorer: class {} }));
-vi.mock("../registry.ts", () => ({ listStations: vi.fn(), StationLoadError: class extends Error {} }));
+vi.mock("../registry.ts", () => ({ listStations: vi.fn(), PRIVATE_BUILD: false, StationLoadError: class extends Error {} }));
 import { App } from "./app.ts";
 
 type Harness = {
