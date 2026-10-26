@@ -98,8 +98,9 @@ it("estimates spec-13 catalog draws before/after distance culling at every defau
     loadTexture: async () => new THREE.Texture(),
   };
   const kit = await loadKitCatalog(THREE, host, (placementsFile as unknown as { placements: CatalogPlacement[] }).placements, false);
-  // Batch C (desktop tier; the phone copies are the stacked follow-up): 69 strips merged into a few meshes.
+  // Batch C ships on both tiers: the desktop tier's 69 strips and the phone tier's 69, each merged into a few meshes.
   const nosing = await loadNosingKit(THREE, host, (placementsFile as unknown as { placements: CatalogPlacement[] }).placements, false);
+  const nosingLow = await loadNosingKit(THREE, host, (placementsFile as unknown as { placements: CatalogPlacement[] }).placements, true);
   const env = new THREE.Texture();
   try {
     const { group, stats } = kit.build(THREE, env, toRenderer);
@@ -109,15 +110,22 @@ it("estimates spec-13 catalog draws before/after distance culling at every defau
     expect(nosingBuilt.stats.parts).toBe(69);
     expect(nosingBuilt.stats.clusters).toBe(nosingBuilt.group.children.length);
     expect(nosingBuilt.group.children.length).toBeLessThanOrEqual(NOSING_CLUSTERS); // against 61 one-per-id draws
+    const nosingLowBuilt = nosingLow.build(THREE, env, toRenderer);
+    expect(nosingLowBuilt.stats.parts).toBe(69); // every flight draws its nosing on phones too
+    expect(nosingLowBuilt.stats.clusters).toBe(nosingLowBuilt.group.children.length);
+    expect(nosingLowBuilt.group.children.length).toBeLessThanOrEqual(NOSING_CLUSTERS);
     const visibility = catalogVisibility(THREE);
     visibility.add(group);
     const nosingVisibility = catalogVisibility(THREE);
     nosingVisibility.add(nosingBuilt.group);
+    const nosingLowVisibility = catalogVisibility(THREE);
+    nosingLowVisibility.add(nosingLowBuilt.group);
     group.updateMatrixWorld(true);
     nosingBuilt.group.updateMatrixWorld(true);
+    nosingLowBuilt.group.updateMatrixWorld(true);
     const camera = new THREE.PerspectiveCamera(FOV.follow, 1440 / 900, 0.05, CAMERA_FAR_M);
     const frustum = new THREE.Frustum(), projection = new THREE.Matrix4();
-    const rows: { group: string; node: string; heading: number; before: number; after: number; nosingBefore: number; nosingAfter: number }[] = [];
+    const rows: { group: string; node: string; heading: number; before: number; after: number; nosingBefore: number; nosingAfter: number; nosingLowBefore: number; nosingLowAfter: number }[] = [];
     for (const spot of spots) for (const offset of [0, 90, 180, 270]) {
       const p = byId.get(spot.id)!.position;
       expect(p.z).not.toBeNull();
@@ -134,29 +142,35 @@ it("estimates spec-13 catalog draws before/after distance culling at every defau
       nosingVisibility.update(camera);
       const after = group.children.filter((m) => m.visible && frustum.intersectsObject(m)).length;
       const nosingAfter = nosingBuilt.group.children.filter((m) => m.visible && frustum.intersectsObject(m)).length;
+      const nosingLowBefore = nosingLowBuilt.group.children.filter((m) => frustum.intersectsObject(m)).length;
+      nosingLowVisibility.update(camera);
+      const nosingLowAfter = nosingLowBuilt.group.children.filter((m) => m.visible && frustum.intersectsObject(m)).length;
       expect(after).toBeLessThanOrEqual(before);
       expect(nosingAfter).toBeLessThanOrEqual(nosingBefore);
-      rows.push({ group: spot.group, node: spot.id, heading, before: before * 2, after: after * 2, nosingBefore: nosingBefore * 2, nosingAfter: nosingAfter * 2 });
+      expect(nosingLowAfter).toBeLessThanOrEqual(nosingLowBefore);
+      rows.push({ group: spot.group, node: spot.id, heading, before: before * 2, after: after * 2, nosingBefore: nosingBefore * 2, nosingAfter: nosingAfter * 2, nosingLowBefore: nosingLowBefore * 2, nosingLowAfter: nosingLowAfter * 2 });
     }
     expect(rows).toHaveLength(76);
     const report = `CPU catalog draw estimate: ${group.children.length} meshes, CULL_M=${CULL_M}; x2 = colour + GTAO depth/normal.\n` +
+      // The harness loads accessor-box stand-ins, so it reports clusters and draws, not real triangle counts.
       `Nosing (batch C, high tier): 69 strips in ${nosingBuilt.group.children.length} merged cluster meshes (61 draws if instanced), same CULL_M; x2.\n` +
+      `Nosing (batch C, low tier): 69 strips in ${nosingLowBuilt.group.children.length} merged cluster meshes (61 draws if instanced), same CULL_M; x2.\n` +
       "Accessor-box spheres; 1440x900, FOV 50, settled unobstructed follow pose; no ground snap, camera collision or wall occlusion. GPU totals need spec 13.\n" +
-      "group | views | before p50 | before max | after p50 | after max | nosing before p50 | nosing after p50\n" +
+      "group | views | before p50 | before max | after p50 | after max | nosing high before p50 | nosing high after p50 | nosing low before p50 | nosing low after p50\n" +
       ["gate", "rail", "exit", "spawn", "control"].map((name) => {
         const mine = rows.filter((r) => r.group === name);
-        const summary = (key: "before" | "after" | "nosingBefore" | "nosingAfter") => {
+        const summary = (key: "before" | "after" | "nosingBefore" | "nosingAfter" | "nosingLowBefore" | "nosingLowAfter") => {
           const draws = mine.map((r) => r[key]).sort((a, b) => a - b);
           return `${draws[Math.floor(draws.length * 0.5)]} | ${draws.at(-1)}`; // spec 13's p50 convention
         };
-        return `${name} | ${mine.length} | ${summary("before")} | ${summary("after")} | ${summary("nosingBefore")} | ${summary("nosingAfter")}`;
+        return `${name} | ${mine.length} | ${summary("before")} | ${summary("after")} | ${summary("nosingBefore")} | ${summary("nosingAfter")} | ${summary("nosingLowBefore")} | ${summary("nosingLowAfter")}`;
       }).join("\n");
     console.info(report);
     // Keep the numbers available even when the test runner suppresses stdout from passing tests.
     const out = path.join(ROOT, ".qa", "ikebukuro-catalog-budget.txt");
     fs.mkdirSync(path.dirname(out), { recursive: true });
-    fs.writeFileSync(out, report + "\n\nCatalog draws x2 by viewpoint:\nnode | group | heading | before | after | nosing before | nosing after\n" +
-      rows.map((r) => `${r.node} | ${r.group} | ${r.heading} | ${r.before} | ${r.after} | ${r.nosingBefore} | ${r.nosingAfter}`).join("\n") + "\n");
+    fs.writeFileSync(out, report + "\n\nCatalog draws x2 by viewpoint:\nnode | group | heading | before | after | nosing high before | nosing high after | nosing low before | nosing low after\n" +
+      rows.map((r) => `${r.node} | ${r.group} | ${r.heading} | ${r.before} | ${r.after} | ${r.nosingBefore} | ${r.nosingAfter} | ${r.nosingLowBefore} | ${r.nosingLowAfter}`).join("\n") + "\n");
     for (const name of ["rail", "spawn"]) {
       const mine = rows.filter((r) => r.group === name);
       expect(mine.some((r) => r.after < r.before), `${name}: a distant frustum candidate is removed`).toBe(true);
@@ -164,6 +178,7 @@ it("estimates spec-13 catalog draws before/after distance culling at every defau
   } finally {
     kit.dispose();
     nosing.dispose();
+    nosingLow.dispose();
     env.dispose();
   }
 });
