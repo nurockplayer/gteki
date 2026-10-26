@@ -111,6 +111,11 @@ describe("Shinjuku gteki/ contract files", () => {
     for (const id of bundle.spawnNodeIds!) expect(ids.has(id)).toBe(true);
   });
 
+  it("faces the default spawn toward its identity board (#342 Q2), and sets no other heading", () => {
+    expect(bundle.spawnHeadings).toEqual({ "n:fe13251e6885410b870179837c3832cf": 70 });
+    expect(bundle.spawnNodeIds?.[0]).toBe("n:fe13251e6885410b870179837c3832cf");
+  });
+
   it("gives every Shinjuku coverage gap exactly one en and one ja text, with plain ja and the reuse rights wording (#259)", () => {
     const gaps = bundle.coverage.gaps;
     expect(gaps.length).toBe(8);

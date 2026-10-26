@@ -1431,6 +1431,13 @@ const spawnNodeIds = (["ticket_gate", "platform", "exit"] as const).flatMap((cat
   return poi?.connectorNodeIds[0] ? [poi.connectorNodeIds[0]] : [];
 });
 
+// Walk-entry headings (degrees, 0 = north, clockwise; docs/core/contract.md), measured by the visual lead
+// against the #348 identity boards. Only the default spawn (B1 gate 1) has one: 70 faces the 「新宿」 spawn board
+// 3.25 m away, front side, clear line of sight (#342 Q2: the old default faced away from it). The platform spawn
+// needs none (its walk-entry heading already frames the #348 platform board) and the street spawn waits for a re-measure.
+const SPAWN_HEADING_BY_NODE: Record<string, number> = { "n:fe13251e6885410b870179837c3832cf": 70 };
+const spawnHeadings = Object.fromEntries(spawnNodeIds.flatMap((id) => (id in SPAWN_HEADING_BY_NODE ? [[id, SPAWN_HEADING_BY_NODE[id]!]] : [])));
+
 // Non-code data the web bundle inlines (#186). Declared here so station.json carries the same
 // source and rights gate as assets; each derivation names the script that writes the file.
 const dataFiles: DataFile[] = [
@@ -1493,6 +1500,7 @@ const bundle: StationBundle = {
   pois,
   coverage,
   spawnNodeIds,
+  spawnHeadings,
   dataFiles,
   buildingHours,
 };
