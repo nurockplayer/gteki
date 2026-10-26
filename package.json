@@ -5,6 +5,7 @@
   "packageManager": "pnpm@12.11.2",
   "scripts": {
     "fonts:subset": "node tools/fonts/subset-sign-font.mjs",
+    "map:gen": "node tools/map/gen-symbols.mjs",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "test:heavy": "vitest run --mode heavy --maxWorkers=1 --passWithNoTests",
