@@ -22,6 +22,14 @@
     ],
     "bytes": 69258,
     "max_isolated_mip": 2
+   },
+   "low": {
+    "size_px": [
+     512,
+     640
+    ],
+    "bytes": 29170,
+    "max_isolated_mip": 1
    }
   }
  }

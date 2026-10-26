@@ -1,7 +1,7 @@
 // Lane E station catalog (#94): batch A (the 5 escalators) and batch B (the 21 stair handrails) placed on the surveyed
 // anchors of scene/kit_placements.json, and batch C (the 61 stair nosing strips, merged into a few cluster meshes that
-// sample one packed AO atlas per tier). Pins the batches (batch C's desktop tier in this change; its phone copies are
-// the stacked follow-up), the placement maths, the tier and batch filters, the merge, disposal, and that the copies,
+// sample one packed AO atlas per tier). Pins the batches (batch C on both tiers, one atlas each), the placement maths,
+// the tier and batch filters, the merge, disposal, and that the copies,
 // declarations and credits agree with each other and with Lane E's manifest.
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -30,8 +30,8 @@ const RAILS_IDS = [...new Set(tierParts(stairs, false).map((w) => w.id).filter((
 const NOSING_IDS = [...new Set(tierParts(stairs, false).map((w) => w.id).filter((id) => id.endsWith("_nosing")))].sort();
 /** Ids the station ships (batch A + B + C); every other catalog id is "not in this batch". */
 const SHIPPED = new Set([...ESCALATOR_IDS, ...RAILS_IDS, ...NOSING_IDS]);
-/** Batch C lands in two stacked changes: this one ships the desktop tier, the phone copies follow. */
-const SHIPPED_TIERS: string[] = ["high"];
+/** Batch C ships on both tiers; batches A and B draw on the desktop tier alone. */
+const SHIPPED_TIERS: string[] = ["high", "low"];
 /** The catalog copies the placements need, per tier: the batch plan sync_kit_catalog.py copies. */
 function plannedUris(low: boolean): string[] {
   const tier = tierName(low);
@@ -78,14 +78,17 @@ describe("the shipped batches on the surveyed anchors", () => {
     expect(tierParts(stairs, true).filter((w) => w.id.includes("_rails_"))).toEqual([]); // rails are high only
   });
 
-  it("ships each shipped id on disk with each tier's atlases, and no phone copy yet", () => {
+  it("ships each id on the tier it draws, with each tier's atlases", () => {
     for (const id of SHIPPED) expect(fs.existsSync(path.join(GTEKI, catalogUri(id, false))), id).toBe(true);
+    for (const id of NOSING_IDS) expect(fs.existsSync(path.join(GTEKI, catalogUri(id, true))), id).toBe(true);
+    // Batches A and B stay off phones, so the low tier holds nothing but batch C and its atlas.
+    for (const id of [...ESCALATOR_IDS, ...RAILS_IDS]) expect(fs.existsSync(path.join(GTEKI, catalogUri(id, true))), id).toBe(false);
     expect(fs.existsSync(path.join(GTEKI, nosingAtlasUri(false)))).toBe(true);
+    expect(fs.existsSync(path.join(GTEKI, nosingAtlasUri(true)))).toBe(true);
     // Batch A's escalators draw on the desktop tier alone, so only that tier ships their atlas.
-    expect(atlasUri("escalator", false)).toBe("kit/catalog/high/atlas/escalator_ao.png");
+    expect(atlasUri("escalator", false)).toBe(`kit/catalog/high/${NOSING_ATLAS.replace("nosing", "escalator")}`);
     expect(fs.existsSync(path.join(GTEKI, atlasUri("escalator", false)!))).toBe(true);
     expect(atlasUri("escalator", true)).toBeNull();
-    expect(fs.existsSync(path.join(GTEKI, "kit/catalog/low"))).toBe(false); // batch C's phone copies are the stacked follow-up
   });
 
   it("copies each file byte for byte, pinned by the source record in both manifests", () => {
@@ -650,7 +653,7 @@ describe("loadNosingKit (batch C)", () => {
   const nosingHost = (files: string[] = [...nosingUris, nosingAtlas], make: (uri: string) => Promise<GLTF> = async () => fakeNosing(), texture = new THREE.Texture()) => ({
     assetUrl: vi.fn((uri: string) => (files.includes(uri) ? `/blob/${uri}` : null)),
     loadGlb: vi.fn(make),
-    loadTexture: vi.fn(async () => texture),
+    loadTexture: vi.fn(async (_uri: string, _options?: unknown) => texture),
     texture,
   });
   beforeEach(() => {
@@ -682,6 +685,23 @@ describe("loadNosingKit (batch C)", () => {
     // Every anchor lands in exactly one cluster.
     const anchors = group.children.flatMap((m) => m.userData.gteki_anchors as string[]);
     expect(anchors.sort()).toEqual(loaded.placements.map((w) => w.placement.anchor).sort());
+    loaded.dispose();
+  });
+
+  it("merges the phone tier against its own copies and its own atlas", async () => {
+    const lowUris = NOSING_IDS.map((id) => catalogUri(id, true));
+    const texture = new THREE.Texture();
+    const h = nosingHost([...lowUris, nosingAtlasUri(true)], async () => fakeNosing(), texture);
+    const loaded = await loadNosingKit(THREE, h, placements, true);
+    expect(h.loadGlb.mock.calls.map((c) => c[0])).toEqual(lowUris);
+    expect(loaded.placements.length).toBe(69);
+    const { group, stats } = loaded.build(THREE, env, toRenderer);
+    expect(stats).toMatchObject({ parts: 69, uniqueGlbs: 61 });
+    expect(group.children.length).toBeLessThanOrEqual(NOSING_CLUSTERS);
+    expect(new Set((group.children as THREE.Mesh[]).map((m) => m.material)).size).toBe(1);
+    expect(h.loadTexture.mock.calls[0]![0]).toBe(nosingAtlasUri(true));
+    expect(texture.userData.gteki_max_isolated_mip).toBe(1); // the phone tier's Lane E limit
+    expect((group.children[0] as THREE.Mesh).material).toMatchObject({ aoMap: texture });
     loaded.dispose();
   });
 
