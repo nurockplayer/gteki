@@ -6,9 +6,9 @@ updated: 2026-10-26 20:26 JST
 
 # Data rights: OD-34 precedents and source classes
 
-## What it is
+## What it does
 
-A quick reference for "may we use this source, and how?". The rulings themselves live in [`docs/research/owner-decisions-pending.md`](../research/owner-decisions-pending.md) (OD-02, OD-23, OD-31, OD-32, OD-33, **OD-34** with five rounds) and, for GIS sources, in the generated [`docs/gis/rights/README.md`](../gis/rights/README.md). Rights and truth rulings belong to the director (the Owner where reserved); this page only applies them. New questions go to the rights lane on **#165**.
+A quick reference for "may we use this source, and how?". The rulings themselves live in `docs/research/owner-decisions-pending.md` (OD-02, OD-23, OD-31, OD-32, OD-33, **OD-34** with five rounds) and, for GIS sources, in the generated `docs/gis/rights/README.md`. Rights and truth rulings belong to the director (the Owner where reserved); this page only applies them. New questions go to the rights lane on **#165**.
 
 ## Precedents for a new source (OD-34)
 
@@ -72,9 +72,9 @@ Department stores: one store POI each; brand lists are a facts-only **tenant dat
 - Nothing from a POI source may be committed literally under `docs/gis/**` (#124).
 - When a rights class changes, update this table and the gap table's PENDING terms in the same PR.
 
-## Links
+## Related PRs and issues
 
 - OD-34: [decision, #377 comment 6382700098](https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098); terms reads [#415](https://github.com/nurockplayer/gteki/pull/415); Odakyu Dept #429, #439; chain pages #451
 - OD-31 / OD-32: [#360 comment 6377632614](https://github.com/nurockplayer/gteki/pull/360#issuecomment-6377632614) · OD-33: [#377 comment 6378920311](https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311)
 - Rights lane: [#165](https://github.com/nurockplayer/gteki/issues/165)
-- Notes: [station data](data-stations.md) · [research/lines](data-research-lines.md) · [GIS](data-gis.md)
+- Notes: [[data-stations]] · [[data-research-lines]] · [[data-gis]]

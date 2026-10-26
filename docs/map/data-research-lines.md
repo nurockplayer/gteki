@@ -6,7 +6,7 @@ updated: 2026-10-26 20:26 JST
 
 # Lines research: gap table, field run, field receipts
 
-## What it is
+## What it does
 
 `docs/research/lines/` is the data lane's working record for the rail lines and department stores at Ikebukuro and Shinjuku: what is already in the game, what is still missing, and what only an on-site look can settle. It is docs plus small contract JSON; the station generators read the contract JSON, nothing else here is imported.
 
@@ -18,7 +18,7 @@ Three documents carry the state:
 
 Issue **#533** is the tracker for every field item: the field run is its checklist, receipts are its evidence, and each item closes on #533 when a receipt for it is imported.
 
-## Main files
+## Main files and functions
 
 | Path | Role |
 | --- | --- |
@@ -34,7 +34,7 @@ Issue **#533** is the tracker for every field item: the field run is its checkli
 | `docs/research/field/*-field-checklist.md`, `*-online-closures-2026-10-25.md`, `*-route.md` | Original walking frame (#493) and online closures (#512) |
 | `docs/research/merchants/store-entrances-2026-10-25.md` | Store entrance ties that became field items (#529) |
 
-## How data flows
+## Data flow
 
 ```
 desk research (sources per OD-34) ─▶ contract JSON ─▶ generators ─▶ search-only POIs
@@ -52,11 +52,11 @@ desk research (sources per OD-34) ─▶ contract JSON ─▶ generators ─▶ 
 - A receipt item is `CLOSED` or `OPEN`, with `observedText`, `observedAt` (zoned), and optional `poiId`, `nodeId`, `paid`, `floorLabel`, `stepFree`. `sourceKind` is `team_field`; `observer` is a role, never a name.
 - Connectors are additive: every CLOSED item adds its node. A wrong tie is fixed by editing or deleting the earlier receipt item; a later receipt does not supersede it.
 - A field note confirms what was seen; it does not raise a fact's public source count. The data lane decides what gets imported.
-- No receipt exists yet (`docs/research/field/receipts/` is created by the first one); the visit date is the Owner's.
+- No receipt exists yet (the receipts folder under docs/research/field is created by the first one); the visit date is the Owner's.
 
-## Commands
+## Tests CI runs and regenerating data
 
-No generator lives here. After a receipt lands, regenerate and test as in [station data](data-stations.md):
+No generator lives here. After a receipt lands, regenerate and test as in [[data-stations]]:
 
 ```sh
 pnpm --filter @gteki/station-shinjuku import:e27 && pnpm --filter ./stations/shinjuku bake:surface
@@ -75,9 +75,9 @@ orb-test -- pnpm vitest run stations/ikebukuro/pipeline/import_field_receipt.tes
 - Every time written in these docs carries a zone (JST); receipts use `observedAt` with offset.
 - Tokyo Metro pages are cited via Wayback, even when the live URL answers.
 
-## Related
+## Related PRs and issues
 
 - Tracker: #533 (field items 1–55)
 - Gap table: #501, #535, #537, #544, #546, #555 · Field run: #529, #533, #540, #552, #555 · Receipt import: #554 (Ikebukuro), #556 (Shinjuku)
 - Rights lane: #165 (ecomo transfer routes, ODPT: both pending)
-- Notes: [station data](data-stations.md) · [GIS / S03](data-gis.md) · [rights](data-rights.md)
+- Notes: [[data-stations]] · [[data-gis]] · [[data-rights]]
