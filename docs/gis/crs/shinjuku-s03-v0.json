@@ -12,7 +12,9 @@
       "statement_null_crs": "CRS が null の場合、座標は推定できません。",
       "statement_local": "ローカル座標は、会場に対してローカルに定義された座標のセットです。座標系は、北向きではなく自然な向きで定義されます。"
     },
-    "verification": "UNVERIFIED",
+    "verification": "VERIFIED",
+    "verification_scope": "v5_nav frame only: internal consistency of mx/my with the two source affines. Not datum, absolute accuracy or station alignment (Check B stays open).",
+    "verification_basis": {"ruling": "director, 2026-10-26 11:5x JST (relayed by gteki-31): the Mercator fit closes CRS_UNCONFIRMED on conditions 1-2", "note": "docs/research/lines/s03-reason-codes-desk-2026-10-26.md §1 (PR #546)", "printed": "S03 spec §4.4 「メルカトル座標からマップ座標への変換」; §4.6 「\"mx\":ノード X 座標, //メルカトル座標内」", "fitted_scale": "2^25 units per world (fitted, not printed): lon = mx/2^25*360-180, lat = atan(sinh(pi*(1-2*my/2^25)))", "residual_m": {"nodes": 2506, "median": 0.088, "p95": 0.108, "max": 0.123}, "non_circular": "Both affines are read from the source ZIP, not derived from the Mercator assumption: nav_coefficients_sha256 is JSON.stringify of v5_nav.json d[0].t and drawing_coefficients_sha256 of com-map.geojson ref_frame.transform; rechecked 2026-10-26 11:5x JST against ZIP fc3466270c08593a…"},
     "declared_crs": null,
     "member_frames": {
       "geojson-level-geom": {
@@ -35,7 +37,7 @@
       "v5_nav": {
         "members": 1,
         "crs_key": "absent",
-        "frame": "venue-local mx/my, not drawing-local; not a standard GeoJSON geometry member, so the absent-CRS sentence does not classify it; affine 1 takes it to drawing-local, affine 2 to longitude/latitude; the projection behind mx/my is UNKNOWN except for the two affines"
+        "frame": "venue-local mx/my, not drawing-local; not a standard GeoJSON geometry member, so the absent-CRS sentence does not classify it; affine 1 takes it to drawing-local, affine 2 to longitude/latitude; the projection behind mx/my is spherical Mercator per spec §4.4/§4.6, at a fitted 2^25-per-world scale; the two affines reproduce it to <= 0.123 m"
       }
     },
     "geographic_envelope": {
@@ -51,7 +53,7 @@
       "drawing_id": 35814,
       "level_ids": [64672, 64673, 64674, 64688, 64675, 64676, 64689, 64677, 64678, 64679, 64680],
       "nav_member_sha256": "469d34033cbe0052569298a0478021ae399391de08f4f6d16efddc5b9d8da651",
-      "map_member_sha256": "0481b174b2bafe24be32de8432eee67e745cc57ea526462a26c9168bf737c3d8",
+      "map_member_sha256": "0481b174b2fafe24be32de8432eee67e745cc57ea526462a26c9168bf737c3d8",
       "nav_coefficients_sha256": "0a154848be6c786ebd36e3e545c1e988cfb9d628a294bed23224a6bd046f5838",
       "drawing_coefficients_sha256": "78dbe40fb37f277b48f4274d380e467cff8e3ff57f587b262673781b11a36e8e",
       "coefficient_hash_encoding": "UTF-8 JSON array in source order",
@@ -141,10 +143,10 @@
     "WGS84 realization/epoch and any WGS84 to JGD2011 horizontal offset are UNKNOWN; none is applied.",
     "Absolute accuracy and station alignment are not established; the only control is the E27 overlap sample.",
     "Why level 64677 fails containment, and why 64678 has 13 outside nodes while passing, is unresolved; only 64677 fails and the overall FAIL follows from it.",
-    "The source projection behind mx/my and its linear unit are UNKNOWN; the 0.44% anisotropy is derived only.",
+    "The mx/my projection is printed as Mercator (spec §4.4/§4.6); its 2^25-per-world scale is fitted, not printed. The 0.44% anisotropy is derived only.",
     "Publication of nav paths, path geometry or opening hours is not covered by any ruling; paths stay HOLD.",
     "Physical heights are absent from S03."
   ],
   "credit": "出典：東京都都市整備局「新宿駅周辺の施設情報等」",
-  "verification": "UNVERIFIED"
+  "verification": "VERIFIED (v5_nav frame, internal consistency; see frame.verification_scope)"
 }
