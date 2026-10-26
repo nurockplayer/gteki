@@ -81,6 +81,8 @@ S1 §3.2.3 prints 「zlevel - レベルの zlevel、または順序付けパラ�
 
 ### 2.2 A source inconsistency — 42 links whose `dz` is not the `z` difference
 
+**Update 2026-10-26 18:30 JST:** [Private locating result and field decisions](s03-dz-locate-2026-10-26.md): 42 A links in 16 clusters; all 40 1F↔2F links carry `dz` ±3, a source-wide convention, so no field item (lead decision).
+
 S1 §4.8 prints 「"dz":デルタ zlevel」. For 2,611 of 2,653 links, `dz` equals z(to) − z(from). The other 42 do not:
 
 | Levels | Links | `dz` printed | z difference | Device |
@@ -114,6 +116,8 @@ These are factual fields under the S2 clearance.
 
 ### 3.1 The 4 that do not resolve
 
+**Update 2026-10-26 18:30 JST:** [Located device-UNKNOWN residue](s03-dz-locate-2026-10-26.md): all four prefixes reproduce in two clusters; the three one-end-device candidates become field items 50–51; the no-device link stays GAP.
+
 | link-id sha256 (first 12) | levels | `dz` | device at the ends |
 |---|---|---|---|
 | `543e76f800f3` | B2F → M1F | +2 | — / stairs |
@@ -145,3 +149,4 @@ By the login rule, **no file of S4 was requested**. So S4 cannot supply S03's CR
 3. **Floor tie:** field item 30 gets a look-for (the 「大江戸線改札B」 name) as the only seam evidence. The S03 ↔ bundle floor mapping stays UNVERIFIED until then.
 4. **§2.2 and §3.1 (46 links):** locate privately, then decide whether any becomes a field item. They do not block routing inside S03 levels once the CRS is ruled, but each still carries its code.
 5. **S4:** recorded GAP; Owner decision on registration.
+6. **Check B control scouting (2026-10-26 18:30 JST):** [independent-control findings](s03-check-b-control-2026-10-26.md): Metro exit names have no coordinates; PLATEAU/KSJ station geometry has no exact S03 feature-name match; 0 eligible measured pairs, residual statistics N/A, no supported threshold. `CHECK_B_RESIDUAL_UNVERIFIED` stays for the director's ruling.
