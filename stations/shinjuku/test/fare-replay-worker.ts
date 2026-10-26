@@ -100,7 +100,7 @@ if (parentPort && workerData?.kind === "shinjuku-fare-replay") {
   });
   const scene: StationScene = { root: new THREE.Group(), dispose() {}, walkable: fixture.walkable.map(i => meshes[i]!), colliders: fixture.colliders.map(i => meshes[i]!), walls: fixture.walls };
   accelerateRaycasts(meshes);
-  const built: BuiltStation = { root: new THREE.Group(), layout: fixture.layout, world, propWalls: fixture.props, escalators: [], signs: [], levelGroups: new Map(), update() {}, dispose() {}, trainStatus: () => [] };
+  const built: BuiltStation = { root: new THREE.Group(), layout: fixture.layout, world, propWalls: fixture.props, escalators: [], signs: [], identityBoards: [], levelGroups: new Map(), update() {}, dispose() {}, trainStatus: () => [] };
   const env = replayEnvironment(built, scene, fixture.plan, fixture.regions);
   parentPort.on("message", (group: Job[]) => {
    for (const [groupIndex, job] of group.entries()) {
