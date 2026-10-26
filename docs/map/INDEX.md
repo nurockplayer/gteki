@@ -31,8 +31,8 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 - godot: Godot HQ client fed by exported GLB + sidecar snapshots; routes/searches by calling the TS CLIs. `src/*.test.ts` runs in root vitest, the GDScript suites in `packages/godot/tests/` run in no CI · `packages/godot/` · [[pkg-godot]]
 
 ### Stations (`stations/`)
-- Shinjuku: E27-derived station data (`stations/shinjuku/gteki/`), scene build (`stations/shinjuku/scene/`), importers (`stations/shinjuku/tools/`), fare/replay tests (`stations/shinjuku/test/`) · no note yet (station lead)
-- Ikebukuro: data (`stations/ikebukuro/gteki/`), scene (`stations/ikebukuro/scene/`), pipeline (`stations/ikebukuro/pipeline/`), lane docs (`stations/ikebukuro/docs/`), entry point `stations/ikebukuro/README.md` · no note yet (station lead)
+- Shinjuku: E27-derived station data (`stations/shinjuku/gteki/`), scene build (`stations/shinjuku/scene/`), importers (`stations/shinjuku/tools/`), fare/replay tests (`stations/shinjuku/test/`) · data generation and raw-data runs: [[data-stations]]; scene: no note yet (station lead)
+- Ikebukuro: data (`stations/ikebukuro/gteki/`), scene (`stations/ikebukuro/scene/`), pipeline (`stations/ikebukuro/pipeline/`), lane docs (`stations/ikebukuro/docs/`), entry point `stations/ikebukuro/README.md` · data generation and receipts: [[data-stations]]; scene: no note yet (station lead)
 
 ### Tools (`tools/`)
 - GIS: its own pnpm workspace. Source acquisition, CRS conversion, S03 nav graph, publish path into the stations · `tools/gis/` · [[gis]]
@@ -49,8 +49,9 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 ### Docs, CI, deploy
 - Architecture and product: `docs/architecture.md`, `docs/product-vision.md`, `docs/acceptance.md`, `docs/ci-limits.md`
 - Core contracts: `docs/core/contract.md`, `docs/core/merchant-submission-format.md`
-- GIS records (acquisitions, decisions, rights, S03): `docs/gis/`; start at `docs/gis/README.md`
-- Research and source register: `docs/research/`; start at `docs/research/source-register.md`
+- GIS records (acquisitions, decisions, rights, S03): `docs/gis/`; start at `docs/gis/README.md` · data-lane view: [[data-gis]]
+- Research and source register: `docs/research/`; start at `docs/research/source-register.md` · lines, gap table, field run and receipts (#533): [[data-research-lines]]
+- Data rights: OD-34 precedents and per-source rights classes · `docs/research/owner-decisions-pending.md` · [[data-rights]]
 - Assets and visual: `docs/assets/`, `docs/visual/`, `assets/`
 - CI: `.github/workflows/root-test.yml` (typecheck + root vitest, the merge gate together with `test`), `.github/workflows/gis-test.yml`, `.github/workflows/e2e-smoke.yml`, `.github/workflows/reuse.yml`, `.github/workflows/deploy-pages.yml`
 - Deploy: `deploy/cloudflare-pages/`
