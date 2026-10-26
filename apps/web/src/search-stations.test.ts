@@ -161,10 +161,10 @@ describe("core search on the real Shinjuku POIs (docs/stations/shinjuku/search-e
 
   /**
    * #214: a merchant directory listing whose printed name contains the operator matches these queries too
-   * (小田急百貨店 新宿店, ミスターミニット 新宿東口店). Such a hit is a shop POI: one facts-only directory
-   * source, no connector and no route, exactly like an S03 name.
+   * (小田急百貨店 新宿店, ミスターミニット 新宿東口店, 京王百貨店 from #539). Such a hit is a shop POI: one
+   * facts-only directory source, no connector and no route, exactly like an S03 name.
    */
-  const SHOP_ONLY_HITS: Record<string, string[]> = { 小田急: ["shop-sjk-odakyudept"], 東口: ["shop-sjk-metro-004"] };
+  const SHOP_ONLY_HITS: Record<string, string[]> = { 小田急: ["shop-sjk-odakyudept"], 東口: ["shop-sjk-metro-004"], 京王: ["shop-sjk-keio"] };
 
   it.each(SEARCH_ONLY)("%s returns only search-only POIs (S03 names, merchant listings and WP4 line POIs; no route)", (q) => {
     const s = strong(q);

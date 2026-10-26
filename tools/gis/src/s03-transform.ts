@@ -234,7 +234,11 @@ export function residualStats(values: readonly number[]) {
   return { count: values.length, min_m: sorted[0] ?? null, median_m: percentile(0.5), p90_m: percentile(0.9), max_m: sorted.at(-1) ?? null };
 }
 
-interface S03Node { index: number; sourceId: number; levelId: number; native: Point2 }
+/**
+ * `geometryId` is the source's `l[].gid`, the id of the level-geometry feature the node sits in, or null when the
+ * source omits it (43 node-level entries in this archive). It is an identity, never a position.
+ */
+export interface S03Node { index: number; sourceId: number; levelId: number; native: Point2; geometryId: number | null }
 /** Nav link: `direction` is the source's `d` (1 forward, 2 reverse, 3 both); `dz` is the source's vertical step when present. */
 export interface S03Link { sourceId: number; n1: number; n2: number; direction: number; dz: number | null }
 /**
@@ -442,10 +446,13 @@ export function parseS03Members(entries: readonly { name: string; data: Buffer }
   const nodeIds = new Set<number>();
   const nodes: S03Node[] = (nav.n as unknown[]).map((n, index) => {
     if (!record(n) || !id(n.id) || !finite(n.mx) || !finite(n.my) || !Array.isArray(n.l) || n.l.length !== 1 || !record(n.l[0]) || !levelIds.has(n.l[0].lid as number)) fail(navName, `invalid node or ambiguous level at index ${index}`);
-    const node = n as { id: number; mx: number; my: number; l: Array<{ lid: number }> };
+    const node = n as { id: number; mx: number; my: number; l: Array<{ lid: number; gid?: number }> };
     if (nodeIds.has(node.id)) fail(navName, `duplicate node id at index ${index}`);
+    // The geometry id is optional but, when written, must be a positive integer: a malformed one fails closed.
+    const gid = node.l[0]!.gid;
+    if (gid !== undefined && !id(gid)) fail(navName, `node ${node.id} has a malformed level geometry id`);
     nodeIds.add(node.id);
-    return { index, sourceId: node.id, levelId: node.l[0]!.lid, native: [node.mx, node.my] };
+    return { index, sourceId: node.id, levelId: node.l[0]!.lid, native: [node.mx, node.my], geometryId: gid ?? null };
   });
   // Links carry the source's direction code (1 forward, 2 reverse, 3 both) and dz only when they change level.
   if (!Array.isArray(nav.l)) fail(navName, 'missing links');
