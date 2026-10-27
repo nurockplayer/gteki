@@ -107,7 +107,8 @@ export function auditPolyline(probe: SceneProbe, points: readonly PolylinePoint[
       const [x, y, z] = enuToRenderer({ x: s.x, y: s.y, z: s.z + PROBE_M });
       ray.set(new THREE.Vector3(x, y, z), down);
       ray.far = 2 * PROBE_M;
-      const hit = castAll(ray, probe.ground)[0];
+      // Nearest walkable to the drawn height, not the first one down: a mezzanine above must not count.
+      const hit = castAll(ray, probe.ground).sort((a, b) => Math.abs(s.z - a.point.y) - Math.abs(s.z - b.point.y))[0];
       if (!hit) { noFloor++; if (!worst) worst = `no floor at (${s.x.toFixed(1)}, ${s.y.toFixed(1)}, z ${s.z.toFixed(2)})`; }
       else {
         const dz = s.z - hit.point.y;
@@ -196,13 +197,16 @@ async function main(): Promise<void> {
           const n = nodes.get(id)!, z = polyline.find((p) => p.x === n.position.x && p.y === n.position.y)?.z;
           console.log(`node ${id}  floor ${n.floorId}  (${n.position.x.toFixed(1)}, ${n.position.y.toFixed(1)})  drawn z ${z?.toFixed(2) ?? "?"}`);
         }
+        // The route total sums the per-edge audits, so the elevator exemption applies to it too.
+        const total = { violations: 0, samples: 0, offFloor: 0, noFloor: 0, wallHits: 0, maxAbsDzM: 0 };
         for (const step of res.steps) {
           const edge = bundle.edges.find((e) => e.id === step.edgeId)!;
           const a = auditPolyline(probe, edgePolyline(bundle, edge), { skipInteriorFloor: edge.mode === "elevator" });
+          total.violations += violations(a); total.samples += a.samples; total.offFloor += a.offFloor; total.noFloor += a.noFloor;
+          total.wallHits += a.wallHits; total.maxAbsDzM = Math.max(total.maxAbsDzM, a.maxAbsDzM);
           console.log(`edge ${edge.id}  ${edge.mode}  ${sourceOf.get(edge.id) ?? "public"}  violations ${violations(a)} (off-floor ${a.offFloor}, no-floor ${a.noFloor}, wall ${a.wallHits})${a.worst ? `  first: ${a.worst}` : ""}`);
         }
-        const whole = auditPolyline(probe, polyline);
-        console.log(`route total: ${violations(whole)} violations over ${whole.samples} samples (off-floor ${whole.offFloor}, no-floor ${whole.noFloor}, wall ${whole.wallHits}, max |dz| ${whole.maxAbsDzM.toFixed(2)} m)`);
+        console.log(`route total: ${total.violations} violations over ${total.samples} samples (off-floor ${total.offFloor}, no-floor ${total.noFloor}, wall ${total.wallHits}, max |dz| ${total.maxAbsDzM.toFixed(2)} m)`);
         continue;
       }
       for (const edge of bundle.edges) {

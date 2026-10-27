@@ -6,15 +6,19 @@ import { auditPolyline, sceneProbe, violations } from "./route-clip-audit.ts";
 // Renderer frame: y up, ENU (x, y, z) → (x, z, -y). A 20 m floor at z 0 and a wall across x = 5.
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial());
 const wall = new THREE.Mesh(new THREE.BoxGeometry(0.2, 3, 20).translate(5, 1.5, 0), new THREE.MeshBasicMaterial());
-const root = new THREE.Group().add(floor, wall);
+const mezzanine = new THREE.Mesh(new THREE.PlaneGeometry(4, 4).rotateX(-Math.PI / 2).translate(-6, 2.5, 0), new THREE.MeshBasicMaterial());
+const root = new THREE.Group().add(floor, wall, mezzanine);
 root.updateMatrixWorld(true);
-const probe = sceneProbe({ root, walkable: [floor], colliders: [wall] } as never);
+const probe = sceneProbe({ root, walkable: [floor, mezzanine], colliders: [wall] } as never);
 const line = (...pts: [number, number, number][]): PolylinePoint[] =>
   pts.map(([x, y, z], i) => ({ x, y, z, zKnown: true, stepIndex: i - 1, floorId: "f" }));
 
 describe("route clip audit", () => {
   it("passes a route on the floor that stays on one side of the wall", () => {
     expect(violations(auditPolyline(probe, line([-8, 0, 0.1], [4, 0, 0.1])))).toBe(0);
+  });
+  it("checks against the walkable nearest the drawn height, under a mezzanine too", () => {
+    expect(violations(auditPolyline(probe, line([-7, 0, 0], [-5, 0, 0])))).toBe(0);
   });
   it("counts samples above the floor tolerance", () => {
     const a = auditPolyline(probe, line([-8, 0, 1], [-2, 0, 1]));

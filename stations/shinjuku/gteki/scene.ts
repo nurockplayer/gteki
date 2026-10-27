@@ -73,7 +73,8 @@ export function planBundle(bundle: Parameters<BuildScene>[0]["bundle"]): Paramet
   const known = new Set(Object.keys((plan as unknown as Plan).nodeRenderZ));
   if (bundle.nodes.every((n) => known.has(n.id))) return bundle;
   return { ...bundle, nodes: bundle.nodes.filter((n) => known.has(n.id)), edges: bundle.edges.filter((e) => known.has(e.from) && known.has(e.to)),
-    pois: bundle.pois.filter((p) => p.connectorNodeIds.every((id) => known.has(id))) };
+    // A POI keeps the connectors the plan knows; one with none left is not part of this scene.
+    pois: bundle.pois.map((p) => ({ ...p, connectorNodeIds: p.connectorNodeIds.filter((id) => known.has(id)) })).filter((p) => p.connectorNodeIds.length > 0) };
 }
 
 /** The scene build itself, with an optional, already prepared kit swap. Exported for tests. */
