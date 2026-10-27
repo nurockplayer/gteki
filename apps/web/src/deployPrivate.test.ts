@@ -36,7 +36,7 @@ describe("private Cloudflare Pages deploy guards", () => {
   });
 
   it("lets gteki-private CI past the CI guard", () => {
-    const env = { ...localEnv, GITHUB_ACTIONS: "true", GITHUB_REPOSITORY: "nurockplayer/gteki-private" };
+    const env: NodeJS.ProcessEnv = { ...localEnv, GITHUB_ACTIONS: "true", GITHUB_REPOSITORY: "nurockplayer/gteki-private" };
     delete env.GTEKI_PRIVATE_DIR;
     const result = spawnSync("bash", [script], { env, encoding: "utf8" });
     expect(result.status).toBe(1);
