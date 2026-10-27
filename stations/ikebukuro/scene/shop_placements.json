@@ -39,21 +39,6 @@
    "display": "cafe"
   },
   {
-   "id": "ph-ikb-b1e-02",
-   "kind": "placeholder",
-   "openings": [
-    "poly-0b9b96bb-9f24-432f-95d4-2faf6b3bb6cc",
-    "poly-0e973616-0d07-404e-8948-b49e2b34979a"
-   ],
-   "front": "glazing",
-   "sign": {
-    "ja": "ベーカリー",
-    "en": "Bakery"
-   },
-   "accent": "#c98a3d",
-   "display": "bakery"
-  },
-  {
    "id": "ph-ikb-b1e-03",
    "kind": "placeholder",
    "openings": [
@@ -98,35 +83,6 @@
    },
    "accent": "#3f5f8f",
    "display": "books"
-  },
-  {
-   "id": "ph-ikb-b1e-06",
-   "kind": "placeholder",
-   "openings": [
-    "poly-7834377e-dfcb-4cf2-9d10-c790daf8fdca",
-    "poly-943c3bb7-5bd3-48dd-980a-103bb45df864"
-   ],
-   "front": "door_glazing",
-   "sign": {
-    "ja": "花",
-    "en": "Flowers"
-   },
-   "accent": "#5f8a4a",
-   "display": "flowers"
-  },
-  {
-   "id": "ph-ikb-b1e-07",
-   "kind": "placeholder",
-   "openings": [
-    "poly-16c9c03c-3e1e-4d7e-a251-f2115bd8c2e1"
-   ],
-   "front": "glazing",
-   "sign": {
-    "ja": "洋菓子",
-    "en": "Patisserie"
-   },
-   "accent": "#c46a7a",
-   "display": "sweets"
   },
   {
    "id": "ph-ikb-b1e-08",
@@ -193,11 +149,11 @@
    ],
    "front": "glazing",
    "sign": {
-    "ja": "ジュース",
-    "en": "Juice"
+    "ja": "ベーカリー",
+    "en": "Bakery"
    },
-   "accent": "#d08a2a",
-   "display": "juice"
+   "accent": "#c98a3d",
+   "display": "bakery"
   }
  ]
 }
