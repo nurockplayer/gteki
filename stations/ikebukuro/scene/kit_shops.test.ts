@@ -121,8 +121,8 @@ describe("committed shop data", () => {
   const byPolygon = new Map(openings.map((o) => [o.polygon_ids[0], o]));
   const pois = new Set((JSON.parse(fs.readFileSync(path.join(GTEKI, "pois.json"), "utf8")) as { pois: { id: string }[] }).pois.map((p) => p.id));
 
-  it("lists 13 shops whose every opening id is a surveyed opening row", () => {
-    expect(shops).toHaveLength(13);
+  it("lists 10 shops whose every opening id is a surveyed opening row", () => {
+    expect(shops).toHaveLength(10);
     for (const shop of shops)
       for (const polygon of shop.openings) expect(byPolygon.get(polygon), `${shop.id} ${polygon}`).toBeTruthy();
   });
