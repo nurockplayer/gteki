@@ -1,0 +1,676 @@
+{
+  "schema": "gteki.research.tenants/0.1",
+  "note": "Facts-only list of the 売場 sections (not brands) of 伊勢丹新宿店 本館 and メンズ館 (83 rows), as the floor pages under the store's floor guide print them, read 2026-10-27. Not POIs: a section search returns the building's POI with the floor. Isetan is a site allowing private use and quotation (OD-35, docs/research/use-tiers.md; #522). UNVERIFIED.",
+  "sourceId": "isetan-shinjuku-floorguide-2026-10",
+  "storePoiIds": [
+    "shop-sjk-isetan-honkan",
+    "shop-sjk-isetan-mens"
+  ],
+  "retrievedAt": "2026-10-27T12:45:00Z",
+  "tenants": [
+    {
+      "id": "tenant-sjk-isetan-main-000",
+      "name": "イセタン ビューティー コスメティックス / フレグランス",
+      "aliases": [],
+      "floorLabel": "1F",
+      "category": "化粧品",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-001",
+      "name": "ジュエリー",
+      "aliases": [],
+      "floorLabel": "1F",
+      "category": "婦人雑貨",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-002",
+      "name": "雑貨 ISETAN Seed / ISETAN Leaf",
+      "aliases": [],
+      "floorLabel": "1F",
+      "category": "婦人雑貨",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-003",
+      "name": "ハンドバッグ・財布",
+      "aliases": [],
+      "floorLabel": "1F",
+      "category": "婦人雑貨",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-004",
+      "name": "TOKYOクローゼット",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-005",
+      "name": "アーバンクローゼット",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-006",
+      "name": "イセタン ザ・スペース",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-007",
+      "name": "イセタン ビューティー コスメティックス / フレグランス",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "化粧品",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-008",
+      "name": "プロモーション",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人雑貨",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-009",
+      "name": "婦人靴",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-010",
+      "name": "ザ セカンド バー ジュース&コーヒー",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": null,
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-011",
+      "name": "シャンパーニュバー ザ ・スタンド",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": null,
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-012",
+      "name": "インターナショナル クリエーターズ",
+      "aliases": [],
+      "floorLabel": "3F",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-013",
+      "name": "インターナショナルデザイナーズ",
+      "aliases": [],
+      "floorLabel": "3F",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-014",
+      "name": "トラストスタイル",
+      "aliases": [],
+      "floorLabel": "3F",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-015",
+      "name": "マ・ランジェリー",
+      "aliases": [],
+      "floorLabel": "3F",
+      "category": "婦人肌着",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-016",
+      "name": "リ・スタイル",
+      "aliases": [],
+      "floorLabel": "3F",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-017",
+      "name": "コンテンポラリー",
+      "aliases": [],
+      "floorLabel": "3F",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-018",
+      "name": "ビストロカフェ　レディース アンド ジェントルメン",
+      "aliases": [],
+      "floorLabel": "3F",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-019",
+      "name": "インターナショナルラグジュアリー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-020",
+      "name": "ジュエリー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "宝飾品・時計・メガネ",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-021",
+      "name": "ISETAN HOME ESSENCE",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "リビング",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-022",
+      "name": "ウォッチ",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "宝飾品・時計・メガネ",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-023",
+      "name": "キッチンダイニング",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "リビング",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-024",
+      "name": "ザ・コンランショップ",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "リビング",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-025",
+      "name": "センターパーク / ザ ステージ#5",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "リビング",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-026",
+      "name": "ベッドバスパウダールーム",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "リビング",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-027",
+      "name": "リビングルーム・インテリア",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "リビング",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-028",
+      "name": "アートギャラリー",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "美術",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-029",
+      "name": "イセタン ブライド",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "ブライダル",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-030",
+      "name": "インターナショナルラグジュアリー",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "ベビー・子供服雑貨",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-031",
+      "name": "キャラクターブランド",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "ベビー・子供服雑貨",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-032",
+      "name": "スクール子供雑貨",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "ベビー・子供服雑貨",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-033",
+      "name": "ステーショナリー",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "ホビー・ステーショナリー",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-034",
+      "name": "テイストフルスタイル",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "ベビー・子供服雑貨",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-035",
+      "name": "フォーマルサロン",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "ブライダル・セレモニー",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-036",
+      "name": "マタニティ 新生児",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "ベビー・子供服雑貨",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-037",
+      "name": "リ・スタイル キッズ",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "ベビー・子供服雑貨",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-038",
+      "name": "時の場(ギフトサロン 商品券サロン 薬品 健康食品)",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "ブライダル・セレモニー",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-039",
+      "name": "玩具",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "ベビー・子供服雑貨",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-040",
+      "name": "ジューススタンド ハッピーホームキッチン",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": null,
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-041",
+      "name": "親子カフェ ラッテ チャノママ",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-042",
+      "name": "セレモピアン",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "セレモニー",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-043",
+      "name": "メガネサロン",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "宝飾品・時計・メガネ",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-044",
+      "name": "呉服/ きもの・和装小物・和雑貨",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "きもの",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-045",
+      "name": "屋上/アイ・ガーデン",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "カルチャー・その他",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-046",
+      "name": "買取・引取ご相談窓口「アイム グリーン」",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "その他",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-047",
+      "name": "レストラン＆カフェ",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": null,
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-048",
+      "name": "カフェ エ シュクレ（洋菓子）",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "食品",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-049",
+      "name": "グランアルチザン（洋特選）",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "食品",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-050",
+      "name": "グランドカーヴ（洋酒ワイン）",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "食品",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-051",
+      "name": "シェフズセレクション（グローサリー）",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "食品",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-052",
+      "name": "デリ エ ブーランジュリー(パン・洋惣菜）",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "食品",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-053",
+      "name": "フレッシュマーケット（生鮮食品）",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "食品",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-054",
+      "name": "フードコレクション（食品催物場）",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "食品",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-055",
+      "name": "和酒（日本酒・ビール）",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "食品",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-056",
+      "name": "旨の膳（惣菜・弁当）・粋の座（和特選）",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "食品",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-057",
+      "name": "甘の味（和菓子）茶の道（日本茶・特選和菓子）",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "食品",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-058",
+      "name": "イセタンクラフトビアバー",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-059",
+      "name": "キッチンステージ",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-060",
+      "name": "ジャン＝ポール・エヴァン　バー ア ショコラ",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-061",
+      "name": "テイスティングカウンター",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-062",
+      "name": "プレミアム　マリオジェラテリア",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-063",
+      "name": "ワールドミートバル　ニッシン　テイスティングカウンター",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-064",
+      "name": "虎屋菓寮（TORAYA CAFE）",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-065",
+      "name": "イセタン ビューティー アポセカリー",
+      "aliases": [],
+      "floorLabel": "B2F",
+      "category": "化粧品",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-main-066",
+      "name": "ミールアットホーム　テイスティングカウンター",
+      "aliases": [],
+      "floorLabel": "B2F",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-isetan-honkan"
+    },
+    {
+      "id": "tenant-sjk-isetan-mens-067",
+      "name": "コスメティクス / フレグランス",
+      "aliases": [],
+      "floorLabel": "1F",
+      "category": "化粧品",
+      "storePoiId": "shop-sjk-isetan-mens"
+    },
+    {
+      "id": "tenant-sjk-isetan-mens-068",
+      "name": "ジュエリー",
+      "aliases": [],
+      "floorLabel": "1F",
+      "category": "紳士雑貨",
+      "storePoiId": "shop-sjk-isetan-mens"
+    },
+    {
+      "id": "tenant-sjk-isetan-mens-069",
+      "name": "レザーグッズ / ベルト / 帽子・傘",
+      "aliases": [],
+      "floorLabel": "1F",
+      "category": "紳士雑貨",
+      "storePoiId": "shop-sjk-isetan-mens"
+    },
+    {
+      "id": "tenant-sjk-isetan-mens-070",
+      "name": "メンズデザイナーズ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "紳士服",
+      "storePoiId": "shop-sjk-isetan-mens"
+    },
+    {
+      "id": "tenant-sjk-isetan-mens-071",
+      "name": "メンズデザイナーズ",
+      "aliases": [],
+      "floorLabel": "3F",
+      "category": "紳士服",
+      "storePoiId": "shop-sjk-isetan-mens"
+    },
+    {
+      "id": "tenant-sjk-isetan-mens-072",
+      "name": "メンズラグジュアリー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "紳士服",
+      "storePoiId": "shop-sjk-isetan-mens"
+    },
+    {
+      "id": "tenant-sjk-isetan-mens-073",
+      "name": "シャツ・ネクタイ・シーズン雑貨/オーダーシャツ",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "紳士服",
+      "storePoiId": "shop-sjk-isetan-mens"
+    },
+    {
+      "id": "tenant-sjk-isetan-mens-074",
+      "name": "メンズテーラードクロージング",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "紳士服",
+      "storePoiId": "shop-sjk-isetan-mens"
+    },
+    {
+      "id": "tenant-sjk-isetan-mens-075",
+      "name": "メンズクリエーターズ",
+      "aliases": [],
+      "floorLabel": "6F",
+      "category": "紳士服",
+      "storePoiId": "shop-sjk-isetan-mens"
+    },
+    {
+      "id": "tenant-sjk-isetan-mens-076",
+      "name": "メンズオーセンティック＆コンテンポラリー",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "紳士服",
+      "storePoiId": "shop-sjk-isetan-mens"
+    },
+    {
+      "id": "tenant-sjk-isetan-mens-077",
+      "name": "イセタンメンズ レジデンス",
+      "aliases": [],
+      "floorLabel": "8F",
+      "category": "化粧品",
+      "storePoiId": "shop-sjk-isetan-mens"
+    },
+    {
+      "id": "tenant-sjk-isetan-mens-078",
+      "name": "伊勢丹ゴルフスクール スイング",
+      "aliases": [],
+      "floorLabel": "8F",
+      "category": "カルチャー・その他",
+      "storePoiId": "shop-sjk-isetan-mens"
+    },
+    {
+      "id": "tenant-sjk-isetan-mens-079",
+      "name": "カフェ リジーグ",
+      "aliases": [],
+      "floorLabel": "8F",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-isetan-mens"
+    },
+    {
+      "id": "tenant-sjk-isetan-mens-080",
+      "name": "バッグ/ラゲッジ",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "紳士雑貨・靴",
+      "storePoiId": "shop-sjk-isetan-mens"
+    },
+    {
+      "id": "tenant-sjk-isetan-mens-081",
+      "name": "紳士靴",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "紳士靴",
+      "storePoiId": "shop-sjk-isetan-mens"
+    },
+    {
+      "id": "tenant-sjk-isetan-mens-082",
+      "name": "肌着・靴下・ナイティ/ハンカチ",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "紳士雑貨",
+      "storePoiId": "shop-sjk-isetan-mens"
+    }
+  ]
+}
