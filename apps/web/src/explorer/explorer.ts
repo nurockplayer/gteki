@@ -1316,7 +1316,8 @@ export class Explorer {
     const gaps = this.groundTargets.length === 0 ? [] : unmodelledRuns(polyline, (p) => {
       this.ray.set(R(p.x, p.y, p.z + 3), new THREE.Vector3(0, -1, 0));
       this.ray.far = 6;
-      return castAll(this.ray, this.groundTargets).length > 0;
+      // Only a floor at the route's own height counts: the storey below must not hide a missing one (public routes sit within 0.45 m).
+      return castAll(this.ray, this.groundTargets).some((h) => Math.abs(h.point.y - p.z) <= 1);
     });
     if (gaps.length > 0) {
       this.noModelTexture ??= dashTexture();
