@@ -584,7 +584,7 @@
      "triangles": 96,
      "hash": "7884048760eb01274be6f7d424e79ab14d2959282b878396e643be002f1d9635"
     },
-    "[\"MeshStandardMaterial\",\"mat.escStep\",\"ffffff\",\"000000\",1,1,false,0,true,0.51,0.6,true,true,true,true,false,false]#visible=true#order=0#instanced=true": {
+    "[\"MeshStandardMaterial\",\"mat.escStep\",\"ffffff\",\"000000\",1,1,false,0,true,0.51,0.3,true,true,true,true,false,false]#visible=true#order=0#instanced=true": {
      "triangles": 37968,
      "hash": "611d5a00342728457892a0f405242c90325988274295e3eeb7d69968dce6ac1c"
     },
@@ -1745,7 +1745,7 @@
      "triangles": 96,
      "hash": "7884048760eb01274be6f7d424e79ab14d2959282b878396e643be002f1d9635"
     },
-    "[\"MeshStandardMaterial\",\"mat.escStep\",\"ffffff\",\"000000\",1,1,false,0,true,0.51,0.6,true,true,true,true,false,false]#visible=true#order=0#instanced=true": {
+    "[\"MeshStandardMaterial\",\"mat.escStep\",\"ffffff\",\"000000\",1,1,false,0,true,0.51,0.3,true,true,true,true,false,false]#visible=true#order=0#instanced=true": {
      "triangles": 37968,
      "hash": "611d5a00342728457892a0f405242c90325988274295e3eeb7d69968dce6ac1c"
     },

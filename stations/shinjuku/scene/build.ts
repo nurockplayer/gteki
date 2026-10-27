@@ -555,7 +555,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     stair: track(new THREE.MeshStandardMaterial({ color: "#c7c2b8", roughness: 0.42 })),
     riser: track(new THREE.MeshStandardMaterial({ color: "#dbdbd6", roughness: 0.3 })),
     nosing: track(new THREE.MeshStandardMaterial({ color: "#2a2b2c", roughness: 0.6 })),
-    escStep: track(new THREE.MeshStandardMaterial({ map: track(escalatorStepTexture()), roughness: 0.51, metalness: 0.6 })),
+    escStep: track(new THREE.MeshStandardMaterial({ map: track(escalatorStepTexture()), roughness: 0.51, metalness: 0.3 })),
     escTruss: track(new THREE.MeshStandardMaterial({ color: "#ccccc7", roughness: 0.34 })),
     gateBody: track(new THREE.MeshStandardMaterial({ color: "#e9ebec", roughness: 0.35, metalness: 0.15 })),
     gateTop: track(new THREE.MeshStandardMaterial({ color: "#303634", roughness: 0.58, metalness: 0.15, envMapIntensity: 0.3 })),

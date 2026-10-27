@@ -45,7 +45,7 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 const MAIN_BASELINE = {
   station: {
     geometryDigest: "698615760ab27c20613de649182cb02455edfc5ffb39a587f2d0cc7f592e0a17",
-    appearanceDigest: "eb44e27429073435fc861294b2d243f1d264208896a02fbe8a7278f0e12f17f8",
+    appearanceDigest: "bb90e82a587a6cfcd79a1d6a311dbd6e010a6d747417b3a96cb7c7e5553fabaf",
     nodesDigest: "04c6bfd082e1f1ce2f1c4826baf2199806e2eb003b10a34bb58366db5c8d0d88",
     texturesDigest: "c8f53716338bb41faf1cf09499f2a6bb149147d879491c851eac564281f01e1c",
     meshes: 145,
