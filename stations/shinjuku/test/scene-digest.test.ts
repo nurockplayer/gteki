@@ -20,6 +20,9 @@ import { exactHash, fullDigest, protectOnly, stationDigest, visualDigest, withCa
  * the previous visual digest before updating the fixture.
  * #342 adds original identity faces/cases/hangers and their sign semantics; the fixture was
  * regenerated from the build. All physical, spawn and fare-protection fields remain unchanged.
+ * The vertical transport pass (docs/visual/vertical-gap.md) restyles stair and escalator visuals: regenerated; protect,
+ * station, walkable, colliders and camera blockers are unchanged, and `semantic` differs only in one portal mesh's
+ * child index (49 -> 54, two meshes added before it).
  */
 const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;

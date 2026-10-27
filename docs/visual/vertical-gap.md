@@ -84,3 +84,25 @@ Post-processing is not a top gap: AgX, environment light, bloom threshold and GT
 | Conform Object | Wrap tactile strips and nosings onto non-planar landings | Minor; our landings are planar |
 | Cablerator | Handrail and cable runs along curves for prototyping the escalator handrail loop | Prototyping only |
 | Realtime Materials | Quick PBR look-dev of tread, cleat and brushed-steel finishes before baking to the palette | Look-dev speed; shipped textures stay CC0/self-made |
+
+## Batch 1 result (2026-10-28 04:35 JST): escalator steps and stair finish (#1, #4)
+
+Same spots, same cameras, spec 21. Top row before, bottom row after. Desktop:
+
+![batch 1 desktop](evidence/vertical-b1-desktop.jpg)
+
+Phone (bank foot close, Exit 1 stair foot; before, before, after, after):
+
+![batch 1 phone](evidence/vertical-b1-phone.jpg)
+
+| Spot | Desktop draws / tris, before → after | Phone draws / tris, before → after |
+| --- | --- | --- |
+| bank foot (wide) | 231 / 341k → 235 / 372k | 100 / 159k → 102 / 171k |
+| bank foot (close) | 220 / 337k → 214 / 365k | 80 / 158k → 82 / 171k |
+| bank head | 207 / 341k → 211 / 375k | 80 / 159k → 82 / 172k |
+| Exit 1 stair foot | 171 / 319k → 175 / 332k | 68 / 150k → 70 / 157k |
+
+- **Walk.** Down `e1fa65` and up `2692fe` on both tiers: `done` at every quarter, never `stuck`. Heights match the before run to the centimetre.
+- **Guided walks.** Spec 03's two Shinjuku walks (exit1-platform, platform-exit2) pass on desktop and phone.
+- **Geometry.** +490,580 B and +2 meshes per scene.
+- **Physics.** Walkable, colliders, camera blockers and explorer lists are byte-identical (scene-digest and kit-swap baselines). So the route-clip audit, which reads only those, cannot change.

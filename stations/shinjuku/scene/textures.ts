@@ -155,6 +155,26 @@ export function tactileTexture() {
   return finish(c, 1);
 }
 
+/**
+ * Escalator step atlas (style.md `escalator_tread` #38383B, `vertical_safety_yellow` #F5B009). Top half (v 0.5-1):
+ * the tread, cleats running along u (the direction of travel), yellow demarcation on both sides (v edges) and the
+ * back edge (u = 1). Bottom half (v 0-0.5): the riser, vertical cleats. The step geometry remaps its UVs into the halves.
+ */
+export function escalatorStepTexture() {
+  const W = 256, H = 512;
+  const [c, g] = canvas(W, H);
+  g.fillStyle = "#38383b";
+  g.fillRect(0, 0, W, H);
+  g.fillStyle = "#1e1e20";
+  for (let y = 4; y < 256; y += 8) g.fillRect(0, y, W, 3);
+  for (let x = 4; x < W; x += 8) g.fillRect(x, 256, 3, 256);
+  g.fillStyle = "#f5b009";
+  g.fillRect(0, 0, W, 12);
+  g.fillRect(0, 244, W, 12);
+  g.fillRect(W - 26, 0, 26, 256);
+  return finish(c, 1);
+}
+
 /** Wall cladding: enamel panels with vertical joints and an accent stripe band. */
 export function wallTexture(accent: string) {
   const W = 512;
