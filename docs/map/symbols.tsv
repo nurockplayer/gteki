@@ -2025,7 +2025,7 @@ generateSymbols	function	tools/map/gen-symbols.mjs	148
 StationFiles	interface	tools/private-overlay/build-overlay.ts	7
 Additions	interface	tools/private-overlay/build-overlay.ts	8
 mergeStation	function	tools/private-overlay/build-overlay.ts	35
-buildOverlay	function	tools/private-overlay/build-overlay.ts	101
+buildOverlay	function	tools/private-overlay/build-overlay.ts	107
 Obj	interface	tools/qa/avatar-baseline/procedural.ts	9
 Motion	interface	tools/qa/avatar-baseline/procedural.ts	20
 AvatarUnderTest	interface	tools/qa/avatar-baseline/procedural.ts	22
