@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@gteki/geo": "workspace:*",
+    "@gteki/navigation": "workspace:*",
     "@gteki/scene-api": "workspace:*",
     "@gteki/schema": "workspace:*",
     "three": "^0.186.1"

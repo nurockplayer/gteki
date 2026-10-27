@@ -242,7 +242,8 @@ export function surfaceEntrances(layout: Layout, bundle: StationBundle): Surface
       const L = Math.hypot(top.x - low.x, top.y - low.y) || 1;
       const u = { x: (top.x - low.x) / L, y: (top.y - low.y) / L };
       const reach = run ? Math.min(L, 2.6 / Math.abs(run.a.z - run.b.z) * L) : 2;
-      return { id: p.id, labelJa: p.names.find((n) => n.lang === "ja")!.text, labelEn: p.names.find((n) => n.lang === "en")!.text, center: { x: top.x - u.x * (reach / 2 + .475), y: top.y - u.y * (reach / 2 + .475) }, top: { x: top.x, y: top.y }, firstLandingZ: run ? Math.min(run.a.z, run.b.z) : 0, u, halfWidth: (run?.width ?? 2.2) / 2 + 0.5, halfLength: reach / 2 + .625 };
+      const labelJa = p.names.find((n) => n.lang === "ja")?.text ?? p.names[0]!.text;
+      return { id: p.id, labelJa, labelEn: p.names.find((n) => n.lang === "en")?.text ?? labelJa, center: { x: top.x - u.x * (reach / 2 + .475), y: top.y - u.y * (reach / 2 + .475) }, top: { x: top.x, y: top.y }, firstLandingZ: run ? Math.min(run.a.z, run.b.z) : 0, u, halfWidth: (run?.width ?? 2.2) / 2 + 0.5, halfLength: reach / 2 + .625 };
     });
   });
 }

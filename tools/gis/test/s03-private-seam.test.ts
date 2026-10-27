@@ -4,7 +4,7 @@ import type { Floor, GraphFile, Node, StationManifestFile } from '../../../packa
 import { repoRoot } from '../src/common.js';
 import { type HeldGraphDocument } from '../src/s03-nav-graph-route.js';
 import { S03_NAV_GRAPH_POLICY } from '../src/s03-nav-graph.js';
-import { buildPrivateSeam, s03PrivateSeam } from '../src/s03-private-seam.js';
+import { buildPrivateSeam, renderElevationFor, s03PrivateSeam } from '../src/s03-private-seam.js';
 
 const runId = `nav-graph-${'a'.repeat(20)}`;
 const opts = { runId, today: '2026-10-27' };
@@ -38,9 +38,9 @@ describe('S03 private seam (synthetic only)', () => {
     const result = buildPrivateSeam(held, e27, opts);
     expect(result.nodes.map(node => node.id)).toEqual(['p:sjk:s03:n:1', 'p:sjk:s03:n:2', 'p:sjk:s03:n:3']);
     expect(result.nodes[0]).toMatchObject({ floorId: floor.id, kind: 'ticket_gate', inOut: null,
-      position: { x: 0, y: 0, z: -7 }, sourceRefs: [{ sourceId: 'tokyo-s03-zip', featureId: '1' }] });
+      position: { x: 0, y: 0, z: null }, sourceRefs: [{ sourceId: 'tokyo-s03-zip', featureId: '1' }] });
     expect(result.nodes[2]).toMatchObject({ floorId: 'p:sjk:s03:f:20', kind: 'junction' });
-    expect(result.floors).toMatchObject([{ id: 'p:sjk:s03:f:20', ordinal: 2, elevationM: null, renderElevationM: 8 }]);
+    expect(result.floors).toMatchObject([{ id: 'p:sjk:s03:f:20', ordinal: 2, elevationM: null, renderElevationM: 13.5 }]);
     expect(result.edges.slice(0, 3)).toMatchObject([
       { id: 'p:sjk:s03:e:11', from: 'p:sjk:s03:n:1', to: 'p:sjk:s03:n:2', direction: 'both', mode: 'walk',
         lengthM: 100, attributes: { reasonCodes: 'HELD_TEST,OTHER_TEST', s03LinkId: 11 } },
@@ -56,6 +56,15 @@ describe('S03 private seam (synthetic only)', () => {
       { id: 'p:sjk:s03:e:seam:gate:1', lengthM: 25, attributes: { seam: 'gate' } },
     ]);
     expect(result.edges.some(edge => edge.id.includes('twenty-away'))).toBe(false);
+  });
+
+  it('places S03-only floors at public scene heights, never at the source level order', () => {
+    const at = (ordinal: number, renderElevationM: number): Floor => ({ ...floor, id: `f${ordinal}`, ordinal, renderElevationM });
+    const pub = [at(1, 0), at(-1, -7.8), at(-3, -23.74)];
+    expect(renderElevationFor(pub, -2)).toBeCloseTo(-15.77);
+    expect(renderElevationFor(pub, 3)).toBeCloseTo(9);
+    expect(renderElevationFor(pub, -5)).toBeCloseTo(-32.74);
+    expect(renderElevationFor(pub, null)).toBe(0);
   });
 
   it('makes a private floor when E27 floor compatibility is ambiguous', () => {
