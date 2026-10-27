@@ -9,7 +9,7 @@ import { contractName } from "./batch.ts";
 import { ROLE_SELECTORS, kitBundleUri, kitFileUri, kitTierFor, tintSlots, type TierCaps } from "./config.ts";
 import { loadLibraryManifest } from "./manifest.ts";
 import { createKitSwap, type KitSwapOptions } from "./swap.ts";
-import type { KitAsset, KitAssetProvider, KitManifest, KitSwap, KitTier } from "./types.ts";
+import type { KitAsset, KitAssetProvider, KitManifest, KitRole, KitSwap, KitTier } from "./types.ts";
 
 /** Provider over a loaded kit bundle (`gteki-kit-bundle/0.1`): asset roots are the bundle root's children. */
 export function bundleProvider(scene: THREE.Object3D): KitAssetProvider {
@@ -35,6 +35,8 @@ export interface PrepareOptions {
   log?: (message: string) => void;
   /** Load one GLB per asset from `asset.file` instead of the bundle (fallback while no bundle is built). */
   perFile?: boolean;
+  /** Roles to place. Absent = every role whose placeholder the build records (`?kit=1` and tests). */
+  roles?: ReadonlySet<KitRole>;
 }
 
 export async function prepareKitSwap(
@@ -56,7 +58,7 @@ export async function prepareKitSwap(
     } else {
       provider = bundleProvider((await ctx.loadGlb(kitBundleUri(tier))).scene);
     }
-    const swapOptions: KitSwapOptions = { manifest, provider, caps, tint: tintSlots(opts.lineColour), log };
+    const swapOptions: KitSwapOptions = { manifest, provider, caps, tint: tintSlots(opts.lineColour), ...(opts.roles ? { placeable: opts.roles } : {}), log };
     return createKitSwap(swapOptions);
   } catch (err) {
     log(`kit swap off: ${err instanceof Error ? err.message : String(err)}; placeholders stay`);

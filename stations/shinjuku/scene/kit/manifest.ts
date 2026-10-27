@@ -102,13 +102,27 @@ export function counterpart(asset: KitAsset, other: KitManifest): KitAsset | nul
 }
 
 /**
- * Load a tier's manifest from the repository library. Dynamic, so the JSON stays out of the default
- * chunk: with the flag off nothing here is fetched. The path is the library's own layout
- * (`assets/library/manifest.json`, `assets/library/mobile/manifest.json`), documented in asset-contract §6/§8.
+ * The station's own built pieces, merged after the library's so a station manifest may restate a library id.
+ * The mobile tier is the only one built for Shinjuku today (batch 2, Issue #94).
+ */
+function mergedTier(tier: KitTier, ...manifests: KitManifest[]): KitManifest {
+  const byId = new Map<string, KitAsset>();
+  for (const m of manifests) for (const a of m.assets) byId.set(a.id, a);
+  return { contract: "gteki-asset/0.1", tier, license: manifests[0]?.license ?? "", assets: [...byId.values()], byId };
+}
+
+/**
+ * Load a tier's manifest: the repository library, plus (mobile) the station's own built pieces from
+ * `gteki/assets/kit/mobile.manifest.json`. Dynamic, so the JSON stays out of the default chunk: with the swap
+ * off nothing here is fetched. The library layout (`assets/library/manifest.json`,
+ * `assets/library/mobile/manifest.json`) is documented in asset-contract §6/§8.
  */
 export async function loadLibraryManifest(tier: KitTier): Promise<KitManifest> {
-  const json = tier === "mobile"
-    ? (await import("../../../../assets/library/mobile/manifest.json", { with: { type: "json" } })).default
-    : (await import("../../../../assets/library/manifest.json", { with: { type: "json" } })).default;
+  if (tier === "mobile") {
+    const library = parseKitManifest((await import("../../../../assets/library/mobile/manifest.json", { with: { type: "json" } })).default, tier);
+    const station = parseKitManifest((await import("../../gteki/assets/kit/mobile.manifest.json", { with: { type: "json" } })).default, tier);
+    return mergedTier(tier, library, station);
+  }
+  const json = (await import("../../../../assets/library/manifest.json", { with: { type: "json" } })).default;
   return parseKitManifest(json, tier);
 }

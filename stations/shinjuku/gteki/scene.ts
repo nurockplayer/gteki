@@ -54,14 +54,15 @@ export function releaseShinjukuCaches() {
 export const releaseCaches = releaseShinjukuCaches;
 
 /**
- * The explorer hook. The Lane E kit swap (Issue #94) is OFF by default: with no opt-in this is the same
- * synchronous build as before. `?kit=1` (or `kit=mobile|full`) opts in for QA; the swap then loads the
- * kit bundle from the station folder and, if that fails for any reason, keeps every placeholder.
+ * The explorer hook. The Lane E kit swap (Issue #94) is ON by default for the escalator role only: with no query
+ * the scene loads the station's mobile kit bundle and dresses the escalators, and if that fails for any reason it
+ * keeps every placeholder. `?kit=1` (or `kit=mobile|full`) opts every hooked role in for QA; `?kit=0` turns the
+ * swap off entirely, which is still the same synchronous build as before the kit.
  */
 export const buildScene: BuildScene = (ctx) => {
   const request = kitSwapRequested(typeof location === "undefined" ? undefined : location.search);
   if (!request.enabled) return assembleScene(ctx);
-  return prepareKitSwap(ctx, { lineColour: OEDO_MAGENTA, ...(request.tier ? { tier: request.tier } : {}) }).then((kit) => assembleScene(ctx, kit ?? undefined));
+  return prepareKitSwap(ctx, { lineColour: OEDO_MAGENTA, ...(request.tier ? { tier: request.tier } : {}), ...(request.roles ? { roles: request.roles } : {}) }).then((kit) => assembleScene(ctx, kit ?? undefined));
 };
 
 /**

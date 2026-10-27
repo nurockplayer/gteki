@@ -45,7 +45,7 @@ Gain is judged at the play view. "Phone" says whether the fix reaches the low ti
 | # | Gap (Shinjuku unless noted) | Reference | Game today | Fix (reuse first) | Gain | Effort | Phone |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Escalator steps read as a ramp** | Dark cleated treads, yellow demarcation on three sides, risers, two or three flat steps and a comb plate at each end | Flush grey slabs on a straight incline, no riser, no landing steps, no comb | Restyle the procedural steps in `build.ts`: cleat texture (canvas, like the existing tactile map), yellow edge with the unused `escStepEdge`, a riser face, flat steps at both ends | high | S | yes |
-| 2 | **Escalator body has no form** | Glass balustrade on a steel shoe, black handrail running in a loop round rounded newels, skirt, comb plates, newel lamps | Glass panel and box handrail end square at the floor; no newel, no comb; truss reads as a grey slab | Build the Shinjuku catalog's escalator entries with `parts` balustrade + handrail + newel + comb (the generator behind `vertical_hero` and Ikebukuro batch A) and place them through the kit swap; drop the procedural balustrade, handrail and skirt on dressed runs. Collision stays the station's run walls | high | M | yes (mobile tier) |
+| 2 | **Escalator body has no form** | Glass balustrade on a steel shoe, black handrail running in a loop round rounded newels, skirt, comb plates, newel lamps | Glass panel and box handrail end square at the floor; no newel, no comb; truss reads as a grey slab | Build the Shinjuku catalog's escalator entries with `parts` balustrade + handrail + newel + comb (the generator behind `vertical_hero` and Ikebukuro batch A) and place them through the kit swap; drop the procedural glass panel, handrail and top rail on dressed runs (the steel skirt stays). Collision stays the station's run walls | high | M | yes (mobile tier) |
 | 3 | **No contact darkening** | Strong AO under handrails, at skirts, at every step edge; sun shadow | Runs get neither shadows nor AO; the high tier only has screen-space GTAO; phones get nothing | Kit AO atlas on UV1 (already produced by the catalog build at `ao_res` 256) for the dressing; a baked gradient on the procedural truss, sides and step risers (vertex colour, no extra draw) | high on phone, medium on desktop | M | yes |
 | 4 | **Stairs are monochrome blocks** | White treads, dark nosing with a highlight, stringers, rails on both sides with posts and extensions | Warm grey solid blocks, one wall rail, stringer is a dark band | Lighter tread finish from the palette (terrazzo `#C7C2B8` family), separate riser shade, nosing strip from the catalog (`stair_dressing` nosing), and post-mounted rails where a side has no wall | medium-high | S–M | yes |
 | 5 | **Flat, sourceless light along the incline** | Light from ceiling fixtures; highlights run along bevels and the handrail | Even ambient; the escalator soffit is a blank plane | Linear luminaires from the kit (`fixtures.py` linear module) along the soffit over each dressed bank (a ceiling finish on drawn geometry, so no new structure), emissive only on phones; on desktop one or two of the existing ≤ 8 point lights moved to the bank | medium | M | partly (emissive) |
@@ -106,3 +106,27 @@ Phone (bank foot close, Exit 1 stair foot; before, before, after, after):
 - **Guided walks.** Spec 03's two Shinjuku walks (exit1-platform, platform-exit2) pass on desktop and phone.
 - **Geometry.** +490,580 B and +2 meshes per scene.
 - **Physics.** Walkable, colliders, camera blockers and explorer lists are byte-identical (scene-digest and kit-swap baselines). So the route-clip audit, which reads only those, cannot change.
+
+## Batch 2 result (2026-10-28 05:35 JST): Lane E escalator dressing (#2, #3, #6). Golden Slice before/after
+
+The Shinjuku kit swap is on by default for the escalator role only (`?kit=0` turns it off). It places Lane E's `escalator_dressing` (balustrade, handrail loop, newels, combs, baked AO) on 14 of 21 runs and hides the procedural glass panel, box handrail and top rail on those runs (the steel skirt stays, since the piece is built without skirts). Pieces are ordered longest run first, so both banks the guided walks ride (m1–m3 and m3–m6) are dressed. Of the 7 runs left procedural, 5 are dropped by the 3 MB geometry cap and 2 have angles outside the generator's range.
+
+Same spots and cameras as the before run. Top row before (main `9e1c1d37`), bottom row after batches 1 and 2. Desktop:
+
+![Golden Slice desktop](evidence/vertical-golden-desktop.jpg)
+
+Phone (bank foot wide and close; before, before, after, after):
+
+![Golden Slice phone](evidence/vertical-golden-phone.jpg)
+
+| Spot | Desktop draws / tris, before → after | Phone draws / tris, before → after |
+| --- | --- | --- |
+| bank foot (wide) | 231 / 341k → 245 / 375k | 100 / 159k → 105 / 168k |
+| bank foot (close) | 220 / 337k → 234 / 396k | 80 / 158k → 90 / 168k |
+| bank head | 207 / 341k → 221 / 377k | 80 / 159k → 85 / 169k |
+| Exit 1 stair foot | 171 / 319k → 175 / 281k | 68 / 150k → 70 / 131k |
+
+- **Walk.** Down `e1fa65` and up `2692fe`, `done` at every quarter on both tiers, never `stuck`. Heights are identical to the before run.
+- **Physics.** Walkable, colliders, camera blockers, spawn points, walls and explorer lists are identical with the swap on and off.
+- **Kit report.** 6 draws, 42,720 triangles, about 2.45 MB measured geometry (2.99 MB at the planner's 70 B/tri estimate), 131 kB GPU textures. The bundle is 2.28 MB on disk.
+- **Left for later.** The procedural indicator lamps now read as squares on the glass and should move to the kit's `indicators`. At the bottom comb a sliver of the animated step shows past the plate. Luminaires over the bank (#5) are batch 3.

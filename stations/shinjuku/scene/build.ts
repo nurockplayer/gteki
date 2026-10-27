@@ -853,7 +853,11 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         panel.profile!.bottomA = za + 0.15;
         panel.profile!.bottomB = zb + 0.15;
       }
-      (r.mode === "stairs" ? sideGeos : balustradeGeos).push(enclosureWallGeometry(panel));
+      // The escalator's procedural balustrade panel, handrail and top rail are one placeholder group, hidden per run
+      // when the kit piece that replaces them is placed; stairs keep their side walls and pipes.
+      const panelGeo = enclosureWallGeometry(panel);
+      if (r.mode === "stairs") sideGeos.push(panelGeo);
+      else balustradeGeos.push(ledger ? ledger.tag("escalator-balustrade", r.edgeId, panelGeo) : panelGeo);
       const a = v3({ ...w.a, z: za + 0.96 }), b = v3({ ...w.b, z: zb + 0.96 });
       if (r.mode === "stairs") {
         handGeos.push(cylAlong(a, b, 0.026));
@@ -862,9 +866,12 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         const mid = a.clone().add(b).multiplyScalar(0.5);
         handGeos.push(cylAlong(mid.clone().add(new THREE.Vector3(0, -0.16, 0)), mid, 0.015, 6));
       } else {
-        rubberGeos.push(boxAlong(a, b, 0.09, 0.07));
+        const rubber = boxAlong(a, b, 0.09, 0.07);
+        rubberGeos.push(ledger ? ledger.tag("escalator-balustrade", r.edgeId, rubber) : rubber);
+        // The steel skirt stays on dressed runs: the kit piece is built with skirts: false.
         steelGeos.push(enclosureWallGeometry({ ...w, profile: { bottomA: za - 0.12, bottomB: zb - 0.12, topA: za + 0.22, topB: zb + 0.22 } }));
-        steelGeos.push(boxAlong(v3({ ...w.a, z: za + 0.88 }), v3({ ...w.b, z: zb + 0.88 }), 0.025, 0.025));
+        const rail = boxAlong(v3({ ...w.a, z: za + 0.88 }), v3({ ...w.b, z: zb + 0.88 }), 0.025, 0.025);
+        steelGeos.push(ledger ? ledger.tag("escalator-balustrade", r.edgeId, rail) : rail);
       }
     }
     const add = (geos: THREE.BufferGeometry[], m: THREE.Material, name?: string) => {
@@ -881,10 +888,13 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     const nosingMesh = add(nosingGeos, mat.nosing);
     if (nosingMesh) ledger?.bind("stair-nosing", nosingMesh, nosingGeos);
     add(sideGeos, mat.wall);
-    add(balustradeGeos, mat.glass);
+    const balustradeMesh = add(balustradeGeos, mat.glass);
+    if (balustradeMesh) ledger?.bind("escalator-balustrade", balustradeMesh, balustradeGeos);
     add(handGeos, mat.steel);
-    add(rubberGeos, mat.rubber);
-    add(steelGeos, mat.steel);
+    const rubberMesh = add(rubberGeos, mat.rubber);
+    if (rubberMesh) ledger?.bind("escalator-balustrade", rubberMesh, rubberGeos);
+    const steelMesh = add(steelGeos, mat.steel);
+    if (steelMesh) ledger?.bind("escalator-balustrade", steelMesh, steelGeos);
     add(greenGeos, mat.gateOk);
     add(redGeos, mat.flap);
   }
