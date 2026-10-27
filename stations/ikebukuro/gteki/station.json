@@ -1348,6 +1348,42 @@
    "retrievedAt": "2026-10-27T11:42:00Z",
    "datasetDate": null,
    "notes": "Brand names, printed floor labels and categories only; no descriptive text, hours, logos, images or maps reproduced. Class (OD-35, docs/research/use-tiers.md): the そごう・西武 site terms §2(8) ban business or profit use only, and S is non-commercial, so facts-only applies; recheck-at-C. Lifts the Sogo-Seibu tenant limit of OD-34 round 3 for S."
+  },
+  {
+   "id": "tobu-ikebukuro-insidemap-2026-10",
+   "title": "池袋駅 構内マップ",
+   "publisher": "東武鉄道",
+   "url": "https://www.tobu.co.jp/railway/guide/station/insidemap/7105/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/564",
+    "date": "2026-10-27"
+   },
+   "attribution": "東武鉄道「池袋駅 構内マップ」(facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-27T08:17:00+09:00",
+   "datasetDate": null,
+   "notes": "Gate names only (南改札口, JR線のりかえ改札口). Tobu Railway terms §8 bans business use only: facts only for the non-commercial S tier (use-tiers OD-35), recheck-at-C. No image, layout or position is reproduced or derived."
+  },
+  {
+   "id": "tobudept-ikebukuro-access-2026-10",
+   "title": "東武百貨店 池袋店 アクセス",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/access/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/564",
+    "date": "2026-10-27"
+   },
+   "attribution": "東武百貨店 池袋店 アクセス (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-27T08:17:00+09:00",
+   "datasetDate": null,
+   "notes": "Gate names in its directly-connected gate list only (JR メトロポリタン改札, 東上線南口改札); facts only as for tobu-dept-ikebukuro-2026-10 (#377). No text or map reproduced."
   }
  ],
  "floors": [
