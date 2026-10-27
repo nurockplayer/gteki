@@ -64,10 +64,26 @@ export const buildScene: BuildScene = (ctx) => {
   return prepareKitSwap(ctx, { lineColour: OEDO_MAGENTA, ...(request.tier ? { tier: request.tier } : {}) }).then((kit) => assembleScene(ctx, kit ?? undefined));
 };
 
+/**
+ * The part of the bundle the plan was authored for. A private build (GTEKI_PRIVATE_OVERLAY) adds nodes and edges
+ * the plan has no heights or walls for; built as geometry they would sit at z 0 or open walls in the station. The route
+ * still draws them; the scene does not.
+ */
+export function planBundle(bundle: Parameters<BuildScene>[0]["bundle"]): Parameters<BuildScene>[0]["bundle"] {
+  const known = new Set(Object.keys((plan as unknown as Plan).nodeRenderZ));
+  // Overlay edges are namespaced `p:<station>:` (gteki-private additions/FORMAT.md), also between two plan nodes.
+  const planEdge = (e: { id: string; from: string; to: string }) => !e.id.startsWith("p:") && known.has(e.from) && known.has(e.to);
+  if (bundle.nodes.every((n) => known.has(n.id)) && bundle.edges.every(planEdge)) return bundle;
+  return { ...bundle, nodes: bundle.nodes.filter((n) => known.has(n.id)), edges: bundle.edges.filter(planEdge),
+    // A POI keeps the connectors the plan knows; one with none left is not part of this scene.
+    pois: bundle.pois.map((p) => ({ ...p, connectorNodeIds: p.connectorNodeIds.filter((id) => known.has(id)) })).filter((p) => p.connectorNodeIds.length > 0) };
+}
+
 /** The scene build itself, with an optional, already prepared kit swap. Exported for tests. */
 export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap): StationScene => {
   const T = ctx.THREE;
-  const built = buildStation(ctx.bundle, plan as unknown as Plan, { quality: ctx.quality, reuseLayout: true, verifyRestrictedInput: true, ...(kit ? { kit } : {}) });
+  const sceneBundle = planBundle(ctx.bundle);
+  const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, reuseLayout: true, verifyRestrictedInput: true, ...(kit ? { kit } : {}) });
   const { layout } = built;
 
   // Invisible walk proxies: the explorer raycasts these from above (non-recursive), so each is a Mesh.
@@ -164,7 +180,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap): St
   // explorer's street probe tests only walls and floors for open sky, and a roof must count there too.
   const cameraBlockers: THREE.Mesh[] = [];
   const underground = new Set(layout.levels.filter((lv) => lv.z < -0.5).map((lv) => lv.floorId));
-  const street = withSurfaceMemo(() => ({ entrances: surfaceEntrances(layout, ctx.bundle), roofs: surfaceRoofs(layout, ctx.bundle) }));
+  const street = withSurfaceMemo(() => ({ entrances: surfaceEntrances(layout, sceneBundle), roofs: surfaceRoofs(layout, sceneBundle) }));
   const caps = [
     ...layout.levels.filter((lv) => underground.has(lv.floorId)).flatMap((lv) => lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 1, true))),
     // Above-ground source spaces are drawn with ceilings too: the 1F entrance structures over exit stairs

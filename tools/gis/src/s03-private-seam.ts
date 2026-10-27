@@ -10,7 +10,26 @@ const sourceId = 'tokyo-s03-zip';
 const nodeId = (id: number): string => `p:sjk:s03:n:${id}`;
 export interface PrivateSeam { nodes: Node[]; edges: Edge[]; floors: Floor[] }
 
-/** Private additions only. Held coordinates already use station ENU; printed z remains the source's level order. */
+/** Storey height used above or below the public floors' range. */
+const STOREY_M = 4.5;
+
+/**
+ * Render height for an S03-only floor, in the public scene's metres: interpolated between the public floors
+ * around its ordinal, or one STOREY_M per ordinal step beyond them. The source's level_z is a level order, not
+ * metres, so it is never used as a height.
+ */
+export function renderElevationFor(publicFloors: readonly Floor[], ordinal: number | null): number {
+  const known = publicFloors.filter((f) => f.ordinal !== null).map((f) => ({ o: f.ordinal!, z: f.renderElevationM }))
+    .sort((a, b) => a.o - b.o || a.z - b.z);
+  if (ordinal === null || known.length === 0) return 0;
+  const lo = known[0]!, hi = known[known.length - 1]!;
+  if (ordinal <= lo.o) return lo.z - (lo.o - ordinal) * STOREY_M;
+  if (ordinal >= hi.o) return hi.z + (ordinal - hi.o) * STOREY_M;
+  const below = known.filter((f) => f.o <= ordinal).at(-1)!, above = known.find((f) => f.o >= ordinal)!;
+  return above.o === below.o ? below.z : below.z + (above.z - below.z) * (ordinal - below.o) / (above.o - below.o);
+}
+
+/** Private additions only. Held coordinates already use station ENU; nodes take their floor's render height. */
 export function buildPrivateSeam(held: HeldGraphDocument, e27: { manifest: StationManifestFile; graph: GraphFile },
   opts: { runId: string; today: string }): PrivateSeam {
   const floors: Floor[] = [], floorIds = new Map<number, string>();
@@ -25,12 +44,12 @@ export function buildPrivateSeam(held: HeldGraphDocument, e27: { manifest: Stati
       const operatorId = e27.manifest.station.operators[0]!.id;
       floors.push({ id, operatorId, sourceLabels: [{ operatorId, label: node.level_label, sourceId }],
         ordinal: comparison, intermediate: comparison !== null && !Number.isInteger(comparison),
-        elevationM: null, elevationSource: 'symbolic', renderElevationM: node.level_z ?? 0 });
+        elevationM: null, elevationSource: 'symbolic', renderElevationM: renderElevationFor(e27.manifest.floors, comparison) });
       floorIds.set(node.level_id, id);
     }
   }
   const nodes: Node[] = held.nodes.map(node => ({ id: nodeId(node.source_id), floorId: floorIds.get(node.level_id)!,
-    position: { x: node.east_m, y: node.north_m, z: node.level_z ?? null },
+    position: { x: node.east_m, y: node.north_m, z: null },
     kind: node.gate ? 'ticket_gate' : 'junction', inOut: null,
     sourceRefs: [{ sourceId, featureId: String(node.source_id) }] }));
   const evidence = (method: string) => ({ sourceIds: [sourceId], method, checkedDate: opts.today });
