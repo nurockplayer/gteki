@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const script = path.join(repo, "scripts/deploy-private.sh");
 // The host CI sets these; strip them so only the CI test exercises the CI guard.
-const { CI: _ci, GITHUB_ACTIONS: _gha, ...localEnv } = process.env;
+const { CI: _ci, GITHUB_ACTIONS: _gha, GITHUB_REPOSITORY: _repo, ...localEnv } = process.env;
 
 describe("private Cloudflare Pages deploy guards", () => {
   it("refuses when GTEKI_PRIVATE_DIR is unset", () => {
@@ -24,6 +24,23 @@ describe("private Cloudflare Pages deploy guards", () => {
     });
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("must not run from CI");
+  });
+
+  it("refuses in public-repo CI before the build", () => {
+    const result = spawnSync("bash", [script], {
+      env: { ...localEnv, GTEKI_PRIVATE_DIR: "/tmp", GITHUB_ACTIONS: "true", GITHUB_REPOSITORY: "nurockplayer/gteki" },
+      encoding: "utf8",
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("must not run from CI");
+  });
+
+  it("lets gteki-private CI past the CI guard", () => {
+    const env: NodeJS.ProcessEnv = { ...localEnv, GITHUB_ACTIONS: "true", GITHUB_REPOSITORY: "nurockplayer/gteki-private" };
+    delete env.GTEKI_PRIVATE_DIR;
+    const result = spawnSync("bash", [script], { env, encoding: "utf8" });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("GTEKI_PRIVATE_DIR must be set");
   });
 
   it("refuses --branch main before the build", () => {
