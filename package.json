@@ -14,6 +14,7 @@
     "dev": "pnpm --filter @gteki/web dev",
     "build": "pnpm --filter @gteki/web build",
     "build:private": "sh tools/private-overlay/run.sh build",
+    "deploy:private": "bash scripts/deploy-private.sh",
     "dev:private": "sh tools/private-overlay/run.sh dev"
   },
   "devDependencies": {
