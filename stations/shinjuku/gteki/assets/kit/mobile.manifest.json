@@ -1,0 +1,1063 @@
+{
+  "contract": "gteki-asset/0.1",
+  "kit_version": "0.1.0",
+  "catalog": "stations/shinjuku/kit/catalog.json",
+  "texture_resolution": 1024,
+  "license": "CC-BY-4.0 — original GTEki work; attribution: GTEki contributors",
+  "license_spdx": "CC-BY-4.0",
+  "rights_class": "original",
+  "attribution": "GTEki contributors",
+  "profile": "mobile",
+  "assets": [
+    {
+      "id": "gteki_sj_escalator_06a78a8f",
+      "family": "dressing",
+      "variant": "escalator_dressing",
+      "file": "glb/gteki_sj_escalator_06a78a8f.glb",
+      "sha256": "0252d5c8b044c50a9e5b42320f66552508c701da6e3fb3bb2fbded028edc5e56",
+      "bytes": 228092,
+      "triangles": 3048,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.835,
+          0.002,
+          -36.1431
+        ],
+        "max": [
+          0.835,
+          20.0809,
+          0.5429
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "rise_mm": 19100,
+        "width_mm": 1150,
+        "angle_deg": 29.9119,
+        "landing_mm": 800,
+        "flat_steps": 2,
+        "balustrade": "glass",
+        "direction": "up",
+        "skirts": false,
+        "treads": false,
+        "indicators": false,
+        "parts": [
+          "balustrade",
+          "handrail",
+          "newel",
+          "comb"
+        ],
+        "run_mm": 34000,
+        "comb_run_m": 35.6,
+        "inclined_run_m": 32.4
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 1.15,
+          "height": 2.4
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            19.1,
+            -35.6
+          ],
+          "yaw_deg": 0.0,
+          "width": 1.15,
+          "height": 2.4
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/dressing.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "anchor": "linear_run",
+      "tags": [
+        "dressing",
+        "escalator"
+      ]
+    },
+    {
+      "id": "gteki_sj_escalator_2692fe08",
+      "family": "dressing",
+      "variant": "escalator_dressing",
+      "file": "glb/gteki_sj_escalator_2692fe08.glb",
+      "sha256": "85e44f55bd4f36ba950b80f2f3b521a1831098a3473a1b752df36fdaa9e9a147",
+      "bytes": 228552,
+      "triangles": 3048,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.835,
+          0.002,
+          -30.6432
+        ],
+        "max": [
+          0.835,
+          16.8809,
+          0.5429
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "rise_mm": 15900,
+        "width_mm": 1150,
+        "angle_deg": 29.8561,
+        "landing_mm": 800,
+        "flat_steps": 2,
+        "balustrade": "glass",
+        "direction": "up",
+        "skirts": false,
+        "treads": false,
+        "indicators": false,
+        "parts": [
+          "balustrade",
+          "handrail",
+          "newel",
+          "comb"
+        ],
+        "run_mm": 28500,
+        "comb_run_m": 30.1,
+        "inclined_run_m": 26.9
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 1.15,
+          "height": 2.4
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            15.9,
+            -30.1
+          ],
+          "yaw_deg": 0.0,
+          "width": 1.15,
+          "height": 2.4
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/dressing.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "anchor": "linear_run",
+      "tags": [
+        "dressing",
+        "escalator"
+      ]
+    },
+    {
+      "id": "gteki_sj_escalator_296f6709",
+      "family": "dressing",
+      "variant": "escalator_dressing",
+      "file": "glb/gteki_sj_escalator_296f6709.glb",
+      "sha256": "447b5026553e827fb3e1fdee5c9c471c62c253df0e5f649440a9e9a075dee7ab",
+      "bytes": 231868,
+      "triangles": 3072,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.835,
+          0.002,
+          -16.6512
+        ],
+        "max": [
+          0.835,
+          8.2808,
+          0.5429
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "rise_mm": 7300,
+        "width_mm": 1150,
+        "angle_deg": 28.0508,
+        "landing_mm": 800,
+        "flat_steps": 2,
+        "balustrade": "glass",
+        "direction": "up",
+        "skirts": false,
+        "treads": false,
+        "indicators": false,
+        "parts": [
+          "balustrade",
+          "handrail",
+          "newel",
+          "comb"
+        ],
+        "run_mm": 14500,
+        "comb_run_m": 16.1,
+        "inclined_run_m": 12.9
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 1.15,
+          "height": 2.4
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            7.3,
+            -16.1
+          ],
+          "yaw_deg": 0.0,
+          "width": 1.15,
+          "height": 2.4
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/dressing.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "anchor": "linear_run",
+      "tags": [
+        "dressing",
+        "escalator"
+      ]
+    },
+    {
+      "id": "gteki_sj_escalator_4b7d9463",
+      "family": "dressing",
+      "variant": "escalator_dressing",
+      "file": "glb/gteki_sj_escalator_4b7d9463.glb",
+      "sha256": "a00f016281929ec552696e65aee74bfa0bbcb261a1a1e9535f0021846b3abd25",
+      "bytes": 230356,
+      "triangles": 3072,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.835,
+          0.002,
+          -26.1512
+        ],
+        "max": [
+          0.835,
+          12.8809,
+          0.5429
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "rise_mm": 11900,
+        "width_mm": 1150,
+        "angle_deg": 27.1547,
+        "landing_mm": 800,
+        "flat_steps": 2,
+        "balustrade": "glass",
+        "direction": "up",
+        "skirts": false,
+        "treads": false,
+        "indicators": false,
+        "parts": [
+          "balustrade",
+          "handrail",
+          "newel",
+          "comb"
+        ],
+        "run_mm": 24000,
+        "comb_run_m": 25.6,
+        "inclined_run_m": 22.4
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 1.15,
+          "height": 2.4
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            11.9,
+            -25.6
+          ],
+          "yaw_deg": 0.0,
+          "width": 1.15,
+          "height": 2.4
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/dressing.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "anchor": "linear_run",
+      "tags": [
+        "dressing",
+        "escalator"
+      ]
+    },
+    {
+      "id": "gteki_sj_escalator_6113a228",
+      "family": "dressing",
+      "variant": "escalator_dressing",
+      "file": "glb/gteki_sj_escalator_6113a228.glb",
+      "sha256": "dfdbfdfb165e7a2b179f15ed8217937aaf4a7827c264dee2c5cb9a15f914b70a",
+      "bytes": 228208,
+      "triangles": 3048,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.835,
+          0.002,
+          -31.4013
+        ],
+        "max": [
+          0.835,
+          16.8809,
+          0.5429
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "rise_mm": 15900,
+        "width_mm": 1150,
+        "angle_deg": 29.1997,
+        "landing_mm": 800,
+        "flat_steps": 2,
+        "balustrade": "glass",
+        "direction": "up",
+        "skirts": false,
+        "treads": false,
+        "indicators": false,
+        "parts": [
+          "balustrade",
+          "handrail",
+          "newel",
+          "comb"
+        ],
+        "run_mm": 29250,
+        "comb_run_m": 30.85,
+        "inclined_run_m": 27.65
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 1.15,
+          "height": 2.4
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            15.9,
+            -30.85
+          ],
+          "yaw_deg": 0.0,
+          "width": 1.15,
+          "height": 2.4
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/dressing.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "anchor": "linear_run",
+      "tags": [
+        "dressing",
+        "escalator"
+      ]
+    },
+    {
+      "id": "gteki_sj_escalator_7628a98a",
+      "family": "dressing",
+      "variant": "escalator_dressing",
+      "file": "glb/gteki_sj_escalator_7628a98a.glb",
+      "sha256": "659d0412edd7a838e7c6245e36d20cde665171577b89c16f741ce0e0a2874217",
+      "bytes": 228164,
+      "triangles": 3048,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.835,
+          0.002,
+          -31.6431
+        ],
+        "max": [
+          0.835,
+          16.8809,
+          0.5429
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "rise_mm": 15900,
+        "width_mm": 1150,
+        "angle_deg": 28.9868,
+        "landing_mm": 800,
+        "flat_steps": 2,
+        "balustrade": "glass",
+        "direction": "up",
+        "skirts": false,
+        "treads": false,
+        "indicators": false,
+        "parts": [
+          "balustrade",
+          "handrail",
+          "newel",
+          "comb"
+        ],
+        "run_mm": 29500,
+        "comb_run_m": 31.1,
+        "inclined_run_m": 27.9
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 1.15,
+          "height": 2.4
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            15.9,
+            -31.1
+          ],
+          "yaw_deg": 0.0,
+          "width": 1.15,
+          "height": 2.4
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/dressing.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "anchor": "linear_run",
+      "tags": [
+        "dressing",
+        "escalator"
+      ]
+    },
+    {
+      "id": "gteki_sj_escalator_88ef3d09",
+      "family": "dressing",
+      "variant": "escalator_dressing",
+      "file": "glb/gteki_sj_escalator_88ef3d09.glb",
+      "sha256": "17189d9a05cd9fd779545dc3d23a2430c2ae7399bdc758863b902e291761b2cb",
+      "bytes": 231568,
+      "triangles": 3072,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.835,
+          0.002,
+          -19.6512
+        ],
+        "max": [
+          0.835,
+          9.3809,
+          0.5429
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "rise_mm": 8400,
+        "width_mm": 1150,
+        "angle_deg": 26.7021,
+        "landing_mm": 800,
+        "flat_steps": 2,
+        "balustrade": "glass",
+        "direction": "up",
+        "skirts": false,
+        "treads": false,
+        "indicators": false,
+        "parts": [
+          "balustrade",
+          "handrail",
+          "newel",
+          "comb"
+        ],
+        "run_mm": 17500,
+        "comb_run_m": 19.1,
+        "inclined_run_m": 15.9
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 1.15,
+          "height": 2.4
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            8.4,
+            -19.1
+          ],
+          "yaw_deg": 0.0,
+          "width": 1.15,
+          "height": 2.4
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/dressing.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "anchor": "linear_run",
+      "tags": [
+        "dressing",
+        "escalator"
+      ]
+    },
+    {
+      "id": "gteki_sj_escalator_904c66c3",
+      "family": "dressing",
+      "variant": "escalator_dressing",
+      "file": "glb/gteki_sj_escalator_904c66c3.glb",
+      "sha256": "0e83420c334ab413f59d8998cb1a070ce40a66ef82efd2be8f0dfd9776db6ecd",
+      "bytes": 227724,
+      "triangles": 3000,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.835,
+          0.002,
+          -20.1512
+        ],
+        "max": [
+          0.835,
+          9.3809,
+          0.5429
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "rise_mm": 8400,
+        "width_mm": 1150,
+        "angle_deg": 26.0296,
+        "landing_mm": 800,
+        "flat_steps": 2,
+        "balustrade": "glass",
+        "direction": "up",
+        "skirts": false,
+        "treads": false,
+        "indicators": false,
+        "parts": [
+          "balustrade",
+          "handrail",
+          "newel",
+          "comb"
+        ],
+        "run_mm": 18000,
+        "comb_run_m": 19.6,
+        "inclined_run_m": 16.4
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 1.15,
+          "height": 2.4
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            8.4,
+            -19.6
+          ],
+          "yaw_deg": 0.0,
+          "width": 1.15,
+          "height": 2.4
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/dressing.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "anchor": "linear_run",
+      "tags": [
+        "dressing",
+        "escalator"
+      ]
+    },
+    {
+      "id": "gteki_sj_escalator_d573063b",
+      "family": "dressing",
+      "variant": "escalator_dressing",
+      "file": "glb/gteki_sj_escalator_d573063b.glb",
+      "sha256": "8f3378713502b12a2cc9146cdd2c9ffae8b9210cb766ba3b33d9b586890b192e",
+      "bytes": 232052,
+      "triangles": 3072,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.835,
+          0.002,
+          -15.9012
+        ],
+        "max": [
+          0.835,
+          9.3808,
+          0.5429
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "rise_mm": 8400,
+        "width_mm": 1150,
+        "angle_deg": 32.9694,
+        "landing_mm": 800,
+        "flat_steps": 2,
+        "balustrade": "glass",
+        "direction": "up",
+        "skirts": false,
+        "treads": false,
+        "indicators": false,
+        "parts": [
+          "balustrade",
+          "handrail",
+          "newel",
+          "comb"
+        ],
+        "run_mm": 13750,
+        "comb_run_m": 15.35,
+        "inclined_run_m": 12.15
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 1.15,
+          "height": 2.4
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            8.4,
+            -15.35
+          ],
+          "yaw_deg": 0.0,
+          "width": 1.15,
+          "height": 2.4
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/dressing.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "anchor": "linear_run",
+      "tags": [
+        "dressing",
+        "escalator"
+      ]
+    },
+    {
+      "id": "gteki_sj_escalator_fe73ae6f",
+      "family": "dressing",
+      "variant": "escalator_dressing",
+      "file": "glb/gteki_sj_escalator_fe73ae6f.glb",
+      "sha256": "1508b373918e5e3dda884ebb27f58b88fc8ae62b293f62d93cebf6aa99600991",
+      "bytes": 229976,
+      "triangles": 3072,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.835,
+          0.002,
+          -25.9012
+        ],
+        "max": [
+          0.835,
+          12.8809,
+          0.5429
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "rise_mm": 11900,
+        "width_mm": 1150,
+        "angle_deg": 27.4076,
+        "landing_mm": 800,
+        "flat_steps": 2,
+        "balustrade": "glass",
+        "direction": "up",
+        "skirts": false,
+        "treads": false,
+        "indicators": false,
+        "parts": [
+          "balustrade",
+          "handrail",
+          "newel",
+          "comb"
+        ],
+        "run_mm": 23750,
+        "comb_run_m": 25.35,
+        "inclined_run_m": 22.15
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 1.15,
+          "height": 2.4
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            11.9,
+            -25.35
+          ],
+          "yaw_deg": 0.0,
+          "width": 1.15,
+          "height": 2.4
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/dressing.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "anchor": "linear_run",
+      "tags": [
+        "dressing",
+        "escalator"
+      ]
+    }
+  ]
+}
