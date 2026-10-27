@@ -527,6 +527,15 @@ def build_actions(arm, animation):
                 if bone_name == "pelvis" and offset is not None:
                     pose_bone.location = basis[bone_name].translation
                     pose_bone.keyframe_insert("location", frame=frame, group=bone_name)
+            # Key every other bone at rest too: the exporter samples unkeyed bones from whatever pose the
+            # previous action left behind, which froze idle's legs mid-stride (#339 in-game kneel).
+            for pose_bone in arm.pose.bones:
+                if pose_bone.name not in previous:
+                    pose_bone.rotation_quaternion = (1.0, 0.0, 0.0, 0.0)
+                    pose_bone.keyframe_insert("rotation_quaternion", frame=frame, group=pose_bone.name)
+                if pose_bone.name == "pelvis" and offset is None:
+                    pose_bone.location = (0.0, 0.0, 0.0)
+                    pose_bone.keyframe_insert("location", frame=frame, group="pelvis")
         for curve in action_curves(action):
             for key in curve.keyframe_points:
                 key.interpolation = "LINEAR"
