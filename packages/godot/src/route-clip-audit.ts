@@ -16,7 +16,7 @@ import * as THREE from "three";
 import { GLTFLoader, type GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { enuToRenderer } from "@gteki/geo";
-import { createRouter, routeBetween, routePolyline, type PolylinePoint, type RouteResult } from "@gteki/navigation";
+import { createRouter, nodeDisplayZ, routeBetween, routePolyline, type PolylinePoint, type RouteResult } from "@gteki/navigation";
 import { parseStationFiles, type Edge, type StationBundle } from "@gteki/schema";
 import { glbPrimitivePlugin, type SceneContext, type StationScene, type StationSceneModule, type WallSegment } from "@gteki/scene-api";
 import { headlessGltfTextures, headlessThree, installHeadlessDom, newShimUsage, stubRenderer } from "./headless-dom.ts";
@@ -199,10 +199,10 @@ async function main(): Promise<void> {
           { fare: "ticketed", stepFree: false, hours: "warn_unknown" });
         if (!res.ok) { console.log(`${station}: no route: ${res.reason} ${res.message}`); continue; }
         const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
-        const polyline = routePolyline(bundle, res);
+        const floors = new Map(bundle.floors.map((f) => [f.id, f]));
         for (const id of res.nodeIds) {
-          const n = nodes.get(id)!, z = polyline.find((p) => p.x === n.position.x && p.y === n.position.y)?.z;
-          console.log(`node ${id}  floor ${n.floorId}  (${n.position.x.toFixed(1)}, ${n.position.y.toFixed(1)})  drawn z ${z?.toFixed(2) ?? "?"}`);
+          const n = nodes.get(id)!, z = nodeDisplayZ(n, floors.get(n.floorId)).z;
+          console.log(`node ${id}  floor ${n.floorId}  (${n.position.x.toFixed(1)}, ${n.position.y.toFixed(1)})  drawn z ${z.toFixed(2)}`);
         }
         // The route total sums the per-edge audits, so the elevator exemption applies to it too.
         const total = { violations: 0, samples: 0, offFloor: 0, noFloor: 0, wallHits: 0, maxAbsDzM: 0 };
@@ -211,6 +211,7 @@ async function main(): Promise<void> {
           const a = auditPolyline(probe, edgePolyline(bundle, edge), { skipInteriorFloor: edge.mode === "elevator" });
           total.violations += violations(a); total.samples += a.samples; total.offFloor += a.offFloor; total.noFloor += a.noFloor;
           total.wallHits += a.wallHits; total.maxAbsDzM = Math.max(total.maxAbsDzM, a.maxAbsDzM);
+          results.push({ station, edgeId: edge.id, sourceFile: sourceOf.get(edge.id) ?? "public", mode: edge.mode, lengthM: edge.lengthM ?? 0, ...a });
           console.log(`edge ${edge.id}  ${edge.mode}  ${sourceOf.get(edge.id) ?? "public"}  violations ${violations(a)} (off-floor ${a.offFloor}, no-floor ${a.noFloor}, wall ${a.wallHits})${a.worst ? `  first: ${a.worst}` : ""}`);
         }
         console.log(`route total: ${total.violations} violations over ${total.samples} samples (off-floor ${total.offFloor}, no-floor ${total.noFloor}, wall ${total.wallHits}, max |dz| ${total.maxAbsDzM.toFixed(2)} m)`);
@@ -229,12 +230,12 @@ async function main(): Promise<void> {
       for (const r of mine) { const c = byFile.get(r.sourceFile) ?? [0, 0]; c[0]++; if (violations(r) > 0) c[1]++; byFile.set(r.sourceFile, c); }
       for (const [file, [n, b]] of byFile) console.log(`  ${file}: ${b}/${n} edges with violations`);
     }
+    if (jsonOut) fs.writeFileSync(jsonOut, `${JSON.stringify(results, null, 1)}\n`);
     if (route) return;
     const ranked = results.filter((r) => violations(r) > 0).sort((a, b) => violations(b) - violations(a) || b.maxAbsDzM - a.maxAbsDzM);
     console.log(`\nworst ${Math.min(top, ranked.length)} edges:`);
     for (const r of ranked.slice(0, top))
       console.log(`${r.station}\t${r.edgeId}\t${r.sourceFile}\t${r.mode}\tviol ${violations(r)}/${r.samples}\toff ${r.offFloor} none ${r.noFloor} wall ${r.wallHits}\tmax|dz| ${r.maxAbsDzM.toFixed(2)}\t${r.worst}`);
-    if (jsonOut) fs.writeFileSync(jsonOut, `${JSON.stringify(results, null, 1)}\n`);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
