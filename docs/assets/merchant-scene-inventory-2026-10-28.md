@@ -67,8 +67,9 @@ the station has a shopfront, not on invented walls. No tenant is tied to any of 
 as an original placeholder.
 
 **ルミネ池袋 as the first real merchant.** It is the only merchant with a printed public-tier entrance tie
-(`g_jr_s`, B1) and it prints its B1 tenant list (18). It gets a generic entrance sign with its name in text and a
-B1 directory board in text at the South Gate (4 openings there), shipped in the same batch as a small second spot.
+(`g_jr_s`, B1) and it prints its B1 tenant list (18). Under ruling R1 (§5) its facade, with its name in text and a
+B1 directory board in text, goes in the PLATEAU opening by the South Gate (4 openings there), in the same batch as a
+small second spot.
 
 **Why not elsewhere.** The northwest cluster is off every guided route; the south cluster is far from the walk;
 Shinjuku E27 has no entrance tie and no surveyed openings, and Lane B (#156) is working there.
@@ -93,9 +94,12 @@ Shinjuku E27 has no entrance tie and no surveyed openings, and Lane B (#156) is 
 
 ## 5. Open items
 
-- **R1 (director ruling, truth).** May the ルミネ池袋 entrance facade sit in the PLATEAU opening by the South Gate that
-  matches 「正面右手よりすぐ」, recorded as a printed relative position (not surveyed), visual only, with no new connector
-  or coordinate? Until ruled, it is a name sign and directory board at the gate, not a facade at a chosen opening.
+- **R1 (director ruling, 2026-10-28 03:0x JST): approved.** The ルミネ池袋 facade may sit in the PLATEAU opening by the
+  JR South Gate that matches 「正面右手よりすぐ」, on four conditions: (1) its placement records the position as
+  `printed-relative (「正面右手よりすぐ」), not surveyed` with the source; (2) visual only: no new connector, graph node or
+  coordinate, and routes and search still point to the existing gate and POI; (3) no facade UI or label says "you are
+  here" or gives a distance; (4) a field-run check item (data lead) confirms the real opening, and the facade moves or
+  goes if it does not match. The same rule holds for any other merchant whose position comes from printed relative text.
 - **Data asks (data lead).** (1) A finer ルミネ池袋 B1 entrance position (facts-only source or the #533 field run);
   (2) printed ties from エチカ池袋, 池袋ショッピングパーク and 東武ホープセンター entrances to named gates or exits on B1;
   (3) any facts-only tie of a tenant to the east passage `c_n` → `n_e` (e.g. a 西武池袋本店 B1 entrance) or to the
