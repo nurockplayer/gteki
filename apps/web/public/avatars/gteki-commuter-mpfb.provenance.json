@@ -2,34 +2,47 @@
   "file": "apps/web/public/avatars/gteki-commuter-mpfb.glb",
   "issue": "#339",
   "candidate": "A: MPFB2 route (quiet commuter)",
-  "sha256": "a02f14137437a9ee5aa6d92dda5e9f3533d6f022164d8fe1b68ec6118ed2043f",
-  "bytes": 426360,
+  "sha256": "3385cc8d2ad82c841846564f4d4ebd38601f7c4e8c8d63c777a65b2a292952e9",
+  "bytes": 2057388,
   "license_spdx": "CC-BY-4.0",
   "attribution": "GTEki contributors",
   "base_mesh": {
-    "source_url": "https://github.com/makehumancommunity/mpfb2/archive/refs/tags/v2.0.18.tar.gz",
-    "archive_sha256": "2909fdf3de140d7ba13b024f3316e8c9862b312d80b39469dfeaba25af30d1c8",
-    "file": "src/mpfb/data/3dobjs/base.obj",
-    "file_sha256": "8e761e6624b8f54536409135d1636da63b32486a90d4897f84e121d144f6fb4c",
+    "source_url": "/Volumes/KIOXIA/eddington-1919-cache/mpfb/dl/mpfb-2.0.18.zip (MPFB2 2.0.18 extension package, https://github.com/makehumancommunity/mpfb2/releases/tag/v2.0.18)",
+    "archive_sha256": "c075b3e9b94b8e5556a5f03f4653602d02ea306de08126e8f55ed6dee28a2dad",
+    "files": [
+      {
+        "file": "data/3dobjs/base.obj",
+        "file_sha256": "8e761e6624b8f54536409135d1636da63b32486a90d4897f84e121d144f6fb4c"
+      },
+      {
+        "file": "data/rigs/standard/rig.game_engine.json",
+        "file_sha256": "b324ddb4b707721c19630bfadb87c3e3b38eed3b6e4590bb3cead43ea918f799"
+      },
+      {
+        "file": "data/rigs/standard/weights.game_engine.json",
+        "file_sha256": "9f4a773e74ce5ba08415b4f30070338e9f75bae5971b5075b10cd6b9caa58473"
+      }
+    ],
     "license_spdx": "CC0-1.0",
-    "licence_line": "C. The license for the bundled assets: \"The assets are CC0 1.0 ... The base mesh and proxies ... Rigs, poses and expressions ... JSON data with mesh information\" (LICENSE.md section C; LICENSE.ASSETS.md is CC0 1.0 Universal, sha256 f6089cba01cb570a24712b41ab8a586ccd3cc5ef53dc266ca50b95c288956d2c)",
+    "licence_line": "The assets are CC0 1.0 (LICENSE.md section C; LICENSE.ASSETS.md is CC0 1.0 Universal, sha256 f6089cba01cb570a24712b41ab8a586ccd3cc5ef53dc266ca50b95c288956d2c). base.obj is byte-identical to the v2.0.18 source tarball copy documented in the previous revision of this file.",
     "author": "MakeHuman community (MPFB2 project)",
-    "date_fetched": "2026-10-26 09:36 JST",
-    "shipped_code": "none; the GPLv3 add-on code is not shipped or used"
+    "date_fetched": "2026-10-27 21:47 JST",
+    "shipped_code": "none; only data files (base.obj, rig and weight JSON); the GPLv3 add-on code is not shipped or used"
   },
   "edits": [
-    "Scaled 0.1 (MPFB units to metres); rotated to Blender frame (Z up, front +Y); feet on floor",
-    "Triangulated and Decimate collapse, ratio 0.22 (19158 verts to fit the 10k triangle budget)",
-    "Material slots by region (skin, hair, navy-charcoal coat, trousers, shoes), flat colours, no textures",
-    "Backpack merged into the skinned body as a 0.15 x 0.07 x 0.20 m box on bone daypack (weight 1); the earlier unscaled 1 m rigid cube was a bug, fixed in #545 round 2",
-    "Armature of 24 joints named after the character contract (UE-style names, subset), rest pose A-like",
-    "Skin weights: inverse-distance to bone segments, top 4 bones per vertex (Blender heat weighting failed on the decimated mesh)",
-    "Clips idle (4.0 s), walk (1.0 s), run (0.6 s) authored procedurally with sinusoidal keyframes at 30 fps, in place, frame N equal to frame 0",
-    "No blink morphs, no face detail beyond the base mesh, no hair cards"
+    "Read the g body group of base.obj with a stdlib parser, keeping the file's vertex indices so the MPFB2 weight table applies directly",
+    "Scaled 0.1 (MPFB decimetres to metres), rotated from the MPFB frame to the contract frame (Blender Z up, front +Y, anatomical left at -X), scaled by 0.9965 to 1.66 m, feet on the floor (z = 0)",
+    "38-joint UE-style contract armature: MPFB2 game-engine joints renamed to the contract names (fingers_01 = middle_01 head, fingers_02 = middle_02 head, twist joints at the parent midpoint, daypack offset 12 cm behind the spine_03 head); rest pose keeps the MPFB2 A-pose and the clips remove 88 percent of its arm splay so the arms hang at the sides",
+    "Weights copied from weights.game_engine.json, the four finger chains merged into fingers_01/fingers_02 (thumb_03 into thumb_02), normalised to the top 4 influences, evaluated on the full-resolution mesh before decimation",
+    "Decimate collapse to 11000 triangles, then split into VIS_body and VIS_head by dominant bone (head/neck_01), one triangle-free primitive each",
+    "Flat vertex colours, no textures: #1f2a44 coat (torso, arms), #a8a59a trousers (thighs, calves), #2a2622 shoes, #c99a7a skin (hands, face), #3b2a20 bob hair, #6f6457 tote",
+    "Tote joined into the body as a 0.30 x 0.08 x 0.28 m box at the right hip, weighted 1.0 to the pelvis",
+    "VIS_head shape keys Basis, blinkLeft, blinkRight; each blink lowers the upper-lid vertices within 1.5 cm of its eye centre by 6 mm (4 left, 5 right vertices)",
+    "Clips idle (4.0 s), walk (1.0 s), run (0.6 s) at 30 fps, in place, last frame equal to the first; legs driven by planar two-link IK onto ankle targets, feet kept flat in stance, pelvis bob 2 cm at stride frequency, arms adducted with walk swing +/-15 deg and run swing +/-30 deg plus ~70 deg elbow bend opposite the legs"
   ],
   "clip_authorship": "Authored by GTEki contributors in Blender from code (no motion capture, no third-party clips); CC-BY-4.0",
-  "generator": "Blender 5.2.2 LTS (headless, -b) with glTF 2.0 exporter; build script kept in the Lane E scratch only",
-  "triangles": 8143,
+  "generator": "tools/blender/character/build_commuter_mpfb.py, Blender 5.2.2 LTS (headless, -b) with the bundled glTF 2.0 exporter",
+  "triangles": 11012,
   "texture_bytes": 0,
-  "budget": "phone tier: <=10k triangles, <=1 MB textures (0 used)"
+  "budget": "high tier: <=12000 triangles, <=3 primitives per visual node, <=1024^2 textures (0 used)"
 }

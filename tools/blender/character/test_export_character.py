@@ -198,6 +198,26 @@ class P0Export(unittest.TestCase):
             with self.subTest(key=key, value=value), self.assertRaises(ValueError):
                 exporter.build_extras(**kwargs)
 
+    def test_full_clip_set_metadata(self):
+        contacts = {"l": [[0., .44]], "r": [[.5, .94]]}
+        clips = {"idle": dict(duration_s=4., contacts=contacts), "walk": dict(duration_s=1., contacts=contacts)}
+        meta = exporter.build_extras(fixture.CHARACTER_ID, "high", fixture.HEIGHT_M, fixture.FEET, 4., clips)
+        self.assertEqual(sorted(meta["clips"]), ["idle", "walk"])
+        self.assertEqual(meta["clips"]["walk"]["kind"], vc.CLIPS["walk"][0])
+        self.assertEqual(meta["clips"]["walk"]["distance_per_cycle_m"], vc.CLIPS["walk"][1] * 1.)
+        self.assertEqual(meta["clips"]["walk"]["contacts"], contacts)
+        for bad, message in (({"dance": dict(duration_s=1., contacts=contacts)}, "unknown clip"),
+                             ({"idle": dict(duration_s=0., contacts=contacts)}, "positive")):
+            with self.subTest(clips=sorted(bad)), self.assertRaisesRegex(ValueError, message):
+                exporter.build_extras(fixture.CHARACTER_ID, "high", fixture.HEIGHT_M, fixture.FEET, 4., bad)
+        # A build on third-party base data must record its own description, and the licence stays CC-BY-4.0.
+        described = exporter.build_extras(fixture.CHARACTER_ID, "high", fixture.HEIGHT_M, fixture.FEET, 4., clips,
+                                          "clips on a CC0 base mesh")
+        self.assertEqual(described["clips"]["walk"]["provenance"]["description"], "clips on a CC0 base mesh")
+        self.assertEqual(described["clips"]["walk"]["provenance"]["licence"], vc.ORIGINAL_LICENCE)
+        with self.assertRaisesRegex(ValueError, "description"):
+            exporter.build_extras(fixture.CHARACTER_ID, "high", fixture.HEIGHT_M, fixture.FEET, 4., clips, " ")
+
     def test_joint_layout_and_geometry_weights(self):
         positions = sample.joint_positions()
         self.assertEqual(set(positions), set(vc.JOINT_PARENTS))

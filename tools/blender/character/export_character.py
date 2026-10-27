@@ -28,8 +28,12 @@ def blender_to_gltf(vector):
     return (float(x), float(z), float(-y))
 
 
-def build_extras(character_id, tier, height_m, feet, duration_s):
-    """P0 metadata: both feet planted for the whole cycle, with a wrapped right window."""
+def build_extras(character_id, tier, height_m, feet, duration_s, clips=None, description=PROVENANCE):
+    """Metadata for the §7 extras. Without `clips` this is the P0 two-frame idle, both feet planted.
+
+    `clips` maps clip name -> {duration_s, contacts}; each entry is filled in from §6.
+    `description` records how the clips were made; a build on third-party base data must say so.
+    """
     if not re.fullmatch(r"[a-z][a-z0-9_]*", character_id):
         raise ValueError("id must be a lowercase identifier")
     if tier not in TIERS:
@@ -38,6 +42,8 @@ def build_extras(character_id, tier, height_m, feet, duration_s):
         raise ValueError("height outside contract range")
     if not math.isfinite(duration_s) or duration_s <= 0:
         raise ValueError("duration must be positive and finite")
+    if not isinstance(description, str) or not description.strip():
+        raise ValueError("description must be a non-empty string")
     offsets = {}
     for side in ("l", "r"):
         offsets[side] = {}
@@ -46,16 +52,24 @@ def build_extras(character_id, tier, height_m, feet, duration_s):
             if len(value) != 3 or not all(math.isfinite(x) for x in value):
                 raise ValueError("feet must contain finite joint-local 3D offsets")
             offsets[side][point] = value
-    kind, speed = CLIPS["idle"]
-    return dict(
-        contract=CONTRACT, id=character_id, tier=tier, height_m=height_m, forward="-Z", feet=offsets,
-        clips={"idle": dict(
-            kind=kind, duration_s=duration_s, distance_per_cycle_m=speed * duration_s,
-            calib_speed_mps=speed, contacts={"l": [[0.0, 1.0]], "r": [[0.5, 1.5]]},
+    if clips is None:
+        clips = {"idle": dict(duration_s=duration_s, contacts={"l": [[0.0, 1.0]], "r": [[0.5, 1.5]]})}
+    entries = {}
+    for name, spec in clips.items():
+        if name not in CLIPS:
+            raise ValueError(f"unknown clip {name!r}")
+        kind, speed = CLIPS[name]
+        duration = spec["duration_s"]
+        if not math.isfinite(duration) or duration <= 0:
+            raise ValueError(f"clip {name!r} duration must be positive and finite")
+        entries[name] = dict(
+            kind=kind, duration_s=duration, distance_per_cycle_m=speed * duration, calib_speed_mps=speed,
+            contacts=spec["contacts"],
             provenance=dict(author="GTEki contributors", licence=ORIGINAL_LICENCE,
-                            source="original", description=PROVENANCE),
-        )},
-    )
+                            source="original", description=description),
+        )
+    return dict(contract=CONTRACT, id=character_id, tier=tier, height_m=height_m, forward="-Z", feet=offsets,
+                clips=entries)
 
 
 def encode_glb(doc, binary):
@@ -223,7 +237,7 @@ def finish_glb(data, extras, blink_vertices=None):
         skin["skeleton"] = arms[0]
     result = encode_glb(doc, binary)
     report = Validator(f"{extras['id']}.{extras['tier']}.glb", result, extras["tier"],
-                       drift_gate=False, required_clips=["idle"]).check()
+                       drift_gate=False, required_clips=sorted(extras["clips"])).check()
     failures = [m["message"] for m in report["messages"] if m["level"] == "FAIL"]
     if failures:
         raise ValueError("export violates character contract: " + "; ".join(failures))
@@ -263,7 +277,7 @@ def exporter_options(properties):
     return required
 
 
-def export_character(character_id, tier, out_dir):
+def export_character(character_id, tier, out_dir, clips=None, description=PROVENANCE):
     import bpy
 
     # TODO(E1): bake Rigify controls to the §3 skeleton/actions at FPS; decimate
@@ -301,14 +315,29 @@ def export_character(character_id, tier, out_dir):
                        [blender_to_gltf(keys.key_blocks[name].data[i].co - vertex.co) for name in BLINKS])
                       for i, vertex in enumerate(keys.reference_key.data)]
     if not arm.animation_data or not arm.animation_data.action or arm.animation_data.action.name != "idle":
-        raise ValueError("P0 requires an active idle action")
+        raise ValueError("the armature must carry an active idle action")
     if arm.animation_data.nla_tracks:
-        raise ValueError("P0 expects a direct idle action without NLA tracks")
+        raise ValueError("expected direct actions without NLA tracks")
     scene = bpy.context.scene
     scene.render.fps, scene.render.fps_base = FPS, 1.0
     start, end = arm.animation_data.action.frame_range
-    if end - start != 1:
-        raise ValueError("P0 idle must contain exactly two frames")
+    if clips is None:
+        if end - start != 1:
+            raise ValueError("P0 idle must contain exactly two frames")
+        durations = {"idle": (end - start) / FPS}
+    else:
+        durations = {}
+        for name, spec in clips.items():
+            action = bpy.data.actions.get(name)
+            if action is None:
+                raise ValueError(f"missing clip action {name!r}")
+            first, last = action.frame_range
+            if round(last - first) != round(spec["duration_s"] * FPS):
+                raise ValueError(f"clip {name!r} spans {last - first:g} frames, "
+                                 f"expected {spec['duration_s'] * FPS:g}")
+            durations[name] = (last - first) / FPS
+        if clips["idle"]["duration_s"] != durations["idle"]:
+            raise ValueError("the active idle action must match its clip spec")
     scene.frame_start, scene.frame_end = int(start), int(end)
     scene.frame_set(int(start))
     # Rest-space geometry, not evaluated animation: the source meshes have applied transforms.
@@ -316,7 +345,7 @@ def export_character(character_id, tier, out_dir):
                  for vertex in obj.data.vertices)
     # placeholder: finish_glb replaces the feet with offsets measured on the exported joints
     feet = {side: {"heel": [0., 0., 0.], "ball": [0., 0., 0.]} for side in ("l", "r")}
-    extras = build_extras(character_id, tier, height, feet, (end - start) / FPS)
+    extras = build_extras(character_id, tier, height, feet, durations["idle"], clips, description)
     out = Path(out_dir).resolve()
     out.mkdir(parents=True, exist_ok=True)
     path = out / f"{character_id}.{tier}.glb"
