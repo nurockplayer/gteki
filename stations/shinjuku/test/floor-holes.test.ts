@@ -40,7 +40,7 @@ describe("E27 floor holes (#221)", () => {
     const runs = polygonClipping.union(runPolys[0] ?? [], ...runPolys.slice(1)) as unknown as Poly[];
     const bad: string[] = [];
     for (const lv of layout.levels) {
-      const cover = [...lv.slabs, ...layout.pads, ...layout.linkStrips, ...layout.streetPads, ...fill].filter((s) => Math.abs(s.z - lv.z) < 0.01).map(toPoly);
+      const cover = [...lv.slabs, ...layout.pads, ...layout.linkStrips.filter((s) => s.z < -0.5), ...layout.streetPads, ...fill].filter((s) => Math.abs(s.z - lv.z) < 0.01).map(toPoly);
       for (const slab of lv.slabs) {
         for (let i = 1; i < slab.rings.length; i++) {
           const hole: Poly = [slab.rings[i]!.map((p) => [p.x, p.y] as [number, number])];

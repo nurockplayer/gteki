@@ -1238,9 +1238,10 @@ export function roomFloorFill(layout: Layout, plan: Plan): SlabPoly[] {
     const rooms = lv.rooms.filter((r) => r.role === "room" || r.role === "office" || r.role === "toilet");
     if (!rooms.length) continue;
     const planLevel = plan.levels.find((p) => p.label === lv.label);
+    // linkStrips are drawn only underground (build.ts pads mesh), so only those count as cover.
     // Only rooms inside a public floor outline: a room outside every floor outline is not a hole.
     const floorOutlines = (planLevel?.spaces ?? []).filter((s) => spaceRole(s) === "floor").map((s) => s.rings[0]!);
-    const walk = [...lv.slabs, ...layout.pads, ...layout.linkStrips, ...layout.streetPads].filter((s) => Math.abs(s.z - lv.z) < 0.01);
+    const walk = [...lv.slabs, ...layout.pads, ...layout.linkStrips.filter((s) => s.z < -0.5), ...layout.streetPads].filter((s) => Math.abs(s.z - lv.z) < 0.01);
     const cover: ClipPolygon[] = walk.map((s) => clipPoly(s.rings));
     for (const { space } of rooms) {
       const room = clipPoly(space.rings);
