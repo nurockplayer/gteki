@@ -157,6 +157,12 @@ describe("avatar flag", () => {
   it("uses Lane E's future URL for ?avatar=glb", () => {
     expect(avatarGlbUrl(new URLSearchParams("avatar=glb"), page)).toBe(DEFAULT_AVATAR_GLB_URL);
   });
+  it.each([
+    ["ual", "/avatars/gteki-commuter-ual.glb"],
+    ["kaykit", "/avatars/gteki-commuter-kaykit.glb"],
+  ])("loads the %s ready-rigged CC0 candidate", (mode, expected) => {
+    expect(avatarGlbUrl(new URLSearchParams(`avatar=${mode}`), page)).toBe(expected);
+  });
   it.each([["/avatars/test.glb", "/avatars/test.glb"], ["./test.glb", "/app/test.glb"], ["../test.glb?tier=low", "/test.glb?tier=low"]])("accepts a same-origin relative path: %s", (input, expected) => {
     expect(avatarGlbUrl(new URLSearchParams({ avatar: "glb", avatarUrl: input! }), page)).toBe(expected);
   });

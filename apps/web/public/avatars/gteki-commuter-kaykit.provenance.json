@@ -1,0 +1,34 @@
+{
+  "file": "apps/web/public/avatars/gteki-commuter-kaykit.glb",
+  "issue": "#339",
+  "candidate": "B: ready-rigged CC0 (KayKit Adventurers Rogue)",
+  "sha256": "fdee4f2db907cca65b2ceebcfbcb9a2df88c49b85c6030cfc56098111b4c25aa",
+  "bytes": 527072,
+  "triangles": 7562,
+  "license_spdx": "CC0-1.0",
+  "attribution": "Kay Lousberg (KayKit Adventurers 2.0, CC0 1.0). Credit is not required by the licence; it is kept in NOTICE.",
+  "sources": [
+    {
+      "zip": "KayKit_Adventurers_2.0_FREE.zip",
+      "zip_sha256": "abe48f4763fba0896bab486ee9e6d08ca6b5b3884b9601f235c8847ae94dc479",
+      "url": "https://kaylousberg.itch.io/kaykit-adventurers",
+      "date_downloaded": "2026-10-27 21:18 JST",
+      "licence_quote": "itch.io page, 2026-10-27: \"Free for personal and commercial use, no attribution required. (CC0 Licensed)\"",
+      "members_used": [
+        "Characters/gltf/Rogue.glb",
+        "Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
+        "Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb"
+      ]
+    }
+  ],
+  "edits": [
+    "Imported Characters/gltf/Rogue.glb: kept the 23-joint Rig_Medium armature, its 7 skinned meshes (7,562 triangles) and the embedded rogue_texture.png; no repaint and no decimation",
+    "Imported Rig_Medium_General.glb and Rig_Medium_MovementBasic.glb for their actions only and deleted their mannequin meshes and rigs; the clips bind by joint name (the libraries list the joints in a different order)",
+    "Kept 3 of the 26 clips and renamed them idle (Idle_A), walk (Walking_A), run (Running_A); deleted the other 23 actions",
+    "Rogue ships no handslot props, so none were dropped; the handslot bones stay in the skin",
+    "Rotated 180 degrees about Z so the character faces -Z, the glTF contract in apps/web/src/explorer/avatarGlb.ts"
+  ],
+  "generator": "tools/blender/character/build_cc0_candidates.py under Blender 5.2.2 LTS (headless -b), glTF 2.0 exporter with export_animation_mode=ACTIONS, skins on, no cameras/lights",
+  "texture_bytes": 15026,
+  "budget": "phone tier: about 10k triangles target (shipped 7,562), texture 15,026 bytes (embedded PNG)"
+}
