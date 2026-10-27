@@ -597,16 +597,16 @@
      "hash": "11a884267ee13ad5be9ac66cdc3daf8a54c3d96eeb21751c21fff1665716bf2c"
     },
     "[\"MeshStandardMaterial\",\"mat.floor\",\"ffffff\",\"000000\",1,1,false,0,true,0.72,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 1339,
-     "hash": "4337986141295f065ea7bd8d937c801ef701bc4a037ea9a12a2b8a9824330ee1"
+     "triangles": 1448,
+     "hash": "87e2b0e32bc02bb05e3a0f493eaf2b09bde0fca13d9a93ef726b10c2dac6cac4"
     },
     "[\"MeshStandardMaterial\",\"mat.floorPaid\",\"ffffff\",\"000000\",1,1,false,0,true,0.68,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
      "triangles": 790,
      "hash": "3056050990d11865803d9398d36f12936374b889e3fbee8d8f7b7916c30d8d7b"
     },
     "[\"MeshStandardMaterial\",\"mat.floorPlatform\",\"ffffff\",\"000000\",1,1,false,0,true,0.82,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 319,
-     "hash": "0ac9ba7d11cc1e60516677e6c2504400675d7279d4055d0847191b76aa5dc248"
+     "triangles": 419,
+     "hash": "af831554531dfbb9a6dd134e9095d0ab65eaa101bf3438d772f50bf271a8c2ca"
     },
     "[\"MeshStandardMaterial\",\"mat.gateBody\",\"e9ebec\",\"000000\",1,1,false,0,true,0.35,0.15,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 96,
@@ -1750,16 +1750,16 @@
      "hash": "11a884267ee13ad5be9ac66cdc3daf8a54c3d96eeb21751c21fff1665716bf2c"
     },
     "[\"MeshStandardMaterial\",\"mat.floor\",\"ffffff\",\"000000\",1,1,false,0,true,0.72,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 1339,
-     "hash": "4337986141295f065ea7bd8d937c801ef701bc4a037ea9a12a2b8a9824330ee1"
+     "triangles": 1448,
+     "hash": "87e2b0e32bc02bb05e3a0f493eaf2b09bde0fca13d9a93ef726b10c2dac6cac4"
     },
     "[\"MeshStandardMaterial\",\"mat.floorPaid\",\"ffffff\",\"000000\",1,1,false,0,true,0.68,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
      "triangles": 790,
      "hash": "3056050990d11865803d9398d36f12936374b889e3fbee8d8f7b7916c30d8d7b"
     },
     "[\"MeshStandardMaterial\",\"mat.floorPlatform\",\"ffffff\",\"000000\",1,1,false,0,true,0.82,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 319,
-     "hash": "0ac9ba7d11cc1e60516677e6c2504400675d7279d4055d0847191b76aa5dc248"
+     "triangles": 419,
+     "hash": "af831554531dfbb9a6dd134e9095d0ab65eaa101bf3438d772f50bf271a8c2ca"
     },
     "[\"MeshStandardMaterial\",\"mat.gateBody\",\"e9ebec\",\"000000\",1,1,false,0,true,0.35,0.15,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 96,
