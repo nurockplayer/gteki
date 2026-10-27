@@ -38,15 +38,18 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
  * changes geometryDigest; appearance, nodes, textures, meshes and every explorer list are unchanged.
  * #342 identity boards add 2 meshes and 28,160 B (geometry, appearance, nodes and textures re-measured; lists unchanged).
  * #221 render-only room floors (B1, B3, B6 under restricted/office rooms cut out of the floor outline) add 3 meshes and 12,174 B;
- * walkable, colliders, cameraBlockers and every explorer list are unchanged. */
+ * walkable, colliders, cameraBlockers and every explorer list are unchanged.
+ * Vertical transport pass (docs/visual/vertical-gap.md) adds 2 meshes (stair risers, escalator truss on its own
+ * material) and 490,580 B (riser planes and nosing lips); escalator steps become tread + riser with a step atlas.
+ * Geometry, appearance, nodes and textures re-measured; listsDigest and every count unchanged. */
 const MAIN_BASELINE = {
   station: {
-    geometryDigest: "fc9a245d9c18bae32702ec3d9fd7bbdfb7fe8e050d60b55f0d3fb2ae0a201d19",
-    appearanceDigest: "fcdd2bb0a6b2f124bfe156de5874c90a902f33d6e868d0d316d0c93ed47b6a8a",
-    nodesDigest: "979ffa9a136ec32435aaefe1c59f8d6702c8796a36ca2511a8e2a7ec70b6e030",
-    texturesDigest: "3a9915b58b9eee2711a82b07722e443082b663be0b1c5e3b23a2283c175b96f4",
-    meshes: 143,
-    bytes: 13_542_498,
+    geometryDigest: "698615760ab27c20613de649182cb02455edfc5ffb39a587f2d0cc7f592e0a17",
+    appearanceDigest: "bb90e82a587a6cfcd79a1d6a311dbd6e010a6d747417b3a96cb7c7e5553fabaf",
+    nodesDigest: "04c6bfd082e1f1ce2f1c4826baf2199806e2eb003b10a34bb58366db5c8d0d88",
+    texturesDigest: "c8f53716338bb41faf1cf09499f2a6bb149147d879491c851eac564281f01e1c",
+    meshes: 145,
+    bytes: 14_033_078,
   },
   lists: {
     listsDigest: "ddd5c84df153fb71c2254a20ec8132134ef0aaa6bb4878cb683da4ffc967913f",
