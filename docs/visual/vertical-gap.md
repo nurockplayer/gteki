@@ -106,3 +106,27 @@ Phone (bank foot close, Exit 1 stair foot; before, before, after, after):
 - **Guided walks.** Spec 03's two Shinjuku walks (exit1-platform, platform-exit2) pass on desktop and phone.
 - **Geometry.** +490,580 B and +2 meshes per scene.
 - **Physics.** Walkable, colliders, camera blockers and explorer lists are byte-identical (scene-digest and kit-swap baselines). So the route-clip audit, which reads only those, cannot change.
+
+## Batch 2 result (2026-10-28 05:35 JST): Lane E escalator dressing (#2, #3, #6). Golden Slice before/after
+
+The Shinjuku kit swap is on by default for the escalator role only (`?kit=0` turns it off). It places Lane E's `escalator_dressing` (balustrade, handrail loop, newels, combs, baked AO) on 14 of 21 runs and hides the procedural glass panel, box handrail and skirt on those runs. Pieces are ordered longest run first, so both banks the guided walks ride (m1–m3 and m3–m6) are dressed. Of the 7 runs left procedural, 5 are dropped by the 3 MB geometry cap and 2 have angles outside the generator's range.
+
+Same spots and cameras as the before run. Top row before (main `9e1c1d37`), bottom row after batches 1 and 2. Desktop:
+
+![Golden Slice desktop](evidence/vertical-golden-desktop.jpg)
+
+Phone (bank foot wide and close; before, before, after, after):
+
+![Golden Slice phone](evidence/vertical-golden-phone.jpg)
+
+| Spot | Desktop draws / tris, before → after | Phone draws / tris, before → after |
+| --- | --- | --- |
+| bank foot (wide) | 231 / 341k → 245 / 375k | 100 / 159k → 105 / 168k |
+| bank foot (close) | 220 / 337k → 234 / 396k | 80 / 158k → 90 / 168k |
+| bank head | 207 / 341k → 221 / 377k | 80 / 159k → 85 / 169k |
+| Exit 1 stair foot | 171 / 319k → 175 / 281k | 68 / 150k → 70 / 131k |
+
+- **Walk.** Down `e1fa65` and up `2692fe`, `done` at every quarter on both tiers, never `stuck`. Heights are identical to the before run.
+- **Physics.** Walkable, colliders, camera blockers, spawn points, walls and explorer lists are identical with the swap on and off.
+- **Kit report.** 6 draws, 42,720 triangles, about 2.45 MB measured geometry (2.99 MB at the planner's 70 B/tri estimate), 131 kB GPU textures. The bundle is 2.28 MB on disk.
+- **Left for later.** The procedural indicator lamps now read as squares on the glass and should move to the kit's `indicators`. At the bottom comb a sliver of the animated step shows past the plate. Luminaires over the bank (#5) are batch 3.
