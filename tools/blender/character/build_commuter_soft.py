@@ -24,37 +24,40 @@ DERIVATION = ("original: soft-stylized commuter silhouette hand-built from Blend
 
 BODY_ATLAS, HEAD_ATLAS = 1024, 512
 NAVY, NAVY_LIGHT, NAVY_DARK = "#2B3550", "#36435F", "#222B40"
+LAPEL, LAPEL_EDGE, CUFF_BAND = "#3A4766", "#161C2C", "#3E4B6B"
 CREAM, KNIT_RIB, BELT = "#EDE6D8", "#D8CEBA", "#2A2622"
 TAUPE, TAUPE_CREASE, TAUPE_HEM = "#A9A39B", "#948E86", "#8F897F"
 SHOE, SOLE, SHOE_HI = "#8C7766", "#5E4E42", "#9C8775"
 TOTE, TOTE_DARK, STITCH = "#9A8574", "#6E604F", "#B0A08A"
 SKIN, NECK_SKIN = "#F6D9C6", "#E9C4AE"
-HAIR, HAIR_HI, HAIR_SHADE = "#6B4A3A", "#8A6450", "#4A3228"
+HAIR, HAIR_HI, HAIR_SHADE = "#7A5541", "#9A7158", "#4E3528"
 IRIS_TOP, IRIS_BOT, SCLERA, LASH = "#5A3A2A", "#8A5A40", "#F4ECE6", "#2A1E18"
 
 # Body landmarks (metres, Blender Z up, +Y front).
 HEM_Z, COAT_SPLIT_Z, COAT_TOP_Z = 0.50, 0.86, 1.396
 # A-line overcoat (fix 1): rounded shoulders, body widens steadily from the underarm (1.15 m) to the hem.
-COAT_PROFILE = [(0.50, 0.220, 0.140), (0.70, 0.190, 0.125), (0.86, 0.165, 0.115), (1.00, 0.140, 0.105),
-                (1.10, 0.125, 0.100), (1.20, 0.115, 0.100), (1.30, 0.115, 0.100), (1.345, 0.105, 0.095),
-                (1.372, 0.080, 0.080), (1.396, 0.055, 0.065)]
+COAT_PROFILE = [(0.50, 0.220, 0.140), (0.70, 0.192, 0.126), (0.86, 0.168, 0.116), (1.00, 0.148, 0.108),
+                (1.10, 0.138, 0.105), (1.20, 0.140, 0.105), (1.30, 0.168, 0.105), (1.335, 0.165, 0.098),
+                (1.365, 0.120, 0.085), (1.396, 0.062, 0.066)]
 # Front opening half-width: 0.05 at the chest (knit >= 40% of torso width), narrowing to 0.03 at the waist.
-OPEN_PROFILE = [(0.50, 0.075), (0.86, 0.035), (1.00, 0.030), (1.30, 0.050), (1.345, 0.050), (1.396, 0.030)]
+OPEN_PROFILE = [(0.50, 0.075), (0.86, 0.040), (1.00, 0.034), (1.10, 0.058), (1.20, 0.060), (1.30, 0.056),
+                (1.345, 0.045), (1.396, 0.030)]
 SKIRT_OVERLAP = math.radians(3.0)  # the two lower panels lap 3 deg past the back vent seam
 SKIRT_THIGH_SHARE = 0.9  # same-side thigh at the hem; the hip line stays on the pelvis
-SLEEVE_PROFILE = [(0.93, 0.055), (0.99, 0.057), (1.13, 0.062), (1.22, 0.064), (1.30, 0.065),
-                  (1.345, 0.062), (1.38, 0.048), (1.395, 0.026)]
+SLEEVE_PROFILE = [(0.93, 0.055), (0.99, 0.057), (1.13, 0.062), (1.22, 0.064), (1.30, 0.065), (1.335, 0.060)]
+SLEEVE_TOP_Z = 1.335  # the sleeve stops here, inside the coat shoulder: no cap above the shoulder line
 TROUSER_ZS = [0.06, 0.10, 0.20, 0.34, 0.50, 0.62, 0.74, 0.86]
 TROUSER_R = [0.075, 0.072, 0.072, 0.072, 0.072, 0.072, 0.072, 0.072]
 # Loafers 1.3x the v2 size (fix 1 item 5): toes clear the trouser hem in front and side views.
 SHOE_RINGS = [(0.008, 0.060, 0.146), (0.029, 0.070, 0.161), (0.057, 0.069, 0.159),
               (0.081, 0.062, 0.147), (0.094, 0.047, 0.125), (0.100, 0.026, 0.083)]
+HAND_Y = 0.030
 HAND_RINGS = [(0.80, 0.021), (0.85, 0.024), (0.90, 0.027), (0.94, 0.026)]
 # Flatter, wider tote (~0.30 w x 0.32 h x 0.08 d), top at waist height, hung from the right shoulder.
-TOTE_X, TOTE_RINGS = 0.215, [(0.68, 0.034, 0.140), (0.76, 0.040, 0.150), (0.84, 0.040, 0.150),
+TOTE_X, TOTE_RINGS = 0.275, [(0.68, 0.034, 0.140), (0.76, 0.040, 0.150), (0.84, 0.040, 0.150),
                              (0.92, 0.040, 0.150), (1.00, 0.034, 0.140)]
-STRAP_PATH = [(0.215, -0.09, 1.00), (0.250, -0.06, 1.16), (0.262, -0.03, 1.30), (0.225, 0.0, 1.41),
-              (0.262, 0.03, 1.30), (0.250, 0.06, 1.16), (0.215, 0.09, 1.00)]
+STRAP_PATH = [(0.275, -0.09, 1.00), (0.300, -0.06, 1.16), (0.300, -0.03, 1.28), (0.240, 0.0, 1.40),
+              (0.300, 0.03, 1.28), (0.300, 0.06, 1.16), (0.275, 0.09, 1.00)]
 WALK_CROUCH_M = 0.025  # near-straight stance leg; the shared Animation stays on its own default
 SPINE_STOPS = [(1.36, "spine_03"), (1.26, "spine_02"), (1.10, "spine_01"), (0.94, "pelvis")]
 
@@ -63,7 +66,7 @@ HEAD_CENTRE, HEAD_RADII = (0.0, 0.0, 1.550), (0.110, 0.121, 0.150)
 EYE_X, EYE_Z = 0.045, 1.505
 EYE_HALF_W, EYE_HALF_H = 0.032, 0.024  # eyes ~2x the v2 area; eye height ~1/4 of the face
 # Solid bob shell (fix 1 item 3): (z, rx, ry) from the chin to above the crown. ear-level width >= 1.3x skull.
-BOB_SHELL = [(1.400, 0.100, 0.105), (1.450, 0.135, 0.125), (1.500, 0.150, 0.135), (1.550, 0.150, 0.140),
+BOB_SHELL = [(1.400, 0.118, 0.110), (1.450, 0.138, 0.135), (1.500, 0.150, 0.150), (1.550, 0.150, 0.150),
              (1.600, 0.140, 0.140), (1.650, 0.125, 0.130), (1.680, 0.095, 0.105), (1.715, 0.040, 0.050)]
 BOB_OPEN = 0.75  # half-angle (rad) of the face opening in the lower shell, centred on the front
 BOB_TIPS = 10  # scallops around the lower edge
@@ -88,10 +91,10 @@ def joint_positions():
     positions.update({"neck_01": (0.0, 0.0, 1.43), "head": (0.0, 0.0, 1.53)})
     for side, s in (("l", -1.0), ("r", 1.0)):
         positions.update({
-            f"clavicle_{side}": (s * 0.045, 0.0, 1.345), f"upperarm_{side}": (s * 0.135, 0.0, 1.345),
-            f"lowerarm_{side}": (s * 0.145, 0.0, 1.13), f"hand_{side}": (s * 0.137, 0.030, 0.955),
-            f"fingers_01_{side}": (s * 0.137, 0.030, 0.895), f"fingers_02_{side}": (s * 0.137, 0.030, 0.815),
-            f"thumb_01_{side}": (s * 0.143, 0.055, 0.925), f"thumb_02_{side}": (s * 0.148, 0.065, 0.905),
+            f"clavicle_{side}": (s * 0.045, 0.0, 1.360), f"upperarm_{side}": (s * 0.170, 0.0, 1.335),
+            f"lowerarm_{side}": (s * 0.195, 0.0, 1.115), f"hand_{side}": (s * 0.205, HAND_Y, 0.940),
+            f"fingers_01_{side}": (s * 0.205, HAND_Y, 0.895), f"fingers_02_{side}": (s * 0.205, HAND_Y, 0.815),
+            f"thumb_01_{side}": (s * 0.211, 0.055, 0.925), f"thumb_02_{side}": (s * 0.216, 0.065, 0.905),
             f"thigh_{side}": (s * 0.085, 0.0, 0.85), f"calf_{side}": (s * 0.085, 0.0, 0.48),
             f"foot_{side}": (s * 0.085, -0.035, 0.075), f"ball_{side}": (s * 0.085, 0.13, 0.0),
         })
@@ -103,7 +106,6 @@ def joint_positions():
     if set(positions) != set(JOINT_PARENTS):
         raise ValueError("joint layout does not cover the contract")
     return positions
-
 
 def bone_pairs(positions):
     """Head/tail pairs: the tail points at the principal child, as in the p0 sample."""
@@ -460,21 +462,18 @@ def sleeve_radius(z):
     return interp(SLEEVE_PROFILE, z)
 
 
-def arm_x(z):
-    """Sleeve axis x at height z: clear of the coat body by the sleeve radius, never nearer than 0.16 m.
-
-    The arm bones stay where they are; the sleeve geometry is offset outward so the arm reads as a tube
-    beside the coat with a gap under the armpit.
-    """
-    coat_rx, _ = coat_radii(z)
-    return max(coat_rx + sleeve_radius(z) + 0.012, 0.16)
+def arm_axis_x(z):
+    """Sleeve axis x at height z, following the arm bones: shoulder 0.170 -> elbow 0.195 -> wrist 0.205."""
+    if z >= 1.115:
+        return interp([(1.115, 0.195), (1.335, 0.170)], z)
+    return interp([(0.940, 0.205), (1.115, 0.195)], z)
 
 
 def build_sleeve(s, rect):
     rings = []
-    for z in linspace(0.93, 1.395, 10):
+    for z in linspace(0.93, SLEEVE_TOP_Z, 10):
         r = sleeve_radius(z)
-        rings.append(ellipse_ring((s * arm_x(z), 0.0, z), (r, r * 0.95), 16))
+        rings.append(ellipse_ring((s * arm_axis_x(z), 0.0, z), (r, r * 0.95), 16))
     patch = Patch(rect)
     patch.loft(rings, cap_last=True)  # open cuff at the bottom: the hand comes out of it
     return patch
@@ -509,8 +508,7 @@ def build_body():
     for s, side in ((-1.0, "l"), (1.0, "r")):
         body.add(build_sleeve(s, BODY_RECTS[f"sleeve_{side}"]), arm_weights(side))
         hand = Patch(BODY_RECTS["hands"])
-        hand_x = arm_x(0.90)
-        hand.loft([ellipse_ring((s * hand_x, 0.030, z), (r, r * 0.6), 10) for z, r in HAND_RINGS],
+        hand.loft([ellipse_ring((s * 0.205, HAND_Y, z), (r, r * 0.6), 10) for z, r in HAND_RINGS],
                   cap_first=True, cap_last=True)
         body.add(hand, {f"hand_{side}": 1.0})
         body.add(build_trouser(s, BODY_RECTS[f"trouser_{side}"]), leg_weights(side))
@@ -613,9 +611,15 @@ def build_bob():
         rings.append(ring)
     shell_patch = Patch(HAIR_CELLS[0])
     shell_patch.grid(rings)
-    dome_zs = [1.600, 1.650, 1.680, 1.715]
+    # Hemisphere dome: rings every 15 degrees from the 1.60 m base up to the crown, closed by a small cap.
+    base_rx, base_ry = shell_radii(1.600)
+    dome_rings = []
+    for deg in range(0, 91, 15):
+        t = math.radians(deg)
+        k = max(math.cos(t), 0.03)
+        dome_rings.append(ellipse_ring((0.0, 0.0, 1.600 + 0.115 * math.sin(t)), (base_rx * k, base_ry * k), 24))
     dome = Patch(HAIR_CELLS[1])
-    dome.loft([ellipse_ring((0.0, 0.0, z), shell_radii(z), 24) for z in dome_zs], cap_last=True)
+    dome.loft(dome_rings, cap_last=True)
     out = [shell_patch, dome]
     cells = iter(HAIR_CELLS[2:])
     for root_x, tip_x in ((-0.060, -0.072), (-0.032, -0.040), (-0.004, -0.010), (0.024, 0.030), (0.052, 0.064)):
@@ -703,9 +707,8 @@ def knit_paint(S, T):
 
 
 def lapel_paint(S, T):
-    base = flat(NAVY_LIGHT, S.shape) * (0.94 + 0.06 * T)[..., None]
-    base = over(base, rgb(NAVY_DARK), band(S, 0.0, 0.06) * 0.8)  # darker fold line at the opening edge
-    return over(base, rgb(NAVY_DARK), band(S, 0.94, 1.0) * 0.8)  # darker outer edge line: reads from afar
+    base = flat(LAPEL, S.shape) * (0.94 + 0.06 * T)[..., None]
+    return over(base, rgb(LAPEL_EDGE), band(S, 1.0 - 3.0 / 128.0, 1.0))  # 3-texel dark outer edge
 
 
 def trouser_paint(S, T):
@@ -720,9 +723,9 @@ def sleeve_paint(S, T):
     import numpy as np
     base = flat(NAVY, S.shape)
     cuff_rib = band(np.mod(S * 12.0, 1.0), 0.0, 0.15)
-    base = over(base, rgb(KNIT_RIB), band(T, 0.0, 0.07) * cuff_rib * 0.5)
-    base = over(base, rgb(CREAM), band(T, 0.0, 0.07))  # cream knit cuff at the wrist
-    base = over(base, rgb(NAVY_LIGHT), band(T, 0.07, 0.13))  # turned-back navy cuff band
+    base = over(base, rgb(KNIT_RIB), band(T, 0.0, 0.025) * cuff_rib * 0.5)
+    base = over(base, rgb(CREAM), band(T, 0.0, 0.025))  # 1 cm cream knit cuff ring
+    base = over(base, rgb(CUFF_BAND), band(T, 0.025, 0.099))  # 3 cm turned-back cuff band
     base = over(base, rgb(NAVY_DARK), band(T, 0.9, 1.0) * 0.5)
     return over(base, rgb(NAVY_DARK), np.clip(band(S, 0.0, 0.03) + band(S, 0.97, 1.0), 0, 1) * 0.5)
 
@@ -898,14 +901,81 @@ def set_camera(camera, location, turn):
     camera.rotation_euler = (math.radians(90.0), 0.0, math.radians(turn))
 
 
+def preview_material(name, image):
+    """Toon-look preview only (never exported): atlas -> diffuse -> ShaderToRGB -> constant ramp, multiplied by
+    the atlas, added to the runtime fill (atlas x 0.55) and emitted."""
+    import bpy
+    material = bpy.data.materials.new(name)
+    material.use_nodes = True
+    tree = material.node_tree
+    tree.nodes.clear()
+    out = tree.nodes.new("ShaderNodeOutputMaterial")
+    texture = tree.nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    diffuse = tree.nodes.new("ShaderNodeBsdfDiffuse")
+    tree.links.new(texture.outputs["Color"], diffuse.inputs["Color"])
+    to_rgb = tree.nodes.new("ShaderNodeShaderToRGB")
+    tree.links.new(diffuse.outputs["BSDF"], to_rgb.inputs["Shader"])
+    ramp = tree.nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.interpolation = "CONSTANT"
+    stops = ramp.color_ramp.elements
+    stops[0].position, stops[0].color = 0.0, (150 / 255, 150 / 255, 150 / 255, 1.0)
+    stops[1].position, stops[1].color = 0.35, (205 / 255, 205 / 255, 205 / 255, 1.0)
+    top = stops.new(0.65)
+    top.color = (1.0, 1.0, 1.0, 1.0)
+    tree.links.new(to_rgb.outputs["Color"], ramp.inputs["Fac"])
+    shade = tree.nodes.new("ShaderNodeMixRGB")
+    shade.blend_type = "MULTIPLY"
+    shade.inputs["Fac"].default_value = 1.0
+    tree.links.new(ramp.outputs["Color"], shade.inputs["Color1"])
+    tree.links.new(texture.outputs["Color"], shade.inputs["Color2"])
+    fill = tree.nodes.new("ShaderNodeMixRGB")
+    fill.blend_type = "MULTIPLY"
+    fill.inputs["Fac"].default_value = 1.0
+    tree.links.new(texture.outputs["Color"], fill.inputs["Color1"])
+    fill.inputs["Color2"].default_value = (0.55, 0.55, 0.55, 1.0)
+    total = tree.nodes.new("ShaderNodeMixRGB")
+    total.blend_type = "ADD"
+    total.inputs["Fac"].default_value = 1.0
+    tree.links.new(shade.outputs["Color"], total.inputs["Color1"])
+    tree.links.new(fill.outputs["Color"], total.inputs["Color2"])
+    emission = tree.nodes.new("ShaderNodeEmission")
+    emission.inputs["Strength"].default_value = 1.0
+    tree.links.new(total.outputs["Color"], emission.inputs["Color"])
+    tree.links.new(emission.outputs["Emission"], out.inputs["Surface"])
+    return material
+
+
+def apply_preview_look(camera_scene):
+    """EEVEE scene for the previews: grey world, one warm sun from front-left-above, toon materials."""
+    import bpy
+    scene = camera_scene
+    try:
+        scene.render.engine = "BLENDER_EEVEE"
+    except TypeError:
+        scene.render.engine = "BLENDER_EEVEE_NEXT"
+    scene.render.film_transparent = False
+    world = bpy.data.worlds.new("PreviewWorld")
+    world.use_nodes = True
+    background = world.node_tree.nodes["Background"]
+    background.inputs["Color"].default_value = (0.290, 0.290, 0.290, 1.0)
+    background.inputs["Strength"].default_value = 1.0
+    scene.world = world
+    sun = bpy.data.lights.new("PreviewSun", "SUN")
+    sun.energy = 3.0
+    sun_object = bpy.data.objects.new("PreviewSun", sun)
+    scene.collection.objects.link(sun_object)
+    sun_object.rotation_euler = (math.radians(50.0), 0.0, math.radians(-30.0))
+    for name, image_name in (("VIS_body", "body_atlas"), ("VIS_head", "head_atlas")):
+        obj = bpy.data.objects[name]
+        obj.data.materials.clear()
+        obj.data.materials.append(preview_material(f"{name}_preview", bpy.data.images[image_name]))
+
+
 def render_previews(out, arm):
     import bpy
     scene = bpy.context.scene
-    scene.render.engine = "BLENDER_WORKBENCH"
-    scene.display.shading.light = "STUDIO"
-    scene.display.shading.color_type = "TEXTURE"
-    scene.display.shading.show_shadows = False
-    scene.display.shading.show_cavity = False
+    apply_preview_look(scene)
     scene.render.resolution_x, scene.render.resolution_y = 600, 800
     scene.render.resolution_percentage = 100
     camera = bpy.data.objects.new("QA_camera", bpy.data.cameras.new("QA_camera"))
