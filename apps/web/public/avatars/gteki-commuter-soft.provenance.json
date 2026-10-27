@@ -2,8 +2,8 @@
   "file": "apps/web/public/avatars/gteki-commuter-soft.glb",
   "issue": "#339",
   "candidate": "A2 v2: soft-stylized silhouette sample (hand-built from primitives), open coat, cream knit, layered bob, painted toon atlases",
-  "sha256": "13da814df7b2afa586e4d3cf7f4f4f932dd0b8923a7af722553d5df722146370",
-  "bytes": 543448,
+  "sha256": "d070c327a0a13a5df780d5fffa5e9c5679cf31d6a0f526fdd0f4892cc72aaa11",
+  "bytes": 543444,
   "license_spdx": "CC-BY-4.0",
   "attribution": "GTEki contributors",
   "base_mesh": "none (primitives)",
@@ -17,6 +17,6 @@
   "clip_authorship": "Authored by GTEki contributors in Blender from code (no motion capture, no third-party clips); CC-BY-4.0",
   "generator": "tools/blender/character/build_commuter_soft.py, Blender 5.2.2 LTS (headless, -b) with the bundled glTF 2.0 exporter",
   "triangles": 3756,
-  "texture_bytes": 61998,
+  "texture_bytes": 61995,
   "budget": "high tier: <=12000 triangles, <=3 primitives per visual node, <=1024^2 textures (body 1024^2, head 512^2); this sample stays under 5000 triangles by design"
 }
