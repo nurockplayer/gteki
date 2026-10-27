@@ -32,6 +32,7 @@ function stubDocument() {
       const state: Record<string, unknown> = { font: "16px sans" };
       const context = new Proxy(state, {
         get(t, k: string) {
+          if (k === "createLinearGradient") return () => ({ addColorStop: () => undefined });
           if (k === "measureText")
             return (text: string) => ({
               width: [...text].reduce((w, ch) => w + (ch.charCodeAt(0) > 0x2e7f ? 1 : /\d/.test(ch) ? 0.6 : 0.56), 0)
@@ -96,24 +97,24 @@ describe("placement maths", () => {
     expect(placed.find((p) => p.row === "r-win")!.yawDeg).toBe(90);
   });
 
-  it("puts one sign per shop on its widest placed row's fascia, 0.16 m in front, never wider than 4.8 m", () => {
+  it("puts one sign per shop on its widest placed row's fascia, 0.148 m in front, fitting the fascia", () => {
     const [sign, ...rest] = shopSigns([shop], [door, windowRow, lowRow], pieces);
     expect(rest).toEqual([]);
-    expect(sign).toMatchObject({ shop: "s", ja: "店", en: "Shop", width: 4, height: SIGN_HEIGHT_M, yawDeg: 90 });
+    expect(sign).toMatchObject({ shop: "s", ja: "店", en: "Shop", width: 3.9, height: SIGN_HEIGHT_M * 1.15, yawDeg: 90 });
     expect(sign!.x).toBeCloseTo(-20 + SIGN_OFFSET_M, 12);
     expect(sign!.y).toBe(30);
     expect(sign!.z).toBeCloseTo(12 + (2.2 + 0.3) * 1.15, 12);
     const wide = { ...windowRow, opening_id: "r-wide", polygon_ids: ["p-wide"], width: 6 };
-    expect(shopSigns([{ ...shop, openings: ["p-wide"] }], [wide], pieces)[0]!.width).toBe(SIGN_MAX_WIDTH_M);
+    expect(shopSigns([{ ...shop, openings: ["p-wide"] }], [wide], pieces)[0]!.width).toBe(SIGN_MAX_WIDTH_M - 0.1);
     // A shop with no placed row (all under 1.8 m) gets no sign.
     expect(shopSigns([{ ...shop, openings: ["p-low"] }], [lowRow], pieces)).toEqual([]);
   });
 
-  it("paints dark accents light and light accents dark", () => {
+  it("uses accents darkened to legible luminance", () => {
     expect(relativeLuminance("#000000")).toBe(0);
     expect(relativeLuminance("#f4f2ee")).toBeGreaterThan(0.6);
-    expect(signTextColour("#8a5a3c")).toBe("#ffffff");
-    expect(signTextColour("#f4f2ee")).toBe("#1f2328");
+    expect(signTextColour("#8a5a3c")).toBe("#8a5a3c");
+    expect(relativeLuminance(signTextColour("#f4f2ee"))).toBeLessThanOrEqual(0.25);
   });
 });
 
@@ -209,6 +210,21 @@ describe("visual only", () => {
     expect(stats.signTriangles).toBe(2 * loaded.signs.length);
     expect(stats.trianglesAllTiles).toBe(loaded.placements.length * 2 * 12); // 2 fake parts, 12 triangles each
     expect(stats.drawCallsAllTiles).toBe(group.children.filter((o) => (o as THREE.InstancedMesh).isInstancedMesh).length);
+    loaded.dispose();
+  });
+
+  it("replaces the dark reveal on instanced meshes with a lit interior", async () => {
+    const loaded = await loadShopKit(THREE, host(all("high"), async (uri) => {
+      const gltf = fakeShop(uri, 1);
+      const reveal = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshStandardMaterial({ name: "gteki_reveal_dark" }));
+      reveal.name = "VIS_reveal";
+      gltf.scene.children[0]!.add(reveal);
+      return gltf;
+    }), kit, shops, openings, false);
+    const { group } = loaded.build(THREE, env, toRenderer);
+    const instances = group.children.filter((o) => (o as THREE.InstancedMesh).isInstancedMesh) as THREE.InstancedMesh[];
+    expect(instances.every((o) => (o.material as THREE.Material).name !== "gteki_reveal_dark")).toBe(true);
+    expect(instances.some((o) => (o.material as THREE.MeshBasicMaterial).isMeshBasicMaterial && (o.material as THREE.MeshBasicMaterial).map)).toBe(true);
     loaded.dispose();
   });
 

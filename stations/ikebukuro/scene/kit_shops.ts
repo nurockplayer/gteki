@@ -63,9 +63,9 @@ export const SHOP_USE = {
 export const MIN_SHOP_ROW_M = 1.8;
 /** The piece's back plane stands this far in front of the opening plane (m). */
 export const SHOP_BACK_OFFSET_M = 0.01;
-/** The sign quad stands this far in front of the opening plane (m; the piece's front face is at 0.14). */
-export const SIGN_OFFSET_M = 0.16;
-export const SIGN_HEIGHT_M = 0.42;
+/** The sign quad stands this far in front of the opening plane (m; the fascia face is at 0.128). */
+export const SIGN_OFFSET_M = 0.148;
+export const SIGN_HEIGHT_M = 0.5;
 export const SIGN_MAX_WIDTH_M = 4.8;
 /** Height of the fascia band above the glass top (m), in the piece's own frame. */
 export const FASCIA_BAND_M = 0.6;
@@ -177,8 +177,8 @@ export function shopPlacements(
 }
 
 /**
- * Pure: one sign per shop with non-empty `sign.ja`, on the fascia of its widest placed row (max 4.8 m wide, 0.42 m
- * tall, centred in the 0.6 m band above the glass top), 0.16 m in front of the opening plane.
+ * Pure: one sign per shop with non-empty `sign.ja`, on the fascia of its widest placed row (max 4.8 m wide less 0.1 m, 0.5 × sy m
+ * tall, centred in the 0.6 m band above the glass top), 0.148 m in front of the opening plane.
  */
 export function shopSigns(
   shops: readonly Shop[],
@@ -208,8 +208,8 @@ export function shopSigns(
       y: row.centre[1] + Math.sin(row.normal_deg * DEG) * SIGN_OFFSET_M,
       z: row.base_z + (spec.glass_top_m + FASCIA_BAND_M / 2) * sy,
       yawDeg: (row.normal_deg + 90) % 360,
-      width: Math.min(SIGN_MAX_WIDTH_M, row.width),
-      height: SIGN_HEIGHT_M,
+      width: Math.min(SIGN_MAX_WIDTH_M, row.width) - 0.1,
+      height: SIGN_HEIGHT_M * sy,
     });
   }
   return out;
@@ -226,10 +226,20 @@ export function relativeLuminance(hex: string): number {
   return 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
 }
 
-/** Sign type colour: white on a dark accent, charcoal on a light one (luminance > 0.6). */
-export const signTextColour = (accent: string) => (relativeLuminance(accent) > 0.6 ? "#1f2328" : "#ffffff");
+/** Darken light accents for legible lettering on the pale sign face. */
+export function signTextColour(accent: string): string {
+  if (relativeLuminance(accent) <= 0.25) return accent;
+  const rgb = [1, 3, 5].map((i) => parseInt(accent.slice(i, i + 2), 16));
+  let scale = 1;
+  let colour = accent;
+  while (relativeLuminance(colour) > 0.25) {
+    scale -= 0.01;
+    colour = `#${rgb.map((c) => Math.round(c * scale).toString(16).padStart(2, "0")).join("")}`;
+  }
+  return colour;
+}
 
-export const SIGN_PX_PER_M = 256;
+export const SIGN_PX_PER_M = 320;
 export const SIGN_GUTTER_PX = 8;
 
 interface SignSlot {
@@ -254,25 +264,28 @@ function paintSignAtlas(signs: readonly ShopSign[], pxPerM: number): { canvas: H
     const slot = { x: SIGN_GUTTER_PX, y, w: dims[i]!.w, h: dims[i]!.h };
     slots.push(slot);
     y += slot.h + SIGN_GUTTER_PX;
-    g.fillStyle = sign.accent;
+    g.fillStyle = "#fbfaf7";
     g.fillRect(slot.x, slot.y, slot.w, slot.h);
-    g.fillStyle = signTextColour(sign.accent);
-    g.textAlign = "center";
+    g.fillStyle = sign.accent;
+    g.fillRect(slot.x, slot.y + slot.h * 0.88, slot.w, slot.h * 0.12);
+    g.textAlign = "left";
     g.textBaseline = "middle";
-    const pad = Math.round(slot.h * 0.06);
-    const fit = (text: string, px: number, weight: number) => {
-      g.font = `${weight} ${px}px ${FONT}`;
-      const measured = g.measureText(text).width;
-      const room = Math.max(1, slot.w - 2 * pad);
-      return measured > room ? Math.max(1, Math.floor(px * room / measured)) : px;
-    };
-    const jaPx = fit(sign.ja, Math.round(slot.h * 0.46), 700);
-    g.font = `700 ${jaPx}px ${FONT}`;
-    g.fillText(sign.ja, slot.x + slot.w / 2, slot.y + slot.h * 0.38);
+    const jaSize = slot.h * 0.62, enSize = slot.h * 0.22;
+    g.font = `700 ${jaSize}px ${FONT}`;
+    const jaWidth = g.measureText(sign.ja).width;
+    g.font = `500 ${enSize}px ${FONT}`;
+    const enWidth = sign.en ? g.measureText(sign.en).width : 0;
+    const gap = sign.en ? slot.h * 0.12 : 0;
+    const scale = Math.min(1, slot.w * 0.88 / (jaWidth + gap + enWidth));
+    const x = slot.x + (slot.w - (jaWidth + gap + enWidth) * scale) / 2;
+    const textY = slot.y + slot.h * 0.44;
+    g.fillStyle = signTextColour(sign.accent);
+    g.font = `700 ${jaSize * scale}px ${FONT}`;
+    g.fillText(sign.ja, x, textY);
     if (sign.en) {
-      const enPx = fit(sign.en, Math.round(slot.h * 0.2), 500);
-      g.font = `500 ${enPx}px ${FONT}`;
-      g.fillText(sign.en, slot.x + slot.w / 2, slot.y + slot.h * 0.78);
+      g.fillStyle = "#5b6168";
+      g.font = `500 ${enSize * scale}px ${FONT}`;
+      g.fillText(sign.en, x + (jaWidth + gap) * scale, textY);
     }
   });
   return { canvas: page, slots };
@@ -323,6 +336,18 @@ export async function loadShopKit(
       const gltf = await host.loadGlb(uri);
       const parts = visibleParts(THREE, gltf);
       if (!parts.length) throw new Error(`${uri} has no visible mesh`);
+      for (const part of parts) {
+        if (part.material.name !== "gteki_reveal_dark") continue;
+        const pos = part.geometry.getAttribute("position");
+        part.geometry.computeBoundingBox();
+        const bounds = part.geometry.boundingBox!;
+        const uv = new Float32Array(pos.count * 2);
+        for (let i = 0; i < pos.count; i++) {
+          uv[i * 2] = (pos.getX(i) - bounds.min.x) / (bounds.max.x - bounds.min.x);
+          uv[i * 2 + 1] = (pos.getY(i) - bounds.min.y) / (bounds.max.y - bounds.min.y);
+        }
+        part.geometry.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+      }
       assets.set(id, { gltf, parts });
     } catch (err) {
       console.warn(`[ikebukuro] shop kit: ${id}: ${err instanceof Error ? err.message : String(err)}; keeping the PLATEAU panels`);
@@ -345,8 +370,41 @@ export async function loadShopKit(
         drawCallsAllTiles: 0, trianglesAllTiles: 0, trianglesWorstTile: 0,
         signs: 0, signDrawCalls: 0, signTriangles: 0,
       };
+      let interior: THREE_NS.MeshBasicMaterial | undefined;
+      const interiorOf = () => {
+        if (interior) return interior;
+        const canvas = document.createElement("canvas");
+        canvas.width = canvas.height = 512;
+        const g = canvas.getContext("2d")!;
+        const gradient = g.createLinearGradient(0, 0, 0, 512);
+        gradient.addColorStop(0, "#fff3dc");
+        gradient.addColorStop(0.55, "#f6d3a1");
+        gradient.addColorStop(1, "#c9a073");
+        g.fillStyle = gradient;
+        g.fillRect(0, 0, 512, 512);
+        g.fillStyle = "#fff8e9";
+        g.fillRect(0, 0, 512, 512 * 0.08);
+        let seed = 61;
+        const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+        const colours = ["#b99b7c", "#c7b09a", "#a9aaa0", "#d7b896"];
+        for (const y of [190, 300, 410]) {
+          g.fillStyle = "rgba(138,106,74,0.35)";
+          g.fillRect(0, y, 512, 9);
+          for (let x = 20; x < 490; x += 40) {
+            g.fillStyle = colours[Math.floor(rnd() * colours.length)]!;
+            const h = 20 + rnd() * 32;
+            g.fillRect(x, y - h, 18 + rnd() * 12, h);
+          }
+        }
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        interior = new THREE.MeshBasicMaterial({ map: texture, toneMapped: false });
+        owned.push(texture, interior);
+        return interior;
+      };
       const lit = new Map<THREE_NS.Material, THREE_NS.Material>();
       const litOf = (src: THREE_NS.Material) => {
+        if (src.name === "gteki_reveal_dark") return interiorOf();
         let m = lit.get(src);
         if (!m) {
           m = src.clone();
