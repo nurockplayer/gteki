@@ -63,11 +63,11 @@ slideAlong	function	apps/web/src/explorer/bodyCollision.ts	124
 CameraCut	class	apps/web/src/explorer/cameraCut.ts	16
 injectCut	function	apps/web/src/explorer/cameraCut.ts	158
 contactShadow	function	apps/web/src/explorer/contactShadow.ts	7
-ExplorerMode	type	apps/web/src/explorer/explorer.ts	50
-ExplorerPose	interface	apps/web/src/explorer/explorer.ts	52
-ExplorerOptions	interface	apps/web/src/explorer/explorer.ts	54
-ExplorerEvents	interface	apps/web/src/explorer/explorer.ts	76
-Explorer	class	apps/web/src/explorer/explorer.ts	183
+ExplorerMode	type	apps/web/src/explorer/explorer.ts	51
+ExplorerPose	interface	apps/web/src/explorer/explorer.ts	53
+ExplorerOptions	interface	apps/web/src/explorer/explorer.ts	55
+ExplorerEvents	interface	apps/web/src/explorer/explorer.ts	77
+Explorer	class	apps/web/src/explorer/explorer.ts	184
 FloorReflectionSettings	interface	apps/web/src/explorer/floorReflectionPass.ts	12
 FLOOR_REFLECTION_DEFAULTS	const	apps/web/src/explorer/floorReflectionPass.ts	26
 FloorReflectionPass	class	apps/web/src/explorer/floorReflectionPass.ts	138
@@ -106,6 +106,7 @@ R	const	apps/web/src/explorer/geometry.ts	8
 ribbonGeometry	function	apps/web/src/explorer/geometry.ts	14
 edgePoints	function	apps/web/src/explorer/geometry.ts	55
 chevronTexture	function	apps/web/src/explorer/geometry.ts	72
+dashTexture	function	apps/web/src/explorer/geometry.ts	98
 GraphView	interface	apps/web/src/explorer/graphView.ts	16
 buildGraphView	function	apps/web/src/explorer/graphView.ts	26
 GUIDE_TIERS	const	apps/web/src/explorer/guidePace.ts	6
@@ -238,6 +239,7 @@ castAll	function	apps/web/src/explorer/raycast.ts	75
 castCamera	function	apps/web/src/explorer/raycast.ts	89
 keepBelowBlockers	function	apps/web/src/explorer/raycast.ts	111
 cuttableSigns	function	apps/web/src/explorer/raycast.ts	128
+unmodelledRuns	function	apps/web/src/explorer/routeGaps.ts	13
 SHADOW_HALF_EXTENT_M	const	apps/web/src/explorer/shadows.ts	7
 SHADOW_MAP_SIZE	const	apps/web/src/explorer/shadows.ts	8
 SHADOW_RADIUS	const	apps/web/src/explorer/shadows.ts	10
