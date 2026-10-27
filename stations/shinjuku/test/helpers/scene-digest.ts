@@ -184,13 +184,19 @@ export function stationDigest(built: ReturnType<typeof buildStation>): StationDi
 
 export type FullDigest = { protect: ProtectDigest; station: StationDigest; scene: Record<"low" | "high", Digest> };
 
-/** Stub the canvas the texture code draws on (geometry only), run `fn`, restore. */
+/** Stub the canvas the texture code draws on (geometry only), run `fn`, restore. When `fn` returns a promise
+ * (buildScene is async while the kit swap is on, which is the default) the stub stays until it settles. */
 export function withCanvasStub<T>(fn: () => T): T {
   const context = new Proxy({}, { get: (_t, key) => key === "createLinearGradient" || key === "createRadialGradient" ? () => ({ addColorStop() {} }) : () => undefined });
   const g = globalThis as { document?: unknown };
   const before = g.document;
   g.document = { createElement: () => ({ width: 1, height: 1, getContext: () => context }) };
-  try { return fn(); } finally { g.document = before; }
+  const restore = () => { g.document = before; };
+  let out: T;
+  try { out = fn(); } catch (err) { restore(); throw err; }
+  if (out instanceof Promise) return out.finally(restore) as unknown as T;
+  restore();
+  return out;
 }
 
 export function protectOnly(bundle: StationBundle, plan: Plan, options?: Parameters<typeof protectFareAndAccess>[3]) {

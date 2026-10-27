@@ -116,8 +116,8 @@ export function combRunM(params: Record<string, unknown>): number | null {
 }
 
 /**
- * `escalator_dressing` with parts [comb, newel]: origin on the bottom comb plate line, rising toward -Z. Fits when
- * rise_mm, the step width and the comb-to-comb run match the drawn run.
+ * `escalator_dressing` with parts [balustrade, handrail, newel, comb]: origin on the bottom comb plate line,
+ * rising toward -Z. Fits when rise_mm, the step width and the comb-to-comb run match the drawn run.
  */
 export function escalatorPlacement(a: RunAnchor, asset: KitAsset): Fitted | null {
   const rise = num(asset.params.rise_mm), width = num(asset.params.width_mm), comb = combRunM(asset.params);
@@ -173,10 +173,10 @@ export function planKitPlacements(input: PlaceInput): PlaceResult {
   const log = input.log ?? (() => {});
   const placeable = input.placeable ?? new Set((Object.keys(ROLE_REPLACES) as KitRole[]).filter((r) => ROLE_REPLACES[r].hooked));
   const gaps: KitGap[] = [];
-  const candidates: KitPlacement[] = [];
+  const candidates: (KitPlacement & { length: number })[] = [];
   const dropped: KitDrop[] = [];
 
-  const consider = <A extends { key: string; floorId: string }>(role: KitRole, list: A[], place: (a: A, asset: KitAsset) => Fitted | null) => {
+  const consider = <A extends { key: string; floorId: string }>(role: KitRole, list: A[], place: (a: A, asset: KitAsset) => Fitted | null, length: (a: A) => number = () => 0) => {
     if (!list.length) return;
     const disabled = ROLE_DISABLED[role];
     if (disabled) {
@@ -184,6 +184,9 @@ export function planKitPlacements(input: PlaceInput): PlaceResult {
       return;
     }
     if (!placeable.has(role)) {
+      // A caller that names its roles (the shipping default is the escalator role only) left this one out on
+      // purpose, so it is not a gap. Without a caller list, a role the build cannot replace is a gap.
+      if (input.placeable) return;
       gaps.push({ role, anchors: list.length, reason: "the build does not record this role's placeholder geometry yet; placing a piece would double it" });
       return;
     }
@@ -203,7 +206,7 @@ export function planKitPlacements(input: PlaceInput): PlaceResult {
       if (!chosen) { unfit++; dropped.push({ role, anchorKey: a.key, assetId: pool[0]!.id, reason: "no piece fits this anchor" }); continue; }
       candidates.push({
         role, anchorKey: a.key, assetId: chosen.asset.id, rank: ROLE_RANK[role], floorId: a.floorId,
-        position: chosen.t.position, yaw: chosen.t.yaw, replaces: ROLE_REPLACES[role].group,
+        position: chosen.t.position, yaw: chosen.t.yaw, replaces: ROLE_REPLACES[role].group, length: length(a),
       });
     }
     if (unfit === list.length) gaps.push({ role, anchors: list.length, reason: `${manifest.tier} manifest has ${role} pieces, none fits any of the ${list.length} anchors` });
@@ -211,13 +214,16 @@ export function planKitPlacements(input: PlaceInput): PlaceResult {
 
   consider("gate", anchors.gates, gatePlacement);
   consider("lift", anchors.lifts, liftPlacement);
-  consider("stairs", anchors.runs.filter((r) => r.role === "stairs"), stairPlacement);
-  consider("escalator", anchors.runs.filter((r) => r.role === "escalator"), escalatorPlacement);
+  const runLength = (a: RunAnchor) => runGeometry(a).length;
+  consider("stairs", anchors.runs.filter((r) => r.role === "stairs"), stairPlacement, runLength);
+  consider("escalator", anchors.runs.filter((r) => r.role === "escalator"), escalatorPlacement, runLength);
   consider("exit", anchors.exits, exitPlacement);
   consider("toilet", anchors.toilets, () => null); // disabled in config.ts: reported as a gap, never placed
 
-  // Highest-ranked first; drop from the tail as soon as the budget is breached.
-  candidates.sort((a, b) => a.rank - b.rank || a.anchorKey.localeCompare(b.anchorKey));
+  // Highest-ranked first; inside a rank the longest drawn run goes first (the 35.6 m m3-m6 bank and the 30 m
+  // m1-m3 bank are what the guided walks ride), then the anchor key; drop from the tail as soon as the budget is
+  // breached. `length` is the run anchor's plan length (hypot of lo -> hi in x, y), the length the fit check uses.
+  candidates.sort((a, b) => a.rank - b.rank || b.length - a.length || a.anchorKey.localeCompare(b.anchorKey));
   const placed: KitPlacement[] = [];
   let cut: string | null = null;
   for (const c of candidates) {
