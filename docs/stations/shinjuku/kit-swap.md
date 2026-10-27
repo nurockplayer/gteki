@@ -69,7 +69,7 @@ output. The coordinator will do this.
 ## 3. Budget (director ruling, per scene)
 
 +30 draws, +60,000 triangles, +3 MB geometry (decimal), 8 MB GPU textures (meshopt + KTX2).
-`planKitPlacements` sorts placements by (role rank, anchor key) and keeps the longest prefix inside every
+`planKitPlacements` sorts placements by (role rank, then the drawn run length descending, then anchor key) and keeps the longest prefix inside every
 cap; the rest are dropped, logged as `kit swap: dropped ...`, and listed in `report.dropped`.
 Draws are counted as distinct (level, material) batches; material keys strip the `~<asset_id>` suffix of
 AO-baked clones (`extras.gteki_name`, falling back to the material name). Runtime batching merges those clones per floor only when their retained texture identities match and clears
