@@ -500,8 +500,8 @@ EdgeAudit	interface	packages/godot/src/route-clip-audit.ts	33
 SceneProbe	interface	packages/godot/src/route-clip-audit.ts	38
 loadScene	function	packages/godot/src/route-clip-audit.ts	42
 sceneProbe	function	packages/godot/src/route-clip-audit.ts	68
-auditPolyline	function	packages/godot/src/route-clip-audit.ts	105
-violations	const	packages/godot/src/route-clip-audit.ts	152
+auditPolyline	function	packages/godot/src/route-clip-audit.ts	106
+violations	const	packages/godot/src/route-clip-audit.ts	158
 WALKABLE_ROLES	const	packages/godot/src/scene-roles.ts	25
 COLLIDER_ROLES	const	packages/godot/src/scene-roles.ts	26
 CAMERA_ROLES	const	packages/godot/src/scene-roles.ts	27

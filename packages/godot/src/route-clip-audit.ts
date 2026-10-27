@@ -76,15 +76,16 @@ export function sceneProbe(scene: StationScene): SceneProbe {
 function cross2(a: { x: number; y: number }, b: { x: number; y: number }, c: { x: number; y: number }): number {
   return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
-function segmentsCross(p: { x: number; y: number }, q: { x: number; y: number }, w: WallSegment): boolean {
+/** Where p→q crosses the wall in plan, as a fraction along p→q; null when it doesn't. */
+function segmentsCross(p: { x: number; y: number }, q: { x: number; y: number }, w: WallSegment): number | null {
   const d1 = cross2(w.a, w.b, p), d2 = cross2(w.a, w.b, q), d3 = cross2(p, q, w.a), d4 = cross2(p, q, w.b);
   if (d1 === 0 && d2 === 0) {
     // Collinear: running along inside the wall counts when the two segments overlap.
     const ax = Math.abs(w.b.x - w.a.x) >= Math.abs(w.b.y - w.a.y) ? "x" : "y";
     const [w0, w1] = [Math.min(w.a[ax], w.b[ax]), Math.max(w.a[ax], w.b[ax])], [s0, s1] = [Math.min(p[ax], q[ax]), Math.max(p[ax], q[ax])];
-    return s1 > w0 && s0 < w1;
+    return s1 > w0 && s0 < w1 ? 0 : null;
   }
-  return d1 * d2 < 0 && d3 * d4 < 0;
+  return d1 * d2 < 0 && d3 * d4 < 0 ? d1 / (d1 - d2) : null;
 }
 
 /** Resample a polyline every STEP_M (keeping every vertex), z linear along each piece. */
@@ -134,8 +135,13 @@ export function auditPolyline(probe: SceneProbe, points: readonly PolylinePoint[
       ray.far = len;
       if (castCamera(ray, probe.collider, twoSided).length > 0) crossed = true;
     }
-    const zLo = Math.min(p.z, s.z) + BODY_LOW_M, zHi = Math.max(p.z, s.z) + BODY_HIGH_M;
-    for (const w of probe.walls) if (w.zMax > zLo && w.zMin < zHi && segmentsCross(p, s, w)) { crossed = true; break; }
+    for (const w of probe.walls) {
+      const t = segmentsCross(p, s, w);
+      if (t === null) continue;
+      // The body's height where the route crosses the wall in plan, not the whole segment's span.
+      const z = t === 0 && p.z !== s.z ? Math.min(p.z, s.z) : p.z + (s.z - p.z) * t;
+      if (w.zMax > z + BODY_LOW_M && w.zMin < z + BODY_HIGH_M) { crossed = true; break; }
+    }
     if (crossed) { wallHits++; if (!worst) worst = `crosses a wall near (${s.x.toFixed(1)}, ${s.y.toFixed(1)}, z ${s.z.toFixed(2)})`; }
   });
   return { samples: samples.length, offFloor, noFloor, maxAbsDzM, wallHits, worst };
@@ -153,6 +159,7 @@ export const violations = (a: Pick<EdgeAudit, "offFloor" | "noFloor" | "wallHits
 
 function additionsEdgeFiles(addDir: string): Map<string, string> {
   const files = new Map<string, string>();
+  if (!fs.existsSync(addDir)) return files;
   for (const name of fs.readdirSync(addDir).filter((n) => /^graph(\..+)?\.json$/.test(n)).sort()) {
     const graph = JSON.parse(fs.readFileSync(path.join(addDir, name), "utf8")) as { edges?: { id: string }[] };
     for (const e of graph.edges ?? []) files.set(e.id, `additions/${path.basename(addDir)}/${name}`);

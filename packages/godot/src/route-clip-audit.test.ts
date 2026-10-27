@@ -30,4 +30,7 @@ describe("route clip audit", () => {
     expect(auditPolyline(probe, line([30, 0, 0], [31, 0, 0])).noFloor).toBe(3);
     expect(auditPolyline(probe, line([-8, 3, 0], [-4, 3, 0])).wallHits).toBeGreaterThan(0);
   });
+  it("passes a lift ride over a low scene wall", () => {
+    expect(auditPolyline(probe, line([-5, 2.8, 0], [-5, 3.2, 10]), { skipInteriorFloor: true }).wallHits).toBe(0);
+  });
 });
