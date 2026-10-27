@@ -9,7 +9,7 @@ const wall = new THREE.Mesh(new THREE.BoxGeometry(0.2, 3, 20).translate(5, 1.5, 
 const mezzanine = new THREE.Mesh(new THREE.PlaneGeometry(4, 4).rotateX(-Math.PI / 2).translate(-6, 2.5, 0), new THREE.MeshBasicMaterial());
 const root = new THREE.Group().add(floor, wall, mezzanine);
 root.updateMatrixWorld(true);
-const probe = sceneProbe({ root, walkable: [floor, mezzanine], colliders: [wall] } as never);
+const probe = sceneProbe({ root, walkable: [floor, mezzanine], colliders: [wall], walls: [{ a: { x: -9, y: 3 }, b: { x: -1, y: 3 }, zMin: 0, zMax: 2 }] } as never);
 const line = (...pts: [number, number, number][]): PolylinePoint[] =>
   pts.map(([x, y, z], i) => ({ x, y, z, zKnown: true, stepIndex: i - 1, floorId: "f" }));
 
@@ -28,5 +28,6 @@ describe("route clip audit", () => {
   it("counts a wall crossing and samples with no floor below", () => {
     expect(auditPolyline(probe, line([0.2, 0, 0], [8.2, 0, 0])).wallHits).toBe(1);
     expect(auditPolyline(probe, line([30, 0, 0], [31, 0, 0])).noFloor).toBe(3);
+    expect(auditPolyline(probe, line([-8, 3, 0], [-4, 3, 0])).wallHits).toBeGreaterThan(0);
   });
 });

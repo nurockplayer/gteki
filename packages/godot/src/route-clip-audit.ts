@@ -2,7 +2,7 @@
  * Headless clip audit of a private build: does each private-addition edge, drawn the way the explorer draws a
  * route (routePolyline), stay on the scene's floor and out of its walls?
  *   GTEKI_PRIVATE_DIR=<dir> pnpm tsx packages/godot/src/route-clip-audit.ts [--station <s>]... [--top 20]
- *     [--route <fromPoiId> <toPoiId>] [--all] [--json <out>]
+ *     [--route <fromPoiId> <toPoiId> (with one --station)] [--all] [--json <out>]
  * Per sample (every 0.5 m): the walkable surface within ±3 m of the drawn height must be within ±0.3 m of it.
  * Between samples, a body-height segment must not cross a collider or a scene wall. Elevator interiors are
  * exempt from the floor check (the car moves between floors). Writes nothing into the private dir: the overlay
@@ -78,6 +78,12 @@ function cross2(a: { x: number; y: number }, b: { x: number; y: number }, c: { x
 }
 function segmentsCross(p: { x: number; y: number }, q: { x: number; y: number }, w: WallSegment): boolean {
   const d1 = cross2(w.a, w.b, p), d2 = cross2(w.a, w.b, q), d3 = cross2(p, q, w.a), d4 = cross2(p, q, w.b);
+  if (d1 === 0 && d2 === 0) {
+    // Collinear: running along inside the wall counts when the two segments overlap.
+    const ax = Math.abs(w.b.x - w.a.x) >= Math.abs(w.b.y - w.a.y) ? "x" : "y";
+    const [w0, w1] = [Math.min(w.a[ax], w.b[ax]), Math.max(w.a[ax], w.b[ax])], [s0, s1] = [Math.min(p[ax], q[ax]), Math.max(p[ax], q[ax])];
+    return s1 > w0 && s0 < w1;
+  }
   return d1 * d2 < 0 && d3 * d4 < 0;
 }
 
@@ -169,6 +175,7 @@ async function main(): Promise<void> {
     else throw new Error(`unknown or incomplete argument: ${args[i]}`);
   }
   if (!privateDir) throw new Error("set GTEKI_PRIVATE_DIR or pass --private <dir>");
+  if (route && stations.length !== 1) throw new Error("--route needs exactly one --station");
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "gteki-clip-"));
   try {
     fs.cpSync(path.join(privateDir, "additions"), path.join(tmp, "additions"), { recursive: true });

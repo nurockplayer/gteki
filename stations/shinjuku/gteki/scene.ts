@@ -66,13 +66,15 @@ export const buildScene: BuildScene = (ctx) => {
 
 /**
  * The part of the bundle the plan was authored for. A private build (GTEKI_PRIVATE_OVERLAY) adds nodes and edges
- * the plan has no heights for; built as geometry they would sit at z 0 and cut through the station. The route
+ * the plan has no heights or walls for; built as geometry they would sit at z 0 or open walls in the station. The route
  * still draws them; the scene does not.
  */
 export function planBundle(bundle: Parameters<BuildScene>[0]["bundle"]): Parameters<BuildScene>[0]["bundle"] {
   const known = new Set(Object.keys((plan as unknown as Plan).nodeRenderZ));
-  if (bundle.nodes.every((n) => known.has(n.id))) return bundle;
-  return { ...bundle, nodes: bundle.nodes.filter((n) => known.has(n.id)), edges: bundle.edges.filter((e) => known.has(e.from) && known.has(e.to)),
+  // Overlay edges are namespaced `p:<station>:` (gteki-private additions/FORMAT.md), also between two plan nodes.
+  const planEdge = (e: { id: string; from: string; to: string }) => !e.id.startsWith("p:") && known.has(e.from) && known.has(e.to);
+  if (bundle.nodes.every((n) => known.has(n.id)) && bundle.edges.every(planEdge)) return bundle;
+  return { ...bundle, nodes: bundle.nodes.filter((n) => known.has(n.id)), edges: bundle.edges.filter(planEdge),
     // A POI keeps the connectors the plan knows; one with none left is not part of this scene.
     pois: bundle.pois.map((p) => ({ ...p, connectorNodeIds: p.connectorNodeIds.filter((id) => known.has(id)) })).filter((p) => p.connectorNodeIds.length > 0) };
 }

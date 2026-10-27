@@ -500,8 +500,8 @@ EdgeAudit	interface	packages/godot/src/route-clip-audit.ts	33
 SceneProbe	interface	packages/godot/src/route-clip-audit.ts	38
 loadScene	function	packages/godot/src/route-clip-audit.ts	42
 sceneProbe	function	packages/godot/src/route-clip-audit.ts	68
-auditPolyline	function	packages/godot/src/route-clip-audit.ts	99
-violations	const	packages/godot/src/route-clip-audit.ts	146
+auditPolyline	function	packages/godot/src/route-clip-audit.ts	105
+violations	const	packages/godot/src/route-clip-audit.ts	152
 WALKABLE_ROLES	const	packages/godot/src/scene-roles.ts	25
 COLLIDER_ROLES	const	packages/godot/src/scene-roles.ts	26
 CAMERA_ROLES	const	packages/godot/src/scene-roles.ts	27
@@ -906,7 +906,7 @@ releaseShinjukuCaches	function	stations/shinjuku/gteki/scene.ts	51
 releaseCaches	const	stations/shinjuku/gteki/scene.ts	54
 buildScene	const	stations/shinjuku/gteki/scene.ts	61
 planBundle	function	stations/shinjuku/gteki/scene.ts	72
-assembleScene	const	stations/shinjuku/gteki/scene.ts	81
+assembleScene	const	stations/shinjuku/gteki/scene.ts	83
 @gteki/station-shinjuku:dev	script	stations/shinjuku/package.json	24
 @gteki/station-shinjuku:build	script	stations/shinjuku/package.json	25
 @gteki/station-shinjuku:preview	script	stations/shinjuku/package.json	26
