@@ -940,7 +940,7 @@ coalesceWallPanels	function	stations/shinjuku/scene/build.ts	312
 cladWallGeometry	function	stations/shinjuku/scene/build.ts	338
 disposeRetiredGeometries	function	stations/shinjuku/scene/build.ts	389
 guardBumpNormals	function	stations/shinjuku/scene/build.ts	465
-buildStation	function	stations/shinjuku/scene/build.ts	500
+buildStation	function	stations/shinjuku/scene/build.ts	519
 contentKey	function	stations/shinjuku/scene/content-key.ts	6
 Fence	interface	stations/shinjuku/scene/fare-fence.ts	19
 FareProtection	interface	stations/shinjuku/scene/fare-fence.ts	28
@@ -1182,11 +1182,12 @@ IDENTITY_ART	const	stations/shinjuku/scene/textures.ts	15
 identityTexture	function	stations/shinjuku/scene/textures.ts	24
 tileTextures	function	stations/shinjuku/scene/textures.ts	75
 tactileTexture	function	stations/shinjuku/scene/textures.ts	133
-wallTexture	function	stations/shinjuku/scene/textures.ts	159
-ceilingTexture	function	stations/shinjuku/scene/textures.ts	215
-SignIcon	type	stations/shinjuku/scene/textures.ts	264
-SIGN_ROW_HEIGHT	const	stations/shinjuku/scene/textures.ts	267
-signTexture	function	stations/shinjuku/scene/textures.ts	269
+escalatorStepTexture	function	stations/shinjuku/scene/textures.ts	163
+wallTexture	function	stations/shinjuku/scene/textures.ts	179
+ceilingTexture	function	stations/shinjuku/scene/textures.ts	235
+SignIcon	type	stations/shinjuku/scene/textures.ts	284
+SIGN_ROW_HEIGHT	const	stations/shinjuku/scene/textures.ts	287
+signTexture	function	stations/shinjuku/scene/textures.ts	289
 RESOLUTION	const	stations/shinjuku/test/fare-boundary-audit.ts	15
 Patch	interface	stations/shinjuku/test/fare-boundary-audit.ts	18
 WalkerAudit	interface	stations/shinjuku/test/fare-boundary-audit.ts	28
