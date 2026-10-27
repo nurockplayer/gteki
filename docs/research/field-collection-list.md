@@ -11,6 +11,7 @@ Consolidated 2026-10-22 from the five research files (R1 to R5) and the existing
 >   - *Surface close-ups* (materials, floors, ceilings, walls with no sign, logo, ad or face in frame) are the only Owner photos that may ship, under OD-13/OD-14 below.
 > - Hours and lift facts recorded at FC-IK-01 and H1/H2 are **on-site observations by the Owner**, dated and timed. They are not JR East data (OD-02 bars JR East page facts, not facts the Owner observes on site).
 > - Record the date and time on every note.
+> - **Printed-relative placements** (merchant lead, director ruling R1, 2026-10-28): when the game places a merchant facade from printed relative text only (e.g. 「正面右手よりすぐ」), that placement gets a field check row here (FC-MER-*). The facade is printed-relative, not surveyed; it moves or goes if the field reading differs.
 > - No measurement inside a paid area unless the item says a ticket is needed (column "Paid?").
 > - Contact no one (Owner decision of 2026-10-22, recorded on #165). Items that need an operator are in "Not collectable by the Owner alone" and are blocked.
 > - The Owner's own surface close-ups ship as CC BY 4.0, attribution "GTEki contributors" (OD-13, decided 2026-10-22, [`owner-decisions-pending.md`](owner-decisions-pending.md)). A surface close-up that unavoidably catches the edge of an operator logo or ad ships only with that region removed or blurred (OD-14, applied narrowly). A photo that frames a sign, logo or ad is a sign photo and never ships, even blurred. Operator photography rules were not checked (`gaps/DR-imagery-materials.md` section 7).
@@ -28,7 +29,7 @@ Consolidated 2026-10-22 from the five research files (R1 to R5) and the existing
 
 **Minutes** are per item as given by the source file, walking between items not included, overlap between neighbouring items not subtracted. "est." marks a figure derived here, not given by a source.
 
-**Source keys.** IK = [`gaps/DR-IK-station-facts.md`](gaps/DR-IK-station-facts.md) section 7. SJ = [`gaps/DR-SJ-station-facts.md`](gaps/DR-SJ-station-facts.md) section 7. CH = [`gaps/DR-changes-since-2023.md`](gaps/DR-changes-since-2023.md) section 7. IMG = [`gaps/DR-imagery-materials.md`](gaps/DR-imagery-materials.md) section 7. SH = [SH](gaps/DR-IK-stepfree-hours-seibu.md) section 7 (R12). SX = [SX](gaps/DR-SJ-exits-aliases-facilities.md) section 7. RT = [RT](gaps/DR-retry-unread-sources-addendum.md) section 7. FV = [FV](gaps/DR-SJ-e27-visual-facts.md) section 7 (E27 visual facts; per OD-30 the FV-E27 photos are the final source for the E27 look). CL = [Ikebukuro field checklist](../../stations/ikebukuro/docs/field-checklist.md) (the exact questions for A1 to H4 are there; they are not copied here). Rank = ranked gap in [`m0-01-coverage-gaps.md`](../gis/research/m0-01-coverage-gaps.md) section 3.
+**Source keys.** IK = [`gaps/DR-IK-station-facts.md`](gaps/DR-IK-station-facts.md) section 7. SJ = [`gaps/DR-SJ-station-facts.md`](gaps/DR-SJ-station-facts.md) section 7. CH = [`gaps/DR-changes-since-2023.md`](gaps/DR-changes-since-2023.md) section 7. IMG = [`gaps/DR-imagery-materials.md`](gaps/DR-imagery-materials.md) section 7. SH = [SH](gaps/DR-IK-stepfree-hours-seibu.md) section 7 (R12). SX = [SX](gaps/DR-SJ-exits-aliases-facilities.md) section 7. RT = [RT](gaps/DR-retry-unread-sources-addendum.md) section 7. FV = [FV](gaps/DR-SJ-e27-visual-facts.md) section 7 (E27 visual facts; per OD-30 the FV-E27 photos are the final source for the E27 look). CL = [Ikebukuro field checklist](../../stations/ikebukuro/docs/field-checklist.md) (the exact questions for A1 to H4 are there; they are not copied here). Rank = ranked gap in [`m0-01-coverage-gaps.md`](../gis/research/m0-01-coverage-gaps.md) section 3. MER = [MER](gaps/DR-IK-merchant-ties.md) section 2 (#209 merchant ties).
 
 **Checklist ids still open per R1 (IK section 7):** A1, A2, A3, B2, B3, B4, B5, B6, C1, D1, F2, F3, G1, G2, H1, H2. The checklist's B1, E1, F1 (verify already-routed exits), H3 (differences from the app; the CH items below are the specific version) and H4 (visual reference; the IMG items below) are not listed by R1 and stay in the checklist.
 
@@ -36,10 +37,11 @@ Consolidated 2026-10-22 from the five research files (R1 to R5) and the existing
 
 **Merged in R13** (new ids folded into existing rows, minutes added only where the new item asks for more, marked est.): FC-SH-03 into FC-IK-02 (same stair heads, +0); FC-SH-06 into H1, H2 (+5 est.); FC-RT-04 into FC-CH-03 (1a and C4 plus the time-limit text, +5 est.); FC-SX-01 into FC-SJ-02 (+0); FC-SX-02 and FC-SX-04 into FC-SJ-04 (+0); FC-SX-03 into FC-SJ-03 (+0); FV-E27-01 and FV-E27-02 into FC-IMG-10 (+10 est.); FV-E27-03 and FV-E27-05 into FC-IMG-07 (+10 est.). FC-SH-01 and FC-SH-02 are the #203 flights (field item I12) and had no earlier row, so they are new rows. Merged ids are not counted in the tier headings, as for FC-IK-03.
 
-## T1: free area, look and count only (6 rows, 10 ids)
+## T1: free area, look and count only (7 rows, 11 ids)
 
 | id | Station | Place | What to observe / measure | Method | Min | Paid? | Unblocks | Source |
 |---|---|---|---|---|---|---|---|---|
+| FC-MER-01 | IK | JR South Gate (南改札), public side (graph `g_jr_s`) | Which opening is the ルミネ池袋 B1 entrance (printed: 「JR池袋駅南改札、正面右手よりすぐ」): side and column counted from the gate line, facing out. The game places its facade there as printed-relative, not surveyed; it moves or goes if the reading differs | look, count columns, write down the entrance sign wording | 5 (est.) | No | #209 merchant facade (ruling R1) | [MER](gaps/DR-IK-merchant-ties.md) |
 | FC-SH-01 | IK | East B1 hall toward exit 35 (`e_hall` to `e_low`, #203 flight a; field item I12) | Is there a ramp, slope, lift or only steps; step count; posted sign wording. No public text states it | look, count steps, write down sign wording | 5 (est.) | No | #203 A1(a), I12; `gap-step-free` | [SH](gaps/DR-IK-stepfree-hours-seibu.md) |
 | FC-SH-02 | IK | South Passage near exit 41 (`s41_j` to `s41_f`, #203 flight b; field item I12) | Same: ramp, slope, lift or only steps; step count; sign wording | look, count steps, write down sign wording | 5 (est.) | No | #203 A1(b), I12; `gap-step-free` | [SH](gaps/DR-IK-stepfree-hours-seibu.md) |
 | FC-SH-05 | IK | Seibu 1F gate frontage, stair 36 and the 東口（南） sign | Printed gate name; whether the signs say 36番 and 東口（南）. Names only, an alias and link check; the Toshima draft exit mapping stays alias-only (OD-22) | look, write down the wording | 5 (est.) | No | Seibu name and link check | [SH](gaps/DR-IK-stepfree-hours-seibu.md) |
@@ -94,7 +96,7 @@ Consolidated 2026-10-22 from the five research files (R1 to R5) and the existing
 
 Totals are item minutes only (no walking, no overlap removed). Order is by the checklist's A to G walking order and by the places the sources give; no map was checked, so adjust on site.
 
-### Ikebukuro: T1 and T2, 250 min of items (175 min facts + 75 min imagery)
+### Ikebukuro: T1 and T2, 255 min of items (180 min facts + 75 min imagery)
 
 | Step | Where | Items | Min |
 |---|---|---|---|
@@ -103,7 +105,7 @@ Totals are item minutes only (no walking, no overlap removed). Order is by the c
 | 3 | West Exit hall and west passage | B2, B3 to B6, C1; add-on `[CH-04]` (hoarding, closures) | 5 + 10 + 5 (est.) |
 | 4 | Same hall, one exit stair | FC-IMG-04 | 20 |
 | 5 | Passage south to the West Exit (South) hall; stairs signed 4 and 5 | D1; FC-RT-03 | 10 + 15 |
-| 6 | South Passage; JR west link; South Passage near exit 41 | F2, F3; FC-SH-02 | 10 + 5 (est.) |
+| 6 | South Passage; JR west link; South Passage near exit 41; JR South Gate public side | F2, F3; FC-SH-02; FC-MER-01 | 10 + 5 (est.) + 5 (est.) |
 | 7 | Central Passage east; East B1 hall toward exit 35 | FC-IK-02 (with FC-SH-03); FC-SH-01 | 10 + 5 (est.) |
 | 8 | ISP and Seibu side | FC-SH-04; FC-SH-05 | 10 + 5 (est.) |
 | 9 | North-east, shopping-park passage | G1, G2 (FC-IK-03) | 15 |
