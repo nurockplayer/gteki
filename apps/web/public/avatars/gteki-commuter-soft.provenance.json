@@ -2,8 +2,8 @@
   "file": "apps/web/public/avatars/gteki-commuter-soft.glb",
   "issue": "#339",
   "candidate": "A2 v2: soft-stylized silhouette sample (hand-built from primitives), open coat, cream knit, layered bob, painted toon atlases",
-  "sha256": "7a5965a99033b7ecdca1c5943d4ad6b2372eb32bf871f71ad3f3a88cf8c0741f",
-  "bytes": 514008,
+  "sha256": "28302ce2d643d108ab1be19f03684838f5e2371fbfc53c1941c863da90410d6b",
+  "bytes": 538764,
   "license_spdx": "CC-BY-4.0",
   "attribution": "GTEki contributors",
   "base_mesh": "none (primitives)",
@@ -13,12 +13,13 @@
     "v2 fix 1 (#339, 2026-10-28): A-line open overcoat with rounded shoulders, arms offset outward as separate tubes with cuffs and hands, big raised triangular lapels, cream knit strip >= 40% of chest width; one solid bob shell with 10 scallops and five broad bangs; head ~10% larger, eyes ~2x, neck short; loafers 1.3x; flatter tote hung from the right shoulder with top at 1.0 m",
     "Materials: one base-colour atlas per mesh (VIS_body 1024^2, VIS_head 512^2), painted procedurally in the script, roughness 1 and metallic 0, flagged gteki_toon=1 (material extras); the Three.js loader clones flagged materials as MeshToonMaterial with a 3-tone ramp",
     "Blink morphs blinkLeft/blinkRight push each eye lens about 5 mm along its normal under the skin, where the painted closed-eye arc sits",
-    "v2 fix 4 (#339, 2026-10-28): the five bang tubes are replaced by one fringe sheet (4 mm proud of the forehead, five rounded scallops, part at x -0.02); the tote strap runs over the right shoulder on the coat surface down to the bag's top corners, no segment above z 1.36 and clear of the head; the upper coat and both skirt panels share one navy paint cell, the skirt top sits 3 mm inside the upper coat hem, and the back vent and yoke line stay"
+    "v2 fix 4 (#339, 2026-10-28): the five bang tubes are replaced by one fringe sheet (4 mm proud of the forehead, five rounded scallops, part at x -0.02); the tote strap runs over the right shoulder on the coat surface down to the bag's top corners, no segment above z 1.36 and clear of the head; the upper coat and both skirt panels share one navy paint cell, the skirt top sits 3 mm inside the upper coat hem, and the back vent and yoke line stay",
+    "v3 (#339, 2026-10-28): whole head scaled 0.82 about the chin (adult proportions, height 1.660 m), eyes 0.8x; shoulders narrowed 8% and sleeves taper 6 cm to 5.2 cm; hem flare +10%; coat open to the hem with no centre-front bridge, inner edges and two buttons painted; trousers 8.8 cm radius at legs x +/-0.098 with one crease; loafers 4 cm longer toe and 1.5 cm heel block; seven-clump bob, single fringe sheet with pointed V scallops; bag 6 cm deep, 18 mm strap, over the right shoulder; skirt top merged with the coat seam (no ledge); yoke line at 1.24 m with a 2 mm step; face and hair paint retuned"
   ],
   "clip_authorship": "Authored by GTEki contributors in Blender from code (no motion capture, no third-party clips); CC-BY-4.0",
   "generator": "tools/blender/character/build_commuter_soft.py, Blender 5.2.2 LTS (headless, -b) with the bundled glTF 2.0 exporter",
-  "triangles": 4088,
-  "texture_bytes": 41866,
+  "triangles": 4332,
+  "texture_bytes": 53359,
   "budget": "high tier: <=12000 triangles, <=3 primitives per visual node, <=1024^2 textures (body 1024^2, head 512^2); this sample stays under 5000 triangles by design",
-  "triangles_note": "4088 exported tris (body 2940, head 1148 from the build report)"
+  "triangles_note": "4332 exported tris (body 3184, head 1148 from the build report)"
 }
