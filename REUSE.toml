@@ -54,6 +54,15 @@ precedence = "override"
 SPDX-FileCopyrightText = "GTEki contributors"
 SPDX-License-Identifier = "CC-BY-4.0"
 
+# #339 soft-stylized silhouette sample: hand-built from Blender primitives with no body generator and
+# no downloaded mesh, so the whole mesh, rig, weights and clips are original work (CC-BY-4.0) under the
+# repo licence. The sidecar records the hash and the build script.
+[[annotations]]
+path = ["apps/web/public/avatars/gteki-commuter-soft.glb", "apps/web/public/avatars/gteki-commuter-soft.provenance.json"]
+precedence = "override"
+SPDX-FileCopyrightText = "GTEki contributors"
+SPDX-License-Identifier = "CC-BY-4.0"
+
 # #339 candidate B (ready-rigged CC0): Quaternius Universal Animation Library (models by @Quaternius)
 # and KayKit Adventurers 2.0 Rogue (Kay Lousberg) are dedicated to the public domain under CC0 1.0.
 # The GLBs are edited derivatives of those sources and stay CC0-1.0; each sidecar records the source

@@ -158,6 +158,7 @@ describe("avatar flag", () => {
     expect(avatarGlbUrl(new URLSearchParams("avatar=glb"), page)).toBe(DEFAULT_AVATAR_GLB_URL);
   });
   it.each([
+    ["soft", "/avatars/gteki-commuter-soft.glb"],
     ["ual", "/avatars/gteki-commuter-ual.glb"],
     ["kaykit", "/avatars/gteki-commuter-kaykit.glb"],
   ])("loads the %s ready-rigged CC0 candidate", (mode, expected) => {

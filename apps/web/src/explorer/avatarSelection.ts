@@ -6,10 +6,12 @@ import { sanitizeAvatarFade } from "./avatarDither.ts";
 /** #339 X1: Lane E's E1 asset will occupy this path; a missing asset safely keeps the procedural rig. */
 export const DEFAULT_AVATAR_GLB_URL = "/avatars/commuter.glb";
 
-/** #339 dev-only candidates: `?avatar=mpfb` is Lane E candidate A (MPFB2 route); `?avatar=ual` and
- *  `?avatar=kaykit` are candidate B, the two ready-rigged CC0 models (Quaternius, KayKit Rogue). */
+/** #339 dev-only candidates: `?avatar=mpfb` is Lane E candidate A (MPFB2 route); `?avatar=soft` is the
+ *  hand-built soft-stylized silhouette sample; `?avatar=ual` and `?avatar=kaykit` are candidate B, the
+ *  two ready-rigged CC0 models (Quaternius, KayKit Rogue). */
 const AVATAR_CANDIDATES = new Map<string, string>([
   ["mpfb", "/avatars/gteki-commuter-mpfb.glb"],
+  ["soft", "/avatars/gteki-commuter-soft.glb"],
   ["ual", "/avatars/gteki-commuter-ual.glb"],
   ["kaykit", "/avatars/gteki-commuter-kaykit.glb"],
 ]);
