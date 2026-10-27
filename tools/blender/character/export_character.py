@@ -277,7 +277,7 @@ def exporter_options(properties):
     return required
 
 
-def export_character(character_id, tier, out_dir, clips=None, description=PROVENANCE):
+def export_character(character_id, tier, out_dir, clips=None, description=PROVENANCE, textured=False):
     import bpy
 
     # TODO(E1): bake Rigify controls to the §3 skeleton/actions at FPS; decimate
@@ -355,6 +355,7 @@ def export_character(character_id, tier, out_dir, clips=None, description=PROVEN
     bpy.context.view_layer.objects.active = arm
     properties = {prop.identifier: prop for prop in bpy.ops.export_scene.gltf.get_rna_type().properties}
     options = exporter_options(properties)
+    options["export_texcoords"] = bool(textured)  # textured builds keep UVs so the base-colour atlas maps
     # Write through a temporary sibling so a failed validation never replaces a good tier.
     temporary = path.with_name(f".{path.stem}.export.glb")
     try:

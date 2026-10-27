@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Build the #339 soft-stylized commuter silhouette sample from Blender primitives.
+"""Build the #339 soft-stylised commuter sample v2 from Blender primitives.
 
-No body generator and no downloaded mesh: every vertex is generated here from rings, eggs and boxes.
-The rig, clips and export path come from the MPFB build, so the result passes the same validator.
+v2: an open overcoat over a cream knit, a layered bob of opaque locks, wide trousers, loafers, and two
+painted base-colour atlases (body 1024, head 512) for a toon material. No body generator and no downloaded
+mesh: every vertex is generated here. The rig, clips and export path come from the MPFB build.
 
 Usage: Blender -b --factory-startup --python build_commuter_soft.py -- --out <dir> [--preview]
 """
@@ -12,8 +13,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from build_commuter_mpfb import (Animation, build_actions, build_armature, colour,  # noqa: E402
-                                 finish_mesh, triangle_count)
+from build_commuter_mpfb import Animation, build_actions, build_armature, triangle_count  # noqa: E402
 from build_p0_sample import joint_positions as p0_joints  # noqa: E402
 from export_character import export_character  # noqa: E402
 from validate_character import BLINKS, FPS, JOINT_PARENTS  # noqa: E402
@@ -22,30 +22,56 @@ CHARACTER_ID = "gteki_commuter_soft"
 DERIVATION = ("original: soft-stylized commuter silhouette hand-built from Blender primitives; "
               "see apps/web/public/avatars/gteki-commuter-soft.provenance.json")
 
-# Look (#339 soft-stylized direction): flat sRGB colours, matching the procedural avatar palette.
-SKIN, HAIR, COAT, CREAM = "#cfa283", "#3b2a20", "#26324b", "#e8dcc4"
-TROUSERS, SHOES, TOTE = "#a8a59a", "#2a2622", "#8a7a66"
-EYE, BROW, MOUTH = "#2a2320", "#3b2a20", "#9a5a4a"
+BODY_ATLAS, HEAD_ATLAS = 1024, 512
+NAVY, NAVY_LIGHT, NAVY_DARK = "#2B3550", "#36435F", "#222B40"
+CREAM, KNIT_RIB, BELT = "#EDE6D8", "#D8CEBA", "#2A2622"
+TAUPE, TAUPE_CREASE, TAUPE_HEM = "#A9A39B", "#948E86", "#8F897F"
+SHOE, SOLE, SHOE_HI = "#8C7766", "#5E4E42", "#9C8775"
+TOTE, TOTE_DARK, STITCH = "#8A7A66", "#6E604F", "#B0A08A"
+SKIN, NECK_SKIN = "#F6D9C6", "#E9C4AE"
+HAIR, HAIR_HI, HAIR_SHADE = "#6B4A3A", "#8A6450", "#4A3228"
+IRIS_TOP, IRIS_BOT, SCLERA, LASH = "#5A3A2A", "#8A5A40", "#F4ECE6", "#2A1E18"
 
-HEM_Z = 0.50
-# 6.2 heads: chin 1.395, crown 1.666 (0.271 m); the bob adds 1.5 cm, so the mesh top is 1.680 m.
-HEAD_CENTRE, HEAD_RADII = (0.0, 0.0, 1.5305), (0.095, 0.105, 0.1355)
-HAIR_VOLUME, HAIR_TEMPLE_Z, HAIR_HEM_Z = 0.015, 1.505, 1.393
-HAIR_Y_SHIFT = -0.006  # a bob carries its volume behind the ears
-HAIR_RING_Z = (HAIR_HEM_Z, 1.425, 1.462, HAIR_TEMPLE_Z, 1.540, 1.570, 1.600, 1.625,
-               1.647, 1.664, 1.674, 1.680)
-EYE_Y, EYE_Z, EYE_RADII = 0.085, 1.522, (0.0161, 0.0080, 0.023)
-HAND_Y = 0.030
-WALK_CROUCH_M = 0.025  # near-straight stance leg; the shared Animation stays on its own default
-# Coat skirt (round 4): split below the hip line into a left and a right panel, each its own edge loop,
-# with the seam at centre front (the coat opening) and centre back (the vent). The panels lap 1.5 cm.
-SKIRT_SPLIT_Z = 0.86
-SKIRT_OVERLAP = math.radians(3.0)  # each panel runs 3 deg past a seam: a 6 deg lap, ~1.5 cm at the hem
-SKIRT_SEGMENTS = 9
+# Body landmarks (metres, Blender Z up, +Y front).
+HEM_Z, COAT_SPLIT_Z, COAT_TOP_Z = 0.50, 0.86, 1.396
+# Coat half-widths (rx, ry) by height: straight to slightly flared, never pinched from chest to hem.
+COAT_PROFILE = [(0.50, 0.240, 0.160), (0.70, 0.226, 0.146), (0.86, 0.212, 0.134), (1.00, 0.198, 0.120),
+                (1.10, 0.186, 0.110), (1.20, 0.178, 0.104), (1.30, 0.170, 0.100), (1.345, 0.150, 0.096),
+                (1.372, 0.118, 0.084), (1.396, 0.088, 0.077)]
+# Front opening half-width: >= 0.05 at the chest, ~0.03 at 1.0 m, open to the hem (trousers show through).
+OPEN_PROFILE = [(0.50, 0.075), (0.86, 0.035), (1.00, 0.030), (1.30, 0.048), (1.345, 0.050), (1.396, 0.030)]
+SKIRT_OVERLAP = math.radians(3.0)  # the two lower panels lap 3 deg past the back vent seam
 SKIRT_THIGH_SHARE = 0.9  # same-side thigh at the hem; the hip line stays on the pelvis
-
-# joint -> (head, tail) is what the armature, the Animation clips and the exporter all read.
+SLEEVE_PROFILE = [(0.93, 0.055), (0.99, 0.057), (1.13, 0.062), (1.22, 0.066), (1.30, 0.066),
+                  (1.345, 0.064), (1.38, 0.050), (1.395, 0.026)]
+TROUSER_ZS = [0.06, 0.10, 0.20, 0.34, 0.50, 0.62, 0.74, 0.86]
+TROUSER_R = [0.075, 0.072, 0.072, 0.072, 0.072, 0.072, 0.072, 0.072]
+SHOE_RINGS = [(0.006, 0.046, 0.112), (0.022, 0.054, 0.124), (0.044, 0.053, 0.122),
+              (0.062, 0.048, 0.113), (0.072, 0.036, 0.096), (0.077, 0.020, 0.064)]
+HAND_RINGS = [(0.80, 0.021), (0.85, 0.024), (0.90, 0.027), (0.94, 0.026)]
+TOTE_X, TOTE_ZS = 0.265, [0.66, 0.76, 0.87, 0.98]
+STRAP_PATH = [(0.265, -0.11, 0.975), (0.255, -0.09, 1.15), (0.215, -0.05, 1.31), (0.165, 0.0, 1.42),
+              (0.205, 0.06, 1.31), (0.250, 0.09, 1.15), (0.265, 0.11, 0.975)]
+WALK_CROUCH_M = 0.025  # near-straight stance leg; the shared Animation stays on its own default
 SPINE_STOPS = [(1.36, "spine_03"), (1.26, "spine_02"), (1.10, "spine_01"), (0.94, "pelvis")]
+
+# Head: 6 heads tall with the bob; chin 1.395, crown 1.675, hair to 1.690.
+HEAD_CENTRE, HEAD_RADII = (0.0, 0.0, 1.535), (0.100, 0.110, 0.140)
+HAIR_VOLUME = 0.015
+EYE_X, EYE_Z = 0.045, 1.522
+EYE_HALF_W, EYE_HALF_H = 0.024, 0.018
+BLINK_PUSH_M = 0.005  # lens sits 1 mm proud; the closed blink pushes it 4 mm under the skin
+
+# Atlas rectangles (x0, y0, w, h) in pixels, origin bottom-left, as Blender UVs read them.
+BODY_RECTS = dict(
+    coat=(0, 512, 512, 512), panel_l=(512, 512, 256, 256), panel_r=(768, 512, 256, 256),
+    tote=(512, 768, 128, 256), strap=(640, 768, 128, 256), lapel_l=(768, 768, 128, 128),
+    lapel_r=(896, 768, 128, 128), knit=(0, 256, 256, 256), trouser_l=(256, 0, 128, 512),
+    trouser_r=(384, 0, 128, 512), sleeve_l=(512, 0, 128, 256), sleeve_r=(640, 0, 128, 256),
+    shoe=(768, 0, 128, 128), hands=(896, 0, 64, 64), neck=(960, 0, 64, 64))
+FACE_RECT = (0, 0, 256, 384)
+EYE_RECTS = {-1.0: (0, 384, 128, 128), 1.0: (128, 384, 128, 128)}
+HAIR_CELLS = [(256 + 64 * (i % 4), 128 * (i // 4), 64, 128) for i in range(16)]
 
 
 def joint_positions():
@@ -55,8 +81,8 @@ def joint_positions():
     for side, s in (("l", -1.0), ("r", 1.0)):
         positions.update({
             f"clavicle_{side}": (s * 0.045, 0.0, 1.345), f"upperarm_{side}": (s * 0.135, 0.0, 1.345),
-            f"lowerarm_{side}": (s * 0.145, 0.0, 1.13), f"hand_{side}": (s * 0.137, HAND_Y, 0.955),
-            f"fingers_01_{side}": (s * 0.137, HAND_Y, 0.895), f"fingers_02_{side}": (s * 0.137, HAND_Y, 0.815),
+            f"lowerarm_{side}": (s * 0.145, 0.0, 1.13), f"hand_{side}": (s * 0.137, 0.030, 0.955),
+            f"fingers_01_{side}": (s * 0.137, 0.030, 0.895), f"fingers_02_{side}": (s * 0.137, 0.030, 0.815),
             f"thumb_01_{side}": (s * 0.143, 0.055, 0.925), f"thumb_02_{side}": (s * 0.148, 0.065, 0.905),
             f"thigh_{side}": (s * 0.085, 0.0, 0.85), f"calf_{side}": (s * 0.085, 0.0, 0.48),
             f"foot_{side}": (s * 0.085, -0.035, 0.075), f"ball_{side}": (s * 0.085, 0.13, 0.0),
@@ -101,22 +127,16 @@ def blend(stops, value):
 
 
 def coat_weights(point):
-    """Spine chain by height; the coat body itself now stops at the hip line (the skirt panels take over)."""
+    """Spine chain by height for the coat, knit and lapels."""
     return blend(SPINE_STOPS, point[2])
 
 
 def skirt_weights(side):
-    """One coat panel: pelvis 1.0 at the hip line easing to pelvis 0.1 / same-side thigh 0.9 at the hem.
-
-    A panel only ever follows its own thigh, so nothing inside a panel is pulled in two directions; the
-    panels part at the front opening and the back vent during the stride, which is what a coat does.
-    """
+    """One coat panel: pelvis 1.0 at the hip line easing to pelvis 0.1 / same-side thigh 0.9 at the hem."""
     joint = f"thigh_{side}"
 
     def weights(point):
-        ramp = min(max((SKIRT_SPLIT_Z - point[2]) / (SKIRT_SPLIT_Z - HEM_Z), 0.0), 1.0)
-        # The panels have to drape over the swinging thigh by mid-skirt, not only at the hem, or the knee
-        # comes through the face of the panel: ease the ramp so the follow is already half way at the knee.
+        ramp = min(max((COAT_SPLIT_Z - point[2]) / (COAT_SPLIT_Z - HEM_Z), 0.0), 1.0)
         share = SKIRT_THIGH_SHARE * math.sqrt(ramp)
         if share < 1e-4:
             return {"pelvis": 1.0}
@@ -141,194 +161,182 @@ def strap_weights(point):
     return {"spine_03": spine, "pelvis": 1.0 - spine}
 
 
-# ---- primitives -------------------------------------------------------------------------------
+# ---- small vector and profile helpers ------------------------------------------------------------
+
+def clamp(value, low=0.0, high=1.0):
+    return max(low, min(high, value))
+
+
+def interp(profile, z):
+    """Piecewise-linear value of (key, value) pairs sorted by key."""
+    if z <= profile[0][0]:
+        return profile[0][1]
+    for (z0, v0), (z1, v1) in zip(profile, profile[1:]):
+        if z0 <= z <= z1:
+            return v0 + (v1 - v0) * (z - z0) / (z1 - z0)
+    return profile[-1][1]
+
+
+def linspace(a, b, n):
+    return [a + (b - a) * i / (n - 1) for i in range(n)]
+
+
+def sub(a, b):
+    return tuple(x - y for x, y in zip(a, b))
+
+
+def add(a, b):
+    return tuple(x + y for x, y in zip(a, b))
+
+
+def scale(a, k):
+    return tuple(x * k for x in a)
+
+
+def cross(a, b):
+    return (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
+
+
+def unit(a):
+    length = math.sqrt(sum(x * x for x in a))
+    return scale(a, 1.0 / length)
+
 
 def ellipse_ring(centre, radii, sides, phase=0.0):
     x, y, z = centre
     rx, ry = radii
-    return [(x + rx * math.cos(phase + i * math.tau / sides),
-             y + ry * math.sin(phase + i * math.tau / sides), z) for i in range(sides)]
+    return [(x + rx * math.cos(phase + math.tau * i / sides), y + ry * math.sin(phase + math.tau * i / sides), z)
+            for i in range(sides)]
 
 
-def arc_ring(centre, radii, start, end, steps, grow=0.0):
-    """An open arc of an ellipse (one coat panel); the ends are its own seam edge loops."""
+def arc_ring(centre, radii, start, end, steps):
+    """An open arc of an ellipse, from start to end radians, steps + 1 points."""
     x, y, z = centre
     rx, ry = radii
-    return [(x + (rx + grow) * math.cos(start + (end - start) * i / steps),
-             y + (ry + grow) * math.sin(start + (end - start) * i / steps), z)
-            for i in range(steps + 1)]
+    return [(x + rx * math.cos(a), y + ry * math.sin(a), z) for a in linspace(start, end, steps + 1)]
 
 
-def panel_loft(rings):
-    """Skin a stack of open arcs: no wrap, no caps, so the panel keeps its own boundary."""
-    sides = len(rings[0])
-    points = [point for ring in rings for point in ring]
-    faces = []
-    for k in range(len(rings) - 1):
-        lower, upper = k * sides, (k + 1) * sides
-        for i in range(sides - 1):
-            faces.append((lower + i, lower + i + 1, upper + i + 1, upper + i))
-    return points, faces
+# ---- surface pieces ------------------------------------------------------------------------------
 
+class Patch:
+    """One surface piece: points, quad/tri faces and per-corner UVs in an atlas rectangle.
 
-def loft(rings, cap_start=False, cap_end=False):
-    """Skin rings ordered along the surface direction; outward normals follow the right-hand rule."""
-    sides = len(rings[0])
-    points = [point for ring in rings for point in ring]
-    faces = []
-    for k in range(len(rings) - 1):
-        lower, upper = k * sides, (k + 1) * sides
-        for i in range(sides):
-            j = (i + 1) % sides
-            faces.append((lower + i, lower + j, upper + j, upper + i))
-    if cap_start:
-        faces.append(tuple(reversed(range(sides))))
-    if cap_end:
-        start = (len(rings) - 1) * sides
-        faces.append(tuple(start + i for i in range(sides)))
-    return points, faces
-
-
-def egg(centre, radii, segments=20, rings=14):
-    """Bottom-to-top UV sphere with a tapered jaw and a slightly wider crown."""
-    cx, cy, cz = centre
-    rx, ry, rz = radii
-    points = [(cx, cy, cz - rz)]
-    for k in range(1, rings):
-        z_norm = -1.0 + 2.0 * k / rings
-        ring = math.sqrt(max(0.0, 1.0 - z_norm * z_norm))
-        profile = 1.0 + 0.06 * z_norm - 0.10 * max(0.0, -z_norm)
-        points.extend(ellipse_ring((cx, cy, cz + rz * z_norm),
-                                   (rx * ring * profile, ry * ring * profile), segments))
-    top = len(points)
-    points.append((cx, cy, cz + rz))
-    faces = []
-    for i in range(segments):
-        faces.append((0, 1 + (i + 1) % segments, 1 + i))
-    for k in range(rings - 2):
-        lower, upper = 1 + k * segments, 1 + (k + 1) * segments
-        for i in range(segments):
-            j = (i + 1) % segments
-            faces.append((lower + i, lower + j, upper + j, upper + i))
-    last = 1 + (rings - 2) * segments
-    for i in range(segments):
-        faces.append((last + i, last + (i + 1) % segments, top))
-    return points, faces
-
-
-def path_tube(points, radii, sides=6):
-    """Sweep a rectangle-ish cross-section along a 3D polyline (the tote strap)."""
-    from mathutils import Vector
-    centres = [Vector(point) for point in points]
-    rings = []
-    for index, centre in enumerate(centres):
-        if index == 0:
-            axis = centres[1] - centre
-        elif index == len(centres) - 1:
-            axis = centre - centres[index - 1]
-        else:
-            axis = centres[index + 1] - centres[index - 1]
-        axis.normalize()
-        u = axis.cross(Vector((0.0, 1.0, 0.0)))
-        if u.length < 1e-6:
-            u = axis.cross(Vector((1.0, 0.0, 0.0)))
-        u.normalize()
-        v = axis.cross(u)
-        rx, ry = radii[index]
-        rings.append([tuple(centre + rx * math.cos(i * math.tau / sides) * u
-                            + ry * math.sin(i * math.tau / sides) * v) for i in range(sides)])
-    merged = [point for ring in rings for point in ring]
-    faces = []
-    for k in range(len(rings) - 1):
-        lower, upper = k * sides, (k + 1) * sides
-        for i in range(sides):
-            j = (i + 1) % sides
-            faces.append((lower + i, lower + j, upper + j, upper + i))
-    return merged, faces
-
-
-def skull_radii(z):
-    """Head-egg silhouette (rx, ry) at height z; the same profile the head mesh is built from."""
-    z_norm = (z - HEAD_CENTRE[2]) / HEAD_RADII[2]
-    ring = math.sqrt(max(0.0, 1.0 - z_norm * z_norm))
-    profile = 1.0 + 0.06 * z_norm - 0.10 * max(0.0, -z_norm)
-    return HEAD_RADII[0] * ring * profile, HEAD_RADII[1] * ring * profile
-
-
-def hair_radii(z):
-    """1.5 cm off the skull above the temples; below them the silhouette holds and flares to a level hem.
-
-    Above the temples the offset is an ellipsoid grown by the hair volume, not the skull plus a constant:
-    adding a constant to the skull's own crown taper would leave the bob with a cone on top.
+    UVs follow the grid (u across the ring, v up the rings) unless `planar` maps each point to rect-local
+    (u, v) in [0, 1]. Winding is outward for rings that run counter-clockwise seen from above, bottom to top.
     """
-    if z <= HAIR_TEMPLE_Z:
-        rx, ry = skull_radii(HAIR_TEMPLE_Z)
-        flare = HAIR_VOLUME + (HAIR_TEMPLE_Z - z) * 0.06
-        return rx + flare, ry + flare
-    z_norm = (z - HEAD_CENTRE[2]) / (HEAD_RADII[2] + HAIR_VOLUME)
-    ring = math.sqrt(max(0.0, 1.0 - z_norm * z_norm))
-    profile = 1.0 + 0.06 * z_norm
-    return ((HEAD_RADII[0] + HAIR_VOLUME) * ring * profile,
-            (HEAD_RADII[1] + HAIR_VOLUME) * ring * profile)
 
+    def __init__(self, rect):
+        self.rect = rect
+        self.points, self.faces, self.uv = [], [], []
 
-def head_surface_y(x, z):
-    """Front of the head egg at (x, z), so face decals can hug it instead of floating."""
-    rx, ry = skull_radii(z)
-    if abs(x) >= rx:
-        return HEAD_CENTRE[1]
-    return HEAD_CENTRE[1] + ry * math.sqrt(max(0.0, 1.0 - (x / rx) ** 2))
+    def _point(self, p):
+        self.points.append(tuple(float(c) for c in p))
+        return len(self.points) - 1
 
+    def grid(self, rings, wrap=False, flip=False, planar=None):
+        n, rows = len(rings[0]), len(rings)
+        index = [[self._point(p) for p in ring] for ring in rings]
+        den = n if wrap else n - 1
+        for k in range(rows - 1):
+            for i in range(n if wrap else n - 1):
+                j = (i + 1) % n
+                quad = [index[k][i], index[k][j], index[k + 1][j], index[k + 1][i]]
+                param = [(i / den, k / (rows - 1)), ((i + 1) / den, k / (rows - 1)),
+                         ((i + 1) / den, (k + 1) / (rows - 1)), (i / den, (k + 1) / (rows - 1))]
+                if flip:
+                    quad, param = [quad[0], quad[3], quad[2], quad[1]], [param[0], param[3], param[2], param[1]]
+                self.faces.append(tuple(quad))
+                self.uv.append([planar(self.points[v]) for v in quad] if planar else param)
+        return index
 
-def face_strip(x0, x1, z, half_height, lift=0.003, steps=3):
-    """A thin decal strip lying on the face surface, facing +Y (brows, mouth)."""
-    points, faces = [], []
-    for i in range(steps + 1):
-        x = x0 + (x1 - x0) * i / steps
-        y = min(head_surface_y(x, z - half_height), head_surface_y(x, z + half_height)) + lift
-        points.extend([(x, y, z - half_height), (x, y, z + half_height)])
-    for i in range(steps):
-        a, b = 2 * i, 2 * (i + 1)
-        faces.append((a, a + 1, b + 1, b))
-    return points, faces
+    def _fan(self, ring, reverse, planar):
+        n = len(ring)
+        pts = [self.points[i] for i in ring]
+        centre = self._point(tuple(sum(p[a] for p in pts) / n for a in range(3)))
 
+        def disc(i):
+            t = math.tau * (i % n) / n
+            return (0.5 + 0.5 * math.cos(t), 0.5 + 0.5 * math.sin(t))
 
-def face_centre(points, face):
-    return tuple(sum(points[index][axis] for index in face) / len(face) for axis in range(3))
+        for i in range(n):
+            a, b = ring[i], ring[(i + 1) % n]
+            if reverse:
+                tri, uv = (a, centre, b), [disc(i), (0.5, 0.5), disc(i + 1)]
+            else:
+                tri, uv = (a, b, centre), [disc(i), disc(i + 1), (0.5, 0.5)]
+            if planar:
+                uv = [planar(self.points[v]) for v in tri]
+            self.faces.append(tri)
+            self.uv.append(uv)
 
+    def loft(self, rings, cap_first=False, cap_last=False, planar=None):
+        """A closed tube of rings (wrapping around), optionally capped at the first and last ring."""
+        index = self.grid(rings, wrap=True, planar=planar)
+        if cap_first:
+            self._fan(index[0], True, planar)
+        if cap_last:
+            self._fan(index[-1], False, planar)
 
-def drop_faces(points, faces, keep):
-    kept = [face for face in faces if keep(face_centre(points, face))]
-    used = sorted({index for face in kept for index in face})
-    remap = {old: new for new, old in enumerate(used)}
-    return [points[index] for index in used], [tuple(remap[index] for index in face) for face in kept]
+    def tube(self, path, radii, sides=8):
+        """Sweep an elliptic section (rx across the lock, ry through it) along a polyline."""
+        rings = []
+        for idx, centre in enumerate(path):
+            if idx == 0:
+                axis = sub(path[1], centre)
+            elif idx == len(path) - 1:
+                axis = sub(centre, path[idx - 1])
+            else:
+                axis = sub(path[idx + 1], path[idx - 1])
+            axis = unit(axis)
+            u = cross(axis, (0.0, 1.0, 0.0))
+            if math.sqrt(sum(x * x for x in u)) < 1e-6:
+                u = cross(axis, (1.0, 0.0, 0.0))
+            u = unit(u)
+            v = cross(axis, u)
+            rx, ry = radii[idx]
+            rings.append([add(centre, add(scale(u, rx * math.cos(math.tau * i / sides)),
+                                          scale(v, ry * math.sin(math.tau * i / sides))))
+                          for i in range(sides)])
+        self.grid(rings, wrap=True)
 
 
 class Geometry:
-    """Disconnected solids with one explicit normalised influence list per vertex."""
+    """Disconnected pieces with one explicit normalised influence list per vertex and per-corner atlas UVs."""
 
-    def __init__(self):
-        self.vertices, self.faces, self.weights, self.colours, self.smooth = [], [], [], [], []
+    def __init__(self, atlas):
+        self.atlas = atlas
+        self.vertices, self.faces, self.uvs, self.weights, self.smooth = [], [], [], [], []
 
-    def add(self, vertices, faces, weights, hex_colour, smooth=True):
+    def add(self, patch, weights, smooth=True):
         start = len(self.vertices)
-        self.vertices.extend(tuple(float(c) for c in vertex) for vertex in vertices)
-        for vertex in vertices:
+        self.vertices.extend(patch.points)
+        for vertex in patch.points:
             rows = weights(vertex) if callable(weights) else dict(weights)
             total = sum(rows.values())
             if abs(total - 1.0) > 1e-6 or any(joint not in JOINT_PARENTS for joint in rows):
                 raise ValueError(f"bad weights {rows} at {vertex}")
             self.weights.append(rows)
-            self.colours.append(colour(hex_colour))
-        self.faces.extend(tuple(start + index for index in face) for face in faces)
-        self.smooth.extend([smooth] * len(faces))
+        x0, y0, w, h = patch.rect
+        for face, uv in zip(patch.faces, patch.uv):
+            self.faces.append(tuple(start + index for index in face))
+            self.uvs.append([((x0 + u * w) / self.atlas, (y0 + v * h) / self.atlas) for u, v in uv])
+        self.smooth.extend([smooth] * len(patch.faces))
         return start, len(self.vertices)
 
-    def mesh(self, name, root, armature):
+    def mesh(self, name, root, armature, image):
         import bpy
         mesh = bpy.data.meshes.new(name)
         mesh.from_pydata(self.vertices, [], self.faces)
         mesh.update()
+        if len(mesh.polygons) != len(self.faces):
+            raise ValueError(f"{name}: Blender dropped faces")
+        uv_layer = mesh.uv_layers.new(name="UVMap")
+        for polygon in mesh.polygons:
+            if tuple(polygon.vertices) != self.faces[polygon.index]:
+                raise ValueError(f"{name}: polygon order changed")
+            for corner, loop_index in enumerate(polygon.loop_indices):
+                uv_layer.data[loop_index].uv = self.uvs[polygon.index][corner]
+            polygon.use_smooth = self.smooth[polygon.index]
         obj = bpy.data.objects.new(name, mesh)
         bpy.context.scene.collection.objects.link(obj)
         grouped = {}
@@ -339,215 +347,502 @@ class Geometry:
             group = obj.vertex_groups.new(name=joint)
             for weight, indices in by_weight.items():
                 group.add(indices, weight, "REPLACE")
-        for polygon, smooth in zip(mesh.polygons, self.smooth):
-            polygon.use_smooth = smooth
-        finish_mesh(obj, root, armature, self.colours)
+        obj.parent = root
+        modifier = obj.modifiers.new("CharacterSkin", "ARMATURE")
+        modifier.object = armature
+        modifier.use_vertex_groups = True
+        material = bpy.data.materials.new(f"{name}_toon")
+        material.use_nodes = True
+        material.use_backface_culling = False
+        material["gteki_toon"] = 1
+        tree = material.node_tree
+        bsdf = tree.nodes["Principled BSDF"]
+        bsdf.inputs["Metallic"].default_value = 0.0
+        bsdf.inputs["Roughness"].default_value = 1.0
+        texture = tree.nodes.new("ShaderNodeTexImage")
+        texture.image = image
+        tree.links.new(texture.outputs["Color"], bsdf.inputs["Base Color"])
+        tree.nodes.active = texture
+        mesh.materials.append(material)
         return obj
 
 
-# ---- the character ----------------------------------------------------------------------------
-
-# The top rings taper into the neck opening instead of closing with a wide flat cap: that flat cap read
-# as a rectangular block at the shoulders.
-COAT_RINGS = [(0.50, 0.225, 0.150), (0.56, 0.214, 0.142), (0.66, 0.197, 0.130), (0.78, 0.180, 0.118),
-              (0.86, 0.172, 0.110),
-              (0.88, 0.170, 0.108), (0.98, 0.138, 0.092), (1.06, 0.110, 0.080), (1.14, 0.116, 0.086),
-              (1.20, 0.126, 0.092), (1.26, 0.136, 0.096), (1.30, 0.146, 0.098), (1.345, 0.146, 0.096),
-              (1.372, 0.118, 0.084), (1.388, 0.090, 0.074)]
-TROUSER_RINGS = [(0.05, 0.048), (0.10, 0.050), (0.20, 0.055), (0.34, 0.060), (0.50, 0.068),
-                 (0.62, 0.072), (0.74, 0.076), (0.86, 0.080)]
-# The sleeve's dome tops out level with the coat's shoulder slope, so it blends instead of standing on it.
-SLEEVE_RINGS = [(0.93, 0.140, 0.040, 0.028), (0.99, 0.142, 0.042, 0.024), (1.13, 0.145, 0.050, 0.012),
-                (1.20, 0.144, 0.053, 0.006), (1.26, 0.141, 0.055, 0.002), (1.305, 0.139, 0.056, 0.0),
-                (1.340, 0.137, 0.055, 0.0), (1.365, 0.134, 0.049, 0.0), (1.382, 0.131, 0.036, 0.0),
-                (1.392, 0.128, 0.018, 0.0)]
-SHOE_RINGS = [(0.006, 0.045, 0.110), (0.022, 0.052, 0.122), (0.044, 0.051, 0.120),
-              (0.060, 0.046, 0.111), (0.070, 0.034, 0.094), (0.075, 0.020, 0.062)]
-HAND_RINGS = [(0.80, 0.021), (0.85, 0.024), (0.90, 0.027), (0.94, 0.026)]
-TOTE_X, TOTE_RINGS = 0.215, [(0.66, 0.040, 0.140), (0.70, 0.045, 0.150),
-                             (0.94, 0.045, 0.150), (0.98, 0.040, 0.140)]
-# Rides over the rounded shoulder cap (sleeve top 1.42 m) instead of sinking into it.
-STRAP_PATH = [(0.215, -0.135, 0.975), (0.205, -0.115, 1.15), (0.175, -0.080, 1.31),
-              (0.145, -0.005, 1.432), (0.172, 0.070, 1.29), (0.198, 0.115, 1.10), (0.212, 0.135, 0.978)]
-
+# ---- body --------------------------------------------------------------------------------------
 
 def coat_radii(z):
-    """Coat ring (rx, ry) interpolated at height z."""
-    if z <= COAT_RINGS[0][0]:
-        return COAT_RINGS[0][1], COAT_RINGS[0][2]
-    for (z0, x0, y0), (z1, x1, y1) in zip(COAT_RINGS, COAT_RINGS[1:]):
-        if z0 <= z <= z1:
-            t = (z - z0) / (z1 - z0)
-            return x0 + (x1 - x0) * t, y0 + (y1 - y0) * t
-    return COAT_RINGS[-1][1], COAT_RINGS[-1][2]
+    return interp([(p[0], p[1]) for p in COAT_PROFILE], z), interp([(p[0], p[2]) for p in COAT_PROFILE], z)
 
 
-def coat_front(x, z, lift):
-    """Point on the coat's front surface at (x, z), pushed out along +Y by lift."""
+def opening(z):
+    return interp(OPEN_PROFILE, z)
+
+
+def front_point(x, z, lift):
+    """Point on the coat's outer front surface at (x, z), lifted along +Y."""
     rx, ry = coat_radii(z)
-    x = max(-0.97 * rx, min(0.97 * rx, x))
+    x = clamp(x, -0.98 * rx, 0.98 * rx)
     return (x, ry * math.sqrt(max(0.0, 1.0 - (x / rx) ** 2)) + lift, z)
 
 
-# The coat is open in a soft V from the collar to mid-chest; the cream knit shows inside it.
-V_TOP_Z, V_TOP_HALF, V_BOTTOM_Z, V_BOTTOM_HALF = 1.386, 0.068, 1.19, 0.010
-KNIT_HALF = 0.068
+def edge_angle(z):
+    """Angle at which the coat's front edge meets the ellipse (the opening's outer boundary)."""
+    rx, _ = coat_radii(z)
+    return math.acos(clamp(opening(z) / rx, 0.0, 0.999))
 
 
-def v_half_width(z):
-    return V_BOTTOM_HALF + (V_TOP_HALF - V_BOTTOM_HALF) * (z - V_BOTTOM_Z) / (V_TOP_Z - V_BOTTOM_Z)
+def build_coat_upper():
+    """Open overcoat from the skirt split up to the collar: the arc runs from the left front edge round the back."""
+    rings = []
+    for z in linspace(COAT_SPLIT_Z, COAT_TOP_Z, 12):
+        rx, ry = coat_radii(z)
+        theta = edge_angle(z)
+        rings.append(arc_ring((0.0, 0.0, z), (rx, ry), math.pi - theta, 2 * math.pi + theta, 30))
+    patch = Patch(BODY_RECTS["coat"])
+    patch.grid(rings)
+    return patch
 
 
-# Columns must include +-V_BOTTOM_HALF: that is where the V's lower boundary kinks, and a column layout
-# that straddles it would interpolate the knit's edge above the fold line and open a navy sliver.
-KNIT_COLUMNS = (-0.068, -0.055, -0.042, -0.030, -0.020, -0.010, 0.0,
-                0.010, 0.020, 0.030, 0.042, 0.055, 0.068)
+def build_skirt_panels():
+    """Two lower panels: left runs front-left edge to the back vent, right runs back vent to front-right edge."""
+    left, right = Patch(BODY_RECTS["panel_l"]), Patch(BODY_RECTS["panel_r"])
+    rings_l, rings_r = [], []
+    for z in linspace(HEM_Z, COAT_SPLIT_Z, 6):
+        rx, ry = coat_radii(z)
+        theta = edge_angle(z)
+        rings_l.append(arc_ring((0.0, 0.0, z), (rx, ry), math.pi - theta, 1.5 * math.pi + SKIRT_OVERLAP, 12))
+        grow = 0.003 if z < 0.78 else 0.0  # the right panel sits 3 mm proud so the laps never share a surface
+        rings_r.append(arc_ring((0.0, 0.0, z), (rx + grow, ry + grow), 1.5 * math.pi - SKIRT_OVERLAP,
+                                2 * math.pi + theta, 12))
+    left.grid(rings_l)
+    right.grid(rings_r)
+    return left, right
 
 
 def build_knit():
-    """Cream crew-neck layer: a curved patch inside the V with a rounded neckline arc at the top."""
-    rows = 4
-    slope = (V_TOP_Z - V_BOTTOM_Z) / (V_TOP_HALF - V_BOTTOM_HALF)
-    points, faces = [], []
-    for i in range(rows + 1):
-        for x in KNIT_COLUMNS:
-            share = abs(x) / KNIT_HALF
-            top = 1.348 + (V_TOP_Z - 1.348) * share ** 1.5
-            # The knit's lower edge is the lapels' fold line itself, so the opening always shows cream.
-            low = min(V_BOTTOM_Z + max(0.0, abs(x) - V_BOTTOM_HALF) * slope, top - 0.004)
-            points.append(coat_front(x, low + (top - low) * i / rows, 0.003))
-    columns = len(KNIT_COLUMNS) - 1
-    for i in range(rows):
-        for j in range(columns):
-            a, b = i * (columns + 1) + j, (i + 1) * (columns + 1) + j
-            faces.append((a, b, b + 1, a + 1))
-    return points, faces
+    """Cream knit torso in the opening: a rectangular strip from the belt at 0.98 m up to the neck."""
+    rows = []
+    for z in linspace(0.98, 1.35, 8):
+        half = opening(z)
+        rows.append([front_point(half * (2.0 * c / 6 - 1.0), z, 0.004) for c in range(7)])
+    patch = Patch(BODY_RECTS["knit"])
+    patch.grid(rows, flip=True)
+    return patch
 
 
 def build_lapels():
-    """Two navy lapels: the open coat's front edges, folded proud of the knit along the V."""
-    rows = 6
+    """Broad lapels: strips from each opening edge out over the coat front, from 1.02 m to the shoulder."""
     out = []
-    for s in (-1.0, 1.0):
-        points, faces = [], []
-        # Columns must run in +X on both sides or the left lapel's faces would point into the body.
-        fold = [(0.0, 0.011), (0.014, 0.006), (0.028, 0.002)]
-        for i in range(rows + 1):
-            z = V_BOTTOM_Z + (V_TOP_Z - V_BOTTOM_Z) * i / rows
-            inner = s * v_half_width(z)
-            for offset, lift in (fold if s > 0 else fold[::-1]):
-                points.append(coat_front(inner + s * offset, z, lift))
-        for i in range(rows):
-            for j in range(2):
-                a, b = i * 3 + j, (i + 1) * 3 + j
-                faces.append((a, b, b + 1, a + 1))
-        out.append((points, faces))
+    for s, rect in ((-1.0, BODY_RECTS["lapel_l"]), (1.0, BODY_RECTS["lapel_r"])):
+        rows = []
+        for z in linspace(1.02, 1.37, 6):
+            row = []
+            for c in range(3):
+                x = s * (opening(z) + 0.055 * c / 2)
+                row.append(front_point(x, z, 0.008 + (0.004 if c == 1 else 0.0)))
+            rows.append(row)
+        patch = Patch(rect)
+        patch.grid(rows, flip=s > 0)
+        out.append(patch)
     return out
 
 
-def build_coat_panel(side, start, end):
-    """One half of the skirt: an arc from the front seam round to the back seam, lapping 1.5 cm past both.
+def sleeve_radius(z):
+    return interp(SLEEVE_PROFILE, z)
 
-    The right panel sits 3 mm proud from 0.78 m down, so where the two panels lap they never share a
-    surface (no z-fighting at the seam) and the coat reads as a closed front with a back vent at rest.
-    """
+
+def build_sleeve(s, rect):
     rings = []
-    for z, rx, ry in COAT_RINGS:
-        if z > SKIRT_SPLIT_Z:
-            continue
-        grow = 0.003 * min(max((SKIRT_SPLIT_Z - z) / (SKIRT_SPLIT_Z - 0.78), 0.0), 1.0) if side == "r" else 0.0
-        rings.append(arc_ring((0.0, 0.0, z), (rx, ry), start, end, SKIRT_SEGMENTS, grow))
-    return panel_loft(rings)
+    for z in linspace(0.93, 1.395, 10):
+        r = sleeve_radius(z)
+        cx = s * (0.141 - 0.010 * clamp((z - 1.30) / 0.095))
+        rings.append(ellipse_ring((cx, 0.0, z), (r, r * 0.95), 16))
+    patch = Patch(rect)
+    patch.loft(rings, cap_last=True)  # open cuff at the bottom: the hand comes out of it
+    return patch
+
+
+def build_trouser(s, rect):
+    rings = [ellipse_ring((s * 0.085, 0.0, z), (r, r), 14) for z, r in zip(TROUSER_ZS, TROUSER_R)]
+    patch = Patch(rect)
+    patch.loft(rings, cap_first=True, cap_last=True)
+    return patch
+
+
+def build_shoe(s, rect):
+    rings = [ellipse_ring((s * 0.085, 0.045, z), (rx, ry), 14) for z, rx, ry in SHOE_RINGS]
+    patch = Patch(rect)
+    patch.loft(rings, cap_first=True, cap_last=True)
+    return patch
 
 
 def build_body():
-    """Coat, trousers, shoes, hands, neck, collar, knit, lapels and the tote."""
-    body = Geometry()
-    rings = [ellipse_ring((0.0, 0.0, z), (rx, ry), 16) for z, rx, ry in COAT_RINGS if z >= SKIRT_SPLIT_Z]
-    body.add(*loft(rings, cap_end=True), weights=coat_weights, hex_colour=COAT)
-    for side, start, end in (("r", -math.pi / 2 - SKIRT_OVERLAP, math.pi / 2 + SKIRT_OVERLAP),
-                             ("l", math.pi / 2 - SKIRT_OVERLAP, 3 * math.pi / 2 + SKIRT_OVERLAP)):
-        body.add(*build_coat_panel(side, start, end), weights=skirt_weights(side), hex_colour=COAT)
-
-    # Stand collar, emerging through the coat's neckline so no neck shows under the jaw.
-    collar = [ellipse_ring((0.0, 0.0, z), (rx, ry), 16) for z, rx, ry in
-              [(1.352, 0.094, 0.082), (1.372, 0.092, 0.080), (1.396, 0.088, 0.077)]]
-    body.add(*loft(collar), weights={"spine_03": 1.0}, hex_colour=COAT)
-
-    neck = [ellipse_ring((0.0, 0.0, z), (0.052, 0.050), 10) for z in (1.32, 1.44)]
-    body.add(*loft(neck), weights={"neck_01": 1.0}, hex_colour=SKIN)
-
-    body.add(*build_knit(), weights={"spine_03": 1.0}, hex_colour=CREAM)
-    for points, faces in build_lapels():
-        body.add(points, faces, weights={"spine_03": 1.0}, hex_colour=COAT, smooth=False)
-
-    for side, s in (("l", -1.0), ("r", 1.0)):
-        # The sleeve runs up over the shoulder joint and closes with a rounded cap: no shoulder pad.
-        sleeve = [ellipse_ring((s * x, y, z), (r, r * 0.93), 16) for z, x, r, y in SLEEVE_RINGS]
-        body.add(*loft(sleeve, cap_start=True, cap_end=True), weights=arm_weights(side), hex_colour=COAT)
-
-        hand = [ellipse_ring((s * 0.136, HAND_Y, z), (r, r * 0.6), 10) for z, r in HAND_RINGS]
-        body.add(*loft(hand, cap_start=True, cap_end=True), weights={f"hand_{side}": 1.0}, hex_colour=SKIN)
-
-        leg = [ellipse_ring((s * 0.085, 0.0, z), (r, r), 14) for z, r in TROUSER_RINGS]
-        body.add(*loft(leg, cap_start=True), weights=leg_weights(side), hex_colour=TROUSERS)
-        # Low loafer: an oval footprint flattened to a 7 cm top, standing on z = 0.
-        shoe = [ellipse_ring((s * 0.085, 0.045, z), (rx, ry), 14) for z, rx, ry in SHOE_RINGS]
-        body.add(*loft(shoe, cap_start=True, cap_end=True), weights={f"foot_{side}": 1.0},
-                 hex_colour=SHOES, smooth=False)
-
-    tote = [ellipse_ring((TOTE_X, 0.0, z), (rx, ry), 12) for z, rx, ry in TOTE_RINGS]
-    body.add(*loft(tote, cap_start=True, cap_end=True), weights={"pelvis": 1.0}, hex_colour=TOTE)
-    body.add(*path_tube(STRAP_PATH, [(0.016, 0.006)] * len(STRAP_PATH)), weights=strap_weights, hex_colour=TOTE)
+    body = Geometry(BODY_ATLAS)
+    body.add(build_coat_upper(), coat_weights)
+    left, right = build_skirt_panels()
+    body.add(left, skirt_weights("l"))
+    body.add(right, skirt_weights("r"))
+    body.add(build_knit(), coat_weights)
+    for lapel in build_lapels():
+        body.add(lapel, coat_weights, smooth=False)
+    neck = Patch(BODY_RECTS["neck"])
+    neck.loft([ellipse_ring((0.0, 0.0, z), (0.052, 0.050), 12) for z in (1.32, 1.44)], cap_first=True, cap_last=True)
+    body.add(neck, {"neck_01": 1.0})
+    for s, side in ((-1.0, "l"), (1.0, "r")):
+        body.add(build_sleeve(s, BODY_RECTS[f"sleeve_{side}"]), arm_weights(side))
+        hand = Patch(BODY_RECTS["hands"])
+        hand.loft([ellipse_ring((s * 0.136, 0.030, z), (r, r * 0.6), 10) for z, r in HAND_RINGS],
+                  cap_first=True, cap_last=True)
+        body.add(hand, {f"hand_{side}": 1.0})
+        body.add(build_trouser(s, BODY_RECTS[f"trouser_{side}"]), leg_weights(side))
+        body.add(build_shoe(s, BODY_RECTS["shoe"]), {f"foot_{side}": 1.0}, smooth=False)
+    tote = Patch(BODY_RECTS["tote"])
+    tote.loft([ellipse_ring((TOTE_X, 0.0, z), (0.034 + 0.002 * i, 0.13), 12) for i, z in enumerate(TOTE_ZS)],
+              cap_first=True, cap_last=True)
+    body.add(tote, {"pelvis": 1.0})
+    strap = Patch(BODY_RECTS["strap"])
+    strap.tube(STRAP_PATH, [(0.012, 0.005)] * len(STRAP_PATH), sides=6)
+    body.add(strap, strap_weights)
     return body
 
 
-def build_hair():
-    """Bob: hugs the skull above the temples, level at the jawline, nape covered down to the collar."""
-    rings = [ellipse_ring((0.0, HAIR_Y_SHIFT, z), hair_radii(z), 20) for z in HAIR_RING_Z]
-    points, faces = loft(rings, cap_end=True)
+# ---- head and bob ------------------------------------------------------------------------------
 
-    def keep(centre):
-        x, y, z = centre
-        # Face opening: a side-swept fringe (lower over the +X brow) over the brow, open down to the chin.
-        fringe = 1.598 - 0.026 * (x + 0.066) / 0.132
-        return not (y > 0.02 and abs(x) < 0.066 and z < fringe)
+def egg_radii(zn):
+    """Head egg (rx, ry) at normalised height zn in [-1, 1]: a slightly tapered jaw and crown."""
+    ring = math.sqrt(max(0.0, 1.0 - zn * zn))
+    profile = 1.0 + 0.06 * zn - 0.10 * max(0.0, -zn)
+    return HEAD_RADII[0] * ring * profile, HEAD_RADII[1] * ring * profile
 
-    return drop_faces(points, faces, keep)
+
+def head_front_y(x, z):
+    rx, ry = egg_radii((z - HEAD_CENTRE[2]) / HEAD_RADII[2])
+    return ry * math.sqrt(max(0.0, 1.0 - (x / rx) ** 2))
+
+
+def hair_radii(z):
+    """Skull plus the bob's volume: an ellipsoid grown by HAIR_VOLUME, so the crown stays round."""
+    zn = (z - HEAD_CENTRE[2]) / (HEAD_RADII[2] + HAIR_VOLUME)
+    ring = math.sqrt(max(0.0, 1.0 - zn * zn))
+    profile = 1.0 + 0.06 * zn
+    return (HEAD_RADII[0] + HAIR_VOLUME) * ring * profile, (HEAD_RADII[1] + HAIR_VOLUME) * ring * profile
+
+
+def hair_front_y(x, z):
+    rx, ry = hair_radii(z)
+    return ry * math.sqrt(max(0.0, 1.0 - (x / rx) ** 2))
+
+
+def shell(psi, z, out):
+    """A point on the bob shell at angle psi (0 = front, pi = back) and height z, pushed out by `out` metres."""
+    rx, ry = hair_radii(z)
+    return ((rx + out) * math.sin(psi), (ry + out) * math.cos(psi), z)
+
+
+def face_uv(point):
+    x, y, z = point
+    if y < 0.0:
+        return (0.02, 0.02)  # the back of the skull is under the bob: any texel will do
+    return (clamp((x + 0.10) / 0.20), clamp((z - 1.36) / 0.32))
+
+
+def build_egg():
+    """Skin: the head egg, its front planar-mapped onto the face rectangle."""
+    rings = []
+    for zn in linspace(-0.97, 0.97, 10):
+        rx, ry = egg_radii(zn)
+        rings.append(ellipse_ring((0.0, 0.0, HEAD_CENTRE[2] + HEAD_RADII[2] * zn), (rx, ry), 16))
+    patch = Patch(FACE_RECT)
+    patch.loft(rings, cap_first=True, cap_last=True, planar=face_uv)
+    return patch
+
+
+def build_eye(side):
+    """Open-eye lens: a small grid on the head surface, 1 mm proud, UV-mapped to its eye slot."""
+    xc = side * EYE_X
+    xs = linspace(xc - EYE_HALF_W, xc + EYE_HALF_W, 5)
+    zs = linspace(EYE_Z - EYE_HALF_H, EYE_Z + EYE_HALF_H, 4)
+    rings = [[(x, head_front_y(x, z) + 0.001, z) for x in xs] for z in zs]
+
+    def uv(point):
+        return (clamp((point[0] - (xc - EYE_HALF_W)) / (2 * EYE_HALF_W)),
+                clamp((point[2] - (EYE_Z - EYE_HALF_H)) / (2 * EYE_HALF_H)))
+
+    patch = Patch(EYE_RECTS[side])
+    patch.grid(rings, flip=True, planar=uv)
+    return patch
+
+
+BANGS = [((-0.060, -0.078), 0), ((-0.036, -0.052), 0), ((-0.012, -0.022), 0),
+         ((0.014, 0.030), 0), ((0.038, 0.058), 0)]  # (root x, tip x): the part sits off centre at -0.012
+
+
+def hair_patches():
+    """Eleven opaque locks (5 bangs, 2 side, 4 back) plus the crown cap and the back under-layer."""
+    cells = iter(HAIR_CELLS)
+    out = []
+    for (root_x, tip_x), _ in BANGS:
+        mid_x = (root_x + tip_x) / 2
+        path = [(root_x, hair_front_y(root_x, 1.668) + 0.004, 1.668),
+                (mid_x, hair_front_y(mid_x, 1.62) + 0.006, 1.62),
+                (tip_x, hair_front_y(tip_x, 1.575) + 0.008, 1.575)]
+        patch = Patch(next(cells))
+        patch.tube(path, [(0.011, 0.008), (0.010, 0.007), (0.008, 0.005)])
+        out.append(patch)
+    for s in (-1.0, 1.0):
+        path = [(s * 0.100, -0.001, 1.600), (s * 0.116, -0.008, 1.520),
+                (s * 0.120, -0.020, 1.440), (s * 0.116, -0.030, 1.402)]
+        patch = Patch(next(cells))
+        patch.tube(path, [(0.016, 0.010), (0.019, 0.012), (0.019, 0.012), (0.014, 0.008)])
+        out.append(patch)
+    for psi in (2.10, 2.60, 3.14, 3.68):
+        # The root sits inside the crown cap (-1 cm): a lock that starts on the surface shows as a ridge on top.
+        path = [shell(psi, 1.640, -0.010), shell(psi, 1.530, 0.004), shell(psi, 1.450, 0.012),
+                shell(psi, 1.398, 0.026)]
+        patch = Patch(next(cells))
+        patch.tube(path, [(0.030, 0.011), (0.031, 0.012), (0.029, 0.011), (0.024, 0.008)])
+        out.append(patch)
+    crown = Patch(next(cells))
+    crown_rings = []
+    for z in (1.600, 1.630, 1.655, 1.672):
+        rx, ry = hair_radii(z)
+        crown_rings.append(ellipse_ring((0.0, 0.0, z), (rx, ry), 14))
+    crown.loft(crown_rings, cap_last=True)
+    out.append(crown)
+    under = Patch(next(cells))
+    under.grid([[shell(psi, z, 0.0) for psi in linspace(1.9, 4.38, 11)]
+                for z in (1.398, 1.440, 1.480, 1.520, 1.560, 1.600)])
+    out.append(under)
+    return out
 
 
 def build_head():
-    """Egg head, bob hair shell, and the flat face features; returns the eye vertex ranges for blinks."""
-    head = Geometry()
-    head.add(*egg(HEAD_CENTRE, HEAD_RADII), weights={"head": 1.0}, hex_colour=SKIN)
-    head.add(*build_hair(), weights={"head": 1.0}, hex_colour=HAIR)
-
-    eyes = []
-    for s in (-1.0, 1.0):
-        eyes.append(head.add(*egg((s * 0.045, EYE_Y, EYE_Z), EYE_RADII, segments=10, rings=6),
-                             weights={"head": 1.0}, hex_colour=EYE))
-        inner, outer = sorted((s * 0.022, s * 0.062))
-        head.add(*face_strip(inner, outer, 1.556, 0.0022),
-                 weights={"head": 1.0}, hex_colour=BROW, smooth=False)
-    head.add(*face_strip(-0.019, 0.019, 1.471, 0.003),
-             weights={"head": 1.0}, hex_colour=MOUTH, smooth=False)
-    head.add(*egg((0.0, 0.086, 1.495), (0.012, 0.014, 0.015), segments=8, rings=6),
-             weights={"head": 1.0}, hex_colour=SKIN)
+    head = Geometry(HEAD_ATLAS)
+    head.add(build_egg(), {"head": 1.0})
+    eyes = [head.add(build_eye(side), {"head": 1.0}) for side in (-1.0, 1.0)]
+    for patch in hair_patches():
+        head.add(patch, {"head": 1.0})
     return head, eyes
 
 
+# ---- painted atlases (sRGB, row 0 = bottom) -------------------------------------------------
+
+def rgb(hex_string):
+    import numpy as np
+    return np.array([int(hex_string[i:i + 2], 16) / 255.0 for i in (1, 3, 5)], dtype=np.float32)
+
+
+def flat(hex_string, shape):
+    import numpy as np
+    return np.broadcast_to(rgb(hex_string), shape + (3,)).astype(np.float32)
+
+
+def over(base, colour, mask):
+    import numpy as np
+    m = np.asarray(mask, dtype=np.float32)[..., None]
+    return base * (1.0 - m) + np.asarray(colour, dtype=np.float32) * m
+
+
+def band(x, low, high):
+    import numpy as np
+    return ((x >= low) & (x <= high)).astype(np.float32)
+
+
+def paint(canvas, rect, painter):
+    import numpy as np
+    x0, y0, w, h = rect
+    s = (np.arange(w) + 0.5) / w
+    t = (np.arange(h) + 0.5) / h
+    S, T = np.meshgrid(s, t)
+    canvas[y0:y0 + h, x0:x0 + w] = painter(S, T)
+
+
+def coat_paint(S, T):
+    import numpy as np
+    base = flat(NAVY, S.shape)
+    edge = np.abs(S - 0.5) * 2
+    base = base * (1.0 - 0.10 * edge ** 2)[..., None] * (0.92 + 0.08 * T)[..., None]
+    back = (np.abs(S - 0.5) < 0.32).astype(np.float32)
+    base = over(base, rgb(NAVY_DARK), band(T, 0.725, 0.733) * back)  # yoke seam across the back
+    base = over(base, rgb(NAVY_LIGHT), band(T, 0.733, 0.79) * back * 0.5)  # storm flap above it
+    base = over(base, rgb(NAVY_DARK), band(T, 0.93, 1.0) * 0.6)  # collar shade
+    return base
+
+
+def panel_paint(S, T):
+    import numpy as np
+    base = flat(NAVY, S.shape) * (0.92 + 0.08 * T)[..., None]
+    folds = np.clip(band(S, 0.345, 0.355) + band(S, 0.645, 0.655), 0, 1)
+    base = over(base, rgb(NAVY_DARK), folds * 0.6)
+    base = over(base, rgb(NAVY_DARK), band(T, 0.0, 0.05) * 0.6)  # hem edge
+    base = over(base, rgb(NAVY_DARK), np.clip(band(S, 0.0, 0.04) + band(S, 0.96, 1.0), 0, 1) * 0.8)  # vent edges
+    return base
+
+
+def knit_paint(S, T):
+    import numpy as np
+    base = flat(CREAM, S.shape)
+    rib = band(np.mod(S * 9.0, 1.0), 0.0, 0.14)
+    base = over(base, rgb(KNIT_RIB), rib * 0.7)
+    base = over(base, rgb(KNIT_RIB), band(T, 0.92, 1.0) * rib * 0.5)  # mock neck band
+    base = over(base, rgb(BELT), band(T, 0.0, 0.06))  # thin dark belt where the trousers start
+    return base
+
+
+def lapel_paint(S, T):
+    base = flat(NAVY_LIGHT, S.shape) * (0.94 + 0.06 * T)[..., None]
+    return over(base, rgb(NAVY_DARK), band(S, 0.0, 0.08) * 0.7)  # fold crease at the opening edge
+
+
+def trouser_paint(S, T):
+    import numpy as np
+    base = flat(TAUPE, S.shape) * (0.94 + 0.06 * T)[..., None]
+    creases = np.clip(band(S, 0.245, 0.255) + band(S, 0.745, 0.755), 0, 1)
+    base = over(base, rgb(TAUPE_CREASE), creases * 0.7)
+    return over(base, rgb(TAUPE_HEM), band(T, 0.0, 0.03))  # clear hem line
+
+
+def sleeve_paint(S, T):
+    import numpy as np
+    base = flat(NAVY, S.shape)
+    cuff_rib = band(np.mod(S * 12.0, 1.0), 0.0, 0.15)
+    base = over(base, rgb(KNIT_RIB), band(T, 0.0, 0.07) * cuff_rib * 0.5)
+    base = over(base, rgb(CREAM), band(T, 0.0, 0.07))  # cream knit cuff at the wrist
+    base = over(base, rgb(NAVY_LIGHT), band(T, 0.07, 0.13))  # turned-back navy cuff band
+    base = over(base, rgb(NAVY_DARK), band(T, 0.9, 1.0) * 0.5)
+    return over(base, rgb(NAVY_DARK), np.clip(band(S, 0.0, 0.03) + band(S, 0.97, 1.0), 0, 1) * 0.5)
+
+
+def shoe_paint(S, T):
+    import numpy as np
+    base = flat(SHOE, S.shape)
+    base = over(base, rgb(SHOE_HI), band(S, 0.2, 0.3) * band(T, 0.5, 0.8) * 0.6)
+    base = over(base, rgb(SOLE), band(T, 0.0, 0.18))  # darker sole band
+    return over(base, rgb(SOLE), np.clip(band(T, 0.18, 0.2), 0, 1) * 0.8)
+
+
+def tote_paint(S, T):
+    import numpy as np
+    base = flat(TOTE, S.shape)
+    border = np.clip(band(S, 0.06, 0.08) + band(S, 0.92, 0.94) + band(T, 0.05, 0.07) + band(T, 0.93, 0.95), 0, 1)
+    base = over(base, rgb(STITCH), border * 0.7)
+    return over(base, rgb(TOTE_DARK), band(T, 0.80, 0.82))
+
+
+def strap_paint(S, T):
+    import numpy as np
+    base = flat(TOTE, S.shape)
+    return over(base, rgb(STITCH), np.clip(band(S, 0.15, 0.2) + band(S, 0.8, 0.85), 0, 1) * 0.7)
+
+
+def body_atlas():
+    import numpy as np
+    canvas = np.zeros((BODY_ATLAS, BODY_ATLAS, 3), dtype=np.float32)
+    painters = dict(coat=coat_paint, panel_l=panel_paint, panel_r=panel_paint, knit=knit_paint,
+                    lapel_l=lapel_paint, lapel_r=lapel_paint, trouser_l=trouser_paint, trouser_r=trouser_paint,
+                    sleeve_l=sleeve_paint, sleeve_r=sleeve_paint, shoe=shoe_paint, tote=tote_paint,
+                    strap=strap_paint, hands=lambda S, T: flat(SKIN, S.shape),
+                    neck=lambda S, T: flat(NECK_SKIN, S.shape))
+    for name, rect in BODY_RECTS.items():
+        paint(canvas, rect, painters[name])
+    return canvas
+
+
+def face_paint(S, T):
+    import numpy as np
+    x, z = -0.10 + 0.20 * S, 1.36 + 0.32 * T
+    base = flat(SKIN, S.shape)
+    for side in (-1.0, 1.0):
+        blush = np.exp(-(((x - side * 0.058) / 0.016) ** 2 + ((z - 1.478) / 0.009) ** 2))
+        base = over(base, rgb("#F0A9A0"), blush * 0.45)
+    base = over(base, rgb("#E2B39E"), np.exp(-((x / 0.004) ** 2 + ((z - 1.492) / 0.008) ** 2)) * 0.5)  # nose
+    base = over(base, rgb("#B0604E"), band(z - (1.462 + 6.0 * x * x), -0.0011, 0.0011) * (np.abs(x) < 0.013))
+    for side in (-1.0, 1.0):
+        xr = x * side
+        brow_z = 1.556 + 0.010 * (xr - 0.022) / 0.042
+        inside = (xr >= 0.022) & (xr <= 0.064)
+        base = over(base, rgb("#6A4A3A"), band(z - brow_z, -0.0013, 0.0013) * inside * 0.9)
+        dx = x - side * EYE_X
+        arc = EYE_Z - 0.008 * (1.0 - np.clip(dx / 0.024, -1, 1) ** 2)
+        base = over(base, rgb("#3B2A20"), band(z - arc, -0.0014, 0.0014) * (np.abs(dx) < 0.024))  # closed-eye arc
+    return base
+
+
+def eye_paint(S, T):
+    import numpy as np
+    dx, dz = (S - 0.5) * 2, (T - 0.5) * 2
+    base = flat(SKIN, S.shape)
+    shape = (dx ** 2 + (dz / 0.92) ** 2) < 1.0
+    iris = ((dx / 0.66) ** 2 + (dz / 0.80) ** 2) < 1.0
+    g = ((dz + 1.0) / 2.0)[..., None]
+    iris_colour = rgb(IRIS_TOP) * g + rgb(IRIS_BOT) * (1.0 - g)
+    out = np.where(shape[..., None], flat(SCLERA, S.shape), base)
+    out = np.where(iris[..., None], iris_colour, out)
+    out = np.where((shape & (dz > 0.78))[..., None], flat(LASH, S.shape), out)
+    highlight = (((dx + 0.28) / 0.16) ** 2 + ((dz - 0.30) / 0.16) ** 2 < 1.0) | (
+        ((dx - 0.26) / 0.07) ** 2 + ((dz + 0.22) / 0.07) ** 2 < 1.0)
+    out = np.where((shape & highlight)[..., None], flat("#FFFFFF", S.shape), out)
+    return out.astype(np.float32)
+
+
+def hair_paint(S, T):
+    import numpy as np
+    base = flat(HAIR, S.shape)
+    base = over(base, rgb(HAIR_HI), band(S, 0.30, 0.45) * 0.8)  # painted highlight band
+    edge = np.clip(band(S, 0.0, 0.10) + band(S, 0.90, 1.0) + band(T, 0.0, 0.08), 0, 1)
+    return over(base, rgb(HAIR_SHADE), edge * 0.6)
+
+
+def head_atlas():
+    import numpy as np
+    canvas = np.zeros((HEAD_ATLAS, HEAD_ATLAS, 3), dtype=np.float32)
+    paint(canvas, FACE_RECT, face_paint)
+    for side, rect in EYE_RECTS.items():
+        paint(canvas, rect, eye_paint)
+    for rect in HAIR_CELLS:
+        paint(canvas, rect, hair_paint)
+    return canvas
+
+
+def make_image(name, canvas, out):
+    """Write the atlas as a PNG beside the GLB, reload it as a file-backed sRGB image and embed it.
+
+    Pixels set on a generated image are lost when it is packed, so the file is the source of truth.
+    """
+    import bpy
+    import numpy as np
+    size = canvas.shape[0]
+    rgba = np.ones((size, size, 4), dtype=np.float32)
+    rgba[..., :3] = canvas
+    scratch = bpy.data.images.new(f"{name}_scratch", width=size, height=size, alpha=True)
+    scratch.pixels.foreach_set(rgba.ravel())
+    path = out / f"{name}.png"
+    scratch.filepath_raw = str(path)
+    scratch.file_format = "PNG"
+    scratch.save()
+    bpy.data.images.remove(scratch)
+    image = bpy.data.images.load(str(path), check_existing=False)
+    image.name = name
+    image.colorspace_settings.name = "sRGB"
+    image.pack()
+    return image
+
+
 def add_blinks(head, eyes):
-    """Each blink flattens its eye to ~10 % of its own height about the eye centre."""
+    """Each blink pushes that eye's lens along its normal, ~4 mm under the skin (the closed arc is painted there)."""
     head.shape_key_add(name="Basis")
     for name, (start, stop) in zip(BLINKS, eyes):
         key = head.shape_key_add(name=name)
         key.value = 0.0
         for index in range(start, stop):
-            key.data[index].co.z = EYE_Z + 0.1 * (key.data[index].co.z - EYE_Z)
-        print(f"{name}: {stop - start} eye vertices flattened about z {EYE_Z}")
+            co = key.data[index].co
+            normal = unit(sub((co.x, co.y, co.z), HEAD_CENTRE))
+            co.x -= normal[0] * BLINK_PUSH_M
+            co.y -= normal[1] * BLINK_PUSH_M
+            co.z -= normal[2] * BLINK_PUSH_M
+        print(f"{name}: {stop - start} eye vertices pushed {BLINK_PUSH_M * 1000:.0f} mm along the normal")
 
 
-def build_scene():
+def build_scene(out):
     import bpy
     for obj in list(bpy.data.objects):
         bpy.data.objects.remove(obj, do_unlink=True)
@@ -564,14 +859,15 @@ def build_scene():
     arm = build_armature(root, bone_pairs(positions))
     arm.name = arm.data.name = f"ARM_{CHARACTER_ID}"
 
-    body = build_body().mesh("VIS_body", root, arm)
+    body_image = make_image("body_atlas", body_atlas(), out)
+    head_image = make_image("head_atlas", head_atlas(), out)
+    body = build_body().mesh("VIS_body", root, arm, body_image)
     head_geometry, eyes = build_head()
-    head = head_geometry.mesh("VIS_head", root, arm)
+    head = head_geometry.mesh("VIS_head", root, arm, head_image)
     add_blinks(head, eyes)
     print(f"meshes: body {triangle_count(body.data)} triangles, head {triangle_count(head.data)} triangles")
 
     animation = Animation(bone_pairs(positions))
-    # Shallower walk crouch (lead round 1): the stance leg stays near straight instead of squatting.
     animation.gait_spec["walk"]["crouch"] = WALK_CROUCH_M
     build_actions(arm, animation)
     scene.frame_start, scene.frame_end = 1, 121
@@ -580,15 +876,15 @@ def build_scene():
 
 def report(body, head):
     top = max(vertex.co.z for obj in (body, head) for vertex in obj.data.vertices)
-    low = min(vertex.co.z for vertex in head.data.vertices)
-    high = max(vertex.co.z for vertex in head.data.vertices)
     chin, crown = HEAD_CENTRE[2] - HEAD_RADII[2], HEAD_CENTRE[2] + HEAD_RADII[2]
-    print(f"height {top:.3f} m; VIS_head {low:.3f}-{high:.3f} m (with hair); "
-          f"chin {chin:.3f} crown {crown:.3f} -> head {crown - chin:.3f} m; "
-          f"head ratio (chin->crown, no hair) {top / (crown - chin):.2f}; "
+    print(f"height {top:.3f} m; head {crown - chin:.3f} m (chin {chin:.3f}, crown {crown:.3f}); "
+          f"head ratio {top / (crown - chin):.2f}; "
           f"triangles {triangle_count(body.data) + triangle_count(head.data)}")
-    sleeve = 2 * (max(x + r for _, x, r, _ in SLEEVE_RINGS))
-    print(f"shoulder span {sleeve:.3f} m; coat hem z {HEM_Z:.2f} m")
+
+
+def set_camera(camera, location, turn):
+    camera.location = location
+    camera.rotation_euler = (math.radians(90.0), 0.0, math.radians(turn))
 
 
 def render_previews(out, arm):
@@ -596,7 +892,7 @@ def render_previews(out, arm):
     scene = bpy.context.scene
     scene.render.engine = "BLENDER_WORKBENCH"
     scene.display.shading.light = "STUDIO"
-    scene.display.shading.color_type = "VERTEX"
+    scene.display.shading.color_type = "TEXTURE"
     scene.display.shading.show_shadows = False
     scene.display.shading.show_cavity = False
     scene.render.resolution_x, scene.render.resolution_y = 600, 800
@@ -608,13 +904,13 @@ def render_previews(out, arm):
     scene.camera = camera
     views = {
         "front": ((0.0, 3.0, 0.84), 180.0, "idle", 1),
+        "q45": ((2.12, 2.12, 0.84), 135.0, "idle", 1),
         "side": ((3.0, 0.0, 0.84), 90.0, "idle", 1),
         "back": ((0.0, -3.0, 0.84), 0.0, "idle", 1),
         "walk8": ((2.2, 2.2, 0.84), 135.0, "walk", 8),
     }
     for name, (location, turn, action, frame) in views.items():
-        camera.location = location
-        camera.rotation_euler = (math.radians(90.0), 0.0, math.radians(turn))
+        set_camera(camera, location, turn)
         arm.animation_data.action = bpy.data.actions[action]
         scene.frame_set(frame)
         scene.render.filepath = str(out / f"{name}.png")
@@ -640,8 +936,7 @@ def render_walk_strip(out, arm, camera):
     arm.animation_data.action = bpy.data.actions["walk"]
     tiles = []
     for name, location, turn, row in views:
-        camera.location = location
-        camera.rotation_euler = (math.radians(90.0), 0.0, math.radians(turn))
+        set_camera(camera, location, turn)
         for column, frame in enumerate(frames):
             scene.frame_set(frame)
             path = out / f"walk_{name}_{frame:02d}.png"
@@ -674,10 +969,11 @@ def main():
     print(f"Blender {bpy.app.version_string}")
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=True)
-    arm, body, head, animation = build_scene()
+    arm, body, head, animation = build_scene(out)
     report(body, head)
     bpy.ops.wm.save_as_mainfile(filepath=str(out / f"{CHARACTER_ID}.blend"), compress=True)
-    print(export_character(CHARACTER_ID, "high", out, clips=animation.clips(), description=DERIVATION))
+    print(export_character(CHARACTER_ID, "high", out, clips=animation.clips(), description=DERIVATION,
+                           textured=True))
     if args.preview:
         render_walk_strip(out, arm, render_previews(out, arm))
 
