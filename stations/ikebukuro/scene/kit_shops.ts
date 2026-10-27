@@ -354,9 +354,10 @@ export async function loadShopKit(
     }
   }
   const placements = wanted.filter((p) => assets.has(p.piece));
-  // A sign belongs to a drawn shopfront: a shop whose piece failed keeps the bare PLATEAU panel and no sign.
-  const drawn = new Set(placements.map((p) => p.shop));
-  const signs = shopSigns(shops, openings, pieces).filter((s) => drawn.has(s.shop));
+  // A sign belongs to a drawn shopfront: it is anchored only on rows whose piece loaded, so a shop whose pieces all
+  // failed keeps the bare PLATEAU panels and no sign.
+  const loaded = Object.fromEntries(Object.entries(pieces).filter(([id]) => assets.has(id)));
+  const signs = shopSigns(shops, openings, loaded);
   const owned: { dispose(): void }[] = [];
   return {
     placements,

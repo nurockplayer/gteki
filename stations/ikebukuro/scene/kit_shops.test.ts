@@ -106,6 +106,9 @@ describe("placement maths", () => {
     expect(sign!.z).toBeCloseTo(12 + (2.2 + 0.3) * 1.15, 12);
     const wide = { ...windowRow, opening_id: "r-wide", polygon_ids: ["p-wide"], width: 6 };
     expect(shopSigns([{ ...shop, openings: ["p-wide"] }], [wide], pieces)[0]!.width).toBe(SIGN_MAX_WIDTH_M - 0.1);
+    // Only pieces that loaded anchor a sign: without the glazing piece it moves to the door row.
+    const noGlazing = Object.fromEntries(Object.entries(pieces).filter(([id]) => !id.includes("glazing")));
+    expect(shopSigns([shop], [door, windowRow, lowRow], noGlazing)[0]!.width).toBeCloseTo(3 - 0.1, 12);
     // A shop with no placed row (all under 1.8 m) gets no sign.
     expect(shopSigns([{ ...shop, openings: ["p-low"] }], [lowRow], pieces)).toEqual([]);
   });
