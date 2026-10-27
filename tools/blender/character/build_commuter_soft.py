@@ -29,7 +29,7 @@ CREAM, KNIT_RIB, BELT = "#EDE6D8", "#D8CEBA", "#2A2622"
 TAUPE, TAUPE_CREASE, TAUPE_HEM = "#A9A39B", "#948E86", "#8F897F"
 SHOE, SOLE, SHOE_HI = "#8C7766", "#5E4E42", "#9C8775"
 TOTE, TOTE_DARK, STITCH = "#9A8574", "#6E604F", "#B0A08A"
-SKIN, NECK_SKIN = "#F6D9C6", "#E9C4AE"
+SKIN, NECK_SKIN = "#F8DCCB", "#E9C4AE"
 HAIR, HAIR_HI, HAIR_SHADE = "#7A5541", "#9A7158", "#4E3528"
 IRIS_TOP, IRIS_BOT, SCLERA, LASH = "#5A3A2A", "#8A5A40", "#F4ECE6", "#2A1E18"
 
@@ -54,20 +54,21 @@ SHOE_RINGS = [(0.008, 0.060, 0.146), (0.029, 0.070, 0.161), (0.057, 0.069, 0.159
 HAND_Y = 0.030
 HAND_RINGS = [(0.80, 0.021), (0.85, 0.024), (0.90, 0.027), (0.94, 0.026)]
 # Flatter, wider tote (~0.30 w x 0.32 h x 0.08 d), top at waist height, hung from the right shoulder.
-TOTE_X, TOTE_RINGS = 0.275, [(0.68, 0.034, 0.140), (0.76, 0.040, 0.150), (0.84, 0.040, 0.150),
+TOTE_X, TOTE_RINGS = 0.295, [(0.68, 0.034, 0.140), (0.76, 0.040, 0.150), (0.84, 0.040, 0.150),
                              (0.92, 0.040, 0.150), (1.00, 0.034, 0.140)]
-STRAP_PATH = [(0.275, -0.09, 1.00), (0.300, -0.06, 1.16), (0.300, -0.03, 1.28), (0.240, 0.0, 1.40),
-              (0.300, 0.03, 1.28), (0.300, 0.06, 1.16), (0.275, 0.09, 1.00)]
+STRAP_PATH = [(0.295, -0.09, 1.00), (0.320, -0.06, 1.16), (0.320, -0.03, 1.28), (0.240, 0.0, 1.40),
+              (0.320, 0.03, 1.28), (0.320, 0.06, 1.16), (0.295, 0.09, 1.00)]
 WALK_CROUCH_M = 0.025  # near-straight stance leg; the shared Animation stays on its own default
 SPINE_STOPS = [(1.36, "spine_03"), (1.26, "spine_02"), (1.10, "spine_01"), (0.94, "pelvis")]
 
 # Head: 6 heads tall with the bob; chin 1.395, crown 1.675, hair to 1.690.
 HEAD_CENTRE, HEAD_RADII = (0.0, 0.0, 1.550), (0.110, 0.121, 0.150)
-EYE_X, EYE_Z = 0.045, 1.505
-EYE_HALF_W, EYE_HALF_H = 0.032, 0.024  # eyes ~2x the v2 area; eye height ~1/4 of the face
+EYE_X, EYE_Z = 0.050, 1.500
+EYE_HALF_W, EYE_HALF_H = 0.040, 0.030  # fix 3: bigger eyes, iris fills ~70% of the eye height
 # Solid bob shell (fix 1 item 3): (z, rx, ry) from the chin to above the crown. ear-level width >= 1.3x skull.
-BOB_SHELL = [(1.400, 0.118, 0.110), (1.450, 0.138, 0.135), (1.500, 0.150, 0.150), (1.550, 0.150, 0.150),
-             (1.600, 0.140, 0.140), (1.650, 0.125, 0.130), (1.680, 0.095, 0.105), (1.715, 0.040, 0.050)]
+BOB_LOWER = [(1.400, 0.122, 0.116), (1.450, 0.142, 0.135), (1.500, 0.152, 0.154), (1.545, 0.154, 0.156)]
+DOME_BASE_Z, DOME_RX, DOME_HEIGHT = 1.545, 0.154, 0.172  # hemisphere cap: crown at 1.717 m
+BOB_FADE_Z = 1.575  # the face opening closes into the forehead between 1.545 and 1.575 m
 BOB_OPEN = 0.75  # half-angle (rad) of the face opening in the lower shell, centred on the front
 BOB_TIPS = 10  # scallops around the lower edge
 FACE_X0, FACE_W, FACE_Z0, FACE_H = -0.115, 0.230, 1.370, 0.340  # face atlas span (metres)
@@ -92,9 +93,9 @@ def joint_positions():
     for side, s in (("l", -1.0), ("r", 1.0)):
         positions.update({
             f"clavicle_{side}": (s * 0.045, 0.0, 1.360), f"upperarm_{side}": (s * 0.170, 0.0, 1.335),
-            f"lowerarm_{side}": (s * 0.195, 0.0, 1.115), f"hand_{side}": (s * 0.205, HAND_Y, 0.940),
-            f"fingers_01_{side}": (s * 0.205, HAND_Y, 0.895), f"fingers_02_{side}": (s * 0.205, HAND_Y, 0.815),
-            f"thumb_01_{side}": (s * 0.211, 0.055, 0.925), f"thumb_02_{side}": (s * 0.216, 0.065, 0.905),
+            f"lowerarm_{side}": (s * 0.205, 0.0, 1.115), f"hand_{side}": (s * 0.235, HAND_Y, 0.945),
+            f"fingers_01_{side}": (s * 0.235, HAND_Y, 0.895), f"fingers_02_{side}": (s * 0.235, HAND_Y, 0.815),
+            f"thumb_01_{side}": (s * 0.241, 0.055, 0.925), f"thumb_02_{side}": (s * 0.246, 0.065, 0.905),
             f"thigh_{side}": (s * 0.085, 0.0, 0.85), f"calf_{side}": (s * 0.085, 0.0, 0.48),
             f"foot_{side}": (s * 0.085, -0.035, 0.075), f"ball_{side}": (s * 0.085, 0.13, 0.0),
         })
@@ -258,6 +259,16 @@ class Patch:
                 self.faces.append(tuple(quad))
                 self.uv.append([planar(self.points[v]) for v in quad] if planar else param)
         return index
+
+    def drop(self, remove):
+        """Remove the faces whose centre satisfies remove(centre), e.g. a cut-out for the face."""
+        kept = []
+        for face, uv in zip(self.faces, self.uv):
+            centre = tuple(sum(self.points[v][a] for v in face) / len(face) for a in range(3))
+            if not remove(centre):
+                kept.append((face, uv))
+        self.faces = [face for face, _ in kept]
+        self.uv = [uv for _, uv in kept]
 
     def _fan(self, ring, reverse, planar):
         n = len(ring)
@@ -439,14 +450,20 @@ def build_knit():
     return patch
 
 
+def lapel_width(z):
+    """Lapel width: 0.115 m at the shoulder, a point at 1.00 m, and a 2 cm notch step at 1.30 m."""
+    width = 0.115 * (z - 1.00) / 0.37
+    return width - 0.020 if z < 1.30 else width
+
+
 def build_lapels():
-    """Big triangular lapels as raised geometry: from the opening edge out over the coat front, widest at the
-    shoulder (0.085 m) and closing to a point at 1.02 m. The middle column stands proud of the coat."""
+    """Big triangular lapels as raised geometry: from the opening edge out over the coat front, with the dark
+    outer edge painted on the texture. The middle column stands proud of the coat."""
     out = []
     for s, rect in ((-1.0, BODY_RECTS["lapel_l"]), (1.0, BODY_RECTS["lapel_r"])):
         rows = []
-        for z in linspace(1.02, 1.37, 7):
-            width = 0.085 * (z - 1.02) / (1.37 - 1.02)
+        for z in (1.00, 1.10, 1.20, 1.29, 1.30, 1.34, 1.37):
+            width = max(lapel_width(z), 0.0)
             row = []
             for c in range(3):
                 x = s * (opening(z) + width * c / 2)
@@ -463,10 +480,10 @@ def sleeve_radius(z):
 
 
 def arm_axis_x(z):
-    """Sleeve axis x at height z, following the arm bones: shoulder 0.170 -> elbow 0.195 -> wrist 0.205."""
+    """Sleeve axis x at height z, following the arm bones: shoulder 0.170 -> elbow 0.205 -> wrist 0.235."""
     if z >= 1.115:
-        return interp([(1.115, 0.195), (1.335, 0.170)], z)
-    return interp([(0.940, 0.205), (1.115, 0.195)], z)
+        return interp([(1.115, 0.205), (1.335, 0.170)], z)
+    return interp([(0.945, 0.235), (1.115, 0.205)], z)
 
 
 def build_sleeve(s, rect):
@@ -508,7 +525,7 @@ def build_body():
     for s, side in ((-1.0, "l"), (1.0, "r")):
         body.add(build_sleeve(s, BODY_RECTS[f"sleeve_{side}"]), arm_weights(side))
         hand = Patch(BODY_RECTS["hands"])
-        hand.loft([ellipse_ring((s * 0.205, HAND_Y, z), (r, r * 0.6), 10) for z, r in HAND_RINGS],
+        hand.loft([ellipse_ring((s * 0.235, HAND_Y, z), (r, r * 0.6), 10) for z, r in HAND_RINGS],
                   cap_first=True, cap_last=True)
         body.add(hand, {f"hand_{side}": 1.0})
         body.add(build_trouser(s, BODY_RECTS[f"trouser_{side}"]), leg_weights(side))
@@ -576,8 +593,27 @@ BANGS = [((-0.060, -0.078), 0), ((-0.036, -0.052), 0), ((-0.012, -0.022), 0),
 
 
 def shell_radii(z):
-    """Bob shell (rx, ry) at height z, interpolated from BOB_SHELL."""
-    return (interp([(p[0], p[1]) for p in BOB_SHELL], z), interp([(p[0], p[2]) for p in BOB_SHELL], z))
+    """Bob (rx, ry) at height z: a rounded outline widest at cheek level, then a hemisphere cap to the crown."""
+    if z <= DOME_BASE_Z:
+        return (interp([(p[0], p[1]) for p in BOB_LOWER], z), interp([(p[0], p[2]) for p in BOB_LOWER], z))
+    t = math.asin(min(1.0, (z - DOME_BASE_Z) / DOME_HEIGHT))
+    rx = DOME_RX * math.cos(t)
+    return rx, 0.95 * rx + 0.010 * math.cos(t)
+
+
+def face_opening_angle(z):
+    if z <= DOME_BASE_Z:
+        return BOB_OPEN
+    return BOB_OPEN * max(0.0, (BOB_FADE_Z - z) / (BOB_FADE_Z - DOME_BASE_Z))
+
+
+def in_face_opening(centre):
+    x, y, z = centre
+    if y <= 0.0:
+        return False
+    rx, ry = shell_radii(z)
+    phi = math.atan2(y / ry, x / rx)
+    return abs(phi - math.pi / 2) < face_opening_angle(z)
 
 
 def hair_front_y(x, z):
@@ -586,49 +622,40 @@ def hair_front_y(x, z):
 
 
 def build_bob():
-    """One solid bob: a lower shell open at the face, a closed dome above 1.60 m, and five broad bangs.
+    """One solid bob: a closed rounded shell (lower outline plus hemisphere crown) with the face opening cut
+    out of its front, the lower edge scalloped into BOB_TIPS tips, and five tapered bangs over the forehead.
 
-    The lower edge is scalloped into BOB_TIPS tips that curve slightly inward. Ellipse angle theta is
-    measured from +X, so the front (+Y) is pi/2 and the face opening is centred there.
+    Ellipse angle theta is measured from +X, so the front (+Y) is pi/2.
     """
-    lower_zs = [1.400, 1.450, 1.500, 1.550, 1.600]
-    front = math.pi / 2
-    start, sweep = front + BOB_OPEN, 2 * math.pi - 2 * BOB_OPEN
+    zs = [1.400, 1.450, 1.500, DOME_BASE_Z] + [DOME_BASE_Z + DOME_HEIGHT * math.sin(math.radians(d))
+                                              for d in range(15, 91, 15)]
     rings = []
-    for k, z in enumerate(lower_zs):
+    for z in zs:
         rx, ry = shell_radii(z)
         ring = []
         for j in range(28):
-            theta = start + sweep * j / 27
-            lift = 0.0
-            if k <= 1:
-                wave = 0.5 + 0.5 * math.cos(BOB_TIPS * theta)  # 1 at a tip apex
-                lift = (0.020 if k == 0 else 0.010) * wave
-            point = (rx * math.cos(theta), ry * math.sin(theta), z - lift)
-            if k == 0:
-                point = (point[0] * (1 - 0.04 * (0.5 + 0.5 * math.cos(BOB_TIPS * theta))), point[1], point[2])
-            ring.append(point)
+            theta = math.tau * j / 28
+            wave = 0.5 + 0.5 * math.cos(BOB_TIPS * theta)  # 1 at a tip apex
+            lift = (0.020 if z < 1.42 else 0.010) * wave if z < 1.46 else 0.0
+            x, y = rx * math.cos(theta), ry * math.sin(theta)
+            if z < 1.42:
+                x *= 1 - 0.04 * wave  # tips curve slightly inward
+            ring.append((x, y, z - lift))
         rings.append(ring)
-    shell_patch = Patch(HAIR_CELLS[0])
-    shell_patch.grid(rings)
-    # Hemisphere dome: rings every 15 degrees from the 1.60 m base up to the crown, closed by a small cap.
-    base_rx, base_ry = shell_radii(1.600)
-    dome_rings = []
-    for deg in range(0, 91, 15):
-        t = math.radians(deg)
-        k = max(math.cos(t), 0.03)
-        dome_rings.append(ellipse_ring((0.0, 0.0, 1.600 + 0.115 * math.sin(t)), (base_rx * k, base_ry * k), 24))
-    dome = Patch(HAIR_CELLS[1])
-    dome.loft(dome_rings, cap_last=True)
-    out = [shell_patch, dome]
-    cells = iter(HAIR_CELLS[2:])
-    for root_x, tip_x in ((-0.060, -0.072), (-0.032, -0.040), (-0.004, -0.010), (0.024, 0.030), (0.052, 0.064)):
-        mid_x = (root_x + tip_x) / 2
-        path = [(root_x, hair_front_y(root_x, 1.690) + 0.006, 1.690),
-                (mid_x, hair_front_y(mid_x, 1.630) + 0.008, 1.630),
-                (tip_x, hair_front_y(tip_x, 1.575) + 0.010, 1.575)]
+    shell = Patch(HAIR_CELLS[0])
+    shell.loft(rings, cap_last=True)
+    shell.drop(in_face_opening)
+    out = [shell]
+    cells = iter(HAIR_CELLS[1:])
+    # Five tapered bangs: roots under the shell, sweeping 1.2 cm toward +x, tips alternating in height.
+    for root_x, tip_z in zip((-0.046, -0.026, -0.006, 0.014, 0.034), (1.585, 1.565, 1.575, 1.560, 1.580)):
+        tip_x, mid_x = root_x + 0.012, root_x + 0.006
+        mid_z = (1.665 + tip_z) / 2
+        path = [(root_x, hair_front_y(root_x, 1.665) + 0.002, 1.665),
+                (mid_x, hair_front_y(mid_x, mid_z) + 0.004, mid_z),
+                (tip_x, hair_front_y(tip_x, tip_z) + 0.003, tip_z)]
         bang = Patch(next(cells))
-        bang.tube(path, [(0.0135, 0.010), (0.0135, 0.010), (0.0125, 0.008)])  # >= 2.5 cm wide
+        bang.tube(path, [(0.0125, 0.006), (0.008, 0.0055), (0.003, 0.004)])  # tip width 6 mm, thickness <= 12 mm
         out.append(bang)
     return out
 
@@ -767,7 +794,7 @@ def face_paint(S, T):
     base = flat(SKIN, S.shape)
     for side in (-1.0, 1.0):
         blush = np.exp(-(((x - side * 0.060) / 0.017) ** 2 + ((z - 1.470) / 0.010) ** 2))
-        base = over(base, rgb("#F0A9A0"), blush * 0.45)
+        base = over(base, rgb("#F0A9A0"), blush * 0.585)
     base = over(base, rgb("#E2B39E"), np.exp(-((x / 0.004) ** 2 + ((z - 1.485) / 0.008) ** 2)) * 0.5)  # nose
     base = over(base, rgb("#B0604E"), band(z - (1.455 + 6.0 * x * x), -0.0012, 0.0012) * (np.abs(x) < 0.013))
     for side in (-1.0, 1.0):
@@ -786,12 +813,12 @@ def eye_paint(S, T):
     dx, dz = (S - 0.5) * 2, (T - 0.5) * 2
     base = flat(SKIN, S.shape)
     shape = (dx ** 2 + (dz / 0.92) ** 2) < 1.0
-    iris = ((dx / 0.66) ** 2 + (dz / 0.80) ** 2) < 1.0
+    iris = ((dx / 0.66) ** 2 + (dz / 0.70) ** 2) < 1.0
     g = ((dz + 1.0) / 2.0)[..., None]
     iris_colour = rgb(IRIS_TOP) * g + rgb(IRIS_BOT) * (1.0 - g)
     out = np.where(shape[..., None], flat(SCLERA, S.shape), base)
     out = np.where(iris[..., None], iris_colour, out)
-    out = np.where((shape & (dz > 0.78))[..., None], flat(LASH, S.shape), out)
+    out = np.where((shape & (dz > 0.74))[..., None], flat(LASH, S.shape), out)
     highlight = (((dx + 0.28) / 0.16) ** 2 + ((dz - 0.30) / 0.16) ** 2 < 1.0) | (
         ((dx - 0.26) / 0.07) ** 2 + ((dz + 0.22) / 0.07) ** 2 < 1.0)
     out = np.where((shape & highlight)[..., None], flat("#FFFFFF", S.shape), out)
