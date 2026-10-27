@@ -1,0 +1,158 @@
+{
+ "schema": "gteki.ikebukuro.shop-placements/0",
+ "note": "Visual-only shopfronts in PLATEAU openings (scene/shop_openings.json, by first polygon id). kind=placeholder: an original illustrative shop (示意店面), generic category text in our own words, no POI, connector, route node or search result. kind=real: a merchant with a printed tie; its position_basis says how exact it is. Signs are plain text in the GTEki sign font; no logo, photo or brand artwork. Accent colours are ours. Curated by the merchant scene lead, docs/assets/merchant-scene-inventory-2026-10-28.md.",
+ "shops": [
+  {
+   "id": "real-ikb-lumine-b1",
+   "kind": "real",
+   "poiId": "shop-ikb-lumine",
+   "openings": [
+    "poly-b79b5d8f-01c0-43aa-bfde-a6b7f0dfdaae",
+    "poly-4291c961-0ef3-4d50-afcd-c3bf7ff115ca"
+   ],
+   "front": "door_glazing",
+   "sign": {
+    "ja": "ルミネ池袋",
+    "en": "LUMINE IKEBUKURO"
+   },
+   "accent": "#f4f2ee",
+   "display": "department",
+   "position_basis": "printed-relative (「JR池袋駅南改札、正面右手よりすぐ」), not surveyed",
+   "sourceIds": [
+    "lumine-ikebukuro-access-2026-10"
+   ],
+   "field_check": "FC-MER-01",
+   "ruling": "R1, director 2026-10-28 03:0x JST: visual only; no connector, node or coordinate; no 'you are here' or distance on the facade; moves or goes if FC-MER-01 differs"
+  },
+  {
+   "id": "ph-ikb-b1e-01",
+   "kind": "placeholder",
+   "openings": [
+    "poly-ee944784-bd30-4684-ae11-65dd35697972"
+   ],
+   "front": "glazing",
+   "sign": {
+    "ja": "カフェ",
+    "en": "Café"
+   },
+   "accent": "#8a5a3c",
+   "display": "cafe"
+  },
+  {
+   "id": "ph-ikb-b1e-03",
+   "kind": "placeholder",
+   "openings": [
+    "poly-8a9c3a9f-31d4-41ae-afc3-ad3be94bfc19"
+   ],
+   "front": "open",
+   "sign": {
+    "ja": "くすり・日用品",
+    "en": "Pharmacy"
+   },
+   "accent": "#2f7f8f",
+   "display": "pharmacy"
+  },
+  {
+   "id": "ph-ikb-b1e-04",
+   "kind": "placeholder",
+   "openings": [
+    "poly-010bad24-1858-4750-8821-03de7491206b",
+    "poly-319224f0-e7af-4235-8eb2-5884f1055d9a",
+    "poly-9f436830-cc5d-487f-9ed7-17690d17545d",
+    "poly-e3d82a79-8c0a-440d-bb1d-c383d7ebabca"
+   ],
+   "front": "door_glazing",
+   "sign": {
+    "ja": "服飾雑貨",
+    "en": "Accessories"
+   },
+   "accent": "#6d5a8a",
+   "display": "fashion"
+  },
+  {
+   "id": "ph-ikb-b1e-05",
+   "kind": "placeholder",
+   "openings": [
+    "poly-164c1132-3ea8-4d00-bb7e-41aaf933290a",
+    "poly-1dc8f012-f4ea-4ef2-b317-f6a7a2afb99d"
+   ],
+   "front": "door_glazing",
+   "sign": {
+    "ja": "書店・文具",
+    "en": "Books"
+   },
+   "accent": "#3f5f8f",
+   "display": "books"
+  },
+  {
+   "id": "ph-ikb-b1e-08",
+   "kind": "placeholder",
+   "openings": [
+    "poly-788b4c29-63b3-40b7-98e4-303009ac6cf8"
+   ],
+   "front": "open",
+   "sign": {
+    "ja": "弁当・惣菜",
+    "en": "Deli"
+   },
+   "accent": "#b5532f",
+   "display": "deli"
+  },
+  {
+   "id": "ph-ikb-b1e-09",
+   "kind": "placeholder",
+   "openings": [
+    "poly-09c55ade-6380-4d82-9911-2d16ad69e652"
+   ],
+   "front": "glazing",
+   "sign": {
+    "ja": "和菓子",
+    "en": "Wagashi"
+   },
+   "accent": "#7a4a5a",
+   "display": "sweets"
+  },
+  {
+   "id": "ph-ikb-b1e-10",
+   "kind": "placeholder",
+   "openings": [
+    "poly-05a15b3d-dac6-4582-8f65-a4f4192fa92c"
+   ],
+   "front": "glazing",
+   "sign": {
+    "ja": "生活雑貨",
+    "en": "Homeware"
+   },
+   "accent": "#4f6f6a",
+   "display": "homeware"
+  },
+  {
+   "id": "ph-ikb-b1e-11",
+   "kind": "placeholder",
+   "openings": [
+    "poly-33720987-9bdd-4c8e-bb46-884e837e905f"
+   ],
+   "front": "shutter_half",
+   "sign": {
+    "ja": "",
+    "en": ""
+   },
+   "accent": "#7d8186",
+   "display": "none"
+  },
+  {
+   "id": "ph-ikb-b1e-12",
+   "kind": "placeholder",
+   "openings": [
+    "poly-005b2a87-f72f-465d-90e7-4783958d611c"
+   ],
+   "front": "glazing",
+   "sign": {
+    "ja": "ベーカリー",
+    "en": "Bakery"
+   },
+   "accent": "#c98a3d",
+   "display": "bakery"
+  }
+ ]
+}

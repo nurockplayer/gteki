@@ -11,6 +11,7 @@ import { type AccessFences, buildAccessFences } from "./fences.ts";
 import { type KitGraph, type KitManifest, loadKit } from "./kit.ts";
 import { type CatalogPlacement, lazyKitCatalog } from "./kit_catalog_loader.ts";
 import { type ColumnsFile, loadColumnKit } from "./kit_columns.ts";
+import { type Opening, type Shop, loadShopKit } from "./kit_shops.ts";
 import { loadSignKit } from "./kit_signs.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
 import { createAmbience } from "./ambience.ts";
@@ -25,6 +26,8 @@ import accessFences from "./access_fences.json";
 import kitManifest from "./kit/kit.json";
 import kitPlacements from "./kit_placements.json";
 import columnsFile from "./columns.json";
+import shopPlacements from "./shop_placements.json";
+import shopOpenings from "./shop_openings.json";
 import graph from "../gteki/graph.json";
 import litMeta from "../gteki/assets/ikebukuro_b1_lit.meta.json";
 
@@ -402,6 +405,9 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   // The three JR gate nodes get one REPRESENTATIVE array each (aisle count and orientation unverified; see kit.ts).
   const kit = await loadKit(THREE, ctx, kitManifest as KitManifest, (accessFences as AccessFences).marks, low, graph as unknown as KitGraph);
   const columnKit = await loadColumnKit(THREE, ctx, kitManifest as KitManifest, (columnsFile as unknown as ColumnsFile).columns, low);
+  // Curated shopfronts (#209): visual only, in the surveyed PLATEAU openings; they never enter the walker's world.
+  const shopKit = await loadShopKit(THREE, ctx, kitManifest as KitManifest, (shopPlacements as unknown as { shops: Shop[] }).shops,
+    (shopOpenings as unknown as { openings: Opening[] }).openings, low);
   // Phones keep the sign frames but not their rods: with rods all 119 frames are ~40k triangles, without ~19k.
   const signKit = await loadSignKit(THREE, ctx, kitManifest as KitManifest, low, { omitPhoneRods: true });
   const fences = buildAccessFences(THREE, accessFences as AccessFences, toRenderer, kit.railed);
@@ -497,6 +503,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
 
   root.add(kit.build(THREE, env, toRenderer).group);
   root.add(columnKit.build(THREE, env, toRenderer).group);
+  root.add(shopKit.build(THREE, env, toRenderer).group);
   // Surveyed stair/escalator dressing is visual only. Load after the attached scene's first frame, one GLB at a time.
   const catalogKit = lazyKitCatalog(THREE, ctx, (kitPlacements as unknown as { placements: CatalogPlacement[] }).placements, low, root, env, toRenderer);
 
@@ -556,6 +563,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       finishes.dispose();
       kit.dispose();
       columnKit.dispose();
+      shopKit.dispose();
       catalogKit.dispose();
       signKit.dispose();
       signs.dispose();
