@@ -14,7 +14,7 @@ import type { KitAsset, KitBudget, KitRole, KitTier, PlaceholderGroup } from "./
 export const KIT_SWAP_DEFAULT = true;
 
 /**
- * Roles placed with no opt-in. Escalator dressing replaces the procedural balustrade, handrail and skirt
+ * Roles placed with no opt-in. Escalator dressing replaces the procedural glass panel, handrail and top rail (the steel skirt stays)
  * (batch 2); stairs, gates and lifts are not dressed by default and stay opt-in through `?kit=1`.
  */
 export const KIT_DEFAULT_ROLES: ReadonlySet<KitRole> = new Set<KitRole>(["escalator"]);
@@ -98,7 +98,7 @@ export const ROLE_REPLACES: Record<KitRole, { group: PlaceholderGroup | null; ho
   // Stairs: the kit piece is nosing strips only, which replace the per-step nosing boxes (tagged per run in build.ts).
   stairs: { group: "stair-nosing", hooked: true },
   // Escalators: the piece carries the balustrade, handrail, newel and comb, so it replaces the procedural glass
-  // panels, box handrails and steel skirts/rails (tagged per run in build.ts). Truss, steps and indicator lamps stay.
+  // panels, box handrails and top rails (tagged per run in build.ts). Truss, steps, steel skirts and lamps stay.
   escalator: { group: "escalator-balustrade", hooked: true },
   exit: { group: null, hooked: false },
   toilet: { group: null, hooked: false },

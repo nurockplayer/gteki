@@ -853,7 +853,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         panel.profile!.bottomA = za + 0.15;
         panel.profile!.bottomB = zb + 0.15;
       }
-      // The escalator's procedural balustrade panel, handrail and skirt are one placeholder group, hidden per run
+      // The escalator's procedural balustrade panel, handrail and top rail are one placeholder group, hidden per run
       // when the kit piece that replaces them is placed; stairs keep their side walls and pipes.
       const panelGeo = enclosureWallGeometry(panel);
       if (r.mode === "stairs") sideGeos.push(panelGeo);
@@ -868,8 +868,8 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       } else {
         const rubber = boxAlong(a, b, 0.09, 0.07);
         rubberGeos.push(ledger ? ledger.tag("escalator-balustrade", r.edgeId, rubber) : rubber);
-        const skirt = enclosureWallGeometry({ ...w, profile: { bottomA: za - 0.12, bottomB: zb - 0.12, topA: za + 0.22, topB: zb + 0.22 } });
-        steelGeos.push(ledger ? ledger.tag("escalator-balustrade", r.edgeId, skirt) : skirt);
+        // The steel skirt stays on dressed runs: the kit piece is built with skirts: false.
+        steelGeos.push(enclosureWallGeometry({ ...w, profile: { bottomA: za - 0.12, bottomB: zb - 0.12, topA: za + 0.22, topB: zb + 0.22 } }));
         const rail = boxAlong(v3({ ...w.a, z: za + 0.88 }), v3({ ...w.b, z: zb + 0.88 }), 0.025, 0.025);
         steelGeos.push(ledger ? ledger.tag("escalator-balustrade", r.edgeId, rail) : rail);
       }
