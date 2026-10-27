@@ -116,10 +116,9 @@
    "id": "ph-ikb-b1e-10",
    "kind": "placeholder",
    "openings": [
-    "poly-264a5298-cd05-43d3-b552-3afc5c75c35a",
     "poly-05a15b3d-dac6-4582-8f65-a4f4192fa92c"
    ],
-   "front": "door_glazing",
+   "front": "glazing",
    "sign": {
     "ja": "生活雑貨",
     "en": "Homeware"
