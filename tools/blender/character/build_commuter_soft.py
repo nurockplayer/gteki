@@ -56,8 +56,8 @@ HAND_RINGS = [(0.80, 0.021), (0.85, 0.024), (0.90, 0.027), (0.94, 0.026)]
 # Flatter, wider tote (~0.30 w x 0.32 h x 0.08 d), top at waist height, hung from the right shoulder.
 TOTE_X, TOTE_RINGS = 0.295, [(0.68, 0.034, 0.140), (0.76, 0.040, 0.150), (0.84, 0.040, 0.150),
                              (0.92, 0.040, 0.150), (1.00, 0.034, 0.140)]
-STRAP_PATH = [(0.295, -0.09, 1.00), (0.320, -0.06, 1.16), (0.320, -0.03, 1.28), (0.240, 0.0, 1.40),
-              (0.320, 0.03, 1.28), (0.320, 0.06, 1.16), (0.295, 0.09, 1.00)]
+STRAP_PATH = [(0.295, -0.14, 1.00), (0.265, -0.10, 1.15), (0.205, -0.06, 1.30), (0.158, 0.0, 1.354),
+              (0.205, 0.06, 1.30), (0.265, 0.10, 1.15), (0.295, 0.14, 1.00)]
 WALK_CROUCH_M = 0.025  # near-straight stance leg; the shared Animation stays on its own default
 SPINE_STOPS = [(1.36, "spine_03"), (1.26, "spine_02"), (1.10, "spine_01"), (0.94, "pelvis")]
 
@@ -424,11 +424,17 @@ def build_coat_upper():
 
 
 def build_skirt_panels():
-    """Two lower panels: left runs front-left edge to the back vent, right runs back vent to front-right edge."""
+    """Two lower panels: left runs front-left edge to the back vent, right runs back vent to front-right edge.
+
+    The panels run 2 cm above the 0.86 m split and sit 3 mm inside the upper coat there, so the overlap is
+    hidden and no light edge shows across the back.
+    """
     left, right = Patch(BODY_RECTS["panel_l"]), Patch(BODY_RECTS["panel_r"])
     rings_l, rings_r = [], []
-    for z in linspace(HEM_Z, COAT_SPLIT_Z, 6):
+    for z in linspace(HEM_Z, COAT_SPLIT_Z + 0.02, 8):
         rx, ry = coat_radii(z)
+        inset = 0.003 if z > COAT_SPLIT_Z else 0.0
+        rx, ry = rx - inset, ry - inset
         theta = edge_angle(z)
         rings_l.append(arc_ring((0.0, 0.0, z), (rx, ry), math.pi - theta, 1.5 * math.pi + SKIRT_OVERLAP, 12))
         grow = 0.003 if z < 0.78 else 0.0  # the right panel sits 3 mm proud so the laps never share a surface
@@ -535,7 +541,7 @@ def build_body():
               cap_first=True, cap_last=True)
     body.add(tote, {"pelvis": 1.0})
     strap = Patch(BODY_RECTS["strap"])
-    strap.tube(STRAP_PATH, [(0.012, 0.005)] * len(STRAP_PATH), sides=6)
+    strap.tube(STRAP_PATH, [(0.008, 0.004)] * len(STRAP_PATH), sides=6)
     body.add(strap, strap_weights)
     return body
 
@@ -621,9 +627,41 @@ def hair_front_y(x, z):
     return ry * math.sqrt(max(0.0, 1.0 - (x / rx) ** 2))
 
 
+def fringe_z(x):
+    """Lower edge of the fringe: five rounded-point scallops between six tips (x, z), a 8 mm cusp between tips."""
+    tips_x = [-0.085, -0.051, -0.017, 0.017, 0.051, 0.085]
+    tips_z = [1.578, 1.565, 1.572, 1.560, 1.570, 1.590]
+    for i in range(5):
+        if tips_x[i] <= x <= tips_x[i + 1]:
+            t = (x - tips_x[i]) / (tips_x[i + 1] - tips_x[i])
+            return tips_z[i] + (tips_z[i + 1] - tips_z[i]) * t + 0.008 * math.sin(math.pi * t)
+    return tips_z[0] if x < 0 else tips_z[-1]
+
+
+def build_fringe():
+    """One curved fringe sheet on the forehead: 4 mm proud of the shell, with an 8 mm back face."""
+    columns = [-0.085 + 0.170 * j / 24 for j in range(25)]
+    rows_front, rows_back = [], []
+    top = 1.660  # tucked under the crown shell
+    for r in range(4):
+        front_row, back_row = [], []
+        for x in columns:
+            low = fringe_z(x)
+            z = low + (top - low) * r / 3
+            y = hair_front_y(x, z) + 0.004
+            front_row.append((x, y, z))
+            back_row.append((x, y - 0.008, z))
+        rows_front.append(front_row)
+        rows_back.append(back_row)
+    sheet = Patch(HAIR_CELLS[1])
+    sheet.grid(rows_front, flip=True)
+    sheet.grid(rows_back)  # the back face: normals point away from the forehead
+    return sheet
+
+
 def build_bob():
     """One solid bob: a closed rounded shell (lower outline plus hemisphere crown) with the face opening cut
-    out of its front, the lower edge scalloped into BOB_TIPS tips, and five tapered bangs over the forehead.
+    out of its front, the lower edge scalloped into BOB_TIPS tips, and one fringe sheet over the forehead.
 
     Ellipse angle theta is measured from +X, so the front (+Y) is pi/2.
     """
@@ -645,19 +683,7 @@ def build_bob():
     shell = Patch(HAIR_CELLS[0])
     shell.loft(rings, cap_last=True)
     shell.drop(in_face_opening)
-    out = [shell]
-    cells = iter(HAIR_CELLS[1:])
-    # Five tapered bangs: roots under the shell, sweeping 1.2 cm toward +x, tips alternating in height.
-    for root_x, tip_z in zip((-0.046, -0.026, -0.006, 0.014, 0.034), (1.585, 1.565, 1.575, 1.560, 1.580)):
-        tip_x, mid_x = root_x + 0.012, root_x + 0.006
-        mid_z = (1.665 + tip_z) / 2
-        path = [(root_x, hair_front_y(root_x, 1.665) + 0.002, 1.665),
-                (mid_x, hair_front_y(mid_x, mid_z) + 0.004, mid_z),
-                (tip_x, hair_front_y(tip_x, tip_z) + 0.003, tip_z)]
-        bang = Patch(next(cells))
-        bang.tube(path, [(0.0125, 0.006), (0.008, 0.0055), (0.003, 0.004)])  # tip width 6 mm, thickness <= 12 mm
-        out.append(bang)
-    return out
+    return [shell, build_fringe()]
 
 
 def build_head():
@@ -701,11 +727,16 @@ def paint(canvas, rect, painter):
     canvas[y0:y0 + h, x0:x0 + w] = painter(S, T)
 
 
-def coat_paint(S, T):
+def navy_shade(S):
     import numpy as np
     base = flat(NAVY, S.shape)
     edge = np.abs(S - 0.5) * 2
-    base = base * (1.0 - 0.10 * edge ** 2)[..., None] * (0.92 + 0.08 * T)[..., None]
+    return base * (1.0 - 0.10 * edge ** 2)[..., None]
+
+
+def coat_paint(S, T):
+    import numpy as np
+    base = navy_shade(S)
     back = (np.abs(S - 0.5) < 0.32).astype(np.float32)
     base = over(base, rgb(NAVY_DARK), band(T, 0.725, 0.733) * back)  # yoke seam across the back
     base = over(base, rgb(NAVY_LIGHT), band(T, 0.733, 0.79) * back * 0.5)  # storm flap above it
@@ -715,12 +746,10 @@ def coat_paint(S, T):
 
 def panel_paint(S, T):
     import numpy as np
-    base = flat(NAVY, S.shape) * (0.92 + 0.08 * T)[..., None]
-    folds = np.clip(band(S, 0.345, 0.355) + band(S, 0.645, 0.655), 0, 1)
-    base = over(base, rgb(NAVY_DARK), folds * 0.6)
-    base = over(base, rgb(NAVY_DARK), band(T, 0.0, 0.05) * 0.6)  # hem edge
-    base = over(base, rgb(NAVY_DARK), np.clip(band(S, 0.0, 0.04) + band(S, 0.96, 1.0), 0, 1) * 0.8)  # vent edges
-    return base
+    base = navy_shade(S)
+    base = over(base, rgb(NAVY_DARK), band(T, 0.0, 0.05) * 0.6)  # hem edge at 0.50 m
+    vent = (T < 0.66).astype(np.float32)  # the back vent runs from about 0.75 m down
+    return over(base, rgb(NAVY_DARK), np.clip(band(S, 0.0, 0.04) + band(S, 0.96, 1.0), 0, 1) * 0.8 * vent)
 
 
 def knit_paint(S, T):
