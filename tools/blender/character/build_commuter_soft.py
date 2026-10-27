@@ -34,7 +34,7 @@ HAIR_VOLUME, HAIR_TEMPLE_Z, HAIR_HEM_Z = 0.015, 1.505, 1.393
 HAIR_Y_SHIFT = -0.006  # a bob carries its volume behind the ears
 HAIR_RING_Z = (HAIR_HEM_Z, 1.425, 1.462, HAIR_TEMPLE_Z, 1.540, 1.570, 1.600, 1.625,
                1.647, 1.664, 1.674, 1.680)
-EYE_Y, EYE_Z, EYE_RADII = 0.087, 1.522, (0.014, 0.0075, 0.020)
+EYE_Y, EYE_Z, EYE_RADII = 0.085, 1.522, (0.0161, 0.0080, 0.023)
 HAND_Y = 0.030
 WALK_CROUCH_M = 0.025  # near-straight stance leg; the shared Animation stays on its own default
 
@@ -307,14 +307,19 @@ class Geometry:
 
 # ---- the character ----------------------------------------------------------------------------
 
+# The top rings taper into the neck opening instead of closing with a wide flat cap: that flat cap read
+# as a rectangular block at the shoulders.
 COAT_RINGS = [(0.50, 0.205, 0.135), (0.56, 0.198, 0.130), (0.66, 0.186, 0.123), (0.78, 0.176, 0.115),
-              (0.88, 0.170, 0.108), (0.98, 0.138, 0.092), (1.06, 0.110, 0.080), (1.14, 0.114, 0.084),
-              (1.22, 0.124, 0.092), (1.30, 0.128, 0.092), (1.38, 0.117, 0.084)]
+              (0.88, 0.170, 0.108), (0.98, 0.138, 0.092), (1.06, 0.110, 0.080), (1.14, 0.116, 0.086),
+              (1.20, 0.126, 0.092), (1.26, 0.136, 0.096), (1.30, 0.146, 0.098), (1.345, 0.146, 0.096),
+              (1.372, 0.118, 0.084), (1.388, 0.090, 0.074)]
 TROUSER_RINGS = [(0.05, 0.048), (0.10, 0.050), (0.20, 0.055), (0.34, 0.060), (0.50, 0.068),
                  (0.62, 0.072), (0.74, 0.076), (0.86, 0.080)]
+# The sleeve's dome tops out level with the coat's shoulder slope, so it blends instead of standing on it.
 SLEEVE_RINGS = [(0.93, 0.140, 0.040, 0.028), (0.99, 0.142, 0.042, 0.024), (1.13, 0.145, 0.050, 0.012),
-                (1.24, 0.142, 0.054, 0.005), (1.32, 0.136, 0.056, 0.0), (1.365, 0.130, 0.054, 0.0),
-                (1.392, 0.122, 0.048, 0.0), (1.410, 0.114, 0.034, 0.0), (1.420, 0.108, 0.018, 0.0)]
+                (1.20, 0.144, 0.053, 0.006), (1.26, 0.141, 0.055, 0.002), (1.305, 0.139, 0.056, 0.0),
+                (1.340, 0.137, 0.055, 0.0), (1.365, 0.134, 0.049, 0.0), (1.382, 0.131, 0.036, 0.0),
+                (1.392, 0.128, 0.018, 0.0)]
 SHOE_RINGS = [(0.006, 0.045, 0.110), (0.022, 0.052, 0.122), (0.044, 0.051, 0.120),
               (0.060, 0.046, 0.111), (0.070, 0.034, 0.094), (0.075, 0.020, 0.062)]
 HAND_RINGS = [(0.80, 0.021), (0.85, 0.024), (0.90, 0.027), (0.94, 0.026)]
@@ -325,36 +330,110 @@ STRAP_PATH = [(0.215, -0.135, 0.975), (0.205, -0.115, 1.15), (0.175, -0.080, 1.3
               (0.145, -0.005, 1.432), (0.172, 0.070, 1.29), (0.198, 0.115, 1.10), (0.212, 0.135, 0.978)]
 
 
+def coat_radii(z):
+    """Coat ring (rx, ry) interpolated at height z."""
+    if z <= COAT_RINGS[0][0]:
+        return COAT_RINGS[0][1], COAT_RINGS[0][2]
+    for (z0, x0, y0), (z1, x1, y1) in zip(COAT_RINGS, COAT_RINGS[1:]):
+        if z0 <= z <= z1:
+            t = (z - z0) / (z1 - z0)
+            return x0 + (x1 - x0) * t, y0 + (y1 - y0) * t
+    return COAT_RINGS[-1][1], COAT_RINGS[-1][2]
+
+
+def coat_front(x, z, lift):
+    """Point on the coat's front surface at (x, z), pushed out along +Y by lift."""
+    rx, ry = coat_radii(z)
+    x = max(-0.97 * rx, min(0.97 * rx, x))
+    return (x, ry * math.sqrt(max(0.0, 1.0 - (x / rx) ** 2)) + lift, z)
+
+
+# The coat is open in a soft V from the collar to mid-chest; the cream knit shows inside it.
+V_TOP_Z, V_TOP_HALF, V_BOTTOM_Z, V_BOTTOM_HALF = 1.386, 0.068, 1.19, 0.010
+KNIT_HALF = 0.068
+
+
+def v_half_width(z):
+    return V_BOTTOM_HALF + (V_TOP_HALF - V_BOTTOM_HALF) * (z - V_BOTTOM_Z) / (V_TOP_Z - V_BOTTOM_Z)
+
+
+# Columns must include +-V_BOTTOM_HALF: that is where the V's lower boundary kinks, and a column layout
+# that straddles it would interpolate the knit's edge above the fold line and open a navy sliver.
+KNIT_COLUMNS = (-0.068, -0.055, -0.042, -0.030, -0.020, -0.010, 0.0,
+                0.010, 0.020, 0.030, 0.042, 0.055, 0.068)
+
+
+def build_knit():
+    """Cream crew-neck layer: a curved patch inside the V with a rounded neckline arc at the top."""
+    rows = 4
+    slope = (V_TOP_Z - V_BOTTOM_Z) / (V_TOP_HALF - V_BOTTOM_HALF)
+    points, faces = [], []
+    for i in range(rows + 1):
+        for x in KNIT_COLUMNS:
+            share = abs(x) / KNIT_HALF
+            top = 1.348 + (V_TOP_Z - 1.348) * share ** 1.5
+            # The knit's lower edge is the lapels' fold line itself, so the opening always shows cream.
+            low = min(V_BOTTOM_Z + max(0.0, abs(x) - V_BOTTOM_HALF) * slope, top - 0.004)
+            points.append(coat_front(x, low + (top - low) * i / rows, 0.003))
+    columns = len(KNIT_COLUMNS) - 1
+    for i in range(rows):
+        for j in range(columns):
+            a, b = i * (columns + 1) + j, (i + 1) * (columns + 1) + j
+            faces.append((a, b, b + 1, a + 1))
+    return points, faces
+
+
+def build_lapels():
+    """Two navy lapels: the open coat's front edges, folded proud of the knit along the V."""
+    rows = 6
+    out = []
+    for s in (-1.0, 1.0):
+        points, faces = [], []
+        # Columns must run in +X on both sides or the left lapel's faces would point into the body.
+        fold = [(0.0, 0.011), (0.014, 0.006), (0.028, 0.002)]
+        for i in range(rows + 1):
+            z = V_BOTTOM_Z + (V_TOP_Z - V_BOTTOM_Z) * i / rows
+            inner = s * v_half_width(z)
+            for offset, lift in (fold if s > 0 else fold[::-1]):
+                points.append(coat_front(inner + s * offset, z, lift))
+        for i in range(rows):
+            for j in range(2):
+                a, b = i * 3 + j, (i + 1) * 3 + j
+                faces.append((a, b, b + 1, a + 1))
+        out.append((points, faces))
+    return out
+
+
 def build_body():
-    """Coat, trousers, shoes, hands, neck, collar, neckline and the tote."""
+    """Coat, trousers, shoes, hands, neck, collar, knit, lapels and the tote."""
     body = Geometry()
-    rings = [ellipse_ring((0.0, 0.0, z), (rx, ry), 12) for z, rx, ry in COAT_RINGS]
+    rings = [ellipse_ring((0.0, 0.0, z), (rx, ry), 16) for z, rx, ry in COAT_RINGS]
     body.add(*loft(rings, cap_end=True), weights=coat_weights, hex_colour=COAT)
 
-    # 5 cm stand collar: it hides most of the neck and meets the bob's level hem at the jawline.
-    collar = [ellipse_ring((0.0, 0.0, z), (rx, ry), 12) for z, rx, ry in
-              [(1.343, 0.070, 0.062), (1.368, 0.073, 0.065), (1.393, 0.077, 0.069)]]
-    body.add(*loft(collar), weights={"spine_03": 1.0}, hex_colour=COAT, smooth=False)
+    # Stand collar, emerging through the coat's neckline so no neck shows under the jaw.
+    collar = [ellipse_ring((0.0, 0.0, z), (rx, ry), 16) for z, rx, ry in
+              [(1.352, 0.094, 0.082), (1.372, 0.092, 0.080), (1.396, 0.088, 0.077)]]
+    body.add(*loft(collar), weights={"spine_03": 1.0}, hex_colour=COAT)
 
     neck = [ellipse_ring((0.0, 0.0, z), (0.052, 0.050), 10) for z in (1.32, 1.44)]
     body.add(*loft(neck), weights={"neck_01": 1.0}, hex_colour=SKIN)
 
-    # Cream knit V-neck, sitting proud of the coat's chest surface.
-    neckline = [(-0.045, 0.086, 1.335), (0.0, 0.096, 1.330), (0.045, 0.086, 1.335), (0.0, 0.100, 1.250)]
-    body.add(neckline, [(0, 1, 3), (1, 2, 3)], weights={"spine_03": 1.0}, hex_colour=CREAM, smooth=False)
+    body.add(*build_knit(), weights={"spine_03": 1.0}, hex_colour=CREAM)
+    for points, faces in build_lapels():
+        body.add(points, faces, weights={"spine_03": 1.0}, hex_colour=COAT, smooth=False)
 
     for side, s in (("l", -1.0), ("r", 1.0)):
         # The sleeve runs up over the shoulder joint and closes with a rounded cap: no shoulder pad.
-        sleeve = [ellipse_ring((s * x, y, z), (r, r * 0.93), 10) for z, x, r, y in SLEEVE_RINGS]
+        sleeve = [ellipse_ring((s * x, y, z), (r, r * 0.93), 16) for z, x, r, y in SLEEVE_RINGS]
         body.add(*loft(sleeve, cap_start=True, cap_end=True), weights=arm_weights(side), hex_colour=COAT)
 
-        hand = [ellipse_ring((s * 0.136, HAND_Y, z), (r, r * 0.6), 8) for z, r in HAND_RINGS]
+        hand = [ellipse_ring((s * 0.136, HAND_Y, z), (r, r * 0.6), 10) for z, r in HAND_RINGS]
         body.add(*loft(hand, cap_start=True, cap_end=True), weights={f"hand_{side}": 1.0}, hex_colour=SKIN)
 
-        leg = [ellipse_ring((s * 0.085, 0.0, z), (r, r), 10) for z, r in TROUSER_RINGS]
+        leg = [ellipse_ring((s * 0.085, 0.0, z), (r, r), 14) for z, r in TROUSER_RINGS]
         body.add(*loft(leg, cap_start=True), weights=leg_weights(side), hex_colour=TROUSERS)
         # Low loafer: an oval footprint flattened to a 7 cm top, standing on z = 0.
-        shoe = [ellipse_ring((s * 0.085, 0.045, z), (rx, ry), 10) for z, rx, ry in SHOE_RINGS]
+        shoe = [ellipse_ring((s * 0.085, 0.045, z), (rx, ry), 14) for z, rx, ry in SHOE_RINGS]
         body.add(*loft(shoe, cap_start=True, cap_end=True), weights={f"foot_{side}": 1.0},
                  hex_colour=SHOES, smooth=False)
 
@@ -389,7 +468,7 @@ def build_head():
         eyes.append(head.add(*egg((s * 0.045, EYE_Y, EYE_Z), EYE_RADII, segments=10, rings=6),
                              weights={"head": 1.0}, hex_colour=EYE))
         inner, outer = sorted((s * 0.022, s * 0.062))
-        head.add(*face_strip(inner, outer, 1.556, 0.0045),
+        head.add(*face_strip(inner, outer, 1.556, 0.0022),
                  weights={"head": 1.0}, hex_colour=BROW, smooth=False)
     head.add(*face_strip(-0.019, 0.019, 1.471, 0.003),
              weights={"head": 1.0}, hex_colour=MOUTH, smooth=False)
