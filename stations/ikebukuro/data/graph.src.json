@@ -323,10 +323,7 @@
    "datasetDate": "2022-01",
    "notes": "Used only to identify which PLATEAU openings are which named passage, exit or gate. No image, layout or pictogram is reproduced.",
    "usage": "facts-only",
-   "decision": {
-    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
-    "date": "2026-10-21"
-   }
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
   },
   {
    "id": "toshima-terminal-sign-guideline-draft-v1.3",
@@ -341,10 +338,7 @@
    "datasetDate": "2026-03",
    "notes": "Draft (案, 草案) Ver1.3, 第14回 委員会 (2026-03-25), 資料3-3 p20 text layer only (p21 figure not read); listed on https://www.city.toshima.lg.jp/405/kuse/shingi/kaigichiran/006335.html. Used only for the names-to-number mapping of main exits (東口(北)=22, 東口(中央)=37, 東口(南)=38, 西口(北)=20a, 西口(中央)=19, 西口(南)=4), never as route evidence (OD-22, PR #222); also cited as supporting (not confirming) evidence for the east-side station identity label (#342 Q4), which is not route evidence. Freshness check: replace when the final guideline is published.",
    "usage": "facts-only",
-   "decision": {
-    "url": "https://github.com/nurockplayer/gteki/issues/165#issuecomment-6340635823",
-    "date": "2026-10-22"
-   }
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/165#issuecomment-6340635823", "date": "2026-10-22" }
   },
   {
    "id": "tokyometro-ikebukuro-yardmap-2026-03",
@@ -359,10 +353,7 @@
    "datasetDate": "2026-03",
    "notes": "Exit numbers and the public status of B1 passages were read from the official map. Nothing is reproduced.",
    "usage": "facts-only",
-   "decision": {
-    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
-    "date": "2026-10-21"
-   }
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
   },
   {
    "id": "tokyometro-ikebukuro-accessibility-2026-10",
@@ -377,10 +368,7 @@
    "datasetDate": null,
    "notes": "ライセンスなし・事実のみ参照（複製なし）。丸ノ内線・有楽町線・副都心線の各バリアフリー設備（エレベーター・エスカレーターの設置場所の端点表記、対応の有無「あり」のみ採用）。運転停止予定は対象外。トイレ設備は車いす対応トイレ・乳幼児用設備・オストメイトの設置場所表記のみ採用（「なし」の行は除外、#431）。 Re-read 2026-10-24 (WP2): lift and escalator end pairs per line. The existing station record (retrieved 2026-10-22) keeps its id; the writer updates retrievedAt and these notes. Re-read 2026-10-24 (#431): toilet rows; page undated.",
    "usage": "facts-only",
-   "decision": {
-    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
-    "date": "2026-10-21"
-   }
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
   },
   {
    "id": "plateau-13116-bldg-53394576",
@@ -526,10 +514,7 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": {
-    "url": "https://github.com/nurockplayer/gteki/issues/342",
-    "date": "2026-10-24"
-   },
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/342", "date": "2026-10-24" },
    "attribution": "Tabi-mag / LIVE JAPAN (location facts only; no content reproduced)",
    "modified": false,
    "retrievedAt": null,
@@ -1338,6 +1323,36 @@
     "kit/catalog/low/atlas/nosing_ao.png": "2a091a6ac2ee9b2fc6ad3024acd5380fa4cb78a7e7a8f18a7b2057db66b01ffe"
    },
    "notes": "Visual only: never walkable, never a collider, never walk-graph or route evidence. The pieces are GTEki's own art; the catalogue entries that sized them are station-verified from the PLATEAU survey (scene/dressing_anchors.json). Provenance: kit main 7258e6b; catalog main 7258e6b stations/ikebukuro/scene/kit_catalog.json. Both tiers were built 119/119 (build, validate --require-occlusion 0 FAIL, Godot 119/119); full manifest sha256 ae50ce902c505c1b..., mobile 51b5b54b4160ca62.... Batch A copies the 5 escalator ids, batch B the 21 stair handrail ids, all desktop tier: every escalator placement lists `high` alone (low waits for a phone measurement) and rails are drawn only on `main_route` flights and on `high`, so there is no phone copy yet. pipeline/sync_kit_catalog.py copies each file byte for byte after checking it against its tier's manifest (sha256 and bytes). Batch A's escalators and batch C's 61 stair nosing ids carry no per-id AO image and sample a packed AO atlas through TEXCOORD_1: `atlas/escalator_ao.png` on the desktop tier, `atlas/nosing_ao.png` on both tiers (batch C copies the nosing ids on both tiers). Atlas provenance: derived: packed from the per-id Cycles AO bakes of ../ike_catalog_cb3b29b.json/0.1.0 by tools/blender/ao_atlas.py; GTEki contributors."
+  },
+  {
+   "id": "sogo-seibu-ikebukuro-floorguide-2026-10",
+   "title": "西武池袋本店 フロアガイド（本館）",
+   "publisher": "株式会社そごう・西武",
+   "url": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md", "date": "2026-10-27" },
+   "attribution": "西武池袋本店 フロアガイド（本館） (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-27T11:43:00Z",
+   "datasetDate": null,
+   "notes": "Brand names, printed floor labels and categories only; no descriptive text, hours, logos, images or maps reproduced. Class (OD-35, docs/research/use-tiers.md): the そごう・西武 site terms §2(8) ban business or profit use only, and S is non-commercial, so facts-only applies; recheck-at-C. Lifts the Sogo-Seibu tenant limit of OD-34 round 3 for S."
+  },
+  {
+   "id": "sogo-seibu-ikebukuro-annex-2026-10",
+   "title": "西武池袋本店 フロアガイド（別館・書籍館）",
+   "publisher": "株式会社そごう・西武",
+   "url": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md", "date": "2026-10-27" },
+   "attribution": "西武池袋本店 フロアガイド（別館・書籍館） (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-27T11:42:00Z",
+   "datasetDate": null,
+   "notes": "Brand names, printed floor labels and categories only; no descriptive text, hours, logos, images or maps reproduced. Class (OD-35, docs/research/use-tiers.md): the そごう・西武 site terms §2(8) ban business or profit use only, and S is non-commercial, so facts-only applies; recheck-at-C. Lifts the Sogo-Seibu tenant limit of OD-34 round 3 for S."
   }
  ],
  "floors": [
