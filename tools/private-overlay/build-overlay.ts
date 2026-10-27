@@ -9,7 +9,7 @@ export interface Additions {
   sources?: Source[];
   floors?: Floor[];
   pois?: Poi[];
-  graphParts: { file: string; nodes: Node[]; edges: Edge[] }[];
+  graphParts: { file: string; nodes: Node[]; edges: Edge[]; floors?: Floor[] }[];
 }
 
 function mergeList<T extends { id: string }>(publicItems: T[], additions: { file: string; items: T[] }[], label: string, problems: string[]): T[] {
@@ -36,9 +36,13 @@ export function mergeStation(pub: StationFiles, add: Additions): StationFiles {
   const problems: string[] = [];
   for (const source of add.sources ?? []) if (!source.notes?.startsWith("[tier P]")) problems.push(`source ${source.id} notes must start with [tier P]`);
   const sourceFiles = (add.sources ?? []).length ? [{ file: "sources.json", items: add.sources! }] : [];
-  const floorFiles = (add.floors ?? []).length ? [{ file: "floors.json", items: add.floors! }] : [];
   const poiFiles = (add.pois ?? []).length ? [{ file: "pois.json", items: add.pois! }] : [];
   const graphParts = [...add.graphParts].sort((a, b) => a.file < b.file ? -1 : a.file > b.file ? 1 : 0);
+  // Graph parts may carry their own floors (the S03 seam does); they merge after floors.json.
+  const floorFiles = [
+    ...((add.floors ?? []).length ? [{ file: "floors.json", items: add.floors! }] : []),
+    ...graphParts.filter(({ floors }) => floors?.length).map(({ file, floors }) => ({ file, items: floors! })),
+  ];
   const manifest: StationManifestFile = {
     ...pub.manifest,
     sources: mergeList(pub.manifest.sources, sourceFiles, "source", problems),
@@ -80,11 +84,13 @@ function readAdditions(dir: string): Additions {
   add.floors = optional("floors.json", "floors");
   add.pois = optional("pois.json", "pois");
   const graphFile = path.join(dir, "graph.json");
-  if (fs.existsSync(graphFile)) add.graphParts.push({ file: "graph.json", nodes: readArray(graphFile, "nodes"), edges: readArray(graphFile, "edges") });
-  for (const name of fs.readdirSync(dir).filter((entry) => /^graph\..+\.json$/.test(entry)).sort()) {
-    const file = path.join(dir, name);
-    add.graphParts.push({ file: name, nodes: readArray(file, "nodes"), edges: readArray(file, "edges") });
-  }
+  const readPart = (file: string, name: string) => {
+    const floors = (readJson(file) as { floors?: unknown }).floors;
+    if (floors !== undefined && !Array.isArray(floors)) throw new Error(`${file}: floors must be an array`);
+    add.graphParts.push({ file: name, nodes: readArray(file, "nodes"), edges: readArray(file, "edges"), ...(floors ? { floors: floors as Floor[] } : {}) });
+  };
+  if (fs.existsSync(graphFile)) readPart(graphFile, "graph.json");
+  for (const name of fs.readdirSync(dir).filter((entry) => /^graph\..+\.json$/.test(entry)).sort()) readPart(path.join(dir, name), name);
   return add;
 }
 
