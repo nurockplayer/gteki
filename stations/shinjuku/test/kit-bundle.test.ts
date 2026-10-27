@@ -116,7 +116,7 @@ describe("the shipped mobile kit bundle dresses the escalators", () => {
     // e:27d3ed49 at 35.7 deg, both outside the dressing generator's range) never fitted any piece.
     expect(report.placed.length).toBe(14);
     expect(report.dropped.filter((d) => /budget/.test(d.reason)).map((d) => d.anchorKey).sort()).toEqual([
-      "e:42a9f8829d984243af47ff8328e698f6", "e:296f6709397b47faa8cbf2c36135a619", "e:88ef3d09d7b240b18754ee19bbeae3e1",
+      "e:296f6709397b47faa8cbf2c36135a619", "e:42a9f8829d984243af47ff8328e698f6", "e:88ef3d09d7b240b18754ee19bbeae3e1",
       "e:904c66c36c1440ea8c6261ec2356bf72", "e:d573063b997e42f3b146ffeec98aed38",
     ]);
     expect(report.dropped.filter((d) => /no piece fits/.test(d.reason)).map((d) => d.anchorKey).sort()).toEqual([
