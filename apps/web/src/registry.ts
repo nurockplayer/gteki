@@ -1,8 +1,10 @@
 import { parseStationFiles, type StationIdentity, type StationBundle, type ValidationIssue } from "@gteki/schema";
 import type { StationSceneModule } from "@gteki/scene-api";
-import { stations as discovered } from "virtual:gteki-stations";
+import { stations as discovered, privateBuild } from "virtual:gteki-stations";
 import { identityNamesOf } from "./ui/identityCard.ts";
 import { createDemoFiles } from "./demo.ts";
+
+export const PRIVATE_BUILD = privateBuild;
 
 /** A station the explorer can open. Everything station-specific comes from its files. */
 export interface StationEntry {
@@ -76,7 +78,7 @@ export async function listStations(): Promise<StationEntry[]> {
         const [graph, pois, tenants, sceneModule] = await Promise.all([
           s.graph(), s.pois(), s.tenants ? s.tenants() : Promise.resolve(undefined), scenePromise,
         ]);
-        const parsed = parseStationFiles(manifest, graph, pois, tenants);
+        const parsed = parseStationFiles(manifest, graph, pois, tenants, { privateTier: privateBuild });
         if (!parsed.ok) throw new StationLoadError(s.dir, parsed.issues);
         if (sceneModule !== null && !isSceneModule(sceneModule)) sceneImportError = "scene module does not export buildScene(ctx)";
         const assetUrls = new Map<string, string>();

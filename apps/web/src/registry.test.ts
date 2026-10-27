@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 // Two discovered stations: one whose manifest import rejects, one with a malformed names shape.
 vi.mock("virtual:gteki-stations", () => ({
+  privateBuild: false,
   stations: [
     { dir: "broken-import", manifest: () => Promise.reject(new Error("boom")), graph: async () => ({}), pois: async () => ({}), assets: {} },
     { dir: "bad-names", manifest: async () => ({ station: { names: "not-an-array" } }), graph: async () => ({}), pois: async () => ({}), assets: {} },

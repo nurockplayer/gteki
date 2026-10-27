@@ -42,6 +42,7 @@ updated: 2026-10-26 JST
 - `apps/web/src/ui/emptySuggestions.ts:3-8` — SuggestGroup types and from/to category order; `11-41` emptySuggestions(); `44-58` pushRecent(), readRecent(), writeRecent(); `64-69` exampleQueries().
 - `apps/web/src/ui/tenantDisplay.ts:11-27` — tenantLabel(), tenantResultTags().
 - `apps/web/src/ui/noRouteText.ts:6-28` — isUnlocatedShop(), poiNoteText(), noRouteText().
+- `apps/web/src/ui/unverifiedSteps.ts` — `unverifiedSources()`: source titles for unverified edges in a route or instruction.
 - `apps/web/src/ui/motion.ts:11` — watchReducedMotion(), the reduced-motion query.
 - `apps/web/src/hours.ts:15-23` — printedHours(): a shop's printed hours, hidden when older than 180 days.
 - `apps/web/src/noPath.ts:20-50` — noPathView(): the wording for a no-path cause.

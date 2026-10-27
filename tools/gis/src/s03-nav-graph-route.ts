@@ -38,6 +38,8 @@ export interface HeldGraphNode {
 export interface HeldGraphEdge {
   link_id: number; from_node: number; to_node: number; direction: number; dz_m: number | null;
   length_m: number; level_relation: 'same_level' | 'cross_level'; reason_codes: string[];
+  device?: string | null;
+  paid?: boolean | null; crossesFareBoundary?: boolean | null; wheelchair?: boolean | null; steps?: boolean | null;
 }
 export interface HeldGraphDocument {
   policy_version: string; digest: string; run_id: string; source_id: string;

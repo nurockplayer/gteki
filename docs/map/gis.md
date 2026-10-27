@@ -31,6 +31,7 @@ Isolated TypeScript/ESM package with its own pnpm workspace (Node 26). It acquir
 - `tools/gis/src/s03-nav-graph.ts:96-105` — writeHeldDocument(): writes only under the store's out/s03 and refuses paths that escape the store.
 - `tools/gis/src/s03-nav-graph.ts:359-420` — s03NavGraph(): entry; private document plus public receipt.
 - `tools/gis/src/s03-nav-graph-route.ts:81-88` — loadHeldGraph(); `tools/gis/src/s03-nav-graph-route.ts:121-147` shortestPath(); `tools/gis/src/s03-nav-graph-route.ts:241-276` s03NavGraphRoute(): held diagnostic routing, `--held-diagnostic` only.
+- `tools/gis/src/s03-private-seam.ts:14-114` — buildPrivateSeam() / s03PrivateSeam(): PRIVATE-tier additions and E27 stitches; writes only to the private repo via --out, refuses output under this git repo, and emits no public receipt.
 - `tools/gis/src/s03-nav-graph-publish.ts:14-26` — publishBlockers(): lists every blocker (reason-code counts, floor tie not VERIFIED, missing or malformed HOLD sign-off, sign-off for another run).
 - `tools/gis/src/s03-nav-graph-publish.ts:33-41` — s03NavGraphPublish(): refuses without `--publish`, then always throws. Even with every gate clear it says the station-graph merge (S03 to E27 seam) is not built.
 

@@ -17,6 +17,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 
 ### Repo root
 - Worker rules: what Codex and other workers read first (map first, brief scope, orb-test, times with zone, no checkout in the shared clone, no big files) · `AGENTS.md` · no note (the file is the rules)
+- Private preview deployment: local-only deployment of the private overlay to the Pages `private` branch · `scripts/deploy-private.sh`
 
 ### App (`apps/web`)
 - Explorer: the 3D station view. Scene load, walk/camera, route rendering, POI labels, minimap hookup · `apps/web/src/explorer/` · [[web-explorer]]
@@ -40,6 +41,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 ### Tools (`tools/`)
 - GIS: its own pnpm workspace. Source acquisition, CRS conversion, S03 nav graph, publish path into the stations · `tools/gis/` · [[gis]]
 - Map generator: `tools/map/gen-symbols.mjs` and its test `tools/map/map.test.ts` · this index
+- Private overlay builder: `tools/private-overlay/build-overlay.ts` · builds station contract overlays from private additions for local builds/dev only
 - QA: L2 acceptance pack, avatar baseline, recognition and Shinjuku B checks · `tools/qa/` · no note yet (visual lead); the protocol is in `docs/qa/protocol.md`
 - Blender: asset build, GLB validation, texture budget, Godot import · `tools/blender/` · no note yet (visual lead); start at `tools/blender/README.md`
 - Fonts: the sign-font subset (`pnpm fonts:subset`) · `tools/fonts/` · no note yet

@@ -135,6 +135,22 @@ describe("validator truth rules added in v0.1 core", () => {
 });
 
 describe("parseStationFiles (fail-closed JSON loading)", () => {
+  it("relaxes publication rights only for private-tier parsing", () => {
+    const b = asRealStation(createSyntheticBundle());
+    const restricted = { ...b.sources[0]!, id: "restricted-source", rights: "RESTRICTED" as const };
+    b.sources.push(restricted);
+    b.nodes[0]!.sourceRefs = [{ sourceId: restricted.id, featureId: "restricted-plan" }];
+    for (const e of b.edges) e.verification = "verified";
+    const [m, g, p] = split(b);
+    expect(parseStationFiles(m, g, p).ok).toBe(false);
+    const privateParsed = parseStationFiles(m, g, p, undefined, { privateTier: true });
+    expect(privateParsed.ok).toBe(true);
+    expect(privateParsed.issues).toContainEqual(expect.objectContaining({ code: "node.source.rights", level: "warning" }));
+
+    g.edges[0]!.to = "missing-node";
+    expect(parseStationFiles(m, g, p, undefined, { privateTier: true }).ok).toBe(false);
+  });
+
   it("loads the three station files into one bundle", () => {
     const parsed = parseStationFiles(...split(createSyntheticBundle()));
     expect(parsed.ok).toBe(true);

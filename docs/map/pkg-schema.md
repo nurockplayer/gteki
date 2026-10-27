@@ -18,7 +18,8 @@ The data contract for stations. gteki.station/0.1 is the schema version string (
 - `packages/schema/src/index.ts:364-370` — `Coverage`; `packages/schema/src/index.ts:375-401` — `Asset`.
 - `packages/schema/src/index.ts:429-448` — `StationBundle`: the in-memory form every consumer receives.
 - `packages/schema/src/index.ts:488-506` — `Tenant`, the store-brand directory entry.
-- `packages/schema/src/parse.ts:317-334` — `parseStationFiles()`: the entry point all apps and tools use.
+- `packages/schema/src/parse.ts:317-334` — `parseStationFiles()`: the entry point all apps and tools use; `{ privateTier: true }` downgrades publication-rule issues to warnings while retaining shape and structure failures.
+- `packages/schema/src/validate.ts` — `PUBLICATION_RULE_CODES`, the shared set of publication-only validation codes.
 - `packages/schema/src/parse.ts:182-286` — `checkShape()`: structural check, on the `ShapeChecker` class (line 70).
 - `packages/schema/src/parse.ts:289-307` — `composeBundle()`.
 - `packages/schema/src/validate.ts:103-477` — `validateBundle()`: error and warning issues with a code, message and ref.

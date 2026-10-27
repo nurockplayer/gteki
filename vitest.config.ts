@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
     test: {
       include: [
         ...testRoots.map((root) => `${root}/**/${testPattern}`),
-        ...(heavy ? [] : ["tools/*.test.mjs", "tools/map/*.test.ts"]),
+        ...(heavy ? [] : ["tools/*.test.mjs", "tools/map/*.test.ts", "tools/private-overlay/*.test.ts"]),
       ],
       exclude: heavy ? configDefaults.exclude : [...configDefaults.exclude, "**/*.heavy.test.ts"],
       execArgv: [`--max-old-space-size=${process.env.GTEKI_TEST_HEAP_MB ?? "3072"}`],
