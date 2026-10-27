@@ -51,4 +51,13 @@ describe("Department store brand search (#419)", () => {
       tenant: { name: brand, floorLabel: floor },
     });
   });
+
+  it("returns the 伊勢丹 メンズ館 card with the printed floor for a 売場 section", () => {
+    const section = "レザーグッズ / ベルト / 帽子・傘";
+    expect(search(section)[0]).toMatchObject({
+      poi: { id: "shop-sjk-isetan-mens" },
+      matched: section,
+      tenant: { name: section, floorLabel: "1F" },
+    });
+  });
 });

@@ -1,6 +1,6 @@
 {
   "schema": "gteki.research.tenants/0.1",
-  "note": "Facts-only brand list of 西武池袋本店 (307 rows: main building floor guide and the annex/bookstore page), as the floor guide prints it. Not POIs: a brand search returns the store's POI with the floor. Promoted from the private tier under OD-35 (S, facts only, recheck-at-C). UNVERIFIED.",
+  "note": "Facts-only brand list of 西武池袋本店 (307 rows: main building floor guide and the annex/bookstore page), as the floor guide prints it. Not POIs: a brand search returns the store's POI with the floor. Promoted from the private tier under OD-35 (S, facts only, recheck-at-C). UNVERIFIED. Rows from the annex page carry the building as the page prints it (別館・書籍館 1F), since the store POI covers both buildings.",
   "storePoiId": "shop-ikb-seibu-honten",
   "retrievedAt": "2026-10-27T11:43:00Z",
   "sources": [
@@ -64,7 +64,7 @@
           "text": "三省堂書店"
         }
       ],
-      "floorLabel": "1F",
+      "floorLabel": "別館・書籍館 1F",
       "category": "サービス・その他",
       "sourceId": "sogo-seibu-ikebukuro-annex-2026-10"
     },
@@ -207,7 +207,7 @@
           "text": "無印良品"
         }
       ],
-      "floorLabel": "1F",
+      "floorLabel": "別館・書籍館 1F",
       "category": "インテリア, ファッション",
       "sourceId": "sogo-seibu-ikebukuro-annex-2026-10"
     },
@@ -285,7 +285,7 @@
           "text": "同仁堂薬局"
         }
       ],
-      "floorLabel": "2F",
+      "floorLabel": "別館・書籍館 2F",
       "category": "サービス・その他",
       "sourceId": "sogo-seibu-ikebukuro-annex-2026-10"
     },
@@ -324,7 +324,7 @@
           "text": "ライオンズストア＠西武池袋本店"
         }
       ],
-      "floorLabel": "2F",
+      "floorLabel": "別館・書籍館 2F",
       "category": "サービス・その他",
       "sourceId": "sogo-seibu-ikebukuro-annex-2026-10"
     },
@@ -363,7 +363,7 @@
           "text": "無印良品"
         }
       ],
-      "floorLabel": "2F",
+      "floorLabel": "別館・書籍館 2F",
       "category": "インテリア, ファッション",
       "sourceId": "sogo-seibu-ikebukuro-annex-2026-10"
     },
@@ -389,7 +389,7 @@
           "text": "免税手続きのご案内"
         }
       ],
-      "floorLabel": "2F",
+      "floorLabel": "別館・書籍館 2F",
       "category": "サービス・その他",
       "sourceId": "sogo-seibu-ikebukuro-annex-2026-10"
     },
@@ -1788,7 +1788,7 @@
           "text": "池袋コミュニティ・カレッジ"
         }
       ],
-      "floorLabel": "8F",
+      "floorLabel": "別館・書籍館 8F",
       "category": "アート＆カルチャー",
       "sourceId": "sogo-seibu-ikebukuro-annex-2026-10"
     },
@@ -2009,7 +2009,7 @@
           "text": "三省堂書店"
         }
       ],
-      "floorLabel": "B1F",
+      "floorLabel": "別館・書籍館 B1F",
       "category": "サービス・その他",
       "sourceId": "sogo-seibu-ikebukuro-annex-2026-10"
     },
@@ -3187,7 +3187,7 @@
           "text": "イー・エー・グラン"
         }
       ],
-      "floorLabel": "B1F",
+      "floorLabel": "別館・書籍館 B1F",
       "category": "カフェ＆レストラン",
       "sourceId": "sogo-seibu-ikebukuro-annex-2026-10"
     },
