@@ -2,8 +2,8 @@
   "file": "apps/web/public/avatars/gteki-commuter-soft.glb",
   "issue": "#339",
   "candidate": "A2 v2: soft-stylized silhouette sample (hand-built from primitives), open coat, cream knit, layered bob, painted toon atlases",
-  "sha256": "e8a21479f6878e4dd98567b5764110d26cdf2946e1ca4edfb5a3240172f55339",
-  "bytes": 548220,
+  "sha256": "ff4376b083045e65b906028abab51657df60e867bc5b8e977edc32a7905581f8",
+  "bytes": 536228,
   "license_spdx": "CC-BY-4.0",
   "attribution": "GTEki contributors",
   "base_mesh": "none (primitives)",
@@ -12,11 +12,13 @@
     "38-joint UE-style contract armature reused from the candidate A build (tools/blender/character/build_commuter_mpfb.py build_armature); joint layout starts from the p0 sample",
     "v2 fix 1 (#339, 2026-10-28): A-line open overcoat with rounded shoulders, arms offset outward as separate tubes with cuffs and hands, big raised triangular lapels, cream knit strip >= 40% of chest width; one solid bob shell with 10 scallops and five broad bangs; head ~10% larger, eyes ~2x, neck short; loafers 1.3x; flatter tote hung from the right shoulder with top at 1.0 m",
     "Materials: one base-colour atlas per mesh (VIS_body 1024^2, VIS_head 512^2), painted procedurally in the script, roughness 1 and metallic 0, flagged gteki_toon=1 (material extras); the Three.js loader clones flagged materials as MeshToonMaterial with a 3-tone ramp",
-    "Blink morphs blinkLeft/blinkRight push each eye lens about 5 mm along its normal under the skin, where the painted closed-eye arc sits"
+    "Blink morphs blinkLeft/blinkRight push each eye lens about 5 mm along its normal under the skin, where the painted closed-eye arc sits",
+    "v2 fix 4 (#339, 2026-10-28): the five bang tubes are replaced by one fringe sheet (4 mm proud of the forehead, five rounded scallops, part at x -0.02); the tote strap runs over the right shoulder on the coat surface down to the bag's top corners, no segment above z 1.36 and clear of the head; the upper coat and both skirt panels share one navy paint cell, the skirt top sits 3 mm inside the upper coat hem, and the back vent and yoke line stay"
   ],
   "clip_authorship": "Authored by GTEki contributors in Blender from code (no motion capture, no third-party clips); CC-BY-4.0",
   "generator": "tools/blender/character/build_commuter_soft.py, Blender 5.2.2 LTS (headless, -b) with the bundled glTF 2.0 exporter",
-  "triangles": 3864,
-  "texture_bytes": 62847,
-  "budget": "high tier: <=12000 triangles, <=3 primitives per visual node, <=1024^2 textures (body 1024^2, head 512^2); this sample stays under 5000 triangles by design"
+  "triangles": 4088,
+  "texture_bytes": 41866,
+  "budget": "high tier: <=12000 triangles, <=3 primitives per visual node, <=1024^2 textures (body 1024^2, head 512^2); this sample stays under 5000 triangles by design",
+  "triangles_note": "4088 exported tris (body 2940, head 1148 from the build report)"
 }
