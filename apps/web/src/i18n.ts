@@ -68,6 +68,7 @@ const STRINGS = {
     /** English-only marker: a store's floor label is quoted exactly as printed, not a station floor. */
     asPrinted: "（原文どおり）",
     noResults: "該当なし",
+    otherCategoryHits: (n: string) => `他の種類に ${n} 件：すべての種類で探す`,
     suggestRecent: "最近選んだ場所",
     suggestPopularFrom: "よく使う出発地（改札など）",
     suggestPopularTo: "人気の目的地",
@@ -297,6 +298,7 @@ const STRINGS = {
     tenantFloorsNotGuided: "Floors inside the store are not guided",
     asPrinted: "(as printed)",
     noResults: "No matches",
+    otherCategoryHits: (n: string) => `${n} in other categories: search all categories`,
     suggestRecent: "Recent",
     suggestPopularFrom: "Common starting points (gates)",
     suggestPopularTo: "Popular destinations",

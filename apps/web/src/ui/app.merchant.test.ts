@@ -85,11 +85,11 @@ describe("search category filter (#213)", () => {
     const options = [...a.ui.toResults!.querySelectorAll(".result")];
     expect(options.length).toBeGreaterThan(0);
     expect(options.every((o) => o.classList.contains("cat-shop"))).toBe(true);
-    // The same query under another category finds nothing: no fallback to the shop.
+    // The same query under another category finds nothing: no fallback to the shop, only a row that counts it.
     a.s.filter = "exit";
     a.renderResults("to");
-    const empty = a.ui.toResults!.querySelector(".result.empty");
-    expect(empty?.getAttribute("aria-disabled")).toBe("true");
+    expect(a.ui.toResults!.querySelector(".result.empty")).not.toBeNull();
+    expect(a.ui.toResults!.querySelector(".result.other-categories")?.textContent).toBe("他の種類に 1 件：すべての種類で探す");
     expect(a.ui.toResults!.querySelector(".cat-shop")).toBeNull();
   });
 });
