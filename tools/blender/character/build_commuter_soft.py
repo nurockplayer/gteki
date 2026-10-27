@@ -28,10 +28,15 @@ TROUSERS, SHOES, TOTE = "#a8a59a", "#2a2622", "#8a7a66"
 EYE, BROW, MOUTH = "#2a2320", "#3b2a20", "#9a5a4a"
 
 HEM_Z = 0.50
-HEAD_CENTRE, HEAD_RADII = (0.0, 0.0, 1.535), (0.088, 0.097, 0.130)
-HAIR_CENTRE, HAIR_RADII = (0.0, -0.002, 1.533), (0.104, 0.114, 0.136)
-EYE_Y, EYE_Z = 0.079, 1.545
+# 6.2 heads: chin 1.395, crown 1.666 (0.271 m); the bob adds 1.5 cm, so the mesh top is 1.680 m.
+HEAD_CENTRE, HEAD_RADII = (0.0, 0.0, 1.5305), (0.095, 0.105, 0.1355)
+HAIR_VOLUME, HAIR_TEMPLE_Z, HAIR_HEM_Z = 0.015, 1.505, 1.393
+HAIR_Y_SHIFT = -0.006  # a bob carries its volume behind the ears
+HAIR_RING_Z = (HAIR_HEM_Z, 1.425, 1.462, HAIR_TEMPLE_Z, 1.540, 1.570, 1.600, 1.625,
+               1.647, 1.664, 1.674, 1.680)
+EYE_Y, EYE_Z, EYE_RADII = 0.087, 1.522, (0.014, 0.0075, 0.020)
 HAND_Y = 0.030
+WALK_CROUCH_M = 0.025  # near-straight stance leg; the shared Animation stays on its own default
 
 # joint -> (head, tail) is what the armature, the Animation clips and the exporter all read.
 SPINE_STOPS = [(1.36, "spine_03"), (1.26, "spine_02"), (1.10, "spine_01"), (0.94, "pelvis")]
@@ -171,16 +176,6 @@ def egg(centre, radii, segments=20, rings=14):
     return points, faces
 
 
-def box(centre, size):
-    x, y, z = centre
-    a, b, c = (half / 2 for half in size)
-    points = [(x + dx * a, y + dy * b, z + dz * c)
-              for dx, dy, dz in ((-1, -1, -1), (1, -1, -1), (1, 1, -1), (-1, 1, -1),
-                                 (-1, -1, 1), (1, -1, 1), (1, 1, 1), (-1, 1, 1))]
-    faces = [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
-    return points, faces
-
-
 def path_tube(points, radii, sides=6):
     """Sweep a rectangle-ish cross-section along a 3D polyline (the tote strap)."""
     from mathutils import Vector
@@ -212,12 +207,34 @@ def path_tube(points, radii, sides=6):
     return merged, faces
 
 
-def head_surface_y(x, z):
-    """Front of the head egg at (x, z), so face decals can hug it instead of floating."""
+def skull_radii(z):
+    """Head-egg silhouette (rx, ry) at height z; the same profile the head mesh is built from."""
     z_norm = (z - HEAD_CENTRE[2]) / HEAD_RADII[2]
     ring = math.sqrt(max(0.0, 1.0 - z_norm * z_norm))
     profile = 1.0 + 0.06 * z_norm - 0.10 * max(0.0, -z_norm)
-    rx, ry = HEAD_RADII[0] * ring * profile, HEAD_RADII[1] * ring * profile
+    return HEAD_RADII[0] * ring * profile, HEAD_RADII[1] * ring * profile
+
+
+def hair_radii(z):
+    """1.5 cm off the skull above the temples; below them the silhouette holds and flares to a level hem.
+
+    Above the temples the offset is an ellipsoid grown by the hair volume, not the skull plus a constant:
+    adding a constant to the skull's own crown taper would leave the bob with a cone on top.
+    """
+    if z <= HAIR_TEMPLE_Z:
+        rx, ry = skull_radii(HAIR_TEMPLE_Z)
+        flare = HAIR_VOLUME + (HAIR_TEMPLE_Z - z) * 0.06
+        return rx + flare, ry + flare
+    z_norm = (z - HEAD_CENTRE[2]) / (HEAD_RADII[2] + HAIR_VOLUME)
+    ring = math.sqrt(max(0.0, 1.0 - z_norm * z_norm))
+    profile = 1.0 + 0.06 * z_norm
+    return ((HEAD_RADII[0] + HAIR_VOLUME) * ring * profile,
+            (HEAD_RADII[1] + HAIR_VOLUME) * ring * profile)
+
+
+def head_surface_y(x, z):
+    """Front of the head egg at (x, z), so face decals can hug it instead of floating."""
+    rx, ry = skull_radii(z)
     if abs(x) >= rx:
         return HEAD_CENTRE[1]
     return HEAD_CENTRE[1] + ry * math.sqrt(max(0.0, 1.0 - (x / rx) ** 2))
@@ -290,18 +307,22 @@ class Geometry:
 
 # ---- the character ----------------------------------------------------------------------------
 
-COAT_RINGS = [(0.50, 0.190, 0.125), (0.56, 0.183, 0.120), (0.66, 0.172, 0.113), (0.78, 0.160, 0.105),
-              (0.88, 0.160, 0.100), (0.98, 0.132, 0.088), (1.06, 0.108, 0.078), (1.14, 0.112, 0.082),
-              (1.22, 0.122, 0.090), (1.30, 0.126, 0.090), (1.38, 0.115, 0.082)]
-TROUSER_RINGS = [(0.06, 0.040), (0.18, 0.045), (0.30, 0.050), (0.40, 0.055), (0.48, 0.057),
-                 (0.56, 0.060), (0.70, 0.064), (0.86, 0.070)]
-SLEEVE_RINGS = [(0.93, 0.140, 0.040, 0.028), (0.99, 0.142, 0.042, 0.024), (1.13, 0.145, 0.047, 0.012),
-                (1.24, 0.142, 0.050, 0.005), (1.355, 0.135, 0.053, 0.0)]
-HAND_RINGS = [(0.80, 0.023), (0.85, 0.027), (0.90, 0.030), (0.94, 0.029)]
+COAT_RINGS = [(0.50, 0.205, 0.135), (0.56, 0.198, 0.130), (0.66, 0.186, 0.123), (0.78, 0.176, 0.115),
+              (0.88, 0.170, 0.108), (0.98, 0.138, 0.092), (1.06, 0.110, 0.080), (1.14, 0.114, 0.084),
+              (1.22, 0.124, 0.092), (1.30, 0.128, 0.092), (1.38, 0.117, 0.084)]
+TROUSER_RINGS = [(0.05, 0.048), (0.10, 0.050), (0.20, 0.055), (0.34, 0.060), (0.50, 0.068),
+                 (0.62, 0.072), (0.74, 0.076), (0.86, 0.080)]
+SLEEVE_RINGS = [(0.93, 0.140, 0.040, 0.028), (0.99, 0.142, 0.042, 0.024), (1.13, 0.145, 0.050, 0.012),
+                (1.24, 0.142, 0.054, 0.005), (1.32, 0.136, 0.056, 0.0), (1.365, 0.130, 0.054, 0.0),
+                (1.392, 0.122, 0.048, 0.0), (1.410, 0.114, 0.034, 0.0), (1.420, 0.108, 0.018, 0.0)]
+SHOE_RINGS = [(0.006, 0.045, 0.110), (0.022, 0.052, 0.122), (0.044, 0.051, 0.120),
+              (0.060, 0.046, 0.111), (0.070, 0.034, 0.094), (0.075, 0.020, 0.062)]
+HAND_RINGS = [(0.80, 0.021), (0.85, 0.024), (0.90, 0.027), (0.94, 0.026)]
 TOTE_X, TOTE_RINGS = 0.215, [(0.66, 0.040, 0.140), (0.70, 0.045, 0.150),
                              (0.94, 0.045, 0.150), (0.98, 0.040, 0.140)]
-STRAP_PATH = [(0.215, -0.135, 0.975), (0.205, -0.115, 1.15), (0.165, -0.040, 1.33),
-              (0.148, 0.0, 1.385), (0.172, 0.075, 1.28), (0.198, 0.120, 1.10), (0.212, 0.135, 0.978)]
+# Rides over the rounded shoulder cap (sleeve top 1.42 m) instead of sinking into it.
+STRAP_PATH = [(0.215, -0.135, 0.975), (0.205, -0.115, 1.15), (0.175, -0.080, 1.31),
+              (0.145, -0.005, 1.432), (0.172, 0.070, 1.29), (0.198, 0.115, 1.10), (0.212, 0.135, 0.978)]
 
 
 def build_body():
@@ -310,11 +331,12 @@ def build_body():
     rings = [ellipse_ring((0.0, 0.0, z), (rx, ry), 12) for z, rx, ry in COAT_RINGS]
     body.add(*loft(rings, cap_end=True), weights=coat_weights, hex_colour=COAT)
 
+    # 5 cm stand collar: it hides most of the neck and meets the bob's level hem at the jawline.
     collar = [ellipse_ring((0.0, 0.0, z), (rx, ry), 12) for z, rx, ry in
-              [(1.355, 0.070, 0.060), (1.405, 0.080, 0.068)]]
+              [(1.343, 0.070, 0.062), (1.368, 0.073, 0.065), (1.393, 0.077, 0.069)]]
     body.add(*loft(collar), weights={"spine_03": 1.0}, hex_colour=COAT, smooth=False)
 
-    neck = [ellipse_ring((0.0, 0.0, z), (0.045, 0.042), 8) for z in (1.33, 1.43)]
+    neck = [ellipse_ring((0.0, 0.0, z), (0.052, 0.050), 10) for z in (1.32, 1.44)]
     body.add(*loft(neck), weights={"neck_01": 1.0}, hex_colour=SKIN)
 
     # Cream knit V-neck, sitting proud of the coat's chest surface.
@@ -322,18 +344,19 @@ def build_body():
     body.add(neckline, [(0, 1, 3), (1, 2, 3)], weights={"spine_03": 1.0}, hex_colour=CREAM, smooth=False)
 
     for side, s in (("l", -1.0), ("r", 1.0)):
+        # The sleeve runs up over the shoulder joint and closes with a rounded cap: no shoulder pad.
         sleeve = [ellipse_ring((s * x, y, z), (r, r * 0.93), 10) for z, x, r, y in SLEEVE_RINGS]
-        body.add(*loft(sleeve, cap_start=True), weights=arm_weights(side), hex_colour=COAT)
-        shoulder = egg((s * 0.125, 0.0, 1.335), (0.052, 0.055, 0.050), segments=12, rings=8)
-        body.add(*shoulder, weights={f"clavicle_{side}": 0.5, f"upperarm_{side}": 0.5}, hex_colour=COAT)
+        body.add(*loft(sleeve, cap_start=True, cap_end=True), weights=arm_weights(side), hex_colour=COAT)
 
-        hand = [ellipse_ring((s * 0.152, HAND_Y, z), (r, r * 0.6), 8) for z, r in HAND_RINGS]
+        hand = [ellipse_ring((s * 0.136, HAND_Y, z), (r, r * 0.6), 8) for z, r in HAND_RINGS]
         body.add(*loft(hand, cap_start=True, cap_end=True), weights={f"hand_{side}": 1.0}, hex_colour=SKIN)
 
         leg = [ellipse_ring((s * 0.085, 0.0, z), (r, r), 10) for z, r in TROUSER_RINGS]
         body.add(*loft(leg, cap_start=True), weights=leg_weights(side), hex_colour=TROUSERS)
-        body.add(*box((s * 0.085, 0.045, 0.035), (0.075, 0.24, 0.07)),
-                 weights={f"foot_{side}": 1.0}, hex_colour=SHOES, smooth=False)
+        # Low loafer: an oval footprint flattened to a 7 cm top, standing on z = 0.
+        shoe = [ellipse_ring((s * 0.085, 0.045, z), (rx, ry), 10) for z, rx, ry in SHOE_RINGS]
+        body.add(*loft(shoe, cap_start=True, cap_end=True), weights={f"foot_{side}": 1.0},
+                 hex_colour=SHOES, smooth=False)
 
     tote = [ellipse_ring((TOTE_X, 0.0, z), (rx, ry), 12) for z, rx, ry in TOTE_RINGS]
     body.add(*loft(tote, cap_start=True, cap_end=True), weights={"pelvis": 1.0}, hex_colour=TOTE)
@@ -341,33 +364,36 @@ def build_body():
     return body
 
 
+def build_hair():
+    """Bob: hugs the skull above the temples, level at the jawline, nape covered down to the collar."""
+    rings = [ellipse_ring((0.0, HAIR_Y_SHIFT, z), hair_radii(z), 20) for z in HAIR_RING_Z]
+    points, faces = loft(rings, cap_end=True)
+
+    def keep(centre):
+        x, y, z = centre
+        # Face opening: a side-swept fringe (lower over the +X brow) over the brow, open down to the chin.
+        fringe = 1.598 - 0.026 * (x + 0.066) / 0.132
+        return not (y > 0.02 and abs(x) < 0.066 and z < fringe)
+
+    return drop_faces(points, faces, keep)
+
+
 def build_head():
     """Egg head, bob hair shell, and the flat face features; returns the eye vertex ranges for blinks."""
     head = Geometry()
     head.add(*egg(HEAD_CENTRE, HEAD_RADII), weights={"head": 1.0}, hex_colour=SKIN)
-
-    hair_points, hair_faces = egg(HAIR_CENTRE, HAIR_RADII, segments=22, rings=15)
-
-    def keep_face(centre):
-        x, y, z = centre
-        if z < 1.395:
-            return False  # open under the jaw
-        # face opening: from a side-swept fringe (higher on the -X side) down past the chin
-        fringe = 1.628 - 0.038 * (x + 0.062) / 0.124
-        return not (y > 0.006 and abs(x) < 0.062 and z < fringe)
-
-    head.add(*drop_faces(hair_points, hair_faces, keep_face), weights={"head": 1.0}, hex_colour=HAIR)
+    head.add(*build_hair(), weights={"head": 1.0}, hex_colour=HAIR)
 
     eyes = []
     for s in (-1.0, 1.0):
-        eyes.append(head.add(*egg((s * 0.040, EYE_Y, EYE_Z), (0.013, 0.0075, 0.019), segments=10, rings=6),
+        eyes.append(head.add(*egg((s * 0.045, EYE_Y, EYE_Z), EYE_RADII, segments=10, rings=6),
                              weights={"head": 1.0}, hex_colour=EYE))
-        inner, outer = sorted((s * 0.020, s * 0.058))
-        head.add(*face_strip(inner, outer, 1.576, 0.0045),
+        inner, outer = sorted((s * 0.022, s * 0.062))
+        head.add(*face_strip(inner, outer, 1.556, 0.0045),
                  weights={"head": 1.0}, hex_colour=BROW, smooth=False)
-    head.add(*face_strip(-0.017, 0.017, 1.468, 0.003),
+    head.add(*face_strip(-0.019, 0.019, 1.471, 0.003),
              weights={"head": 1.0}, hex_colour=MOUTH, smooth=False)
-    head.add(*egg((0.0, 0.084, 1.510), (0.011, 0.013, 0.014), segments=8, rings=6),
+    head.add(*egg((0.0, 0.086, 1.495), (0.012, 0.014, 0.015), segments=8, rings=6),
              weights={"head": 1.0}, hex_colour=SKIN)
     return head, eyes
 
@@ -407,6 +433,8 @@ def build_scene():
     print(f"meshes: body {triangle_count(body.data)} triangles, head {triangle_count(head.data)} triangles")
 
     animation = Animation(bone_pairs(positions))
+    # Shallower walk crouch (lead round 1): the stance leg stays near straight instead of squatting.
+    animation.gait_spec["walk"]["crouch"] = WALK_CROUCH_M
     build_actions(arm, animation)
     scene.frame_start, scene.frame_end = 1, 121
     return arm, body, head, animation
@@ -416,9 +444,12 @@ def report(body, head):
     top = max(vertex.co.z for obj in (body, head) for vertex in obj.data.vertices)
     low = min(vertex.co.z for vertex in head.data.vertices)
     high = max(vertex.co.z for vertex in head.data.vertices)
-    print(f"height {top:.3f} m; head {low:.3f}-{high:.3f} m ({high - low:.3f} m); "
-          f"head ratio {top / (high - low):.2f} heads; triangles {triangle_count(body.data) + triangle_count(head.data)}")
-    sleeve = 2 * 0.135 + 2 * 0.053
+    chin, crown = HEAD_CENTRE[2] - HEAD_RADII[2], HEAD_CENTRE[2] + HEAD_RADII[2]
+    print(f"height {top:.3f} m; VIS_head {low:.3f}-{high:.3f} m (with hair); "
+          f"chin {chin:.3f} crown {crown:.3f} -> head {crown - chin:.3f} m; "
+          f"head ratio (chin->crown, no hair) {top / (crown - chin):.2f}; "
+          f"triangles {triangle_count(body.data) + triangle_count(head.data)}")
+    sleeve = 2 * (max(x + r for _, x, r, _ in SLEEVE_RINGS))
     print(f"shoulder span {sleeve:.3f} m; coat hem z {HEM_Z:.2f} m")
 
 
