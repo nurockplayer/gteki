@@ -95,15 +95,24 @@ def blend(stops, value):
 
 
 def coat_weights(point):
-    """Spine chain above the hip; below it, half the hem follows the thighs so the walk does not tear it."""
+    """Spine chain above the hip; below it the skirt stays on the pelvis.
+
+    Pelvis 1.0 at the hip line and at the front and back centre columns, easing to 0.85 pelvis /
+    0.15 nearest thigh at the side hem.
+
+    No vertex mixes both thighs and the front and back centre columns take no thigh at all, so neighbouring
+    skirt vertices are never pulled in opposite directions. At z 0.86 the pelvis-only spine branch meets
+    the pelvis-only skirt branch, so the weight field stays continuous at the waist.
+    """
     z, x = point[2], point[0]
     if z >= 0.86:
         return blend(SPINE_STOPS, z)
-    # Both thighs share the hem equally at the front and back centre (where the two legs cancel out)
-    # and hand over to the near thigh at the sides, so the walk does not pull two flaps apart.
-    thigh = 0.5 * min(1.0, (0.86 - z) / (0.86 - HEM_Z))
-    right = 0.5 + 0.5 * min(max(x / 0.14, -1.0), 1.0)
-    return {"pelvis": 1.0 - thigh, "thigh_r": thigh * right, "thigh_l": thigh * (1.0 - right)}
+    drop = min(1.0, (0.86 - z) / (0.86 - HEM_Z))
+    side = min(max((abs(x) - 0.05) / 0.09, 0.0), 1.0)
+    share = 0.15 * drop * side
+    if share < 1e-4:
+        return {"pelvis": 1.0}
+    return {"pelvis": 1.0 - share, ("thigh_r" if x > 0 else "thigh_l"): share}
 
 
 def arm_weights(side):
@@ -309,7 +318,7 @@ class Geometry:
 
 # The top rings taper into the neck opening instead of closing with a wide flat cap: that flat cap read
 # as a rectangular block at the shoulders.
-COAT_RINGS = [(0.50, 0.205, 0.135), (0.56, 0.198, 0.130), (0.66, 0.186, 0.123), (0.78, 0.176, 0.115),
+COAT_RINGS = [(0.50, 0.225, 0.150), (0.56, 0.214, 0.142), (0.66, 0.197, 0.130), (0.78, 0.180, 0.118),
               (0.88, 0.170, 0.108), (0.98, 0.138, 0.092), (1.06, 0.110, 0.080), (1.14, 0.116, 0.086),
               (1.20, 0.126, 0.092), (1.26, 0.136, 0.096), (1.30, 0.146, 0.098), (1.345, 0.146, 0.096),
               (1.372, 0.118, 0.084), (1.388, 0.090, 0.074)]
@@ -563,6 +572,47 @@ def render_previews(out, arm):
         print(f"preview {name}: {scene.render.filepath}")
     arm.animation_data.action = bpy.data.actions["idle"]
     scene.frame_set(1)
+    return camera
+
+
+def render_walk_strip(out, arm, camera):
+    """Eight walk frames from the back and the right side, 300x400 each, assembled into one strip."""
+    import bpy
+    import numpy as np
+    scene = bpy.context.scene
+    scene.render.resolution_x, scene.render.resolution_y = 300, 400
+    scene.render.image_settings.file_format = "PNG"
+    camera.data.ortho_scale = 1.95
+    frames = (0, 4, 8, 12, 16, 20, 24, 28)
+    views = (("back", (0.0, -3.0, 0.84), 0.0, 1), ("side", (3.0, 0.0, 0.84), 90.0, 0))
+    width, height = 300 * len(frames), 400 * 2
+    strip = np.zeros((height, width, 4), dtype=np.float32)
+    arm.animation_data.action = bpy.data.actions["walk"]
+    tiles = []
+    for name, location, turn, row in views:
+        camera.location = location
+        camera.rotation_euler = (math.radians(90.0), 0.0, math.radians(turn))
+        for column, frame in enumerate(frames):
+            scene.frame_set(frame)
+            path = out / f"walk_{name}_{frame:02d}.png"
+            scene.render.filepath = str(path)
+            bpy.ops.render.render(write_still=True)
+            image = bpy.data.images.load(str(path))
+            pixels = np.empty(len(image.pixels), dtype=np.float32)
+            image.pixels.foreach_get(pixels)
+            strip[row * 400:(row + 1) * 400, column * 300:(column + 1) * 300] = pixels.reshape(400, 300, 4)
+            bpy.data.images.remove(image)
+            tiles.append(path)
+    sheet = bpy.data.images.new("walk_strip", width=width, height=height, alpha=True)
+    sheet.pixels.foreach_set(strip.reshape(-1))
+    sheet.filepath_raw = str(out / "walk_strip.png")
+    sheet.file_format = "PNG"
+    sheet.save()
+    for path in tiles:
+        path.unlink(missing_ok=True)
+    arm.animation_data.action = bpy.data.actions["idle"]
+    scene.frame_set(1)
+    print(f"preview walk_strip: {out / 'walk_strip.png'}")
 
 
 def main():
@@ -579,7 +629,7 @@ def main():
     bpy.ops.wm.save_as_mainfile(filepath=str(out / f"{CHARACTER_ID}.blend"), compress=True)
     print(export_character(CHARACTER_ID, "high", out, clips=animation.clips(), description=DERIVATION))
     if args.preview:
-        render_previews(out, arm)
+        render_walk_strip(out, arm, render_previews(out, arm))
 
 
 if __name__ == "__main__":
