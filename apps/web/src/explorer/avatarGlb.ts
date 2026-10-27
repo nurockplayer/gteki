@@ -124,6 +124,8 @@ export async function loadGlbAvatar(url: string, opts: { quality: "low" | "high"
   }
 }
 
+const TOON_FILL = 0.55;
+
 /** One shared 3-tone ramp for toon-flagged avatar materials: nearest-sampled, no mipmaps. */
 let toonRamp: THREE.DataTexture | undefined;
 function toonGradient(): THREE.DataTexture {
@@ -144,6 +146,10 @@ function toonClone(source: THREE.Material): THREE.MeshToonMaterial {
     map: standard.map ?? null,
     color: standard.color ? standard.color.clone() : new THREE.Color(0xffffff),
     gradientMap: toonGradient(),
+    // Scene-lit stations switch the core lights off and light PBR by IBL alone, which toon shading ignores:
+    // the base colour doubles as a fill so the avatar never goes black; any real light adds the 3-tone ramp.
+    emissive: new THREE.Color().setScalar(TOON_FILL),
+    emissiveMap: standard.map ?? null,
     side: source.side,
   });
   material.name = source.name;
