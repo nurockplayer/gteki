@@ -2,10 +2,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import type { Edge, Floor, Node, Poi, Source } from "../../packages/schema/src/index.ts";
-import { parseStationFiles } from "../../packages/schema/src/index.ts";
+import type { Edge, Floor, Node, Poi, Source, Tenant } from "../../packages/schema/src/index.ts";
+import { parseStationFiles, TENANTS_SCHEMA_VERSION } from "../../packages/schema/src/index.ts";
 import { createDemoFiles } from "../../apps/web/src/demo.ts";
 import { createRouter } from "../../packages/navigation/src/index.ts";
+import { createTenantFixtureBundle } from "../../packages/navigation/src/fixtures.ts";
 import { buildPrivateSeam } from "../gis/src/s03-private-seam.ts";
 import type { HeldGraphDocument } from "../gis/src/s03-nav-graph-route.ts";
 import { buildOverlay, mergeStation, type Additions, type StationFiles } from "./build-overlay.ts";
@@ -53,6 +54,22 @@ function poi(id: string): Poi {
     evidence: { sourceIds: ["private-source"], method: "synthetic-fixture", checkedDate: "2026-10-27" },
   };
 }
+/** The tenant fixture bundle as public files, with its tenants.json. */
+function tenantFiles(): StationFiles {
+  const { nodes, edges, pois, tenants, ...rest } = createTenantFixtureBundle();
+  return {
+    manifest: { schema: rest.schema, station: rest.station, sources: rest.sources, floors: rest.floors, coverage: rest.coverage },
+    graph: { schema: rest.schema, stationId: rest.station.id, nodes, edges },
+    pois: { schema: rest.schema, stationId: rest.station.id, pois },
+    tenants: { schema: TENANTS_SCHEMA_VERSION, tenants },
+  };
+}
+function tenant(id: string, ja: string): Tenant {
+  return {
+    id, poiId: "store", names: [{ lang: "ja", text: ja }], aliases: [], floorLabel: [{ lang: "ja", text: "B1F" }],
+    evidence: { sourceIds: ["private-source"], method: "facts-only tenant directory listing (OD-34), UNVERIFIED", checkedDate: "2026-10-27" },
+  };
+}
 const additions = (patch: Partial<Additions> = {}): Additions => ({ graphParts: [], ...patch });
 
 describe("private overlay builder", () => {
@@ -76,6 +93,21 @@ describe("private overlay builder", () => {
     const result = mergeStation(pub, additions({ pois: [replacement] }));
     expect(result.pois.pois.map((item) => item.id)).toEqual(pub.pois.pois.map((item) => item.id));
     expect(result.pois.pois[index].names[0].text).toBe("Private restroom");
+  });
+
+  it("merges tenant additions by id, an addition winning a clash", () => {
+    const pub = tenantFiles();
+    const tenantsOf = (files: StationFiles) => (files.tenants as { tenants: Tenant[] }).tenants;
+    const privateSource = { ...source(), usage: "facts-only" as const, decision: { url: "https://example.invalid/decision", date: "2026-10-27" } };
+    const result = mergeStation(pub, additions({ sources: [privateSource], tenants: [tenant("tenant-store-1", "私的薬局"), tenant("tenant-p-1", "私的ブランド")] }));
+    expect(tenantsOf(result).map((t) => t.id)).toEqual([...tenantsOf(pub).map((t) => t.id), "tenant-p-1"]);
+    expect(tenantsOf(result)[0].names[0].text).toBe("私的薬局");
+    // A station without a public tenants.json gets one from its additions alone.
+    const { tenants: _, ...withoutTenants } = pub;
+    expect(tenantsOf(mergeStation(withoutTenants, additions({ sources: [privateSource], tenants: [tenant("tenant-p-1", "私的ブランド")] }))).map((t) => t.id)).toEqual(["tenant-p-1"]);
+    expect(() => mergeStation(pub, additions({ sources: [privateSource], tenants: [tenant("tenant-p-1", "a"), tenant("tenant-p-1", "b")] }))).toThrow(/tenant id tenant-p-1 appears twice in tenants\.json/);
+    // The merged file is still validated: a tenant on an unknown POI fails.
+    expect(() => mergeStation(pub, additions({ sources: [privateSource], tenants: [{ ...tenant("tenant-p-2", "x"), poiId: "nope" }] }))).toThrow(/tenant-p-2/);
   });
 
   it("rejects duplicate graph ids across addition files and identifies both files", () => {
@@ -162,6 +194,9 @@ describe("private overlay builder", () => {
     fs.mkdirSync(path.join(privateDir, "overlay", "gone", "gteki"), { recursive: true });
     buildOverlay({ repoRoot: root, privateDir });
     expect(fs.existsSync(path.join(privateDir, "overlay", "gone"))).toBe(false);
+    fs.writeFileSync(path.join(privateDir, "additions", "demo", "tenants.json"), JSON.stringify({ schema: "gteki.tenants/9.9", tenants: [] }));
+    expect(() => buildOverlay({ repoRoot: root, privateDir })).toThrow(/tenants\.json: schema must be gteki\.tenants\/0\.1/);
+    fs.rmSync(path.join(privateDir, "additions", "demo", "tenants.json"));
     fs.mkdirSync(path.join(privateDir, "additions", "missing"));
     expect(() => buildOverlay({ repoRoot: root, privateDir })).toThrow(/additions\/missing.*no public station folder/);
   });

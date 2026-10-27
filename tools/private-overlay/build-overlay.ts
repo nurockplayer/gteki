@@ -1,14 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import type { Edge, Floor, GraphFile, Node, Poi, PoiFile, Source, StationManifestFile } from "../../packages/schema/src/index.ts";
-import { parseStationFiles } from "../../packages/schema/src/index.ts";
+import type { Edge, Floor, GraphFile, Node, Poi, PoiFile, Source, StationManifestFile, Tenant, TenantFile } from "../../packages/schema/src/index.ts";
+import { parseStationFiles, TENANTS_SCHEMA_VERSION } from "../../packages/schema/src/index.ts";
 
 export interface StationFiles { manifest: StationManifestFile; graph: GraphFile; pois: PoiFile; tenants?: unknown }
 export interface Additions {
   sources?: Source[];
   floors?: Floor[];
   pois?: Poi[];
+  tenants?: Tenant[];
   graphParts: { file: string; nodes: Node[]; edges: Edge[]; floors?: Floor[] }[];
 }
 
@@ -54,8 +55,17 @@ export function mergeStation(pub: StationFiles, add: Additions): StationFiles {
     edges: mergeList(pub.graph.edges, graphParts.map(({ file, edges }) => ({ file, items: edges })), "edge", problems),
   };
   const pois: PoiFile = { ...pub.pois, pois: mergeList(pub.pois.pois, poiFiles, "poi", problems) };
+  // Tenant additions merge by id like POIs; without any, the public file passes through untouched.
+  let tenants = pub.tenants;
+  if ((add.tenants ?? []).length) {
+    const publicTenants = (pub.tenants as TenantFile | undefined)?.tenants;
+    tenants = {
+      schema: TENANTS_SCHEMA_VERSION,
+      tenants: mergeList(Array.isArray(publicTenants) ? publicTenants : [], [{ file: "tenants.json", items: add.tenants! }], "tenant", problems),
+    };
+  }
   if (problems.length) throw new Error(problems.join("\n"));
-  const merged: StationFiles = { manifest, graph, pois, ...(pub.tenants === undefined ? {} : { tenants: pub.tenants }) };
+  const merged: StationFiles = { manifest, graph, pois, ...(tenants === undefined ? {} : { tenants }) };
   const parsed = parseStationFiles(manifest, graph, pois, merged.tenants, { privateTier: true });
   if (!parsed.ok) {
     const errors = parsed.issues.filter((issue) => issue.level === "error");
@@ -83,6 +93,10 @@ function readAdditions(dir: string): Additions {
   add.sources = optional("sources.json", "sources");
   add.floors = optional("floors.json", "floors");
   add.pois = optional("pois.json", "pois");
+  const tenantsFile = path.join(dir, "tenants.json");
+  if (fs.existsSync(tenantsFile) && (readJson(tenantsFile) as { schema?: unknown }).schema !== TENANTS_SCHEMA_VERSION)
+    throw new Error(`${tenantsFile}: schema must be ${TENANTS_SCHEMA_VERSION}`);
+  add.tenants = optional("tenants.json", "tenants");
   const graphFile = path.join(dir, "graph.json");
   const readPart = (file: string, name: string) => {
     const floors = (readJson(file) as { floors?: unknown }).floors;
