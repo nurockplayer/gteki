@@ -88,6 +88,16 @@ describe("private overlay builder", () => {
     ] }))).toThrow(/twice appears twice in graph\.s03\.json/);
   });
 
+  it("merges floors carried inside a graph part", () => {
+    const result = mergeStation(publicFiles(), additions({ sources: [source()], graphParts: [
+      { file: "graph.s03.json", floors: [floor()], nodes: [{ ...node("s03-node"), floorId: "d-test" }], edges: [] },
+    ] }));
+    expect(result.manifest.floors.map((f) => f.id).slice(-1)).toEqual(["d-test"]);
+    expect(() => mergeStation(publicFiles(), additions({ sources: [source()], floors: [floor()], graphParts: [
+      { file: "graph.s03.json", floors: [floor()], nodes: [], edges: [] },
+    ] }))).toThrow(/d-test appears in both floors\.json and graph\.s03\.json/);
+  });
+
   it("requires private tier notes on every added source", () => {
     expect(() => mergeStation(publicFiles(), additions({ sources: [{ ...source(), notes: "not tiered" }] }))).toThrow(/private-source.*\[tier P\]/);
   });
