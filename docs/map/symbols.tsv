@@ -302,11 +302,11 @@ angleDelta	function	apps/web/src/explorer/walker.ts	99
 HOURS_MAX_AGE_DAYS	const	apps/web/src/hours.ts	7
 printedHours	function	apps/web/src/hours.ts	15
 Lang	type	apps/web/src/i18n.ts	6
-Strings	type	apps/web/src/i18n.ts	461
-strings	function	apps/web/src/i18n.ts	463
-pick	function	apps/web/src/i18n.ts	468
-coverageText	function	apps/web/src/i18n.ts	477
-initialLang	function	apps/web/src/i18n.ts	482
+Strings	type	apps/web/src/i18n.ts	463
+strings	function	apps/web/src/i18n.ts	465
+pick	function	apps/web/src/i18n.ts	470
+coverageText	function	apps/web/src/i18n.ts	479
+initialLang	function	apps/web/src/i18n.ts	484
 FormClock	interface	apps/web/src/merchant/form-state.ts	9
 FormState	interface	apps/web/src/merchant/form-state.ts	18
 newFormState	function	apps/web/src/merchant/form-state.ts	32
