@@ -82,11 +82,12 @@ describe("placement maths", () => {
     const d = placed.filter((p) => p.row === "r-door");
     expect(d.map((p) => p.sx)).toEqual([0.75, 0.75]); // 3 m / (2 x 2 m)
     expect(d.map((p) => p.x)).toEqual([100.75, 99.25]); // +X runs along the wall (normal 90 deg -> yaw 180)
-    expect(d.every((p) => p.y === 50 && p.z === 10 && p.sy === 1)).toBe(true);
+    // The back plane stands 0.01 m in front of the opening plane (normal 90 deg -> +Y).
+    for (const p of d) expect([p.y, p.z, p.sy]).toEqual([expect.closeTo(50.01, 12), 10, 1]);
     const w = placed.filter((p) => p.row === "r-win");
     expect(w.map((p) => p.sx)).toEqual([4 / 4.8, 4 / 4.8]);
-    expect(w.map((p) => p.y)).toEqual([31, 29]); // wall normal 0 deg -> yaw 90: bays run north
-    expect(w.every((p) => p.x === -20 && p.sy === 1.15)).toBe(true); // 3.0 / 2.2 clamped to 1.15
+    expect(w.map((p) => p.y)).toEqual([29, 31]); // wall normal 0 deg -> yaw 90: bays run north
+    for (const p of w) expect([p.x, p.sy]).toEqual([expect.closeTo(-19.99, 12), 1.15]); // 3.0 / 2.2 clamped to 1.15
     expect(placed.some((p) => p.row === "r-low")).toBe(false);
   });
 
