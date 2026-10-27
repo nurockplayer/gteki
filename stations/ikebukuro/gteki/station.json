@@ -2794,6 +2794,25 @@
    "derivation": "pipeline/extract_columns.py: PLATEAU column footprints and heights found by shape in the barriers triangles (build/ubld_enu.json, welded vertical prisms 1.5 m or taller, up to 3 m across), each with its kit sleeve piece id or null and a reason. sourceIds = PLATEAU"
   },
   {
+   "id": "shop-openings",
+   "path": "scene/shop_openings.json",
+   "sourceIds": [
+    "plateau-ubld-13116"
+   ],
+   "modified": true,
+   "derivation": "pipeline/extract_shop_openings.py: PLATEAU room door and window panels (build/ubld_enu.json) welded per opening type and wall plane, with width, base, height, the surveyed wall normal and the nearest walk-graph edge. sourceIds = PLATEAU"
+  },
+  {
+   "id": "shop-placements",
+   "path": "scene/shop_placements.json",
+   "sourceIds": [
+    "lumine-ikebukuro-access-2026-10",
+    "plateau-ubld-13116"
+   ],
+   "modified": true,
+   "derivation": "GTEki-authored (merchant scene lead, #209): which surveyed openings get a shopfront and its plain-text sign. kind=placeholder: original illustrative shops (示意店面), no POI, connector or route. kind=real: ルミネ池袋 at the JR South Gate, position printed-relative (「JR池袋駅南改札、正面右手よりすぐ」), not surveyed (director ruling R1, field check FC-MER-01). Visual only, drawn by scene/kit_shops.ts, no colliders"
+  },
+  {
    "id": "identity",
    "path": "scene/identity.json",
    "sourceIds": [
