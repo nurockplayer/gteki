@@ -25,7 +25,7 @@ Captured with `tests/e2e/specs/21-vertical-shots.spec.ts` (fixed node, fixed cam
 | bank head | 207 / 341k | 80 / 159k |
 | Exit 1 stair foot | 171 / 319k | 68 / 150k |
 
-Walk: down and up the 30 m bank in quarters on both tiers, `done` every time, never `stuck`, height linear from −7.85 m to −23.53 m (the ramp walk proxy). Frame time is pinned at the 60 Hz vsync (16.7 ms) on the dev Mac at every spot, so it's no use for comparison here. Draws and triangles are the cost measure.
+Walk: down the 30 m bank (the before run walked back up the same escalator; the spec now climbs the up escalator `2692fe`) in quarters on both tiers, `done` every time, never `stuck`, height linear from −7.85 m to −23.53 m (the ramp walk proxy). Frame time is pinned at the 60 Hz vsync (16.7 ms) on the dev Mac at every spot, so it's no use for comparison here. Draws and triangles are the cost measure.
 
 ## Where vertical transport comes from today
 

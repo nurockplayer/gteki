@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { ARTIFACTS, hooks, openStation } from "../lib/gteki.ts";
 
 /**
@@ -8,7 +8,7 @@ import { ARTIFACTS, hooks, openStation } from "../lib/gteki.ts";
  * m1-m3 escalator bank (edges e1fa65, 2692fe, fd3365: both guided walks ride it) and the Exit 1 stair flights:
  * the walker spawns at a graph node, the follow camera is pinned with setCamera (yaw 0 = -Z, radians), and each spot
  * records a screenshot, draws and triangles per frame (p50 at the WebGL boundary, every pass included, as in spec 13)
- * and frame intervals. Then a play-view walk: down the escalator from the m1 head to the m3 foot and back up, with a
+ * and frame intervals. Then a play-view walk: down escalator e1fa65 (m1 head to m3 foot) and up 2692fe, with a
  * shot at each quarter and the avatar height recorded, so a walk/collision regression shows as a stuck or a height
  * jump. Evidence, not a golden: compare two runs (before/after) side by side.
  *
@@ -29,6 +29,9 @@ const SETTLE_MS = 1500;
 // down to the m3 foot (-48.21,-23.74,-165.23); up the bank is yaw about -1.22.
 const HEAD = "n:e4365ef27b14448eb770343c8a024f80";
 const FOOT = "n:ea71c5f746934d0a934c43782d861da5";
+// The bank's up escalator 2692fe: m3 foot (-47.62,-23.74,-163.74) to m1 head (-19.29,-7.8,-174.02).
+const UP_FOOT = "n:5d2a3fac668d4a068a98e0b9e3aeaf5d";
+const UP_HEAD = "n:57e00b46b8804e7f95bd92ba9a20fb7b";
 const STAIR_FOOT = "n:04f621ba"; // prefix, resolved below: Exit 1 stair flight 03bd24, foot on m1
 const spots = [
   { id: "bank-foot", node: FOOT, yaw: -0.75, pitch: 0.18, distance: 6 },
@@ -93,20 +96,19 @@ test("shinjuku vertical transport: fixed spots and escalator walk @phone", async
     (report.spots as unknown[]).push({ ...s, spawned: ok, ...(await shoot(s.id)) });
   }
 
-  // Play view: the follow camera trails the walker down the bank and back up (camera released, as a player sees it).
+  // Play view: the follow camera trails the walker down e1fa65 and up 2692fe (camera released, as a player sees it).
   await page.evaluate(() => (window as any).__gteki.setCamera(null));
-  await hooks.walkFromNode(page, HEAD);
-  const head = await hooks.avatar(page);
-  await hooks.walkFromNode(page, FOOT);
-  const foot = await hooks.avatar(page);
-  await hooks.walkFromNode(page, HEAD);
-  const legs = [["down", head, foot], ["up", foot, head]] as const;
-  for (const [leg, a, b] of legs) {
+  const at = async (node: string) => { await hooks.walkFromNode(page, node); return hooks.avatar(page); };
+  const legs = [["down", HEAD, FOOT], ["up", UP_FOOT, UP_HEAD]] as const;
+  for (const [leg, from, to] of legs) {
+    const b = await at(to);
+    const a = await at(from);
     for (const q of [0.25, 0.5, 0.75, 1]) {
       // Avatar ENU (x east, y north, z up) -> renderer (x, z = -north); walkPath takes renderer x/z.
       const target = { x: a.x + (b.x - a.x) * q, z: -(a.y + (b.y - a.y) * q) };
       const r = await page.evaluate((p) => (window as any).__gteki.walkPath([p], { maxSeconds: 30 }), target);
       (report.walk as unknown[]).push({ leg, q, result: r, ...(await shoot(`walk-${leg}-${q * 100}`)) });
+      expect.soft(r.done && !r.stuck, `${leg} walk reaches ${q * 100}% without getting stuck`).toBe(true);
     }
   }
   fs.writeFileSync(path.join(dir, "vertical.json"), JSON.stringify(report, null, 2));
