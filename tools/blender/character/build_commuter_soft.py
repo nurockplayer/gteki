@@ -37,6 +37,12 @@ HAIR_RING_Z = (HAIR_HEM_Z, 1.425, 1.462, HAIR_TEMPLE_Z, 1.540, 1.570, 1.600, 1.6
 EYE_Y, EYE_Z, EYE_RADII = 0.085, 1.522, (0.0161, 0.0080, 0.023)
 HAND_Y = 0.030
 WALK_CROUCH_M = 0.025  # near-straight stance leg; the shared Animation stays on its own default
+# Coat skirt (round 4): split below the hip line into a left and a right panel, each its own edge loop,
+# with the seam at centre front (the coat opening) and centre back (the vent). The panels lap 1.5 cm.
+SKIRT_SPLIT_Z = 0.86
+SKIRT_OVERLAP = math.radians(3.0)  # each panel runs 3 deg past a seam: a 6 deg lap, ~1.5 cm at the hem
+SKIRT_SEGMENTS = 9
+SKIRT_THIGH_SHARE = 0.9  # same-side thigh at the hem; the hip line stays on the pelvis
 
 # joint -> (head, tail) is what the armature, the Animation clips and the exporter all read.
 SPINE_STOPS = [(1.36, "spine_03"), (1.26, "spine_02"), (1.10, "spine_01"), (0.94, "pelvis")]
@@ -95,24 +101,28 @@ def blend(stops, value):
 
 
 def coat_weights(point):
-    """Spine chain above the hip; below it the skirt stays on the pelvis.
+    """Spine chain by height; the coat body itself now stops at the hip line (the skirt panels take over)."""
+    return blend(SPINE_STOPS, point[2])
 
-    Pelvis 1.0 at the hip line and at the front and back centre columns, easing to 0.85 pelvis /
-    0.15 nearest thigh at the side hem.
 
-    No vertex mixes both thighs and the front and back centre columns take no thigh at all, so neighbouring
-    skirt vertices are never pulled in opposite directions. At z 0.86 the pelvis-only spine branch meets
-    the pelvis-only skirt branch, so the weight field stays continuous at the waist.
+def skirt_weights(side):
+    """One coat panel: pelvis 1.0 at the hip line easing to pelvis 0.1 / same-side thigh 0.9 at the hem.
+
+    A panel only ever follows its own thigh, so nothing inside a panel is pulled in two directions; the
+    panels part at the front opening and the back vent during the stride, which is what a coat does.
     """
-    z, x = point[2], point[0]
-    if z >= 0.86:
-        return blend(SPINE_STOPS, z)
-    drop = min(1.0, (0.86 - z) / (0.86 - HEM_Z))
-    side = min(max((abs(x) - 0.05) / 0.09, 0.0), 1.0)
-    share = 0.15 * drop * side
-    if share < 1e-4:
-        return {"pelvis": 1.0}
-    return {"pelvis": 1.0 - share, ("thigh_r" if x > 0 else "thigh_l"): share}
+    joint = f"thigh_{side}"
+
+    def weights(point):
+        ramp = min(max((SKIRT_SPLIT_Z - point[2]) / (SKIRT_SPLIT_Z - HEM_Z), 0.0), 1.0)
+        # The panels have to drape over the swinging thigh by mid-skirt, not only at the hem, or the knee
+        # comes through the face of the panel: ease the ramp so the follow is already half way at the knee.
+        share = SKIRT_THIGH_SHARE * math.sqrt(ramp)
+        if share < 1e-4:
+            return {"pelvis": 1.0}
+        return {"pelvis": 1.0 - share, joint: share}
+
+    return weights
 
 
 def arm_weights(side):
@@ -138,6 +148,27 @@ def ellipse_ring(centre, radii, sides, phase=0.0):
     rx, ry = radii
     return [(x + rx * math.cos(phase + i * math.tau / sides),
              y + ry * math.sin(phase + i * math.tau / sides), z) for i in range(sides)]
+
+
+def arc_ring(centre, radii, start, end, steps, grow=0.0):
+    """An open arc of an ellipse (one coat panel); the ends are its own seam edge loops."""
+    x, y, z = centre
+    rx, ry = radii
+    return [(x + (rx + grow) * math.cos(start + (end - start) * i / steps),
+             y + (ry + grow) * math.sin(start + (end - start) * i / steps), z)
+            for i in range(steps + 1)]
+
+
+def panel_loft(rings):
+    """Skin a stack of open arcs: no wrap, no caps, so the panel keeps its own boundary."""
+    sides = len(rings[0])
+    points = [point for ring in rings for point in ring]
+    faces = []
+    for k in range(len(rings) - 1):
+        lower, upper = k * sides, (k + 1) * sides
+        for i in range(sides - 1):
+            faces.append((lower + i, lower + i + 1, upper + i + 1, upper + i))
+    return points, faces
 
 
 def loft(rings, cap_start=False, cap_end=False):
@@ -319,6 +350,7 @@ class Geometry:
 # The top rings taper into the neck opening instead of closing with a wide flat cap: that flat cap read
 # as a rectangular block at the shoulders.
 COAT_RINGS = [(0.50, 0.225, 0.150), (0.56, 0.214, 0.142), (0.66, 0.197, 0.130), (0.78, 0.180, 0.118),
+              (0.86, 0.172, 0.110),
               (0.88, 0.170, 0.108), (0.98, 0.138, 0.092), (1.06, 0.110, 0.080), (1.14, 0.116, 0.086),
               (1.20, 0.126, 0.092), (1.26, 0.136, 0.096), (1.30, 0.146, 0.098), (1.345, 0.146, 0.096),
               (1.372, 0.118, 0.084), (1.388, 0.090, 0.074)]
@@ -413,11 +445,29 @@ def build_lapels():
     return out
 
 
+def build_coat_panel(side, start, end):
+    """One half of the skirt: an arc from the front seam round to the back seam, lapping 1.5 cm past both.
+
+    The right panel sits 3 mm proud from 0.78 m down, so where the two panels lap they never share a
+    surface (no z-fighting at the seam) and the coat reads as a closed front with a back vent at rest.
+    """
+    rings = []
+    for z, rx, ry in COAT_RINGS:
+        if z > SKIRT_SPLIT_Z:
+            continue
+        grow = 0.003 * min(max((SKIRT_SPLIT_Z - z) / (SKIRT_SPLIT_Z - 0.78), 0.0), 1.0) if side == "r" else 0.0
+        rings.append(arc_ring((0.0, 0.0, z), (rx, ry), start, end, SKIRT_SEGMENTS, grow))
+    return panel_loft(rings)
+
+
 def build_body():
     """Coat, trousers, shoes, hands, neck, collar, knit, lapels and the tote."""
     body = Geometry()
-    rings = [ellipse_ring((0.0, 0.0, z), (rx, ry), 16) for z, rx, ry in COAT_RINGS]
+    rings = [ellipse_ring((0.0, 0.0, z), (rx, ry), 16) for z, rx, ry in COAT_RINGS if z >= SKIRT_SPLIT_Z]
     body.add(*loft(rings, cap_end=True), weights=coat_weights, hex_colour=COAT)
+    for side, start, end in (("r", -math.pi / 2 - SKIRT_OVERLAP, math.pi / 2 + SKIRT_OVERLAP),
+                             ("l", math.pi / 2 - SKIRT_OVERLAP, 3 * math.pi / 2 + SKIRT_OVERLAP)):
+        body.add(*build_coat_panel(side, start, end), weights=skirt_weights(side), hex_colour=COAT)
 
     # Stand collar, emerging through the coat's neckline so no neck shows under the jaw.
     collar = [ellipse_ring((0.0, 0.0, z), (rx, ry), 16) for z, rx, ry in
