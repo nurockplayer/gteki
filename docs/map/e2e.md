@@ -1,7 +1,7 @@
 ---
 area: e2e
 owner: gteki-fa
-updated: 2026-10-26 JST
+updated: 2026-10-28 JST
 ---
 # Browser e2e harness (tests/e2e)
 
@@ -61,6 +61,7 @@ Local runs of the full suite need a real GPU for 05 and the visual specs. Run th
 - 18-reduced-motion-lens — follow lens changes in one frame under prefers-reduced-motion (#136).
 - 19-avatar-baseline — #339 F0 avatar baseline: foot slide, captures and frame time.
 - 20-recognition — #342 Q5 recognition-proxy captures (OCR, proxy table).
+- 21-vertical-shots — vertical transport before/after: Shinjuku escalator bank and Exit 1 stairs at fixed cameras, both tiers, plus a walk down and up the bank (`docs/visual/vertical-gap.md`).
 
 ## Pitfalls
 - SwiftShader numbers are invalid for performance or visuals; CI checks flow only.
