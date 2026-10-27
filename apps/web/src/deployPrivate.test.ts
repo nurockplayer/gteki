@@ -5,10 +5,12 @@ import { describe, expect, it } from "vitest";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const script = path.join(repo, "scripts/deploy-private.sh");
+// The host CI sets these; strip them so only the CI test exercises the CI guard.
+const { CI: _ci, GITHUB_ACTIONS: _gha, ...localEnv } = process.env;
 
 describe("private Cloudflare Pages deploy guards", () => {
   it("refuses when GTEKI_PRIVATE_DIR is unset", () => {
-    const env = { ...process.env };
+    const env = { ...localEnv };
     delete env.GTEKI_PRIVATE_DIR;
     const result = spawnSync("bash", [script], { env, encoding: "utf8" });
     expect(result.status).toBe(1);
@@ -17,7 +19,7 @@ describe("private Cloudflare Pages deploy guards", () => {
 
   it("refuses in CI before the build", () => {
     const result = spawnSync("bash", [script], {
-      env: { ...process.env, GTEKI_PRIVATE_DIR: "/tmp", CI: "1" },
+      env: { ...localEnv, GTEKI_PRIVATE_DIR: "/tmp", CI: "1" },
       encoding: "utf8",
     });
     expect(result.status).toBe(1);
@@ -26,7 +28,7 @@ describe("private Cloudflare Pages deploy guards", () => {
 
   it("refuses --branch main before the build", () => {
     const result = spawnSync("bash", [script, "--branch", "main"], {
-      env: { ...process.env, GTEKI_PRIVATE_DIR: "/tmp" },
+      env: { ...localEnv, GTEKI_PRIVATE_DIR: "/tmp" },
       encoding: "utf8",
     });
     expect(result.status).toBe(1);
@@ -35,7 +37,7 @@ describe("private Cloudflare Pages deploy guards", () => {
 
   it("refuses GTEKI_DEPLOY_BRANCH=production before the build", () => {
     const result = spawnSync("bash", [script], {
-      env: { ...process.env, GTEKI_PRIVATE_DIR: "/tmp", GTEKI_DEPLOY_BRANCH: "production" },
+      env: { ...localEnv, GTEKI_PRIVATE_DIR: "/tmp", GTEKI_DEPLOY_BRANCH: "production" },
       encoding: "utf8",
     });
     expect(result.status).toBe(1);
