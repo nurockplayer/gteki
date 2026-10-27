@@ -87,7 +87,7 @@ pnpm typecheck
 | `scene/finishes.json` | Finish-pack manifest for the Lane E kit: role → texture folder + repeat in metres. Empty today (see "Kit integration") | presentation |
 | `scene/kit/kit.json`, `scene/kit.ts` | Kit GLBs placed as instances on existing data (batch 1: barrier rails on the access-fence stretches; plus one labelled representative gate array per JR gate node); copies in `gteki/kit/` | presentation |
 | `scene/columns.json`, `scene/kit_columns.ts` | PLATEAU column footprints (found by shape in the `barriers` triangles, `pipeline/extract_columns.py`) and the kit column sleeves placed on them (batch 2) | truth (footprints, heights) / presentation (sleeves) |
-| `scene/shop_openings.json` | PLATEAU door and window panels of the rooms (`pipeline/extract_shop_openings.py`), welded per opening type with width, base and height, the wall normal facing the nearest walk-graph edge and its distance (#209) | truth (survey positions, dimensions) |
+| `scene/shop_openings.json` | PLATEAU door and window panels of the rooms (`pipeline/extract_shop_openings.py`), welded per opening type and winding heading with width, base and height, the surveyed wall normal and its relation to the nearest walk-graph edge (#209) | truth (survey positions, dimensions) |
 | `scene/dressing_anchors.json` | Stair nosing lines and escalator landings from the PLATEAU survey, where kit dressing is placed (see "Kit integration") | truth (survey positions) |
 | `scene/kit_catalog.json`, `scene/kit_placements.json` | Lane E catalog and per-anchor placements for stair and escalator dressing, generated from the anchors (see "Kit integration") | derived (survey dimensions) |
 | `pipeline/` | Reproducible data and asset build (stdlib Python + Blender; one Node walker check) | — |
@@ -223,9 +223,9 @@ sleeve (42 square, 103 round), 136 are listed with a reason and keep the flat co
 kit's generic tile or enamel, not a survey of the real columns.
 
 `python3 -I pipeline/extract_shop_openings.py` (from `build/ubld_enu.json` and `gteki/graph.json`; same GML-hash check as
-the columns) welds the room opening panels per type (1 mm grid) and writes `scene/shop_openings.json` — one row per
-component with type, opening and polygon ids, width, centre, base and height, and the wall normal (`normal_deg`) pointing
-at the nearest walk-graph edge within 1 m in z of the base, plus that edge and its 2D distance. Facts only, no kit piece.
+the columns) welds the room opening panels per type and winding heading (1 mm grid) and writes `scene/shop_openings.json` — one row per
+component with type, opening and polygon ids, width, centre, base and height, and the area-weighted winding normal (`normal_deg`), plus the nearest walk-graph edge within 1 m in z of the base,
+its 2D distance and whether the normal faces it (`faces_walk`). Facts only, no kit piece.
 
 **Kit sign frames (batch 3).** `scene/kit_signs.ts` stretches `gteki_sign_frame_9slice_h480_d80` around each
 sign using the fitted face dimensions from `buildSigns`, centred and facing with the existing sign. The outer width

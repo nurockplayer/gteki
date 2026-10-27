@@ -10,18 +10,14 @@ is invented, no kit piece is placed, and nothing here changes the GLB, the graph
 Why geometry. PLATEAU carries door and window openings as panels of triangles on a Room (bldg:opening with a
 type, a host wall and its polygons), not as a placed object: one opening is several triangles, spanning one
 panel or a band of them. The walk graph is a separate file (the station's bldg-level graph), so "which side of
-the wall does this shopfront face" has to be read off the graph geometry.
+the wall does this shopfront face" can be compared with the graph geometry.
 
- 1. Triangles are welded into components by shared vertex (1 mm grid), per opening `type`, so a door panel that
-    shares a jamb vertex with the window band beside it stays its own door.
- 2. Per component: `type`, `opening_id` (the PLATEAU opening id; a list when a component welds triangles of
-    several openings), `polygon_ids` (sorted), `base_z` (min z), `height` (max z - min z), `width` (the
-    horizontal extent along the wall: the largest distance between the vertices' (x, y) projections), `centre`
-    (x, y at the midpoint of that extent, z = base_z), `normal_deg` (direction of the wall normal seen from
-    above, counter-clockwise from +X, pointing to the side of the nearest walk-graph edge), `nearest_edge`
-    (edge id) and `edge_distance_m` (2D distance from the centre to that edge's `geometry` polyline, counting
-    only edges whose z at the closest point is within 1.0 m of `base_z`; null, with `normal_deg` null, when
-    no edge is that close).
+ 1. Triangles are welded by shared vertex (1 mm grid), opening type and 10-degree winding-normal heading bucket.
+ 2. Per component: `type`, `opening_id`, `polygon_ids`, `base_z`, `height`, `width` (largest horizontal
+    vertex extent), `centre` (midpoint of that extent at base z), `normal_deg` (area-weighted horizontal
+    winding normal, counter-clockwise from +X), `nearest_edge`, `edge_distance_m` and `faces_walk` (whether
+    the winding normal points toward the nearest edge). The edge fields and `faces_walk` are null when no
+    edge is within 1.0 m in z of the base.
  3. Rows are sorted by (type, centre x, centre y).
 
 Top level: `schema`, `source` (gml file + sha256, as columns.json does), `frame`, `counts` (components per
@@ -63,8 +59,15 @@ def read_triangles(rooms):
     return out, skipped
 
 
+def winding_normal(t):
+    a, b, c = t
+    u = [(b[i] - a[i]) / MM for i in range(3)]
+    v = [(c[i] - a[i]) / MM for i in range(3)]
+    return (u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2])
+
+
 def components(tris):
-    """Triangle index lists, one per component of triangles of the same type sharing a vertex, in first-triangle order."""
+    """Triangle components by type, shared vertex and winding-normal heading bucket."""
     parent = {}
 
     def find(a):
@@ -75,8 +78,10 @@ def components(tris):
 
     for idx, (typ, _o, _p, t) in enumerate(tris):
         parent[idx] = idx
+        n = winding_normal(t)
+        bucket = round(degrees(n) / 10) % 36 if math.hypot(*n) >= 1e-9 else -1
         for v in t:
-            key = (typ, v)
+            key = (typ, v, bucket)
             if key in parent:
                 ra, rb = find(idx), find(parent[key])
                 if ra != rb:
@@ -129,25 +134,6 @@ def nearest_edge(cx, cy, base_z, edges):
     return None if best is None else (best[1], best[0], best[2], best[3])
 
 
-def normal_deg(a, b, cx, cy, toward):
-    """Wall normal in degrees counter-clockwise from +X: of the two perpendiculars to the wall (a -> b), the one
-    pointing at `toward` (the closest point of the nearest edge). None when the wall has no horizontal extent or
-    no edge is near enough to say which side the opening faces."""
-    ux, uy = (b[0] - a[0]) / MM, (b[1] - a[1]) / MM
-    ln = math.hypot(ux, uy)
-    if ln == 0 or toward is None:
-        return None
-    ux, uy = ux / ln, uy / ln
-    cands = ((-uy, ux), (uy, -ux))
-    vx, vy = toward[0] - cx, toward[1] - cy
-    dots = [nx * vx + ny * vy for nx, ny in cands]
-    if dots[0] > dots[1]:
-        return degrees(cands[0])
-    if dots[1] > dots[0]:
-        return degrees(cands[1])
-    return degrees(min(cands, key=degrees))  # centre on the edge: no side, take the lower heading
-
-
 def degrees(n):
     return math.degrees(math.atan2(n[1], n[0])) % 360.0
 
@@ -167,6 +153,10 @@ def find_openings(rooms, edges):
         a, b = pair if pair else (xy[0], xy[0])  # one point only: no extent, no wall direction
         cx, cy = (a[0] + b[0]) / 2 / MM, (a[1] + b[1]) / 2 / MM
         edge = nearest_edge(cx, cy, base / MM, edges)
+        normals = [winding_normal(tris[i][3]) for i in comp]
+        nx, ny = sum(n[0] for n in normals), sum(n[1] for n in normals)
+        normal = degrees((nx, ny)) if math.hypot(nx, ny) >= 1e-9 else None
+        faces_walk = None if edge is None else nx * (edge[2] - cx) + ny * (edge[3] - cy) > 0
         found.append({
             "type": tris[comp[0]][0],
             "opening_ids": sorted({tris[i][1] for i in comp}),
@@ -174,7 +164,8 @@ def find_openings(rooms, edges):
             "base": base / MM, "top": top / MM,
             "width": (math.hypot(b[0] - a[0], b[1] - a[1]) / MM) if pair else 0.0,
             "centre": (cx, cy),
-            "normal": normal_deg(a, b, cx, cy, None if edge is None else (edge[2], edge[3])),
+            "normal": normal,
+            "faces_walk": faces_walk,
             "edge": None if edge is None else edge[0],
             "edge_d": None if edge is None else edge[1],
         })
@@ -202,6 +193,7 @@ def build(data, input_sha256, graph):
             "width": r3(o["width"]),
             "centre": [r3(o["centre"][0]), r3(o["centre"][1]), r3(o["base"])],
             "normal_deg": None if o["normal"] is None else normal_round(o["normal"]),
+            "faces_walk": o["faces_walk"],
             "nearest_edge": o["edge"],
             "edge_distance_m": None if o["edge_d"] is None else r3(o["edge_d"]),
         })
@@ -219,8 +211,8 @@ def build(data, input_sha256, graph):
                            "door and window panels welded and measured by GTEki.",
         },
         "frame": {"axes": "ENU metres: x east, y north, z TP height", "origin": data["frame"]["origin"], "rounding_m": 0.001,
-                  "normal_deg": "counter-clockwise from +X seen from above, in [0, 360), of the wall normal pointing "
-                                "to the side of `nearest_edge` (null when no edge is within %.1f m in z)" % EDGE_Z_M},
+                  "normal_deg": "counter-clockwise from +X seen from above, in [0, 360), of the area-weighted "
+                                "horizontal winding normal"},
         "counts": {"triangles": stats["triangles"], "skipped_polygons": stats["skipped_polygons"],
                    "components": dict(sorted(by_type.items())),
                    "total": len(openings)},

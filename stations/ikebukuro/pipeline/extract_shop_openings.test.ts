@@ -26,6 +26,7 @@ interface Opening {
   width: number;
   centre: V3;
   normal_deg: number | null;
+  faces_walk: boolean | null;
   nearest_edge: string | null;
   edge_distance_m: number | null;
 }
@@ -58,7 +59,7 @@ function fixture() {
     op("Door", "op_d1", panel(40, 41, 0, 2.1)),                              // D1: door panel, 1 m wide
     op("Window", "op_w2", panel(41, 42, 0, 1.5)),                            // W2: shares its corner vertex with D1
     op("Window", "op_w3", [poly([[50, 20, 0], [51, 20, 0], [51, 20, 1]])]),  // W3 + W4: one component, two openings
-    op("Window", "op_w4", [poly([[50, 20, 0], [50, 20, 1], [51, 20, 1]])]),
+    op("Window", "op_w4", [poly([[50, 20, 0], [51, 20, 1], [50, 20, 1]])]),
     op("Door", "op_d2", panel(55, 56, 10, 12)),                              // D2: 10 m above the walk graph
   ];
   return {
@@ -123,6 +124,21 @@ describe.skipIf(!python)("extract_shop_openings.py on a synthetic extract", () =
     expect(w2.polygon_ids.length).toBe(2);
   });
 
+  it("keeps two perpendicular window panels sharing a corner edge separate", () => {
+    const input = fixture();
+    input.rooms[0].openings = [op("Window", "corner", [
+      ...panel(0, 2, 0, 2, 0),
+      poly([[2, 0, 0], [2, 2, 0], [2, 2, 2]]),
+      poly([[2, 0, 0], [2, 2, 2], [2, 0, 2]]),
+    ])];
+    const result = run(input);
+    expect(result.r.status, result.r.stderr).toBe(0);
+    const rows = (JSON.parse(result.text) as ShopFile).openings;
+    expect(rows).toHaveLength(2);
+    expect(rows.map((row) => row.width)).toEqual([2, 2]);
+    expect(rows.map((row) => [row.normal_deg, row.faces_walk])).toEqual([[270, false], [0, false]]);
+  });
+
   it("gives a welded band its width, extent-midpoint centre, base and height", () => {
     const w1 = at(11);
     expect(w1).toMatchObject({ type: "Window", base_z: 0, height: 2, width: 2 });
@@ -134,18 +150,18 @@ describe.skipIf(!python)("extract_shop_openings.py on a synthetic extract", () =
     expect(at(50.5)).toMatchObject({ type: "Window", opening_id: ["op_w3", "op_w4"], width: 1, height: 1 });
   });
 
-  it("measures the nearest edge along its geometry polyline and points the normal at that side", () => {
+  it("measures the nearest edge and uses the winding normal", () => {
     // e_bent's from→to chord runs at y = 25, 5 m from W1; only its polyline comes closer (2.57 m), so a chord
     // distance would pick e_straight (3 m) instead.
     const w1 = at(11);
-    expect(w1).toMatchObject({ nearest_edge: "e_bent", normal_deg: 90 });
+    expect(w1).toMatchObject({ nearest_edge: "e_bent", normal_deg: 270, faces_walk: false });
     expect(w1.edge_distance_m).toBeCloseTo(2.575, 2);
-    expect(at(40.5)).toMatchObject({ nearest_edge: "e_straight", edge_distance_m: 3, normal_deg: 90 });
+    expect(at(40.5)).toMatchObject({ nearest_edge: "e_straight", edge_distance_m: 3, normal_deg: 270, faces_walk: false });
   });
 
   it("gives nulls where no edge is within 1 m in z of the base", () => {
     const d2 = file!.openings.find((o) => Math.abs(o.centre[2] - 10) < 0.01)!;
-    expect(d2).toMatchObject({ type: "Door", base_z: 10, height: 2, width: 1, normal_deg: null, nearest_edge: null, edge_distance_m: null });
+    expect(d2).toMatchObject({ type: "Door", base_z: 10, height: 2, width: 1, normal_deg: 270, faces_walk: null, nearest_edge: null, edge_distance_m: null });
   });
 
   it("sorts the rows by type, then centre x and y", () => {
@@ -180,8 +196,9 @@ describe("the committed scene/shop_openings.json", () => {
       expect(o.polygon_ids.length).toBeGreaterThan(0);
       expect(o.height).toBeGreaterThan(0);
       expect(o.width).toBeGreaterThan(0);
-      expect(o.normal_deg === null).toBe(o.nearest_edge === null);
-      expect(o.normal_deg === null).toBe(o.edge_distance_m === null);
+      if (o.width > 0) expect(o.normal_deg).not.toBeNull();
+      expect(o.faces_walk === null).toBe(o.nearest_edge === null);
+      expect(o.edge_distance_m === null).toBe(o.nearest_edge === null);
       if (o.normal_deg !== null) expect(o.normal_deg).toBeGreaterThanOrEqual(0);
       if (o.normal_deg !== null) expect(o.normal_deg).toBeLessThan(360);
     }
