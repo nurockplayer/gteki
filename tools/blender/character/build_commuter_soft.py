@@ -30,7 +30,7 @@ CREAM, KNIT_RIB, BELT = "#EEE8DE", "#B9B0A2", "#2A2622"
 TAUPE, TAUPE_CREASE, TAUPE_HEM = "#ABA6A2", "#7E7873", "#918B87"
 SHOE, SOLE, SHOE_HI = "#8B7568", "#5E4E42", "#9C8775"
 TOTE, TOTE_SIDE, STITCH = "#AC9787", "#8F7A6B", "#B0A08A"
-SKIN, NECK_SKIN = "#F0D6C5", "#E9C4AE"
+SKIN, NECK_SKIN = "#F0D6C5", "#E3C2B0"
 HAIR, HAIR_HI, HAIR_SHADE = "#59453B", "#795D4F", "#584237"
 HAIR_LAYER_B = "#6B5044"
 IRIS_TOP, IRIS_BOT, SCLERA, LASH = "#59463D", "#59463D", "#F3EDE5", "#2A1E18"
@@ -78,7 +78,9 @@ EYE_HALF_W, EYE_HALF_H = 0.0308, 0.0271  # v7: width -11 %, height -6 % (from v6
 BOB_LOWER = [(1.400, 0.122, 0.116), (1.450, 0.142, 0.135), (1.500, 0.152, 0.154), (1.545, 0.154, 0.156)]
 DOME_BASE_Z, DOME_RX, DOME_HEIGHT = 1.545, 0.154, 0.172  # hemisphere cap: crown at 1.717 m
 BOB_FADE_Z = 1.575  # the face opening closes into the forehead between 1.545 and 1.575 m
-BOB_OPEN = 0.93  # v6: far-side opening edge pulled back about 1 cm  # half-angle (rad) of the face opening in the lower shell, centred on the front
+# v10 oval face opening: half-angle (rad) of the opening in the lower shell, by post-scale height (metres).
+# Wide at cheekbone level, narrower toward the fringe (above) and the jaw (below); the side hair curves in.
+OPEN_ANGLE_POST = [(1.400, 0.70), (1.470, 1.00), (1.530, 0.85)]
 BOB_TIPS = 7  # v3: seven broad clumps around the lower edge
 FACE_X0, FACE_W, FACE_Z0, FACE_H = -0.115, 0.230, 1.370, 0.340  # face atlas span (metres)
 BLINK_PUSH_M = 0.005  # lens sits 1 mm proud; the closed blink pushes it 4 mm under the skin
@@ -554,8 +556,9 @@ def build_body():
     body.add(build_knit(), coat_weights)
     for lapel in build_lapels():
         body.add(lapel, coat_weights)
-    neck = Patch(BODY_RECTS["neck"])
-    neck.loft([ellipse_ring((0.0, 0.0, z), (0.052, 0.050), 12) for z in (1.32, 1.44)], cap_first=True, cap_last=True)
+    neck = Patch(BODY_RECTS["neck"])  # v10: tapers up into the jaw (no flat block under the chin)
+    neck.loft([ellipse_ring((0.0, 0.0, z), (r, r * 0.96), 12)
+               for z, r in ((1.30, 0.050), (1.36, 0.046), (1.40, 0.040), (1.44, 0.036))], cap_first=True)
     body.add(neck, {"neck_01": 1.0})
     for s, side in ((-1.0, "l"), (1.0, "r")):
         body.add(build_sleeve(s, BODY_RECTS[f"sleeve_{side}"]), arm_weights(side))
@@ -641,10 +644,13 @@ def shell_radii(z):
 
 
 def face_opening_angle(z):
+    """z is in pre-scale (shell) units; the opening half-angle follows OPEN_ANGLE_POST in post-scale height."""
+    z_post = HEAD_CHIN[2] + (z - HEAD_CHIN[2]) * HEAD_SCALE
+    base = interp(OPEN_ANGLE_POST, z_post)
     if z <= DOME_BASE_Z:
-        return BOB_OPEN
+        return base
     u = min(1.0, (z - DOME_BASE_Z) / (BOB_FADE_Z - DOME_BASE_Z))
-    return BOB_OPEN * math.sqrt(max(0.0, 1.0 - u * u))  # rounded top of the opening, not a straight cut
+    return base * math.sqrt(max(0.0, 1.0 - u * u))  # rounded top of the opening, not a straight cut
 
 
 def in_face_opening(centre):
@@ -687,6 +693,7 @@ def build_fringe():
     sweeps = [15.0, 35.0, 20.0, 30.0, 18.0, 33.0]
     top = 1.625
     for root, length, sweep_deg in zip(roots, lengths, sweeps):
+        length += 0.005 * ((root / 0.06) ** 2 - 1.0)  # v10: arched lower edge, tips 5 mm higher at the centre
         tip_x = root + length * math.sin(math.radians(sweep_deg))
         path, radii = [], []
         for k in range(7):
@@ -1258,8 +1265,9 @@ def render_hair_closeup(out, arm, camera):
     camera.data.ortho_scale = 0.42
     arm.animation_data.action = bpy.data.actions["idle"]
     scene.frame_set(1)
-    for name, location, turn in (("hair_closeup_side", (3.0, 0.0, 1.56), 90.0),
-                                 ("hair_closeup_q45", (2.12, 2.12, 1.56), 135.0)):
+    d, eye_z = 3.0, 1.48  # v10: true 45 degrees from the front-right, same distance, at eye height
+    for name, location, turn in (("hair_closeup_side", (d, 0.0, eye_z), 90.0),
+                                 ("hair_closeup_q45", (d * math.sin(math.radians(45)), d * math.cos(math.radians(45)), eye_z), 135.0)):
         set_camera(camera, location, turn)
         scene.render.filepath = str(out / f"{name}.png")
         bpy.ops.render.render(write_still=True)
