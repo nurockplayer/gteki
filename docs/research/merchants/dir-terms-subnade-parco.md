@@ -41,7 +41,7 @@ Cross-check of the other footer policy page: `http://web.archive.org/web/2026101
 
 **Closest OD-34 precedent:** LUMINE type — OD-34 §2 quotes the same shape at `https://www.lumine.ne.jp/policy/` (「私的利用など法律によって認められる範囲を超えて、当サイトに掲載されている内容を無断使用することはできません。」). The サブナード clause bans only use beyond private use or what the law allows; it contains no 営利 / business-use word.
 
-**classification: for director** (LUMINE type: facts only if the director confirms). Caveat for the ruling: this is a 2026-10-12 archive capture of a site that has been unreachable since at least 2026-10-24, so the director may want to treat it as evidence of wording rather than a current live read.
+**Ruled (director gteki-1b, 2026-10-29, OD-34 sixth round): LUMINE type, facts only** (store name, floor, category, entrances worded as the source prints them). Basis: the Wayback capture above (archive URL, capture timestamp and sha256 recorded), labelled 「live 拒連，存檔讀取」 (live refused, read from archive). Facts that can also only be read from an archive carry that archive's capture date; hours follow OD-32 with their date. When the live site answers again, re-read the terms and the facts; a changed clause is ruled again.
 
 ### 1.3 Directory (archived)
 
@@ -190,6 +190,6 @@ The current host's sitemap (`https://ikebukuro.parco.jp/sitemap.xml`, 200 / 6,32
 
 ## 3. What this unblocks
 
-1. サブナード: a director ruling on the archived `/legal/` clause (LUMINE type) would resolve the rights classification. It would not by itself make a tenant import ready: the 85 cards are from a 2026-09-17 capture, floor assignment is unavailable, and neither the directory nor the terms have been verified live. A pre-import check of current status must come first.
+1. サブナード: ruled facts only (OD-34 sixth round, 2026-10-29), read from archive. That does not by itself make a tenant import ready: the 85 cards are from a 2026-09-17 capture, floor assignment is unavailable, and neither the directory nor the terms have been verified live. A pre-import check of current status must come first.
 2. 池袋PARCO: the directory is technically readable (static HTML, per-floor counts); its rights stay Corroboration only until the director rules otherwise, so there is **no** tenant import path from PARCO's own site today.
 3. Both rows 46 and 53 stay `partial` in `coverage-sjk-ikb.md` until a field entrance is recorded; nothing here is route evidence.
