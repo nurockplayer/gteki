@@ -579,9 +579,12 @@ def build_body():
 # ---- head and bob ------------------------------------------------------------------------------
 
 def egg_radii(zn):
-    """Head egg (rx, ry) at normalised height zn in [-1, 1]: a slightly tapered jaw and crown."""
+    """Head egg (rx, ry) at normalised height zn in [-1, 1]: fuller cheeks, a rounder jaw, a flatter chin (v9)."""
     ring = math.sqrt(max(0.0, 1.0 - zn * zn))
+    ring = ring ** (1.0 - 0.15 * min(1.0, max(0.0, (-0.8 - zn) / 0.17)))  # chin bottom slightly flattened
     profile = 1.0 + 0.04 * zn - 0.08 * max(0.0, -zn) ** 1.5 + 0.15 * max(0.0, -zn - 0.3)  # softer jaw (v8)
+    profile *= 1.0 + 0.08 * math.exp(-((zn + 0.42) / 0.30) ** 2)  # v9: cheeks +8 % in the eye-to-mouth band
+    profile *= 1.0 + 0.16 * min(1.0, max(0.0, (-0.6 - zn) / 0.25)) ** 2  # v9: chin width >= 0.62 x cheek
     return HEAD_RADII[0] * ring * profile, HEAD_RADII[1] * ring * profile
 
 
@@ -953,21 +956,25 @@ def face_paint(S, T):
     x, z = FACE_X0 + FACE_W * S, FACE_Z0 + FACE_H * T
     base = flat(SKIN, S.shape)
     for side in (-1.0, 1.0):
-        blush = np.exp(-(((x - side * 0.060) / 0.024) ** 2 + ((z - 1.470) / 0.016) ** 2))
-        base = over(base, rgb("#EBC3B6"), blush * 0.6)  # warm cheek gradient, feathered
-    base = over(base, rgb("#E6C7B6"), np.clip((1.43 - z) / 0.05, 0.0, 1.0) * 0.5)  # soft jaw underside
+        blush = np.exp(-(((x - side * 0.060) / 0.030) ** 2 + ((z - 1.470) / 0.022) ** 2))
+        base = over(base, rgb("#EBC3B6"), blush * 0.6)  # v9: feathered cheek midtone, no hard edge
+    base = over(base, rgb("#E2BFAE"), np.clip((1.43 - z) / 0.05, 0.0, 1.0) * 0.5)  # jaw underside
+    bridge = np.exp(-((x / 0.008) ** 2)) * band(z, 1.480, 1.520)  # faint nose bridge line (v9)
+    base = over(base, rgb("#EDCDBE"), bridge * 0.35)
     nose = band(np.abs(x), 0.0, 0.0018) * band(z, 1.470, 1.490)  # 2-texel nose shade
     base = over(base, rgb("#E2B39E"), nose * 0.6)
+    fringe_shade = np.exp(-(((z - 1.545) / 0.012) ** 2))  # soft shade under the fringe (v9)
+    base = over(base, rgb("#E9CBBB"), fringe_shade * 0.5)
     for side in (-1.0, 1.0):
         xr = x * side
-        brow_z = 1.556 + 0.018 * (xr - 0.030) / 0.040  # gently angled
+        brow_z = 1.556 + 0.018 * (xr - 0.030) / 0.040 + 0.005 * (1.0 - ((xr - 0.045) / 0.015) ** 2)  # gently arched (v9)
         inside = (xr >= 0.030) & (xr <= 0.072)
         base = over(base, rgb("#6A4A3A"), band(z - brow_z, -0.0012, 0.0012) * band(xr, 0.030, 0.060) * 0.8)  # short thin brow
         dx = x - side * EYE_X
         arc = EYE_Z - 0.010 * (1.0 - np.clip(dx / EYE_HALF_W, -1, 1) ** 2)
         base = over(base, rgb("#3B2A20"), band(z - arc, -0.0016, 0.0016) * (np.abs(dx) < EYE_HALF_W))  # closed-eye arc
-    smile = band(z - (1.426 + 2.5 * x * x), -0.0012, 0.0012) * band(np.abs(x), 0.0, 0.008)  # one 16 mm mouth
-    base = over(base, rgb("#8E4A40"), smile * 1.0)  # visible, gentle closed smile
+    smile = band(z - (1.426 + 2.5 * x * x), -0.0012, 0.0012) * band(np.abs(x), 0.0, 0.009)  # one 18 mm mouth (v9)
+    base = over(base, rgb("#7E3F37"), smile * 1.0)  # slightly darker gentle closed smile
     return base
 
 
@@ -975,10 +982,10 @@ def eye_painter(side):
     """Both eye artworks sit toward the face centre by the same amount and are 6 % narrower (front view symmetric)."""
     shift = 0.16 + 0.224  # v8b: both eyes mirror the far-side offset (8 % + 3 % of width, toward centre)
     shift = shift if side < 0 else -shift
-    return lambda S, T: eye_paint(S, T, shift, 0.94)
+    return lambda S, T: eye_paint(S, T, shift, 0.94, outer=side)
 
 
-def eye_paint(S, T, shift=0.0, squeeze=1.0):
+def eye_paint(S, T, shift=0.0, squeeze=1.0, outer=0.0):
     import numpy as np
     dx, dz = ((S - 0.5) * 2 - shift) / squeeze, (T - 0.5) * 2
     base = flat(SKIN, S.shape)
@@ -990,7 +997,8 @@ def eye_paint(S, T, shift=0.0, squeeze=1.0):
     out = np.where(iris[..., None], iris_colour, out)
     rim = iris & (((dx / 0.66) ** 2 + (dz / 0.70) ** 2) > 0.55)  # darker iris rim separates it from the white
     out = np.where(rim[..., None], flat("#3E2E28", S.shape), out)
-    lid = (shape & (dz > 0.84) & (dz < 0.93)).astype(np.float32) * 0.6  # soft upper-lid arc
+    lid_low = 0.84 - 0.031 * np.clip(dx * outer, 0.0, 1.0)  # v9: 2 texels thicker at the outer corner
+    lid = (shape & (dz > lid_low) & (dz < 0.93)).astype(np.float32) * 0.6  # soft upper-lid arc
     out = out * (1.0 - lid[..., None]) + rgb(LASH) * lid[..., None]
     highlight = (((dx + 0.28) / 0.16) ** 2 + ((dz - 0.30) / 0.16) ** 2 < 1.0) | (
         ((dx - 0.26) / 0.07) ** 2 + ((dz + 0.22) / 0.07) ** 2 < 1.0)
