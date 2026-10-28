@@ -47,7 +47,7 @@ Only **新宿区** (`city.shinjuku.lg.jp`) is used beyond the sites already read
 - **URL:** `https://www.city.shinjuku.lg.jp/kusei/about.html` (HTTP 200, 67,486 B), read **2026-10-29 07:06 JST** (2026-10-28T22:06Z).
 - **sha256 of the fetched HTML:** `abc05302f63de4d42980ad6a7b9a4970aacce0031ffee74a8eb388b4c3182e6f`
 - **Clause, quoted verbatim (two sentences; the operative one first):** 「掲載されている情報は、個人的かつ非営利的な使用目的だけのために利用する場合に限り、複製、使用、ダウンロードすることができます。」「著作権法上の「私的使用」や「引用」の範囲を越えて、本ページのコンテンツの使用を希望する場合は事前に問合せ担当課または区政情報課までお問い合わせください。事前の許可がない限り、転載、変更、発行、配布、掲示などは一切できません。」
-- **classification: for director.** Closest precedent named for the director, not ruled here: the 新宿区 entry already recorded in `docs/research/merchants/shinjuku-3stores-facts-2026-10-26.md` §5 (#502 class: a quoted use restriction covering purposes beyond private use → corroboration only). Until the director rules, the 新宿区 facts above are recorded as **corroboration only** and must not be imported.
+- **Ruled (director gteki-1b, 2026-10-29, OD-34 sixth round):** same class as Tobu Railway §8 and 西武池袋本店 (bans business use). **Public tier: corroboration only, never a sole source.** Tier P (Owner private, non-commercial) may use it, in the private overlay. Facts #1–#6 and #8 rest on 新宿区 alone, so for the public tier they need a second source (Tokyo Metro official or the day-2 field item 56).
 
 Two sites are already inside OD-34 and were re-read only to test status, not to add a clause:
 
@@ -68,12 +68,12 @@ Sites used for **discovery only** (no fact taken): Wikipedia, eventernote, shunk
 | MPR-6 | English name unknown | The English station page has **no Wayback capture** (404 from Wayback, 07:11 JST); Japanese pages print only the katakana name. | Tokyo Metro English page when reachable. |
 | MPR-7 | Large ward PDFs not read | `000347763.pdf` (11.7 MB, 「バリアフリー縦動線の整備事例（メトロプロムナード・新宿サブナード間）」), `000336763.pdf` (7.1 MB), `000319159.pdf` (6.4 MB), `000319161.pdf` (4.7 MB) were skipped under the no-large-download limit. | Read when the limit allows; they are planning material, likely no directory. |
 | MPR-8 | No current shop/space list | §2. Only one dated shop fact (2018). | Field walk or a future official page. |
-| MPR-9 | 新宿区 facts need a ruling | Clause quoted in §3; recorded as corroboration only, classification: for director. | OD-34 sixth-round entry by the director. |
+| MPR-9 | 新宿区 facts are corroboration only in the public tier | Ruled 2026-10-29 (OD-34 sixth round); usable in tier P only. | A Tokyo Metro official source or field item 56 (`docs/research/lines/field-run-2026-11-01.md`). |
 
 ## 5. What this unblocks
 
-1. Row 49 **station access** can move from `?` to **partial**: the promenade is printed as the 東京メトロ丸ノ内線 新宿駅 out-of-gate concourse under 新宿通り (facts #5–#7), which ties it to M08 without asserting a route.
-2. Row 49 **passage attribution** can move from `?` to **partial** (name, opening year, existing-passage status, one shop fact); **directory and inventory** stays `?` — no current list was located.
+1. Row 49 **station access**, public tier: Tokyo Metro's own 2018 press release (#9, facts only) places a shop 「丸ノ内線新宿駅メトロプロムナード内」, which ties the passage to M08 without asserting a route: `?` → **partial**. The out-of-gate concourse, 1959 and 新宿通り facts (#1–#6, #8) are 新宿区-only: tier P only until a second source.
+2. Row 49 **passage attribution** stays `?` in the public tier (its identity facts are 新宿区-only; field item 56 adds the sign evidence); tier P: partial. **Directory and inventory** stays `?` — no current list was located.
 3. Still needs **FC-SEP-02** in `docs/research/field-collection-list.md` (新宿三丁目 endpoint, exits, posted hours, and the observed Subnade connection), which no page read here can replace.
 
 ## 6. Fetch log (JST; UTC in the record column)
