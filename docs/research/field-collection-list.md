@@ -49,12 +49,15 @@ Consolidated 2026-10-22 from the five research files (R1 to R5) and the existing
 | B3, B4, B5, B6, C1 `[CH-04]` | IK | West Exit hall; west passage to Exit 8 | Where the stairs of exits 14, 16, 19 start; the number on the south-west stair and on the short stair beside the wide Fukutoshin stair; whether the way to Exit 8 has no gate | look, write down the sign wording | 10 | No | `gap-west-stairs`; `exit-14`, `exit-16`, `exit-19`, `exit-8`; rank 2 | IK, CL, CH (alias FC-CH-04) |
 | D1 `[CH-04]` | IK | Passage north of the West Exit (South) hall | Exits 5, 6a, 6b, 7: east or west side of the passage, and which column from the north edge of the south hall | count columns | 10 | No | `gap-west-corridor-exits`; `exit-5`, `exit-6a`, `exit-6b`, `exit-7`; rank 2 | IK, CL, CH (alias FC-CH-04) |
 
-## T2: free area, photo, tape or up to 30 minutes (22 rows, 27 ids)
+## T2: free area, photo, tape or up to 30 minutes (25 rows, 30 ids)
 
 | id | Station | Place | What to observe / measure | Method | Min | Paid? | Unblocks | Source |
 |---|---|---|---|---|---|---|---|---|
 | H1, H2 | IK | Along the whole walk | Opening hours posted at exit stair heads; every lift or escalator seen: where, which floors. FC-SH-06 adds: copy the posted wording at the Sunshine City 地下道入口, the ISP entrances and Metro exits 34 to 37 (plate or shutter wording; no hours are stated in public text) | photo of the posted sign | 0 extra; +5 est. for FC-SH-06 | No | `gap-hours`, `gap-step-free`; rank 2 | IK, CL, [SH](gaps/DR-IK-stepfree-hours-seibu.md) (FC-SH-06) |
 | B2 `[CH-04]` | IK | West Exit hall, west passage | Exit 9 stair: which side and how many columns from Exit 10's stair; also the sign wording at the stair head | look, count columns, sign photo | 5 | No | `exit-9`, `gap-west-stairs`; rank 2 (cheapest unlock per CL and `stations/ikebukuro/docs/coverage-gaps.md`) | IK, CL, CH (alias FC-CH-04) |
+| FC-SEP-01 | SJ | 西武新宿駅 and 新宿サブナード | Locate the 西武新宿 and 新宿駅 endpoints and copy sign wording; identify the current public path and passage names, at-grade or underground sections, posted hours and lifts or ramps along the continuous route; whether the proposed サブナード–メトロプロムナード passage is open: photograph an opening notice or sign if present; it remains proposed until opening is evidenced | walk, write down sign wording and posted hours, sign photo | 20 (est.) | No | separate-station endpoint → walkable segment (director ruling 2026-10-29 JST) | [separate stations](lines/sjk-separate-stations.md) |
+| FC-SEP-02 | SJ | 新宿三丁目駅 and the public path toward 新宿駅 | Locate the 新宿三丁目 and 新宿駅 endpoints and copy sign wording; identify the current public path and passage names, at-grade or underground sections, posted hours and lifts or ramps along the continuous route; independently check the exact Subnade connection and record its observed status | walk, write down sign wording and posted hours, sign photo | 20 (est.) | No | separate-station endpoint → walkable segment (director ruling 2026-10-29 JST) | [separate stations](lines/sjk-separate-stations.md) |
+| FC-SEP-03 | SJ | 新宿西口駅 and the public path toward 新宿駅 | Locate the 新宿西口 and 新宿駅 endpoints and copy sign wording; identify the current public path and passage names, at-grade or underground sections, posted hours and lifts or ramps along the continuous route | walk, write down sign wording and posted hours, sign photo | 20 (est.) | No | separate-station endpoint → walkable segment (director ruling 2026-10-29 JST) | [separate stations](lines/sjk-separate-stations.md) |
 | FC-IK-01 | IK | Passage west of the Tobu 中央1 gate, towards the West Exit stairs and Exit 19 | The lift JR's page calls 西口方面階段裏エレベーター: does it exist, which levels, posted hours, which exit number or sign it names | look, sign photo | 5 | No | `gap-step-free` (west), `exit-19`; rank 2 | IK |
 | A1, A2, A3 | IK | Central Passage | Side and column of each Marunouchi gate (east, centre, west) and Tobu 中央1 / 中央2 gate; the two floor openings near the Marunouchi gates; photograph the printed gate-name plates (Metro's 中央通路西改札 against 東武百貨店's 中央連絡西改札) | photo of sign, count columns | 10 | No | `gap-metro-tobu-gates`; the 5 gate POIs; rank 2 | IK, CL |
 | F2, F3 | IK | South Passage; JR west passage | Side and column of the Yurakucho South Passage west and east gates counted from the JR South Gate; whether both ends of the JR-side link have gate lines and whether it can be walked without a ticket. The 南通路西改札 to 4番出入口 POI addition is approved (Owner decision relayed by director gteki-80, 2026-10-22, #165; the Ikebukuro lane handles it); F2 still gives the gate's side and column | look, sign photo | 10 | No | `gap-south-west`, `gap-tobu-jr-link`; rank 2 | IK, CL |
@@ -114,7 +117,7 @@ Totals are item minutes only (no walking, no overlap removed). Order is by the c
 
 If time is short, imagery first in the order the source gives: FC-IMG-01, 02, 03, 08 (45 min). The checklist's own A to G walk is 80 min of item time (60 to 90 min per the checklist).
 
-### Shinjuku: T1 and T2, 95 min of items
+### Shinjuku: T1 and T2, 155 min of items
 
 | Step | Where | Items | Min |
 |---|---|---|---|
@@ -123,8 +126,9 @@ If time is short, imagery first in the order the source gives: FC-IMG-01, 02, 03
 | 3 | JR east-west free passage | FC-IMG-06 | 10 |
 | 4 | E27 / E01 free-side concourse | FC-IMG-07 (with FV-E27-03, FV-E27-05) | 15 + 10 (est.) |
 | 5 | E27 signs, free side | FC-SX-05; FV-E27-04 | 15 + 10 (est.) |
+| 6 | 西武新宿 / サブナード, 新宿三丁目 / メトロプロムナード, 新宿西口 | FC-SEP-01, FC-SEP-02, FC-SEP-03 (field-run items 57–59) | 60 (est.) |
 
-Free extensions (T3 only by length, no ticket): FC-CH-01 (40, same plaza as step 1) and FC-SJ-02 (45, street exits): +85, giving 180 min. FC-IMG-08 and 09 can be repeated here if wanted (the source counts them once for both stations).
+Free extensions (T3 only by length, no ticket): FC-CH-01 (40, same plaza as step 1) and FC-SJ-02 (45, street exits): +85, giving 240 min. FC-IMG-08 and 09 can be repeated here if wanted (the source counts them once for both stations).
 
 Ticket visit, one fare (T3 paid): FC-SJ-03 (45), FC-SJ-04 (40), FC-SJ-05 (90), FC-SJ-06 (30), FC-RT-05 (30), optional FC-IMG-10 (30, with FV-E27-01 and FV-E27-02) = 265 min. FC-CH-05 is deferred to about 2030.
 
