@@ -21570,6 +21570,10 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
+    },
+    {
+     "lang": "en",
+     "text": "Coin lockers (charged)"
     }
    ],
    "aliases": [],
@@ -21579,7 +21583,8 @@
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tobudept-ikebukuro-facilities-2026-10"
+     "tobudept-ikebukuro-facilities-2026-10",
+     "tobudept-ikebukuro-en-2026-10"
     ],
     "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
     "checkedDate": "2026-10-24"
@@ -21602,6 +21607,10 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
+    },
+    {
+     "lang": "en",
+     "text": "Coin lockers (charged)"
     }
    ],
    "aliases": [],
@@ -21611,7 +21620,8 @@
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tobudept-ikebukuro-facilities-2026-10"
+     "tobudept-ikebukuro-facilities-2026-10",
+     "tobudept-ikebukuro-en-2026-10"
     ],
     "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
     "checkedDate": "2026-10-24"
@@ -21634,6 +21644,10 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
+    },
+    {
+     "lang": "en",
+     "text": "Coin lockers (charged)"
     }
    ],
    "aliases": [],
@@ -21643,7 +21657,8 @@
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tobudept-ikebukuro-facilities-2026-10"
+     "tobudept-ikebukuro-facilities-2026-10",
+     "tobudept-ikebukuro-en-2026-10"
     ],
     "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
     "checkedDate": "2026-10-24"
@@ -21666,6 +21681,10 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
+    },
+    {
+     "lang": "en",
+     "text": "Coin lockers (charged)"
     }
    ],
    "aliases": [],
@@ -21675,7 +21694,8 @@
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tobudept-ikebukuro-facilities-2026-10"
+     "tobudept-ikebukuro-facilities-2026-10",
+     "tobudept-ikebukuro-en-2026-10"
     ],
     "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
     "checkedDate": "2026-10-24"
@@ -21698,6 +21718,10 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
+    },
+    {
+     "lang": "en",
+     "text": "Coin lockers (charged)"
     }
    ],
    "aliases": [],
@@ -21707,7 +21731,8 @@
    "paid": null,
    "evidence": {
     "sourceIds": [
-     "tobudept-ikebukuro-facilities-2026-10"
+     "tobudept-ikebukuro-facilities-2026-10",
+     "tobudept-ikebukuro-en-2026-10"
     ],
     "method": "facts-only facility listing (OD-34), UNVERIFIED, AREA_ONLY",
     "checkedDate": "2026-10-24"
