@@ -23,11 +23,11 @@ DERIVATION = ("original: soft-stylized commuter silhouette hand-built from Blend
               "see apps/web/public/avatars/gteki-commuter-soft.provenance.json")
 
 BODY_ATLAS, HEAD_ATLAS = 1024, 512
-NAVY, NAVY_LIGHT, NAVY_DARK = "#293A50", "#3B4A5D", "#203047"
+NAVY, NAVY_LIGHT, NAVY_DARK = "#293A50", "#3D4C62", "#1E2D44"
 NAVY_EDGE, BUTTON = "#1D2A3E", "#1A2030"
 LAPEL, LAPEL_EDGE, CUFF_BAND = "#3B4A5D", "#161C2C", "#3E4B6B"
-CREAM, KNIT_RIB, BELT = "#EEE8DE", "#CFC7BA", "#2A2622"
-TAUPE, TAUPE_CREASE, TAUPE_HEM = "#ABA6A2", "#918B87", "#918B87"
+CREAM, KNIT_RIB, BELT = "#EEE8DE", "#B9B0A2", "#2A2622"
+TAUPE, TAUPE_CREASE, TAUPE_HEM = "#ABA6A2", "#7E7873", "#918B87"
 SHOE, SOLE, SHOE_HI = "#8B7568", "#5E4E42", "#9C8775"
 TOTE, TOTE_SIDE, STITCH = "#AC9787", "#8F7A6B", "#B0A08A"
 SKIN, NECK_SKIN = "#F0D6C5", "#E9C4AE"
@@ -46,8 +46,8 @@ YOKE_Z = 1.24  # yoke lower edge: painted line only (v4: no geometry step, so no
 # Front opening half-width: 0.05 at the chest (knit >= 40% of torso width), narrowing to 0.03 at the waist.
 OPEN_PROFILE = [(0.50, 0.100), (0.70, 0.075), (0.86, 0.055), (1.00, 0.040), (1.10, 0.058), (1.20, 0.060),
                 (1.30, 0.056), (1.345, 0.045), (1.396, 0.030)]
-BACK_LAP_Z0, BACK_LAP_Z1 = 0.75, 0.80  # the halves lap 3 deg at the back above the vent (vent from 0.75 m down)
-SKIRT_OVERLAP = math.radians(3.0)  # the two lower panels lap 3 deg past the back vent seam
+BACK_LAP_Z0, BACK_LAP_Z1 = 0.62, 0.67  # the halves lap 6 deg at the back above the vent (vent from 0.62 m down)
+SKIRT_OVERLAP = math.radians(6.0)  # the two halves lap 6 deg across the back vent (v6)
 SKIRT_THIGH_SHARE = 0.6  # same-side thigh at the hem; the hip line stays on the pelvis
 SKIRT_BLEND_Z = 0.80  # pelvis-to-thigh blend starts here (v5)
 SLEEVE_PROFILE = [(0.93, 0.044), (0.99, 0.045), (1.13, 0.049), (1.22, 0.052), (1.30, 0.055), (1.32, 0.056)]
@@ -61,11 +61,11 @@ SHOE_RINGS = [(0.008, 0.060, 0.146), (0.029, 0.070, 0.161), (0.057, 0.069, 0.159
 HAND_Y = 0.030
 HAND_RINGS = [(0.80, 0.021), (0.85, 0.024), (0.90, 0.027), (0.94, 0.026)]
 # Flatter, wider tote (~0.30 w x 0.32 h x 0.08 d), top at waist height, hung from the right shoulder.
-TOTE_X, TOTE_Y, TOTE_RINGS = 0.255, -0.060, [(0.68, 0.012, 0.120), (0.70, 0.024, 0.138), (0.73, 0.030, 0.150),
+TOTE_X, TOTE_Y, TOTE_ROT, TOTE_RINGS = 0.255, -0.060, math.radians(30.0), [(0.68, 0.012, 0.120), (0.70, 0.024, 0.138), (0.73, 0.030, 0.150),
                              (0.92, 0.030, 0.150), (0.97, 0.030, 0.150), (1.00, 0.030, 0.150)]  # 6 cm deep
 # one strap: over the right shoulder, down the back of the arm, to the bag's back top corner
-STRAP_PATH = [(0.158, 0.0, 1.354), (0.200, -0.050, 1.28), (0.235, -0.085, 1.15), (0.255, -0.110, 1.04),
-              (0.255, -0.130, 1.00)]
+STRAP_PATH = [(0.158, 0.0, 1.354), (0.200, -0.050, 1.28), (0.250, -0.100, 1.15), (0.300, -0.160, 1.04),
+              (0.330, -0.190, 1.00)]
 WALK_CROUCH_M = 0.025  # near-straight stance leg; the shared Animation stays on its own default
 SPINE_STOPS = [(1.36, "spine_03"), (1.26, "spine_02"), (1.10, "spine_01"), (0.94, "pelvis")]
 
@@ -73,12 +73,12 @@ SPINE_STOPS = [(1.36, "spine_03"), (1.26, "spine_02"), (1.10, "spine_01"), (0.94
 HEAD_CENTRE, HEAD_RADII = (0.0, 0.0, 1.550), (0.110, 0.121, 0.150)
 HEAD_CHIN, HEAD_SCALE = (0.0, 0.0, 1.398), 0.82  # v3: the whole head scales 0.82 about the chin (adult size)
 EYE_X, EYE_Z = 0.050, 1.500
-EYE_HALF_W, EYE_HALF_H = 0.0384, 0.0288  # v5: lenses +20 % over v4, applied before the head scale
+EYE_HALF_W, EYE_HALF_H = 0.0346, 0.0288  # v6: width x0.9 of v5 (+20 % over v4), height unchanged
 # Solid bob shell (fix 1 item 3): (z, rx, ry) from the chin to above the crown. ear-level width >= 1.3x skull.
 BOB_LOWER = [(1.400, 0.122, 0.116), (1.450, 0.142, 0.135), (1.500, 0.152, 0.154), (1.545, 0.154, 0.156)]
 DOME_BASE_Z, DOME_RX, DOME_HEIGHT = 1.545, 0.154, 0.172  # hemisphere cap: crown at 1.717 m
 BOB_FADE_Z = 1.575  # the face opening closes into the forehead between 1.545 and 1.575 m
-BOB_OPEN = 1.00  # half-angle (rad) of the face opening in the lower shell, centred on the front
+BOB_OPEN = 0.93  # v6: far-side opening edge pulled back about 1 cm  # half-angle (rad) of the face opening in the lower shell, centred on the front
 BOB_TIPS = 7  # v3: seven broad clumps around the lower edge
 FACE_X0, FACE_W, FACE_Z0, FACE_H = -0.115, 0.230, 1.370, 0.340  # face atlas span (metres)
 BLINK_PUSH_M = 0.005  # lens sits 1 mm proud; the closed blink pushes it 4 mm under the skin
@@ -220,6 +220,19 @@ def cross(a, b):
 def unit(a):
     length = math.sqrt(sum(x * x for x in a))
     return scale(a, 1.0 / length)
+
+
+def rotated_ellipse(centre, radii, sides, angle):
+    """An ellipse ring turned by angle (rad) about the vertical axis through its centre."""
+    cx, cy, cz = centre
+    rx, ry = radii
+    ca, sa = math.cos(angle), math.sin(angle)
+    ring = []
+    for i in range(sides):
+        t = math.tau * i / sides
+        x, y = rx * math.cos(t), ry * math.sin(t)
+        ring.append((cx + x * ca - y * sa, cy + x * sa + y * ca, cz))
+    return ring
 
 
 def ellipse_ring(centre, radii, sides, phase=0.0):
@@ -431,7 +444,8 @@ def build_coat_half(side):
 
     side -1 is the wearer's left half (front-left edge round the back), side +1 the right half. The two halves
     meet at the centre back (lapping above the vent) and at the front opening. The right half sits 2 mm proud
-    of the left so the lapped strip never shares a surface with it.
+    of the left so the lapped strip never shares a surface with it. Between 0.50 and 0.70 m the leg-facing
+    (side) hem is pushed 25 mm outward so the thighs stay inside the skirt while walking.
     """
     rings = []
     for z in linspace(HEM_Z, COAT_TOP_Z, COAT_RINGS):
@@ -443,11 +457,15 @@ def build_coat_half(side):
             start, end, grow = math.pi - theta + corner, 1.5 * math.pi + lap, 0.0
         else:
             start, end, grow = 1.5 * math.pi - lap, 2 * math.pi + theta - corner, 0.002
-        rings.append(arc_ring((0.0, 0.0, z), (rx + grow, ry + grow), start, end, COAT_STEPS))
+        flare = 0.025 * clamp(1.0 - (z - HEM_Z) / 0.20)
+        ring = []
+        for a in linspace(start, end, COAT_STEPS + 1):
+            push = grow + flare * math.cos(a) ** 2  # the side faces (leg side) flare most
+            ring.append(((rx + push) * math.cos(a), (ry + push) * math.sin(a), z))
+        rings.append(ring)
     patch = Patch(BODY_RECTS["coat_l" if side < 0 else "coat_r"])
     patch.grid(rings)
     return patch
-
 
 def coat_half_weights(side):
     """Coat above the 0.86 m split; below it the same-side panel weights (pelvis 1.0 at the split, thigh at the hem)."""
@@ -549,7 +567,7 @@ def build_body():
         for shoe_patch in build_shoe(s, BODY_RECTS["shoe"]):
             body.add(shoe_patch, {f"foot_{side}": 1.0}, smooth=False)
     tote = Patch(BODY_RECTS["tote"])
-    tote.loft([ellipse_ring((TOTE_X, TOTE_Y, z), (rx, ry), 14) for z, rx, ry in TOTE_RINGS],
+    tote.loft([rotated_ellipse((TOTE_X, TOTE_Y, z), (rx, ry), 14, TOTE_ROT) for z, rx, ry in TOTE_RINGS],
               cap_first=True, cap_last=True)
     body.add(tote, {"pelvis": 1.0})
     strap = Patch(BODY_RECTS["strap"])
@@ -563,7 +581,7 @@ def build_body():
 def egg_radii(zn):
     """Head egg (rx, ry) at normalised height zn in [-1, 1]: a slightly tapered jaw and crown."""
     ring = math.sqrt(max(0.0, 1.0 - zn * zn))
-    profile = 1.0 + 0.06 * zn - 0.10 * max(0.0, -zn)
+    profile = 1.0 + 0.04 * zn - 0.08 * max(0.0, -zn) ** 1.5  # rounder jaw, softer cheeks (v6)
     return HEAD_RADII[0] * ring * profile, HEAD_RADII[1] * ring * profile
 
 
@@ -657,16 +675,16 @@ def fringe_z(x):
 
 
 def build_fringe():
-    """Six solid locks from roots tucked under the crown shell at 1.625 m: flattened wedges, 30 mm root to a
-    rounded tip, 8 mm thick, neighbours overlapping about a fifth. Each lock is swept 25 deg toward +x;
-    lengths 60-80 mm."""
+    """Six solid swept locks from roots tucked under the crown at 1.625 m: flattened wedges, 30 mm root to a
+    rounded tip, 8 mm thick. Each lock sweeps 15-35 deg toward +x, lengths 60-80 mm, and neighbours overlap
+    about 30 % (root spacing 21 mm)."""
     patch = Patch(HAIR_CELLS[1])
-    roots = [-0.075, -0.049, -0.023, 0.003, 0.029, 0.055]
+    roots = [-0.058, -0.037, -0.016, 0.005, 0.026, 0.047]
     lengths = [0.080, 0.066, 0.060, 0.076, 0.064, 0.072]
-    sweep = math.sin(math.radians(25.0))
+    sweeps = [15.0, 35.0, 20.0, 30.0, 18.0, 33.0]
     top = 1.625
-    for root, length in zip(roots, lengths):
-        tip_x = root + length * sweep
+    for root, length, sweep_deg in zip(roots, lengths, sweeps):
+        tip_x = root + length * math.sin(math.radians(sweep_deg))
         path, radii = [], []
         for k in range(7):
             t = k / 6.0
@@ -677,7 +695,6 @@ def build_fringe():
             radii.append((width, 0.004 * (1.0 - 0.5 * t)))
         patch.tube(path, radii, sides=6)
     return patch
-
 
 def build_lip(side):
     """A 6 mm lip of hair colour along the face-opening edge on one side (side -1 left, +1 right)."""
@@ -712,6 +729,21 @@ def build_underlay():
     return patch
 
 
+def build_lower_locks():
+    """Three tapered lower locks hanging below the bob's back and side edge: separate silhouette tips 8-10 mm apart."""
+    patch = Patch(HAIR_CELLS[0])
+    rx, ry = shell_radii(1.40)
+    for theta, length in ((0.20 * math.pi, 0.034), (0.92 * math.pi, 0.028), (1.58 * math.pi, 0.038)):
+        cx, cy = rx * math.cos(theta), ry * math.sin(theta)
+        path, radii = [], []
+        for k in range(3):
+            t = k / 2.0
+            path.append((cx, cy, 1.41 - length * t))
+            radii.append((0.014 - 0.008 * t, 0.008 - 0.004 * t))
+        patch.tube(path, radii, sides=4)
+    return patch
+
+
 def build_bob():
     """One solid bob: a closed rounded shell (lower outline plus hemisphere crown) with the face opening cut
     out of its front, seven broad clumps along the lower edge, a hair lip on each side of the opening, and one
@@ -740,7 +772,7 @@ def build_bob():
     shell = Patch(HAIR_CELLS[0])
     shell.loft(rings, cap_last=True)
     shell.drop(in_face_opening)
-    return [shell, build_lip(-1.0), build_lip(1.0), build_underlay(), build_fringe()]
+    return [shell, build_lip(-1.0), build_lip(1.0), build_underlay(), build_fringe(), build_lower_locks()]
 
 def head_point(p):
     return tuple(HEAD_CHIN[a] + (p[a] - HEAD_CHIN[a]) * HEAD_SCALE for a in range(3))
@@ -866,7 +898,7 @@ def trouser_paint(S, T):
     base = flat(TAUPE, S.shape) * (0.97 + 0.03 * T)[..., None]
     for centre in (0.25, 0.75):  # two vertical folds per leg, slightly wavy
         fold = centre + 0.008 * np.sin(T * 18.0)
-        base = over(base, rgb(TAUPE_CREASE), (np.abs(S - fold) < 0.006).astype(np.float32) * 0.7)
+        base = over(base, rgb(TAUPE_CREASE), (np.abs(S - fold) < 0.006).astype(np.float32) * 0.9)
     return over(base, rgb(TAUPE_HEM), band(T, 0.0, 0.03))  # shade band at the hem
 
 def sleeve_paint(S, T):
@@ -933,8 +965,8 @@ def face_paint(S, T):
         dx = x - side * EYE_X
         arc = EYE_Z - 0.010 * (1.0 - np.clip(dx / EYE_HALF_W, -1, 1) ** 2)
         base = over(base, rgb("#3B2A20"), band(z - arc, -0.0016, 0.0016) * (np.abs(dx) < EYE_HALF_W))  # closed-eye arc
-    smile = band(z - (1.428 + 2.0 * x * x), -0.0009, 0.0009) * band(np.abs(x), 0.0, 0.010)  # 2 cm smile line
-    base = over(base, rgb("#A4564A"), smile * 1.0)
+    smile = band(z - (1.428 + 2.0 * x * x), -0.0012, 0.0012) * band(np.abs(x), 0.0, 0.010)  # 2 cm smile line
+    base = over(base, rgb("#8E4A40"), smile * 1.0)  # visible, gentle closed smile
     return base
 
 
@@ -950,7 +982,8 @@ def eye_paint(S, T):
     out = np.where(iris[..., None], iris_colour, out)
     rim = iris & (((dx / 0.66) ** 2 + (dz / 0.70) ** 2) > 0.55)  # darker iris rim separates it from the white
     out = np.where(rim[..., None], flat("#3E2E28", S.shape), out)
-    out = np.where((shape & (dz > 0.86) & (dz < 0.93))[..., None], flat(LASH, S.shape), out)  # thin upper lash line
+    lid = (shape & (dz > 0.84) & (dz < 0.93)).astype(np.float32) * 0.6  # soft upper-lid arc
+    out = out * (1.0 - lid[..., None]) + rgb(LASH) * lid[..., None]
     highlight = (((dx + 0.28) / 0.16) ** 2 + ((dz - 0.30) / 0.16) ** 2 < 1.0) | (
         ((dx - 0.26) / 0.07) ** 2 + ((dz + 0.22) / 0.07) ** 2 < 1.0)
     out = np.where((shape & highlight)[..., None], flat("#FFFFFF", S.shape), out)
@@ -1160,7 +1193,7 @@ def render_previews(out, arm):
 
 
 def render_walk_strip(out, arm, camera):
-    """Eight walk frames from the back and the right side, 300x400 each, assembled into one strip."""
+    """Eight frames each: walk from the back, walk from the right side, and run from the right side (3 rows)."""
     import bpy
     import numpy as np
     scene = bpy.context.scene
@@ -1168,16 +1201,18 @@ def render_walk_strip(out, arm, camera):
     scene.render.image_settings.file_format = "PNG"
     camera.data.ortho_scale = 1.95
     frames = (0, 4, 8, 12, 16, 20, 24, 28)
-    views = (("back", (0.0, -3.0, 0.84), 0.0, 1), ("side", (3.0, 0.0, 0.84), 90.0, 0))
-    width, height = 300 * len(frames), 400 * 2
+    views = (("walk", "walk_back", (0.0, -3.0, 0.84), 0.0, 0),
+             ("walk", "walk_side", (3.0, 0.0, 0.84), 90.0, 1),
+             ("run", "run_side", (3.0, 0.0, 0.84), 90.0, 2))
+    width, height = 300 * len(frames), 400 * len(views)
     strip = np.zeros((height, width, 4), dtype=np.float32)
-    arm.animation_data.action = bpy.data.actions["walk"]
     tiles = []
-    for name, location, turn, row in views:
+    for action, name, location, turn, row in views:
+        arm.animation_data.action = bpy.data.actions[action]
         set_camera(camera, location, turn)
         for column, frame in enumerate(frames):
             scene.frame_set(frame)
-            path = out / f"walk_{name}_{frame:02d}.png"
+            path = out / f"{name}_{frame:02d}.png"
             scene.render.filepath = str(path)
             bpy.ops.render.render(write_still=True)
             image = bpy.data.images.load(str(path))
@@ -1196,7 +1231,6 @@ def render_walk_strip(out, arm, camera):
     arm.animation_data.action = bpy.data.actions["idle"]
     scene.frame_set(1)
     print(f"preview walk_strip: {out / 'walk_strip.png'}")
-
 
 def render_hair_closeup(out, arm, camera):
     """Hair-only close-ups (body hidden) from +X and at 45 degrees, 600 px, for the hair stripe check."""
