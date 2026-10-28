@@ -151,11 +151,11 @@ describe("avatar selection", () => {
 
 describe("avatar flag", () => {
   const page = "https://gteki.example/app/index.html";
-  it.each(["", "avatarUrl=/avatar.glb", "avatar=GLB", "avatar=soft"])("uses the soft protagonist: %s", (query) => {
-    expect(avatarGlbUrl(new URLSearchParams(query), page)).toBe(SOFT_AVATAR_GLB_URL);
+  it("uses the soft protagonist only with ?avatar=soft", () => {
+    expect(avatarGlbUrl(new URLSearchParams("avatar=soft"), page)).toBe(SOFT_AVATAR_GLB_URL);
   });
-  it("opts out with ?avatar=procedural", () => {
-    expect(avatarGlbUrl(new URLSearchParams("avatar=procedural"), page)).toBeUndefined();
+  it.each(["", "avatar=procedural", "avatarUrl=/avatar.glb", "avatar=GLB", "avatar=SOFT"])("keeps the procedural avatar by default: %s", (query) => {
+    expect(avatarGlbUrl(new URLSearchParams(query), page)).toBeUndefined();
   });
   it("uses Lane E's future URL for ?avatar=glb", () => {
     expect(avatarGlbUrl(new URLSearchParams("avatar=glb"), page)).toBe(DEFAULT_AVATAR_GLB_URL);
