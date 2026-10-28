@@ -10,6 +10,7 @@
 // +X runs along the row's wall and its +Z (the depth 0..0.14, front face) along the wall normal, with the back plane
 // 0.01 m in front of the opening plane.
 //
+// The directory board prints facts-only text from the shop directory, with no map, arrows or positions.
 // Signs are plain text in the GTEki sign font, one quad per shop on the widest placed row's fascia: no logo, image or
 // brand artwork. All quads share one canvas atlas and one unlit material (lit from within): one draw call.
 import type * as THREE_NS from "three";
@@ -50,6 +51,7 @@ export interface Shop {
   sourceIds?: string[];
   field_check?: string;
   ruling?: string;
+  directory?: { title: { ja: string; en: string }; note: { ja: string; en: string }; sourceIds: string[]; checkedDate: string; shops: string[] };
 }
 
 /** The kit's shopfront uses: one piece id per role the shop fronts ask for. */
@@ -256,6 +258,24 @@ export function shopABoards(shops: readonly Shop[], openings: readonly Opening[]
   return out;
 }
 
+/** A facts-only directory on the widest drawable row, opposite its blade sign. */
+export function shopDirectoryBoards(shops: readonly Shop[], openings: readonly Opening[], pieces: Readonly<Record<string, ShopPieceSpec>>): ShopSign[] {
+  const out: ShopSign[] = [];
+  for (const shop of shops) {
+    if (!shop.directory) continue;
+    const rows = shop.openings.map((p) => rowOf(openings, p)).filter((r): r is Opening => !!r && r.height >= MIN_SHOP_ROW_M && !!pieceFor(shopFrontUse(shop.front, r.type), pieces));
+    if (!rows.length) continue;
+    const row = rows.reduce((a, b) => b.width > a.width ? b : a);
+    if (row.edge_distance_m < 2) continue;
+    const yaw = (row.normal_deg + 90) * DEG, normal = row.normal_deg * DEG, along = -row.width / 2 + 0.6;
+    out.push({ shop: shop.id, ja: shop.directory.title.ja, en: shop.directory.title.en, accent: shop.accent,
+      x: row.centre[0] + Math.cos(yaw) * along + Math.cos(normal) * 0.5,
+      y: row.centre[1] + Math.sin(yaw) * along + Math.sin(normal) * 0.5,
+      z: row.base_z + 0.95, yawDeg: (row.normal_deg + 90) % 360, width: 0.9, height: 1.9 });
+  }
+  return out;
+}
+
 /** WCAG relative luminance of a #rrggbb accent (0..1). */
 export function relativeLuminance(hex: string): number {
   const m = /^#([0-9a-f]{6})$/i.exec(hex);
@@ -291,20 +311,44 @@ interface SignSlot {
 }
 
 /** Paint one shelf-packed atlas page: every sign's accent panel and its fitted text. Never squeezes type. */
-function paintSignAtlas(signs: readonly ShopSign[], pxPerM: number, bladeStart: number): { canvas: HTMLCanvasElement; slots: SignSlot[] } {
+function paintSignAtlas(signs: readonly ShopSign[], pxPerM: number, bladeStart: number, directoryStart: number, shops: readonly Shop[]): { canvas: HTMLCanvasElement; slots: SignSlot[] } {
   const dims = signs.map((s) => ({ w: Math.max(1, Math.round(s.width * pxPerM)), h: Math.max(1, Math.round(s.height * pxPerM)) }));
-  const width = Math.max(...dims.map((d) => d.w)) + 2 * SIGN_GUTTER_PX;
-  const height = dims.reduce((n, d) => n + d.h + SIGN_GUTTER_PX, SIGN_GUTTER_PX);
+  // Fascia and blade signs stack in the first column; directory panels sit side by side to its right, so the tall
+  // panels widen the page instead of lengthening it.
+  const main = dims.slice(0, directoryStart), side = dims.slice(directoryStart);
+  const mainW = Math.max(1, ...main.map((d) => d.w));
+  const width = mainW + side.reduce((n, d) => n + d.w + SIGN_GUTTER_PX, 0) + 2 * SIGN_GUTTER_PX;
+  const height = Math.max(main.reduce((n, d) => n + d.h + SIGN_GUTTER_PX, SIGN_GUTTER_PX), ...side.map((d) => d.h + 2 * SIGN_GUTTER_PX));
   const page = document.createElement("canvas");
   page.width = width;
   page.height = height;
   const g = page.getContext("2d")!;
   const slots: SignSlot[] = [];
-  let y = SIGN_GUTTER_PX;
+  let y = SIGN_GUTTER_PX, sideX = 2 * SIGN_GUTTER_PX + mainW;
   signs.forEach((sign, i) => {
-    const slot = { x: SIGN_GUTTER_PX, y, w: dims[i]!.w, h: dims[i]!.h };
+    const slot = i < directoryStart ? { x: SIGN_GUTTER_PX, y, w: dims[i]!.w, h: dims[i]!.h } : { x: sideX, y: SIGN_GUTTER_PX, w: dims[i]!.w, h: dims[i]!.h };
     slots.push(slot);
-    y += slot.h + SIGN_GUTTER_PX;
+    if (i < directoryStart) y += slot.h + SIGN_GUTTER_PX;
+    else sideX += slot.w + SIGN_GUTTER_PX;
+    if (i >= directoryStart) {
+      const directory = shops.find((shop) => shop.id === sign.shop)!.directory!;
+      g.fillStyle = "#f4f2ee"; g.fillRect(slot.x, slot.y, slot.w, slot.h);
+      g.fillStyle = "#202020"; g.textAlign = "center"; g.textBaseline = "middle";
+      const line = (text: string, y: number, size: number, weight: number) => {
+        g.font = `${weight} ${size}px ${FONT}`;
+        const scale = Math.min(1, slot.w * 0.9 / g.measureText(text).width);
+        g.font = `${weight} ${size * scale}px ${FONT}`;
+        g.fillText(text, slot.x + slot.w / 2, slot.y + slot.h * y);
+      };
+      line(directory.title.ja, 0.045, slot.h * 0.035, 700);
+      line(directory.title.en, 0.085, slot.h * 0.024, 500);
+      directory.shops.forEach((name, n) => line(name, 0.14 + n * 0.040, slot.h * 0.028, 500));
+      line(directory.note.ja, 0.87, slot.h * 0.019, 500);
+      line(directory.note.en, 0.905, slot.h * 0.019, 500);
+      // Dark plinth band: the panel stands on the floor as a pylon.
+      g.fillStyle = "#3a3a3a"; g.fillRect(slot.x, slot.y + slot.h * 0.94, slot.w, slot.h * 0.06);
+      return;
+    }
     g.fillStyle = "#fbfaf7";
     g.fillRect(slot.x, slot.y, slot.w, slot.h);
     g.fillStyle = sign.accent;
@@ -358,6 +402,7 @@ export interface ShopStats {
   spillDrawCalls: number;
   bladeSigns: number;
   aBoards: number;
+  directoryBoards: number;
 }
 
 export interface LoadedShopKit {
@@ -402,6 +447,7 @@ export async function loadShopKit(
   const signs = shopSigns(shops, openings, loaded);
   const blades = shopBladeSigns(shops, openings, loaded);
   const boards = shopABoards(shops, openings, loaded);
+  const directories = shopDirectoryBoards(shops, openings, loaded);
   const owned: { dispose(): void }[] = [];
   return {
     placements,
@@ -413,7 +459,7 @@ export async function loadShopKit(
       const stats: ShopStats = {
         shops: new Set(placements.map((p) => p.shop)).size, modules: placements.length, tiles: 0,
         drawCallsAllTiles: 0, trianglesAllTiles: 0, trianglesWorstTile: 0,
-        signs: 0, signDrawCalls: 0, signTriangles: 0, interiorDrawCalls: 0, interiorTriangles: 0, spillDrawCalls: 0, bladeSigns: 0, aBoards: 0,
+        signs: 0, signDrawCalls: 0, signTriangles: 0, interiorDrawCalls: 0, interiorTriangles: 0, spillDrawCalls: 0, bladeSigns: 0, aBoards: 0, directoryBoards: 0,
       };
       const lit = new Map<THREE_NS.Material, THREE_NS.Material>();
       const litOf = (src: THREE_NS.Material) => {
@@ -571,15 +617,15 @@ export async function loadShopKit(
         if (spill.length) { const geo=spill[0]!.geometry; const mesh=new THREE.Mesh(geo,sm); owned.push(geo); mesh.name="kit_shop_spill"; mesh.userData={ gteki_role: "kit_shop" }; group.add(mesh); stats.spillDrawCalls=1; }
       }
 
-      if (signs.length) {
+      if (signs.length || directories.length) {
         // One unlit atlas face batch: every sign quad lit from within, one draw call.
-        const { canvas, slots } = paintSignAtlas([...signs, ...blades], SIGN_PX_PER_M, signs.length);
+        const { canvas, slots } = paintSignAtlas([...signs, ...blades, ...directories], SIGN_PX_PER_M, signs.length, signs.length + blades.length, shops);
         const texture = new THREE.CanvasTexture(canvas);
         texture.colorSpace = THREE.SRGBColorSpace;
         const material = new THREE.MeshBasicMaterial({ map: texture, toneMapped: false });
         owned.push(texture, material);
         // Single-sided: a blade sign gets a second quad turned 180° so its text reads unmirrored from both ways.
-        const parts = [...signs, ...blades].flatMap((sign, i) => {
+        const parts = [...signs, ...blades, ...directories].flatMap((sign, i) => {
           const slot = slots[i]!;
           const geo = new THREE.PlaneGeometry(sign.width, sign.height);
           // Map the plane's 0..1 UVs onto this sign's atlas rectangle (CanvasTexture flips Y).
@@ -604,6 +650,7 @@ export async function loadShopKit(
           group.add(mesh);
           stats.signs = signs.length;
           stats.bladeSigns = blades.length;
+          stats.directoryBoards = directories.length;
           stats.signDrawCalls = 1;
           stats.signTriangles = triOf(merged[0]!.geometry);
         }
