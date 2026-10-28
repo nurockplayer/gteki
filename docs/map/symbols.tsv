@@ -826,9 +826,9 @@ relativeLuminance	function	stations/ikebukuro/scene/kit_shops.ts	280
 signTextColour	function	stations/ikebukuro/scene/kit_shops.ts	291
 SIGN_PX_PER_M	const	stations/ikebukuro/scene/kit_shops.ts	303
 SIGN_GUTTER_PX	const	stations/ikebukuro/scene/kit_shops.ts	304
-ShopStats	interface	stations/ikebukuro/scene/kit_shops.ts	380
-LoadedShopKit	interface	stations/ikebukuro/scene/kit_shops.ts	401
-loadShopKit	function	stations/ikebukuro/scene/kit_shops.ts	412
+ShopStats	interface	stations/ikebukuro/scene/kit_shops.ts	387
+LoadedShopKit	interface	stations/ikebukuro/scene/kit_shops.ts	408
+loadShopKit	function	stations/ikebukuro/scene/kit_shops.ts	419
 NineSlice	interface	stations/ikebukuro/scene/kit_signs.ts	10
 FRAME_USE	const	stations/ikebukuro/scene/kit_signs.ts	28
 SIGN_FRAME_TILE_M	const	stations/ikebukuro/scene/kit_signs.ts	32

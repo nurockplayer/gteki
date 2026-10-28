@@ -271,7 +271,7 @@ export function shopDirectoryBoards(shops: readonly Shop[], openings: readonly O
     out.push({ shop: shop.id, ja: shop.directory.title.ja, en: shop.directory.title.en, accent: shop.accent,
       x: row.centre[0] + Math.cos(yaw) * along + Math.cos(normal) * 0.5,
       y: row.centre[1] + Math.sin(yaw) * along + Math.sin(normal) * 0.5,
-      z: row.base_z + 1.15, yawDeg: (row.normal_deg + 90) % 360, width: 0.9, height: 1.8 });
+      z: row.base_z + 0.95, yawDeg: (row.normal_deg + 90) % 360, width: 0.9, height: 1.9 });
   }
   return out;
 }
@@ -313,18 +313,23 @@ interface SignSlot {
 /** Paint one shelf-packed atlas page: every sign's accent panel and its fitted text. Never squeezes type. */
 function paintSignAtlas(signs: readonly ShopSign[], pxPerM: number, bladeStart: number, directoryStart: number, shops: readonly Shop[]): { canvas: HTMLCanvasElement; slots: SignSlot[] } {
   const dims = signs.map((s) => ({ w: Math.max(1, Math.round(s.width * pxPerM)), h: Math.max(1, Math.round(s.height * pxPerM)) }));
-  const width = Math.max(...dims.map((d) => d.w)) + 2 * SIGN_GUTTER_PX;
-  const height = dims.reduce((n, d) => n + d.h + SIGN_GUTTER_PX, SIGN_GUTTER_PX);
+  // Fascia and blade signs stack in the first column; directory panels sit side by side to its right, so the tall
+  // panels widen the page instead of lengthening it.
+  const main = dims.slice(0, directoryStart), side = dims.slice(directoryStart);
+  const mainW = Math.max(1, ...main.map((d) => d.w));
+  const width = mainW + side.reduce((n, d) => n + d.w + SIGN_GUTTER_PX, 0) + 2 * SIGN_GUTTER_PX;
+  const height = Math.max(main.reduce((n, d) => n + d.h + SIGN_GUTTER_PX, SIGN_GUTTER_PX), ...side.map((d) => d.h + 2 * SIGN_GUTTER_PX));
   const page = document.createElement("canvas");
   page.width = width;
   page.height = height;
   const g = page.getContext("2d")!;
   const slots: SignSlot[] = [];
-  let y = SIGN_GUTTER_PX;
+  let y = SIGN_GUTTER_PX, sideX = 2 * SIGN_GUTTER_PX + mainW;
   signs.forEach((sign, i) => {
-    const slot = { x: SIGN_GUTTER_PX, y, w: dims[i]!.w, h: dims[i]!.h };
+    const slot = i < directoryStart ? { x: SIGN_GUTTER_PX, y, w: dims[i]!.w, h: dims[i]!.h } : { x: sideX, y: SIGN_GUTTER_PX, w: dims[i]!.w, h: dims[i]!.h };
     slots.push(slot);
-    y += slot.h + SIGN_GUTTER_PX;
+    if (i < directoryStart) y += slot.h + SIGN_GUTTER_PX;
+    else sideX += slot.w + SIGN_GUTTER_PX;
     if (i >= directoryStart) {
       const directory = shops.find((shop) => shop.id === sign.shop)!.directory!;
       g.fillStyle = "#f4f2ee"; g.fillRect(slot.x, slot.y, slot.w, slot.h);
@@ -338,8 +343,10 @@ function paintSignAtlas(signs: readonly ShopSign[], pxPerM: number, bladeStart: 
       line(directory.title.ja, 0.045, slot.h * 0.035, 700);
       line(directory.title.en, 0.085, slot.h * 0.024, 500);
       directory.shops.forEach((name, n) => line(name, 0.14 + n * 0.040, slot.h * 0.028, 500));
-      line(directory.note.ja, 0.91, slot.h * 0.019, 500);
-      line(directory.note.en, 0.95, slot.h * 0.019, 500);
+      line(directory.note.ja, 0.87, slot.h * 0.019, 500);
+      line(directory.note.en, 0.905, slot.h * 0.019, 500);
+      // Dark plinth band: the panel stands on the floor as a pylon.
+      g.fillStyle = "#3a3a3a"; g.fillRect(slot.x, slot.y + slot.h * 0.94, slot.w, slot.h * 0.06);
       return;
     }
     g.fillStyle = "#fbfaf7";

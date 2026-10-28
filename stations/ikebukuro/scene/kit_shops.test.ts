@@ -126,10 +126,10 @@ describe("placement maths", () => {
   it("places a directory opposite the blade on the widest drawable row and skips a narrow walkway", () => {
     const candidate = { ...shop, directory: { title: { ja: "案内", en: "Directory" }, note: { ja: "注記", en: "Note" }, sourceIds: [], checkedDate: "2026-10-24", shops: [] } };
     const [board] = shopDirectoryBoards([candidate], [door, windowRow, lowRow], pieces);
-    expect(board).toMatchObject({ shop: "s", width: 0.9, height: 1.8, yawDeg: 90 });
+    expect(board).toMatchObject({ shop: "s", width: 0.9, height: 1.9, yawDeg: 90 });
     expect(board!.x).toBeCloseTo(-19.5);
     expect(board!.y).toBeCloseTo(28.6);
-    expect(board!.z).toBeCloseTo(13.15);
+    expect(board!.z).toBeCloseTo(12.95);
     expect(shopDirectoryBoards([candidate], [door, { ...windowRow, edge_distance_m: 1.99 }], pieces)).toEqual([]);
   });
 
