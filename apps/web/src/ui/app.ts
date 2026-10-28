@@ -621,12 +621,28 @@ export class App {
       : (groups ?? []).flatMap((group) => group.pois.map((poi) => ({ poi, score: 0, matched: "", routable: true })));
     this.ui.live.announce(searchLiveMessage(this.t, hits.length));
     if (hits.length === 0) {
+      // Nothing in the filtered category: say how many the other categories have, and offer to drop the filter.
+      const elsewhere = q && this.s.filter ? this.s.search.search(q, { limit: 8, lang: this.s.lang }).length : 0;
       const none = el("div", "result empty", this.t.noResults);
-      none.setAttribute("role", "option");
-      none.setAttribute("aria-disabled", "true");
-      box.append(none);
+      if (elsewhere > 0) {
+        none.setAttribute("role", "presentation");
+        const label = this.t.otherCategoryHits(elsewhere === 8 ? "8+" : String(elsewhere));
+        const all = el("button", "result other-categories", label);
+        applyAria(all, optionAria(COMBO_CLOSED, box.id, 0, label));
+        all.addEventListener("mousedown", (e) => e.preventDefault());
+        all.addEventListener("click", () => {
+          this.s.filter = null;
+          this.ui.categoryFilter.value = "";
+          this.renderResults(which);
+        });
+        box.append(none, all);
+      } else {
+        none.setAttribute("role", "option");
+        none.setAttribute("aria-disabled", "true");
+        box.append(none);
+      }
       this.mascotSay({ kind: "search_empty" }, box);
-      this.setCombo(which, { open: true, count: 0, active: -1 });
+      this.setCombo(which, { open: true, count: elsewhere > 0 ? 1 : 0, active: -1 });
       return;
     }
     hits.forEach((h, i) => {

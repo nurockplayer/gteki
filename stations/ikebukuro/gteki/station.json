@@ -476,6 +476,14 @@
     "kit/low/gteki_column_round_d600.glb": "78eafab3c83e90495fb257a6b599aa825b1951c70bf393a1afbbd996597e80df",
     "kit/high/gteki_gate_array_2.glb": "837827e00581ef8b3026bba3ffed7d16bc2886b4358c0d3e8043d8d214a59cdc",
     "kit/low/gteki_gate_array_2.glb": "ef9ee106810bf17002c273f3aadab8bb1286da2f0b5d7ed8a9438e1191508930",
+    "kit/high/gteki_shopfront_door_w2000.glb": "d18e739fda7b5c8a2da759470082aeb2e4bcfa083e9c693242337ba7ecd5e48f",
+    "kit/low/gteki_shopfront_door_w2000.glb": "862578e6206126e7b3bc8187a81ff620b916818f9f889e22794cc208be38974a",
+    "kit/high/gteki_shopfront_glazing_w2400.glb": "e255d3090afac83a9d41ef33cf632766cff1cb84c5cc1e2a56e1e62eb38b4985",
+    "kit/low/gteki_shopfront_glazing_w2400.glb": "3a0f55b3f7f2fde133433ca9f41d16066a38e71359a280974776c7c124464d43",
+    "kit/high/gteki_shopfront_shutter_w2400_closed.glb": "4152829f6c8b87ec25105292600b39b7479340b3d3dd898ba724cb441ab6f31d",
+    "kit/low/gteki_shopfront_shutter_w2400_closed.glb": "b3e1630298dd19e52eca123d744ba9137c0e4b22effd44f91f0970efc1f0ff3d",
+    "kit/high/gteki_shopfront_shutter_w2400_half.glb": "cf9ccea0bce5b24f1b89aa32508e0468cb6787f3379bb651edd3afe9bb01468e",
+    "kit/low/gteki_shopfront_shutter_w2400_half.glb": "dd5e8dcee75782a7d7792266848b3202604375201a7d6c763149fda2b5faec33",
     "kit/high/gteki_sign_frame_9slice_h480_d80.glb": "889db7bac82595d051674b30a0d88618e1180cbabd5a0873570a000efe575099",
     "kit/low/gteki_sign_frame_9slice_h480_d80.glb": "abb2aa5de0d46b423bb2e2ca1e39117f3920fc84e819247295725628ddbfde1d"
    },
@@ -2559,6 +2567,14 @@
     "kit/low/gteki_column_round_d600.glb",
     "kit/high/gteki_gate_array_2.glb",
     "kit/low/gteki_gate_array_2.glb",
+    "kit/high/gteki_shopfront_door_w2000.glb",
+    "kit/low/gteki_shopfront_door_w2000.glb",
+    "kit/high/gteki_shopfront_glazing_w2400.glb",
+    "kit/low/gteki_shopfront_glazing_w2400.glb",
+    "kit/high/gteki_shopfront_shutter_w2400_closed.glb",
+    "kit/low/gteki_shopfront_shutter_w2400_closed.glb",
+    "kit/high/gteki_shopfront_shutter_w2400_half.glb",
+    "kit/low/gteki_shopfront_shutter_w2400_half.glb",
     "kit/high/gteki_sign_frame_9slice_h480_d80.glb",
     "kit/low/gteki_sign_frame_9slice_h480_d80.glb",
     "kit/catalog/high/gteki_ik_escalator_w1009_rise2210_a2193.glb",
@@ -2812,6 +2828,25 @@
    ],
    "modified": true,
    "derivation": "pipeline/extract_columns.py: PLATEAU column footprints and heights found by shape in the barriers triangles (build/ubld_enu.json, welded vertical prisms 1.5 m or taller, up to 3 m across), each with its kit sleeve piece id or null and a reason. sourceIds = PLATEAU"
+  },
+  {
+   "id": "shop-openings",
+   "path": "scene/shop_openings.json",
+   "sourceIds": [
+    "plateau-ubld-13116"
+   ],
+   "modified": true,
+   "derivation": "pipeline/extract_shop_openings.py: PLATEAU room door and window panels (build/ubld_enu.json) welded per opening type and wall plane, with width, base, height, the surveyed wall normal and the nearest walk-graph edge. sourceIds = PLATEAU"
+  },
+  {
+   "id": "shop-placements",
+   "path": "scene/shop_placements.json",
+   "sourceIds": [
+    "lumine-ikebukuro-access-2026-10",
+    "plateau-ubld-13116"
+   ],
+   "modified": true,
+   "derivation": "GTEki-authored (merchant scene lead, #209): which surveyed openings get a shopfront and its plain-text sign. kind=placeholder: original illustrative shops (示意店面), no POI, connector or route. kind=real: ルミネ池袋 at the JR South Gate, position printed-relative (「JR池袋駅南改札、正面右手よりすぐ」), not surveyed (director ruling R1, field check FC-MER-01). Visual only, drawn by scene/kit_shops.ts, no colliders"
   },
   {
    "id": "identity",
