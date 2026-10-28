@@ -124,7 +124,7 @@ export async function chooseBySearch(page: Page, which: "from" | "to", query: st
   await input.click();
   await input.fill("");
   await input.pressSequentially(query, { delay: 40 });
-  const result = page.locator(`.field-${which} .results button.result`).filter({ hasText: resultName }).first();
+  const result = page.locator(`.field-${which} .results button.result`).filter({ has: page.locator(".result-name, .result-note", { hasText: resultName }) }).first();
   await expect(result).toBeVisible();
   await result.click();
 }
