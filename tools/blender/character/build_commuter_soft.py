@@ -39,8 +39,8 @@ IRIS_TOP, IRIS_BOT, SCLERA, LASH = "#59463D", "#59463D", "#F3EDE5", "#2A1E18"
 HEM_Z, COAT_SPLIT_Z, COAT_TOP_Z = 0.50, 0.86, 1.396
 # A-line overcoat (fix 1): rounded shoulders, body widens steadily from the underarm (1.15 m) to the hem.
 COAT_PROFILE = [(0.50, 0.230, 0.150), (0.70, 0.202, 0.136), (0.86, 0.179, 0.125), (1.00, 0.159, 0.115),
-                (1.15, 0.138, 0.105), (1.20, 0.140, 0.105), (1.30, 0.155, 0.103), (1.335, 0.150, 0.096),
-                (1.365, 0.110, 0.083), (1.396, 0.062, 0.066)]
+                (1.15, 0.138, 0.105), (1.20, 0.140, 0.105), (1.28, 0.140, 0.100), (1.32, 0.132, 0.094),
+                (1.355, 0.100, 0.082), (1.38, 0.075, 0.072), (1.396, 0.062, 0.066)]
 COAT_RINGS, COAT_STEPS = 18, 20  # each half is one loft: shoulder neck ring to hem
 YOKE_Z = 1.24  # yoke lower edge: painted line only (v4: no geometry step, so no horizontal break)
 # Front opening half-width: 0.05 at the chest (knit >= 40% of torso width), narrowing to 0.03 at the waist.
@@ -48,9 +48,10 @@ OPEN_PROFILE = [(0.50, 0.100), (0.70, 0.075), (0.86, 0.055), (1.00, 0.040), (1.1
                 (1.30, 0.056), (1.345, 0.045), (1.396, 0.030)]
 BACK_LAP_Z0, BACK_LAP_Z1 = 0.75, 0.80  # the halves lap 3 deg at the back above the vent (vent from 0.75 m down)
 SKIRT_OVERLAP = math.radians(3.0)  # the two lower panels lap 3 deg past the back vent seam
-SKIRT_THIGH_SHARE = 0.9  # same-side thigh at the hem; the hip line stays on the pelvis
-SLEEVE_PROFILE = [(0.93, 0.052), (0.99, 0.053), (1.13, 0.056), (1.22, 0.058), (1.30, 0.059), (1.335, 0.060)]
-SLEEVE_TOP_Z = 1.335  # the sleeve stops here, inside the coat shoulder: no cap above the shoulder line
+SKIRT_THIGH_SHARE = 0.6  # same-side thigh at the hem; the hip line stays on the pelvis
+SKIRT_BLEND_Z = 0.80  # pelvis-to-thigh blend starts here (v5)
+SLEEVE_PROFILE = [(0.93, 0.044), (0.99, 0.045), (1.13, 0.049), (1.22, 0.052), (1.30, 0.055), (1.32, 0.056)]
+SLEEVE_TOP_Z = 1.320  # the sleeve stops here, inside the coat shoulder: no cap above the shoulder line
 TROUSER_ZS = [0.06, 0.10, 0.20, 0.34, 0.50, 0.62, 0.74, 0.86]
 TROUSER_R = [0.078, 0.080, 0.088, 0.088, 0.088, 0.088, 0.086, 0.080]
 LEG_X = 0.098  # leg centres, trousers and loafers
@@ -72,7 +73,7 @@ SPINE_STOPS = [(1.36, "spine_03"), (1.26, "spine_02"), (1.10, "spine_01"), (0.94
 HEAD_CENTRE, HEAD_RADII = (0.0, 0.0, 1.550), (0.110, 0.121, 0.150)
 HEAD_CHIN, HEAD_SCALE = (0.0, 0.0, 1.398), 0.82  # v3: the whole head scales 0.82 about the chin (adult size)
 EYE_X, EYE_Z = 0.050, 1.500
-EYE_HALF_W, EYE_HALF_H = 0.032, 0.024  # v3: 0.8x of the v2 eye size, applied before the head scale
+EYE_HALF_W, EYE_HALF_H = 0.0384, 0.0288  # v5: lenses +20 % over v4, applied before the head scale
 # Solid bob shell (fix 1 item 3): (z, rx, ry) from the chin to above the crown. ear-level width >= 1.3x skull.
 BOB_LOWER = [(1.400, 0.122, 0.116), (1.450, 0.142, 0.135), (1.500, 0.152, 0.154), (1.545, 0.154, 0.156)]
 DOME_BASE_Z, DOME_RX, DOME_HEIGHT = 1.545, 0.154, 0.172  # hemisphere cap: crown at 1.717 m
@@ -100,10 +101,10 @@ def joint_positions():
     positions.update({"neck_01": (0.0, 0.0, 1.42), "head": (0.0, 0.0, 1.50)})
     for side, s in (("l", -1.0), ("r", 1.0)):
         positions.update({
-            f"clavicle_{side}": (s * 0.045, 0.0, 1.360), f"upperarm_{side}": (s * 0.158, 0.0, 1.335),
-            f"lowerarm_{side}": (s * 0.205, 0.0, 1.115), f"hand_{side}": (s * 0.235, HAND_Y, 0.945),
-            f"fingers_01_{side}": (s * 0.235, HAND_Y, 0.895), f"fingers_02_{side}": (s * 0.235, HAND_Y, 0.815),
-            f"thumb_01_{side}": (s * 0.241, 0.055, 0.925), f"thumb_02_{side}": (s * 0.246, 0.065, 0.905),
+            f"clavicle_{side}": (s * 0.045, 0.0, 1.360), f"upperarm_{side}": (s * 0.142, 0.0, 1.320),
+            f"lowerarm_{side}": (s * 0.205, 0.0, 1.115), f"hand_{side}": (s * 0.245, HAND_Y, 0.945),
+            f"fingers_01_{side}": (s * 0.245, HAND_Y, 0.895), f"fingers_02_{side}": (s * 0.245, HAND_Y, 0.815),
+            f"thumb_01_{side}": (s * 0.251, 0.055, 0.925), f"thumb_02_{side}": (s * 0.256, 0.065, 0.905),
             f"thigh_{side}": (s * LEG_X, 0.0, 0.85), f"calf_{side}": (s * LEG_X, 0.0, 0.48),
             f"foot_{side}": (s * LEG_X, -0.035, 0.075), f"ball_{side}": (s * LEG_X, 0.13, 0.0),
         })
@@ -155,7 +156,7 @@ def skirt_weights(side):
     joint = f"thigh_{side}"
 
     def weights(point):
-        ramp = min(max((COAT_SPLIT_Z - point[2]) / (COAT_SPLIT_Z - HEM_Z), 0.0), 1.0)
+        ramp = min(max((SKIRT_BLEND_Z - point[2]) / (SKIRT_BLEND_Z - HEM_Z), 0.0), 1.0)
         share = SKIRT_THIGH_SHARE * math.sqrt(ramp)
         if share < 1e-4:
             return {"pelvis": 1.0}
@@ -348,7 +349,8 @@ class Geometry:
         x0, y0, w, h = patch.rect
         for face, uv in zip(patch.faces, patch.uv):
             self.faces.append(tuple(start + index for index in face))
-            self.uvs.append([((x0 + u * w) / self.atlas, (y0 + v * h) / self.atlas) for u, v in uv])
+            self.uvs.append([((x0 + clamp(u, 0.5 / w, 1 - 0.5 / w) * w) / self.atlas,
+                              (y0 + clamp(v, 0.5 / h, 1 - 0.5 / h) * h) / self.atlas) for u, v in uv])
         self.smooth.extend([smooth] * len(patch.faces))
         return start, len(self.vertices)
 
@@ -495,7 +497,7 @@ def sleeve_radius(z):
 def arm_axis_x(z):
     """Sleeve axis x at height z, following the arm bones: shoulder 0.158 -> elbow 0.205 -> wrist 0.235."""
     if z >= 1.115:
-        return interp([(1.115, 0.205), (1.335, 0.158)], z)
+        return interp([(1.115, 0.205), (1.320, 0.142)], z)
     return interp([(0.945, 0.235), (1.115, 0.205)], z)
 
 
@@ -503,7 +505,7 @@ def build_sleeve(s, rect):
     rings = []
     for z in linspace(0.93, SLEEVE_TOP_Z, 10):
         r = sleeve_radius(z)
-        rings.append(ellipse_ring((s * arm_axis_x(z), 0.0, z), (r, r * 0.95), 16))
+        rings.append(ellipse_ring((s * arm_axis_x(z), 0.0, z), (r, r * 0.9), 16))  # cloth, not a slab
     patch = Patch(rect)
     patch.loft(rings, cap_last=True)  # open cuff at the bottom: the hand comes out of it
     return patch
@@ -540,7 +542,7 @@ def build_body():
     for s, side in ((-1.0, "l"), (1.0, "r")):
         body.add(build_sleeve(s, BODY_RECTS[f"sleeve_{side}"]), arm_weights(side))
         hand = Patch(BODY_RECTS["hands"])
-        hand.loft([ellipse_ring((s * 0.235, HAND_Y, z), (r, r * 0.6), 10) for z, r in HAND_RINGS],
+        hand.loft([ellipse_ring((s * 0.245, HAND_Y, z), (r, r * 0.6), 10) for z, r in HAND_RINGS],
                   cap_first=True, cap_last=True)
         body.add(hand, {f"hand_{side}": 1.0})
         body.add(build_trouser(s, BODY_RECTS[f"trouser_{side}"]), leg_weights(side))
@@ -655,13 +657,13 @@ def fringe_z(x):
 
 def build_fringe():
     """Six solid locks on the forehead: flattened wedges, 30 mm root to 6 mm tip, 8 mm thick, neighbours
-    overlapping about a fifth, tips curving slightly toward the part at x -0.02."""
+    overlapping about a fifth. Each lock is swept 25 deg toward +x; lengths vary by 25 mm across the set."""
     patch = Patch(HAIR_CELLS[1])
-    part_x = -0.02
     roots = [-0.075, -0.049, -0.023, 0.003, 0.029, 0.055]
-    lengths = [0.085, 0.070, 0.060, 0.080, 0.065, 0.075]
+    lengths = [0.085, 0.070, 0.060, 0.080, 0.068, 0.072]
+    sweep = math.sin(math.radians(25.0))
     for root, length in zip(roots, lengths):
-        tip_x = root + (part_x - root) * 0.3
+        tip_x = root + length * sweep
         path, radii = [], []
         for k in range(5):
             t = k / 4.0
@@ -710,7 +712,8 @@ def build_bob():
                 offset += 0.020 * side_tip  # pushed outward 20 mm...
             elif z == 1.400:
                 offset -= 0.008 * side_tip  # ...then tucked 8 mm in at the very tip
-            ring.append(((rx + offset) * math.cos(theta), (ry + offset) * math.sin(theta), z))
+            stagger = 0.010 * math.cos(BOB_TIPS * theta) if z == 1.400 else 0.0  # clump ends +/-10 mm
+            ring.append(((rx + offset) * math.cos(theta), (ry + offset) * math.sin(theta), z + stagger))
         rings.append(ring)
     shell = Patch(HAIR_CELLS[0])
     shell.loft(rings, cap_last=True)
@@ -774,28 +777,47 @@ def navy_shade(S):
 
 
 def coat_painter(side):
-    """Painter for one coat half: its front opening edge at S=0 (left) or S=1 (right), the back seam at the other end."""
+    """Painter for one coat half. S runs from the front opening edge (S=0 left, S=1 right) round to the back seam.
+
+    The angle of each texel is recovered from its row (z) and column (S), so the yoke and seam follow the coat.
+    """
     import numpy as np
+    profile_z = [p[0] for p in COAT_PROFILE]
+    profile_rx = [p[1] for p in COAT_PROFILE]
+    open_z = [p[0] for p in OPEN_PROFILE]
+    open_h = [p[1] for p in OPEN_PROFILE]
 
     def painter(S, T):
         z = HEM_Z + T * (COAT_TOP_Z - HEM_Z)
-        base = flat(NAVY, S.shape)
-        base = over(base, rgb(NAVY_LIGHT), ((z > 1.25) & (S > 0.25) & (S < 0.75)).astype(np.float32) * 0.6)
-        front = band(S, 0.0, 0.03) if side < 0 else band(S, 0.97, 1.0)
-        back = band(S, 0.97, 1.0) if side < 0 else band(S, 0.0, 0.03)
-        base = over(base, rgb(NAVY_EDGE), front)  # inner-facing opening edge
-        base = over(base, rgb(NAVY_DARK), back * band(z, 0.75, YOKE_Z) * 0.9)  # back seam shadow, vent to yoke
-        back_half = (S > 0.5) if side < 0 else (S < 0.5)
-        yoke_t = (YOKE_Z - HEM_Z) / (COAT_TOP_Z - HEM_Z)
-        base = over(base, rgb(NAVY_DARK), band(T, yoke_t - 0.006, yoke_t + 0.006) * back_half)  # yoke line 1.24 m
-        base = over(base, rgb(NAVY_DARK), band(T, 0.93, 1.0) * 0.6)  # under-collar recess
+        rx = np.interp(z, profile_z, profile_rx)
+        theta = np.arccos(np.clip(np.interp(z, open_z, open_h) / rx, 0.0, 0.999))
         if side < 0:
-            base = over(base, rgb(NAVY_DARK), band(z, 0.92, 0.94) * band(S, 0.03, 0.14) * 0.3)  # hip pocket line
+            phi = (math.pi - theta) + S * (math.pi / 2 + theta)
+        else:
+            phi = 1.5 * math.pi + S * (math.pi / 2 + theta)
+        d = phi - 1.5 * math.pi  # 0 at the centre back
+        base = flat(NAVY, S.shape)
+        lit_w = np.clip((z - 1.00) / 0.20, 0.0, 1.0) * np.clip((np.sin(phi) - 0.2) / 0.3, 0.0, 1.0)
+        base = over(base, rgb(NAVY_LIGHT), lit_w * 0.9)  # lit upper front and shoulders, feathered
+        base = over(base, rgb(NAVY_DARK), np.clip((0.80 - z) / 0.14, 0.0, 1.0) * 0.9)  # lower shade, feathered
+        front_edge = band(S, 0.0, 0.03) if side < 0 else band(S, 0.97, 1.0)
+        back_edge = band(S, 0.96, 1.0) if side < 0 else band(S, 0.0, 0.04)
+        base = over(base, rgb(NAVY_EDGE), front_edge)  # inner-facing opening edge
+        base = over(base, rgb(NAVY_DARK), back_edge * band(z, HEM_Z, YOKE_Z) * 0.9)  # continuous back seam
+        in_yoke = (np.abs(d) <= 0.80).astype(np.float32)
+        yoke_low = YOKE_Z - 0.02 * (1.0 - np.clip((d / 0.80) ** 2, 0.0, 1.0))  # slightly curved lower edge
+        base = over(base, rgb(NAVY_LIGHT), in_yoke * (z >= yoke_low) * 0.35)  # yoke panel, 70% of the width
+        base = over(base, rgb(NAVY_DARK), in_yoke * band(z - yoke_low, -0.0045, 0.0045) * 0.9)  # yoke edge line
+        base = over(base, rgb(NAVY_DARK), band(T, 0.94, 1.0) * 0.6)  # under-collar recess
+        base = over(base, rgb(NAVY_DARK), band(z, 0.97, 0.99) * (np.abs(d) > 0.3) * 0.12)  # waist fold, faint
+        base = over(base, rgb(NAVY_DARK), band(z, HEM_Z, HEM_Z + 0.02) * 0.5)  # hem shade
+        if side < 0:
+            base = over(base, rgb(NAVY_DARK), band(z, 0.92, 0.94) * band(S, 0.03, 0.14) * 0.3)  # hip pocket, faint
             for zb in (1.05, 0.93):  # two buttons on the wearer's-left panel, 2 cm in from the opening edge
                 xb = -(opening(zb) + 0.02)
-                rx, _ = coat_radii(zb)
-                theta = edge_angle(zb)
-                su = (math.acos(clamp(xb / rx, -1.0, 1.0)) - (math.pi - theta)) / (math.pi / 2 + theta)
+                rx_b, _ = coat_radii(zb)
+                theta_b = edge_angle(zb)
+                su = (math.acos(clamp(xb / rx_b, -1.0, 1.0)) - (math.pi - theta_b)) / (math.pi / 2 + theta_b)
                 tt = (zb - HEM_Z) / (COAT_TOP_Z - HEM_Z)
                 dist = ((S - su) / 0.033) ** 2 + ((T - tt) / 0.0134) ** 2
                 base = over(base, rgb(BUTTON), (dist < 1.0).astype(np.float32))
@@ -806,8 +828,8 @@ def coat_painter(side):
 def knit_paint(S, T):
     import numpy as np
     base = flat(CREAM, S.shape)
-    rib = band(np.mod(S * 3.0, 1.0), 0.0, 0.30)  # three broad warm-grey rib cues round the knit
-    base = over(base, rgb(KNIT_RIB), rib * 0.5)
+    rib = band(np.mod(S * 256.0 / 12.0, 1.0), 0.0, 0.25)  # warm-grey rib lines every ~12 texels
+    base = over(base, rgb(KNIT_RIB), rib * 0.8)
     base = over(base, rgb(KNIT_RIB), band(T, 0.92, 1.0) * rib * 0.5)  # collar band
     base = over(base, rgb(BELT), band(T, 0.0, 0.06))  # thin dark belt where the trousers start
     return base
@@ -820,8 +842,9 @@ def lapel_paint(S, T):
 def trouser_paint(S, T):
     import numpy as np
     base = flat(TAUPE, S.shape) * (0.97 + 0.03 * T)[..., None]
-    crease = 0.25 + 0.008 * np.sin(T * 18.0)  # one slightly wavy crease per leg
-    base = over(base, rgb(TAUPE_CREASE), (np.abs(S - crease) < 0.006).astype(np.float32) * 0.7)
+    for centre in (0.25, 0.75):  # two vertical folds per leg, slightly wavy
+        fold = centre + 0.008 * np.sin(T * 18.0)
+        base = over(base, rgb(TAUPE_CREASE), (np.abs(S - fold) < 0.006).astype(np.float32) * 0.7)
     return over(base, rgb(TAUPE_HEM), band(T, 0.0, 0.03))  # shade band at the hem
 
 def sleeve_paint(S, T):
@@ -876,20 +899,20 @@ def face_paint(S, T):
     base = flat(SKIN, S.shape)
     for side in (-1.0, 1.0):
         blush = np.exp(-(((x - side * 0.060) / 0.017) ** 2 + ((z - 1.470) / 0.010) ** 2))
-        base = over(base, rgb("#D7AAA2"), blush * 0.35)  # very faint cheek tint
+        base = over(base, rgb("#D7AAA2"), blush * 0.5)  # cheek tint
     nose = band(np.abs(x), 0.0, 0.0018) * band(z, 1.470, 1.490)  # 2-texel nose shade
     base = over(base, rgb("#E2B39E"), nose * 0.6)
     base = over(base, rgb("#B0604E"), band(z - (1.455 + 6.0 * x * x), -0.0012, 0.0012) * (np.abs(x) < 0.013))
     for side in (-1.0, 1.0):
         xr = x * side
-        brow_z = 1.556 + 0.010 * (xr - 0.030) / 0.040
+        brow_z = 1.556 + 0.018 * (xr - 0.030) / 0.040  # gently angled
         inside = (xr >= 0.030) & (xr <= 0.072)
         base = over(base, rgb("#6A4A3A"), band(z - brow_z, -0.0012, 0.0012) * band(xr, 0.030, 0.060) * 0.8)  # short thin brow
         dx = x - side * EYE_X
         arc = EYE_Z - 0.010 * (1.0 - np.clip(dx / EYE_HALF_W, -1, 1) ** 2)
         base = over(base, rgb("#3B2A20"), band(z - arc, -0.0016, 0.0016) * (np.abs(dx) < EYE_HALF_W))  # closed-eye arc
     smile = band(z - (1.428 + 2.0 * x * x), -0.0009, 0.0009) * band(np.abs(x), 0.0, 0.010)  # 2 cm smile line
-    base = over(base, rgb("#B0604E"), smile * 0.8)
+    base = over(base, rgb("#A4564A"), smile * 1.0)
     return base
 
 
@@ -903,6 +926,8 @@ def eye_paint(S, T):
     iris_colour = rgb(IRIS_TOP) * g + rgb(IRIS_BOT) * (1.0 - g)
     out = np.where(shape[..., None], flat(SCLERA, S.shape), base)
     out = np.where(iris[..., None], iris_colour, out)
+    rim = iris & (((dx / 0.66) ** 2 + (dz / 0.70) ** 2) > 0.55)  # darker iris rim separates it from the white
+    out = np.where(rim[..., None], flat("#3E2E28", S.shape), out)
     out = np.where((shape & (dz > 0.86) & (dz < 0.93))[..., None], flat(LASH, S.shape), out)  # thin upper lash line
     highlight = (((dx + 0.28) / 0.16) ** 2 + ((dz - 0.30) / 0.16) ** 2 < 1.0) | (
         ((dx - 0.26) / 0.07) ** 2 + ((dz + 0.22) / 0.07) ** 2 < 1.0)
@@ -1151,6 +1176,25 @@ def render_walk_strip(out, arm, camera):
     print(f"preview walk_strip: {out / 'walk_strip.png'}")
 
 
+def render_hair_closeup(out, arm, camera):
+    """Hair-only close-ups (body hidden) from +X and at 45 degrees, 600 px, for the hair stripe check."""
+    import bpy
+    scene = bpy.context.scene
+    body = bpy.data.objects["VIS_body"]
+    body.hide_render = True
+    scene.render.resolution_x, scene.render.resolution_y = 600, 600
+    camera.data.ortho_scale = 0.42
+    arm.animation_data.action = bpy.data.actions["idle"]
+    scene.frame_set(1)
+    for name, location, turn in (("hair_closeup_side", (3.0, 0.0, 1.56), 90.0),
+                                 ("hair_closeup_q45", (2.12, 2.12, 1.56), 135.0)):
+        set_camera(camera, location, turn)
+        scene.render.filepath = str(out / f"{name}.png")
+        bpy.ops.render.render(write_still=True)
+        print(f"preview {name}: {scene.render.filepath}")
+    body.hide_render = False
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
@@ -1166,7 +1210,9 @@ def main():
     print(export_character(CHARACTER_ID, "high", out, clips=animation.clips(), description=DERIVATION,
                            textured=True))
     if args.preview:
-        render_walk_strip(out, arm, render_previews(out, arm))
+        camera = render_previews(out, arm)
+        render_hair_closeup(out, arm, camera)
+        render_walk_strip(out, arm, camera)
 
 
 if __name__ == "__main__":
