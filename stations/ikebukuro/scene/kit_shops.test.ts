@@ -13,7 +13,7 @@ import placementsJson from "./shop_placements.json";
 import { type KitManifest, pieceUri } from "./kit.ts";
 import {
   type Opening, type Shop, SHOP_USE, SIGN_HEIGHT_M, SIGN_MAX_WIDTH_M, SIGN_OFFSET_M, loadShopKit, relativeLuminance, shopPieces,
-  shopPlacements, shopSigns, shopBladeSigns, shopABoards, signTextColour,
+  shopPlacements, shopSigns, shopBladeSigns, shopABoards, shopDirectoryBoards, signTextColour,
 } from "./kit_shops.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -123,6 +123,16 @@ describe("placement maths", () => {
     }
   });
 
+  it("places a directory opposite the blade on the widest drawable row and skips a narrow walkway", () => {
+    const candidate = { ...shop, directory: { title: { ja: "案内", en: "Directory" }, note: { ja: "注記", en: "Note" }, sourceIds: [], checkedDate: "2026-10-24", shops: [] } };
+    const [board] = shopDirectoryBoards([candidate], [door, windowRow, lowRow], pieces);
+    expect(board).toMatchObject({ shop: "s", width: 0.9, height: 1.8, yawDeg: 90 });
+    expect(board!.x).toBeCloseTo(-19.5);
+    expect(board!.y).toBeCloseTo(28.6);
+    expect(board!.z).toBeCloseTo(13.15);
+    expect(shopDirectoryBoards([candidate], [door, { ...windowRow, edge_distance_m: 1.99 }], pieces)).toEqual([]);
+  });
+
   it("uses accents darkened to legible luminance", () => {
     expect(relativeLuminance("#000000")).toBe(0);
     expect(relativeLuminance("#f4f2ee")).toBeGreaterThan(0.6);
@@ -134,6 +144,21 @@ describe("placement maths", () => {
 describe("committed shop data", () => {
   const byPolygon = new Map(openings.map((o) => [o.polygon_ids[0], o]));
   const pois = new Set((JSON.parse(fs.readFileSync(path.join(GTEKI, "pois.json"), "utf8")) as { pois: { id: string }[] }).pois.map((p) => p.id));
+
+  it("prints the 18 B1 names from the floor guide in source order", () => {
+    const data = JSON.parse(fs.readFileSync(path.resolve(HERE, "../../../docs/research/merchants/ikebukuro-merchants-batch4.json"), "utf8")) as {
+      pois: { names: { text: string }[]; evidence: { sourceIds: string[] }; notes: { lang: string; text: string }[] }[];
+    };
+    const directories = shops.filter((shop) => shop.directory);
+    expect(directories).toHaveLength(1);
+    for (const shop of directories) {
+      const directory = shop.directory!;
+      const names = data.pois.filter((row) => row.evidence.sourceIds.includes(directory.sourceIds[0]!) && row.notes.some((note) => note.lang === "ja" && note.text.includes("ルミネ池袋 B1")))
+        .map((row) => row.names[0]!.text.replaceAll("　", " "));
+      expect(directory.shops).toHaveLength(18);
+      expect(directory.shops).toEqual(names);
+    }
+  });
 
   it("lists 10 shops whose every opening id is a surveyed opening row", () => {
     expect(shops).toHaveLength(10);
@@ -238,8 +263,8 @@ describe("visual only", () => {
       console.log(`[shop stats] ${low ? "low" : "desktop"}: ${JSON.stringify(stats)}`);
       expect(stats).toMatchObject({ shops: 10, modules: 22, tiles: low ? 5 : 8,
         drawCallsAllTiles: low ? 29 : 77, trianglesAllTiles: low ? 3336 : 7379,
-        trianglesWorstTile: low ? 1294 : 1548, signs: 9, signDrawCalls: 1, signTriangles: 50,
-        interiorDrawCalls: 1, interiorTriangles: 60, spillDrawCalls: 1, bladeSigns: 8, aBoards: 4 });
+        trianglesWorstTile: low ? 1294 : 1548, signs: 9, signDrawCalls: 1, signTriangles: 54,
+        interiorDrawCalls: 1, interiorTriangles: 60, spillDrawCalls: 1, bladeSigns: 8, aBoards: 4, directoryBoards: 1 });
       loaded.dispose();
     }
   });
@@ -260,7 +285,7 @@ describe("visual only", () => {
     expect(stats.signs).toBe(loaded.signs.length);
     expect(stats.signDrawCalls).toBe(1);
     // Each blade sign is two single-sided quads facing opposite ways, so neither face shows mirrored text.
-    expect(stats.signTriangles).toBe(2 * (loaded.signs.length + 2 * stats.bladeSigns));
+    expect(stats.signTriangles).toBe(2 * (loaded.signs.length + 2 * (stats.bladeSigns + stats.directoryBoards)));
     const signMesh = group.getObjectByName("kit_shop_signs") as THREE.Mesh;
     expect((signMesh.material as THREE.Material).side).toBe(THREE.FrontSide);
     expect(stats.trianglesAllTiles).toBe(loaded.placements.length * 2 * 12); // 2 fake parts, 12 triangles each
