@@ -130,3 +130,22 @@ Phone (bank foot wide and close; before, before, after, after):
 - **Physics.** Walkable, colliders, camera blockers, spawn points, walls and explorer lists are identical with the swap on and off.
 - **Kit report.** 6 draws, 42,720 triangles, about 2.45 MB measured geometry (2.99 MB at the planner's 70 B/tri estimate), 131 kB GPU textures. The bundle is 2.28 MB on disk.
 - **Left for later.** The procedural indicator lamps now read as squares on the glass and should move to the kit's `indicators`. At the bottom comb a sliver of the animated step shows past the plate. Luminaires over the bank (#5) are batch 3.
+
+## Batch 3 result (2026-10-28 13:25 JST): soffit luminaires and contact shade (#3, #5)
+
+- **Contact shade (#3).** Vertex-colour darkening (`contactShade` in `build.ts`) on the escalator truss (dark under the skirt), the escalator step risers and the stair risers (dark towards the tread below). No AO pass or extra draw, so it reaches phones. The kit dressing keeps its own baked AO.
+- **Luminaires (#5).** The visual escalator shell soffits now count as roofs for the instanced linear luminaires, adding 16 fixtures in the existing batch with no new draw. A per-run count of fixtures 2.4–5.3 m above the incline, main → batch 3: `4bee1c` 0→1, `27d3ed` 0→4, `42a9f8` 1→5, `d57306` 1→3, `88ef3d` 2→5, `4b7d94` 3→6, `904c66` 5→6, `296f67` 3→4. Correction to gap #5: the Golden Slice bank (`e1fa65`, `2692fe`, `fd3365`) already had 8 fixtures each from the station's own pitched soffits, so the slice's flat look comes from the light distribution, not missing fixtures.
+- **Evidence.** Same spots and cameras as the final batch 2 run on main (`8cc81df7`). Left is main, right is batch 3. Rows from top: bank foot close up, bank head, Exit 1 stair foot:
+
+![Batch 3 desktop](evidence/vertical-b3-desktop.jpg)
+
+| Spot | Desktop draws / tris, main → batch 3 | Phone draws / tris, main → batch 3 |
+| --- | --- | --- |
+| bank foot (wide) | 245 / 378k → 245 / 379k | 105 / 169k → 105 / 170k |
+| bank foot (close) | 224 / 397k → 234 / 400k | 90 / 170k → 85 / 169k |
+| bank head | 221 / 381k → 221 / 382k | 85 / 170k → 85 / 171k |
+| Exit 1 stair foot | 175 / 285k → 175 / 285k | 70 / 133k → 70 / 134k |
+
+The bank-foot close draw count varies between runs on both tiers: batch 2's own after run measured 234 on desktop.
+
+- **Walk and physics.** Down `e1fa65` and up `2692fe` finish at every quarter on both tiers and never get stuck, at the same heights as main. The scene digest changes only in the instanced luminaire batch (+384 triangles). Collision, walkable, lists and every other visual set are byte-identical. The vertex colours add 27,696 B, and a scene test checks that every mesh with a vertex-colour material has a colour attribute.
