@@ -1,7 +1,7 @@
 ---
 area: data/stations
 owner: data-research lead
-updated: 2026-10-26 20:26 JST
+updated: 2026-10-29 02:36 JST
 ---
 
 # Station data: Ikebukuro and Shinjuku
@@ -24,6 +24,7 @@ The two stations are built differently:
 | `stations/shinjuku/tools/fetch-sources.sh` | Downloads raw inputs, verifies sha256 against `stations/shinjuku/sources/manifest.json` |
 | `stations/shinjuku/tools/field-receipts.ts` | Applies `docs/research/field/receipts/*-shinjuku.json` inside `import:e27` (#556) |
 | `stations/shinjuku/tools/bake-surface.ts` | Writes `stations/shinjuku/data/surface-baked.json`; `DERIVATION_SOURCES` lists the scene files it hashes |
+| `stations/shinjuku/tools/shop-bays.ts` | Derives visual-only placeholder shop bays from the scene layout and anchors; `shops:bays` regenerates `scene/shop_bays.json` |
 | `stations/shinjuku/tools/import-tenants.ts`, `import-surface.ts` | Tenant rows; PLATEAU street layer (`plateau-bldg` under the raw dir) |
 | `stations/shinjuku/test/data-files.test.ts` | Each committed data file must equal its generator's output |
 | `stations/shinjuku/test/surface-bake.test.ts` | Baked file must match a fresh bake byte for byte |

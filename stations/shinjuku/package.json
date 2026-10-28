@@ -35,7 +35,8 @@
     "explorer-walk": "tsx tools/explorer-walk.ts",
     "perf": "tsx tools/perf.ts",
     "heap": "tsx tools/heap.ts",
-    "bake:surface": "tsx tools/bake-surface.ts"
+    "bake:surface": "tsx tools/bake-surface.ts",
+    "shops:bays": "tsx tools/shop-bays.ts"
   },
   "devDependencies": {
     "@types/three": "^0.186.0",
