@@ -83,6 +83,8 @@ export interface ShopPlacement {
   shop: string;
   /** `Opening.opening_id` the bay dresses. */
   row: string;
+  /** First polygon id uniquely identifies the surveyed row. */
+  polygon: string;
   piece: string;
   /** Bay centre on the floor, ENU metres. */
   x: number;
@@ -108,6 +110,13 @@ export interface ShopSign {
   width: number;
   height: number;
 }
+
+// Desktop GLB reveal bounds, shared by both tiers when low merges the backing into its palette.
+const INTERIOR_RECTS: Readonly<Record<string, readonly [number, number, number, number]>> = {
+  [SHOP_USE.glazing]: [-1.17, 1.17, 0.33, 2.13],
+  [SHOP_USE.door]: [-0.93, 0.93, 0.01, 2.1],
+  [SHOP_USE.shutterHalf]: [-1.11, 1.11, 0, 1.95],
+};
 
 const DEG = Math.PI / 180;
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
@@ -169,7 +178,7 @@ export function shopPlacements(
       const x = row.centre[0] + nx * SHOP_BACK_OFFSET_M, y = row.centre[1] + ny * SHOP_BACK_OFFSET_M;
       for (let k = 0; k < n; k++) {
         const t = (k - (n - 1) / 2) * spec.bay_m * sx;
-        out.push({ shop: shop.id, row: row.opening_id, piece, x: x + ux * t, y: y + uy * t, z: row.base_z, yawDeg, sx, sy, sz: 1 });
+        out.push({ shop: shop.id, row: row.opening_id, polygon, piece, x: x + ux * t, y: y + uy * t, z: row.base_z, yawDeg, sx, sy, sz: 1 });
       }
     }
   }
@@ -215,6 +224,38 @@ export function shopSigns(
   return out;
 }
 
+/** Blade and board placements follow the widest drawable row, as the fascia sign does. */
+export function shopBladeSigns(shops: readonly Shop[], openings: readonly Opening[], pieces: Readonly<Record<string, ShopPieceSpec>>): ShopSign[] {
+  return shopSigns(shops, openings, pieces).flatMap((sign) => {
+    const shop = shops.find((s) => s.id === sign.shop)!;
+    const rows = shop.openings.map((p) => rowOf(openings, p)).filter((r): r is Opening => !!r && r.height >= MIN_SHOP_ROW_M && !!pieceFor(shopFrontUse(shop.front, r.type), pieces));
+    const row = rows.reduce((a, b) => b.width > a.width ? b : a);
+    const spec = pieceFor(shopFrontUse(shop.front, row.type), pieces)![1];
+    const bottom = row.base_z + spec.glass_top_m * clamp(row.height / spec.glass_top_m, 0.9, 1.15);
+    if (bottom < row.base_z + 2.2) return [];
+    const yaw = (row.normal_deg + 90) * DEG, normal = row.normal_deg * DEG;
+    return [{ ...sign, x: row.centre[0] + Math.cos(yaw) * row.width / 2 + Math.cos(normal) * 0.35,
+      y: row.centre[1] + Math.sin(yaw) * row.width / 2 + Math.sin(normal) * 0.35,
+      z: bottom + 0.45, yawDeg: sign.yawDeg + 90, width: 0.45, height: 0.9 }];
+  });
+}
+
+export interface ShopBoard { shop: string; display: string; x: number; y: number; z: number; yawDeg: number }
+export function shopABoards(shops: readonly Shop[], openings: readonly Opening[], pieces: Readonly<Record<string, ShopPieceSpec>>): ShopBoard[] {
+  const out: ShopBoard[] = [];
+  for (const shop of shops) {
+    if (!["cafe", "bakery", "deli", "sweets"].includes(shop.display)) continue;
+    const rows = shop.openings.map((p) => rowOf(openings, p)).filter((r): r is Opening => !!r && r.height >= MIN_SHOP_ROW_M && !!pieceFor(shopFrontUse(shop.front, r.type), pieces));
+    if (!rows.length) continue;
+    const row = rows.reduce((a, b) => b.width > a.width ? b : a);
+    if (row.edge_distance_m < 2) continue;
+    const yaw = (row.normal_deg + 90) * DEG, normal = row.normal_deg * DEG;
+    out.push({ shop: shop.id, display: shop.display, x: row.centre[0] + Math.cos(yaw) * row.width * 0.3 + Math.cos(normal) * 0.6,
+      y: row.centre[1] + Math.sin(yaw) * row.width * 0.3 + Math.sin(normal) * 0.6, z: row.base_z, yawDeg: (row.normal_deg + 90) % 360 });
+  }
+  return out;
+}
+
 /** WCAG relative luminance of a #rrggbb accent (0..1). */
 export function relativeLuminance(hex: string): number {
   const m = /^#([0-9a-f]{6})$/i.exec(hex);
@@ -250,7 +291,7 @@ interface SignSlot {
 }
 
 /** Paint one shelf-packed atlas page: every sign's accent panel and its fitted text. Never squeezes type. */
-function paintSignAtlas(signs: readonly ShopSign[], pxPerM: number): { canvas: HTMLCanvasElement; slots: SignSlot[] } {
+function paintSignAtlas(signs: readonly ShopSign[], pxPerM: number, bladeStart: number): { canvas: HTMLCanvasElement; slots: SignSlot[] } {
   const dims = signs.map((s) => ({ w: Math.max(1, Math.round(s.width * pxPerM)), h: Math.max(1, Math.round(s.height * pxPerM)) }));
   const width = Math.max(...dims.map((d) => d.w)) + 2 * SIGN_GUTTER_PX;
   const height = dims.reduce((n, d) => n + d.h + SIGN_GUTTER_PX, SIGN_GUTTER_PX);
@@ -268,6 +309,14 @@ function paintSignAtlas(signs: readonly ShopSign[], pxPerM: number): { canvas: H
     g.fillRect(slot.x, slot.y, slot.w, slot.h);
     g.fillStyle = sign.accent;
     g.fillRect(slot.x, slot.y + slot.h * 0.88, slot.w, slot.h * 0.12);
+    if (i >= bladeStart) {
+      g.textAlign = "center"; g.textBaseline = "middle";
+      const chars = [...sign.ja];
+      const size = Math.min(slot.w * 0.7, slot.h * 0.75 / chars.length);
+      g.font = `700 ${size}px ${FONT}`; g.fillStyle = signTextColour(sign.accent);
+      chars.forEach((ch, n) => g.fillText(ch, slot.x + slot.w / 2, slot.y + slot.h * 0.08 + size * (n + 0.5)));
+      return;
+    }
     g.textAlign = "left";
     g.textBaseline = "middle";
     const jaSize = slot.h * 0.62, enSize = slot.h * 0.22;
@@ -304,6 +353,11 @@ export interface ShopStats {
   signs: number;
   signDrawCalls: number;
   signTriangles: number;
+  interiorDrawCalls: number;
+  interiorTriangles: number;
+  spillDrawCalls: number;
+  bladeSigns: number;
+  aBoards: number;
 }
 
 export interface LoadedShopKit {
@@ -336,18 +390,6 @@ export async function loadShopKit(
       const gltf = await host.loadGlb(uri);
       const parts = visibleParts(THREE, gltf);
       if (!parts.length) throw new Error(`${uri} has no visible mesh`);
-      for (const part of parts) {
-        if (part.material.name !== "gteki_reveal_dark") continue;
-        const pos = part.geometry.getAttribute("position");
-        part.geometry.computeBoundingBox();
-        const bounds = part.geometry.boundingBox!;
-        const uv = new Float32Array(pos.count * 2);
-        for (let i = 0; i < pos.count; i++) {
-          uv[i * 2] = (pos.getX(i) - bounds.min.x) / (bounds.max.x - bounds.min.x);
-          uv[i * 2 + 1] = (pos.getY(i) - bounds.min.y) / (bounds.max.y - bounds.min.y);
-        }
-        part.geometry.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
-      }
       assets.set(id, { gltf, parts });
     } catch (err) {
       console.warn(`[ikebukuro] shop kit: ${id}: ${err instanceof Error ? err.message : String(err)}; keeping the PLATEAU panels`);
@@ -358,6 +400,8 @@ export async function loadShopKit(
   // failed keeps the bare PLATEAU panels and no sign.
   const loaded = Object.fromEntries(Object.entries(pieces).filter(([id]) => assets.has(id)));
   const signs = shopSigns(shops, openings, loaded);
+  const blades = shopBladeSigns(shops, openings, loaded);
+  const boards = shopABoards(shops, openings, loaded);
   const owned: { dispose(): void }[] = [];
   return {
     placements,
@@ -369,43 +413,10 @@ export async function loadShopKit(
       const stats: ShopStats = {
         shops: new Set(placements.map((p) => p.shop)).size, modules: placements.length, tiles: 0,
         drawCallsAllTiles: 0, trianglesAllTiles: 0, trianglesWorstTile: 0,
-        signs: 0, signDrawCalls: 0, signTriangles: 0,
-      };
-      let interior: THREE_NS.MeshBasicMaterial | undefined;
-      const interiorOf = () => {
-        if (interior) return interior;
-        const canvas = document.createElement("canvas");
-        canvas.width = canvas.height = 512;
-        const g = canvas.getContext("2d")!;
-        const gradient = g.createLinearGradient(0, 0, 0, 512);
-        gradient.addColorStop(0, "#fff3dc");
-        gradient.addColorStop(0.55, "#f6d3a1");
-        gradient.addColorStop(1, "#c9a073");
-        g.fillStyle = gradient;
-        g.fillRect(0, 0, 512, 512);
-        g.fillStyle = "#fff8e9";
-        g.fillRect(0, 0, 512, 512 * 0.08);
-        let seed = 61;
-        const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
-        const colours = ["#b99b7c", "#c7b09a", "#a9aaa0", "#d7b896"];
-        for (const y of [190, 300, 410]) {
-          g.fillStyle = "rgba(138,106,74,0.35)";
-          g.fillRect(0, y, 512, 9);
-          for (let x = 20; x < 490; x += 40) {
-            g.fillStyle = colours[Math.floor(rnd() * colours.length)]!;
-            const h = 20 + rnd() * 32;
-            g.fillRect(x, y - h, 18 + rnd() * 12, h);
-          }
-        }
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.colorSpace = THREE.SRGBColorSpace;
-        interior = new THREE.MeshBasicMaterial({ map: texture, toneMapped: false });
-        owned.push(texture, interior);
-        return interior;
+        signs: 0, signDrawCalls: 0, signTriangles: 0, interiorDrawCalls: 0, interiorTriangles: 0, spillDrawCalls: 0, bladeSigns: 0, aBoards: 0,
       };
       const lit = new Map<THREE_NS.Material, THREE_NS.Material>();
       const litOf = (src: THREE_NS.Material) => {
-        if (src.name === "gteki_reveal_dark") return interiorOf();
         let m = lit.get(src);
         if (!m) {
           m = src.clone();
@@ -433,6 +444,7 @@ export async function loadShopKit(
             const mine = idx.filter((wi) => world[wi]!.p.piece === id);
             if (!mine.length) continue;
             for (const part of assets.get(id)!.parts) {
+              if (part.material.name === "gteki_reveal_dark") continue;
               const im = new THREE.InstancedMesh(part.geometry, litOf(part.material), mine.length);
               owned.push(im); // its instance-matrix buffer is freed only by its own dispose()
               im.name = `kit_shop:${id}:${key}`;
@@ -457,14 +469,117 @@ export async function loadShopKit(
         stats.trianglesWorstTile = worst;
       }
 
+      if (placements.length) {
+        const displays = ["cafe", "bakery", "sweets", "deli", "pharmacy", "books", "fashion", "homeware", "department", "none"];
+        const boardDisplays = ["cafe", "bakery", "deli", "sweets"];
+        const cell = low ? 256 : 512, cols = 4, rows = 6;
+        const canvas = document.createElement("canvas"); canvas.width = cols * cell; canvas.height = rows * cell;
+        const g = canvas.getContext("2d")!;
+        const rect = (x: number, y: number, w: number, h: number, colour: string) => { g.fillStyle = colour; g.fillRect(x, y, w, h); };
+        const poly = (points: number[], colour: string) => { g.fillStyle = colour; g.beginPath(); g.moveTo(points[0]!, points[1]!); for (let i = 2; i < points.length; i += 2) g.lineTo(points[i]!, points[i + 1]!); g.closePath(); g.fill(); };
+        for (let index = 0; index < 24; index++) {
+          g.save(); g.translate((index % cols) * cell, Math.floor(index / cols) * cell); g.scale(cell / 512, cell / 512);
+          if (index >= 20) {
+            rect(0, 0, 512, 512, "#6b4d32"); rect(25, 25, 462, 462, "#1e3029");
+            g.strokeStyle = "#e9e1c6"; g.lineWidth = 9; g.beginPath();
+            if (index === 20) { g.arc(250, 220, 65, 0, Math.PI); g.moveTo(190, 220); g.lineTo(310, 220); }
+            else if (index === 21) { g.ellipse(250, 230, 100, 55, 0, 0, Math.PI * 2); }
+            else { g.arc(250, 220, 85, 0, Math.PI); }
+            g.moveTo(100, 340); g.lineTo(410, 340); g.moveTo(150, 390); g.lineTo(370, 390); g.stroke();
+          } else {
+            const display = displays[Math.floor(index / 2)]!, variant = index % 2;
+            const cool = display === "pharmacy" || display === "department";
+            const dim = display === "none";
+            rect(0, 0, 512, 512, dim ? "#63594e" : cool ? "#f4f8fb" : "#fff1d8");
+            poly([0,0,110,85,110,350,0,512], dim ? "#514b43" : "#cbb8a1");
+            poly([512,0,402,85,402,350,512,512], dim ? "#514b43" : "#d7c9b8");
+            poly([0,512,110,350,402,350,512,512], dim ? "#48443e" : "#c89a6a");
+            rect(110, 30, 292, 20, dim ? "#8b8270" : "#fffdf3");
+            let seed = 71 + index * 193; const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+            if (["books", "pharmacy", "bakery", "homeware"].includes(display)) {
+              for (let y = 145; y <= 355; y += 70) {
+                rect(115,y,282,8,"#806b59");
+                for (let x = 120; x < 390; x += display === "books" ? 12 : 27) {
+                  const colors = display === "pharmacy" ? ["#f6f8f5", "#a6c5ca", "#e6b8ad"] : display === "bakery" ? ["#b56d30", "#dfa85a", "#efc37c"] : ["#a36e5d", "#d9bd91", "#879995", "#e0d5c4"];
+                  rect(x,y - 25 - rnd() * 22, display === "books" ? 9 : 19, 25 + rnd() * 20, colors[Math.floor(rnd() * colors.length)]!);
+                }
+              }
+            } else if (display === "fashion") {
+              rect(130,145,250,6,"#6e6158");
+              for (let x = 145; x < 380; x += 39) poly([x,170,x+12,150,x+25,170,x+29,270,x-3,270], ["#b99383","#e6d8c7","#8b9290"][Math.floor(rnd()*3)]!);
+            } else if (!dim) {
+              rect(100, 295, 312, 90, "#ac8e75"); rect(110, 285, 292, 13, dim ? "#6d6255" : "#f9e9d7");
+              for (let x = 130; x < 390; x += 38) rect(x, 255 + rnd()*12, 23, 24, ["#f4dfca","#b97c5b","#d4ac83","#e5b4b1"][Math.floor(rnd()*4)]!);
+            }
+            if (display === "bakery") for (let y = 135; y <= 345; y += 70) for (let x = 135; x < 390; x += 45) { g.fillStyle = "#d99a4d"; g.beginPath(); g.ellipse(x, y, 19, 10, 0, 0, Math.PI * 2); g.fill(); }
+            if (display === "cafe") for (let x = 145; x < 380; x += 55) { rect(x, 255, 25, 25, "#fffaf1"); g.strokeStyle = "#fffaf1"; g.lineWidth = 5; g.beginPath(); g.arc(x+25,267,8,-Math.PI/2,Math.PI/2); g.stroke(); }
+            if (display === "sweets" || display === "deli") { rect(105, 260, 302, 8, "#e7f3f3"); rect(105, 260, 8, 100, "#e7f3f3"); rect(399, 260, 8, 100, "#e7f3f3"); for (let x = 125; x < 390; x += 34) for (let y = 300; y < 355; y += 25) rect(x,y,22,12,display === "sweets" ? ["#efaeb7","#f7e5c7","#b7d0b0"][Math.floor(rnd()*3)]! : ["#ad7654","#d7b068","#82a073"][Math.floor(rnd()*3)]!); }
+            if (display === "books") { rect(160,390,190,12,"#ad8f72"); for (let x=175; x<335; x+=40) { rect(x,374,32,6,"#a87060"); rect(x,367,30,6,"#e1d1a9"); } }
+            if (display === "homeware") for (let x=145; x<380; x+=55) { g.fillStyle = "#e8d8c0"; g.beginPath(); g.ellipse(x, 325, 18, 10, 0, 0, Math.PI); g.fill(); rect(x-8,280,16,30,"#aeb5a4"); }
+            if (display === "fashion") { g.fillStyle = "#c9b7a5"; g.beginPath(); g.arc(270,135,16,0,Math.PI*2); g.fill(); poly([258,153,282,153,293,230,247,230],"#d9c8b6"); for (const x of [170,270,370]) { g.fillStyle="rgba(255,248,216,0.35)"; g.beginPath(); g.ellipse(x,450,55,20,0,0,Math.PI*2); g.fill(); } }
+            if (display === "department") { rect(130, 320, 105, 45, "#f8f5ef"); rect(275, 320, 105, 45, "#f8f5ef"); for (let x=150; x<375; x+=25) rect(x,300,10,20,"#d8b6ae"); }
+            if (display === "cafe" || display === "department") for (let x = 155 + variant * 25; x < 390; x += 90) { rect(x,50,3,45,"#8f7866"); rect(x-13,92,29,12,"#fff8ce"); }
+          }
+          g.restore();
+        }
+        const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;
+        const material = new THREE.MeshBasicMaterial({ map: texture, toneMapped: false, side: THREE.DoubleSide }); owned.push(texture, material);
+        const parts: { geometry: THREE_NS.BufferGeometry; material: THREE_NS.Material; matrix: THREE_NS.Matrix4 }[] = [];
+        const mapCell = (geo: THREE_NS.BufferGeometry, index: number) => {
+          const uv = geo.getAttribute("uv") as THREE_NS.BufferAttribute;
+          for (let k = 0; k < uv.count; k++) uv.setXY(k, ((index % cols) + uv.getX(k)) / cols, 1 - (Math.floor(index / cols) + 1 - uv.getY(k)) / rows);
+        };
+        const counts = new Map<string, number>();
+        for (const p of placements) {
+          const key = `${p.shop}:${p.polygon}`, k = counts.get(key) ?? 0; counts.set(key, k + 1);
+          const display = shops.find((s) => s.id === p.shop)!.display;
+          const index = Math.max(0, displays.indexOf(display)) * 2 + k % 2;
+          const rect = INTERIOR_RECTS[pieces[p.piece]!.use];
+          if (!rect) continue;
+          const [left, right, bottom, top] = rect;
+          const geo = new THREE.PlaneGeometry(right - left, top - bottom);
+          geo.translate((left + right) / 2, (bottom + top) / 2, 0.025); mapCell(geo, index);
+          q.setFromAxisAngle(up, p.yawDeg * DEG); s.set(p.sx, p.sy, p.sz);
+          parts.push({ geometry: geo, material, matrix: new THREE.Matrix4().compose(toRenderer(p.x,p.y,p.z),q,s) });
+        }
+        for (const board of boards) for (const angle of [-12, 12]) {
+          const geo = new THREE.PlaneGeometry(0.5, 0.9); mapCell(geo, 20 + boardDisplays.indexOf(board.display));
+          const rotation = new THREE.Quaternion().setFromAxisAngle(up, board.yawDeg * DEG).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0), angle * DEG));
+          const normal = (board.yawDeg - 90) * DEG, offset = -Math.sin(angle * DEG) * 0.45;
+          parts.push({ geometry: geo, material, matrix: new THREE.Matrix4().compose(toRenderer(board.x + Math.cos(normal) * offset,board.y + Math.sin(normal) * offset,board.z + 0.45 * Math.cos(12 * DEG)), rotation, new THREE.Vector3(1,1,1)) });
+        }
+        const merged = mergeByMaterial(THREE, parts); for (const part of parts) part.geometry.dispose();
+        if (merged.length) { const geo = merged[0]!.geometry; const mesh = new THREE.Mesh(geo, material); owned.push(geo); mesh.name = "kit_shop_interiors"; mesh.userData = { gteki_role: "kit_shop" }; group.add(mesh); stats.interiorDrawCalls = 1; stats.interiorTriangles = triOf(geo); stats.aBoards = boards.length; }
+        const spillCanvas = document.createElement("canvas"); spillCanvas.width = 2; spillCanvas.height = 64;
+        const sg = spillCanvas.getContext("2d")!; const gradient = sg.createLinearGradient(0,0,0,64); gradient.addColorStop(0,"rgba(255,255,255,0.35)"); gradient.addColorStop(1,"rgba(255,255,255,0)"); sg.fillStyle = gradient; sg.fillRect(0,0,2,64);
+        const st = new THREE.CanvasTexture(spillCanvas); const sm = new THREE.MeshBasicMaterial({ map: st, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }); owned.push(st,sm);
+        const spillParts: { geometry: THREE_NS.BufferGeometry; material: THREE_NS.Material; matrix: THREE_NS.Matrix4 }[] = [];
+        for (const polygon of new Set(placements.map((p) => p.polygon))) {
+          const row = rowOf(openings, polygon)!; const p = placements.find((p) => p.polygon === polygon)!; const display = shops.find((shop) => shop.id === p.shop)!.display;
+          const geo = new THREE.PlaneGeometry(row.width, 1.4); const colour = new THREE.Color(display === "pharmacy" || display === "department" ? "#e7f3ff" : "#ffe0af");
+          const colors = new Float32Array(geo.getAttribute("position").count * 3); for (let i=0; i<colors.length; i+=3) { colors[i]=colour.r; colors[i+1]=colour.g; colors[i+2]=colour.b; } geo.setAttribute("color", new THREE.BufferAttribute(colors,3));
+          const normal = row.normal_deg * DEG; const centre = toRenderer(row.centre[0]+Math.cos(normal)*0.7,row.centre[1]+Math.sin(normal)*0.7,row.base_z+0.01);
+          const rotation = new THREE.Quaternion().setFromAxisAngle(up,p.yawDeg*DEG).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2));
+          spillParts.push({ geometry: geo, material: sm, matrix: new THREE.Matrix4().compose(centre,rotation,new THREE.Vector3(1,1,1)) });
+        }
+        const spill = mergeByMaterial(THREE,spillParts);
+        if (spill.length) {
+          const colors = new Float32Array(spillParts.flatMap((part) => Array.from((part.geometry.getAttribute("color") as THREE_NS.BufferAttribute).array)));
+          spill[0]!.geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+        }
+        for (const part of spillParts) part.geometry.dispose();
+        if (spill.length) { const geo=spill[0]!.geometry; const mesh=new THREE.Mesh(geo,sm); owned.push(geo); mesh.name="kit_shop_spill"; mesh.userData={ gteki_role: "kit_shop" }; group.add(mesh); stats.spillDrawCalls=1; }
+      }
+
       if (signs.length) {
         // One unlit atlas face batch: every sign quad lit from within, one draw call.
-        const { canvas, slots } = paintSignAtlas(signs, SIGN_PX_PER_M);
+        const { canvas, slots } = paintSignAtlas([...signs, ...blades], SIGN_PX_PER_M, signs.length);
         const texture = new THREE.CanvasTexture(canvas);
         texture.colorSpace = THREE.SRGBColorSpace;
         const material = new THREE.MeshBasicMaterial({ map: texture, toneMapped: false });
         owned.push(texture, material);
-        const parts = signs.map((sign, i) => {
+        // Single-sided: a blade sign gets a second quad turned 180° so its text reads unmirrored from both ways.
+        const parts = [...signs, ...blades].flatMap((sign, i) => {
           const slot = slots[i]!;
           const geo = new THREE.PlaneGeometry(sign.width, sign.height);
           // Map the plane's 0..1 UVs onto this sign's atlas rectangle (CanvasTexture flips Y).
@@ -472,9 +587,12 @@ export async function loadShopKit(
           const vTop = 1 - slot.y / canvas.height, vBot = 1 - (slot.y + slot.h) / canvas.height;
           const uv = geo.getAttribute("uv") as THREE_NS.BufferAttribute;
           for (let k = 0; k < uv.count; k++) uv.setXY(k, u0 + uv.getX(k) * (u1 - u0), vBot + uv.getY(k) * (vTop - vBot));
-          q.setFromAxisAngle(up, sign.yawDeg * DEG);
-          const matrix = new THREE.Matrix4().compose(toRenderer(sign.x, sign.y, sign.z), q, new THREE.Vector3(1, 1, 1));
-          return { geometry: geo, material, matrix };
+          const centre = toRenderer(sign.x, sign.y, sign.z);
+          return (i >= signs.length ? [0, 180] : [0]).map((turn, j) => {
+            q.setFromAxisAngle(up, (sign.yawDeg + turn) * DEG);
+            const matrix = new THREE.Matrix4().compose(centre, q, new THREE.Vector3(1, 1, 1));
+            return { geometry: j ? geo.clone() : geo, material, matrix };
+          });
         });
         const merged = mergeByMaterial(THREE, parts);
         for (const p of parts) p.geometry.dispose(); // mergeByMaterial copies the vertices
@@ -485,6 +603,7 @@ export async function loadShopKit(
           mesh.userData = { gteki_role: "kit_shop_sign" };
           group.add(mesh);
           stats.signs = signs.length;
+          stats.bladeSigns = blades.length;
           stats.signDrawCalls = 1;
           stats.signTriangles = triOf(merged[0]!.geometry);
         }
