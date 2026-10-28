@@ -71,10 +71,35 @@ Post-processing is not a top gap: AgX, environment light, bloom threshold and GT
   4. Measure, then widen to the other 9 escalator entries and the stair entries within the kit budget (≤ +30 draws, ≤ +60k triangles, ≤ +3 MB geometry on phone).
 - **Evidence for each batch.** Spec 21 rerun against the same spots on both tiers (draws and triangles against the before table), the walk down and up with no `stuck` and the same heights, the guided walk specs 03 and 12, and the route-clip audit.
 
-## Two-station expansion (outline; full plan after the slice)
+## Two-station expansion plan (2026-10-28 17:40 JST)
 
-- **Shinjuku.** The slice code is per run, so #1 and #4 already cover every run. #2 and #5 widen entry by entry against the phone budget.
-- **Ikebukuro.** Batch A already gives escalator dressing on desktop. Bring the escalator treatment to the low tier as a mobile bundle. Apply the stair finish to the PLATEAU `stairs_ramps` through its existing `patchLit("stairs")` shader (no rebake). Escalators stay non-walkable until the station lead adds verified escalator edges; that call belongs to the station lead.
+Ordered by play-view gain per effort. "Heavy" means Blender or WebGL QA in the weekday 03:00–15:00 JST window.
+
+### Shinjuku
+1. **Batch 4: slice polish (lead, S, no heavy work except the evidence shots). In progress on `claude/vertical-batch4`.**
+   - Hide the escalator steps within half a step of either comb, so no sliver shows past the bottom comb.
+   - Move the indicator lamps, which float 0.65 m out over the landing at 0.9 m, low onto the skirt end at the comb (0.12 m up), facing the approach.
+   - Spec 21: assert `walkFromNode` and the walk heights (the batch 1 follow-ups).
+2. **Remaining 7 escalator runs (worker, M, heavy).**
+   - 5 runs are left out by the 3 MB geometry cap. Add meshopt to the mobile bundle (`bundle_kit.py`) to cut the measured bytes, then place more runs, longest first, under the same director cap.
+   - 2 runs are outside the generator's angle range. Widen the `escalator_dressing` incline range in `families/vertical.py` and rebuild those two entries. If the result fails the fit tolerances, they stay procedural; the batch 1–3 steps, AO and luminaires already cover them.
+3. **Light distribution at the bank (lead + worker, S–M).** The slice bank already has 8 soffit fixtures per run (the gap #5 correction), so the remaining flatness is in the distribution:
+   - desktop: move one or two of the ≤ 8 underground point lights to the bank heads;
+   - phone: check that the floor light pools at the bank feet show.
+4. **Stairs kit (worker, M, heavy).** Turn on the `stairs` role by default after its own review: `stair_dressing` nosing plus post-mounted rails on the sides with no wall (gap #4 rails). Keep it inside the same kit budget, measured per scene.
+
+### Ikebukuro
+5. **Stair finish (worker, S, no rebake).** Tread and riser palette through the existing `patchLit("stairs")` in `scene/materials.ts`, matching Shinjuku's terrazzo `#C7C2B8` and enamel risers. The materials file is outside the merchant lead's kit.ts/scene.ts, but tell them first anyway.
+6. **Escalator dressing on phones (worker, M, heavy).** Batch A ships its 5 escalator ids at the high tier only (`tiers: {"dressing": ["high"]}` in `kit_placements.json`; `kit/catalog/low/` has no escalator GLB).
+   - Build the low-tier GLBs with the catalog tool, add `"low"` to those placements' tiers, and measure phone draws and triangles at one bank.
+   - Coordinate with the merchant lead (w6:p14) before touching kit.ts/scene.ts.
+7. **Walkability stays with the station lead.** Ikebukuro escalators are not walkable or guided today. The art work above does not depend on that ruling.
+
+### Order and workers
+- Order: 1 → 5 → 6 → 2 → 3 → 4.
+- Worker items go to whichever worker `quota-advisor` names (Codex weekly reset 2026-10-28 17:2x JST).
+- Every implementation PR runs through review-bundle → oracle → review-gate.
+- Evidence uses spec 21 (Shinjuku). Ikebukuro needs an equivalent fixed-spot spec, which is part of item 5.
 
 ## Plugins (none needed to proceed)
 
