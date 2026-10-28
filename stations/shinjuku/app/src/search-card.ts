@@ -16,12 +16,14 @@ const ROLE = {
   destination: { ja: "目的地", en: "this destination" },
 } as const;
 
-/** The line under a result's name: the English name and floor when the source has them, else its own note. */
+/** Search-only results show their own note; routable results show English and floor. */
 export function searchRowSub(poi: Poi, floorShort: string): string {
+  const note = poi.notes?.find((n) => n.lang === "ja")?.text.trim() ?? "";
+  if (poi.connectorNodeIds.length === 0 && note) return note;
   const en = poi.descriptions?.find((n) => n.lang === "en")?.text.trim() ?? poi.names.find((n) => n.lang === "en")?.text.trim() ?? "";
   const line = [en, floorShort.trim()].filter(Boolean).join(" · ");
   if (line) return line;
-  return poi.notes?.find((n) => n.lang === "ja")?.text.trim() ?? "";
+  return note;
 }
 
 /**
