@@ -591,9 +591,16 @@ def egg_radii(zn):
     return HEAD_RADII[0] * ring * profile, HEAD_RADII[1] * ring * profile
 
 
+EGG_N_FRONT = 2.6  # v11: the front half of the egg plan is a superellipse (flatter front); the back stays n = 2
+# Ring sides: 12 across the front 220 deg (y > -0.35 ry), 4 across the hidden back; 16 per ring as before (tri-neutral).
+EGG_ANGLES = [math.radians(a) for a in linspace(-20.0, 200.0, 12)] + [math.radians(200.0 + 28.0 * k) for k in (1, 2, 3, 4)]
+
+
 def head_front_y(x, z):
     rx, ry = egg_radii((z - HEAD_CENTRE[2]) / HEAD_RADII[2])
-    return ry * math.sqrt(max(0.0, 1.0 - (x / rx) ** 2))
+    if abs(x) >= rx:
+        return 0.0
+    return ry * (1.0 - (abs(x) / rx) ** EGG_N_FRONT) ** (1.0 / EGG_N_FRONT)  # front superellipse
 
 
 def face_uv(point):
@@ -603,12 +610,23 @@ def face_uv(point):
     return (clamp((x - FACE_X0) / FACE_W), clamp((z - FACE_Z0) / FACE_H))
 
 
+def egg_ring(zn):
+    """One egg ring: superellipse (n 2.6) on the front half, ellipse (n 2) behind; sides bunched on the front."""
+    rx, ry = egg_radii(zn)
+    z = HEAD_CENTRE[2] + HEAD_RADII[2] * zn
+    ring = []
+    for t in EGG_ANGLES:
+        c, s = math.cos(t), math.sin(t)
+        n = EGG_N_FRONT if s > 0.0 else 2.0
+        ring.append((rx * math.copysign(abs(c) ** (2.0 / n), c), ry * math.copysign(abs(s) ** (2.0 / n), s), z))
+    return ring
+
+
 def build_egg():
-    """Skin: the head egg, its front planar-mapped onto the face rectangle."""
-    rings = []
-    for zn in linspace(-0.97, 0.97, 10):
-        rx, ry = egg_radii(zn)
-        rings.append(ellipse_ring((0.0, 0.0, HEAD_CENTRE[2] + HEAD_RADII[2] * zn), (rx, ry), 16))
+    """Skin: the head egg, its front planar-mapped onto the face rectangle. Rings: 4 from crown to brow, 6 down to chin."""
+    brow_zn = (1.5907 - HEAD_CENTRE[2]) / HEAD_RADII[2]  # brow height (1.556 m after the head scale), pre-scale
+    rings = [egg_ring(zn) for zn in linspace(0.97, brow_zn, 4)]
+    rings += [egg_ring(zn) for zn in linspace(brow_zn, -0.97, 7)[1:]]
     patch = Patch(FACE_RECT)
     patch.loft(rings, cap_first=True, cap_last=True, planar=face_uv)
     return patch
@@ -964,8 +982,9 @@ def face_paint(S, T):
     base = flat(SKIN, S.shape)
     for side in (-1.0, 1.0):
         blush = np.exp(-(((x - side * 0.060) / 0.030) ** 2 + ((z - 1.470) / 0.022) ** 2))
-        base = over(base, rgb("#EBC3B6"), blush * 0.6)  # v9: feathered cheek midtone, no hard edge
-    base = over(base, rgb("#E2BFAE"), np.clip((1.43 - z) / 0.05, 0.0, 1.0) * 0.5)  # jaw underside
+        base = over(base, rgb("#E8BCAE"), blush * 0.6)  # v11: cheek midtone 8 % darker and warmer, feathered
+    base = over(base, base * 0.90, np.clip((1.43 - z) / 0.05, 0.0, 1.0) * 0.5)  # v11: 10 % jaw underside shade
+    base = over(base, base * 0.90, np.clip((np.abs(x) - 0.072) / 0.02, 0.0, 1.0) * 0.6)  # v11: sides near the hair
     bridge = np.exp(-((x / 0.008) ** 2)) * band(z, 1.480, 1.520)  # faint nose bridge line (v9)
     base = over(base, rgb("#EDCDBE"), bridge * 0.35)
     nose = band(np.abs(x), 0.0, 0.0018) * band(z, 1.470, 1.490)  # 2-texel nose shade
@@ -980,8 +999,10 @@ def face_paint(S, T):
         dx = x - side * EYE_X
         arc = EYE_Z - 0.010 * (1.0 - np.clip(dx / EYE_HALF_W, -1, 1) ** 2)
         base = over(base, rgb("#3B2A20"), band(z - arc, -0.0016, 0.0016) * (np.abs(dx) < EYE_HALF_W))  # closed-eye arc
-    smile = band(z - (1.426 + 2.5 * x * x), -0.0012, 0.0012) * band(np.abs(x), 0.0, 0.009)  # one 18 mm mouth (v9)
-    base = over(base, rgb("#7E3F37"), smile * 1.0)  # slightly darker gentle closed smile
+    smile = band(z - (1.426 + 15.0 * x * x), -0.0012, 0.0012) * band(np.abs(x), 0.0, 0.010)  # 20 mm, corners +1.5 mm (v11)
+    base = over(base, rgb("#7E3F37"), smile * 1.0)  # slightly darker gentle smile
+    lip = np.exp(-((x / 0.005) ** 2) - (((z - 1.4215) / 0.0018) ** 2))  # faint lower-lip tint (v11)
+    base = over(base, rgb("#D9A79C"), lip * 0.6)
     return base
 
 
