@@ -848,7 +848,8 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         steps.userData = { lo, hi, yaw, count, L3, stepLen };
         root.add(steps);
         escalators.push({ run: r, steps, speed: 0.5 * (r.travel === 0 ? 0 : (r.a.z <= r.b.z ? 1 : -1) * r.travel) });
-        // entry/exit indicators: green arrow where you board, red bar where you must not
+        // entry/exit indicators: green arrow where you board, red bar where you must not.
+        // Low on the skirt end at the comb, facing the approach (not floating out over the landing).
         const board = r.travel >= 0 ? r.a : r.b;
         const alight = r.travel >= 0 ? r.b : r.a;
         for (const [p, ok] of [
@@ -856,8 +857,8 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
           [alight, false],
         ] as const) {
           const lamp = new THREE.BoxGeometry(0.16, 0.1, 0.02);
-          const into = p === lo ? -1 : 1;
-          const at = v3({ x: p.x + u.x * 0.65 * into + n.x * (hw + 0.07), y: p.y + u.y * 0.65 * into + n.y * (hw + 0.07), z: p.z + 0.9 });
+          const out = p === lo ? -1 : 1;
+          const at = v3({ x: p.x + u.x * 0.03 * out + n.x * (hw + 0.08), y: p.y + u.y * 0.03 * out + n.y * (hw + 0.08), z: p.z + 0.12 });
           lamp.rotateY(yaw + Math.PI / 2).translate(at.x, at.y, at.z);
           (ok ? greenGeos : redGeos).push(lamp);
         }
@@ -1092,6 +1093,8 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const kitSwap = opts.kit && ledger
     ? opts.kit.apply({ THREE, bundle, plan, layout, protection, liftAnchors, root, ledger, levelGroups, track }) ?? undefined
     : undefined;
+  // Runs whose balustrade the kit replaced; only these get the kit comb plates.
+  const combed = new Set(kitSwap?.placed.filter((p) => p.replaces === "escalator-balustrade").map((p) => p.anchorKey));
   addWallBackFaces(root, mat.wall, track);
   bakeFloorLightPools(layout, root, [mat.floor, mat.floorPaid, mat.floorPlatform], track);
   // Batch names say what is inside. The steel batch is the stair handrails and brackets, escalator trusses and
@@ -1290,6 +1293,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const tmpM = new THREE.Matrix4();
   const tmpQ = new THREE.Quaternion();
   const tmpS = new THREE.Vector3(1, 1, 1);
+  const zeroS = new THREE.Vector3(0, 0, 0);
   const tmpP = new THREE.Vector3();
   const tmpE = new THREE.Euler();
   /** Train cycle (s): 0–14 arrive (decelerate), 14–40 dwell (doors 16–37), 40–54 depart, 54–110 empty. */
@@ -1348,6 +1352,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     }
     for (const esc of escalators) {
       const { lo, hi, yaw, count, L3, stepLen } = esc.steps.userData as { lo: XYZ; hi: XYZ; yaw: number; count: number; L3: number; stepLen: number };
+      const trim = combed.has(esc.run.edgeId) ? stepLen / 2 : 0;
       tmpQ.setFromEuler(new THREE.Euler(0, yaw, 0, "YXZ"));
       const phase = (((t * esc.speed) % stepLen) + stepLen) % stepLen;
       for (let i = 0; i < count; i++) {
@@ -1355,7 +1360,9 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         if (s > L3) s -= L3;
         const f = s / L3;
         tmpP.set(lo.x + (hi.x - lo.x) * f, lo.z + (hi.z - lo.z) * f - 0.03, -(lo.y + (hi.y - lo.y) * f));
-        tmpM.compose(tmpP, tmpQ, tmpS);
+        // On a kit run, a step within half a step of either comb would poke a sliver past it: hide it there.
+        // Procedural runs have no comb, so hiding would open a gap at the landing instead.
+        tmpM.compose(tmpP, tmpQ, s < trim || s > L3 - trim ? zeroS : tmpS);
         esc.steps.setMatrixAt(i, tmpM);
       }
       esc.steps.instanceMatrix.needsUpdate = true;
