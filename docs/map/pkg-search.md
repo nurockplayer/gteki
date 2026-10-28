@@ -6,7 +6,7 @@ updated: 2026-10-26 JST
 # pkg-search: station, POI and store-brand search
 
 ## What it does
-Name and alias search over one station's POIs, built once per bundle with `createSearchIndex`. Matching is Japanese-aware: NFKC, case folding, katakana to hiragana, long-vowel and punctuation folding, romaji aliases from the bundle, exit-number folding (号 and 號 to 番 before 出口), and dropping the station's own name from the front of a query. Store brands listed in a tenant directory (`tenants.json`) are extra texts on their store POI and rank below a direct match. Each hit says whether the POI is routable (`routable`, false for search-only POIs without a verified connector).
+Name, alias and description search over one station's POIs, built once per bundle with `createSearchIndex`. Matching is Japanese-aware: NFKC, case folding, katakana to hiragana, long-vowel and punctuation folding, romaji aliases from the bundle, exit-number folding (号 and 號 to 番 before 出口), and dropping the station's own name from the front of a query. Store brands listed in a tenant directory (`tenants.json`) are extra texts on their store POI and rank below a direct match. Each hit says whether the POI is routable (`routable`, false for search-only POIs without a verified connector).
 
 ## Main files and functions
 - `packages/search/src/search.ts:5-9` — `normalizeJa()`: the fold used for queries and the Godot goldens. Leave it unchanged.
@@ -21,7 +21,7 @@ Name and alias search over one station's POIs, built once per bundle with `creat
 - `packages/search/src/index.ts:47-49` — `SearchIndex` interface.
 
 ## Data flow
-- Bundle POIs and tenants (from `parseStationFiles`, see [[pkg-schema]]) → `createSearchIndex` → `search(query, opts)` → `SearchHit[]`.
+- Bundle POI names, aliases, descriptions and tenants (from `parseStationFiles`, see [[pkg-schema]]) → `createSearchIndex` → `search(query, opts)` → `SearchHit[]`.
 - The web app builds the index at `apps/web/src/ui/app.ts:326` and shows hits in the search combobox. A chosen hit's `poi.connectorNodeIds` become route endpoints for [[pkg-navigation]] `routeBetween`. A hit with `routable: false` cannot be a route endpoint.
 - Godot: `packages/godot/src/search-query.ts` (`runSearch`, line 11) and `packages/godot/src/export-search.ts` (`buildSearchExport`, line 52) use this package's `createSearchIndex` and `normalizeJa`. The GDScript HUD reads the exported index and does not port `normalizeJa`.
 - Imported by (non-test code first): `apps/web/src/ui/app.ts`, `apps/web/src/ui/tenantDisplay.ts`, `stations/shinjuku/app/src/main.ts`, `stations/shinjuku/app/src/search-card.ts`, `packages/godot/src/search-query.ts`, `packages/godot/src/export-search.ts` (relative import). Tests: `apps/web/src/search-stations.test.ts`, `apps/web/src/ui/app.brand-search.test.ts`, `apps/web/src/ui/app.merchant.test.ts`, `apps/web/src/ui/app.notes.test.ts`, `stations/shinjuku/test/search-truth.test.ts`, `stations/shinjuku/test/tenant-search.test.ts`, `stations/ikebukuro/scene/search.test.ts`, `stations/ikebukuro/scene/tenants.test.ts`, `stations/ikebukuro/scene/routing.test.ts` (relative import), `packages/godot/src/data-bridge.test.ts` (relative import).

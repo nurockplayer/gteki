@@ -27,7 +27,7 @@ The station-name hits ride on `poi:platform:oedo`, the one existing POI that sta
 
 Official exit numbers are a coverage gap (`gap:exit-numbers`). The internal ids `poi:exit:N` are **not** exit numbers and never appear in a display name. The names use level, compass side, the adjacent GSI space category within 0.5 m (stairs B021 / elevator B022 / escalator B023 / walkway B029; several are joined with 「と」 / "and"), and the E27 roof code. The compass side is the bearing of the F108 point from the **centroid of the mapped network nodes**, not from the ENU origin. The roof word appears only at street level, and only when the codes of all links within 1.5 m of the F108 point (any floor), plus every link inside the cited stairs / lift / escalator space, agree and none is 99 (不明). Otherwise it is left out.
 
-| POI | ja name | en name |
+| POI | ja name | en description |
 | --- | --- | --- |
 | `poi:exit:1` | 出口（地上・北側・階段に隣接・屋根あり） | Exit (street level, north side, next to stairs, roofed) |
 | `poi:exit:2` | 出口（地上・北西側・通路/コンコースに隣接） | Exit (street level, northwest side, next to walkway/concourse) |
@@ -43,7 +43,7 @@ Only `poi:exit:1` states a roof (all nearby links are roof = 2). `poi:exit:2`, `
 | でぐち / deguchi / exit | generic | all six exits (score 105 each) | generic aliases on every exit; the list is not ranked by distance |
 | 出口 | ja generic | the six exits (score 105 each), plus the S03 and WP4 search-only POIs whose names contain 出口 | the S03 and WP4 names also contain 出口; those hits have no route (see the last two sections) |
 | 出口 地上 | ja | exits 1–4 | prefix of the ja name, 85 |
-| street level | en | exits 1–4 | substring of the en name; B1 exits do not say street level |
+| street level | en | exits 1–4 | substring of the en description; B1 exits do not say street level |
 | 出口 地下1階 | ja | exits 5, 6 | prefix of the ja name. The reverse word order 地下1階 出口 returns nothing (the ranker needs the name's order) |
 | exit B1 | en | exits 5, 6 | tokens exit + b1; only the B1 exits carry B1 |
 | 屋根あり / roofed | ja / en | `poi:exit:1` | E27 roof = 2 on every nearby link |

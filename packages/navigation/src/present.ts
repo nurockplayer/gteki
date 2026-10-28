@@ -497,7 +497,8 @@ function junctionNames(bundle: StationBundle, lang: "ja" | "en"): Map<string, st
     if (!NAMES_JUNCTIONS.has(poi.category)) continue;
     const named = poi.names.find((t) => t.lang === lang) ?? poi.names.find((t) => t.lang === "ja") ?? poi.names[0];
     if (!named || named.text.trim() === "") continue;
-    for (const nodeId of poi.connectorNodeIds) if (!out.has(nodeId)) out.set(nodeId, named.text);
+    const description = lang === "en" ? poi.descriptions?.find((t) => t.lang === lang)?.text : undefined;
+    for (const nodeId of poi.connectorNodeIds) if (!out.has(nodeId)) out.set(nodeId, description ? `${named.text} — ${description}` : named.text);
   }
   return out;
 }
@@ -587,7 +588,8 @@ function foldShortLegs(drafts: Draft[]): Draft[] {
 function poiDisplayName(poi: Poi, lang: "ja" | "en"): string | null {
   const names = poi.names.map((n) => ({ lang: n.lang, text: n.text.trim() })).filter((n) => n.text !== "");
   const named = names.find((n) => n.lang === lang) ?? names.find((n) => n.lang === "ja") ?? names[0];
-  return named?.text ?? null;
+  const description = lang === "en" ? poi.descriptions?.find((t) => t.lang === lang)?.text : undefined;
+  return named ? (description ? `${named.text} — ${description}` : named.text) : null;
 }
 
 /**

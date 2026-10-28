@@ -24,7 +24,7 @@ const SPECS = {
   position: { x: "number", y: "number", z: "number|null" },
   edge: { id: "string", from: "string", to: "string", direction: "string", mode: "string", lengthM: "number|null", paid: "tri", crossesFareBoundary: "tri", wheelchair: "tri", steps: "tri", hours: "object|null", closed: "boolean", verification: "string", geometryEvidence: "object", accessEvidence: "object|null", geometry: "array?", geometryZ: "string?", attributes: "object?" },
   evidence: { sourceIds: "array", method: "string", checkedDate: "string", note: "string?" },
-  poi: { id: "string", category: "string", names: "array", aliases: "array", floorId: "string|null", displayPosition: "object|null", approximatePosition: "object?", connectorNodeIds: "array", paid: "tri", evidence: "object", notes: "array?", hours: "object?" },
+  poi: { id: "string", category: "string", names: "array", aliases: "array", floorId: "string|null", displayPosition: "object|null", approximatePosition: "object?", connectorNodeIds: "array", paid: "tri", evidence: "object", notes: "array?", descriptions: "array?", hours: "object?" },
   approximatePosition: { east: "number", north: "number", uncertaintyM: "number", method: "string", navigationUse: "string", floor: "string" },
   // Printed hours (OD-32): text as the page printed it, where it came from, when it was read, whose word it is.
   hours: { text: "string?", sourceUrl: "string", retrievedAt: "string", basis: "string", status: "string" },
@@ -267,6 +267,7 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown, ten
       c.texts(poi.names, `${where}.names`);
       c.texts(poi.aliases, `${where}.aliases`);
       c.texts(poi.notes, `${where}.notes`);
+      c.texts(poi.descriptions, `${where}.descriptions`);
       c.strings(poi.connectorNodeIds, `${where}.connectorNodeIds`);
       if (poi.displayPosition !== null) c.check(poi.displayPosition, SPECS.position, `${where}.displayPosition`);
       if (poi.approximatePosition !== undefined) c.approximatePosition(poi.approximatePosition, `${where}.approximatePosition`);
