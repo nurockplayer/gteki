@@ -972,9 +972,10 @@ def face_paint(S, T):
 
 
 def eye_painter(side):
-    """The far-side (wearer's left, -X) eye artwork sits 8 % of its width toward the face centre."""
-    shift, squeeze = (0.16 + 0.224, 0.94) if side < 0 else (0.0, 1.0)
-    return lambda S, T: eye_paint(S, T, shift, squeeze)
+    """Both eye artworks sit toward the face centre by the same amount and are 6 % narrower (front view symmetric)."""
+    shift = 0.16 + 0.224  # v8b: both eyes mirror the far-side offset (8 % + 3 % of width, toward centre)
+    shift = shift if side < 0 else -shift
+    return lambda S, T: eye_paint(S, T, shift, 0.94)
 
 
 def eye_paint(S, T, shift=0.0, squeeze=1.0):
