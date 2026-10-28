@@ -23,6 +23,8 @@ import { exactHash, fullDigest, protectOnly, stationDigest, visualDigest, withCa
  * The vertical transport pass (docs/visual/vertical-gap.md) restyles stair and escalator visuals: regenerated; protect,
  * station, walkable, colliders and camera blockers are unchanged, and `semantic` differs only in one portal mesh's
  * child index (49 -> 54, two meshes added before it).
+ * Vertical batch 3 adds 16 luminaires under the escalator shell soffits (the instanced linear-light batch, +384 triangles);
+ * regenerated, every other field unchanged.
  */
 const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;
