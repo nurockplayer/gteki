@@ -156,7 +156,8 @@ type Finish = Parameters<typeof soffitHeight>[0];
 /** #49: generic finish for an unmodelled void, not a surveyed station reproduction.
  * These panels belong only to the visible root; never append them to the layout/wall lists.
  */
-export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): { sides: THREE.BufferGeometry | null; soffits: THREE.BufferGeometry | null } {
+/** `finishes` are the drawn soffit panels as roofs, so fixtures can hang from them. */
+export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): { sides: THREE.BufferGeometry | null; soffits: THREE.BufferGeometry | null; finishes: Soffit[] } {
   const polygon = (rings: XY[][]): polygonClipping.Polygon => rings.map((ring) => ring.map((p) => [p.x, p.y]));
   const ringsOf = (poly: polygonClipping.Polygon): XY[][] => poly.map((ring) => ring.map(([x, y]) => ({ x: x!, y: y! })));
   const strip = (r: Run, margin: number, extend: number): XY[][] => {
@@ -214,7 +215,7 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
   // Leave 1 mm below it so Float32 vertices remain strictly underground.
   const streetLimit = STREET_UNDERSIDE - 0.001;
   const existingRoofs = [...layout.levels.flatMap((lv) => lv.ceilings), ...layout.soffits];
-  const walls: { wall: WallSeg; covered: XY[][][] }[] = [], roofs: THREE.BufferGeometry[] = [];
+  const walls: { wall: WallSeg; covered: XY[][][] }[] = [], roofs: THREE.BufferGeometry[] = [], finishes: Soffit[] = [];
   for (const r of layout.runs.filter((r) => r.mode === "escalator")) {
     // Outside the truss (+0.15 m) and balustrade (+0.08 m). The 0.6 m end overlap
     // joins the inclined finish to landing ceilings without closing either run mouth.
@@ -266,7 +267,13 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
       cut = heightMask(cut, (p) => v.top(p) - soffitHeight(roof, p));
       if (cut.length) panels = polygonClipping.difference(panels, cut);
     }
-    for (const panel of panels) roofs.push(soffitGeometry({ ...roof, rings: ringsOf(panel) }));
+    const lowZ = Math.min(r.a.z, r.b.z);
+    const floorId = layout.levels.reduce<Layout["levels"][number] | undefined>((best, lv) => !best || Math.abs(lv.z - lowZ) < Math.abs(best.z - lowZ) ? lv : best, undefined)?.floorId ?? "";
+    for (const panel of panels) {
+      const finish = { ...roof, floorId, rings: ringsOf(panel) };
+      roofs.push(soffitGeometry(finish));
+      finishes.push(finish);
+    }
   }
   const sides: THREE.BufferGeometry[] = [];
   for (const { wall, covered } of walls) {
@@ -305,7 +312,7 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
       sides.push(geo);
     }
   }
-  return { sides: merged(sides), soffits: merged(roofs) };
+  return { sides: merged(sides), soffits: merged(roofs), finishes };
 }
 
 /** Collision keeps short conservative height bands; rendering can join collinear panels. */
@@ -371,11 +378,13 @@ export function cladWallGeometry(walls: WallSeg[]): THREE.BufferGeometry | null 
 
 function merged(geos: THREE.BufferGeometry[]): THREE.BufferGeometry | null {
   if (!geos.length) return null;
+  // Vertex colours (contactShade) survive only when every part has them; mergeGeometries needs one attribute set.
+  const keep = geos.every((g) => g.attributes.color) ? ["position", "normal", "uv", "color"] : ["position", "normal", "uv"];
   for (const g of geos) {
     if (!g.index) g.setIndex([...Array(g.attributes.position!.count).keys()]);
     if (!g.attributes.normal) g.computeVertexNormals();
     if (!g.attributes.uv) g.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position!.count * 2), 2));
-    for (const name of Object.keys(g.attributes)) if (!["position", "normal", "uv"].includes(name)) g.deleteAttribute(name);
+    for (const name of Object.keys(g.attributes)) if (!keep.includes(name)) g.deleteAttribute(name);
   }
   const m = mergeGeometries(geos, false);
   for (const g of geos) g.dispose();
@@ -489,6 +498,17 @@ function boxAlong(a: THREE.Vector3, b: THREE.Vector3, w: number, h: number): THR
 }
 
 /**
+ * Contact darkening baked as vertex colour (vertical gap #3), so phones get it without an AO pass or extra draw.
+ * `open` maps a vertex to 0 where the surface meets another and 1 in the open; colour runs from `dark` to 1.
+ */
+function contactShade(geo: THREE.BufferGeometry, open: (p: THREE.Vector3) => number, dark: number): THREE.BufferGeometry {
+  const pos = geo.attributes.position!, colors = new Float32Array(pos.count * 3), p = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) colors.fill(dark + (1 - dark) * THREE.MathUtils.clamp(open(p.fromBufferAttribute(pos, i)), 0, 1), i * 3, i * 3 + 3);
+  geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  return geo;
+}
+
+/**
  * One escalator step in its instance frame (+X uphill, tread top at y = 0): a level tread `depth` deep and the riser
  * under its downhill edge, `rise` tall. UVs map the tread into the top half of `escalatorStepTexture` and the riser into
  * the bottom half, so a step stays one geometry and one draw per escalator.
@@ -499,8 +519,9 @@ function escalatorStepGeometry(depth: number, rise: number, width: number): THRE
     for (let i = 0; i < uv.count; i++) uv.setY(i, v0 + uv.getY(i) * 0.5);
     return g;
   };
-  const tread = half(new THREE.BoxGeometry(depth * 0.97, 0.04, width).translate(0, -0.02, 0), 0.5);
-  const riser = half(new THREE.BoxGeometry(0.015, rise, width).translate(-depth * 0.485 + 0.0075, -rise / 2, 0), 0);
+  const tread = contactShade(half(new THREE.BoxGeometry(depth * 0.97, 0.04, width).translate(0, -0.02, 0), 0.5), () => 1, 1);
+  // The riser darkens towards the tread below it.
+  const riser = contactShade(half(new THREE.BoxGeometry(0.015, rise, width).translate(-depth * 0.485 + 0.0075, -rise / 2, 0), 0), (p) => 1 + p.y / rise, 0.45);
   const geo = mergeGeometries([tread, riser])!;
   tread.dispose();
   riser.dispose();
@@ -553,10 +574,10 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     // Vertical transport follows style.md §2: terrazzo treads, enamel risers, rubber nosing, cleated escalator
     // treads with yellow demarcation, light painted truss.
     stair: track(new THREE.MeshStandardMaterial({ color: "#c7c2b8", roughness: 0.42 })),
-    riser: track(new THREE.MeshStandardMaterial({ color: "#dbdbd6", roughness: 0.3 })),
+    riser: track(new THREE.MeshStandardMaterial({ color: "#dbdbd6", roughness: 0.3, vertexColors: true })),
     nosing: track(new THREE.MeshStandardMaterial({ color: "#2a2b2c", roughness: 0.6 })),
-    escStep: track(new THREE.MeshStandardMaterial({ map: track(escalatorStepTexture()), roughness: 0.51, metalness: 0.3 })),
-    escTruss: track(new THREE.MeshStandardMaterial({ color: "#ccccc7", roughness: 0.34 })),
+    escStep: track(new THREE.MeshStandardMaterial({ map: track(escalatorStepTexture()), roughness: 0.51, metalness: 0.3, vertexColors: true })),
+    escTruss: track(new THREE.MeshStandardMaterial({ color: "#ccccc7", roughness: 0.34, vertexColors: true })),
     gateBody: track(new THREE.MeshStandardMaterial({ color: "#e9ebec", roughness: 0.35, metalness: 0.15 })),
     gateTop: track(new THREE.MeshStandardMaterial({ color: "#303634", roughness: 0.58, metalness: 0.15, envMapIntensity: 0.3 })),
     gateIc: track(new THREE.MeshStandardMaterial({ color: "#1a507e", emissive: "#3983b0", emissiveIntensity: 0.18, roughness: 0.45 })),
@@ -673,7 +694,9 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   // source walls per level. No extra wall material draw is needed for the new enclosure.
 
   // ---- underground fixtures, kept in a separate helper for the surface lane's hook
-  buildUndergroundLighting(bundle, layout, levelGroups, root, track);
+  // The escalator shell soffits are roofs too: without them the inclines get no fixtures (vertical gap #5).
+  const shell = escalatorShellGeometry(layout, bundle);
+  buildUndergroundLighting(bundle, layout, levelGroups, root, track, shell.finishes);
   const liftAnchors = buildElevatorPortals(bundle, layout, root, mat, track, ledger);
 
   // ---- existing surface ceiling lights (street scene is owned by W2)
@@ -744,7 +767,6 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   }
 
   // ---- stairs & escalators
-  const shell = escalatorShellGeometry(layout, bundle);
   for (const [geo, material, name] of [[shell.sides, mat.wall, "escalator-shell-sides"], [shell.soffits, mat.ceiling, "escalator-shell-soffits"]] as const) {
     if (!geo) continue;
     const mesh = new THREE.Mesh(track(geo), material);
@@ -796,7 +818,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
             const ex = lo.x + u.x * run * i;
             const ey = lo.y + u.y * run * i;
             // Enamel riser face 3 mm proud of the block, then a 55 mm rubber nosing strip and a steel lip.
-            const riser = new THREE.PlaneGeometry(r.width - 0.02, rise - 0.02);
+            const riser = contactShade(new THREE.PlaneGeometry(r.width - 0.02, rise - 0.02), (p) => 0.5 + p.y / (rise - 0.02), 0.55);
             riser.rotateY(-Math.PI / 2 + yaw);
             riser.translate(ex - u.x * 0.013, top - rise / 2 - 0.012, -(ey - u.y * 0.013));
             riserGeos.push(riser);
@@ -813,7 +835,9 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       } else {
         // escalator truss + balustrades
         // Truss top sits 0.25 m under the incline, below the step profile's lowest point (about 0.17 m).
-        trussGeos.push(boxAlong(v3({ ...lo, z: lo.z - 0.7 }), v3({ ...hi, z: hi.z - 0.7 }), r.width + 0.3, 0.9));
+        // Darker under the skirt and steps, open towards the bottom.
+        const inclineAt = (p: THREE.Vector3) => lo.z + dz * THREE.MathUtils.clamp(((p.x - lo.x) * dx + (-p.z - lo.y) * dy) / (L * L), 0, 1);
+        trussGeos.push(contactShade(boxAlong(v3({ ...lo, z: lo.z - 0.7 }), v3({ ...hi, z: hi.z - 0.7 }), r.width + 0.3, 0.9), (p) => (inclineAt(p) - 0.25 - p.y) / 0.9, 0.6));
         // animated steps: a level tread and the riser under its downhill edge, so the run reads as steps, not a ramp
         const L3 = Math.hypot(L, dz);
         const stepLen = 0.4;
@@ -824,7 +848,8 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         steps.userData = { lo, hi, yaw, count, L3, stepLen };
         root.add(steps);
         escalators.push({ run: r, steps, speed: 0.5 * (r.travel === 0 ? 0 : (r.a.z <= r.b.z ? 1 : -1) * r.travel) });
-        // entry/exit indicators: green arrow where you board, red bar where you must not
+        // entry/exit indicators: green arrow where you board, red bar where you must not.
+        // Low on the skirt end at the comb, facing the approach (not floating out over the landing).
         const board = r.travel >= 0 ? r.a : r.b;
         const alight = r.travel >= 0 ? r.b : r.a;
         for (const [p, ok] of [
@@ -832,8 +857,8 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
           [alight, false],
         ] as const) {
           const lamp = new THREE.BoxGeometry(0.16, 0.1, 0.02);
-          const into = p === lo ? -1 : 1;
-          const at = v3({ x: p.x + u.x * 0.65 * into + n.x * (hw + 0.07), y: p.y + u.y * 0.65 * into + n.y * (hw + 0.07), z: p.z + 0.9 });
+          const out = p === lo ? -1 : 1;
+          const at = v3({ x: p.x + u.x * 0.03 * out + n.x * (hw + 0.08), y: p.y + u.y * 0.03 * out + n.y * (hw + 0.08), z: p.z + 0.12 });
           lamp.rotateY(yaw + Math.PI / 2).translate(at.x, at.y, at.z);
           (ok ? greenGeos : redGeos).push(lamp);
         }
@@ -1068,6 +1093,8 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const kitSwap = opts.kit && ledger
     ? opts.kit.apply({ THREE, bundle, plan, layout, protection, liftAnchors, root, ledger, levelGroups, track }) ?? undefined
     : undefined;
+  // Runs whose balustrade the kit replaced; only these get the kit comb plates.
+  const combed = new Set(kitSwap?.placed.filter((p) => p.replaces === "escalator-balustrade").map((p) => p.anchorKey));
   addWallBackFaces(root, mat.wall, track);
   bakeFloorLightPools(layout, root, [mat.floor, mat.floorPaid, mat.floorPlatform], track);
   // Batch names say what is inside. The steel batch is the stair handrails and brackets, escalator trusses and
@@ -1266,6 +1293,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const tmpM = new THREE.Matrix4();
   const tmpQ = new THREE.Quaternion();
   const tmpS = new THREE.Vector3(1, 1, 1);
+  const zeroS = new THREE.Vector3(0, 0, 0);
   const tmpP = new THREE.Vector3();
   const tmpE = new THREE.Euler();
   /** Train cycle (s): 0–14 arrive (decelerate), 14–40 dwell (doors 16–37), 40–54 depart, 54–110 empty. */
@@ -1324,6 +1352,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     }
     for (const esc of escalators) {
       const { lo, hi, yaw, count, L3, stepLen } = esc.steps.userData as { lo: XYZ; hi: XYZ; yaw: number; count: number; L3: number; stepLen: number };
+      const trim = combed.has(esc.run.edgeId) ? stepLen / 2 : 0;
       tmpQ.setFromEuler(new THREE.Euler(0, yaw, 0, "YXZ"));
       const phase = (((t * esc.speed) % stepLen) + stepLen) % stepLen;
       for (let i = 0; i < count; i++) {
@@ -1331,7 +1360,9 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         if (s > L3) s -= L3;
         const f = s / L3;
         tmpP.set(lo.x + (hi.x - lo.x) * f, lo.z + (hi.z - lo.z) * f - 0.03, -(lo.y + (hi.y - lo.y) * f));
-        tmpM.compose(tmpP, tmpQ, tmpS);
+        // On a kit run, a step within half a step of either comb would poke a sliver past it: hide it there.
+        // Procedural runs have no comb, so hiding would open a gap at the landing instead.
+        tmpM.compose(tmpP, tmpQ, s < trim || s > L3 - trim ? zeroS : tmpS);
         esc.steps.setMatrixAt(i, tmpM);
       }
       esc.steps.instanceMatrix.needsUpdate = true;
@@ -1603,11 +1634,12 @@ function buildUndergroundLighting(
   groups: Map<string, THREE.Group>,
   root: THREE.Group,
   track: <T extends { dispose(): void }>(x: T) => T,
+  extraRoofs: Soffit[] = [],
 ) {
   type Fixture = { a: XYZ; b: XYZ; ground: XYZ };
   const batches = new Map<string, Fixture[]>();
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
-  const roofs = [...layout.levels.flatMap((lv) => lv.ceilings.map((s) => ({ ...s, floorId: lv.floorId }))), ...layout.soffits];
+  const roofs = [...layout.levels.flatMap((lv) => lv.ceilings.map((s) => ({ ...s, floorId: lv.floorId }))), ...layout.soffits, ...extraRoofs];
   const ceilingAt = (p: XYZ) => {
     let best: { z: number; floorId: string } | null = null;
     for (const s of roofs) {

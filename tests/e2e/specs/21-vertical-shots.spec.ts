@@ -92,23 +92,34 @@ test("shinjuku vertical transport: fixed spots and escalator walk @phone", async
 
   for (const s of spots) {
     const ok = await hooks.walkFromNode(page, resolve(s.node));
+    expect.soft(ok, `${s.id} spawns at its node`).toBe(true);
     await page.evaluate((c) => (window as any).__gteki.setCamera(c), { yaw: s.yaw, pitch: s.pitch, distance: s.distance });
     (report.spots as unknown[]).push({ ...s, spawned: ok, ...(await shoot(s.id)) });
   }
 
   // Play view: the follow camera trails the walker down e1fa65 and up 2692fe (camera released, as a player sees it).
   await page.evaluate(() => (window as any).__gteki.setCamera(null));
-  const at = async (node: string) => { await hooks.walkFromNode(page, node); return hooks.avatar(page); };
+  const at = async (node: string) => {
+    expect.soft(await hooks.walkFromNode(page, node), `spawns at ${node}`).toBe(true);
+    return hooks.avatar(page);
+  };
   const legs = [["down", HEAD, FOOT], ["up", UP_FOOT, UP_HEAD]] as const;
   for (const [leg, from, to] of legs) {
     const b = await at(to);
     const a = await at(from);
+    let z = a.z;
     for (const q of [0.25, 0.5, 0.75, 1]) {
       // Avatar ENU (x east, y north, z up) -> renderer (x, z = -north); walkPath takes renderer x/z.
       const target = { x: a.x + (b.x - a.x) * q, z: -(a.y + (b.y - a.y) * q) };
       const r = await page.evaluate((p) => (window as any).__gteki.walkPath([p], { maxSeconds: 30 }), target);
-      (report.walk as unknown[]).push({ leg, q, result: r, ...(await shoot(`walk-${leg}-${q * 100}`)) });
+      const shot = await shoot(`walk-${leg}-${q * 100}`);
+      (report.walk as unknown[]).push({ leg, q, result: r, ...shot });
       expect.soft(r.done && !r.stuck, `${leg} walk reaches ${q * 100}% without getting stuck`).toBe(true);
+      // Heights only ever go the leg's way (5 cm slack), and the walk ends on the far node's level.
+      const dz = shot.avatar.z - z;
+      expect.soft(leg === "down" ? dz <= 0.05 : dz >= -0.05, `${leg} walk height at ${q * 100}% (${shot.avatar.z.toFixed(2)} after ${z.toFixed(2)})`).toBe(true);
+      z = shot.avatar.z;
+      if (q === 1) expect.soft(Math.abs(z - b.z), `${leg} walk ends at the far node's height`).toBeLessThan(0.3);
     }
   }
   fs.writeFileSync(path.join(dir, "vertical.json"), JSON.stringify(report, null, 2));

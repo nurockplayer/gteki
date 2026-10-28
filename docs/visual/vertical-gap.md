@@ -71,10 +71,35 @@ Post-processing is not a top gap: AgX, environment light, bloom threshold and GT
   4. Measure, then widen to the other 9 escalator entries and the stair entries within the kit budget (≤ +30 draws, ≤ +60k triangles, ≤ +3 MB geometry on phone).
 - **Evidence for each batch.** Spec 21 rerun against the same spots on both tiers (draws and triangles against the before table), the walk down and up with no `stuck` and the same heights, the guided walk specs 03 and 12, and the route-clip audit.
 
-## Two-station expansion (outline; full plan after the slice)
+## Two-station expansion plan (2026-10-28 17:40 JST)
 
-- **Shinjuku.** The slice code is per run, so #1 and #4 already cover every run. #2 and #5 widen entry by entry against the phone budget.
-- **Ikebukuro.** Batch A already gives escalator dressing on desktop. Bring the escalator treatment to the low tier as a mobile bundle. Apply the stair finish to the PLATEAU `stairs_ramps` through its existing `patchLit("stairs")` shader (no rebake). Escalators stay non-walkable until the station lead adds verified escalator edges; that call belongs to the station lead.
+Ordered by play-view gain per effort. "Heavy" means Blender or WebGL QA in the weekday 03:00–15:00 JST window.
+
+### Shinjuku
+1. **Batch 4: slice polish (lead, S, no heavy work except the evidence shots). In progress on `claude/vertical-batch4`.**
+   - Hide the escalator steps within half a step of either comb, so no sliver shows past the bottom comb.
+   - Move the indicator lamps, which float 0.65 m out over the landing at 0.9 m, low onto the skirt end at the comb (0.12 m up), facing the approach.
+   - Spec 21: assert `walkFromNode` and the walk heights (the batch 1 follow-ups).
+2. **Remaining 7 escalator runs (worker, M, heavy).**
+   - 5 runs are left out by the 3 MB geometry cap. Add meshopt to the mobile bundle (`bundle_kit.py`) to cut the measured bytes, then place more runs, longest first, under the same director cap.
+   - 2 runs are outside the generator's angle range. Widen the `escalator_dressing` incline range in `families/vertical.py` and rebuild those two entries. If the result fails the fit tolerances, they stay procedural; the batch 1–3 steps, AO and luminaires already cover them.
+3. **Light distribution at the bank (lead + worker, S–M).** The slice bank already has 8 soffit fixtures per run (the gap #5 correction), so the remaining flatness is in the distribution:
+   - desktop: move one or two of the ≤ 8 underground point lights to the bank heads;
+   - phone: check that the floor light pools at the bank feet show.
+4. **Stairs kit (worker, M, heavy).** Turn on the `stairs` role by default after its own review: `stair_dressing` nosing plus post-mounted rails on the sides with no wall (gap #4 rails). Keep it inside the same kit budget, measured per scene.
+
+### Ikebukuro
+5. **Stair finish (worker, S, no rebake).** Tread and riser palette through the existing `patchLit("stairs")` in `scene/materials.ts`, matching Shinjuku's terrazzo `#C7C2B8` and enamel risers. The materials file is outside the merchant lead's kit.ts/scene.ts, but tell them first anyway.
+6. **Escalator dressing on phones (worker, M, heavy).** Batch A ships its 5 escalator ids at the high tier only (`tiers: {"dressing": ["high"]}` in `kit_placements.json`; `kit/catalog/low/` has no escalator GLB).
+   - Build the low-tier GLBs with the catalog tool, add `"low"` to those placements' tiers, and measure phone draws and triangles at one bank.
+   - Coordinate with the merchant lead (w6:p14) before touching kit.ts/scene.ts.
+7. **Walkability stays with the station lead.** Ikebukuro escalators are not walkable or guided today. The art work above does not depend on that ruling.
+
+### Order and workers
+- Order: 1 → 5 → 6 → 2 → 3 → 4.
+- Worker items go to whichever worker `quota-advisor` names (Codex weekly reset 2026-10-28 17:2x JST).
+- Every implementation PR runs through review-bundle → oracle → review-gate.
+- Evidence uses spec 21 (Shinjuku). Ikebukuro needs an equivalent fixed-spot spec, which is part of item 5.
 
 ## Plugins (none needed to proceed)
 
@@ -130,3 +155,22 @@ Phone (bank foot wide and close; before, before, after, after):
 - **Physics.** Walkable, colliders, camera blockers, spawn points, walls and explorer lists are identical with the swap on and off.
 - **Kit report.** 6 draws, 42,720 triangles, about 2.45 MB measured geometry (2.99 MB at the planner's 70 B/tri estimate), 131 kB GPU textures. The bundle is 2.28 MB on disk.
 - **Left for later.** The procedural indicator lamps now read as squares on the glass and should move to the kit's `indicators`. At the bottom comb a sliver of the animated step shows past the plate. Luminaires over the bank (#5) are batch 3.
+
+## Batch 3 result (2026-10-28 13:25 JST): soffit luminaires and contact shade (#3, #5)
+
+- **Contact shade (#3).** Vertex-colour darkening (`contactShade` in `build.ts`) on the escalator truss (dark under the skirt), the escalator step risers and the stair risers (dark towards the tread below). No AO pass or extra draw, so it reaches phones. The kit dressing keeps its own baked AO.
+- **Luminaires (#5).** The visual escalator shell soffits now count as roofs for the instanced linear luminaires, adding 16 fixtures in the existing batch with no new draw. A per-run count of fixtures 2.4–5.3 m above the incline, main → batch 3: `4bee1c` 0→1, `27d3ed` 0→4, `42a9f8` 1→5, `d57306` 1→3, `88ef3d` 2→5, `4b7d94` 3→6, `904c66` 5→6, `296f67` 3→4. Correction to gap #5: the Golden Slice bank (`e1fa65`, `2692fe`, `fd3365`) already had 8 fixtures each from the station's own pitched soffits, so the slice's flat look comes from the light distribution, not missing fixtures.
+- **Evidence.** Same spots and cameras as the final batch 2 run on main (`8cc81df7`). Left is main, right is batch 3. Rows from top: bank foot close up, bank head, Exit 1 stair foot:
+
+![Batch 3 desktop](evidence/vertical-b3-desktop.jpg)
+
+| Spot | Desktop draws / tris, main → batch 3 | Phone draws / tris, main → batch 3 |
+| --- | --- | --- |
+| bank foot (wide) | 245 / 378k → 245 / 379k | 105 / 169k → 105 / 170k |
+| bank foot (close) | 224 / 397k → 234 / 400k | 90 / 170k → 85 / 169k |
+| bank head | 221 / 381k → 221 / 382k | 85 / 170k → 85 / 171k |
+| Exit 1 stair foot | 175 / 285k → 175 / 285k | 70 / 133k → 70 / 134k |
+
+The bank-foot close draw count varies between runs on both tiers: batch 2's own after run measured 234 on desktop.
+
+- **Walk and physics.** Down `e1fa65` and up `2692fe` finish at every quarter on both tiers and never get stuck, at the same heights as main. The scene digest changes only in the instanced luminaire batch (+384 triangles). Collision, walkable, lists and every other visual set are byte-identical. The vertex colours add 27,696 B, and a scene test checks that every mesh with a vertex-colour material has a colour attribute.

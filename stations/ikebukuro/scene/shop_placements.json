@@ -22,7 +22,41 @@
     "lumine-ikebukuro-access-2026-10"
    ],
    "field_check": "FC-MER-01",
-   "ruling": "R1, director 2026-10-28 03:0x JST: visual only; no connector, node or coordinate; no 'you are here' or distance on the facade; moves or goes if FC-MER-01 differs"
+   "ruling": "R1, director 2026-10-28 03:0x JST: visual only; no connector, node or coordinate; no 'you are here' or distance on the facade; moves or goes if FC-MER-01 differs",
+   "directory": {
+    "title": {
+     "ja": "ルミネ池袋 B1 ショップ",
+     "en": "LUMINE IKEBUKURO B1 SHOPS"
+    },
+    "note": {
+     "ja": "2026年10月 公開フロアガイドより・営業状況は未確認",
+     "en": "From the public floor guide, Oct 2026; status not verified"
+    },
+    "sourceIds": [
+     "lumine-ikebukuro-floorguide-2026-10"
+    ],
+    "checkedDate": "2026-10-24",
+    "shops": [
+     "ATELIER Spick ＆ Span",
+     "IÉNA",
+     "UNITED ARROWS WOMEN‘S STORE",
+     "SNIDEL",
+     "MARKS&WEB",
+     "SHIRO",
+     "JO MALONE LONDON",
+     "Cosme Kitchen",
+     "Maison Margiela Fragrances",
+     "ENSEMBLE",
+     "gelato pique",
+     "Aesop",
+     "Whim Gazette",
+     "HIROB",
+     "OSAJI",
+     "Dior BACKSTAGE STUDIO",
+     "SABON",
+     "Aoyama Flower Market"
+    ]
+   }
   },
   {
    "id": "ph-ikb-b1e-01",
