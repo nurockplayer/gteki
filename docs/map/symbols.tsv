@@ -45,9 +45,10 @@ AvatarGlbLoader	interface	apps/web/src/explorer/avatarGlb.ts	10
 loadGlbAvatar	function	apps/web/src/explorer/avatarGlb.ts	19
 avatarMotion	function	apps/web/src/explorer/avatarMotion.ts	13
 DEFAULT_AVATAR_GLB_URL	const	apps/web/src/explorer/avatarSelection.ts	7
-avatarGlbUrl	function	apps/web/src/explorer/avatarSelection.ts	10
-AvatarSelection	interface	apps/web/src/explorer/avatarSelection.ts	23
-createAvatarRig	function	apps/web/src/explorer/avatarSelection.ts	31
+SOFT_AVATAR_GLB_URL	const	apps/web/src/explorer/avatarSelection.ts	10
+avatarGlbUrl	function	apps/web/src/explorer/avatarSelection.ts	13
+AvatarSelection	interface	apps/web/src/explorer/avatarSelection.ts	28
+createAvatarRig	function	apps/web/src/explorer/avatarSelection.ts	36
 AO_MAP_HIGH_SCALE	const	apps/web/src/explorer/bakedAo.ts	16
 BakedAoCounts	interface	apps/web/src/explorer/bakedAo.ts	19
 bakedAoScale	const	apps/web/src/explorer/bakedAo.ts	33
