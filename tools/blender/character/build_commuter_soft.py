@@ -23,9 +23,9 @@ DERIVATION = ("original: soft-stylized commuter silhouette hand-built from Blend
               "see apps/web/public/avatars/gteki-commuter-soft.provenance.json")
 
 BODY_ATLAS, HEAD_ATLAS = 1024, 512
-NAVY, NAVY_LIGHT, NAVY_DARK = "#293A50", "#3D4C62", "#1E2D44"
+NAVY, NAVY_LIGHT, NAVY_DARK = "#2C3D54", "#46566E", "#1C2A3F"
 NAVY_EDGE, BUTTON = "#1D2A3E", "#1A2030"
-LAPEL, LAPEL_EDGE, CUFF_BAND = "#3B4A5D", "#161C2C", "#3E4B6B"
+LAPEL, LAPEL_EDGE, CUFF_BAND = "#46566E", "#161C2C", "#3E4B6B"
 CREAM, KNIT_RIB, BELT = "#EEE8DE", "#B9B0A2", "#2A2622"
 TAUPE, TAUPE_CREASE, TAUPE_HEM = "#ABA6A2", "#7E7873", "#918B87"
 SHOE, SOLE, SHOE_HI = "#8B7568", "#5E4E42", "#9C8775"
@@ -48,12 +48,12 @@ OPEN_PROFILE = [(0.50, 0.100), (0.70, 0.075), (0.86, 0.055), (1.00, 0.040), (1.1
                 (1.30, 0.056), (1.345, 0.045), (1.396, 0.030)]
 BACK_LAP_Z0, BACK_LAP_Z1 = 0.62, 0.67  # the halves lap 6 deg at the back above the vent (vent from 0.62 m down)
 SKIRT_OVERLAP = math.radians(6.0)  # the two halves lap 6 deg across the back vent (v6)
-SKIRT_THIGH_SHARE = 0.6  # same-side thigh at the hem; the hip line stays on the pelvis
+SKIRT_THIGH_SHARE = 0.75  # v7 (was 0.6) # same-side thigh at the hem; the hip line stays on the pelvis
 SKIRT_BLEND_Z = 0.80  # pelvis-to-thigh blend starts here (v5)
 SLEEVE_PROFILE = [(0.93, 0.044), (0.99, 0.045), (1.13, 0.049), (1.22, 0.052), (1.30, 0.055), (1.32, 0.056)]
 SLEEVE_TOP_Z = 1.320  # the sleeve stops here, inside the coat shoulder: no cap above the shoulder line
-TROUSER_ZS = [0.06, 0.10, 0.20, 0.34, 0.50, 0.62, 0.74, 0.86]
-TROUSER_R = [0.078, 0.080, 0.088, 0.088, 0.088, 0.088, 0.086, 0.080]
+TROUSER_ZS = [0.06, 0.10, 0.20, 0.34, 0.46, 0.54, 0.62, 0.74, 0.86]
+TROUSER_R = [0.088, 0.088, 0.088, 0.088, 0.088, 0.082, 0.070, 0.070, 0.070]  # narrow inside the coat (v7)
 LEG_X = 0.098  # leg centres, trousers and loafers
 # Loafers 1.3x the v2 size (fix 1 item 5): toes clear the trouser hem in front and side views.
 SHOE_RINGS = [(0.008, 0.060, 0.146), (0.029, 0.070, 0.161), (0.057, 0.069, 0.159),
@@ -73,7 +73,7 @@ SPINE_STOPS = [(1.36, "spine_03"), (1.26, "spine_02"), (1.10, "spine_01"), (0.94
 HEAD_CENTRE, HEAD_RADII = (0.0, 0.0, 1.550), (0.110, 0.121, 0.150)
 HEAD_CHIN, HEAD_SCALE = (0.0, 0.0, 1.398), 0.82  # v3: the whole head scales 0.82 about the chin (adult size)
 EYE_X, EYE_Z = 0.050, 1.500
-EYE_HALF_W, EYE_HALF_H = 0.0346, 0.0288  # v6: width x0.9 of v5 (+20 % over v4), height unchanged
+EYE_HALF_W, EYE_HALF_H = 0.0308, 0.0271  # v7: width -11 %, height -6 % (from v6)
 # Solid bob shell (fix 1 item 3): (z, rx, ry) from the chin to above the crown. ear-level width >= 1.3x skull.
 BOB_LOWER = [(1.400, 0.122, 0.116), (1.450, 0.142, 0.135), (1.500, 0.152, 0.154), (1.545, 0.154, 0.156)]
 DOME_BASE_Z, DOME_RX, DOME_HEIGHT = 1.545, 0.154, 0.172  # hemisphere cap: crown at 1.717 m
@@ -581,7 +581,7 @@ def build_body():
 def egg_radii(zn):
     """Head egg (rx, ry) at normalised height zn in [-1, 1]: a slightly tapered jaw and crown."""
     ring = math.sqrt(max(0.0, 1.0 - zn * zn))
-    profile = 1.0 + 0.04 * zn - 0.08 * max(0.0, -zn) ** 1.5  # rounder jaw, softer cheeks (v6)
+    profile = 1.0 + 0.04 * zn - 0.08 * max(0.0, -zn) ** 1.5 + 0.12 * max(0.0, -zn - 0.3)  # softer jaw (v7)
     return HEAD_RADII[0] * ring * profile, HEAD_RADII[1] * ring * profile
 
 
@@ -860,7 +860,7 @@ def coat_painter(side):
         base = over(base, rgb(NAVY_DARK), back_edge * band(z, HEM_Z, YOKE_Z) * 0.9)  # continuous back seam
         in_yoke = (np.abs(d) <= 0.80).astype(np.float32)
         yoke_low = YOKE_Z - 0.02 * (1.0 - np.clip((d / 0.80) ** 2, 0.0, 1.0))  # slightly curved lower edge
-        base = over(base, rgb(NAVY_LIGHT), in_yoke * (z >= yoke_low) * 0.35)  # yoke panel, 70% of the width
+        base = over(base, rgb(NAVY_LIGHT), in_yoke * (z >= yoke_low) * 0.6)  # yoke panel, 70% of the width
         base = over(base, rgb(NAVY_DARK), in_yoke * band(z - yoke_low, -0.0045, 0.0045) * 0.9)  # yoke edge line
         base = over(base, rgb(NAVY_DARK), band(T, 0.94, 1.0) * 0.6)  # under-collar recess
         base = over(base, rgb(NAVY_DARK), band(z, 0.97, 0.99) * (np.abs(d) > 0.3) * 0.12)  # waist fold, faint
@@ -882,9 +882,9 @@ def coat_painter(side):
 def knit_paint(S, T):
     import numpy as np
     base = flat(CREAM, S.shape)
-    rib = band(np.mod(S * 256.0 / 12.0, 1.0), 0.0, 0.25)  # warm-grey rib lines every ~12 texels
-    base = over(base, rgb(KNIT_RIB), rib * 0.8)
-    base = over(base, rgb(KNIT_RIB), band(T, 0.92, 1.0) * rib * 0.5)  # collar band
+    wave = 0.5 + 0.5 * np.cos(2.0 * np.pi * S * 256.0 / 12.0)  # soft rib lines every ~12 texels
+    base = base * (1.0 - 0.13 * wave)[..., None]
+    base = over(base, rgb(KNIT_RIB), band(T, 0.92, 1.0) * 0.5)  # collar band
     base = over(base, rgb(BELT), band(T, 0.0, 0.06))  # thin dark belt where the trousers start
     return base
 
@@ -898,12 +898,13 @@ def trouser_paint(S, T):
     base = flat(TAUPE, S.shape) * (0.97 + 0.03 * T)[..., None]
     for centre in (0.25, 0.75):  # two vertical folds per leg, slightly wavy
         fold = centre + 0.008 * np.sin(T * 18.0)
-        base = over(base, rgb(TAUPE_CREASE), (np.abs(S - fold) < 0.006).astype(np.float32) * 0.9)
+        base = base * (1.0 - 0.13 * np.exp(-(((S - fold) / 0.008) ** 2)))[..., None]  # soft fold
     return over(base, rgb(TAUPE_HEM), band(T, 0.0, 0.03))  # shade band at the hem
 
 def sleeve_paint(S, T):
     import numpy as np
     base = flat(NAVY, S.shape)
+    base = over(base, rgb(NAVY_LIGHT), np.clip((T - 0.55) / 0.35, 0.0, 1.0) * 0.6)  # upper sleeve lit to mid
     cuff_rib = band(np.mod(S * 12.0, 1.0), 0.0, 0.15)
     base = over(base, rgb(NAVY_DARK), band(S, 0.49, 0.51) * 0.7)  # sleeve seam line
     base = over(base, rgb(NAVY_DARK), band(T, 0.44, 0.47) * 0.25)  # low-contrast elbow fold
@@ -952,8 +953,8 @@ def face_paint(S, T):
     x, z = FACE_X0 + FACE_W * S, FACE_Z0 + FACE_H * T
     base = flat(SKIN, S.shape)
     for side in (-1.0, 1.0):
-        blush = np.exp(-(((x - side * 0.060) / 0.017) ** 2 + ((z - 1.470) / 0.010) ** 2))
-        base = over(base, rgb("#D7AAA2"), blush * 0.5)  # cheek tint
+        blush = np.exp(-(((x - side * 0.060) / 0.024) ** 2 + ((z - 1.470) / 0.016) ** 2))
+        base = over(base, rgb("#EBC3B6"), blush * 0.6)  # warm cheek gradient, feathered
     nose = band(np.abs(x), 0.0, 0.0018) * band(z, 1.470, 1.490)  # 2-texel nose shade
     base = over(base, rgb("#E2B39E"), nose * 0.6)
     base = over(base, rgb("#B0604E"), band(z - (1.455 + 6.0 * x * x), -0.0012, 0.0012) * (np.abs(x) < 0.013))
@@ -965,14 +966,20 @@ def face_paint(S, T):
         dx = x - side * EYE_X
         arc = EYE_Z - 0.010 * (1.0 - np.clip(dx / EYE_HALF_W, -1, 1) ** 2)
         base = over(base, rgb("#3B2A20"), band(z - arc, -0.0016, 0.0016) * (np.abs(dx) < EYE_HALF_W))  # closed-eye arc
-    smile = band(z - (1.428 + 2.0 * x * x), -0.0012, 0.0012) * band(np.abs(x), 0.0, 0.010)  # 2 cm smile line
+    smile = band(z - (1.426 + 2.5 * x * x), -0.0012, 0.0012) * band(np.abs(x), 0.0, 0.008)  # one 16 mm mouth
     base = over(base, rgb("#8E4A40"), smile * 1.0)  # visible, gentle closed smile
     return base
 
 
-def eye_paint(S, T):
+def eye_painter(side):
+    """The far-side (wearer's left, -X) eye artwork sits 8 % of its width toward the face centre."""
+    shift = 0.16 if side < 0 else 0.0
+    return lambda S, T: eye_paint(S, T, shift)
+
+
+def eye_paint(S, T, shift=0.0):
     import numpy as np
-    dx, dz = (S - 0.5) * 2, (T - 0.5) * 2
+    dx, dz = (S - 0.5) * 2 - shift, (T - 0.5) * 2
     base = flat(SKIN, S.shape)
     shape = (dx ** 2 + (dz / 0.92) ** 2) < 1.0
     iris = ((dx / 0.66) ** 2 + (dz / 0.70) ** 2) < 1.0
@@ -1001,7 +1008,7 @@ def head_atlas():
     canvas = np.zeros((HEAD_ATLAS, HEAD_ATLAS, 3), dtype=np.float32)
     paint(canvas, FACE_RECT, face_paint)
     for side, rect in EYE_RECTS.items():
-        paint(canvas, rect, eye_paint)
+        paint(canvas, rect, eye_painter(side))
     for rect in HAIR_CELLS:
         paint(canvas, rect, hair_paint)
     return canvas
