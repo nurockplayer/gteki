@@ -1268,7 +1268,7 @@ if (usedApprox.size !== s03ApproxById.size) throw new Error(`S03 positions: ${s0
 // LUMINE 2, LUMINE EST, NEWoMan and the three 新宿マルイ buildings. It cites the LUMINE floor-guide sources the
 // batch files already registered, so it declares only its own Marui source; the check below catches a typo.
 type MerchantFile = { sources: Source[]; pois: Poi[] };
-const MERCHANT_POI_FILES = ["shinjuku-merchants-batch1.json", "shinjuku-merchants-batch2.json", "shinjuku-odakyu-dept.json", "shinjuku-dept-stores.json"];
+const MERCHANT_POI_FILES = ["shinjuku-merchants-batch1.json", "shinjuku-merchants-batch2.json", "shinjuku-odakyu-dept.json", "shinjuku-dept-stores.json", "shinjuku-recovery-batch1.json"];
 // A file may cite sources another file registered only when the pair is listed here, so a POI cannot
 // borrow an unrelated merchant source and pass the check below. The store POIs reuse the LUMINE /
 // NEWoMan floor-guide sources that batch2 already declares.

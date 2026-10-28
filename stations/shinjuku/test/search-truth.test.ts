@@ -7,6 +7,7 @@ import type { Poi } from "@gteki/schema";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
 import approxPositions from "../sources/s03-approx-positions.json" with { type: "json" };
+import recoveryBatch from "../../../docs/research/merchants/shinjuku-recovery-batch1.json" with { type: "json" };
 
 /**
  * Search truth for the Shinjuku (E27) POIs (issue #106): names are distinct, nothing in a name or
@@ -283,9 +284,11 @@ describe("POI aliases", () => {
         return p.category === "exit" && t.includes(" ") ? `${lang}:${tokens(t)}` : k;
       };
       const allowedNorm = new Map([...allowed].map(([k, v]) => [norm(k), v]));
-      // #214: a shop's only aliases are kana readings its directory prints (checked in the shop block below).
+      // Recovery aliases are the shop-page names in the research hand-off; directory aliases are kana readings.
       for (const a of p.aliases) {
-        if (isShop(p)) expect(a.lang, `${p.id} alias ${a.text}`).toBe("ja-Hrkt");
+        if (p.id.startsWith("shop-sjk-rec-")) {
+          expect(recoveryBatch.pois.find((shop) => shop.id === p.id)?.aliases).toContainEqual(a);
+        } else if (isShop(p)) expect(a.lang, `${p.id} alias ${a.text}`).toBe("ja-Hrkt");
         else if (isSeparate(p)) {
           expect(["ja"], `${p.id} alias ${a.lang}`).toContain(a.lang);
         } else if (isWp4(p)) {
@@ -412,7 +415,7 @@ describe("facility POIs trace to the GSI facility points", () => {
     // #214: 6 Toei/Tokyo Metro + 576 LUMINE/NEWoMan listings + the Odakyu department store, plus the 12 store
     // POIs for the printed buildings (LUMINE 1/2, LUMINE EST, NEWoMan, 新宿マルイ 本館/アネックス/メン,
     // 伊勢丹新宿店 本館/メンズ館, 京王百貨店, 高島屋タイムズスクエア, サブナード).
-    const SHOP_COUNT = 595;
+    const SHOP_COUNT = 595 + 15; // plus the recovery batch's shop-page POIs
     // #501: 9 Toei station exits + 28 Metro M08 exits + 4 lifts + 2 escalators (see the WP4 block); the 2 M08 gates are held.
     const WP4_COUNT = 43;
     expect(pois.length).toBe(OLD_COUNT + ADDED.length + S03_COUNT + SHOP_COUNT + WP4_COUNT + 3);
@@ -745,8 +748,8 @@ describe("merchant shops (#214)", () => {
   const shops = pois.filter(isShop);
   const index = createSearchIndex(bundle);
 
-  it("imports the 583 directory listings and the 12 store POIs as search-only shops", () => {
-    expect(shops.length).toBe(595);
+  it("imports directory listings, store POIs and recovery shops as search-only shops", () => {
+    expect(shops.length).toBe(610);
     for (const p of shops) {
       expect(p.evidence.sourceIds.length, p.id).toBe(1);
       expect(bundle.sources.some((s) => s.id === p.evidence.sourceIds[0]), p.id).toBe(true);
