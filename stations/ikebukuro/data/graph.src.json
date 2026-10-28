@@ -1361,6 +1361,42 @@
    "retrievedAt": "2026-10-27T11:42:00Z",
    "datasetDate": null,
    "notes": "Brand names, printed floor labels and categories only; no descriptive text, hours, logos, images or maps reproduced. Class (OD-35, docs/research/use-tiers.md): the そごう・西武 site terms §2(8) ban business or profit use only, and S is non-commercial, so facts-only applies; recheck-at-C. Lifts the Sogo-Seibu tenant limit of OD-34 round 3 for S."
+  },
+  {
+   "id": "tobu-ikebukuro-insidemap-2026-10",
+   "title": "池袋駅 構内マップ",
+   "publisher": "東武鉄道",
+   "url": "https://www.tobu.co.jp/railway/guide/station/insidemap/7105/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/564",
+    "date": "2026-10-27"
+   },
+   "attribution": "東武鉄道「池袋駅 構内マップ」(facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-27T08:17:00+09:00",
+   "datasetDate": null,
+   "notes": "Gate names only (南改札口, JR線のりかえ改札口). Tobu Railway terms §8 bans business use only: facts only for the non-commercial S tier (use-tiers OD-35), recheck-at-C. No image, layout or position is reproduced or derived."
+  },
+  {
+   "id": "tobudept-ikebukuro-access-2026-10",
+   "title": "東武百貨店 池袋店 アクセス",
+   "publisher": "株式会社東武百貨店",
+   "url": "https://www.tobu-dept.jp/ikebukuro/access/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/564",
+    "date": "2026-10-27"
+   },
+   "attribution": "東武百貨店 池袋店 アクセス (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-27T08:17:00+09:00",
+   "datasetDate": null,
+   "notes": "Gate names in its directly-connected gate list only (JR メトロポリタン改札, 東上線南口改札); facts only as for tobu-dept-ikebukuro-2026-10 (#377). No text or map reproduced."
   }
  ],
  "floors": [
@@ -24912,6 +24948,302 @@
     {
      "lang": "en",
      "text": "Printed as 西武池袋本店, a key tenant of LINKS IKEBUKURO (東京都豊島区南池袋1-28-1; the row prints the complex's opening date, 2026-06-30; note 8), in the Japan Council of Shopping Centers 2026 opening-SC list. That date is the complex's, not the store's own opening date. Floors are not printed in that source. Location and entrance not verified (search only, no route). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "tobu-south-gate",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "東武東上線 南改札口"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Tojo Line South Gate"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "南改札口"
+    },
+    {
+     "lang": "ja",
+     "text": "東上線南口改札"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-ikebukuro-insidemap-2026-10",
+     "tobudept-ikebukuro-access-2026-10"
+    ],
+    "method": "facts-only Tobu station map (OD-35 S tier; Tobu §8 business-use ban only, recheck-at-C), UNVERIFIED, SEARCH_ONLY; the department store page prints 東上線南口改札",
+    "checkedDate": "2026-10-27"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "2026年10月27日に確認した情報です。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "Read 2026-10-27. Location and entrance are unverified (search only, no route); current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "tobu-jr-transfer-gate",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "東武東上線 JR線のりかえ改札口"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Tojo Line JR Transfer Gate"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "JR線のりかえ改札口"
+    },
+    {
+     "lang": "ja",
+     "text": "のりかえ改札口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-ikebukuro-insidemap-2026-10"
+    ],
+    "method": "facts-only Tobu station map (OD-35 S tier; Tobu §8 business-use ban only, recheck-at-C), UNVERIFIED, SEARCH_ONLY; transfer gate between the Tobu and JR paid areas, not an exit to the public concourse",
+    "checkedDate": "2026-10-27"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東武線とJR線の乗り換え専用の改札です。2026年10月27日に確認した情報です。位置は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "Transfer gate between the Tobu and JR lines only. Read 2026-10-27. Location unverified (search only, no route); current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "jr-metropolitan-gate",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "JR メトロポリタン改札"
+    },
+    {
+     "lang": "en",
+     "text": "JR Metropolitan Gate"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "メトロポリタン改札"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobudept-ikebukuro-access-2026-10"
+    ],
+    "method": "facts-only Tobu department store access page (JR name as printed there, #377 / OD-35), UNVERIFIED, SEARCH_ONLY",
+    "checkedDate": "2026-10-27"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "2026年10月27日に確認した情報です。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "Read 2026-10-27. Location and entrance are unverified (search only, no route); current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "exit-20a",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "20a番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 20a"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "20a"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "facts-only ward guide (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), number as printed in the alias",
+    "checkedDate": "2026-10-27"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "2022年1月の案内図に基づく情報で、変更されている可能性があります。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "The guide is dated 2022-01 and may have changed. Location and entrance are unverified (search only, no route); current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "exit-20b",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "20b番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 20b"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "20b"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "facts-only ward guide (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), number as printed in the alias",
+    "checkedDate": "2026-10-27"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "2022年1月の案内図に基づく情報で、変更されている可能性があります。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "The guide is dated 2022-01 and may have changed. Location and entrance are unverified (search only, no route); current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "exit-20c",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "20c番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 20c"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "20c"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "facts-only ward guide (#26), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern (番出口 / Exit), number as printed in the alias",
+    "checkedDate": "2026-10-27"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "2022年1月の案内図に基づく情報で、変更されている可能性があります。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "The guide is dated 2022-01 and may have changed. Location and entrance are unverified (search only, no route); current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "exit-c1a",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "C1a番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit C1a"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "C1a"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "facts-only 構内図 (#26; printed separately in the Echika-side diagram), UNVERIFIED, SEARCH_ONLY; name follows the existing exit-POI pattern",
+    "checkedDate": "2026-10-27"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "2026年10月27日に確認した情報です。位置・入口は未確認（検索のみ、経路なし）。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "Read 2026-10-27. Location and entrance are unverified (search only, no route); current status unknown."
     }
    ]
   }
