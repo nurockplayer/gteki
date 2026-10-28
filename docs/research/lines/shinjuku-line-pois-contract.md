@@ -26,7 +26,7 @@ Every name is copied exactly as `com-entity.geojson` prints it, including full-w
 | --- | --- |
 | `id` | `poi:<operator>-<kind>:<n>` as in the file. Platforms use the platform number as printed. Never renumber. |
 | `category` | `ticket_gate`, `transfer` or `platform`. |
-| `names` | One `ja` entry, exactly as printed. No translation, no invented English. |
+| `names` | `ja` required; `en` optional only when verbatim official text has a cited source. The S03 entries remain ja-only. |
 | `aliases` | Empty. No invented readings or romaji. |
 | `floorId` | `null`. S03 level labels are S03's own; they are not E27 floors and not elevations. |
 | `displayPosition` | `null`. S03's CRS is UNKNOWN in the GIS record, so nothing is placed. |

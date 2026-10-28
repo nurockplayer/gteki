@@ -1,0 +1,2940 @@
+{
+  "schema": "gteki.research.tenants/0.1",
+  "note": "Facts-only brand list of 新宿高島屋 本館 and the タカシマヤ タイムズスクエア specialty shops (366 rows), as the official floor guide prints it: 本館 brands from the per-floor detail pages' 「お取り扱いブランド」 text lists (B1F, 2F, 4F, 5F, 7F, 9F, 10F, 11F), specialty shops from /shinjuku/timessquare/. GAP: 本館 1F, 3F, 6F, 8F print no text brand list (map image only). Category is the printed 売場/corner name, else null. Supply notes in brackets (冬季のみ etc.) and trailing ほか/他 are dropped. Not POIs. UNVERIFIED.",
+  "sourceId": "takashimaya-shinjuku-floorguide-2026-10",
+  "storePoiIds": [
+    "shop-sjk-takashimaya"
+  ],
+  "retrievedAt": "2026-10-28T03:31:22Z",
+  "removed": [],
+  "tenants": [
+    {
+      "id": "tenant-sjk-takashimaya-2f-001",
+      "name": "アヴェダ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-002",
+      "name": "あおつぶ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-003",
+      "name": "アスレティア",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-004",
+      "name": "アムリターラ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-005",
+      "name": "アロマセラピーアソシエイツ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-006",
+      "name": "イイスタンダード",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-007",
+      "name": "ヴェレダ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-008",
+      "name": "オブ・コスメティックス",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-009",
+      "name": "キュアバザー",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-010",
+      "name": "シゲタ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-011",
+      "name": "ジュリーク",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-012",
+      "name": "ジョジアンヌロール",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-013",
+      "name": "ジョンマスターオーガニック",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-014",
+      "name": "ソネット",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-015",
+      "name": "ゾネントア",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-016",
+      "name": "ダヴィネス",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-017",
+      "name": "デイヴィッズ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-018",
+      "name": "ドクターハウシュカ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-019",
+      "name": "ニールズヤード レメディーズ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-020",
+      "name": "バウム",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-021",
+      "name": "スリー",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-022",
+      "name": "モルトンブラウン",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-023",
+      "name": "ユメドリーミン",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-024",
+      "name": "ルネ フルトレール",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "ベルナチュレール",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-025",
+      "name": "アシックスウォーキング",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-026",
+      "name": "アンテプリマ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-027",
+      "name": "アンリーフ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-028",
+      "name": "エイゾー",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-029",
+      "name": "オゥ バニスター",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-030",
+      "name": "銀座かねまつ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-031",
+      "name": "サヴァサヴァ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-032",
+      "name": "スタッカート",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-033",
+      "name": "バークレー",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-034",
+      "name": "ビューフォート",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-035",
+      "name": "マーガレットハウエル アイデア",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-036",
+      "name": "マッキントッシュ フィロソフィー",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-037",
+      "name": "マッキントッシュ ロンドン",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-038",
+      "name": "ミハマ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-039",
+      "name": "ランバンオンブルー",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-040",
+      "name": "ランバンコレクション",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-041",
+      "name": "リズ ラフィーネ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-042",
+      "name": "エムエムシックス",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "シューメゾン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-043",
+      "name": "グラウンズ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "シューメゾン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-044",
+      "name": "ツルバイマリコオイカワ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "シューメゾン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-045",
+      "name": "ピッピシック",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "シューメゾン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-046",
+      "name": "ファビオ ルスコーニ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "シューメゾン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-047",
+      "name": "フォーシーズ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "シューメゾン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-048",
+      "name": "ペリーコ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "シューメゾン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-049",
+      "name": "ミハラヤスヒロ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "シューメゾン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-2f-050",
+      "name": "ルカ グロッシ",
+      "aliases": [],
+      "floorLabel": "2F",
+      "category": "シューメゾン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-001",
+      "name": "アキラナカ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-002",
+      "name": "アンティパスト",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-003",
+      "name": "ア ヴァケーション",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-004",
+      "name": "アンフォーチュネイト ポートレート",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-005",
+      "name": "イネス ブレッサンド",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-006",
+      "name": "ウェイスト ヤーン プロジェクト",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-007",
+      "name": "ウジョー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-008",
+      "name": "ヴァシュモン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-009",
+      "name": "ヴァジック",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-010",
+      "name": "ヴィスク",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-011",
+      "name": "ヴィンス",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-012",
+      "name": "エムエムシックス メゾン マルジェラ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-013",
+      "name": "エムフィル",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-014",
+      "name": "エンシャラ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-015",
+      "name": "オダカ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-016",
+      "name": "オフリス",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-017",
+      "name": "カオン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-018",
+      "name": "カレンテージ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-019",
+      "name": "キムヘキム",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-020",
+      "name": "コーヘン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-021",
+      "name": "サスキア ディツ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-022",
+      "name": "サヤカ デイヴィス",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-023",
+      "name": "ザ ガーメント",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-024",
+      "name": "ザ リラクス",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-025",
+      "name": "サンアルシデ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-026",
+      "name": "シシ ジョイア",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-027",
+      "name": "シーエフシーエル",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-028",
+      "name": "シーオール",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-029",
+      "name": "シー ニューヨーク",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-030",
+      "name": "シモーネ ワイルド",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-031",
+      "name": "ジェケロ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-032",
+      "name": "スーベニアスタンド",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-033",
+      "name": "3.1 フィリップ リム",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-034",
+      "name": "08サーカス",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-035",
+      "name": "ソワリー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-036",
+      "name": "ソン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-037",
+      "name": "タトラス",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-038",
+      "name": "タージュ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-039",
+      "name": "ダンスト",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-040",
+      "name": "チカ キサダ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-041",
+      "name": "チノ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-042",
+      "name": "ティー コート",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-043",
+      "name": "テラ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-044",
+      "name": "ディニテコリエ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-045",
+      "name": "デヴォーション ツインズ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-046",
+      "name": "デミリー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-047",
+      "name": "トラッツォドンナ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-048",
+      "name": "ネイビー・ウォ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-049",
+      "name": "ネプラ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-050",
+      "name": "ハクジ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-051",
+      "name": "バウム・ウンド・ヘルガーテン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-052",
+      "name": "バラカ バラッカ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-053",
+      "name": "ババコ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-054",
+      "name": "ピッピシック",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-055",
+      "name": "ピージー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-056",
+      "name": "フォルテ フォルテ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-057",
+      "name": "フミカ ウチダ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-058",
+      "name": "フランクアンドアイリーン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-059",
+      "name": "ブラン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-060",
+      "name": "プブメス",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-061",
+      "name": "ヘンリ エン ヴァーゴ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-062",
+      "name": "ペレック",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-063",
+      "name": "ホルツウェイラー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-064",
+      "name": "ボーダーズ アット バルコニー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-065",
+      "name": "ポンティ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-066",
+      "name": "マリハ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-067",
+      "name": "マリリンムーン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-068",
+      "name": "マージ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-069",
+      "name": "ミオズモーキー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-070",
+      "name": "ミュベール",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-071",
+      "name": "ミュラー オブ ヨシオクボ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-072",
+      "name": "メイドインマダ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-073",
+      "name": "メゾン ド リリス",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-074",
+      "name": "ヤーキ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-075",
+      "name": "ヨーコ チャン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-076",
+      "name": "ラグ アンド ボーン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-077",
+      "name": "リヴィントーン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-078",
+      "name": "リクソ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-079",
+      "name": "ロベルトコリーナ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "スタイル＆エディット",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-080",
+      "name": "アストロン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-081",
+      "name": "アラッサ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-082",
+      "name": "アビエイター",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-083",
+      "name": "エクシード",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-084",
+      "name": "エコ・ドライブワン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-085",
+      "name": "オシアナス",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-086",
+      "name": "オリエントスター",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-087",
+      "name": "カンパノラ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-088",
+      "name": "クレドール",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-089",
+      "name": "クロスシー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-090",
+      "name": "ザ・シチズン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-091",
+      "name": "シュトゥルマンスキー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-092",
+      "name": "Ｇショック",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-093",
+      "name": "ティソ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-094",
+      "name": "ハミルトン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-095",
+      "name": "プレサージュ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-096",
+      "name": "プロスペックス",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-097",
+      "name": "ベビーG",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-098",
+      "name": "ポールスミス",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-099",
+      "name": "ルキア",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-100",
+      "name": "ロンジン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "ウォッチサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-101",
+      "name": "アクネ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-102",
+      "name": "アンリアレイジ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-103",
+      "name": "イレニサ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-104",
+      "name": "エヌティーエヌ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-105",
+      "name": "カナダグース",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-106",
+      "name": "カラー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-107",
+      "name": "ジェイダブルアンダーソン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-108",
+      "name": "ジルサンダープラス",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-109",
+      "name": "ストーンアイランド",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-110",
+      "name": "スポーティ＆リッチ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-111",
+      "name": "ゼロハチサーカス",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-112",
+      "name": "ターク",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-113",
+      "name": "ダブルエイチアール",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-114",
+      "name": "バトナー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-115",
+      "name": "ファセッタズム",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-116",
+      "name": "ボイラールーム",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-117",
+      "name": "ホワイトマウンテニアリング",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-118",
+      "name": "マルニ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-119",
+      "name": "メゾンキツネ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-120",
+      "name": "メゾンマルジェラ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-121",
+      "name": "ヨシオクボ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-122",
+      "name": "ヴェイランス",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-123",
+      "name": "エーエムロンドン",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-124",
+      "name": "エラシオ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-125",
+      "name": "エンメティ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-126",
+      "name": "カルーゾ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-127",
+      "name": "キンロック",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-128",
+      "name": "グランサッソ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-129",
+      "name": "コーネリアンタウラス",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-130",
+      "name": "ジ―ニック",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-131",
+      "name": "ジャブスアルキヴィオ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-132",
+      "name": "ジョンスメドレー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-133",
+      "name": "ジルサンダー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-134",
+      "name": "セッテフィーリカシミア",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-135",
+      "name": "タリアトーレ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-136",
+      "name": "チリエッロ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-137",
+      "name": "ピーティ―トリノ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-138",
+      "name": "ピーティーデニム",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-140",
+      "name": "フミヤヒラノ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-141",
+      "name": "ベルウィッチ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-142",
+      "name": "ヘルノ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-143",
+      "name": "マリアサンタンジェロ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-144",
+      "name": "ムーレー",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-145",
+      "name": "ラルディーニ",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-4f-146",
+      "name": "レンコントラント",
+      "aliases": [],
+      "floorLabel": "4F",
+      "category": "CSケーススタディ / サロンルシックセレクト",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-5f-001",
+      "name": "シーズンスタイルラボ",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "シーズンスタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-5f-002",
+      "name": "リズム",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "シーズンスタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-5f-003",
+      "name": "イプリ",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "シーズンスタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-5f-004",
+      "name": "アシェット",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "シーズンスタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-5f-005",
+      "name": "アッパーハイツ",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "シーズンスタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-5f-006",
+      "name": "シンメ",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "シーズンスタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-5f-007",
+      "name": "スローン",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "シーズンスタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-5f-008",
+      "name": "スタンブリー",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "シーズンスタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-5f-009",
+      "name": "ジョット",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "シーズンスタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-5f-010",
+      "name": "ブックシェルフ／ヴァジック",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "シーズンスタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-5f-011",
+      "name": "ティッカ",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "シーズンスタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-5f-012",
+      "name": "ピレネックス",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "シーズンスタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-5f-013",
+      "name": "マニプリ",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "シーズンスタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-5f-015",
+      "name": "ヌキテパ",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "シーズンスタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-5f-016",
+      "name": "レッドカード",
+      "aliases": [],
+      "floorLabel": "5F",
+      "category": "シーズンスタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-7f-001",
+      "name": "アッパーハイツ",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "デニム・スタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-7f-002",
+      "name": "ウールリッチ",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "デニム・スタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-7f-003",
+      "name": "ウォードブルー",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "デニム・スタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-7f-004",
+      "name": "エーゴールドイー",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "デニム・スタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-7f-005",
+      "name": "エージージーンズ",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "デニム・スタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-7f-006",
+      "name": "エドウィン",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "デニム・スタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-7f-007",
+      "name": "オーセン",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "デニム・スタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-7f-008",
+      "name": "サムシング",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "デニム・スタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-7f-009",
+      "name": "シチズンズオブヒューマニティ",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "デニム・スタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-7f-010",
+      "name": "ジョンブル",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "デニム・スタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-7f-011",
+      "name": "スウィートキャメル",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "デニム・スタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-7f-012",
+      "name": "スリードッツ",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "デニム・スタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-7f-013",
+      "name": "ニードバイヘリテージ",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "デニム・スタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-7f-014",
+      "name": "マザー",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "デニム・スタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-7f-015",
+      "name": "ヤヌーク",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "デニム・スタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-7f-016",
+      "name": "ラグアンドボーン",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "デニム・スタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-7f-017",
+      "name": "レッドカードトーキョー",
+      "aliases": [],
+      "floorLabel": "7F",
+      "category": "デニム・スタイルラボ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-9f-001",
+      "name": "ウルフ＆リタ",
+      "aliases": [],
+      "floorLabel": "9F",
+      "category": "CSケーススタディキッズ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-9f-002",
+      "name": "エムエスジーエム",
+      "aliases": [],
+      "floorLabel": "9F",
+      "category": "CSケーススタディキッズ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-9f-003",
+      "name": "エムエムシックス メゾンマルジェラ",
+      "aliases": [],
+      "floorLabel": "9F",
+      "category": "CSケーススタディキッズ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-9f-004",
+      "name": "オフホワイト",
+      "aliases": [],
+      "floorLabel": "9F",
+      "category": "CSケーススタディキッズ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-9f-005",
+      "name": "ジェラートピケ キッズ＆ベビー",
+      "aliases": [],
+      "floorLabel": "9F",
+      "category": "CSケーススタディキッズ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-9f-006",
+      "name": "シーエフシ－エル",
+      "aliases": [],
+      "floorLabel": "9F",
+      "category": "CSケーススタディキッズ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-9f-007",
+      "name": "ステラマッカートニーキッズ",
+      "aliases": [],
+      "floorLabel": "9F",
+      "category": "CSケーススタディキッズ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-9f-008",
+      "name": "ダントン",
+      "aliases": [],
+      "floorLabel": "9F",
+      "category": "CSケーススタディキッズ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-9f-009",
+      "name": "ヌメロヴェントゥーノ",
+      "aliases": [],
+      "floorLabel": "9F",
+      "category": "CSケーススタディキッズ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-9f-010",
+      "name": "パタゴニア",
+      "aliases": [],
+      "floorLabel": "9F",
+      "category": "CSケーススタディキッズ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-9f-011",
+      "name": "ボボショーズ",
+      "aliases": [],
+      "floorLabel": "9F",
+      "category": "CSケーススタディキッズ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-9f-012",
+      "name": "ヘルノ キッズ",
+      "aliases": [],
+      "floorLabel": "9F",
+      "category": "CSケーススタディキッズ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-9f-013",
+      "name": "マルニ",
+      "aliases": [],
+      "floorLabel": "9F",
+      "category": "CSケーススタディキッズ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-9f-014",
+      "name": "アシックス",
+      "aliases": [],
+      "floorLabel": "9F",
+      "category": "子供靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-9f-015",
+      "name": "ニューバランス",
+      "aliases": [],
+      "floorLabel": "9F",
+      "category": "子供靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-9f-016",
+      "name": "ナイキ",
+      "aliases": [],
+      "floorLabel": "9F",
+      "category": "子供靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-9f-017",
+      "name": "ハルタ",
+      "aliases": [],
+      "floorLabel": "9F",
+      "category": "子供靴",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-001",
+      "name": "ウェッジウッド",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "特選洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-002",
+      "name": "クリストフル",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "特選洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-003",
+      "name": "ジアン",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "特選洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-004",
+      "name": "スワロフスキー",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "特選洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-005",
+      "name": "ナハトマン",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "特選洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-006",
+      "name": "ベルナルド",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "特選洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-007",
+      "name": "ヘレンド",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "特選洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-008",
+      "name": "マイセン",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "特選洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-009",
+      "name": "リーデル",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "特選洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-010",
+      "name": "リヤドロ",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "特選洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-011",
+      "name": "ロイヤルコペンハーゲン",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "特選洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-012",
+      "name": "ローゼンタール",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "特選洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-013",
+      "name": "ロブマイヤー",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "特選洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-014",
+      "name": "アクセルジャパン",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-015",
+      "name": "アラビア",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-016",
+      "name": "イッタラ",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-017",
+      "name": "カリタ",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-018",
+      "name": "クチポール",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-019",
+      "name": "サスギャラリー（SUS Gallary）",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-020",
+      "name": "新光堂",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-021",
+      "name": "チルウィッチ",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-022",
+      "name": "ツヴィーゼル",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-023",
+      "name": "ツェラミカ",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-024",
+      "name": "ナルミ",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-025",
+      "name": "ニッコー",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-026",
+      "name": "ノリタケ",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-027",
+      "name": "ハリオ",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-028",
+      "name": "磨き屋シンジケート",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-029",
+      "name": "ラッキーウッド",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-030",
+      "name": "リヴェレット",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "洋食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-031",
+      "name": "有田焼",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-032",
+      "name": "秋田曲げわっぱ",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-033",
+      "name": "岩鋳（鉄瓶）",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-034",
+      "name": "江戸切子",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-035",
+      "name": "越前塗",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-036",
+      "name": "大阪錫器",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-037",
+      "name": "京焼",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-038",
+      "name": "九谷焼",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-039",
+      "name": "渓山窯",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-040",
+      "name": "源右衛門窯",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-041",
+      "name": "薩摩切子",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-042",
+      "name": "菅原工芸硝子（Sghr）",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-043",
+      "name": "能作",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-044",
+      "name": "波佐見焼",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-045",
+      "name": "備前焼",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-046",
+      "name": "深川製磁",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-047",
+      "name": "ホリエ",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-048",
+      "name": "マルナオ",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-049",
+      "name": "森銀器",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-050",
+      "name": "山中塗",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-051",
+      "name": "ワゴト（WAGOTO）",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-052",
+      "name": "若狭塗り箸",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-053",
+      "name": "輪島塗",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "和食器",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-054",
+      "name": "ヴェーエムエフ（WMF）",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "キッチン用品",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-055",
+      "name": "オクソー（OXO）",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "キッチン用品",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-056",
+      "name": "クリステル",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "キッチン用品",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-057",
+      "name": "白雪ふきん",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "キッチン用品",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-058",
+      "name": "ソーダストリーム",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "キッチン用品",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-059",
+      "name": "バーミックス",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "キッチン用品",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-060",
+      "name": "ビタクラフト",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "キッチン用品",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-061",
+      "name": "ラッセルホブス",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "キッチン用品",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-062",
+      "name": "ラ・バーゼ",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "キッチン用品",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-063",
+      "name": "ル・クルーゼ",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "キッチン用品",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-10f-064",
+      "name": "レコルト",
+      "aliases": [],
+      "floorLabel": "10F",
+      "category": "キッチン用品",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-11f-001",
+      "name": "オークリー",
+      "aliases": [],
+      "floorLabel": "11F",
+      "category": "メガネサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-11f-002",
+      "name": "カルティエ",
+      "aliases": [],
+      "floorLabel": "11F",
+      "category": "メガネサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-11f-003",
+      "name": "グッチ",
+      "aliases": [],
+      "floorLabel": "11F",
+      "category": "メガネサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-11f-004",
+      "name": "ケン・オクヤマ",
+      "aliases": [],
+      "floorLabel": "11F",
+      "category": "メガネサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-11f-005",
+      "name": "ショパール",
+      "aliases": [],
+      "floorLabel": "11F",
+      "category": "メガネサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-11f-006",
+      "name": "セリーヌ",
+      "aliases": [],
+      "floorLabel": "11F",
+      "category": "メガネサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-11f-007",
+      "name": "ティファニー",
+      "aliases": [],
+      "floorLabel": "11F",
+      "category": "メガネサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-11f-008",
+      "name": "ディオール",
+      "aliases": [],
+      "floorLabel": "11F",
+      "category": "メガネサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-11f-009",
+      "name": "999.9（フォーナインズ）",
+      "aliases": [],
+      "floorLabel": "11F",
+      "category": "メガネサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-11f-010",
+      "name": "マウイジム",
+      "aliases": [],
+      "floorLabel": "11F",
+      "category": "メガネサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-11f-011",
+      "name": "ラインアート",
+      "aliases": [],
+      "floorLabel": "11F",
+      "category": "メガネサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-11f-012",
+      "name": "ローデンストック",
+      "aliases": [],
+      "floorLabel": "11F",
+      "category": "メガネサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-001",
+      "name": "エニスモアガーデン",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-002",
+      "name": "エヌグラム",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-003",
+      "name": "kouji&ko",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-004",
+      "name": "パティスリーヴォワザン",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-005",
+      "name": "パティスリー ハヤトヤマダ",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-006",
+      "name": "パティスリープラネッツ",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-007",
+      "name": "パティスリーミラベル",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-008",
+      "name": "パティスリーラ・ヴィ・ドゥース",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-009",
+      "name": "パティスリーレザネフォール",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-010",
+      "name": "ピュイサンス",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-011",
+      "name": "マ・プリエール",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-012",
+      "name": "ラル奥沢",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-013",
+      "name": "ル パティシエ タカギ",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-014",
+      "name": "アデイクト・オ・シュクル",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-015",
+      "name": "アトリエうかい",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-016",
+      "name": "エレスト",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-017",
+      "name": "カカオティエゴカン",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-018",
+      "name": "ケイタマルヤマ",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-019",
+      "name": "ココシュシュ",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-020",
+      "name": "コフレエコフレトウキョウ",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-021",
+      "name": "シェ・シバタ",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-022",
+      "name": "Teal",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-023",
+      "name": "東京會舘",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-024",
+      "name": "パケモンテ",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-025",
+      "name": "パティスリー1904ディズヌフソンキャトル",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-026",
+      "name": "ホテルニューオータニ",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-027",
+      "name": "マカロンエショコラ",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-028",
+      "name": "洋菓子のプルミエール",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-029",
+      "name": "レ・ザンジュ",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-030",
+      "name": "ミッシェル・ブラン エソンシエル",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-031",
+      "name": "トシ ヨロイヅカ",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-b1f-032",
+      "name": "ショコラトリーキャメル",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "パティシェリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-ts-2f-001",
+      "name": "ハンズ新宿店",
+      "aliases": [],
+      "floorLabel": "2F～7F",
+      "category": "総合雑貨",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-ts-8f-001",
+      "name": "カインズ ハンズ新宿店",
+      "aliases": [],
+      "floorLabel": "8F",
+      "category": "ホームセンター",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-ts-11f-001",
+      "name": "ノジマ 新宿タカシマヤ タイムズスクエア店",
+      "aliases": [],
+      "floorLabel": "11F",
+      "category": "携帯電話・生活家電",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-ts-12f-001",
+      "name": "ユニクロ 新宿高島屋店",
+      "aliases": [],
+      "floorLabel": "12F",
+      "category": "ファミリー・カジュアルウエア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-ts-12f-002",
+      "name": "ABCクッキングスタジオ",
+      "aliases": [],
+      "floorLabel": "12F",
+      "category": "料理教室",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-ts-12f-003",
+      "name": "ボディーズ",
+      "aliases": [],
+      "floorLabel": "12F",
+      "category": "フィットネススタジオ",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-ts-12f-004",
+      "name": "エステティック&スパ ビューティアベニュー ソシエ",
+      "aliases": [],
+      "floorLabel": "12F",
+      "category": "ビューティーサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-ts-12f-005",
+      "name": "ヘアーカッティングガーデン ジャック･モアザン",
+      "aliases": [],
+      "floorLabel": "12F",
+      "category": "ヘアーサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-ts-12f-006",
+      "name": "ホワイトエッセンス",
+      "aliases": [],
+      "floorLabel": "12F",
+      "category": "デンタルサロン",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-ts-12f-007",
+      "name": "スーモカウンター",
+      "aliases": [],
+      "floorLabel": "12F",
+      "category": "住まい関連サービス",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-ts-12f-008",
+      "name": "ほけん百花",
+      "aliases": [],
+      "floorLabel": "12F",
+      "category": "保険代理店",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-ts-s1f-001",
+      "name": "ニトリ",
+      "aliases": [],
+      "floorLabel": "南館 1F～5F",
+      "category": "家具・インテリア",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-ts-s6f-001",
+      "name": "Books Kinokuniya Tokyo",
+      "aliases": [],
+      "floorLabel": "南館 6F",
+      "category": "洋書専門店",
+      "storePoiId": "shop-sjk-takashimaya"
+    },
+    {
+      "id": "tenant-sjk-takashimaya-ts-s7f-001",
+      "name": "紀伊國屋サザンシアターTAKASHIMAYA",
+      "aliases": [],
+      "floorLabel": "南館 7F",
+      "category": null,
+      "storePoiId": "shop-sjk-takashimaya"
+    }
+  ]
+}
