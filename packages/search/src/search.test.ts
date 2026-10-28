@@ -61,6 +61,17 @@ describe("station POI search", () => {
     expect(index.search("ekishoten")).toEqual([]);
   });
 
+  it("indexes descriptions with alias scoring while retaining the POI name", () => {
+    const description = { lang: "en", text: "Toilet (men)" };
+    const described = poi("d", "トイレ", { descriptions: [description] });
+    const aliased = poi("a", "トイレ", { aliases: [description] });
+    const descriptionHit = indexFor(bundleWith([described])).search("toilet")[0]!;
+    const aliasHit = indexFor(bundleWith([aliased])).search("toilet")[0]!;
+    expect(descriptionHit.score).toBe(aliasHit.score);
+    expect(descriptionHit.matched).toBe(description.text);
+    expect(descriptionHit.poi.names).toEqual([{ lang: "en", text: "トイレ" }]);
+  });
+
   it("ranks exact, prefix, substring, then fuzzy matches", () => {
     const index = indexFor(bundleWith([
       poi("substring", "North West Gate"), poi("fuzzy", "Wonderful Entrance Sign Terminal"),

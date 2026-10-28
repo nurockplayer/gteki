@@ -222,7 +222,7 @@ export function createSearchIndex(bundle: StationBundle): SearchIndex {
     else tenantsByPoi.set(tenant.poiId, [tenant]);
   }
   const entries: IndexedPoi[] = bundle.pois.map((poi) => {
-    const texts: IndexedText[] = [...poi.names, ...poi.aliases].map(({ text }) => ({ original: text, normalized: searchKey(text) }));
+    const texts: IndexedText[] = [...poi.names, ...poi.aliases, ...(poi.descriptions ?? [])].map(({ text }) => ({ original: text, normalized: searchKey(text) }));
     // A store's directory only adds texts to the store itself: one card per store, never one per brand.
     for (const tenant of tenantsByPoi.get(poi.id) ?? [])
       for (const { text } of [...tenant.names, ...tenant.aliases])

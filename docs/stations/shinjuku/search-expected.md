@@ -43,7 +43,7 @@ Only `poi:exit:1` states a roof (all nearby links are roof = 2). `poi:exit:2`, `
 | でぐち / deguchi / exit | generic | all six exits (score 105 each) | generic aliases on every exit; the list is not ranked by distance |
 | 出口 | ja generic | the six exits (score 105 each), plus the S03 and WP4 search-only POIs whose names contain 出口 | the S03 and WP4 names also contain 出口; those hits have no route (see the last two sections) |
 | 出口 地上 | ja | exits 1–4 | prefix of the ja name, 85 |
-| street level | en | exits 1–4 | substring of the en alias; B1 exits do not say street level |
+| street level | en | exits 1–4 | substring of the en description; B1 exits do not say street level |
 | 出口 地下1階 | ja | exits 5, 6 | prefix of the ja name. The reverse word order 地下1階 出口 returns nothing (the ranker needs the name's order) |
 | exit B1 | en | exits 5, 6 | tokens exit + b1; only the B1 exits carry B1 |
 | 屋根あり / roofed | ja / en | `poi:exit:1` | E27 roof = 2 on every nearby link |
@@ -55,16 +55,14 @@ Only `poi:exit:1` states a roof (all nearby links are roof = 2). `poi:exit:2`, `
 | 出口 地面 西北側 | zh-Hant | `poi:exit:2` | zh-Hant alias for the northwest exit |
 | でぐち ちじょう きたがわ | kana | `poi:exit:1` | ja-Hrkt alias でぐち ちじょう きたがわ かいだん やねあり |
 | deguchi kita-gawa | romaji | `poi:exit:1` among the hits (exit 5 also matches: it is also on the north side) | ja-Latn alias |
-| northwest | en | `poi:exit:2` | the exit alias contains northwest |
+| northwest | en | `poi:exit:2` and `poi:gate:1` (65 each) | both are on the north-west side |
 
 ## Facilities (from the GSI facility points; no shop, kiosk, bench or vending geometry)
 
 | Query | Expected top POI(s) | Why |
 | --- | --- | --- |
-| トイレ / 廁所 | `poi:toilet:1` women, `poi:toilet:2` unisex, `poi:toilet:3` men (all B3) | The notes are traveller text describing each toilet-space representative point; facility codes and the source cross-check live in `evidence.method` |
-| 電梯 / エレベーター | `poi:elevator:1`, `:2`, `:3` (and `poi:exit:3` below them: its name says elevator) | The notes describe stops and any station-map confirmation gap for travellers; F012 levels and cross-check results live in `evidence.method`. No shop name contains these words. エレベーター also matches the four WP4 Metro lift names below (`poi:tokyometro-lift:*`, search only) |
-| toilet | no strong hits | The composed English description is not indexed. |
-| elevator | `poi:exit:3` | The exit alias mentions an elevator; descriptions are not indexed. |
+| トイレ / 廁所 / toilet | `poi:toilet:1` women, `poi:toilet:2` unisex, `poi:toilet:3` men (all B3) | The notes are traveller text describing each toilet-space representative point; facility codes and the source cross-check live in `evidence.method` |
+| 電梯 / elevator / エレベーター | `poi:elevator:1`, `:2`, `:3` (and `poi:exit:3` below them: its name says elevator) | The notes describe stops and any station-map confirmation gap for travellers; F012 levels and cross-check results live in `evidence.method`. No shop name contains these words. エレベーター also matches the four WP4 Metro lift names below (`poi:tokyometro-lift:*`, search only) |
 | 改札 / 剪票口 / gate | `poi:gate:1`, `:2`, `:3` (for 改札 the S03 gate names that contain 改札 and, since #501, the WP4 lift/escalator names ending in 東改札/西改札 also match, search only) | The notes give travellers an approximate position; gate-link counts and F106 cluster counts live in `evidence.method` (1, 4 and 1; all 6 points are counted once) |
 
 ## Negative cases (must return no E27 claim)

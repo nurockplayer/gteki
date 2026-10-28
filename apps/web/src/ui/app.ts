@@ -662,15 +662,15 @@ export class App {
       const floor = this.floorLabel(h.poi);
       const searchOnly = isUnlocatedShop(h.poi) ? this.t.shopSearchOnly : this.t.searchOnly;
       // A brand from the store's own directory (#419) replaces the store floor: the printed floor is the useful one.
+      const description = h.poi.descriptions?.find((d) => d.lang === this.s.lang)?.text;
       const tags = h.tenant
         ? tenantResultTags(h, this.s.lang, this.t)
-        : [floor, h.matched && h.matched !== this.poiName(h.poi) ? `“${h.matched}”` : null].filter(Boolean) as string[];
+        : [floor, h.matched && h.matched !== this.poiName(h.poi) && h.matched !== description ? `“${h.matched}”` : null].filter(Boolean) as string[];
       if (!h.routable) tags.push(searchOnly);
       meta.textContent = tags.join(" · ");
       // The directory is unverified: say since when it was checked, as a second line.
       const checkedDate = h.tenant ? tenantCheckedDate(this.s.loaded?.bundle.tenants, h.tenant.id) : null;
       const asOf = h.tenant && checkedDate ? this.t.tenantAsOf(checkedDate) : null;
-      const description = h.poi.descriptions?.find((d) => d.lang === this.s.lang)?.text;
       b.append(dot, name, meta);
       if (description) b.append(el("span", "result-note", description));
       if (asOf) b.append(el("span", "result-asof", asOf));

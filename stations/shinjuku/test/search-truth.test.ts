@@ -446,7 +446,7 @@ describe("expected search results (docs/stations/shinjuku/search-expected.md)", 
     ["出口 地上", ["poi:exit:1", "poi:exit:2", "poi:exit:3", "poi:exit:4"]],
     ["出口 地下1階", ["poi:exit:5", "poi:exit:6"]],
     ["exit B1", ["poi:exit:5", "poi:exit:6"]],
-    ["northwest", ["poi:exit:2"]],
+    ["northwest", ["poi:exit:2", "poi:gate:1"]],
     ["出口 地面 北側", ["poi:exit:1"]],
     ["exit street level south elevator", ["poi:exit:3"]],
     // generic words still list the whole category

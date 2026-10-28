@@ -40,7 +40,7 @@ function displayNames(poi: Poi): Names {
 function keys(poi: Poi): { lang: string; text: string; norm: string }[] {
   const seen = new Set<string>();
   const out: { lang: string; text: string; norm: string }[] = [];
-  for (const { lang, text } of [...poi.names, ...poi.aliases] as LocalizedText[]) {
+  for (const { lang, text } of [...poi.names, ...poi.aliases, ...(poi.descriptions ?? [])] as LocalizedText[]) {
     const norm = normalizeJa(text);
     if (!norm || seen.has(norm)) continue;
     seen.add(norm);
