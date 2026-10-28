@@ -37,10 +37,11 @@ const GOLDEN: Record<string, Row[]> = {
     { q: "35番", top1: "exit-35" },
     { q: "35番出口", top1: "exit-35" },
     { q: "出口35", top1: "exit-35" },
-    { q: "Exit 35", top1: "exit-35" },
+    // #595 B: these POIs are ja-only in public (no official English source); English names live in the private overlay.
+    { q: "35番出口", top1: "exit-35" },
     { q: "３５", top1: "exit-35" },
     { q: "5", top1: "exit-5" },
-    { q: "Exit 6a", top1: "exit-6a" },
+    { q: "6a番出口", top1: "exit-6a" },
   ],
   "numbered exits (romaji / zh-Hant)": [
     { q: "35 ban deguchi", top1: "exit-35" },
@@ -50,8 +51,8 @@ const GOLDEN: Record<string, Row[]> = {
     { q: "東口", top: EAST },
     { q: "西口", top: WEST },
     { q: "西口（南）", top1: "exit-4" },
-    { q: "East Exit (South)", top1: "exit-38" },
-    { q: "east exit south", top1: "exit-38" },
+    { q: "38番出口", top1: "exit-38" },
+    { q: "38番出口", top1: "exit-38" },
     { q: "東口 地下", top1: "east-exit-b1" },
   ],
   "east and west exit names (romaji / kana)": [
@@ -64,7 +65,7 @@ const GOLDEN: Record<string, Row[]> = {
   "JR gates": [
     { q: "JR", top: JR },
     { q: "中央2", top1: "jr-central-gate-2" },
-    { q: "JR Central Gate 2", top1: "jr-central-gate-2" },
+    { q: "JR 中央2改札", top1: "jr-central-gate-2" },
     { q: "chuo 2 kaisatsu", top1: "jr-central-gate-2" },
     { q: "chuo ni kaisatsu", top1: "jr-central-gate-2" },
     { q: "ちゅうおうにかいさつ", top1: "jr-central-gate-2" },
@@ -142,7 +143,7 @@ const GOLDEN: Record<string, Row[]> = {
   ],
   "line and store POIs (#501)": [
     { q: "西武池袋線 3番ホーム", top1: "seibu-platform-3" },
-    { q: "Seibu Ikebukuro Line Platform 7", top1: "seibu-platform-7" },
+    { q: "西武池袋線 7番ホーム", top1: "seibu-platform-7" },
     { q: "ルミネ池袋", top1: "shop-ikb-lumine" },
     { q: "エソラ池袋", top1: "shop-ikb-esola" },
   ],

@@ -44,7 +44,7 @@ const AHEAD_M = 25;
 
 const walks = [
   { from: ["中央2", /JR 中央2改札/] as [string, RegExp], to: ["35", /^35番出口$/] as [string, RegExp], label: "jrc2-exit35" },
-  { from: ["West Exit", /^西口（地下）$/] as [string, RegExp], to: ["West Exit (South)", /^4番出口$/] as [string, RegExp], label: "westb1-exit4" },
+  { from: ["西口（地下）", /^西口（地下）$/] as [string, RegExp], to: ["4番出口", /^4番出口$/] as [string, RegExp], label: "westb1-exit4" },
 ];
 
 for (const w of walks) {

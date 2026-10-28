@@ -173,12 +173,7 @@
       {
         "query": "exit 35",
         "normalized": "exit35",
-        "top": [
-          {
-            "poiId": "exit-35",
-            "score": 105
-          }
-        ]
+        "top": []
       },
       {
         "query": "35番出口",
@@ -203,12 +198,7 @@
       {
         "query": "JR Central Gate 2",
         "normalized": "jrcentralgate2",
-        "top": [
-          {
-            "poiId": "jr-central-gate-2",
-            "score": 105
-          }
-        ]
+        "top": []
       },
       {
         "query": "中央通路",
@@ -251,15 +241,15 @@
         "normalized": "centralpassage",
         "top": [
           {
-            "poiId": "central-passage",
-            "score": 105
-          },
-          {
             "poiId": "metro-m-central-east-gate",
             "score": 60
           },
           {
             "poiId": "metro-m-central-west-gate",
+            "score": 60
+          },
+          {
+            "poiId": "metro-m-central-gate",
             "score": 60
           }
         ]
@@ -285,20 +275,7 @@
       {
         "query": "East Exit",
         "normalized": "eastexit",
-        "top": [
-          {
-            "poiId": "east-exit-b1",
-            "score": 85
-          },
-          {
-            "poiId": "exit-22",
-            "score": 85
-          },
-          {
-            "poiId": "exit-38",
-            "score": 85
-          }
-        ]
+        "top": []
       },
       {
         "query": "6a",
@@ -331,8 +308,8 @@
             "score": 100
           },
           {
-            "poiId": "tobu-north-gate",
-            "score": 80
+            "poiId": "shop-ikb-esola-1047",
+            "score": 6.666666666666667
           }
         ]
       },

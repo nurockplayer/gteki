@@ -20,7 +20,7 @@ const FLOW_ONLY = !!process.env.GTEKI_GUIDE_FLOW_ONLY;
 const walks: Record<StationKey, { from: [string, RegExp]; to: [string, RegExp]; label: string; gpuOnly?: string }[]> = {
   ikebukuro: [
     { from: ["中央2", /JR 中央2改札/], to: ["35", /^35番出口$/], label: "jrc2-exit35" },
-    { from: ["West Exit", /^西口（地下）$/], to: ["West Exit (South)", /^4番出口$/], label: "westb1-exit4" },
+    { from: ["西口（地下）", /^西口（地下）$/], to: ["4番出口", /^4番出口$/], label: "westb1-exit4" },
   ],
   shinjuku: [
     { from: ["north side", /street level, north side/], to: ["platform", /Oedo Line platform/], label: "exit1-platform" },
