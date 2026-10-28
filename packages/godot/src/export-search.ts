@@ -33,7 +33,7 @@ export const SCORING = {
 type Names = Record<(typeof DISPLAY_LANGS)[number], string | null>;
 
 function displayNames(poi: Poi): Names {
-  const pick = (lang: string) => poi.names.find((n) => n.lang === lang)?.text ?? poi.aliases.find((n) => n.lang === lang)?.text ?? null;
+  const pick = (lang: string) => poi.names.find((n) => n.lang === lang)?.text ?? poi.descriptions?.find((n) => n.lang === lang)?.text ?? poi.aliases.find((n) => n.lang === lang)?.text ?? null;
   return { ja: pick("ja"), en: pick("en"), "zh-Hant": pick("zh-Hant") };
 }
 
