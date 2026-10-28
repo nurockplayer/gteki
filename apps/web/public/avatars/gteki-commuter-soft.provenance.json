@@ -2,8 +2,8 @@
   "file": "apps/web/public/avatars/gteki-commuter-soft.glb",
   "issue": "#339",
   "candidate": "A2 v2: soft-stylized silhouette sample (hand-built from primitives), open coat, cream knit, layered bob, painted toon atlases",
-  "sha256": "c16ff4244d69b64da3cda7a85eed02e820f56800eccb149b9874c09a904c7169",
-  "bytes": 554952,
+  "sha256": "7bc08638eab924240c18cb39c9d410fc9be4551d13f8d10d625df3af57ca2042",
+  "bytes": 558388,
   "license_spdx": "CC-BY-4.0",
   "attribution": "GTEki contributors",
   "base_mesh": "none (primitives)",
@@ -18,12 +18,13 @@
     "v4 (#339, 2026-10-28): coat rebuilt as two continuous shoulder-neck-to-hem lofts (one per half, back lap 3 deg above the vent), no separate upper coat and skirt meshes, linear widening to the hem, opening 0.10 m at the hem; bob hair lips at the face opening, six-lock fringe, side tips pushed out 20 mm then tucked 8 mm; eyes, brows, smile line and cheek tint; coat, knit and trouser atlas colours; bag centre x 0.255 y -0.060 with one strap down the back of the arm",
     "v5 (#339, 2026-10-28): shoulders sloped and 25 mm narrower per side, upper arm joints x +/-0.142 at z 1.320, sleeves 56 mm to 44 mm and 0.9 deep; walk drape with thigh share 0.6 blending from 0.80 m; hands 10 mm outward; fringe locks swept 25 deg toward +x with 60-85 mm lengths; bob clump ends staggered +/-10 mm; UVs kept half a texel inside atlas rects (hair stripe from the face-skin neighbour removed); yoke over 70% of the back width with a curved lower edge, continuous back seam to the hem; feathered value zones, two folds per trouser leg, knit rib lines every 12 texels; lenses +20 %, iris rim, angled brows, stronger smile, cheek tint 0.5",
     "v5b (#339, 2026-10-28): the face opening closes at 1.560 m (was 1.575), so the crown shell covers the forehead above the brows and no skin shows between the hairline and the fringe",
-    "v5c (#339, 2026-10-28): face opening 1.00 rad with a rounded top that closes at 1.575 m, so cheeks and jaw show and the shell stays 4 mm or more outside the skull; fringe roots tucked under the crown at 1.625 m with rounded tips (lengths 60-80 mm); an arched 1.5 mm hair underlay fills the forehead under the fringe, so no skin shows between the hairline and the fringe"
+    "v5c (#339, 2026-10-28): face opening 1.00 rad with a rounded top that closes at 1.575 m, so cheeks and jaw show and the shell stays 4 mm or more outside the skull; fringe roots tucked under the crown at 1.625 m with rounded tips (lengths 60-80 mm); an arched 1.5 mm hair underlay fills the forehead under the fringe, so no skin shows between the hairline and the fringe",
+    "v6 (#339, 2026-10-28): back vent from 0.62 m with a 6 deg lap; leg-side hem pushed 25 mm outward between 0.50 and 0.70 m; egg jaw rounder; eye lenses width x0.9; soft upper-lid arc; visible gentle smile; face opening 0.93 rad; three lower hair tips; six fringe locks swept 15-35 deg with 30 % overlap; bag turned 30 deg about its vertical axis, strap to its back top corner; navy zones #3D4C62 / #293A50 / #1E2D44; knit and trouser accents darker; walk strip gains a run row"
   ],
   "clip_authorship": "Authored by GTEki contributors in Blender from code (no motion capture, no third-party clips); CC-BY-4.0",
   "generator": "tools/blender/character/build_commuter_soft.py, Blender 5.2.2 LTS (headless, -b) with the bundled glTF 2.0 exporter",
-  "triangles": 4812,
-  "texture_bytes": 47066,
+  "triangles": 4860,
+  "texture_bytes": 46788,
   "budget": "high tier: <=12000 triangles, <=3 primitives per visual node, <=1024^2 textures (body 1024^2, head 512^2); this sample stays under 5000 triangles by design",
-  "triangles_note": "4812 exported tris (body 3404, head 1408 from the build report)"
+  "triangles_note": "4860 exported tris (body 3404, head 1456 from the build report)"
 }
