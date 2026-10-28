@@ -489,7 +489,7 @@ exportStationScene	function	packages/godot/src/export-scene.ts	144
 DISPLAY_LANGS	const	packages/godot/src/export-search.ts	15
 NORMALIZATION	const	packages/godot/src/export-search.ts	17
 SCORING	const	packages/godot/src/export-search.ts	28
-buildSearchExport	function	packages/godot/src/export-search.ts	52
+buildSearchExport	function	packages/godot/src/export-search.ts	58
 ShimUsage	interface	packages/godot/src/headless-dom.ts	13
 newShimUsage	function	packages/godot/src/headless-dom.ts	24
 headlessGltfTextures	function	packages/godot/src/headless-dom.ts	48
