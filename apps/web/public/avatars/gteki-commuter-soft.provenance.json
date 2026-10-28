@@ -2,8 +2,8 @@
   "file": "apps/web/public/avatars/gteki-commuter-soft.glb",
   "issue": "#339",
   "candidate": "A2 v2: soft-stylized silhouette sample (hand-built from primitives), open coat, cream knit, layered bob, painted toon atlases",
-  "sha256": "b3e828d3e3b5af730ba6097b7fffee6ed599779bae30ba8ec1ad1ce4bc4ee9ec",
-  "bytes": 568688,
+  "sha256": "b8456c563c6783bc0521d55347cf8456a1692910ad6e9fe5772bc3987c8be207",
+  "bytes": 571084,
   "license_spdx": "CC-BY-4.0",
   "attribution": "GTEki contributors",
   "base_mesh": "none (primitives)",
@@ -22,7 +22,8 @@
     "v6 (#339, 2026-10-28): back vent from 0.62 m with a 6 deg lap; leg-side hem pushed 25 mm outward between 0.50 and 0.70 m; egg jaw rounder; eye lenses width x0.9; soft upper-lid arc; visible gentle smile; face opening 0.93 rad; three lower hair tips; six fringe locks swept 15-35 deg with 30 % overlap; bag turned 30 deg about its vertical axis, strap to its back top corner; navy zones #3D4C62 / #293A50 / #1E2D44; knit and trouser accents darker; walk strip gains a run row",
     "v7 (#339, 2026-10-28): trouser thighs narrow (0.070 m) inside the coat down to 0.62 m, wide below the hem; skirt thigh share 0.75; eye lenses width -11 % and height -6 %, far-side artwork moved 8 % toward centre; one 16 mm mouth; jaw 5-10 mm fuller; warm cheek gradient; coat lit/mid/shade regions #46566E / #2C3D54 / #1C2A3F, soft knit ribs and trouser folds",
     "v8 face (#339, 2026-10-28): one mouth only (old second stroke removed); far-side (wearer's left) eye artwork a further 3 % of face width inward and 6 % narrower; soft jaw underside #E6C7B6; jaw perimeter 0.15 fuller",
-    "v8b symmetric eyes (#339, 2026-10-28): near (+X) eye artwork given the same inward offset as the far eye (8 % + 3 % of face width) and the same 6 % narrower squeeze, so both eyes are symmetric in the front view; no other change"
+    "v8b symmetric eyes (#339, 2026-10-28): near (+X) eye artwork given the same inward offset as the far eye (8 % + 3 % of face width) and the same 6 % narrower squeeze, so both eyes are symmetric in the front view; no other change",
+    "v9 face-only (#339, 2026-10-28): cheeks +8 % in the eye-to-mouth band, chin width >= 0.62 x cheek with a flatter chin bottom; feathered cheek, nose-bridge and under-fringe midtones; outer-corner upper lids 2 texels thicker; brows gently arched; mouth 18 mm, #7E3F37; eyes unmoved"
   ],
   "clip_authorship": "Authored by GTEki contributors in Blender from code (no motion capture, no third-party clips); CC-BY-4.0",
   "generator": "tools/blender/character/build_commuter_soft.py, Blender 5.2.2 LTS (headless, -b) with the bundled glTF 2.0 exporter",
