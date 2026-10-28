@@ -23,27 +23,30 @@ DERIVATION = ("original: soft-stylized commuter silhouette hand-built from Blend
               "see apps/web/public/avatars/gteki-commuter-soft.provenance.json")
 
 BODY_ATLAS, HEAD_ATLAS = 1024, 512
-NAVY, NAVY_LIGHT, NAVY_DARK = "#2C3950", "#3E4A60", "#202C42"
-NAVY_EDGE, BUTTON = "#1F2B40", "#1A2030"
-LAPEL, LAPEL_EDGE, CUFF_BAND = "#3E4A60", "#161C2C", "#3E4B6B"
-CREAM, KNIT_RIB, BELT = "#EDE6D8", "#D8CEBA", "#2A2622"
-TAUPE, TAUPE_CREASE, TAUPE_HEM = "#B4ADA7", "#928C88", "#8F897F"
+NAVY, NAVY_LIGHT, NAVY_DARK = "#293A50", "#3B4A5D", "#203047"
+NAVY_EDGE, BUTTON = "#1D2A3E", "#1A2030"
+LAPEL, LAPEL_EDGE, CUFF_BAND = "#3B4A5D", "#161C2C", "#3E4B6B"
+CREAM, KNIT_RIB, BELT = "#EEE8DE", "#CFC7BA", "#2A2622"
+TAUPE, TAUPE_CREASE, TAUPE_HEM = "#ABA6A2", "#918B87", "#918B87"
 SHOE, SOLE, SHOE_HI = "#8B7568", "#5E4E42", "#9C8775"
 TOTE, TOTE_SIDE, STITCH = "#AC9787", "#8F7A6B", "#B0A08A"
 SKIN, NECK_SKIN = "#F0D6C5", "#E9C4AE"
-HAIR, HAIR_HI, HAIR_SHADE = "#59453B", "#74584A", "#3F3029"
-IRIS_TOP, IRIS_BOT, SCLERA, LASH = "#554037", "#554037", "#F4ECE6", "#2A1E18"
+HAIR, HAIR_HI, HAIR_SHADE = "#59453B", "#795D4F", "#584237"
+HAIR_LAYER_B = "#6B5044"
+IRIS_TOP, IRIS_BOT, SCLERA, LASH = "#59463D", "#59463D", "#F3EDE5", "#2A1E18"
 
 # Body landmarks (metres, Blender Z up, +Y front).
 HEM_Z, COAT_SPLIT_Z, COAT_TOP_Z = 0.50, 0.86, 1.396
 # A-line overcoat (fix 1): rounded shoulders, body widens steadily from the underarm (1.15 m) to the hem.
-COAT_PROFILE = [(0.50, 0.242, 0.152), (0.70, 0.205, 0.132), (0.86, 0.168, 0.116), (1.00, 0.148, 0.108),
-                (1.10, 0.138, 0.105), (1.20, 0.140, 0.105), (1.30, 0.155, 0.103), (1.335, 0.150, 0.096),
+COAT_PROFILE = [(0.50, 0.230, 0.150), (0.70, 0.202, 0.136), (0.86, 0.179, 0.125), (1.00, 0.159, 0.115),
+                (1.15, 0.138, 0.105), (1.20, 0.140, 0.105), (1.30, 0.155, 0.103), (1.335, 0.150, 0.096),
                 (1.365, 0.110, 0.083), (1.396, 0.062, 0.066)]
-YOKE_Z = 1.24  # yoke lower edge: painted line plus a 2 mm step proud of the coat below it
+COAT_RINGS, COAT_STEPS = 18, 20  # each half is one loft: shoulder neck ring to hem
+YOKE_Z = 1.24  # yoke lower edge: painted line only (v4: no geometry step, so no horizontal break)
 # Front opening half-width: 0.05 at the chest (knit >= 40% of torso width), narrowing to 0.03 at the waist.
-OPEN_PROFILE = [(0.50, 0.078), (0.70, 0.062), (0.86, 0.050), (1.00, 0.040), (1.10, 0.058), (1.20, 0.060),
+OPEN_PROFILE = [(0.50, 0.100), (0.70, 0.075), (0.86, 0.055), (1.00, 0.040), (1.10, 0.058), (1.20, 0.060),
                 (1.30, 0.056), (1.345, 0.045), (1.396, 0.030)]
+BACK_LAP_Z0, BACK_LAP_Z1 = 0.75, 0.80  # the halves lap 3 deg at the back above the vent (vent from 0.75 m down)
 SKIRT_OVERLAP = math.radians(3.0)  # the two lower panels lap 3 deg past the back vent seam
 SKIRT_THIGH_SHARE = 0.9  # same-side thigh at the hem; the hip line stays on the pelvis
 SLEEVE_PROFILE = [(0.93, 0.052), (0.99, 0.053), (1.13, 0.056), (1.22, 0.058), (1.30, 0.059), (1.335, 0.060)]
@@ -57,10 +60,11 @@ SHOE_RINGS = [(0.008, 0.060, 0.146), (0.029, 0.070, 0.161), (0.057, 0.069, 0.159
 HAND_Y = 0.030
 HAND_RINGS = [(0.80, 0.021), (0.85, 0.024), (0.90, 0.027), (0.94, 0.026)]
 # Flatter, wider tote (~0.30 w x 0.32 h x 0.08 d), top at waist height, hung from the right shoulder.
-TOTE_X, TOTE_RINGS = 0.315, [(0.68, 0.012, 0.120), (0.70, 0.024, 0.138), (0.73, 0.030, 0.150),
+TOTE_X, TOTE_Y, TOTE_RINGS = 0.255, -0.060, [(0.68, 0.012, 0.120), (0.70, 0.024, 0.138), (0.73, 0.030, 0.150),
                              (0.92, 0.030, 0.150), (0.97, 0.030, 0.150), (1.00, 0.030, 0.150)]  # 6 cm deep
-STRAP_PATH = [(0.315, -0.14, 1.00), (0.280, -0.10, 1.15), (0.205, -0.06, 1.30), (0.158, 0.0, 1.354),
-              (0.205, 0.06, 1.30), (0.280, 0.10, 1.15), (0.315, 0.14, 1.00)]
+# one strap: over the right shoulder, down the back of the arm, to the bag's back top corner
+STRAP_PATH = [(0.158, 0.0, 1.354), (0.200, -0.050, 1.28), (0.235, -0.085, 1.15), (0.255, -0.110, 1.04),
+              (0.255, -0.130, 1.00)]
 WALK_CROUCH_M = 0.025  # near-straight stance leg; the shared Animation stays on its own default
 SPINE_STOPS = [(1.36, "spine_03"), (1.26, "spine_02"), (1.10, "spine_01"), (0.94, "pelvis")]
 
@@ -80,7 +84,7 @@ BLINK_PUSH_M = 0.005  # lens sits 1 mm proud; the closed blink pushes it 4 mm un
 
 # Atlas rectangles (x0, y0, w, h) in pixels, origin bottom-left, as Blender UVs read them.
 BODY_RECTS = dict(
-    coat=(0, 512, 512, 512), panel_l=(512, 512, 256, 256), panel_r=(768, 512, 256, 256),
+    coat_l=(0, 512, 256, 512), coat_r=(256, 512, 256, 512),
     tote=(512, 768, 128, 256), strap=(640, 768, 128, 256), lapel_l=(768, 768, 128, 128),
     lapel_r=(896, 768, 128, 128), knit=(0, 256, 256, 256), trouser_l=(256, 0, 128, 512),
     trouser_r=(384, 0, 128, 512), sleeve_l=(512, 0, 128, 256), sleeve_r=(640, 0, 128, 256),
@@ -415,43 +419,38 @@ def edge_angle(z):
     return math.acos(clamp(opening(z) / rx, 0.0, 0.999))
 
 
-def build_coat_upper():
-    """Open overcoat from the skirt split up to the collar: the arc runs from the left front edge round the back.
+def coat_lap(z):
+    """Back overlap of the two halves: 3 deg above the vent, none below it (ramped over 5 cm)."""
+    return SKIRT_OVERLAP * clamp((z - BACK_LAP_Z0) / (BACK_LAP_Z1 - BACK_LAP_Z0))
 
-    The yoke above 1.24 m stands 2 mm proud of the coat below it (two rings at the step).
+
+def build_coat_half(side):
+    """One half of the coat as a single continuous loft from the hem to the shoulder ring.
+
+    side -1 is the wearer's left half (front-left edge round the back), side +1 the right half. The two halves
+    meet at the centre back (lapping above the vent) and at the front opening. The right half sits 2 mm proud
+    of the left so the lapped strip never shares a surface with it.
     """
     rings = []
-    zs = sorted(set(linspace(COAT_SPLIT_Z, COAT_TOP_Z, 12) + [YOKE_Z - 0.0005, YOKE_Z + 0.0005]))
-    for z in zs:
+    for z in linspace(HEM_Z, COAT_TOP_Z, COAT_RINGS):
         rx, ry = coat_radii(z)
-        step = 0.002 if z > YOKE_Z else 0.0
-        rx, ry = rx + step, ry + step
         theta = edge_angle(z)
-        rings.append(arc_ring((0.0, 0.0, z), (rx, ry), math.pi - theta, 2 * math.pi + theta, 30))
-    patch = Patch(BODY_RECTS["coat"])
+        corner = 0.03 * clamp(1.0 - (z - HEM_Z) / 0.03) / rx  # hem corner rounding, in radians
+        lap = coat_lap(z)
+        if side < 0:
+            start, end, grow = math.pi - theta + corner, 1.5 * math.pi + lap, 0.0
+        else:
+            start, end, grow = 1.5 * math.pi - lap, 2 * math.pi + theta - corner, 0.002
+        rings.append(arc_ring((0.0, 0.0, z), (rx + grow, ry + grow), start, end, COAT_STEPS))
+    patch = Patch(BODY_RECTS["coat_l" if side < 0 else "coat_r"])
     patch.grid(rings)
     return patch
 
 
-def build_skirt_panels():
-    """Two lower panels: left runs front-left edge to the back vent, right runs back vent to front-right edge.
-
-    The top ring meets the upper coat's bottom ring exactly (merged seam, no ledge), and the front edges
-    round off over the bottom 3 cm of the hem. The laps are at the back vent only; the front stays open.
-    """
-    left, right = Patch(BODY_RECTS["panel_l"]), Patch(BODY_RECTS["panel_r"])
-    rings_l, rings_r = [], []
-    for z in linspace(HEM_Z, COAT_SPLIT_Z, 8):
-        rx, ry = coat_radii(z)
-        theta = edge_angle(z)
-        corner = 0.03 * clamp(1.0 - (z - HEM_Z) / 0.03) / rx  # hem corner rounding, in radians
-        rings_l.append(arc_ring((0.0, 0.0, z), (rx, ry), math.pi - theta + corner, 1.5 * math.pi + SKIRT_OVERLAP, 12))
-        rings_r.append(arc_ring((0.0, 0.0, z), (rx, ry), 1.5 * math.pi - SKIRT_OVERLAP,
-                                2 * math.pi + theta - corner, 12))
-    left.grid(rings_l)
-    right.grid(rings_r)
-    return left, right
-
+def coat_half_weights(side):
+    """Coat above the 0.86 m split; below it the same-side panel weights (pelvis 1.0 at the split, thigh at the hem)."""
+    skirt = skirt_weights("l" if side < 0 else "r")
+    return lambda point: coat_weights(point) if point[2] >= COAT_SPLIT_Z else skirt(point)
 
 def build_knit():
     """Cream knit torso in the opening: a strip from the belt at 0.98 m up to just under the collar."""
@@ -530,10 +529,8 @@ def build_shoe(s, rect):
 
 def build_body():
     body = Geometry(BODY_ATLAS)
-    body.add(build_coat_upper(), coat_weights)
-    left, right = build_skirt_panels()
-    body.add(left, skirt_weights("l"))
-    body.add(right, skirt_weights("r"))
+    for side in (-1.0, 1.0):
+        body.add(build_coat_half(side), coat_half_weights(side))
     body.add(build_knit(), coat_weights)
     for lapel in build_lapels():
         body.add(lapel, coat_weights)
@@ -550,7 +547,7 @@ def build_body():
         for shoe_patch in build_shoe(s, BODY_RECTS["shoe"]):
             body.add(shoe_patch, {f"foot_{side}": 1.0}, smooth=False)
     tote = Patch(BODY_RECTS["tote"])
-    tote.loft([ellipse_ring((TOTE_X, 0.0, z), (rx, ry), 14) for z, rx, ry in TOTE_RINGS],
+    tote.loft([ellipse_ring((TOTE_X, TOTE_Y, z), (rx, ry), 14) for z, rx, ry in TOTE_RINGS],
               cap_first=True, cap_last=True)
     body.add(tote, {"pelvis": 1.0})
     strap = Patch(BODY_RECTS["strap"])
@@ -657,29 +654,44 @@ def fringe_z(x):
 
 
 def build_fringe():
-    """One curved fringe sheet on the forehead: 4 mm proud of the shell, with an 8 mm back face."""
-    columns = [-0.085 + 0.170 * j / 24 for j in range(25)]
-    rows_front, rows_back = [], []
-    top = 1.660  # tucked under the crown shell
-    for r in range(4):
-        front_row, back_row = [], []
-        for x in columns:
-            low = fringe_z(x)
-            z = low + (top - low) * r / 3
-            y = hair_front_y(x, z) + 0.004
-            front_row.append((x, y, z))
-            back_row.append((x, y - 0.008, z))
-        rows_front.append(front_row)
-        rows_back.append(back_row)
-    sheet = Patch(HAIR_CELLS[1])
-    sheet.grid(rows_front, flip=True)
-    sheet.grid(rows_back)  # the back face: normals point away from the forehead
-    return sheet
+    """Six solid locks on the forehead: flattened wedges, 30 mm root to 6 mm tip, 8 mm thick, neighbours
+    overlapping about a fifth, tips curving slightly toward the part at x -0.02."""
+    patch = Patch(HAIR_CELLS[1])
+    part_x = -0.02
+    roots = [-0.075, -0.049, -0.023, 0.003, 0.029, 0.055]
+    lengths = [0.085, 0.070, 0.060, 0.080, 0.065, 0.075]
+    for root, length in zip(roots, lengths):
+        tip_x = root + (part_x - root) * 0.3
+        path, radii = [], []
+        for k in range(5):
+            t = k / 4.0
+            x = root + (tip_x - root) * t
+            z = 1.665 - length * t
+            path.append((x, hair_front_y(x, z) + 0.003, z))
+            radii.append((0.015 + (0.003 - 0.015) * t, 0.004))
+        patch.tube(path, radii, sides=6)
+    return patch
+
+def build_lip(side):
+    """A 6 mm lip of hair colour along the face-opening edge on one side (side -1 left, +1 right)."""
+    rings = []
+    for z in linspace(1.400, BOB_FADE_Z, 8):
+        alpha = face_opening_angle(z)
+        rx, ry = shell_radii(z)
+        phi = math.pi / 2 - side * alpha
+        x_edge = rx * math.cos(phi)
+        y_edge = ry * math.sin(phi)
+        x_in = x_edge - side * 0.006
+        rings.append([(x_edge, y_edge, z), (x_in, hair_front_y(x_in, z) + 0.001, z)])
+    patch = Patch(HAIR_CELLS[0])
+    patch.grid(rings)
+    return patch
 
 
 def build_bob():
     """One solid bob: a closed rounded shell (lower outline plus hemisphere crown) with the face opening cut
-    out of its front, the lower edge scalloped into BOB_TIPS tips, and one fringe sheet over the forehead.
+    out of its front, seven broad clumps along the lower edge, a hair lip on each side of the opening, and one
+    fringe made of six locks.
 
     Ellipse angle theta is measured from +X, so the front (+Y) is pi/2.
     """
@@ -693,14 +705,17 @@ def build_bob():
             theta = math.tau * j / 28
             wave = 0.5 + 0.5 * math.cos(BOB_TIPS * theta)  # 1 at a clump centre
             offset = (-0.008 + 0.020 * wave) if z < 1.46 else 0.0  # +12 mm at a clump, -8 mm between clumps
-            x, y = (rx + offset) * math.cos(theta), (ry + offset) * math.sin(theta)
-            ring.append((x, y, z))
+            side_tip = clamp((abs(math.cos(theta)) - 0.6) / 0.4)  # the two side tips
+            if z == 1.450:
+                offset += 0.020 * side_tip  # pushed outward 20 mm...
+            elif z == 1.400:
+                offset -= 0.008 * side_tip  # ...then tucked 8 mm in at the very tip
+            ring.append(((rx + offset) * math.cos(theta), (ry + offset) * math.sin(theta), z))
         rings.append(ring)
     shell = Patch(HAIR_CELLS[0])
     shell.loft(rings, cap_last=True)
     shell.drop(in_face_opening)
-    return [shell, build_fringe()]
-
+    return [shell, build_lip(-1.0), build_lip(1.0), build_fringe()]
 
 def head_point(p):
     return tuple(HEAD_CHIN[a] + (p[a] - HEAD_CHIN[a]) * HEAD_SCALE for a in range(3))
@@ -758,47 +773,44 @@ def navy_shade(S):
     return base * (1.0 - 0.10 * edge ** 2)[..., None]
 
 
-def coat_paint(S, T):
+def coat_painter(side):
+    """Painter for one coat half: its front opening edge at S=0 (left) or S=1 (right), the back seam at the other end."""
     import numpy as np
-    base = navy_shade(S)
-    shoulder = ((T > 0.85) & (np.abs(S - 0.5) > 0.30)).astype(np.float32)
-    base = over(base, rgb(NAVY_LIGHT), shoulder * 0.5)  # lit upper shoulders
-    inner = np.clip(band(S, 0.0, 0.03) + band(S, 0.97, 1.0), 0, 1)
-    base = over(base, rgb(NAVY_EDGE), inner)  # inner-facing edges of the opening
-    back = (np.abs(S - 0.5) < 0.32).astype(np.float32)
-    yoke_t = (YOKE_Z - COAT_SPLIT_Z) / (COAT_TOP_Z - COAT_SPLIT_Z)
-    base = over(base, rgb(NAVY_DARK), band(T, yoke_t - 0.006, yoke_t + 0.006) * back)  # yoke lower edge 1.24 m
-    base = over(base, rgb(NAVY_DARK), band(S, 0.485, 0.515) * band(T, 0.0, yoke_t) * 0.9)  # back pleat shadow
-    base = over(base, rgb(NAVY_DARK), band(T, 0.93, 1.0) * 0.6)  # under-collar recess
-    for zb in (1.05, 0.93):  # two dark buttons on the wearer's-left panel, 2 cm in from the opening edge
-        xb = -(opening(zb) + 0.02)
-        rx, _ = coat_radii(zb)
-        theta = edge_angle(zb)
-        su = (math.acos(clamp(xb / rx, -1.0, 1.0)) - (math.pi - theta)) / (math.pi + 2 * theta)
-        tt = (zb - COAT_SPLIT_Z) / (COAT_TOP_Z - COAT_SPLIT_Z)
-        dist = ((S - su) / 0.0154) ** 2 + ((T - tt) / 0.0224) ** 2
-        base = over(base, rgb(BUTTON), (dist < 1.0).astype(np.float32))
-    return base
 
+    def painter(S, T):
+        z = HEM_Z + T * (COAT_TOP_Z - HEM_Z)
+        base = flat(NAVY, S.shape)
+        base = over(base, rgb(NAVY_LIGHT), ((z > 1.25) & (S > 0.25) & (S < 0.75)).astype(np.float32) * 0.6)
+        front = band(S, 0.0, 0.03) if side < 0 else band(S, 0.97, 1.0)
+        back = band(S, 0.97, 1.0) if side < 0 else band(S, 0.0, 0.03)
+        base = over(base, rgb(NAVY_EDGE), front)  # inner-facing opening edge
+        base = over(base, rgb(NAVY_DARK), back * band(z, 0.75, YOKE_Z) * 0.9)  # back seam shadow, vent to yoke
+        back_half = (S > 0.5) if side < 0 else (S < 0.5)
+        yoke_t = (YOKE_Z - HEM_Z) / (COAT_TOP_Z - HEM_Z)
+        base = over(base, rgb(NAVY_DARK), band(T, yoke_t - 0.006, yoke_t + 0.006) * back_half)  # yoke line 1.24 m
+        base = over(base, rgb(NAVY_DARK), band(T, 0.93, 1.0) * 0.6)  # under-collar recess
+        if side < 0:
+            base = over(base, rgb(NAVY_DARK), band(z, 0.92, 0.94) * band(S, 0.03, 0.14) * 0.3)  # hip pocket line
+            for zb in (1.05, 0.93):  # two buttons on the wearer's-left panel, 2 cm in from the opening edge
+                xb = -(opening(zb) + 0.02)
+                rx, _ = coat_radii(zb)
+                theta = edge_angle(zb)
+                su = (math.acos(clamp(xb / rx, -1.0, 1.0)) - (math.pi - theta)) / (math.pi / 2 + theta)
+                tt = (zb - HEM_Z) / (COAT_TOP_Z - HEM_Z)
+                dist = ((S - su) / 0.033) ** 2 + ((T - tt) / 0.0134) ** 2
+                base = over(base, rgb(BUTTON), (dist < 1.0).astype(np.float32))
+        return base
 
-def panel_paint(S, T):
-    import numpy as np
-    base = navy_shade(S)
-    base = over(base, rgb(NAVY_DARK), band(T, 0.0, 0.05) * 0.6)  # hem edge at 0.50 m
-    vent = (T < 0.66).astype(np.float32)  # the back vent runs from about 0.75 m down
-    edge = np.clip(band(S, 0.0, 0.04) + band(S, 0.96, 1.0), 0, 1)
-    return over(base, rgb(NAVY_EDGE), edge * 0.9 * vent)
-
+    return painter
 
 def knit_paint(S, T):
     import numpy as np
     base = flat(CREAM, S.shape)
-    rib = band(np.mod(S * 3.0, 1.0), 0.0, 0.30)  # three broad rib cues round the knit
+    rib = band(np.mod(S * 3.0, 1.0), 0.0, 0.30)  # three broad warm-grey rib cues round the knit
     base = over(base, rgb(KNIT_RIB), rib * 0.5)
-    base = over(base, rgb(KNIT_RIB), band(T, 0.92, 1.0) * rib * 0.5)  # mock neck band
+    base = over(base, rgb(KNIT_RIB), band(T, 0.92, 1.0) * rib * 0.5)  # collar band
     base = over(base, rgb(BELT), band(T, 0.0, 0.06))  # thin dark belt where the trousers start
     return base
-
 
 def lapel_paint(S, T):
     base = flat(LAPEL, S.shape) * (0.94 + 0.06 * T)[..., None]
@@ -807,16 +819,17 @@ def lapel_paint(S, T):
 
 def trouser_paint(S, T):
     import numpy as np
-    base = flat(TAUPE, S.shape) * (0.94 + 0.06 * T)[..., None]
-    base = over(base, rgb(TAUPE_CREASE), band(S, 0.245, 0.255) * 0.7)  # one crease per leg
-    return over(base, rgb(TAUPE_HEM), band(T, 0.0, 0.03))  # clear hem line
-
+    base = flat(TAUPE, S.shape) * (0.97 + 0.03 * T)[..., None]
+    crease = 0.25 + 0.008 * np.sin(T * 18.0)  # one slightly wavy crease per leg
+    base = over(base, rgb(TAUPE_CREASE), (np.abs(S - crease) < 0.006).astype(np.float32) * 0.7)
+    return over(base, rgb(TAUPE_HEM), band(T, 0.0, 0.03))  # shade band at the hem
 
 def sleeve_paint(S, T):
     import numpy as np
     base = flat(NAVY, S.shape)
     cuff_rib = band(np.mod(S * 12.0, 1.0), 0.0, 0.15)
     base = over(base, rgb(NAVY_DARK), band(S, 0.49, 0.51) * 0.7)  # sleeve seam line
+    base = over(base, rgb(NAVY_DARK), band(T, 0.44, 0.47) * 0.25)  # low-contrast elbow fold
     base = over(base, rgb(KNIT_RIB), band(T, 0.0, 0.025) * cuff_rib * 0.5)
     base = over(base, rgb(CREAM), band(T, 0.0, 0.025))  # 1 cm cream knit cuff ring
     base = over(base, rgb(CUFF_BAND), band(T, 0.025, 0.099))  # 3 cm turned-back cuff band
@@ -847,7 +860,7 @@ def strap_paint(S, T):
 def body_atlas():
     import numpy as np
     canvas = np.zeros((BODY_ATLAS, BODY_ATLAS, 3), dtype=np.float32)
-    painters = dict(coat=coat_paint, panel_l=panel_paint, panel_r=panel_paint, knit=knit_paint,
+    painters = dict(coat_l=coat_painter(-1.0), coat_r=coat_painter(1.0), knit=knit_paint,
                     lapel_l=lapel_paint, lapel_r=lapel_paint, trouser_l=trouser_paint, trouser_r=trouser_paint,
                     sleeve_l=sleeve_paint, sleeve_r=sleeve_paint, shoe=shoe_paint, tote=tote_paint,
                     strap=strap_paint, hands=lambda S, T: flat(SKIN, S.shape),
@@ -863,7 +876,7 @@ def face_paint(S, T):
     base = flat(SKIN, S.shape)
     for side in (-1.0, 1.0):
         blush = np.exp(-(((x - side * 0.060) / 0.017) ** 2 + ((z - 1.470) / 0.010) ** 2))
-        base = over(base, rgb("#F0A9A0"), blush * 0.585)
+        base = over(base, rgb("#D7AAA2"), blush * 0.35)  # very faint cheek tint
     nose = band(np.abs(x), 0.0, 0.0018) * band(z, 1.470, 1.490)  # 2-texel nose shade
     base = over(base, rgb("#E2B39E"), nose * 0.6)
     base = over(base, rgb("#B0604E"), band(z - (1.455 + 6.0 * x * x), -0.0012, 0.0012) * (np.abs(x) < 0.013))
@@ -871,10 +884,12 @@ def face_paint(S, T):
         xr = x * side
         brow_z = 1.556 + 0.010 * (xr - 0.030) / 0.040
         inside = (xr >= 0.030) & (xr <= 0.072)
-        base = over(base, rgb("#6A4A3A"), band(z - brow_z, -0.0024, 0.0024) * inside * 0.6)  # soft brow line
+        base = over(base, rgb("#6A4A3A"), band(z - brow_z, -0.0012, 0.0012) * band(xr, 0.030, 0.060) * 0.8)  # short thin brow
         dx = x - side * EYE_X
         arc = EYE_Z - 0.010 * (1.0 - np.clip(dx / EYE_HALF_W, -1, 1) ** 2)
         base = over(base, rgb("#3B2A20"), band(z - arc, -0.0016, 0.0016) * (np.abs(dx) < EYE_HALF_W))  # closed-eye arc
+    smile = band(z - (1.428 + 2.0 * x * x), -0.0009, 0.0009) * band(np.abs(x), 0.0, 0.010)  # 2 cm smile line
+    base = over(base, rgb("#B0604E"), smile * 0.8)
     return base
 
 
@@ -888,7 +903,7 @@ def eye_paint(S, T):
     iris_colour = rgb(IRIS_TOP) * g + rgb(IRIS_BOT) * (1.0 - g)
     out = np.where(shape[..., None], flat(SCLERA, S.shape), base)
     out = np.where(iris[..., None], iris_colour, out)
-    out = np.where((shape & (dz > 0.74))[..., None], flat(LASH, S.shape), out)
+    out = np.where((shape & (dz > 0.86) & (dz < 0.93))[..., None], flat(LASH, S.shape), out)  # thin upper lash line
     highlight = (((dx + 0.28) / 0.16) ** 2 + ((dz - 0.30) / 0.16) ** 2 < 1.0) | (
         ((dx - 0.26) / 0.07) ** 2 + ((dz + 0.22) / 0.07) ** 2 < 1.0)
     out = np.where((shape & highlight)[..., None], flat("#FFFFFF", S.shape), out)
@@ -897,11 +912,9 @@ def eye_paint(S, T):
 
 def hair_paint(S, T):
     import numpy as np
-    base = flat(HAIR, S.shape) * (0.92 + 0.08 * T)[..., None]  # smooth vertical gradient, no blocks
-    sheen = np.exp(-(((S - 0.38) / 0.07) ** 2))  # zero at both cell edges: no seam down the back
-    base = over(base, rgb(HAIR_HI), sheen * 0.6)
-    return over(base, rgb(HAIR_SHADE), np.clip(1.0 - T / 0.12, 0, 1) * 0.35)
-
+    base = flat(HAIR, S.shape)
+    base = over(base, rgb(HAIR_SHADE), band(T, 0.0, 0.22) * 0.45)  # lower band, darker
+    return over(base, rgb(HAIR_LAYER_B), band(S, 0.30, 0.42) * 0.7)  # broad band across the cell
 
 def head_atlas():
     import numpy as np
