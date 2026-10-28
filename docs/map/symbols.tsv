@@ -966,9 +966,9 @@ STREET_UNDERSIDE	const	stations/shinjuku/scene/build.ts	151
 escalatorShellGeometry	function	stations/shinjuku/scene/build.ts	160
 coalesceWallPanels	function	stations/shinjuku/scene/build.ts	319
 cladWallGeometry	function	stations/shinjuku/scene/build.ts	345
-disposeRetiredGeometries	function	stations/shinjuku/scene/build.ts	396
-guardBumpNormals	function	stations/shinjuku/scene/build.ts	472
-buildStation	function	stations/shinjuku/scene/build.ts	538
+disposeRetiredGeometries	function	stations/shinjuku/scene/build.ts	398
+guardBumpNormals	function	stations/shinjuku/scene/build.ts	474
+buildStation	function	stations/shinjuku/scene/build.ts	540
 contentKey	function	stations/shinjuku/scene/content-key.ts	6
 Fence	interface	stations/shinjuku/scene/fare-fence.ts	19
 FareProtection	interface	stations/shinjuku/scene/fare-fence.ts	28
