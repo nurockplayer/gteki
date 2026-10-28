@@ -111,6 +111,13 @@ export interface ShopSign {
   height: number;
 }
 
+// Desktop GLB reveal bounds, shared by both tiers when low merges the backing into its palette.
+const INTERIOR_RECTS: Readonly<Record<string, readonly [number, number, number, number]>> = {
+  [SHOP_USE.glazing]: [-1.17, 1.17, 0.33, 2.13],
+  [SHOP_USE.door]: [-0.93, 0.93, 0.01, 2.1],
+  [SHOP_USE.shutterHalf]: [-1.11, 1.11, 0, 1.95],
+};
+
 const DEG = Math.PI / 180;
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
@@ -383,18 +390,6 @@ export async function loadShopKit(
       const gltf = await host.loadGlb(uri);
       const parts = visibleParts(THREE, gltf);
       if (!parts.length) throw new Error(`${uri} has no visible mesh`);
-      for (const part of parts) {
-        if (part.material.name !== "gteki_reveal_dark") continue;
-        const pos = part.geometry.getAttribute("position");
-        part.geometry.computeBoundingBox();
-        const bounds = part.geometry.boundingBox!;
-        const uv = new Float32Array(pos.count * 2);
-        for (let i = 0; i < pos.count; i++) {
-          uv[i * 2] = (pos.getX(i) - bounds.min.x) / (bounds.max.x - bounds.min.x);
-          uv[i * 2 + 1] = (pos.getY(i) - bounds.min.y) / (bounds.max.y - bounds.min.y);
-        }
-        part.geometry.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
-      }
       assets.set(id, { gltf, parts });
     } catch (err) {
       console.warn(`[ikebukuro] shop kit: ${id}: ${err instanceof Error ? err.message : String(err)}; keeping the PLATEAU panels`);
@@ -539,11 +534,13 @@ export async function loadShopKit(
           const key = `${p.shop}:${p.polygon}`, k = counts.get(key) ?? 0; counts.set(key, k + 1);
           const display = shops.find((s) => s.id === p.shop)!.display;
           const index = Math.max(0, displays.indexOf(display)) * 2 + k % 2;
-          for (const part of assets.get(p.piece)!.parts.filter((part) => part.material.name === "gteki_reveal_dark")) {
-            const geo = part.geometry.clone(); mapCell(geo, index);
-            q.setFromAxisAngle(up, p.yawDeg * DEG); s.set(p.sx, p.sy, p.sz);
-            parts.push({ geometry: geo, material, matrix: new THREE.Matrix4().compose(toRenderer(p.x,p.y,p.z),q,s).multiply(part.matrix) });
-          }
+          const rect = INTERIOR_RECTS[pieces[p.piece]!.use];
+          if (!rect) continue;
+          const [left, right, bottom, top] = rect;
+          const geo = new THREE.PlaneGeometry(right - left, top - bottom);
+          geo.translate((left + right) / 2, (bottom + top) / 2, 0.025); mapCell(geo, index);
+          q.setFromAxisAngle(up, p.yawDeg * DEG); s.set(p.sx, p.sy, p.sz);
+          parts.push({ geometry: geo, material, matrix: new THREE.Matrix4().compose(toRenderer(p.x,p.y,p.z),q,s) });
         }
         for (const board of boards) for (const angle of [-12, 12]) {
           const geo = new THREE.PlaneGeometry(0.5, 0.9); mapCell(geo, 20 + boardDisplays.indexOf(board.display));

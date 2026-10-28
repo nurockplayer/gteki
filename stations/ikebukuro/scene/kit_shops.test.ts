@@ -239,7 +239,7 @@ describe("visual only", () => {
       expect(stats).toMatchObject({ shops: 10, modules: 22, tiles: low ? 5 : 8,
         drawCallsAllTiles: low ? 29 : 77, trianglesAllTiles: low ? 3336 : 7379,
         trianglesWorstTile: low ? 1294 : 1548, signs: 9, signDrawCalls: 1, signTriangles: 34,
-        interiorDrawCalls: 1, interiorTriangles: low ? 16 : 60, spillDrawCalls: 1, bladeSigns: 8, aBoards: 4 });
+        interiorDrawCalls: 1, interiorTriangles: 60, spillDrawCalls: 1, bladeSigns: 8, aBoards: 4 });
       loaded.dispose();
     }
   });
@@ -284,6 +284,20 @@ describe("visual only", () => {
     expect(group.children.filter((o) => o.name === "kit_shop_spill")).toHaveLength(1);
     const uv = interior.geometry.getAttribute("uv");
     expect([uv.getX(0), uv.getY(0)]).not.toEqual([uv.getX(4), uv.getY(4)]);
+    loaded.dispose();
+  });
+
+  it("builds low-tier cards for glazing and door bays without reveal parts", async () => {
+    const rows: Opening[] = [
+      { ...openings[0]!, opening_id: "window", polygon_ids: ["window"], width: 4.8, height: 2.2, type: "Window" },
+      { ...openings[0]!, opening_id: "door", polygon_ids: ["door"], width: 4, height: 2.2, type: "Door" },
+    ];
+    const shop: Shop = { ...shops[0]!, openings: ["window", "door"], front: "door_glazing", display: "books" };
+    const loaded = await loadShopKit(THREE, host(all("low")), kit, [shop], rows, true);
+    const { group, stats } = loaded.build(THREE, env, toRenderer);
+    expect(loaded.placements).toHaveLength(4);
+    expect(stats.interiorTriangles).toBe(8);
+    expect((group.getObjectByName("kit_shop_interiors") as THREE.Mesh).geometry.getAttribute("position").count).toBe(16);
     loaded.dispose();
   });
 
