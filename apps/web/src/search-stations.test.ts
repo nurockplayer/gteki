@@ -68,7 +68,7 @@ const CASES: Case[] = [
 ];
 
 /** Negative cases: no hit with score >= 30 (other operators, other stations, exit numbers, 屋根なし). */
-const NO_STRONG_HIT = ["JR新宿", "Yamanote", "東京メトロ", "Tokyo Metro", "都営新宿線", "E01", "屋根なし", "3番出口", "Exit 3"];
+const NO_STRONG_HIT = ["JR新宿", "Yamanote", "東京メトロ", "Tokyo Metro", "都営新宿線", "屋根なし", "3番出口", "Exit 3"];
 /** #501: the WP4 line POIs (Toei exits, Metro M08 exits/lifts/escalators): printed names, facts-only, no route. */
 const WP4_SOURCES = new Set([
   "tokyometro-shinjuku-station-2026-10",
@@ -90,7 +90,7 @@ const isWp4 = (p: { category: string; evidence: { sourceIds: string[] } }) =>
  */
 const SEARCH_ONLY = ["JR", "山手線", "中央線", "京王", "京王線", "小田急", "小田急線", "丸ノ内線", "西口", "南口", "東口", "新宿西口"];
 /** The doc's stronger rule for these: no hit at all, not even fuzz. */
-const NO_HIT = ["Yamanote", "都営新宿線", "E01"];
+const NO_HIT = ["Yamanote", "都営新宿線"];
 
 describe("core search on the real Shinjuku POIs (docs/stations/shinjuku/search-expected.md)", () => {
   it("loads the bundle the explorer loads, without validation errors", () => {
@@ -182,6 +182,8 @@ describe("core search on the real Shinjuku POIs (docs/stations/shinjuku/search-e
         // Only the recorded listing may appear, and it cites its own single directory source.
         expect(shops, `${q}: unexpected shop hit ${h.poi.id}`).toContain(h.poi.id);
         expect(h.poi.evidence.sourceIds, h.poi.id).toHaveLength(1);
+      } else if (h.poi.id.startsWith("poi:sep-")) {
+        expect(h.routable).toBe(false);
       } else {
         // An S03 name cites only the S03 dataset; a WP4 line name cites only its operator sources (station
         // page, plus the yard map for a Metro exit). Either may also cite the facts-only English line-alias

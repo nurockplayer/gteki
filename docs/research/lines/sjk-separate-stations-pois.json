@@ -1,0 +1,311 @@
+{
+  "sources": [
+    {
+      "id": "sep-seibu-s2",
+      "title": "西武新宿線の取り組み",
+      "publisher": "西武鉄道",
+      "url": "https://www.seiburailway.jp/safety/shinjukulineinnovation/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "西武新宿線の取り組み (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-29T02:34:00+09:00",
+      "datasetDate": null,
+      "notes": "Facts only; connection name only, no geometry. OD-25 / OD-01 A.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
+    },
+    {
+      "id": "sep-metro-m2",
+      "title": "新宿駅・新宿三丁目駅",
+      "publisher": "東京地下鉄",
+      "url": "https://www.tokyometro.jp/info/files/20260414_jp.pdf",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "新宿駅・新宿三丁目駅 (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-29T02:34:00+09:00",
+      "datasetDate": null,
+      "notes": "Facts only; connection name only, no geometry. OD-25 / OD-01 A.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
+    },
+    {
+      "id": "sep-toei-t3",
+      "title": "新宿駅案内",
+      "publisher": "東京都交通局",
+      "url": "https://www.kotsu.metro.tokyo.jp/subway/map/shinjyuku.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "新宿駅案内 (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-29T02:34:00+09:00",
+      "datasetDate": null,
+      "notes": "Facts only; connection name only, no geometry. OD-25 / OD-01 A.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
+    },
+    {
+      "id": "sep-seibu-s1",
+      "title": "西武新宿駅",
+      "publisher": "西武鉄道",
+      "url": "https://www.seiburailway.jp/railway/station/seibu-shinjuku/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "西武新宿駅 (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-29T02:34:00+09:00",
+      "datasetDate": null,
+      "notes": "Facts only; connection name only, no geometry. OD-25 / OD-01 A.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
+    },
+    {
+      "id": "sep-metro-m1",
+      "title": "新宿三丁目駅",
+      "publisher": "東京地下鉄",
+      "url": "https://www.tokyometro.jp/station/shinjuku-sanchome/index.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "新宿三丁目駅 (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-29T02:34:00+09:00",
+      "datasetDate": null,
+      "notes": "Facts only; connection name only, no geometry. OD-25 / OD-01 A.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
+    },
+    {
+      "id": "sep-toei-t2",
+      "title": "新宿三丁目駅",
+      "publisher": "東京都交通局",
+      "url": "https://www.kotsu.metro.tokyo.jp/subway/stations/shinjuku-sanchome.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "新宿三丁目駅 (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-29T02:34:00+09:00",
+      "datasetDate": null,
+      "notes": "Facts only; connection name only, no geometry. OD-25 / OD-01 A.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
+    },
+    {
+      "id": "sep-toei-t1",
+      "title": "新宿西口駅",
+      "publisher": "東京都交通局",
+      "url": "https://www.kotsu.metro.tokyo.jp/subway/stations/shinjuku-nishiguchi.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "新宿西口駅 (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-29T02:34:00+09:00",
+      "datasetDate": null,
+      "notes": "Facts only; connection name only, no geometry. OD-25 / OD-01 A.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
+    },
+    {
+      "id": "sep-metro-m3",
+      "title": "乗り換え時間",
+      "publisher": "東京地下鉄",
+      "url": "https://www.tokyometro.jp/ticket/guide/transfertime/index.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "乗り換え時間 (facts only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-29T02:34:00+09:00",
+      "datasetDate": null,
+      "notes": "Facts only; connection name only, no geometry. OD-25 / OD-01 A.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
+    }
+  ],
+  "pois": [
+    {
+      "id": "poi:sep-seibu-shinjuku",
+      "category": "transfer",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "西武新宿駅（別駅）"
+        },
+        {
+          "lang": "en",
+          "text": "Seibu-Shinjuku Station (separate station)"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "西武新宿"
+        },
+        {
+          "lang": "ja",
+          "text": "西武新宿駅"
+        },
+        {
+          "lang": "ja",
+          "text": "SS01"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "sep-seibu-s2",
+          "sep-seibu-s1"
+        ],
+        "method": "facts-only operator page (OD-01 A/OD-25), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-29"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "新宿サブナードに連絡。別駅。位置・経路・営業時間・バリアフリーは未確認（検索のみ、案内ルートなし）"
+        },
+        {
+          "lang": "en",
+          "text": "Connects to Shinjuku Subnade. Separate station. Location, route, opening hours and accessibility not verified (search only, no navigation route)."
+        }
+      ]
+    },
+    {
+      "id": "poi:sep-shinjuku-sanchome",
+      "category": "transfer",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "新宿三丁目駅（別駅）"
+        },
+        {
+          "lang": "en",
+          "text": "Shinjuku-sanchome Station (separate station)"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "新宿三丁目"
+        },
+        {
+          "lang": "ja",
+          "text": "新宿三丁目駅"
+        },
+        {
+          "lang": "ja",
+          "text": "M09"
+        },
+        {
+          "lang": "ja",
+          "text": "F13"
+        },
+        {
+          "lang": "ja",
+          "text": "S02"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "sep-metro-m2",
+          "sep-metro-m1",
+          "sep-toei-t2",
+          "sep-metro-m3"
+        ],
+        "method": "facts-only operator page (OD-01 A/OD-25), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-29"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "新宿駅と地下通路で連絡。別駅。位置・経路・営業時間・バリアフリーは未確認（検索のみ、案内ルートなし）"
+        },
+        {
+          "lang": "en",
+          "text": "Connected to Shinjuku Station by an underground passage. Separate station. Location, route, opening hours and accessibility not verified (search only, no navigation route)."
+        }
+      ]
+    },
+    {
+      "id": "poi:sep-shinjuku-nishiguchi",
+      "category": "transfer",
+      "names": [
+        {
+          "lang": "ja",
+          "text": "新宿西口駅（別駅）"
+        },
+        {
+          "lang": "en",
+          "text": "Shinjuku-nishiguchi Station (separate station)"
+        }
+      ],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "新宿西口"
+        },
+        {
+          "lang": "ja",
+          "text": "新宿西口駅"
+        },
+        {
+          "lang": "ja",
+          "text": "E01"
+        }
+      ],
+      "floorId": null,
+      "displayPosition": null,
+      "connectorNodeIds": [],
+      "paid": null,
+      "evidence": {
+        "sourceIds": [
+          "sep-toei-t3",
+          "sep-toei-t1",
+          "sep-metro-m3"
+        ],
+        "method": "facts-only operator page (OD-01 A/OD-25), UNVERIFIED, SEARCH_ONLY",
+        "checkedDate": "2026-10-29"
+      },
+      "notes": [
+        {
+          "lang": "ja",
+          "text": "JR新宿駅西口出口から案内。別駅。位置・経路・営業時間・バリアフリーは未確認（検索のみ、案内ルートなし）"
+        },
+        {
+          "lang": "en",
+          "text": "Signs lead from the JR Shinjuku Station west exit. Separate station. Location, route, opening hours and accessibility not verified (search only, no navigation route)."
+        }
+      ]
+    }
+  ]
+}
