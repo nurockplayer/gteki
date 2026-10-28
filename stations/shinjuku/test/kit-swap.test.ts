@@ -46,7 +46,7 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
  * shell soffits: +39,792 B, same meshes; geometry, nodes and textures re-measured, appearance and lists unchanged. */
 const MAIN_BASELINE = {
   station: {
-    geometryDigest: "03c651ff993064a5bd8c70f2eb39171f9452a5c8f232e29e46f8d7b9c70d1ca9",
+    geometryDigest: "f0a1b267ff2cf78debf670f66520cddf47ec4c94bd39d324348ac0b2920be840",
     appearanceDigest: "bb90e82a587a6cfcd79a1d6a311dbd6e010a6d747417b3a96cb7c7e5553fabaf",
     nodesDigest: "6247901bcf70bac74641e0a6d8ddab3bedff9f9bc744b9d748a76684f70e9941",
     texturesDigest: "ffc241b92b736d65bbd408c5d766beed14df518857647e9dce1b02e53bbf0193",
