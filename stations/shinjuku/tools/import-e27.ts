@@ -1357,7 +1357,8 @@ for (const raw of wp4Imported) {
   if (raw.connectorNodeIds.length > 0) throw new Error(`WP4 import: ${raw.id} has connectorNodeIds`);
   if (raw.evidence.sourceIds.length === 0 || raw.evidence.sourceIds.some((id) => !WP4_SOURCE_IDS.has(id))) throw new Error(`WP4 import: ${raw.id} cites a source outside the WP4 file`);
   if (!WP4_CATEGORIES.has(raw.category)) throw new Error(`WP4 import: ${raw.id} has category ${raw.category}`);
-  if (raw.names.length !== 1 || raw.names[0]!.lang !== "ja" || !raw.names[0]!.text) throw new Error(`WP4 import: ${raw.id} must carry exactly one ja name`);
+  if (raw.names.length < 1 || raw.names.length > 2 || raw.names[0]!.lang !== "ja" || !raw.names[0]!.text || (raw.names.length === 2 && (raw.names[1]!.lang !== "en" || !raw.names[1]!.text))) throw new Error(`WP4 import: ${raw.id} must carry ja and optionally en`);
+  if (raw.names.length === 2 && !raw.evidence.sourceIds.some((id) => id.includes("-en-") && WP4_SOURCE_IDS.has(id))) throw new Error(`WP4 import: ${raw.id} English name requires a declared English source`);
   if (raw.aliases.some((a) => !raw.names[0]!.text.startsWith(a.text))) throw new Error(`WP4 import: ${raw.id} has an alias not printed in its name`);
   if (pois.some((p) => p.id === raw.id)) throw new Error(`WP4 import: duplicate id ${raw.id}`);
   pois.push({

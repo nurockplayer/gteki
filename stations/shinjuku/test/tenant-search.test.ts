@@ -13,7 +13,7 @@ const search = createSearchIndex(bundle).search;
 describe("Department store brand search (#419)", () => {
   it("loads the brand directories with no validation errors", () => {
     expect(issues.filter((i) => i.level === "error")).toEqual([]);
-    expect(bundle.tenants).toHaveLength(509);
+    expect(bundle.tenants).toHaveLength(875);
     expect(new Set(bundle.tenants!.map((t) => t.poiId))).toEqual(
       new Set([
         "shop-sjk-odakyudept",
@@ -22,6 +22,7 @@ describe("Department store brand search (#419)", () => {
         "shop-sjk-marui-men",
         "shop-sjk-isetan-honkan",
         "shop-sjk-isetan-mens",
+        "shop-sjk-takashimaya",
       ]),
     );
   });
@@ -58,6 +59,17 @@ describe("Department store brand search (#419)", () => {
       poi: { id: "shop-sjk-isetan-mens" },
       matched: section,
       tenant: { name: section, floorLabel: "1F" },
+    });
+  });
+
+  it.each([
+    ["アロマセラピーアソシエイツ", "2F"],
+    ["ニトリ", "南館 1F～5F"],
+  ])("returns the 高島屋 card with the printed floor for %s", (brand, floor) => {
+    expect(search(brand)[0]).toMatchObject({
+      poi: { id: "shop-sjk-takashimaya" },
+      matched: brand,
+      tenant: { name: brand, floorLabel: floor },
     });
   });
 });
