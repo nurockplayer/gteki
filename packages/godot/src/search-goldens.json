@@ -171,11 +171,6 @@
         ]
       },
       {
-        "query": "exit 35",
-        "normalized": "exit35",
-        "top": []
-      },
-      {
         "query": "35番出口",
         "normalized": "35番出口",
         "top": [
@@ -194,11 +189,6 @@
             "score": 105
           }
         ]
-      },
-      {
-        "query": "JR Central Gate 2",
-        "normalized": "jrcentralgate2",
-        "top": []
       },
       {
         "query": "中央通路",
@@ -271,11 +261,6 @@
             "score": 85
           }
         ]
-      },
-      {
-        "query": "East Exit",
-        "normalized": "eastexit",
-        "top": []
       },
       {
         "query": "6a",
