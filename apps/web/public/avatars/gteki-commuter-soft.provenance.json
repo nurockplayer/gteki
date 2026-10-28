@@ -2,8 +2,8 @@
   "file": "apps/web/public/avatars/gteki-commuter-soft.glb",
   "issue": "#339",
   "candidate": "A2 v2: soft-stylized silhouette sample (hand-built from primitives), open coat, cream knit, layered bob, painted toon atlases",
-  "sha256": "41a2ccd88db41541efb957652a4f98cb6aff95cd0ab78cb70f8492e09418cc32",
-  "bytes": 572136,
+  "sha256": "4655770629b5e1617134d4c26a6933ff1afb860ec9265cad773bd93313910601",
+  "bytes": 580196,
   "license_spdx": "CC-BY-4.0",
   "attribution": "GTEki contributors",
   "base_mesh": "none (primitives)",
@@ -24,7 +24,8 @@
     "v8 face (#339, 2026-10-28): one mouth only (old second stroke removed); far-side (wearer's left) eye artwork a further 3 % of face width inward and 6 % narrower; soft jaw underside #E6C7B6; jaw perimeter 0.15 fuller",
     "v8b symmetric eyes (#339, 2026-10-28): near (+X) eye artwork given the same inward offset as the far eye (8 % + 3 % of face width) and the same 6 % narrower squeeze, so both eyes are symmetric in the front view; no other change",
     "v9 face-only (#339, 2026-10-28): cheeks +8 % in the eye-to-mouth band, chin width >= 0.62 x cheek with a flatter chin bottom; feathered cheek, nose-bridge and under-fringe midtones; outer-corner upper lids 2 texels thicker; brows gently arched; mouth 18 mm, #7E3F37; eyes unmoved",
-    "v10 face framing (#339, 2026-10-28): oval face opening (half-angle 0.70 rad at 1.40 m, 1.00 at 1.47, 0.85 at 1.53); fringe lower edge arched (5 mm higher at centre); neck tapers into the jaw (r 0.050 to 0.036) and tinted #E3C2B0; close-up camera at 45 degrees front-right, eye height 1.48 m"
+    "v10 face framing (#339, 2026-10-28): oval face opening (half-angle 0.70 rad at 1.40 m, 1.00 at 1.47, 0.85 at 1.53); fringe lower edge arched (5 mm higher at centre); neck tapers into the jaw (r 0.050 to 0.036) and tinted #E3C2B0; close-up camera at 45 degrees front-right, eye height 1.48 m",
+    "v11 face geometry (#339, 2026-10-28): egg plan front half is a superellipse (n 2.6, back n 2); egg rings bunched (4 crown-to-brow, 6 to chin) with 12 sides on the front 220 deg and 4 behind (tri-neutral, egg 320 tris); cheek midtone #E8BCAE, 10 % jaw and side shade; 20 mm smile with corners lifted 1.5 mm in #7E3F37 and a faint lower-lip tint #D9A79C"
   ],
   "clip_authorship": "Authored by GTEki contributors in Blender from code (no motion capture, no third-party clips); CC-BY-4.0",
   "generator": "tools/blender/character/build_commuter_soft.py, Blender 5.2.2 LTS (headless, -b) with the bundled glTF 2.0 exporter",
