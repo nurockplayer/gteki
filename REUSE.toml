@@ -55,15 +55,6 @@ precedence = "override"
 SPDX-FileCopyrightText = "GTEki contributors"
 SPDX-License-Identifier = "CC-BY-4.0"
 
-# #339 candidate A (MPFB2 route): edited derivative of the CC0 MPFB2 base mesh; the edits (decimation,
-# commuter materials, skeleton, weights, clips) are original work under CC-BY-4.0 per the rights audit
-# (docs/assets/character-rights-audit.md section 1). Sidecar records the CC0 base hashes and licence line.
-[[annotations]]
-path = ["apps/web/public/avatars/gteki-commuter-mpfb.glb", "apps/web/public/avatars/gteki-commuter-mpfb.provenance.json"]
-precedence = "override"
-SPDX-FileCopyrightText = "GTEki contributors"
-SPDX-License-Identifier = "CC-BY-4.0"
-
 # #339 soft-stylized silhouette sample: hand-built from Blender primitives with no body generator and
 # no downloaded mesh, so the whole mesh, rig, weights and clips are original work (CC-BY-4.0) under the
 # repo licence. The sidecar records the hash and the build script.
@@ -72,16 +63,6 @@ path = ["apps/web/public/avatars/gteki-commuter-soft.glb", "apps/web/public/avat
 precedence = "override"
 SPDX-FileCopyrightText = "GTEki contributors"
 SPDX-License-Identifier = "CC-BY-4.0"
-
-# #339 candidate B (ready-rigged CC0): Quaternius Universal Animation Library (models by @Quaternius)
-# and KayKit Adventurers 2.0 Rogue (Kay Lousberg) are dedicated to the public domain under CC0 1.0.
-# The GLBs are edited derivatives of those sources and stay CC0-1.0; each sidecar records the source
-# zip hash, the member paths used, the licence quotes and the edits.
-[[annotations]]
-path = ["apps/web/public/avatars/gteki-commuter-ual.glb", "apps/web/public/avatars/gteki-commuter-ual.provenance.json", "apps/web/public/avatars/gteki-commuter-kaykit.glb", "apps/web/public/avatars/gteki-commuter-kaykit.provenance.json"]
-precedence = "override"
-SPDX-FileCopyrightText = "Quaternius (Universal Animation Library); Kay Lousberg (KayKit Adventurers 2.0); modified by GTEki contributors"
-SPDX-License-Identifier = "CC0-1.0"
 
 # --- 3. AI-generated 2D images: CC0-1.0 ----------------------------------------------------
 # Generated 2026-10-20 with OpenAI image generation through Codex; prompts, hashes and the
