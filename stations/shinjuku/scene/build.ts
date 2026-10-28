@@ -1093,6 +1093,8 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const kitSwap = opts.kit && ledger
     ? opts.kit.apply({ THREE, bundle, plan, layout, protection, liftAnchors, root, ledger, levelGroups, track }) ?? undefined
     : undefined;
+  // Runs whose balustrade the kit replaced; only these get the kit comb plates.
+  const combed = new Set(kitSwap?.placed.filter((p) => p.replaces === "escalator-balustrade").map((p) => p.anchorKey));
   addWallBackFaces(root, mat.wall, track);
   bakeFloorLightPools(layout, root, [mat.floor, mat.floorPaid, mat.floorPlatform], track);
   // Batch names say what is inside. The steel batch is the stair handrails and brackets, escalator trusses and
@@ -1350,6 +1352,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     }
     for (const esc of escalators) {
       const { lo, hi, yaw, count, L3, stepLen } = esc.steps.userData as { lo: XYZ; hi: XYZ; yaw: number; count: number; L3: number; stepLen: number };
+      const trim = combed.has(esc.run.edgeId) ? stepLen / 2 : 0;
       tmpQ.setFromEuler(new THREE.Euler(0, yaw, 0, "YXZ"));
       const phase = (((t * esc.speed) % stepLen) + stepLen) % stepLen;
       for (let i = 0; i < count; i++) {
@@ -1357,8 +1360,9 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         if (s > L3) s -= L3;
         const f = s / L3;
         tmpP.set(lo.x + (hi.x - lo.x) * f, lo.z + (hi.z - lo.z) * f - 0.03, -(lo.y + (hi.y - lo.y) * f));
-        // A step within half a step of either comb would poke a sliver past it: hide it there.
-        tmpM.compose(tmpP, tmpQ, s < stepLen / 2 || s > L3 - stepLen / 2 ? zeroS : tmpS);
+        // On a kit run, a step within half a step of either comb would poke a sliver past it: hide it there.
+        // Procedural runs have no comb, so hiding would open a gap at the landing instead.
+        tmpM.compose(tmpP, tmpQ, s < trim || s > L3 - trim ? zeroS : tmpS);
         esc.steps.setMatrixAt(i, tmpM);
       }
       esc.steps.instanceMatrix.needsUpdate = true;

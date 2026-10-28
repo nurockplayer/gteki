@@ -50,6 +50,6 @@ describe("station geometry lifetime", () => {
     // after #316 stopped letting surfaces below the runs suppress the shell.
     // Removing only those batches reproduces the previous visual digest; all physical
     // buffers remain byte-identical (scene-digest.test.ts). Retired arrays stay collectible.
-    expect(result.geometryHash).toBe("f0a1b267ff2cf78debf670f66520cddf47ec4c94bd39d324348ac0b2920be840");
+    expect(result.geometryHash).toBe("2931495174d3eacc531cc9e2bbcdd0e5521b6bc2f457b258fccf1cd9040a472e");
   }, 60_000);
 });
