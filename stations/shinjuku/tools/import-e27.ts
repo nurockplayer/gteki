@@ -811,6 +811,8 @@ exits.forEach((x, i) => {
     names: [
       { lang: "ja", text: `出口（${d.parts.ja.join("・")}）` },
     ],
+    // Director ruling #595: composed English is our description, not a name. Name displays (map and minimap
+    // labels, cards) fall back to ja by design; the description shows only as a subtitle.
     descriptions: [{ lang: "en", text: `Exit (${d.parts.en.join(", ")})` }],
     aliases: [
       { lang: "ja-Hrkt", text: "でぐち" },
