@@ -181,7 +181,7 @@ if (!enabled) test.skip("avatar baseline (set GTEKI_AVATAR_BASELINE=1; needs a G
 for (const key of enabled ? STATIONS_UNDER_TEST : []) test(`${key}: avatar baseline (#339 F0/F1) @phone`, async ({ page }, testInfo) => {
   test.setTimeout(900_000);
   await page.addInitScript(DEVTOOLS_SCRIPT);
-  await openStation(page, key);
+  await openStation(page, key, process.env.GTEKI_AVATAR_PROBES ? "" : "&avatar=procedural");
   const found = await page.evaluate(PAGE_HELPERS, PROBES);
   expect(found.missing, "foot probe objects not found in the scene (set GTEKI_AVATAR_PROBES)").toEqual([]);
   expect(found.hasGroup).toBe(true);

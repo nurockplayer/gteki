@@ -2,6 +2,10 @@
 
 Draft transcription for review by lines-lead. Data file: [`shinjuku-line-pois-wp4.json`](shinjuku-line-pois-wp4.json). Search-only: nothing here is routable, positioned, floored or claimed to be open.
 
+## Name contract
+
+Japanese is required; English is optional only for verbatim official text with a cited English source.
+
 ## Counts
 
 | Operator | ticket_gate | exit | elevator | escalator | total |

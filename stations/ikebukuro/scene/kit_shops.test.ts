@@ -13,7 +13,7 @@ import placementsJson from "./shop_placements.json";
 import { type KitManifest, pieceUri } from "./kit.ts";
 import {
   type Opening, type Shop, SHOP_USE, SIGN_HEIGHT_M, SIGN_MAX_WIDTH_M, SIGN_OFFSET_M, loadShopKit, relativeLuminance, shopPieces,
-  shopPlacements, shopSigns, signTextColour,
+  shopPlacements, shopSigns, shopBladeSigns, shopABoards, signTextColour,
 } from "./kit_shops.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -113,6 +113,16 @@ describe("placement maths", () => {
     expect(shopSigns([{ ...shop, openings: ["p-low"] }], [lowRow], pieces)).toEqual([]);
   });
 
+  it("places eligible blade signs and boards", () => {
+    expect(shopBladeSigns([shop], [{ ...door, height: 1.9 }], pieces)).toEqual([]);
+    expect(shopBladeSigns([shop], [door], pieces)).toHaveLength(1);
+    for (const display of ["cafe", "bakery", "deli", "sweets", "books"]) {
+      const candidate = { ...shop, openings: ["p-door"], display };
+      expect(shopABoards([candidate], [door], pieces)).toHaveLength(display === "books" ? 0 : 1);
+      expect(shopABoards([candidate], [{ ...door, edge_distance_m: 1.99 }], pieces)).toHaveLength(0);
+    }
+  });
+
   it("uses accents darkened to legible luminance", () => {
     expect(relativeLuminance("#000000")).toBe(0);
     expect(relativeLuminance("#f4f2ee")).toBeGreaterThan(0.6);
@@ -195,6 +205,45 @@ describe("visual only", () => {
   const all = (tier: string) => ["gteki_shopfront_glazing_w2400", "gteki_shopfront_door_w2000", "gteki_shopfront_shutter_w2400_half"]
     .map((id) => pieceUri(kit, id, tier === "low"));
   const env = new THREE.Texture();
+  function realShop(uri: string): GLTF {
+    const bytes = fs.readFileSync(path.join(GTEKI, uri));
+    const jsonBytes = bytes.readUInt32LE(12);
+    const d = JSON.parse(bytes.subarray(20, 20 + jsonBytes).toString("utf8"));
+    const bin = bytes.subarray(28 + jsonBytes);
+    const accessor = (id: number, components: number) => {
+      const a = d.accessors[id], view = d.bufferViews[a.bufferView];
+      const size = a.componentType === 5123 ? 2 : 4;
+      const get = a.componentType === 5126 ? (o: number) => bin.readFloatLE(o) : a.componentType === 5123 ? (o: number) => bin.readUInt16LE(o) : (o: number) => bin.readUInt32LE(o);
+      return Array.from({ length: a.count * components }, (_, i) => get((view.byteOffset ?? 0) + (a.byteOffset ?? 0) + Math.floor(i / components) * (view.byteStride ?? components * size) + i % components * size));
+    };
+    const nodes = d.nodes.map((n: { name: string; mesh?: number; translation?: number[]; rotation?: number[]; scale?: number[] }) => {
+      const group = new THREE.Group(); group.name = n.name;
+      if (n.translation) group.position.fromArray(n.translation);
+      if (n.rotation) group.quaternion.fromArray(n.rotation);
+      if (n.scale) group.scale.fromArray(n.scale);
+      if (n.mesh !== undefined) for (const p of d.meshes[n.mesh].primitives) {
+        const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(accessor(p.attributes.POSITION, 3), 3)); geo.setIndex(accessor(p.indices, 1));
+        group.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ name: d.materials[p.material].name })));
+      }
+      return group;
+    });
+    d.nodes.forEach((n: { children?: number[] }, i: number) => n.children?.forEach((c) => nodes[i].add(nodes[c])));
+    const scene = new THREE.Group(); for (const i of d.scenes[d.scene ?? 0].nodes) scene.add(nodes[i]);
+    return { scene, scenes: [scene] } as unknown as GLTF;
+  }
+  it("reports committed placements for each real tier", async () => {
+    for (const low of [false, true]) {
+      const loaded = await loadShopKit(THREE, host(all(low ? "low" : "high"), async (uri) => realShop(uri)), kit, shops, openings, low);
+      const { stats } = loaded.build(THREE, env, toRenderer);
+      console.log(`[shop stats] ${low ? "low" : "desktop"}: ${JSON.stringify(stats)}`);
+      expect(stats).toMatchObject({ shops: 10, modules: 22, tiles: low ? 5 : 8,
+        drawCallsAllTiles: low ? 29 : 77, trianglesAllTiles: low ? 3336 : 7379,
+        trianglesWorstTile: low ? 1294 : 1548, signs: 9, signDrawCalls: 1, signTriangles: 50,
+        interiorDrawCalls: 1, interiorTriangles: 60, spillDrawCalls: 1, bladeSigns: 8, aBoards: 4 });
+      loaded.dispose();
+    }
+  });
+
 
   it("builds instances and one merged sign mesh, all under the kit_shop role, and nothing else", async () => {
     const loaded = await loadShopKit(THREE, host(all("high")), kit, shops, openings, false);
@@ -210,24 +259,60 @@ describe("visual only", () => {
     expect(stats.modules).toBe(loaded.placements.length);
     expect(stats.signs).toBe(loaded.signs.length);
     expect(stats.signDrawCalls).toBe(1);
-    expect(stats.signTriangles).toBe(2 * loaded.signs.length);
+    // Each blade sign is two single-sided quads facing opposite ways, so neither face shows mirrored text.
+    expect(stats.signTriangles).toBe(2 * (loaded.signs.length + 2 * stats.bladeSigns));
+    const signMesh = group.getObjectByName("kit_shop_signs") as THREE.Mesh;
+    expect((signMesh.material as THREE.Material).side).toBe(THREE.FrontSide);
     expect(stats.trianglesAllTiles).toBe(loaded.placements.length * 2 * 12); // 2 fake parts, 12 triangles each
     expect(stats.drawCallsAllTiles).toBe(group.children.filter((o) => (o as THREE.InstancedMesh).isInstancedMesh).length);
     loaded.dispose();
   });
 
-  it("replaces the dark reveal on instanced meshes with a lit interior", async () => {
+  it("merges reveals into an atlas and adds one spill mesh", async () => {
+    const row: Opening = { ...openings[0]!, opening_id: "test-row", polygon_ids: ["test-polygon"], width: 4.8, height: 2.2, type: "Window" };
+    const shop: Shop = { ...shops[0]!, id: "test-shop", openings: ["test-polygon"], front: "glazing", display: "books" };
     const loaded = await loadShopKit(THREE, host(all("high"), async (uri) => {
       const gltf = fakeShop(uri, 1);
       const reveal = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshStandardMaterial({ name: "gteki_reveal_dark" }));
       reveal.name = "VIS_reveal";
       gltf.scene.children[0]!.add(reveal);
       return gltf;
-    }), kit, shops, openings, false);
+    }), kit, [shop], [row], false);
     const { group } = loaded.build(THREE, env, toRenderer);
     const instances = group.children.filter((o) => (o as THREE.InstancedMesh).isInstancedMesh) as THREE.InstancedMesh[];
     expect(instances.every((o) => (o.material as THREE.Material).name !== "gteki_reveal_dark")).toBe(true);
-    expect(instances.some((o) => (o.material as THREE.MeshBasicMaterial).isMeshBasicMaterial && (o.material as THREE.MeshBasicMaterial).map)).toBe(true);
+    const interior = group.getObjectByName("kit_shop_interiors") as THREE.Mesh;
+    expect(interior).toBeTruthy();
+    expect(group.children.filter((o) => o.name === "kit_shop_interiors")).toHaveLength(1);
+    expect(group.children.filter((o) => o.name === "kit_shop_spill")).toHaveLength(1);
+    const uv = interior.geometry.getAttribute("uv");
+    expect([uv.getX(0), uv.getY(0)]).not.toEqual([uv.getX(4), uv.getY(4)]);
+    loaded.dispose();
+  });
+
+  it("builds low-tier cards for glazing and door bays without reveal parts", async () => {
+    const rows: Opening[] = [
+      { ...openings[0]!, opening_id: "window", polygon_ids: ["window"], width: 4.8, height: 2.2, type: "Window" },
+      { ...openings[0]!, opening_id: "door", polygon_ids: ["door"], width: 4, height: 2.2, type: "Door" },
+    ];
+    const shop: Shop = { ...shops[0]!, openings: ["window", "door"], front: "door_glazing", display: "books" };
+    const loaded = await loadShopKit(THREE, host(all("low")), kit, [shop], rows, true);
+    const { group, stats } = loaded.build(THREE, env, toRenderer);
+    expect(loaded.placements).toHaveLength(4);
+    expect(stats.interiorTriangles).toBe(8);
+    expect((group.getObjectByName("kit_shop_interiors") as THREE.Mesh).geometry.getAttribute("position").count).toBe(16);
+    loaded.dispose();
+  });
+
+  it("keeps spill quads for distinct rows sharing an opening id", async () => {
+    const row: Opening = { ...openings[0]!, opening_id: "shared", polygon_ids: ["one"], centre: [10, 20, 0], width: 3, height: 2.2, type: "Window" };
+    const other: Opening = { ...row, polygon_ids: ["two"], centre: [30, 20, 0] };
+    const shop: Shop = { ...shops[0]!, openings: ["one", "two"], front: "glazing" };
+    const loaded = await loadShopKit(THREE, host(all("high")), kit, [shop], [row, other], false);
+    const mesh = loaded.build(THREE, env, toRenderer).group.getObjectByName("kit_shop_spill") as THREE.Mesh;
+    const pos = mesh.geometry.getAttribute("position");
+    expect(pos.count).toBe(8);
+    expect(Math.abs(pos.getX(0) - pos.getX(4))).toBeCloseTo(20);
     loaded.dispose();
   });
 

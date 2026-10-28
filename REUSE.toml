@@ -55,6 +55,15 @@ precedence = "override"
 SPDX-FileCopyrightText = "GTEki contributors"
 SPDX-License-Identifier = "CC-BY-4.0"
 
+# #339 soft-stylized silhouette sample: hand-built from Blender primitives with no body generator and
+# no downloaded mesh, so the whole mesh, rig, weights and clips are original work (CC-BY-4.0) under the
+# repo licence. The sidecar records the hash and the build script.
+[[annotations]]
+path = ["apps/web/public/avatars/gteki-commuter-soft.glb", "apps/web/public/avatars/gteki-commuter-soft.provenance.json"]
+precedence = "override"
+SPDX-FileCopyrightText = "GTEki contributors"
+SPDX-License-Identifier = "CC-BY-4.0"
+
 # --- 3. AI-generated 2D images: CC0-1.0 ----------------------------------------------------
 # Generated 2026-10-20 with OpenAI image generation through Codex; prompts, hashes and the
 # "AI-generated" label are in assets/library/source/posters/provenance.json. Fictional only:
