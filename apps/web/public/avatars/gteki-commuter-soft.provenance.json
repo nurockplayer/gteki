@@ -2,8 +2,8 @@
   "file": "apps/web/public/avatars/gteki-commuter-soft.glb",
   "issue": "#339",
   "candidate": "A2 v2: soft-stylized silhouette sample (hand-built from primitives), open coat, cream knit, layered bob, painted toon atlases",
-  "sha256": "81678aeb2a1cebf9cd05f9dddf97d937bf5333bfb3150311def7efb4694e6b24",
-  "bytes": 542156,
+  "sha256": "48d355bd61c52f1cc017f37d1b08fbc0f777e17b1b082dbae8b18d48b980a16b",
+  "bytes": 542260,
   "license_spdx": "CC-BY-4.0",
   "attribution": "GTEki contributors",
   "base_mesh": "none (primitives)",
@@ -16,12 +16,13 @@
     "v2 fix 4 (#339, 2026-10-28): the five bang tubes are replaced by one fringe sheet (4 mm proud of the forehead, five rounded scallops, part at x -0.02); the tote strap runs over the right shoulder on the coat surface down to the bag's top corners, no segment above z 1.36 and clear of the head; the upper coat and both skirt panels share one navy paint cell, the skirt top sits 3 mm inside the upper coat hem, and the back vent and yoke line stay",
     "v3 (#339, 2026-10-28): whole head scaled 0.82 about the chin (adult proportions, height 1.660 m), eyes 0.8x; shoulders narrowed 8% and sleeves taper 6 cm to 5.2 cm; hem flare +10%; coat open to the hem with no centre-front bridge, inner edges and two buttons painted; trousers 8.8 cm radius at legs x +/-0.098 with one crease; loafers 4 cm longer toe and 1.5 cm heel block; seven-clump bob, single fringe sheet with pointed V scallops; bag 6 cm deep, 18 mm strap, over the right shoulder; skirt top merged with the coat seam (no ledge); yoke line at 1.24 m with a 2 mm step; face and hair paint retuned",
     "v4 (#339, 2026-10-28): coat rebuilt as two continuous shoulder-neck-to-hem lofts (one per half, back lap 3 deg above the vent), no separate upper coat and skirt meshes, linear widening to the hem, opening 0.10 m at the hem; bob hair lips at the face opening, six-lock fringe, side tips pushed out 20 mm then tucked 8 mm; eyes, brows, smile line and cheek tint; coat, knit and trouser atlas colours; bag centre x 0.255 y -0.060 with one strap down the back of the arm",
-    "v5 (#339, 2026-10-28): shoulders sloped and 25 mm narrower per side, upper arm joints x +/-0.142 at z 1.320, sleeves 56 mm to 44 mm and 0.9 deep; walk drape with thigh share 0.6 blending from 0.80 m; hands 10 mm outward; fringe locks swept 25 deg toward +x with 60-85 mm lengths; bob clump ends staggered +/-10 mm; UVs kept half a texel inside atlas rects (hair stripe from the face-skin neighbour removed); yoke over 70% of the back width with a curved lower edge, continuous back seam to the hem; feathered value zones, two folds per trouser leg, knit rib lines every 12 texels; lenses +20 %, iris rim, angled brows, stronger smile, cheek tint 0.5"
+    "v5 (#339, 2026-10-28): shoulders sloped and 25 mm narrower per side, upper arm joints x +/-0.142 at z 1.320, sleeves 56 mm to 44 mm and 0.9 deep; walk drape with thigh share 0.6 blending from 0.80 m; hands 10 mm outward; fringe locks swept 25 deg toward +x with 60-85 mm lengths; bob clump ends staggered +/-10 mm; UVs kept half a texel inside atlas rects (hair stripe from the face-skin neighbour removed); yoke over 70% of the back width with a curved lower edge, continuous back seam to the hem; feathered value zones, two folds per trouser leg, knit rib lines every 12 texels; lenses +20 %, iris rim, angled brows, stronger smile, cheek tint 0.5",
+    "v5b (#339, 2026-10-28): the face opening closes at 1.560 m (was 1.575), so the crown shell covers the forehead above the brows and no skin shows between the hairline and the fringe"
   ],
   "clip_authorship": "Authored by GTEki contributors in Blender from code (no motion capture, no third-party clips); CC-BY-4.0",
   "generator": "tools/blender/character/build_commuter_soft.py, Blender 5.2.2 LTS (headless, -b) with the bundled glTF 2.0 exporter",
-  "triangles": 4580,
+  "triangles": 4584,
   "texture_bytes": 47066,
   "budget": "high tier: <=12000 triangles, <=3 primitives per visual node, <=1024^2 textures (body 1024^2, head 512^2); this sample stays under 5000 triangles by design",
-  "triangles_note": "4580 exported tris (body 3404, head 1176 from the build report)"
+  "triangles_note": "4584 exported tris (body 3404, head 1180 from the build report)"
 }
