@@ -77,8 +77,8 @@ EYE_HALF_W, EYE_HALF_H = 0.0384, 0.0288  # v5: lenses +20 % over v4, applied bef
 # Solid bob shell (fix 1 item 3): (z, rx, ry) from the chin to above the crown. ear-level width >= 1.3x skull.
 BOB_LOWER = [(1.400, 0.122, 0.116), (1.450, 0.142, 0.135), (1.500, 0.152, 0.154), (1.545, 0.154, 0.156)]
 DOME_BASE_Z, DOME_RX, DOME_HEIGHT = 1.545, 0.154, 0.172  # hemisphere cap: crown at 1.717 m
-BOB_FADE_Z = 1.560  # the face opening closes into the forehead between 1.545 and 1.560 m (v5b: covers the forehead)
-BOB_OPEN = 0.75  # half-angle (rad) of the face opening in the lower shell, centred on the front
+BOB_FADE_Z = 1.575  # the face opening closes into the forehead between 1.545 and 1.575 m
+BOB_OPEN = 1.00  # half-angle (rad) of the face opening in the lower shell, centred on the front
 BOB_TIPS = 7  # v3: seven broad clumps around the lower edge
 FACE_X0, FACE_W, FACE_Z0, FACE_H = -0.115, 0.230, 1.370, 0.340  # face atlas span (metres)
 BLINK_PUSH_M = 0.005  # lens sits 1 mm proud; the closed blink pushes it 4 mm under the skin
@@ -622,7 +622,8 @@ def shell_radii(z):
 def face_opening_angle(z):
     if z <= DOME_BASE_Z:
         return BOB_OPEN
-    return BOB_OPEN * max(0.0, (BOB_FADE_Z - z) / (BOB_FADE_Z - DOME_BASE_Z))
+    u = min(1.0, (z - DOME_BASE_Z) / (BOB_FADE_Z - DOME_BASE_Z))
+    return BOB_OPEN * math.sqrt(max(0.0, 1.0 - u * u))  # rounded top of the opening, not a straight cut
 
 
 def in_face_opening(centre):
@@ -656,23 +657,27 @@ def fringe_z(x):
 
 
 def build_fringe():
-    """Six solid locks on the forehead: flattened wedges, 30 mm root to 6 mm tip, 8 mm thick, neighbours
-    overlapping about a fifth. Each lock is swept 25 deg toward +x; lengths vary by 25 mm across the set."""
+    """Six solid locks from roots tucked under the crown shell at 1.625 m: flattened wedges, 30 mm root to a
+    rounded tip, 8 mm thick, neighbours overlapping about a fifth. Each lock is swept 25 deg toward +x;
+    lengths 60-80 mm."""
     patch = Patch(HAIR_CELLS[1])
     roots = [-0.075, -0.049, -0.023, 0.003, 0.029, 0.055]
-    lengths = [0.085, 0.070, 0.060, 0.080, 0.068, 0.072]
+    lengths = [0.080, 0.066, 0.060, 0.076, 0.064, 0.072]
     sweep = math.sin(math.radians(25.0))
+    top = 1.625
     for root, length in zip(roots, lengths):
         tip_x = root + length * sweep
         path, radii = [], []
-        for k in range(5):
-            t = k / 4.0
+        for k in range(7):
+            t = k / 6.0
             x = root + (tip_x - root) * t
-            z = 1.665 - length * t
+            z = top - length * t
             path.append((x, hair_front_y(x, z) + 0.003, z))
-            radii.append((0.015 + (0.003 - 0.015) * t, 0.004))
+            width = 0.015 + (0.002 - 0.015) * t  # tapers to a rounded tip
+            radii.append((width, 0.004 * (1.0 - 0.5 * t)))
         patch.tube(path, radii, sides=6)
     return patch
+
 
 def build_lip(side):
     """A 6 mm lip of hair colour along the face-opening edge on one side (side -1 left, +1 right)."""
@@ -687,6 +692,23 @@ def build_lip(side):
         rings.append([(x_edge, y_edge, z), (x_in, hair_front_y(x_in, z) + 0.001, z)])
     patch = Patch(HAIR_CELLS[0])
     patch.grid(rings)
+    return patch
+
+
+def build_underlay():
+    """Hair underlay on the forehead, 1.5 mm proud of the shell, from an arched hairline (1.548-1.565 m) up under the crown: it covers the
+    gap between the fringe tips and the rounded top of the face opening, so no skin shows under the fringe."""
+    patch = Patch(HAIR_CELLS[1])
+    rows = []
+    columns = linspace(-0.09, 0.09, 19)
+    for f in linspace(0.0, 1.0, 4):
+        row = []
+        for x in columns:
+            low = 1.548 + 0.017 * (1.0 - (x / 0.09) ** 2)  # arched hairline: higher at the centre
+            z = low + (1.63 - low) * f
+            row.append((x, hair_front_y(x, z) + 0.0015, z))
+        rows.append(row)
+    patch.grid(rows, flip=True)
     return patch
 
 
@@ -718,7 +740,7 @@ def build_bob():
     shell = Patch(HAIR_CELLS[0])
     shell.loft(rings, cap_last=True)
     shell.drop(in_face_opening)
-    return [shell, build_lip(-1.0), build_lip(1.0), build_fringe()]
+    return [shell, build_lip(-1.0), build_lip(1.0), build_underlay(), build_fringe()]
 
 def head_point(p):
     return tuple(HEAD_CHIN[a] + (p[a] - HEAD_CHIN[a]) * HEAD_SCALE for a in range(3))
