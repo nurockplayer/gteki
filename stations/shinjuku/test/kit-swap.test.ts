@@ -41,15 +41,17 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
  * walkable, colliders, cameraBlockers and every explorer list are unchanged.
  * Vertical transport pass (docs/visual/vertical-gap.md) adds 2 meshes (stair risers, escalator truss on its own
  * material) and 490,580 B (riser planes and nosing lips); escalator steps become tread + riser with a step atlas.
- * Geometry, appearance, nodes and textures re-measured; listsDigest and every count unchanged. */
+ * Geometry, appearance, nodes and textures re-measured; listsDigest and every count unchanged.
+ * Vertical batch 3 adds contact-shade vertex colours (truss, risers, escalator steps) and luminaires under the escalator
+ * shell soffits: +39,792 B, same meshes; geometry, nodes and textures re-measured, appearance and lists unchanged. */
 const MAIN_BASELINE = {
   station: {
-    geometryDigest: "698615760ab27c20613de649182cb02455edfc5ffb39a587f2d0cc7f592e0a17",
+    geometryDigest: "03c651ff993064a5bd8c70f2eb39171f9452a5c8f232e29e46f8d7b9c70d1ca9",
     appearanceDigest: "bb90e82a587a6cfcd79a1d6a311dbd6e010a6d747417b3a96cb7c7e5553fabaf",
-    nodesDigest: "04c6bfd082e1f1ce2f1c4826baf2199806e2eb003b10a34bb58366db5c8d0d88",
-    texturesDigest: "c8f53716338bb41faf1cf09499f2a6bb149147d879491c851eac564281f01e1c",
+    nodesDigest: "6247901bcf70bac74641e0a6d8ddab3bedff9f9bc744b9d748a76684f70e9941",
+    texturesDigest: "ffc241b92b736d65bbd408c5d766beed14df518857647e9dce1b02e53bbf0193",
     meshes: 145,
-    bytes: 14_033_078,
+    bytes: 14_072_870,
   },
   lists: {
     listsDigest: "ddd5c84df153fb71c2254a20ec8132134ef0aaa6bb4878cb683da4ffc967913f",
