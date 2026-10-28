@@ -18,6 +18,7 @@ const pois = bundle.pois;
 const floors = new Map(bundle.floors.map((f) => [f.id, f]));
 const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
 const text = (p: Poi, lang: string) => p.names.find((n) => n.lang === lang)?.text;
+const description = (p: Poi, lang: string) => p.descriptions?.find((n) => n.lang === lang)?.text;
 const byCategory = (c: string) => pois.filter((p) => p.category === c);
 /** #411: search-only line POIs cite tokyo-s03-zip and nothing else. */
 const S03_SOURCE = "tokyo-s03-zip";
@@ -49,13 +50,13 @@ describe("POI names", () => {
     expect(issues.filter((i) => i.level === "error")).toEqual([]);
   });
 
-  it("gives every E27 POI a ja and en name, unique per language, and every S03 or shop POI one ja name", () => {
+  it("gives every E27 POI a unique ja name and en description, and every S03 or shop POI one ja name", () => {
     // #411: S03 search-only POIs carry a ja name only (copied as printed; no English is invented).
     // #214: merchant listings are printed names too; they carry no invented English either.
     const e27 = pois.filter(isE27);
     for (const p of pois.filter(isShop)) expect(text(p, "ja"), p.id).toBeTruthy();
     for (const lang of ["ja", "en"]) {
-      const names = e27.map((p) => text(p, lang));
+      const names = e27.map((p) => lang === "en" ? description(p, lang) : text(p, lang));
       expect(names.every(Boolean), lang).toBe(true);
       expect(new Set(names).size, lang).toBe(names.length);
     }
@@ -74,7 +75,7 @@ describe("POI names", () => {
   it("keeps the level in every exit name (a B1 exit never says street level)", () => {
     for (const p of exits) {
       const ordinal = floors.get(p.floorId!)!.ordinal!;
-      const ja = text(p, "ja")!, en = text(p, "en")!;
+      const ja = text(p, "ja")!, en = description(p, "en")!;
       if (ordinal >= 0) {
         expect(ja, p.id).toMatch(/地上/);
         expect(en, p.id).toMatch(/street level/);
@@ -90,7 +91,7 @@ describe("POI names", () => {
     // Official exit numbers are a coverage gap (gap:exit-numbers); the only digit allowed is the level itself.
     expect(bundle.coverage.gaps.some((g) => g.id === "gap:exit-numbers")).toBe(true);
     for (const p of exits) {
-      const ja = text(p, "ja")!.replace("地下1階", ""), en = text(p, "en")!.replace("B1", "");
+      const ja = text(p, "ja")!.replace("地下1階", ""), en = description(p, "en")!.replace("B1", "");
       expect(ja, p.id).not.toMatch(/[0-9０-９]|番|第|No\./);
       expect(en, p.id).not.toMatch(/[0-9]|#|\bno\.|\bnumber\b/i);
       for (const a of p.aliases) {
@@ -111,7 +112,7 @@ describe("POI names", () => {
       const ja = [d.street ? "地上" : "地下1階", `${COMPASS_BY_EN[d.compass]!.ja}側`, ...(wordsJa ? [`${wordsJa}に隣接`] : []), ...(d.roof ? [d.roof === "roofed" ? "屋根あり" : "屋根なし"] : [])].join("・");
       const en = [d.street ? "street level" : "underground level B1", `${d.compass} side`, ...(wordsEn ? [`next to ${wordsEn}`] : []), ...(d.roof ? [d.roof === "roofed" ? "roofed" : "no roof"] : [])].join(", ");
       expect(text(p, "ja"), p.id).toBe(`出口（${ja}）`);
-      expect(text(p, "en"), p.id).toBe(`Exit (${en})`);
+      expect(description(p, "en"), p.id).toBe(`Exit (${en})`);
       if (!d.street) expect(d.roof, p.id).toBeNull();
       expect(p.evidence.method, p.id).toContain("E27 屋根の有無");
     }
@@ -304,14 +305,14 @@ describe("POI aliases", () => {
     const platform = pois.find((p) => p.id === "poi:platform:oedo")!;
     expect(text(platform, "ja")).toContain("都営大江戸線");
     expect(text(platform, "ja")).toContain("新宿");
-    expect(text(platform, "en")).toContain("Toei Oedo Line");
-    expect(text(platform, "en")).toContain("Shinjuku");
+    expect(description(platform, "en")).toContain("Toei Oedo Line");
+    expect(description(platform, "en")).toContain("Shinjuku");
     expect(platform.notes!.map((n) => n.text).join(" ")).toMatch(/JR/);
     // the names reuse the station record's own wording
     const stationJa = bundle.station.names.find((n) => n.lang === "ja")!.text;
     expect(stationJa).toContain("都営大江戸線");
     expect(bundle.station.codes!.map((c) => c.code)).toContain("E27");
-    expect(text(platform, "en")).toContain("E27");
+    expect(description(platform, "en")).toContain("E27");
   });
 
   it("never says PDL covers E27", () => {

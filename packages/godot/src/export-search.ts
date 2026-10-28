@@ -37,10 +37,16 @@ function displayNames(poi: Poi): Names {
   return { ja: pick("ja"), en: pick("en"), "zh-Hant": pick("zh-Hant") };
 }
 
+// Our own descriptive text (#595): a subtitle for the row, never its name.
+function displayDescriptions(poi: Poi): Names {
+  const pick = (lang: string) => poi.descriptions?.find((n) => n.lang === lang)?.text ?? null;
+  return { ja: pick("ja"), en: pick("en"), "zh-Hant": pick("zh-Hant") };
+}
+
 function keys(poi: Poi): { lang: string; text: string; norm: string }[] {
   const seen = new Set<string>();
   const out: { lang: string; text: string; norm: string }[] = [];
-  for (const { lang, text } of [...poi.names, ...poi.aliases] as LocalizedText[]) {
+  for (const { lang, text } of [...poi.names, ...poi.aliases, ...(poi.descriptions ?? [])] as LocalizedText[]) {
     const norm = normalizeJa(text);
     if (!norm || seen.has(norm)) continue;
     seen.add(norm);
@@ -86,6 +92,7 @@ export function buildSearchExport(bundle: StationBundle) {
       category: poi.category,
       floorId: poi.floorId,
       names: displayNames(poi),
+      descriptions: displayDescriptions(poi),
       // true only when the data lists at least one connector node; false = search-only, never route to it.
       routable: poi.connectorNodeIds.length > 0,
       nodeIds: poi.connectorNodeIds,

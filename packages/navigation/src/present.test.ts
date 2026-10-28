@@ -267,6 +267,8 @@ describe("describeRoute start at a stair/escalator/ramp connector", () => {
     const { b, exit, r } = stairFootOrigin();
     exit.names = [{ lang: "ja", text: "４番出口" }];
     expect(describeRoute(b, r, "en", undefined, exit)[0]!.text).toBe("Start at the foot of the ４番出口 stairs (the stairs are not part of this route)");
+    exit.descriptions = [{ lang: "en", text: "Exit 4" }];
+    expect(describeRoute(b, r, "en", undefined, exit)[0]!.text).toBe("Start at the foot of the ４番出口 — Exit 4 stairs (the stairs are not part of this route)");
     exit.names = [];
     expect(describeRoute(b, r, "en", undefined, exit)[0]!.text).toBe("Start at the foot of the stairs (the stairs are not part of this route)");
     expect(describeRoute(b, r, "ja", undefined, exit)[0]!.text).toBe("階段の下から出発（階段は経路に含まれません）");
@@ -462,6 +464,8 @@ describe("describeRoute junction hints", () => {
     const en = describeRoute(b, route(b, "start", "g"), "en");
     expect(en.map((i) => i.kind)).toEqual(["start", "walk", "turn_left", "arrive"]);
     expect(en[2]!.text).toBe("Turn left, ~90 m. After ~30 m, keep left at the junction. After ~60 m, continue straight past Ｂ出口.");
+    b.pois.find((p) => p.id === "exit-b")!.descriptions = [{ lang: "en", text: "North side" }];
+    expect(describeRoute(b, route(b, "start", "g"), "en")[2]!.junctions![1]!.name).toBe("Ｂ出口 — North side");
     b.pois.find((p) => p.id === "exit-b")!.names = [];
     expect(describeRoute(b, route(b, "start", "g"), "en")[2]!.junctions![1]).toMatchObject({ action: "straight", name: null });
   });

@@ -82,6 +82,21 @@ describe.each(STATIONS)("%s search export", (id) => {
   });
 });
 
+describe("search export description labels", () => {
+  it("exports descriptions as their own field, never as the name (#595)", async () => {
+    const bundle = await loadBundle(stationDir("shinjuku"));
+    const exits = buildSearchExport(bundle).entries.filter((e) => /^poi:exit:[1-4]$/.test(e.poiId));
+    expect(exits).toHaveLength(4);
+    for (const entry of exits) {
+      const poi = bundle.pois.find((p) => p.id === entry.poiId)!;
+      const desc = poi.descriptions!.find((d) => d.lang === "en")!.text;
+      expect(entry.descriptions.en).toBe(desc);
+      expect(entry.names.en).not.toBe(desc);
+    }
+    expect(new Set(exits.map((e) => e.descriptions.en)).size).toBe(4);
+  });
+});
+
 describe("approximate positions in the search export (#463)", () => {
   it("exports the ± radius and markers, never a position", () => {
     const b = createSyntheticBundle();

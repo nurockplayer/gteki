@@ -810,8 +810,10 @@ exits.forEach((x, i) => {
     category: "exit",
     names: [
       { lang: "ja", text: `出口（${d.parts.ja.join("・")}）` },
-      { lang: "en", text: `Exit (${d.parts.en.join(", ")})` },
     ],
+    // Director ruling #595: composed English is our description, not a name. Name displays (map and minimap
+    // labels, cards) fall back to ja by design; the description shows only as a subtitle.
+    descriptions: [{ lang: "en", text: `Exit (${d.parts.en.join(", ")})` }],
     aliases: [
       { lang: "ja-Hrkt", text: "でぐち" },
       { lang: "ja-Latn", text: "deguchi" },
@@ -859,8 +861,8 @@ gateClusters.forEach((g, i) => {
     category: "ticket_gate",
     names: [
       { lang: "ja", text: `改札（${g.level === "B1" ? "地下1階" : "地下2階"}・${ja}側）` },
-      { lang: "en", text: `Ticket gates (${g.level}, ${en} side)` },
     ],
+    descriptions: [{ lang: "en", text: `Ticket gates (${g.level}, ${en} side)` }],
     aliases: [
       { lang: "ja-Hrkt", text: "かいさつ" },
       { lang: "ja-Latn", text: "kaisatsu" },
@@ -888,8 +890,8 @@ pois.push({
   // searching 新宿 / Shinjuku lands on the Toei Oedo Line station. Other operators' names are added separately as search-only POIs from S03 (#411), appended at the end of the array.
   names: [
     { lang: "ja", text: "新宿駅（都営大江戸線）ホーム" },
-    { lang: "en", text: "Toei Oedo Line platform (Shinjuku Station, E27)" },
   ],
+  descriptions: [{ lang: "en", text: "Toei Oedo Line platform (Shinjuku Station, E27)" }],
   aliases: [
     { lang: "ja-Hrkt", text: "おおえどせん ほーむ" },
     { lang: "ja-Latn", text: "oedo sen platform" },
@@ -974,8 +976,8 @@ shafts.forEach((s, i) => {
     category: "elevator",
     names: [
       { lang: "ja", text: `エレベーター（${label}）` },
-      { lang: "en", text: `Elevator (${label})` },
     ],
+    descriptions: [{ lang: "en", text: `Elevator (${label})` }],
     aliases: [
       { lang: "ja-Hrkt", text: "えれべーたー" },
       { lang: "ja-Latn", text: "erebeta" },
@@ -1017,8 +1019,8 @@ for (const { level, f, p } of allFacilities) {
     category: "toilet",
     names: [
       { lang: "ja", text: `${t[0]}（${level.label === "1" ? "1階" : `地下${level.label.slice(1)}階`}）` },
-      { lang: "en", text: `${t[1]} (${level.label})` },
     ],
+    descriptions: [{ lang: "en", text: `${t[1]} (${level.label})` }],
     aliases: [
       { lang: "ja-Hrkt", text: "といれ" },
       { lang: "ja", text: "お手洗い" },

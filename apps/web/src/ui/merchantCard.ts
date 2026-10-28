@@ -28,6 +28,7 @@ export function merchantPrecision(poi: Poi): MerchantPrecision | null {
 export interface MerchantCardModel {
   id: string;
   name: string;
+  description?: string;
   category: string;
   /** The station floor label the POI records, or null: a merchant listing carries no floor id today. */
   floor: string | null;
@@ -49,6 +50,7 @@ export function merchantCardModel(poi: Poi, sources: readonly Source[], lang: La
   return {
     id: poi.id,
     name: pick(poi.names, lang) || poi.id,
+    description: poi.descriptions?.find((d) => d.lang === lang)?.text,
     category: poi.category,
     floor,
     precision: merchantPrecision(poi),
@@ -71,6 +73,7 @@ export function merchantCardEl(model: MerchantCardModel, t: Strings): HTMLElemen
   const card = el("div", "card merchant");
   card.dataset.poiId = model.id;
   card.append(el("h2", "merchant-name", model.name));
+  if (model.description) card.append(el("p", "muted merchant-description", model.description));
   const meta = [
     t.categoryNames[model.category] ?? model.category,
     model.floor,
