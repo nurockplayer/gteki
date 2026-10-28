@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
@@ -72,6 +73,20 @@ describe("#72 load-cost changes leave collision and fence geometry byte-identica
     for (const d of digests) expect(d).toEqual(base.station);
     // The snapshot itself is still the pristine post-protect layout.
     expect(exactHash(prepareLayout(bundle, plan, { reuse: true }).layout)).toBe(base.protect.layoutAfterProtect);
+  }, 120_000);
+
+  it("every mesh drawn with a vertex-colour material carries a colour attribute", () => {
+    withCanvasStub(() => {
+      const built = buildStation(bundle, plan, { quality: "low" });
+      const missing: string[] = [];
+      built.root.traverse((o) => {
+        if (!(o instanceof THREE.Mesh)) return;
+        const mats = Array.isArray(o.material) ? o.material : [o.material];
+        if (mats.some((m) => m.vertexColors) && !o.geometry.attributes.color) missing.push(o.name || o.uuid);
+      });
+      built.dispose();
+      expect(missing).toEqual([]);
+    });
   }, 120_000);
 
   it("derives the street layer itself when the baked table is not used, with the same result", () => {

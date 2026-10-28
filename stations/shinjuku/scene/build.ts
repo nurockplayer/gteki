@@ -378,11 +378,13 @@ export function cladWallGeometry(walls: WallSeg[]): THREE.BufferGeometry | null 
 
 function merged(geos: THREE.BufferGeometry[]): THREE.BufferGeometry | null {
   if (!geos.length) return null;
+  // Vertex colours (contactShade) survive only when every part has them; mergeGeometries needs one attribute set.
+  const keep = geos.every((g) => g.attributes.color) ? ["position", "normal", "uv", "color"] : ["position", "normal", "uv"];
   for (const g of geos) {
     if (!g.index) g.setIndex([...Array(g.attributes.position!.count).keys()]);
     if (!g.attributes.normal) g.computeVertexNormals();
     if (!g.attributes.uv) g.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position!.count * 2), 2));
-    for (const name of Object.keys(g.attributes)) if (!["position", "normal", "uv"].includes(name)) g.deleteAttribute(name);
+    for (const name of Object.keys(g.attributes)) if (!keep.includes(name)) g.deleteAttribute(name);
   }
   const m = mergeGeometries(geos, false);
   for (const g of geos) g.dispose();
