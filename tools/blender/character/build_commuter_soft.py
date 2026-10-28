@@ -581,7 +581,7 @@ def build_body():
 def egg_radii(zn):
     """Head egg (rx, ry) at normalised height zn in [-1, 1]: a slightly tapered jaw and crown."""
     ring = math.sqrt(max(0.0, 1.0 - zn * zn))
-    profile = 1.0 + 0.04 * zn - 0.08 * max(0.0, -zn) ** 1.5 + 0.12 * max(0.0, -zn - 0.3)  # softer jaw (v7)
+    profile = 1.0 + 0.04 * zn - 0.08 * max(0.0, -zn) ** 1.5 + 0.15 * max(0.0, -zn - 0.3)  # softer jaw (v8)
     return HEAD_RADII[0] * ring * profile, HEAD_RADII[1] * ring * profile
 
 
@@ -955,9 +955,9 @@ def face_paint(S, T):
     for side in (-1.0, 1.0):
         blush = np.exp(-(((x - side * 0.060) / 0.024) ** 2 + ((z - 1.470) / 0.016) ** 2))
         base = over(base, rgb("#EBC3B6"), blush * 0.6)  # warm cheek gradient, feathered
+    base = over(base, rgb("#E6C7B6"), np.clip((1.43 - z) / 0.05, 0.0, 1.0) * 0.5)  # soft jaw underside
     nose = band(np.abs(x), 0.0, 0.0018) * band(z, 1.470, 1.490)  # 2-texel nose shade
     base = over(base, rgb("#E2B39E"), nose * 0.6)
-    base = over(base, rgb("#B0604E"), band(z - (1.455 + 6.0 * x * x), -0.0012, 0.0012) * (np.abs(x) < 0.013))
     for side in (-1.0, 1.0):
         xr = x * side
         brow_z = 1.556 + 0.018 * (xr - 0.030) / 0.040  # gently angled
@@ -973,13 +973,13 @@ def face_paint(S, T):
 
 def eye_painter(side):
     """The far-side (wearer's left, -X) eye artwork sits 8 % of its width toward the face centre."""
-    shift = 0.16 if side < 0 else 0.0
-    return lambda S, T: eye_paint(S, T, shift)
+    shift, squeeze = (0.16 + 0.224, 0.94) if side < 0 else (0.0, 1.0)
+    return lambda S, T: eye_paint(S, T, shift, squeeze)
 
 
-def eye_paint(S, T, shift=0.0):
+def eye_paint(S, T, shift=0.0, squeeze=1.0):
     import numpy as np
-    dx, dz = (S - 0.5) * 2 - shift, (T - 0.5) * 2
+    dx, dz = ((S - 0.5) * 2 - shift) / squeeze, (T - 0.5) * 2
     base = flat(SKIN, S.shape)
     shape = (dx ** 2 + (dz / 0.92) ** 2) < 1.0
     iris = ((dx / 0.66) ** 2 + (dz / 0.70) ** 2) < 1.0
