@@ -118,13 +118,13 @@ export const hooks = {
   guideControls: (page: Page): Promise<{ paused: boolean; tier: string; speed: number }> => page.evaluate(() => (window as any).__gteki.guideControls()),
 };
 
-/** Pick an endpoint the way a user does: type into the field and click a search result by its visible name. */
+/** Pick an endpoint the way a user does: type into the field and click a search result by its visible text (name or its description subtitle, #595). */
 export async function chooseBySearch(page: Page, which: "from" | "to", query: string, resultName: string | RegExp): Promise<void> {
   const input = page.locator(`#gteki-${which}`);
   await input.click();
   await input.fill("");
   await input.pressSequentially(query, { delay: 40 });
-  const result = page.locator(`.field-${which} .results button.result`).filter({ has: page.locator(".result-name", { hasText: resultName }) }).first();
+  const result = page.locator(`.field-${which} .results button.result`).filter({ hasText: resultName }).first();
   await expect(result).toBeVisible();
   await result.click();
 }
