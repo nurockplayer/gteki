@@ -1,6 +1,6 @@
 import type { GraphFile, PoiFile, StationBundle, StationManifestFile, TenantFile } from "./index.ts";
 import { SCHEMA_VERSION, TENANTS_SCHEMA_VERSION } from "./index.ts";
-import { validateBundle, type ValidationIssue } from "./validate.ts";
+import { PUBLICATION_RULE_CODES, validateBundle, type ValidationIssue } from "./validate.ts";
 
 /**
  * Fail-closed loading of station JSON. TypeScript types do not exist at runtime, so every
@@ -314,7 +314,7 @@ export type ParseResult =
  * Shape check → compose → truth-rule validation. Any error yields `ok: false` and no bundle,
  * so a malformed or rule-breaking station never reaches the router (fail closed).
  */
-export function parseStationFiles(manifest: unknown, graph: unknown, pois: unknown, tenants?: unknown): ParseResult {
+export function parseStationFiles(manifest: unknown, graph: unknown, pois: unknown, tenants?: unknown, opts: { privateTier?: boolean } = {}): ParseResult {
   const shape = checkShape(manifest, graph, pois, tenants);
   if (shape.length > 0) return { ok: false, bundle: null, issues: shape };
   const m = manifest as StationManifestFile;
@@ -329,6 +329,6 @@ export function parseStationFiles(manifest: unknown, graph: unknown, pois: unkno
   if (t && t.schema !== TENANTS_SCHEMA_VERSION)
     issues.push({ level: "error", code: "schema.version", message: `tenants.json: expected ${TENANTS_SCHEMA_VERSION}, got ${t.schema}` });
   const bundle = composeBundle(m, g, p, t);
-  issues.push(...validateBundle(bundle));
+  issues.push(...validateBundle(bundle).map((issue) => opts.privateTier && PUBLICATION_RULE_CODES.has(issue.code) ? { ...issue, level: "warning" as const } : issue));
   return issues.some((i) => i.level === "error") ? { ok: false, bundle: null, issues } : { ok: true, bundle, issues };
 }

@@ -1,0 +1,4012 @@
+{
+  "schema": "gteki.research.tenants/0.1",
+  "note": "Facts-only brand list of 西武池袋本店 (307 rows: main building floor guide and the annex/bookstore page), as the floor guide prints it. Not POIs: a brand search returns the store's POI with the floor. Promoted from the private tier under OD-35 (S, facts only, recheck-at-C). UNVERIFIED. Rows from the annex page carry the building as the page prints it (別館・書籍館 1F), since the store POI covers both buildings.",
+  "storePoiId": "shop-ikb-seibu-honten",
+  "retrievedAt": "2026-10-27T11:43:00Z",
+  "sources": [
+    {
+      "id": "sogo-seibu-ikebukuro-floorguide-2026-10",
+      "title": "西武池袋本店 フロアガイド（本館）",
+      "publisher": "株式会社そごう・西武",
+      "url": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md",
+        "date": "2026-10-27"
+      },
+      "attribution": "西武池袋本店 フロアガイド（本館） (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-27T11:43:00Z",
+      "datasetDate": null,
+      "notes": "Brand names, printed floor labels and categories only; no descriptive text, hours, logos, images or maps reproduced. Class (OD-35, docs/research/use-tiers.md): the そごう・西武 site terms §2(8) ban business or profit use only, and S is non-commercial, so facts-only applies; recheck-at-C. Lifts the Sogo-Seibu tenant limit of OD-34 round 3 for S."
+    },
+    {
+      "id": "sogo-seibu-ikebukuro-annex-2026-10",
+      "title": "西武池袋本店 フロアガイド（別館・書籍館）",
+      "publisher": "株式会社そごう・西武",
+      "url": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md",
+        "date": "2026-10-27"
+      },
+      "attribution": "西武池袋本店 フロアガイド（別館・書籍館） (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-27T11:42:00Z",
+      "datasetDate": null,
+      "notes": "Brand names, printed floor labels and categories only; no descriptive text, hours, logos, images or maps reproduced. Class (OD-35, docs/research/use-tiers.md): the そごう・西武 site terms §2(8) ban business or profit use only, and S is non-commercial, so facts-only applies; recheck-at-C. Lifts the Sogo-Seibu tenant limit of OD-34 round 3 for S."
+    }
+  ],
+  "tenants": [
+    {
+      "id": "tenant-ikb-seibuhonten-acqua-di-parma",
+      "name": "ACQUA DI PARMA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アクア ディ パルマ"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-books-sanseido-1f",
+      "name": "BOOKS SANSEIDO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "三省堂書店"
+        }
+      ],
+      "floorLabel": "別館・書籍館 1F",
+      "category": "サービス・その他",
+      "sourceId": "sogo-seibu-ikebukuro-annex-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-bvlgarifragrance",
+      "name": "BVLGARI",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ブルガリ"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-byredo",
+      "name": "BYREDO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "バイレード"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-comme-des-garcons-pocket",
+      "name": "COMME des GARCONS POCKET",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "コム デ ギャルソン ポケット"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "ファッション",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-dior-haute-parfumerie",
+      "name": "DIOR HAUTE PARFUMERIE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ディオール オート パフューマリー"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-dior-ladies",
+      "name": "DIOR（WOMEN）",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ディオール（レディース）"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-diptyque",
+      "name": "DIPTYQUE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ディプティック"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-guerlain-maison-de-parfums",
+      "name": "Guerlain Maison de Parfums",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ゲラン メゾン ド パルファン"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-jo-malone-london",
+      "name": "JO MALONE LONDON",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ジョー マローン ロンドン"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-loewe-perfumes",
+      "name": "LOEWE PERFUMES",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ロエベ パルファム"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-louis-vuitton-1f",
+      "name": "LOUIS VUITTON",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ルイ・ヴィトン"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-muji-1f",
+      "name": "MUJI",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "無印良品"
+        }
+      ],
+      "floorLabel": "別館・書籍館 1F",
+      "category": "インテリア, ファッション",
+      "sourceId": "sogo-seibu-ikebukuro-annex-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-maison-margiela-fragrances",
+      "name": "Maison Margiela Fragrances",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "メゾン マルジェラ フレグランス"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-officine-universelle-buly",
+      "name": "OFFICINE UNIVERSELLE BULY",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "オフィシーヌ・ユニヴェルセル・ビュリー"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-the-row",
+      "name": "THE ROW",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ザ・ロウ"
+        }
+      ],
+      "floorLabel": "1F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-celine",
+      "name": "CELINE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "セリーヌ"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-dior-men",
+      "name": "DIOR（MEN）",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ディオール（メンズ）"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-dojindo-pharmacy",
+      "name": "DOJINDO-PHARMACY",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "同仁堂薬局"
+        }
+      ],
+      "floorLabel": "別館・書籍館 2F",
+      "category": "サービス・その他",
+      "sourceId": "sogo-seibu-ikebukuro-annex-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-fendi",
+      "name": "FENDI",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "フェンディ"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-gucci",
+      "name": "GUCCI",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "グッチ"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-lions-store",
+      "name": "LIONS STORE @ SEIBU IKEBUKUROHONTEN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "ライオンズストア＠西武池袋本店"
+        }
+      ],
+      "floorLabel": "別館・書籍館 2F",
+      "category": "サービス・その他",
+      "sourceId": "sogo-seibu-ikebukuro-annex-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-loewe",
+      "name": "LOEWE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ロエベ"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-louis-vuitton-2f",
+      "name": "LOUIS VUITTON",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ルイ・ヴィトン"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-muji-2f",
+      "name": "MUJI",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "無印良品"
+        }
+      ],
+      "floorLabel": "別館・書籍館 2F",
+      "category": "インテリア, ファッション",
+      "sourceId": "sogo-seibu-ikebukuro-annex-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-rimowa",
+      "name": "RIMOWA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "リモワ"
+        }
+      ],
+      "floorLabel": "2F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-tax-refund-counter",
+      "name": "TAX REFUND COUNTER",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "免税手続きのご案内"
+        }
+      ],
+      "floorLabel": "別館・書籍館 2F",
+      "category": "サービス・その他",
+      "sourceId": "sogo-seibu-ikebukuro-annex-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-addiction",
+      "name": "ADDICTION",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アディクション"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-albion",
+      "name": "ALBION",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "アルビオン（化粧品）"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-bobbi-brown",
+      "name": "BOBBI BROWN",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ボビイ ブラウン"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-burberry-beauty",
+      "name": "Burberry Beauty",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "バーバリー ビューティ"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-chanel",
+      "name": "CHANEL",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "シャネル"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-clarins",
+      "name": "CLARINS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "クラランス"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-clinique",
+      "name": "CLINIQUE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "クリニーク"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-covermark",
+      "name": "COVERMARK",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "カバーマーク"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-cle-de-peau-beaute",
+      "name": "Clé de Peau Beauté",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "クレ・ド・ポー ボーテ（化粧品）"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-decorte",
+      "name": "DECORTÉ",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "コスメデコルテ（化粧品）"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-dior-beauty",
+      "name": "DIOR BEAUTY",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ディオール ビューティー"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-dries-van-noten",
+      "name": "DRIES VAN NOTEN Beauty",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ドリス ヴァン ノッテン ビューティー"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-estee-lauder",
+      "name": "ESTÉE LAUDER",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "エスティ ローダー"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-etvos",
+      "name": "ETVOS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "エトヴォス"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-elegance",
+      "name": "Elégance",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "エレガンス"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-fancl",
+      "name": "FANCL",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ファンケル"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-givenchy-beauty",
+      "name": "GIVENCHY BEAUTY",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ジバンシイ ビューティー"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-gucci-beauty",
+      "name": "GUCCI BEAUTY",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "グッチ ビューティ"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-guerlain",
+      "name": "GUERLAIN",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ゲラン"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-hacci",
+      "name": "HACCI",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ハッチ"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-helena-rubinstein",
+      "name": "Helena Rubinstein",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヘレナ ルビンスタイン"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-hermes-in-colors",
+      "name": "Hermès in Colors",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "エルメス・イン・カラー"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ipsa",
+      "name": "IPSA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "イプサ"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-jillstuart",
+      "name": "JILLSTUART",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ジルスチュアート"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kanebo",
+      "name": "KANEBO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "カネボウ（化粧品）"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kiehl-s",
+      "name": "Kiehl's",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "キールズ"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-l-atelier-des-parfums",
+      "name": "L'ATELIER DES PARFUMS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ラトリエ デ パルファム"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-l-occitane",
+      "name": "L'OCCITANE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ロクシタン"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-la-maison-du-chocolat3f",
+      "name": "LA MAISON DU CHOCOLAT",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "ラ・メゾン・デュ・ショコラ 西武池袋サロン店"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "カフェ＆レストラン, グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-la-mer",
+      "name": "LA MER",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ラ・メール"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-lunasol",
+      "name": "LUNASOL",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "ルナソル（化粧品）"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-lancome",
+      "name": "Lancôme",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ランコム"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-mac",
+      "name": "M･A･C",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "マック"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-nars",
+      "name": "NARS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ナーズ"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-paul-joe-beaute",
+      "name": "PAUL & JOE BEAUTE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ポール ＆ ジョー ボーテ"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-pola",
+      "name": "POLA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ポーラ"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-prada-beauty",
+      "name": "PRADA BEAUTY",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "プラダ ビューティ"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-rmk",
+      "name": "RMK",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アールエムケー"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-sabon",
+      "name": "SABON",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "サボン"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-shiseido",
+      "name": "SHISEIDO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "資生堂（化粧品）"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-sk-ii",
+      "name": "SK-II",
+      "aliases": [],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-snidel-beauty",
+      "name": "SNIDEL BEAUTY",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "スナイデル ビューティ"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-suqqu",
+      "name": "SUQQU",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "スック"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-three",
+      "name": "THREE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "スリー"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-yves-saint-laurent-beaute",
+      "name": "YVES SAINT LAURENT BEAUTÉ",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "イヴ・サンローラン・ボーテ"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-est",
+      "name": "est",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "エスト（化粧品）"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-john-masters-organics",
+      "name": "john masters organics",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ジョンマスターオーガニック"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-shu-uemura",
+      "name": "shu uemura",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "シュウ ウエムラ"
+        }
+      ],
+      "floorLabel": "3F",
+      "category": "コスメ＆ビューティー",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-balenciaga",
+      "name": "BALENCIAGA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "バレンシアガ"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-berluti",
+      "name": "BERLUTI",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ベルルッティ"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-bottega-veneta",
+      "name": "BOTTEGA VENETA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ボッテガ・ヴェネタ"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-brunello-cucinelli",
+      "name": "BRUNELLO CUCINELLI",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ブルネロ クチネリ"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-burberry",
+      "name": "BURBERRY",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "バーバリー"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-chloe",
+      "name": "Chloé",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "クロエ"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ferragamo",
+      "name": "FERRAGAMO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "フェラガモ"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-le-cafe-benoit-nihant",
+      "name": "LE CAFÉ BENOIT NIHANT",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ル カフェ ブノワ・ニアン"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "カフェ＆レストラン",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-moncler",
+      "name": "MONCLER",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "モンクレール"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-maison-margiela",
+      "name": "Maison Margiela",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "メゾン マルジェラ"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-roger-vivier",
+      "name": "Roger Vivier",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ロジェ ヴィヴィエ"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-saint-laurent",
+      "name": "SAINT LAURENT",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "サンローラン"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-serapian",
+      "name": "SERAPIAN",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "セラピアン"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-stella-mccartney",
+      "name": "STELLA MCCARTNEY",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ステラ マッカートニー"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-tods",
+      "name": "TOD'S",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "トッズ"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-tokyo-megane",
+      "name": "TOKYO MEGANE",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "東京メガネ"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "サービス・その他",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-valextra",
+      "name": "Valextra",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヴァレクストラ"
+        }
+      ],
+      "floorLabel": "4F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-baccarat",
+      "name": "BACCARAT",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "バカラ"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-boucheron",
+      "name": "BOUCHERON",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ブシュロン"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-bvlgari",
+      "name": "BVLGARI",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ブルガリ"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-chaumet",
+      "name": "CHAUMET",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ショーメ"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-chopard",
+      "name": "CHOPARD",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ショパール"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-club-on-counter",
+      "name": "CLUB-ON DESK/CLUB-ON CREDIT COUNTER",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "クラブ・オンデスク／クラブ・オンクレジットカウンター"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "サービス・その他",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-credor",
+      "name": "CREDOR",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "クレドール"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-cartier",
+      "name": "Cartier",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "カルティエ"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-damiani",
+      "name": "DAMIANI",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ダミアーニ"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-fred",
+      "name": "FRED",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "フレッド"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-gem-salon",
+      "name": "GEM SALON",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "GEMサロン"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-grand-seiko",
+      "name": "GRAND SEIKO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "グランドセイコー"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-harrywinston",
+      "name": "HARRY WINSTON",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ハリー・ウィンストン"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-messika",
+      "name": "MESSIKA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "メシカ"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-mikimoto",
+      "name": "MIKIMOTO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ミキモト"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-pomellato",
+      "name": "Pomellato",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ポメラート"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-repossi",
+      "name": "REPOSSI",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "レポシ"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-sgc-gold-shop",
+      "name": "SGC GOLD SHOP",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "エスジーシー ゴールドショップ"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-tag-heuer",
+      "name": "TAG Heuer",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "タグ・ホイヤー"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-tiffany",
+      "name": "TIFFANY & CO.",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ティファニー"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-tudor",
+      "name": "TUDOR",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "チューダー"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-vhernier",
+      "name": "VHERNIER",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヴェルニエ"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-van-cleef-arpels",
+      "name": "Van Cleef & Arpels",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヴァン クリーフ＆アーペル"
+        }
+      ],
+      "floorLabel": "5F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-akris",
+      "name": "AKRIS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アクリス"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "ファッション",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-a-bathing-ape",
+      "name": "BAPE STORE®",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ベイプ ストア®"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "ファッション",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-cfcl",
+      "name": "CFCL",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "シーエフシーエル"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "ファッション",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-comme-des-garcons",
+      "name": "COMME DES GARCONS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "コム デ ギャルソン"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "ファッション",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-dunhill",
+      "name": "DUNHILL",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ダンヒル"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-etro",
+      "name": "ETRO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "エトロ"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "ファッション",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-hiroin",
+      "name": "HAIR & ESTHETIC HIROIN",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヘア アンド エステティック ヒロイン"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "サービス・その他",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-herno",
+      "name": "HERNO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヘルノ"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-maison-kitsune",
+      "name": "MAISON KITSUNÉ",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "メゾン キツネ"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "ファッション",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-montblanc",
+      "name": "MONTBLANC",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "モンブラン"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-polo-ralph-lauren",
+      "name": "POLO RALPH LAUREN",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ポロ ラルフ ローレン"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "ファッション",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ralphs-coffee",
+      "name": "Ralph’s Coffee by Ralph Lauren",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ラルフズ コーヒー by Ralph Lauren"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "カフェ＆レストラン",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-tasaki",
+      "name": "TASAKI",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "タサキ"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-tom-ford",
+      "name": "TOM FORD",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "トム フォード"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-versace",
+      "name": "VERSACE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヴェルサーチェ"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "ファッション",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-vivienne-westwood",
+      "name": "VIVIENNE WESTWOOD",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヴィヴィアン・ウエストウッド"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "ファッション",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-y-3",
+      "name": "Y-3",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ワイスリー"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "ファッション",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-yohji-yamamoto",
+      "name": "YOHJI YAMAMOTO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヨウジヤマモト"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "ファッション",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-zegna",
+      "name": "ZEGNA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ゼニア"
+        }
+      ],
+      "floorLabel": "6F",
+      "category": "プレステージブティック",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ikebukuro-community-college",
+      "name": "IKEBUKURO COMMUNITY COLLEGE",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "池袋コミュニティ・カレッジ"
+        }
+      ],
+      "floorLabel": "別館・書籍館 8F",
+      "category": "アート＆カルチャー",
+      "sourceId": "sogo-seibu-ikebukuro-annex-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-agemochi-cocoro",
+      "name": "AGEMOCHI COCORO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "あげもちCocoro"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-akasakakakiyama",
+      "name": "AKASAKA KAKIYAMA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "赤坂柿山"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-akasaka-matsubaya",
+      "name": "AKASAKA MATSUBAYA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "赤坂松葉屋"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-araien-honten",
+      "name": "ARAIEN HONTEN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "新井園本店"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-asakusa-imahan",
+      "name": "ASAKUSA IMAHAN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "浅草今半"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-asakusamangando",
+      "name": "ASAKUSA MANGANDO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "浅草満願堂"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-asakusa-umezono",
+      "name": "ASAKUSA UMEZONO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "浅草梅園"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-atelier-de-godiva",
+      "name": "ATELIER de GODIVA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アトリエ ドゥ ゴディバ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-audrey",
+      "name": "AUDREY",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "オードリー"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-azabu-karinto",
+      "name": "AZABU KARINTO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "麻布かりんと"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-bel-amer",
+      "name": "BEL AMER",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ベル アメール"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-belle-plage",
+      "name": "BELLE PLAGE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ベルプラージュ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-benoit-nihant",
+      "name": "BENOIT NIHANT",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ブノワ・ニアン"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-bento-station",
+      "name": "BENTO STATION",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "BENTO ステーション"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-berne",
+      "name": "BERNE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ベルン"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-bonchaperai",
+      "name": "BONCHAPERAI",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ボンシャペリー"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-books-sanseido-b1f",
+      "name": "BOOKS SANSEIDO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "三省堂書店"
+        }
+      ],
+      "floorLabel": "別館・書籍館 B1F",
+      "category": "サービス・その他",
+      "sourceId": "sogo-seibu-ikebukuro-annex-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-boul-mich",
+      "name": "BOUL'MICH",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ブールミッシュ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-bunmeido",
+      "name": "BUNMEIDO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "文明堂"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-butter-state-s",
+      "name": "BUTTER STATE's",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "バターステイツ by銀のぶどう"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-c3",
+      "name": "C CUBE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "シーキューブ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-caramel-tokyo-warakubeniya",
+      "name": "CARAMEL TOKYO WARAKUBENIYA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "キャラメル トーキョー ワラクベニヤ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-cc-s-cookie",
+      "name": "CC's Cookie",
+      "aliases": [],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-chez-shibata",
+      "name": "CHEZ SHIBATA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "シェ・シバタ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-demel",
+      "name": "DEMEL",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "デメル"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-di-classe",
+      "name": "DI CLASSE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ディ クラッセ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-donq",
+      "name": "DONQ",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ドンク"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-fortnum-masion",
+      "name": "FORTNUM & MASON",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "フォートナム・アンド・メイソン"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-foucher",
+      "name": "FOUCHER",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "フーシェ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-fruits-peaks",
+      "name": "FRUITS PEAKS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "フルーツピークス"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-fujiya-ginza",
+      "name": "FUJIYA GINZA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "不二家 銀座"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-fumuroya",
+      "name": "FUMUROYA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "不室屋"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-funabashiya",
+      "name": "FUNABASHIYA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "船橋屋"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-funawa",
+      "name": "FUNAWA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "舟和"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-fukusaya",
+      "name": "Fukusaya",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "福砂屋"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-galette-du-soleil",
+      "name": "GALETTE DU SOLEIL",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "太陽のガレット"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-gateau-festa-harada",
+      "name": "GATEAU FESTA HARADA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ガトーフェスタ ハラダ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-gazta",
+      "name": "GAZTA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ガスタ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-gift-salon",
+      "name": "GIFT SALON",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ギフトサロン"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "ギフトサロン",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ginza-akebono",
+      "name": "GINZA AKEBONO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "銀座あけぼの"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ginza-nishikawa",
+      "name": "GINZA NISHIKAWA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "銀座に志かわ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ginza-kaishin",
+      "name": "GINZA-KAISHIN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "銀座貝新"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-godiva-bakery-godipan",
+      "name": "GODIVA BAKERY",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "GODIVA Bakery ゴディパン"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-gramercy-newyork",
+      "name": "GRAMERCY NEWYORK",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "グラマシーニューヨーク"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-hanaichie",
+      "name": "HANAICHIE",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "花一会"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-henri-charpentier",
+      "name": "HENRI CHARPENTIER",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アンリ・シャルパンティエ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-hibiya-kadan",
+      "name": "HIBIYA KADAN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "日比谷花壇"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "サービス・その他",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-hon-takasagoya",
+      "name": "HON TAKASAGOYA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "本髙砂屋"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-incense-butsugu",
+      "name": "INCENSE BUTSUGU",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "香 仏具"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "ギフトサロン, サービス・その他",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ippodo-tea",
+      "name": "IPPODO TEA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "一保堂茶舗"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ito-en-ltd",
+      "name": "ITO EN, LTD.",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "伊藤園"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-juchheim",
+      "name": "Juchheim",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ユーハイム"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kakitane-kitchen",
+      "name": "KAKITANE KITCHEN",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "かきたねキッチン"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kakiyasu-honten",
+      "name": "KAKIYASU HONTEN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "柿安本店"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kanou-shoujuan",
+      "name": "KANOU SHOUJUAN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "叶 匠壽庵"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kasho-seikain",
+      "name": "KASHO SEIKAIN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "菓匠 清閑院"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-keishindo",
+      "name": "KEISHINDO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "桂新堂"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kimuraya-souhonten",
+      "name": "KIMURAYA-SOUHONTEN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "木村屋総本店"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kinshobai",
+      "name": "KINSHOBAI",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "錦松梅"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kiyoken",
+      "name": "KIYOKEN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "崎陽軒"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kobe-gogyofuku",
+      "name": "KOBE GOGYOFUKU",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "KOBE 伍魚福"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kurakichi",
+      "name": "KURAKICHI",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "KURAKICHI（くら吉）"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kyo-gion-ninigi",
+      "name": "KYO GION NINIGI",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "京衹をん ににぎ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kyo-mitarashi-umezono",
+      "name": "KYO MITARASHI UMEZONO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "京 みたらし 梅園"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-la-maison-du-chocolat",
+      "name": "LA MAISON DU CHOCOLAT",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ラ・メゾン・デュ・ショコラ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-le-patissier-takagi",
+      "name": "LE PATISSIER TAKAGI",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ル パティシエ タカギ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-lenotre",
+      "name": "LENÔTRE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ルノートル"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-local-specialty-ajikoji",
+      "name": "LOCAL SPECIALTY AJIKOJI",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "諸国名産「味小路」"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-local-sweets-unohanagaki",
+      "name": "LOCAL SWEETS UNOHANAGAKI",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "諸国銘菓「卯花墻」"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-maison-d-ahni-shirokane",
+      "name": "MAISON D'AHNI SHIROKANE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "メゾン・ダーニ シロカネ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-maison-kayser",
+      "name": "MAISON KAYSER",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "メゾンカイザー"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-mariage-freres",
+      "name": "MARIAGE FRÈRES",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "マリアージュ フレール"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-mon-loire",
+      "name": "MON LOIRE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "モンロワール"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-morihachi",
+      "name": "MORIHACHI",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "森八"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-morozoff",
+      "name": "MOROZOFF",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "モロゾフ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-mary-chocolate",
+      "name": "Mary Chocolate",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "メリーチョコレート"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-mini-one",
+      "name": "Mini One",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ミニワン"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-nihombashi-sembikiya",
+      "name": "NIHOMBASHI SEMBIKIYA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "日本橋 千疋屋総本店"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-niigata-kashimaya",
+      "name": "NIIGATA KASHIMAYA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "新潟 加島屋"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-obusedo",
+      "name": "OBUSEDO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "小布施堂"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ogurasansou",
+      "name": "OGURASANSOU",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "小倉山荘"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-paris-butter-chocolat",
+      "name": "PARIS BUTTER CHOCOLAT",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "パリバターショコラ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-pierre-herme-paris",
+      "name": "PIERRE HERMÉ PARIS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ピエール・エルメ・パリ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-pierre-marcolini",
+      "name": "PIERRE MARCOLINI",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ピエール マルコリーニ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-press-butter-sand",
+      "name": "PRESS BUTTER SAND",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "プレスバターサンド"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-quolofune",
+      "name": "QUOLOFUNE",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "黒船"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-r-l-waffle-cake",
+      "name": "R. L WAFFLE CAKE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "エール・エル ワッフルケーキ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ring-bell-boutique",
+      "name": "RING BELL BOUTIQUE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "リンベルブティック"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "ギフトサロン, サービス・その他",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-riviere",
+      "name": "RIVIÈRE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "リビエール"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-rokumeikan",
+      "name": "ROKUMEIKAN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "西洋菓子 鹿鳴館"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ryoguchiya-korekiyo",
+      "name": "Ryoguchiya Korekiyo",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "両口屋是清"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-sable-michelle",
+      "name": "SABLE MICHELLE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "サブレミシェル"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-sebastien-bouillet",
+      "name": "SEBASTIEN BOUILLET",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "セバスチャン・ブイエ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-takano-b1",
+      "name": "SHINJYUKU TAKANO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "新宿高野"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-shunkashunka-kyorakudo",
+      "name": "SHUNKASHUNKA KYORAKUDO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "旬果瞬菓 共楽堂"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-sugar-butter-tree",
+      "name": "SUGAR BUTTER TREE",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "シュガーバターの木"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-taneya",
+      "name": "TANEYA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "たねや"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-tokyo-tulip-rose",
+      "name": "TOKYO TULIP ROSE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "TOKYOチューリップローズ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-top-s",
+      "name": "TOP'S",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "トップス"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-toraya",
+      "name": "TORAYA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "とらや"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-toshimaya",
+      "name": "TOSHIMAYA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "豊島屋"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-tsuruya-hachiman",
+      "name": "TSURUYA HACHIMAN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "鶴屋八幡"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-tsuruyayoshinobu",
+      "name": "TSURUYA YOSHINOBU",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "京菓匠 鶴屋𠮷信"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-the-royal-bake",
+      "name": "The Royal Bake",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ザ・ロイヤル ベイク"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-vanista",
+      "name": "VANISTA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "バニスタ"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-yoku-moku",
+      "name": "YOKU MOKU",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヨックモック"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-adachiotoemon",
+      "name": "adachiotoemon",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "足立音衛門"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-e-a-gran",
+      "name": "e.a.gran",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "イー・エー・グラン"
+        }
+      ],
+      "floorLabel": "別館・書籍館 B1F",
+      "category": "カフェ＆レストラン",
+      "sourceId": "sogo-seibu-ikebukuro-annex-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-nenrinya",
+      "name": "nenrinya",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "ねんりん家"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-echire-patisserie-au-beurre",
+      "name": "ÉCHIRÉ PÂTISSERIE AU BEURRE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "エシレ・パティスリー オ ブール"
+        }
+      ],
+      "floorLabel": "B1F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ajanta",
+      "name": "AJANTA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アジャンタ"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ajisaki",
+      "name": "AJISAKI",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "味咲き"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-avancer",
+      "name": "AVANCER",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アヴァンセ"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-changtaifu",
+      "name": "CHANGTAIFU",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "張大夫"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-chanroi",
+      "name": "CHANROI",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "チャンロイ"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-craclu",
+      "name": "CRACLU",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "かにとまぐろのクラクラ"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ebisu-daikoku",
+      "name": "EBISU DAIKOKU",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ゑびすDaikoku"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-fumiya",
+      "name": "FUMIYA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "冨美家"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-gangnam-gimbap",
+      "name": "GANGNAM GIMBAP",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "カンナムキンパ"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ginza-tan-ichi",
+      "name": "GINZA TEN-ICHI",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "銀座天一"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-haochaozu",
+      "name": "HAOCHAOZU",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "好餃子"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ito",
+      "name": "I.T.O.",
+      "aliases": [],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ichijyushunsai-nihonbashi-dashiba",
+      "name": "ICHIJYUSHUNSAI NIHONBASHI DASHIBA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "一汁旬菜 日本橋だし場"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ishingo",
+      "name": "ISHINGO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "維新號"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-itohan",
+      "name": "ITOHAN",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "いとはん"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-jiraiya",
+      "name": "JIRAIYA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "地雷也"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kaisekiryori-aoyama",
+      "name": "KAISEKIRYORI AOYAMA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "懐石料理 青山"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kakiyasu-dining",
+      "name": "KAKIYASU DINING",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "柿安ダイニング"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kuilin",
+      "name": "KEI-LIN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "桂林"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kichijoji-satou",
+      "name": "KICHIJOJI SATOU",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "吉祥寺 さとう"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kichijoji-tsukadasuisan",
+      "name": "KICHIJOJI TSUKADASUISAN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "吉祥寺 塚田水産"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kobe-croquette",
+      "name": "KOBE CROQUETTE",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "神戸コロッケ"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kudanshita-sushimasa-shunhakkai",
+      "name": "KUDANSHITA SUSHIMASA SHUNHAKKAI",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "九段下 寿司政 旬八海"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kushiju",
+      "name": "KUSHIJU",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "串重"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kyokasuduke-uokyu",
+      "name": "KYOKASUDUKE UOKYU",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "京粕漬 魚久"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-kitchen-abc",
+      "name": "Kitchen ABC",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "キッチンABC"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-maison-de-steak-story",
+      "name": "MAISON DE STEAK STORY",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "メゾン・ド・ステーキストーリー"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-masugo",
+      "name": "MASUGO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "桝俉"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-matsuoka",
+      "name": "MATSUOKA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "まつおか"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-meat-yazawa",
+      "name": "MEAT YAZAWA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "ミート矢澤"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-moriyasu",
+      "name": "MORIYASU",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "肉匠もりやす［仮設売場］"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-mr-chicken-keihanten",
+      "name": "MR.CHICKEN KEIHANTEN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "MR.CHICKEN鶏飯店"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-nadaman-chubo",
+      "name": "NADAMAN CHUBO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "なだ万厨房"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-nakao",
+      "name": "NAKAO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "なかお"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-koichian",
+      "name": "NANIWA KOICHIAN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "浪花 古市庵"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-nato-s",
+      "name": "NATO'S",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ナトス"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-nihonbashi-taimeiken",
+      "name": "NIHONBASHI TAIMEIKEN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "日本橋たいめいけん"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ningyocho-imahan",
+      "name": "NINGYOCHO IMAHAN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "人形町今半"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-ojima",
+      "name": "OJIMA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "尾島"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-okonomiyaki-micchan",
+      "name": "OKONOMIYAKI MICCHAN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "お好み焼みっちゃん 横川店分家"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-organic-house",
+      "name": "ORGANIC HOUSE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "オーガニックハウス"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-paopao",
+      "name": "PAOPAO",
+      "aliases": [],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-portar-il-mare-via",
+      "name": "PORTAR IL MARE VIA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ポルタ イルマーレ ヴィア"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-rf1",
+      "name": "RF1",
+      "aliases": [],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-romantei",
+      "name": "ROMANTEI",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "魯鰻亭"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-saigon",
+      "name": "SAIGON",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "サイゴン"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-seiyo-ginza",
+      "name": "SEIYO GINZA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "西洋銀座"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-takano-b2",
+      "name": "SHINJUKU TAKANO (SALAD)",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "新宿高野（サラダ）"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-sozai-iina",
+      "name": "SOZAI IINA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "創菜いい菜"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-tagosaku",
+      "name": "TAGOSAKU",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "たごさく"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-tonkatsu-maisen",
+      "name": "TONKATSU MAISEN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "とんかつ まい泉"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-toriichi-shouten",
+      "name": "TORIICHI SHOUTEN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "鳥市商店"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-torisanwa",
+      "name": "TORISANWA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "鶏三和"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-tsubame-grill-deli",
+      "name": "TSUBAME GRILL DELI",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "つばめグリルDELI"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-tsuboya",
+      "name": "TSUBOYA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "壺屋"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-tsukiji-miyagawa-honten",
+      "name": "TSUKIJI MIYAGAWA HONTEN",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "つきじ宮川本廛"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-tsukiji-suzutomi",
+      "name": "TSUKIJI SUZUTOMI",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "つきじ鈴富"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-umenohana",
+      "name": "UMENOHANA",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "梅の花"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-white-bear",
+      "name": "WHITE BEAR",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ホワイトベアー"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-yong-yang",
+      "name": "YONG YANG",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヨンヤン"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-yugo",
+      "name": "YUGO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "融合"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    },
+    {
+      "id": "tenant-ikb-seibuhonten-yunotani-tawaradaimyo",
+      "name": "YUNOTANI TAWARADAIMYO",
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "ゆのたに俵大名"
+        }
+      ],
+      "floorLabel": "B2F",
+      "category": "グルメ＆スイーツ",
+      "sourceId": "sogo-seibu-ikebukuro-floorguide-2026-10"
+    }
+  ]
+}

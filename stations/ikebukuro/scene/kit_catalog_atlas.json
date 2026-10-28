@@ -1,0 +1,36 @@
+{
+ "escalator": {
+  "path": "atlas/escalator_ao.png",
+  "tiers": {
+   "high": {
+    "size_px": [
+     1024,
+     1536
+    ],
+    "bytes": 417840,
+    "max_isolated_mip": 2
+   }
+  }
+ },
+ "nosing": {
+  "path": "atlas/nosing_ao.png",
+  "tiers": {
+   "high": {
+    "size_px": [
+     1024,
+     1280
+    ],
+    "bytes": 69258,
+    "max_isolated_mip": 2
+   },
+   "low": {
+    "size_px": [
+     512,
+     640
+    ],
+    "bytes": 29170,
+    "max_isolated_mip": 1
+   }
+  }
+ }
+}

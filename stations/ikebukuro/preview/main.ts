@@ -193,7 +193,7 @@ function frame() {
 let elapsed = 0;
 function step(dt: number, render = true) {
   elapsed += dt;
-  station.update?.(dt, elapsed);
+  station.update?.(dt, elapsed, camera);
   // move intent in camera space
   let f = 0, s = 0;
   if (keys.has("KeyW") || keys.has("ArrowUp")) f += 1;

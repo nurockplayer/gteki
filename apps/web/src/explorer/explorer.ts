@@ -14,7 +14,8 @@ import type { SceneContext, StationScene } from "@gteki/scene-api";
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
-import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
+import { R, chevronTexture, dashTexture, ribbonGeometry } from "./geometry.ts";
+import { unmodelledRuns } from "./routeGaps.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
@@ -251,6 +252,8 @@ export class Explorer {
   private readonly cameraCut = new CameraCut();
   private routeTexture: THREE.CanvasTexture | null = null;
   private routeLines: OccludedLineStyle | null = null;
+  /** Shared by every route's "no model" bands; kept for the explorer's lifetime. */
+  private noModelTexture: THREE.CanvasTexture | null = null;
   /** QA hook state: the start/destination beacons follow it, including across route recomputes. */
   private routeMarkersVisible = true;
   /** `toneMapped: false` overlays whose colour is pre-compensated for the high tier's OutputPass (see applyOverlayTone). */
@@ -1308,8 +1311,27 @@ export class Explorer {
     xray.name = "route-xray";
     xray.visible = this.mode === "overview";
     this.routeGroup.add(ribbon, ...glow, xray);
+    // Stretches with no scene floor under them (the graph runs through space the scene doesn't model):
+    // an always-on-top dashed amber band, so they read as "not modelled" rather than as a route in the void.
+    const gaps = this.groundTargets.length === 0 ? [] : unmodelledRuns(polyline, (p) => {
+      this.ray.set(R(p.x, p.y, p.z + 3), new THREE.Vector3(0, -1, 0));
+      this.ray.far = 6;
+      // Only a floor at the route's own height counts: the storey below must not hide a missing one (public routes sit within 0.45 m).
+      return castAll(this.ray, this.groundTargets).some((h) => Math.abs(h.point.y - p.z) <= 1);
+    });
+    if (gaps.length > 0) {
+      this.noModelTexture ??= dashTexture();
+      this.noModelTexture.repeat.set(1 / 1.6, 1);
+      const gapMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.noModelTexture, color: 0xffb547, transparent: true, opacity: 0.95, depthTest: false, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }));
+      for (const run of gaps) {
+        const band = new THREE.Mesh(ribbonGeometry(run.map((p) => R(p.x, p.y, p.z)), 0.5, 0.15), gapMat);
+        band.renderOrder = 21;
+        band.name = "route-no-model";
+        this.routeGroup.add(band);
+      }
+    }
     this.routeGroup.add(this.beacon(pts[0]!, 0x7dffa0, 2.2), this.beacon(pts[pts.length - 1]!, 0xffc857, 5));
-    this.routeGroup.userData = { symbolicHeights: symbolic };
+    this.routeGroup.userData = { symbolicHeights: symbolic, noModelRuns: gaps.length };
   }
 
   private beacon(at: THREE.Vector3, color: number, height: number): THREE.Group {
@@ -1932,7 +1954,8 @@ export class Explorer {
       const ring = g.userData.pulse as THREE.Mesh | undefined;
       if (ring) ring.scale.setScalar(this.reducedMotion ? 1 : 1 + 0.25 * Math.sin(t * 3));
     }
-    this.stationScene?.update?.(dt, t);
+    // The camera still holds last frame's pose here (fine for distance culling; see the scene hook contract).
+    this.stationScene?.update?.(dt, t, this.camera);
 
     if (this.mode === "walk") this.stepWalk(dt);
     else if (this.mode === "guide") this.stepGuide(dt);

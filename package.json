@@ -5,13 +5,17 @@
   "packageManager": "pnpm@12.11.2",
   "scripts": {
     "fonts:subset": "node tools/fonts/subset-sign-font.mjs",
+    "map:gen": "node tools/map/gen-symbols.mjs",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "test:heavy": "vitest run --mode heavy --maxWorkers=1 --passWithNoTests",
     "test:heavy:box": "node tools/test-box.mjs",
     "check": "pnpm typecheck && pnpm test",
     "dev": "pnpm --filter @gteki/web dev",
-    "build": "pnpm --filter @gteki/web build"
+    "build": "pnpm --filter @gteki/web build",
+    "build:private": "sh tools/private-overlay/run.sh build",
+    "deploy:private": "bash scripts/deploy-private.sh",
+    "dev:private": "sh tools/private-overlay/run.sh dev"
   },
   "devDependencies": {
     "@babel/parser": "7.28.5",

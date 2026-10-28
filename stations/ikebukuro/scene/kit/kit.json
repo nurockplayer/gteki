@@ -42,6 +42,34 @@
       },
       "note": "Generic Lane E hanging sign housing, CC BY 4.0; not a survey of real Ikebukuro housings. Part pivots and metre units are from the library nine-slice recipe."
     },
+    "gteki_shopfront_glazing_w2400": {
+      "use": "shopfront_glazing",
+      "bay_m": 2.4,
+      "height_m": 2.8,
+      "glass_top_m": 2.2,
+      "note": "Origin on the floor at the bay centre, +X along the front, front face toward +Z (depth 0..0.14), fascia art face = material gteki_fascia_art (UV 0..1)."
+    },
+    "gteki_shopfront_door_w2000": {
+      "use": "shopfront_door",
+      "bay_m": 2.0,
+      "height_m": 2.8,
+      "glass_top_m": 2.2,
+      "note": "Origin on the floor at the bay centre, +X along the front, front face toward +Z (depth 0..0.14), fascia art face = material gteki_fascia_art (UV 0..1)."
+    },
+    "gteki_shopfront_shutter_w2400_half": {
+      "use": "shopfront_shutter_half",
+      "bay_m": 2.4,
+      "height_m": 2.8,
+      "glass_top_m": 2.2,
+      "note": "Origin on the floor at the bay centre, +X along the front, front face toward +Z (depth 0..0.14), fascia art face = material gteki_fascia_art (UV 0..1)."
+    },
+    "gteki_shopfront_shutter_w2400_closed": {
+      "use": "shopfront_shutter_closed",
+      "bay_m": 2.4,
+      "height_m": 2.8,
+      "glass_top_m": 2.2,
+      "note": "Origin on the floor at the bay centre, +X along the front, front face toward +Z (depth 0..0.14), fascia art face = material gteki_fascia_art (UV 0..1)."
+    },
     "gteki_gate_array_2": {
       "use": "gate_array_representative",
       "nodes": ["g_jr_c1", "g_jr_c2", "g_jr_s"],

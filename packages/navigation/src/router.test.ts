@@ -131,6 +131,18 @@ describe("directed Dijkstra routing", () => {
 });
 
 describe("access and verification rules", () => {
+  it("routes unverified edges only when explicitly allowed", () => {
+    const bundle = createSyntheticBundle([
+      edge("start-a", "start", "a"),
+      edge("a-goal", "a", "goal", { verification: "unverified" }),
+    ]);
+    const denied = createRouter(checked(bundle));
+    noPath(denied);
+
+    const allowed = createRouter(checked(bundle), { allowUnverified: true });
+    expect(success(allowed.route("start", "goal")).steps.map((step) => step.edgeId)).toEqual(["start-a", "a-goal"]);
+  });
+
   it("refuses a paid gate for unpaid_only and permits it for a ticketed traveller", () => {
     const gate = edge("gate", "start", "goal", { mode: "gate", paid: true, crossesFareBoundary: true });
     const router = routerFor([gate]);

@@ -56,9 +56,17 @@ const EXPECTED: Record<string, { script: string; sources: () => string[]; author
   "scene/access_fences.json": { script: "pipeline/build_access.py", sources: () => [PLATEAU, ...routableAreas()] },
   "scene/crowd_lanes.json": { script: "pipeline/build_station.py", sources: () => [PLATEAU, ...routableAreas(), ...verifiedEdges()] },
   "scene/signage.json": { script: "pipeline/build_signage.py", sources: () => [PLATEAU, ...verifiedEdges(), ...shownPois()] },
+  "scene/identity.json": { script: "pipeline/build_identity.py", sources: () => read("scene/identity.json").boards.flatMap((b: Evidence) => b.sourceIds) },
   "scene/finishes.json": { script: "GTEki-authored", sources: () => [], authored: true },
   "scene/kit/kit.json": { script: "GTEki-authored", sources: () => [], authored: true },
   "scene/columns.json": { script: "pipeline/extract_columns.py", sources: () => [PLATEAU] },
+  "scene/shop_openings.json": { script: "pipeline/extract_shop_openings.py", sources: () => [PLATEAU] },
+  // Curated shopfront picks: the openings come from the survey, ルミネ池袋's spot from its printed access line (R1).
+  "scene/shop_placements.json": { script: "GTEki-authored", sources: () => ["lumine-ikebukuro-access-2026-10", PLATEAU] },
+  // The catalog's ids, origins and tiers come from the survey anchors; the golden-route flag only selects flights.
+  "scene/kit_placements.json": { script: "pipeline/build_kit_catalog.py", sources: () => [PLATEAU] },
+  // The atlases pack the catalog pieces' own AO bakes; the catalog source carries their provenance.
+  "scene/kit_catalog_atlas.json": { script: "tools/blender/ao_atlas.py", sources: () => ["gteki-ikb-catalog-0-1-0"] },
 };
 
 const declared: DataFile[] = src.dataFiles;

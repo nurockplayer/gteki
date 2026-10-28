@@ -21,6 +21,7 @@
  *    except true abutments (±0.05 m) and their 0.6 m endpoint joins. Deeper levels move down;
  *    street floors 0/1 remain pinned and monotonic floor gaps are retained.
  */
+import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -28,6 +29,7 @@ import { EnuFrame } from "@gteki/geo";
 import {
   SCHEMA_VERSION,
   validateBundle,
+  type Asset,
   type BuildingHours,
   type CoverageArea,
   type CoverageGap,
@@ -48,6 +50,7 @@ import { runWidth } from "../scene/layout.ts";
 import { floorLabel } from "../app/src/narrate.ts";
 import { SURFACE_CREDIT } from "./import-surface.ts";
 import { loadRawE27, normId, pointInPolygon, RAW_DIR, type GeoFeature, type PolyG, type RawSpaceP } from "./e27-raw.ts";
+import { applyFieldReceipts, loadReceipts } from "./field-receipts.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT = join(HERE, "../data");
@@ -1285,6 +1288,7 @@ for (const file of MERCHANT_POI_FILES) {
     for (const id of poi.evidence.sourceIds)
       if (!allowed.has(id)) throw new Error(`merchant import: ${poi.id} (${file}) cites ${id}, which this file does not declare`);
     if (poi.evidence.sourceIds.length === 0) throw new Error(`merchant import: ${poi.id} cites no source`);
+    if (poi.connectorNodeIds.length > 0) throw new Error(`merchant import: ${poi.id} (${file}) has connectorNodeIds; a store connector comes only from a field receipt (docs/research/field/receipts)`);
     pois.push(poi);
   }
 }
@@ -1431,6 +1435,13 @@ const spawnNodeIds = (["ticket_gate", "platform", "exit"] as const).flatMap((cat
   return poi?.connectorNodeIds[0] ? [poi.connectorNodeIds[0]] : [];
 });
 
+// Walk-entry headings (degrees, 0 = north, clockwise; docs/core/contract.md), measured by the visual lead
+// against the #348 identity boards. Only the default spawn (B1 gate 1) has one: 70 faces the 「新宿」 spawn board
+// 3.25 m away, front side, clear line of sight (#342 Q2: the old default faced away from it). The platform spawn
+// needs none (its walk-entry heading already frames the #348 platform board) and the street spawn waits for a re-measure.
+const SPAWN_HEADING_BY_NODE: Record<string, number> = { "n:fe13251e6885410b870179837c3832cf": 70 };
+const spawnHeadings = Object.fromEntries(spawnNodeIds.flatMap((id) => (id in SPAWN_HEADING_BY_NODE ? [[id, SPAWN_HEADING_BY_NODE[id]!]] : [])));
+
 // Non-code data the web bundle inlines (#186). Declared here so station.json carries the same
 // source and rights gate as assets; each derivation names the script that writes the file.
 const dataFiles: DataFile[] = [
@@ -1464,6 +1475,41 @@ const dataFiles: DataFile[] = [
   },
 ];
 
+// ---------------------------------------------------------------- assets (Lane E kit, Issue #94 batch 2)
+// The station's own built escalator dressing: one mobile-profile bundle with the ten catalog pieces, loaded by the
+// scene's kit swap on by default (scene/kit/load.ts). Original GTEki art; the pins below are the exact shipped bytes.
+const SRC_CATALOG = "gteki-sjk-catalog-0-1-0";
+const KIT_BUNDLE = "assets/kit/mobile.glb";
+const KIT_MANIFEST = "assets/kit/mobile.manifest.json";
+const kitSha = Object.fromEntries([KIT_BUNDLE, KIT_MANIFEST].map((f) => [f, createHash("sha256").update(readFileSync(join(OUT_GTEKI, f))).digest("hex")]));
+sources.push({
+  id: SRC_CATALOG,
+  title: "GTEki Shinjuku station catalog 0.1.0 (Lane E, Golden Slice batch 2): ten escalator dressings, each with balustrade, handrail, newel and comb",
+  publisher: "GTEki contributors",
+  url: "https://github.com/nurockplayer/gteki/tree/main/stations/shinjuku/kit",
+  license: { name: "CC BY 4.0", url: "https://creativecommons.org/licenses/by/4.0/" },
+  rights: "REUSABLE_WITH_CONDITIONS",
+  attribution: "GTEki contributors, CC BY 4.0. Procedural Blender kit pieces built from the station catalog (stations/shinjuku/kit/catalog.json) and bundled unmodified into gteki/assets/kit/mobile.glb. Sizes are the symbolic dimensions the drawn plan suggests (data/plan.json, declared separately), not a survey of the station.",
+  modified: false,
+  // The build date, not a fetch: the bundle is our own output. Pinned so regenerating changes the record.
+  retrievedAt: "2026-10-28T00:00:00+09:00",
+  datasetDate: "2026-10",
+  sha256: kitSha,
+  notes: "Visual only: every piece has gteki_role null, so nothing here is walkable, a collider or route evidence; collision, walkable floors and camera blockers stay the station's own layout geometry (test/kit-bundle.test.ts checks the lists are unchanged). Mobile profile only (one bundle, KTX2 not decoded by the explorer yet). Rebuild: tools/blender build.sh (mobile profile) then python3 tools/blender/bundle_kit.py bundle --library <output> --all --out stations/shinjuku/gteki/assets/kit/mobile.glb; the sidecar manifest is that build's manifest.json with its catalog pointer made repo-relative.",
+});
+const nodeFloor = new Map(nodes.map((n) => [n.id, n.floorId]));
+const kitFloorIds = floors.map((f) => f.id).filter((id) => edges.some((e) => e.mode === "escalator" && (nodeFloor.get(e.from) === id || nodeFloor.get(e.to) === id)));
+const assets: Asset[] = [{
+  id: "kit-mobile",
+  uri: KIT_BUNDLE,
+  format: "glb",
+  floorIds: kitFloorIds,
+  role: "visual",
+  sourceIds: [SRC_CATALOG],
+  files: [KIT_MANIFEST],
+  derivation: "tools/blender build + bundle_kit.py bundle (mobile profile) from stations/shinjuku/kit/catalog.json: ten escalator dressings (balustrade, handrail, newel, comb; AO baked), one self-contained GLB with shared textures. Loaded by the scene's kit swap (scene/kit/load.ts), not by the asset loader: visual only, never walkable, never a collider, never route evidence. The manifest beside it is what scene/kit/manifest.ts reads.",
+}];
+
 const bundle: StationBundle = {
   schema: SCHEMA_VERSION,
   station: {
@@ -1493,15 +1539,23 @@ const bundle: StationBundle = {
   pois,
   coverage,
   spawnNodeIds,
+  spawnHeadings,
+  assets,
   dataFiles,
   buildingHours,
 };
 
+// ---------------------------------------------------------------- field receipts (#533, #554)
+// CLOSED team_field observations add a store or gate connector; nothing else may (see the merchant guard above).
+const fieldApplied = applyFieldReceipts(pois, sources, new Set(nodes.map((n) => n.id)), loadReceipts(join(HERE, "../../../docs/research/field/receipts"), "shinjuku"));
+if (fieldApplied.length) console.log(`field receipts: applied #533 items ${fieldApplied.join(", ")}`);
+
 // ---------------------------------------------------------------- plan (render geometry)
 const plan = {
   note: "Render-only geometry derived from 構内地図データ（都営地下鉄大江戸線 新宿駅）（国土交通省）, published under the Owner's #16 override; licence basis unconfirmed. Not routing truth. Heights are symbolic.",
-  // S03 (#411), the merchant sources (#214) and the WP4 line sources (#501) supply POIs only, nothing in the plan, so their credit is not listed here.
-  attribution: sources.filter((s) => s.id !== S03_SOURCE_ID && s.id !== LINE_ALIAS_SOURCE && !MERCHANT_SOURCE_IDS.has(s.id) && !WP4_SOURCE_IDS.has(s.id)).map((s) => s.attribution),
+  // S03 (#411), the merchant sources (#214), the WP4 line sources (#501) and the kit catalog (nothing in the plan)
+  // supply POIs or art only, nothing in the plan, so their credit is not listed here.
+  attribution: sources.filter((s) => s.id !== S03_SOURCE_ID && s.id !== LINE_ALIAS_SOURCE && s.id !== SRC_CATALOG && !MERCHANT_SOURCE_IDS.has(s.id) && !WP4_SOURCE_IDS.has(s.id)).map((s) => s.attribution),
   levels: mapLevels.map((ml) => {
     const nwdOrd = ml.ordinal === -5 ? -4.5 : ml.ordinal;
     return {

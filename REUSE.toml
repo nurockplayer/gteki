@@ -38,6 +38,16 @@ precedence = "override"
 SPDX-FileCopyrightText = "GTEki contributors"
 SPDX-License-Identifier = "CC-BY-4.0"
 
+# Shinjuku's own mobile kit bundle (#94 batch 2): tools/blender build + bundle_kit.py output from
+# stations/shinjuku/kit/catalog.json, plus the sidecar manifest. Not a byte-for-byte copy of a library GLB
+# (so not under stations/*/gteki/kit/**), and it sits under stations/shinjuku/gteki/assets/, which no other
+# annotation covers — without this it would resolve to the Apache-2.0 default, which is wrong for kit art.
+[[annotations]]
+path = "stations/shinjuku/gteki/assets/kit/**"
+precedence = "override"
+SPDX-FileCopyrightText = "GTEki contributors"
+SPDX-License-Identifier = "CC-BY-4.0"
+
 # #94 look-gap captures: renders of the Lane E kit (showcase layouts) in the web explorer.
 [[annotations]]
 path = "docs/qa/reports/2026-10-22-art-94/*.jpg"

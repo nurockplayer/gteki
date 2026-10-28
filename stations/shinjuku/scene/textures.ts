@@ -4,6 +4,52 @@
 import * as THREE from "three";
 import { OEDO_MAGENTA } from "./palette.ts";
 
+/** #342 Q0: the pinned Noto Sans JP subset (registered by the explorer's loadSignFont), then system fallbacks. */
+export const SIGN_FONT_STACK = "'GTEki Sign JP','Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif";
+export const IDENTITY_FONT_STACK = SIGN_FONT_STACK;
+
+/** Full-resolution canvas coordinates, also used by the CPU projection proxy.
+ * Conservative ink/cap-height assumptions: Japanese 0.80 em; Latin capitals 0.72 em.
+ * These are font-dependent assumptions, not a raster measurement of the fallback font.
+ */
+export const IDENTITY_ART = {
+  width: 1024, height: 512,
+  ja: { text: "新宿", x: 72, baseline: 198, fontSize: 184, capFraction: 0.80, inkWidth: 368 },
+  kana: { text: "しんじゅく", x: 76, baseline: 292, fontSize: 64 },
+  en: { text: "Shinjuku", x: 72, baseline: 405, fontSize: 112, capFraction: 0.72, inkWidth: 560 },
+  name: { left: 60, top: 40, right: 964, bottom: 432 },
+} as const;
+
+/** Original GTEki typography; plain code/line name, no operator badge or copied layout. */
+export function identityTexture(quality: "low" | "high") {
+  const scale = quality === "high" ? 1 : 0.5;
+  const [c, g] = canvas(IDENTITY_ART.width * scale, IDENTITY_ART.height * scale);
+  g.scale(scale, scale);
+  g.fillStyle = "#f6f2e9";
+  g.fillRect(0, 0, IDENTITY_ART.width, IDENTITY_ART.height);
+  g.fillStyle = OEDO_MAGENTA; // GTEki-defined, not official (OD-29); line text below.
+  g.fillRect(24, 48, 12, 380);
+  g.fillStyle = "#20242b";
+  g.textBaseline = "alphabetic";
+  for (const row of [IDENTITY_ART.ja, IDENTITY_ART.kana, IDENTITY_ART.en]) {
+    g.font = `700 ${row.fontSize}px ${IDENTITY_FONT_STACK}`;
+    g.fillText(row.text, row.x, row.baseline);
+  }
+  g.fillStyle = "#555961";
+  g.fillRect(72, 440, 880, 2);
+  g.font = `600 48px ${IDENTITY_FONT_STACK}`;
+  // Line colour sits beside the line name it stands for (#342 ruling 3).
+  g.fillStyle = OEDO_MAGENTA;
+  g.fillRect(72, 457, 36, 36);
+  g.fillStyle = "#555961";
+  g.fillText("E27  都営大江戸線", 124, 493);
+  const texture = new THREE.CanvasTexture(c);
+  texture.name = "GTEki Shinjuku identity (original design)";
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = quality === "high" ? 8 : 4;
+  return texture;
+}
+
 function canvas(w: number, h: number) {
   const c = document.createElement("canvas");
   c.width = w;
@@ -106,6 +152,26 @@ export function tactileTexture() {
   g.strokeStyle = "rgba(0,0,0,0.25)";
   g.lineWidth = 4;
   g.strokeRect(0, 0, S, S);
+  return finish(c, 1);
+}
+
+/**
+ * Escalator step atlas (style.md `escalator_tread` #38383B, `vertical_safety_yellow` #F5B009). Top half (v 0.5-1):
+ * the tread, cleats running along u (the direction of travel), yellow demarcation on both sides (v edges) and the
+ * back edge (u = 1). Bottom half (v 0-0.5): the riser, vertical cleats. The step geometry remaps its UVs into the halves.
+ */
+export function escalatorStepTexture() {
+  const W = 256, H = 512;
+  const [c, g] = canvas(W, H);
+  g.fillStyle = "#38383b";
+  g.fillRect(0, 0, W, H);
+  g.fillStyle = "#1e1e20";
+  for (let y = 4; y < 256; y += 8) g.fillRect(0, y, W, 3);
+  for (let x = 4; x < W; x += 8) g.fillRect(x, 256, 3, 256);
+  g.fillStyle = "#f5b009";
+  g.fillRect(0, 0, W, 12);
+  g.fillRect(0, 244, W, 12);
+  g.fillRect(W - 26, 0, 26, 256);
   return finish(c, 1);
 }
 
@@ -248,9 +314,9 @@ export function signTexture(lines: { arrow?: "left" | "right" | "up" | "down" | 
     }
     g.fillStyle = fg;
     g.textBaseline = "alphabetic";
-    g.font = "700 54px 'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif";
+    g.font = `700 54px ${SIGN_FONT_STACK}`;
     g.fillText(l.ja, x, y0 + 66);
-    g.font = "600 34px 'Helvetica Neue','Inter','Arial',sans-serif";
+    g.font = "600 34px 'GTEki Sign JP','Helvetica Neue','Inter','Arial',sans-serif";
     g.globalAlpha = 0.9;
     g.fillText(l.en, x, y0 + 108);
     g.globalAlpha = 1;

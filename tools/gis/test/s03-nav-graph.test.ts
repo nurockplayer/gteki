@@ -9,14 +9,18 @@ import {
   type NavGraphDigestFacts, type NavGraphInputs, type S03GateTag,
 } from '../src/s03-nav-graph.js';
 import { PATH_REASON } from '../src/s03-paths.js';
-import type { Affine, Point2, S03Inputs, S03Link } from '../src/s03-transform.js';
+import type { Affine, Point2, S03Inputs, S03Level, S03Link } from '../src/s03-transform.js';
 import { readZip } from '../src/zip.js';
 
 const nav: Affine = [2, 0, 0, 2, 10, 20], drawing: Affine = [0.01, 0, 0, 0.01, 0, 0];
 /** The transform output is already treated as lon/lat, so station ENU is [lon, lat]. */
 const project = (lat: number, lon: number): Point2 => [lon, lat];
 const hash = (value: number | string): string => createHash('sha256').update(String(value)).digest('hex');
-const level = (id: number, label: string, ordinal: number): NavGraphInputs['levels'][number] => ({ id, label, ordinal });
+/** A level with one rectangular footprint (GeoJSON lon/lat ring), or none when `ring` is null. */
+const level = (id: number, label: string, ordinal: number, ring: Point2[] | null, z: number | null = null): S03Level => ({ id, label, ordinal, z,
+  polygons: ring ? [[ring]] : [], nonPolygonFeatures: 0, memberSha256: hash(id), featuresTotal: ring ? 1 : 0, featuresUsed: ring ? 1 : 0,
+  featuresExcludedUnclosedRing: 0, featuresExcludedHoleOutsideShell: 0, features: [] });
+const rect = (east: number, north: number): Point2[] => [[0, 0], [east, 0], [east, north], [0, north], [0, 0]];
 const node = (sourceId: number, levelId: number, native: Point2, geometryId: number | null = null): S03Inputs['nodes'][number] =>
   ({ index: 0, sourceId, levelId, native, geometryId });
 const link = (sourceId: number, n1: number, n2: number, direction = 3, dz: number | null = null): S03Link => ({ sourceId, n1, n2, direction, dz });
@@ -32,16 +36,32 @@ const base = (): NavGraphInputs => ({
   nodes: [node(101, 11, [2, 3]), node(102, 11, [3, 3]), node(103, 12, [4, 3]), node(104, 11, [5, 3], 901),
     node(105, 11, [6, 3], 902), node(106, 64677, [7, 3], 903)],
   links: [link(201, 101, 102, 3), link(202, 102, 103, 1), link(203, 103, 104, 3), link(204, 104, 105, 2), link(205, 105, 106, 3)],
-  levels: [level(11, 'B1F', -1), level(12, '1F', 1), level(64677, '2F', 2)],
+  levels: [level(11, 'B1F', -1, rect(0.21, 1), -2), level(12, '1F', 1, rect(1, 1), 0), level(64677, '2F', 2, null, 1)],
   gateTags: new Map([[901, gate('poi:keio-gate:1', ['keio'], 'keio-new', '京王新線　京王新線口')]]),
+  facilities: new Map(), crsVerified: false,
 });
 
 describe('S03 nav graph: nodes and edges come from v5_nav through the affine pair (synthetic only)', () => {
+  it('takes floor order from level id and z, not dz', () => {
+    const input = base();
+    input.links = input.links.map(entry => entry.sourceId === 201 ? { ...entry, dz: 3 } : entry);
+    const graph = buildNavGraph(input, project);
+    const sameLevel = graph.edges.find(edge => edge.link_id === 201)!;
+    expect(sameLevel.level_relation).toBe('same_level');
+    expect(sameLevel.reason_codes).not.toContain(PATH_REASON.CROSS_LEVEL_DEVICE_UNKNOWN);
+    for (const edge of graph.edges.filter(edge => edge.level_relation === 'cross_level'))
+      expect(edge.reason_codes).not.toContain(PATH_REASON.FLOOR_ORDINAL_UNVERIFIED);
+
+    const missingZ = base();
+    missingZ.levels = missingZ.levels.map(entry => entry.id === 11 ? { ...entry, z: null } : entry);
+    expect(buildNavGraph(missingZ, project).edges.find(edge => edge.link_id === 201)!.reason_codes)
+      .toContain(PATH_REASON.FLOOR_ORDINAL_UNVERIFIED);
+  });
   it('applies the nav then drawing affine and projects into station ENU', () => {
     const graph = buildNavGraph(base(), project);
     // transformS03([2, 3]) = nav ([14, 26]) then drawing ([0.14, 0.26]); project returns [lon, lat].
     expect(graph.nodes.map(entry => entry.source_id)).toEqual([101, 102, 103, 104, 105]);
-    expect(graph.nodes[0]).toMatchObject({ source_id: 101, level_id: 11, level_label: 'B1F', floor_ordinal: -1, east_m: 0.14, north_m: 0.26 });
+    expect(graph.nodes[0]).toMatchObject({ source_id: 101, level_id: 11, level_label: 'B1F', level_z: -2, east_m: 0.14, north_m: 0.26 });
     expect(graph.nodes[3]!.east_m).toBeCloseTo(0.20, 12);
     expect(graph.nodes[0]!.lon).toBeCloseTo(0.14, 12);
     expect(graph.nodes[0]!.lat).toBeCloseTo(0.26, 12);
@@ -70,6 +90,70 @@ describe('S03 nav graph: nodes and edges come from v5_nav through the affine pai
   });
 });
 
+describe('S03 nav graph: Check A per node and per edge (synthetic only)', () => {
+  it('clears CHECK_A_CONTAINMENT_FAIL only where both ends are inside their own footprint', () => {
+    const graph = buildNavGraph(base(), project);
+    // Node 105 sits at east 0.22, past B1F's footprint edge at 0.21: it alone fails, the rest pass.
+    expect(Object.fromEntries(graph.nodes.map(entry => [entry.source_id, entry.check_a]))).toEqual({ 101: 'PASS', 102: 'PASS', 103: 'PASS', 104: 'PASS', 105: 'FAIL' });
+    const codes = (linkId: number) => graph.edges.find(edge => edge.link_id === linkId)!.reason_codes;
+    // Both ends inside: the code is cleared and every other code stays.
+    expect(codes(201)).not.toContain(PATH_REASON.CHECK_A_CONTAINMENT_FAIL);
+    expect(codes(201)).toEqual(expect.arrayContaining([PATH_REASON.CRS_UNCONFIRMED, PATH_REASON.CHECK_B_RESIDUAL_UNVERIFIED]));
+    expect(codes(203)).not.toContain(PATH_REASON.CHECK_A_CONTAINMENT_FAIL);
+    // One end outside (105): the code stays on that edge.
+    expect(codes(204)).toContain(PATH_REASON.CHECK_A_CONTAINMENT_FAIL);
+    expect(graph.check_a).toMatchObject({ nodes: { PASS: 4, FAIL: 1, UNASSESSED: 0 }, edges: { pass: 3, fail: 1 } });
+    // Per level, an edge is charged to the level of its from-node: 201, 202 and 204 start on B1F, 203 on 1F.
+    expect(graph.check_a.levels).toEqual([
+      { level_id: 11, nodes_pass: 3, nodes_fail: 1, nodes_unassessed: 0, edges_pass: 2, edges_fail: 1 },
+      { level_id: 12, nodes_pass: 1, nodes_fail: 0, nodes_unassessed: 0, edges_pass: 1, edges_fail: 0 },
+    ]);
+  });
+});
+
+describe('S03 nav graph: CRS_UNCONFIRMED, device, ONE_WAY and SELF_LOOP (synthetic only)', () => {
+  it('clears CRS_UNCONFIRMED from the edges only when the frame reads VERIFIED', () => {
+    const codesOf = (crsVerified: boolean) => buildNavGraph({ ...base(), crsVerified }, project).edges.map(edge => edge.reason_codes);
+    expect(codesOf(false).every(codes => codes.includes(PATH_REASON.CRS_UNCONFIRMED))).toBe(true);
+    expect(codesOf(true).some(codes => codes.includes(PATH_REASON.CRS_UNCONFIRMED))).toBe(false);
+    // Every other code stays on the edge when the frame is verified.
+    expect(buildNavGraph({ ...base(), crsVerified: true }, project).edges.find(edge => edge.link_id === 201)!.reason_codes)
+      .toEqual([PATH_REASON.CHECK_B_RESIDUAL_UNVERIFIED]);
+  });
+  it('sets the device and clears CROSS_LEVEL_DEVICE_UNKNOWN where both ends print the same facility, and keeps it where they differ', () => {
+    // Link 203 joins node 103 (gid 910, 1F) to node 104 (gid 901, B1F): the same facility clears the code, a different one keeps it.
+    const withFacilities = (at103: string, at104: string): NavGraphInputs => ({ ...base(),
+      nodes: base().nodes.map(entry => entry.sourceId === 103 ? node(103, 12, [4, 3], 910) : entry),
+      facilities: new Map([['12:910', at103], ['11:901', at104]]) });
+    const same = buildNavGraph(withFacilities('stairs', 'stairs'), project).edges.find(edge => edge.link_id === 203)!;
+    expect(same.device).toBe('stairs');
+    expect(same.reason_codes).not.toContain(PATH_REASON.CROSS_LEVEL_DEVICE_UNKNOWN);
+    const differ = buildNavGraph(withFacilities('stairs', 'elevator'), project).edges.find(edge => edge.link_id === 203)!;
+    expect(differ.device).toBeNull();
+    expect(differ.reason_codes).toContain(PATH_REASON.CROSS_LEVEL_DEVICE_UNKNOWN);
+    // With no facility printed at either end the code stays, as it did before.
+    expect(buildNavGraph(base(), project).edges.find(edge => edge.link_id === 203)!.reason_codes).toContain(PATH_REASON.CROSS_LEVEL_DEVICE_UNKNOWN);
+    // A facility printed on another level under the same gid is not this node's, and a value that is not a device keeps the code.
+    const otherLevel = buildNavGraph({ ...withFacilities('stairs', 'stairs'), facilities: new Map([['13:910', 'stairs'], ['11:901', 'stairs']]) }, project);
+    expect(otherLevel.edges.find(edge => edge.link_id === 203)!.device).toBeNull();
+    const unknownValue = buildNavGraph(withFacilities('toilet', 'toilet'), project).edges.find(edge => edge.link_id === 203)!;
+    expect(unknownValue.device).toBeNull();
+    expect(unknownValue.reason_codes).toContain(PATH_REASON.CROSS_LEVEL_DEVICE_UNKNOWN);
+  });
+  it('keeps ONE_WAY off the edges, and drops a self-loop and counts it', () => {
+    const graph = buildNavGraph(base(), project);
+    expect(graph.edges.find(edge => edge.link_id === 202)!.reason_codes).not.toContain(PATH_REASON.ONE_WAY);
+    expect(graph.edges.find(edge => edge.link_id === 204)!.reason_codes).not.toContain(PATH_REASON.ONE_WAY);
+    const looped = buildNavGraph({ ...base(), links: [...base().links, link(206, 101, 101, 3)] }, project);
+    expect(looped.edges.map(edge => edge.link_id)).not.toContain(206);
+    expect(looped.counts).toMatchObject({ self_loop_dropped: 1, source_links: 6, edges: 4 });
+    // A self-loop on the dropped level 64677 (node 106) belongs to the level drop, not the surviving graph's loop count.
+    const onDropped = buildNavGraph({ ...base(), links: [...base().links, link(207, 106, 106, 3)] }, project);
+    expect(onDropped.counts).toMatchObject({ self_loop_dropped: 0, dropped_edges: 2 });
+    expect(looped.edges.some(edge => edge.reason_codes.includes(PATH_REASON.SELF_LOOP))).toBe(false);
+  });
+});
+
 describe('S03 nav graph: level 64677 is dropped whole (synthetic only)', () => {
   it('removes every node on 64677 and every edge that touches one', () => {
     const graph = buildNavGraph(base(), project);
@@ -78,9 +162,10 @@ describe('S03 nav graph: level 64677 is dropped whole (synthetic only)', () => {
     expect(graph.counts).toMatchObject({ dropped_nodes: 1, dropped_edges: 1 });
     expect(graph.dropped).toEqual([{ level_id: 64677, reason: PATH_REASON.CHECK_A_CONTAINMENT_FAIL, nodes: 1, edges: 1,
       evidence: DROPPED_LEVELS[0]!.evidence }]);
-    // Nothing else is dropped: the one-way link and every other record stay, with their reason codes.
+    // Nothing else is dropped: the one-way link stays and its direction remains on the edge.
     expect(graph.other_drops).toEqual([]);
-    expect(graph.edges.find(edge => edge.link_id === 202)!.reason_codes).toContain(PATH_REASON.ONE_WAY);
+    expect(graph.edges.find(edge => edge.link_id === 202)!.direction).toBe(1);
+    expect(graph.edges.find(edge => edge.link_id === 202)!.reason_codes).not.toContain(PATH_REASON.ONE_WAY);
   });
 });
 
@@ -143,8 +228,8 @@ describe('S03 nav graph: Path GeoJSON is never an input', () => {
 });
 
 const facts = (): NavGraphDigestFacts => ({ policy_version: S03_NAV_GRAPH_POLICY, tool_input_sha256: 'a'.repeat(64), zip_sha256: 'b'.repeat(64),
-  station_json_sha256: 'c'.repeat(64), floor_mapping_sha256: 'd'.repeat(64), gate_source_sha256: 'e'.repeat(64), crs: 'UNKNOWN',
-  publish_gate: 'CONDITIONAL', sources_yaml_sha256: 'f'.repeat(64) });
+  station_json_sha256: 'c'.repeat(64), floor_mapping_sha256: 'd'.repeat(64), floor_rule: 'test', bundle_floor_tie: 'UNVERIFIED', gate_source_sha256: 'e'.repeat(64), crs: 'UNKNOWN',
+  publish_gate: 'CONDITIONAL', sources_yaml_sha256: 'f'.repeat(64), crs_verification: 'UNVERIFIED' });
 const receipt = (result = buildNavGraph(base(), project)) => {
   const identity = navGraphIdentity(facts());
   return buildNavGraphReceipt({ digest_inputs: facts(), digest: identity.digest, run_id: identity.run_id, publish_gate: 'CONDITIONAL',
@@ -175,7 +260,7 @@ describe('S03 nav graph: held receipt (synthetic only)', () => {
   it('names the run from policy, tool, ZIP, station.json, floor mapping, gate source, CRS, gate and manifest', () => {
     const baseIdentity = navGraphIdentity(facts());
     expect(baseIdentity.run_id).toMatch(/^nav-graph-[0-9a-f]{20}$/);
-    for (const changed of [{ crs: 'EPSG:6668' }, { publish_gate: 'PASS' }, { policy_version: 's03-nav-graph-v2' },
+    for (const changed of [{ crs: 'EPSG:6668' }, { crs_verification: 'VERIFIED' }, { publish_gate: 'PASS' }, { policy_version: 's03-nav-graph-v2' },
       { zip_sha256: '1'.repeat(64) }, { station_json_sha256: '2'.repeat(64) }, { gate_source_sha256: '3'.repeat(64) }])
       expect(navGraphIdentity({ ...facts(), ...changed }).digest).not.toBe(baseIdentity.digest);
   });

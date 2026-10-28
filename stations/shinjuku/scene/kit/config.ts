@@ -5,11 +5,19 @@
 import type { KitAsset, KitBudget, KitRole, KitTier, PlaceholderGroup } from "./types.ts";
 
 /**
- * The code-level switch. OFF until the asset library is cleared for release. A QA run can still opt in
- * with `?kit=1` (see `kitSwapRequested`); a build without the kit bundle in the station folder simply
- * keeps the placeholders.
+ * The code-level switch. ON by default for the escalator role only (batch 2 of the vertical slice): with no
+ * query the station loads its mobile kit bundle and dresses its escalators. `KIT_DEFAULT_ROLES` is the role
+ * filter, so stairs, gates and lifts keep their current default (off) until their own batches are reviewed.
+ * `?kit=0` is the off switch; `?kit=1` (or `kit=mobile|full`) still opts every hooked role in for QA. A build
+ * without the kit bundle in the station folder simply keeps the placeholders.
  */
-export const KIT_SWAP_DEFAULT = false;
+export const KIT_SWAP_DEFAULT = true;
+
+/**
+ * Roles placed with no opt-in. Escalator dressing replaces the procedural glass panel, handrail and top rail (the steel skirt stays)
+ * (batch 2); stairs, gates and lifts are not dressed by default and stay opt-in through `?kit=1`.
+ */
+export const KIT_DEFAULT_ROLES: ReadonlySet<KitRole> = new Set<KitRole>(["escalator"]);
 
 /**
  * Station-relative locations (under stations/shinjuku/gteki/) of the derived kit files. The bundle is
@@ -49,20 +57,26 @@ export function kitTierFor(quality: "low" | "high", caps: TierCaps, override?: K
   return quality === "high" && caps.ktx2 ? "full" : "mobile";
 }
 
-/** Parse the opt-in. `?kit=1|on|mobile|full` enables; anything else, or no query at all, leaves it off. */
-export function kitSwapRequested(search: string | undefined): { enabled: boolean; tier?: KitTier } {
-  if (!search) return { enabled: KIT_SWAP_DEFAULT };
+/**
+ * Parse the opt-in. No query (or an unknown value) gives the default: on, escalator role only. `?kit=0` is the
+ * off switch; `?kit=1|on|true` enables every hooked role, and `?kit=mobile|full` does the same on that tier.
+ * `roles` narrows the placement to the named roles; absent means every role whose placeholder the build records.
+ */
+export function kitSwapRequested(search: string | undefined): { enabled: boolean; tier?: KitTier; roles?: ReadonlySet<KitRole> } {
+  if (!search) return { enabled: KIT_SWAP_DEFAULT, roles: KIT_DEFAULT_ROLES };
   const value = new URLSearchParams(search).get("kit");
   if (value === "mobile" || value === "full") return { enabled: true, tier: value };
   if (value === "1" || value === "on" || value === "true") return { enabled: true };
   if (value === "0" || value === "off" || value === "false") return { enabled: false };
-  return { enabled: KIT_SWAP_DEFAULT };
+  return { enabled: KIT_SWAP_DEFAULT, roles: KIT_DEFAULT_ROLES };
 }
 
 /**
  * Lower is more screen time on the main routes (docs/stations/shinjuku/kit-swap.md, measured from the router:
  * an exit-to-platform walk spends about 26% of its time on escalators, 17% on stairs, one gate crossing per
  * route, lifts on about half of them and on every step-free one). Over budget, the highest numbers are dropped first.
+ * Inside a rank, runs go longest drawn run first (then anchor key): the longest banks are the ones the guided walks
+ * ride, so they keep their dressing when the budget cuts the tail.
  */
 export const ROLE_RANK: Record<KitRole, number> = {
   escalator: 1,
@@ -75,17 +89,17 @@ export const ROLE_RANK: Record<KitRole, number> = {
 
 /**
  * Which placeholder group a role replaces, and whether build.ts records that group so its triangles can
- * be hidden. `group: null` means the role adds geometry that is not drawn today (escalator comb plates and newels). A role whose
- * placeholder is drawn but not recorded cannot be placed: the kit would double the geometry.
+ * be hidden. `group: null` means the role adds geometry that is not drawn today. A role whose placeholder is
+ * drawn but not recorded cannot be placed: the kit would double the geometry.
  */
 export const ROLE_REPLACES: Record<KitRole, { group: PlaceholderGroup | null; hooked: boolean }> = {
   gate: { group: "gate-machines", hooked: true },
   lift: { group: "lift-portals", hooked: true },
   // Stairs: the kit piece is nosing strips only, which replace the per-step nosing boxes (tagged per run in build.ts).
   stairs: { group: "stair-nosing", hooked: true },
-  // Escalators: comb plates and newels only. The placeholder draws neither (truss, steps, balustrade panels and
-  // lamps stay), so there is nothing to hide; the piece is additive and its parts must never include the balustrade.
-  escalator: { group: null, hooked: true },
+  // Escalators: the piece carries the balustrade, handrail, newel and comb, so it replaces the procedural glass
+  // panels, box handrails and top rails (tagged per run in build.ts). Truss, steps, steel skirts and lamps stay.
+  escalator: { group: "escalator-balustrade", hooked: true },
   exit: { group: null, hooked: false },
   toilet: { group: null, hooked: false },
 };
@@ -94,7 +108,7 @@ const num = (v: unknown): number | null => (typeof v === "number" && Number.isFi
 
 /** `parts` values this adapter accepts per dressing generator (PR #143: escalator balustrade|handrail|newel|comb, stair nosing|handrail|skirt). */
 export const STAIR_PARTS = ["nosing"] as const;
-export const ESCALATOR_PARTS = ["comb", "newel"] as const;
+export const ESCALATOR_PARTS = ["balustrade", "handrail", "newel", "comb"] as const;
 const partsAre = (a: KitAsset, want: readonly string[]) => {
   const p = a.params.parts;
   return Array.isArray(p) && p.length === want.length && want.every((w) => p.includes(w));
@@ -110,11 +124,14 @@ export const ROLE_SELECTORS: Record<ActiveRole, (a: KitAsset) => boolean> = {
   // dataset does not have, so only single-aisle arrays qualify.
   gate: (a) => a.family === "gate" && num(a.params.aisles) === 1,
   lift: (a) => a.family === "vertical" && a.placement === "wall" && /lift/.test(a.id),
-  // Dressing pieces (Lane E D2, PR #143) fitted to a run through params. Only the parts Shinjuku has no placeholder
-  // for are accepted: nosing for stairs; comb plates and newels for escalators. A piece that also carries the
-  // balustrade, handrail or skirts would double geometry that stays, so it is never selected.
+  // Dressing pieces (Lane E D2, PR #143) fitted to a run through params. Each role accepts exactly the parts it
+  // replaces: nosing for stairs; balustrade, handrail, newel and comb for escalators (the procedural truss, steps
+  // and lamps stay, and the piece carries no skirts or treads). Any other part set would double or drop geometry.
   stairs: (a) => a.family === "dressing" && a.tags.includes("stair") && partsAre(a, STAIR_PARTS) && num(a.params.step_count) !== null,
-  escalator: (a) => a.family === "dressing" && a.tags.includes("escalator") && partsAre(a, ESCALATOR_PARTS) && num(a.params.rise_mm) !== null,
+  // The scene draws the animated steps, steel skirt and green/red lamps itself, so a piece that also carries
+  // static treads, skirts or indicators would double them; only the four-part dressing qualifies.
+  escalator: (a) => a.family === "dressing" && a.tags.includes("escalator") && partsAre(a, ESCALATOR_PARTS) && num(a.params.rise_mm) !== null &&
+    !a.params.treads && !a.params.skirts && !a.params.indicators,
   exit: (a) => a.tags.some((t) => /(^|[:_ -])(canopy|exit)$/.test(t)) || a.family === "canopy",
 };
 

@@ -45,6 +45,7 @@ button, input, select { font: inherit; color: inherit; }
 .topbar > * { pointer-events: auto; }
 .brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
 .logo { font-weight: 800; letter-spacing: 0.04em; font-size: 20px; color: var(--accent); text-shadow: 0 0 18px rgba(94, 240, 255, 0.45); }
+.private-badge { color: #ffb2b2; border: 1px solid #ff6666; border-radius: 999px; padding: 2px 6px; font-size: 9px; font-weight: 800; letter-spacing: 0.08em; line-height: 1.2; }
 .tagline { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .station-select {
   margin-left: auto; max-width: 46vw; padding: 8px 12px; border-radius: 10px;
@@ -94,6 +95,9 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .result.disabled .result-name { color: var(--muted); }
 .result[aria-selected="true"] { background: rgba(94, 240, 255, 0.16); outline: 2px solid var(--accent); outline-offset: -2px; }
 .result.empty { display: block; padding: 10px 12px; color: var(--muted); }
+.result.other-categories { display: block; padding: 10px 12px; color: var(--accent); }
+.result-group { padding: 6px 12px 2px; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+.result-hint { padding: 8px 12px; color: var(--muted); font-size: 12px; }
 .cat-exit .dot { background: var(--ok); } .cat-ticket_gate .dot { background: var(--gate); } .cat-platform .dot { background: #9b8cff; }
 .cat-toilet .dot, .cat-locker .dot { background: #ff9ad5; } .cat-elevator .dot { background: var(--accent); } .cat-transfer .dot { background: #ffa3a3; }
 
@@ -151,6 +155,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .actions .primary { flex: 1; }
 .instructions { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; counter-reset: ins; }
 .ins { display: grid; grid-template-columns: 26px 1fr; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 9px; cursor: pointer; font-size: 13px; }
+.ins-unverified { grid-column: 2; color: #ffd59a; font-size: 11px; }
 .ins:hover { background: rgba(255, 255, 255, 0.05); }
 .ins.active { background: rgba(94, 240, 255, 0.12); color: #dffcff; }
 .ins-icon { width: 22px; height: 22px; border-radius: 6px; background: rgba(255, 255, 255, 0.08); display: grid; place-items: center; font-size: 13px; }
@@ -197,6 +202,12 @@ button.on { border-color: var(--accent); color: var(--accent); }
 /* ---- guide mascots (#132): placeholder art; transform/opacity animation only, off for reduced motion and the phone tier ---- */
 .mascot { display: flex; align-items: center; gap: 8px; pointer-events: none; }
 .mascot[hidden], .mascot-bubble[hidden] { display: none; }
+.first-run { position: relative; margin-top: 10px; padding: 10px 38px 10px 12px; border-radius: 10px; background: var(--glass-strong); border: 1px solid var(--line); font-size: 12px; line-height: 1.45; }
+.first-run[hidden], .first-run-try[hidden] { display: none; }
+.first-run-steps { margin: 0; padding-left: 20px; }
+.first-run-steps li + li { margin-top: 3px; }
+.first-run-try { margin-top: 8px; padding: 6px 10px; font-size: 12px; }
+.first-run-close { position: absolute; top: 4px; right: 4px; padding: 3px 8px; border: 0; background: transparent; font-size: 16px; line-height: 1; }
 .mascot-figure { flex: 0 0 auto; width: 48px; height: 48px; transform-origin: 50% 100%; }
 .mascot-figure svg { display: block; width: 100%; height: 100%; }
 .mascot-bubble { max-width: 20em; padding: 6px 12px; border-radius: 12px; background: var(--glass-strong); border: 1px solid rgba(94, 240, 255, 0.4); font-size: 13px; line-height: 1.45; }

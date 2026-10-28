@@ -139,12 +139,12 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
     const y=index*384;
     ctx.fillStyle="#edf0ee";ctx.fillRect(0,y,2048,384);
     ctx.fillStyle=OEDO_MAGENTA;ctx.fillRect(0,y+356,2048,28);
-    ctx.fillStyle="#2b3439";ctx.font='600 105px sans-serif';ctx.fillText("大江戸線 新宿駅",280,y+122);
-    ctx.font='60px sans-serif';ctx.fillText("Oedo Line Shinjuku",280,y+204);
-    ctx.font='48px sans-serif';ctx.fillText(e.labelJa,280,y+280);
-    ctx.font='32px sans-serif';ctx.fillText(e.labelEn,280,y+330);
+    ctx.fillStyle="#2b3439";ctx.font="600 105px 'GTEki Sign JP',sans-serif";ctx.fillText("大江戸線 新宿駅",280,y+122);
+    ctx.font="60px 'GTEki Sign JP',sans-serif";ctx.fillText("Oedo Line Shinjuku",280,y+204);
+    ctx.font="48px 'GTEki Sign JP',sans-serif";ctx.fillText(e.labelJa,280,y+280);
+    ctx.font="32px 'GTEki Sign JP',sans-serif";ctx.fillText(e.labelEn,280,y+330);
     ctx.fillStyle=OEDO_MAGENTA;ctx.fillRect(38,y+74,184,184);
-    ctx.fillStyle="#ffffff";ctx.font='600 80px sans-serif';ctx.fillText("E27",53,y+193);
+    ctx.fillStyle="#ffffff";ctx.font="600 80px 'GTEki Sign JP',sans-serif";ctx.fillText("E27",53,y+193);
     const at=(along:number,across:number,z:number)=>new THREE.Vector3(e.center.x+e.u.x*along-e.u.y*across,z,-(e.center.y+e.u.y*along+e.u.x*across));
     add("glass",glazingSheet(e.center,e.u,e.halfWidth,e.halfLength,3.08),mats.glass);
     for(const side of [-1,1]){

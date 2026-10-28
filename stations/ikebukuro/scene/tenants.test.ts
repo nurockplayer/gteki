@@ -13,6 +13,15 @@ const bundle: StationBundle = (() => {
   return parsed.bundle;
 })();
 
+describe("西武池袋本店 brand directory (OD-35)", () => {
+  it("returns shop-ikb-seibu-honten's card with the printed floor for a Seibu-only brand", () => {
+    expect(createSearchIndex(bundle).search("ACQUA DI PARMA")[0]).toMatchObject({
+      poi: { id: "shop-ikb-seibu-honten", category: "shop" },
+      tenant: { name: "ACQUA DI PARMA", floorLabel: "1F", category: "コスメ＆ビューティー" },
+    });
+  });
+});
+
 describe("Tobu Department Store brand directory (#419)", () => {
   it("returns shop-ikb-tobudept's card with the printed floor for a real brand", () => {
     expect(validateBundle(bundle).filter((issue) => issue.level === "error")).toEqual([]);
@@ -22,7 +31,8 @@ describe("Tobu Department Store brand directory (#419)", () => {
       { name: "紀伊國屋書店", floorLabel: "7F", category: "文具・書籍" },
       { name: "とらや", floorLabel: "B1F", category: "食品" },
     ]) {
-      expect(index.search(brand.name)[0]).toMatchObject({
+      // A brand may also be in 西武池袋本店, so look for Tobu's card among the hits.
+      expect(index.search(brand.name).find((hit) => hit.poi.id === "shop-ikb-tobudept")).toMatchObject({
         poi: { id: "shop-ikb-tobudept", category: "shop" },
         matched: brand.name,
         tenant: { name: brand.name, floorLabel: brand.floorLabel, category: brand.category },

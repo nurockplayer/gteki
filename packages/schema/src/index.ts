@@ -511,6 +511,6 @@ export interface TenantFile {
   tenants: Tenant[];
 }
 
-export { ASSET_FILE_EXT, DATA_FILE_EXT, dataFileFactsOnlySources, isCanonicalAssetPath, validateBundle, type ValidationIssue } from "./validate.ts";
+export { ASSET_FILE_EXT, DATA_FILE_EXT, PUBLICATION_RULE_CODES, dataFileFactsOnlySources, isCanonicalAssetPath, validateBundle, type ValidationIssue } from "./validate.ts";
 export { checkShape, composeBundle, parseStationFiles, type ParseResult } from "./parse.ts";
 export { parseHm, isOpenAt, type LocalTime } from "./hours.ts";

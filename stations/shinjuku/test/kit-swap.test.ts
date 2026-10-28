@@ -7,7 +7,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import { assembleScene, buildScene } from "../gteki/scene.ts";
 import { OEDO_MAGENTA } from "../scene/build.ts";
-import { KIT_BUDGET, kitSwapRequested, kitTierFor, ROLE_DISABLED, ROLE_SELECTORS } from "../scene/kit/config.ts";
+import { KIT_BUDGET, KIT_DEFAULT_ROLES, kitSwapRequested, kitTierFor, ROLE_DISABLED, ROLE_SELECTORS } from "../scene/kit/config.ts";
 import { collectKitAnchors } from "../scene/kit/anchors.ts";
 import { batchKitPlacements } from "../scene/kit/batch.ts";
 import { PlaceholderLedger, compact } from "../scene/kit/ledger.ts";
@@ -35,15 +35,21 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
  * #370 names the `mat` materials `mat.<key>`, which changes texturesDigest only (was b799e0f8…; re-measured with
  * and without the naming line, every other field unchanged).
  * #316 re-measured on the merged tree: the shell roof coverage above the head band adds 205,300 B and
- * changes geometryDigest; appearance, nodes, textures, meshes and every explorer list are unchanged. */
+ * changes geometryDigest; appearance, nodes, textures, meshes and every explorer list are unchanged.
+ * #342 identity boards add 2 meshes and 28,160 B (geometry, appearance, nodes and textures re-measured; lists unchanged).
+ * #221 render-only room floors (B1, B3, B6 under restricted/office rooms cut out of the floor outline) add 3 meshes and 12,174 B;
+ * walkable, colliders, cameraBlockers and every explorer list are unchanged.
+ * Vertical transport pass (docs/visual/vertical-gap.md) adds 2 meshes (stair risers, escalator truss on its own
+ * material) and 490,580 B (riser planes and nosing lips); escalator steps become tread + riser with a step atlas.
+ * Geometry, appearance, nodes and textures re-measured; listsDigest and every count unchanged. */
 const MAIN_BASELINE = {
   station: {
-    geometryDigest: "af86784d1f7a632f2ee5ef5c2bc87c51644b2bc661a0cfe0493116d8b48206fe",
-    appearanceDigest: "c45106d83d6500652ae0911b8a037f9020e7a7e38ae05fce61ff495dd0835003",
-    nodesDigest: "8716cc4d548465dd836e07e69646928ad33791f37d6fc1a1dc02e2519c9e6ed7",
-    texturesDigest: "34886c8768f0a00486cfbab005dbcb7e89f6035f23dc38d79ab8658953f2976d",
-    meshes: 138,
-    bytes: 13_502_164,
+    geometryDigest: "698615760ab27c20613de649182cb02455edfc5ffb39a587f2d0cc7f592e0a17",
+    appearanceDigest: "bb90e82a587a6cfcd79a1d6a311dbd6e010a6d747417b3a96cb7c7e5553fabaf",
+    nodesDigest: "04c6bfd082e1f1ce2f1c4826baf2199806e2eb003b10a34bb58366db5c8d0d88",
+    texturesDigest: "c8f53716338bb41faf1cf09499f2a6bb149147d879491c851eac564281f01e1c",
+    meshes: 145,
+    bytes: 14_033_078,
   },
   lists: {
     listsDigest: "ddd5c84df153fb71c2254a20ec8132134ef0aaa6bb4878cb683da4ffc967913f",
@@ -76,12 +82,12 @@ const triangles = (root: THREE.Object3D, skip: (o: THREE.Object3D) => boolean = 
 
 describe("kit swap: Issue #94, Shinjuku half", () => {
   describe("flag and tier", () => {
-    it("is off by default and only an explicit opt-in turns it on", () => {
-      expect(kitSwapRequested(undefined).enabled).toBe(false);
-      expect(kitSwapRequested("").enabled).toBe(false);
-      expect(kitSwapRequested("?q=high").enabled).toBe(false);
-      expect(kitSwapRequested("?kit=maybe").enabled).toBe(false);
-      expect(kitSwapRequested("?kit=0").enabled).toBe(false);
+    it("is on for the escalator role with no query; ?kit=0 is the off switch and ?kit=1 opts every hooked role in", () => {
+      // Batch 2 turns the swap on for escalators only: a bare load, an empty query or an unknown value all keep
+      // the default role filter, so stairs, gates and lifts stay as they were (not placed).
+      expect([...KIT_DEFAULT_ROLES]).toEqual(["escalator"]);
+      for (const search of [undefined, "", "?q=high", "?kit=maybe"]) expect(kitSwapRequested(search)).toEqual({ enabled: true, roles: KIT_DEFAULT_ROLES });
+      expect(kitSwapRequested("?kit=0")).toEqual({ enabled: false });
       expect(kitSwapRequested("?kit=1")).toEqual({ enabled: true });
       expect(kitSwapRequested("?kit=full")).toEqual({ enabled: true, tier: "full" });
     });
@@ -135,12 +141,14 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         expect([role, selectAssets(mobile, selector).map((a) => a.id)]).toEqual([role, selectAssets(full, selector).map((a) => a.id)]);
       }
     });
-    it("kit 0.1.0 offers a lift portal, one-aisle gate, safe dressing parts and exit canopies", () => {
+    it("kit 0.1.0 offers a lift portal, one-aisle gate, the four-part escalator dressing and exit canopies", () => {
       const ids = {
         lift: ["gteki_lift_portal_w1000"],
         gate: ["gteki_gate_array_1w"],
         stairs: ["gteki_stair_nosing_w2400_n18"],
-        escalator: ["gteki_escalator_dress_s1000_r4000_comb_newel"],
+        // Batch 2 replaces the procedural balustrade, handrail and skirt too, so the comb+newel-only piece is no
+        // longer selected; the two full dressings qualify (cheapest first; the treads variant is refused).
+        escalator: ["gteki_escalator_dress_s600_r3500_panel", "gteki_escalator_dress_s1000_r4000_glass"],
         exit: ["gteki_street_canopy_w3000_d3000_posts", "gteki_street_canopy_w4500_d3000_cantilever_curved"],
       };
       for (const role of Object.keys(ids) as (keyof typeof ids)[]) {
@@ -244,7 +252,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         role, key: "r1", lo: { x: 0, y: 0, z: -7.8 }, hi: { x: length, y: 0, z: -7.8 + rise }, width, dir: { x: 1, y: 0 }, floorId: "B1",
       });
       const stair = (extra: Record<string, unknown> = {}) => stubAsset("stub_stair_nosing", "dressing", "linear", { tags: ["dressing", "stair"], materials: ["stub_yellow"], textures: {}, params: { step_count: 16, riser_mm: 200, tread_mm: 300, width_mm: 2400, parts: ["nosing"], ...extra } });
-      const esc = (extra: Record<string, unknown> = {}) => stubAsset("stub_esc_comb_newel", "dressing", "linear", { tags: ["dressing", "escalator"], materials: ["stub_steel"], textures: {}, params: { rise_mm: 3200, width_mm: 1150, run_mm: 6800, parts: ["comb", "newel"], ...extra } });
+      const esc = (extra: Record<string, unknown> = {}) => stubAsset("stub_esc_dressing", "dressing", "linear", { tags: ["dressing", "escalator"], materials: ["stub_steel"], textures: {}, params: { rise_mm: 3200, width_mm: 1150, run_mm: 6800, parts: ["balustrade", "handrail", "newel", "comb"], ...extra } });
       const plan = (assets: unknown[], runs: ReturnType<typeof run>[]) => {
         const a = anchors(0, 0);
         a.runs = runs;
@@ -262,22 +270,23 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         expect(climb.x).toBeCloseTo(1, 6);
         expect(climb.z).toBeCloseTo(0, 6);
       });
-      it("puts the escalator comb line on the lower end node and adds (never replaces) placeholder geometry", () => {
+      it("puts the escalator comb line on the lower end node and replaces the procedural balustrade that run", () => {
         const r = plan([esc()], [run("escalator", 1.25, 3.2, 8.4)]);
         const p = r.placed[0]!;
-        expect([p.assetId, p.replaces]).toEqual(["stub_esc_comb_newel", null]);
+        expect([p.assetId, p.replaces]).toEqual(["stub_esc_dressing", "escalator-balustrade"]);
         expect(p.position[0]).toBeCloseTo(0, 6);
         expect(p.position[1]).toBeCloseTo(-7.797, 6);
         expect(p.position[2]).toBeCloseTo(0, 6);
       });
-      it("never selects a piece that also carries parts the scene already draws, or one with no stated parts", () => {
-        for (const parts of [["balustrade", "comb", "newel"], ["comb"], ["comb", "newel", "handrail"], undefined]) {
+      it("takes exactly the parts it replaces: the four-part dressing, never comb-only, a partial set or a treads piece", () => {
+        for (const parts of [["comb"], ["comb", "newel"], ["balustrade", "handrail", "newel"], undefined]) {
           const e = esc(parts ? { parts } : { parts: undefined });
-          const r = plan([e], [run("escalator", 1.25, 3.2, 8.4)]);
-          expect(r.placed).toEqual([]);
+          expect(plan([e], [run("escalator", 1.25, 3.2, 8.4)]).placed).toEqual([]);
         }
+        // Static treads, skirts or indicator lamps would double geometry the scene animates or draws itself.
+        for (const extra of [{ treads: true }, { skirts: true }, { indicators: true }]) expect(plan([esc(extra)], [run("escalator", 1.25, 3.2, 8.4)]).placed).toEqual([]);
         for (const parts of [["nosing", "skirt"], ["handrail"], ["nosing", "handrail", "skirt"]]) expect(plan([stair({ parts })], [run("stairs", 2.4)]).placed).toEqual([]);
-        expect(plan([esc({ parts: ["newel", "comb"] })], [run("escalator", 1.25, 3.2, 8.4)]).placed.length).toBe(1);
+        expect(plan([esc({ parts: ["comb", "newel", "handrail", "balustrade"] })], [run("escalator", 1.25, 3.2, 8.4)]).placed.length).toBe(1);
       });
       it("fits on rise, length and width, and reports an unfit run as dropped", () => {
         expect(plan([stair()], [run("stairs", 2.4, 3.6)]).placed).toEqual([]); // rise 3.6 vs 16 x 200 mm
@@ -727,7 +736,8 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
     beforeAll(async () => {
       const context = new Proxy({}, { get: (_t, key) => (key === "createLinearGradient" || key === "createRadialGradient") ? () => ({ addColorStop() {} }) : () => undefined });
       vi.stubGlobal("document", { createElement: () => ({ width: 1, height: 1, getContext: () => context }) });
-      // The shipping entry point with the flag off (no `location` in node): the path every user gets today.
+      // The shipping entry point with `?kit=0`: the off switch, still the build every user got before batch 2.
+      vi.stubGlobal("location", { search: "?kit=0" });
       off = await buildScene(ctx);
       const inner = createKitSwap({
         manifest: parseKitManifest(shinjukuStubManifestJson(catalogJson), "mobile"),
@@ -997,10 +1007,13 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       expect(report.hidden["gate-machines"]).toBe(96 * placed("gate").length);
       const steps = placed("stairs").reduce((n, p) => n + (catalogJson.assets.find((e) => e.id === p.assetId)!.params.step_count as number), 0);
       expect(report.hidden["stair-nosing"]).toBe(12 * steps);
-      // Escalators are additive: no escalator triangle is hidden, and the scene lost nothing else.
-      expect(offTri - onTri).toBe(192 * placed("lift").length + 96 * placed("gate").length + 12 * steps);
+      // Escalator dressing replaces the procedural balustrade panels, handrails and steel skirts/rails per run; the
+      // per-run triangle count is whatever build.ts drew, so the identity below is the exact-size check.
+      expect(report.hidden["escalator-balustrade"]).toBeGreaterThan(0);
+      expect(report.hidden["escalator-balustrade"]).toBe(offTri - onTri - 192 * placed("lift").length - 96 * placed("gate").length - 12 * steps);
       // The 4 lifts and 2 escalators that were not placed keep every placeholder triangle.
       expect(captured.liftAnchors.length - placed("lift").length).toBe(4);
+      expect(placed("escalator").length).toBe(19);
     });
 
     it("flag on: the budget holds on what was actually built, and the report states it", () => {

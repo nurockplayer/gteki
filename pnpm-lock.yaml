@@ -238,6 +238,9 @@ importers:
       '@gteki/geo':
         specifier: workspace:*
         version: link:../geo
+      '@gteki/navigation':
+        specifier: workspace:*
+        version: link:../navigation
       '@gteki/scene-api':
         specifier: workspace:*
         version: link:../scene-api

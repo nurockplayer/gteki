@@ -93,3 +93,19 @@ export function chevronTexture(color = "#5ef0ff"): THREE.CanvasTexture {
   t.anisotropy = 4;
   return t;
 }
+
+/** White dashes (1 m on, 0.6 m off at repeat 1/1.6) for the "no model" route overlay; tinted by the material. */
+export function dashTexture(): THREE.CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = 80;
+  c.height = 8;
+  const g = c.getContext("2d")!;
+  g.clearRect(0, 0, 80, 8);
+  g.fillStyle = "#ffffff";
+  g.fillRect(0, 0, 50, 8);
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = THREE.RepeatWrapping;
+  t.wrapT = THREE.ClampToEdgeWrapping;
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}

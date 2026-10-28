@@ -68,6 +68,12 @@ const STRINGS = {
     /** English-only marker: a store's floor label is quoted exactly as printed, not a station floor. */
     asPrinted: "（原文どおり）",
     noResults: "該当なし",
+    otherCategoryHits: (n: string) => `他の種類に ${n} 件：すべての種類で探す`,
+    suggestRecent: "最近選んだ場所",
+    suggestPopularFrom: "よく使う出発地（改札など）",
+    suggestPopularTo: "人気の目的地",
+    suggestTry: (q: string) => "試しに入力：" + q,
+    toiletWord: "トイレ",
     route: "ルート",
     minutes: (m: number) => `約${m}分`,
     waiting: (m: number) => `うち待ち約${m}分`,
@@ -157,6 +163,8 @@ const STRINGS = {
     paceNote: (walk: number, stairs: number) => `所要時間は徒歩${walk} m/s・階段${stairs} m/sで計算（ガイドは独自の速度で進みます）`,
     /** A known stairs edge: not "wheelchair access unknown" (#203 B8). */
     routeStairs: "階段あり",
+    routeUnverified: "未検証の区間あり",
+    unverifiedStep: (src: string) => src ? `未検証（${src}）` : "未検証",
     /** A graph node with no POI is never shown by its raw id (#203 B11). */
     unnamedPoint: "名称未登録の地点",
     stairFootLabel: (name: string) => `${name}（階段下）`,
@@ -200,6 +208,13 @@ const STRINGS = {
     routeFound: (m: number, min: number) => `ルートが見つかりました：${m}m、約${min}分`,
     liveSeparator: "。",
     coverageStatus: { routable: "経路あり", visual_only: "表示のみ", unverified: "未確認", excluded: "対象外" } as Record<string, string>,
+    firstRun: {
+      step1: "『出発地』で今いる改札などを選ぶ",
+      step2: "『目的地』で行きたい場所を選ぶ",
+      step3: "ルートを確認して『ガイド開始』",
+      tryRoute: "ルートを試す",
+      close: "閉じる",
+    },
     /** Guide mascot lines (#132): fixed text per event kind, never interpolated with route facts. */
     mascot: {
       arrival: "着いたよ！おつかれさま！",
@@ -283,6 +298,12 @@ const STRINGS = {
     tenantFloorsNotGuided: "Floors inside the store are not guided",
     asPrinted: "(as printed)",
     noResults: "No matches",
+    otherCategoryHits: (n: string) => `${n} in other categories: search all categories`,
+    suggestRecent: "Recent",
+    suggestPopularFrom: "Common starting points (gates)",
+    suggestPopularTo: "Popular destinations",
+    suggestTry: (q: string) => "Try typing: " + q,
+    toiletWord: "Toilet",
     route: "Route",
     minutes: (m: number) => `~${m} min`,
     waiting: (m: number) => `incl. ~${m} min waiting`,
@@ -367,6 +388,8 @@ const STRINGS = {
     dateJoiner: " · ",
     paceNote: (walk: number, stairs: number) => `Time assumes walking ${walk} m/s and stairs ${stairs} m/s; the guide moves at its own pace`,
     routeStairs: "Stairs",
+    routeUnverified: "Includes unverified sections",
+    unverifiedStep: (src: string) => src ? `Unverified (${src})` : "Unverified",
     unnamedPoint: "Unnamed point",
     stairFootLabel: (name: string) => `${name} (stair foot)`,
     generatedSigns: "Signs are placed from the route data, not at the real sign positions",
@@ -406,6 +429,13 @@ const STRINGS = {
     routeFound: (m: number, min: number) => `Route found: ${m} m, about ${min} minute${min === 1 ? "" : "s"}`,
     liveSeparator: ". ",
     coverageStatus: { routable: "routable", visual_only: "visual only", unverified: "unverified", excluded: "excluded" } as Record<string, string>,
+    firstRun: {
+      step1: "Pick where you are in “From” (e.g. a ticket gate)",
+      step2: "Pick where you want to go in “To”",
+      step3: "Check the route, then start the guide",
+      tryRoute: "Try a route",
+      close: "Close",
+    },
     /** Guide mascot lines (#132): fixed text per event kind, never interpolated with route facts. */
     mascot: {
       arrival: "We're here! Nice work!",

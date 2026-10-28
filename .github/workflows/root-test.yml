@@ -36,6 +36,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # tools/private-overlay tests import the S03 seam builder from tools/gis, a separate pnpm project.
+      - run: pnpm --dir tools/gis install --frozen-lockfile
+
       - run: pnpm typecheck
 
       # Default suites only; two workers fit the runner. Station importers' `--check` modes need raw

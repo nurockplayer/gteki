@@ -12,4 +12,5 @@ declare module "virtual:gteki-stations" {
     assets: Record<string, () => Promise<string>>;
   }
   export const stations: DiscoveredStationModule[];
+  export const privateBuild: boolean;
 }

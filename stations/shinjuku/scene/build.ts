@@ -7,8 +7,8 @@ import polygonClipping from "polygon-clipping";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { StationBundle } from "@gteki/schema";
 import { createRouter } from "@gteki/navigation";
-import { centroid, cutWallsByVoids, pointInRings, soffitHeight, STREET_PAD, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
-import { ceilingTexture, signTexture, tactileTexture, tileTextures, wallTexture, SIGN_ROW_HEIGHT, type SignIcon } from "./textures.ts";
+import { centroid, cutWallsByVoids, pointInRings, roomFloorFill, soffitHeight, STREET_PAD, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
+import { ceilingTexture, escalatorStepTexture, signTexture, tactileTexture, tileTextures, wallTexture, SIGN_ROW_HEIGHT, type SignIcon } from "./textures.ts";
 import { prepareLayout } from "./build-cache.ts";
 import { gateMachines, accessSigns, ACCESS_WORDING } from "./fare-fence.ts";
 import surfaceJson from "../data/surface.json";
@@ -20,6 +20,7 @@ import { withSurfaceMemo } from "./surface-layout.ts";
 import { surfaceSeed } from "./surface-bake.ts";
 
 import { OEDO_MAGENTA } from "./palette.ts";
+import { buildIdentityBoards } from "./identity.ts";
 export { OEDO_MAGENTA };
 
 const v3 = (p: XYZ) => new THREE.Vector3(p.x, p.z, -p.y);
@@ -31,7 +32,10 @@ export interface BuiltStation {
   /** Extra collision walls created by props (gate machines, platform doors). */
   propWalls: WallSeg[];
   escalators: { run: Run; steps: THREE.InstancedMesh; speed: number }[];
+  /** Wayfinding metadata groups, one per graph node. */
   signs: THREE.Object3D[];
+  /** Original station identity metadata groups, separate from graph wayfinding. */
+  identityBoards: THREE.Object3D[];
   levelGroups: Map<string, THREE.Group>;
   update(dt: number, t: number): void;
   /** W2: ENU camera position controls render-only street visibility. */
@@ -484,6 +488,25 @@ function boxAlong(a: THREE.Vector3, b: THREE.Vector3, w: number, h: number): THR
   return g;
 }
 
+/**
+ * One escalator step in its instance frame (+X uphill, tread top at y = 0): a level tread `depth` deep and the riser
+ * under its downhill edge, `rise` tall. UVs map the tread into the top half of `escalatorStepTexture` and the riser into
+ * the bottom half, so a step stays one geometry and one draw per escalator.
+ */
+function escalatorStepGeometry(depth: number, rise: number, width: number): THREE.BufferGeometry {
+  const half = (g: THREE.BufferGeometry, v0: number) => {
+    const uv = g.getAttribute("uv") as THREE.BufferAttribute;
+    for (let i = 0; i < uv.count; i++) uv.setY(i, v0 + uv.getY(i) * 0.5);
+    return g;
+  };
+  const tread = half(new THREE.BoxGeometry(depth * 0.97, 0.04, width).translate(0, -0.02, 0), 0.5);
+  const riser = half(new THREE.BoxGeometry(0.015, rise, width).translate(-depth * 0.485 + 0.0075, -rise / 2, 0), 0);
+  const geo = mergeGeometries([tread, riser])!;
+  tread.dispose();
+  riser.dispose();
+  return geo;
+}
+
 function cylAlong(a: THREE.Vector3, b: THREE.Vector3, r: number, seg = 8): THREE.BufferGeometry {
   const d = new THREE.Vector3().subVectors(b, a);
   const g = new THREE.CylinderGeometry(r, r, d.length(), seg, 1);
@@ -527,10 +550,13 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     rubber: track(new THREE.MeshStandardMaterial({ color: "#121314", roughness: 0.55 })),
     // Tinted reflective glass without a transmission scene pass (also coherent on low quality).
     glass: track(new THREE.MeshStandardMaterial({ color: "#b4ccd1", roughness: 0.32, metalness: 0.08, envMapIntensity: 0.18, transparent: true, opacity: 0.28, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true })),
-    stair: track(new THREE.MeshStandardMaterial({ color: "#8d887d", roughness: 0.76 })),
-    nosing: track(new THREE.MeshStandardMaterial({ color: "#303532", roughness: 0.7 })),
-    escStep: track(new THREE.MeshStandardMaterial({ color: "#6d7177", roughness: 0.4, metalness: 0.7 })),
-    escStepEdge: track(new THREE.MeshStandardMaterial({ color: "#f2c21b", roughness: 0.5 })),
+    // Vertical transport follows style.md §2: terrazzo treads, enamel risers, rubber nosing, cleated escalator
+    // treads with yellow demarcation, light painted truss.
+    stair: track(new THREE.MeshStandardMaterial({ color: "#c7c2b8", roughness: 0.42 })),
+    riser: track(new THREE.MeshStandardMaterial({ color: "#dbdbd6", roughness: 0.3 })),
+    nosing: track(new THREE.MeshStandardMaterial({ color: "#2a2b2c", roughness: 0.6 })),
+    escStep: track(new THREE.MeshStandardMaterial({ map: track(escalatorStepTexture()), roughness: 0.51, metalness: 0.3 })),
+    escTruss: track(new THREE.MeshStandardMaterial({ color: "#ccccc7", roughness: 0.34 })),
     gateBody: track(new THREE.MeshStandardMaterial({ color: "#e9ebec", roughness: 0.35, metalness: 0.15 })),
     gateTop: track(new THREE.MeshStandardMaterial({ color: "#303634", roughness: 0.58, metalness: 0.15, envMapIntensity: 0.3 })),
     gateIc: track(new THREE.MeshStandardMaterial({ color: "#1a507e", emissive: "#3983b0", emissiveIntensity: 0.18, roughness: 0.45 })),
@@ -572,6 +598,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   }[] = [];
 
   const fasciaGeos: THREE.BufferGeometry[] = [];
+  const roomFill = roomFloorFill(layout, plan);
   // ---- per level: slabs, ceilings, walls, railings, lights
   for (const lv of layout.levels) {
     const g = new THREE.Group();
@@ -592,6 +619,13 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       const mesh = new THREE.Mesh(track(geo), m);
       mesh.receiveShadow = true;
       mesh.name = "walkable";
+      g.add(mesh);
+    }
+    // Rooms cut out of the floor outline (#221): render-only floor, not walkable (no walk proxy).
+    const roomFloor = merged(roomFill.filter((s) => Math.abs(s.z - lv.z) < 0.01).map((s) => slabGeometry(s.rings, s.z, 2.4)));
+    if (roomFloor) {
+      const mesh = new THREE.Mesh(track(roomFloor), isPlatform ? mat.floorPlatform : mat.floor);
+      mesh.name = "room floor (render only)";
       g.add(mesh);
     }
     const ceil = merged([...lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 2.4, true)), ...layout.soffits.filter((s) => s.floorId === lv.floorId && !(s.spaceId.startsWith("elevator-cap:") && s.z > -0.5)).map(soffitGeometry)]);
@@ -722,6 +756,8 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   {
     const stairGeos: THREE.BufferGeometry[] = [...fasciaGeos];
     const nosingGeos: THREE.BufferGeometry[] = [];
+    const riserGeos: THREE.BufferGeometry[] = [];
+    const trussGeos: THREE.BufferGeometry[] = [];
     const sideGeos: THREE.BufferGeometry[] = [];
     const balustradeGeos: THREE.BufferGeometry[] = [];
     const handGeos: THREE.BufferGeometry[] = [];
@@ -759,21 +795,30 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
             stairGeos.push(box);
             const ex = lo.x + u.x * run * i;
             const ey = lo.y + u.y * run * i;
-            const nose = new THREE.BoxGeometry(0.075, 0.014, r.width - 0.06);
+            // Enamel riser face 3 mm proud of the block, then a 55 mm rubber nosing strip and a steel lip.
+            const riser = new THREE.PlaneGeometry(r.width - 0.02, rise - 0.02);
+            riser.rotateY(-Math.PI / 2 + yaw);
+            riser.translate(ex - u.x * 0.013, top - rise / 2 - 0.012, -(ey - u.y * 0.013));
+            riserGeos.push(riser);
+            const nose = new THREE.BoxGeometry(0.055, 0.008, r.width - 0.06);
             nose.rotateY(yaw);
-            nose.translate(ex + u.x * 0.03, top + 0.006, -(ey + u.y * 0.03));
+            nose.translate(ex + u.x * 0.035, top + 0.004, -(ey + u.y * 0.035));
             nosingGeos.push(ledger ? ledger.tag("stair-nosing", r.edgeId, nose) : nose);
+            const lip = new THREE.BoxGeometry(0.012, 0.02, r.width - 0.02);
+            lip.rotateY(yaw);
+            lip.translate(ex - u.x * 0.012, top - 0.01, -(ey - u.y * 0.012));
+            handGeos.push(lip);
           }
         }
       } else {
         // escalator truss + balustrades
-        const truss = boxAlong(v3({ ...lo, z: lo.z - 0.55 }), v3({ ...hi, z: hi.z - 0.55 }), r.width + 0.3, 0.9);
-        steelGeos.push(truss);
-        // animated steps
+        // Truss top sits 0.25 m under the incline, below the step profile's lowest point (about 0.17 m).
+        trussGeos.push(boxAlong(v3({ ...lo, z: lo.z - 0.7 }), v3({ ...hi, z: hi.z - 0.7 }), r.width + 0.3, 0.9));
+        // animated steps: a level tread and the riser under its downhill edge, so the run reads as steps, not a ramp
         const L3 = Math.hypot(L, dz);
         const stepLen = 0.4;
         const count = Math.ceil(L3 / stepLen);
-        const stepGeo = track(new THREE.BoxGeometry(stepLen * 0.96, 0.06, r.width - 0.1));
+        const stepGeo = track(escalatorStepGeometry(stepLen * (L / L3), stepLen * (dz / L3), r.width - 0.1));
         const steps = new THREE.InstancedMesh(stepGeo, mat.escStep, count);
         steps.name = `escalator-steps:${r.edgeId}`;
         steps.userData = { lo, hi, yaw, count, L3, stepLen };
@@ -808,7 +853,11 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         panel.profile!.bottomA = za + 0.15;
         panel.profile!.bottomB = zb + 0.15;
       }
-      (r.mode === "stairs" ? sideGeos : balustradeGeos).push(enclosureWallGeometry(panel));
+      // The escalator's procedural balustrade panel, handrail and top rail are one placeholder group, hidden per run
+      // when the kit piece that replaces them is placed; stairs keep their side walls and pipes.
+      const panelGeo = enclosureWallGeometry(panel);
+      if (r.mode === "stairs") sideGeos.push(panelGeo);
+      else balustradeGeos.push(ledger ? ledger.tag("escalator-balustrade", r.edgeId, panelGeo) : panelGeo);
       const a = v3({ ...w.a, z: za + 0.96 }), b = v3({ ...w.b, z: zb + 0.96 });
       if (r.mode === "stairs") {
         handGeos.push(cylAlong(a, b, 0.026));
@@ -817,9 +866,12 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         const mid = a.clone().add(b).multiplyScalar(0.5);
         handGeos.push(cylAlong(mid.clone().add(new THREE.Vector3(0, -0.16, 0)), mid, 0.015, 6));
       } else {
-        rubberGeos.push(boxAlong(a, b, 0.09, 0.07));
+        const rubber = boxAlong(a, b, 0.09, 0.07);
+        rubberGeos.push(ledger ? ledger.tag("escalator-balustrade", r.edgeId, rubber) : rubber);
+        // The steel skirt stays on dressed runs: the kit piece is built with skirts: false.
         steelGeos.push(enclosureWallGeometry({ ...w, profile: { bottomA: za - 0.12, bottomB: zb - 0.12, topA: za + 0.22, topB: zb + 0.22 } }));
-        steelGeos.push(boxAlong(v3({ ...w.a, z: za + 0.88 }), v3({ ...w.b, z: zb + 0.88 }), 0.025, 0.025));
+        const rail = boxAlong(v3({ ...w.a, z: za + 0.88 }), v3({ ...w.b, z: zb + 0.88 }), 0.025, 0.025);
+        steelGeos.push(ledger ? ledger.tag("escalator-balustrade", r.edgeId, rail) : rail);
       }
     }
     const add = (geos: THREE.BufferGeometry[], m: THREE.Material, name?: string) => {
@@ -831,13 +883,18 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       return mesh;
     };
     add(stairGeos, mat.stair, "walkable");
+    add(riserGeos, mat.riser);
+    add(trussGeos, mat.escTruss);
     const nosingMesh = add(nosingGeos, mat.nosing);
     if (nosingMesh) ledger?.bind("stair-nosing", nosingMesh, nosingGeos);
     add(sideGeos, mat.wall);
-    add(balustradeGeos, mat.glass);
+    const balustradeMesh = add(balustradeGeos, mat.glass);
+    if (balustradeMesh) ledger?.bind("escalator-balustrade", balustradeMesh, balustradeGeos);
     add(handGeos, mat.steel);
-    add(rubberGeos, mat.rubber);
-    add(steelGeos, mat.steel);
+    const rubberMesh = add(rubberGeos, mat.rubber);
+    if (rubberMesh) ledger?.bind("escalator-balustrade", rubberMesh, rubberGeos);
+    const steelMesh = add(steelGeos, mat.steel);
+    if (steelMesh) ledger?.bind("escalator-balustrade", steelMesh, steelGeos);
     add(greenGeos, mat.gateOk);
     add(redGeos, mat.flap);
   }
@@ -1001,8 +1058,12 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     }
   }
 
-  // ---- wayfinding signs from the verified graph
-  const signs = buildSigns(bundle, layout, root, track, opts.quality);
+  // ---- collision world (also supplies the app's normal spawn for identity placement)
+  const world = new WalkWorld(layout);
+  world.addWalls(propWalls);
+
+  // ---- wayfinding signs from the verified graph and original station identity
+  const { signs, identityBoards } = buildSigns(bundle, layout, world, root, track, opts.quality);
   // ---- optional Lane E kit swap (Issue #94): off unless a KitSwap was passed in
   const kitSwap = opts.kit && ledger
     ? opts.kit.apply({ THREE, bundle, plan, layout, protection, liftAnchors, root, ledger, levelGroups, track }) ?? undefined
@@ -1015,10 +1076,6 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   mergeRootFinishes(root, [[mat.steel, "static-steel-finishes"], [mat.glass, "static-glass-finishes"]], track, true);
   mergeRootFinishes(root, [[mat.darkSteel, "static-dark-steel-finishes"], [mat.gateOk, "static-gate-ok-finishes"], [mat.accent, "static-accent-finishes"]], track);
   installTightCulling(root);
-
-  // ---- collision world
-  const world = new WalkWorld(layout);
-  world.addWalls(propWalls);
 
   // ---- platform edge helper
   function buildPlatformEdge(walls: WallSeg[], z: number, g: THREE.Group) {
@@ -1267,8 +1324,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     }
     for (const esc of escalators) {
       const { lo, hi, yaw, count, L3, stepLen } = esc.steps.userData as { lo: XYZ; hi: XYZ; yaw: number; count: number; L3: number; stepLen: number };
-      const pitch = Math.atan2(hi.z - lo.z, Math.hypot(hi.x - lo.x, hi.y - lo.y));
-      tmpQ.setFromEuler(new THREE.Euler(0, yaw, pitch, "YXZ"));
+      tmpQ.setFromEuler(new THREE.Euler(0, yaw, 0, "YXZ"));
       const phase = (((t * esc.speed) % stepLen) + stepLen) % stepLen;
       for (let i = 0; i < count; i++) {
         let s = i * stepLen + phase;
@@ -1307,6 +1363,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     propWalls,
     escalators,
     signs,
+    identityBoards,
     levelGroups,
     update(dt, t) { update(dt, t); surface.update(dt, t); },
     setViewer: surface.setViewer,
@@ -1658,7 +1715,7 @@ function raySeg(o: XY, d: XY, a: XY, b: XY): number | null {
 }
 
 // ---------------------------------------------------------------- signs
-function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, track: <T extends { dispose(): void }>(x: T) => T, quality: BuildOptions["quality"]): THREE.Object3D[] {
+function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, root: THREE.Group, track: <T extends { dispose(): void }>(x: T) => T, quality: BuildOptions["quality"]): Pick<BuiltStation, "signs" | "identityBoards"> {
   const router = createRouter(bundle);
   const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
   const adj = new Map<string, string[]>();
@@ -1837,11 +1894,12 @@ function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, tr
     mesh.userData.faceCount = page.rects.length;
     root.add(mesh);
   }
+  const identityBoards = buildIdentityBoards(bundle, layout, world, root, track, quality);
   for (const [geos, color, metalness] of [[caseGeos, "#2b2d30", 0.4], [rodGeos, "#888888", 0.8]] as const) {
     const geo = merged(geos);
     if (geo) { const m = new THREE.Mesh(track(geo), track(new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness }))); if (geos === caseGeos) m.name = "sign-cases"; root.add(m); }
   }
   // keep centroid helper referenced for tree-shaking clarity
   void centroid;
-  return out;
+  return { signs: out, identityBoards };
 }

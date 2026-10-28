@@ -1,0 +1,115 @@
+{
+  "policy_version": "s03-nav-graph-route-v1",
+  "held_graph": {
+    "run_id": "nav-graph-2450f32f7a247690beee",
+    "digest": "2450f32f7a247690beee",
+    "sha256": "f0a73eec7d6a594a6bea5296f163141cc0445cfdb117e52abc9b6408306e5c00",
+    "store_path": "out/s03/nav-graph-2450f32f7a247690beee.json",
+    "source_id": "tokyo-s03-zip",
+    "source_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+    "publish_gate": "CONDITIONAL"
+  },
+  "navigation_use": "NOT_FOR_ROUTING",
+  "verification": "UNVERIFIED",
+  "gteki_role": "evidence",
+  "publication": {
+    "graph": "HOLD",
+    "paths": "HOLD",
+    "routing": "HOLD",
+    "release_condition": "CRS evidence for the path frame is obtained AND the data lead signs off; until then nothing here is published, placed, routed on or bundled.",
+    "rule": "The 2026-10-24 ruling covers 25 approximate points and 19 platform names only. This route run writes a held document to the private store and this receipt; no record enters stations/**, route results or the web bundle."
+  },
+  "counts": {
+    "gate_nodes": [
+      {
+        "operator_id": "jreast",
+        "nodes": 14
+      },
+      {
+        "operator_id": "odakyu",
+        "nodes": 2
+      },
+      {
+        "operator_id": "keio",
+        "nodes": 11
+      }
+    ],
+    "scope_nodes": 27,
+    "gate_pairs": [
+      {
+        "operators": "jreast-jreast",
+        "gate_pairs": 91,
+        "reachable_pairs": 91,
+        "routable_pairs": 0
+      },
+      {
+        "operators": "jreast-odakyu",
+        "gate_pairs": 28,
+        "reachable_pairs": 28,
+        "routable_pairs": 0
+      },
+      {
+        "operators": "jreast-keio",
+        "gate_pairs": 154,
+        "reachable_pairs": 154,
+        "routable_pairs": 0
+      },
+      {
+        "operators": "odakyu-odakyu",
+        "gate_pairs": 1,
+        "reachable_pairs": 1,
+        "routable_pairs": 0
+      },
+      {
+        "operators": "odakyu-keio",
+        "gate_pairs": 22,
+        "reachable_pairs": 22,
+        "routable_pairs": 0
+      },
+      {
+        "operators": "keio-keio",
+        "gate_pairs": 55,
+        "reachable_pairs": 55,
+        "routable_pairs": 0
+      }
+    ]
+  },
+  "requested_routes": {
+    "total": 0,
+    "outcomes": [
+      {
+        "outcome": "ROUTED",
+        "count": 0
+      },
+      {
+        "outcome": "REFUSED",
+        "count": 0
+      },
+      {
+        "outcome": "UNREACHABLE",
+        "count": 0
+      },
+      {
+        "outcome": "UNKNOWN_GATE",
+        "count": 0
+      }
+    ]
+  },
+  "reason_codes": [
+    {
+      "code": "CHECK_A_CONTAINMENT_FAIL",
+      "count": 22
+    },
+    {
+      "code": "CHECK_B_RESIDUAL_UNVERIFIED",
+      "count": 2249
+    },
+    {
+      "code": "CROSS_LEVEL_DEVICE_UNKNOWN",
+      "count": 1
+    }
+  ],
+  "route_rule": "Only edges between gate-tagged nodes of the JR East, Odakyu and Keio areas are routed: the endpoints are the nodes whose own reviewed tag names one of those operators, the path is the shortest walk length over the held graph edges, and `d` 1/2 are one-way. Every node, edge and result is labelled NOT_FOR_ROUTING and UNVERIFIED.",
+  "refusal_rule": "Any edge the path takes that carries a reason code refuses the route and lists the codes; a held graph carries CHECK_B_RESIDUAL_UNVERIFIED on every edge, while FLOOR_ORDINAL_UNVERIFIED clears where both ends have printed z, so a real run reports reachability with zero ROUTED pairs.",
+  "receipt_rule": "This receipt carries counts, run identity and reason codes only: no coordinate, no node or link id, no gate name, no level label and no route geometry."
+}

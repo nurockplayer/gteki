@@ -18,6 +18,11 @@ import { exactHash, fullDigest, protectOnly, stationDigest, visualDigest, withCa
  * #49 intentionally adds the visual escalator shell to the wall/ceiling entries only; all
  * physical fields retain their original values. Removing those two batches reproduced
  * the previous visual digest before updating the fixture.
+ * #342 adds original identity faces/cases/hangers and their sign semantics; the fixture was
+ * regenerated from the build. All physical, spawn and fare-protection fields remain unchanged.
+ * The vertical transport pass (docs/visual/vertical-gap.md) restyles stair and escalator visuals: regenerated; protect,
+ * station, walkable, colliders and camera blockers are unchanged, and `semantic` differs only in one portal mesh's
+ * child index (49 -> 54, two meshes added before it).
  */
 const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;
@@ -42,12 +47,12 @@ export function expectIdentical(got: FullDigest) {
 }
 
 describe("#72 load-cost changes leave collision and fence geometry byte-identical", () => {
-  it("a cold build (layout cache miss, then hit) matches the fe8d3b6 digest", async () => {
+  it("a cold build (layout cache miss, then hit) matches the checked-in digest", async () => {
     clearLayoutCache();
     expectIdentical(await fullDigest(bundle, plan));
   }, 120_000);
 
-  it("a reopen (every layout from the cache) matches the fe8d3b6 digest", async () => {
+  it("a reopen (every layout from the cache) matches the checked-in digest", async () => {
     clearLayoutCache();
     expect(prepareLayout(bundle, plan, { reuse: true }).cached).toBe(false); // prime
     expect(prepareLayout(bundle, plan, { reuse: true }).cached).toBe(true);
