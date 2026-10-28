@@ -1345,6 +1345,8 @@ parseRoads	function	stations/shinjuku/tools/import-surface.ts	98
 importSurface	function	stations/shinjuku/tools/import-surface.ts	118
 CATALOG_PATH	const	stations/shinjuku/tools/kit-catalog.ts	18
 renderCatalog	function	stations/shinjuku/tools/kit-catalog.ts	20
+shopBays	function	stations/shinjuku/tools/shop-bays.ts	27
+shopBaysText	const	stations/shinjuku/tools/shop-bays.ts	76
 @gteki/e2e:test	script	tests/e2e/package.json	7
 @gteki/e2e:test:desktop	script	tests/e2e/package.json	8
 @gteki/e2e:report	script	tests/e2e/package.json	9
