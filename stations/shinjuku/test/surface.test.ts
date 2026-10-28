@@ -133,7 +133,7 @@ describe("street geometry and collision", () => {
   });
   it("uses every ground-level exit's existing label, and creates no B1 canopy", () => {
     const es = surfaceEntrances(layout, bundle); expect(es.map((e) => e.id)).toEqual(["poi:exit:1", "poi:exit:2", "poi:exit:3", "poi:exit:4"]);
-    for (const e of es) expect(e.labelEn).toBe(bundle.pois.find((p) => p.id === e.id)!.names.find((n) => n.lang === "en")!.text);
+    for (const e of es) expect(e.labelEn).toBe(bundle.pois.find((p) => p.id === e.id)!.names.find((n) => n.lang === "ja")!.text);
   });
   it("roofs only source-roofed runs (E27 roof = 2) that are open to the street beyond a canopy", () => {
     const roofs = surfaceRoofs(layout, bundle);

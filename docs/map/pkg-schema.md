@@ -14,7 +14,7 @@ The data contract for stations. gteki.station/0.1 is the schema version string (
 - `packages/schema/src/index.ts:119-132` — `Station`; `packages/schema/src/index.ts:136-156` — `Floor`.
 - `packages/schema/src/index.ts:188-198` — `Node` (`NodeKind`, line 171).
 - `packages/schema/src/index.ts:217-246` — `Edge`: mode, direction, paid, crossesFareBoundary, wheelchair, steps, hours, closed, verification, evidence.
-- `packages/schema/src/index.ts:308-332` — `Poi`: names, aliases, connectorNodeIds (empty means not routable), displayPosition (never a routing target), approximatePosition, hours.
+- `packages/schema/src/index.ts:308-332` — `Poi`: names, descriptions, aliases, connectorNodeIds (empty means not routable), displayPosition (never a routing target), approximatePosition, hours.
 - `packages/schema/src/index.ts:364-370` — `Coverage`; `packages/schema/src/index.ts:375-401` — `Asset`.
 - `packages/schema/src/index.ts:429-448` — `StationBundle`: the in-memory form every consumer receives.
 - `packages/schema/src/index.ts:488-506` — `Tenant`, the store-brand directory entry.

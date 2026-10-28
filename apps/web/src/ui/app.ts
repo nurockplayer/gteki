@@ -547,7 +547,8 @@ export class App {
     // An approximate point says so beside the note: its floor is unverified and the ± radius is not for directions (#463).
     const floor = poi?.approximatePosition ? this.floorLabel(poi) : null;
     const approximate = poi ? this.approximateText(poi) : null;
-    const text = [floor, note, approximate].filter(Boolean).join(" · ");
+    const description = poi?.descriptions?.find((d) => d.lang === this.s.lang)?.text;
+    const text = [description, floor, note, approximate].filter(Boolean).join(" · ");
     box.textContent = text;
     box.hidden = text === "";
   }
@@ -669,7 +670,9 @@ export class App {
       // The directory is unverified: say since when it was checked, as a second line.
       const checkedDate = h.tenant ? tenantCheckedDate(this.s.loaded?.bundle.tenants, h.tenant.id) : null;
       const asOf = h.tenant && checkedDate ? this.t.tenantAsOf(checkedDate) : null;
+      const description = h.poi.descriptions?.find((d) => d.lang === this.s.lang)?.text;
       b.append(dot, name, meta);
+      if (description) b.append(el("span", "result-note", description));
       if (asOf) b.append(el("span", "result-asof", asOf));
       // A search-only POI's note (e.g. a 2020 status word in the copied name) is shown beside it, not only in routes.
       const note = h.routable ? null : poiNoteText(h.poi, this.s.lang);
@@ -678,7 +681,7 @@ export class App {
       const approximate = this.approximateText(h.poi);
       if (approximate) b.append(el("span", "result-approx", approximate));
       // The accessible name carries the visible tags, the as-of line, the note and the approximate warning.
-      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...tags, ...(asOf ? [asOf] : []), ...(note ? [note] : []), ...(approximate ? [approximate] : [])].join(", ")));
+      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...(description ? [description] : []), ...tags, ...(asOf ? [asOf] : []), ...(note ? [note] : []), ...(approximate ? [approximate] : [])].join(", ")));
       b.addEventListener("mousedown", (e) => e.preventDefault());
       b.addEventListener("click", () => {
         this.closeResults(which);

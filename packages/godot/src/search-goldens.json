@@ -446,20 +446,7 @@
       {
         "query": "ticket gates",
         "normalized": "ticketgates",
-        "top": [
-          {
-            "poiId": "poi:gate:2",
-            "score": 85
-          },
-          {
-            "poiId": "poi:gate:1",
-            "score": 85
-          },
-          {
-            "poiId": "poi:gate:3",
-            "score": 85
-          }
-        ]
+        "top": []
       },
       {
         "query": "エレベーター",
@@ -518,20 +505,7 @@
       {
         "query": "toilet",
         "normalized": "toilet",
-        "top": [
-          {
-            "poiId": "poi:toilet:3",
-            "score": 85
-          },
-          {
-            "poiId": "poi:toilet:1",
-            "score": 85
-          },
-          {
-            "poiId": "poi:toilet:2",
-            "score": 85
-          }
-        ]
+        "top": []
       },
       {
         "query": "大江戸線",
@@ -552,12 +526,12 @@
             "score": 105
           },
           {
-            "poiId": "poi:exit:2",
-            "score": 7.666666666666666
+            "poiId": "shop-sjk-lumineest-002237",
+            "score": 4.444444444444445
           },
           {
-            "poiId": "poi:exit:5",
-            "score": 6.739130434782608
+            "poiId": "shop-sjk-lumineest-002061",
+            "score": 3.6363636363636362
           }
         ]
       },

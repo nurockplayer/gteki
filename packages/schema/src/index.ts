@@ -309,6 +309,8 @@ export interface Poi {
   id: string;
   category: PoiCategory;
   names: LocalizedText[];
+  /** Our own descriptive text (not an official name); shown as a subtitle, never as the name. */
+  descriptions?: LocalizedText[];
   /** Search aliases incl. kana / romaji / common shorthand. */
   aliases: LocalizedText[];
   floorId: string | null;

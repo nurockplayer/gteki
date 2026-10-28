@@ -16,7 +16,7 @@ describe("Shinjuku gteki/ contract files", () => {
     expect((bundle.station.codes ?? []).map((c) => c.code)).toContain("E27");
   });
 
-  it("gives every E27 POI a distinct ja and en name, and every S03 or shop POI a ja name (search results stay distinguishable)", () => {
+  it("gives every E27 POI a distinct ja name and en description, and every S03 or shop POI a ja name (search results stay distinguishable)", () => {
     // #411: S03 search-only POIs have ja names only, and one source name is printed twice (kept as printed).
     // #214: merchant listings are printed names as well (no invented English), and shops are not E27 POIs.
     // #501: the WP4 line POIs (Toei exits, Metro exits/lifts/escalators) are printed names too, ja only.
@@ -30,7 +30,7 @@ describe("Shinjuku gteki/ contract files", () => {
     const e27 = bundle.pois.filter((p) => !p.evidence.sourceIds.includes("tokyo-s03-zip") && p.category !== "shop" && !p.evidence.sourceIds.every((id) => WP4_SOURCES.has(id)));
     for (const p of bundle.pois.filter((p) => p.category === "shop")) expect(p.names.some((n) => n.lang === "ja" && n.text.trim() !== ""), p.id).toBe(true);
     for (const lang of ["ja", "en"]) {
-      const names = e27.map((p) => p.names.find((n) => n.lang === lang)?.text);
+      const names = e27.map((p) => (lang === "en" ? p.descriptions : p.names)?.find((n) => n.lang === lang)?.text);
       expect(names.every(Boolean)).toBe(true);
       expect(new Set(names).size).toBe(names.length);
     }

@@ -59,6 +59,15 @@ describe("search-only POI notes outside a route", () => {
     expect(a.ui.toNote.textContent).toBe("");
   });
 
+  it("shows the selected language description under a routable endpoint", () => {
+    const a = app("en");
+    const p = poi("p", true);
+    p.descriptions = [{ lang: "en", text: "North exit" }];
+    a.renderEndpointNote(a.ui.toNote, p);
+    expect(a.ui.toNote.textContent).toBe("North exit");
+    expect(a.ui.toNote.hidden).toBe(false);
+  });
+
   it("describes each field with its note element", () => {
     const a = app();
     for (const which of ["from", "to"] as const) {

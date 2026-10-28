@@ -55,15 +55,17 @@ const CASES: Case[] = [
   { q: "出口 地面 西北側", top: "poi:exit:2" },
   { q: "でぐち ちじょう きたがわ", top: "poi:exit:1" },
   { q: "deguchi kita-gawa", among: "poi:exit:1", note: "exit 5 also matches: it is also on the north side" },
-  { q: "northwest", order: [{ ids: ["poi:exit:2", "poi:gate:1"], score: 65 }] },
+  { q: "northwest", order: [{ ids: ["poi:exit:2"], score: 65 }] },
   // #501: this printed exit name belongs to a search-only WP4 exit; the Metro A10–A18 exits follow at 40 through
   // the number, below the exact match.
   { q: "A1出口", top: "poi:toei-exit:a1", score: 100, note: "printed name of the search-only Toei exit" },
   // Facilities
-  ...["トイレ", "廁所", "toilet"].map((q): Case => ({ q, top: ["poi:toilet:1", "poi:toilet:2", "poi:toilet:3"] })),
-  ...["電梯", "elevator", "エレベーター"].map((q): Case => ({
+  ...["トイレ", "廁所"].map((q): Case => ({ q, top: ["poi:toilet:1", "poi:toilet:2", "poi:toilet:3"] })),
+  ...["電梯", "エレベーター"].map((q): Case => ({
     q, order: [{ ids: ["poi:elevator:1", "poi:elevator:2", "poi:elevator:3"] }, { ids: ["poi:exit:3"] }], note: "exit 3's name says elevator",
   })),
+  { q: "toilet", top: [] },
+  { q: "elevator", top: ["poi:exit:3"] },
   ...["剪票口", "gate"].map((q): Case => ({ q, top: ["poi:gate:1", "poi:gate:2", "poi:gate:3"] })),
 ];
 

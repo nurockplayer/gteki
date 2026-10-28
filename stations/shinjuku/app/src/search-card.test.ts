@@ -9,11 +9,11 @@ const byId = (id: string) => bundle.pois.find((p) => p.id === id)!;
 const searchOnly = bundle.pois.filter((p) => p.connectorNodeIds.length === 0);
 const s03 = searchOnly.filter((p) => p.evidence.sourceIds.includes("tokyo-s03-zip"));
 const shops = searchOnly.filter((p) => p.category === "shop");
-const en = (p: Poi) => p.names.find((n) => n.lang === "en")?.text ?? "";
+const en = (p: Poi) => p.descriptions?.find((n) => n.lang === "en")?.text ?? p.names.find((n) => n.lang === "en")?.text ?? "";
 const jaNote = (p: Poi) => p.notes?.find((n) => n.lang === "ja")?.text.trim() ?? "";
 
 describe("search row line (station app)", () => {
-  it("keeps the English name and floor for a POI that prints both", () => {
+  it("shows the English description and floor", () => {
     const exit = byId("poi:exit:1");
     expect(searchRowSub(exit, "地上1F")).toBe(`${en(exit)} · 地上1F`);
     expect(searchRowSub(exit, "")).toBe(en(exit));
