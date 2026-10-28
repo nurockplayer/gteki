@@ -63,7 +63,7 @@ describe("Department store brand search (#419)", () => {
   });
 
   it.each([
-    ["ウェッジウッド", "10F"],
+    ["アロマセラピーアソシエイツ", "2F"],
     ["ニトリ", "南館 1F～5F"],
   ])("returns the 高島屋 card with the printed floor for %s", (brand, floor) => {
     expect(search(brand)[0]).toMatchObject({
