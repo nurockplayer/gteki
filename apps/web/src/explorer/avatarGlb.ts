@@ -91,7 +91,7 @@ export async function loadGlbAvatar(url: string, opts: { quality: "low" | "high"
       const clone = (source: THREE.Material): THREE.Material => {
         let material = clones.get(source);
         if (!material) {
-          material = source.clone();
+          material = source.userData.gteki_toon ? toonClone(source) : source.clone();
           clones.set(source, material);
           materials.add(material);
           ditherFade(material, fade);
@@ -122,6 +122,38 @@ export async function loadGlbAvatar(url: string, opts: { quality: "low" | "high"
     dispose();
     throw error;
   }
+}
+
+const TOON_FILL = 0.55;
+
+/** One shared 3-tone ramp for toon-flagged avatar materials: nearest-sampled, no mipmaps. */
+let toonRamp: THREE.DataTexture | undefined;
+function toonGradient(): THREE.DataTexture {
+  if (!toonRamp) {
+    toonRamp = new THREE.DataTexture(new Uint8Array([150, 205, 255]), 3, 1, THREE.RedFormat, THREE.UnsignedByteType);
+    toonRamp.minFilter = THREE.NearestFilter;
+    toonRamp.magFilter = THREE.NearestFilter;
+    toonRamp.generateMipmaps = false;
+    toonRamp.needsUpdate = true;
+  }
+  return toonRamp;
+}
+
+/** Matte toon clone of a glTF material flagged `gteki_toon` (base colour texture only, no specular). */
+function toonClone(source: THREE.Material): THREE.MeshToonMaterial {
+  const standard = source as THREE.MeshStandardMaterial;
+  const material = new THREE.MeshToonMaterial({
+    map: standard.map ?? null,
+    color: standard.color ? standard.color.clone() : new THREE.Color(0xffffff),
+    gradientMap: toonGradient(),
+    // Scene-lit stations switch the core lights off and light PBR by IBL alone, which toon shading ignores:
+    // the base colour doubles as a fill so the avatar never goes black; any real light adds the 3-tone ramp.
+    emissive: new THREE.Color().setScalar(TOON_FILL),
+    emissiveMap: standard.map ?? null,
+    side: source.side,
+  });
+  material.name = source.name;
+  return material;
 }
 
 /** Temporary X1 policy: named clips only, no phase/stride correction or terrain logic. */

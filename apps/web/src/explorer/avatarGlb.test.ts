@@ -168,6 +168,24 @@ describe("loadGlbAvatar", () => {
     rig.dispose();
   });
 
+  it("clones gteki_toon materials as MeshToonMaterial with the shared ramp and keeps the fade; others stay standard", async () => {
+    const asset = skinnedAvatarFixture();
+    asset.materials[1]!.userData = { gteki_toon: 1 };
+    const rig = await loadGlbAvatar("/avatar.glb", { quality: "high", loader: { loadAsync: async () => asset } });
+    const materials = asset.mesh.material as THREE.Material[];
+    expect(materials[1]).toBeInstanceOf(THREE.MeshToonMaterial);
+    const toon = materials[1] as THREE.MeshToonMaterial;
+    expect(toon.gradientMap).toBeInstanceOf(THREE.DataTexture);
+    expect(toon.gradientMap!.minFilter).toBe(THREE.NearestFilter);
+    expect(toon.gradientMap!.generateMipmaps).toBe(false);
+    expect(materials[0]).toBeInstanceOf(THREE.MeshStandardMaterial);
+    expect(materials[0]).not.toBeInstanceOf(THREE.MeshToonMaterial);
+    const uniform = fadeUniform(toon);
+    rig.setFade(0.35);
+    expect(uniform.value).toBe(0.35);
+    rig.dispose();
+  });
+
   it("accepts a rig with no clips", async () => {
     const asset = skinnedAvatarFixture();
     asset.animations = [];

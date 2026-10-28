@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
-import { avatarGlbUrl, createAvatarRig, DEFAULT_AVATAR_GLB_URL } from "./avatarSelection.ts";
+import { avatarGlbUrl, createAvatarRig, DEFAULT_AVATAR_GLB_URL, SOFT_AVATAR_GLB_URL } from "./avatarSelection.ts";
 import { fadeUniform, skinnedAvatarFixture } from "./avatarGlb.fixture.ts";
 
 afterEach(() => vi.restoreAllMocks());
@@ -151,8 +151,11 @@ describe("avatar selection", () => {
 
 describe("avatar flag", () => {
   const page = "https://gteki.example/app/index.html";
-  it.each(["", "avatar=procedural", "avatar=GLB", "avatarUrl=/avatar.glb"])("is off unless explicitly enabled: %s", (query) => {
-    expect(avatarGlbUrl(new URLSearchParams(query), page)).toBeUndefined();
+  it.each(["", "avatarUrl=/avatar.glb", "avatar=GLB", "avatar=soft"])("uses the soft protagonist: %s", (query) => {
+    expect(avatarGlbUrl(new URLSearchParams(query), page)).toBe(SOFT_AVATAR_GLB_URL);
+  });
+  it("opts out with ?avatar=procedural", () => {
+    expect(avatarGlbUrl(new URLSearchParams("avatar=procedural"), page)).toBeUndefined();
   });
   it("uses Lane E's future URL for ?avatar=glb", () => {
     expect(avatarGlbUrl(new URLSearchParams("avatar=glb"), page)).toBe(DEFAULT_AVATAR_GLB_URL);
