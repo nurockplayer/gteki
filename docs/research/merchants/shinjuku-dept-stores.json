@@ -55,6 +55,24 @@
       "retrievedAt": "2026-10-25T20:59:31Z",
       "datasetDate": null,
       "notes": "The JSON that the Tokyo Metro station pages load for their exit and neighbourhood map (/station/exit.json), cited via its Wayback capture 20260908151007 (UTC; 445,757 bytes, SHA-256 8524c81cd0d54f96bac3d71251c06f66477ea478114c73d0d2118e43c17f973d, re-read by the lead 2026-10-26 06:05 JST), because Tokyo Metro's live site returns 403 from this host. It prints 京王百貨店 as a facility of 新宿駅 exits A14 and A15, 高島屋タイムズスクエア for 新宿駅 A8 / A9 and 新宿三丁目駅 E8, and サブナード for 新宿駅 B10. Only the printed facility labels and exit numbers are taken; no route, floor label or page wording is copied. The 2016-07-30T20:33:40Z Wayback capture of 新宿駅's print page (map/index_print.html) prints the same three labels (京王百貨店 at A15; サブナード at B10; 高島屋タイムズスクエア at A8 / A9) as a cross-read. A live read of the same file during research (2026-10-26 05:59 JST, HTTP 200, same size) is not the cited basis. Class: facts only, the same class as Tokyo Metro station pages (#26, 2026-10-21 decision). Record: docs/research/merchants/shinjuku-3stores-facts-2026-10-26.md."
+    },
+    {
+      "id": "takashimaya-shinjuku-floorguide-2026-10",
+      "title": "新宿タカシマヤ フロアガイド / タカシマヤ タイムズスクエア 専門店 | takashimaya.co.jp",
+      "publisher": "株式会社高島屋",
+      "url": "https://www.takashimaya.co.jp/shinjuku/floor/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md",
+        "date": "2026-10-28"
+      },
+      "attribution": "新宿タカシマヤ フロアガイド (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-10-28T03:31:22Z",
+      "datasetDate": null,
+      "notes": "Brand names, printed floor labels and printed 売場/corner names only; no floor-guide wording, map, photo or logo is reproduced. Class: sites allowing private use and quotation (use-tiers.md, OD-35; classified by the data lead 2026-10-28). Terms https://www.takashimaya.co.jp/aboutinfo/ 著作権、商標権, read 2026-10-28T03:29Z: 「当社ウェブサイトのコンテンツのご利用は著作権法に定める個人の私的使用のみに限ります。個人の私的使用の範囲を超えて、当社の書面による承諾を得ずにコンテンツの全部または一部を転載、使用、複製、配布、変造、販売等を行うことはできません。」 No business-use or automated-access clause. The site does not answer a direct request from this host and machine-translates in the browser, so the Japanese server HTML was read read-only through ego-lite (in-page fetch): /shinjuku/floor/floor_NN/detail_MM.html 「お取り扱いブランド」 lists and /shinjuku/timessquare/."
     }
   ],
   "pois": [
