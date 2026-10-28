@@ -576,9 +576,10 @@ export async function loadShopKit(
         const { canvas, slots } = paintSignAtlas([...signs, ...blades], SIGN_PX_PER_M, signs.length);
         const texture = new THREE.CanvasTexture(canvas);
         texture.colorSpace = THREE.SRGBColorSpace;
-        const material = new THREE.MeshBasicMaterial({ map: texture, toneMapped: false, side: THREE.DoubleSide });
+        const material = new THREE.MeshBasicMaterial({ map: texture, toneMapped: false });
         owned.push(texture, material);
-        const parts = [...signs, ...blades].map((sign, i) => {
+        // Single-sided: a blade sign gets a second quad turned 180° so its text reads unmirrored from both ways.
+        const parts = [...signs, ...blades].flatMap((sign, i) => {
           const slot = slots[i]!;
           const geo = new THREE.PlaneGeometry(sign.width, sign.height);
           // Map the plane's 0..1 UVs onto this sign's atlas rectangle (CanvasTexture flips Y).
@@ -586,9 +587,12 @@ export async function loadShopKit(
           const vTop = 1 - slot.y / canvas.height, vBot = 1 - (slot.y + slot.h) / canvas.height;
           const uv = geo.getAttribute("uv") as THREE_NS.BufferAttribute;
           for (let k = 0; k < uv.count; k++) uv.setXY(k, u0 + uv.getX(k) * (u1 - u0), vBot + uv.getY(k) * (vTop - vBot));
-          q.setFromAxisAngle(up, sign.yawDeg * DEG);
-          const matrix = new THREE.Matrix4().compose(toRenderer(sign.x, sign.y, sign.z), q, new THREE.Vector3(1, 1, 1));
-          return { geometry: geo, material, matrix };
+          const centre = toRenderer(sign.x, sign.y, sign.z);
+          return (i >= signs.length ? [0, 180] : [0]).map((turn, j) => {
+            q.setFromAxisAngle(up, (sign.yawDeg + turn) * DEG);
+            const matrix = new THREE.Matrix4().compose(centre, q, new THREE.Vector3(1, 1, 1));
+            return { geometry: j ? geo.clone() : geo, material, matrix };
+          });
         });
         const merged = mergeByMaterial(THREE, parts);
         for (const p of parts) p.geometry.dispose(); // mergeByMaterial copies the vertices

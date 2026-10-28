@@ -238,7 +238,7 @@ describe("visual only", () => {
       console.log(`[shop stats] ${low ? "low" : "desktop"}: ${JSON.stringify(stats)}`);
       expect(stats).toMatchObject({ shops: 10, modules: 22, tiles: low ? 5 : 8,
         drawCallsAllTiles: low ? 29 : 77, trianglesAllTiles: low ? 3336 : 7379,
-        trianglesWorstTile: low ? 1294 : 1548, signs: 9, signDrawCalls: 1, signTriangles: 34,
+        trianglesWorstTile: low ? 1294 : 1548, signs: 9, signDrawCalls: 1, signTriangles: 50,
         interiorDrawCalls: 1, interiorTriangles: 60, spillDrawCalls: 1, bladeSigns: 8, aBoards: 4 });
       loaded.dispose();
     }
@@ -259,7 +259,10 @@ describe("visual only", () => {
     expect(stats.modules).toBe(loaded.placements.length);
     expect(stats.signs).toBe(loaded.signs.length);
     expect(stats.signDrawCalls).toBe(1);
-    expect(stats.signTriangles).toBe(2 * (loaded.signs.length + stats.bladeSigns));
+    // Each blade sign is two single-sided quads facing opposite ways, so neither face shows mirrored text.
+    expect(stats.signTriangles).toBe(2 * (loaded.signs.length + 2 * stats.bladeSigns));
+    const signMesh = group.getObjectByName("kit_shop_signs") as THREE.Mesh;
+    expect((signMesh.material as THREE.Material).side).toBe(THREE.FrontSide);
     expect(stats.trianglesAllTiles).toBe(loaded.placements.length * 2 * 12); // 2 fake parts, 12 triangles each
     expect(stats.drawCallsAllTiles).toBe(group.children.filter((o) => (o as THREE.InstancedMesh).isInstancedMesh).length);
     loaded.dispose();
