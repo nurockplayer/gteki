@@ -152,11 +152,11 @@
       "names": [
         {
           "lang": "ja",
-          "text": "西武新宿駅（別駅）・新宿サブナード連絡"
+          "text": "西武新宿駅（別駅）"
         },
         {
           "lang": "en",
-          "text": "Seibu-Shinjuku Station (separate station) · Shinjuku Subnade connection"
+          "text": "Seibu-Shinjuku Station (separate station)"
         }
       ],
       "aliases": [
@@ -188,11 +188,11 @@
       "notes": [
         {
           "lang": "ja",
-          "text": "別駅。位置・経路・営業時間・バリアフリーは未確認（検索のみ、案内ルートなし）"
+          "text": "新宿サブナードに連絡。別駅。位置・経路・営業時間・バリアフリーは未確認（検索のみ、案内ルートなし）"
         },
         {
           "lang": "en",
-          "text": "Separate station. Location, route, opening hours and accessibility not verified (search only, no navigation route)."
+          "text": "Connects to Shinjuku Subnade. Separate station. Location, route, opening hours and accessibility not verified (search only, no navigation route)."
         }
       ]
     },
@@ -202,11 +202,11 @@
       "names": [
         {
           "lang": "ja",
-          "text": "新宿三丁目駅（別駅）・新宿駅地下通路連絡"
+          "text": "新宿三丁目駅（別駅）"
         },
         {
           "lang": "en",
-          "text": "Shinjuku-sanchome Station (separate station) · underground connection to Shinjuku Station"
+          "text": "Shinjuku-sanchome Station (separate station)"
         }
       ],
       "aliases": [
@@ -248,11 +248,11 @@
       "notes": [
         {
           "lang": "ja",
-          "text": "別駅。位置・経路・営業時間・バリアフリーは未確認（検索のみ、案内ルートなし）"
+          "text": "新宿駅と地下通路で連絡。別駅。位置・経路・営業時間・バリアフリーは未確認（検索のみ、案内ルートなし）"
         },
         {
           "lang": "en",
-          "text": "Separate station. Location, route, opening hours and accessibility not verified (search only, no navigation route)."
+          "text": "Connected to Shinjuku Station by an underground passage. Separate station. Location, route, opening hours and accessibility not verified (search only, no navigation route)."
         }
       ]
     },
@@ -262,11 +262,11 @@
       "names": [
         {
           "lang": "ja",
-          "text": "新宿西口駅（別駅）・JR新宿駅西口方面連絡"
+          "text": "新宿西口駅（別駅）"
         },
         {
           "lang": "en",
-          "text": "Shinjuku-nishiguchi Station (separate station) · connection toward JR Shinjuku Station west exit"
+          "text": "Shinjuku-nishiguchi Station (separate station)"
         }
       ],
       "aliases": [
@@ -299,11 +299,11 @@
       "notes": [
         {
           "lang": "ja",
-          "text": "別駅。位置・経路・営業時間・バリアフリーは未確認（検索のみ、案内ルートなし）"
+          "text": "JR新宿駅西口出口から案内。別駅。位置・経路・営業時間・バリアフリーは未確認（検索のみ、案内ルートなし）"
         },
         {
           "lang": "en",
-          "text": "Separate station. Location, route, opening hours and accessibility not verified (search only, no navigation route)."
+          "text": "Signs lead from the JR Shinjuku Station west exit. Separate station. Location, route, opening hours and accessibility not verified (search only, no navigation route)."
         }
       ]
     }

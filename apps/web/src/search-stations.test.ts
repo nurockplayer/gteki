@@ -40,8 +40,7 @@ const CASES: Case[] = [
     "大江戸線", "都営大江戸線", "Oedo", "oedo line", "Toei Oedo Line", "新宿站", "大江戶線", "都營大江戶線", "ホーム", "月台"]
     .map((q): Case => ({ q, top: P })),
   // Exits
-  ...["でぐち", "deguchi"].map((q): Case => ({ q, top: ALL_EXITS, score: 105, note: "generic aliases on every exit" })),
-  { q: "exit", top: [...ALL_EXITS, "poi:sep-shinjuku-nishiguchi"] },
+  ...["でぐち", "deguchi", "exit"].map((q): Case => ({ q, top: ALL_EXITS, score: 105, note: "generic aliases on every exit" })),
   { q: "出口 地上", top: exit(1, 2, 3, 4), score: 85, note: "prefix of the ja name" },
   { q: "street level", top: exit(1, 2, 3, 4) },
   { q: "出口 地下1階", top: exit(5, 6) },
@@ -69,7 +68,7 @@ const CASES: Case[] = [
 ];
 
 /** Negative cases: no hit with score >= 30 (other operators, other stations, exit numbers, 屋根なし). */
-const NO_STRONG_HIT = ["Yamanote", "東京メトロ", "Tokyo Metro", "都営新宿線", "屋根なし", "3番出口", "Exit 3"];
+const NO_STRONG_HIT = ["JR新宿", "Yamanote", "東京メトロ", "Tokyo Metro", "都営新宿線", "屋根なし", "3番出口", "Exit 3"];
 /** #501: the WP4 line POIs (Toei exits, Metro M08 exits/lifts/escalators): printed names, facts-only, no route. */
 const WP4_SOURCES = new Set([
   "tokyometro-shinjuku-station-2026-10",

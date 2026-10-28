@@ -820,7 +820,7 @@ function isShopSource(id: string): boolean {
 
 it("finds separate-station connection endpoints without a route", () => {
   const index = createSearchIndex(bundle);
-  for (const [query, id] of [["西武新宿", "poi:sep-seibu-shinjuku"], ["新宿三丁目", "poi:sep-shinjuku-sanchome"], ["新宿西口", "poi:sep-shinjuku-nishiguchi"]]) {
+  for (const [query, id] of [["西武新宿", "poi:sep-seibu-shinjuku"], ["新宿三丁目", "poi:sep-shinjuku-sanchome"], ["新宿西口", "poi:sep-shinjuku-nishiguchi"], ["E01", "poi:sep-shinjuku-nishiguchi"]]) {
     const hit = index.search(query!, { limit: 20 }).find((h) => h.poi.id === id);
     expect(hit, query).toBeDefined();
     expect(hit!.poi.floorId).toBeNull();
@@ -828,7 +828,5 @@ it("finds separate-station connection endpoints without a route", () => {
     expect(hit!.poi.connectorNodeIds).toEqual([]);
     expect(hit!.routable).toBe(false);
   }
-  const jr = index.search("JR新宿", { limit: 20 }).find((h) => h.poi.id === "poi:sep-shinjuku-nishiguchi");
-  expect(jr?.poi.names.find((name) => name.lang === "ja")?.text).toContain("新宿西口駅（別駅）");
-  expect(jr?.routable).toBe(false);
+  expect(index.search("JR新宿", { limit: 20 }).filter((h) => isSeparate(h.poi))).toEqual([]);
 });
