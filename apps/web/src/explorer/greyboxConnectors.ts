@@ -9,20 +9,14 @@ export function unmodelledVerticalEdges(
   traversable: (edge: Edge) => boolean,
   hasFloor: (point: V3) => boolean,
   nearMesh: (point: THREE.Vector3, radius: number) => boolean,
-  hasElevator: (a: THREE.Vector3, b: THREE.Vector3) => boolean = () => false,
 ): Edge[] {
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
   return bundle.edges.filter((edge) => {
-    if (!traversable(edge) || !["stairs", "escalator", "elevator"].includes(edge.mode)) return false;
+    if (!traversable(edge) || !["stairs", "escalator"].includes(edge.mode)) return false;
     const points = edgePoints(bundle, edge, nodes, floors);
     if (points.length < 2) return false;
     if (edge.attributes?.sceneGap === true) return true;
-    if (edge.mode === "elevator") {
-      const a = points[0]!, b = points.at(-1)!;
-      const floor = (p: THREE.Vector3) => hasFloor({ x: p.x, y: -p.z, z: p.y });
-      return !floor(a) || !floor(b) || !hasElevator(a, b);
-    }
     const lengths = points.slice(1).map((p, i) => p.distanceTo(points[i]!));
     let remaining = lengths.reduce((sum, length) => sum + length, 0) / 2;
     let midpoint = points[0]!.clone();
@@ -45,7 +39,7 @@ export function unmodelledVerticalEdges(
 }
 
 export type ConnectorMaterial = "tread" | "riser" | "nosing" | "escStep" | "escTruss" | "steel" | "rubber" | "glass" | "light";
-export interface ConnectorPart { material: ConnectorMaterial; position: number[]; normal: number[]; colour: number[]; edgeId?: string; role?: "walkable" | "collider" | "car" | "door"; landingY?: number; walkableOnly?: boolean; soffit?: boolean; userData?: { fit: "exact" | "approximate"; omittedLandings?: number } }
+export interface ConnectorPart { material: ConnectorMaterial; position: number[]; normal: number[]; colour: number[]; edgeId?: string; role?: "walkable" | "collider"; walkableOnly?: boolean; soffit?: boolean; userData?: { fit: "exact" | "approximate"; omittedLandings?: number } }
 export interface ConnectorOptions { tier: "high" | "low" }
 
 const connectorColours: Record<ConnectorMaterial, string> = {
@@ -169,32 +163,7 @@ export function buildEscalator(from: THREE.Vector3, to: THREE.Vector3, tier: "hi
   return parts;
 }
 
-/** Build a shaft and an independently movable car in local floor coordinates. */
-export function buildElevator(from: THREE.Vector3, to: THREE.Vector3, facing: THREE.Vector3, _tier: "high" | "low"): ConnectorPart[] {
-  const f = frame(from, to), parts: ConnectorPart[] = [], height = f.rise + 2.6;
-  const yaw = Math.hypot(facing.x, facing.z) > 1e-9 ? Math.atan2(facing.z, -facing.x) : 0;
-  f.matrix.makeRotationY(yaw).setPosition(f.low);
-  for (const x of [-1.06, 1.06]) for (const z of [-1.06, 1.06]) box(parts, "steel", f.matrix, x, height / 2, z, 0.08, height, 0.08);
-  for (const y of [0, f.rise]) {
-    for (const z of [-1.06, 1.06]) box(parts, "steel", f.matrix, 0, y + 0.04, z, 2.2, 0.08, 0.08);
-    for (const x of [-1.06, 1.06]) box(parts, "steel", f.matrix, x, y + 0.04, 0, 0.08, 0.08, 2.2);
-    for (const z of [-0.225, 0.225]) { box(parts, "steel", f.matrix, -1.1, y + 1.05, z, 0.04, 2.1, 0.45, "door"); parts.at(-1)!.landingY = f.low.y + y; }
-    box(parts, "light", f.matrix, -1.11, y + 2.2, 0, 0.02, 0.06, 0.3);
-  }
-  box(parts, "escTruss", f.matrix, 1.08, height / 2, 0, 0.04, height, 2.2, "collider");
-  for (const z of [-1.08, 1.08]) box(parts, "escTruss", f.matrix, 0, height / 2, z, 2.2, height, 0.04, "collider");
-  // The front has landing openings cut out of both its visible and collision geometry.
-  for (const z of [-0.775, 0.775]) box(parts, "glass", f.matrix, -1.08, height / 2, z, 0.04, height, 0.65, "collider");
-  for (const [y, h] of [[2.1, Math.max(0, f.rise - 2.1)], [f.rise + 2.1, 0.5]] as const) if (h > 0) box(parts, "glass", f.matrix, -1.08, y + h / 2, 0, 0.04, h, 0.9, "collider");
-  const local = new THREE.Matrix4();
-  box(parts, "tread", local, 0, -0.04, 0, 1.6, 0.08, 1.5, "car");
-  box(parts, "steel", local, 0.78, 1.15, 0, 0.04, 2.3, 1.5, "car");
-  for (const z of [-0.73, 0.73]) box(parts, "steel", local, 0, 1.15, z, 1.6, 2.3, 0.04, "car");
-  box(parts, "light", local, 0, 2.29, 0, 1.3, 0.02, 1.2, "car");
-  return parts;
-}
-
-export interface ConnectorScope { hasFloor: (p: V3) => boolean; nearMesh: (p: THREE.Vector3, radius: number) => boolean; hasElevator?: (a: THREE.Vector3, b: THREE.Vector3) => boolean; elevatorOverlap?: (a: THREE.Vector3, b: THREE.Vector3) => boolean }
+export interface ConnectorScope { hasFloor: (p: V3) => boolean; nearMesh: (p: THREE.Vector3, radius: number) => boolean }
 
 function meshFor(parts: readonly ConnectorPart[], material: THREE.Material): THREE.Mesh {
   const geometry = new THREE.BufferGeometry();
@@ -213,19 +182,17 @@ function meshFor(parts: readonly ConnectorPart[], material: THREE.Material): THR
 export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge) => boolean, scope: ConnectorScope, tier: "high" | "low") {
   const root = new THREE.Group(), walkable: THREE.Object3D[] = [], colliders: THREE.Object3D[] = [];
   const wallSegments: Segment2[] = [];
-  const cars: { edgeId: string; edgeIds: string[]; mesh: THREE.Mesh; zLow: number; zHigh: number; landings: number[]; doors: { landing: number; mesh: THREE.Mesh }[] }[] = [];
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
   const batches = new Map<string, ConnectorPart[]>();
-  const counts = { escalator: 0, stairs: 0, elevator: 0 };
-  let approximateFits = 0, omittedLandings = 0, elevatorOverlaps = 0;
+  const counts = { escalator: 0, stairs: 0 };
+  let approximateFits = 0, omittedLandings = 0;
   const shellMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, side: THREE.DoubleSide });
   const lightMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, emissive: "#fff6e8", emissiveIntensity: 3.2, side: THREE.DoubleSide });
   const glassMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, opacity: 0.28, depthWrite: false, roughness: 0.32, metalness: 0.08, side: THREE.DoubleSide });
   const physicalMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
-  for (const edge of unmodelledVerticalEdges(bundle, traversable, scope.hasFloor, scope.nearMesh, scope.hasElevator)) {
-    const points = edgePoints(bundle, edge, nodes, floors), a = points[0]!, b = points.at(-1)!;
-    const facing = a.clone().sub(b); facing.y = 0;
+  for (const edge of unmodelledVerticalEdges(bundle, traversable, scope.hasFloor, scope.nearMesh)) {
+    const points = edgePoints(bundle, edge, nodes, floors);
     const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
     const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
     let bentEscalator = false;
@@ -236,8 +203,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     }
     const parts: ConnectorPart[] = [];
     let edgeOmitted = 0;
-    if (edge.mode === "elevator") parts.push(...buildElevator(a, b, facing, tier));
-    else for (let i = 1; i < points.length; i++) {
+    for (let i = 1; i < points.length; i++) {
       const from = points[i - 1]!, to = points[i]!;
       const dx = to.x - from.x, dz = to.z - from.z, horizontal = Math.hypot(dx, dz);
       if (horizontal > 1e-6) {
@@ -270,38 +236,22 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     for (const [index, floorNode] of [[0, edge.from], [points.length - 1, edge.to]] as const) {
       const endpoint = points[index]!;
       if (scope.hasFloor({ x: endpoint.x, y: -endpoint.z, z: endpoint.y })) continue;
-      let transform: THREE.Matrix4, center: number;
-      if (edge.mode === "elevator") {
-        const low = a.y <= b.y ? a : b;
-        const yaw = Math.hypot(facing.x, facing.z) > 1e-9 ? Math.atan2(facing.z, -facing.x) : 0;
-        transform = new THREE.Matrix4().makeRotationY(yaw).setPosition(low.x, endpoint.y, low.z);
-        center = -1.85;
-      } else {
-        const next = points[index === 0 ? 1 : index - 1]!;
-        const dx = endpoint.x - next.x, dz = endpoint.z - next.z;
-        transform = new THREE.Matrix4().makeRotationY(Math.hypot(dx, dz) > 1e-9 ? Math.atan2(-dz, dx) : 0).setPosition(endpoint);
-        center = 0.75;
-      }
+      const next = points[index === 0 ? 1 : index - 1]!;
+      const dx = endpoint.x - next.x, dz = endpoint.z - next.z;
+      const transform = new THREE.Matrix4().makeRotationY(Math.hypot(dx, dz) > 1e-9 ? Math.atan2(-dz, dx) : 0).setPosition(endpoint);
       const pad: ConnectorPart[] = [];
-      box(pad, "tread", transform, center, -0.04, 0, 1.5, 0.08, width, "walkable");
+      box(pad, "tread", transform, 0.75, -0.04, 0, 1.5, 0.08, width, "walkable");
       pad[0]!.edgeId = edge.id;
       const floorId = nodes.get(floorNode)?.floorId ?? "";
       pads.push({ part: pad[0]!, floorId });
-      if (edge.mode === "elevator") {
-        const threshold: ConnectorPart[] = [];
-        box(threshold, "tread", transform, -0.95, -0.04, 0, 0.3, 0.08, 0.9, "walkable");
-        threshold[0]!.edgeId = edge.id;
-        pads.push({ part: threshold[0]!, floorId });
-      }
     }
-    if (edge.mode === "elevator" && scope.elevatorOverlap?.(a, b)) { elevatorOverlaps++; for (const p of parts) p.userData = { ...p.userData, fit: "approximate" }; }
     if (edge.mode === "escalator" && bentEscalator) for (const p of parts) p.userData = { ...p.userData, fit: "approximate" };
     for (const part of parts) part.edgeId = edge.id;
-    if (edge.mode === "stairs" || edge.mode === "escalator" || edge.mode === "elevator") counts[edge.mode]++;
+    if (edge.mode === "stairs" || edge.mode === "escalator") counts[edge.mode]++;
     if (parts.some((p) => p.userData?.fit === "approximate")) approximateFits++;
     omittedLandings += edgeOmitted;
     const key = tier === "low" ? "all" : nodes.get(edge.from)?.floorId ?? "";
-    const batch = batches.get(key) ?? []; batch.push(...parts.filter((p) => p.role !== "car" && p.role !== "door" && !p.walkableOnly)); batches.set(key, batch);
+    const batch = batches.get(key) ?? []; batch.push(...parts.filter((p) => !p.walkableOnly)); batches.set(key, batch);
     for (const pad of pads) {
       const floorKey = tier === "low" ? "all" : pad.floorId;
       const floorBatch = batches.get(floorKey) ?? []; floorBatch.push(pad.part); batches.set(floorKey, floorBatch);
@@ -309,35 +259,6 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const support = [...parts.filter((p) => p.role === "walkable"), ...pads.map((pad) => pad.part)], walls = parts.filter((p) => p.role === "collider");
     if (support.length) walkable.push(meshFor(support, physicalMaterial));
     if (walls.length) colliders.push(meshFor(walls, physicalMaterial));
-    const car = parts.filter((p) => p.role === "car");
-    if (car.length) {
-      const low = a.y <= b.y ? a : b;
-      const existing = cars.find((c) => Math.hypot(c.mesh.position.x - low.x, c.mesh.position.z - low.z) < 0.1);
-      const addDoors = (target: typeof cars[number]) => {
-        for (const landing of [a.y, b.y]) {
-          if (target.doors.some((door) => Math.abs(door.landing - landing) < 1e-6)) continue;
-          const leaves = parts.filter((p) => p.role === "door" && Math.abs(p.landingY! - landing) < 1e-6);
-          if (!leaves.length) continue;
-          const door = meshFor(leaves, shellMaterial); door.visible = Math.abs(target.mesh.position.y - landing) >= 1e-6;
-          root.add(door); target.doors.push({ landing, mesh: door });
-        }
-      };
-      if (existing) {
-        existing.edgeIds.push(edge.id); existing.landings = [...new Set([...existing.landings, a.y, b.y])].sort((x, y) => x - y);
-        existing.zLow = existing.landings[0]!; existing.zHigh = existing.landings.at(-1)!; existing.mesh.position.y = existing.zLow;
-        addDoors(existing);
-        continue;
-      }
-      const mesh = meshFor(car, shellMaterial), f = frame(a, b);
-      mesh.geometry.clearGroups();
-      let start = 0;
-      for (const item of car) { const size = item.position.length / 3; mesh.geometry.addGroup(start, size, item.material === "light" ? 1 : 0); start += size; }
-      mesh.material = [shellMaterial, lightMaterial];
-      mesh.position.copy(f.low); mesh.rotation.y = Math.hypot(facing.x, facing.z) > 1e-9 ? Math.atan2(facing.z, -facing.x) : 0;
-      root.add(mesh); const record = { edgeId: edge.id, edgeIds: [edge.id], mesh, zLow: f.low.y, zHigh: f.high.y, landings: [f.low.y, f.high.y], doors: [] as { landing: number; mesh: THREE.Mesh }[] }; cars.push(record); addDoors(record);
-      const floor = meshFor(car.filter((p) => p.material === "tread"), physicalMaterial);
-      floor.visible = false; mesh.add(floor); walkable.push(floor);
-    }
   }
   let triangles = 0;
   const lightBatches: { mesh: THREE.Mesh; parts: ConnectorPart[] }[] = [];
@@ -348,8 +269,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       if (material === lightMaterial) lightBatches.push({ mesh, parts });
     }
   }
-  for (const car of cars) { triangles += car.mesh.geometry.getAttribute("position").count / 3; for (const door of car.doors) triangles += door.mesh.geometry.getAttribute("position").count / 3; for (const door of car.doors) door.mesh.visible = Math.abs(car.mesh.position.y - door.landing) >= 1e-6; }
-  const stats = { connectors: counts, meshes: root.children.length, triangles, approximateFits, omittedLandings, elevatorOverlaps, overBudget: null as string | null,
+  const stats = { connectors: counts, meshes: root.children.length, triangles, approximateFits, omittedLandings, overBudget: null as string | null,
     dropSoffits() {
       for (const batch of lightBatches) {
         const kept = batch.parts.filter((p) => !p.soffit);
@@ -360,7 +280,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         if (!kept.length) { root.remove(batch.mesh); stats.meshes--; }
       }
     } };
-  return { root, walkable, colliders, cars, wallSegments, stats };
+  return { root, walkable, colliders, wallSegments, stats };
 }
 
 /** Apply the shared triangle cap, retaining essential connector and passage geometry. */

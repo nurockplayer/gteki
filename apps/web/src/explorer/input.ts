@@ -98,15 +98,6 @@ export class Input {
     return { x, y, run };
   }
 
-  /** Dedicated elevator selection keys, independent of walking. */
-  liftDirection(): -1 | 0 | 1 {
-    if (!this.enabled) return 0;
-    const keys = new Set([...this.keys, ...this.virtualKeys]);
-    const up = keys.has("KeyE") || keys.has("PageUp");
-    const down = keys.has("KeyQ") || keys.has("PageDown");
-    return up === down ? 0 : up ? 1 : -1;
-  }
-
   consumeLook(): { dx: number; dy: number; zoom: number } {
     const l = this.look;
     this.look = { dx: 0, dy: 0, zoom: 0 };

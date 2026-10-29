@@ -20,8 +20,6 @@ export interface PolylinePoint {
   /** Index into route.steps of the segment ending at this point; -1 for the start point. */
   stepIndex: number;
   floorId: string;
-  /** Edge for the segment ending at this point. */
-  edgeId?: string;
   /**
    * Set on the points of an edge flagged `attributes.sceneGap`: the scene closes or lacks the passage the edge
    * records, so a viewer draws it as unmodelled (ruling A) instead of through the model.
@@ -67,7 +65,7 @@ export function routePolyline(bundle: StationBundle, route: RouteResult): Polyli
       const t = lengths[i]! / total;
       const known = p.z !== null && !symbolicPolyline && (last ? b.known : true);
       const z = last ? b.z : p.z !== null ? p.z : a.z + (b.z - a.z) * t;
-      points.push({ x: last ? to.position.x : p.x, y: last ? to.position.y : p.y, z, zKnown: known, stepIndex, edgeId: step.edgeId, floorId: last ? to.floorId : from.floorId,
+      points.push({ x: last ? to.position.x : p.x, y: last ? to.position.y : p.y, z, zKnown: known, stepIndex, floorId: last ? to.floorId : from.floorId,
         ...(sceneGap ? { sceneGap: true as const } : {}) });
     }
   });

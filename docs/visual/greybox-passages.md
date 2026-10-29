@@ -42,7 +42,8 @@ The design ships in three PRs, and each one is complete on its own:
 - **Ticket A (#630):** passages, portal frames with locally opened walker collision, the legend, and the QA hooks.
   - Vertical edges get no geometry in A.
   - The scene wall at a portal is still drawn and still blocks the follow camera.
-- **Ticket B:** the vertical connectors above.
+- **Ticket B:** the stairs and escalators above.
+- **Elevator:** ships in a follow-up PR.
 - **#631:** cuts the scene wall's triangles open at each portal at load. That opens the rendered wall, the camera rays and the colliders together, and the door panel goes.
 
 ## Known limits (accepted, ticket A)

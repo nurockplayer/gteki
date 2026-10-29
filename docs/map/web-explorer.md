@@ -12,7 +12,7 @@ Most helpers in the folder are small pure modules with their own tests (camera m
 ## Main files and functions
 - `apps/web/src/explorer/greybox.ts` — detects unmodelled edge runs, builds merged runtime passage meshes and portal openings, and splits walls at openings.
 - `apps/web/src/explorer/greyboxConnectors.ts` — builds runtime vertical connectors, batches their geometry and checks the shared triangle budget.
-- `apps/web/src/explorer/greyboxScene.ts` — station-only collision and elevator probes, and runtime greybox legend proximity.
+- `apps/web/src/explorer/greyboxScene.ts` — station-only collision probes, and runtime greybox legend proximity.
 - `apps/web/src/explorer/routeGroundQa.ts` — route ground and vertical connector sampling for the QA hook.
 - `apps/web/src/main.ts:1-8` — entry: imports the CSS and constructs `App` on the `#app` element, prints a load failure into the page.
 - `apps/web/src/explorer/explorer.ts:50-54` — types ExplorerMode, ExplorerPose, ExplorerOptions.
@@ -54,7 +54,7 @@ Most helpers in the folder are small pure modules with their own tests (camera m
 - `apps/web/src/explorer/walker.ts:22-53` — resolveWalls(); `72-86` samplePolyline().
 
 ## Data flow
-- Runtime greybox: `Explorer.loadStation()` probes the original station ground and colliders, builds passages and piecewise vertical connectors from traversable graph edges, then adds their ground and walls to walker and camera targets. Guide polyline points carry the edge ID for elevator car tracking; walk mode calls and boards cars after a stationary wait, with Q/E, PageUp/PageDown and on-screen buttons selecting direction independently of walking. Missing connector endpoint floors receive landing pads; visible closed landing doors block empty shafts and doors hide where cars are present. Tagged scene lifts suppress generated elevators unless the edge is marked as a scene gap; untagged shaft overlaps are counted and marked approximate. Portal openings split scene wall segments and filter collider hits.
+- Runtime greybox: `Explorer.loadStation()` probes the original station ground and colliders, builds passages and piecewise stairs and escalators from traversable graph edges, then adds their ground and walls to walker and camera targets. Missing connector endpoint floors receive landing pads. Portal openings split scene wall segments and filter collider hits. Elevators are deferred to a follow-up PR.
 - Station data: `apps/web/src/registry.ts` `listStations()` (line 50) reads the Vite virtual module `virtual:gteki-stations` (built by `apps/web/stations-plugin.ts` from the `stations/` folders). `GTEKI_PRIVATE_OVERLAY` can replace contract JSON for matching public station names while scene code and assets stay public; the module exports `privateBuild`, surfaced by `PRIVATE_BUILD` and the UI badge. Each entry's `load()` returns a LoadedStation: the parsed bundle from the schema package, optional `scene` module, `sceneImportError`, and `assetUrls`. The synthetic demo entry is added at the end and has no scene.
 - `apps/web/src/ui/app.ts` `openStation()` (283-353) creates the router (`createRouter`) and the search index, then calls `Explorer.loadStation`. The explorer never parses station files itself.
 - Route: `app.ts` `computeRoute()` (775-801) calls `routeBetween`, then `Explorer.showRoute` and `minimap.setRoute`. In overview it also calls `focusPoints`.

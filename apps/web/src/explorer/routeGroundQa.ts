@@ -19,12 +19,9 @@ export function darkSampleDistances(total: number, stops: readonly number[]): nu
 }
 
 /** A deterministic half-metre sampling of the drawn route, including both ends. */
-export function routeGroundCounts(points: readonly (V3 & { stepIndex?: number; edgeId?: string })[], ground: (p: THREE.Vector3) => number | null, verticalSteps: readonly RouteStep[], bundle: StationBundle | null, nearMesh: (p: THREE.Vector3, radius: number, edgeId: string) => boolean, hasElevator: (edgeId: string, a: THREE.Vector3, b: THREE.Vector3) => boolean = () => false) {
+export function routeGroundCounts(points: readonly V3[], ground: (p: THREE.Vector3) => number | null, verticalSteps: readonly RouteStep[], bundle: StationBundle | null, nearMesh: (p: THREE.Vector3, radius: number, edgeId: string) => boolean) {
   const pts = points.map((p) => R(p.x, p.y, p.z));
-  let samples = 0, noFloor = 0, connectorSamples = 0;
-  const elevatorCoverage = new Map<string, boolean>();
-  const nodesById = new Map(bundle?.nodes.map((node) => [node.id, node]) ?? []);
-  const floorsById = new Map(bundle?.floors.map((floor) => [floor.id, floor]) ?? []);
+  let samples = 0, noFloor = 0;
   if (pts.length === 1) {
     const height = ground(pts[0]!);
     samples = 1;
@@ -34,22 +31,6 @@ export function routeGroundCounts(points: readonly (V3 & { stepIndex?: number; e
     const cum = cumulativeLengths(pts), total = cum.at(-1)!;
     const at = (s: number) => {
       const p = samplePolyline(pts, cum, s);
-      const endpoint = points[Math.min(p.segment + 1, points.length - 1)];
-      const step = endpoint?.edgeId ? verticalSteps.find((v) => v.edgeId === endpoint.edgeId) : verticalSteps[endpoint?.stepIndex ?? -1];
-      if (step?.mode === "elevator") {
-        const a = nodesById.get(step.fromNodeId), b = nodesById.get(step.toNodeId);
-        if (a && b) {
-          const ay = nodeDisplayZ(a, floorsById.get(a.floorId)).z, by = nodeDisplayZ(b, floorsById.get(b.floorId)).z;
-          const low = ay <= by ? a : b;
-          if (p.y > Math.min(ay, by) + 1e-6 && p.y < Math.max(ay, by) - 1e-6 && Math.abs(p.x - low.position.x) <= 1.1 && Math.abs(p.z + low.position.y) <= 1.1) {
-            samples++;
-            if (!elevatorCoverage.has(step.edgeId)) elevatorCoverage.set(step.edgeId, hasElevator(step.edgeId, R(a.position.x, a.position.y, ay), R(b.position.x, b.position.y, by)));
-            if (elevatorCoverage.get(step.edgeId)) connectorSamples++;
-            else noFloor++;
-            return;
-          }
-        }
-      }
       const y = ground(new THREE.Vector3(p.x, p.y, p.z));
       samples++;
       if (y === null || Math.abs(y - p.y) > 0.3) noFloor++;
@@ -69,7 +50,7 @@ export function routeGroundCounts(points: readonly (V3 & { stepIndex?: number; e
       if (!nearMesh(R((a.position.x + b.position.x) / 2, (a.position.y + b.position.y) / 2, (az + bz) / 2), 1.5, step.edgeId)) verticalWithoutConnector++;
     }
   }
-  return { samples, noFloor, connectorSamples, verticalWithoutConnector };
+  return { samples, noFloor, verticalWithoutConnector };
 }
 
 /** Only explicit vertical transport is evidence of a connector; ambiguous roles are unknown.

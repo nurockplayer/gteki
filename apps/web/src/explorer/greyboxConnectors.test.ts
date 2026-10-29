@@ -19,22 +19,24 @@ describe("vertical connector scope", () => {
     expect(unmodelledVerticalEdges(bundle, () => true, (p) => p.x !== 2, () => true)).toEqual(bundle.edges);
     expect(unmodelledVerticalEdges(bundle, () => true, () => true, () => false)).toEqual(bundle.edges);
   });
-  it("probes only landings and excludes an existing scene elevator", () => {
-    const lift = { ...bundle, edges: [{ ...bundle.edges[0]!, mode: "elevator" }] } as StationBundle;
-    const floors = (p: { z: number }) => p.z === 0 || p.z === 3;
-    expect(unmodelledVerticalEdges(lift, () => true, floors, () => false, () => true)).toEqual([]);
-    expect(unmodelledVerticalEdges(lift, () => true, floors, () => false, () => false)).toEqual(lift.edges);
-    expect(unmodelledVerticalEdges(lift, () => true, (p) => p.z === 0, () => true, () => true)).toEqual(lift.edges);
-  });
+
 });
 
 import * as THREE from "three";
-import { buildConnectors, buildElevator, buildEscalator, buildStairs, withinGreyboxBudget } from "./greyboxConnectors.ts";
+import { buildConnectors, buildEscalator, buildStairs, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
+
+it("leaves elevator edges to the follow-up, including scene gaps", () => {
+  const station = { ...bundle, edges: [{ ...bundle.edges[0]!, mode: "elevator", attributes: { sceneGap: true } }] } as StationBundle;
+  const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+  expect(result.root.children).toHaveLength(0);
+  expect(result.walkable).toHaveLength(0);
+  expect(result.colliders).toHaveLength(0);
+});
 
 describe("connector geometry", () => {
   const a = new THREE.Vector3(0, 0, 0), b = new THREE.Vector3(5.2, 3, 0);
-  it("emits stairs, escalator and movable elevator car parts", () => {
+  it("emits stairs and escalator parts", () => {
     const edge = bundle.edges[0]!;
     const stairs = buildStairs(a, b, 1.5, "high");
     expect(stairs.some((p) => p.material === "riser")).toBe(true);
@@ -42,9 +44,7 @@ describe("connector geometry", () => {
     const escalator = buildEscalator(a, b, "high");
     expect(escalator.some((p) => p.material === "glass")).toBe(true);
     expect(escalator.some((p) => p.role === "collider")).toBe(true);
-    const elevator = buildElevator(a, b, new THREE.Vector3(-1, 0, 0), "high");
-    expect(elevator.some((p) => p.role === "car" && p.material === "tread")).toBe(true);
-    expect(elevator.some((p) => p.role === "collider")).toBe(true);
+
   });
   it("batches generated geometry and tags its meshes", () => {
     const result = buildConnectors(bundle, () => true, { hasFloor: () => false, nearMesh: () => false }, "low");
@@ -56,12 +56,11 @@ describe("connector geometry", () => {
 
 
 it("adds rendered and walkable endpoint pads only where floors are missing", () => {
-  for (const mode of ["stairs", "escalator", "elevator"] as const) {
-    const vertical = mode === "elevator";
-    const station = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: vertical ? 0 : 4, y: 0, z: 3 } }], edges: [{ ...bundle.edges[0]!, mode, attributes: { sceneGap: true } }] } as StationBundle;
+  for (const mode of ["stairs", "escalator"] as const) {
+    const station = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 4, y: 0, z: 3 } }], edges: [{ ...bundle.edges[0]!, mode, attributes: { sceneGap: true } }] } as StationBundle;
     const build = (missing: boolean) => buildConnectors(station, () => true, { hasFloor: (p) => !missing || p.z !== 3, nearMesh: () => false }, "high");
     const result = build(true), noPad = build(false);
-    const x = vertical ? -1.85 : 4.75;
+    const x = 4.75;
     const ray = new THREE.Raycaster(new THREE.Vector3(x, 3.2, 0), new THREE.Vector3(0, -1, 0), 0, 0.4);
     const ground = ray.intersectObjects(result.walkable, false);
     expect(ground[0]?.point.y).toBeCloseTo(3);
@@ -165,34 +164,6 @@ describe("endpoint fitting", () => {
     expect(Math.min(...landing[0]!.position.filter((_, i) => i % 3 === 0))).toBeCloseTo(0);
     expect(Math.max(...landing[1]!.position.filter((_, i) => i % 3 === 0))).toBeCloseTo(4);
     expect(Math.max(...landing[1]!.position.filter((_, i) => i % 3 === 1))).toBeCloseTo(3.6);
-  });
-});
-
-describe("elevator geometry", () => {
-  it("spans the floors, places two doors and lamps, and parks the car", () => {
-    const lower = new THREE.Vector3(0, 2, 0), upper = new THREE.Vector3(0, 6, 0);
-    const parts = buildElevator(lower, upper, new THREE.Vector3(-1, 0, 0), "high");
-    const shaft = parts.filter((p) => p.role === "collider");
-    const ys = shaft.flatMap((p) => p.position.filter((_, i) => i % 3 === 1));
-    expect(Math.min(...ys)).toBeCloseTo(2);
-    expect(Math.max(...ys)).toBeCloseTo(8.6);
-    const doors = parts.filter((p) => p.material === "steel" && p.role !== "car" && Math.abs(Math.max(...p.position.filter((_, i) => i % 3 === 1)) - Math.min(...p.position.filter((_, i) => i % 3 === 1)) - 2.1) < 1e-5);
-    expect(doors).toHaveLength(4);
-    expect(parts.filter((p) => p.material === "light" && p.role !== "car")).toHaveLength(2);
-    const station = { ...bundle, nodes: [{ ...bundle.nodes[0]!, position: { x: 0, y: 0, z: 2 } }, { ...bundle.nodes[1]!, position: { x: 0, y: 0, z: 6 } }], edges: [{ ...bundle.edges[0]!, mode: "elevator" }] } as StationBundle;
-    const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
-    expect(result.cars).toHaveLength(1);
-    expect(result.cars[0]!.mesh.position.y).toBeCloseTo(2);
-    expect(result.cars[0]!.zLow).toBe(2);
-    expect(result.cars[0]!.zHigh).toBe(6);
-    expect(result.walkable.some((o) => o.parent === result.cars[0]!.mesh)).toBe(true);
-    expect(result.root.children.length).toBeLessThanOrEqual(9);
-    expect(result.cars[0]!.doors).toHaveLength(2);
-    expect(result.stats.triangles).toBe(result.root.children.reduce((sum, child) => sum + ((child as THREE.Mesh).geometry?.getAttribute("position").count ?? 0) / 3, 0));
-    const ray = new THREE.Raycaster(new THREE.Vector3(-2, 2.8, 0), new THREE.Vector3(1, 0, 0), 0, 1.3);
-    expect(ray.intersectObjects(result.colliders, false)).toHaveLength(0);
-    ray.ray.origin.z = 0.8;
-    expect(ray.intersectObjects(result.colliders, false).length).toBeGreaterThan(0);
   });
 });
 

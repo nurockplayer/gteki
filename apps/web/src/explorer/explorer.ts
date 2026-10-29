@@ -18,7 +18,7 @@ import { R, chevronTexture, dashTexture, ribbonGeometry } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { buildConnectors, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { buildGreybox, splitWallsAtOpenings, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
-import { greyboxPathSegments, greyboxSceneProbes, sceneHasElevator, sceneElevatorOverlap, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
+import { greyboxPathSegments, greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
 import { darkSampleDistances, routeGroundCounts, sceneMeshNear } from "./routeGroundQa.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
@@ -81,7 +81,6 @@ interface ShadowFit {
 export interface ExplorerEvents {
   onMode?(mode: ExplorerMode): void;
   onGreyboxLegend?(visible: boolean): void;
-  onElevatorDirectionHint?(visible: boolean): void;
   onGuideProgress?(p: { s: number; total: number; stepIndex: number; done: boolean }): void;
   /** The guide stopped (and paused) at `stops[index]` given to startGuide. */
   onGuideStop?(index: number): void;
@@ -231,12 +230,6 @@ export class Explorer {
   private stationScene: StationScene | null = null;
   private greybox: ReturnType<typeof buildGreybox> | null = null;
   private connectors: ReturnType<typeof buildConnectors> | null = null;
-  private liftRide: { edgeId: string; status: "waiting" | "riding" | "arrived"; elapsed: number; target: number; direction: 1 | -1; rearm?: boolean; guideEdgeId?: string } | null = null;
-  private liftParked = new Set<string>();
-  private liftSelection: { edgeId: string; direction: 1 | -1 | 0; elapsed: number } | null = null;
-  private liftHintVisible = false;
-  private liftRoute: PolylinePoint[] = [];
-  private liftCall: { edgeId: string; landing: number; status: "waiting" | "calling" | "arrived"; elapsed: number } | null = null;
   private greyboxOpenings: Box[] = [];
   private sceneColliderTargets = new Set<THREE.Object3D>();
   private greyboxSegments: GreyboxSegment[] = [];
@@ -329,7 +322,7 @@ export class Explorer {
   private qaAvatarFade: number | null = null;
   private firstPerson = false;
   private mode: ExplorerMode = "overview";
-  private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; edgeIds?: (string | undefined)[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
+  private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
   /** Every stop of the running guide (`guide.stops` is consumed as they are reached; a seek restores the ones still ahead). */
   private guideAllStops: { s: number; index: number }[] = [];
   private guideIdentityHoldS = 0;
@@ -464,10 +457,10 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { greybox: (GreyboxStats & { connectors: { escalator: number; stairs: number; elevator: number }; elevatorOverlaps: number; rideState: { edgeId: string; status: "waiting" | "riding" | "arrived"; elapsed: number; target: number; direction: 1 | -1 } | null }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
+  sceneInfo(): { greybox: (GreyboxStats & { connectors: { escalator: number; stairs: number } }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
-      greybox: this.greybox ? { ...this.greybox.stats, overBudget: this.connectors?.stats.overBudget ?? this.greybox.stats.overBudget, connectors: this.connectors?.stats.connectors ?? { escalator: 0, stairs: 0, elevator: 0 }, elevatorOverlaps: this.connectors?.stats.elevatorOverlaps ?? 0, rideState: this.liftRide ?? null } : null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
+      greybox: this.greybox ? { ...this.greybox.stats, overBudget: this.connectors?.stats.overBudget ?? this.greybox.stats.overBudget, connectors: this.connectors?.stats.connectors ?? { escalator: 0, stairs: 0 } } : null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
       walkable: this.walkable.length, colliders: this.colliders.length, cameraBlockers: this.cameraBlockers.length, seeThrough: this.seeThrough.length,
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
       bakedAo: { ...this.bakedAo }, assets: this.loadedAssets.map((a) => ({ ...a })),
@@ -951,7 +944,7 @@ export class Explorer {
       this.world.add(this.greybox.root);
       this.walkable = [...this.walkable, ...this.greybox.walkable];
       this.colliders = [...this.colliders, ...this.greybox.colliders];
-      this.connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: (p, radius) => sceneMeshNear([this.stationScene!.root], p, radius), hasElevator: (a, b) => sceneHasElevator(this.stationScene!.root, originalTargets.collider, a, b), elevatorOverlap: (a, b) => sceneElevatorOverlap(originalTargets.collider, a, b) }, this.quality);
+      this.connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: (p, radius) => sceneMeshNear([this.stationScene!.root], p, radius) }, this.quality);
       withinGreyboxBudget(this.greybox.stats, this.connectors.stats, this.quality);
       this.world.add(this.connectors.root);
       this.walkable = [...this.walkable, ...this.connectors.walkable];
@@ -1005,8 +998,6 @@ export class Explorer {
   }
 
   private clearStation(): void {
-    this.cancelRide();
-    this.liftParked?.clear();
     this.avatarRig?.cancelPendingLoad();
     this.street.restore(this.scene);
     this.street.attach(null);
@@ -1039,7 +1030,6 @@ export class Explorer {
       for (const material of materials) material.dispose();
       this.connectors = null;
     }
-    this.liftRide = null; this.liftCall = null;
     this.greyboxOpenings = [];
     this.sceneColliderTargets = new Set();
     this.greyboxSegments = [];
@@ -1251,7 +1241,6 @@ export class Explorer {
 
   setMode(mode: ExplorerMode): void {
     if (this.mode === mode) return;
-    this.cancelRide();
     this.guideIdentityHoldS = 0;
     if (this.mode === "overview") this.fadeStale = true;
     this.mode = mode;
@@ -1321,7 +1310,6 @@ export class Explorer {
 
   /** Start free walking at a station ENU point (nearest walkable ground below/above it). */
   walkFrom(enu: { x: number; y: number; z: number }, headingDeg = 0): boolean {
-    this.cancelRide();
     const p = R(enu.x, enu.y, enu.z);
     const ground = this.groundAt(p.x, p.y + 1.5, p.z, 4);
     if (ground === null) return false;
@@ -1355,8 +1343,7 @@ export class Explorer {
   /** QA for the current route: the same ground ray used by the walker, plus connector and image checks. */
   routeGroundCheck(polyline: readonly PolylinePoint[], steps: readonly RouteStep[], guideStopsM: readonly number[] = []) {
     const roots = [this.stationScene?.root, this.greybox?.root, this.connectors?.root].filter((root): root is THREE.Object3D => Boolean(root));
-    const counts = routeGroundCounts(polyline, (p) => this.groundAt(p.x, p.y + DEFAULT_GROUND.stepUp + 0.05, p.z, DEFAULT_GROUND.stepUp + DEFAULT_GROUND.stepDown + 0.1), steps, this.station?.bundle ?? null, (p, radius, edgeId) => sceneMeshNear(roots, p, radius, edgeId), (edgeId, a, b) =>
-      (this.connectors?.cars.some((car) => car.edgeIds.includes(edgeId)) ?? false) || Boolean(this.stationScene && sceneHasElevator(this.stationScene.root, [], a, b)));
+    const counts = routeGroundCounts(polyline, (p) => this.groundAt(p.x, p.y + DEFAULT_GROUND.stepUp + 0.05, p.z, DEFAULT_GROUND.stepUp + DEFAULT_GROUND.stepDown + 0.1), steps, this.station?.bundle ?? null, (p, radius, edgeId) => sceneMeshNear(roots, p, radius, edgeId));
     return { ...counts, darkShare: async (stops?: readonly number[]): Promise<number> => {
       const points = polyline.map((p) => R(p.x, p.y, p.z));
       if (points.length < 2) return 0;
@@ -1433,7 +1420,6 @@ export class Explorer {
     this.clearRoute();
     const pts = polyline.map((p) => R(p.x, p.y, p.z));
     if (pts.length < 2) return;
-    this.liftRoute = polyline.slice();
     this.routeTexture = chevronTexture();
     this.routeTexture.repeat.set(1 / 1.8, 1);
     const mat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.routeTexture, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }), CHEVRON);
@@ -1495,7 +1481,6 @@ export class Explorer {
 
   /** Removing the route also ends any guidance along it: a recomputed or failed route never keeps the old guide. */
   clearRoute(): void {
-    this.liftRoute = [];
     this.stopGuide();
     for (const child of [...this.routeGroup.children]) {
       this.routeGroup.remove(child);
@@ -1876,10 +1861,9 @@ export class Explorer {
   startGuide(polyline: PolylinePoint[], fromS = 0, stopAtPoints: readonly number[] = [], paceSpans: readonly PaceSpan[] = []): void {
     const pts = polyline.map((p) => R(p.x, p.y, p.z));
     if (pts.length < 2) return;
-    this.cancelRide();
     const cum = cumulativeLengths(pts);
     const stops = stopAtPoints.map((point, index) => ({ s: cum[point] ?? 0, index })).filter((x) => x.s >= fromS).sort((a, b) => a.s - b.s || a.index - b.index);
-    this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), edgeIds: polyline.map((p) => p.edgeId), s: fromS, paused: false, stops, holding: false, spans: paceSpans };
+    this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), s: fromS, paused: false, stops, holding: false, spans: paceSpans };
     this.guideAllStops = stops.slice();
     const first = samplePolyline(pts, this.guide.cum, fromS);
     this.pos.set(first.x, first.y, first.z);
@@ -1900,7 +1884,6 @@ export class Explorer {
     this.guideIdentityHoldS = 0;
     const g = this.guide;
     if (!g) return;
-    this.cancelRide();
     const total = g.cum[g.cum.length - 1]!;
     seekGuideState(g, this.guideAllStops, total, s, firstStop);
     const p = samplePolyline(g.pts, g.cum, g.s);
@@ -2113,7 +2096,6 @@ export class Explorer {
     if (this.mode === "walk") this.stepWalk(dt);
     else if (this.mode === "guide") this.stepGuide(dt);
     else this.orbit.update();
-    this.updateElevatorCars(dt);
     this.updateGreyboxLegend();
 
     if (this.mode !== "overview") {
@@ -2137,182 +2119,7 @@ export class Explorer {
     this.updateShadows();
   }
 
-  /** Cancel a ride or call at the nearest landing, carrying anyone inside the car. */
-  private cancelRide(): void {
-    const ids = [this.liftRide?.edgeId, this.liftCall?.edgeId];
-    for (const car of this.connectors?.cars ?? []) {
-      if (!ids.includes(car.edgeId)) continue;
-      this.parkLift(car, car.mesh.position.y, this.inLiftFootprint(car));
-    }
-    this.liftRide = null;
-    this.liftCall = null;
-    this.liftSelection = null;
-    this.setLiftHint(false);
-  }
-
-  private setLiftHint(visible: boolean): void {
-    if (Boolean(this.liftHintVisible) === visible) return;
-    this.liftHintVisible = visible;
-    this.events.onElevatorDirectionHint?.(visible);
-  }
-
-  /** A route segment leaving this landing selects its next floor on this shaft. */
-  private liftRouteDirection(car: NonNullable<Explorer["connectors"]>["cars"][number], landing: number): 1 | -1 | null {
-    const points = this.liftRoute ?? [];
-    for (let i = 1; i < points.length; i++) {
-      const a = points[i - 1]!, b = points[i]!;
-      if (!b.edgeId || !car.edgeIds.includes(b.edgeId) || Math.abs(a.z - landing) > 0.12 || Math.abs(b.z - a.z) < 1e-6) continue;
-      const p = R(a.x, a.y, a.z);
-      if (Math.hypot(p.x - car.mesh.position.x, p.z - car.mesh.position.z) <= 1.5) return b.z > a.z ? 1 : -1;
-    }
-    return null;
-  }
-
-  private inLiftFootprint(car: NonNullable<Explorer["connectors"]>["cars"][number]): boolean {
-    const dx = this.pos.x - car.mesh.position.x, dz = this.pos.z - car.mesh.position.z;
-    const c = Math.cos(car.mesh.rotation.y), s = Math.sin(car.mesh.rotation.y);
-    return Math.abs(c * dx - s * dz) <= 0.8 && Math.abs(s * dx + c * dz) <= 0.75;
-  }
-
-  private inLiftCar(car: NonNullable<Explorer["connectors"]>["cars"][number]): boolean {
-    return this.inLiftFootprint(car) && Math.abs(this.pos.y - car.mesh.position.y) <= 0.08;
-  }
-
-  private parkLift(car: NonNullable<Explorer["connectors"]>["cars"][number], height: number, carry: boolean): void {
-    car.mesh.position.y = car.landings.reduce((best, y) => Math.abs(y - height) < Math.abs(best - height) ? y : best);
-    if (carry && this.pos.y !== car.mesh.position.y) {
-      this.pos.y = car.mesh.position.y;
-      this.lastAvatarPos?.copy(this.pos);
-      this.teleported = true;
-    }
-    car.mesh.updateMatrixWorld(true);
-    for (const door of car.doors) door.mesh.visible = Math.abs(car.mesh.position.y - door.landing) >= 1e-6;
-    (this.liftParked ??= new Set()).add(car.edgeId);
-  }
-
-  /** Select a destination from the on-screen lift controls. */
-  chooseElevatorDirection(direction: 1 | -1): void {
-    if (this.mode !== "walk" || this.liftRide?.status === "riding") return;
-    for (const car of this.connectors?.cars ?? []) {
-      const i = car.landings.findIndex((y) => Math.abs(y - car.mesh.position.y) < 0.08);
-      if (!this.inLiftCar(car) || i <= 0 || i >= car.landings.length - 1) continue;
-      const target = car.landings[i + direction];
-      if (target === undefined) return;
-      this.liftParked?.delete(car.edgeId);
-      this.liftRide = { edgeId: car.edgeId, status: "riding", elapsed: 0, target, direction };
-      this.liftSelection = null;
-      return;
-    }
-  }
-
-  private updateElevatorCars(dt: number): void {
-    const guide = this.guide;
-    const sample = this.mode === "guide" && guide && guide.s < guide.cum.at(-1)! ? samplePolyline(guide.pts, guide.cum, guide.s) : null;
-    const edgeId = sample && guide ? guide.edgeIds?.[sample.segment + 1] : undefined;
-    const movement = this.mode === "walk" ? this.input.move() : { x: 0, y: 0 };
-    const moving = movement.x !== 0 || movement.y !== 0;
-    const cars = this.connectors?.cars ?? [];
-    try { for (const car of cars) {
-      const dx = this.pos.x - car.mesh.position.x, dz = this.pos.z - car.mesh.position.z;
-      const c = Math.cos(car.mesh.rotation.y), s = Math.sin(car.mesh.rotation.y);
-      const localX = c * dx - s * dz, localZ = s * dx + c * dz;
-      const inside = Math.abs(localX) <= 0.8 && Math.abs(localZ) <= 0.75;
-      const onFloor = inside && Math.abs(this.pos.y - car.mesh.position.y) <= 0.08;
-      let call = this.liftCall;
-      const landing = car.landings.find((y) => Math.abs(this.pos.y - y) <= 0.12);
-      const outsideDoor = landing !== undefined && localX <= -1.1 && Math.hypot(localX + 1.1, Math.max(0, Math.abs(localZ) - 0.45)) <= 1.2;
-      const doorDx = -1.1 * c - dx, doorDz = 1.1 * s - dz;
-      const toward = (-Math.sin(this.yaw) * doorDx - Math.cos(this.yaw) * doorDz) / (Math.hypot(doorDx, doorDz) || 1);
-      if (this.mode === "walk" && !call && !this.liftRide && outsideDoor && !moving && toward >= Math.SQRT1_2 && Math.abs(car.mesh.position.y - landing!) > 0.08) {
-        this.liftParked?.delete(car.edgeId);
-        this.liftCall = call = { edgeId: car.edgeId, landing: landing!, status: "waiting", elapsed: 0 };
-      }
-      if (call?.edgeId === car.edgeId && this.mode === "walk") {
-        if (call.status === "waiting") {
-          if (!outsideDoor || moving || toward < Math.SQRT1_2) this.liftCall = call = null;
-          else { call.elapsed += dt; if (call.elapsed >= 0.5) call.status = "calling"; }
-        }
-        if (call?.status === "waiting") continue;
-        if (call?.status === "calling") {
-          const delta = call.landing - car.mesh.position.y;
-          car.mesh.position.y += Math.sign(delta) * Math.min(Math.abs(delta), 1.5 * dt);
-          car.mesh.updateMatrixWorld(true);
-          if (Math.abs(car.mesh.position.y - call.landing) < 1e-6) call.status = "arrived";
-          continue;
-        }
-        if (call?.status === "arrived") {
-          const inShaft = Math.abs(localX) <= 1.1 && Math.abs(localZ) <= 1.1;
-          if (onFloor || (!outsideDoor && !inShaft)) this.liftCall = call = null;
-          else continue;
-        }
-      }
-      let ride = this.liftRide;
-      if (this.mode === "walk" && ride?.edgeId === car.edgeId && ride.status === "riding") {
-        const next = THREE.MathUtils.clamp(car.mesh.position.y + ride.direction * 1.5 * dt, Math.min(car.mesh.position.y, ride.target), Math.max(car.mesh.position.y, ride.target));
-        car.mesh.position.y = next; this.pos.y = next;
-        if (Math.abs(next - ride.target) < 1e-6) ride.status = "arrived";
-        car.mesh.updateMatrixWorld(true);
-        continue;
-      }
-      const landingIndex = car.landings.findIndex((y) => Math.abs(y - car.mesh.position.y) < 0.08);
-      if (this.mode === "walk" && ride?.edgeId === car.edgeId && ride.status === "arrived" && !onFloor) this.liftRide = ride = null;
-      if (this.mode === "walk" && onFloor && landingIndex >= 0 && ride?.status !== "riding") {
-        const requested = this.input.liftDirection?.() ?? 0;
-        const direction = requested && car.landings[landingIndex + requested] !== undefined ? requested : 0;
-        let selection = this.liftSelection;
-        if (!selection || selection.edgeId !== car.edgeId || selection.direction !== direction || (moving && !direction)) {
-          this.liftSelection = selection = { edgeId: car.edgeId, direction, elapsed: 0 };
-        }
-        if (direction || !moving) selection.elapsed += dt;
-        const automatic = landingIndex === 0 ? 1 : landingIndex === car.landings.length - 1 ? -1 : this.liftRouteDirection(car, car.landings[landingIndex]!);
-        const chosen = direction && selection.elapsed >= 0.3 - 1e-9 ? direction : !moving && selection.elapsed >= 0.5 - 1e-9 && (ride?.status !== "arrived" || (landingIndex > 0 && landingIndex < car.landings.length - 1)) ? automatic : null;
-        if (chosen && car.landings[landingIndex + chosen] !== undefined) {
-          this.liftParked?.delete(car.edgeId);
-          this.liftRide = ride = { edgeId: car.edgeId, status: "riding", elapsed: 0, target: car.landings[landingIndex + chosen]!, direction: chosen };
-          this.liftSelection = null;
-        }
-      } else if (this.liftSelection?.edgeId === car.edgeId) this.liftSelection = null;
-      const onGuide = this.mode === "guide" && edgeId !== undefined && car.edgeIds.includes(edgeId);
-      if (onGuide && sample && guide) {
-        this.liftParked?.delete(car.edgeId);
-        if (this.liftRide?.edgeId !== car.edgeId || this.liftRide.guideEdgeId !== edgeId || this.liftRide.direction * (this.pos.y - this.liftRide.target) > 1e-6) {
-          const nextPoint = guide.pts.slice(sample.segment + 1).find((point, offset) => car.edgeIds.includes(guide.edgeIds?.[sample.segment + 1 + offset] ?? "") && Math.abs(point.y - this.pos.y) > 1e-6);
-          const direction: 1 | -1 = nextPoint && nextPoint.y < this.pos.y ? -1 : 1;
-          const target = (direction === 1 ? car.landings : [...car.landings].reverse()).find((y) => direction * (y - this.pos.y) > 1e-6) ?? this.pos.y;
-          this.liftRide = { edgeId: car.edgeId, guideEdgeId: edgeId, status: "riding", elapsed: 0, target, direction };
-        }
-        car.mesh.position.y = THREE.MathUtils.clamp(this.pos.y, car.zLow, car.zHigh);
-      } else if (this.mode === "guide" && ((!sample && inside && this.pos.y >= car.zLow - 0.08 && this.pos.y <= car.zHigh + 0.08) || this.liftRide?.edgeId === car.edgeId)) {
-        if (inside) this.parkLift(car, this.pos.y, true);
-        if (this.liftRide?.edgeId === car.edgeId) this.liftRide = null;
-      } else if (!this.liftParked?.has(car.edgeId) && !(this.mode === "walk" && Math.abs(localX) <= 1.1 && Math.abs(localZ) <= 1.1 && Math.abs(this.pos.y - car.mesh.position.y) <= 0.08)) car.mesh.position.y = THREE.MathUtils.damp(car.mesh.position.y, car.zLow, 5, dt);
-    }
-    } finally {
-      for (const car of cars) for (const door of car.doors) door.mesh.visible = Math.abs(car.mesh.position.y - door.landing) >= 1e-6;
-      this.setLiftHint(this.mode === "walk" && cars.some((car) => {
-        const i = car.landings.findIndex((y) => Math.abs(y - car.mesh.position.y) < 1e-6);
-        return i > 0 && i < car.landings.length - 1 && this.inLiftCar(car);
-      }));
-    }
-  }
-
-  /** Closed landing doors remain solid until the car is at that landing. */
-  private elevatorDoorWalls(): Segment2[] {
-    const walls: Segment2[] = [];
-    for (const car of this.connectors?.cars ?? []) {
-      const c = Math.cos(car.mesh.rotation.y), s = Math.sin(car.mesh.rotation.y);
-      for (const y of car.landings) {
-        if (Math.abs(car.mesh.position.y - y) < 1e-6) continue;
-        const at = (z: number) => ({ x: car.mesh.position.x - 1.1 * c + z * s, z: car.mesh.position.z + 1.1 * s + z * c });
-        const a = at(-0.45), b = at(0.45);
-        walls.push({ ax: a.x, az: a.z, bx: b.x, bz: b.z, yMin: y, yMax: y + 2.1 });
-      }
-    }
-    return walls;
-  }
-
   private stepWalk(dt: number): void {
-    if (this.liftRide?.status === "riding") return;
     const look = this.input.consumeLook();
     this.yaw -= look.dx * 0.0042;
     this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, LOOK_PITCH.min, LOOK_PITCH.max);
@@ -2326,27 +2133,14 @@ export class Explorer {
     const step = speed * dt;
     const nx = this.pos.x + (fx * mv.y + rx * mv.x) * step;
     const nz = this.pos.z + (fz * mv.y + rz * mv.x) * step;
-    const doorWalls = this.elevatorDoorWalls();
-    for (const wall of doorWalls) {
-      if (this.pos.y + WALKER_BODY.bodyTopM < wall.yMin || this.pos.y > wall.yMax) continue;
-      const wx = wall.bx - wall.ax, wz = wall.bz - wall.az;
-      const px = this.pos.x - wall.ax, pz = this.pos.z - wall.az, qx = nx - wall.ax, qz = nz - wall.az;
-      const oldSide = wx * pz - wz * px, newSide = wx * qz - wz * qx;
-      if (oldSide * newSide <= 0 && oldSide !== newSide) {
-        const t = oldSide / (oldSide - newSide), x = px + (qx - px) * t, z = pz + (qz - pz) * t;
-        const along = (x * wx + z * wz) / (wx * wx + wz * wz);
-        if (along >= -RADIUS / 0.9 && along <= 1 + RADIUS / 0.9) return;
-      }
-    }
-    const walls = [...this.walls, ...doorWalls];
-    const pushed = resolveWalls(nx, nz, RADIUS, this.pos.y, WALKER_BODY.bodyTopM, walls);
+    const pushed = resolveWalls(nx, nz, RADIUS, this.pos.y, WALKER_BODY.bodyTopM, this.walls);
     let target = new THREE.Vector3(pushed.x, this.pos.y, pushed.z);
     const block = this.blockedByColliders(this.pos, target);
     if (block) {
       // Slide along the surface that stopped the move rather than sticking to it.
       const slid = slideAlong(this.pos, target, block.normal);
       if (!slid) return;
-      const along = resolveWalls(slid.x, slid.z, RADIUS, this.pos.y, WALKER_BODY.bodyTopM, walls);
+      const along = resolveWalls(slid.x, slid.z, RADIUS, this.pos.y, WALKER_BODY.bodyTopM, this.walls);
       target = new THREE.Vector3(along.x, this.pos.y, along.z);
       if (this.blockedByColliders(this.pos, target)) return;
     }
