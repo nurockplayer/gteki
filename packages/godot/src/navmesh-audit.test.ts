@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { NavMeshQuery } from "recast-navigation";
 import { bakeNavmesh } from "./navmesh-bake.ts";
@@ -40,4 +40,49 @@ describe("navmesh route audit", () => {
     } else expect(path).toBeNull();
     query.destroy(); baked.navMesh.destroy();
   });
+});
+
+it("uses the authored connector even when Detour chooses the other link", async () => {
+  const { buildConnectorPath } = await import("@gteki/navigation");
+  const { queryPathWithLinks } = await import("./navmesh-audit.ts");
+  const positions=[0,0,0,0,0,6,6,0,6,6,0,0,0,3,0,0,3,6,6,3,6,6,3,0];
+  const indices=[0,1,2,0,2,3,4,5,6,4,6,7];
+  const baked=await bakeNavmesh(positions,indices,{offMeshConnections:[
+    {startPosition:{x:4,y:0,z:2},endPosition:{x:4,y:3,z:2},radius:0.3,bidirectional:true,area:0,flags:1,userId:1},
+    {startPosition:{x:2,y:0,z:2},endPosition:{x:2,y:3,z:2},radius:0.3,bidirectional:true,area:0,flags:1,userId:2},
+  ]});
+  if (!baked.success) throw new Error(baked.error);
+  const query=new NavMeshQuery(baked.navMesh), from={x:2,y:0,z:2}, to={x:2,y:3,z:2};
+  expect(queryPathWithLinks(baked.navMesh,query,from,to)?.some(p=>p.link?.userId===2)).toBe(true);
+  const line=[{x:2,y:-2,z:0,zKnown:true,floorId:"low",stepIndex:0},{x:3,y:-2,z:1.5,zKnown:true,floorId:"low",stepIndex:0},{x:2,y:-2,z:3,zKnown:true,floorId:"high",stepIndex:0}];
+  const result=buildConnectorPath(query,from,to,line,()=>true);
+  expect(result.reason).toBeNull();
+  expect(result.points?.map(p=>p.x)).toEqual([2,2,3,2,2]);
+  expect(result.points?.every(p=>p.connector)).toBe(true);
+  expect(buildConnectorPath(query,from,to,line,()=>false).reason).toBe("snap_failed");
+  query.destroy(); baked.navMesh.destroy();
+});
+
+it("rejects connector joins over 0.6 m", async () => {
+  const { buildConnectorPath } = await import("@gteki/navigation");
+  const {positions,indices}=fixture(true), baked=await bakeNavmesh(positions,indices);
+  if (!baked.success) throw new Error(baked.error);
+  const query=new NavMeshQuery(baked.navMesh), from={x:2,y:0,z:2}, to={x:3,y:0,z:2};
+  const line=[{x:2.61,y:-2,z:0,zKnown:true,floorId:"f",stepIndex:0},{x:3,y:-2,z:0,zKnown:true,floorId:"f",stepIndex:0}];
+  expect(buildConnectorPath(query,from,to,line,()=>true).reason).toBe("join_gap");
+  query.destroy(); baked.navMesh.destroy();
+});
+
+
+it("rejects a connector snap across a wall", async () => {
+  const { buildConnectorPath } = await import("@gteki/navigation");
+  const { validateLinkSnap } = await import("./navmesh-links.ts");
+  const {positions,indices,probe}=fixture(false), baked=await bakeNavmesh(positions,indices);
+  if (!baked.success) throw new Error(baked.error);
+  const query=new NavMeshQuery(baked.navMesh), from={x:3.8,y:0,z:2}, to={x:6,y:0,z:2};
+  const hit=query.findClosestPoint(to,{halfExtents:{x:1.5,y:0.6,z:1.5}});
+  vi.spyOn(query,"findClosestPoint").mockReturnValue({...hit,point:{x:4.2,y:0,z:2}});
+  const line=[{x:3.8,y:-2,z:0,zKnown:true,floorId:"f",stepIndex:0},{x:6,y:-2,z:0,zKnown:true,floorId:"f",stepIndex:0}];
+  expect(buildConnectorPath(query,from,to,line,(node,snap)=>validateLinkSnap(probe,node,snap)===null).reason).toBe("snap_failed");
+  query.destroy(); baked.navMesh.destroy();
 });

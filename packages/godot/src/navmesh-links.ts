@@ -87,7 +87,7 @@ export function validateLinkSnap(probe: SceneProbe, node: Point, snapped: Point)
 export function verticalLinkCandidates(edges: readonly VerticalEdge[], nodePoint: (id: string) => Point | undefined, query: Pick<NavMeshQuery, "findClosestPoint">, validateSnap: (nodeId: string, node: Point, snapped: Point) => boolean, fallback?: (nodeId:string,node:Point)=>Fallback | null) {
   const candidates: { edgeId: string; connection: OffMeshConnectionParams; fallback?: {from?:Fallback;to?:Fallback} }[] = [];
   const failed: { edgeId: string; reason: "missing_node" | "snap_failed" | "unsafe_snap" }[] = [];
-  let snapFailures = 0;
+  let snapFailures = 0, noPolyStart = 0, noPolyEnd = 0;
   const vertical = edges.filter(e => ["stairs", "escalator", "elevator"].includes(e.mode)).slice().sort((a, b) => a.id.localeCompare(b.id));
   const snap = (point: Point) => {
     const result = query.findClosestPoint(point, { halfExtents: { x: 1.5, y: 0.6, z: 1.5 } });
@@ -100,10 +100,10 @@ export function verticalLinkCandidates(edges: readonly VerticalEdge[], nodePoint
     const fromFallback = !start && fallback ? fallback(edge.from,from) : null;
     const toFallback = !end && fallback ? fallback(edge.to,to) : null;
     start ??= fromFallback?.point ?? null; end ??= toFallback?.point ?? null;
-    if (!start || !end) { snapFailures += Number(!start) + Number(!end); failed.push({ edgeId: edge.id, reason: "snap_failed" }); return; }
+    if (!start || !end) { noPolyStart += Number(!start); noPolyEnd += Number(!end); snapFailures += Number(!start) + Number(!end); failed.push({ edgeId: edge.id, reason: "snap_failed" }); return; }
     const startValid=!!fromFallback || validateSnap(edge.from, from, start), endValid=!!toFallback || validateSnap(edge.to, to, end);
     if (!startValid || !endValid) { failed.push({ edgeId: edge.id, reason: "unsafe_snap" }); return; }
     candidates.push({ edgeId: edge.id, connection: { startPosition: start, endPosition: end, radius: 0.3, bidirectional: edge.direction === "both", area: 0, flags: 1, userId: index + 1 }, ...(fromFallback || toFallback ? {fallback:{...(fromFallback ? {from:fromFallback} : {}),...(toFallback ? {to:toFallback} : {})}} : {}) });
   });
-  return { candidates, failed, snapFailures };
+  return { candidates, failed, snapFailures, noPolyStart, noPolyEnd };
 }

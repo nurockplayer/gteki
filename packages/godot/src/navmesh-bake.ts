@@ -224,18 +224,30 @@ async function main() {
   const bakeMs = performance.now() - start;
   const nav = linked.navMesh;
   let tiles = 0, polygons = 0;
+  let minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;
   const emittedLinkIds = new Set<number>(), attachedLinkIds = new Set<number>();
+  const linkEnds = new Map<number,Set<number>>();
   for (let i = 0; i < nav.getMaxTiles(); i++) {
     const tile = nav.getTile(i), header = tile.header();
     if (header) {
       tiles++; polygons += header.polyCount();
+      minX=Math.min(minX,header.bmin(0)); maxX=Math.max(maxX,header.bmax(0));
+      minZ=Math.min(minZ,header.bmin(2)); maxZ=Math.max(maxZ,header.bmax(2));
       for (let j=0;j<header.offMeshConCount();j++) {
         const connection=tile.offMeshCons(j), id=connection.userId(); emittedLinkIds.add(id);
         const ends=new Set<number>(); let next=tile.polys(connection.poly()).firstLink(), guard=0;
         while (next !== 0xffffffff && guard++ < header.maxLinkCount()) { const link=tile.links(next); if (link.ref()) ends.add(link.edge()); next=link.next(); }
+        linkEnds.set(id,ends);
         if (ends.has(0) && ends.has(1)) attachedLinkIds.add(id);
       }
     }
+  }
+  // Report outside the bounds of all emitted tiles; other missing emissions remain unknown.
+  const linkAttachmentDiagnosis = { noPolyStart:links.noPolyStart,noPolyEnd:links.noPolyEnd,tileOutsideBounds:0,unemittedUnknown:0,unsafeSnap:links.failed.filter(f=>f.reason==="unsafe_snap").length,missingNode:links.failed.filter(f=>f.reason==="missing_node").length };
+  for (const candidate of links.candidates) {
+    const id=candidate.connection.userId!, ends=linkEnds.get(id);
+    if (ends) { if (!ends.has(0)) linkAttachmentDiagnosis.noPolyStart++; if (!ends.has(1)) linkAttachmentDiagnosis.noPolyEnd++; }
+    else { const p=candidate.connection.startPosition; if (p.x<minX || p.x>maxX || p.z<minZ || p.z>maxZ) linkAttachmentDiagnosis.tileOutsideBounds++; else linkAttachmentDiagnosis.unemittedUnknown++; }
   }
   const query = new NavMeshQuery(nav);
   const vertical: Record<string, { total: number; endpointsWithinHalfM: number; connected: number; localCandidate: number; needsInvestigation: number }> = {};
@@ -275,9 +287,9 @@ async function main() {
   fs.writeFileSync(qaFile(path.join(output, `${station}.bin`)), bytes);
   const effectiveRadiusCells = rounding === "down" ? Math.floor(radiusM / cellSizeM + 1e-6) : Math.ceil(radiusM / cellSizeM - 1e-6);
   const gateTriangles = collider.reduce((n, mesh) => n + (mesh.userData.gtekiGateTriangles?.length ?? 0), 0);
-  const metrics = { station, withGreybox, privateBuild, snapFallback, bundleSha256:createHash("sha256").update(JSON.stringify(bundle)).digest("hex"), meshSha256: createHash("sha256").update(bytes).digest("hex"), radiusM, rounding, cellSizeM, climbM, tileSize, effectiveClimbM: Math.floor(climbM / 0.1 + 1e-6) * 0.1, effectiveRadiusCells, effectiveRadiusM: effectiveRadiusCells * cellSizeM, ignoreGates, gateWallCount, activeGateWalls, gateTriangles, excludedActiveGateWalls: ignoreGates ? activeGateWalls : 0, excludedGateTriangles: ignoreGates ? gateTriangles : 0, bakeMs, rawBytes: bytes.length, gzipBytes: gz.length, tiles, polygons, peakRssKiB: process.resourceUsage().maxRSS, greyboxRuns, greyboxLandingPads:grey?.grey.stats.landingPads ?? null, vertical, links, emittedLinkIds:[...emittedLinkIds].sort((a,b)=>a-b), attachedLinkIds:[...attachedLinkIds].sort((a,b)=>a-b), fallbackRecovered:links.candidates.filter(c=>c.fallback && attachedLinkIds.has(c.connection.userId!)).length, snapRejections };
+  const metrics = { station, withGreybox, privateBuild, snapFallback, bundleSha256:createHash("sha256").update(JSON.stringify(bundle)).digest("hex"), meshSha256: createHash("sha256").update(bytes).digest("hex"), radiusM, rounding, cellSizeM, climbM, tileSize, effectiveClimbM: Math.floor(climbM / 0.1 + 1e-6) * 0.1, effectiveRadiusCells, effectiveRadiusM: effectiveRadiusCells * cellSizeM, ignoreGates, gateWallCount, activeGateWalls, gateTriangles, excludedActiveGateWalls: ignoreGates ? activeGateWalls : 0, excludedGateTriangles: ignoreGates ? gateTriangles : 0, bakeMs, rawBytes: bytes.length, gzipBytes: gz.length, tiles, polygons, peakRssKiB: process.resourceUsage().maxRSS, greyboxRuns, greyboxLandingPads:grey?.grey.stats.landingPads ?? null, vertical, links, emittedLinkIds:[...emittedLinkIds].sort((a,b)=>a-b), attachedLinkIds:[...attachedLinkIds].sort((a,b)=>a-b), linkAttachmentDiagnosis, fallbackRecovered:links.candidates.filter(c=>c.fallback && attachedLinkIds.has(c.connection.userId!)).length, snapRejections };
   fs.writeFileSync(qaFile(path.join(output, `${station}-bake.json`)), JSON.stringify(metrics, null, 2) + "\n");
-  console.log(JSON.stringify({station,withGreybox,snapFallback,bakeMs,rawBytes:bytes.length,gzipBytes:gz.length,tiles,polygons,landingPads:metrics.greyboxLandingPads,linksAttached:attachedLinkIds.size,fallbackAttached:metrics.fallbackRecovered,snapRejections,peakRssKiB:metrics.peakRssKiB}));
+  console.log(JSON.stringify({station,withGreybox,snapFallback,bakeMs,rawBytes:bytes.length,gzipBytes:gz.length,tiles,polygons,landingPads:metrics.greyboxLandingPads,linksAttached:attachedLinkIds.size,fallbackAttached:metrics.fallbackRecovered,linkAttachmentDiagnosis,snapRejections,peakRssKiB:metrics.peakRssKiB}));
   query.destroy(); nav.destroy(); scene.dispose();
 }
 

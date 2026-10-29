@@ -234,6 +234,23 @@ This is a partial diagnostic. Direction and tile-region checks, gap sampling and
 
 Oracle static review at 2026-10-30 03:07 JST identified a partial-path property error, missed straight-path buffer exhaustion, and link anchors being reported as snapped nodes. These were corrected after review; the reviewer did not independently run the tests or review the fixes. Full query-stage diagnostics and targeted synthetic tests for partial corridors and straight-path exhaustion remain follow-ups.
 
+## Authored vertical connector selection, 2026-10-30 03:16 JST
+
+Vertical edges now use the graph edge's authored polyline between two independently snapped and scene-validated endpoints. Each snap-to-polyline join is limited to 0.6 m in plan. Detour still resolves walking edges and joins between edge paths; vertical traversal no longer depends on the link Detour chooses. The reusable builder is exported by `@gteki/navigation`. Link attachment is diagnostic only, with aggregate counts for missing start or end polys, out-of-bounds tiles, unsafe snaps, missing nodes and unexplained non-emission.
+
+Public data with greybox, 0.10 m cells, 0.30 m radius, 0.40 m climb and 256-cell tiles:
+
+| Station | Incomplete routes before → after | Unique failed edges before → after | Directed failures before → after | Attachment no start / no end / outside / unknown / unsafe |
+| --- | ---: | ---: | ---: | ---: |
+| Ikebukuro | 0/1,054 → 0/1,054 | 0 → 0 | 0 → 0 | 0 / 0 / 0 / 0 / 0 |
+| Shinjuku | 72/238 → 72/238 | 6 → 5 | 9 → 7 | 1 / 2 / 0 / 0 / 3 |
+
+Afterward, Ikebukuro had no directed failures; Shinjuku had four elevator and three stair directed failures, each `snap_failed` with an unattached link. No failure was caused by Detour selecting a different connector. A missing attachment can be reported for both ends, so endpoint counts are not edge counts.
+
+For completed routes, scene-height navmesh segments have 0 off-floor, 0 no-floor and 0 wall hits in both stations. Connector segments have 0 / 0 / 0 in Ikebukuro and **0 / 0 / 16** in Shinjuku. Those connector hits are not hidden by the navmesh-segment gate and still need investigation before runtime use.
+
+Oracle's static review raised snap-floor and wall validation, 3D join distance, and an absolute inter-edge join limit. The scene floor/wall snap validation was added and tested after review. The requested connector limit is explicitly in plan, so a 3D limit was not substituted. Inter-edge joins continue to use the existing scene checks and Detour path validation. Oracle did not rerun or re-review the later changes.
+
 ## Integration sketch
 
 - Guide: `apps/web/src/ui/app.ts` creates `routePolyline` and passes it to `Explorer.startGuide`; `Explorer.stepGuide` follows it. Supply per-edge navmesh geometry while preserving step-to-point spans, instructions, floor and lift semantics. Risk: a partial or disconnected path must stop guidance, and snapping can select the wrong floor.

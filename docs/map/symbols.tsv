@@ -524,9 +524,9 @@ installHeadlessDom	function	packages/godot/src/headless-dom.ts	111
 stubRenderer	function	packages/godot/src/headless-dom.ts	137
 headlessThree	function	packages/godot/src/headless-dom.ts	142
 loadBundle	function	packages/godot/src/load-bundle.ts	6
-queryCompletePath	function	packages/godot/src/navmesh-audit.ts	26
-snapNode	function	packages/godot/src/navmesh-audit.ts	35
-queryPathWithLinks	function	packages/godot/src/navmesh-audit.ts	41
+queryCompletePath	function	packages/godot/src/navmesh-audit.ts	28
+snapNode	function	packages/godot/src/navmesh-audit.ts	37
+queryPathWithLinks	function	packages/godot/src/navmesh-audit.ts	43
 bakeNavmesh	function	packages/godot/src/navmesh-bake.ts	21
 completePath	function	packages/godot/src/navmesh-bake.ts	39
 triangleKey	const	packages/godot/src/navmesh-bake.ts	80
