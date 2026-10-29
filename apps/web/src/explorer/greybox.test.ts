@@ -163,6 +163,17 @@ describe("buildGreybox", () => {
     expect(at.every((w) => w.yMax < 2.5 || w.yMin > 4.4)).toBe(true);
   });
 
+  it("keeps the corridor wall under a flight whose both ends are junctions", () => {
+    const floors = [...bundle.floors, { id: "g", renderElevationM: 8 }];
+    const nodes = [...bundle.nodes, { id: "c", floorId: "g", position: { x: 10, y: 8, z: 8 } }, { id: "d", floorId: "g", position: { x: 20, y: 8, z: 8 } }, { id: "e", floorId: "g", position: { x: 0, y: 8, z: 8 } },
+      { id: "p", floorId: "f", position: { x: 0, y: 3.7, z: 0 } }, { id: "q", floorId: "f", position: { x: 20, y: 3.7, z: 0 } }];
+    const edges = [bundle.edges[0]!, { id: "s", from: "b", to: "c", mode: "stairs" }, { id: "pq", from: "p", to: "q", mode: "walk" }, { id: "cd", from: "c", to: "d", mode: "walk" }, { id: "ec", from: "e", to: "c", mode: "walk" }];
+    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
+    const at = result.wallSegments.filter((w) => Math.abs(w.az + 3.7 - MODE_WIDTH.walk! / 2) < 1e-6 && Math.min(w.ax, w.bx) < 10 && Math.max(w.ax, w.bx) > 10);
+    expect(at.some((w) => w.yMin < 0.1 && w.yMax > 1.9)).toBe(true);
+    expect(at.every((w) => w.yMax < 2.5 || w.yMin > 4.4)).toBe(true);
+  });
+
   it("opens a stair mouth at the end of a long ramp", () => {
     const floors = [...bundle.floors, { id: "g", renderElevationM: 7 }];
     const ramp = [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 30, y: 0, z: 3 } }];

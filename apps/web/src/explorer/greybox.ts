@@ -397,6 +397,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         // Each cut keeps the wall below the flight's surface and above a walker on it: a corridor passing under or over
         // the flight stays closed. Heights are above the wall base.
         const cuts: { lo: number; hi: number; below: number; above: number }[] = [];
+        const standing = intervals;
         for (const m of mouths) {
           // Any wall inside the connector's footprint is one the flight passes through; walls beside it stay. Footprint,
           // not run ownership: deduplication may keep a run from another edge. In the connector's frame, u runs along
@@ -452,18 +453,24 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
           else quad(b.shell, b.colors, lowP, lowQ, topQ, topP, [0.62, 0.62, 0.62, 0.62]);
         };
         for (const [s, e] of clearIntervals) band(s, e, 0, 2.6);
-        // The kept bands of each cut, outside every other cut's span (crossing flights) and only where the wall stood.
-        for (const c of cuts) {
-          let spans: [number, number][] = [[c.lo, c.hi]];
-          for (const o of cuts) if (o !== c) spans = spans.flatMap(([s, e]) => [[s, Math.min(e, o.lo)], [Math.max(s, o.hi), e]].filter(([x, y]) => x! < y!) as [number, number][]);
-          for (const [s, e] of spans) {
+        // The kept bands of the cuts. Where cuts overlap (the same connector seen from both ends, or crossing flights),
+        // keep only what is clear of all of them: the lowest band below and the highest band above.
+        const stops = [...new Set(cuts.flatMap((c) => [c.lo, c.hi]))].sort((x, y) => x - y);
+        for (let k = 1; k < stops.length; k++) {
+          const over = cuts.filter((c) => c.lo <= stops[k - 1]! && c.hi >= stops[k]!);
+          if (!over.length) continue;
+          const below = Math.min(...over.map((c) => c.below)), above = Math.max(...over.map((c) => c.above));
+          // Only where the wall stood before the cuts: a junction disc or another passage's floor stays open.
+          for (const [s, e] of standing) {
+            const lo = Math.max(s, stops[k - 1]!), hi = Math.min(e, stops[k]!);
+            if (lo >= hi) continue;
             // A band is kept only where it can stop someone: 1 m or more of wall under a flight overhead, or any wall
             // left above a flight passing below. A lower stub under the flight's own steps would only snag the walker.
-            for (const [y0, y1] of [[0, c.below >= 1 ? Math.min(c.below, 2.6) : 0], [Math.max(c.above, 0), 2.6]] as const) {
+            for (const [y0, y1] of [[0, below >= 1 ? Math.min(below, 2.6) : 0], [Math.max(above, 0), 2.6]] as const) {
               if (y1 - y0 < 0.05) continue;
-              const p = wa.clone().lerp(wz, s), q = wa.clone().lerp(wz, e);
+              const p = wa.clone().lerp(wz, lo), q = wa.clone().lerp(wz, hi);
               wallSegments.push({ ax: p.x, az: p.z, bx: q.x, bz: q.z, yMin: Math.min(p.y, q.y) + (y0 === 0 ? -0.12 : y0), yMax: Math.max(p.y, q.y) + y1 });
-              band(s, e, y0, y1);
+              band(lo, hi, y0, y1);
             }
           }
         }
