@@ -79,6 +79,7 @@ describe("initial identity placement", () => {
     const { e, root } = runtime();
     e.walkFrom({ x: 0, y: 0, z: 0 });
     Object.assign(e, {
+      portalCutResources: { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map() },
       street: { restore: vi.fn(), attach: vi.fn() }, streetProbe: { at: new THREE.Vector3() },
       overviewLook: { set: vi.fn() }, world: new THREE.Group(), graph: null,
     });

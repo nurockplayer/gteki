@@ -64,11 +64,11 @@ slideAlong	function	apps/web/src/explorer/bodyCollision.ts	124
 CameraCut	class	apps/web/src/explorer/cameraCut.ts	16
 injectCut	function	apps/web/src/explorer/cameraCut.ts	158
 contactShadow	function	apps/web/src/explorer/contactShadow.ts	7
-ExplorerMode	type	apps/web/src/explorer/explorer.ts	54
-ExplorerPose	interface	apps/web/src/explorer/explorer.ts	56
-ExplorerOptions	interface	apps/web/src/explorer/explorer.ts	58
-ExplorerEvents	interface	apps/web/src/explorer/explorer.ts	80
-Explorer	class	apps/web/src/explorer/explorer.ts	188
+ExplorerMode	type	apps/web/src/explorer/explorer.ts	55
+ExplorerPose	interface	apps/web/src/explorer/explorer.ts	57
+ExplorerOptions	interface	apps/web/src/explorer/explorer.ts	59
+ExplorerEvents	interface	apps/web/src/explorer/explorer.ts	81
+Explorer	class	apps/web/src/explorer/explorer.ts	189
 FloorReflectionSettings	interface	apps/web/src/explorer/floorReflectionPass.ts	12
 FLOOR_REFLECTION_DEFAULTS	const	apps/web/src/explorer/floorReflectionPass.ts	26
 FloorReflectionPass	class	apps/web/src/explorer/floorReflectionPass.ts	138
