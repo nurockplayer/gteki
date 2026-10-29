@@ -8,7 +8,7 @@ import { enuToRenderer } from "@gteki/geo";
 import { nodeDisplayZ, routePolyline, type PolylinePoint, type RouteResult } from "@gteki/navigation";
 import { parseStationFiles, type Edge, type Node, type StationBundle } from "@gteki/schema";
 import { castAll } from "../../../apps/web/src/explorer/raycast.ts";
-import { auditPolyline, loadScene, sceneProbe, violations, type SceneProbe } from "./route-clip-audit.ts";
+import { auditPolyline, loadScene, sceneProbe, violations, type SampleDetail, type SceneProbe } from "./route-clip-audit.ts";
 
 type Point = { x: number; y: number; z: number };
 const point = (p: Point): PolylinePoint => ({ ...p, zKnown: false, stepIndex: 0, floorId: "" });
@@ -95,8 +95,10 @@ export function drapeEdges(probe: SceneProbe, bundle: StationBundle, edgeIds: Se
     if (edge.attributes?.sceneGapReason !== "drape-unresolved" && (edge.attributes?.sceneGap !== undefined || edge.attributes?.sceneGapReason !== undefined)) continue;
     const finalEdge = geometry.has(edge.id) ? { ...edge, geometry: geometry.get(edge.id)! } : edge;
     const finalBundle = { ...updated, edges: updated.edges.map(e => e.id === edge.id ? finalEdge : e) };
-    const audit = auditPolyline(probe, drawn(finalBundle, finalEdge), { skipInteriorFloor: edge.mode === "elevator" });
-    const flag = audit.offFloor > 0 || (audit.wallHits > 0 && audit.noFloor === 0);
+    const detail: SampleDetail[] = [];
+    const audit = auditPolyline(probe, drawn(finalBundle, finalEdge), { skipInteriorFloor: edge.mode === "elevator", detail });
+    const interiorWall = detail.some((sample, i) => sample.wallBefore && !detail.slice(Math.max(0, i - 2), i + 2).some(d => d.floor === "none"));
+    const flag = audit.offFloor > 0 || interiorWall;
     if (flag || edge.attributes?.sceneGapReason === "drape-unresolved" && violations(audit) === 0) sceneGaps.set(edge.id, flag);
   }
   return { nodes, geometry, unresolved, sceneGaps };
