@@ -18,7 +18,7 @@ import { R, chevronTexture, dashTexture, ribbonGeometry } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { buildConnectors, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { buildGreybox, splitWallsAtOpenings, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
-import { greyboxPathSegments, greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
+import { greyboxPathSegments, greyboxSceneProbes, sceneHasElevator, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
 import { darkSampleDistances, routeGroundCounts, sceneMeshNear } from "./routeGroundQa.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
@@ -232,6 +232,7 @@ export class Explorer {
   private connectors: ReturnType<typeof buildConnectors> | null = null;
   private liftRide: { edgeId: string; status: "waiting" | "riding" | "arrived"; elapsed: number; target: number; direction: 1 | -1 } | null = null;
   private liftDirection: 1 | -1 = 1;
+  private liftCall: { edgeId: string; landing: number; status: "waiting" | "calling" | "arrived"; elapsed: number } | null = null;
   private greyboxOpenings: Box[] = [];
   private sceneColliderTargets = new Set<THREE.Object3D>();
   private greyboxSegments: GreyboxSegment[] = [];
@@ -946,12 +947,12 @@ export class Explorer {
       this.world.add(this.greybox.root);
       this.walkable = [...this.walkable, ...this.greybox.walkable];
       this.colliders = [...this.colliders, ...this.greybox.colliders];
-      this.connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: (p, radius) => sceneMeshNear([this.stationScene!.root], p, radius) }, this.quality);
+      this.connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: (p, radius) => sceneMeshNear([this.stationScene!.root], p, radius), hasElevator: (a, b) => sceneHasElevator(this.stationScene!.root, originalTargets.collider, a, b) }, this.quality);
       withinGreyboxBudget(this.greybox.stats, this.connectors.stats, this.quality);
       this.world.add(this.connectors.root);
       this.walkable = [...this.walkable, ...this.connectors.walkable];
       this.colliders = [...this.colliders, ...this.connectors.colliders];
-      this.walls = splitWallsAtOpenings([...this.walls, ...this.greybox.wallSegments], this.greyboxOpenings);
+      this.walls = splitWallsAtOpenings([...this.walls, ...this.greybox.wallSegments, ...this.connectors.wallSegments], this.greyboxOpenings);
     } else {
       this.world.add(this.graph.root);
       this.walkable = this.graph.walkable;
@@ -1032,7 +1033,7 @@ export class Explorer {
       for (const material of materials) material.dispose();
       this.connectors = null;
     }
-    this.liftRide = null;
+    this.liftRide = null; this.liftCall = null;
     this.greyboxOpenings = [];
     this.sceneColliderTargets = new Set();
     this.greyboxSegments = [];
@@ -2130,12 +2131,40 @@ export class Explorer {
     const movement = this.mode === "walk" ? this.input.move() : { x: 0, y: 0 };
     const moving = movement.x !== 0 || movement.y !== 0;
     const cars = this.connectors?.cars ?? [];
-    if (this.mode !== "walk") this.liftRide = null;
+    if (this.mode !== "walk") { this.liftRide = null; this.liftCall = null; }
     for (const car of cars) {
       const dx = this.pos.x - car.mesh.position.x, dz = this.pos.z - car.mesh.position.z;
       const c = Math.cos(car.mesh.rotation.y), s = Math.sin(car.mesh.rotation.y);
-      const inside = Math.abs(c * dx - s * dz) <= 0.8 && Math.abs(s * dx + c * dz) <= 0.75;
+      const localX = c * dx - s * dz, localZ = s * dx + c * dz;
+      const inside = Math.abs(localX) <= 0.8 && Math.abs(localZ) <= 0.75;
       const onFloor = inside && Math.abs(this.pos.y - car.mesh.position.y) <= 0.08;
+      let call = this.liftCall;
+      const landing = car.landings.find((y) => Math.abs(this.pos.y - y) <= 0.12);
+      const outsideDoor = landing !== undefined && localX <= -1.1 && Math.hypot(localX + 1.1, Math.max(0, Math.abs(localZ) - 0.45)) <= 1.2;
+      const doorDx = -1.1 * c - dx, doorDz = 1.1 * s - dz;
+      const toward = (-Math.sin(this.yaw) * doorDx - Math.cos(this.yaw) * doorDz) / (Math.hypot(doorDx, doorDz) || 1);
+      if (this.mode === "walk" && !call && !this.liftRide && outsideDoor && !moving && toward >= Math.SQRT1_2 && Math.abs(car.mesh.position.y - landing!) > 0.08) {
+        this.liftCall = call = { edgeId: car.edgeId, landing: landing!, status: "waiting", elapsed: 0 };
+      }
+      if (call?.edgeId === car.edgeId && this.mode === "walk") {
+        if (call.status === "waiting") {
+          if (!outsideDoor || moving || toward < Math.SQRT1_2) this.liftCall = call = null;
+          else { call.elapsed += dt; if (call.elapsed >= 0.5) call.status = "calling"; }
+        }
+        if (call?.status === "waiting") continue;
+        if (call?.status === "calling") {
+          const delta = call.landing - car.mesh.position.y;
+          car.mesh.position.y += Math.sign(delta) * Math.min(Math.abs(delta), 1.5 * dt);
+          car.mesh.updateMatrixWorld(true);
+          if (Math.abs(car.mesh.position.y - call.landing) < 1e-6) call.status = "arrived";
+          continue;
+        }
+        if (call?.status === "arrived") {
+          const inShaft = Math.abs(localX) <= 1.1 && Math.abs(localZ) <= 1.1;
+          if (onFloor || (!outsideDoor && !inShaft)) this.liftCall = call = null;
+          else continue;
+        }
+      }
       let ride = this.liftRide;
       if (this.mode === "walk" && ride?.edgeId === car.edgeId && ride.status === "riding") {
         const next = THREE.MathUtils.clamp(car.mesh.position.y + ride.direction * 1.5 * dt, Math.min(car.mesh.position.y, ride.target), Math.max(car.mesh.position.y, ride.target));
@@ -2157,8 +2186,23 @@ export class Explorer {
       }
       const onGuide = this.mode === "guide" && edgeId !== undefined && car.edgeIds.includes(edgeId);
       if (onGuide) car.mesh.position.y = THREE.MathUtils.clamp(this.pos.y, car.zLow, car.zHigh);
-      else if (!(this.mode === "walk" && onFloor)) car.mesh.position.y = THREE.MathUtils.damp(car.mesh.position.y, car.zLow, 5, dt);
+      else if (!(this.mode === "walk" && Math.abs(localX) <= 1.1 && Math.abs(localZ) <= 1.1 && Math.abs(this.pos.y - car.mesh.position.y) <= 0.08)) car.mesh.position.y = THREE.MathUtils.damp(car.mesh.position.y, car.zLow, 5, dt);
     }
+  }
+
+  /** Closed landing doors remain solid until the car is at that landing. */
+  private elevatorDoorWalls(): Segment2[] {
+    const walls: Segment2[] = [];
+    for (const car of this.connectors?.cars ?? []) {
+      const c = Math.cos(car.mesh.rotation.y), s = Math.sin(car.mesh.rotation.y);
+      for (const y of car.landings) {
+        if (Math.abs(car.mesh.position.y - y) < 1e-6) continue;
+        const at = (z: number) => ({ x: car.mesh.position.x - 1.1 * c + z * s, z: car.mesh.position.z + 1.1 * s + z * c });
+        const a = at(-0.45), b = at(0.45);
+        walls.push({ ax: a.x, az: a.z, bx: b.x, bz: b.z, yMin: y, yMax: y + 2.1 });
+      }
+    }
+    return walls;
   }
 
   private stepWalk(dt: number): void {
@@ -2176,14 +2220,27 @@ export class Explorer {
     const step = speed * dt;
     const nx = this.pos.x + (fx * mv.y + rx * mv.x) * step;
     const nz = this.pos.z + (fz * mv.y + rz * mv.x) * step;
-    const pushed = resolveWalls(nx, nz, RADIUS, this.pos.y, WALKER_BODY.bodyTopM, this.walls);
+    const doorWalls = this.elevatorDoorWalls();
+    for (const wall of doorWalls) {
+      if (this.pos.y + WALKER_BODY.bodyTopM < wall.yMin || this.pos.y > wall.yMax) continue;
+      const wx = wall.bx - wall.ax, wz = wall.bz - wall.az;
+      const px = this.pos.x - wall.ax, pz = this.pos.z - wall.az, qx = nx - wall.ax, qz = nz - wall.az;
+      const oldSide = wx * pz - wz * px, newSide = wx * qz - wz * qx;
+      if (oldSide * newSide <= 0 && oldSide !== newSide) {
+        const t = oldSide / (oldSide - newSide), x = px + (qx - px) * t, z = pz + (qz - pz) * t;
+        const along = (x * wx + z * wz) / (wx * wx + wz * wz);
+        if (along >= -RADIUS / 0.9 && along <= 1 + RADIUS / 0.9) return;
+      }
+    }
+    const walls = [...this.walls, ...doorWalls];
+    const pushed = resolveWalls(nx, nz, RADIUS, this.pos.y, WALKER_BODY.bodyTopM, walls);
     let target = new THREE.Vector3(pushed.x, this.pos.y, pushed.z);
     const block = this.blockedByColliders(this.pos, target);
     if (block) {
       // Slide along the surface that stopped the move rather than sticking to it.
       const slid = slideAlong(this.pos, target, block.normal);
       if (!slid) return;
-      const along = resolveWalls(slid.x, slid.z, RADIUS, this.pos.y, WALKER_BODY.bodyTopM, this.walls);
+      const along = resolveWalls(slid.x, slid.z, RADIUS, this.pos.y, WALKER_BODY.bodyTopM, walls);
       target = new THREE.Vector3(along.x, this.pos.y, along.z);
       if (this.blockedByColliders(this.pos, target)) return;
     }

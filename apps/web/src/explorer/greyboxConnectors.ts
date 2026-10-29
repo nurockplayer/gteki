@@ -1,6 +1,7 @@
 import type { Edge, StationBundle } from "@gteki/schema";
 import * as THREE from "three";
 import { edgePoints, type V3 } from "./geometry.ts";
+import type { Segment2 } from "./walker.ts";
 
 /** Find vertical edges for which the original scene lacks a complete connector. */
 export function unmodelledVerticalEdges(
@@ -8,6 +9,7 @@ export function unmodelledVerticalEdges(
   traversable: (edge: Edge) => boolean,
   hasFloor: (point: V3) => boolean,
   nearMesh: (point: THREE.Vector3, radius: number) => boolean,
+  hasElevator: (a: THREE.Vector3, b: THREE.Vector3) => boolean = () => false,
 ): Edge[] {
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
@@ -15,6 +17,11 @@ export function unmodelledVerticalEdges(
     if (!traversable(edge) || !["stairs", "escalator", "elevator"].includes(edge.mode)) return false;
     const points = edgePoints(bundle, edge, nodes, floors);
     if (points.length < 2) return false;
+    if (edge.mode === "elevator") {
+      const a = points[0]!, b = points.at(-1)!;
+      const floor = (p: THREE.Vector3) => hasFloor({ x: p.x, y: -p.z, z: p.y });
+      return !floor(a) || !floor(b) || !hasElevator(a, b);
+    }
     const lengths = points.slice(1).map((p, i) => p.distanceTo(points[i]!));
     let remaining = lengths.reduce((sum, length) => sum + length, 0) / 2;
     let midpoint = points[0]!.clone();
@@ -174,7 +181,7 @@ export function buildElevator(from: THREE.Vector3, to: THREE.Vector3, facing: TH
   return parts;
 }
 
-export interface ConnectorScope { hasFloor: (p: V3) => boolean; nearMesh: (p: THREE.Vector3, radius: number) => boolean }
+export interface ConnectorScope { hasFloor: (p: V3) => boolean; nearMesh: (p: THREE.Vector3, radius: number) => boolean; hasElevator?: (a: THREE.Vector3, b: THREE.Vector3) => boolean }
 
 function meshFor(parts: readonly ConnectorPart[], material: THREE.Material): THREE.Mesh {
   const geometry = new THREE.BufferGeometry();
@@ -192,6 +199,7 @@ function meshFor(parts: readonly ConnectorPart[], material: THREE.Material): THR
 /** Build runtime-only batches for missing vertical transport. */
 export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge) => boolean, scope: ConnectorScope, tier: "high" | "low") {
   const root = new THREE.Group(), walkable: THREE.Object3D[] = [], colliders: THREE.Object3D[] = [];
+  const wallSegments: Segment2[] = [];
   const cars: { edgeId: string; edgeIds: string[]; mesh: THREE.Mesh; zLow: number; zHigh: number; landings: number[] }[] = [];
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
@@ -202,7 +210,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   const lightMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, emissive: "#fff6e8", emissiveIntensity: 3.2, side: THREE.DoubleSide });
   const glassMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, opacity: 0.28, depthWrite: false, roughness: 0.32, metalness: 0.08, side: THREE.DoubleSide });
   const physicalMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
-  for (const edge of unmodelledVerticalEdges(bundle, traversable, scope.hasFloor, scope.nearMesh)) {
+  for (const edge of unmodelledVerticalEdges(bundle, traversable, scope.hasFloor, scope.nearMesh, scope.hasElevator)) {
     const points = edgePoints(bundle, edge, nodes, floors), a = points[0]!, b = points.at(-1)!;
     const facing = a.clone().sub(b); facing.y = 0;
     const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
@@ -218,6 +226,15 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     if (edge.mode === "elevator") parts.push(...buildElevator(a, b, facing, tier));
     else for (let i = 1; i < points.length; i++) {
       const from = points[i - 1]!, to = points[i]!;
+      const dx = to.x - from.x, dz = to.z - from.z, horizontal = Math.hypot(dx, dz);
+      if (horizontal > 1e-6) {
+        const half = (edge.mode === "stairs" ? width : 1.2) / 2 + 0.03, n = Math.max(1, Math.ceil(horizontal / 0.5));
+        for (const side of [-1, 1]) for (let k = 0; k < n; k++) {
+          const t = k / n, u = (k + 1) / n, ox = -dz / horizontal * half * side, oz = dx / horizontal * half * side;
+          const ya = THREE.MathUtils.lerp(from.y, to.y, t), yb = THREE.MathUtils.lerp(from.y, to.y, u);
+          wallSegments.push({ ax: THREE.MathUtils.lerp(from.x, to.x, t) + ox, az: THREE.MathUtils.lerp(from.z, to.z, t) + oz, bx: THREE.MathUtils.lerp(from.x, to.x, u) + ox, bz: THREE.MathUtils.lerp(from.z, to.z, u) + oz, yMin: Math.min(ya, yb) - 0.12, yMax: Math.max(ya, yb) + 0.96 });
+        }
+      }
       if (Math.abs(to.y - from.y) > 1e-6) {
         const flight = edge.mode === "stairs" ? buildStairs(from, to, width, tier) : buildEscalator(from, to, tier);
         edgeOmitted += flight[0]?.userData?.omittedLandings ?? 0;
@@ -286,7 +303,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         if (!kept.length) { root.remove(batch.mesh); stats.meshes--; }
       }
     } };
-  return { root, walkable, colliders, cars, stats };
+  return { root, walkable, colliders, cars, wallSegments, stats };
 }
 
 /** Apply the shared triangle cap, retaining essential connector and passage geometry. */

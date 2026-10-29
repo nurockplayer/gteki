@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { StationBundle } from "@gteki/schema";
 import { unmodelledVerticalEdges } from "./greyboxConnectors.ts";
+import { resolveWalls } from "./walker.ts";
 
 const bundle = {
   floors: [{ id: "low", renderElevationM: 0 }, { id: "high", renderElevationM: 3 }],
@@ -17,6 +18,13 @@ describe("vertical connector scope", () => {
     expect(unmodelledVerticalEdges(bundle, () => false, () => false, () => false)).toEqual([]);
     expect(unmodelledVerticalEdges(bundle, () => true, (p) => p.x !== 2, () => true)).toEqual(bundle.edges);
     expect(unmodelledVerticalEdges(bundle, () => true, () => true, () => false)).toEqual(bundle.edges);
+  });
+  it("probes only landings and excludes an existing scene elevator", () => {
+    const lift = { ...bundle, edges: [{ ...bundle.edges[0]!, mode: "elevator" }] } as StationBundle;
+    const floors = (p: { z: number }) => p.z === 0 || p.z === 3;
+    expect(unmodelledVerticalEdges(lift, () => true, floors, () => false, () => true)).toEqual([]);
+    expect(unmodelledVerticalEdges(lift, () => true, floors, () => false, () => false)).toEqual(lift.edges);
+    expect(unmodelledVerticalEdges(lift, () => true, (p) => p.z === 0, () => true, () => true)).toEqual(lift.edges);
   });
 });
 
@@ -139,6 +147,9 @@ it("builds a bent stair edge along both legs with a flat turning landing", () =>
   upper.position = { x: 4, y: 4, z: 4 };
   const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
   const support = result.walkable[0] as THREE.Mesh;
+  const rail = result.wallSegments.find((w) => Math.abs(w.az) > 0.7 && w.ax < 2 && w.bx > 1)!;
+  const x = (rail.ax + rail.bx) / 2;
+  expect(Math.abs(resolveWalls(x, rail.az + 0.05, 0.3, 0.7, 1.8, [rail]).z - rail.az)).toBeGreaterThanOrEqual(0.299);
   support.updateMatrixWorld(true);
   const ray = new THREE.Raycaster(new THREE.Vector3(4, 2.1, 0), new THREE.Vector3(0, -1, 0), 0, 0.2);
   expect(ray.intersectObject(support).some((hit) => Math.abs(hit.point.y - 2) < 0.001)).toBe(true);
