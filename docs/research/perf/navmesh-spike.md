@@ -128,6 +128,30 @@ Rounding down admits paths with only 0.15 m of Recast erosion and **does not sat
 
 Each bake now records the binary SHA-256, effective erosion and gate exclusion counts, and the audit checks its accompanying metadata and records it in the output. The gate-off audit still checks collisions against the original scene; in this run no active gate obstacle was removed. The metadata does not fingerprint the full input scene or overlay, so rebake after changing either. Zero-cell erosion is rejected.
 
+## Step 6: hybrid transition, work in progress
+
+2026-10-30 02:02 JST. The director's transition rule makes the navmesh primary and permits graph-polyline fallback only for edges on a committed list, which must only shrink; the proposed CI gate also requires zero navmesh-segment clips. This step is **not complete**. No fallback list or passing CI gate has been established, and the default bake parameters have not been changed.
+
+| Public station | Earlier unique failed edges | After links | After parameter choice |
+| --- | ---: | ---: | ---: |
+| Ikebukuro | 3 (step 2, all stairs) | not measured | not measured |
+| Shinjuku | 19 (step 5, including 4 stairs) | not measured | not measured |
+
+These earlier failure counts are not committed fallback-list lengths. The two-pass link candidate helper snaps against an initial navmesh with 1.5 / 0.6 / 1.5 m extents and preserves one-way direction. A synthetic test exercises its use in a rebake across a solid wall. It is not connected to the station CLI or route audit: link attachment, user-ID mapping, authored connector reconstruction, and separate connector auditing remain to be implemented. Stair/escalator kit classification and landing clearance remain unverified.
+
+The bake accepts experimental cell size and climb values and records their effective quantised values. With the existing 0.1 m cell height, climbs of 0.40 m and 0.45 m both quantise to 0.40 m. No full parameter sweep or default selection has been completed; in particular the existing ray-based audit does not perform the required swept `WALKER_BODY` radius check. A fallback set-diff helper and unit test exist, but list generation, public lists, private destination handling, comparison against the PR base, and the CI gate are still outstanding.
+
+As a preliminary **pre-link** check, both public stations were baked at 0.10 m cell size, 0.30 m radius, 0.40 m climb in a single 3 GB container at 2026-10-30 02:04 JST. These are not the requested post-link or swept-radius results, and the audit excludes incomplete routes from its scene totals.
+
+| Station | Incomplete routes | Unique failed edges, including vertical | Scene-height off floor / no floor / wall hits | Bake ms | Gzip bytes |
+| --- | ---: | ---: | --- | ---: | ---: |
+| Ikebukuro | 0 / 1,054 | 1 | 0 / 0 / 0 | 1,151 | 353,721 |
+| Shinjuku | 28 / 238 | 6 | 0 / 92 / 0 | 3,178 | 160,552 |
+
+The headless Ikebukuro scene load reported that some stair kit assets were skipped, so this run does not validate the effect of modelled stair meshes on landings.
+
+Oracle advised a two-pass bake, checking actual Detour link IDs and direction after export/import, reconstructing authored link polylines rather than straight Detour links, and testing long links across tiles. A route can otherwise appear connected through the wrong connector or an unattached link. In a subsequent review Oracle identified cross-wall snaps and output symlinks as blockers. The candidate helper now requires the caller to validate both snaps; a real scene-aware validator remains to be implemented. Bake and audit output reject symlinks that escape `.qa` or occupy the output file. Oracle did not review these subsequent changes or validate the unfinished station implementation.
+
 ## Evidence and missing measurements
 
 - `recast-navigation` 0.43.1 is installed only in `@gteki/godot`; its package licence is MIT. It uses WebAssembly and includes the 0.43.1 core and generators packages.

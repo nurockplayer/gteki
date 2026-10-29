@@ -7,6 +7,7 @@ import { init, importNavMesh, NavMeshQuery, Detour, statusDetail } from "recast-
 import { createRouter, DEFAULT_PROFILE, nodeDisplayZ, routeBetween, routePolyline, type PolylinePoint, type RouteResult, type RouteStep } from "@gteki/navigation";
 import { navmeshBundle } from "./navmesh-input.ts";
 import { makeGreybox } from "./navmesh-greybox.ts";
+import { qaFile } from "./navmesh-qa-path.ts";
 import { auditPolyline, loadScene, sceneProbe, resampleAudit, type SampleDetail, type AuditCache } from "./route-clip-audit.ts";
 
 type V3 = { x: number; y: number; z: number };
@@ -46,8 +47,7 @@ async function main() {
     else throw new Error(`unknown or incomplete argument: ${args[i]}`);
   }
   if (!station || !navmeshFile || !json) throw new Error("use --station <station> --navmesh <file> --json <file>");
-  const qa = path.resolve(".qa"), dest = path.resolve(json);
-  if (!dest.startsWith(qa + path.sep)) throw new Error("JSON output must be under .qa/");
+  const dest = qaFile(json);
   const loadStart = performance.now();
   const meshBytes = fs.readFileSync(navmeshFile);
   const provenance = JSON.parse(fs.readFileSync(path.join(path.dirname(navmeshFile), `${station}-bake.json`), "utf8"));

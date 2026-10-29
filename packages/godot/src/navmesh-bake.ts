@@ -11,13 +11,15 @@ import { navmeshBundle } from "./navmesh-input.ts";
 import type { Box } from "../../../apps/web/src/explorer/greybox.ts";
 import { makeGreybox } from "./navmesh-greybox.ts";
 import { loadScene, sceneProbe } from "./route-clip-audit.ts";
-import { init, NavMeshQuery, exportNavMesh } from "recast-navigation";
+import { init, NavMeshQuery, exportNavMesh, type OffMeshConnectionParams } from "recast-navigation";
 import { generateTiledNavMesh } from "recast-navigation/generators";
 import { WALKER_BODY } from "@gteki/scene-api";
+import { qaDirectory, qaFile } from "./navmesh-qa-path.ts";
 
 /** Positions are renderer coordinates; triangle indices must have upward-facing floors. */
-export async function bakeNavmesh(positions: readonly number[], indices: readonly number[], options: { radiusM?: number; rounding?: "up" | "down" } = {}) {
-  const cs = 0.15, ch = 0.1;
+export async function bakeNavmesh(positions: readonly number[], indices: readonly number[], options: { radiusM?: number; rounding?: "up" | "down"; cellSizeM?: number; climbM?: number; offMeshConnections?: OffMeshConnectionParams[] } = {}) {
+  const cs = options.cellSizeM ?? 0.15, ch = 0.1, climb = options.climbM ?? 0.3;
+  if (!Number.isFinite(cs) || cs <= 0 || !Number.isFinite(climb) || climb < 0) throw new Error("cell size must be positive and climb must be non-negative");
   const radius = options.radiusM ?? WALKER_BODY.radiusM;
   const radiusCells = options.rounding === "down" ? Math.floor(radius / cs + 1e-6) : Math.ceil(radius / cs - 1e-6);
   if (!Number.isFinite(radius) || radius <= 0 || radiusCells < 1) throw new Error("radius must produce at least one cell of erosion");
@@ -26,8 +28,9 @@ export async function bakeNavmesh(positions: readonly number[], indices: readonl
     cs, ch, tileSize: 64,
     walkableRadius: radiusCells,
     walkableHeight: Math.ceil(1.7 / ch),
-    walkableClimb: Math.floor(0.3 / ch + 1e-6),
+    walkableClimb: Math.floor(climb / ch + 1e-6),
     walkableSlopeAngle: 40,
+    offMeshConnections: options.offMeshConnections,
   });
 }
 
@@ -125,21 +128,23 @@ export function appendMeshes(objects: readonly THREE.Object3D[], positions: numb
 }
 
 async function main() {
-  let station = "", out = "", withGreybox = false, radiusM: number = WALKER_BODY.radiusM, rounding: "up" | "down" = "up", ignoreGates = false;
+  let station = "", out = "", withGreybox = false, radiusM: number = WALKER_BODY.radiusM, cellSizeM = 0.15, climbM = 0.3, rounding: "up" | "down" = "up", ignoreGates = false;
   const args = process.argv.slice(2);
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--station" && args[i+1]) station = args[++i]!;
     else if (args[i] === "--out" && args[i+1]) out = args[++i]!;
     else if (args[i] === "--with-greybox") withGreybox = true;
     else if (args[i] === "--agent-radius" && args[i+1]) radiusM = Number(args[++i]);
+    else if (args[i] === "--cell-size" && args[i+1]) cellSizeM = Number(args[++i]);
+    else if (args[i] === "--walkable-climb" && args[i+1]) climbM = Number(args[++i]);
     else if (args[i] === "--radius-rounding" && (args[i+1] === "up" || args[i+1] === "down")) rounding = args[++i] as "up" | "down";
     else if (args[i] === "--ignore-gate-obstacles") ignoreGates = true;
     else throw new Error(`unknown or incomplete argument: ${args[i]}`);
   }
   if (!Number.isFinite(radiusM) || radiusM <= 0) throw new Error("radius must be positive");
+  if (!Number.isFinite(cellSizeM) || cellSizeM <= 0 || !Number.isFinite(climbM) || climbM < 0) throw new Error("cell size must be positive and climb must be non-negative");
   if (!out) throw new Error("use --station <station> --out <directory>");
-  const output = path.resolve(out), qa = path.resolve(".qa");
-  if (output !== qa && !output.startsWith(qa + path.sep)) throw new Error("output must be under .qa/");
+  const output = qaDirectory(out);
   const { bundle, privateBuild } = await navmeshBundle(station);
   const scene = await loadScene(station, bundle);
   const probe = sceneProbe(scene);
@@ -178,7 +183,7 @@ async function main() {
   }
   console.log(`scene input: ${ground.length} ground meshes, ${collider.length} collider meshes, ${walls.length} wall segments, ${indices.length/3} triangles; greybox runs ${greyboxRuns ?? "not measured"}`);
   const start = performance.now();
-  const result = await bakeNavmesh(positions, indices, { radiusM, rounding });
+  const result = await bakeNavmesh(positions, indices, { radiusM, rounding, cellSizeM, climbM });
   const bakeMs = performance.now() - start;
   if (!result.success) throw new Error(`bake failed: ${result.error}`);
   const nav = result.navMesh;
@@ -228,12 +233,11 @@ async function main() {
     if (local) stats.localCandidate++; else stats.needsInvestigation++;
   }
   const bytes = exportNavMesh(nav), gz = gzipSync(bytes);
-  fs.mkdirSync(out, { recursive: true });
-  fs.writeFileSync(path.join(out, `${station}.bin`), bytes);
-  const effectiveRadiusCells = rounding === "down" ? Math.floor(radiusM / 0.15 + 1e-6) : Math.ceil(radiusM / 0.15 - 1e-6);
+  fs.writeFileSync(qaFile(path.join(output, `${station}.bin`)), bytes);
+  const effectiveRadiusCells = rounding === "down" ? Math.floor(radiusM / cellSizeM + 1e-6) : Math.ceil(radiusM / cellSizeM - 1e-6);
   const gateTriangles = collider.reduce((n, mesh) => n + (mesh.userData.gtekiGateTriangles?.length ?? 0), 0);
-  const metrics = { station, withGreybox, privateBuild, meshSha256: createHash("sha256").update(bytes).digest("hex"), radiusM, rounding, effectiveRadiusCells, effectiveRadiusM: effectiveRadiusCells * 0.15, ignoreGates, gateWallCount, activeGateWalls, gateTriangles, excludedActiveGateWalls: ignoreGates ? activeGateWalls : 0, excludedGateTriangles: ignoreGates ? gateTriangles : 0, bakeMs, rawBytes: bytes.length, gzipBytes: gz.length, tiles, polygons, peakRssKiB: process.resourceUsage().maxRSS, greyboxRuns, vertical };
-  fs.writeFileSync(path.join(out, `${station}-bake.json`), JSON.stringify(metrics, null, 2) + "\n");
+  const metrics = { station, withGreybox, privateBuild, meshSha256: createHash("sha256").update(bytes).digest("hex"), radiusM, rounding, cellSizeM, climbM, effectiveClimbM: Math.floor(climbM / 0.1 + 1e-6) * 0.1, effectiveRadiusCells, effectiveRadiusM: effectiveRadiusCells * cellSizeM, ignoreGates, gateWallCount, activeGateWalls, gateTriangles, excludedActiveGateWalls: ignoreGates ? activeGateWalls : 0, excludedGateTriangles: ignoreGates ? gateTriangles : 0, bakeMs, rawBytes: bytes.length, gzipBytes: gz.length, tiles, polygons, peakRssKiB: process.resourceUsage().maxRSS, greyboxRuns, vertical };
+  fs.writeFileSync(qaFile(path.join(output, `${station}-bake.json`)), JSON.stringify(metrics, null, 2) + "\n");
   console.log(JSON.stringify(metrics, null, 2));
   query.destroy(); nav.destroy(); scene.dispose();
 }

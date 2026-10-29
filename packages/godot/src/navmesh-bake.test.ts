@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { NavMeshQuery } from "recast-navigation";
 import { bakeNavmesh, completePath } from "./navmesh-bake.ts";
+import { verticalLinkCandidates } from "./navmesh-links.ts";
 
 // Two 4 m rooms divided by a wall. The doorway is 1.6 m wide when open.
 function rooms(door: boolean) {
@@ -27,6 +28,38 @@ describe("navmesh spike", () => {
     expect(path !== null).toBe(door);
     query.destroy();
     result.navMesh.destroy();
+  });
+  it("accepts the finer sweep grid and rejects invalid settings", async () => {
+    const { positions, indices } = rooms(true);
+    const result = await bakeNavmesh(positions, indices, { cellSizeM: 0.1, climbM: 0.45, radiusM: 0.2 });
+    expect(result.success).toBe(true);
+    if (result.success) result.navMesh.destroy();
+    await expect(bakeNavmesh(positions, indices, { cellSizeM: 0 })).rejects.toThrow();
+    await expect(bakeNavmesh(positions, indices, { climbM: -1 })).rejects.toThrow();
+  });
+  it("builds a one-way off-mesh candidate and retains it through a bake", async () => {
+    const { positions, indices } = rooms(false);
+    const base = await bakeNavmesh(positions, indices);
+    if (!base.success) throw new Error(base.error);
+    const query = new NavMeshQuery(base.navMesh);
+    const points: Record<string, {x:number;y:number;z:number}> = { a:{x:3,y:0,z:2}, b:{x:5,y:0,z:2}, high:{x:5,y:3,z:2} };
+    const result = verticalLinkCandidates([
+      { id:"one", mode:"stairs", from:"a", to:"b", direction:"forward" },
+      { id:"missing", mode:"elevator", from:"a", to:"high", direction:"both" },
+      { id:"walk", mode:"walk", from:"a", to:"b", direction:"both" },
+    ], id => points[id], query, () => true);
+    expect(result.candidates.map(c => c.edgeId)).toEqual(["one"]);
+    expect(result.failed).toEqual([{ edgeId:"missing", reason:"snap_failed" }]);
+    expect(result.candidates[0]!.connection.bidirectional).toBe(false);
+    const unsafe = verticalLinkCandidates([{ id:"blocked", mode:"stairs", from:"a", to:"b", direction:"both" }], id => points[id], query, id => id !== "b");
+    expect(unsafe.failed).toEqual([{ edgeId:"blocked", reason:"unsafe_snap" }]);
+    query.destroy(); base.navMesh.destroy();
+    const linked = await bakeNavmesh(positions, indices, { offMeshConnections: result.candidates.map(c => c.connection) });
+    if (!linked.success) throw new Error(linked.error);
+    const linkedQuery = new NavMeshQuery(linked.navMesh);
+    expect(completePath(linkedQuery, points.a!, points.b!)).not.toBeNull();
+    expect(completePath(linkedQuery, points.b!, points.a!)).toBeNull();
+    linkedQuery.destroy(); linked.navMesh.destroy();
   });
 });
 
