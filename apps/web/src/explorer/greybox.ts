@@ -299,7 +299,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   }
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
-  const junctions = new Map<string, { at: THREE.Vector3; width: number; count: number; floor: string }>();
+  const junctions = new Map<string, { at: THREE.Vector3; width: number; count: number; floor: string; radius?: number }>();
   for (const run of detected) {
     const edgePointsR = edgePoints(bundle, run.edge, nodes, floors);
     for (const [id, point, endpoint] of [[run.edge.from, run.points[0], edgePointsR[0]], [run.edge.to, run.points.at(-1), edgePointsR.at(-1)]] as const) {
@@ -323,7 +323,8 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     if (!["stairs", "escalator", "elevator"].includes(edge.mode)) continue;
     for (const id of [edge.from, edge.to]) {
       const junction = junctions.get(id);
-      if (junction) { junction.count++; junction.width = Math.max(junction.width, widthOf(edge)); }
+      // The passage's own walls stand at half its width, so the mouth clears a metre beyond that.
+      if (junction) { junction.count++; junction.width = Math.max(junction.width, widthOf(edge)); junction.radius = junction.width / 2 + 1; }
     }
   }
   const activeJunctions = [...junctions.values()].filter((junction) => junction.count >= 2);
@@ -365,9 +366,11 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         // Clip the wall centreline against junction discs; the floor and ceiling remain continuous.
         let intervals: [number, number][] = index.uncovered(wa, wz);
         for (const j of activeJunctions) {
-          if (Math.abs(j.at.y - (a.y + z.y) / 2) > 1) continue;
           const vx = wz.x - wa.x, vz = wz.z - wa.z, ox = wa.x - j.at.x, oz = wa.z - j.at.z;
-          const A = vx * vx + vz * vz, B = 2 * (ox * vx + oz * vz), C = ox * ox + oz * oz - (j.width / 2) ** 2;
+          const A = vx * vx + vz * vz, B = 2 * (ox * vx + oz * vz), C = ox * ox + oz * oz - (j.radius ?? j.width / 2) ** 2;
+          // Compare heights where the wall passes the junction, not at the segment midpoint: a long ramp drifts.
+          const nearest = A < 1e-12 ? 0 : Math.min(1, Math.max(0, -B / (2 * A)));
+          if (Math.abs(j.at.y - (a.y + (z.y - a.y) * nearest)) > 1) continue;
           const disc = B * B - 4 * A * C;
           if (A < 1e-12 || disc <= 0) continue;
           const lo = (-B - Math.sqrt(disc)) / (2 * A), hi = (-B + Math.sqrt(disc)) / (2 * A);

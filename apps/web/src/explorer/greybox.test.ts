@@ -108,6 +108,17 @@ describe("buildGreybox", () => {
     }
   });
 
+  it("opens the mouth of a stair as wide as the passage, and at the end of a long ramp", () => {
+    const floors = [...bundle.floors, { id: "g", renderElevationM: 4 }];
+    const ramp = [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 30, y: 0, z: 3 } }];
+    const nodes = [...ramp, { id: "c", floorId: "g", position: { x: 30, y: 6, z: 7 } }];
+    const edges = [{ ...bundle.edges[0]!, mode: "ramp" }, { id: "s", from: "b", to: "c", mode: "stairs" }];
+    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
+    for (const wall of result.wallSegments) for (const [x, z] of [[wall.ax, wall.az], [wall.bx, wall.bz]] as const) {
+      expect(Math.hypot(x - 30, z)).toBeGreaterThanOrEqual(MODE_WIDTH.ramp! / 2 + 1 - 1e-5);
+    }
+  });
+
   it("makes a junction patch and keeps wall segments out of its disc", () => {
     const junction = { ...bundle, nodes: [...bundle.nodes, { ...bundle.nodes[1]!, id: "c", position: { x: 10, y: 10, z: 0 } }], edges: [bundle.edges[0]!, { ...bundle.edges[0]!, id: "e2", from: "b", to: "c" }] };
     const result = buildGreybox(junction, () => true, () => false, emptyScene, "high");
