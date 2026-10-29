@@ -182,6 +182,7 @@ function meshFor(parts: readonly ConnectorPart[], material: THREE.Material): THR
 export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge) => boolean, scope: ConnectorScope, tier: "high" | "low") {
   const root = new THREE.Group(), walkable: THREE.Object3D[] = [], colliders: THREE.Object3D[] = [];
   const wallSegments: Segment2[] = [];
+  const segments: { line: THREE.Line3; halfWidth: number }[] = [];
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
   const batches = new Map<string, ConnectorPart[]>();
@@ -195,6 +196,8 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const points = edgePoints(bundle, edge, nodes, floors);
     const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
     const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
+    const halfWidth = (edge.mode === "stairs" ? width : 1.2) / 2;
+    for (let i = 1; i < points.length; i++) segments.push({ line: new THREE.Line3(points[i - 1]!.clone(), points[i]!.clone()), halfWidth });
     let bentEscalator = false;
     for (let i = 1; i + 1 < points.length; i++) {
       const before = points[i]!.clone().sub(points[i - 1]!); before.y = 0;
@@ -280,7 +283,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         if (!kept.length) { root.remove(batch.mesh); stats.meshes--; }
       }
     } };
-  return { root, walkable, colliders, wallSegments, stats };
+  return { root, walkable, colliders, wallSegments, segments, stats };
 }
 
 /** Apply the shared triangle cap, retaining essential connector and passage geometry. */

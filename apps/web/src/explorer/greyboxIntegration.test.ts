@@ -51,6 +51,34 @@ describe("greybox station integration", () => {
     expect(state.routeGroundCheck([], steps).verticalWithoutConnector).toBe(0);
   });
 
+  it("shows the legend for a route or walker near generated stairs and escalators", async () => {
+    const context = { clearRect: vi.fn(), fillRect: vi.fn(), beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), stroke: vi.fn() };
+    vi.stubGlobal("document", { createElement: () => ({ width: 0, height: 0, getContext: () => context }) });
+    try {
+      for (const mode of ["stairs", "escalator"] as const) {
+        const { state, loaded } = fixture();
+        loaded.bundle = createSyntheticBundle([syntheticEdge("vertical", "start", "upper", { mode, attributes: { sceneGap: true } })]);
+        const notify = vi.fn(); state.events.onGreyboxLegend = notify;
+        await state.loadStation(loaded, createRouter(loaded.bundle));
+        expect(state.greybox.stats.runs).toBe(0);
+        expect(state.connectors.stats.connectors[mode]).toBe(1);
+        state.mode = "walk"; state.pos.set(5, 2, 100); state.updateGreyboxLegend();
+        expect(notify).toHaveBeenLastCalledWith(false);
+        state.trackOverlay = (material: THREE.Material) => material;
+        const point = (x: number, z: number) => ({ x, y: 0, z, zKnown: true, stepIndex: 0, floorId: "concourse" });
+        state.showRoute([point(0, 0), point(10, 4)]);
+        expect(state.routeGroup.userData.greybox).toBe(true);
+        expect(notify).toHaveBeenLastCalledWith(true);
+        state.clearRoute();
+        expect(notify).toHaveBeenLastCalledWith(false);
+        state.pos.set(5, 2, 15.5); state.updateGreyboxLegend();
+        expect(notify).toHaveBeenLastCalledWith(true);
+        state.pos.set(5, 2, 16); state.updateGreyboxLegend();
+        expect(notify).toHaveBeenLastCalledWith(false);
+      }
+    } finally { vi.unstubAllGlobals(); }
+  });
+
   it("builds floor and targets and walks through a portal in the original collider", async () => {
     const { state, loaded } = fixture();
     expect(await state.loadStation(loaded, createRouter(loaded.bundle))).toBe(true);
