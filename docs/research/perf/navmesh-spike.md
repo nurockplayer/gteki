@@ -316,6 +316,16 @@ The Shinjuku unique-edge audit also found two connector wall hits. The fallback 
 
 Oracle's review found that the audit does not assemble hybrid routes or validate their fallback joins, and only covers edges used by selected routes. The gate therefore fails closed on incomplete routes until hybrid route validation exists; it is not yet a usable green gate for a station with legitimate fallbacks. It also requires a completed route, checks successful edges on incomplete routes and rejects fallback off-floor/no-floor results as well as wall hits. Other unresolved review risks include direct `--gate` versus test parity, POI and directed-edge coverage, and private intermediate files if the process is killed. The user's specified scene-raycast height remains the gate variant.
 
+## Obstacle report
+
+2026-10-30 04:40 JST: Public Shinjuku's failed non-vertical edges yielded no sampled gaps. The report captured 16 connector and 3 fallback wall-hit samples; all 19 were attributed to greybox geometry. There were no gap blockers to count by source or facing. The detailed public report is `.qa/navmesh/shinjuku-obstacles.json`; private reports must be written under `GTEKI_PRIVATE_DIR`.
+
+Source classification checks the mesh and ancestor tags and names in this order: `greybox`; merchant/tenant/shop-kit; PLATEAU/3D-tiles/CityGML; kit tags or names; known procedural wall, ceiling and walk-proxy names; otherwise `unknown`. `manifestScene` attaches `gtekiAsset` to asset roots and greybox meshes carry `userData.greybox`. Kit swapping records a root-level report rather than a per-mesh source tag, so unmatched kit geometry remains `unknown`. Facing uses the world triangle normal (renderer Y is vertical); the upper-floor-slab check follows the requested upward-normal or overhead-walkable rule.
+
+Gap evidence is sampled at 0.25 m along the diagnosed interval. The triangle query checks the 0.30 m cylinder at each sample, so narrow features between samples can still be missed; portal-cut geometry is approximated by the explorer hit exemption. Unclassified failed non-vertical edges are recorded separately even when no gap was diagnosed. The clip-site check reports the earliest hit per audited sample, retains repeated completed-route hits, and additionally checks directed connectors used only by incomplete routes.
+
+Oracle found that the original implementation could attribute a later hit instead of the earliest one and could miss small blockers. It also questioned private-output enforcement, midpoint-only sampling and instanced normals. The report now records the earliest hit, clips triangles to the vertical cylinder, samples the full gap, and accounts for instance transforms. Output uses the existing private-directory restriction; public output remains permitted as explicitly requested. These changes were tested but not independently re-reviewed.
+
 ## Integration sketch
 
 - Guide: `apps/web/src/ui/app.ts` creates `routePolyline` and passes it to `Explorer.startGuide`; `Explorer.stepGuide` follows it. Supply per-edge navmesh geometry while preserving step-to-point spans, instructions, floor and lift semantics. Risk: a partial or disconnected path must stop guidance, and snapping can select the wrong floor.

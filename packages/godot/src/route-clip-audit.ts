@@ -145,6 +145,7 @@ export function auditPolyline(probe: SceneProbe, points: readonly PolylinePoint[
     const cachedWall = opts.cache?.wall.get(wallKey);
     if (cachedWall) ({ crossed, wallCollider, wallPoint, wallSegment } = cachedWall);
     else {
+      let firstT=Infinity;
       for (const lift of [BODY_LOW_M, BODY_HIGH_M]) {
         const a = new THREE.Vector3(...enuToRenderer({ x: p.x, y: p.y, z: p.z + lift }));
         const b = new THREE.Vector3(...enuToRenderer({ x: s.x, y: s.y, z: s.z + lift }));
@@ -153,14 +154,14 @@ export function auditPolyline(probe: SceneProbe, points: readonly PolylinePoint[
         ray.set(a, b.clone().sub(a).normalize());
         ray.far = len;
         const hit = castCamera(ray, probe.collider, twoSided).find(h => !probe.ignoreColliderHit?.(h, ray.ray.direction));
-        if (hit) { crossed = true; if (wallCollider === undefined) { wallCollider = probe.collider.indexOf(hit.object); wallPoint = { x: hit.point.x, y: -hit.point.z, z: hit.point.y }; } }
+        if (hit) { crossed = true; const t=hit.distance/len; if (t<firstT) { firstT=t; wallCollider = probe.collider.indexOf(hit.object); wallSegment=undefined; wallPoint = { x: hit.point.x, y: -hit.point.z, z: hit.point.y }; } }
       }
       for (const [wi, w] of probe.walls.entries()) {
         const t = segmentsCross(p, s, w);
         if (t === null) continue;
         // The body's height where the route crosses the wall in plan, not the whole segment's span.
         const z = t === 0 && p.z !== s.z ? Math.min(p.z, s.z) : p.z + (s.z - p.z) * t;
-        if (w.zMax > z + BODY_LOW_M && w.zMin < z + BODY_HIGH_M) { crossed = true; wallSegment = wi; break; }
+        if (w.zMax > z + BODY_LOW_M && w.zMin < z + BODY_HIGH_M) { crossed = true; if(t<firstT) {firstT=t;wallSegment = wi;wallCollider=undefined;wallPoint={x:p.x+(s.x-p.x)*t,y:p.y+(s.y-p.y)*t,z:(Math.max(z+BODY_LOW_M,w.zMin)+Math.min(z+BODY_HIGH_M,w.zMax))/2};} }
       }
       opts.cache?.wall.set(wallKey, { crossed, wallCollider, wallPoint, wallSegment });
     }

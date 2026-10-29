@@ -14,6 +14,15 @@ const line = (...pts: [number, number, number][]): PolylinePoint[] =>
   pts.map(([x, y, z], i) => ({ x, y, z, zKnown: true, stepIndex: i - 1, floorId: "f" }));
 
 describe("route clip audit", () => {
+  it("attributes a hit to the earliest obstacle across both body heights",()=>{
+    const near=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.3,2),new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));near.position.set(0.3,1.5,0);
+    const far=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.3,2),new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));far.position.set(0.7,0.5,0);
+    near.updateMatrixWorld(true);far.updateMatrixWorld(true);
+    const details:import("./route-clip-audit.ts").SampleDetail[]=[];
+    auditPolyline({ground:[],collider:[near,far],walls:[]},line([0,0,0],[1,0,0]),{alreadySampled:true,detail:details});
+    expect(details[1]!.wallCollider).toBe(0);
+    near.geometry.dispose();far.geometry.dispose();
+  });
   it("preserves audit results for explicit samples and a reused cache", () => {
     const points = line([0.2, 0, 0], [8.2, 0, 0]);
     const expected = auditPolyline(probe, points);

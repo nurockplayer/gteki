@@ -524,9 +524,9 @@ installHeadlessDom	function	packages/godot/src/headless-dom.ts	111
 stubRenderer	function	packages/godot/src/headless-dom.ts	137
 headlessThree	function	packages/godot/src/headless-dom.ts	142
 loadBundle	function	packages/godot/src/load-bundle.ts	6
-queryCompletePath	function	packages/godot/src/navmesh-audit.ts	31
-snapNode	function	packages/godot/src/navmesh-audit.ts	40
-queryPathWithLinks	function	packages/godot/src/navmesh-audit.ts	46
+queryCompletePath	function	packages/godot/src/navmesh-audit.ts	32
+snapNode	function	packages/godot/src/navmesh-audit.ts	41
+queryPathWithLinks	function	packages/godot/src/navmesh-audit.ts	47
 bakeNavmesh	function	packages/godot/src/navmesh-bake.ts	23
 completePath	function	packages/godot/src/navmesh-bake.ts	41
 applyBridgeGeometry	function	packages/godot/src/navmesh-bake.ts	83
@@ -543,6 +543,10 @@ linkStripGeometry	function	packages/godot/src/navmesh-bridge.ts	72
 auditFallbackSegments	function	packages/godot/src/navmesh-fallback-audit.ts	5
 fallbackGate	function	packages/godot/src/navmesh-fallback-audit.ts	17
 fallbackDiff	function	packages/godot/src/navmesh-fallback-diff.ts	2
+FallbackEntry	type	packages/godot/src/navmesh-fallback.ts	8
+fallbackEntries	function	packages/godot/src/navmesh-fallback.ts	11
+fallbackDestination	function	packages/godot/src/navmesh-fallback.ts	23
+measureFallbacks	function	packages/godot/src/navmesh-fallback.ts	36
 GapClass	type	packages/godot/src/navmesh-gaps.ts	8
 gapClass	function	packages/godot/src/navmesh-gaps.ts	9
 dataWidth	function	packages/godot/src/navmesh-gaps.ts	19
@@ -564,7 +568,7 @@ sceneProbe	function	packages/godot/src/route-clip-audit.ts	71
 resampleAudit	function	packages/godot/src/route-clip-audit.ts	95
 AuditCache	interface	packages/godot/src/route-clip-audit.ts	105
 auditPolyline	function	packages/godot/src/route-clip-audit.ts	114
-violations	const	packages/godot/src/route-clip-audit.ts	181
+violations	const	packages/godot/src/route-clip-audit.ts	182
 WALKABLE_ROLES	const	packages/godot/src/scene-roles.ts	25
 COLLIDER_ROLES	const	packages/godot/src/scene-roles.ts	26
 CAMERA_ROLES	const	packages/godot/src/scene-roles.ts	27

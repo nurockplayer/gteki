@@ -33,7 +33,7 @@ export function fallbackDestination(file:string, privateDir?:string):string {
 }
 
 /** Bake and audit in a disposable .qa directory, retaining only aggregate results. */
-export function measureFallbacks(station:string, fallbackList?:string) {
+export function measureFallbacks(station:string, fallbackList?:string, includeFallbackSites=false) {
   if (!/^(ikebukuro|shinjuku)$/.test(station)) throw new Error("unsupported station");
   const dir=fs.mkdtempSync(path.join(qaDirectory(".qa/navmesh"),"fallback-")), start=performance.now();
   const run=(script:string,args:string[])=>{
@@ -44,8 +44,13 @@ export function measureFallbacks(station:string, fallbackList?:string) {
     run("navmesh-bake.ts",["--station",station,"--with-greybox","--cell-size","0.10","--agent-radius","0.30","--walkable-climb","0.40","--tile-size","256","--out",dir]);
     const json=path.join(dir,"audit.json");
     run("navmesh-audit.ts",["--station",station,"--with-greybox","--navmesh",path.join(dir,`${station}.bin`),"--json",json,...(fallbackList ? ["--fallback-list",fallbackList] : [])]);
-    const audit=JSON.parse(fs.readFileSync(json,"utf8"));
+    let audit=JSON.parse(fs.readFileSync(json,"utf8"));
     const entries=fallbackEntries(audit.failureEdges as Failure[]);
+    if (includeFallbackSites && !fallbackList) {
+      const list=path.join(dir,"fallback.json"); fs.writeFileSync(list,JSON.stringify(entries),{mode:0o600});
+      run("navmesh-audit.ts",["--station",station,"--with-greybox","--navmesh",path.join(dir,`${station}.bin`),"--json",json,"--fallback-list",list]);
+      audit=JSON.parse(fs.readFileSync(json,"utf8"));
+    }
     return {entries,audit,elapsedMs:performance.now()-start};
   } finally { fs.rmSync(dir,{recursive:true,force:true}); }
 }
