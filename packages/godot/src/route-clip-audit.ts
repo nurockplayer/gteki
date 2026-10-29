@@ -38,6 +38,7 @@ export interface EdgeAudit {
 }
 
 export interface SceneProbe { ground: THREE.Object3D[]; collider: THREE.Object3D[]; walls: WallSegment[] }
+export interface SampleDetail { i: number; floor: "ok" | "off" | "none"; wallBefore: boolean }
 
 const repoRoot = process.cwd();
 
@@ -105,27 +106,29 @@ const ray = new THREE.Raycaster();
 const down = new THREE.Vector3(0, -1, 0);
 
 /** Audit one drawn polyline against the scene. */
-export function auditPolyline(probe: SceneProbe, points: readonly PolylinePoint[], opts: { skipInteriorFloor?: boolean } = {}):
+export function auditPolyline(probe: SceneProbe, points: readonly PolylinePoint[], opts: { skipInteriorFloor?: boolean; detail?: SampleDetail[] } = {}):
   Pick<EdgeAudit, "samples" | "offFloor" | "noFloor" | "maxAbsDzM" | "wallHits" | "worst"> {
   const samples = resample(points);
   let offFloor = 0, noFloor = 0, maxAbsDzM = 0, wallHits = 0, worst = "";
   const twoSided = new Set(probe.collider);
   samples.forEach((s, i) => {
     const interior = i > 0 && i < samples.length - 1;
-    if (!(opts.skipInteriorFloor && interior)) {
+    const countFloor = !(opts.skipInteriorFloor && interior);
+    let floor: SampleDetail["floor"] = "ok";
+    if (countFloor || opts.detail) {
       const [x, y, z] = enuToRenderer({ x: s.x, y: s.y, z: s.z + PROBE_M });
       ray.set(new THREE.Vector3(x, y, z), down);
       ray.far = 2 * PROBE_M;
       // Nearest walkable to the drawn height, not the first one down: a mezzanine above must not count.
       const hit = castAll(ray, probe.ground).sort((a, b) => Math.abs(s.z - a.point.y) - Math.abs(s.z - b.point.y))[0];
-      if (!hit) { noFloor++; if (!worst) worst = `no floor at (${s.x.toFixed(1)}, ${s.y.toFixed(1)}, z ${s.z.toFixed(2)})`; }
+      if (!hit) { floor = "none"; if (countFloor) { noFloor++; if (!worst) worst = `no floor at (${s.x.toFixed(1)}, ${s.y.toFixed(1)}, z ${s.z.toFixed(2)})`; } }
       else {
         const dz = s.z - hit.point.y;
-        if (Math.abs(dz) > maxAbsDzM) maxAbsDzM = Math.abs(dz);
-        if (Math.abs(dz) > FLOOR_TOLERANCE_M) { offFloor++; if (!worst) worst = `route z ${s.z.toFixed(2)} vs floor ${hit.point.y.toFixed(2)} at (${s.x.toFixed(1)}, ${s.y.toFixed(1)})`; }
+        if (countFloor && Math.abs(dz) > maxAbsDzM) maxAbsDzM = Math.abs(dz);
+        if (Math.abs(dz) > FLOOR_TOLERANCE_M) { floor = "off"; if (countFloor) { offFloor++; if (!worst) worst = `route z ${s.z.toFixed(2)} vs floor ${hit.point.y.toFixed(2)} at (${s.x.toFixed(1)}, ${s.y.toFixed(1)})`; } }
       }
     }
-    if (i === 0) return;
+    if (i === 0) { opts.detail?.push({ i, floor, wallBefore: false }); return; }
     const p = samples[i - 1]!;
     let crossed = false;
     for (const lift of [BODY_LOW_M, BODY_HIGH_M]) {
@@ -145,6 +148,7 @@ export function auditPolyline(probe: SceneProbe, points: readonly PolylinePoint[
       if (w.zMax > z + BODY_LOW_M && w.zMin < z + BODY_HIGH_M) { crossed = true; break; }
     }
     if (crossed) { wallHits++; if (!worst) worst = `crosses a wall near (${s.x.toFixed(1)}, ${s.y.toFixed(1)}, z ${s.z.toFixed(2)})`; }
+    opts.detail?.push({ i, floor, wallBefore: crossed });
   });
   return { samples: samples.length, offFloor, noFloor, maxAbsDzM, wallHits, worst };
 }

@@ -478,8 +478,8 @@ rendererToEnu	const	packages/geo/src/index.ts	139
 ENU_TO_RENDERER_MATRIX	const	packages/geo/src/index.ts	142
 @gteki/godot:export:scene	script	packages/godot/package.json	7
 drapeEdges	function	packages/godot/src/drape-edges.ts	30
-applyDrapeGeometry	function	packages/godot/src/drape-edges.ts	97
-drapePaths	function	packages/godot/src/drape-edges.ts	117
+applyDrapeGeometry	function	packages/godot/src/drape-edges.ts	109
+drapePaths	function	packages/godot/src/drape-edges.ts	129
 SIDECAR_SCHEMA	const	packages/godot/src/export-scene.ts	26
 SceneSidecar	interface	packages/godot/src/export-scene.ts	29
 Bounds	interface	packages/godot/src/export-scene.ts	60
@@ -504,10 +504,11 @@ loadBundle	function	packages/godot/src/load-bundle.ts	6
 FLOOR_TOLERANCE_M	const	packages/godot/src/route-clip-audit.ts	27
 EdgeAudit	interface	packages/godot/src/route-clip-audit.ts	33
 SceneProbe	interface	packages/godot/src/route-clip-audit.ts	40
-loadScene	function	packages/godot/src/route-clip-audit.ts	44
-sceneProbe	function	packages/godot/src/route-clip-audit.ts	70
-auditPolyline	function	packages/godot/src/route-clip-audit.ts	108
-violations	const	packages/godot/src/route-clip-audit.ts	160
+SampleDetail	interface	packages/godot/src/route-clip-audit.ts	41
+loadScene	function	packages/godot/src/route-clip-audit.ts	45
+sceneProbe	function	packages/godot/src/route-clip-audit.ts	71
+auditPolyline	function	packages/godot/src/route-clip-audit.ts	109
+violations	const	packages/godot/src/route-clip-audit.ts	164
 WALKABLE_ROLES	const	packages/godot/src/scene-roles.ts	25
 COLLIDER_ROLES	const	packages/godot/src/scene-roles.ts	26
 CAMERA_ROLES	const	packages/godot/src/scene-roles.ts	27

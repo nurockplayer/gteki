@@ -70,6 +70,35 @@ describe("scene floor draping", () => {
     const result = drapeEdges(probe(false), bundle(), new Set(["edge"]));
     expect(result.geometry.size).toBe(0);
     expect(result.unresolved).toEqual([{ edgeId: "edge", reason: "no lattice path" }]);
+    expect(result.sceneGaps.get("edge")).toBe(true);
+  });
+  it("clears resolved automatic flags and preserves hand flags", () => {
+    const b = bundle(), edge = b.edges[0]!;
+    edge.attributes = { ...edge.attributes, sceneGap: true, sceneGapReason: "drape-unresolved" };
+    expect(drapeEdges(probe(true), b, new Set(["edge"])).sceneGaps.get("edge")).toBe(false);
+    edge.attributes = { ...edge.attributes, sceneGap: true, sceneGapReason: "hand" };
+    expect(drapeEdges(probe(false), b, new Set(["edge"])).sceneGaps.has("edge")).toBe(false);
+    edge.attributes = { sceneGap: false };
+    expect(drapeEdges(probe(false), b, new Set(["edge"])).sceneGaps.has("edge")).toBe(false);
+  });
+  it("does not flag unmodelled floor alone", () => {
+    expect(drapeEdges({ ground: [], collider: [], walls: [] }, bundle(), new Set(["edge"])).sceneGaps.has("edge")).toBe(false);
+  });
+  it("clears an automatic flag when only unmodelled floor remains", () => {
+    const b = bundle();
+    b.edges[0]!.attributes = { ...b.edges[0]!.attributes, sceneGap: true, sceneGapReason: "drape-unresolved" };
+    expect(drapeEdges({ ground: [], collider: [], walls: [] }, b, new Set(["edge"])).sceneGaps.get("edge")).toBe(false);
+  });
+  it.each([[0, true], [2.9, false]])("distinguishes a wall at x=%s from the model boundary", (wallX, flagged) => {
+    const floor = new THREE.Mesh(new THREE.BoxGeometry(6, 0.2, 10), new THREE.MeshBasicMaterial());
+    floor.position.y = -0.1; floor.updateMatrixWorld(true);
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(0.1, 3, 10), new THREE.MeshBasicMaterial());
+    wall.position.set(wallX, 1.5, 0); wall.updateMatrixWorld(true);
+    const b = bundle(); b.edges[0]!.mode = "escalator";
+    b.nodes.find(n => n.id === "goal")!.position.x = 6;
+    const scene = { ground: [floor], collider: [wall], walls: [] };
+    const result = drapeEdges(scene, b, new Set(["edge"]));
+    expect(result.sceneGaps.get("edge") === true).toBe(flagged);
   });
   it("snaps nodes to a floor above the render height", () => {
     const result = drapeEdges(probe(true, 1), bundle(), new Set(["edge"]));
