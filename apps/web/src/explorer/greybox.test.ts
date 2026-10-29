@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import type { StationBundle } from "@gteki/schema";
-import { buildGreybox, simplifyGreyboxRun, splitWallsAtOpenings, unmodelledRunsByEdge } from "./greybox.ts";
+import { buildGreybox, greyboxTriangleLimit, simplifyGreyboxRun, splitWallsAtOpenings, unmodelledRunsByEdge } from "./greybox.ts";
 import { MODE_WIDTH } from "./graphView.ts";
 import { resolveWalls } from "./walker.ts";
 
@@ -49,6 +49,10 @@ describe("unmodelledRunsByEdge", () => {
 
 describe("buildGreybox", () => {
   const emptyScene = { colliderNear: () => false, wallHit: () => null };
+  it("uses the triangle limit for each tier", () => {
+    expect(greyboxTriangleLimit("high")).toBe(150000);
+    expect(greyboxTriangleLimit("low")).toBe(100000);
+  });
   it("uses the mode width fallback and self-lit shell", () => {
     const result = buildGreybox(bundle, () => true, () => false, emptyScene, "high");
     const shell = result.root.getObjectByName("greybox-shell") as THREE.Mesh;

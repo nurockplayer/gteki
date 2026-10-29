@@ -87,6 +87,7 @@ export interface Box {
 }
 
 export interface GreyboxStats { runs: number; lengthM: number; portals: number; meshes: number; triangles: number; buildMs: number; overBudget: string | null }
+export const greyboxTriangleLimit = (tier: "high" | "low"): number => tier === "high" ? 150000 : 100000;
 export interface GreyboxScene {
   colliderNear(p: V3, r: number): boolean;
   wallHit(a: V3, b: V3): V3 | null;
@@ -379,12 +380,13 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
     }
   }
   const root = new THREE.Group(), walkable: THREE.Object3D[] = [], colliders: THREE.Object3D[] = [];
+  const triangleCap = greyboxTriangleLimit(tier);
   const total = () => [...batches.values()].reduce((n, b) => n + (b.shell.length + b.ceiling.length + b.portal.length + b.lights.length + b.kerb.length) / 9, 0);
   const dropped: string[] = [];
-  if (total() > 60000) { for (const b of batches.values()) { b.lights = []; b.lightColors = []; } dropped.push("lights"); }
-  if (total() > 60000) { for (const b of batches.values()) b.kerb = []; dropped.push("kerb"); }
-  if (total() > 60000) { for (const b of batches.values()) { b.ceiling = []; b.ceilingColors = []; } dropped.push("ceiling"); }
-  const remainsOver = total() > 60000;
+  if (total() > triangleCap) { for (const b of batches.values()) { b.lights = []; b.lightColors = []; } dropped.push("lights"); }
+  if (total() > triangleCap) { for (const b of batches.values()) b.kerb = []; dropped.push("kerb"); }
+  if (total() > triangleCap) { for (const b of batches.values()) { b.ceiling = []; b.ceilingColors = []; } dropped.push("ceiling"); }
+  const remainsOver = total() > triangleCap;
   let triangles = 0;
   for (const b of batches.values()) {
     b.shell = b.shell.concat(b.ceiling);
@@ -417,5 +419,5 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
       if (material === shellMat) { walkable.push(mesh); colliders.push(mesh); }
     }
   }
-  return { root, walkable, colliders, wallSegments, openings, stats: { runs: runs.length, lengthM, portals: openings.length, meshes: root.children.length, triangles, buildMs: performance.now() - started, overBudget: dropped.length ? `Dropped ${dropped.join(", ")}${remainsOver ? "; floor and walls exceed 60k triangles" : " to meet 60k triangles"}` : null } satisfies GreyboxStats };
+  return { root, walkable, colliders, wallSegments, openings, stats: { runs: runs.length, lengthM, portals: openings.length, meshes: root.children.length, triangles, buildMs: performance.now() - started, overBudget: dropped.length ? `Dropped ${dropped.join(", ")}${remainsOver ? `; floor and walls exceed ${triangleCap} triangles` : ` to meet ${triangleCap} triangles`}` : null } satisfies GreyboxStats };
 }

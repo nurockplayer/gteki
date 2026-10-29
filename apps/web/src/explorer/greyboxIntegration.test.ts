@@ -7,6 +7,7 @@ import { greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox
 import { strings } from "../i18n.ts";
 import { darkSampleDistances } from "./routeGroundQa.ts";
 import { OverviewLook } from "./overviewLook.ts";
+import { prepareRayTrees } from "./meshBvh.ts";
 
 const bundle = () => createSyntheticBundle([syntheticEdge("hall", "start", "a")]);
 
@@ -86,6 +87,17 @@ describe("greybox station integration", () => {
     const box = { center: new THREE.Vector3(2, 0, 0), along: new THREE.Vector3(1, 0, 0), across: new THREE.Vector3(0, 0, 1), width: 2, depth: 0.6, height: 2.3 };
     expect(insideGreyboxOpening(new THREE.Vector3(2, 1, 0), box)).toBe(true);
     expect(insideGreyboxOpening(new THREE.Vector3(2, 1, 2), box)).toBe(false);
+  });
+
+  it("finds collider surfaces by their closest point and uses indexed walls", () => {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshBasicMaterial());
+    mesh.position.set(3, 1, -4); mesh.rotation.y = Math.PI / 7; mesh.updateMatrixWorld(true);
+    prepareRayTrees([mesh]);
+    const face = new THREE.Vector3(1.2, 0, 0.13).applyMatrix4(mesh.matrixWorld);
+    const probes = greyboxSceneProbes([mesh], [{ ax: 20, az: -5, bx: 20, bz: 5, yMin: 0, yMax: 3 }]);
+    expect(probes.colliderNear({ x: face.x, y: -face.z, z: face.y }, 0.21)).toBe(true);
+    expect(probes.colliderNear({ x: 50, y: 0, z: 0 }, 0.3)).toBe(false);
+    expect(probes.wallHit({ x: 19, y: 0, z: 0 }, { x: 21, y: 0, z: 0 })).toEqual({ x: 20, y: 0, z: 0 });
   });
 
   it("samples dark share with a test renderer and restores the camera", async () => {

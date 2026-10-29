@@ -42,9 +42,9 @@ Greybox geometry is built at runtime from the graph that is already loaded, and 
 
 ## Budget (both tickets together)
 - **Draw calls:** everything is merged by material per floor, which gives at most 3 meshes per floor (shell, light strips, kerb) plus 1 per elevator car. Station total: at most +12 on desktop and at most +6 on phone (phone merges all floors into one shell).
-- **Triangles:** at most 60 k for the passages and connectors of a whole station; phone treads drop to one quad per 3 steps.
+- **Triangles:** 150 k on high tier and 100 k on low tier for the passages and connectors of a whole station. With five merged meshes the GPU cost at these counts is small. Drop lights, kerbs, then ceilings when over the tier budget; retain floors and walls even if they alone exceed it. Phone treads drop to one quad per 3 steps.
 - **Textures:** none new (procedural only); GPU memory below 2 MiB of vertex buffers.
-- **Build time at load:** at most 30 ms desktop and at most 80 ms phone, measured; idle fallback only if real-station acceptance measures it over budget.
+- **Build time at load:** build the passages within 60 m of the spawn synchronously, then continue in 8 ms per-frame slices; complete route-relevant work before showing or checking a route.
 - **Shadows:** none on any tier.
 
 ## Acceptance

@@ -4,23 +4,69 @@ import type { Box, GreyboxScene, UnmodelledEdgeRun } from "./greybox.ts";
 import { castCamera } from "./raycast.ts";
 import type { Segment2 } from "./walker.ts";
 import { MODE_WIDTH } from "./graphView.ts";
+import { currentBvh } from "./meshBvh.ts";
 
 /** Probes against station-owned colliders and walls, before adding generated geometry. */
 export function greyboxSceneProbes(colliders: readonly THREE.Object3D[], walls: readonly Segment2[]): GreyboxScene {
   const ray = new THREE.Raycaster();
-  const sides = new Set(colliders);
+  const dynamic: THREE.Object3D[] = [];
+  const staticMeshes: { mesh: THREE.Mesh; bounds: THREE.Box3; inverse: THREE.Matrix4; radiusScale: number }[] = [];
+  for (const object of colliders) {
+    const mesh = object as THREE.Mesh;
+    if (!mesh.isMesh || mesh.raycast !== THREE.Mesh.prototype.raycast || mesh.getVertexPosition !== THREE.Mesh.prototype.getVertexPosition || (mesh as THREE.InstancedMesh).isInstancedMesh || (mesh as THREE.SkinnedMesh).isSkinnedMesh || !currentBvh(mesh.geometry)) { dynamic.push(object); continue; }
+    if (!mesh.geometry.boundingBox) mesh.geometry.computeBoundingBox();
+    const bounds = mesh.geometry.boundingBox!.clone().applyMatrix4(mesh.matrixWorld);
+    const inverse = mesh.matrixWorld.clone().invert(), e = inverse.elements;
+    const radiusScale = Math.sqrt(e[0]! ** 2 + e[1]! ** 2 + e[2]! ** 2 + e[4]! ** 2 + e[5]! ** 2 + e[6]! ** 2 + e[8]! ** 2 + e[9]! ** 2 + e[10]! ** 2);
+    staticMeshes.push({ mesh, bounds, inverse, radiusScale });
+  }
+  const sides = new Set(colliders), dynamicSides = new Set(dynamic);
+  const wallCells = new Map<string, Segment2[]>(), largeWalls: Segment2[] = [];
+  const wallCellSize = 5;
+  for (const wall of walls) {
+    const x0 = Math.floor(Math.min(wall.ax, wall.bx) / wallCellSize), x1 = Math.floor(Math.max(wall.ax, wall.bx) / wallCellSize);
+    const z0 = Math.floor(Math.min(wall.az, wall.bz) / wallCellSize), z1 = Math.floor(Math.max(wall.az, wall.bz) / wallCellSize);
+    if ((x1 - x0 + 1) * (z1 - z0 + 1) > 4096) { largeWalls.push(wall); continue; }
+    for (let x = x0; x <= x1; x++) for (let z = z0; z <= z1; z++) {
+      const key = `${x},${z}`; let cell = wallCells.get(key); if (!cell) { cell = []; wallCells.set(key, cell); } cell.push(wall);
+    }
+  }
+  const triangle = new THREE.Triangle(), closest = new THREE.Vector3(), local = new THREE.Vector3();
+  const candidates: number[] = [];
   const dirs = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(-1, 0, 0), new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, -1), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, -1, 0), ...[1, -1].flatMap((x) => [1, -1].map((z) => new THREE.Vector3(x, 0, z).normalize()))];
   return {
     colliderNear(p, radius) {
       const origin = R(p.x, p.y, p.z);
+      for (const entry of staticMeshes) {
+        if (entry.bounds.distanceToPoint(origin) > radius) continue;
+        const mesh = entry.mesh, geometry = mesh.geometry, tree = currentBvh(geometry);
+        if (!tree) { dynamic.push(mesh); dynamicSides.add(mesh); continue; }
+        candidates.length = 0;
+        local.copy(origin).applyMatrix4(entry.inverse);
+        tree.pointCandidates(local.x, local.y, local.z, radius * entry.radiusScale + 1e-6, candidates);
+        const pos = geometry.getAttribute("position"), index = geometry.index, range = geometry.drawRange;
+        for (const id of candidates) {
+          const at = id * 3;
+          if (at < range.start || at + 3 > range.start + range.count) continue;
+          if (Array.isArray(mesh.material) && !geometry.groups.some((g) => at >= g.start && at + 3 <= g.start + g.count)) continue;
+          const vertex = (offset: number, out: THREE.Vector3) => out.fromBufferAttribute(pos, index ? index.getX(at + offset) : at + offset).applyMatrix4(mesh.matrixWorld);
+          vertex(0, triangle.a); vertex(1, triangle.b); vertex(2, triangle.c);
+          if (triangle.closestPointToPoint(origin, closest).distanceToSquared(origin) <= radius * radius) return true;
+        }
+      }
       ray.near = 0; ray.far = radius;
-      return dirs.some((dir) => { ray.set(origin, dir); return castCamera(ray, colliders, sides).length > 0; });
+      return dirs.some((dir) => { ray.set(origin, dir); return castCamera(ray, dynamic, dynamicSides).length > 0; });
     },
     wallHit(a, b) {
       const from = R(a.x, a.y, a.z), to = R(b.x, b.y, b.z);
       const dx = to.x - from.x, dz = to.z - from.z;
       let best = Infinity;
-      for (const w of walls) {
+      const candidates = new Set(largeWalls);
+      const x0 = Math.floor(Math.min(from.x, to.x) / wallCellSize), x1 = Math.floor(Math.max(from.x, to.x) / wallCellSize);
+      const z0 = Math.floor(Math.min(from.z, to.z) / wallCellSize), z1 = Math.floor(Math.max(from.z, to.z) / wallCellSize);
+      if ((x1 - x0 + 1) * (z1 - z0 + 1) > 4096) for (const wall of walls) candidates.add(wall);
+      else for (let x = x0; x <= x1; x++) for (let z = z0; z <= z1; z++) for (const wall of wallCells.get(`${x},${z}`) ?? []) candidates.add(wall);
+      for (const w of candidates) {
         const wx = w.bx - w.ax, wz = w.bz - w.az;
         const cross = dx * wz - dz * wx;
         if (Math.abs(cross) < 1e-9) continue;
