@@ -144,9 +144,23 @@ describe("buildGreybox", () => {
     const edges = [bundle.edges[0]!, { id: "e2", from: "b", to: "d", mode: "walk" }, { id: "s", from: "b", to: "c", mode: "stairs" }];
     const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
     const north = result.wallSegments.filter((w) => Math.abs(w.az + MODE_WIDTH.walk! / 2) < 1e-6);
-    const covers = (x: number) => north.some((w) => Math.min(w.ax, w.bx) < x && Math.max(w.ax, w.bx) > x);
-    expect(covers(13.6)).toBe(false);
-    expect(covers(18)).toBe(true);
+    // Only wall reaching up to where a walker on the flight is counts: a band below the flight stays for the corridor.
+    const covers = (x: number, y: number) => north.some((w) => Math.min(w.ax, w.bx) < x && Math.max(w.ax, w.bx) > x && w.yMax > y);
+    expect(covers(13.6, 2.2)).toBe(false);
+    expect(covers(18, 2.2)).toBe(true);
+  });
+
+  it("keeps the wall of a corridor a flight passes over, below the flight", () => {
+    const floors = [...bundle.floors, { id: "g", renderElevationM: 8 }];
+    const nodes = [...bundle.nodes, { id: "c", floorId: "g", position: { x: 10, y: 8, z: 8 } },
+      { id: "p", floorId: "f", position: { x: 0, y: 3.7, z: 0 } }, { id: "q", floorId: "f", position: { x: 20, y: 3.7, z: 0 } }];
+    const edges = [bundle.edges[0]!, { id: "s", from: "b", to: "c", mode: "stairs" }, { id: "pq", from: "p", to: "q", mode: "walk" }];
+    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
+    // The flight is 2.4 m up where it crosses the corridor's near wall, 2.4 m north: a walker in the corridor
+    // still meets a wall up to the flight's underside, and nothing stands where a walker on the flight is.
+    const at = result.wallSegments.filter((w) => Math.abs(w.az + 3.7 - MODE_WIDTH.walk! / 2) < 1e-6 && Math.min(w.ax, w.bx) < 10 && Math.max(w.ax, w.bx) > 10);
+    expect(at.some((w) => w.yMin < 0.1 && w.yMax > 1.9)).toBe(true);
+    expect(at.every((w) => w.yMax < 2.5 || w.yMin > 4.4)).toBe(true);
   });
 
   it("opens a stair mouth at the end of a long ramp", () => {

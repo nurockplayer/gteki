@@ -394,6 +394,9 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
           const lo = (-B - Math.sqrt(disc)) / (2 * A), hi = (-B + Math.sqrt(disc)) / (2 * A);
           intervals = intervals.flatMap(([s, e]) => [[s, Math.min(e, lo)], [Math.max(s, hi), e]].filter(([x, y]) => x! < y!) as [number, number][]);
         }
+        // Each cut keeps the wall below the flight's surface and above a walker on it: a corridor passing under or over
+        // the flight stays closed. Heights are above the wall base.
+        const cuts: { lo: number; hi: number; below: number; above: number }[] = [];
         for (const m of mouths) {
           // Any wall inside the connector's footprint is one the flight passes through; walls beside it stay. Footprint,
           // not run ownership: deduplication may keep a run from another edge. In the connector's frame, u runs along
@@ -418,6 +421,9 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
             lo = Math.max(lo, ta); hi = Math.min(hi, tb);
             if (lo >= hi) continue;
           }
+          const gl = gap(lo), gh = gap(hi);
+          // 0.4 m under the flight's lowest point keeps a band clear of the walker's feet and the step it climbs.
+          cuts.push({ lo, hi, below: Math.min(gl, gh) - 0.4, above: Math.max(gl, gh) + 2.6 });
           intervals = intervals.flatMap(([s, e]) => [[s, Math.min(e, lo)], [Math.max(s, hi), e]].filter(([x, y]) => x! < y!) as [number, number][]);
         }
         const clearIntervals: [number, number][] = [];
@@ -438,13 +444,27 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
             if (k === pieces - 1 && clearStart !== null) clearIntervals.push([clearStart, end]);
           }
         }
-        for (const [s, e] of clearIntervals) {
+        const band = (s: number, e: number, y0: number, y1: number) => {
           const p = wa.clone().lerp(wz, s), q = wa.clone().lerp(wz, e);
-          const topP = p.clone().add(new THREE.Vector3(0, 2.6, 0)), topQ = q.clone().add(new THREE.Vector3(0, 2.6, 0));
-          if (side < 0) {
-            quad(b.shell, b.colors, topP, topQ, q, p, [0.62, 0.62, 0.62, 0.62]);
-          } else {
-            quad(b.shell, b.colors, p, q, topQ, topP, [0.62, 0.62, 0.62, 0.62]);
+          const lowP = p.clone().add(new THREE.Vector3(0, y0, 0)), lowQ = q.clone().add(new THREE.Vector3(0, y0, 0));
+          const topP = p.clone().add(new THREE.Vector3(0, y1, 0)), topQ = q.clone().add(new THREE.Vector3(0, y1, 0));
+          if (side < 0) quad(b.shell, b.colors, topP, topQ, lowQ, lowP, [0.62, 0.62, 0.62, 0.62]);
+          else quad(b.shell, b.colors, lowP, lowQ, topQ, topP, [0.62, 0.62, 0.62, 0.62]);
+        };
+        for (const [s, e] of clearIntervals) band(s, e, 0, 2.6);
+        // The kept bands of each cut, outside every other cut's span (crossing flights) and only where the wall stood.
+        for (const c of cuts) {
+          let spans: [number, number][] = [[c.lo, c.hi]];
+          for (const o of cuts) if (o !== c) spans = spans.flatMap(([s, e]) => [[s, Math.min(e, o.lo)], [Math.max(s, o.hi), e]].filter(([x, y]) => x! < y!) as [number, number][]);
+          for (const [s, e] of spans) {
+            // A band is kept only where it can stop someone: 1 m or more of wall under a flight overhead, or any wall
+            // left above a flight passing below. A lower stub under the flight's own steps would only snag the walker.
+            for (const [y0, y1] of [[0, c.below >= 1 ? Math.min(c.below, 2.6) : 0], [Math.max(c.above, 0), 2.6]] as const) {
+              if (y1 - y0 < 0.05) continue;
+              const p = wa.clone().lerp(wz, s), q = wa.clone().lerp(wz, e);
+              wallSegments.push({ ax: p.x, az: p.z, bx: q.x, bz: q.z, yMin: Math.min(p.y, q.y) + (y0 === 0 ? -0.12 : y0), yMax: Math.max(p.y, q.y) + y1 });
+              band(s, e, y0, y1);
+            }
           }
         }
       }
