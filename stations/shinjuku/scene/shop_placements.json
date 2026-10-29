@@ -1,0 +1,48 @@
+{
+  "schema": "gteki.shinjuku.shop-placements/0",
+  "note": "Visual-only 示意店面: original generic category names, no real location, POI, connector, graph or search entry.",
+  "shops": [
+    {
+      "id": "ph-sjk-1",
+      "kind": "placeholder",
+      "openings": [
+        "sjk-bay-1"
+      ],
+      "front": "open",
+      "sign": {
+        "ja": "カフェ",
+        "en": "CAFÉ"
+      },
+      "accent": "#835340",
+      "display": "cafe"
+    },
+    {
+      "id": "ph-sjk-2",
+      "kind": "placeholder",
+      "openings": [
+        "sjk-bay-2"
+      ],
+      "front": "open",
+      "sign": {
+        "ja": "ベーカリー",
+        "en": "BAKERY"
+      },
+      "accent": "#956445",
+      "display": "bakery"
+    },
+    {
+      "id": "ph-sjk-3",
+      "kind": "placeholder",
+      "openings": [
+        "sjk-bay-3"
+      ],
+      "front": "open",
+      "sign": {
+        "ja": "書店",
+        "en": "BOOKS"
+      },
+      "accent": "#47647c",
+      "display": "books"
+    }
+  ]
+}
