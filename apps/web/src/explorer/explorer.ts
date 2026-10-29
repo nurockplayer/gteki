@@ -1355,7 +1355,8 @@ export class Explorer {
   /** QA for the current route: the same ground ray used by the walker, plus connector and image checks. */
   routeGroundCheck(polyline: readonly PolylinePoint[], steps: readonly RouteStep[], guideStopsM: readonly number[] = []) {
     const roots = [this.stationScene?.root, this.greybox?.root, this.connectors?.root].filter((root): root is THREE.Object3D => Boolean(root));
-    const counts = routeGroundCounts(polyline, (p) => this.groundAt(p.x, p.y + DEFAULT_GROUND.stepUp + 0.05, p.z, DEFAULT_GROUND.stepUp + DEFAULT_GROUND.stepDown + 0.1), steps, this.station?.bundle ?? null, (p, radius, edgeId) => sceneMeshNear(roots, p, radius, edgeId));
+    const counts = routeGroundCounts(polyline, (p) => this.groundAt(p.x, p.y + DEFAULT_GROUND.stepUp + 0.05, p.z, DEFAULT_GROUND.stepUp + DEFAULT_GROUND.stepDown + 0.1), steps, this.station?.bundle ?? null, (p, radius, edgeId) => sceneMeshNear(roots, p, radius, edgeId), (edgeId, a, b) =>
+      (this.connectors?.cars.some((car) => car.edgeIds.includes(edgeId)) ?? false) || Boolean(this.stationScene && sceneHasElevator(this.stationScene.root, [], a, b)));
     return { ...counts, darkShare: async (stops?: readonly number[]): Promise<number> => {
       const points = polyline.map((p) => R(p.x, p.y, p.z));
       if (points.length < 2) return 0;
@@ -2189,6 +2190,21 @@ export class Explorer {
     (this.liftParked ??= new Set()).add(car.edgeId);
   }
 
+  /** Select a destination from the on-screen lift controls. */
+  chooseElevatorDirection(direction: 1 | -1): void {
+    if (this.mode !== "walk" || this.liftRide?.status === "riding") return;
+    for (const car of this.connectors?.cars ?? []) {
+      const i = car.landings.findIndex((y) => Math.abs(y - car.mesh.position.y) < 0.08);
+      if (!this.inLiftCar(car) || i <= 0 || i >= car.landings.length - 1) continue;
+      const target = car.landings[i + direction];
+      if (target === undefined) return;
+      this.liftParked?.delete(car.edgeId);
+      this.liftRide = { edgeId: car.edgeId, status: "riding", elapsed: 0, target, direction };
+      this.liftSelection = null;
+      return;
+    }
+  }
+
   private updateElevatorCars(dt: number): void {
     const guide = this.guide;
     const sample = this.mode === "guide" && guide && guide.s < guide.cum.at(-1)! ? samplePolyline(guide.pts, guide.cum, guide.s) : null;
@@ -2241,7 +2257,7 @@ export class Explorer {
       const landingIndex = car.landings.findIndex((y) => Math.abs(y - car.mesh.position.y) < 0.08);
       if (this.mode === "walk" && ride?.edgeId === car.edgeId && ride.status === "arrived" && !onFloor) this.liftRide = ride = null;
       if (this.mode === "walk" && onFloor && landingIndex >= 0 && ride?.status !== "riding") {
-        const requested: 1 | -1 | 0 = movement.y > 0 ? 1 : movement.y < 0 ? -1 : 0;
+        const requested = this.input.liftDirection?.() ?? 0;
         const direction = requested && car.landings[landingIndex + requested] !== undefined ? requested : 0;
         let selection = this.liftSelection;
         if (!selection || selection.edgeId !== car.edgeId || selection.direction !== direction || (moving && !direction)) {
@@ -2303,12 +2319,6 @@ export class Explorer {
     this.camDistance = THREE.MathUtils.clamp(this.camDistance + look.zoom * 0.004, 1.8, 9);
     const mv = this.input.move();
     if (mv.x === 0 && mv.y === 0) return;
-    // Forward/back is the lift selector while a valid destination is available.
-    if (mv.y && (this.connectors?.cars ?? []).some((car) => {
-      if (!this.inLiftCar(car)) return false;
-      const i = car.landings.findIndex((y) => Math.abs(y - car.mesh.position.y) < 0.08);
-      return i >= 0 && car.landings[i + (mv.y > 0 ? 1 : -1)] !== undefined;
-    })) return;
     const speed = mv.run ? RUN : WALK;
     // Camera-relative: forward = -Z rotated by yaw.
     const fx = -Math.sin(this.yaw), fz = -Math.cos(this.yaw);

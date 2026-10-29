@@ -28,7 +28,7 @@ function fixture() {
     applyLighting: vi.fn(), cameraCut: { apply: () => [] }, attachShadows: vi.fn(), buildOccluders: vi.fn(),
     setupComposer: vi.fn(), frameAll: vi.fn(), events: {}, ray: new THREE.Raycaster(),
     pos: new THREE.Vector3(1, 0, 0), yaw: -Math.PI / 2, pitch: 0, camDistance: 3,
-    input: { enabled: true, virtualKeys: keys, consumeLook: () => ({ dx: 0, dy: 0, zoom: 0 }), move: () => ({ x: 0, y: (keys.has("KeyW") || keys.has("ArrowUp") ? 1 : 0) - (keys.has("KeyS") || keys.has("ArrowDown") ? 1 : 0), run: false }) },
+    input: { enabled: true, virtualKeys: keys, consumeLook: () => ({ dx: 0, dy: 0, zoom: 0 }), liftDirection: () => (keys.has("KeyE") || keys.has("PageUp") ? 1 : 0) - (keys.has("KeyQ") || keys.has("PageDown") ? 1 : 0), move: () => ({ x: 0, y: (keys.has("KeyW") || keys.has("ArrowUp") ? 1 : 0) - (keys.has("KeyS") || keys.has("ArrowDown") ? 1 : 0), run: false }) },
     timer: { getElapsed: () => 0 }, render: vi.fn(),
     step(dt: number) { (Explorer.prototype as unknown as { stepWalk(this: unknown, dt: number): void }).stepWalk.call(state, dt); },
   });
@@ -199,7 +199,7 @@ describe("greybox station integration", () => {
     state.mode = "walk"; state.pos.set(10, 4, 0); car.mesh.position.y = 4; car.mesh.updateMatrixWorld(true);
     for (let i = 0; i < 30; i++) { state.stepWalk(0.05); state.updateElevatorCars(0.05); }
     expect(state.pos.y).toBe(4); expect(car.mesh.position.y).toBe(4); expect(state.liftRide).toBeFalsy(); expect(hints).toEqual([true]);
-    state.input.virtualKeys.add("KeyS");
+    state.input.virtualKeys.add("KeyQ");
     for (let i = 0; i < 5; i++) { state.stepWalk(0.05); state.updateElevatorCars(0.05); }
     expect(state.pos.y).toBe(4);
     state.stepWalk(0.05); state.updateElevatorCars(0.05);
@@ -208,13 +208,39 @@ describe("greybox station integration", () => {
     for (let i = 0; i < 70; i++) { state.stepWalk(0.05); state.updateElevatorCars(0.05); }
     expect(state.pos.y).toBeCloseTo(0);
     car.mesh.position.y = 4; car.mesh.updateMatrixWorld(true); state.pos.set(10, 4, 0); state.cancelRide(); car.mesh.position.y = 4; car.mesh.updateMatrixWorld(true);
-    state.input.virtualKeys.add("ArrowUp");
+    state.input.virtualKeys.add("PageUp");
     for (let i = 0; i < 6; i++) { state.stepWalk(0.05); state.updateElevatorCars(0.05); }
     expect(state.liftRide).toMatchObject({ direction: 1, target: 8, status: "riding" });
     state.input.virtualKeys.clear();
     for (let i = 0; i < 70; i++) { state.stepWalk(0.05); state.updateElevatorCars(0.05); }
     expect(state.pos.y).toBeCloseTo(8);
     expect(hints).toContain(false);
+  });
+
+  it("lets forward movement leave a car at an intermediate landing", async () => {
+    const { state, loaded } = fixture();
+    loaded.bundle = createSyntheticBundle([
+      syntheticEdge("lift-1", "a", "upper", { mode: "elevator" }),
+      syntheticEdge("lift-2", "upper", "upper-2", { mode: "elevator" }),
+    ]);
+    loaded.bundle.nodes.find((n) => n.id === "upper-2")!.position = { x: 10, y: 0, z: 8 };
+    await state.loadStation(loaded, createRouter(loaded.bundle));
+    const car = state.connectors.cars[0]; car.mesh.position.y = 4; car.mesh.updateMatrixWorld(true);
+    state.pos.set(9.7, 4, 0); state.yaw = Math.PI / 2;
+    state.input.virtualKeys.add("KeyW");
+    for (let i = 0; i < 20; i++) { state.stepWalk(0.05); state.updateElevatorCars(0.05); }
+    expect(state.pos.x).toBeLessThan(8.9); expect(state.pos.y).toBeCloseTo(4);
+    expect(state.liftRide?.status).not.toBe("riding");
+  });
+
+  it("accepts an on-screen direction choice", async () => {
+    const { state, loaded } = fixture();
+    loaded.bundle = createSyntheticBundle([syntheticEdge("lift-1", "a", "upper", { mode: "elevator" }), syntheticEdge("lift-2", "upper", "upper-2", { mode: "elevator" })]);
+    loaded.bundle.nodes.find((n) => n.id === "upper-2")!.position = { x: 10, y: 0, z: 8 };
+    await state.loadStation(loaded, createRouter(loaded.bundle));
+    const car = state.connectors.cars[0]; car.mesh.position.y = 4; car.mesh.updateMatrixWorld(true); state.pos.set(10, 4, 0);
+    state.chooseElevatorDirection(-1);
+    expect(state.liftRide).toMatchObject({ status: "riding", direction: -1, target: 0 });
   });
 
   it("uses the active route direction after waiting at an intermediate landing", async () => {
@@ -247,6 +273,21 @@ describe("greybox station integration", () => {
     for (let i = 0; i < 20; i++) state.updateElevatorCars(0.05);
     expect(car.mesh.position.y).toBe(4);
     expect(state.groundAt(state.pos.x, state.pos.y + 0.2, state.pos.z, 0.4)).toBeCloseTo(4);
+  });
+
+  it("credits elevator interior only for the matching greybox edge or a tagged scene lift", async () => {
+    const { state, loaded, scene } = fixture();
+    loaded.bundle = createSyntheticBundle([syntheticEdge("lift", "a", "upper", { mode: "elevator" })]);
+    await state.loadStation(loaded, createRouter(loaded.bundle));
+    const points = [{ x: 10, y: 0, z: 0, stepIndex: -1 }, { x: 10, y: 0, z: 4, stepIndex: 0, edgeId: "lift" }];
+    const steps = [{ edgeId: "lift", mode: "elevator", fromNodeId: "a", toNodeId: "upper" }];
+    expect(state.routeGroundCheck(points, steps).connectorSamples).toBe(7);
+    state.connectors.cars[0].edgeIds = ["other"];
+    const missing = state.routeGroundCheck(points, steps);
+    expect(missing.connectorSamples).toBe(0); expect(missing.noFloor).toBeGreaterThanOrEqual(7);
+    const lift = new THREE.Mesh(new THREE.BoxGeometry(0.1, 4, 0.1), new THREE.MeshBasicMaterial());
+    lift.position.set(10, 2, 0); lift.userData.gteki_role = "elevator"; scene.root.add(lift);
+    expect(state.routeGroundCheck(points, steps).connectorSamples).toBe(7);
   });
 
   it("loads vertical connectors and tracks the elevator car in guide mode", async () => {

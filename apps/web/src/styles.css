@@ -198,6 +198,9 @@ button.on { border-color: var(--accent); color: var(--accent); }
 
 .hint { position: absolute; z-index: 2; right: 16px; top: calc(60px + env(safe-area-inset-top)); font-size: 11px; color: var(--muted); padding: 6px 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.35); display: none; }
 .app[data-mode="walk"] .hint { display: block; }
+.elevator-controls { position: absolute; z-index: 5; left: 50%; transform: translateX(-50%); bottom: calc(100px + env(safe-area-inset-bottom) + var(--credit-extra)); display: flex; gap: 8px; }
+.elevator-controls[hidden] { display: none; }
+.elevator-controls button { min-width: 44px; min-height: 44px; font-size: 20px; }
 
 /* ---- guide mascots (#132): placeholder art; transform/opacity animation only, off for reduced motion and the phone tier ---- */
 .mascot { display: flex; align-items: center; gap: 8px; pointer-events: none; }

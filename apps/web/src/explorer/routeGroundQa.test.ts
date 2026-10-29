@@ -54,6 +54,8 @@ it("counts elevator shaft interior separately from landing floor samples", () =>
   const bundle = createSyntheticBundle([syntheticEdge("lift", "a", "upper", { mode: "elevator" })]);
   const steps = [{ edgeId: "lift", mode: "elevator", fromNodeId: "a", toNodeId: "upper", reversed: false, lengthM: 4, fromFloorId: "concourse", toFloorId: "upper" }] as Parameters<typeof routeGroundCounts>[2];
   const points = [{ x: 10, y: 0, z: 0, stepIndex: -1 }, { x: 10, y: 0, z: 4, stepIndex: 0, edgeId: "lift" }];
-  const counts = routeGroundCounts(points, (p) => p.y === 0 || p.y === 4 ? p.y : null, steps, bundle, () => true);
+  const counts = routeGroundCounts(points, (p) => p.y === 0 || p.y === 4 ? p.y : null, steps, bundle, () => true, () => true);
   expect(counts).toMatchObject({ samples: 9, noFloor: 0, connectorSamples: 7, verticalWithoutConnector: 0 });
+  const missing = routeGroundCounts(points, (p) => p.y === 0 || p.y === 4 ? p.y : null, steps, bundle, () => false);
+  expect(missing).toMatchObject({ samples: 9, noFloor: 7, connectorSamples: 0, verticalWithoutConnector: 1 });
 });

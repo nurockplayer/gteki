@@ -120,6 +120,7 @@ export class App {
     coverageBtn: el("button", "ghost"),
     railBtn: el("button", "ghost rail-launch"),
     hint: el("div", "hint"),
+    elevatorControls: el("div", "elevator-controls"),
     credit: el("footer", "credit-line"),
     greyboxLegend: el("div", "greybox-legend"),
     panel: el("section", "panel"),
@@ -146,7 +147,7 @@ export class App {
     this.explorer = new Explorer(this.root.querySelector(".viewport") as HTMLElement, {
       onMode: (mode) => this.onMode(mode),
       onGreyboxLegend: (visible) => { this.ui.greyboxLegend.hidden = !visible; },
-      onElevatorDirectionHint: (visible) => { this.elevatorDirectionHint = visible; this.updateWalkHint(); },
+      onElevatorDirectionHint: (visible) => { this.elevatorDirectionHint = visible; this.ui.elevatorControls.hidden = !visible; this.updateWalkHint(); },
       onGuideProgress: (p) => this.onGuideProgress(p),
       onGuideStop: (index) => this.onGuideStop(index),
       onPoiClick: (id) => {
@@ -247,8 +248,15 @@ export class App {
     panel.append(this.identityView.overview, this.ui.banner, fields, filterRow, this.ui.firstRun, this.ui.spawnChips, this.ui.profile, this.ui.more);
 
     this.ui.hint.setAttribute("role", "note");
+    this.ui.elevatorControls.hidden = true;
+    for (const [label, direction] of [["↑", 1], ["↓", -1]] as const) {
+      const button = el("button", "ghost", label);
+      button.type = "button";
+      button.addEventListener("click", () => this.explorer.chooseElevatorDirection(direction));
+      this.ui.elevatorControls.append(button);
+    }
     this.ui.greyboxLegend.hidden = true;
-    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.minimap.el, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit, this.ui.greyboxLegend);
+    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.minimap.el, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.elevatorControls, this.ui.credit, this.ui.greyboxLegend);
     this.layoutText();
   }
 

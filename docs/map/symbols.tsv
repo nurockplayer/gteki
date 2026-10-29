@@ -131,7 +131,7 @@ buildEscalator	function	apps/web/src/explorer/greyboxConnectors.ts	120
 buildElevator	function	apps/web/src/explorer/greyboxConnectors.ts	173
 ConnectorScope	interface	apps/web/src/explorer/greyboxConnectors.ts	197
 buildConnectors	function	apps/web/src/explorer/greyboxConnectors.ts	213
-withinGreyboxBudget	function	apps/web/src/explorer/greyboxConnectors.ts	334
+withinGreyboxBudget	function	apps/web/src/explorer/greyboxConnectors.ts	367
 sceneHasElevator	function	apps/web/src/explorer/greyboxScene.ts	10
 sceneElevatorOverlap	function	apps/web/src/explorer/greyboxScene.ts	31
 greyboxSceneProbes	function	apps/web/src/explorer/greyboxScene.ts	43
@@ -274,7 +274,7 @@ floorProbe	function	apps/web/src/explorer/routeGaps.ts	7
 unmodelledRuns	function	apps/web/src/explorer/routeGaps.ts	55
 darkSampleDistances	function	apps/web/src/explorer/routeGroundQa.ts	10
 routeGroundCounts	function	apps/web/src/explorer/routeGroundQa.ts	22
-sceneMeshNear	function	apps/web/src/explorer/routeGroundQa.ts	84
+sceneMeshNear	function	apps/web/src/explorer/routeGroundQa.ts	89
 SHADOW_HALF_EXTENT_M	const	apps/web/src/explorer/shadows.ts	7
 SHADOW_MAP_SIZE	const	apps/web/src/explorer/shadows.ts	8
 SHADOW_RADIUS	const	apps/web/src/explorer/shadows.ts	10

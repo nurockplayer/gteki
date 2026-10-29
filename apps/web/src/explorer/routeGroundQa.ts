@@ -19,9 +19,10 @@ export function darkSampleDistances(total: number, stops: readonly number[]): nu
 }
 
 /** A deterministic half-metre sampling of the drawn route, including both ends. */
-export function routeGroundCounts(points: readonly (V3 & { stepIndex?: number; edgeId?: string })[], ground: (p: THREE.Vector3) => number | null, verticalSteps: readonly RouteStep[], bundle: StationBundle | null, nearMesh: (p: THREE.Vector3, radius: number, edgeId: string) => boolean) {
+export function routeGroundCounts(points: readonly (V3 & { stepIndex?: number; edgeId?: string })[], ground: (p: THREE.Vector3) => number | null, verticalSteps: readonly RouteStep[], bundle: StationBundle | null, nearMesh: (p: THREE.Vector3, radius: number, edgeId: string) => boolean, hasElevator: (edgeId: string, a: THREE.Vector3, b: THREE.Vector3) => boolean = () => false) {
   const pts = points.map((p) => R(p.x, p.y, p.z));
   let samples = 0, noFloor = 0, connectorSamples = 0;
+  const elevatorCoverage = new Map<string, boolean>();
   const nodesById = new Map(bundle?.nodes.map((node) => [node.id, node]) ?? []);
   const floorsById = new Map(bundle?.floors.map((floor) => [floor.id, floor]) ?? []);
   if (pts.length === 1) {
@@ -41,7 +42,11 @@ export function routeGroundCounts(points: readonly (V3 & { stepIndex?: number; e
           const ay = nodeDisplayZ(a, floorsById.get(a.floorId)).z, by = nodeDisplayZ(b, floorsById.get(b.floorId)).z;
           const low = ay <= by ? a : b;
           if (p.y > Math.min(ay, by) + 1e-6 && p.y < Math.max(ay, by) - 1e-6 && Math.abs(p.x - low.position.x) <= 1.1 && Math.abs(p.z + low.position.y) <= 1.1) {
-            samples++; connectorSamples++; return;
+            samples++;
+            if (!elevatorCoverage.has(step.edgeId)) elevatorCoverage.set(step.edgeId, hasElevator(step.edgeId, R(a.position.x, a.position.y, ay), R(b.position.x, b.position.y, by)));
+            if (elevatorCoverage.get(step.edgeId)) connectorSamples++;
+            else noFloor++;
+            return;
           }
         }
       }

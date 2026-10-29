@@ -265,6 +265,35 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         box(parts, edge.mode === "stairs" ? "tread" : "escStep", rotation, 0, -0.04, 0, edge.mode === "stairs" ? width : 1.2, 0.08, edge.mode === "stairs" ? width : 1.2, "walkable");
       }
     }
+    // Extend unsupported endpoints into the approaching passage at the landing height.
+    const pads: { part: ConnectorPart; floorId: string }[] = [];
+    for (const [index, floorNode] of [[0, edge.from], [points.length - 1, edge.to]] as const) {
+      const endpoint = points[index]!;
+      if (scope.hasFloor({ x: endpoint.x, y: -endpoint.z, z: endpoint.y })) continue;
+      let transform: THREE.Matrix4, center: number;
+      if (edge.mode === "elevator") {
+        const low = a.y <= b.y ? a : b;
+        const yaw = Math.hypot(facing.x, facing.z) > 1e-9 ? Math.atan2(facing.z, -facing.x) : 0;
+        transform = new THREE.Matrix4().makeRotationY(yaw).setPosition(low.x, endpoint.y, low.z);
+        center = -1.85;
+      } else {
+        const next = points[index === 0 ? 1 : index - 1]!;
+        const dx = endpoint.x - next.x, dz = endpoint.z - next.z;
+        transform = new THREE.Matrix4().makeRotationY(Math.hypot(dx, dz) > 1e-9 ? Math.atan2(-dz, dx) : 0).setPosition(endpoint);
+        center = 0.75;
+      }
+      const pad: ConnectorPart[] = [];
+      box(pad, "tread", transform, center, -0.04, 0, 1.5, 0.08, width, "walkable");
+      pad[0]!.edgeId = edge.id;
+      const floorId = nodes.get(floorNode)?.floorId ?? "";
+      pads.push({ part: pad[0]!, floorId });
+      if (edge.mode === "elevator") {
+        const threshold: ConnectorPart[] = [];
+        box(threshold, "tread", transform, -0.95, -0.04, 0, 0.3, 0.08, 0.9, "walkable");
+        threshold[0]!.edgeId = edge.id;
+        pads.push({ part: threshold[0]!, floorId });
+      }
+    }
     if (edge.mode === "elevator" && scope.elevatorOverlap?.(a, b)) { elevatorOverlaps++; for (const p of parts) p.userData = { ...p.userData, fit: "approximate" }; }
     if (edge.mode === "escalator" && bentEscalator) for (const p of parts) p.userData = { ...p.userData, fit: "approximate" };
     for (const part of parts) part.edgeId = edge.id;
@@ -273,7 +302,11 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     omittedLandings += edgeOmitted;
     const key = tier === "low" ? "all" : nodes.get(edge.from)?.floorId ?? "";
     const batch = batches.get(key) ?? []; batch.push(...parts.filter((p) => p.role !== "car" && p.role !== "door" && !p.walkableOnly)); batches.set(key, batch);
-    const support = parts.filter((p) => p.role === "walkable"), walls = parts.filter((p) => p.role === "collider");
+    for (const pad of pads) {
+      const floorKey = tier === "low" ? "all" : pad.floorId;
+      const floorBatch = batches.get(floorKey) ?? []; floorBatch.push(pad.part); batches.set(floorKey, floorBatch);
+    }
+    const support = [...parts.filter((p) => p.role === "walkable"), ...pads.map((pad) => pad.part)], walls = parts.filter((p) => p.role === "collider");
     if (support.length) walkable.push(meshFor(support, physicalMaterial));
     if (walls.length) colliders.push(meshFor(walls, physicalMaterial));
     const car = parts.filter((p) => p.role === "car");

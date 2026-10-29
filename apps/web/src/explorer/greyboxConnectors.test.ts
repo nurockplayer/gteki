@@ -55,6 +55,21 @@ describe("connector geometry", () => {
 });
 
 
+it("adds rendered and walkable endpoint pads only where floors are missing", () => {
+  for (const mode of ["stairs", "escalator", "elevator"] as const) {
+    const vertical = mode === "elevator";
+    const station = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: vertical ? 0 : 4, y: 0, z: 3 } }], edges: [{ ...bundle.edges[0]!, mode, attributes: { sceneGap: true } }] } as StationBundle;
+    const build = (missing: boolean) => buildConnectors(station, () => true, { hasFloor: (p) => !missing || p.z !== 3, nearMesh: () => false }, "high");
+    const result = build(true), noPad = build(false);
+    const x = vertical ? -1.85 : 4.75;
+    const ray = new THREE.Raycaster(new THREE.Vector3(x, 3.2, 0), new THREE.Vector3(0, -1, 0), 0, 0.4);
+    const ground = ray.intersectObjects(result.walkable, false);
+    expect(ground[0]?.point.y).toBeCloseTo(3);
+    expect(ray.intersectObjects(result.root.children, false).some((hit) => Math.abs(hit.point.y - 3) < 1e-5)).toBe(true);
+    expect(ray.intersectObjects(noPad.walkable, false)).toHaveLength(0);
+  }
+});
+
 describe("measured connector dimensions", () => {
   const extent = (p: { position: number[] }, axis: number) => {
     const values = p.position.filter((_, i) => i % 3 === axis);
@@ -171,7 +186,7 @@ describe("elevator geometry", () => {
     expect(result.cars[0]!.zLow).toBe(2);
     expect(result.cars[0]!.zHigh).toBe(6);
     expect(result.walkable.some((o) => o.parent === result.cars[0]!.mesh)).toBe(true);
-    expect(result.root.children.length).toBeLessThanOrEqual(6);
+    expect(result.root.children.length).toBeLessThanOrEqual(9);
     expect(result.cars[0]!.doors).toHaveLength(2);
     expect(result.stats.triangles).toBe(result.root.children.reduce((sum, child) => sum + ((child as THREE.Mesh).geometry?.getAttribute("position").count ?? 0) / 3, 0));
     const ray = new THREE.Raycaster(new THREE.Vector3(-2, 2.8, 0), new THREE.Vector3(1, 0, 0), 0, 1.3);
@@ -207,8 +222,8 @@ it("builds a bent stair edge along both legs with a flat turning landing", () =>
   let first = false, second = false;
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), z = pos.getZ(i), y = pos.getY(i);
-    const inFirst = x >= -0.751 && x <= 4.751 && Math.abs(z) <= 0.751;
-    const inSecond = Math.abs(x - 4) <= 0.751 && z <= 0.751 && z >= -4.751;
+    const inFirst = x >= -1.501 && x <= 4.751 && Math.abs(z) <= 0.751;
+    const inSecond = Math.abs(x - 4) <= 0.751 && z <= 0.751 && z >= -5.501;
     expect(inFirst || inSecond).toBe(true);
     if (x < 3 && y > 0) first = true;
     if (z < -1 && y > 2) second = true;
