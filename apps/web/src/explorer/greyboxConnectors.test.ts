@@ -21,7 +21,7 @@ describe("vertical connector scope", () => {
 });
 
 import * as THREE from "three";
-import { buildConnectors, buildElevator, buildEscalator, buildStairs } from "./greyboxConnectors.ts";
+import { buildConnectors, buildElevator, buildEscalator, buildStairs, withinGreyboxBudget } from "./greyboxConnectors.ts";
 
 describe("connector geometry", () => {
   const a = new THREE.Vector3(0, 0, 0), b = new THREE.Vector3(5.2, 3, 0);
@@ -120,4 +120,14 @@ describe("elevator geometry", () => {
     ray.ray.origin.z = 0.8;
     expect(ray.intersectObjects(result.colliders, false).length).toBeGreaterThan(0);
   });
+});
+
+it("drops only connector soffits before reporting a combined over-budget result", () => {
+  const station = { ...bundle, edges: [{ ...bundle.edges[0]!, mode: "escalator" }] } as StationBundle;
+  const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+  const before = result.stats.triangles;
+  expect(withinGreyboxBudget({ triangles: 150000 }, result.stats, "high")).toBe(false);
+  expect(result.stats.triangles).toBeLessThan(before);
+  expect(result.stats.overBudget).toMatch(/exceeds 150000/);
+  expect(result.walkable.length).toBeGreaterThan(0);
 });

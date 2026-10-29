@@ -37,7 +37,7 @@ export function unmodelledVerticalEdges(
 }
 
 export type ConnectorMaterial = "tread" | "riser" | "nosing" | "escStep" | "escTruss" | "steel" | "rubber" | "glass" | "light";
-export interface ConnectorPart { material: ConnectorMaterial; position: number[]; normal: number[]; colour: number[]; role?: "walkable" | "collider" | "car"; userData?: { fit: "exact" | "approximate"; omittedLandings?: number } }
+export interface ConnectorPart { material: ConnectorMaterial; position: number[]; normal: number[]; colour: number[]; role?: "walkable" | "collider" | "car"; soffit?: boolean; userData?: { fit: "exact" | "approximate"; omittedLandings?: number } }
 export interface ConnectorOptions { tier: "high" | "low" }
 
 const connectorColours: Record<ConnectorMaterial, string> = {
@@ -138,7 +138,7 @@ export function buildEscalator(from: THREE.Vector3, to: THREE.Vector3, tier: "hi
     box(parts, "rubber", inclined, 0, 0.96 * Math.cos(angle), side * 0.6, incline, 0.07, 0.09);
     if (tier === "high") box(parts, "steel", inclined, 0, 0.88 * Math.cos(angle), side * 0.6, incline, 0.025, 0.025);
   }
-  for (let x = 0; x <= incline; x += tier === "low" ? 4 : 2) box(parts, "light", inclined, x - incline / 2, -1.16, 0, 0.35, 0.02, 0.08);
+  for (let x = 0; x <= incline; x += tier === "low" ? 4 : 2) { box(parts, "light", inclined, x - incline / 2, -1.16, 0, 0.35, 0.02, 0.08); parts.at(-1)!.soffit = true; }
   for (const end of [0, 1]) {
     const indicator: ConnectorPart[] = [];
     box(indicator, "light", f.matrix, (end ? f.length - landing : landing), end * f.rise + 0.12, 0.64, 0.02, 0.1, 0.16);
@@ -225,12 +225,34 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     }
   }
   let triangles = 0;
+  const lightBatches: { mesh: THREE.Mesh; parts: ConnectorPart[] }[] = [];
   for (const batch of batches.values()) {
     for (const [parts, material] of [[batch.filter((p) => p.material !== "light" && p.material !== "glass"), shellMaterial], [batch.filter((p) => p.material === "light"), lightMaterial], [batch.filter((p) => p.material === "glass"), glassMaterial]] as const) {
       if (!parts.length) continue;
       const mesh = meshFor(parts, material); root.add(mesh); triangles += mesh.geometry.getAttribute("position").count / 3;
+      if (material === lightMaterial) lightBatches.push({ mesh, parts });
     }
   }
   for (const car of cars) triangles += car.mesh.geometry.getAttribute("position").count / 3;
-  return { root, walkable, colliders, cars, stats: { connectors: counts, meshes: root.children.length, triangles, approximateFits, omittedLandings } };
+  const stats = { connectors: counts, meshes: root.children.length, triangles, approximateFits, omittedLandings, overBudget: null as string | null,
+    dropSoffits() {
+      for (const batch of lightBatches) {
+        const kept = batch.parts.filter((p) => !p.soffit);
+        if (kept.length === batch.parts.length) continue;
+        stats.triangles -= batch.parts.filter((p) => p.soffit).reduce((n, p) => n + p.position.length / 9, 0);
+        const replacement = meshFor(kept, lightMaterial);
+        batch.mesh.geometry.dispose(); batch.mesh.geometry = replacement.geometry; batch.parts = kept;
+        if (!kept.length) { root.remove(batch.mesh); stats.meshes--; }
+      }
+    } };
+  return { root, walkable, colliders, cars, stats };
+}
+
+/** Apply the shared triangle cap, retaining essential connector and passage geometry. */
+export function withinGreyboxBudget(aStats: { triangles: number }, bStats: { triangles: number; overBudget: string | null; dropSoffits: () => void }, tier: "high" | "low"): boolean {
+  const limit = tier === "high" ? 150000 : 100000;
+  if (aStats.triangles + bStats.triangles > limit) bStats.dropSoffits();
+  const over = aStats.triangles + bStats.triangles > limit;
+  bStats.overBudget = over ? `Combined greybox exceeds ${limit} triangles after dropping connector soffits` : null;
+  return !over;
 }

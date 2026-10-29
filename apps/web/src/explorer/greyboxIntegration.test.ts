@@ -37,6 +37,28 @@ function fixture() {
 }
 
 describe("greybox station integration", () => {
+  it("loads vertical connectors and tracks the elevator car in guide mode", async () => {
+    const { state, loaded } = fixture();
+    loaded.bundle = createSyntheticBundle([
+      syntheticEdge("lift", "a", "upper", { mode: "elevator", attributes: { sceneGap: true } }),
+      syntheticEdge("escalator", "start", "upper", { mode: "escalator", attributes: { sceneGap: true } }),
+    ]);
+    await state.loadStation(loaded, createRouter(loaded.bundle));
+    expect(state.connectors.stats.connectors).toMatchObject({ elevator: 1, escalator: 1 });
+    expect(state.connectors.walkable.length).toBeGreaterThan(1);
+    expect(state.groundTargets).toContain(state.connectors.walkable[0]);
+    const car = state.connectors.cars[0];
+    state.mode = "guide";
+    state.guideIdentityHoldS = 0;
+    state.guide = { pts: [new THREE.Vector3(10, 0, 0), new THREE.Vector3(10, 4, 0)], cum: [0, 4], steps: [-1, 0], edgeIds: [undefined, "lift"], s: 2, paused: true, stops: [], holding: false, spans: [] };
+    state.stepGuide(0.016); state.updateElevatorCars(0.016);
+    expect(car.mesh.position.y).toBeCloseTo(2);
+    state.mode = "overview"; state.updateElevatorCars(2);
+    expect(car.mesh.position.y).toBeLessThan(0.001);
+    const steps = [{ mode: "elevator", fromNodeId: "a", toNodeId: "upper" }, { mode: "escalator", fromNodeId: "start", toNodeId: "upper" }];
+    expect(state.routeGroundCheck([], steps).verticalWithoutConnector).toBe(0);
+  });
+
   it("builds floor and targets and walks through a portal in the original collider", async () => {
     const { state, loaded } = fixture();
     expect(await state.loadStation(loaded, createRouter(loaded.bundle))).toBe(true);

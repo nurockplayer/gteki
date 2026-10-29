@@ -16,6 +16,7 @@ import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
 import { R, chevronTexture, dashTexture, ribbonGeometry } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
+import { buildConnectors, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { buildGreybox, splitWallsAtOpenings, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
 import { greyboxPathSegments, greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
 import { darkSampleDistances, routeGroundCounts, sceneMeshNear } from "./routeGroundQa.ts";
@@ -228,6 +229,7 @@ export class Explorer {
   private station: LoadedStation | null = null;
   private stationScene: StationScene | null = null;
   private greybox: ReturnType<typeof buildGreybox> | null = null;
+  private connectors: ReturnType<typeof buildConnectors> | null = null;
   private greyboxOpenings: Box[] = [];
   private sceneColliderTargets = new Set<THREE.Object3D>();
   private greyboxSegments: GreyboxSegment[] = [];
@@ -320,7 +322,7 @@ export class Explorer {
   private qaAvatarFade: number | null = null;
   private firstPerson = false;
   private mode: ExplorerMode = "overview";
-  private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
+  private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; edgeIds?: (string | undefined)[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
   /** Every stop of the running guide (`guide.stops` is consumed as they are reached; a seek restores the ones still ahead). */
   private guideAllStops: { s: number; index: number }[] = [];
   private guideIdentityHoldS = 0;
@@ -455,10 +457,10 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { greybox: GreyboxStats | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
+  sceneInfo(): { greybox: (GreyboxStats & { connectors: { escalator: number; stairs: number; elevator: number } }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
-      greybox: this.greybox?.stats ?? null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
+      greybox: this.greybox ? { ...this.greybox.stats, overBudget: this.connectors?.stats.overBudget ?? this.greybox.stats.overBudget, connectors: this.connectors?.stats.connectors ?? { escalator: 0, stairs: 0, elevator: 0 } } : null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
       walkable: this.walkable.length, colliders: this.colliders.length, cameraBlockers: this.cameraBlockers.length, seeThrough: this.seeThrough.length,
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
       bakedAo: { ...this.bakedAo }, assets: this.loadedAssets.map((a) => ({ ...a })),
@@ -942,6 +944,11 @@ export class Explorer {
       this.world.add(this.greybox.root);
       this.walkable = [...this.walkable, ...this.greybox.walkable];
       this.colliders = [...this.colliders, ...this.greybox.colliders];
+      this.connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: (p, radius) => sceneMeshNear([this.stationScene!.root], p, radius) }, this.quality);
+      withinGreyboxBudget(this.greybox.stats, this.connectors.stats, this.quality);
+      this.world.add(this.connectors.root);
+      this.walkable = [...this.walkable, ...this.connectors.walkable];
+      this.colliders = [...this.colliders, ...this.connectors.colliders];
       this.walls = splitWallsAtOpenings([...this.walls, ...this.greybox.wallSegments], this.greyboxOpenings);
     } else {
       this.world.add(this.graph.root);
@@ -1326,7 +1333,7 @@ export class Explorer {
 
   /** QA for the current route: the same ground ray used by the walker, plus connector and image checks. */
   routeGroundCheck(polyline: readonly PolylinePoint[], steps: readonly RouteStep[], guideStopsM: readonly number[] = []) {
-    const roots = [this.stationScene?.root, this.greybox?.root].filter((root): root is THREE.Object3D => Boolean(root));
+    const roots = [this.stationScene?.root, this.greybox?.root, this.connectors?.root].filter((root): root is THREE.Object3D => Boolean(root));
     const counts = routeGroundCounts(polyline, (p) => this.groundAt(p.x, p.y + DEFAULT_GROUND.stepUp + 0.05, p.z, DEFAULT_GROUND.stepUp + DEFAULT_GROUND.stepDown + 0.1), steps, this.station?.bundle ?? null, (p, radius) => sceneMeshNear(roots, p, radius));
     return { ...counts, darkShare: async (stops?: readonly number[]): Promise<number> => {
       const points = polyline.map((p) => R(p.x, p.y, p.z));
@@ -1847,7 +1854,7 @@ export class Explorer {
     if (pts.length < 2) return;
     const cum = cumulativeLengths(pts);
     const stops = stopAtPoints.map((point, index) => ({ s: cum[point] ?? 0, index })).filter((x) => x.s >= fromS).sort((a, b) => a.s - b.s || a.index - b.index);
-    this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), s: fromS, paused: false, stops, holding: false, spans: paceSpans };
+    this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), edgeIds: polyline.map((p) => p.edgeId), s: fromS, paused: false, stops, holding: false, spans: paceSpans };
     this.guideAllStops = stops.slice();
     const first = samplePolyline(pts, this.guide.cum, fromS);
     this.pos.set(first.x, first.y, first.z);
@@ -2080,6 +2087,7 @@ export class Explorer {
     if (this.mode === "walk") this.stepWalk(dt);
     else if (this.mode === "guide") this.stepGuide(dt);
     else this.orbit.update();
+    this.updateElevatorCars(dt);
     this.updateGreyboxLegend();
 
     if (this.mode !== "overview") {
@@ -2101,6 +2109,17 @@ export class Explorer {
     this.avatar.position.copy(this.pos);
     this.avatar.rotation.y = this.bodyYaw;
     this.updateShadows();
+  }
+
+  private updateElevatorCars(dt: number): void {
+    const guide = this.guide;
+    const sample = this.mode === "guide" && guide && guide.s < guide.cum.at(-1)! ? samplePolyline(guide.pts, guide.cum, guide.s) : null;
+    const edgeId = sample && guide ? guide.edgeIds?.[sample.segment + 1] : undefined;
+    for (const car of this.connectors?.cars ?? []) {
+      const onGuide = this.mode === "guide" && edgeId === car.edgeId;
+      const onWalk = this.mode === "walk" && Math.hypot(this.pos.x - car.mesh.position.x, this.pos.z - car.mesh.position.z) <= 1 && this.pos.y >= car.zLow && this.pos.y <= car.zHigh;
+      car.mesh.position.y = onGuide || onWalk ? THREE.MathUtils.clamp(this.pos.y, car.zLow, car.zHigh) : THREE.MathUtils.damp(car.mesh.position.y, car.zLow, 5, dt);
+    }
   }
 
   private stepWalk(dt: number): void {
