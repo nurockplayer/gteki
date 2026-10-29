@@ -76,16 +76,25 @@ export interface Box {
   center: THREE.Vector3;
   along: THREE.Vector3;
   across: THREE.Vector3;
+  wallNormal?: THREE.Vector3;
   width: number;
   depth: number;
   height: number;
+}
+
+/** Unit normal to the portal wall; passage direction is the fallback when no face was hit. */
+export function portalDepthAxis(box: Box): THREE.Vector3 { return box.wallNormal ?? box.along; }
+export function portalWidthAxis(box: Box): THREE.Vector3 {
+  if (!box.wallNormal) return box.across;
+  const n = box.wallNormal;
+  return new THREE.Vector3(-n.z, 0, n.x);
 }
 
 export interface GreyboxStats { runs: number; lengthM: number; portals: number; meshes: number; triangles: number; buildMs: number; overBudget: string | null }
 export const greyboxTriangleLimit = (tier: "high" | "low"): number => tier === "high" ? 150000 : 100000;
 export interface GreyboxScene {
   colliderNear(p: V3, r: number): boolean;
-  wallHit(a: V3, b: V3): V3 | null;
+  wallHit(a: V3, b: V3): (V3 & { wallNormal?: THREE.Vector3 }) | null;
 }
 
 /** Clip a wall against oriented openings, preserving the wall above and below an opening. */
@@ -99,7 +108,7 @@ export function splitWallsAtOpenings(walls: readonly Segment2[], openings: reado
       let lo = 0, hi = 1;
       const x = w.ax - box.center.x, z = w.az - box.center.z;
       const dx = w.bx - w.ax, dz = w.bz - w.az;
-      for (const [axis, extent] of [[box.across, box.width / 2], [box.along, box.depth / 2]] as const) {
+      for (const [axis, extent] of [[portalWidthAxis(box), box.width / 2], [portalDepthAxis(box), box.depth / 2]] as const) {
         const origin = x * axis.x + z * axis.z, delta = dx * axis.x + dz * axis.z;
         if (Math.abs(delta) < 1e-9) { if (Math.abs(origin) > extent) { lo = 1; hi = 0; break; } continue; }
         const a = (-extent - origin) / delta, b = (extent - origin) / delta;
@@ -423,18 +432,15 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       if (transition) {
         const hit = scene.wallHit(pa, pz);
         if (hit) {
-          const center = R(hit.x, hit.y, hit.z);
-          openings.push({ center, along: along.clone(), across: across.clone(), width, depth: 0.6, height: 2.3 });
-          // A panel marks the modelled face; it is decorative and never a collider.
-          const modelledSign = run.edge.attributes?.sceneGap === true ? (i === 1 ? -1 : 1) : (hasFloor(pa) ? -1 : 1);
+          const near = R(hit.x, hit.y, hit.z);
+          const center = near.clone();
+          const depth = 0.6;
+          const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
+          const openingWidth = width * Math.min(2, 1 / Math.max(cosine, 1e-9));
+          openings.push({ center, along: along.clone(), across: across.clone(), ...(hit.wallNormal ? { wallNormal: hit.wallNormal.clone() } : {}), width: openingWidth, depth, height: 2.3 });
           const faceAt = (face: number) => {
-            const outside = center.clone().addScaledVector(along, face * 0.3);
-            const inside = center.clone().addScaledVector(along, -face * 0.3);
-            const surface = scene.wallHit(enu(outside), enu(inside));
-            return (surface ? R(surface.x, surface.y, surface.z) : center.clone()).addScaledVector(along, face * 0.02);
+            return near.clone().addScaledVector(along, face * 0.02);
           };
-          const panel = faceAt(modelledSign);
-          quad(b.portal, b.portalColors, offset(panel, -half, 0), offset(panel, half, 0), offset(panel, half, 2.3), offset(panel, -half, 2.3), [0.16, 0.16, 0.55, 0.55]);
           for (const face of [-1, 1]) {
           const frame = faceAt(face);
           for (const side of [-1, 1]) {
