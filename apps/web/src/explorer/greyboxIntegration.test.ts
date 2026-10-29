@@ -16,15 +16,16 @@ function fixture() {
   floor.position.set(0, -0.1, 0);
   const wall = new THREE.Mesh(new THREE.BoxGeometry(0.1, 3, 6), new THREE.MeshBasicMaterial());
   wall.position.set(2.1, 1.5, 0);
-  const root = new THREE.Group(); root.add(floor, wall); root.updateMatrixWorld(true);
-  const scene = { root, walkable: [floor], colliders: [wall], walls: [{ a: { x: 2.05, y: -3 }, b: { x: 2.05, y: 3 }, zMin: 0, zMax: 3 }], dispose: vi.fn() };
+  const secondWall = wall.clone(); secondWall.position.x += 0.02;
+  const root = new THREE.Group(); root.add(floor, wall, secondWall); root.updateMatrixWorld(true);
+  const scene = { root, walkable: [floor], colliders: [wall, secondWall], walls: [{ a: { x: 2.05, y: -3 }, b: { x: 2.05, y: 3 }, zMin: 0, zMax: 3 }], dispose: vi.fn() };
   const keys = new Set<string>();
   const state = Object.assign(Object.create(Explorer.prototype), {
     loadGeneration: 0, disposed: false, mode: "walk", quality: "high", stationCaches: { remember: vi.fn() },
     releaseStationCaches: vi.fn(), clearStation: vi.fn(), ensureAudio: () => false,
     buildStationScene: async () => scene, overviewLook: { set: vi.fn() }, street: { restore: vi.fn(), attach: vi.fn() },
     portalCutResources: { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map() }, portalExemptions: 0, renderer: {},
-    scene: new THREE.Scene(), world: new THREE.Group(), overlays: new THREE.Group(), routeGroup: new THREE.Group(), greyboxPortalColliders: new Map(),
+    scene: new THREE.Scene(), world: new THREE.Group(), overlays: new THREE.Group(), routeGroup: new THREE.Group(), sceneColliderTargets: new Set(),
     applyLighting: vi.fn(), cameraCut: { apply: () => [] }, attachShadows: vi.fn(), buildOccluders: vi.fn(),
     setupComposer: vi.fn(), frameAll: vi.fn(), events: {}, ray: new THREE.Raycaster(),
     pos: new THREE.Vector3(1, 0, 0), yaw: -Math.PI / 2, pitch: 0, camDistance: 3,
@@ -50,6 +51,8 @@ describe("greybox station integration", () => {
     const vertical = [{ mode: "stairs", fromNodeId: "isolated", toNodeId: "upper" }];
     expect(state.routeGroundCheck([point(0, 0), point(10, 0)], vertical)).toMatchObject({ samples: 21, noFloor: 0, verticalWithoutConnector: 1 });
     expect(state.routeGroundCheck([point(0, 8), point(10, 8)], [])).toMatchObject({ samples: 21, noFloor: 21, verticalWithoutConnector: 0 });
+    expect(state.sceneColliderTargets.size).toBe(2);
+    expect(state.blockedByColliders(new THREE.Vector3(1.5, 0, 0), new THREE.Vector3(2.35, 0, 0))).toBeNull();
     const result = state.walkPath([{ x: 5, z: 0 }], { maxSeconds: 10 });
     expect(result).toMatchObject({ done: true, stuck: false });
     expect(state.pos.x).toBeGreaterThan(4.5);
@@ -104,6 +107,18 @@ describe("greybox station integration", () => {
   it("samples dark share with a test renderer and restores the camera", async () => {
     const { state, loaded } = fixture();
     await state.loadStation(loaded, createRouter(loaded.bundle));
+    const shell = state.greybox.root.getObjectByName("greybox-shell") as THREE.Mesh;
+    const material = shell.material as THREE.MeshLambertMaterial;
+    // With no scene lights the emissive contribution is the only illumination; convert to display sRGB.
+    const shellLuminance = () => {
+      const color = material.emissive.clone().multiplyScalar(material.emissiveIntensity).convertLinearToSRGB();
+      return 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+    };
+    expect(shellLuminance()).toBeGreaterThanOrEqual(0.25);
+    const intensity = material.emissiveIntensity;
+    material.emissiveIntensity = 0;
+    expect(shellLuminance()).toBeLessThan(0.25);
+    material.emissiveIntensity = intensity;
     const readPixels = vi.fn((_x, _y, _w, _h, _format, _type, pixels: Uint8Array) => pixels.fill(255));
     state.renderer = { getContext: () => ({ drawingBufferWidth: 10, drawingBufferHeight: 10, RGBA: 6408, UNSIGNED_BYTE: 5121, readPixels }), render: vi.fn() };
     state.camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);

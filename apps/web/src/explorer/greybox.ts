@@ -26,17 +26,6 @@ function createRunDetector(bundle: StationBundle, traversable: (edge: Edge) => b
     if (!traversable(edge) || !["walk", "gate", "moving_walkway", "ramp"].includes(edge.mode)) return out;
     const points = edgePoints(bundle, edge, nodes, floors).map((p) => ({ x: p.x, y: -p.z, z: p.y }));
     if (points.length < 2) return out;
-    const edgeLength = points.slice(1).reduce((n, p, i) => n + Math.hypot(p.x - points[i]!.x, p.y - points[i]!.y, p.z - points[i]!.z), 0);
-    if (edge.attributes?.sceneGap !== true) {
-      let remaining = edgeLength / 2, mid = points[0]!;
-      for (let i = 1; i < points.length; i++) {
-        const a = points[i - 1]!, b = points[i]!, len = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
-        if (remaining <= len && len) { const t = remaining / len; mid = { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, z: a.z + (b.z - a.z) * t }; break; }
-        remaining -= len;
-      }
-      const startHasFloor = floor(points[0]!), middleHasFloor = floor(mid), endHasFloor = floor(points.at(-1)!);
-      if (edgeLength <= 5 && startHasFloor && middleHasFloor && endHasFloor) return out;
-    }
     const samples: V3[] = [points[0]!];
     const distances = [0];
     for (let i = 1; i < points.length; i++) {
@@ -62,7 +51,8 @@ function createRunDetector(bundle: StationBundle, traversable: (edge: Edge) => b
       if (!bare[i]) continue;
       let end = i;
       while (end + 1 < samples.length && bare[end + 1]) end++;
-      const length = distances[end]! - distances[i]!;
+      // The gap can reach the neighbouring floored samples, so measure up to them: a 1.2 m gap may hold only two bare samples.
+      const length = distances[Math.min(end + 1, samples.length - 1)]! - distances[Math.max(i - 1, 0)]!;
       if (length >= 1 || edge.attributes?.sceneGap === true) {
         const start = Math.max(0, distances[i]! - 0.5);
         const finish = Math.min(distances.at(-1)!, distances[end]! + 0.5);
@@ -171,7 +161,7 @@ export function simplifyGreyboxRun(points: readonly V3[], preserve: readonly num
   return [...keep].filter((i) => i >= 0 && i < points.length).sort((a, b) => a - b).map((i) => points[i]!);
 }
 
-type Corridor = { a: THREE.Vector3; b: THREE.Vector3; radius: number };
+type Corridor = { a: THREE.Vector3; b: THREE.Vector3; radius: number; half: number };
 
 /** A one-metre spatial hash of built corridors; coverage is clipped in plan and within 0.5 m in height. */
 class CorridorIndex {
@@ -193,15 +183,16 @@ class CorridorIndex {
     }
   }
   add(a: THREE.Vector3, b: THREE.Vector3, half: number): void {
-    const corridor = { a: a.clone(), b: b.clone(), radius: Math.max(0, half - 0.2) };
+    const corridor = { a: a.clone(), b: b.clone(), radius: Math.max(0, half - 0.2), half };
     this.visit(a, b, corridor.radius, (key, minX, maxX) => { let cell = this.cells.get(key); if (!cell) { cell = []; this.cells.set(key, cell); } cell.push({ minX, maxX, corridor }); });
   }
   /** Uncovered parameter intervals for a segment. */
-  uncovered(a: THREE.Vector3, b: THREE.Vector3): [number, number][] {
+  uncovered(a: THREE.Vector3, b: THREE.Vector3, requiredHalf = 0): [number, number][] {
     const candidates = new Set<Corridor>();
     this.visit(a, b, 0, (key, minX, maxX) => { const row = this.cells.get(key); if (row) for (const span of row) if (span.maxX >= minX && span.minX <= maxX) candidates.add(span.corridor); });
     let open: [number, number][] = [[0, 1]];
     for (const c of candidates) {
+      if (c.half < requiredHalf - 0.2) continue;
       const dx = c.b.x - c.a.x, dz = c.b.z - c.a.z, len = Math.hypot(dx, dz);
       if (len < 1e-8 || c.radius <= 0) continue;
       const ux = dx / len, uz = dz / len, vx = b.x - a.x, vz = b.z - a.z;
@@ -283,7 +274,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   const started = performance.now();
   const index = new CorridorIndex();
   const runs: UnmodelledEdgeRun[] = [];
-  for (const run of detected) {
+  for (const run of [...detected].sort((a, b) => widthOf(b.edge) - widthOf(a.edge))) {
     const p = run.points;
     const preserve: number[] = [];
     if (p.length > 2 && (hasFloor(p[0]!) !== hasFloor(p[1]!) || (run.edge.attributes?.sceneGap === true && hasFloor(p[0]!)))) preserve.push(1);
@@ -293,7 +284,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     const flush = () => { if (current.length > 1) runs.push({ edge: run.edge, points: current }); current = []; };
     for (let i = 1; i < points.length; i++) {
       const a = points[i - 1]!, b = points[i]!;
-      const uncovered = index.uncovered(a, b);
+      const uncovered = index.uncovered(a, b, widthOf(run.edge) / 2);
       if (!uncovered.length) { flush(); continue; }
       for (const [start, end] of uncovered) {
         const from = a.clone().lerp(b, start), to = a.clone().lerp(b, end);
@@ -374,17 +365,32 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
           const lo = (-B - Math.sqrt(disc)) / (2 * A), hi = (-B + Math.sqrt(disc)) / (2 * A);
           intervals = intervals.flatMap(([s, e]) => [[s, Math.min(e, lo)], [Math.max(s, hi), e]].filter(([x, y]) => x! < y!) as [number, number][]);
         }
+        const clearIntervals: [number, number][] = [];
         for (const [s, e] of intervals) {
-          const p = wa.clone().lerp(wz, s), q = wa.clone().lerp(wz, e), mid = p.clone().lerp(q, 0.5);
-          mid.y += 1.3;
-          if (scene.colliderNear(enu(mid), 0.3)) continue;
+          const pieces = Math.max(1, Math.ceil(wa.distanceTo(wz) * (e - s) / 2));
+          let clearStart: number | null = null;
+          for (let k = 0; k < pieces; k++) {
+            const start = s + (e - s) * k / pieces, end = s + (e - s) * (k + 1) / pieces;
+            const mid = wa.clone().lerp(wz, (start + end) / 2); mid.y += 1.3;
+            if (scene.colliderNear(enu(mid), 0.3)) {
+              if (clearStart !== null) clearIntervals.push([clearStart, start]);
+              clearStart = null;
+            } else {
+              if (clearStart === null) clearStart = start;
+              const p = wa.clone().lerp(wz, start), q = wa.clone().lerp(wz, end);
+              wallSegments.push({ ax: p.x, az: p.z, bx: q.x, bz: q.z, yMin: Math.min(p.y, q.y) - 0.12, yMax: Math.max(p.y, q.y) + 2.6 });
+            }
+            if (k === pieces - 1 && clearStart !== null) clearIntervals.push([clearStart, end]);
+          }
+        }
+        for (const [s, e] of clearIntervals) {
+          const p = wa.clone().lerp(wz, s), q = wa.clone().lerp(wz, e);
           const topP = p.clone().add(new THREE.Vector3(0, 2.6, 0)), topQ = q.clone().add(new THREE.Vector3(0, 2.6, 0));
           if (side < 0) {
             quad(b.shell, b.colors, topP, topQ, q, p, [0.62, 0.62, 0.62, 0.62]);
           } else {
             quad(b.shell, b.colors, p, q, topQ, topP, [0.62, 0.62, 0.62, 0.62]);
           }
-          wallSegments.push({ ax: p.x, az: p.z, bx: q.x, bz: q.z, yMin: Math.min(p.y, q.y), yMax: Math.max(p.y, q.y) + 2.6 });
         }
       }
       quad(b.ceiling, b.ceilingColors, offset(z, -half, 2.6), offset(z, half, 2.6), offset(a, half, 2.6), offset(a, -half, 2.6), [0.62, 0.62, 0.62, 0.62]);

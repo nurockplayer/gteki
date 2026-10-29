@@ -233,7 +233,7 @@ export class Explorer {
   private portalCutResources = { geometries: [] as THREE.BufferGeometry[], materials: [] as THREE.Material[], portalMeshes: new Map<Box, THREE.Mesh[]>(), originals: new Map<THREE.Mesh, { geometry: THREE.BufferGeometry; material: THREE.Material | THREE.Material[] }>() };
   private portalExemptions = 0;
   private portalCutStats: ReturnType<typeof cutPortals> | null = null;
-  private greyboxPortalColliders = new Map<Box, THREE.Object3D>();
+  private sceneColliderTargets = new Set<THREE.Object3D>();
   private greyboxSegments: GreyboxSegment[] = [];
   private greyboxLegendVisible = false;
   private sceneGroundTargets: THREE.Object3D[] = [];
@@ -942,13 +942,7 @@ export class Explorer {
       this.greybox = buildGreybox(bundle, traversable, hasFloor, scene, this.quality);
       this.greyboxSegments = greyboxPathSegments(unmodelledRunsByEdge(bundle, traversable, hasFloor));
       this.greyboxOpenings = this.greybox.openings;
-      this.greyboxPortalColliders.clear();
-      for (const box of this.greyboxOpenings) {
-        const ray = new THREE.Raycaster(box.center.clone().addScaledVector(box.along, -box.depth / 2).add(new THREE.Vector3(0, 1.2, 0)), box.along, 0, box.depth);
-        const hits = castCamera(ray, originalTargets.collider, new Set(originalTargets.collider));
-        const wall = hits.sort((a, b) => Math.abs(a.point.clone().sub(box.center).dot(box.along)) - Math.abs(b.point.clone().sub(box.center).dot(box.along)))[0];
-        if (wall) this.greyboxPortalColliders.set(box, wall.object);
-      }
+      this.sceneColliderTargets = new Set(originalTargets.collider);
       this.portalCutStats = cutPortals(this.stationScene.root, this.greyboxOpenings, this.portalCutResources);
       this.renderer.localClippingEnabled = true;
       this.world.add(this.greybox.root);
@@ -1033,7 +1027,7 @@ export class Explorer {
     this.portalCutStats = null;
     this.portalExemptions = 0;
     this.greyboxOpenings = [];
-    this.greyboxPortalColliders = new Map();
+    this.sceneColliderTargets = new Set();
     this.greyboxSegments = [];
     this.sceneGroundTargets = [];
     this.updateGreyboxLegend();
@@ -1466,7 +1460,7 @@ export class Explorer {
       const hit = castAll(this.ray, this.colliderTargets).find((h) => {
         if (h.object.userData.greybox || !h.face) return true;
         const normal = hitNormal(h, dir);
-        const exempt = this.greyboxOpenings.some((box) => this.greyboxPortalColliders.get(box) === h.object && insideGreyboxOpening(h.point, box) && Math.abs(normal.y) <= 0.5);
+        const exempt = this.greyboxOpenings.some((box) => this.sceneColliderTargets.has(h.object) && insideGreyboxOpening(h.point, box) && Math.abs(normal.y) <= 0.5);
         if (exempt) this.portalExemptions++;
         return !exempt;
       });
