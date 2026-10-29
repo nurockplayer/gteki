@@ -20,6 +20,19 @@ describe("unmodelledRunsByEdge", () => {
     expect(unmodelledRunsByEdge(bundle, () => false, () => false)).toEqual([]);
   });
 
+  it("finds a floorless span on a short edge even when its endpoints and midpoint have floor", () => {
+    const short = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 4, y: 0, z: 0 } }] };
+    const runs = unmodelledRunsByEdge(short, () => true, (p) => p.x < 0.25 || p.x > 1.75);
+    expect(runs).toHaveLength(1);
+    expect(runs[0]!.points[0]!.x).toBe(0);
+    expect(runs[0]!.points.at(-1)!.x).toBe(2);
+  });
+
+  it("finds a 1.5 m floorless middle on a 4 m edge", () => {
+    const short = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 4, y: 0, z: 0 } }] };
+    expect(unmodelledRunsByEdge(short, () => true, (p) => p.x < 1.25 || p.x > 2.75)).toHaveLength(1);
+  });
+
   it("forces a sceneGap edge to be unmodelled", () => {
     const forced = { ...bundle, edges: [{ ...bundle.edges[0]!, attributes: { sceneGap: true } }] };
     expect(unmodelledRunsByEdge(forced, () => true, () => true)[0]!.points.at(-1)!.x).toBe(10);

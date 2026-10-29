@@ -26,17 +26,6 @@ function createRunDetector(bundle: StationBundle, traversable: (edge: Edge) => b
     if (!traversable(edge) || !["walk", "gate", "moving_walkway", "ramp"].includes(edge.mode)) return out;
     const points = edgePoints(bundle, edge, nodes, floors).map((p) => ({ x: p.x, y: -p.z, z: p.y }));
     if (points.length < 2) return out;
-    const edgeLength = points.slice(1).reduce((n, p, i) => n + Math.hypot(p.x - points[i]!.x, p.y - points[i]!.y, p.z - points[i]!.z), 0);
-    if (edge.attributes?.sceneGap !== true) {
-      let remaining = edgeLength / 2, mid = points[0]!;
-      for (let i = 1; i < points.length; i++) {
-        const a = points[i - 1]!, b = points[i]!, len = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
-        if (remaining <= len && len) { const t = remaining / len; mid = { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, z: a.z + (b.z - a.z) * t }; break; }
-        remaining -= len;
-      }
-      const startHasFloor = floor(points[0]!), middleHasFloor = floor(mid), endHasFloor = floor(points.at(-1)!);
-      if (edgeLength <= 5 && startHasFloor && middleHasFloor && endHasFloor) return out;
-    }
     const samples: V3[] = [points[0]!];
     const distances = [0];
     for (let i = 1; i < points.length; i++) {
