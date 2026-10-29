@@ -160,7 +160,7 @@ export function simplifyGreyboxRun(points: readonly V3[], preserve: readonly num
   return [...keep].filter((i) => i >= 0 && i < points.length).sort((a, b) => a - b).map((i) => points[i]!);
 }
 
-type Corridor = { a: THREE.Vector3; b: THREE.Vector3; radius: number };
+type Corridor = { a: THREE.Vector3; b: THREE.Vector3; radius: number; half: number };
 
 /** A one-metre spatial hash of built corridors; coverage is clipped in plan and within 0.5 m in height. */
 class CorridorIndex {
@@ -182,15 +182,16 @@ class CorridorIndex {
     }
   }
   add(a: THREE.Vector3, b: THREE.Vector3, half: number): void {
-    const corridor = { a: a.clone(), b: b.clone(), radius: Math.max(0, half - 0.2) };
+    const corridor = { a: a.clone(), b: b.clone(), radius: Math.max(0, half - 0.2), half };
     this.visit(a, b, corridor.radius, (key, minX, maxX) => { let cell = this.cells.get(key); if (!cell) { cell = []; this.cells.set(key, cell); } cell.push({ minX, maxX, corridor }); });
   }
   /** Uncovered parameter intervals for a segment. */
-  uncovered(a: THREE.Vector3, b: THREE.Vector3): [number, number][] {
+  uncovered(a: THREE.Vector3, b: THREE.Vector3, requiredHalf = 0): [number, number][] {
     const candidates = new Set<Corridor>();
     this.visit(a, b, 0, (key, minX, maxX) => { const row = this.cells.get(key); if (row) for (const span of row) if (span.maxX >= minX && span.minX <= maxX) candidates.add(span.corridor); });
     let open: [number, number][] = [[0, 1]];
     for (const c of candidates) {
+      if (c.half < requiredHalf - 0.2) continue;
       const dx = c.b.x - c.a.x, dz = c.b.z - c.a.z, len = Math.hypot(dx, dz);
       if (len < 1e-8 || c.radius <= 0) continue;
       const ux = dx / len, uz = dz / len, vx = b.x - a.x, vz = b.z - a.z;
@@ -272,7 +273,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   const started = performance.now();
   const index = new CorridorIndex();
   const runs: UnmodelledEdgeRun[] = [];
-  for (const run of detected) {
+  for (const run of [...detected].sort((a, b) => widthOf(b.edge) - widthOf(a.edge))) {
     const p = run.points;
     const preserve: number[] = [];
     if (p.length > 2 && (hasFloor(p[0]!) !== hasFloor(p[1]!) || (run.edge.attributes?.sceneGap === true && hasFloor(p[0]!)))) preserve.push(1);
@@ -282,7 +283,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     const flush = () => { if (current.length > 1) runs.push({ edge: run.edge, points: current }); current = []; };
     for (let i = 1; i < points.length; i++) {
       const a = points[i - 1]!, b = points[i]!;
-      const uncovered = index.uncovered(a, b);
+      const uncovered = index.uncovered(a, b, widthOf(run.edge) / 2);
       if (!uncovered.length) { flush(); continue; }
       for (const [start, end] of uncovered) {
         const from = a.clone().lerp(b, start), to = a.clone().lerp(b, end);
@@ -373,7 +374,11 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
             if (scene.colliderNear(enu(mid), 0.3)) {
               if (clearStart !== null) clearIntervals.push([clearStart, start]);
               clearStart = null;
-            } else if (clearStart === null) clearStart = start;
+            } else {
+              if (clearStart === null) clearStart = start;
+              const p = wa.clone().lerp(wz, start), q = wa.clone().lerp(wz, end);
+              wallSegments.push({ ax: p.x, az: p.z, bx: q.x, bz: q.z, yMin: Math.min(p.y, q.y) - 0.12, yMax: Math.max(p.y, q.y) + 2.6 });
+            }
             if (k === pieces - 1 && clearStart !== null) clearIntervals.push([clearStart, end]);
           }
         }
@@ -385,7 +390,6 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
           } else {
             quad(b.shell, b.colors, p, q, topQ, topP, [0.62, 0.62, 0.62, 0.62]);
           }
-          wallSegments.push({ ax: p.x, az: p.z, bx: q.x, bz: q.z, yMin: Math.min(p.y, q.y), yMax: Math.max(p.y, q.y) + 2.6 });
         }
       }
       quad(b.ceiling, b.ceilingColors, offset(z, -half, 2.6), offset(z, half, 2.6), offset(a, half, 2.6), offset(a, -half, 2.6), [0.62, 0.62, 0.62, 0.62]);

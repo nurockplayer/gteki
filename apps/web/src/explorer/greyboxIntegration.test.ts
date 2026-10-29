@@ -106,6 +106,18 @@ describe("greybox station integration", () => {
   it("samples dark share with a test renderer and restores the camera", async () => {
     const { state, loaded } = fixture();
     await state.loadStation(loaded, createRouter(loaded.bundle));
+    const shell = state.greybox.root.getObjectByName("greybox-shell") as THREE.Mesh;
+    const material = shell.material as THREE.MeshLambertMaterial;
+    // With no scene lights the emissive contribution is the only illumination; convert to display sRGB.
+    const shellLuminance = () => {
+      const color = material.emissive.clone().multiplyScalar(material.emissiveIntensity).convertLinearToSRGB();
+      return 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+    };
+    expect(shellLuminance()).toBeGreaterThanOrEqual(0.25);
+    const intensity = material.emissiveIntensity;
+    material.emissiveIntensity = 0;
+    expect(shellLuminance()).toBeLessThan(0.25);
+    material.emissiveIntensity = intensity;
     const readPixels = vi.fn((_x, _y, _w, _h, _format, _type, pixels: Uint8Array) => pixels.fill(255));
     state.renderer = { getContext: () => ({ drawingBufferWidth: 10, drawingBufferHeight: 10, RGBA: 6408, UNSIGNED_BYTE: 5121, readPixels }), render: vi.fn() };
     state.camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
