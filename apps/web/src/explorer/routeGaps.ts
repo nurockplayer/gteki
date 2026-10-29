@@ -20,7 +20,8 @@ export function unmodelledRuns(points: readonly (V3 & { sceneGap?: boolean })[],
     const n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / STEP_M));
     for (let k = 1; k <= n; k++) {
       samples.push({ x: a.x + (b.x - a.x) * k / n, y: a.y + (b.y - a.y) * k / n, z: a.z + (b.z - a.z) * k / n });
-      forced.push(b.sceneGap === true && k < n);
+      // The segment's own end stays forced while the edge goes on (its next vertex is flagged too).
+      forced.push(b.sceneGap === true && (k < n || points[i + 1]?.sceneGap === true));
     }
   }
   const bare = samples.map((s, i) => forced[i]! || !hasFloor(s));
@@ -31,7 +32,8 @@ export function unmodelledRuns(points: readonly (V3 & { sceneGap?: boolean })[],
     while (j + 1 < samples.length && bare[j + 1]) j++;
     let len = 0;
     for (let k = i + 1; k <= j; k++) len += Math.hypot(samples[k]!.x - samples[k - 1]!.x, samples[k]!.y - samples[k - 1]!.y);
-    if (len >= MIN_RUN_M) runs.push(samples.slice(Math.max(0, i - 1), Math.min(samples.length, j + 2)));
+    // A flagged edge is declared unmodelled, so the seam filter does not apply to it.
+    if (len >= MIN_RUN_M || forced.slice(i, j + 1).some(Boolean)) runs.push(samples.slice(Math.max(0, i - 1), Math.min(samples.length, j + 2)));
     i = j;
   }
   return runs;
