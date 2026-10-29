@@ -129,8 +129,8 @@ ConnectorOptions	interface	apps/web/src/explorer/greyboxConnectors.ts	41
 buildStairs	function	apps/web/src/explorer/greyboxConnectors.ts	77
 buildEscalator	function	apps/web/src/explorer/greyboxConnectors.ts	112
 buildElevator	function	apps/web/src/explorer/greyboxConnectors.ts	153
-ConnectorScope	interface	apps/web/src/explorer/greyboxConnectors.ts	175
-buildConnectors	function	apps/web/src/explorer/greyboxConnectors.ts	188
+ConnectorScope	interface	apps/web/src/explorer/greyboxConnectors.ts	177
+buildConnectors	function	apps/web/src/explorer/greyboxConnectors.ts	190
 greyboxSceneProbes	function	apps/web/src/explorer/greyboxScene.ts	10
 insideGreyboxOpening	function	apps/web/src/explorer/greyboxScene.ts	91
 GreyboxSegment	interface	apps/web/src/explorer/greyboxScene.ts	98

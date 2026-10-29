@@ -150,8 +150,10 @@ export function buildEscalator(from: THREE.Vector3, to: THREE.Vector3, tier: "hi
 }
 
 /** Build a shaft and an independently movable car in local floor coordinates. */
-export function buildElevator(_edge: Edge, from: THREE.Vector3, to: THREE.Vector3, _opts: ConnectorOptions): ConnectorPart[] {
+export function buildElevator(from: THREE.Vector3, to: THREE.Vector3, facing: THREE.Vector3, _tier: "high" | "low"): ConnectorPart[] {
   const f = frame(from, to), parts: ConnectorPart[] = [], height = f.rise + 2.6;
+  const yaw = Math.hypot(facing.x, facing.z) > 1e-9 ? Math.atan2(facing.z, -facing.x) : 0;
+  f.matrix.makeRotationY(yaw).setPosition(f.low);
   for (const x of [-1.06, 1.06]) for (const z of [-1.06, 1.06]) box(parts, "steel", f.matrix, x, height / 2, z, 0.08, height, 0.08);
   for (const y of [0, f.rise]) {
     for (const z of [-1.06, 1.06]) box(parts, "steel", f.matrix, 0, y + 0.04, z, 2.2, 0.08, 0.08);
@@ -199,7 +201,8 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   const physicalMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
   for (const edge of unmodelledVerticalEdges(bundle, traversable, scope.hasFloor, scope.nearMesh)) {
     const points = edgePoints(bundle, edge, nodes, floors), a = points[0]!, b = points.at(-1)!;
-    const opts = { tier }, parts = edge.mode === "stairs" ? buildStairs(a, b, 1.5, tier) : edge.mode === "escalator" ? buildEscalator(a, b, tier) : buildElevator(edge, a, b, opts);
+    const facing = a.clone().sub(b); facing.y = 0;
+    const parts = edge.mode === "stairs" ? buildStairs(a, b, 1.5, tier) : edge.mode === "escalator" ? buildEscalator(a, b, tier) : buildElevator(a, b, facing, tier);
     if (edge.mode === "stairs" || edge.mode === "escalator" || edge.mode === "elevator") counts[edge.mode]++;
     if (parts[0]?.userData?.fit === "approximate") approximateFits++;
     omittedLandings += parts[0]?.userData?.omittedLandings ?? 0;
@@ -211,10 +214,14 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const car = parts.filter((p) => p.role === "car");
     if (car.length) {
       const mesh = meshFor(car, shellMaterial), f = frame(a, b);
-      mesh.position.copy(f.low); mesh.rotation.y = Math.atan2(-(f.high.z - f.low.z), f.high.x - f.low.x);
+      mesh.geometry.clearGroups();
+      let start = 0;
+      for (const item of car) { const size = item.position.length / 3; mesh.geometry.addGroup(start, size, item.material === "light" ? 1 : 0); start += size; }
+      mesh.material = [shellMaterial, lightMaterial];
+      mesh.position.copy(f.low); mesh.rotation.y = Math.hypot(facing.x, facing.z) > 1e-9 ? Math.atan2(facing.z, -facing.x) : 0;
       root.add(mesh); cars.push({ edgeId: edge.id, mesh, zLow: f.low.y, zHigh: f.high.y });
       const floor = meshFor(car.filter((p) => p.material === "tread"), physicalMaterial);
-      mesh.add(floor); walkable.push(floor);
+      floor.visible = false; mesh.add(floor); walkable.push(floor);
     }
   }
   let triangles = 0;
