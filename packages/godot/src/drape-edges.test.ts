@@ -70,6 +70,17 @@ describe("scene floor draping", () => {
     const result = drapeEdges(probe(false), bundle(), new Set(["edge"]));
     expect(result.geometry.size).toBe(0);
     expect(result.unresolved).toEqual([{ edgeId: "edge", reason: "no lattice path" }]);
+    expect(result.sceneGaps.get("edge")).toBe(true);
+  });
+  it("clears resolved automatic flags and preserves hand flags", () => {
+    const b = bundle(), edge = b.edges[0]!;
+    edge.attributes = { ...edge.attributes, sceneGap: true, sceneGapReason: "drape-unresolved" };
+    expect(drapeEdges(probe(true), b, new Set(["edge"])).sceneGaps.get("edge")).toBe(false);
+    edge.attributes = { ...edge.attributes, sceneGap: true, sceneGapReason: "hand" };
+    expect(drapeEdges(probe(false), b, new Set(["edge"])).sceneGaps.has("edge")).toBe(false);
+  });
+  it("does not flag unmodelled floor alone", () => {
+    expect(drapeEdges({ ground: [], collider: [], walls: [] }, bundle(), new Set(["edge"])).sceneGaps.has("edge")).toBe(false);
   });
   it("snaps nodes to a floor above the render height", () => {
     const result = drapeEdges(probe(true, 1), bundle(), new Set(["edge"]));
