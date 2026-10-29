@@ -100,6 +100,21 @@ it("connects two separate floors using a stair link", async () => {
   q.destroy(); linked.navMesh.destroy();
 });
 
+it("attaches a fallback connector from a snapped neighbour", async () => {
+  const positions=[0,0,0,0,0,4,4,0,4,4,0,0,0,3,0,0,3,4,4,3,4,4,3,0];
+  const indices=[0,1,2,0,2,3,4,5,6,4,6,7];
+  const base=await bakeNavmesh(positions,indices); if (!base.success) throw new Error(base.error);
+  const query=new NavMeshQuery(base.navMesh), points={a:{x:7,y:0,z:2},neighbor:{x:2,y:0,z:2},b:{x:2,y:3,z:2}};
+  const snapped=query.findClosestPoint(points.neighbor,{halfExtents:{x:1.5,y:0.6,z:1.5}});
+  const built=verticalLinkCandidates([{id:"stairs",mode:"stairs",from:"a",to:"b",direction:"both"}],id=>points[id as keyof typeof points],query,()=>true,id=>id==="a" ? {point:snapped.point,neighborId:"neighbor",edgeId:"walk"} : null);
+  expect(built.candidates[0]?.fallback?.from?.neighborId).toBe("neighbor");
+  query.destroy(); base.navMesh.destroy();
+  const linked=await bakeNavmesh(positions,indices,{offMeshConnections:built.candidates.map(c=>c.connection)}); if (!linked.success) throw new Error(linked.error);
+  const q=new NavMeshQuery(linked.navMesh), {queryPathWithLinks}=await import("./navmesh-audit.ts");
+  expect(queryPathWithLinks(linked.navMesh,q,snapped.point,points.b)?.some(p=>p.link?.userId===1)).toBe(true);
+  q.destroy(); linked.navMesh.destroy();
+});
+
 it("bakes a greybox floor and keeps its shell as obstacles", async () => {
   const THREE = await import("three");
   const { buildGreybox } = await import("../../../apps/web/src/explorer/greybox.ts");

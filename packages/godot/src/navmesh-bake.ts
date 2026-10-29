@@ -6,11 +6,11 @@ import { gzipSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import * as THREE from "three";
 import { enuToRenderer } from "@gteki/geo";
-import { createRouter, DEFAULT_PROFILE, nodeDisplayZ } from "@gteki/navigation";
+import { createRouter, DEFAULT_PROFILE, nodeDisplayZ, routePolyline, type RouteResult } from "@gteki/navigation";
 import { navmeshBundle } from "./navmesh-input.ts";
 import type { Box } from "../../../apps/web/src/explorer/greybox.ts";
 import { makeGreybox } from "./navmesh-greybox.ts";
-import { loadScene, sceneProbe } from "./route-clip-audit.ts";
+import { auditPolyline, loadScene, sceneProbe } from "./route-clip-audit.ts";
 import { init, NavMeshQuery, exportNavMesh, type OffMeshConnectionParams } from "recast-navigation";
 import { generateTiledNavMesh } from "recast-navigation/generators";
 import { WALKER_BODY } from "@gteki/scene-api";
@@ -129,12 +129,13 @@ export function appendMeshes(objects: readonly THREE.Object3D[], positions: numb
 }
 
 async function main() {
-  let station = "", out = "", withGreybox = false, radiusM: number = WALKER_BODY.radiusM, cellSizeM = 0.15, climbM = 0.3, tileSize = 256, rounding: "up" | "down" = "up", ignoreGates = false;
+  let station = "", out = "", withGreybox = false, snapFallback = false, radiusM: number = WALKER_BODY.radiusM, cellSizeM = 0.15, climbM = 0.3, tileSize = 256, rounding: "up" | "down" = "up", ignoreGates = false;
   const args = process.argv.slice(2);
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--station" && args[i+1]) station = args[++i]!;
     else if (args[i] === "--out" && args[i+1]) out = args[++i]!;
     else if (args[i] === "--with-greybox") withGreybox = true;
+    else if (args[i] === "--snap-fallback") snapFallback = true;
     else if (args[i] === "--agent-radius" && args[i+1]) radiusM = Number(args[++i]);
     else if (args[i] === "--cell-size" && args[i+1]) cellSizeM = Number(args[++i]);
     else if (args[i] === "--walkable-climb" && args[i+1]) climbM = Number(args[++i]);
@@ -197,8 +198,26 @@ async function main() {
   const initialQuery = new NavMeshQuery(result.navMesh);
   const router = createRouter(bundle, { allowUnverified: privateBuild });
   const snapRejections = { floor:0, wall:0 };
+  const fallback = (id:string, node:{x:number;y:number;z:number}) => {
+    const here=nodes.get(id); if (!here) return null;
+    const candidates=bundle.edges.filter(e=>e.mode!=="stairs" && e.mode!=="escalator" && e.mode!=="elevator" && e.direction==="both" && (e.from===id || e.to===id) && router.isTraversable(e,DEFAULT_PROFILE)).sort((a,b)=>a.id.localeCompare(b.id));
+    for (const edge of candidates) {
+      const neighborId=edge.from===id ? edge.to : edge.from, neighbor=nodes.get(neighborId);
+      if (!neighbor || neighbor.floorId!==here.floorId) continue;
+      const source=point(neighbor), hit=initialQuery.findClosestPoint(source,{halfExtents:{x:1.5,y:0.6,z:1.5}});
+      if (!hit.success || !hit.polyRef || Math.abs(hit.point.y-source.y)>0.6 || validateLinkSnap(grey?.probe ?? probe,source,hit.point)) continue;
+      const step={edgeId:edge.id,fromNodeId:neighborId,toNodeId:id,reversed:edge.to===neighborId,mode:edge.mode,lengthM:edge.lengthM ?? 0,fromFloorId:neighbor.floorId,toFloorId:here.floorId};
+      const line=routePolyline(bundle,{nodeIds:[neighborId,id],steps:[step]} as RouteResult);
+      const distance=line.slice(1).reduce((n,p,i)=>n+Math.hypot(p.x-line[i]!.x,p.y-line[i]!.y,p.z-line[i]!.z),Math.hypot(hit.point.x-source.x,hit.point.y-source.y,hit.point.z-source.z));
+      if (distance>3) continue;
+      const audit=auditPolyline(grey?.probe ?? probe,line);
+      if (audit.wallHits || audit.noFloor || audit.offFloor || validateLinkSnap(grey?.probe ?? probe,node,{x:node.x,y:node.y,z:node.z})) continue;
+      return {point:hit.point,neighborId,edgeId:edge.id};
+    }
+    return null;
+  };
   const links = verticalLinkCandidates(bundle.edges.filter(e => router.isTraversable(e, DEFAULT_PROFILE)), id => { const n=nodes.get(id); return n ? point(n) : undefined; }, initialQuery,
-    (_id, a, b) => { const reason=validateLinkSnap(grey?.probe ?? probe, a, b); if (reason) snapRejections[reason]++; return !reason; });
+    (_id, a, b) => { const reason=validateLinkSnap(grey?.probe ?? probe, a, b); if (reason) snapRejections[reason]++; return !reason; }, snapFallback ? fallback : undefined);
   initialQuery.destroy(); result.navMesh.destroy();
   const linked = await bakeNavmesh(positions, indices, { radiusM, rounding, cellSizeM, climbM, tileSize, offMeshConnections:links.candidates.map(c => c.connection) });
   if (!linked.success) throw new Error(`linked bake failed: ${linked.error}`);
@@ -256,9 +275,9 @@ async function main() {
   fs.writeFileSync(qaFile(path.join(output, `${station}.bin`)), bytes);
   const effectiveRadiusCells = rounding === "down" ? Math.floor(radiusM / cellSizeM + 1e-6) : Math.ceil(radiusM / cellSizeM - 1e-6);
   const gateTriangles = collider.reduce((n, mesh) => n + (mesh.userData.gtekiGateTriangles?.length ?? 0), 0);
-  const metrics = { station, withGreybox, privateBuild, bundleSha256:createHash("sha256").update(JSON.stringify(bundle)).digest("hex"), meshSha256: createHash("sha256").update(bytes).digest("hex"), radiusM, rounding, cellSizeM, climbM, tileSize, effectiveClimbM: Math.floor(climbM / 0.1 + 1e-6) * 0.1, effectiveRadiusCells, effectiveRadiusM: effectiveRadiusCells * cellSizeM, ignoreGates, gateWallCount, activeGateWalls, gateTriangles, excludedActiveGateWalls: ignoreGates ? activeGateWalls : 0, excludedGateTriangles: ignoreGates ? gateTriangles : 0, bakeMs, rawBytes: bytes.length, gzipBytes: gz.length, tiles, polygons, peakRssKiB: process.resourceUsage().maxRSS, greyboxRuns, vertical, links, emittedLinkIds:[...emittedLinkIds].sort((a,b)=>a-b), attachedLinkIds:[...attachedLinkIds].sort((a,b)=>a-b), snapRejections };
+  const metrics = { station, withGreybox, privateBuild, snapFallback, bundleSha256:createHash("sha256").update(JSON.stringify(bundle)).digest("hex"), meshSha256: createHash("sha256").update(bytes).digest("hex"), radiusM, rounding, cellSizeM, climbM, tileSize, effectiveClimbM: Math.floor(climbM / 0.1 + 1e-6) * 0.1, effectiveRadiusCells, effectiveRadiusM: effectiveRadiusCells * cellSizeM, ignoreGates, gateWallCount, activeGateWalls, gateTriangles, excludedActiveGateWalls: ignoreGates ? activeGateWalls : 0, excludedGateTriangles: ignoreGates ? gateTriangles : 0, bakeMs, rawBytes: bytes.length, gzipBytes: gz.length, tiles, polygons, peakRssKiB: process.resourceUsage().maxRSS, greyboxRuns, vertical, links, emittedLinkIds:[...emittedLinkIds].sort((a,b)=>a-b), attachedLinkIds:[...attachedLinkIds].sort((a,b)=>a-b), fallbackRecovered:links.candidates.filter(c=>c.fallback && attachedLinkIds.has(c.connection.userId!)).length, snapRejections };
   fs.writeFileSync(qaFile(path.join(output, `${station}-bake.json`)), JSON.stringify(metrics, null, 2) + "\n");
-  console.log(JSON.stringify(metrics, null, 2));
+  console.log(JSON.stringify({station,withGreybox,snapFallback,bakeMs,rawBytes:bytes.length,gzipBytes:gz.length,tiles,polygons,linksAttached:attachedLinkIds.size,fallbackAttached:metrics.fallbackRecovered,snapRejections,peakRssKiB:metrics.peakRssKiB}));
   query.destroy(); nav.destroy(); scene.dispose();
 }
 

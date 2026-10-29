@@ -524,9 +524,9 @@ installHeadlessDom	function	packages/godot/src/headless-dom.ts	111
 stubRenderer	function	packages/godot/src/headless-dom.ts	137
 headlessThree	function	packages/godot/src/headless-dom.ts	142
 loadBundle	function	packages/godot/src/load-bundle.ts	6
-queryCompletePath	function	packages/godot/src/navmesh-audit.ts	25
-snapNode	function	packages/godot/src/navmesh-audit.ts	34
-queryPathWithLinks	function	packages/godot/src/navmesh-audit.ts	40
+queryCompletePath	function	packages/godot/src/navmesh-audit.ts	26
+snapNode	function	packages/godot/src/navmesh-audit.ts	35
+queryPathWithLinks	function	packages/godot/src/navmesh-audit.ts	41
 bakeNavmesh	function	packages/godot/src/navmesh-bake.ts	21
 completePath	function	packages/godot/src/navmesh-bake.ts	39
 triangleKey	const	packages/godot/src/navmesh-bake.ts	80
@@ -534,8 +534,10 @@ appendMeshes	function	packages/godot/src/navmesh-bake.ts	83
 fallbackDiff	function	packages/godot/src/navmesh-fallback-diff.ts	2
 makeGreybox	function	packages/godot/src/navmesh-greybox.ts	15
 navmeshBundle	function	packages/godot/src/navmesh-input.ts	7
-validateLinkSnap	function	packages/godot/src/navmesh-links.ts	8
-verticalLinkCandidates	function	packages/godot/src/navmesh-links.ts	31
+planFallbackRoute	function	packages/godot/src/navmesh-links.ts	11
+diagnoseVerticalSnap	function	packages/godot/src/navmesh-links.ts	32
+validateLinkSnap	function	packages/godot/src/navmesh-links.ts	49
+verticalLinkCandidates	function	packages/godot/src/navmesh-links.ts	72
 qaDirectory	function	packages/godot/src/navmesh-qa-path.ts	5
 qaFile	function	packages/godot/src/navmesh-qa-path.ts	17
 FLOOR_TOLERANCE_M	const	packages/godot/src/route-clip-audit.ts	27

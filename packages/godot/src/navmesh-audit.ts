@@ -9,6 +9,7 @@ import { navmeshBundle } from "./navmesh-input.ts";
 import { makeGreybox } from "./navmesh-greybox.ts";
 import { qaFile } from "./navmesh-qa-path.ts";
 import { auditPolyline, loadScene, sceneProbe, resampleAudit, type SampleDetail, type AuditCache } from "./route-clip-audit.ts";
+import { diagnoseVerticalSnap, planFallbackRoute } from "./navmesh-links.ts";
 
 type V3 = { x: number; y: number; z: number };
 const extents = { x: 1, y: 0.6, z: 1 };
@@ -70,13 +71,14 @@ export function queryPathWithLinks(nav: NavMesh, query: NavMeshQuery, from: V3, 
 }
 
 async function main() {
-  let station = "", navmeshFile = "", json = "", withGreybox = false;
+  let station = "", navmeshFile = "", json = "", withGreybox = false, snapFallback = false;
   const args = process.argv.slice(2);
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--station" && args[i+1]) station = args[++i]!;
     else if (args[i] === "--navmesh" && args[i+1]) navmeshFile = args[++i]!;
     else if (args[i] === "--json" && args[i+1]) json = args[++i]!;
     else if (args[i] === "--with-greybox") withGreybox = true;
+    else if (args[i] === "--snap-fallback") snapFallback = true;
     else throw new Error(`unknown or incomplete argument: ${args[i]}`);
   }
   if (!station || !navmeshFile || !json) throw new Error("use --station <station> --navmesh <file> --json <file>");
@@ -85,6 +87,7 @@ async function main() {
   const meshBytes = fs.readFileSync(navmeshFile);
   const provenance = JSON.parse(fs.readFileSync(path.join(path.dirname(navmeshFile), `${station}-bake.json`), "utf8"));
   if (provenance.station !== station || provenance.withGreybox !== withGreybox || provenance.meshSha256 !== createHash("sha256").update(meshBytes).digest("hex")) throw new Error("navmesh bake provenance does not match station, greybox flag, or binary; rebake first");
+  if (!!provenance.snapFallback !== snapFallback) throw new Error("navmesh bake and audit disagree on --snap-fallback");
   await init();
   const nav = importNavMesh(meshBytes).navMesh, query = new NavMeshQuery(nav);
   const loadMs = performance.now() - loadStart, memoryAfterLoad = process.memoryUsage();
@@ -97,8 +100,11 @@ async function main() {
   const nodes = new Map(bundle.nodes.map(n => [n.id, n])), floors = new Map(bundle.floors.map(f => [f.id, f]));
   const edges = new Map(bundle.edges.map(e => [e.id, e]));
   const attached = new Set<number>(provenance.attachedLinkIds ?? []);
-  const links = new Map<number, {edgeId:string;connection:{userId:number;startPosition:V3;endPosition:V3}}>((provenance.links?.candidates ?? []).filter((v: {connection:{userId:number}})=>attached.has(v.connection.userId)).map((v: {edgeId:string;connection:{userId:number;startPosition:V3;endPosition:V3}}) => [v.connection.userId,v]));
+  type Fallback={neighborId:string;edgeId:string};
+  type Link={edgeId:string;connection:{userId:number;startPosition:V3;endPosition:V3};fallback?:{from?:Fallback;to?:Fallback}};
+  const links = new Map<number, Link>((provenance.links?.candidates ?? []).filter((v:Link)=>attached.has(v.connection.userId)).map((v:Link) => [v.connection.userId,v]));
   const linksByEdge = new Map([...links.values()].map(link => [link.edgeId, link]));
+  const usedFallbackEdges = new Set<string>();
   const nodePoint = (id: string): V3 => {
     const n = nodes.get(id)!;
     return { x: n.position.x, y: nodeDisplayZ(n, floors.get(n.floorId)).z, z: -n.position.y };
@@ -111,7 +117,7 @@ async function main() {
     }
     return snapped.get(id)!;
   };
-  type Entry = { points: PolylinePoint[] | null; missing: boolean; reason: "snap_failed" | "no_path" | "too_long" | null; stairLink: boolean; connector: boolean; corridor: number[]; gapM: number; gapWidthM: number | null; step: RouteStep; fromSnapped: boolean; toSnapped: boolean; connectivity: "connected" | "disconnected" | "query_limit_or_error" | "unknown_snap" };
+  type Entry = { points: PolylinePoint[] | null; missing: boolean; reason: "snap_failed" | "no_path" | "too_long" | null; stairLink: boolean; connector: boolean; fallbackUsed:string[]; corridor: number[]; gapM: number; gapWidthM: number | null; step: RouteStep; fromSnapped: boolean; toSnapped: boolean; connectivity: "connected" | "disconnected" | "query_limit_or_error" | "unknown_snap" };
   const cache = new Map<string, Entry>();
   // Approximate width from scene wall segments perpendicular to the graph edge.
   // This is a sampled cross-section, not proof of a doorway or clearance through the mesh.
@@ -151,6 +157,7 @@ async function main() {
     const tooLong = step.mode === "stairs" && !!path && !path.some(p=>p.link) && length(path.map(p=>p.point)) > 2 * step.lengthM;
     let reason: "snap_failed" | "no_path" | "too_long" | null = !a || !b ? "snap_failed" : !path ? "no_path" : tooLong ? "too_long" : null;
     const stairLink = false;
+    const fallbackUsed = new Set<string>();
     let points: (PolylinePoint & {connector?:boolean})[] | null = null;
     if (path && !reason) {
       points=[];
@@ -160,14 +167,25 @@ async function main() {
         if (!part.link) continue;
         const link=links.get(part.link.userId), edge=link && edges.get(link.edgeId);
         if (!link || !edge) { points=null; break; }
+        if (link.fallback && link.edgeId!==step.edgeId) { points=null; break; }
         const reversed=distance(part.point,link.connection.endPosition)<distance(part.point,link.connection.startPosition);
         if (reversed && edge.direction!=="both") { points=null; break; }
         const fromId=reversed ? edge.to:edge.from, toId=reversed ? edge.from:edge.to;
         const n1=nodes.get(fromId), n2=nodes.get(toId);
         if (!n1 || !n2) { points=null; break; }
         const linkStep={...step,edgeId:edge.id,mode:edge.mode,fromNodeId:fromId,toNodeId:toId,fromFloorId:n1.floorId,toFloorId:n2.floorId,reversed};
+        const approach=(fb:Fallback, startId:string, endId:string) => {
+          const via=edges.get(fb.edgeId), nStart=nodes.get(startId), nEnd=nodes.get(endId);
+          if (!via || !nStart || !nEnd || via.direction!=="both") return null;
+          const viaStep={...step,edgeId:via.id,mode:via.mode,fromNodeId:startId,toNodeId:endId,fromFloorId:nStart.floorId,toFloorId:nEnd.floorId,reversed:via.from!==startId};
+          return routePolyline(bundle,{...route,nodeIds:[startId,endId],steps:[viaStep]}).map(q=>({...q,connector:true}));
+        };
+        const first=reversed ? link.fallback?.to : link.fallback?.from, last=reversed ? link.fallback?.from : link.fallback?.to;
+        if (first) { const line=approach(first,first.neighborId,fromId); if (!line) {points=null;break;} points.push(...line); }
         points.push(...routePolyline(bundle,{...route,nodeIds:[fromId,toId],steps:[linkStep]}).map(q=>({...q,connector:true})));
+        if (last) { const line=approach(last,toId,last.neighborId); if (!line) {points=null;break;} points.push(...line); }
         points.push({x:part.link.end.x,y:-part.link.end.z,z:part.link.end.y,zKnown:true,stepIndex:0,floorId:n2.floorId,connector:true});
+        if (first || last) fallbackUsed.add(link.edgeId);
       }
     }
     if (!points && !reason) reason="no_path";
@@ -189,7 +207,7 @@ async function main() {
         found.polys.destroy();
       }
     }
-    const entry: Entry = { points, missing, reason, stairLink, connector:!!points?.some(p=>p.connector), corridor, gapM: distance(from, to), gapWidthM: missing && !stairLink ? crossSectionWidth(route,step) : null, step, fromSnapped: !!a, toSnapped: !!b, connectivity };
+    const entry: Entry = { points, missing, reason, stairLink, connector:!!points?.some(p=>p.connector), fallbackUsed:[...fallbackUsed], corridor, gapM: distance(from, to), gapWidthM: missing && !stairLink ? crossSectionWidth(route,step) : null, step, fromSnapped: !!a, toSnapped: !!b, connectivity };
     cache.set(key, entry); return entry;
   };
   const totals = () => ({ samples: 0, offFloor: 0, noFloor: 0, wallHits: 0 });
@@ -222,9 +240,10 @@ async function main() {
   const wallClasses = { notInBake: 0, possibleCornerOrRaster: 0, join: 0, possibleDifferentCorridor: 0, unclassified: 0 };
   const wallLocations = new Map<string, number>();
   const navTotal = totals(), graphComparable = totals(), graphAll = totals(), ratios: number[] = [];
-  const connectorRaw = totals(), walkingRaw = totals(), connectorScene = totals(), walkingScene = totals();
-  let routeCount = 0, completed = 0, pure = 0, hybrid = 0, incomplete = 0, invalidJoinRoutes = 0, routeFailures = 0, stepUses = 0, joinsWithGap = 0, maxJoinGapM = 0;
+  const connectorRaw = totals(), walkingRaw = totals(), connectorDetail = totals(), walkingDetail = totals(), connectorScene = totals(), walkingScene = totals();
+  let routeCount = 0, completed = 0, pure = 0, hybrid = 0, incomplete = 0, invalidJoinRoutes = 0, unpairedFallbackRoutes = 0, fallbackRoutesCompleted = 0, routeFailures = 0, stepUses = 0, joinsWithGap = 0, maxJoinGapM = 0;
   const routeSteps: RouteStep[][] = [];
+  const usedVerticalSteps = new Map<string, RouteStep>();
   const affectedByMode: Record<string, number> = {};
   const pois = bundle.pois.filter(p => p.connectorNodeIds.length > 0);
   for (const from of pois) for (const to of pois) {
@@ -232,10 +251,13 @@ async function main() {
     const route = routeBetween(router, { kind: "poi", poi: from }, to, DEFAULT_PROFILE);
     if (!route.ok) { routeFailures++; continue; }
     routeCount++; stepUses += route.steps.length; routeSteps.push(route.steps);
+    for (const step of route.steps) if (["stairs","escalator","elevator"].includes(step.mode)) usedVerticalSteps.set(step.edgeId,step);
     const graph = routePolyline(bundle, route);
     const graphAudit = auditPolyline(probe, graph, { cache:auditCache });
     add(graphAll, graphAudit);
-    const entries = route.steps.map(step => edgePath(route, step));
+    const consumed=planFallbackRoute(route.steps,linksByEdge);
+    if (!consumed) { incomplete++; unpairedFallbackRoutes++; continue; }
+    const entries = route.steps.filter((_step,i)=>!consumed.has(i)).map(step => edgePath(route, step));
     if (entries.some(e => !e.points?.length)) {
       incomplete++;
       for (const mode of new Set(entries.filter(e => !e.points?.length).map(e => e.step.mode))) affectedByMode[mode] = (affectedByMode[mode] ?? 0) + 1;
@@ -247,7 +269,13 @@ async function main() {
       if (Math.hypot(p.x-q.x,p.y-q.y,p.z-q.z)<1e-6) continue;
       const key=`${p.x},${p.y},${p.z};${q.x},${q.y},${q.z}`;
       let valid=joinChecks.get(key);
-      if (valid===undefined) { const checked=auditPolyline(probe,[p,q],{cache:auditCache}); valid=!checked.wallHits && !checked.offFloor && !checked.noFloor; joinChecks.set(key,valid); }
+      if (valid===undefined) {
+        const checked=auditPolyline(probe,[p,q],{cache:auditCache});
+        const a={x:p.x,y:p.z,z:-p.y}, b={x:q.x,y:q.z,z:-q.y}, na=query.findClosestPoint(a,{halfExtents:extents}), nb=query.findClosestPoint(b,{halfExtents:extents});
+        const path=na.success && nb.success && na.polyRef && nb.polyRef && distance(a,na.point)<=0.02 && distance(b,nb.point)<=0.02 ? queryPathWithLinks(nav,query,a,b) : null;
+        valid=!checked.wallHits && !checked.offFloor && !checked.noFloor && !!path && !path.some(v=>v.link) && length(path.map(v=>v.point))<=distance(a,b)+0.3;
+        joinChecks.set(key,valid);
+      }
       if (!valid) { invalidJoin=true; break; }
     }
     if (invalidJoin) { incomplete++; invalidJoinRoutes++; continue; }
@@ -263,7 +291,7 @@ async function main() {
       walked.push(...pts.slice(skip).map((p, j) => ({ ...p, stepIndex: entryIndex, fallback: entry.stairLink, join: !!last && !skip && j === 0 })));
     }
     if (!walked.length) { incomplete++; continue; }
-    completed++; if (entries.some(e => e.connector)) hybrid++; else pure++;
+    completed++; if (consumed.size) fallbackRoutesCompleted++; for (const entry of entries) for (const id of entry.fallbackUsed) usedFallbackEdges.add(id); if (entries.some(e => e.connector)) hybrid++; else pure++;
     const samples = resampleAudit(walked) as Marked[];
     const rawDetails: SampleDetail[] = [];
     add(rawTotal, auditPolyline(probe, samples, { alreadySampled:true, detail:rawDetails, cache:auditCache }));
@@ -291,7 +319,7 @@ async function main() {
     const sceneInfo: SampleDetail[] = [];
     add(sceneTotal, auditPolyline(probe, scenePoints, { alreadySampled:true, cache:auditCache, detail:sceneInfo }));
     for (let i=0;i<samples.length;i++) {
-      for (const [detail, target] of [[rawDetails[i]!, samples[i]!.connector ? connectorRaw:walkingRaw], [sceneInfo[i]!, samples[i]!.connector ? connectorScene:walkingScene]] as const) {
+      for (const [detail, target] of [[rawDetails[i]!, samples[i]!.connector ? connectorRaw:walkingRaw], [detailInfo[i]!, samples[i]!.connector ? connectorDetail:walkingDetail], [sceneInfo[i]!, samples[i]!.connector ? connectorScene:walkingScene]] as const) {
         target.samples++; if (detail.floor === "off") target.offFloor++; if (detail.floor === "none") target.noFloor++; if (detail.wallBefore) target.wallHits++;
       }
     }
@@ -308,7 +336,7 @@ async function main() {
       if (d.wallCollider === undefined && d.wallSegment === undefined) { wallClasses.unclassified++; continue; }
       const object = d.wallCollider === undefined ? null : probe.collider[d.wallCollider] as import("three").Mesh;
       if (object && !object.geometry?.getAttribute("position")) { wallClasses.notInBake++; continue; }
-      const step = route.steps[p.stepIndex];
+      const step = entries[p.stepIndex]?.step;
       if (!step) { wallClasses.unclassified++; continue; }
       const edgeLine = routePolyline(bundle, { ...route, nodeIds:[step.fromNodeId,step.toNodeId], steps:[step] });
       let dist = Infinity;
@@ -324,6 +352,18 @@ async function main() {
     const graphLength = length(graph); if (graphLength > 0) ratios.push(length(walked) / graphLength);
   }
   const failed = [...cache.values()].filter(e => e.missing);
+  const diagnosed = new Map<string, ReturnType<typeof diagnoseVerticalSnap>>();
+  for (const step of usedVerticalSteps.values()) {
+    for (const nodeId of [step.fromNodeId,step.toNodeId]) {
+      const key=`${step.edgeId}\0${nodeId}`;
+      if (!diagnosed.has(key)) diagnosed.set(key,diagnoseVerticalSnap(query,probe,nodePoint(nodeId)));
+    }
+  }
+  const failedEndpoints=[...diagnosed.values()].filter(d=>d.reason !== null);
+  const dz=failedEndpoints.flatMap(d=>d.deltaZ === null ? [] : [d.deltaZ]);
+  const absDz=dz.map(Math.abs);
+  const distribution=(values:number[]) => ({count:values.length,p50:percentile(values,0.5),p95:percentile(values,0.95),max:values.length ? Math.max(...values) : null});
+  const snapDiagnosis={ failedEndpoints:failedEndpoints.length, noPoly:failedEndpoints.filter(d=>d.reason==="no_poly").length, height:failedEndpoints.filter(d=>d.reason==="height").length, floor:failedEndpoints.filter(d=>d.reason==="floor").length, wall:failedEndpoints.filter(d=>d.reason==="wall").length, deltaZM:distribution(dz), absDeltaZM:distribution(absDz), sampledWalkableWithin3m:failedEndpoints.filter(d=>d.walkableWithin3m).length, sampledNoWalkableWithin3m:failedEndpoints.filter(d=>!d.walkableWithin3m).length };
   const failures = failed.map(e => ({ edgeId: e.step.edgeId, mode: e.step.mode, floor: e.step.fromFloorId, direction: e.step.reversed ? "reverse" : "forward", straightGapM: e.gapM, reason: e.reason, stairLink: e.stairLink, fromSnapped:e.fromSnapped, toSnapped:e.toSnapped, connectivity:e.connectivity, sampledWallCrossSectionM:e.gapWidthM }))
     .sort((a,b) => b.straightGapM-a.straightGapM || a.edgeId.localeCompare(b.edgeId));
   // Fresh uncached WASM path queries; excludes graph routing, floor probing and path reconstruction.
@@ -345,9 +385,9 @@ async function main() {
     const key = `${e.mode} | ${e.fromSnapped && e.toSnapped ? "both snapped" : "snap missing"} | ${e.connectivity} | ${e.reason}`;
     failureClasses[key] = (failureClasses[key] ?? 0)+1;
   }
-  const result = { station, withGreybox, bakeProvenance: provenance, collisionAuditUsesOriginalGateObstacles: provenance.ignoreGates, affectedIncompleteRoutesByMode:affectedByMode, failureClasses, failureEdges:failures, greyboxRuns: grey?.grey.stats.runs ?? null, runtime, orderedPoiPairs: pois.length * (pois.length-1), routesAudited: routeCount, failedRoutePairs: routeFailures, completeAuditedRoutes: completed, pureNavmeshRoutes: pure, routesWithConnectors: hybrid, incompleteRoutes: incomplete, invalidJoinRoutes, joinsWithGap, maxJoinGapM,
+  const result = { station, withGreybox, snapFallback, fallbackRecoveredAttached:provenance.fallbackRecovered ?? 0, fallbackEdgesUsed:usedFallbackEdges.size, fallbackRoutesCompleted, unpairedFallbackRoutes, bakeProvenance: provenance, collisionAuditUsesOriginalGateObstacles: provenance.ignoreGates, affectedIncompleteRoutesByMode:affectedByMode, failureClasses, failureEdges:failures, greyboxRuns: grey?.grey.stats.runs ?? null, runtime, orderedPoiPairs: pois.length * (pois.length-1), routesAudited: routeCount, failedRoutePairs: routeFailures, completeAuditedRoutes: completed, pureNavmeshRoutes: pure, routesWithConnectors: hybrid, incompleteRoutes: incomplete, invalidJoinRoutes, joinsWithGap, maxJoinGapM,
     edgeUses: stepUses, uniqueEdgesUsed: new Set([...cache.values()].map(e => e.step.edgeId)).size, directedEdgesQueried: cache.size,
-    navmeshTotals: navTotal, segmentTotals:{ raw:{connector:connectorRaw,navmesh:walkingRaw}, sceneRaycast:{connector:connectorScene,navmesh:walkingScene} }, diagnosis: { raw: rawTotal, detail: navTotal, sceneRaycast: sceneTotal,
+    navmeshTotals: navTotal, snapDiagnosis, navmeshSegmentHeights:{default:walkingDetail,gateSceneRaycast:walkingScene}, segmentTotals:{ raw:{connector:connectorRaw,navmesh:walkingRaw}, detail:{connector:connectorDetail,navmesh:walkingDetail}, sceneRaycast:{connector:connectorScene,navmesh:walkingScene} }, diagnosis: { raw: rawTotal, detail: navTotal, sceneRaycast: sceneTotal,
       detailHeightUnavailableSamples: detailMissing, detailUnavailableStairFallback: detailMissingFallback, detailUnavailableJoin: detailMissingJoin, detailUnavailableAmbiguous: detailAmbiguous, detailLargeHeightJumps, detailMaxHeightJump, offFloorWithDetail, offFloorWithoutDetail, heightCorrectionM: { count:heightCorrections.length, p50:percentile(heightCorrections,0.5), p95:percentile(heightCorrections,0.95), max:heightCorrections.length ? heightCorrections.reduce((a,b)=>Math.max(a,b),0) : null }, sceneFloorUnavailableSamples: sceneMissing,
       rawAbsDzM: { count:rawDiffs.length, p50:percentile(rawDiffs,0.5), p95:percentile(rawDiffs,0.95), max:rawDiffs.length ? rawDiffs.reduce((a,b)=>Math.max(a,b),0) : null },
       detailAbsDzM: { count:detailDiffs.length, p50:percentile(detailDiffs,0.5), p95:percentile(detailDiffs,0.95), max:detailDiffs.length ? detailDiffs.reduce((a,b)=>Math.max(a,b),0) : null },
@@ -357,7 +397,7 @@ async function main() {
     snapDistanceM: { count: snapDistances.length, p50: percentile(snapDistances, 0.5), p95: percentile(snapDistances, 0.95), max: snapDistances.length ? Math.max(...snapDistances) : null },
     medianPathToGraphLength: percentile(ratios, 0.5) };
   fs.mkdirSync(path.dirname(dest), { recursive: true }); fs.writeFileSync(dest, JSON.stringify(result, null, 2) + "\n");
-  console.log(JSON.stringify(result, null, 2));
+  console.log(`snap diagnosis ${JSON.stringify(snapDiagnosis)}; fallback attached ${result.fallbackRecoveredAttached}, used ${result.fallbackEdgesUsed}, completed routes ${fallbackRoutesCompleted}; navmesh segments ${JSON.stringify(result.navmeshSegmentHeights)}`);
   query.destroy(); nav.destroy(); scene.dispose();
 }
 

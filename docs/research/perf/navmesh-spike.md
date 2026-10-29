@@ -169,6 +169,28 @@ For complete routes only, the raw connector audit is Ikebukuro **1,216 off-floor
 
 The independent review found risks in link attachment, floor gaps, wrong-connector paths, joins and provenance. After review, the code checks attachment, sampled approach floors, connector identity, joins and bundle identity; these changes have not received another independent review. Scene geometry itself is not fingerprinted, approach samples can miss a narrow gap, and private QA outputs contain detailed private graph information and must not be published. The station bake does not selectively reclassify stair-kit meshes, and the headless Ikebukuro loader reported skipped kit assets; landing geometry still needs validation.
 
+## Step 8: endpoint diagnostics and neighbour experiment
+
+2026-10-30 02:36 JST. The audit now reports aggregate diagnostics for failed endpoints of distinct vertical edges used by the public route set. It searches for the nearest polygon in a 1.5 m horizontal box with a wide height range, records signed and absolute height differences, and classifies missing polygons, height mismatches, floor validation and wall validation. The 3 m floor-presence result samples downward rays on a 0.5 m grid at the node's floor elevation; a negative result is not proof that no small floor patch exists. IDs remain in the local detailed audit, not in this public report; stdout contains an aggregate-only summary.
+
+| Public station | Failed endpoints | No polygon / height / floor / wall | Sampled floor within 3 m | Absolute height difference p50 / p95 / max |
+| --- | ---: | --- | ---: | --- |
+| Ikebukuro | 0 | 0 / 0 / 0 / 0 | 0 | no samples |
+| Shinjuku | 10 | 0 / 3 / 7 / 0 | 10 | 0.303 / 7.766 / 7.766 m |
+
+The ten Shinjuku values have signed Δz p50 0.034 m and p95/max 0.382 m; the absolute distribution exposes the large negative floor mismatch. These endpoint counts are not edge or route counts. Ikebukuro has no failed endpoint samples, rather than a measured zero height difference.
+
+`--snap-fallback` must be supplied to **both** bake and audit. Since a Detour off-mesh link cannot terminate at a point without a polygon, the experiment creates a composite connector from a neighbouring attached polygon to the opposite vertical landing. It preserves the graph approach and vertical geometry, and consumes an adjacent graph approach and connector as a pair. It considers only traversable, bidirectional, same-floor neighbour edges with at most 3 m of approach, and rejects approaches with sampled floor or wall violations. This deliberately conservative subset does not cover every possible neighbour. The report distinguishes attached composite candidates, distinct fallback edges used, and completed routes using them.
+
+The composite link is only meaningful to a consumer that interprets its metadata and follows the authored approach and connector geometry: a generic Detour consumer would traverse the straight link and could cut through a wall. It is an audit experiment and is not ready for application movement. The independent review also identified join connectivity and early recovery counting; the audit now requires both join endpoints within 0.02 m of their snapped polys and an ordinary navmesh path no more than 0.3 m longer than the direct join, and counts fallback edges used only after a route completes. These conservative checks can reject a usable join. The fixes and atomic graph-step pairing postdate the review and have not received another independent review. Private-derived detailed JSON and binaries remain under `.qa` and must not be published; bake and audit stdout now print aggregate summaries. Earlier gate-obstacle exclusion counters may undercount instanced triangles and degenerate walls.
+
+| Public station | Incomplete routes, baseline / fallback | Failed edges, baseline / fallback | Fallback links attached / used | Completed routes using fallback |
+| --- | --- | --- | --- | ---: |
+| Ikebukuro | 0 / 0 | 0 / 0 | 0 / 0 | 0 |
+| Shinjuku | 88 / 88 | 7 / 7 | 0 / 0 | 0 |
+
+At 0.10 m cells, 0.30 m radius, 0.40 m climb and 256-cell tiles, both the default detail-height and scene-raycast-height navmesh segment audits report **0 off-floor / 0 no-floor / 0 wall hits** on the completed public routes for both stations. Incomplete routes are excluded. The scene-height result is the requested gate number, but is not a swept-body clearance test.
+
 ## Evidence and missing measurements
 
 - `recast-navigation` 0.43.1 is installed only in `@gteki/godot`; its package licence is MIT. It uses WebAssembly and includes the 0.43.1 core and generators packages.

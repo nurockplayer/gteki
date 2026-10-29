@@ -1,8 +1,50 @@
 import type { NavMeshQuery, OffMeshConnectionParams } from "recast-navigation";
 import { auditPolyline, type SceneProbe, type SampleDetail } from "./route-clip-audit.ts";
+import * as THREE from "three";
+import { castAll } from "../../../apps/web/src/explorer/raycast.ts";
 
 type Point = { x: number; y: number; z: number };
 type VerticalEdge = { id: string; mode: string; from: string; to: string; direction: "both" | "forward" };
+type Fallback = { point: Point; neighborId: string; edgeId: string };
+
+/** Consume the adjacent graph approach together with its composite vertical connector. */
+export function planFallbackRoute(steps: readonly {edgeId:string;fromNodeId:string;toNodeId:string;reversed:boolean}[], links: ReadonlyMap<string,{fallback?:{from?:{neighborId:string;edgeId:string};to?:{neighborId:string;edgeId:string}}}>) {
+  const consumed = new Set<number>();
+  for (let i=0;i<steps.length;i++) {
+    const step=steps[i]!, link=links.get(step.edgeId); if (!link?.fallback) continue;
+    const first=step.reversed ? link.fallback.to : link.fallback.from;
+    const last=step.reversed ? link.fallback.from : link.fallback.to;
+    if (first) {
+      const prev=steps[i-1];
+      if (!prev || prev.edgeId!==first.edgeId || prev.fromNodeId!==first.neighborId || prev.toNodeId!==step.fromNodeId || consumed.has(i-1)) return null;
+      consumed.add(i-1);
+    }
+    if (last) {
+      const next=steps[i+1];
+      if (!next || next.edgeId!==last.edgeId || next.fromNodeId!==step.toNodeId || next.toNodeId!==last.neighborId || consumed.has(i+1)) return null;
+      consumed.add(i+1);
+    }
+  }
+  return consumed;
+}
+
+/** Classify one endpoint against the nearest polygon in the plan search box. */
+export function diagnoseVerticalSnap(query: Pick<NavMeshQuery, "findClosestPoint">, probe: SceneProbe, node: Point) {
+  const nearest=query.findClosestPoint(node,{halfExtents:{x:1.5,y:10000,z:1.5}});
+  const found=nearest.success && !!nearest.polyRef && Math.abs(nearest.point.x-node.x)<=1.5 && Math.abs(nearest.point.z-node.z)<=1.5;
+  const deltaZ=found ? nearest.point.y-node.y : null;
+  const reason = !found ? "no_poly" : Math.abs(deltaZ!)>0.6 ? "height" : validateLinkSnap(probe,node,nearest.point);
+  if (reason === null) return {reason,deltaZ,walkableWithin3m:false};
+  // Sample downward rays in a 3 m disc at the node's floor elevation; a negative result is not an exact geometry proof.
+  const ray=new THREE.Raycaster(), down=new THREE.Vector3(0,-1,0);
+  let walkableWithin3m=false;
+  for (let x=-3;x<=3 && !walkableWithin3m;x+=0.5) for (let z=-3;z<=3;z+=0.5) {
+    if (x*x+z*z>9) continue;
+    ray.set(new THREE.Vector3(node.x+x,node.y+0.6,node.z+z),down); ray.far=1.2;
+    if (castAll(ray,probe.ground).length) { walkableWithin3m=true; break; }
+  }
+  return {reason,deltaZ,walkableWithin3m};
+}
 
 /** A snap must land on a scene floor and the node-to-snap segment must not cross a wall. */
 export function validateLinkSnap(probe: SceneProbe, node: Point, snapped: Point): "floor" | "wall" | null {
@@ -28,8 +70,8 @@ export function validateLinkSnap(probe: SceneProbe, node: Point, snapped: Point)
 
 /** Build candidates from edges already filtered by the caller for graph traversability.
  * A candidate still needs post-bake verification that Detour attached its user ID. */
-export function verticalLinkCandidates(edges: readonly VerticalEdge[], nodePoint: (id: string) => Point | undefined, query: Pick<NavMeshQuery, "findClosestPoint">, validateSnap: (nodeId: string, node: Point, snapped: Point) => boolean) {
-  const candidates: { edgeId: string; connection: OffMeshConnectionParams }[] = [];
+export function verticalLinkCandidates(edges: readonly VerticalEdge[], nodePoint: (id: string) => Point | undefined, query: Pick<NavMeshQuery, "findClosestPoint">, validateSnap: (nodeId: string, node: Point, snapped: Point) => boolean, fallback?: (nodeId:string,node:Point)=>Fallback | null) {
+  const candidates: { edgeId: string; connection: OffMeshConnectionParams; fallback?: {from?:Fallback;to?:Fallback} }[] = [];
   const failed: { edgeId: string; reason: "missing_node" | "snap_failed" | "unsafe_snap" }[] = [];
   let snapFailures = 0;
   const vertical = edges.filter(e => ["stairs", "escalator", "elevator"].includes(e.mode)).slice().sort((a, b) => a.id.localeCompare(b.id));
@@ -40,11 +82,14 @@ export function verticalLinkCandidates(edges: readonly VerticalEdge[], nodePoint
   vertical.forEach((edge, index) => {
     const from = nodePoint(edge.from), to = nodePoint(edge.to);
     if (!from || !to) { failed.push({ edgeId: edge.id, reason: "missing_node" }); return; }
-    const start = snap(from), end = snap(to);
+    let start = snap(from), end = snap(to);
+    const fromFallback = !start && fallback ? fallback(edge.from,from) : null;
+    const toFallback = !end && fallback ? fallback(edge.to,to) : null;
+    start ??= fromFallback?.point ?? null; end ??= toFallback?.point ?? null;
     if (!start || !end) { snapFailures += Number(!start) + Number(!end); failed.push({ edgeId: edge.id, reason: "snap_failed" }); return; }
-    const startValid=validateSnap(edge.from, from, start), endValid=validateSnap(edge.to, to, end);
+    const startValid=!!fromFallback || validateSnap(edge.from, from, start), endValid=!!toFallback || validateSnap(edge.to, to, end);
     if (!startValid || !endValid) { failed.push({ edgeId: edge.id, reason: "unsafe_snap" }); return; }
-    candidates.push({ edgeId: edge.id, connection: { startPosition: start, endPosition: end, radius: 0.3, bidirectional: edge.direction === "both", area: 0, flags: 1, userId: index + 1 } });
+    candidates.push({ edgeId: edge.id, connection: { startPosition: start, endPosition: end, radius: 0.3, bidirectional: edge.direction === "both", area: 0, flags: 1, userId: index + 1 }, ...(fromFallback || toFallback ? {fallback:{...(fromFallback ? {from:fromFallback} : {}),...(toFallback ? {to:toFallback} : {})}} : {}) });
   });
   return { candidates, failed, snapFailures };
 }
