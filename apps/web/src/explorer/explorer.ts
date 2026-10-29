@@ -944,14 +944,22 @@ export class Explorer {
       this.greyboxOpenings = this.greybox.openings;
       this.sceneColliderTargets = new Set(originalTargets.collider);
       this.portalCutStats = cutPortals(this.stationScene.root, this.greyboxOpenings, this.portalCutResources, new Set(originalTargets.ground));
-      const replacements = this.portalCutResources.instances.map(({ copy }) => copy);
+      const instances = this.portalCutResources.instances;
       const extracted = new Map<THREE.InstancedMesh, number>();
-      for (const { owner } of this.portalCutResources.instances) extracted.set(owner, (extracted.get(owner) ?? 0) + 1);
+      for (const { owner } of instances) extracted.set(owner, (extracted.get(owner) ?? 0) + 1);
       const fullyHidden = new Set([...extracted].filter(([owner, count]) => count === owner.count).map(([owner]) => owner));
       const retain = (objects: readonly THREE.Object3D[]) => objects.filter(object => !fullyHidden.has(object as THREE.InstancedMesh));
-      this.sceneGroundTargets = [...new Set([...retain(originalTargets.ground), ...replacements])];
-      this.walkable = [...new Set([...retain(this.walkable), ...replacements])];
-      this.colliders = [...new Set([...retain(this.colliders), ...replacements])];
+      const copiesOf = (sources: readonly THREE.Object3D[]) => {
+        const sourceSet = new Set(sources);
+        return instances.filter(({ owner }) => sourceSet.has(owner)).map(({ copy }) => copy);
+      };
+      const groundCopies = copiesOf(originalTargets.ground), colliderCopies = copiesOf(originalTargets.collider);
+      const blockerCopies = copiesOf([...originalTargets.blockers]);
+      this.sceneGroundTargets = [...new Set([...retain(originalTargets.ground), ...groundCopies])];
+      this.sceneColliderTargets = new Set([...retain(originalTargets.collider), ...colliderCopies]);
+      this.walkable = [...new Set([...retain(this.walkable), ...groundCopies])];
+      this.colliders = [...new Set([...retain(this.colliders), ...colliderCopies])];
+      this.cameraBlockers = [...new Set([...retain(this.cameraBlockers), ...blockerCopies])];
       this.renderer.localClippingEnabled = true;
       this.world.add(this.greybox.root);
       this.walkable = [...this.walkable, ...this.greybox.walkable];

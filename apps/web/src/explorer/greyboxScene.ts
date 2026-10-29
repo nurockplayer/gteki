@@ -63,6 +63,7 @@ export function greyboxSceneProbes(colliders: readonly THREE.Object3D[], walls: 
       let best = Infinity;
       let wallNormal: THREE.Vector3 | undefined;
       let backFace: boolean | undefined;
+      let objectId: string | undefined, instanceId: number | undefined;
       const candidates = new Set(largeWalls);
       const x0 = Math.floor(Math.min(from.x, to.x) / wallCellSize), x1 = Math.floor(Math.max(from.x, to.x) / wallCellSize);
       const z0 = Math.floor(Math.min(from.z, to.z) / wallCellSize), z1 = Math.floor(Math.max(from.z, to.z) / wallCellSize);
@@ -84,6 +85,7 @@ export function greyboxSceneProbes(colliders: readonly THREE.Object3D[], walls: 
         const hit = castCamera(ray, colliders, sides)[0];
         if (hit && hit.distance <= best * length + 0.3) {
           best = hit.distance / length;
+          objectId = hit.object.uuid; instanceId = hit.instanceId;
           if (hit.face) {
             const matrix = hit.object.matrixWorld.clone();
             if (hit.instanceId !== undefined && (hit.object as THREE.InstancedMesh).isInstancedMesh) {
@@ -97,7 +99,7 @@ export function greyboxSceneProbes(colliders: readonly THREE.Object3D[], walls: 
         }
       }
       if (!Number.isFinite(best)) return null;
-      return { x: a.x + (b.x - a.x) * best, y: a.y + (b.y - a.y) * best, z: a.z + (b.z - a.z) * best, ...(wallNormal ? { wallNormal } : {}), ...(backFace !== undefined ? { backFace } : {}) };
+      return { x: a.x + (b.x - a.x) * best, y: a.y + (b.y - a.y) * best, z: a.z + (b.z - a.z) * best, ...(wallNormal ? { wallNormal } : {}), ...(backFace !== undefined ? { backFace } : {}), ...(objectId ? { objectId } : {}), ...(instanceId !== undefined ? { instanceId } : {}) };
     },
   };
 }

@@ -125,7 +125,7 @@ describe("greybox station integration", () => {
     expect(hits.length).toBeGreaterThan(0);
   });
 
-  it("keeps an extracted instanced floor in every ground and collider target set", async () => {
+  it("keeps an extracted instanced floor in its ground targets", async () => {
     const { state, scene, loaded } = fixture();
     const floor = scene.walkable[0]!; scene.root.remove(floor);
     const instanced = new THREE.InstancedMesh(floor.geometry, floor.material, 1);
@@ -135,8 +135,35 @@ describe("greybox station integration", () => {
     const replacement = state.portalCutResources.instances.find((entry: { owner: THREE.Object3D }) => entry.owner === instanced)?.copy;
     expect(replacement).toBeDefined();
     expect(state.sceneGroundTargets).toContain(replacement); expect(state.groundTargets).toContain(replacement);
-    expect(state.colliderTargets).toContain(replacement); expect(state.sceneGroundTargets).not.toContain(instanced);
+    expect(state.colliderTargets).not.toContain(replacement); expect(state.sceneGroundTargets).not.toContain(instanced);
     expect(floorProbe(new THREE.Raycaster(), state.sceneGroundTargets)({ x: 1.9, y: 0, z: 0 })).toBe(true);
+  });
+
+  it("keeps an extracted visual-only instance out of ground and collider targets", async () => {
+    const { state, scene, loaded } = fixture();
+    const decoration = new THREE.InstancedMesh(new THREE.BoxGeometry(0.4, 1, 0.4), new THREE.MeshBasicMaterial(), 1);
+    decoration.setMatrixAt(0, new THREE.Matrix4().makeTranslation(2.1, 1, 0));
+    scene.root.add(decoration); scene.root.updateMatrixWorld(true);
+    await state.loadStation(loaded, createRouter(loaded.bundle));
+    const copy = state.portalCutResources.instances.find((entry: { owner: THREE.Object3D }) => entry.owner === decoration)?.copy;
+    expect(copy).toBeDefined(); expect(state.sceneGroundTargets).not.toContain(copy);
+    expect(state.groundTargets).not.toContain(copy); expect(state.colliderTargets).not.toContain(copy);
+    expect(state.walkable).not.toContain(copy); expect(state.colliders).not.toContain(copy);
+  });
+
+  it("rejects separate single-surface planes as the two faces of a wall", async () => {
+    const { state, scene, loaded } = fixture();
+    const wall = scene.colliders[0]!, partition = scene.colliders[1]!;
+    const plane = new THREE.PlaneGeometry(6, 3).rotateY(-Math.PI / 2);
+    (wall as THREE.Mesh).geometry = plane; wall.position.set(2.05, 1.5, 0);
+    (partition as THREE.Mesh).geometry = plane; partition.position.set(3.05, 1.5, 0);
+    wall.material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }); partition.material = wall.material;
+    scene.root.updateMatrixWorld(true);
+    await state.loadStation(loaded, createRouter(loaded.bundle));
+    const box = state.greyboxOpenings[0];
+    expect(box.center.x).toBeCloseTo(2.05); expect(box.depth).toBe(0.6);
+    expect(state.greybox.stats.portalFarFaceRejected).toBe(1);
+    expect(partition.geometry).toBe(plane); expect(wall.geometry).not.toBe(plane);
   });
 
   it("records the hit face normal and exempts an oblique wall crossing", () => {

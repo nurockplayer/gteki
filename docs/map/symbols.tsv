@@ -125,11 +125,11 @@ createGreyboxBuilder	function	apps/web/src/explorer/greybox.ts	230
 buildGreybox	function	apps/web/src/explorer/greybox.ts	271
 emitGreybox	function	apps/web/src/explorer/greybox.ts	281
 greyboxSceneProbes	function	apps/web/src/explorer/greyboxScene.ts	10
-insideGreyboxOpening	function	apps/web/src/explorer/greyboxScene.ts	105
-GreyboxSegment	interface	apps/web/src/explorer/greyboxScene.ts	113
-greyboxPathSegments	function	apps/web/src/explorer/greyboxScene.ts	115
-nearGreybox	function	apps/web/src/explorer/greyboxScene.ts	124
-routeUsesGreybox	function	apps/web/src/explorer/greyboxScene.ts	137
+insideGreyboxOpening	function	apps/web/src/explorer/greyboxScene.ts	107
+GreyboxSegment	interface	apps/web/src/explorer/greyboxScene.ts	115
+greyboxPathSegments	function	apps/web/src/explorer/greyboxScene.ts	117
+nearGreybox	function	apps/web/src/explorer/greyboxScene.ts	126
+routeUsesGreybox	function	apps/web/src/explorer/greyboxScene.ts	139
 GUIDE_TIERS	const	apps/web/src/explorer/guidePace.ts	6
 GuideTierId	type	apps/web/src/explorer/guidePace.ts	12
 DEFAULT_GUIDE_TIER	const	apps/web/src/explorer/guidePace.ts	14
