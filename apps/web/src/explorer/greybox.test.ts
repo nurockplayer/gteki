@@ -162,6 +162,16 @@ describe("buildGreybox", () => {
     expect(buildGreybox(partial, () => true, () => false, emptyScene, "high").stats.lengthM).toBeCloseTo(15);
   });
 
+  it("deduplicates diagonal runs without merging corridors on another level", () => {
+    const diagonal = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 10, y: 10, z: 0 } },
+      { ...bundle.nodes[0]!, id: "upper-a", position: { x: 0, y: 0, z: 4 } },
+      { ...bundle.nodes[1]!, id: "upper-b", position: { x: 10, y: 10, z: 4 } }],
+      edges: [bundle.edges[0]!, { ...bundle.edges[0]!, id: "reverse", from: "b", to: "a" }, { ...bundle.edges[0]!, id: "upper", from: "upper-a", to: "upper-b" }] };
+    const result = buildGreybox(diagonal, () => true, () => false, emptyScene, "high");
+    expect(result.stats.runs).toBe(2);
+    expect(result.stats.lengthM).toBeCloseTo(20 * Math.SQRT2);
+  });
+
   it("builds 16 km of overlapping passages on five floors within budget", () => {
     const floors = Array.from({ length: 5 }, (_, i) => ({ ...bundle.floors[0]!, id: `f${i}`, renderElevationM: i * 4 }));
     const nodes = floors.flatMap((floor, i) => [

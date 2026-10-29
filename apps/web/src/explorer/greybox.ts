@@ -1,6 +1,5 @@
 import type { Edge, StationBundle } from "@gteki/schema";
 import * as THREE from "three";
-import { mergeGeometries, mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { edgePoints, R, type V3 } from "./geometry.ts";
 import { MODE_WIDTH } from "./graphView.ts";
 import type { Segment2 } from "./walker.ts";
@@ -170,24 +169,31 @@ type Corridor = { a: THREE.Vector3; b: THREE.Vector3; radius: number };
 
 /** A one-metre spatial hash of built corridors; coverage is clipped in plan and within 0.5 m in height. */
 class CorridorIndex {
-  private readonly cells = new Map<string, Set<Corridor>>();
-  private key(x: number, z: number, y: number): string { return `${x},${z},${y}`; }
-  private visit(a: THREE.Vector3, b: THREE.Vector3, padding: number, fn: (key: string) => void): void {
-    const n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.z - a.z)));
-    const r = Math.ceil(padding);
-    for (let i = 0; i <= n; i++) {
-      const t = i / n, x = Math.floor(a.x + (b.x - a.x) * t), z = Math.floor(a.z + (b.z - a.z) * t), y = Math.floor((a.y + (b.y - a.y) * t) * 2);
-      for (let dx = -r; dx <= r; dx++) for (let dz = -r; dz <= r; dz++) for (let dy = -1; dy <= 1; dy++) fn(this.key(x + dx, z + dz, y + dy));
+  // Each row stores an inclusive span of one-metre x cells, avoiding an entry per metre of a long corridor.
+  private readonly cells = new Map<string, { minX: number; maxX: number; corridor: Corridor }[]>();
+  private visit(a: THREE.Vector3, b: THREE.Vector3, padding: number, fn: (key: string, minX: number, maxX: number) => void): void {
+    const r = padding + 1, dz = b.z - a.z, dx = b.x - a.x;
+    const z0 = Math.floor(Math.min(a.z, b.z) - r), z1 = Math.floor(Math.max(a.z, b.z) + r);
+    const y0 = Math.floor((Math.min(a.y, b.y) - 0.5) * 2), y1 = Math.floor((Math.max(a.y, b.y) + 0.5) * 2);
+    for (let z = z0; z <= z1; z++) {
+      let t0 = 0, t1 = 1;
+      if (Math.abs(dz) > 1e-9) {
+        const u = (z - r - a.z) / dz, v = (z + 1 + r - a.z) / dz;
+        t0 = Math.max(0, Math.min(u, v)); t1 = Math.min(1, Math.max(u, v));
+        if (t0 > t1) continue;
+      }
+      const x0 = Math.floor(Math.min(a.x + t0 * dx, a.x + t1 * dx) - r), x1 = Math.floor(Math.max(a.x + t0 * dx, a.x + t1 * dx) + r);
+      for (let y = y0; y <= y1; y++) fn(`${z},${y}`, x0, x1);
     }
   }
   add(a: THREE.Vector3, b: THREE.Vector3, half: number): void {
     const corridor = { a: a.clone(), b: b.clone(), radius: Math.max(0, half - 0.2) };
-    this.visit(a, b, corridor.radius + 1, (key) => { let cell = this.cells.get(key); if (!cell) { cell = new Set(); this.cells.set(key, cell); } cell.add(corridor); });
+    this.visit(a, b, corridor.radius, (key, minX, maxX) => { let cell = this.cells.get(key); if (!cell) { cell = []; this.cells.set(key, cell); } cell.push({ minX, maxX, corridor }); });
   }
   /** Uncovered parameter intervals for a segment. */
   uncovered(a: THREE.Vector3, b: THREE.Vector3): [number, number][] {
     const candidates = new Set<Corridor>();
-    this.visit(a, b, 0, (key) => { for (const c of this.cells.get(key) ?? []) candidates.add(c); });
+    this.visit(a, b, 0, (key, minX, maxX) => { const row = this.cells.get(key); if (row) for (const span of row) if (span.maxX >= minX && span.minX <= maxX) candidates.add(span.corridor); });
     let open: [number, number][] = [[0, 1]];
     for (const c of candidates) {
       const dx = c.b.x - c.a.x, dz = c.b.z - c.a.z, len = Math.hypot(dx, dz);
@@ -217,6 +223,14 @@ class CorridorIndex {
 export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) => boolean, hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low") {
   const started = performance.now();
   const detected = unmodelledRunsByEdge(bundle, traversable, hasFloor);
+  const result = emitGreybox(bundle, detected, hasFloor, scene, tier);
+  result.stats.buildMs = performance.now() - started;
+  return result;
+}
+
+/** Emit the globally deduplicated passage geometry for already-detected runs. */
+export function emitGreybox(bundle: StationBundle, detected: readonly UnmodelledEdgeRun[], hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low") {
+  const started = performance.now();
   const index = new CorridorIndex();
   const runs: UnmodelledEdgeRun[] = [];
   for (const run of detected) {
@@ -263,6 +277,7 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
       }
     }
   }
+  const activeJunctions = [...junctions.values()].filter((junction) => junction.count >= 2);
   const batches = new Map<string, Batch>();
   const floorBatches = new Map<string, string>();
   const getBatch = (floor: string) => {
@@ -300,8 +315,8 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
         const wa = offset(a, side * half, 0), wz = offset(z, side * half, 0);
         // Clip the wall centreline against junction discs; the floor and ceiling remain continuous.
         let intervals: [number, number][] = index.uncovered(wa, wz);
-        for (const j of junctions.values()) {
-          if (j.count < 2 || Math.abs(j.at.y - (a.y + z.y) / 2) > 1) continue;
+        for (const j of activeJunctions) {
+          if (Math.abs(j.at.y - (a.y + z.y) / 2) > 1) continue;
           const vx = wz.x - wa.x, vz = wz.z - wa.z, ox = wa.x - j.at.x, oz = wa.z - j.at.z;
           const A = vx * vx + vz * vz, B = 2 * (ox * vx + oz * vz), C = ox * ox + oz * oz - (j.width / 2) ** 2;
           const disc = B * B - 4 * A * C;
@@ -366,8 +381,7 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
       travelled += length; lengthM += length;
     }
   }
-  for (const j of junctions.values()) {
-    if (j.count < 2) continue;
+  for (const j of activeJunctions) {
     const b = getBatch(j.floor), radius = j.width / 2;
     for (let i = 0; i < 24; i++) {
       const a = i * Math.PI * 2 / 24, z = (i + 1) * Math.PI * 2 / 24;
@@ -396,20 +410,23 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
     b.lightColors = b.lightColors.concat(b.portalColors);
     for (const [name, data, colors, material] of [["greybox-shell", b.shell, b.colors, shellMat], ["greybox-lights", b.lights, b.lightColors, lightMat], ["greybox-kerb", b.kerb, null, kerbMat]] as const) {
       if (!data.length) continue;
-      const part = new THREE.BufferGeometry();
-      part.setAttribute("position", new THREE.Float32BufferAttribute(data, 3));
-      if (colors) part.setAttribute("color", new THREE.Uint8BufferAttribute(colors.map((c) => Math.round(c * 255)), 3, true));
-      part.computeVertexNormals();
-      const normal = part.getAttribute("normal");
-      const packed = new Int8Array(normal.count * 3);
-      for (let i = 0; i < normal.count; i++) {
-        packed[i * 3] = Math.round(normal.getX(i) * 127);
-        packed[i * 3 + 1] = Math.round(normal.getY(i) * 127);
-        packed[i * 3 + 2] = Math.round(normal.getZ(i) * 127);
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(data), 3));
+      if (colors) {
+        const packedColors = new Uint8Array(colors.length);
+        for (let i = 0; i < colors.length; i++) packedColors[i] = Math.round(colors[i]! * 255);
+        geometry.setAttribute("color", new THREE.BufferAttribute(packedColors, 3, true));
       }
-      part.setAttribute("normal", new THREE.Int8BufferAttribute(packed, 3, true));
-      const merged = mergeGeometries([part])!; part.dispose();
-      const geometry = mergeVertices(merged); merged.dispose();
+      const packed = new Int8Array(data.length);
+      for (let i = 0; i < data.length; i += 9) {
+        const ax = data[i + 3]! - data[i]!, ay = data[i + 4]! - data[i + 1]!, az = data[i + 5]! - data[i + 2]!;
+        const bx = data[i + 6]! - data[i]!, by = data[i + 7]! - data[i + 1]!, bz = data[i + 8]! - data[i + 2]!;
+        let nx = ay * bz - az * by, ny = az * bx - ax * bz, nz = ax * by - ay * bx;
+        const length = Math.hypot(nx, ny, nz);
+        if (length) { nx = Math.round(nx / length * 127); ny = Math.round(ny / length * 127); nz = Math.round(nz / length * 127); }
+        for (let k = 0; k < 9; k += 3) { packed[i + k] = nx; packed[i + k + 1] = ny; packed[i + k + 2] = nz; }
+      }
+      geometry.setAttribute("normal", new THREE.Int8BufferAttribute(packed, 3, true));
       const mesh = new THREE.Mesh(geometry, material); mesh.name = name;
       mesh.userData = { greybox: true, approximate: true };
       if (name === "greybox-lights" && hasPortal) {
