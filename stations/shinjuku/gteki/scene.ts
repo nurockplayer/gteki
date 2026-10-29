@@ -13,6 +13,11 @@ import { railingWalls, type Plan } from "../scene/layout.ts";
 import { surfaceEntrances, surfaceRoofs, withSurfaceMemo } from "../scene/surface-layout.ts";
 import { clearLayoutCache } from "../scene/build-cache.ts";
 import plan from "../data/plan.json" with { type: "json" };
+import { loadShopKit, type LoadedShopKit, type Opening, type Shop } from "../../ikebukuro/scene/kit_shops.ts";
+import type { KitManifest } from "../../ikebukuro/scene/kit.ts";
+import shopKitManifest from "../scene/shop_kit.json" with { type: "json" };
+import shopBays from "../scene/shop_bays.json" with { type: "json" };
+import shopPlacements from "../scene/shop_placements.json" with { type: "json" };
 
 /** Camera that renders the station, reported to the street layer (see the probe in buildScene). */
 function viewerTracker(setViewer: ((pos: { x: number; y: number; z: number }) => void) | undefined) {
@@ -61,8 +66,10 @@ export const releaseCaches = releaseShinjukuCaches;
  */
 export const buildScene: BuildScene = (ctx) => {
   const request = kitSwapRequested(typeof location === "undefined" ? undefined : location.search);
-  if (!request.enabled) return assembleScene(ctx);
-  return prepareKitSwap(ctx, { lineColour: OEDO_MAGENTA, ...(request.tier ? { tier: request.tier } : {}), ...(request.roles ? { roles: request.roles } : {}) }).then((kit) => assembleScene(ctx, kit ?? undefined));
+  const swap = request.enabled ? prepareKitSwap(ctx, { lineColour: OEDO_MAGENTA, ...(request.tier ? { tier: request.tier } : {}), ...(request.roles ? { roles: request.roles } : {}) }) : Promise.resolve(null);
+  const shops = loadShopKit(ctx.THREE, ctx, shopKitManifest as KitManifest, shopPlacements.shops as Shop[], shopBays.openings as Opening[], ctx.quality === "low")
+    .catch((error: unknown) => { console.warn("[shinjuku] shop kit failed", error); return null; });
+  return Promise.all([swap, shops]).then(([kit, shopKit]) => assembleScene(ctx, kit ?? undefined, shopKit ?? undefined));
 };
 
 /**
@@ -81,7 +88,7 @@ export function planBundle(bundle: Parameters<BuildScene>[0]["bundle"]): Paramet
 }
 
 /** The scene build itself, with an optional, already prepared kit swap. Exported for tests. */
-export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap): StationScene => {
+export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, shopKit?: LoadedShopKit): StationScene => {
   const T = ctx.THREE;
   const sceneBundle = planBundle(ctx.bundle);
   const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, reuseLayout: true, verifyRestrictedInput: true, ...(kit ? { kit } : {}) });
@@ -262,6 +269,21 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap): St
       }
     });
   }
+  if (shopKit && !shopKit.placements.length) {
+    shopKit.dispose();
+    shopKit = undefined;
+  }
+  if (shopKit) {
+    try {
+      const { group, stats } = shopKit.build(T, envTarget?.texture as THREE.Texture, (x, y, z) => new T.Vector3(...ctx.enuToRenderer({ x, y, z })));
+      built.root.add(group);
+      built.root.userData.shopKit = stats;
+    } catch (error) {
+      console.warn("[shinjuku] shop kit failed", error);
+      shopKit.dispose();
+      shopKit = undefined;
+    }
+  }
 
   const nodes = new Map(ctx.bundle.nodes.map((n) => [n.id, n]));
   const spawnPoints: SpawnPoint[] = (ctx.bundle.spawnNodeIds ?? []).flatMap((id) => {
@@ -280,7 +302,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap): St
     walls,
     spawnPoints,
     environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },
-    ...sceneLifecycle(built.update, built.dispose, viewer.refresh, [...walkable, ...colliders, probe], [proxyMat, probeMat], envTarget),
+    ...sceneLifecycle(built.update, built.dispose, viewer.refresh, [...walkable, ...colliders, probe], [proxyMat, probeMat, ...(shopKit ? [shopKit] : [])], envTarget),
   };
   return scene;
 };

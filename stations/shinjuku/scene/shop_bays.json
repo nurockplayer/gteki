@@ -1,0 +1,58 @@
+{
+  "openings": [
+    {
+      "type": "Door",
+      "opening_id": "sjk-bay-1",
+      "polygon_ids": [
+        "sjk-bay-1"
+      ],
+      "base_z": -7.8,
+      "height": 2.4,
+      "width": 4.62,
+      "centre": [
+        -73.91,
+        153.34,
+        -7.8
+      ],
+      "normal_deg": 113.923,
+      "nearest_edge": null,
+      "edge_distance_m": 0
+    },
+    {
+      "type": "Door",
+      "opening_id": "sjk-bay-2",
+      "polygon_ids": [
+        "sjk-bay-2"
+      ],
+      "base_z": -7.8,
+      "height": 2.4,
+      "width": 4.58,
+      "centre": [
+        -87.41,
+        146.2,
+        -7.8
+      ],
+      "normal_deg": 204.969,
+      "nearest_edge": null,
+      "edge_distance_m": 0
+    },
+    {
+      "type": "Door",
+      "opening_id": "sjk-bay-3",
+      "polygon_ids": [
+        "sjk-bay-3"
+      ],
+      "base_z": -7.8,
+      "height": 2.4,
+      "width": 3.321,
+      "centre": [
+        -18.235,
+        193.18,
+        -7.8
+      ],
+      "normal_deg": 106.711,
+      "nearest_edge": null,
+      "edge_distance_m": 0
+    }
+  ]
+}

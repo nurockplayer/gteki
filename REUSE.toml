@@ -195,6 +195,7 @@ path = [
   "stations/shinjuku/data/plan.json",
   "stations/shinjuku/data/import-report.json",
   "stations/shinjuku/scene/fare-restricted.generated.json",
+  "stations/shinjuku/scene/shop_bays.json",
   "stations/shinjuku/test/fixtures/restricted-conflicts.json",
   "stations/shinjuku/tools/vantages.json",
   "docs/gis/networks/hokonavi-oedo-shinjuku-*",

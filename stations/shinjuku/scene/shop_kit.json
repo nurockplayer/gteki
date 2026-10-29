@@ -1,0 +1,18 @@
+{
+  "schema": "gteki.ikebukuro.kit/0",
+  "kit_version": "0.1.0",
+  "credit": "GTEki contributors, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+  "dirs": {
+    "high": "kit/high",
+    "low": "kit/low"
+  },
+  "pieces": {
+    "gteki_shopfront_door_w2000": {
+      "use": "shopfront_door",
+      "bay_m": 2,
+      "height_m": 2.8,
+      "glass_top_m": 2.2,
+      "note": "Origin on the floor at the bay centre, +X along the front, front face toward +Z (depth 0..0.14), fascia art face = material gteki_fascia_art (UV 0..1)."
+    }
+  }
+}

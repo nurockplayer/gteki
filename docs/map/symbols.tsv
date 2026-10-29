@@ -933,11 +933,11 @@ LANE_CAMERA	const	stations/shinjuku/app/src/spawn-view.ts	5
 followCameraEnvironment	function	stations/shinjuku/app/src/spawn-view.ts	8
 spawnView	function	stations/shinjuku/app/src/spawn-view.ts	18
 loadShinjukuBundle	function	stations/shinjuku/data/bundle.ts	11
-releaseShinjukuCaches	function	stations/shinjuku/gteki/scene.ts	51
-releaseCaches	const	stations/shinjuku/gteki/scene.ts	54
-buildScene	const	stations/shinjuku/gteki/scene.ts	62
-planBundle	function	stations/shinjuku/gteki/scene.ts	73
-assembleScene	const	stations/shinjuku/gteki/scene.ts	84
+releaseShinjukuCaches	function	stations/shinjuku/gteki/scene.ts	56
+releaseCaches	const	stations/shinjuku/gteki/scene.ts	59
+buildScene	const	stations/shinjuku/gteki/scene.ts	67
+planBundle	function	stations/shinjuku/gteki/scene.ts	80
+assembleScene	const	stations/shinjuku/gteki/scene.ts	91
 @gteki/station-shinjuku:dev	script	stations/shinjuku/package.json	24
 @gteki/station-shinjuku:build	script	stations/shinjuku/package.json	25
 @gteki/station-shinjuku:preview	script	stations/shinjuku/package.json	26
@@ -953,6 +953,7 @@ assembleScene	const	stations/shinjuku/gteki/scene.ts	84
 @gteki/station-shinjuku:perf	script	stations/shinjuku/package.json	36
 @gteki/station-shinjuku:heap	script	stations/shinjuku/package.json	37
 @gteki/station-shinjuku:bake:surface	script	stations/shinjuku/package.json	38
+@gteki/station-shinjuku:shops:bays	script	stations/shinjuku/package.json	39
 PreparedLayout	interface	stations/shinjuku/scene/build-cache.ts	20
 PrepareOptions	interface	stations/shinjuku/scene/build-cache.ts	26
 clearLayoutCache	function	stations/shinjuku/scene/build-cache.ts	37
@@ -1344,6 +1345,8 @@ parseRoads	function	stations/shinjuku/tools/import-surface.ts	98
 importSurface	function	stations/shinjuku/tools/import-surface.ts	118
 CATALOG_PATH	const	stations/shinjuku/tools/kit-catalog.ts	18
 renderCatalog	function	stations/shinjuku/tools/kit-catalog.ts	20
+shopBays	function	stations/shinjuku/tools/shop-bays.ts	27
+shopBaysText	const	stations/shinjuku/tools/shop-bays.ts	76
 @gteki/e2e:test	script	tests/e2e/package.json	7
 @gteki/e2e:test:desktop	script	tests/e2e/package.json	8
 @gteki/e2e:report	script	tests/e2e/package.json	9
