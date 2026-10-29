@@ -1,5 +1,7 @@
+/** Generate private S03 additions, then optionally drape them onto the scene floor. */
+import { spawnSync } from 'node:child_process';
 import { existsSync, realpathSync } from 'node:fs';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import type { Edge, Floor, GraphFile, Node, StationManifestFile } from '../../../packages/schema/src/index.js';
 import { repoRoot } from './common.js';
@@ -118,9 +120,16 @@ function privateOutput(out: string): string {
 }
 
 /** Reads a held run and public base; writes only the requested private additions file, with no public receipt. */
-export async function s03PrivateSeam(options: { run: string; out: string; privateTier: boolean }, storeRoot?: string) {
+export async function s03PrivateSeam(options: { run: string; out: string; privateTier: boolean; drape?: boolean }, storeRoot?: string) {
   if (!options.privateTier) throw new Error('S03 private seam: refusing without the explicit --private-tier flag');
   const out = privateOutput(options.out);
+  let privateDir: string | undefined;
+  if (options.drape) {
+    const stationDir = dirname(out), additions = dirname(stationDir);
+    if (stationDir.split(sep).at(-1) !== 'shinjuku' || additions.split(sep).at(-1) !== 'additions')
+      throw new Error('S03 drape: --out must be under additions/shinjuku');
+    privateDir = dirname(additions);
+  }
   const { document } = await loadHeldGraph(options.run, storeRoot);
   const base = join(repoRoot, 'stations/shinjuku/gteki');
   const manifest = JSON.parse(await readFile(join(base, 'station.json'), 'utf8')) as StationManifestFile;
@@ -128,6 +137,15 @@ export async function s03PrivateSeam(options: { run: string; out: string; privat
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
   const result = buildPrivateSeam(document, { manifest, graph }, { runId: options.run, today });
   await mkdir(dirname(out), { recursive: true });
+  const previous = options.drape && existsSync(out) ? await readFile(out) : undefined;
   await writeFile(out, `${JSON.stringify({ nodes: result.nodes, edges: result.edges, ...(result.floors.length ? { floors: result.floors } : {}) }, null, 2)}\n`);
+  if (options.drape) {
+    const child = spawnSync('pnpm', ['tsx', 'packages/godot/src/drape-edges.ts', '--station', 'shinjuku', '--private', privateDir!,
+      '--file', relative(privateDir!, out), '--out', out], { cwd: repoRoot, stdio: 'inherit' });
+    if (child.error || child.status !== 0) {
+      if (previous) await writeFile(out, previous); else await unlink(out);
+      throw new Error(`S03 drape failed: ${child.error?.message ?? child.status}`);
+    }
+  }
   return { nodes: result.nodes.length, edges: result.edges.length, seamEdges: result.edges.filter(edge => edge.attributes?.seam).length, newFloors: result.floors.length };
 }
