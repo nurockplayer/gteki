@@ -363,10 +363,22 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
           const lo = (-B - Math.sqrt(disc)) / (2 * A), hi = (-B + Math.sqrt(disc)) / (2 * A);
           intervals = intervals.flatMap(([s, e]) => [[s, Math.min(e, lo)], [Math.max(s, hi), e]].filter(([x, y]) => x! < y!) as [number, number][]);
         }
+        const clearIntervals: [number, number][] = [];
         for (const [s, e] of intervals) {
-          const p = wa.clone().lerp(wz, s), q = wa.clone().lerp(wz, e), mid = p.clone().lerp(q, 0.5);
-          mid.y += 1.3;
-          if (scene.colliderNear(enu(mid), 0.3)) continue;
+          const pieces = Math.max(1, Math.ceil(wa.distanceTo(wz) * (e - s) / 2));
+          let clearStart: number | null = null;
+          for (let k = 0; k < pieces; k++) {
+            const start = s + (e - s) * k / pieces, end = s + (e - s) * (k + 1) / pieces;
+            const mid = wa.clone().lerp(wz, (start + end) / 2); mid.y += 1.3;
+            if (scene.colliderNear(enu(mid), 0.3)) {
+              if (clearStart !== null) clearIntervals.push([clearStart, start]);
+              clearStart = null;
+            } else if (clearStart === null) clearStart = start;
+            if (k === pieces - 1 && clearStart !== null) clearIntervals.push([clearStart, end]);
+          }
+        }
+        for (const [s, e] of clearIntervals) {
+          const p = wa.clone().lerp(wz, s), q = wa.clone().lerp(wz, e);
           const topP = p.clone().add(new THREE.Vector3(0, 2.6, 0)), topQ = q.clone().add(new THREE.Vector3(0, 2.6, 0));
           if (side < 0) {
             quad(b.shell, b.colors, topP, topQ, q, p, [0.62, 0.62, 0.62, 0.62]);

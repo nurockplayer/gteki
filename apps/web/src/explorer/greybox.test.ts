@@ -114,6 +114,16 @@ describe("buildGreybox", () => {
     expect(blocked.wallSegments).toHaveLength(0);
   });
 
+  it("omits only the two-metre wall piece next to a collider", () => {
+    const long = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 40, y: 0, z: 0 } }] };
+    const result = buildGreybox(long, () => true, () => false, { ...emptyScene, colliderNear: (p) => Math.abs(p.x - 19) < 0.01 }, "high");
+    for (const sign of [-1, 1]) {
+      const walls = result.wallSegments.filter((wall) => Math.sign(wall.az) === sign);
+      expect(walls).toHaveLength(2);
+      expect(walls.reduce((length, wall) => length + Math.hypot(wall.bx - wall.ax, wall.bz - wall.az), 0)).toBeCloseTo(38);
+    }
+  });
+
   it("fills the outside corner of a bend inside one edge", () => {
     const bent = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 5, y: 10, z: 0 } }], edges: [{ ...bundle.edges[0]!, geometry: [{ x: 0, y: 0, z: 0 }, { x: 5, y: 0, z: 0 }, { x: 5, y: 10, z: 0 }] }] };
     const result = buildGreybox(bent, () => true, () => false, emptyScene, "high");
