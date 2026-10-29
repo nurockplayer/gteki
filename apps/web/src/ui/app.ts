@@ -129,6 +129,7 @@ export class App {
   };
   /** Listbox state of the two search comboboxes. */
   private readonly combo: Record<"from" | "to", ComboState> = { from: COMBO_CLOSED, to: COMBO_CLOSED };
+  private elevatorDirectionHint = false;
   private panelExpanded = false;
   /** When the last IME composition ended anywhere on the page; the guide keys ignore its confirming keys. */
   private compositionEndMs = -Infinity;
@@ -145,6 +146,7 @@ export class App {
     this.explorer = new Explorer(this.root.querySelector(".viewport") as HTMLElement, {
       onMode: (mode) => this.onMode(mode),
       onGreyboxLegend: (visible) => { this.ui.greyboxLegend.hidden = !visible; },
+      onElevatorDirectionHint: (visible) => { this.elevatorDirectionHint = visible; this.updateWalkHint(); },
       onGuideProgress: (p) => this.onGuideProgress(p),
       onGuideStop: (index) => this.onGuideStop(index),
       onPoiClick: (id) => {
@@ -268,7 +270,12 @@ export class App {
     this.ui.fromInput.placeholder = t.fromPlaceholder;
     this.ui.toInput.placeholder = t.toPlaceholder;
     this.root.querySelectorAll<HTMLElement>("[data-label]").forEach((n) => { n.textContent = t[n.dataset.label as "from" | "to"]; });
-    this.ui.hint.textContent = matchMedia("(pointer: coarse)").matches ? t.touchHint : t.controlsHint;
+    this.updateWalkHint();
+  }
+
+  private updateWalkHint(): void {
+    const t = this.t;
+    this.ui.hint.textContent = this.elevatorDirectionHint ? t.elevatorDirectionHint : matchMedia("(pointer: coarse)").matches ? t.touchHint : t.controlsHint;
   }
 
   private field(which: "from" | "to", input: HTMLInputElement, results: HTMLDivElement, note: HTMLParagraphElement): HTMLDivElement {

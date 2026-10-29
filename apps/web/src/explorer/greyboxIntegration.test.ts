@@ -28,7 +28,7 @@ function fixture() {
     applyLighting: vi.fn(), cameraCut: { apply: () => [] }, attachShadows: vi.fn(), buildOccluders: vi.fn(),
     setupComposer: vi.fn(), frameAll: vi.fn(), events: {}, ray: new THREE.Raycaster(),
     pos: new THREE.Vector3(1, 0, 0), yaw: -Math.PI / 2, pitch: 0, camDistance: 3,
-    input: { enabled: true, virtualKeys: keys, consumeLook: () => ({ dx: 0, dy: 0, zoom: 0 }), move: () => ({ x: 0, y: keys.has("KeyW") ? 1 : 0, run: false }) },
+    input: { enabled: true, virtualKeys: keys, consumeLook: () => ({ dx: 0, dy: 0, zoom: 0 }), move: () => ({ x: 0, y: (keys.has("KeyW") || keys.has("ArrowUp") ? 1 : 0) - (keys.has("KeyS") || keys.has("ArrowDown") ? 1 : 0), run: false }) },
     timer: { getElapsed: () => 0 }, render: vi.fn(),
     step(dt: number) { (Explorer.prototype as unknown as { stepWalk(this: unknown, dt: number): void }).stepWalk.call(state, dt); },
   });
@@ -154,7 +154,7 @@ describe("greybox station integration", () => {
     expect(car.mesh.position.y).toBe(parked);
   });
 
-  it("continues in the boarding direction after re-arming at an intermediate landing", async () => {
+  it("selects both directions at an intermediate landing and stays without input", async () => {
     const { state, loaded } = fixture();
     loaded.bundle = createSyntheticBundle([
       syntheticEdge("lift-1", "a", "upper", { mode: "elevator", attributes: { sceneGap: true } }),
@@ -162,19 +162,42 @@ describe("greybox station integration", () => {
     ]);
     loaded.bundle.nodes.find((n) => n.id === "upper-2")!.position = { x: 10, y: 0, z: 8 };
     await state.loadStation(loaded, createRouter(loaded.bundle));
-    expect(state.connectors.cars).toHaveLength(1);
-    state.mode = "walk"; state.pos.set(10, 0, 0);
-    for (let i = 0; i < 100; i++) state.updateElevatorCars(0.05);
-    expect(state.pos.y).toBeCloseTo(4);
-    state.input.virtualKeys.add("KeyW"); state.updateElevatorCars(0.05); state.input.virtualKeys.delete("KeyW");
-    for (let i = 0; i < 100; i++) state.updateElevatorCars(0.05);
-    expect(state.pos.y).toBeCloseTo(8);
-    state.input.virtualKeys.add("KeyW"); state.updateElevatorCars(0.05); state.input.virtualKeys.delete("KeyW");
-    for (let i = 0; i < 100; i++) state.updateElevatorCars(0.05);
-    expect(state.pos.y).toBeCloseTo(4);
-    state.input.virtualKeys.add("KeyW"); state.updateElevatorCars(0.05); state.input.virtualKeys.delete("KeyW");
-    for (let i = 0; i < 100; i++) state.updateElevatorCars(0.05);
+    const car = state.connectors.cars[0];
+    const hints: boolean[] = [];
+    state.events.onElevatorDirectionHint = (visible: boolean) => hints.push(visible);
+    state.mode = "walk"; state.pos.set(10, 4, 0); car.mesh.position.y = 4; car.mesh.updateMatrixWorld(true);
+    for (let i = 0; i < 30; i++) { state.stepWalk(0.05); state.updateElevatorCars(0.05); }
+    expect(state.pos.y).toBe(4); expect(car.mesh.position.y).toBe(4); expect(state.liftRide).toBeFalsy(); expect(hints).toEqual([true]);
+    state.input.virtualKeys.add("KeyS");
+    for (let i = 0; i < 5; i++) { state.stepWalk(0.05); state.updateElevatorCars(0.05); }
+    expect(state.pos.y).toBe(4);
+    state.stepWalk(0.05); state.updateElevatorCars(0.05);
+    expect(state.liftRide).toMatchObject({ direction: -1, target: 0, status: "riding" });
+    state.input.virtualKeys.clear();
+    for (let i = 0; i < 70; i++) { state.stepWalk(0.05); state.updateElevatorCars(0.05); }
     expect(state.pos.y).toBeCloseTo(0);
+    car.mesh.position.y = 4; car.mesh.updateMatrixWorld(true); state.pos.set(10, 4, 0); state.cancelRide(); car.mesh.position.y = 4; car.mesh.updateMatrixWorld(true);
+    state.input.virtualKeys.add("ArrowUp");
+    for (let i = 0; i < 6; i++) { state.stepWalk(0.05); state.updateElevatorCars(0.05); }
+    expect(state.liftRide).toMatchObject({ direction: 1, target: 8, status: "riding" });
+    state.input.virtualKeys.clear();
+    for (let i = 0; i < 70; i++) { state.stepWalk(0.05); state.updateElevatorCars(0.05); }
+    expect(state.pos.y).toBeCloseTo(8);
+    expect(hints).toContain(false);
+  });
+
+  it("uses the active route direction after waiting at an intermediate landing", async () => {
+    const { state, loaded } = fixture();
+    loaded.bundle = createSyntheticBundle([
+      syntheticEdge("lift-1", "a", "upper", { mode: "elevator" }),
+      syntheticEdge("lift-2", "upper", "upper-2", { mode: "elevator" }),
+    ]);
+    loaded.bundle.nodes.find((n) => n.id === "upper-2")!.position = { x: 10, y: 0, z: 8 };
+    await state.loadStation(loaded, createRouter(loaded.bundle));
+    const car = state.connectors.cars[0]; car.mesh.position.y = 4; car.mesh.updateMatrixWorld(true); state.pos.set(10, 4, 0);
+    state.liftRoute = [{ x: 10, y: 0, z: 4 }, { x: 10, y: 0, z: 0, edgeId: "lift-1" }];
+    for (let i = 0; i < 10; i++) state.updateElevatorCars(0.05);
+    expect(state.liftRide).toMatchObject({ target: 0, direction: -1, status: "riding" });
   });
 
   it("loads vertical connectors and tracks the elevator car in guide mode", async () => {

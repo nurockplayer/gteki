@@ -8,6 +8,7 @@ export type Lang = "ja" | "en";
 const STRINGS = {
   ja: {
     greyboxLegend: "示意，非實測",
+    elevatorDirectionHint: "↑/↓ 選擇方向",
     minimap: "ミニマップ",
     minimapPlayerUp: "キャラクターの向きが上",
     minimapNorthUp: "北を上に固定",
@@ -240,6 +241,7 @@ const STRINGS = {
   },
   en: {
     greyboxLegend: "Approximate, not surveyed",
+    elevatorDirectionHint: "↑/↓ choose direction",
     minimap: "Minimap",
     minimapPlayerUp: "Player facing up",
     minimapNorthUp: "North up",
