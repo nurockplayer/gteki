@@ -200,6 +200,23 @@ export class TriangleBvh {
     }
   }
 
+  /** Triangles in leaves whose bounds touch a sphere; callers perform the exact distance test. */
+  pointCandidates(x: number, y: number, z: number, radius: number, out: number[]): void {
+    if (this.tris.length === 0) return;
+    const stack = [0], r2 = radius * radius, b = this.bounds;
+    while (stack.length) {
+      const node = stack.pop()!, at = node * 6;
+      const dx = Math.max(b[at]! - x, 0, x - b[at + 3]!);
+      const dy = Math.max(b[at + 1]! - y, 0, y - b[at + 4]!);
+      const dz = Math.max(b[at + 2]! - z, 0, z - b[at + 5]!);
+      if (dx * dx + dy * dy + dz * dz > r2) continue;
+      const child = this.nodes[node * 3]!;
+      if (child >= 0) { stack.push(child, child + 1); continue; }
+      const first = this.nodes[node * 3 + 1]!, end = first + this.nodes[node * 3 + 2]!;
+      for (let i = first; i < end; i++) out.push(this.ids[i]!);
+    }
+  }
+
   /** Bytes held by the tree (triangles, ids, bounds, nodes). */
   get byteLength(): number {
     return this.tris.byteLength + this.ids.byteLength + this.bounds.byteLength + this.nodes.byteLength;

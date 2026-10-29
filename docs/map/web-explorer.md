@@ -1,7 +1,7 @@
 ---
 area: web-explorer
 owner: gteki-fa
-updated: 2026-10-26 JST
+updated: 2026-10-29 JST
 ---
 # Web explorer (3D station view)
 
@@ -10,6 +10,9 @@ The 3D station explorer in the web app. One `Explorer` class (a single file, `ap
 Most helpers in the folder are small pure modules with their own tests (camera math, label declutter, occlusion, guide pacing), so the class mostly wires them together.
 
 ## Main files and functions
+- `apps/web/src/explorer/greybox.ts` — detects unmodelled edge runs, builds merged runtime passage meshes and portal openings, and splits walls at openings.
+- `apps/web/src/explorer/greyboxScene.ts` — station-only collision probes and runtime greybox legend proximity.
+- `apps/web/src/explorer/routeGroundQa.ts` — route ground and vertical connector sampling for the QA hook.
 - `apps/web/src/main.ts:1-8` — entry: imports the CSS and constructs `App` on the `#app` element, prints a load failure into the page.
 - `apps/web/src/explorer/explorer.ts:50-54` — types ExplorerMode, ExplorerPose, ExplorerOptions.
 - `apps/web/src/explorer/explorer.ts:183-2254` — class Explorer (the whole runtime).
@@ -50,6 +53,7 @@ Most helpers in the folder are small pure modules with their own tests (camera m
 - `apps/web/src/explorer/walker.ts:22-53` — resolveWalls(); `72-86` samplePolyline().
 
 ## Data flow
+- Runtime greybox: `Explorer.loadStation()` probes the original station ground and colliders, builds passages from traversable graph edges, then adds their floor and walls to the walker and camera targets. Portal openings split scene wall segments and filter collider hits.
 - Station data: `apps/web/src/registry.ts` `listStations()` (line 50) reads the Vite virtual module `virtual:gteki-stations` (built by `apps/web/stations-plugin.ts` from the `stations/` folders). `GTEKI_PRIVATE_OVERLAY` can replace contract JSON for matching public station names while scene code and assets stay public; the module exports `privateBuild`, surfaced by `PRIVATE_BUILD` and the UI badge. Each entry's `load()` returns a LoadedStation: the parsed bundle from the schema package, optional `scene` module, `sceneImportError`, and `assetUrls`. The synthetic demo entry is added at the end and has no scene.
 - `apps/web/src/ui/app.ts` `openStation()` (283-353) creates the router (`createRouter`) and the search index, then calls `Explorer.loadStation`. The explorer never parses station files itself.
 - Route: `app.ts` `computeRoute()` (775-801) calls `routeBetween`, then `Explorer.showRoute` and `minimap.setRoute`. In overview it also calls `focusPoints`.
@@ -64,6 +68,7 @@ Most helpers in the folder are small pure modules with their own tests (camera m
 - QA hook tests: `apps/web/src/explorer/explorerQa.test.ts` covers the QA hooks; `apps/web/src/explorer/rayBvh.heavy.test.ts` is a heavy ray test, check whether the root vitest run includes it before relying on it.
 
 ## Pitfalls
+- The greybox is built in `loadStation` from the loaded graph and scene, exists only at runtime, and must never be exported or stored as geometry.
 - `explorer.ts` is one class. Change one method, not the file. Most of the 2300 lines are private state fields (lines 183-370) and never need to be read in full.
 - The camera uses the previous frame's pose for scene `update` (see the comment in `step`). Do not move that call.
 - Station scene failure must never hide routing data: `buildStationScene` falls back to the graph view. Keep that when editing `loadStation`.

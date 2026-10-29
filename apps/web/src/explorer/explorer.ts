@@ -7,7 +7,7 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { LightProbeGenerator } from "three/examples/jsm/lights/LightProbeGenerator.js";
 import { ASSET_SCHEME, fencedUrlResolver, stationDir } from "./assetFence.ts";
 import { enuToRenderer } from "@gteki/geo";
-import type { Router, PolylinePoint } from "@gteki/navigation";
+import type { Router, PolylinePoint, RouteStep } from "@gteki/navigation";
 import { DEFAULT_PROFILE, nodeDisplayZ } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
@@ -15,7 +15,10 @@ import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from 
 import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
 import { R, chevronTexture, dashTexture, ribbonGeometry } from "./geometry.ts";
-import { unmodelledRuns } from "./routeGaps.ts";
+import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
+import { buildGreybox, splitWallsAtOpenings, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
+import { greyboxPathSegments, greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
+import { darkSampleDistances, routeGroundCounts, sceneMeshNear } from "./routeGroundQa.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
@@ -76,6 +79,7 @@ interface ShadowFit {
 
 export interface ExplorerEvents {
   onMode?(mode: ExplorerMode): void;
+  onGreyboxLegend?(visible: boolean): void;
   onGuideProgress?(p: { s: number; total: number; stepIndex: number; done: boolean }): void;
   /** The guide stopped (and paused) at `stops[index]` given to startGuide. */
   onGuideStop?(index: number): void;
@@ -223,6 +227,12 @@ export class Explorer {
 
   private station: LoadedStation | null = null;
   private stationScene: StationScene | null = null;
+  private greybox: ReturnType<typeof buildGreybox> | null = null;
+  private greyboxOpenings: Box[] = [];
+  private sceneColliderTargets = new Set<THREE.Object3D>();
+  private greyboxSegments: GreyboxSegment[] = [];
+  private greyboxLegendVisible = false;
+  private sceneGroundTargets: THREE.Object3D[] = [];
   private graph: GraphView | null = null;
   private readonly world = new THREE.Group();
   private readonly overlays = new THREE.Group();
@@ -445,10 +455,10 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
+  sceneInfo(): { greybox: GreyboxStats | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
-      world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
+      greybox: this.greybox?.stats ?? null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
       walkable: this.walkable.length, colliders: this.colliders.length, cameraBlockers: this.cameraBlockers.length, seeThrough: this.seeThrough.length,
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
       bakedAo: { ...this.bakedAo }, assets: this.loadedAssets.map((a) => ({ ...a })),
@@ -911,6 +921,28 @@ export class Explorer {
         .map((n) => R(n.position.x, n.position.y, nodeDisplayZ(n, streets.find((f) => f.id === n.floorId)).z));
       this.stationScene.root.updateMatrixWorld(true);
       this.street.attach(this.stationScene.root);
+      this.world.updateMatrixWorld(true);
+      const originalTargets = explorerTargets(this.walkable, this.colliders, this.cameraBlockers);
+      prepareRayTrees(originalTargets.camera);
+      this.sceneGroundTargets = originalTargets.ground;
+      const scene = greyboxSceneProbes(originalTargets.collider, this.walls);
+      const probe = floorProbe(new THREE.Raycaster(), originalTargets.ground, true);
+      const floorCache = new Map<string, boolean>();
+      const hasFloor = (p: { x: number; y: number; z: number }) => {
+        const key = `${Math.round(p.x * 100)},${Math.round(p.y * 100)},${Math.round(p.z * 100)}`;
+        let value = floorCache.get(key);
+        if (value === undefined) { value = probe(p); floorCache.set(key, value); }
+        return value;
+      };
+      const traversable = (edge: StationBundle["edges"][number]) => router.isTraversable(edge, DEFAULT_PROFILE);
+      this.greybox = buildGreybox(bundle, traversable, hasFloor, scene, this.quality);
+      this.greyboxSegments = greyboxPathSegments(unmodelledRunsByEdge(bundle, traversable, hasFloor));
+      this.greyboxOpenings = this.greybox.openings;
+      this.sceneColliderTargets = new Set(originalTargets.collider);
+      this.world.add(this.greybox.root);
+      this.walkable = [...this.walkable, ...this.greybox.walkable];
+      this.colliders = [...this.colliders, ...this.greybox.colliders];
+      this.walls = splitWallsAtOpenings([...this.walls, ...this.greybox.wallSegments], this.greyboxOpenings);
     } else {
       this.world.add(this.graph.root);
       this.walkable = this.graph.walkable;
@@ -970,6 +1002,23 @@ export class Explorer {
     this.stopGuide();
     this.clearRoute();
     this.clearPois();
+    if (this.greybox) {
+      this.world.remove(this.greybox.root);
+      const materials = new Set<THREE.Material>();
+      this.greybox.root.traverse((object) => {
+        const mesh = object as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        mesh.geometry.dispose();
+        for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) materials.add(material);
+      });
+      for (const material of materials) material.dispose();
+      this.greybox = null;
+    }
+    this.greyboxOpenings = [];
+    this.sceneColliderTargets = new Set();
+    this.greyboxSegments = [];
+    this.sceneGroundTargets = [];
+    this.updateGreyboxLegend();
     if (this.stationScene) { this.world.remove(this.stationScene.root); this.stationScene.dispose(); this.stationScene = null; }
     if (this.graph) { this.world.remove(this.graph.root); this.overlays.remove(this.graph.overlay); this.graph.dispose(); this.graph = null; }
     this.routableBox = null;
@@ -1193,6 +1242,7 @@ export class Explorer {
     if (mode === "overview") { this.street.restore(this.scene); this.setFov(FOV.overview, true); }
     this.overviewLook.set(this.scene, this.world, mode === "overview");
     this.events.onMode?.(mode);
+    this.updateGreyboxLegend();
   }
 
   get firstPersonOn(): boolean {
@@ -1274,13 +1324,76 @@ export class Explorer {
     return hit ? hit.point.y : null;
   }
 
+  /** QA for the current route: the same ground ray used by the walker, plus connector and image checks. */
+  routeGroundCheck(polyline: readonly PolylinePoint[], steps: readonly RouteStep[], guideStopsM: readonly number[] = []) {
+    const roots = [this.stationScene?.root, this.greybox?.root].filter((root): root is THREE.Object3D => Boolean(root));
+    const counts = routeGroundCounts(polyline, (p) => this.groundAt(p.x, p.y + DEFAULT_GROUND.stepUp + 0.05, p.z, DEFAULT_GROUND.stepUp + DEFAULT_GROUND.stepDown + 0.1), steps, this.station?.bundle ?? null, (p, radius) => sceneMeshNear(roots, p, radius));
+    return { ...counts, darkShare: async (stops?: readonly number[]): Promise<number> => {
+      const points = polyline.map((p) => R(p.x, p.y, p.z));
+      if (points.length < 2) return 0;
+      const cum = cumulativeLengths(points), total = cum.at(-1)!;
+      const positions = darkSampleDistances(total, stops ?? guideStopsM);
+      const cameraPosition = this.camera.position.clone(), cameraRotation = this.camera.quaternion.clone(), cameraFov = this.camera.fov;
+      const avatarPosition = this.avatar.position.clone(), avatarVisible = this.avatar.visible;
+      const gl = this.renderer.getContext(), width = gl.drawingBufferWidth, height = gl.drawingBufferHeight;
+      const x = Math.floor(width * 0.2), y = Math.floor(height * 0.2), w = Math.max(1, Math.floor(width * 0.6)), h = Math.max(1, Math.floor(height * 0.6));
+      const pixels = new Uint8Array(w * h * 4);
+      let dark = 0, count = 0;
+      const overview = this.mode === "overview";
+      const xray = this.routeGroup.getObjectByName("route-xray");
+      const xrayVisible = xray?.visible;
+      try {
+        if (overview) {
+          this.overviewLook.set(this.scene, this.world, false);
+          this.graph?.setXray(false); this.routeLines?.setXray(false);
+          if (xray) xray.visible = false;
+        }
+        this.avatar.visible = true;
+        this.camera.fov = FOV.follow; this.camera.updateProjectionMatrix();
+        for (const distance of positions) {
+          const p = samplePolyline(points, cum, distance);
+          const head = new THREE.Vector3(p.x, p.y + EYE, p.z);
+          const direction = p.tx || p.tz ? new THREE.Vector3(p.tx, 0, p.tz).normalize() : new THREE.Vector3(0, 0, -1);
+          this.avatar.position.set(p.x, p.y, p.z);
+          const cameraOffset = direction.clone().multiplyScalar(-this.camDistance).add(new THREE.Vector3(0, 0.3, 0));
+          const length = cameraOffset.length();
+          this.ray.set(head, cameraOffset.clone().divideScalar(length)); this.ray.far = length;
+          const hit = castCamera(this.ray, this.cameraTargets, this.cameraSides)[0];
+          this.camera.position.copy(head).addScaledVector(cameraOffset, hit ? Math.max(0, hit.distance - FOLLOW.clearance) / length : 1);
+          this.camera.lookAt(head.clone().add(direction)); this.camera.updateMatrixWorld();
+          if (this.composer) this.composer.render(0); else this.renderer.render(this.scene, this.camera);
+          gl.readPixels(x, y, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+          for (let i = 0; i < pixels.length; i += 4) {
+            if ((0.2126 * pixels[i]! + 0.7152 * pixels[i + 1]! + 0.0722 * pixels[i + 2]!) / 255 < 0.06) dark++;
+            count++;
+          }
+        }
+      } finally {
+        if (overview) {
+          this.overviewLook.set(this.scene, this.world, true);
+          this.graph?.setXray(true); this.routeLines?.setXray(true);
+          if (xray && xrayVisible !== undefined) xray.visible = xrayVisible;
+        }
+        this.avatar.position.copy(avatarPosition); this.avatar.visible = avatarVisible;
+        this.camera.position.copy(cameraPosition); this.camera.quaternion.copy(cameraRotation); this.camera.fov = cameraFov;
+        this.camera.updateProjectionMatrix(); this.camera.updateMatrixWorld();
+        if (this.composer) this.composer.render(0); else this.renderer.render(this.scene, this.camera);
+      }
+      return count ? dark / count : 0;
+    } };
+  }
+
   /** The collider surface that stops the walker's body going from `from` to `to`, or null when the move is free. */
   private blockedByColliders(from: THREE.Vector3, to: THREE.Vector3): BodyBlock | null {
     if (this.colliders.length === 0) return null;
     return bodyBlock(from, to, (origin, dir, far) => {
       this.ray.set(origin, dir);
       this.ray.far = far;
-      const hit = castAll(this.ray, this.colliderTargets)[0];
+      const hit = castAll(this.ray, this.colliderTargets).find((h) => {
+        if (h.object.userData.greybox || !h.face) return true;
+        const normal = hitNormal(h, dir);
+        return !this.greyboxOpenings.some((box) => this.sceneColliderTargets.has(h.object) && insideGreyboxOpening(h.point, box) && Math.abs(normal.y) <= 0.5);
+      });
       return hit ? { distance: hit.distance, normal: hitNormal(hit, dir) } : null;
     }, RADIUS);
   }
@@ -1313,12 +1426,8 @@ export class Explorer {
     this.routeGroup.add(ribbon, ...glow, xray);
     // Stretches with no scene floor under them (the graph runs through space the scene doesn't model):
     // an always-on-top dashed amber band, so they read as "not modelled" rather than as a route in the void.
-    const gaps = this.groundTargets.length === 0 ? [] : unmodelledRuns(polyline, (p) => {
-      this.ray.set(R(p.x, p.y, p.z + 3), new THREE.Vector3(0, -1, 0));
-      this.ray.far = 6;
-      // Only a floor at the route's own height counts: the storey below must not hide a missing one (public routes sit within 0.45 m).
-      return castAll(this.ray, this.groundTargets).some((h) => Math.abs(h.point.y - p.z) <= 1);
-    });
+    const routeGround = this.stationScene ? this.sceneGroundTargets : this.groundTargets;
+    const gaps = routeGround.length === 0 ? [] : unmodelledRuns(polyline, floorProbe(this.ray, routeGround));
     if (gaps.length > 0) {
       this.noModelTexture ??= dashTexture();
       this.noModelTexture.repeat.set(1 / 1.6, 1);
@@ -1331,7 +1440,8 @@ export class Explorer {
       }
     }
     this.routeGroup.add(this.beacon(pts[0]!, 0x7dffa0, 2.2), this.beacon(pts[pts.length - 1]!, 0xffc857, 5));
-    this.routeGroup.userData = { symbolicHeights: symbolic, noModelRuns: gaps.length };
+    this.routeGroup.userData = { symbolicHeights: symbolic, noModelRuns: gaps.length, greybox: routeUsesGreybox(polyline, this.greyboxSegments) };
+    this.updateGreyboxLegend();
   }
 
   private beacon(at: THREE.Vector3, color: number, height: number): THREE.Group {
@@ -1365,6 +1475,16 @@ export class Explorer {
     this.routeLines = null;
     this.overlayTints = [];
     this.overlayResidual = null;
+    this.routeGroup.userData = {};
+    this.updateGreyboxLegend();
+  }
+
+  private updateGreyboxLegend(): void {
+    const visible = Boolean(this.routeGroup.userData.greybox) || (this.mode === "overview" && this.greyboxSegments.length > 0) || (this.mode === "walk" && nearGreybox(this.pos, this.greyboxSegments, 15));
+    if (visible !== this.greyboxLegendVisible) {
+      this.greyboxLegendVisible = visible;
+      this.events.onGreyboxLegend?.(visible);
+    }
   }
 
   /** Floating labels at each POI's verified entrance (or display position when search-only). */
@@ -1960,6 +2080,7 @@ export class Explorer {
     if (this.mode === "walk") this.stepWalk(dt);
     else if (this.mode === "guide") this.stepGuide(dt);
     else this.orbit.update();
+    this.updateGreyboxLegend();
 
     if (this.mode !== "overview") {
       this.placeCamera(dt, this.teleported);

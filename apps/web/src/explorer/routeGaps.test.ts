@@ -1,5 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { unmodelledRuns } from "./routeGaps.ts";
+import * as THREE from "three";
+import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
+
+describe("floorProbe", () => {
+  it("uses the old six metre ray and accepts only hits within one metre of route height", () => {
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    floor.updateMatrixWorld(true);
+    const ray = new THREE.Raycaster();
+    const probe = floorProbe(ray, [floor]);
+    const indexed = floorProbe(new THREE.Raycaster(), [floor], true);
+    expect(probe({ x: 0, y: 0, z: 1 })).toBe(true);
+    expect(probe({ x: 0, y: 0, z: 1.01 })).toBe(false);
+    expect(probe({ x: 6, y: 0, z: 0 })).toBe(false);
+    for (const p of [{ x: 0, y: 0, z: 1 }, { x: 0, y: 0, z: 1.01 }, { x: 6, y: 0, z: 0 }]) expect(indexed(p)).toBe(probe(p));
+    expect(ray.far).toBe(6);
+    floor.geometry.dispose();
+    floor.material.dispose();
+  });
+});
 
 // Floor everywhere except x in (10, 20).
 const floorOutsideGap = (p: { x: number }) => p.x <= 10 || p.x >= 20;

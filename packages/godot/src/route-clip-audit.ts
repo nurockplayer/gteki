@@ -42,7 +42,7 @@ export interface SampleDetail { i: number; floor: "ok" | "off" | "none"; wallBef
 
 const repoRoot = process.cwd();
 
-export async function loadScene(station: string, bundle: StationBundle): Promise<StationScene> {
+export async function loadScene(station: string, bundle: StationBundle, quality: "high" | "low" = "low"): Promise<StationScene> {
   const gtekiDir = path.join(repoRoot, "stations", station, "gteki");
   const usage = newShimUsage();
   installHeadlessDom(usage);
@@ -57,7 +57,7 @@ export async function loadScene(station: string, bundle: StationBundle): Promise
       return new Promise<GLTF>((ok, fail) => loader.parse(ab, "", ok, fail));
     },
     loadTexture: async () => new THREE.Texture(),
-    quality: "low",
+    quality,
     renderer: stubRenderer(),
   };
   const module = (await import(pathToFileURL(path.join(gtekiDir, "scene.ts")).href)) as StationSceneModule;
