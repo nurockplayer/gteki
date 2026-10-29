@@ -17,6 +17,7 @@ import { loadSignFont } from "../signFont.ts";
 import { R, chevronTexture, dashTexture, ribbonGeometry } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { cutPortals, disposePortalCuts, type PortalCutResources } from "./portalCut.ts";
+import { cutStairwells, stairwellWells, type StairwellCut, type StairwellStats } from "./stairwellCut.ts";
 import { buildGreybox, portalWidthAxis, splitWallsAtOpenings, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
 import { greyboxPathSegments, greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
 import { darkSampleDistances, routeGroundCounts, sceneMeshNear } from "./routeGroundQa.ts";
@@ -233,6 +234,8 @@ export class Explorer {
   private portalCutResources: PortalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
   private portalExemptions = 0;
   private portalCutStats: ReturnType<typeof cutPortals> | null = null;
+  private stairwellCut: StairwellCut | null = null;
+  private stairwellStats: StairwellStats | null = null;
   private sceneColliderTargets = new Set<THREE.Object3D>();
   private greyboxSegments: GreyboxSegment[] = [];
   private greyboxLegendVisible = false;
@@ -459,10 +462,10 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { greybox: (GreyboxStats & { colliderExemptions: number; portalCut: ReturnType<typeof cutPortals> | null }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
+  sceneInfo(): { greybox: (GreyboxStats & { colliderExemptions: number; portalCut: ReturnType<typeof cutPortals> | null; stairwells: StairwellStats | null }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
-      greybox: this.greybox ? { ...this.greybox.stats, colliderExemptions: this.portalExemptions, portalCut: this.portalCutStats } : null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
+      greybox: this.greybox ? { ...this.greybox.stats, colliderExemptions: this.portalExemptions, portalCut: this.portalCutStats, stairwells: this.stairwellStats } : null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
       walkable: this.walkable.length, colliders: this.colliders.length, cameraBlockers: this.cameraBlockers.length, seeThrough: this.seeThrough.length,
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
       bakedAo: { ...this.bakedAo }, assets: this.loadedAssets.map((a) => ({ ...a })),
@@ -944,6 +947,12 @@ export class Explorer {
       this.greyboxOpenings = this.greybox.openings;
       this.sceneColliderTargets = new Set(originalTargets.collider);
       this.portalCutStats = cutPortals(this.stationScene.root, this.greyboxOpenings, this.portalCutResources, new Set(originalTargets.ground));
+      this.stairwellCut = cutStairwells(this.stationScene.root, stairwellWells(bundle, traversable), {
+        walkable: new Set(originalTargets.ground), tier: this.quality, greyboxRoot: this.greybox.root,
+      });
+      this.stairwellStats = this.stairwellCut.stats;
+      this.greybox.stats.triangles += this.stairwellCut.bandTriangles;
+      if (this.stairwellCut.finish) this.greybox.root.add(this.stairwellCut.finish);
       const instances = this.portalCutResources.instances;
       const extracted = new Map<THREE.InstancedMesh, number>();
       for (const { owner } of instances) extracted.set(owner, (extracted.get(owner) ?? 0) + 1);
@@ -963,8 +972,8 @@ export class Explorer {
       this.renderer.localClippingEnabled = true;
       this.world.add(this.greybox.root);
       this.walkable = [...this.walkable, ...this.greybox.walkable];
-      this.colliders = [...this.colliders, ...this.greybox.colliders];
-      this.walls = splitWallsAtOpenings([...this.walls, ...this.greybox.wallSegments], this.greyboxOpenings);
+      this.colliders = [...this.colliders, ...this.greybox.colliders, ...this.stairwellCut.colliders];
+      this.walls = splitWallsAtOpenings([...this.walls, ...this.greybox.wallSegments, ...this.stairwellCut.walls], this.greyboxOpenings);
     } else {
       this.world.add(this.graph.root);
       this.walkable = this.graph.walkable;
@@ -1036,6 +1045,9 @@ export class Explorer {
       for (const material of materials) material.dispose();
       this.greybox = null;
     }
+    this.stairwellCut?.dispose();
+    this.stairwellCut = null;
+    this.stairwellStats = null;
     disposePortalCuts(this.portalCutResources);
     this.portalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
     this.portalCutStats = null;
