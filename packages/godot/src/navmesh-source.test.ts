@@ -9,11 +9,22 @@ describe("public station collider attribution", () => {
     const { bundle } = await navmeshBundle(station);
     const scene = await loadScene(station, bundle);
     try {
-      for (const object of [...(scene.colliders ?? []), ...(scene.cameraBlockers ?? [])]) {
+      for (const object of scene.colliders ?? []) {
         expect(object.userData.gteki_source, object.name).toBeTruthy();
         expect(object.userData.gteki_role, object.name).toBeTruthy();
       }
+      for (const object of scene.cameraBlockers ?? []) expect(object.userData.gteki_source, object.name).toBeTruthy();
       for (const wall of scene.walls ?? []) { expect(wall.source).toBeTruthy(); expect(wall.role).toBeTruthy(); }
+      if (station === "shinjuku") {
+        const gate = (scene.walls ?? []).find(w => "gtekiGate" in w && w.gtekiGate === true);
+        expect(gate?.role).toBe("gate");
+        expect(JSON.stringify(gate)).not.toMatch(/gtekiGate|source|role/);
+        for (const object of scene.colliders ?? []) expect(Object.keys(object.userData)).not.toContain("gteki_source");
+        const collider = (scene.colliders ?? []).find(object => object.name === "wall collider (invisible)");
+        const activeGates = (scene.walls ?? []).filter(w => "gtekiGate" in w && w.gtekiGate === true && w.zMax > w.zMin);
+        expect(collider?.userData.gtekiGateTriangles.length).toBe(activeGates.length * 2);
+        expect(Object.keys(collider!.userData)).not.toContain("gtekiGateTriangles");
+      }
     } finally { scene.dispose(); }
   }, 120_000);
 });

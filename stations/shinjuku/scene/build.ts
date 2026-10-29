@@ -948,7 +948,10 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
           ic.translate(c.x + gl.dir.x * 0.55 * end, gl.center.z + 0.995, -(c.y + gl.dir.y * 0.55 * end));
           (end > 0 ? icGeos : okGeos).push(tag(ic));
         }
-        propWalls.push(Object.assign({ a: { x: c.x - gl.dir.x * 0.75, y: c.y - gl.dir.y * 0.75 }, b: { x: c.x + gl.dir.x * 0.75, y: c.y + gl.dir.y * 0.75 }, zMin: gl.center.z - 0.1, zMax: gl.center.z + 1.0, side: 1 as const, kind: "wall" as const, bodyMin: gl.center.z - 0.5 }, { gtekiGate: true }));
+        const wall: WallSeg = { a: { x: c.x - gl.dir.x * 0.75, y: c.y - gl.dir.y * 0.75 }, b: { x: c.x + gl.dir.x * 0.75, y: c.y + gl.dir.y * 0.75 }, zMin: gl.center.z - 0.1, zMax: gl.center.z + 1.0, side: 1, kind: "wall", bodyMin: gl.center.z - 0.5 };
+        // Query-only attribution must not change the serialized layout/cache inputs.
+        Object.defineProperty(wall, "gtekiGate", { value: true, writable: true, configurable: true });
+        propWalls.push(wall);
       }
     }
     for (const [geos, m] of [
