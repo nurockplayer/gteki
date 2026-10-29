@@ -42,6 +42,43 @@ function box(name: string, size: number[], at: number[]): THREE.Mesh {
 }
 
 describe("Explorer QA hooks", () => {
+  it("samples portal visibility and luminance and restores renderer and camera state", () => {
+    const state = qaStand() as any;
+    const opening = { center: new THREE.Vector3(), along: new THREE.Vector3(0, 0, 1), across: new THREE.Vector3(1, 0, 0), width: 2, depth: 1, height: 2.3 };
+    const wall = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    wall.position.y = 1; wall.updateMatrixWorld(true);
+    const scene = new THREE.Scene();
+    const oldTarget = new THREE.WebGLRenderTarget(8, 8);
+    let target: THREE.WebGLRenderTarget | null = oldTarget;
+    let lastScene: THREE.Scene = scene;
+    let lastCamera = state.camera as THREE.PerspectiveCamera;
+    const renderer = {
+      getRenderTarget: () => target,
+      setRenderTarget: (value: THREE.WebGLRenderTarget | null) => { target = value; },
+      render: (value: THREE.Scene, camera: THREE.PerspectiveCamera) => { lastScene = value; lastCamera = camera; value.updateMatrixWorld(true); },
+      readRenderTargetPixels: (_target: unknown, _x: number, _y: number, _w: number, _h: number, pixels: Uint8Array) => {
+        const isMask = lastScene !== scene;
+        const ray = new THREE.Raycaster(); ray.setFromCamera(new THREE.Vector2(), lastCamera);
+        const blocked = isMask && ray.intersectObjects(lastScene.children).length > 0;
+        for (let i = 0; i < pixels.length; i += 4) {
+          pixels[i] = pixels[i + 1] = pixels[i + 2] = isMask ? (blocked ? 255 : 0) : 128;
+          pixels[i + 3] = 255;
+        }
+      },
+    };
+    Object.assign(state, { renderer, scene, avatar: { visible: true }, greyboxOpenings: [opening], portalCutResources: { portalMeshes: new Map([[opening, []]]) } });
+    state.camera.position.set(3, 4, 5); state.camera.lookAt(0, 0, 0); state.camera.fov = 42; state.camera.aspect = 1.7;
+    const position = state.camera.position.clone(), rotation = state.camera.quaternion.clone();
+    const open = state.portalView()[0];
+    expect(open.throughShare).toBe(1); expect(open.meanLuminance).toBeCloseTo(128 / 255);
+    state.portalCutResources.portalMeshes.set(opening, [wall]);
+    const closed = state.portalView()[0];
+    expect(closed.throughShare).toBe(0); expect(closed.meanLuminance).toBeCloseTo(128 / 255);
+    expect(target).toBe(oldTarget); expect(state.avatar.visible).toBe(true);
+    expect(state.camera.position.equals(position)).toBe(true); expect(state.camera.quaternion.equals(rotation)).toBe(true);
+    expect(state.camera.fov).toBe(42); expect(state.camera.aspect).toBe(1.7);
+    oldTarget.dispose();
+  });
   it("walks a three-point renderer-space path through ordinary walk movement", () => {
     const state = qaStand();
     const sampled: number[] = [];
