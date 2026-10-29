@@ -88,4 +88,19 @@ describe("scene floor draping", () => {
     const result = drapeEdges(probe(true, 1), bundle(), new Set(["edge"]));
     expect(result.nodes.get("start")).toBeCloseTo(1);
   });
+  it("measures a supported symbolic floor before snapping", () => {
+    const b = bundle(), floor = b.floors.find(f => f.id === b.nodes[0]!.floorId)!;
+    floor.elevationSource = "symbolic"; floor.renderElevationM = -3;
+    b.nodes.push({ ...b.nodes[0]!, id: "third", position: { x: 1, y: 1, z: null } });
+    const result = drapeEdges(probe(true), b, new Set(["edge"]), { floorIds: new Set([floor.id]) });
+    expect(result.floorMeasurements[0]!.height).toBeCloseTo(0);
+    expect(result.nodes.get("start")).toBeCloseTo(0);
+  });
+  it("keeps a symbolic height when fewer than half its nodes support a cluster", () => {
+    const b = bundle(), floor = b.floors.find(f => f.id === b.nodes[0]!.floorId)!;
+    floor.elevationSource = "symbolic"; floor.renderElevationM = -3;
+    for (let i = 0; i < 4; i++) b.nodes.push({ ...b.nodes[0]!, id: `outside-${i}`, position: { x: 30 + i, y: 0, z: null } });
+    const result = drapeEdges(probe(true), b, new Set(["edge"]), { floorIds: new Set([floor.id]) });
+    expect(result.floorMeasurements[0]).toMatchObject({ height: -3, reason: expect.stringContaining("insufficient support") });
+  });
 });

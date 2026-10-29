@@ -27,20 +27,42 @@ function drawn(bundle: StationBundle, edge: Edge): PolylinePoint[] {
 }
 
 /** Drape selected edges without mutating the input bundle. */
-export function drapeEdges(probe: SceneProbe, bundle: StationBundle, edgeIds: Set<string>, opts: { maxCells?: number; nodeIds?: Set<string> } = {}): {
-  nodes: Map<string, number>; geometry: Map<string, Point[]>; unresolved: { edgeId: string; reason: string }[]; sceneGaps: Map<string, boolean>;
+export function drapeEdges(probe: SceneProbe, bundle: StationBundle, edgeIds: Set<string>, opts: { maxCells?: number; nodeIds?: Set<string>; floorIds?: Set<string> } = {}): {
+  nodes: Map<string, number>; geometry: Map<string, Point[]>; unresolved: { edgeId: string; reason: string }[]; sceneGaps: Map<string, boolean>; floorMeasurements: { id: string; old: number; height: number; reason: string }[];
 } {
   const selected = bundle.edges.filter(e => edgeIds.has(e.id)).sort((a, b) => a.id.localeCompare(b.id));
   const nodes = new Map<string, number>(), geometry = new Map<string, Point[]>(), unresolved: { edgeId: string; reason: string }[] = [];
   const byId = new Map(bundle.nodes.map(n => [n.id, n]));
-  const floors = new Map(bundle.floors.map(f => [f.id, f]));
+  const floorMeasurements: { id: string; old: number; height: number; reason: string }[] = [];
+  const measuredFloors = bundle.floors.map(f => {
+    if (!opts.floorIds?.has(f.id) || f.elevationSource !== "symbolic") return f;
+    const members = bundle.nodes.filter(n => n.floorId === f.id);
+    const bins = new Map<number, number[]>();
+    for (const n of members) {
+      ray.set(new THREE.Vector3(...enuToRenderer({ x: n.position.x, y: n.position.y, z: f.renderElevationM + 8 })), new THREE.Vector3(0, -1, 0));
+      ray.far = 16;
+      const perNode = new Map<number, number>();
+      for (const hit of castAll(ray, probe.ground)) {
+        const z = hit.point.y, bin = Math.round(z / 0.3);
+        if (!perNode.has(bin)) perNode.set(bin, z);
+      }
+      for (const [bin, z] of perNode) bins.set(bin, [...(bins.get(bin) ?? []), z]);
+    }
+    const candidates = [...bins.values()].map(hits => ({ hits, height: hits.reduce((a, b) => a + b, 0) / hits.length }));
+    candidates.sort((a, b) => b.hits.length - a.hits.length || Math.abs(a.height - f.renderElevationM) - Math.abs(b.height - f.renderElevationM) || a.height - b.height);
+    const best = candidates[0], supported = best && best.hits.length >= 3 && best.hits.length >= members.length * 0.5;
+    const height = supported ? best.height : f.renderElevationM;
+    floorMeasurements.push({ id: f.id, old: f.renderElevationM, height, reason: supported ? `scene-measured (${best.hits.length}/${members.length} nodes)` : `insufficient support (${best?.hits.length ?? 0}/${members.length} nodes; need 3 and 50%)` });
+    return supported ? { ...f, renderElevationM: height, renderElevationSource: "scene-measured" } : f;
+  });
+  const floors = new Map(measuredFloors.map(f => [f.id, f]));
   for (const id of [...new Set(selected.flatMap(e => [e.from, e.to]))].sort()) {
     const n = byId.get(id)!;
     if (n.position.z !== null || opts.nodeIds && !opts.nodeIds.has(id)) continue;
     const z = floorAt(probe, n.position.x, n.position.y, floors.get(n.floorId)?.renderElevationM ?? 0, 2);
     if (z !== undefined) nodes.set(id, z);
   }
-  const updated = { ...bundle, nodes: bundle.nodes.map(n => nodes.has(n.id) ? { ...n, renderZ: nodes.get(n.id)! } : n) };
+  const updated = { ...bundle, floors: measuredFloors, nodes: bundle.nodes.map(n => nodes.has(n.id) ? { ...n, renderZ: nodes.get(n.id)! } : n) };
   const updatedNodes = new Map(updated.nodes.map(n => [n.id, n]));
   const position = (n: Node): Point => ({ x: n.position.x, y: n.position.y, z: nodeDisplayZ(n, floors.get(n.floorId)).z });
   for (const edge of selected) {
@@ -99,7 +121,7 @@ export function drapeEdges(probe: SceneProbe, bundle: StationBundle, edgeIds: Se
     const flag = audit.offFloor > 0 || (audit.wallHits > 0 && audit.noFloor === 0);
     if (flag || edge.attributes?.sceneGapReason === "drape-unresolved" && violations(audit) === 0) sceneGaps.set(edge.id, flag);
   }
-  return { nodes, geometry, unresolved, sceneGaps };
+  return { nodes, geometry, unresolved, sceneGaps, floorMeasurements };
 }
 
 /** Update a successfully draped edge and retain its previous route length. */
@@ -142,7 +164,7 @@ async function main(): Promise<void> {
   if (!station || !privateDir || !file || !out) throw new Error("--station, --private, --file and --out are required");
   process.chdir(repoRoot);
   const { input, output } = drapePaths(privateDir, station, file, out);
-  const doc = JSON.parse(fs.readFileSync(input, "utf8")) as { nodes: Node[]; edges: Edge[] };
+  const doc = JSON.parse(fs.readFileSync(input, "utf8")) as { floors?: StationBundle["floors"]; nodes: Node[]; edges: Edge[] };
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "gteki-drape-"));
   try {
     fs.cpSync(path.join(privateDir, "additions"), path.join(tmp, "additions"), { recursive: true });
@@ -152,7 +174,11 @@ async function main(): Promise<void> {
     const dir = path.join(tmp, "overlay", station, "gteki"), read = (n: string) => JSON.parse(fs.readFileSync(path.join(dir, n), "utf8")) as unknown;
     const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), fs.existsSync(path.join(dir, "tenants.json")) ? read("tenants.json") : undefined, { privateTier: true });
     if (!parsed.ok) throw new Error(`overlay failed validation: ${JSON.stringify(parsed.issues).slice(0, 500)}`);
-    const result = drapeEdges(sceneProbe(await loadScene(station, parsed.bundle)), parsed.bundle, new Set(doc.edges.map(e => e.id)), { nodeIds: new Set(doc.nodes.map(n => n.id)) });
+    const result = drapeEdges(sceneProbe(await loadScene(station, parsed.bundle)), parsed.bundle, new Set(doc.edges.map(e => e.id)), { nodeIds: new Set(doc.nodes.map(n => n.id)), floorIds: new Set((doc.floors ?? []).map(f => f.id)) });
+    for (const floor of doc.floors ?? []) {
+      const measurement = result.floorMeasurements.find(m => m.id === floor.id);
+      if (measurement && measurement.reason.startsWith("scene-measured")) Object.assign(floor, { renderElevationM: measurement.height, renderElevationSource: "scene-measured" });
+    }
     for (const n of doc.nodes) if (result.nodes.has(n.id)) n.renderZ = result.nodes.get(n.id)!;
     for (const e of doc.edges) {
       const geometry = result.geometry.get(e.id); if (geometry) applyDrapeGeometry(e, geometry);
@@ -163,6 +189,7 @@ async function main(): Promise<void> {
     fs.mkdirSync(path.dirname(output), { recursive: true }); fs.writeFileSync(output, `${JSON.stringify(doc, null, 2)}\n`);
     console.log(`nodes ${result.nodes.size}, edges ${result.geometry.size}, unresolved ${result.unresolved.length}, sceneGap flagged ${[...result.sceneGaps.values()].filter(Boolean).length}`);
     for (const u of result.unresolved) console.log(`${u.edgeId}: ${u.reason}`);
+    for (const m of result.floorMeasurements) console.log(`${m.id}: ${m.old} -> ${m.height}: ${m.reason}`);
   } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch(e => { console.error(e); process.exitCode = 1; });
