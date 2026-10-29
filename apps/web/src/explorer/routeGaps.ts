@@ -1,4 +1,15 @@
-import type { V3 } from "./geometry.ts";
+import * as THREE from "three";
+import { R, type V3 } from "./geometry.ts";
+import { castAll } from "./raycast.ts";
+
+/** The route's existing floor test, shared by route overlays and passage generation. */
+export function floorProbe(ray: THREE.Raycaster, groundTargets: readonly THREE.Object3D[]): (p: V3) => boolean {
+  return (p) => {
+    ray.set(R(p.x, p.y, p.z + 3), new THREE.Vector3(0, -1, 0));
+    ray.far = 6;
+    return castAll(ray, groundTargets).some((h) => Math.abs(h.point.y - p.z) <= 1);
+  };
+}
 
 /** Sampling as in packages/godot route-clip-audit: every half metre of plan length, keeping each vertex. */
 const STEP_M = 0.5;

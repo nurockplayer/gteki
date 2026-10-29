@@ -15,7 +15,7 @@ import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from 
 import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
 import { R, chevronTexture, dashTexture, ribbonGeometry } from "./geometry.ts";
-import { unmodelledRuns } from "./routeGaps.ts";
+import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
@@ -1313,12 +1313,7 @@ export class Explorer {
     this.routeGroup.add(ribbon, ...glow, xray);
     // Stretches with no scene floor under them (the graph runs through space the scene doesn't model):
     // an always-on-top dashed amber band, so they read as "not modelled" rather than as a route in the void.
-    const gaps = this.groundTargets.length === 0 ? [] : unmodelledRuns(polyline, (p) => {
-      this.ray.set(R(p.x, p.y, p.z + 3), new THREE.Vector3(0, -1, 0));
-      this.ray.far = 6;
-      // Only a floor at the route's own height counts: the storey below must not hide a missing one (public routes sit within 0.45 m).
-      return castAll(this.ray, this.groundTargets).some((h) => Math.abs(h.point.y - p.z) <= 1);
-    });
+    const gaps = this.groundTargets.length === 0 ? [] : unmodelledRuns(polyline, floorProbe(this.ray, this.groundTargets));
     if (gaps.length > 0) {
       this.noModelTexture ??= dashTexture();
       this.noModelTexture.repeat.set(1 / 1.6, 1);
