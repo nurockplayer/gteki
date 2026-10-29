@@ -4,7 +4,8 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { init, importNavMesh, NavMeshQuery } from "recast-navigation";
 import { createRouter, DEFAULT_PROFILE, nodeDisplayZ, routeBetween, routePolyline, type PolylinePoint, type RouteResult, type RouteStep } from "@gteki/navigation";
-import { parseStationFiles, type StationBundle } from "@gteki/schema";
+import { navmeshBundle } from "./navmesh-input.ts";
+import { makeGreybox } from "./navmesh-greybox.ts";
 import { auditPolyline, loadScene, sceneProbe, resampleAudit, type SampleDetail, type AuditCache } from "./route-clip-audit.ts";
 
 type V3 = { x: number; y: number; z: number };
@@ -33,29 +34,28 @@ export function snapNode(query: NavMeshQuery, p: V3): V3 | null {
   return hit.success && hit.polyRef && Math.abs(hit.point.y - p.y) <= 0.6 ? hit.point : null;
 }
 
-function loadBundle(): StationBundle {
-  const dir = path.join(process.cwd(), "stations", "ikebukuro", "gteki");
-  const read = (name: string): unknown => JSON.parse(fs.readFileSync(path.join(dir, name), "utf8"));
-  const result = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), read("tenants.json"));
-  if (!result.ok) throw new Error(`public bundle invalid: ${JSON.stringify(result.issues).slice(0, 500)}`);
-  return result.bundle;
-}
-
 async function main() {
-  let station = "", navmeshFile = "", json = "";
+  let station = "", navmeshFile = "", json = "", withGreybox = false;
   const args = process.argv.slice(2);
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--station" && args[i+1]) station = args[++i]!;
     else if (args[i] === "--navmesh" && args[i+1]) navmeshFile = args[++i]!;
     else if (args[i] === "--json" && args[i+1]) json = args[++i]!;
+    else if (args[i] === "--with-greybox") withGreybox = true;
     else throw new Error(`unknown or incomplete argument: ${args[i]}`);
   }
-  if (station !== "ikebukuro" || !navmeshFile || !json) throw new Error("use --station ikebukuro --navmesh <file> --json <file>");
+  if (!station || !navmeshFile || !json) throw new Error("use --station <station> --navmesh <file> --json <file>");
   const qa = path.resolve(".qa"), dest = path.resolve(json);
   if (!dest.startsWith(qa + path.sep)) throw new Error("JSON output must be under .qa/");
-  const bundle = loadBundle(), router = createRouter(bundle), scene = await loadScene(station, bundle), probe = sceneProbe(scene);
+  const loadStart = performance.now();
+  const meshBytes = fs.readFileSync(navmeshFile);
   await init();
-  const nav = importNavMesh(fs.readFileSync(navmeshFile)).navMesh, query = new NavMeshQuery(nav);
+  const nav = importNavMesh(meshBytes).navMesh, query = new NavMeshQuery(nav);
+  const loadMs = performance.now() - loadStart, memoryAfterLoad = process.memoryUsage();
+  const { bundle, privateBuild } = await navmeshBundle(station);
+  const router = createRouter(bundle, { allowUnverified: privateBuild }), scene = await loadScene(station, bundle);
+  const grey = withGreybox ? makeGreybox(bundle, scene, privateBuild) : null;
+  const probe = grey?.probe ?? sceneProbe(scene);
   const nodes = new Map(bundle.nodes.map(n => [n.id, n])), floors = new Map(bundle.floors.map(f => [f.id, f]));
   const edges = new Map(bundle.edges.map(e => [e.id, e]));
   const nodePoint = (id: string): V3 => {
@@ -134,12 +134,13 @@ async function main() {
   const wallLocations = new Map<string, number>();
   const navTotal = totals(), graphComparable = totals(), graphAll = totals(), ratios: number[] = [];
   let routeCount = 0, completed = 0, pure = 0, hybrid = 0, incomplete = 0, routeFailures = 0, stepUses = 0, joinsWithGap = 0, maxJoinGapM = 0;
+  const routeSteps: RouteStep[][] = [];
   const pois = bundle.pois.filter(p => p.connectorNodeIds.length > 0);
   for (const from of pois) for (const to of pois) {
     if (from.id === to.id) continue;
     const route = routeBetween(router, { kind: "poi", poi: from }, to, DEFAULT_PROFILE);
     if (!route.ok) { routeFailures++; continue; }
-    routeCount++; stepUses += route.steps.length;
+    routeCount++; stepUses += route.steps.length; routeSteps.push(route.steps);
     const graph = routePolyline(bundle, route);
     const graphAudit = auditPolyline(probe, graph, { cache:auditCache });
     add(graphAll, graphAudit);
@@ -214,7 +215,21 @@ async function main() {
   const failed = [...cache.values()].filter(e => e.missing);
   const failures = failed.map(e => ({ edgeId: e.step.edgeId, mode: e.step.mode, floor: e.step.fromFloorId, direction: e.step.reversed ? "reverse" : "forward", straightGapM: e.gapM, reason: e.reason, stairLink: e.stairLink }))
     .sort((a,b) => b.straightGapM-a.straightGapM || a.edgeId.localeCompare(b.edgeId));
-  const result = { station, orderedPoiPairs: pois.length * (pois.length-1), routesAudited: routeCount, failedRoutePairs: routeFailures, completeAuditedRoutes: completed, pureNavmeshRoutes: pure, hybridStairFallbackRoutes: hybrid, incompleteRoutes: incomplete, joinsWithGap, maxJoinGapM,
+  // Fresh uncached WASM path queries; excludes graph routing, floor probing and path reconstruction.
+  const edgeTimes: number[] = [], routeTimes: number[] = [];
+  const timedEdge = (step: RouteStep) => {
+    const a = snap(step.fromNodeId), b = snap(step.toNodeId);
+    if (!a || !b) return;
+    const start = performance.now(); queryCompletePath(query, a, b); edgeTimes.push(performance.now()-start);
+  };
+  for (const entry of cache.values()) timedEdge(entry.step);
+  const uniqueQueryTimes = edgeTimes.slice(); edgeTimes.length = 0;
+  for (const steps of routeSteps) {
+    const start = performance.now(); for (const step of steps) timedEdge(step);
+    routeTimes.push(performance.now()-start);
+  }
+  const runtime = { loadMs, memoryAfterLoad, edgeQueries:uniqueQueryTimes.length, edgeMs:{p50:percentile(uniqueQueryTimes,0.5),p95:percentile(uniqueQueryTimes,0.95)}, routes:routeTimes.length, routeMs:{p50:percentile(routeTimes,0.5),p95:percentile(routeTimes,0.95)}, estimateFactor:4 };
+  const result = { station, withGreybox, greyboxRuns: grey?.grey.stats.runs ?? null, runtime, orderedPoiPairs: pois.length * (pois.length-1), routesAudited: routeCount, failedRoutePairs: routeFailures, completeAuditedRoutes: completed, pureNavmeshRoutes: pure, hybridStairFallbackRoutes: hybrid, incompleteRoutes: incomplete, joinsWithGap, maxJoinGapM,
     edgeUses: stepUses, uniqueEdgesUsed: new Set([...cache.values()].map(e => e.step.edgeId)).size, directedEdgesQueried: cache.size,
     navmeshTotals: navTotal, diagnosis: { raw: rawTotal, detail: navTotal, sceneRaycast: sceneTotal,
       detailHeightUnavailableSamples: detailMissing, detailUnavailableStairFallback: detailMissingFallback, detailUnavailableJoin: detailMissingJoin, detailUnavailableAmbiguous: detailAmbiguous, detailLargeHeightJumps, detailMaxHeightJump, offFloorWithDetail, offFloorWithoutDetail, heightCorrectionM: { count:heightCorrections.length, p50:percentile(heightCorrections,0.5), p95:percentile(heightCorrections,0.95), max:heightCorrections.length ? heightCorrections.reduce((a,b)=>Math.max(a,b),0) : null }, sceneFloorUnavailableSamples: sceneMissing,

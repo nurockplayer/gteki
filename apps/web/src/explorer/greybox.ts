@@ -125,7 +125,7 @@ function widthOf(edge: Edge): number {
 }
 
 /** Procedural passages, built entirely in memory from the already-loaded graph and scene probes. */
-export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) => boolean, hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low") {
+export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) => boolean, hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", captureNav = false) {
   const started = performance.now();
   const runs = unmodelledRunsByEdge(bundle, traversable, hasFloor);
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
@@ -159,6 +159,7 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
     }
     let b = batches.get(key); if (!b) { b = batch(); batches.set(key, b); } return b;
   };
+  const navFloors: number[] = [];
   const openings: Box[] = [];
   const wallSegments: Segment2[] = [];
   let lengthM = 0;
@@ -180,6 +181,7 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
       const al = offset(a, -half, 0), ar = offset(a, half, 0), zl = offset(z, -half, 0), zr = offset(z, half, 0);
       quad(b.shell, b.colors, a, z, zl, al, [1, 1, 0.62, 0.62]);
       quad(b.shell, b.colors, ar, zr, z, a, [0.62, 0.62, 1, 1]);
+      if (captureNav) { quad(navFloors, null, a, z, zl, al); quad(navFloors, null, ar, zr, z, a); }
       quad(b.shell, b.colors, offset(a, -half, -0.12), offset(a, half, -0.12), offset(z, half, -0.12), offset(z, -half, -0.12));
       for (const side of [-1, 1]) {
         quad(b.shell, b.colors, offset(a, side * half, -0.12), offset(z, side * half, -0.12), offset(z, side * half, 0), offset(a, side * half, 0));
@@ -267,6 +269,7 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
         const p = center.clone().add(new THREE.Vector3(Math.cos(a) * radius, 0, Math.sin(a) * radius));
         const q = center.clone().add(new THREE.Vector3(Math.cos(z) * radius, 0, Math.sin(z) * radius));
         quad(b.shell, b.colors, center, height === 0 ? q : p, height === 0 ? p : q, center, [0.72, 0.72, 0.72, 0.72]);
+        if (captureNav && height === 0) quad(navFloors, null, center, q, p, center);
       }
     }
   }
@@ -312,5 +315,5 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
       if (material === shellMat) { walkable.push(mesh); colliders.push(mesh); }
     }
   }
-  return { root, walkable, colliders, wallSegments, openings, stats: { runs: runs.length, lengthM, portals: openings.length, meshes: root.children.length, triangles, buildMs: performance.now() - started, overBudget: dropped.length ? `Dropped ${dropped.join(", ")} to meet 60k triangles` : null } satisfies GreyboxStats };
+  return { root, walkable, colliders, wallSegments, openings, navFloors: captureNav ? navFloors : undefined, stats: { runs: runs.length, lengthM, portals: openings.length, meshes: root.children.length, triangles, buildMs: performance.now() - started, overBudget: dropped.length ? `Dropped ${dropped.join(", ")} to meet 60k triangles` : null } satisfies GreyboxStats };
 }

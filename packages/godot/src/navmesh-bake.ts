@@ -6,11 +6,9 @@ import { gzipSync } from "node:zlib";
 import * as THREE from "three";
 import { enuToRenderer } from "@gteki/geo";
 import { createRouter, DEFAULT_PROFILE, nodeDisplayZ } from "@gteki/navigation";
-import { parseStationFiles } from "@gteki/schema";
-import { buildGreybox } from "../../../apps/web/src/explorer/greybox.ts";
-import { greyboxSceneProbes } from "../../../apps/web/src/explorer/greyboxScene.ts";
-import { floorProbe } from "../../../apps/web/src/explorer/routeGaps.ts";
-import { wallToRenderer } from "../../../apps/web/src/explorer/walker.ts";
+import { navmeshBundle } from "./navmesh-input.ts";
+import type { Box } from "../../../apps/web/src/explorer/greybox.ts";
+import { makeGreybox } from "./navmesh-greybox.ts";
 import { loadScene, sceneProbe } from "./route-clip-audit.ts";
 import { init, NavMeshQuery, exportNavMesh } from "recast-navigation";
 import { generateTiledNavMesh } from "recast-navigation/generators";
@@ -41,8 +39,35 @@ export function completePath(query: NavMeshQuery, from: { x: number; y: number; 
   return result.path;
 }
 
+/** Subtract one oriented portal volume from a triangle without dropping surrounding wall. */
+function cutPortal(poly: THREE.Vector3[], box: Box): THREE.Vector3[][] {
+  const axes = [box.across, box.along, new THREE.Vector3(0,1,0)];
+  const centers = [box.center, box.center, box.center.clone().add(new THREE.Vector3(0,box.height/2,0))];
+  const half = [box.width/2, box.depth/2, box.height/2];
+  let inside = poly; const outside: THREE.Vector3[][] = [];
+  for (let k=0; k<3; k++) for (const side of [-1,1]) {
+    if (!inside.length) return outside;
+    const signed = (p: THREE.Vector3) => half[k]! - side * p.clone().sub(centers[k]!).dot(axes[k]!);
+    const clip = (keepInside: boolean) => {
+      const result: THREE.Vector3[] = [];
+      for (let i=0; i<inside.length; i++) {
+        const a=inside[i]!, b=inside[(i+1)%inside.length]!, da=signed(a), db=signed(b);
+        const aKeep=keepInside ? da>=0 : da<0, bKeep=keepInside ? db>=0 : db<0;
+        if (aKeep) result.push(a);
+        if (aKeep !== bKeep) result.push(a.clone().lerp(b, da/(da-db)));
+      }
+      return result;
+    };
+    const part = clip(false); if (part.length>=3) outside.push(part);
+    inside=clip(true);
+  }
+  return outside;
+}
+
+export const triangleKey = (numbers: readonly number[]) => numbers.map(n => Math.fround(n)).join(",");
+
 /** Transform indexed or non-indexed meshes (including instances) into Recast triangles. */
-function appendMeshes(objects: readonly THREE.Object3D[], positions: number[], indices: number[], obstacle: boolean) {
+export function appendMeshes(objects: readonly THREE.Object3D[], positions: number[], indices: number[], obstacle: boolean, portals = new Map<THREE.Object3D, Box[]>(), skip = new Set<string>()) {
   const v = new THREE.Vector3(), instance = new THREE.Matrix4(), world = new THREE.Matrix4();
   for (const object of objects) {
     const mesh = object as THREE.Mesh;
@@ -65,8 +90,24 @@ function appendMeshes(objects: readonly THREE.Object3D[], positions: number[], i
         const ax = positions[3*a]!, az = positions[3*a+2]!;
         const bx = positions[3*b]!, bz = positions[3*b+2]!, cx = positions[3*c]!, cz = positions[3*c+2]!;
         const normalY = (bz-az)*(cx-ax) - (bx-ax)*(cz-az);
-        if (obstacle && normalY > 0) [b, c] = [c, b];
-        indices.push(a, b, c);
+        const at = (i: number) => new THREE.Vector3(positions[3*i]!, positions[3*i+1]!, positions[3*i+2]!);
+        const av=at(a), bv=at(b), cv=at(c);
+        if (skip.has(triangleKey([...av.toArray(), ...bv.toArray(), ...cv.toArray()]))) continue;
+        const normal = bv.clone().sub(av).cross(cv.clone().sub(av));
+        const cuts = obstacle && normal.length() && Math.abs(normal.y/normal.length()) <= 0.5 ? portals.get(object) : undefined;
+        if (cuts?.length) {
+          let parts = [[av,bv,cv]];
+          for (const box of cuts) parts = parts.flatMap(part => cutPortal(part, box));
+          for (const part of parts) for (let k=1; k+1<part.length; k++) {
+            const tri = [part[0]!, part[k]!, part[k+1]!];
+            if (obstacle && normalY > 0) [tri[1],tri[2]] = [tri[2]!,tri[1]!];
+            const first=positions.length/3; for (const v of tri) positions.push(v.x,v.y,v.z);
+            indices.push(first,first+1,first+2);
+          }
+        } else {
+          if (obstacle && normalY > 0) [b, c] = [c, b];
+          indices.push(a, b, c);
+        }
       }
     }
   }
@@ -81,32 +122,31 @@ async function main() {
     else if (args[i] === "--with-greybox") withGreybox = true;
     else throw new Error(`unknown or incomplete argument: ${args[i]}`);
   }
-  if (station !== "ikebukuro" || !out) throw new Error("use --station ikebukuro --out <directory>");
-  const dir = path.join(process.cwd(), "stations", station, "gteki");
-  const read = (name: string): unknown => JSON.parse(fs.readFileSync(path.join(dir, name), "utf8"));
-  const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), read("tenants.json"));
-  if (!parsed.ok) throw new Error(`public bundle invalid: ${JSON.stringify(parsed.issues).slice(0, 500)}`);
-  const bundle = parsed.bundle;
+  if (!out) throw new Error("use --station <station> --out <directory>");
+  const output = path.resolve(out), qa = path.resolve(".qa");
+  if (output !== qa && !output.startsWith(qa + path.sep)) throw new Error("output must be under .qa/");
+  const { bundle, privateBuild } = await navmeshBundle(station);
   const scene = await loadScene(station, bundle);
   const probe = sceneProbe(scene);
-  const ground = [...probe.ground], collider = [...probe.collider], walls = [...probe.walls];
-  let greyboxRuns: number | null = null;
-  if (withGreybox) {
-    const router = createRouter(bundle);
-    const wallSegments = walls.map(wallToRenderer);
-    const grey = buildGreybox(bundle, e => router.isTraversable(e, DEFAULT_PROFILE), floorProbe(new THREE.Raycaster(), probe.ground), greyboxSceneProbes(probe.collider, wallSegments), "low");
-    grey.root.updateMatrixWorld(true);
-    ground.push(...grey.walkable); collider.push(...grey.colliders);
-    greyboxRuns = grey.stats.runs;
-    // This flag is an exploratory stub: portal clipping is not yet applied to mesh colliders.
-    if (greyboxRuns) throw new Error("--with-greybox found passages; portal-safe bake is not implemented");
-  }
+  const grey = withGreybox ? makeGreybox(bundle, scene, privateBuild) : null;
+  const ground = [...(grey?.targets.ground ?? probe.ground)], collider = [...(grey?.targets.collider ?? probe.collider)];
+  let walls = [...probe.walls], greyboxRuns: number | null = null;
   const positions: number[] = [], indices: number[] = [];
   appendMeshes(ground, positions, indices, false);
-  const groundSet = new Set(ground);
-  const shared = collider.filter(o => groundSet.has(o));
+  const groundSet = new Set(ground), shared = collider.filter(o => groundSet.has(o));
   if (shared.length) throw new Error(`${shared.length} meshes are both walkable and colliders; surface classification is ambiguous`);
-  appendMeshes(collider, positions, indices, true);
+  appendMeshes(collider, positions, indices, true, grey?.portals);
+  if (grey) {
+    greyboxRuns = grey.grey.stats.runs; walls = grey.walls;
+    const data = grey.grey.navFloors ?? [], keys = new Set<string>();
+    for (let i=0; i+8<data.length; i+=9) keys.add(triangleKey(data.slice(i,i+9)));
+    if (data.length) {
+      const geometry = new THREE.BufferGeometry(); geometry.setAttribute("position", new THREE.Float32BufferAttribute(data,3));
+      const mesh = new THREE.Mesh(geometry); mesh.updateMatrixWorld(true);
+      appendMeshes([mesh], positions, indices, false); geometry.dispose();
+    }
+    appendMeshes(grey.grey.colliders, positions, indices, true, new Map(), keys);
+  }
   for (const wall of walls) {
     const dx = wall.b.x-wall.a.x, dz = -(wall.b.y-wall.a.y), len = Math.hypot(dx,dz), h = wall.zMax-wall.zMin;
     if (!len || h <= 0) continue;

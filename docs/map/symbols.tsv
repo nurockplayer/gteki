@@ -519,10 +519,12 @@ installHeadlessDom	function	packages/godot/src/headless-dom.ts	111
 stubRenderer	function	packages/godot/src/headless-dom.ts	137
 headlessThree	function	packages/godot/src/headless-dom.ts	142
 loadBundle	function	packages/godot/src/load-bundle.ts	6
-queryCompletePath	function	packages/godot/src/navmesh-audit.ts	22
-snapNode	function	packages/godot/src/navmesh-audit.ts	31
-bakeNavmesh	function	packages/godot/src/navmesh-bake.ts	20
-completePath	function	packages/godot/src/navmesh-bake.ts	33
+queryCompletePath	function	packages/godot/src/navmesh-audit.ts	23
+snapNode	function	packages/godot/src/navmesh-audit.ts	32
+bakeNavmesh	function	packages/godot/src/navmesh-bake.ts	18
+completePath	function	packages/godot/src/navmesh-bake.ts	31
+triangleKey	const	packages/godot/src/navmesh-bake.ts	67
+appendMeshes	function	packages/godot/src/navmesh-bake.ts	70
 FLOOR_TOLERANCE_M	const	packages/godot/src/route-clip-audit.ts	27
 EdgeAudit	interface	packages/godot/src/route-clip-audit.ts	33
 SceneProbe	interface	packages/godot/src/route-clip-audit.ts	40

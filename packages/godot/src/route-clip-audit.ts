@@ -37,7 +37,7 @@ export interface EdgeAudit {
   sceneGap?: true;
 }
 
-export interface SceneProbe { ground: THREE.Object3D[]; collider: THREE.Object3D[]; walls: WallSegment[] }
+export interface SceneProbe { ground: THREE.Object3D[]; collider: THREE.Object3D[]; walls: WallSegment[]; ignoreColliderHit?: (hit: THREE.Intersection, direction: THREE.Vector3) => boolean }
 export interface SampleDetail { i: number; floor: "ok" | "off" | "none"; wallBefore: boolean; floorZ?: number; wallCollider?: number; wallPoint?: { x: number; y: number; z: number }; wallSegment?: number }
 
 const repoRoot = process.cwd();
@@ -152,7 +152,7 @@ export function auditPolyline(probe: SceneProbe, points: readonly PolylinePoint[
         if (len < 1e-6) continue;
         ray.set(a, b.clone().sub(a).normalize());
         ray.far = len;
-        const hit = castCamera(ray, probe.collider, twoSided)[0];
+        const hit = castCamera(ray, probe.collider, twoSided).find(h => !probe.ignoreColliderHit?.(h, ray.ray.direction));
         if (hit) { crossed = true; if (wallCollider === undefined) { wallCollider = probe.collider.indexOf(hit.object); wallPoint = { x: hit.point.x, y: -hit.point.z, z: hit.point.y }; } }
       }
       for (const [wi, w] of probe.walls.entries()) {
