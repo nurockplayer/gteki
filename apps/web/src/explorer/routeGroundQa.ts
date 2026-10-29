@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import type { RouteStep } from "@gteki/navigation";
 import { nodeDisplayZ } from "@gteki/navigation";
+import { roleOf } from "@gteki/scene-api";
 import type { StationBundle } from "@gteki/schema";
 import { R, type V3 } from "./geometry.ts";
 import { cumulativeLengths, samplePolyline } from "./walker.ts";
@@ -52,10 +53,23 @@ export function routeGroundCounts(points: readonly V3[], ground: (p: THREE.Vecto
   return { samples, noFloor, verticalWithoutConnector };
 }
 
-/** Distance to actual mesh triangles in world space, not merely a mesh's bounding box. */
+/** Only explicit vertical transport is evidence of a connector; ambiguous roles are unknown.
+ * Shinjuku's animated escalator steps are named in stations/shinjuku/scene/build.ts.
+ */
+function isConnector(mesh: THREE.Mesh): boolean {
+  if (mesh.userData.greybox) return mesh.userData.connector === true;
+  for (let object: THREE.Object3D | null = mesh; object; object = object.parent) {
+    if (object.name.startsWith("escalator-steps:")) return true;
+    const role = roleOf(object);
+    if (role) return ["stairs", "escalator", "elevator"].includes(role);
+  }
+  return false;
+}
+
+/** Distance to connector mesh triangles in world space, not merely a mesh's bounding box. */
 export function sceneMeshNear(roots: readonly THREE.Object3D[], point: THREE.Vector3, radius: number): boolean {
   const meshes: THREE.Mesh[] = [];
-  for (const root of roots) { root.updateWorldMatrix(true, true); root.traverse((o) => { if ((o as THREE.Mesh).isMesh) meshes.push(o as THREE.Mesh); }); }
+  for (const root of roots) { root.updateWorldMatrix(true, true); root.traverse((o) => { if ((o as THREE.Mesh).isMesh && isConnector(o as THREE.Mesh)) meshes.push(o as THREE.Mesh); }); }
   const triangle = new THREE.Triangle(), closest = new THREE.Vector3(), matrix = new THREE.Matrix4();
   for (const mesh of meshes) {
     const geometry = mesh.geometry, position = geometry?.getAttribute("position"), index = geometry?.getIndex();

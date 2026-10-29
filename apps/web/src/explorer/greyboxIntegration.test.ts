@@ -7,6 +7,7 @@ import { greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox
 import { strings } from "../i18n.ts";
 import { darkSampleDistances } from "./routeGroundQa.ts";
 import { OverviewLook } from "./overviewLook.ts";
+import { prepareRayTrees } from "./meshBvh.ts";
 
 const bundle = () => createSyntheticBundle([syntheticEdge("hall", "start", "a")]);
 
@@ -15,14 +16,15 @@ function fixture() {
   floor.position.set(0, -0.1, 0);
   const wall = new THREE.Mesh(new THREE.BoxGeometry(0.1, 3, 6), new THREE.MeshBasicMaterial());
   wall.position.set(2.1, 1.5, 0);
-  const root = new THREE.Group(); root.add(floor, wall); root.updateMatrixWorld(true);
-  const scene = { root, walkable: [floor], colliders: [wall], walls: [{ a: { x: 2.05, y: -3 }, b: { x: 2.05, y: 3 }, zMin: 0, zMax: 3 }], dispose: vi.fn() };
+  const secondWall = wall.clone(); secondWall.position.x += 0.02;
+  const root = new THREE.Group(); root.add(floor, wall, secondWall); root.updateMatrixWorld(true);
+  const scene = { root, walkable: [floor], colliders: [wall, secondWall], walls: [{ a: { x: 2.05, y: -3 }, b: { x: 2.05, y: 3 }, zMin: 0, zMax: 3 }], dispose: vi.fn() };
   const keys = new Set<string>();
   const state = Object.assign(Object.create(Explorer.prototype), {
     loadGeneration: 0, disposed: false, mode: "walk", quality: "high", stationCaches: { remember: vi.fn() },
     releaseStationCaches: vi.fn(), clearStation: vi.fn(), ensureAudio: () => false,
     buildStationScene: async () => scene, overviewLook: { set: vi.fn() }, street: { restore: vi.fn(), attach: vi.fn() },
-    scene: new THREE.Scene(), world: new THREE.Group(), overlays: new THREE.Group(), routeGroup: new THREE.Group(), greyboxPortalColliders: new Map(),
+    scene: new THREE.Scene(), world: new THREE.Group(), overlays: new THREE.Group(), routeGroup: new THREE.Group(), sceneColliderTargets: new Set(),
     applyLighting: vi.fn(), cameraCut: { apply: () => [] }, attachShadows: vi.fn(), buildOccluders: vi.fn(),
     setupComposer: vi.fn(), frameAll: vi.fn(), events: {}, ray: new THREE.Raycaster(),
     pos: new THREE.Vector3(1, 0, 0), yaw: -Math.PI / 2, pitch: 0, camDistance: 3,
@@ -48,6 +50,8 @@ describe("greybox station integration", () => {
     const vertical = [{ mode: "stairs", fromNodeId: "isolated", toNodeId: "upper" }];
     expect(state.routeGroundCheck([point(0, 0), point(10, 0)], vertical)).toMatchObject({ samples: 21, noFloor: 0, verticalWithoutConnector: 1 });
     expect(state.routeGroundCheck([point(0, 8), point(10, 8)], [])).toMatchObject({ samples: 21, noFloor: 21, verticalWithoutConnector: 0 });
+    expect(state.sceneColliderTargets.size).toBe(2);
+    expect(state.blockedByColliders(new THREE.Vector3(1.5, 0, 0), new THREE.Vector3(2.35, 0, 0))).toBeNull();
     const result = state.walkPath([{ x: 5, z: 0 }], { maxSeconds: 10 });
     expect(result).toMatchObject({ done: true, stuck: false });
     expect(state.pos.x).toBeGreaterThan(4.5);
@@ -86,6 +90,17 @@ describe("greybox station integration", () => {
     const box = { center: new THREE.Vector3(2, 0, 0), along: new THREE.Vector3(1, 0, 0), across: new THREE.Vector3(0, 0, 1), width: 2, depth: 0.6, height: 2.3 };
     expect(insideGreyboxOpening(new THREE.Vector3(2, 1, 0), box)).toBe(true);
     expect(insideGreyboxOpening(new THREE.Vector3(2, 1, 2), box)).toBe(false);
+  });
+
+  it("finds collider surfaces by their closest point and uses indexed walls", () => {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshBasicMaterial());
+    mesh.position.set(3, 1, -4); mesh.rotation.y = Math.PI / 7; mesh.updateMatrixWorld(true);
+    prepareRayTrees([mesh]);
+    const face = new THREE.Vector3(1.2, 0, 0.13).applyMatrix4(mesh.matrixWorld);
+    const probes = greyboxSceneProbes([mesh], [{ ax: 20, az: -5, bx: 20, bz: 5, yMin: 0, yMax: 3 }]);
+    expect(probes.colliderNear({ x: face.x, y: -face.z, z: face.y }, 0.21)).toBe(true);
+    expect(probes.colliderNear({ x: 50, y: 0, z: 0 }, 0.3)).toBe(false);
+    expect(probes.wallHit({ x: 19, y: 0, z: 0 }, { x: 21, y: 0, z: 0 })).toEqual({ x: 20, y: 0, z: 0 });
   });
 
   it("samples dark share with a test renderer and restores the camera", async () => {

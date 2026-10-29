@@ -29,7 +29,7 @@ it("does not treat a greybox ceiling as floor", () => {
   expect(details[0]!.floor).toBe("off");
 });
 
-it("leaves a second portal collider solid, matching the explorer's single-collider rule", () => {
+it("opens both portal colliders, matching the explorer rule", () => {
   const bundle = createSyntheticBundle([syntheticEdge("e","start","a")]);
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(10,10).rotateX(-Math.PI/2).translate(-1,0,0),new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));
   const wall1 = new THREE.Mesh(new THREE.BoxGeometry(0.05,2.5,10),new THREE.MeshBasicMaterial()); wall1.position.set(4,1.25,0);
@@ -38,5 +38,5 @@ it("leaves a second portal collider solid, matching the explorer's single-collid
   const made = makeGreybox(bundle,{root,walkable:[floor],colliders:[wall1,wall2],walls:[]} as never,false);
   expect(made.grey.openings.length).toBeGreaterThan(0);
   const point = (x:number) => ({x,y:0,z:0,zKnown:true,stepIndex:0,floorId:"concourse"});
-  expect(auditPolyline(made.probe,[point(3.5),point(4.5)]).wallHits).toBeGreaterThan(0);
+  expect(auditPolyline(made.probe,[point(3.5),point(4.5)]).wallHits).toBe(0);
 });

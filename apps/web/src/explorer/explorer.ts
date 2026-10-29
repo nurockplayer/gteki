@@ -229,7 +229,7 @@ export class Explorer {
   private stationScene: StationScene | null = null;
   private greybox: ReturnType<typeof buildGreybox> | null = null;
   private greyboxOpenings: Box[] = [];
-  private greyboxPortalColliders = new Map<Box, THREE.Object3D>();
+  private sceneColliderTargets = new Set<THREE.Object3D>();
   private greyboxSegments: GreyboxSegment[] = [];
   private greyboxLegendVisible = false;
   private sceneGroundTargets: THREE.Object3D[] = [];
@@ -923,12 +923,13 @@ export class Explorer {
       this.street.attach(this.stationScene.root);
       this.world.updateMatrixWorld(true);
       const originalTargets = explorerTargets(this.walkable, this.colliders, this.cameraBlockers);
+      prepareRayTrees(originalTargets.camera);
       this.sceneGroundTargets = originalTargets.ground;
       const scene = greyboxSceneProbes(originalTargets.collider, this.walls);
-      const probe = floorProbe(new THREE.Raycaster(), originalTargets.ground);
+      const probe = floorProbe(new THREE.Raycaster(), originalTargets.ground, true);
       const floorCache = new Map<string, boolean>();
       const hasFloor = (p: { x: number; y: number; z: number }) => {
-        const key = `${p.x},${p.y},${p.z}`;
+        const key = `${Math.round(p.x * 100)},${Math.round(p.y * 100)},${Math.round(p.z * 100)}`;
         let value = floorCache.get(key);
         if (value === undefined) { value = probe(p); floorCache.set(key, value); }
         return value;
@@ -937,13 +938,7 @@ export class Explorer {
       this.greybox = buildGreybox(bundle, traversable, hasFloor, scene, this.quality);
       this.greyboxSegments = greyboxPathSegments(unmodelledRunsByEdge(bundle, traversable, hasFloor));
       this.greyboxOpenings = this.greybox.openings;
-      this.greyboxPortalColliders.clear();
-      for (const box of this.greyboxOpenings) {
-        const ray = new THREE.Raycaster(box.center.clone().addScaledVector(box.along, -box.depth / 2).add(new THREE.Vector3(0, 1.2, 0)), box.along, 0, box.depth);
-        const hits = castCamera(ray, originalTargets.collider, new Set(originalTargets.collider));
-        const wall = hits.sort((a, b) => Math.abs(a.point.clone().sub(box.center).dot(box.along)) - Math.abs(b.point.clone().sub(box.center).dot(box.along)))[0];
-        if (wall) this.greyboxPortalColliders.set(box, wall.object);
-      }
+      this.sceneColliderTargets = new Set(originalTargets.collider);
       this.world.add(this.greybox.root);
       this.walkable = [...this.walkable, ...this.greybox.walkable];
       this.colliders = [...this.colliders, ...this.greybox.colliders];
@@ -1020,7 +1015,7 @@ export class Explorer {
       this.greybox = null;
     }
     this.greyboxOpenings = [];
-    this.greyboxPortalColliders = new Map();
+    this.sceneColliderTargets = new Set();
     this.greyboxSegments = [];
     this.sceneGroundTargets = [];
     this.updateGreyboxLegend();
@@ -1397,7 +1392,7 @@ export class Explorer {
       const hit = castAll(this.ray, this.colliderTargets).find((h) => {
         if (h.object.userData.greybox || !h.face) return true;
         const normal = hitNormal(h, dir);
-        return !this.greyboxOpenings.some((box) => this.greyboxPortalColliders.get(box) === h.object && insideGreyboxOpening(h.point, box) && Math.abs(normal.y) <= 0.5);
+        return !this.greyboxOpenings.some((box) => this.sceneColliderTargets.has(h.object) && insideGreyboxOpening(h.point, box) && Math.abs(normal.y) <= 0.5);
       });
       return hit ? { distance: hit.distance, normal: hitNormal(hit, dir) } : null;
     }, RADIUS);

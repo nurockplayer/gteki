@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import type { StationBundle } from "@gteki/schema";
-import { buildGreybox, splitWallsAtOpenings, unmodelledRunsByEdge } from "./greybox.ts";
+import { buildGreybox, createGreyboxBuilder, greyboxTriangleLimit, simplifyGreyboxRun, splitWallsAtOpenings, unmodelledRunsByEdge } from "./greybox.ts";
 import { MODE_WIDTH } from "./graphView.ts";
 import { resolveWalls } from "./walker.ts";
 
@@ -18,6 +18,19 @@ describe("unmodelledRunsByEdge", () => {
     expect(runs[0]!.points[0]!.x).toBe(2);
     expect(runs[0]!.points.at(-1)!.x).toBe(6);
     expect(unmodelledRunsByEdge(bundle, () => false, () => false)).toEqual([]);
+  });
+
+  it("finds a floorless span on a short edge even when its endpoints and midpoint have floor", () => {
+    const short = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 4, y: 0, z: 0 } }] };
+    const runs = unmodelledRunsByEdge(short, () => true, (p) => p.x < 0.25 || p.x > 1.75);
+    expect(runs).toHaveLength(1);
+    expect(runs[0]!.points[0]!.x).toBe(0);
+    expect(runs[0]!.points.at(-1)!.x).toBe(2);
+  });
+
+  it("finds a 1.5 m floorless middle on a 4 m edge", () => {
+    const short = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 4, y: 0, z: 0 } }] };
+    expect(unmodelledRunsByEdge(short, () => true, (p) => p.x < 1.25 || p.x > 2.75)).toHaveLength(1);
   });
 
   it("forces a sceneGap edge to be unmodelled", () => {
@@ -49,6 +62,10 @@ describe("unmodelledRunsByEdge", () => {
 
 describe("buildGreybox", () => {
   const emptyScene = { colliderNear: () => false, wallHit: () => null };
+  it("uses the triangle limit for each tier", () => {
+    expect(greyboxTriangleLimit("high")).toBe(150000);
+    expect(greyboxTriangleLimit("low")).toBe(100000);
+  });
   it("uses the mode width fallback and self-lit shell", () => {
     const result = buildGreybox(bundle, () => true, () => false, emptyScene, "high");
     const shell = result.root.getObjectByName("greybox-shell") as THREE.Mesh;
@@ -97,6 +114,16 @@ describe("buildGreybox", () => {
     expect(blocked.wallSegments).toHaveLength(0);
   });
 
+  it("omits only the two-metre wall piece next to a collider", () => {
+    const long = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 40, y: 0, z: 0 } }] };
+    const result = buildGreybox(long, () => true, () => false, { ...emptyScene, colliderNear: (p) => Math.abs(p.x - 19) < 0.01 }, "high");
+    for (const sign of [-1, 1]) {
+      const walls = result.wallSegments.filter((wall) => Math.sign(wall.az) === sign);
+      expect(walls).toHaveLength(2);
+      expect(walls.reduce((length, wall) => length + Math.hypot(wall.bx - wall.ax, wall.bz - wall.az), 0)).toBeCloseTo(38);
+    }
+  });
+
   it("fills the outside corner of a bend inside one edge", () => {
     const bent = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 5, y: 10, z: 0 } }], edges: [{ ...bundle.edges[0]!, geometry: [{ x: 0, y: 0, z: 0 }, { x: 5, y: 0, z: 0 }, { x: 5, y: 10, z: 0 }] }] };
     const result = buildGreybox(bent, () => true, () => false, emptyScene, "high");
@@ -129,14 +156,56 @@ describe("buildGreybox", () => {
     expect(Math.abs(resolveWalls(2.25, 2.3, 0.2, 0, 1.8, split).x - 2.25)).toBeGreaterThan(0.1);
   });
 
-  it("drops decorative geometry in order and caps large networks", () => {
+  it("preserves the entire floor and walls of a long straight passage", () => {
     const long = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 2000, y: 0, z: 0 } }] };
     const result = buildGreybox(long, () => true, () => false, emptyScene, "low");
+    expect(result.stats.triangles).toBeLessThan(1000);
+    result.root.updateMatrixWorld(true);
+    for (const x of [0.25, 1000.25, 1999.75]) {
+      const ray = new THREE.Raycaster(new THREE.Vector3(x, 1, 0), new THREE.Vector3(0, -1, 0), 0, 2);
+      expect(ray.intersectObjects(result.walkable, false).some((hit) => Math.abs(hit.point.y) < 0.001)).toBe(true);
+    }
+    expect(result.wallSegments.some((wall) => Math.max(wall.ax, wall.bx) >= 1999.5)).toBe(true);
+  });
+
+  it("simplifies a sampled straight 100 m run to one segment", () => {
+    const points = Array.from({ length: 201 }, (_, i) => ({ x: i / 2, y: 0, z: 0 }));
+    expect(simplifyGreyboxRun(points)).toEqual([points[0], points.at(-1)]);
+  });
+
+  it("deduplicates identical corridors and clips partially overlapping corridors", () => {
+    const duplicate = { ...bundle, edges: [bundle.edges[0]!, { ...bundle.edges[0]!, id: "duplicate" }] };
+    const result = buildGreybox(duplicate, () => true, () => false, emptyScene, "high");
+    expect(result.stats.runs).toBe(1);
+    expect(result.stats.lengthM).toBeCloseTo(10);
+    const partial = { ...duplicate, nodes: [...bundle.nodes, { ...bundle.nodes[1]!, id: "c", position: { x: 15, y: 0, z: 0 } }], edges: [bundle.edges[0]!, { ...bundle.edges[0]!, id: "partial", from: "b", to: "c", geometry: [{ x: 5, y: 0, z: 0 }, { x: 15, y: 0, z: 0 }] }] };
+    // The second edge starts at its from-node, so set that node at 5 m.
+    partial.nodes = [bundle.nodes[0]!, bundle.nodes[1]!, { ...bundle.nodes[0]!, id: "d", position: { x: 5, y: 0, z: 0 } }, partial.nodes[2]!];
+    partial.edges[1] = { ...partial.edges[1]!, from: "d" };
+    expect(buildGreybox(partial, () => true, () => false, emptyScene, "high").stats.lengthM).toBeCloseTo(15);
+  });
+
+  it("deduplicates diagonal runs without merging corridors on another level", () => {
+    const diagonal = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 10, y: 10, z: 0 } },
+      { ...bundle.nodes[0]!, id: "upper-a", position: { x: 0, y: 0, z: 4 } },
+      { ...bundle.nodes[1]!, id: "upper-b", position: { x: 10, y: 10, z: 4 } }],
+      edges: [bundle.edges[0]!, { ...bundle.edges[0]!, id: "reverse", from: "b", to: "a" }, { ...bundle.edges[0]!, id: "upper", from: "upper-a", to: "upper-b" }] };
+    const result = buildGreybox(diagonal, () => true, () => false, emptyScene, "high");
+    expect(result.stats.runs).toBe(2);
+    expect(result.stats.lengthM).toBeCloseTo(20 * Math.SQRT2);
+  });
+
+  it("builds 16 km of overlapping passages on five floors within budget", () => {
+    const floors = Array.from({ length: 5 }, (_, i) => ({ ...bundle.floors[0]!, id: `f${i}`, renderElevationM: i * 4 }));
+    const nodes = floors.flatMap((floor, i) => [
+      { ...bundle.nodes[0]!, id: `a${i}`, floorId: floor.id, position: { x: 0, y: 0, z: i * 4 } },
+      { ...bundle.nodes[1]!, id: `b${i}`, floorId: floor.id, position: { x: 200, y: 0, z: i * 4 } },
+    ]);
+    const edges = floors.flatMap((_floor, i) => Array.from({ length: 16 }, (_, k) => ({ ...bundle.edges[0]!, id: `e${i}-${k}`, from: `a${i}`, to: `b${i}`, attributes: { sceneGap: true } })));
+    const result = buildGreybox({ ...bundle, floors, nodes, edges }, () => true, () => false, emptyScene, "low");
     expect(result.stats.triangles).toBeLessThanOrEqual(60000);
-    expect(result.stats.overBudget).toContain("lights");
-    expect(result.stats.overBudget).toContain("kerb");
-    expect(result.root.getObjectByName("greybox-lights")).toBeUndefined();
-    expect(result.root.getObjectByName("greybox-kerb")).toBeUndefined();
+    expect(result.stats.buildMs).toBeLessThanOrEqual(300);
+    expect(result.stats.lengthM).toBeCloseTo(1000);
   });
 
   it("keeps a 400 m two-floor synthetic network within the mesh and triangle budget", () => {
@@ -176,5 +245,38 @@ describe("buildGreybox", () => {
     expect(result.stats.meshes).toBeLessThanOrEqual(12);
     expect(result.stats.triangles).toBeLessThanOrEqual(60000);
     expect(bytes).toBeLessThan(2 * 1024 * 1024);
+  });
+});
+
+
+describe("incremental floor-run discovery", () => {
+  const scene = { colliderNear: () => false, wallHit: () => null };
+  const sample = { ...bundle,
+    nodes: [...bundle.nodes, { ...bundle.nodes[0]!, id: "c", position: { x: 100, y: 0, z: 0 } }, { ...bundle.nodes[1]!, id: "d", position: { x: 110, y: 0, z: 0 } }],
+    edges: [bundle.edges[0]!, { ...bundle.edges[0]!, id: "other", from: "c", to: "d" }],
+  };
+  it("matches the one-shot geometry when all edges have been discovered", () => {
+    const builder = createGreyboxBuilder(sample, () => true, () => false, scene, "high");
+    while (!builder.done) builder.probeStep(10);
+    const incremental = builder.emit(), full = buildGreybox(sample, () => true, () => false, scene, "high");
+    expect(incremental.stats.triangles).toBe(full.stats.triangles);
+    expect(incremental.openings).toHaveLength(full.openings.length);
+    expect(new THREE.Box3().setFromObject(incremental.root)).toEqual(new THREE.Box3().setFromObject(full.root));
+  });
+  it("keeps floor discovery within a generous per-step bound", () => {
+    const many = { ...sample, edges: Array.from({ length: 200 }, (_, i) => ({ ...sample.edges[0]!, id: `copy-${i}` })) };
+    const builder = createGreyboxBuilder(many, () => true, () => false, scene, "high");
+    while (!builder.done) {
+      const start = performance.now();
+      builder.probeStep(6);
+      expect(performance.now() - start).toBeLessThan(24);
+    }
+  });
+  it("discovers edges intersecting the requested route bounds", () => {
+    const builder = createGreyboxBuilder(sample, () => true, () => false, scene, "high");
+    expect(builder.ensure(new THREE.Box3(new THREE.Vector3(99, -1, -1), new THREE.Vector3(111, 1, 1)))).toBe(true);
+    expect(builder.runs.map((run) => run.edge.id)).toEqual(["other"]);
+    expect(builder.ensure(new THREE.Box3(new THREE.Vector3(99, -1, -1), new THREE.Vector3(111, 1, 1)))).toBe(false);
+    expect(builder.done).toBe(false);
   });
 });

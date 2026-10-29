@@ -37,14 +37,22 @@ Built only for vertical edges with no scene model at either end, or where the ed
   - The style follows `vertical_hero` (`docs/visual/vertical-gap.md` items 2 and 4); w6:p13 is to be asked before dispatch.
 - **Ramp:** a sloped greybox passage.
 
+## Delivery split (2026-10-30 JST)
+The design ships in three PRs, and each one is complete on its own:
+- **Ticket A (#630):** passages, portal frames with locally opened walker collision, the legend, and the QA hooks.
+  - Vertical edges get no geometry in A.
+  - The scene wall at a portal is still drawn and still blocks the follow camera.
+- **Ticket B:** the vertical connectors above.
+- **#631:** cuts the scene wall's triangles open at each portal at load. That opens the rendered wall, the camera rays and the colliders together, and the door panel goes.
+
 ## Privacy ★
 Greybox geometry is built at runtime from the graph that is already loaded, and is never written to disk. Nothing built from a private graph may go into a public asset, a GLB export, a snapshot fixture or a CI artifact. Tests use synthetic bundles only.
 
 ## Budget (both tickets together)
 - **Draw calls:** everything is merged by material per floor, which gives at most 3 meshes per floor (shell, light strips, kerb) plus 1 per elevator car. Station total: at most +12 on desktop and at most +6 on phone (phone merges all floors into one shell).
-- **Triangles:** at most 60 k for the passages and connectors of a whole station; phone treads drop to one quad per 3 steps.
+- **Triangles:** 150 k on high tier and 100 k on low tier for the passages and connectors of a whole station. With five merged meshes the GPU cost at these counts is small. Drop lights, kerbs, then ceilings when over the tier budget; retain floors and walls even if they alone exceed it. Phone treads drop to one quad per 3 steps.
 - **Textures:** none new (procedural only); GPU memory below 2 MiB of vertex buffers.
-- **Build time at load:** at most 30 ms desktop and at most 80 ms phone, measured; idle fallback only if real-station acceptance measures it over budget.
+- **Build time at load:** synchronous in ticket A. Headless on the private build: Ikebukuro 68–88 ms, Shinjuku 308–433 ms. Accepted 2026-10-30 JST. Spawn-first, per-frame slices are #632, for when device acceptance shows a stall.
 - **Shadows:** none on any tier.
 
 ## Acceptance
