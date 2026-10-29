@@ -98,25 +98,28 @@ describe("buildGreybox", () => {
     expect(shell.geometry.boundingBox!.getSize(new THREE.Vector3()).z).toBeCloseTo(4);
   });
 
-  it("keeps passage walls out of the mouth of a stair that leaves a run end", () => {
+  it("opens only the wall a stair crosses at a run end", () => {
     const floors = [...bundle.floors, { id: "g", renderElevationM: 4 }];
     const nodes = [...bundle.nodes, { id: "c", floorId: "g", position: { x: 10, y: 6, z: 4 } }];
     const stairs = { id: "s", from: "b", to: "c", mode: "stairs", attributes: { width: { m: 4 } } };
     const result = buildGreybox({ ...bundle, floors, nodes, edges: [bundle.edges[0]!, stairs] } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
-    for (const wall of result.wallSegments) for (const [x, z] of [[wall.ax, wall.az], [wall.bx, wall.bz]] as const) {
-      expect(Math.hypot(x - 10, z)).toBeGreaterThanOrEqual(2 - 1e-5);
-    }
+    const half = MODE_WIDTH.walk! / 2;
+    const side = (z: number) => result.wallSegments.filter((w) => Math.abs(w.az - z) < 1e-6 && Math.abs(w.bz - z) < 1e-6);
+    // North in the graph is -z in the renderer: the stair leaves through the -z wall, which opens over its 4 m width.
+    expect(side(-half).every((w) => Math.max(w.ax, w.bx) <= 8 + 1e-5)).toBe(true);
+    // The other side wall still runs right up to the node, so nobody walks off the passage there.
+    expect(Math.max(...side(half).map((w) => Math.max(w.ax, w.bx)))).toBeGreaterThan(10 - 1e-5);
   });
 
-  it("opens the mouth of a stair as wide as the passage, and at the end of a long ramp", () => {
-    const floors = [...bundle.floors, { id: "g", renderElevationM: 4 }];
+  it("opens a stair mouth at the end of a long ramp", () => {
+    const floors = [...bundle.floors, { id: "g", renderElevationM: 7 }];
     const ramp = [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 30, y: 0, z: 3 } }];
     const nodes = [...ramp, { id: "c", floorId: "g", position: { x: 30, y: 6, z: 7 } }];
     const edges = [{ ...bundle.edges[0]!, mode: "ramp" }, { id: "s", from: "b", to: "c", mode: "stairs" }];
     const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
-    for (const wall of result.wallSegments) for (const [x, z] of [[wall.ax, wall.az], [wall.bx, wall.bz]] as const) {
-      expect(Math.hypot(x - 30, z)).toBeGreaterThanOrEqual(MODE_WIDTH.ramp! / 2 + 1 - 1e-5);
-    }
+    const half = MODE_WIDTH.ramp! / 2, stairHalf = MODE_WIDTH.stairs! / 2;
+    const near = result.wallSegments.filter((w) => Math.abs((w.az + w.bz) / 2 + half) < 1e-6);
+    expect(near.every((w) => Math.max(w.ax, w.bx) <= 30 - stairHalf + 1e-5)).toBe(true);
   });
 
   it("leaves the walls of a corridor that passes a stair mouth", () => {

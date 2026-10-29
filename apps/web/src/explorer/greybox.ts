@@ -308,7 +308,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   }
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
-  const junctions = new Map<string, { at: THREE.Vector3; width: number; count: number; floor: string; radius?: number; edges: Set<string> }>();
+  const junctions = new Map<string, { at: THREE.Vector3; width: number; count: number; floor: string; edges: Set<string> }>();
   for (const run of detected) {
     const edgePointsR = edgePoints(bundle, run.edge, nodes, floors);
     for (const [id, point, endpoint] of [[run.edge.from, run.points[0], edgePointsR[0]], [run.edge.to, run.points.at(-1), edgePointsR.at(-1)]] as const) {
@@ -327,13 +327,19 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       }
     }
   }
-  // A stair, escalator or lift leaves the passage at its end node, so that end needs the same wall-free patch as a junction. Closed ones too: the opening is physical.
+  // A stair, escalator or lift leaves a run at its end node. Its mouth opens only the wall it actually crosses: the
+  // connector's own footprint, so the passage keeps its side walls wherever there is no stair beside them.
+  const mouths: { at: THREE.Vector3; ux: number; uz: number; half: number; length: number; edges: Set<string> }[] = [];
   for (const edge of bundle.edges) {
     if (!["stairs", "escalator", "elevator"].includes(edge.mode)) continue;
-    for (const id of [edge.from, edge.to]) {
+    const points = edgePoints(bundle, edge, nodes, floors);
+    for (const [id, path] of [[edge.from, points], [edge.to, [...points].reverse()]] as const) {
       const junction = junctions.get(id);
-      // The passage's own walls stand at half its width, so the mouth clears a metre beyond that.
-      if (junction) { junction.count++; junction.width = Math.max(junction.width, widthOf(edge)); junction.radius = junction.width / 2 + 1; }
+      if (!junction) continue;
+      const start = path[0]!, next = path.find((q) => Math.hypot(q.x - start.x, q.z - start.z) > 0.1);
+      if (!next) continue;
+      const length = Math.hypot(next.x - start.x, next.z - start.z);
+      mouths.push({ at: junction.at, ux: (next.x - start.x) / length, uz: (next.z - start.z) / length, half: widthOf(edge) / 2, length: Math.min(length, 3), edges: junction.edges });
     }
   }
   const activeJunctions = [...junctions.values()].filter((junction) => junction.count >= 2);
@@ -375,16 +381,31 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         // Clip the wall centreline against junction discs; the floor and ceiling remain continuous.
         let intervals: [number, number][] = index.uncovered(wa, wz);
         for (const j of activeJunctions) {
-          // A mouth opens only the passages that end there; a corridor that merely passes nearby keeps its walls.
-          if (j.radius !== undefined && !j.edges.has(run.edge.id)) continue;
           const vx = wz.x - wa.x, vz = wz.z - wa.z, ox = wa.x - j.at.x, oz = wa.z - j.at.z;
-          const A = vx * vx + vz * vz, B = 2 * (ox * vx + oz * vz), C = ox * ox + oz * oz - (j.radius ?? j.width / 2) ** 2;
+          const A = vx * vx + vz * vz, B = 2 * (ox * vx + oz * vz), C = ox * ox + oz * oz - (j.width / 2) ** 2;
           // Compare heights where the wall passes the junction, not at the segment midpoint: a long ramp drifts.
           const nearest = A < 1e-12 ? 0 : Math.min(1, Math.max(0, -B / (2 * A)));
           if (Math.abs(j.at.y - (a.y + (z.y - a.y) * nearest)) > 1) continue;
           const disc = B * B - 4 * A * C;
           if (A < 1e-12 || disc <= 0) continue;
           const lo = (-B - Math.sqrt(disc)) / (2 * A), hi = (-B + Math.sqrt(disc)) / (2 * A);
+          intervals = intervals.flatMap(([s, e]) => [[s, Math.min(e, lo)], [Math.max(s, hi), e]].filter(([x, y]) => x! < y!) as [number, number][]);
+        }
+        for (const m of mouths) {
+          // Only the passages that end at the mouth, at its height; a corridor passing nearby keeps its walls.
+          if (!m.edges.has(run.edge.id)) continue;
+          const along = Math.hypot(wz.x - wa.x, wz.z - wa.z), t = along < 1e-9 ? 0 : Math.min(1, Math.max(0, ((m.at.x - wa.x) * (wz.x - wa.x) + (m.at.z - wa.z) * (wz.z - wa.z)) / along ** 2));
+          if (Math.abs(m.at.y - (a.y + (z.y - a.y) * t)) > 1) continue;
+          // The wall segment in the connector's frame: u along the flight, v across it.
+          const du = (wz.x - wa.x) * m.ux + (wz.z - wa.z) * m.uz, dv = -(wz.x - wa.x) * m.uz + (wz.z - wa.z) * m.ux;
+          const u0 = (wa.x - m.at.x) * m.ux + (wa.z - m.at.z) * m.uz, v0 = -(wa.x - m.at.x) * m.uz + (wa.z - m.at.z) * m.ux;
+          let lo = 0, hi = 1;
+          for (const [p0, dp, min, max] of [[u0, du, -0.05, m.length], [v0, dv, -m.half, m.half]] as const) {
+            if (Math.abs(dp) < 1e-9) { if (p0 < min || p0 > max) { lo = 1; hi = 0; } continue; }
+            const t1 = (min - p0) / dp, t2 = (max - p0) / dp;
+            lo = Math.max(lo, Math.min(t1, t2)); hi = Math.min(hi, Math.max(t1, t2));
+          }
+          if (lo >= hi) continue;
           intervals = intervals.flatMap(([s, e]) => [[s, Math.min(e, lo)], [Math.max(s, hi), e]].filter(([x, y]) => x! < y!) as [number, number][]);
         }
         const clearIntervals: [number, number][] = [];
