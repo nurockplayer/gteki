@@ -78,6 +78,7 @@ import { hooks, openStation, stationData } from "../lib/gteki.ts";
  *      GTEKI_VANTAGE_SETTLE_MS extra settle after the turn (default 600)
  *      GTEKI_VANTAGE_LOW_DRAWS draw-call limit marked on the low tier (default 28)
  *      GTEKI_VANTAGE_TIER     assert the explorer tier ("low" or "high")
+ *      GTEKI_VANTAGE_STATION  station id to open (default ikebukuro); pass GTEKI_VANTAGE_NODES with it
  *      GTEKI_VANTAGE_FRAMETIME_MS frame intervals sampled per view before its screenshot (default 0 = off)
  *      GTEKI_VANTAGE_GROUPS   comma list of groups to keep (gate, rail, exit, control, spawn)
  *
@@ -102,6 +103,8 @@ const LOW_DRAW_LIMIT = Number(process.env.GTEKI_VANTAGE_LOW_DRAWS ?? 28);
 const FRAMETIME_MS = Number(process.env.GTEKI_VANTAGE_FRAMETIME_MS ?? 0);
 const GROUPS = (process.env.GTEKI_VANTAGE_GROUPS ?? "").split(",").map((s) => s.trim()).filter(Boolean);
 const LOOK_RAD_PER_PX = 0.0042;
+/** Station to shoot (default ikebukuro); the default spots below are Ikebukuro nodes, so name nodes for another. */
+const STATION = process.env.GTEKI_VANTAGE_STATION ?? "ikebukuro";
 
 /** Counts draw calls and triangles per rendered frame at the WebGL boundary (independent of lib PROBE_SCRIPT; as in spec 10). */
 const TRI_PROBE = `(() => {
@@ -153,6 +156,13 @@ async function drag(page: Page, at: Pt, dx: number): Promise<number> {
     sent += chunk;
   }
   return sent;
+}
+
+/** Where the camera looks, compass degrees (0 = north, 90 = east): avatar minus camera, renderer frame (x, up, -north). */
+async function facingOf(page: Page): Promise<number> {
+  const cam = (await hooks.sceneInfo(page)).camera as number[];
+  const av = await hooks.avatar(page);
+  return Math.round(((Math.atan2(av.x - cam[0]!, -(-av.y - cam[2]!)) * 180) / Math.PI + 360) % 360);
 }
 
 /** A point on the canvas that is not covered by UI, to start drags from. */
@@ -248,7 +258,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
   const root = process.env.GTEKI_ROOT;
   if (!root) throw new Error("GTEKI_ROOT must point at the candidate checkout");
 
-  const { graph, station } = stationData("ikebukuro");
+  const { graph, station } = stationData(STATION);
   const byId = new Map(graph.nodes.map((n) => [n.id, n as typeof n & { kind?: string }]));
 
   // ---- spot list ------------------------------------------------------------------------------------
@@ -297,12 +307,12 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
     return { deg: Math.round(bearing(here, target)), edge: e.id };
   };
 
-  const accessFile = path.join(root, "stations", "ikebukuro", "scene", "access_fences.json");
+  const accessFile = path.join(root, "stations", STATION, "scene", "access_fences.json");
   const fences: { a: number[]; b: number[] }[] = fs.existsSync(accessFile) ? (JSON.parse(fs.readFileSync(accessFile, "utf8")).fences ?? []) : [];
 
   // ---- page ------------------------------------------------------------------------------------------
   await page.addInitScript(TRI_PROBE);
-  const { loadMs } = await openStation(page, "ikebukuro");
+  const { loadMs } = await openStation(page, STATION);
   const tier = await hooks.quality(page);
   if (process.env.GTEKI_VANTAGE_TIER) expect(tier, "explorer quality tier").toBe(process.env.GTEKI_VANTAGE_TIER);
   const gl = await page.evaluate(() => (window as any).__qa?.gl ?? null);
@@ -353,6 +363,15 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       if (Math.abs(dx) >= 1) yaw = wrapRad(yaw - (await drag(page, at, dx)) * LOOK_RAD_PER_PX);
       await page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
       await page.waitForTimeout(SETTLE_MS);
+      // Close the loop on the measured facing: the open-loop drag landed 50-77 degrees off on every view of the
+      // 2026-10-29 shop hero run (#209). Up to three corrections, then carry the real yaw to the next heading.
+      for (let i = 0; i < 3; i++) {
+        const err = ((heading - (await facingOf(page)) + 540) % 360) - 180;
+        if (Math.abs(err) < 3) break;
+        await drag(page, at, Math.round((err * Math.PI) / 180 / LOOK_RAD_PER_PX));
+        await page.waitForTimeout(SETTLE_MS);
+      }
+      yaw = wrapRad((-(await facingOf(page)) * Math.PI) / 180);
 
       const m = await measure(page, FRAMES);
       // Frame pacing after the draw sample, before the screenshot: nothing touches the page during the window.
@@ -360,9 +379,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       const vis = await visibilityOf(page);
       const info = await hooks.sceneInfo(page);
       const av = await hooks.avatar(page);
-      // Where the camera looks: avatar minus camera, renderer frame is (x, up, -north). 0 = north, 90 = east.
-      const cam = info.camera as number[];
-      const facing = Math.round(((Math.atan2(av.x - cam[0]!, -(-av.y - cam[2]!)) * 180) / Math.PI + 360) % 360);
+      const facing = await facingOf(page);
       const diff = Math.abs(((facing - heading + 540) % 360) - 180);
 
       const file = `${spot.group}-${spot.node}-h${pad3(heading)}.png`;
