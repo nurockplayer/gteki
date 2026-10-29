@@ -74,7 +74,7 @@ describe("measured connector dimensions", () => {
   it("hides end steps, colours the approach indicators and reduces low tier triangles", () => {
     const from = new THREE.Vector3(), to = new THREE.Vector3(5.064101615, 2, 0);
     const high = buildEscalator(from, to, "high"), low = buildEscalator(from, to, "low");
-    const steps = high.filter((p) => p.material === "escStep" && p.role === "walkable");
+    const steps = high.filter((p) => p.material === "escStep" && p.role !== "walkable" && p.position.length === 108 && extent(p, 1) < 0.081);
     expect(steps).toHaveLength(10); // two landings and eight interior steps
     expect(high.every((v) => v.userData?.fit === "exact")).toBe(true);
     const indicators = high.filter((p) => p.material === "light" && Math.abs(extent(p, 2) - 0.16) < 1e-5);
@@ -98,7 +98,7 @@ describe("endpoint fitting", () => {
   it("joins both comb plates to the visible flight in both tiers", () => {
     for (const tier of ["high", "low"] as const) {
       const parts = buildEscalator(new THREE.Vector3(), new THREE.Vector3(5.064101615, 2, 0), tier);
-      const surfaces = parts.filter((p) => p.material === "escStep" && p.role === "walkable");
+      const surfaces = parts.filter((p) => p.material === "escStep" && p.role !== "walkable" && (p.position.length === 108 || p.position.length === 18));
       const intervals = surfaces.map((p) => {
         const xs = p.position.filter((_, i) => i % 3 === 0);
         return [Math.min(...xs), Math.max(...xs)] as const;
@@ -106,6 +106,41 @@ describe("endpoint fitting", () => {
       expect(intervals[0]![0]).toBeCloseTo(0);
       expect(intervals.at(-1)![1]).toBeCloseTo(5.064101615);
       for (let i = 1; i < intervals.length; i++) expect(intervals[i]![0] - intervals[i - 1]![1]).toBeLessThanOrEqual(0.05);
+    }
+  });
+  it("samples a continuous walkable incline in both tiers", () => {
+    const station = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 5.2, y: 0, z: 1.5 } }], edges: [{ ...bundle.edges[0]!, mode: "escalator" }] } as StationBundle;
+    for (const tier of ["high", "low"] as const) {
+      const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, tier);
+      const ray = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0));
+      let previous: number | undefined;
+      for (let i = 0; i <= 52; i++) {
+        ray.ray.origin.set(Math.min(5.199, i * 0.1 + 0.001), 10, 0);
+        const hit = ray.intersectObjects(result.walkable, false)[0];
+        expect(hit).toBeDefined();
+        if (previous !== undefined) expect(Math.abs(hit!.point.y - previous)).toBeLessThanOrEqual(0.050001);
+        previous = hit!.point.y;
+      }
+      const parts = buildEscalator(new THREE.Vector3(), new THREE.Vector3(5.2, 1.5, 0), tier);
+      expect(parts.filter((p) => p.role === "walkable")).toHaveLength(3);
+      expect(parts.filter((p) => p.role === "walkable").every((p) => p.walkableOnly)).toBe(true);
+    }
+  });
+  it("samples a 30-degree flight at 0.1 m intervals along its surface", () => {
+    const run = 2 * Math.sqrt(3), length = run + 1.6;
+    const station = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: length, y: 0, z: 2 } }], edges: [{ ...bundle.edges[0]!, mode: "escalator" }] } as StationBundle;
+    for (const tier of ["high", "low"] as const) {
+      const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, tier);
+      const ray = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0));
+      let previous: number | undefined;
+      for (let distance = 0.001; distance < 5.6; distance += 0.1) {
+        const x = distance <= 0.8 ? distance : distance < 4.8 ? 0.8 + (distance - 0.8) * Math.sqrt(3) / 2 : 0.8 + run + distance - 4.8;
+        ray.ray.origin.set(x, 10, 0);
+        const hit = ray.intersectObjects(result.walkable, false)[0];
+        expect(hit).toBeDefined();
+        if (previous !== undefined) expect(Math.abs(hit!.point.y - previous)).toBeLessThanOrEqual(0.050001);
+        previous = hit!.point.y;
+      }
     }
   });
   it("flags escalator pitch outside the range and ends at the node", () => {

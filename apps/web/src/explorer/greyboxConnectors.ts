@@ -44,7 +44,7 @@ export function unmodelledVerticalEdges(
 }
 
 export type ConnectorMaterial = "tread" | "riser" | "nosing" | "escStep" | "escTruss" | "steel" | "rubber" | "glass" | "light";
-export interface ConnectorPart { material: ConnectorMaterial; position: number[]; normal: number[]; colour: number[]; edgeId?: string; role?: "walkable" | "collider" | "car" | "door"; landingY?: number; soffit?: boolean; userData?: { fit: "exact" | "approximate"; omittedLandings?: number } }
+export interface ConnectorPart { material: ConnectorMaterial; position: number[]; normal: number[]; colour: number[]; edgeId?: string; role?: "walkable" | "collider" | "car" | "door"; landingY?: number; walkableOnly?: boolean; soffit?: boolean; userData?: { fit: "exact" | "approximate"; omittedLandings?: number } }
 export interface ConnectorOptions { tier: "high" | "low" }
 
 const connectorColours: Record<ConnectorMaterial, string> = {
@@ -126,8 +126,16 @@ export function buildEscalator(from: THREE.Vector3, to: THREE.Vector3, tier: "hi
   const firstX = retained.length ? landing + retained[0]! * 0.4 * Math.cos(angle) : f.length / 2;
   const lastIndex = retained.at(-1);
   const lastEnd = lastIndex === undefined ? f.length / 2 : landing + Math.min(incline, (lastIndex + 1) * 0.4) * Math.cos(angle);
-  box(parts, "escStep", f.matrix, firstX / 2, -0.04, 0, firstX, 0.08, 1, "walkable");
-  box(parts, "escStep", f.matrix, (lastEnd + f.length) / 2, f.rise - 0.04, 0, f.length - lastEnd, 0.08, 1, "walkable");
+  box(parts, "escStep", f.matrix, firstX / 2, -0.04, 0, firstX, 0.08, 1);
+  box(parts, "escStep", f.matrix, (lastEnd + f.length) / 2, f.rise - 0.04, 0, f.length - lastEnd, 0.08, 1);
+  // Physical landings meet the continuous incline at its true endpoints, independently of the extended visual combs.
+  for (const end of [0, 1]) {
+    box(parts, "escStep", f.matrix, end ? f.length - landing / 2 : landing / 2, end * f.rise - 0.04, 0, landing, 0.08, 1, "walkable");
+    parts.at(-1)!.walkableOnly = true;
+  }
+  const surface = new THREE.PlaneGeometry(incline, 1); surface.rotateX(-Math.PI / 2);
+  const surfaceFrame = f.matrix.clone().multiply(new THREE.Matrix4().makeTranslation(landing + run / 2, f.rise / 2, 0)).multiply(new THREE.Matrix4().makeRotationZ(angle));
+  const surfacePart = part(surface, "escStep", surfaceFrame, "walkable"); surfacePart.walkableOnly = true; parts.push(surfacePart);
   for (let i = 0; i < retained.length; i += group) {
     const steps = Math.min(group, retained.length - i), first = retained[i]! * 0.4;
     const last = retained[i + steps - 1]!, finish = last === count - 1 ? incline : (last + 1) * 0.4;
@@ -135,9 +143,9 @@ export function buildEscalator(from: THREE.Vector3, to: THREE.Vector3, tier: "hi
     const depth = (finish - first) * Math.cos(angle), x = landing + start * Math.cos(angle), y = start * Math.sin(angle);
     if (tier === "low") {
       const geo = new THREE.PlaneGeometry(depth, 1); geo.rotateX(-Math.PI / 2);
-      parts.push(part(geo, "escStep", f.matrix.clone().multiply(new THREE.Matrix4().makeTranslation(x, y, 0)), "walkable"));
+      parts.push(part(geo, "escStep", f.matrix.clone().multiply(new THREE.Matrix4().makeTranslation(x, y, 0))));
     } else {
-      box(parts, "escStep", f.matrix, x, y - 0.025, 0, depth, 0.05, 1, "walkable");
+      box(parts, "escStep", f.matrix, x, y - 0.025, 0, depth, 0.05, 1);
       box(parts, "escStep", f.matrix, x - depth / 2, y - 0.1, 0, 0.015, Math.min(0.4, incline - first) * Math.sin(angle), 1);
     }
   }
@@ -263,7 +271,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     if (parts.some((p) => p.userData?.fit === "approximate")) approximateFits++;
     omittedLandings += edgeOmitted;
     const key = tier === "low" ? "all" : nodes.get(edge.from)?.floorId ?? "";
-    const batch = batches.get(key) ?? []; batch.push(...parts.filter((p) => p.role !== "car" && p.role !== "door")); batches.set(key, batch);
+    const batch = batches.get(key) ?? []; batch.push(...parts.filter((p) => p.role !== "car" && p.role !== "door" && !p.walkableOnly)); batches.set(key, batch);
     const support = parts.filter((p) => p.role === "walkable"), walls = parts.filter((p) => p.role === "collider");
     if (support.length) walkable.push(meshFor(support, physicalMaterial));
     if (walls.length) colliders.push(meshFor(walls, physicalMaterial));
