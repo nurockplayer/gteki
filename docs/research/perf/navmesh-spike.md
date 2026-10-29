@@ -15,12 +15,40 @@
 
 The public graph has **25 stair edges**, **0 escalator edges**, and **0 elevator edges**. Both endpoints of 24 stairs snap within 0.5 m; 21 of those have a complete navmesh path. Of the 21, **20** paths stay within 2 m in plan of the graph edge geometry (sampled every 0.5 m), making them local connector candidates; **5** stairs lack such evidence. This heuristic rejects an obvious detour but does not prove the actual stair is traversed or that each of the five needs a link: missing endpoints, geometry, or alternative routing can also explain a failure. No off-mesh links have been added. Further connector inspection is required to determine the true link count.
 
+## Step 2: public route audit
+
+2026-10-30 00:57 JST. With the default profile, 33 POIs have connectors; of 1,056 ordered distinct pairs, **1,054** produced routes and two did not. Of those, 760 use only navmesh edge queries and 294 use at least one graph stair fallback. These are complete audit polylines, not proven continuous navmesh journeys. The fallbacks are graph edge polylines, not validated off-mesh connections. Across all routes, 592 joins have nonzero gaps (maximum 0.145 m); the audit includes the straight segments across those gaps. The routes use 67 unique edges (134 directed edge queries; 9,846 edge uses). Directed edge queries are cached.
+
+| Sampled result | Navmesh with stair fallbacks | Graph polyline, same routes |
+| --- | ---: | ---: |
+| Samples | 580,788 | 580,808 |
+| Off floor | 28,102 | 1,216 |
+| No floor | 0 | 0 |
+| Wall hits | 1,384 | 0 |
+
+The navmesh result does not meet the zero-wall-hit target. Off-floor samples are 4.84% of navmesh samples and 0.21% of graph samples; sample totals differ with geometry and vertex density. `auditPolyline` samples every 0.5 m and tests two body-height rays and wall segments; it is not a swept-body proof. Straight navmesh path segments and transitions between snapped endpoints and fallback stair polylines are included in these counts. Root causes have not been isolated.
+
+Three unique edges (six directed queries) have no navmesh path; all six failed as no-path queries rather than failed snaps or paths over the two-times-edge-length threshold. Each is a stair whose fallback is counted as needing a link under the requested rule. These are public edge IDs. Gap is the straight 3D node-to-node distance, not a measured missing-floor gap.
+
+| Edge | Mode | From floor | Direction | Gap m |
+| --- | --- | --- | --- | ---: |
+| ne_e__x33 | stairs | b1 | forward | 21.85 |
+| ne_e__x33 | stairs | street | reverse | 21.85 |
+| c_s__x37 | stairs | b1 | forward | 18.18 |
+| c_s__x37 | stairs | street | reverse | 18.18 |
+| n_e__ne_j | stairs | b1 | forward | 13.52 |
+| n_e__ne_j | stairs | b1 | reverse | 13.52 |
+
+Among 66 distinct successfully snapped nodes, total 3D snap distance is p50 **0.100 m**, p95 **0.317 m**, max **0.603 m**; the separate height limit is 0.6 m. Median walked-path length / graph-polyline length is **0.997** across the 1,054 complete routes. Snaps use renderer half extents (1, 0.6, 1) m. The height check cannot prove floor identity or wall-side correctness. Search extents do not bound total horizontal snap distance to 0.6 m. A complete query can use a different nearby corridor, so edge-local traversability is not established.
+
+The source `route-clip-audit.ts --all` iterates graph edges, not POI pairs. This audit enumerates ordered pairs directly with `routeBetween` and the default profile, and compares the same route set. Unsuccessful `routeBetween` results are not counted as routes. For future cases with an unresolved non-stair edge, the comparable graph total excludes that incomplete navmesh route; `graphAllRoutableTotals` also records the full graph baseline separately.
+
 ## Evidence and missing measurements
 
 - `recast-navigation` 0.43.1 is installed only in `@gteki/godot`; its package licence is MIT. It uses WebAssembly and includes the 0.43.1 core and generators packages.
 - In the 3 GB OrbStack test container, two synthetic rooms connected by a 1.6 m doorway produced a path; closing the wall produced no complete path. The helper checks the path endpoint because Detour may return a partial path. The agent parameters are radius 0.3 m, height 1.7 m, climb 0.3 m and slope 40°, with 0.1 m voxels.
 - The earlier synthetic-only run did not measure a station bake; the public step 1 measurements are above.
-- Route pair counts, off-floor, no-floor and wall-hit totals, graph-polyline baseline, no-path count and worst 20 gaps, snap percentiles, and path-length ratio: **not measured**. There is no no-path list yet. The existing `route-clip-audit.ts --all` iterates edges, not POI pairs, so a like-for-like pairwise baseline must be constructed.
+- The earlier synthetic-only run did not measure routes; the public step 2 comparison is above.
 - Node load, per-edge and per-route p50/p95: **not measured**. A phone estimate would be four times measured Node timings; it cannot be calculated yet.
 - The earlier combined bake-and-audit command failed because `navmesh-audit.ts` did not exist. Step 1 now provides the bake CLI; the audit remains future work.
 
@@ -34,7 +62,7 @@ The public graph has **25 stair edges**, **0 escalator edges**, and **0 elevator
 
 ## Recommendation
 
-**Undecided; do not adopt on this evidence.** The synthetic door result and public bake validate only narrow capabilities. Implement and measure the actual scene plus greybox, ensure collider and portal geometry agree with the explorer, test vertical links without introducing wall crossings, and audit identical route pairs before deciding whether to adopt fully, partly, or reject.
+**Do not adopt yet.** The public route audit shows wall hits and off-floor samples; their causes need investigation before any navigation replacement. Implement and measure the actual scene plus greybox, ensure collider and portal geometry agree with the explorer, test vertical links without introducing wall crossings, and audit identical route pairs before deciding whether to adopt fully, partly, or reject.
 
 ## Geometry risks identified during investigation
 
@@ -47,3 +75,7 @@ The greybox shell is both walkable and collider and includes floors, ceilings, s
 ## Step 1 independent review
 
 2026-10-30 00:39 JST: Oracle found blockers to treating this bake as navigation-correct. Shared ground/collider meshes can contain mixed semantics; the bake now rejects such input, and none appeared in this public run. Recast low-hanging-obstacle filtering may disagree with explorer collision even when collider winding is reversed. The vertical query checks do not prove authored floor, wall side, or traversal of the actual connector. Wall extrusion has not been exercised by this public scene or the synthetic test. These remain open validation limitations; the review did not independently run the bake.
+
+## Step 2 independent review
+
+2026-10-30 00:53 JST: Oracle identified misleading treatment of hybrid stair fallbacks, overly long detours and discontinuous joins, and warned that nearest-poly snapping and endpoint reachability do not establish floor identity, wall side, or traversal of the authored edge. The revised audit distinguishes pure queries from stair-fallback routes, reports missing-path versus excessive-detour reasons and join gaps, and checks both path endpoints. It retains the brief's snap extents and audits join segments; these do not establish navigability across those joins. The reviewer did not run the audit.
