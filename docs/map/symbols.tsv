@@ -536,10 +536,10 @@ appendMeshes	function	packages/godot/src/navmesh-bake.ts	101
 BridgeGap	type	packages/godot/src/navmesh-bridge.ts	5
 BridgeGeometry	type	packages/godot/src/navmesh-bridge.ts	6
 bridgeGapGeometry	function	packages/godot/src/navmesh-bridge.ts	9
-linkPadGeometry	function	packages/godot/src/navmesh-bridge.ts	45
-linkPadClear	function	packages/godot/src/navmesh-bridge.ts	51
-bridgeFloorTriangles	function	packages/godot/src/navmesh-bridge.ts	59
-linkStripGeometry	function	packages/godot/src/navmesh-bridge.ts	70
+linkPadGeometry	function	packages/godot/src/navmesh-bridge.ts	47
+linkPadClear	function	packages/godot/src/navmesh-bridge.ts	53
+bridgeFloorTriangles	function	packages/godot/src/navmesh-bridge.ts	61
+linkStripGeometry	function	packages/godot/src/navmesh-bridge.ts	72
 auditFallbackSegments	function	packages/godot/src/navmesh-fallback-audit.ts	5
 fallbackGate	function	packages/godot/src/navmesh-fallback-audit.ts	17
 fallbackDiff	function	packages/godot/src/navmesh-fallback-diff.ts	2

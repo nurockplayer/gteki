@@ -301,7 +301,20 @@ The bridge sampler covers all traversable non-vertical edges; the audit only mea
 
 Oracle found that orphan landing pads could create inaccessible link endpoints, and that strip padding extended past authored edge endpoints. The implementation now requires a nearby poly and wall-safe approach before adding a pad, and clamps strips to the authored edge. Tests were added for the footprint and endpoint bounds; Oracle did not re-review those changes.
 
-The fallback-list writer is not present on this branch; obstruction and low-ceiling gaps remain diagnosable in audit gap classes but are not automatically written as fallback entries. Gap-class attribution for nonzero navmesh wall hits is also not implemented; both public runs measured zero.
+Gap-class attribution for nonzero navmesh wall hits is not implemented; both public bridge runs measured zero.
+
+## Public fallback gate
+
+2026-10-30 04:16 JST: The writer bakes with greybox, 0.10 m cells, 0.30 m radius, 0.40 m climb and 256-cell tiles, with bridges off. Its public baselines are zero Ikebukuro edges and five Shinjuku edges. Private outputs are restricted to the private directory. Successful edge paths on incomplete routes are also audited.
+
+| Station | Default bake ms | Gate ms | Result |
+|---|---:|---:|---|
+| Ikebukuro | 2,127 | 13,922 | Pass |
+| Shinjuku | 4,990 | 38,121 | Fail: 16 connector wall hits across completed routes; three fallback wall hits across two edges |
+
+The Shinjuku unique-edge audit also found two connector wall hits. The fallback list does not authorize clipping; the gate remains failing until the connector and fallback geometry is repaired. Both per-station runtimes are under 60 seconds, so the gate remains in root tests. The full command had 1 failed and 1,341 passed tests. The audit samples collision geometry and is not a swept-body proof. The gate compares the current list to current failures; enforcing the director's prohibition on additions across commits also needs a trusted base-revision comparison in CI.
+
+Oracle's review found that the audit does not assemble hybrid routes or validate their fallback joins, and only covers edges used by selected routes. The gate therefore fails closed on incomplete routes until hybrid route validation exists; it is not yet a usable green gate for a station with legitimate fallbacks. It also requires a completed route, checks successful edges on incomplete routes and rejects fallback off-floor/no-floor results as well as wall hits. Other unresolved review risks include direct `--gate` versus test parity, POI and directed-edge coverage, and private intermediate files if the process is killed. The user's specified scene-raycast height remains the gate variant.
 
 ## Integration sketch
 

@@ -14,6 +14,7 @@ export function auditFallbackSegments(probe:SceneProbe, segments:readonly {edgeI
 }
 
 /** Gate only explicit fallback entries and the audited navmesh segments. */
-export function fallbackGate(input:{fallback:{failed:readonly string[]}; unlisted:readonly string[]; navmesh:{offFloor:number;noFloor:number;wallHits:number}; incompleteRoutes:number}) {
-  return {ok:input.incompleteRoutes===0 && input.fallback.failed.length===0 && input.unlisted.length===0 && input.navmesh.offFloor===0 && input.navmesh.noFloor===0 && input.navmesh.wallHits===0, clippedFallbacks:[...input.fallback.failed], unlisted:[...new Set(input.unlisted)].sort(), navmesh:input.navmesh,incompleteRoutes:input.incompleteRoutes};
+export function fallbackGate(input:{fallback:{failed:readonly string[]}; unlisted:readonly string[]; navmesh:{offFloor:number;noFloor:number;wallHits:number}; connector?:{offFloor:number;noFloor:number;wallHits:number}; incompleteRoutes:number}) {
+  const connector=input.connector ?? {offFloor:0,noFloor:0,wallHits:0};
+  return {ok:input.incompleteRoutes===0 && input.fallback.failed.length===0 && input.unlisted.length===0 && input.navmesh.offFloor===0 && input.navmesh.noFloor===0 && input.navmesh.wallHits===0 && connector.offFloor===0 && connector.noFloor===0 && connector.wallHits===0, clippedFallbacks:[...input.fallback.failed], unlisted:[...new Set(input.unlisted)].sort(), navmesh:input.navmesh,connector,incompleteRoutes:input.incompleteRoutes};
 }
