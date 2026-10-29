@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
+import * as THREE from "three";
 import type { StationBundle } from "@gteki/schema";
-import { unmodelledRunsByEdge } from "./greybox.ts";
+import { buildGreybox, splitWallsAtOpenings, unmodelledRunsByEdge } from "./greybox.ts";
+import { MODE_WIDTH } from "./graphView.ts";
+import { resolveWalls } from "./walker.ts";
 
 const bundle = {
   floors: [{ id: "f", renderElevationM: 0 }],
@@ -41,5 +44,94 @@ describe("unmodelledRunsByEdge", () => {
     });
     const first = runs[0]!.points[0]!;
     expect(Math.hypot(first.x - bare[0]!.x, first.y - bare[0]!.y, first.z - bare[0]!.z)).toBeCloseTo(0.5);
+  });
+});
+
+describe("buildGreybox", () => {
+  const emptyScene = { colliderNear: () => false, wallHit: () => null };
+  it("uses the mode width fallback and self-lit shell", () => {
+    const result = buildGreybox(bundle, () => true, () => false, emptyScene, "high");
+    const shell = result.root.getObjectByName("greybox-shell") as THREE.Mesh;
+    shell.geometry.computeBoundingBox();
+    expect(shell.geometry.boundingBox!.max.z - shell.geometry.boundingBox!.min.z).toBeCloseTo(MODE_WIDTH.walk!);
+    const mat = shell.material as THREE.MeshLambertMaterial;
+    expect(mat.emissiveIntensity).toBeGreaterThanOrEqual(0.35);
+    expect(mat.emissive.r).toBeCloseTo(mat.color.r);
+    const colors = shell.geometry.getAttribute("color");
+    expect(Array.from({ length: colors.count }, (_, i) => colors.getX(i)).some((value) => value < 0.7)).toBe(true);
+    expect(Array.from({ length: colors.count }, (_, i) => colors.getX(i)).some((value) => value > 0.95)).toBe(true);
+    expect(shell.userData).toMatchObject({ greybox: true, approximate: true });
+    expect(result.walkable).toContain(shell);
+    expect(result.colliders).toContain(shell);
+  });
+
+  it("uses an explicit positive width", () => {
+    const wide = { ...bundle, edges: [{ ...bundle.edges[0]!, attributes: { width: { m: 4 } } }] } as unknown as StationBundle;
+    const result = buildGreybox(wide, () => true, () => false, emptyScene, "high");
+    const shell = result.root.getObjectByName("greybox-shell") as THREE.Mesh;
+    shell.geometry.computeBoundingBox();
+    expect(shell.geometry.boundingBox!.getSize(new THREE.Vector3()).z).toBeCloseTo(4);
+  });
+
+  it("makes a junction patch and keeps wall segments out of its disc", () => {
+    const junction = { ...bundle, nodes: [...bundle.nodes, { ...bundle.nodes[1]!, id: "c", position: { x: 10, y: 10, z: 0 } }], edges: [bundle.edges[0]!, { ...bundle.edges[0]!, id: "e2", from: "b", to: "c" }] };
+    const result = buildGreybox(junction, () => true, () => false, emptyScene, "high");
+    expect(result.stats.runs).toBe(2);
+    for (const wall of result.wallSegments) {
+      const mid = new THREE.Vector2((wall.ax + wall.bx) / 2 - 10, (wall.az + wall.bz) / 2);
+      expect(mid.length()).toBeGreaterThanOrEqual(MODE_WIDTH.walk! / 2 - 1e-5);
+    }
+    const shell = result.root.getObjectByName("greybox-shell") as THREE.Mesh;
+    result.root.updateMatrixWorld(true);
+    const ray = new THREE.Raycaster(new THREE.Vector3(10.5, 1, 0.5), new THREE.Vector3(0, -1, 0), 0, 2);
+    expect(ray.intersectObject(shell).some((hit) => Math.abs(hit.point.y) < 0.001)).toBe(true);
+  });
+
+  it("skips walls close to a collider", () => {
+    const ordinary = buildGreybox(bundle, () => true, () => false, emptyScene, "high");
+    const blocked = buildGreybox(bundle, () => true, () => false, { ...emptyScene, colliderNear: () => true }, "high");
+    expect(ordinary.wallSegments.length).toBeGreaterThan(0);
+    expect(blocked.wallSegments).toHaveLength(0);
+  });
+
+  it("builds a short sceneGap passage even above modelled floor", () => {
+    const forced = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 0.4, y: 0, z: 0 } }], edges: [{ ...bundle.edges[0]!, attributes: { sceneGap: true } }] };
+    const result = buildGreybox(forced, () => true, () => true, emptyScene, "high");
+    expect(result.stats.runs).toBe(1);
+    expect(result.walkable).toHaveLength(1);
+  });
+
+  it("creates a portal and splits the scene wall at its opening", () => {
+    const result = buildGreybox(bundle, () => true, (p) => p.x <= 2 || p.x >= 6, {
+      colliderNear: () => false,
+      wallHit: (a, b) => a.x < 2.5 && b.x >= 2.5 ? { x: 2.25, y: 0, z: 0 } : null,
+    }, "high");
+    expect(result.stats.portals).toBe(1);
+    expect(result.stats.meshes).toBeLessThanOrEqual(3);
+    expect(result.root.getObjectByName("greybox-portal")).toBeTruthy();
+    expect(result.openings[0]!.width).toBeCloseTo(MODE_WIDTH.walk!);
+    const wall = { ax: 2.25, az: -3, bx: 2.25, bz: 3, yMin: 0, yMax: 3 };
+    const split = splitWallsAtOpenings([wall], result.openings);
+    expect(resolveWalls(2.25, 0, 0.2, 0, 1.8, split).x).toBeCloseTo(2.25);
+    expect(Math.abs(resolveWalls(2.25, 2.3, 0.2, 0, 1.8, split).x - 2.25)).toBeGreaterThan(0.1);
+  });
+
+  it("keeps a 400 m two-floor synthetic network within the mesh and triangle budget", () => {
+    const network = { ...bundle, floors: [bundle.floors[0]!, { ...bundle.floors[0]!, id: "f2", renderElevationM: 4 }], nodes: [
+      { ...bundle.nodes[0]!, position: { x: 0, y: 0, z: 0 } }, { ...bundle.nodes[1]!, position: { x: 200, y: 0, z: 0 } },
+      { ...bundle.nodes[0]!, id: "c", floorId: "f2", position: { x: 0, y: 10, z: 4 } }, { ...bundle.nodes[1]!, id: "d", floorId: "f2", position: { x: 200, y: 10, z: 4 } },
+    ], edges: [bundle.edges[0]!, { ...bundle.edges[0]!, id: "e2", from: "c", to: "d" }] };
+    const high = buildGreybox(network, () => true, () => false, emptyScene, "high");
+    const low = buildGreybox(network, () => true, () => false, emptyScene, "low");
+    expect(high.stats.meshes).toBeLessThanOrEqual(6);
+    expect(low.stats.meshes).toBeLessThanOrEqual(3);
+    expect(high.stats.triangles).toBeLessThanOrEqual(60000);
+    expect(low.stats.triangles).toBeLessThanOrEqual(60000);
+    expect(high.stats.lengthM).toBeCloseTo(400);
+    const bytes = high.root.children.reduce((total, object) => {
+      const geometry = (object as THREE.Mesh).geometry;
+      return total + Object.values(geometry.attributes).reduce((sum, attr) => sum + (attr as THREE.BufferAttribute).array.byteLength, 0);
+    }, 0);
+    expect(bytes).toBeLessThan(2 * 1024 * 1024);
   });
 });
