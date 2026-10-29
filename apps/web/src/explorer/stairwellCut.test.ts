@@ -16,7 +16,8 @@ function scene() {
   const material = () => new THREE.MeshBasicMaterial();
   const floor = new THREE.Mesh(new THREE.BoxGeometry(16, 0.2, 6), material()); floor.position.set(5, -0.1, 0); floor.name = "floor";
   const ceiling = new THREE.Mesh(new THREE.BoxGeometry(16, 0.2, 6), material()); ceiling.position.set(5, 2.7, 0); ceiling.name = "ceiling";
-  const upper = new THREE.Mesh(new THREE.BoxGeometry(16, 0.2, 6), material()); upper.position.set(5, 3.9, 0); upper.name = "upper-floor";
+  // A real slab: the walking top face at 4.0 m and its underside at 3.6 m.
+  const upper = new THREE.Mesh(new THREE.BoxGeometry(16, 0.4, 6), material()); upper.position.set(5, 3.8, 0); upper.name = "upper-floor";
   root.add(floor, ceiling, upper); root.updateMatrixWorld(true);
   return { root, floor, ceiling, upper };
 }
@@ -46,10 +47,13 @@ describe("stairwell cuts", () => {
     // A face outside the footprint stays solid, and both landings keep their walking surface.
     expect(up(root, 5, 1, 2.5).length).toBeGreaterThan(0);
     expect(down(root, 5, 1).some((hit) => Math.abs(hit.point.y) < 1e-6)).toBe(true);
-    expect(down(root, 5, 5).some((hit) => Math.abs(hit.point.y - 4) < 1e-6)).toBe(true);
-    // Collision is the same geometry: nothing left to hit up the well.
+    // Both faces of the upper slab are gone over the flight, in render and collision alike.
+    expect(down(root, 5, 5).filter((hit) => hit.point.y > 3.5)).toHaveLength(0);
     expect(up(ceiling, 5, 2)).toHaveLength(0);
     expect(up(upper, 5, 2)).toHaveLength(0);
+    // Beyond the top step the landing is untouched: its top face and underside are both there.
+    expect(down(root, 12, 5).some((hit) => Math.abs(hit.point.y - 4) < 1e-6)).toBe(true);
+    expect(up(root, 12, 3).some((hit) => Math.abs(hit.point.y - 3.6) < 1e-6)).toBe(true);
     result.dispose();
   });
 
@@ -132,16 +136,10 @@ describe("stairwell cuts", () => {
     expect(wells[0]!.rects).toHaveLength(2);
     const s = scene();
     const result = cutStairwells(s.root, wells, { tier: "high" });
-    // Two pieces, three open sides each (the shared side is skipped), three slab levels.
-    expect(result.bandTriangles).toBe(2 * 3 * 3 * 2);
+    // Two pieces, three open sides each (the shared side is skipped), four slab faces cut
+    // (ceiling 2.6 and 2.8, upper slab underside 3.6 and top 4.0).
+    expect(result.bandTriangles).toBe(2 * 3 * 4 * 2);
     result.dispose();
   });
 
-  it("uses a 2.2 m square shaft plan for an elevator", () => {
-    const wells = stairwellWells(bundle("elevator"), traversable);
-    expect(wells).toHaveLength(1);
-    expect(wells[0]!.rects).toHaveLength(1);
-    expect(wells[0]!.rects[0]!.halfLength * 2).toBeCloseTo(2.2);
-    expect(wells[0]!.rects[0]!.halfWidth * 2).toBeCloseTo(2.2);
-  });
 });

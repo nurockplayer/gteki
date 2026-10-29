@@ -9,10 +9,10 @@ import type { Segment2 } from "./walker.ts";
 export const MIN_WELL_RISE_M = 2.15;
 /** A plan piece flatter than this is a landing: it stays closed, so it gets no cut rectangle. */
 const MIN_PIECE_RISE_M = 0.05;
-/** Headroom kept below the upper landing, and clearance kept above the lower landing. */
-const HEADROOM_M = 2.1, UPPER_KEEP_M = 0.05;
-/** Vertical connectors whose footprint is cut through horizontal slabs. */
-const VERTICAL_MODES = new Set(["stairs", "escalator", "elevator"]);
+/** Headroom kept above the lower landing and past the upper landing: the band takes the whole slab, both faces. */
+const HEADROOM_M = 2.1, UPPER_CLEAR_M = 0.05;
+/** Vertical connectors whose footprint is cut through horizontal slabs. Elevators come with their own follow-up. */
+const VERTICAL_MODES = new Set(["stairs", "escalator"]);
 /** A stored mesh larger than this is reported as skipped instead of CPU-cut (load time). */
 export const STAIRWELL_VERTEX_LIMIT = 1_000_000;
 const BAND_DEPTH_M = 0.3;
@@ -76,7 +76,7 @@ export interface StairwellOptions {
   vertexLimit?: number;
 }
 
-/** One well per traversable stairs / escalator / elevator edge that has a vertical run worth cutting. */
+/** One well per traversable stairs / escalator edge that has a vertical run worth cutting. */
 export function stairwellWells(bundle: StationBundle, traversable: (edge: Edge) => boolean): StairwellWell[] {
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
@@ -90,39 +90,20 @@ export function stairwellWells(bundle: StationBundle, traversable: (edge: Edge) 
     // Order bottom to top, so the last rectangle is the arrival piece.
     const ordered = points[0]!.y <= points.at(-1)!.y ? points : [...points].reverse();
     const rects: StairwellRect[] = [];
-    if (edge.mode === "elevator") {
-      const shaft = shaftRect(ordered);
-      if (shaft) rects.push(shaft);
-    } else {
-      for (let i = 1; i < ordered.length; i++) {
-        const a = ordered[i - 1]!, b = ordered[i]!;
-        const dx = b.x - a.x, dz = b.z - a.z, length = Math.hypot(dx, dz);
-        // Landing and vertical pieces leave no plan rectangle of their own: landings stay closed.
-        if (length < 0.5 || Math.abs(b.y - a.y) < MIN_PIECE_RISE_M) continue;
-        const along = new THREE.Vector3(dx / length, 0, dz / length);
-        const across = new THREE.Vector3(-along.z, 0, along.x);
-        rects.push({ center: new THREE.Vector3((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2), along, across, halfLength: length / 2, halfWidth: (widthOf(edge) + 0.2) / 2 });
-      }
-      if (!rects.length) {
-        const shaft = shaftRect(ordered);
-        if (shaft) rects.push(shaft);
-      }
+    for (let i = 1; i < ordered.length; i++) {
+      const a = ordered[i - 1]!, b = ordered[i]!;
+      const dx = b.x - a.x, dz = b.z - a.z, length = Math.hypot(dx, dz);
+      // Landing and vertical pieces leave no plan rectangle of their own: landings stay closed.
+      if (length < 0.5 || Math.abs(b.y - a.y) < MIN_PIECE_RISE_M) continue;
+      const along = new THREE.Vector3(dx / length, 0, dz / length);
+      const across = new THREE.Vector3(-along.z, 0, along.x);
+      rects.push({ center: new THREE.Vector3((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2), along, across, halfLength: length / 2, halfWidth: (widthOf(edge) + 0.2) / 2 });
     }
     if (!rects.length) continue;
     const arrival = ordered.at(-1)!;
     wells.push({ edgeId: edge.id, mode: edge.mode, lowerY, upperY, rects, arrival: new THREE.Vector3(arrival.x, 0, arrival.z) });
   }
   return wells;
-}
-
-/** Elevator shaft plan: 2.2 × 2.2 m centred on the edge's plan extent. */
-function shaftRect(points: readonly THREE.Vector3[]): StairwellRect | null {
-  const xs = points.map((p) => p.x), zs = points.map((p) => p.z);
-  const minX = Math.min(...xs), maxX = Math.max(...xs), minZ = Math.min(...zs), maxZ = Math.max(...zs);
-  return {
-    center: new THREE.Vector3((minX + maxX) / 2, (points[0]!.y + points.at(-1)!.y) / 2, (minZ + maxZ) / 2),
-    along: new THREE.Vector3(1, 0, 0), across: new THREE.Vector3(0, 0, 1), halfLength: 1.1, halfWidth: 1.1,
-  };
 }
 
 function rectPlanes(rect: StairwellRect, lowerY: number, upperY: number): Plane[] {
@@ -134,7 +115,7 @@ function rectPlanes(rect: StairwellRect, lowerY: number, upperY: number): Plane[
     p => rect.halfWidth + dot(p, across),
     p => rect.halfWidth - dot(p, across),
     p => p.y - lowerY - HEADROOM_M,
-    p => upperY - UPPER_KEEP_M - p.y,
+    p => upperY + UPPER_CLEAR_M - p.y,
   ];
 }
 
@@ -146,12 +127,12 @@ function rectCorners(rect: StairwellRect, height: number): THREE.Vector3[] {
     .setY(height));
 }
 
-/** Convex region: the plan rectangle between the lower landing + 2.1 m and the upper landing − 0.05 m. */
+/** Convex region: the plan rectangle from the lower landing + 2.1 m to the upper landing + 0.05 m. */
 export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
   const regions: CutRegion[] = [];
   for (const well of wells) {
     for (const rect of well.rects) {
-      const corners = [...rectCorners(rect, well.lowerY + HEADROOM_M), ...rectCorners(rect, well.upperY - UPPER_KEEP_M)];
+      const corners = [...rectCorners(rect, well.lowerY + HEADROOM_M), ...rectCorners(rect, well.upperY + UPPER_CLEAR_M)];
       regions.push({ key: rect, bounds: new THREE.Box3().setFromPoints(corners), planes: rectPlanes(rect, well.lowerY, well.upperY), clip: null, accepts: horizontal });
     }
   }
