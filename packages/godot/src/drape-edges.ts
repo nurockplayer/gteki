@@ -103,25 +103,36 @@ export function applyDrapeGeometry(edge: Edge, geometry: Point[]): void {
   edge.geometryEvidence = { ...edge.geometryEvidence, method: `${edge.geometryEvidence.method}+drape` };
 }
 
-function privateOutput(out: string): string {
-  let ancestor = path.resolve(out); const tail: string[] = [];
+function resolvedPath(p: string): string {
+  let ancestor = path.resolve(p); const tail: string[] = [];
   while (!fs.existsSync(ancestor)) { tail.unshift(path.basename(ancestor)); ancestor = path.dirname(ancestor); }
-  const output = path.resolve(fs.realpathSync(ancestor), ...tail), rel = path.relative(fs.realpathSync(repoRoot), output);
+  return path.resolve(fs.realpathSync(ancestor), ...tail);
+}
+function privateOutput(out: string): string {
+  const output = resolvedPath(out), rel = path.relative(fs.realpathSync(repoRoot), output);
   if (rel === "" || !path.isAbsolute(rel) && rel !== ".." && !rel.startsWith(`..${path.sep}`)) throw new Error("refusing --out inside the git repo");
   return output;
 }
+/** Resolve and validate the input overlay and its output destination. */
+export function drapePaths(privateDir: string, station: string, file: string, out: string): { input: string; output: string } {
+  const root = resolvedPath(privateDir), additions = resolvedPath(path.join(root, "additions"));
+  const input = resolvedPath(path.resolve(root, file)), output = privateOutput(out);
+  const parts = path.relative(additions, input).split(path.sep);
+  if (station !== "shinjuku" || parts.length !== 2 || parts[0] !== station || !/^graph(\..+)?\.json$/.test(parts[1]!))
+    throw new Error("--file must be an additions/shinjuku/graph*.json overlay file");
+  const rel = path.relative(additions, output);
+  if (output !== input && rel !== ".." && !rel.startsWith(`..${path.sep}`) && !path.isAbsolute(rel))
+    throw new Error("--out must be the input file or outside the private additions directory");
+  return { input, output };
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2), values: Record<string, string> = {};
   for (let i = 0; i < args.length; i += 2) { if (!["--station", "--private", "--file", "--out"].includes(args[i]!) || !args[i + 1]) throw new Error(`unknown or incomplete argument: ${args[i]}`); values[args[i]!] = args[i + 1]!; }
   const station = values["--station"], privateDir = values["--private"], file = values["--file"], out = values["--out"];
   if (!station || !privateDir || !file || !out) throw new Error("--station, --private, --file and --out are required");
   process.chdir(repoRoot);
-  const output = privateOutput(out), input = path.resolve(privateDir, file);
-  const overlayFile = (p: string) => {
-    const parts = path.relative(path.resolve(privateDir), p).split(path.sep);
-    return station === "shinjuku" && parts.length === 3 && parts[0] === "additions" && parts[1] === station && /^graph(\..+)?\.json$/.test(parts[2]!);
-  };
-  if (!overlayFile(input) || !overlayFile(output)) throw new Error("--file and --out must be additions/shinjuku/graph*.json overlay files inside the private directory");
+  const { input, output } = drapePaths(privateDir, station, file, out);
   const doc = JSON.parse(fs.readFileSync(input, "utf8")) as { nodes: Node[]; edges: Edge[] };
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "gteki-drape-"));
   try {

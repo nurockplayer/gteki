@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import * as THREE from "three";
 import { createSyntheticBundle, syntheticEdge } from "../../navigation/src/fixtures.ts";
 import { auditPolyline, violations, type SceneProbe } from "./route-clip-audit.ts";
-import { applyDrapeGeometry, drapeEdges } from "./drape-edges.ts";
+import { applyDrapeGeometry, drapeEdges, drapePaths } from "./drape-edges.ts";
 
 function probe(gap: boolean, z = 0): SceneProbe {
   const floor = new THREE.Mesh(new THREE.BoxGeometry(10, 0.2, 10), new THREE.MeshBasicMaterial());
@@ -40,13 +43,28 @@ describe("scene floor draping", () => {
     const script = "packages/godot/src/drape-edges.ts", root = "/tmp/synthetic-private";
     for (const [station, file, out] of [
       ["shinjuku", "additions/shinjuku/seam.json", `${root}/additions/shinjuku/graph.json`],
-      ["shinjuku", "additions/shinjuku/graph.json", `${root}/additions/shinjuku/seam.json`],
       ["other", "additions/other/graph.json", `${root}/additions/other/graph.json`],
     ]) {
       const result = spawnSync(process.execPath, ["--import", "tsx", script, "--station", station!, "--private", root, "--file", file!, "--out", out!], { encoding: "utf8" });
       expect(result.status).not.toBe(0);
-      expect(result.stderr).toMatch(/overlay files/);
+      expect(result.stderr).toMatch(/overlay file/);
     }
+  });
+  it("allows in-place and external output but refuses another file anywhere in additions", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "drape-path-test-"));
+    try {
+      const privateDir = path.join(root, "private"), addDir = path.join(privateDir, "additions", "shinjuku");
+      fs.mkdirSync(addDir, { recursive: true });
+      const input = path.join(addDir, "graph.json"), file = "additions/shinjuku/graph.json";
+      fs.writeFileSync(input, "{}");
+      expect(drapePaths(privateDir, "shinjuku", file, input)).toEqual({ input, output: input });
+      expect(drapePaths(privateDir, "shinjuku", file, path.join(root, "out.json")).output).toBe(path.join(root, "out.json"));
+      expect(() => drapePaths(privateDir, "shinjuku", file, path.join(addDir, "graph.draped.json"))).toThrow(/outside the private additions/);
+      expect(() => drapePaths(privateDir, "shinjuku", file, path.join(privateDir, "additions", "other", "out.json"))).toThrow(/outside the private additions/);
+      const alias = path.join(root, "alias"); fs.symlinkSync(privateDir, alias);
+      expect(drapePaths(alias, "shinjuku", file, path.join(alias, file))).toEqual({ input, output: input });
+      expect(() => drapePaths(alias, "shinjuku", file, path.join(alias, "additions", "shinjuku", "graph.other.json"))).toThrow(/outside the private additions/);
+    } finally { fs.rmSync(root, { recursive: true, force: true }); }
   });
   it("reports a wall without a gap", () => {
     const result = drapeEdges(probe(false), bundle(), new Set(["edge"]));
