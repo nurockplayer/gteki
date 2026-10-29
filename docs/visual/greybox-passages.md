@@ -45,6 +45,12 @@ The design ships in three PRs, and each one is complete on its own:
 - **Ticket B:** the vertical connectors above.
 - **#631:** cuts the scene wall's triangles open at each portal at load. That opens the rendered wall, the camera rays and the colliders together, and the door panel goes.
 
+## Known limits (accepted, ticket A)
+- **Portal collision.** Inside a portal's opening box, every wall-like hit on an original scene collider is exempt (normal within 30° of horizontal), whichever mesh it comes from.
+  - A wall-like scene obstacle standing inside the opening box is therefore passable too.
+  - Floors, ceilings and non-wall hits still block.
+  - Accepted 2026-10-30 JST: #631 cuts the wall geometry itself at load, and after that the exemption is only a safety net.
+
 ## Privacy ★
 Greybox geometry is built at runtime from the graph that is already loaded, and is never written to disk. Nothing built from a private graph may go into a public asset, a GLB export, a snapshot fixture or a CI artifact. Tests use synthetic bundles only.
 

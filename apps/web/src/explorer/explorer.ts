@@ -1021,6 +1021,15 @@ export class Explorer {
       for (const material of materials) material.dispose();
       this.greybox = null;
     }
+    if (this.connectors) {
+      this.world.remove(this.connectors.root);
+      const materials = new Set<THREE.Material>(), meshes = new Set<THREE.Mesh>();
+      const dispose = (object: THREE.Object3D) => { const mesh = object as THREE.Mesh; if (!mesh.isMesh || meshes.has(mesh)) return; meshes.add(mesh); mesh.geometry.dispose(); for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) materials.add(material); };
+      this.connectors.root.traverse(dispose);
+      for (const object of [...this.connectors.walkable, ...this.connectors.colliders]) object.traverse(dispose);
+      for (const material of materials) material.dispose();
+      this.connectors = null;
+    }
     this.greyboxOpenings = [];
     this.sceneColliderTargets = new Set();
     this.greyboxSegments = [];
@@ -1334,7 +1343,7 @@ export class Explorer {
   /** QA for the current route: the same ground ray used by the walker, plus connector and image checks. */
   routeGroundCheck(polyline: readonly PolylinePoint[], steps: readonly RouteStep[], guideStopsM: readonly number[] = []) {
     const roots = [this.stationScene?.root, this.greybox?.root, this.connectors?.root].filter((root): root is THREE.Object3D => Boolean(root));
-    const counts = routeGroundCounts(polyline, (p) => this.groundAt(p.x, p.y + DEFAULT_GROUND.stepUp + 0.05, p.z, DEFAULT_GROUND.stepUp + DEFAULT_GROUND.stepDown + 0.1), steps, this.station?.bundle ?? null, (p, radius) => sceneMeshNear(roots, p, radius));
+    const counts = routeGroundCounts(polyline, (p) => this.groundAt(p.x, p.y + DEFAULT_GROUND.stepUp + 0.05, p.z, DEFAULT_GROUND.stepUp + DEFAULT_GROUND.stepDown + 0.1), steps, this.station?.bundle ?? null, (p, radius, edgeId) => sceneMeshNear(roots, p, radius, edgeId));
     return { ...counts, darkShare: async (stops?: readonly number[]): Promise<number> => {
       const points = polyline.map((p) => R(p.x, p.y, p.z));
       if (points.length < 2) return 0;

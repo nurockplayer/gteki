@@ -48,14 +48,13 @@ describe("greybox station integration", () => {
     expect(state.connectors.walkable.length).toBeGreaterThan(1);
     expect(state.groundTargets).toContain(state.connectors.walkable[0]);
     const car = state.connectors.cars[0];
-    state.mode = "guide";
-    state.guideIdentityHoldS = 0;
+    state.mode = "guide"; state.guideIdentityHoldS = 0;
     state.guide = { pts: [new THREE.Vector3(10, 0, 0), new THREE.Vector3(10, 4, 0)], cum: [0, 4], steps: [-1, 0], edgeIds: [undefined, "lift"], s: 2, paused: true, stops: [], holding: false, spans: [] };
     state.stepGuide(0.016); state.updateElevatorCars(0.016);
     expect(car.mesh.position.y).toBeCloseTo(2);
     state.mode = "overview"; state.updateElevatorCars(2);
     expect(car.mesh.position.y).toBeLessThan(0.001);
-    const steps = [{ mode: "elevator", fromNodeId: "a", toNodeId: "upper" }, { mode: "escalator", fromNodeId: "start", toNodeId: "upper" }];
+    const steps = [{ edgeId: "lift", mode: "elevator", fromNodeId: "a", toNodeId: "upper" }, { edgeId: "escalator", mode: "escalator", fromNodeId: "start", toNodeId: "upper" }];
     expect(state.routeGroundCheck([], steps).verticalWithoutConnector).toBe(0);
   });
 
@@ -128,6 +127,18 @@ describe("greybox station integration", () => {
   it("samples dark share with a test renderer and restores the camera", async () => {
     const { state, loaded } = fixture();
     await state.loadStation(loaded, createRouter(loaded.bundle));
+    const shell = state.greybox.root.getObjectByName("greybox-shell") as THREE.Mesh;
+    const material = shell.material as THREE.MeshLambertMaterial;
+    // With no scene lights the emissive contribution is the only illumination; convert to display sRGB.
+    const shellLuminance = () => {
+      const color = material.emissive.clone().multiplyScalar(material.emissiveIntensity).convertLinearToSRGB();
+      return 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+    };
+    expect(shellLuminance()).toBeGreaterThanOrEqual(0.25);
+    const intensity = material.emissiveIntensity;
+    material.emissiveIntensity = 0;
+    expect(shellLuminance()).toBeLessThan(0.25);
+    material.emissiveIntensity = intensity;
     const readPixels = vi.fn((_x, _y, _w, _h, _format, _type, pixels: Uint8Array) => pixels.fill(255));
     state.renderer = { getContext: () => ({ drawingBufferWidth: 10, drawingBufferHeight: 10, RGBA: 6408, UNSIGNED_BYTE: 5121, readPixels }), render: vi.fn() };
     state.camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);

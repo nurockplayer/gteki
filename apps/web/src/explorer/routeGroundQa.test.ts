@@ -25,3 +25,27 @@ it("does not count a nearby floor as a vertical connector", () => {
   connector.userData.gteki_role = "stairs";
   expect(count()).toBe(0);
 });
+
+it("does not count a nearby greybox connector belonging to a different edge", () => {
+  const bundle = createSyntheticBundle([syntheticEdge("stairs", "start", "a", { mode: "stairs" })]);
+  const connector = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1));
+  connector.position.set(5, 0, 0);
+  connector.userData = { greybox: true, connector: true, edgeId: "other" };
+  const steps = [{ edgeId: "stairs", mode: "stairs", fromNodeId: "start", toNodeId: "a", reversed: false, lengthM: 10, fromFloorId: "concourse", toFloorId: "concourse" }] as Parameters<typeof routeGroundCounts>[2];
+  const count = () => routeGroundCounts([], () => 0, steps, bundle, (p, r, id) => sceneMeshNear([connector], p, r, id)).verticalWithoutConnector;
+  expect(count()).toBe(1);
+  connector.userData.edgeId = "stairs";
+  expect(count()).toBe(0);
+  connector.userData = { gteki_role: "stairs" };
+  expect(count()).toBe(0);
+});
+
+it("checks the edge of the nearby triangles inside a shared connector mesh", () => {
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute([0, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 0, 10, 1, 0, 10, 0, 1], 3));
+  const mesh = new THREE.Mesh(geometry);
+  mesh.userData = { greybox: true, connector: true, edgeId: ["first", "second"], edgeRanges: [{ start: 0, end: 3, edgeId: "first" }, { start: 3, end: 6, edgeId: "second" }] };
+  const point = new THREE.Vector3(0, 0.2, 0.2);
+  expect(sceneMeshNear([mesh], point, 1, "first")).toBe(true);
+  expect(sceneMeshNear([mesh], point, 1, "second")).toBe(false);
+});

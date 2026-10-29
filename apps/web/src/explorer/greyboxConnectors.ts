@@ -37,7 +37,7 @@ export function unmodelledVerticalEdges(
 }
 
 export type ConnectorMaterial = "tread" | "riser" | "nosing" | "escStep" | "escTruss" | "steel" | "rubber" | "glass" | "light";
-export interface ConnectorPart { material: ConnectorMaterial; position: number[]; normal: number[]; colour: number[]; role?: "walkable" | "collider" | "car"; soffit?: boolean; userData?: { fit: "exact" | "approximate"; omittedLandings?: number } }
+export interface ConnectorPart { material: ConnectorMaterial; position: number[]; normal: number[]; colour: number[]; edgeId?: string; role?: "walkable" | "collider" | "car"; soffit?: boolean; userData?: { fit: "exact" | "approximate"; omittedLandings?: number } }
 export interface ConnectorOptions { tier: "high" | "low" }
 
 const connectorColours: Record<ConnectorMaterial, string> = {
@@ -182,7 +182,10 @@ function meshFor(parts: readonly ConnectorPart[], material: THREE.Material): THR
   geometry.setAttribute("normal", new THREE.Float32BufferAttribute(parts.flatMap((p) => p.normal), 3));
   geometry.setAttribute("color", new THREE.Float32BufferAttribute(parts.flatMap((p) => p.colour), 3));
   const mesh = new THREE.Mesh(geometry, material);
-  mesh.userData = { greybox: true, connector: true, approximate: true };
+  const ids = [...new Set(parts.map((p) => p.edgeId).filter((id): id is string => id !== undefined))];
+  let start = 0;
+  const edgeRanges = parts.map((p) => { const range = { start, end: start + p.position.length / 3, edgeId: p.edgeId }; start = range.end; return range; });
+  mesh.userData = { greybox: true, connector: true, approximate: true, edgeId: ids.length === 1 ? ids[0] : ids, edgeRanges };
   return mesh;
 }
 
@@ -203,6 +206,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const points = edgePoints(bundle, edge, nodes, floors), a = points[0]!, b = points.at(-1)!;
     const facing = a.clone().sub(b); facing.y = 0;
     const parts = edge.mode === "stairs" ? buildStairs(a, b, 1.5, tier) : edge.mode === "escalator" ? buildEscalator(a, b, tier) : buildElevator(a, b, facing, tier);
+    for (const part of parts) part.edgeId = edge.id;
     if (edge.mode === "stairs" || edge.mode === "escalator" || edge.mode === "elevator") counts[edge.mode]++;
     if (parts[0]?.userData?.fit === "approximate") approximateFits++;
     omittedLandings += parts[0]?.userData?.omittedLandings ?? 0;
@@ -241,7 +245,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         if (kept.length === batch.parts.length) continue;
         stats.triangles -= batch.parts.filter((p) => p.soffit).reduce((n, p) => n + p.position.length / 9, 0);
         const replacement = meshFor(kept, lightMaterial);
-        batch.mesh.geometry.dispose(); batch.mesh.geometry = replacement.geometry; batch.parts = kept;
+        batch.mesh.geometry.dispose(); batch.mesh.geometry = replacement.geometry; batch.mesh.userData.edgeId = replacement.userData.edgeId; batch.mesh.userData.edgeRanges = replacement.userData.edgeRanges; batch.parts = kept;
         if (!kept.length) { root.remove(batch.mesh); stats.meshes--; }
       }
     } };

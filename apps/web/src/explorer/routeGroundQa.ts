@@ -19,7 +19,7 @@ export function darkSampleDistances(total: number, stops: readonly number[]): nu
 }
 
 /** A deterministic half-metre sampling of the drawn route, including both ends. */
-export function routeGroundCounts(points: readonly V3[], ground: (p: THREE.Vector3) => number | null, verticalSteps: readonly RouteStep[], bundle: StationBundle | null, nearMesh: (p: THREE.Vector3, radius: number) => boolean) {
+export function routeGroundCounts(points: readonly V3[], ground: (p: THREE.Vector3) => number | null, verticalSteps: readonly RouteStep[], bundle: StationBundle | null, nearMesh: (p: THREE.Vector3, radius: number, edgeId: string) => boolean) {
   const pts = points.map((p) => R(p.x, p.y, p.z));
   let samples = 0, noFloor = 0;
   if (pts.length === 1) {
@@ -47,7 +47,7 @@ export function routeGroundCounts(points: readonly V3[], ground: (p: THREE.Vecto
       const a = nodes.get(step.fromNodeId), b = nodes.get(step.toNodeId);
       if (!a || !b) { verticalWithoutConnector++; continue; }
       const az = nodeDisplayZ(a, floors.get(a.floorId)).z, bz = nodeDisplayZ(b, floors.get(b.floorId)).z;
-      if (!nearMesh(R((a.position.x + b.position.x) / 2, (a.position.y + b.position.y) / 2, (az + bz) / 2), 1.5)) verticalWithoutConnector++;
+      if (!nearMesh(R((a.position.x + b.position.x) / 2, (a.position.y + b.position.y) / 2, (az + bz) / 2), 1.5, step.edgeId)) verticalWithoutConnector++;
     }
   }
   return { samples, noFloor, verticalWithoutConnector };
@@ -67,7 +67,7 @@ function isConnector(mesh: THREE.Mesh): boolean {
 }
 
 /** Distance to connector mesh triangles in world space, not merely a mesh's bounding box. */
-export function sceneMeshNear(roots: readonly THREE.Object3D[], point: THREE.Vector3, radius: number): boolean {
+export function sceneMeshNear(roots: readonly THREE.Object3D[], point: THREE.Vector3, radius: number, edgeId?: string): boolean {
   const meshes: THREE.Mesh[] = [];
   for (const root of roots) { root.updateWorldMatrix(true, true); root.traverse((o) => { if ((o as THREE.Mesh).isMesh && isConnector(o as THREE.Mesh)) meshes.push(o as THREE.Mesh); }); }
   const triangle = new THREE.Triangle(), closest = new THREE.Vector3(), matrix = new THREE.Matrix4();
@@ -83,6 +83,10 @@ export function sceneMeshNear(roots: readonly THREE.Object3D[], point: THREE.Vec
       if (bound && bound.distanceToPoint(point) > radius) continue;
       const size = index?.count ?? position.count;
       for (let i = 0; i + 2 < size; i += 3) {
+        if (mesh.userData.greybox && edgeId !== undefined) {
+          const ranges = mesh.userData.edgeRanges as { start: number; end: number; edgeId?: string }[] | undefined;
+          if (ranges ? !ranges.some((r) => i >= r.start && i + 3 <= r.end && r.edgeId === edgeId) : mesh.userData.edgeId !== edgeId) continue;
+        }
         const read = (v: THREE.Vector3, k: number) => v.fromBufferAttribute(position, index ? index.getX(k) : k).applyMatrix4(matrix);
         read(triangle.a, i); read(triangle.b, i + 1); read(triangle.c, i + 2);
         if (triangle.closestPointToPoint(point, closest).distanceToSquared(point) <= radius * radius) return true;
