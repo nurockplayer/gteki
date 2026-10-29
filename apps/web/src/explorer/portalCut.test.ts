@@ -20,7 +20,7 @@ describe("portal cuts", () => {
     const floor = new THREE.Mesh(new THREE.BoxGeometry(6, 0.2, 4), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
     floor.position.y = -0.1; root.add(floor);
     const owned = resources(); const result = cutPortals(root, [opening], owned);
-    expect(result.cutMeshes).toBeGreaterThanOrEqual(1);
+    expect(result.cutMeshes).toBeGreaterThanOrEqual(1); expect(result.cutTriangles).toBeGreaterThan(0); expect(result.cutMs).toBeGreaterThan(0);
     prepareRayTrees([wall, floor]);
     expect(ray(wall, 0, 1)).toHaveLength(0);
     expect(ray(wall, 2, 1).length).toBeGreaterThan(0);
@@ -51,6 +51,24 @@ describe("portal cuts", () => {
     expect(discarded(new THREE.Vector3(0, 0.06, 0))).toBe(true);
     expect(discarded(new THREE.Vector3(0, opening.height + 0.01, 0))).toBe(false);
     const disposed = vi.fn(); owned.materials[0]!.addEventListener("dispose", disposed); owned.materials.forEach(m => m.dispose()); expect(disposed).toHaveBeenCalledOnce();
+  });
+  it("allows GPU clipping with a horizontal triangle below the clip volume", () => {
+    const wall = new THREE.PlaneGeometry(6, 3, 224, 224).translate(0, 1.5, 0).toNonIndexed();
+    const wallPositions = wall.getAttribute("position").array;
+    const floor = [-0.4, 0.03, -0.1, 0.4, 0.03, -0.1, 0, 0.03, 0.1];
+    const positions = new Float32Array(wallPositions.length + floor.length);
+    positions.set(wallPositions); positions.set(floor, wallPositions.length);
+    const geometry = new THREE.BufferGeometry(); geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    const root = new THREE.Group(), a = new THREE.Mesh(geometry), b = new THREE.Mesh(geometry);
+    b.position.x = 10; root.add(a, b);
+    const owned = resources(), result = cutPortals(root, [opening], owned);
+    expect(result.clipped).toBe(1); expect(result.cutMeshes).toBe(0);
+    const clips = (a.material as THREE.Material).clippingPlanes!;
+    for (let i = 0; i < floor.length; i += 3) {
+      const p = new THREE.Vector3(floor[i]!, floor[i + 1]!, floor[i + 2]!);
+      expect(clips.every(plane => plane.distanceToPoint(p) < 0)).toBe(false);
+    }
+    disposePortalCuts(owned);
   });
   it("keeps a pillar's passage-parallel faces solid and visible", () => {
     const root = new THREE.Group();

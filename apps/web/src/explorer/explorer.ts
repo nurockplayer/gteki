@@ -1882,7 +1882,7 @@ export class Explorer {
         const parts = meshParts(o.mesh);
         if (hasClippedPortals(o.mesh)) {
           const raycaster = new THREE.Raycaster(from, ray.direction, 0, far);
-          const visibleHit = castAll(raycaster, [o.mesh]).some(hit => {
+          const visibleHit = castCamera(raycaster, [o.mesh], proxy ? new Set([o.mesh]) : new Set()).some(hit => {
             const part = parts.find(p => hit.faceIndex !== undefined && hit.faceIndex !== null && hit.faceIndex * 3 >= p.start && hit.faceIndex * 3 < p.start + p.count);
             if (!part || (!proxy && !blocksView(part.material))) return false;
             const spans = proxy || !this.cameraCut.cuts(part.material) ? whole : drawn;

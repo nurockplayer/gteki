@@ -246,9 +246,9 @@ FrameView	interface	apps/web/src/explorer/overviewFraming.ts	166
 FramePose	interface	apps/web/src/explorer/overviewFraming.ts	197
 frameBounds	function	apps/web/src/explorer/overviewFraming.ts	228
 OverviewLook	class	apps/web/src/explorer/overviewLook.ts	10
-PortalCutResources	interface	apps/web/src/explorer/portalCut.ts	41
-disposePortalCuts	function	apps/web/src/explorer/portalCut.ts	48
-cutPortals	function	apps/web/src/explorer/portalCut.ts	57
+PortalCutResources	interface	apps/web/src/explorer/portalCut.ts	49
+disposePortalCuts	function	apps/web/src/explorer/portalCut.ts	56
+cutPortals	function	apps/web/src/explorer/portalCut.ts	65
 headingFromYaw	function	apps/web/src/explorer/pose.ts	2
 PostFxSettings	interface	apps/web/src/explorer/postfx.ts	18
 POSTFX_HIGH	const	apps/web/src/explorer/postfx.ts	27
