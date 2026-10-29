@@ -161,7 +161,8 @@ describe("buildGreybox", () => {
       wallHit: (a, b) => a.x < 2.5 && b.x >= 2.5 ? { x: 2.25, y: 0, z: 0 } : null,
     }, "high");
     expect(result.stats.portals).toBe(1);
-    expect(result.openings[0]!.depth).toBeGreaterThanOrEqual(1.1);
+    expect(result.openings[0]!.depth).toBe(0.6);
+    expect(result.openings[0]!.center.x).toBeCloseTo(2.25);
     expect(result.stats.meshes).toBeLessThanOrEqual(3);
     expect(result.root.getObjectByName("greybox-portal")).toBeTruthy();
     expect(result.openings[0]!.width).toBeCloseTo(MODE_WIDTH.walk!);

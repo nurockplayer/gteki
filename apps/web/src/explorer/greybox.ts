@@ -82,9 +82,12 @@ export interface Box {
   height: number;
 }
 
-/** Axes of the route corridor; wallNormal controls which faces are cut. */
-export function portalDepthAxis(box: Box): THREE.Vector3 { return box.along; }
-export function portalWidthAxis(box: Box): THREE.Vector3 { return box.across; }
+/** Unit normal to the portal wall; passage direction is the fallback when no face was hit. */
+export function portalDepthAxis(box: Box): THREE.Vector3 { return box.wallNormal ?? box.along; }
+export function portalWidthAxis(box: Box): THREE.Vector3 {
+  const n = portalDepthAxis(box);
+  return Math.abs(box.across.x * n.z - box.across.z * n.x) < 1e-6 ? new THREE.Vector3(-n.z, 0, n.x) : box.across;
+}
 
 export interface GreyboxStats { runs: number; lengthM: number; portals: number; meshes: number; triangles: number; buildMs: number; overBudget: string | null }
 export const greyboxTriangleLimit = (tier: "high" | "low"): number => tier === "high" ? 150000 : 100000;
@@ -416,24 +419,8 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         const hit = scene.wallHit(pa, pz);
         if (hit) {
           const near = R(hit.x, hit.y, hit.z);
-          const edge = edgePoints(bundle, run.edge, nodes, floors);
-          // Extend only along this straight edge segment, stopping at the first clear sample.
-          const segment = edge.findIndex((p, k) => k > 0 && new THREE.Line3(edge[k - 1]!, p).closestPointToPoint(a, true, new THREE.Vector3()).distanceTo(a) < 1e-4 && new THREE.Line3(edge[k - 1]!, p).closestPointToPoint(z, true, new THREE.Vector3()).distanceTo(z) < 1e-4);
-          const limits = segment > 0 ? [edge[segment - 1]!.clone().sub(a).dot(along), edge[segment]!.clone().sub(a).dot(along)].sort((x, y) => x - y) : [0, flat];
-          const extend = (initial: number, direction: number) => {
-            let distance = initial;
-            const limit = direction < 0 ? limits[0]! : limits[1]!;
-            while (direction * (limit - distance) > 1e-6) {
-              const next = direction < 0 ? Math.max(limit, distance - 0.5) : Math.min(limit, distance + 0.5);
-              const sample = a.clone().addScaledVector(along, next);
-              distance = next;
-              if (!scene.wallHit(enu(sample.clone().addScaledVector(along, -0.3)), enu(sample.clone().addScaledVector(along, 0.3)))) break;
-            }
-            return distance;
-          };
-          const start = extend(0, -1) - 0.3, end = extend(flat, 1) + 0.3;
-          const center = a.clone().addScaledVector(along, (start + end) / 2);
-          const depth = end - start;
+          const center = near.clone();
+          const depth = 0.6;
           openings.push({ center, along: along.clone(), across: across.clone(), ...(hit.wallNormal ? { wallNormal: hit.wallNormal.clone() } : {}), width, depth, height: 2.3 });
           const faceAt = (face: number) => {
             return near.clone().addScaledVector(along, face * 0.02);
