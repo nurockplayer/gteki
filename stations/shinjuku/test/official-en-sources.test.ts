@@ -2,7 +2,8 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const read = (path: string) => JSON.parse(readFileSync(new URL(path, import.meta.url), "utf8"));
-const allowed = new Set<string>();
+// Separate-station labels are explanatory translations, not transcribed official English names.
+const allowed = new Set<string>(["poi:sep-seibu-shinjuku", "poi:sep-shinjuku-sanchome", "poi:sep-shinjuku-nishiguchi"]);
 
 describe("Shinjuku official English names", () => {
   it("cites a declared English source for every English POI name", () => {

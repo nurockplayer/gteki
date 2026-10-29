@@ -27,7 +27,7 @@ describe("Shinjuku gteki/ contract files", () => {
       "toei-shinjuku-station-2026-10",
       "tokyometro-shinjuku-station-en-2026-10",
     ]);
-    const e27 = bundle.pois.filter((p) => !p.evidence.sourceIds.includes("tokyo-s03-zip") && p.category !== "shop" && !p.evidence.sourceIds.every((id) => WP4_SOURCES.has(id)));
+    const e27 = bundle.pois.filter((p) => !p.evidence.sourceIds.includes("tokyo-s03-zip") && p.category !== "shop" && !p.id.startsWith("poi:sep-") && !p.evidence.sourceIds.every((id) => WP4_SOURCES.has(id)));
     for (const p of bundle.pois.filter((p) => p.category === "shop")) expect(p.names.some((n) => n.lang === "ja" && n.text.trim() !== ""), p.id).toBe(true);
     for (const lang of ["ja", "en"]) {
       const names = e27.map((p) => (lang === "en" ? p.descriptions : p.names)?.find((n) => n.lang === lang)?.text);
