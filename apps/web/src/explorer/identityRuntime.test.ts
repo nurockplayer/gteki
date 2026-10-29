@@ -20,6 +20,7 @@ function runtime(boardZ = -10) {
   const e = Object.create(Explorer.prototype) as any;
   Object.assign(e, {
     scene, stationScene: { root }, identityBoards: collectIdentityBoards(root), identityPlaced: false,
+    greybox: null, greyboxOpenings: [], greyboxSegments: [], greyboxLegendVisible: false, sceneGroundTargets: [],
     pos: new THREE.Vector3(), lastAvatarPos: new THREE.Vector3(), yaw: 0, pitch: -0.12, bodyYaw: 0,
     mode: "overview", camera: new THREE.PerspectiveCamera(50, 9 / 19.5, 0.05, 100),
     cameraTargets: [], skyTargets: [], ray: new THREE.Raycaster(), occluders: [], proxies: new Set(), signMeshes: new Set(), cameraCut: new CameraCut(),

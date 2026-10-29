@@ -16,6 +16,8 @@ import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
 import { R, chevronTexture, dashTexture, ribbonGeometry } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
+import { buildGreybox, splitWallsAtOpenings, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
+import { greyboxPathSegments, greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
@@ -76,6 +78,7 @@ interface ShadowFit {
 
 export interface ExplorerEvents {
   onMode?(mode: ExplorerMode): void;
+  onGreyboxLegend?(visible: boolean): void;
   onGuideProgress?(p: { s: number; total: number; stepIndex: number; done: boolean }): void;
   /** The guide stopped (and paused) at `stops[index]` given to startGuide. */
   onGuideStop?(index: number): void;
@@ -223,6 +226,11 @@ export class Explorer {
 
   private station: LoadedStation | null = null;
   private stationScene: StationScene | null = null;
+  private greybox: ReturnType<typeof buildGreybox> | null = null;
+  private greyboxOpenings: Box[] = [];
+  private greyboxSegments: GreyboxSegment[] = [];
+  private greyboxLegendVisible = false;
+  private sceneGroundTargets: THREE.Object3D[] = [];
   private graph: GraphView | null = null;
   private readonly world = new THREE.Group();
   private readonly overlays = new THREE.Group();
@@ -445,10 +453,10 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
+  sceneInfo(): { greybox: GreyboxStats | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
-      world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
+      greybox: this.greybox?.stats ?? null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
       walkable: this.walkable.length, colliders: this.colliders.length, cameraBlockers: this.cameraBlockers.length, seeThrough: this.seeThrough.length,
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
       bakedAo: { ...this.bakedAo }, assets: this.loadedAssets.map((a) => ({ ...a })),
@@ -911,6 +919,26 @@ export class Explorer {
         .map((n) => R(n.position.x, n.position.y, nodeDisplayZ(n, streets.find((f) => f.id === n.floorId)).z));
       this.stationScene.root.updateMatrixWorld(true);
       this.street.attach(this.stationScene.root);
+      this.world.updateMatrixWorld(true);
+      const originalTargets = explorerTargets(this.walkable, this.colliders, this.cameraBlockers);
+      this.sceneGroundTargets = originalTargets.ground;
+      const scene = greyboxSceneProbes(originalTargets.collider, this.walls);
+      const probe = floorProbe(new THREE.Raycaster(), originalTargets.ground);
+      const floorCache = new Map<string, boolean>();
+      const hasFloor = (p: { x: number; y: number; z: number }) => {
+        const key = `${p.x},${p.y},${p.z}`;
+        let value = floorCache.get(key);
+        if (value === undefined) { value = probe(p); floorCache.set(key, value); }
+        return value;
+      };
+      const traversable = (edge: StationBundle["edges"][number]) => router.isTraversable(edge, DEFAULT_PROFILE);
+      this.greybox = buildGreybox(bundle, traversable, hasFloor, scene, this.quality);
+      this.greyboxSegments = greyboxPathSegments(unmodelledRunsByEdge(bundle, traversable, hasFloor));
+      this.greyboxOpenings = this.greybox.openings;
+      this.world.add(this.greybox.root);
+      this.walkable = [...this.walkable, ...this.greybox.walkable];
+      this.colliders = [...this.colliders, ...this.greybox.colliders];
+      this.walls = splitWallsAtOpenings([...this.walls, ...this.greybox.wallSegments], this.greyboxOpenings);
     } else {
       this.world.add(this.graph.root);
       this.walkable = this.graph.walkable;
@@ -970,6 +998,22 @@ export class Explorer {
     this.stopGuide();
     this.clearRoute();
     this.clearPois();
+    if (this.greybox) {
+      this.world.remove(this.greybox.root);
+      const materials = new Set<THREE.Material>();
+      this.greybox.root.traverse((object) => {
+        const mesh = object as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        mesh.geometry.dispose();
+        for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) materials.add(material);
+      });
+      for (const material of materials) material.dispose();
+      this.greybox = null;
+    }
+    this.greyboxOpenings = [];
+    this.greyboxSegments = [];
+    this.sceneGroundTargets = [];
+    this.updateGreyboxLegend();
     if (this.stationScene) { this.world.remove(this.stationScene.root); this.stationScene.dispose(); this.stationScene = null; }
     if (this.graph) { this.world.remove(this.graph.root); this.overlays.remove(this.graph.overlay); this.graph.dispose(); this.graph = null; }
     this.routableBox = null;
@@ -1193,6 +1237,7 @@ export class Explorer {
     if (mode === "overview") { this.street.restore(this.scene); this.setFov(FOV.overview, true); }
     this.overviewLook.set(this.scene, this.world, mode === "overview");
     this.events.onMode?.(mode);
+    this.updateGreyboxLegend();
   }
 
   get firstPersonOn(): boolean {
@@ -1280,7 +1325,7 @@ export class Explorer {
     return bodyBlock(from, to, (origin, dir, far) => {
       this.ray.set(origin, dir);
       this.ray.far = far;
-      const hit = castAll(this.ray, this.colliderTargets)[0];
+      const hit = castAll(this.ray, this.colliderTargets).find((h) => h.object.userData.greybox || !this.greyboxOpenings.some((box) => insideGreyboxOpening(h.point, box)));
       return hit ? { distance: hit.distance, normal: hitNormal(hit, dir) } : null;
     }, RADIUS);
   }
@@ -1313,7 +1358,8 @@ export class Explorer {
     this.routeGroup.add(ribbon, ...glow, xray);
     // Stretches with no scene floor under them (the graph runs through space the scene doesn't model):
     // an always-on-top dashed amber band, so they read as "not modelled" rather than as a route in the void.
-    const gaps = this.groundTargets.length === 0 ? [] : unmodelledRuns(polyline, floorProbe(this.ray, this.groundTargets));
+    const routeGround = this.stationScene ? this.sceneGroundTargets : this.groundTargets;
+    const gaps = routeGround.length === 0 ? [] : unmodelledRuns(polyline, floorProbe(this.ray, routeGround));
     if (gaps.length > 0) {
       this.noModelTexture ??= dashTexture();
       this.noModelTexture.repeat.set(1 / 1.6, 1);
@@ -1326,7 +1372,8 @@ export class Explorer {
       }
     }
     this.routeGroup.add(this.beacon(pts[0]!, 0x7dffa0, 2.2), this.beacon(pts[pts.length - 1]!, 0xffc857, 5));
-    this.routeGroup.userData = { symbolicHeights: symbolic, noModelRuns: gaps.length };
+    this.routeGroup.userData = { symbolicHeights: symbolic, noModelRuns: gaps.length, greybox: routeUsesGreybox(polyline, this.greyboxSegments) };
+    this.updateGreyboxLegend();
   }
 
   private beacon(at: THREE.Vector3, color: number, height: number): THREE.Group {
@@ -1360,6 +1407,16 @@ export class Explorer {
     this.routeLines = null;
     this.overlayTints = [];
     this.overlayResidual = null;
+    this.routeGroup.userData = {};
+    this.updateGreyboxLegend();
+  }
+
+  private updateGreyboxLegend(): void {
+    const visible = Boolean(this.routeGroup.userData.greybox) || (this.mode === "walk" && nearGreybox(this.pos, this.greyboxSegments, 15));
+    if (visible !== this.greyboxLegendVisible) {
+      this.greyboxLegendVisible = visible;
+      this.events.onGreyboxLegend?.(visible);
+    }
   }
 
   /** Floating labels at each POI's verified entrance (or display position when search-only). */
@@ -1955,6 +2012,7 @@ export class Explorer {
     if (this.mode === "walk") this.stepWalk(dt);
     else if (this.mode === "guide") this.stepGuide(dt);
     else this.orbit.update();
+    this.updateGreyboxLegend();
 
     if (this.mode !== "overview") {
       this.placeCamera(dt, this.teleported);
