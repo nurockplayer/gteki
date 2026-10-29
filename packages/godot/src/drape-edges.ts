@@ -92,7 +92,7 @@ export function drapeEdges(probe: SceneProbe, bundle: StationBundle, edgeIds: Se
   }
   const sceneGaps = new Map<string, boolean>();
   for (const edge of selected) {
-    if (edge.attributes?.sceneGapReason !== "drape-unresolved" && (edge.attributes?.sceneGap === true || edge.attributes?.sceneGapReason !== undefined)) continue;
+    if (edge.attributes?.sceneGapReason !== "drape-unresolved" && (edge.attributes?.sceneGap !== undefined || edge.attributes?.sceneGapReason !== undefined)) continue;
     const finalEdge = geometry.has(edge.id) ? { ...edge, geometry: geometry.get(edge.id)! } : edge;
     const finalBundle = { ...updated, edges: updated.edges.map(e => e.id === edge.id ? finalEdge : e) };
     const audit = auditPolyline(probe, drawn(finalBundle, finalEdge), { skipInteriorFloor: edge.mode === "elevator" });

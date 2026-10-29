@@ -78,6 +78,8 @@ describe("scene floor draping", () => {
     expect(drapeEdges(probe(true), b, new Set(["edge"])).sceneGaps.get("edge")).toBe(false);
     edge.attributes = { ...edge.attributes, sceneGap: true, sceneGapReason: "hand" };
     expect(drapeEdges(probe(false), b, new Set(["edge"])).sceneGaps.has("edge")).toBe(false);
+    edge.attributes = { sceneGap: false };
+    expect(drapeEdges(probe(false), b, new Set(["edge"])).sceneGaps.has("edge")).toBe(false);
   });
   it("does not flag unmodelled floor alone", () => {
     expect(drapeEdges({ ground: [], collider: [], walls: [] }, bundle(), new Set(["edge"])).sceneGaps.has("edge")).toBe(false);
