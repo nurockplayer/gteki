@@ -37,15 +37,15 @@ start=$(date +%s)
 args=(--reporter=default --reporter=json "--outputFile=$out/$id.vitest.json")
 if [[ ${BENCH_SMOKE:-0} == 1 ]]; then args=(tools/box-idle.test.mjs "${args[@]}"); fi
 case $suite in
- test) pnpm test -- "${args[@]}" ; code=$? ;;
- heavy) pnpm test:heavy -- "${args[@]}" ; code=$? ;;
+ test) pnpm run test "${args[@]}" ; code=$? ;;
+ heavy) pnpm run test:heavy "${args[@]}" ; code=$? ;;
  box) GTEKI_TEST_HEAP_MB=1536 pnpm exec vitest run --mode heavy --maxWorkers=1 --passWithNoTests "${args[@]}"; code=$? ;;
 esac
 elapsed=$(( $(date +%s) - start ))
 kill "$sampler" 2>/dev/null || :; wait "$sampler" 2>/dev/null || :
 cp /sys/fs/cgroup/cpu.stat "$out/$id.cpu-after"
 cp /sys/fs/cgroup/memory.events "$out/$id.events-after"
-BENCH_BASE=$base BENCH_PEAK_RESET=$peak_reset BENCH_ELAPSED=$elapsed BENCH_EXIT=$code BENCH_ID=$id BENCH_SUITE=$suite BENCH_REP=$rep BENCH_VARIANT=$variant BENCH_OUT=$out node tools/bench/summarize.cjs
-gzip -f "$out/$id.samples.tsv"
+BENCH_BASE=$base BENCH_PEAK_RESET=$peak_reset BENCH_ELAPSED=$elapsed BENCH_EXIT=$code BENCH_ID=$id BENCH_SUITE=$suite BENCH_REP=$rep BENCH_VARIANT=$variant BENCH_OUT=$out node tools/bench/summarize.cjs || code=1
+gzip -f "$out/$id.samples.tsv" || code=1
 rm -f "$out/$id.cpu-before" "$out/$id.cpu-after" "$out/$id.events-before" "$out/$id.events-after"
 exit "$code"
