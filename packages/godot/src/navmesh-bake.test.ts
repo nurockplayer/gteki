@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { NavMeshQuery } from "recast-navigation";
 import { bakeNavmesh, completePath } from "./navmesh-bake.ts";
-import { verticalLinkCandidates } from "./navmesh-links.ts";
+import { validateLinkSnap, verticalLinkCandidates } from "./navmesh-links.ts";
 
 // Two 4 m rooms divided by a wall. The doorway is 1.6 m wide when open.
 function rooms(door: boolean) {
@@ -61,6 +61,43 @@ describe("navmesh spike", () => {
     expect(completePath(linkedQuery, points.b!, points.a!)).toBeNull();
     linkedQuery.destroy(); linked.navMesh.destroy();
   });
+});
+
+it("rejects a vertical link snap across a scene wall", async () => {
+  const THREE = await import("three");
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(8,8).rotateX(-Math.PI/2), new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));
+  floor.updateMatrixWorld(true);
+  const probe = { ground:[floor], collider:[], walls:[{a:{x:0,y:-2},b:{x:0,y:2},zMin:0,zMax:2}] };
+  expect(validateLinkSnap(probe,{x:-0.5,y:0,z:0},{x:0.5,y:0,z:0})).toBe("wall");
+  expect(validateLinkSnap(probe,{x:0.1,y:0,z:0},{x:0.5,y:0,z:0})).toBeNull();
+  floor.geometry.dispose(); floor.material.dispose();
+});
+
+it("rejects a snap across an unsupported floor gap", async () => {
+  const THREE = await import("three");
+  const makeFloor=(x:number) => { const m=new THREE.Mesh(new THREE.PlaneGeometry(2,4).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({side:THREE.DoubleSide})); m.position.x=x; m.updateMatrixWorld(true); return m; };
+  const left=makeFloor(-2), right=makeFloor(2);
+  expect(validateLinkSnap({ground:[left,right],collider:[],walls:[]},{x:-1.5,y:0,z:0},{x:1.5,y:0,z:0})).toBe("floor");
+  left.geometry.dispose(); right.geometry.dispose(); left.material.dispose(); right.material.dispose();
+});
+
+it("connects two separate floors using a stair link", async () => {
+  const positions=[0,0,0, 0,0,4, 4,0,4, 4,0,0, 0,3,0, 0,3,4, 4,3,4, 4,3,0];
+  const indices=[0,1,2,0,2,3,4,5,6,4,6,7];
+  const base=await bakeNavmesh(positions,indices);
+  if (!base.success) throw new Error(base.error);
+  const query=new NavMeshQuery(base.navMesh);
+  const points={a:{x:2,y:0,z:2},b:{x:2,y:3,z:2}};
+  const built=verticalLinkCandidates([{id:"stair",mode:"stairs",from:"a",to:"b",direction:"both"}],id=>points[id as keyof typeof points],query,()=>true);
+  expect(built.candidates).toHaveLength(1);
+  query.destroy(); base.navMesh.destroy();
+  const linked=await bakeNavmesh(positions,indices,{offMeshConnections:built.candidates.map(c=>c.connection)});
+  if (!linked.success) throw new Error(linked.error);
+  const q=new NavMeshQuery(linked.navMesh);
+  const { queryPathWithLinks }=await import("./navmesh-audit.ts");
+  const found = queryPathWithLinks(linked.navMesh,q,points.a,points.b);
+  expect(found?.some(p=>p.link?.userId===1)).toBe(true);
+  q.destroy(); linked.navMesh.destroy();
 });
 
 it("bakes a greybox floor and keeps its shell as obstacles", async () => {

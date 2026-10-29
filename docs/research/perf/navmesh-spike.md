@@ -130,14 +130,14 @@ Each bake now records the binary SHA-256, effective erosion and gate exclusion c
 
 ## Step 6: hybrid transition, work in progress
 
-2026-10-30 02:02 JST. The director's transition rule makes the navmesh primary and permits graph-polyline fallback only for edges on a committed list, which must only shrink; the proposed CI gate also requires zero navmesh-segment clips. This step is **not complete**. No fallback list or passing CI gate has been established, and the default bake parameters have not been changed.
+2026-10-30 02:02 JST. The director's transition rule makes the navmesh primary and permits graph-polyline fallback only for edges on a committed list, which must only shrink; the proposed CI gate also requires zero navmesh-segment clips. At this point the step was **not complete**. No fallback list or passing CI gate has been established.
 
 | Public station | Earlier unique failed edges | After links | After parameter choice |
 | --- | ---: | ---: | ---: |
 | Ikebukuro | 3 (step 2, all stairs) | not measured | not measured |
 | Shinjuku | 19 (step 5, including 4 stairs) | not measured | not measured |
 
-These earlier failure counts are not committed fallback-list lengths. The two-pass link candidate helper snaps against an initial navmesh with 1.5 / 0.6 / 1.5 m extents and preserves one-way direction. A synthetic test exercises its use in a rebake across a solid wall. It is not connected to the station CLI or route audit: link attachment, user-ID mapping, authored connector reconstruction, and separate connector auditing remain to be implemented. Stair/escalator kit classification and landing clearance remain unverified.
+These earlier failure counts are not committed fallback-list lengths. At that point the two-pass link candidate helper was not connected to the station CLI or route audit; step 7 below implements that integration. Stair/escalator kit classification and landing clearance remain unverified.
 
 The bake accepts experimental cell size and climb values and records their effective quantised values. With the existing 0.1 m cell height, climbs of 0.40 m and 0.45 m both quantise to 0.40 m. No full parameter sweep or default selection has been completed; in particular the existing ray-based audit does not perform the required swept `WALKER_BODY` radius check. A fallback set-diff helper and unit test exist, but list generation, public lists, private destination handling, comparison against the PR base, and the CI gate are still outstanding.
 
@@ -150,7 +150,24 @@ As a preliminary **pre-link** check, both public stations were baked at 0.10 m c
 
 The headless Ikebukuro scene load reported that some stair kit assets were skipped, so this run does not validate the effect of modelled stair meshes on landings.
 
-Oracle advised a two-pass bake, checking actual Detour link IDs and direction after export/import, reconstructing authored link polylines rather than straight Detour links, and testing long links across tiles. A route can otherwise appear connected through the wrong connector or an unattached link. In a subsequent review Oracle identified cross-wall snaps and output symlinks as blockers. The candidate helper now requires the caller to validate both snaps; a real scene-aware validator remains to be implemented. Bake and audit output reject symlinks that escape `.qa` or occupy the output file. Oracle did not review these subsequent changes or validate the unfinished station implementation.
+Oracle advised a two-pass bake, checking actual Detour link IDs and direction after export/import, reconstructing authored link polylines rather than straight Detour links, and testing long links across tiles. A route can otherwise appear connected through the wrong connector or an unattached link. In a subsequent review Oracle identified cross-wall snaps and output symlinks as blockers. Bake and audit output reject symlinks that escape `.qa` or occupy the output file.
+
+## Step 7: off-mesh connectors
+
+2026-10-30 02:18 JST. Public bakes use 0.10 m cells, 0.30 m radius and 0.40 m climb. The earlier comparison used 64-cell tiles; this run uses 256-cell tiles (25.6 m) to permit a longer Ikebukuro stair link to attach. A 64-cell linked trial still left that stair disconnected. The bake builds the mesh twice and checks that each emitted link polygon has both endpoint attachments; one-way direction follows the graph. Snaps are checked against scene floor and wall crossings, with the approach floor sampled at 0.5 m. The audit checks that a vertical edge uses its own link, reconstructs connector geometry from its graph polyline, and reports connector samples separately.
+
+| Public station | Incomplete routes before | Incomplete routes after | Unique failed edges before | Unique failed edges after | Attached link polygons |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Ikebukuro | 0 / 1,054 | 0 / 1,054 | 1 | 0 | 25 |
+| Shinjuku | 28 / 238 | 88 / 238 | 6 | 7 | 50 |
+
+The before audit allowed failed stairs to use graph fallback while counting the edge as failed. The after audit requires the actual link and has no implicit stair fallback; it also rejects joins with detected floor or wall violations. Thus the route totals are not strictly like-for-like, and the tile size also changed. A complete Detour corridor can choose a different route even when the assigned link is attached; rejecting such a corridor is conservative and can overstate failed edges.
+
+Ikebukuro had no rejected endpoint snaps. Shinjuku had **3 endpoint snap failures** (no suitable polygon within the search) across two edges and **14 floor-validation rejections** across 12 more edges; no wall-validation rejections were observed. Validation of the other endpoint is skipped when either endpoint does not snap. All 25 and 50 respective candidates were emitted and had links to both endpoint polygons; this attachment check alone does not prove every connector is used by a route.
+
+For complete routes only, the raw connector audit is Ikebukuro **1,216 off-floor / 0 no-floor / 0 wall hits**, Shinjuku **0 / 0 / 0**. Raw navmesh segments are **13,202 / 0 / 0** and **0 / 0 / 0**, respectively. Scene-floor-height projection gives **0 / 0 / 0** for both segment classes on both stations, but is circular with the floor check and does not establish swept-body clearance. Incomplete routes are excluded from these totals.
+
+The independent review found risks in link attachment, floor gaps, wrong-connector paths, joins and provenance. After review, the code checks attachment, sampled approach floors, connector identity, joins and bundle identity; these changes have not received another independent review. Scene geometry itself is not fingerprinted, approach samples can miss a narrow gap, and private QA outputs contain detailed private graph information and must not be published. The station bake does not selectively reclassify stair-kit meshes, and the headless Ikebukuro loader reported skipped kit assets; landing geometry still needs validation.
 
 ## Evidence and missing measurements
 
