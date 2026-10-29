@@ -17,6 +17,7 @@ export function unmodelledVerticalEdges(
     if (!traversable(edge) || !["stairs", "escalator", "elevator"].includes(edge.mode)) return false;
     const points = edgePoints(bundle, edge, nodes, floors);
     if (points.length < 2) return false;
+    if (edge.attributes?.sceneGap === true) return true;
     if (edge.mode === "elevator") {
       const a = points[0]!, b = points.at(-1)!;
       const floor = (p: THREE.Vector3) => hasFloor({ x: p.x, y: -p.z, z: p.y });
@@ -30,7 +31,7 @@ export function unmodelledVerticalEdges(
       if (remaining <= length) { midpoint.lerpVectors(points[i]!, points[i + 1]!, length ? remaining / length : 0); break; }
       remaining -= length;
     }
-    if (edge.attributes?.sceneGap === true || !nearMesh(midpoint, 1.5)) return true;
+    if (!nearMesh(midpoint, 1.5)) return true;
     for (let i = 1; i < points.length; i++) {
       const a = points[i - 1]!, b = points[i]!;
       const count = Math.max(1, Math.ceil(a.distanceTo(b) / 0.5));

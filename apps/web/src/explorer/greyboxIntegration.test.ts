@@ -83,6 +83,22 @@ describe("greybox station integration", () => {
     mesh.position.y = -1.7;
     expect(sceneElevatorOverlap([mesh], a, b)).toBe(false);
   });
+  it("builds a scene-gap elevator even when a tagged elevator and both floors exist", async () => {
+    for (const sceneGap of [false, true]) {
+      const { state, loaded, scene } = fixture();
+      loaded.bundle = createSyntheticBundle([syntheticEdge("lift", "a", "upper", { mode: "elevator", attributes: { sceneGap } })]);
+      for (const y of [0, 4]) {
+        const floor = new THREE.Mesh(new THREE.BoxGeometry(4, 0.2, 4), new THREE.MeshBasicMaterial());
+        floor.position.set(10, y - 0.1, 0); scene.root.add(floor); scene.walkable.push(floor);
+      }
+      const lift = new THREE.Mesh(new THREE.BoxGeometry(0.1, 4, 0.1), new THREE.MeshBasicMaterial());
+      lift.position.set(10, 2, 0); lift.userData.gteki_role = "elevator"; scene.root.add(lift);
+      expect(sceneHasElevator(scene.root, [], new THREE.Vector3(10, 0, 0), new THREE.Vector3(10, 4, 0))).toBe(true);
+      await state.loadStation(loaded, createRouter(loaded.bundle));
+      expect(state.connectors.stats.connectors.elevator).toBe(sceneGap ? 1 : 0);
+      expect(state.connectors.cars).toHaveLength(sceneGap ? 1 : 0);
+    }
+  });
   it("builds an approximate elevator when an untagged shaft collider overlaps", async () => {
     const { state, loaded, scene } = fixture();
     loaded.bundle = createSyntheticBundle([syntheticEdge("lift", "a", "upper", { mode: "elevator" })]);
