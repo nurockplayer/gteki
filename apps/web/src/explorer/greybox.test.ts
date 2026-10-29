@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import type { StationBundle } from "@gteki/schema";
-import { buildGreybox, splitWallsAtOpenings, unmodelledRunsByEdge } from "./greybox.ts";
+import { buildGreybox, simplifyGreyboxRun, splitWallsAtOpenings, unmodelledRunsByEdge } from "./greybox.ts";
 import { MODE_WIDTH } from "./graphView.ts";
 import { resolveWalls } from "./walker.ts";
 
@@ -129,22 +129,46 @@ describe("buildGreybox", () => {
     expect(Math.abs(resolveWalls(2.25, 2.3, 0.2, 0, 1.8, split).x - 2.25)).toBeGreaterThan(0.1);
   });
 
-  it("drops lights, kerbs and ceilings but preserves an over-budget floor and walls", () => {
+  it("preserves the entire floor and walls of a long straight passage", () => {
     const long = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 2000, y: 0, z: 0 } }] };
     const result = buildGreybox(long, () => true, () => false, emptyScene, "low");
-    expect(result.stats.triangles).toBeGreaterThan(60000);
-    expect(result.stats.overBudget).toContain("lights");
-    expect(result.stats.overBudget).toContain("kerb");
-    expect(result.stats.overBudget).toContain("ceiling");
-    expect(result.stats.overBudget).toContain("floor and walls exceed");
-    expect(result.root.getObjectByName("greybox-lights")).toBeUndefined();
-    expect(result.root.getObjectByName("greybox-kerb")).toBeUndefined();
+    expect(result.stats.triangles).toBeLessThan(1000);
     result.root.updateMatrixWorld(true);
     for (const x of [0.25, 1000.25, 1999.75]) {
       const ray = new THREE.Raycaster(new THREE.Vector3(x, 1, 0), new THREE.Vector3(0, -1, 0), 0, 2);
       expect(ray.intersectObjects(result.walkable, false).some((hit) => Math.abs(hit.point.y) < 0.001)).toBe(true);
     }
     expect(result.wallSegments.some((wall) => Math.max(wall.ax, wall.bx) >= 1999.5)).toBe(true);
+  });
+
+  it("simplifies a sampled straight 100 m run to one segment", () => {
+    const points = Array.from({ length: 201 }, (_, i) => ({ x: i / 2, y: 0, z: 0 }));
+    expect(simplifyGreyboxRun(points)).toEqual([points[0], points.at(-1)]);
+  });
+
+  it("deduplicates identical corridors and clips partially overlapping corridors", () => {
+    const duplicate = { ...bundle, edges: [bundle.edges[0]!, { ...bundle.edges[0]!, id: "duplicate" }] };
+    const result = buildGreybox(duplicate, () => true, () => false, emptyScene, "high");
+    expect(result.stats.runs).toBe(1);
+    expect(result.stats.lengthM).toBeCloseTo(10);
+    const partial = { ...duplicate, nodes: [...bundle.nodes, { ...bundle.nodes[1]!, id: "c", position: { x: 15, y: 0, z: 0 } }], edges: [bundle.edges[0]!, { ...bundle.edges[0]!, id: "partial", from: "b", to: "c", geometry: [{ x: 5, y: 0, z: 0 }, { x: 15, y: 0, z: 0 }] }] };
+    // The second edge starts at its from-node, so set that node at 5 m.
+    partial.nodes = [bundle.nodes[0]!, bundle.nodes[1]!, { ...bundle.nodes[0]!, id: "d", position: { x: 5, y: 0, z: 0 } }, partial.nodes[2]!];
+    partial.edges[1] = { ...partial.edges[1]!, from: "d" };
+    expect(buildGreybox(partial, () => true, () => false, emptyScene, "high").stats.lengthM).toBeCloseTo(15);
+  });
+
+  it("builds 16 km of overlapping passages on five floors within budget", () => {
+    const floors = Array.from({ length: 5 }, (_, i) => ({ ...bundle.floors[0]!, id: `f${i}`, renderElevationM: i * 4 }));
+    const nodes = floors.flatMap((floor, i) => [
+      { ...bundle.nodes[0]!, id: `a${i}`, floorId: floor.id, position: { x: 0, y: 0, z: i * 4 } },
+      { ...bundle.nodes[1]!, id: `b${i}`, floorId: floor.id, position: { x: 200, y: 0, z: i * 4 } },
+    ]);
+    const edges = floors.flatMap((_floor, i) => Array.from({ length: 16 }, (_, k) => ({ ...bundle.edges[0]!, id: `e${i}-${k}`, from: `a${i}`, to: `b${i}`, attributes: { sceneGap: true } })));
+    const result = buildGreybox({ ...bundle, floors, nodes, edges }, () => true, () => false, emptyScene, "low");
+    expect(result.stats.triangles).toBeLessThanOrEqual(60000);
+    expect(result.stats.buildMs).toBeLessThanOrEqual(300);
+    expect(result.stats.lengthM).toBeCloseTo(1000);
   });
 
   it("keeps a 400 m two-floor synthetic network within the mesh and triangle budget", () => {

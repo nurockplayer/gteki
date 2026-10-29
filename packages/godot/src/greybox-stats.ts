@@ -22,10 +22,10 @@ export function greyboxStats(bundle: StationBundle, scene: StationScene, tier: "
   sceneProbe(scene);
   const targets = explorerTargets(scene.walkable, scene.colliders ?? [], scene.cameraBlockers ?? []);
   prepareRayTrees([...targets.ground, ...targets.collider]);
-  const probe = floorProbe(new THREE.Raycaster(), targets.ground);
+  const probe = floorProbe(new THREE.Raycaster(), targets.ground, true);
   const cache = new Map<string, boolean>();
   const hasFloor = (p: { x: number; y: number; z: number }) => {
-    const key = `${p.x},${p.y},${p.z}`;
+    const key = `${Math.round(p.x * 100)},${Math.round(p.y * 100)},${Math.round(p.z * 100)}`;
     let value = cache.get(key);
     if (value === undefined) { value = probe(p); cache.set(key, value); }
     return value;

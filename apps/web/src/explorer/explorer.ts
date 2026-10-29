@@ -923,12 +923,13 @@ export class Explorer {
       this.street.attach(this.stationScene.root);
       this.world.updateMatrixWorld(true);
       const originalTargets = explorerTargets(this.walkable, this.colliders, this.cameraBlockers);
+      prepareRayTrees(originalTargets.camera);
       this.sceneGroundTargets = originalTargets.ground;
       const scene = greyboxSceneProbes(originalTargets.collider, this.walls);
-      const probe = floorProbe(new THREE.Raycaster(), originalTargets.ground);
+      const probe = floorProbe(new THREE.Raycaster(), originalTargets.ground, true);
       const floorCache = new Map<string, boolean>();
       const hasFloor = (p: { x: number; y: number; z: number }) => {
-        const key = `${p.x},${p.y},${p.z}`;
+        const key = `${Math.round(p.x * 100)},${Math.round(p.y * 100)},${Math.round(p.z * 100)}`;
         let value = floorCache.get(key);
         if (value === undefined) { value = probe(p); floorCache.set(key, value); }
         return value;

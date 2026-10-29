@@ -113,11 +113,12 @@ GraphView	interface	apps/web/src/explorer/graphView.ts	16
 buildGraphView	function	apps/web/src/explorer/graphView.ts	26
 UnmodelledEdgeRun	interface	apps/web/src/explorer/greybox.ts	9
 unmodelledRunsByEdge	function	apps/web/src/explorer/greybox.ts	15
-Box	interface	apps/web/src/explorer/greybox.ts	62
-GreyboxStats	interface	apps/web/src/explorer/greybox.ts	71
-GreyboxScene	interface	apps/web/src/explorer/greybox.ts	72
-splitWallsAtOpenings	function	apps/web/src/explorer/greybox.ts	78
-buildGreybox	function	apps/web/src/explorer/greybox.ts	128
+Box	interface	apps/web/src/explorer/greybox.ts	80
+GreyboxStats	interface	apps/web/src/explorer/greybox.ts	89
+GreyboxScene	interface	apps/web/src/explorer/greybox.ts	90
+splitWallsAtOpenings	function	apps/web/src/explorer/greybox.ts	96
+simplifyGreyboxRun	function	apps/web/src/explorer/greybox.ts	146
+buildGreybox	function	apps/web/src/explorer/greybox.ts	216
 greyboxSceneProbes	function	apps/web/src/explorer/greyboxScene.ts	9
 insideGreyboxOpening	function	apps/web/src/explorer/greyboxScene.ts	45
 GreyboxSegment	interface	apps/web/src/explorer/greyboxScene.ts	52
@@ -254,8 +255,8 @@ castAll	function	apps/web/src/explorer/raycast.ts	75
 castCamera	function	apps/web/src/explorer/raycast.ts	89
 keepBelowBlockers	function	apps/web/src/explorer/raycast.ts	111
 cuttableSigns	function	apps/web/src/explorer/raycast.ts	128
-floorProbe	function	apps/web/src/explorer/routeGaps.ts	6
-unmodelledRuns	function	apps/web/src/explorer/routeGaps.ts	24
+floorProbe	function	apps/web/src/explorer/routeGaps.ts	7
+unmodelledRuns	function	apps/web/src/explorer/routeGaps.ts	55
 darkSampleDistances	function	apps/web/src/explorer/routeGroundQa.ts	9
 routeGroundCounts	function	apps/web/src/explorer/routeGroundQa.ts	21
 sceneMeshNear	function	apps/web/src/explorer/routeGroundQa.ts	56
@@ -511,6 +512,7 @@ DISPLAY_LANGS	const	packages/godot/src/export-search.ts	15
 NORMALIZATION	const	packages/godot/src/export-search.ts	17
 SCORING	const	packages/godot/src/export-search.ts	28
 buildSearchExport	function	packages/godot/src/export-search.ts	58
+greyboxStats	function	packages/godot/src/greybox-stats.ts	20
 ShimUsage	interface	packages/godot/src/headless-dom.ts	13
 newShimUsage	function	packages/godot/src/headless-dom.ts	24
 headlessGltfTextures	function	packages/godot/src/headless-dom.ts	48

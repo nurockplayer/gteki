@@ -16,10 +16,28 @@ export function unmodelledRunsByEdge(bundle: StationBundle, traversable: (edge: 
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
   const out: UnmodelledEdgeRun[] = [];
+  const cache = new Map<string, boolean>();
+  const floor = (p: V3) => {
+    const key = `${Math.round(p.x * 100)},${Math.round(p.y * 100)},${Math.round(p.z * 100)}`;
+    let value = cache.get(key);
+    if (value === undefined) { value = hasFloor(p); cache.set(key, value); }
+    return value;
+  };
   for (const edge of bundle.edges) {
     if (!traversable(edge) || !["walk", "gate", "moving_walkway", "ramp"].includes(edge.mode)) continue;
     const points = edgePoints(bundle, edge, nodes, floors).map((p) => ({ x: p.x, y: -p.z, z: p.y }));
     if (points.length < 2) continue;
+    const edgeLength = points.slice(1).reduce((n, p, i) => n + Math.hypot(p.x - points[i]!.x, p.y - points[i]!.y, p.z - points[i]!.z), 0);
+    if (edge.attributes?.sceneGap !== true) {
+      let remaining = edgeLength / 2, mid = points[0]!;
+      for (let i = 1; i < points.length; i++) {
+        const a = points[i - 1]!, b = points[i]!, len = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
+        if (remaining <= len && len) { const t = remaining / len; mid = { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, z: a.z + (b.z - a.z) * t }; break; }
+        remaining -= len;
+      }
+      const startHasFloor = floor(points[0]!), middleHasFloor = floor(mid), endHasFloor = floor(points.at(-1)!);
+      if (edgeLength <= 5 && startHasFloor && middleHasFloor && endHasFloor) continue;
+    }
     const samples: V3[] = [points[0]!];
     const distances = [0];
     for (let i = 1; i < points.length; i++) {
@@ -40,7 +58,7 @@ export function unmodelledRunsByEdge(bundle: StationBundle, traversable: (edge: 
       const t = span ? (distance - distances[k - 1]!) / span : 0;
       return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, z: a.z + (b.z - a.z) * t };
     };
-    const bare = samples.map((p) => edge.attributes?.sceneGap === true || !hasFloor(p));
+    const bare = samples.map((p) => edge.attributes?.sceneGap === true || !floor(p));
     for (let i = 0; i < samples.length; i++) {
       if (!bare[i]) continue;
       let end = i;
@@ -124,14 +142,109 @@ function widthOf(edge: Edge): number {
   return typeof width === "number" && Number.isFinite(width) && width > 0 ? width : MODE_WIDTH[edge.mode] ?? 2;
 }
 
+/** Douglas–Peucker in plan and height, retaining the vertices needed for portal transitions. */
+export function simplifyGreyboxRun(points: readonly V3[], preserve: readonly number[] = []): V3[] {
+  if (points.length <= 2) return [...points];
+  const keep = new Set([0, points.length - 1, ...preserve]);
+  const anchors = [...keep].filter((i) => i >= 0 && i < points.length).sort((a, b) => a - b);
+  const stack: [number, number][] = anchors.slice(1).map((b, i) => [anchors[i]!, b]);
+  while (stack.length) {
+    const [first, last] = stack.pop()!, a = points[first]!, b = points[last]!;
+    const dx = b.x - a.x, dy = b.y - a.y, length2 = dx * dx + dy * dy;
+    let worst = 1, index = -1;
+    for (let i = first + 1; i < last; i++) {
+      const p = points[i]!;
+      const t = length2 ? THREE.MathUtils.clamp(((p.x - a.x) * dx + (p.y - a.y) * dy) / length2, 0, 1) : 0;
+      const plan = Math.hypot(p.x - a.x - t * dx, p.y - a.y - t * dy) / 0.05;
+      const height = Math.abs(p.z - (a.z + t * (b.z - a.z))) / 0.05;
+      const error = Math.max(plan, height);
+      if (error > worst) { worst = error; index = i; }
+    }
+    if (index >= 0) { keep.add(index); stack.push([first, index], [index, last]); }
+  }
+  return [...keep].filter((i) => i >= 0 && i < points.length).sort((a, b) => a - b).map((i) => points[i]!);
+}
+
+type Corridor = { a: THREE.Vector3; b: THREE.Vector3; radius: number };
+
+/** A one-metre spatial hash of built corridors; coverage is clipped in plan and within 0.5 m in height. */
+class CorridorIndex {
+  private readonly cells = new Map<string, Set<Corridor>>();
+  private key(x: number, z: number, y: number): string { return `${x},${z},${y}`; }
+  private visit(a: THREE.Vector3, b: THREE.Vector3, padding: number, fn: (key: string) => void): void {
+    const n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.z - a.z)));
+    const r = Math.ceil(padding);
+    for (let i = 0; i <= n; i++) {
+      const t = i / n, x = Math.floor(a.x + (b.x - a.x) * t), z = Math.floor(a.z + (b.z - a.z) * t), y = Math.floor((a.y + (b.y - a.y) * t) * 2);
+      for (let dx = -r; dx <= r; dx++) for (let dz = -r; dz <= r; dz++) for (let dy = -1; dy <= 1; dy++) fn(this.key(x + dx, z + dz, y + dy));
+    }
+  }
+  add(a: THREE.Vector3, b: THREE.Vector3, half: number): void {
+    const corridor = { a: a.clone(), b: b.clone(), radius: Math.max(0, half - 0.2) };
+    this.visit(a, b, corridor.radius + 1, (key) => { let cell = this.cells.get(key); if (!cell) { cell = new Set(); this.cells.set(key, cell); } cell.add(corridor); });
+  }
+  /** Uncovered parameter intervals for a segment. */
+  uncovered(a: THREE.Vector3, b: THREE.Vector3): [number, number][] {
+    const candidates = new Set<Corridor>();
+    this.visit(a, b, 0, (key) => { for (const c of this.cells.get(key) ?? []) candidates.add(c); });
+    let open: [number, number][] = [[0, 1]];
+    for (const c of candidates) {
+      const dx = c.b.x - c.a.x, dz = c.b.z - c.a.z, len = Math.hypot(dx, dz);
+      if (len < 1e-8 || c.radius <= 0) continue;
+      const ux = dx / len, uz = dz / len, vx = b.x - a.x, vz = b.z - a.z;
+      const px = a.x - c.a.x, pz = a.z - c.a.z;
+      let lo = 0, hi = 1;
+      const clip = (origin: number, delta: number, min: number, max: number) => {
+        if (Math.abs(delta) < 1e-9) { if (origin < min || origin > max) { lo = 1; hi = 0; } return; }
+        const x = (min - origin) / delta, y = (max - origin) / delta;
+        lo = Math.max(lo, Math.min(x, y)); hi = Math.min(hi, Math.max(x, y));
+      };
+      const along0 = px * ux + pz * uz, alongD = vx * ux + vz * uz;
+      clip(along0, alongD, 0, len);
+      clip(px * -uz + pz * ux, vx * -uz + vz * ux, -c.radius, c.radius);
+      const slope = (c.b.y - c.a.y) / len;
+      clip(a.y - c.a.y - along0 * slope, b.y - a.y - alongD * slope, -0.5, 0.5);
+      if (lo >= hi) continue;
+      open = open.flatMap(([s, e]) => [[s, Math.min(e, lo)], [Math.max(s, hi), e]].filter(([x, y]) => y! - x! > 1e-7) as [number, number][]);
+      if (!open.length) break;
+    }
+    return open;
+  }
+}
+
 /** Procedural passages, built entirely in memory from the already-loaded graph and scene probes. */
 export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) => boolean, hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low") {
   const started = performance.now();
-  const runs = unmodelledRunsByEdge(bundle, traversable, hasFloor);
+  const detected = unmodelledRunsByEdge(bundle, traversable, hasFloor);
+  const index = new CorridorIndex();
+  const runs: UnmodelledEdgeRun[] = [];
+  for (const run of detected) {
+    const p = run.points;
+    const preserve: number[] = [];
+    if (p.length > 2 && (hasFloor(p[0]!) !== hasFloor(p[1]!) || (run.edge.attributes?.sceneGap === true && hasFloor(p[0]!)))) preserve.push(1);
+    if (p.length > 2 && (hasFloor(p.at(-1)!) !== hasFloor(p.at(-2)!) || (run.edge.attributes?.sceneGap === true && hasFloor(p.at(-1)!)))) preserve.push(p.length - 2);
+    const points = simplifyGreyboxRun(p, preserve).map((v) => R(v.x, v.y, v.z));
+    let current: V3[] = [];
+    const flush = () => { if (current.length > 1) runs.push({ edge: run.edge, points: current }); current = []; };
+    for (let i = 1; i < points.length; i++) {
+      const a = points[i - 1]!, b = points[i]!;
+      const uncovered = index.uncovered(a, b);
+      if (!uncovered.length) { flush(); continue; }
+      for (const [start, end] of uncovered) {
+        const from = a.clone().lerp(b, start), to = a.clone().lerp(b, end);
+        if (current.length && R(current.at(-1)!.x, current.at(-1)!.y, current.at(-1)!.z).distanceTo(from) > 1e-6) flush();
+        if (!current.length) current.push(enu(from));
+        current.push(enu(to));
+        index.add(from, to, widthOf(run.edge) / 2);
+        if (end < 1 - 1e-7) flush();
+      }
+    }
+    flush();
+  }
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
   const junctions = new Map<string, { at: THREE.Vector3; width: number; count: number; floor: string }>();
-  for (const run of runs) {
+  for (const run of detected) {
     const edgePointsR = edgePoints(bundle, run.edge, nodes, floors);
     for (const [id, point, endpoint] of [[run.edge.from, run.points[0], edgePointsR[0]], [run.edge.to, run.points.at(-1), edgePointsR.at(-1)]] as const) {
       if (!point || !endpoint || R(point.x, point.y, point.z).distanceTo(endpoint) > 1e-5) continue;
@@ -178,15 +291,14 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
       const across = new THREE.Vector3(-along.z, 0, along.x);
       const offset = (p: THREE.Vector3, side: number, height: number) => p.clone().addScaledVector(across, side).add(new THREE.Vector3(0, height, 0));
       const al = offset(a, -half, 0), ar = offset(a, half, 0), zl = offset(z, -half, 0), zr = offset(z, half, 0);
-      quad(b.shell, b.colors, a, z, zl, al, [1, 1, 0.62, 0.62]);
-      quad(b.shell, b.colors, ar, zr, z, a, [0.62, 0.62, 1, 1]);
+      quad(b.shell, b.colors, ar, zr, zl, al, [0.62, 0.62, 0.62, 0.62]);
       quad(b.shell, b.colors, offset(a, -half, -0.12), offset(a, half, -0.12), offset(z, half, -0.12), offset(z, -half, -0.12));
       for (const side of [-1, 1]) {
         quad(b.shell, b.colors, offset(a, side * half, -0.12), offset(z, side * half, -0.12), offset(z, side * half, 0), offset(a, side * half, 0));
         quad(b.kerb, null, offset(a, side * (half - 0.05), 0.005), offset(z, side * (half - 0.05), 0.005), offset(z, side * half, 0.005), offset(a, side * half, 0.005));
         const wa = offset(a, side * half, 0), wz = offset(z, side * half, 0);
         // Clip the wall centreline against junction discs; the floor and ceiling remain continuous.
-        let intervals: [number, number][] = [[0, 1]];
+        let intervals: [number, number][] = index.uncovered(wa, wz);
         for (const j of junctions.values()) {
           if (j.count < 2 || Math.abs(j.at.y - (a.y + z.y) / 2) > 1) continue;
           const vx = wz.x - wa.x, vz = wz.z - wa.z, ox = wa.x - j.at.x, oz = wa.z - j.at.z;
@@ -200,20 +312,16 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
           const p = wa.clone().lerp(wz, s), q = wa.clone().lerp(wz, e), mid = p.clone().lerp(q, 0.5);
           mid.y += 1.3;
           if (scene.colliderNear(enu(mid), 0.3)) continue;
-          const pm = p.clone().add(new THREE.Vector3(0, 1.3, 0)), qm = q.clone().add(new THREE.Vector3(0, 1.3, 0));
           const topP = p.clone().add(new THREE.Vector3(0, 2.6, 0)), topQ = q.clone().add(new THREE.Vector3(0, 2.6, 0));
           if (side < 0) {
-            quad(b.shell, b.colors, pm, qm, q, p, [1, 1, 0.62, 0.62]);
-            quad(b.shell, b.colors, topP, topQ, qm, pm, [0.62, 0.62, 1, 1]);
+            quad(b.shell, b.colors, topP, topQ, q, p, [0.62, 0.62, 0.62, 0.62]);
           } else {
-            quad(b.shell, b.colors, p, q, qm, pm, [0.62, 0.62, 1, 1]);
-            quad(b.shell, b.colors, pm, qm, topQ, topP, [1, 1, 0.62, 0.62]);
+            quad(b.shell, b.colors, p, q, topQ, topP, [0.62, 0.62, 0.62, 0.62]);
           }
           wallSegments.push({ ax: p.x, az: p.z, bx: q.x, bz: q.z, yMin: Math.min(p.y, q.y), yMax: Math.max(p.y, q.y) + 2.6 });
         }
       }
-      quad(b.ceiling, b.ceilingColors, offset(z, -half, 2.6), offset(z, 0, 2.6), offset(a, 0, 2.6), offset(a, -half, 2.6), [0.62, 1, 1, 0.62]);
-      quad(b.ceiling, b.ceilingColors, offset(z, 0, 2.6), offset(z, half, 2.6), offset(a, half, 2.6), offset(a, 0, 2.6), [1, 0.62, 0.62, 1]);
+      quad(b.ceiling, b.ceilingColors, offset(z, -half, 2.6), offset(z, half, 2.6), offset(a, half, 2.6), offset(a, -half, 2.6), [0.62, 0.62, 0.62, 0.62]);
       while (nextLight <= travelled + length) {
         const t = (nextLight - travelled) / length;
         if (t >= 0) {
