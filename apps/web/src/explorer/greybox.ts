@@ -82,18 +82,15 @@ export interface Box {
   height: number;
 }
 
-/** Unit normal to the portal wall; passage direction is the fallback when no face was hit. */
-export function portalDepthAxis(box: Box): THREE.Vector3 { return box.wallNormal ?? box.along; }
-export function portalWidthAxis(box: Box): THREE.Vector3 {
-  const n = portalDepthAxis(box);
-  return Math.abs(box.across.x * n.z - box.across.z * n.x) < 1e-6 ? new THREE.Vector3(-n.z, 0, n.x) : box.across;
-}
+/** Axes of the route corridor; wallNormal controls which faces are cut. */
+export function portalDepthAxis(box: Box): THREE.Vector3 { return box.along; }
+export function portalWidthAxis(box: Box): THREE.Vector3 { return box.across; }
 
-export interface GreyboxStats { runs: number; lengthM: number; portals: number; portalThicknessUnknown: number; portalFarFaceRejected: number; meshes: number; triangles: number; buildMs: number; overBudget: string | null }
+export interface GreyboxStats { runs: number; lengthM: number; portals: number; meshes: number; triangles: number; buildMs: number; overBudget: string | null }
 export const greyboxTriangleLimit = (tier: "high" | "low"): number => tier === "high" ? 150000 : 100000;
 export interface GreyboxScene {
   colliderNear(p: V3, r: number): boolean;
-  wallHit(a: V3, b: V3, opts?: { faceOnly?: boolean }): (V3 & { wallNormal?: THREE.Vector3; backFace?: boolean; objectId?: string; instanceId?: number }) | null;
+  wallHit(a: V3, b: V3): (V3 & { wallNormal?: THREE.Vector3 }) | null;
 }
 
 /** Clip a wall against oriented openings, preserving the wall above and below an opening. */
@@ -339,7 +336,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   };
   const openings: Box[] = [];
   const wallSegments: Segment2[] = [];
-  let lengthM = 0, portalThicknessUnknown = 0, portalFarFaceRejected = 0;
+  let lengthM = 0;
   const shellMat = new THREE.MeshLambertMaterial({ color: 0x9a9690, emissive: 0x9a9690, emissiveIntensity: 0.35, vertexColors: true, side: THREE.DoubleSide });
   const lightMat = new THREE.MeshBasicMaterial({ color: 0xffffff, vertexColors: true, toneMapped: false, side: THREE.DoubleSide });
   const kerbMat = new THREE.MeshBasicMaterial({ color: 0xffb547, toneMapped: false, side: THREE.DoubleSide });
@@ -419,31 +416,27 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         const hit = scene.wallHit(pa, pz);
         if (hit) {
           const near = R(hit.x, hit.y, hit.z);
-          const start = R(pa.x, pa.y, pa.z).addScaledVector(along, -2);
-          const end = R(pz.x, pz.y, pz.z).addScaledVector(along, 2);
-          const reverse = scene.wallHit(enu(end), enu(start));
-          const farCandidate = reverse ? R(reverse.x, reverse.y, reverse.z) : null;
-          const delta = farCandidate?.clone().sub(near);
-          const normal = hit.wallNormal ?? along;
-          const faceDistance = delta ? Math.abs(delta.dot(normal)) : 0;
-          const matchedNormal = !reverse?.wallNormal || Math.abs(reverse.wallNormal.dot(normal)) >= Math.sqrt(3) / 2;
-          const candidate = Boolean(delta && delta.dot(along) > 1e-4 && delta.length() <= 2.5 && faceDistance > 1e-4 && matchedNormal);
-          const sameObject = Boolean(hit.objectId && reverse?.objectId === hit.objectId && reverse.instanceId === hit.instanceId);
-          const midpoint = candidate && sameObject ? near.clone().add(farCandidate!).multiplyScalar(0.5) : null;
-          const insideHit = midpoint ? scene.wallHit(enu(midpoint), enu(near.clone().addScaledVector(along, -0.1)), { faceOnly: true }) : null;
-          const foundFar = candidate && sameObject && insideHit?.backFace === true;
-          if (candidate && !foundFar) portalFarFaceRejected++;
-          if (!foundFar) portalThicknessUnknown++;
-          const far = foundFar ? farCandidate! : null;
-          const center = far ? near.clone().add(far).multiplyScalar(0.5) : near.clone();
-          const depth = far ? THREE.MathUtils.clamp(faceDistance + 0.2, 0.6, 2.5) : 0.6;
+          const edge = edgePoints(bundle, run.edge, nodes, floors);
+          // Extend only along this straight edge segment, stopping at the first clear sample.
+          const segment = edge.findIndex((p, k) => k > 0 && new THREE.Line3(edge[k - 1]!, p).closestPointToPoint(a, true, new THREE.Vector3()).distanceTo(a) < 1e-4 && new THREE.Line3(edge[k - 1]!, p).closestPointToPoint(z, true, new THREE.Vector3()).distanceTo(z) < 1e-4);
+          const limits = segment > 0 ? [edge[segment - 1]!.clone().sub(a).dot(along), edge[segment]!.clone().sub(a).dot(along)].sort((x, y) => x - y) : [0, flat];
+          const extend = (initial: number, direction: number) => {
+            let distance = initial;
+            const limit = direction < 0 ? limits[0]! : limits[1]!;
+            while (direction * (limit - distance) > 1e-6) {
+              const next = direction < 0 ? Math.max(limit, distance - 0.5) : Math.min(limit, distance + 0.5);
+              const sample = a.clone().addScaledVector(along, next);
+              distance = next;
+              if (!scene.wallHit(enu(sample.clone().addScaledVector(along, -0.3)), enu(sample.clone().addScaledVector(along, 0.3)))) break;
+            }
+            return distance;
+          };
+          const start = extend(0, -1) - 0.3, end = extend(flat, 1) + 0.3;
+          const center = a.clone().addScaledVector(along, (start + end) / 2);
+          const depth = end - start;
           openings.push({ center, along: along.clone(), across: across.clone(), ...(hit.wallNormal ? { wallNormal: hit.wallNormal.clone() } : {}), width, depth, height: 2.3 });
           const faceAt = (face: number) => {
-            if (far) return (face < 0 ? near : far).clone().addScaledVector(along, face * 0.02);
-            const outside = center.clone().addScaledVector(along, face * 0.3);
-            const inside = center.clone().addScaledVector(along, -face * 0.3);
-            const surface = scene.wallHit(enu(outside), enu(inside));
-            return (surface ? R(surface.x, surface.y, surface.z) : center.clone()).addScaledVector(along, face * 0.02);
+            return near.clone().addScaledVector(along, face * 0.02);
           };
           for (const face of [-1, 1]) {
           const frame = faceAt(face);
@@ -515,5 +508,5 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       if (material === shellMat) { walkable.push(mesh); colliders.push(mesh); }
     }
   }
-  return { root, walkable, colliders, wallSegments, openings, stats: { runs: runs.length, lengthM, portals: openings.length, portalThicknessUnknown, portalFarFaceRejected, meshes: root.children.length, triangles, buildMs: performance.now() - started, overBudget: dropped.length ? `Dropped ${dropped.join(", ")}${remainsOver ? `; floor and walls exceed ${triangleCap} triangles` : ` to meet ${triangleCap} triangles`}` : null } satisfies GreyboxStats };
+  return { root, walkable, colliders, wallSegments, openings, stats: { runs: runs.length, lengthM, portals: openings.length, meshes: root.children.length, triangles, buildMs: performance.now() - started, overBudget: dropped.length ? `Dropped ${dropped.join(", ")}${remainsOver ? `; floor and walls exceed ${triangleCap} triangles` : ` to meet ${triangleCap} triangles`}` : null } satisfies GreyboxStats };
 }

@@ -12,7 +12,7 @@ function planes(box: Box): Plane[] {
     p => box.width / 2 - p.clone().sub(c).dot(across),
     p => box.depth / 2 + p.clone().sub(c).dot(depth),
     p => box.depth / 2 - p.clone().sub(c).dot(depth),
-    p => p.y - c.y,
+    p => p.y - c.y - 0.05,
     p => c.y + box.height - p.y,
   ];
 }

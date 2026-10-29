@@ -98,8 +98,8 @@ describe("greybox station integration", () => {
     await state.loadStation(loaded, createRouter(loaded.bundle));
     expect(state.greyboxOpenings).toHaveLength(1);
     const box = state.greyboxOpenings[0];
-    expect(box.center.x).toBeCloseTo(2.65); expect(box.depth).toBeCloseTo(1.4);
-    expect(state.greybox.stats.portalThicknessUnknown).toBe(0);
+    expect(box.center.x - box.depth / 2).toBeLessThan(2.05);
+    expect(box.center.x + box.depth / 2).toBeGreaterThan(3.25);
     const hit = (x: number, direction: number, z = 0) => castCamera(new THREE.Raycaster(new THREE.Vector3(x, 1, z), new THREE.Vector3(direction, 0, 0), 0, 4), [wall], new Set([wall]));
     expect(hit(1, 1)).toHaveLength(0); expect(hit(4, -1)).toHaveLength(0);
     expect(hit(1, 1, 2.5).length).toBeGreaterThan(0);
@@ -111,18 +111,14 @@ describe("greybox station integration", () => {
     wall.geometry = cut;
   });
 
-  it("rejects a separate parallel partition as the far face", async () => {
+  it("leaves a parallel partition outside the route corridor untouched", async () => {
     const { state, scene, loaded } = fixture();
-    const wall = scene.colliders[0]!, partition = scene.colliders[1]!;
-    partition.position.x = 3.1; scene.root.updateMatrixWorld(true);
-    const partitionGeometry = partition.geometry;
+    const partition = scene.colliders[1]!;
+    partition.position.set(2.1, 1.5, 5); scene.root.updateMatrixWorld(true);
+    const original = partition.geometry;
     await state.loadStation(loaded, createRouter(loaded.bundle));
-    const box = state.greyboxOpenings[0];
-    expect(box.center.x).toBeCloseTo(2.05); expect(box.depth).toBe(0.6);
-    expect(state.greybox.stats.portalFarFaceRejected).toBe(1);
-    expect(partition.geometry).toBe(partitionGeometry); expect(wall.geometry).not.toBe(partitionGeometry);
-    const hits = castCamera(new THREE.Raycaster(new THREE.Vector3(2.5, 1, 0), new THREE.Vector3(1, 0, 0), 0, 2), [partition], new Set([partition]));
-    expect(hits.length).toBeGreaterThan(0);
+    expect(partition.geometry).toBe(original);
+    expect(castCamera(new THREE.Raycaster(new THREE.Vector3(1, 1, 5), new THREE.Vector3(1, 0, 0), 0, 3), [partition], new Set([partition])).length).toBeGreaterThan(0);
   });
 
   it("keeps an extracted instanced floor in its ground targets", async () => {
@@ -151,19 +147,18 @@ describe("greybox station integration", () => {
     expect(state.walkable).not.toContain(copy); expect(state.colliders).not.toContain(copy);
   });
 
-  it("rejects separate single-surface planes as the two faces of a wall", async () => {
+  it("cuts both independent partitions crossed by the sampled corridor", async () => {
     const { state, scene, loaded } = fixture();
     const wall = scene.colliders[0]!, partition = scene.colliders[1]!;
     const plane = new THREE.PlaneGeometry(6, 3).rotateY(-Math.PI / 2);
     (wall as THREE.Mesh).geometry = plane; wall.position.set(2.05, 1.5, 0);
-    (partition as THREE.Mesh).geometry = plane; partition.position.set(3.05, 1.5, 0);
+    (partition as THREE.Mesh).geometry = plane; partition.position.set(2.55, 1.5, 0);
     wall.material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }); partition.material = wall.material;
     scene.root.updateMatrixWorld(true);
     await state.loadStation(loaded, createRouter(loaded.bundle));
-    const box = state.greyboxOpenings[0];
-    expect(box.center.x).toBeCloseTo(2.05); expect(box.depth).toBe(0.6);
-    expect(state.greybox.stats.portalFarFaceRejected).toBe(1);
-    expect(partition.geometry).toBe(plane); expect(wall.geometry).not.toBe(plane);
+    expect(wall.geometry).not.toBe(plane); expect(partition.geometry).not.toBe(plane);
+    const hits = castCamera(new THREE.Raycaster(new THREE.Vector3(1, 1, 0), new THREE.Vector3(1, 0, 0), 0, 3), [wall, partition], new Set([wall, partition]));
+    expect(hits).toHaveLength(0);
   });
 
   it("records the hit face normal and exempts an oblique wall crossing", () => {
@@ -174,7 +169,7 @@ describe("greybox station integration", () => {
     expect(hit?.wallNormal?.x).toBeCloseTo(Math.SQRT1_2); expect(hit?.wallNormal?.z).toBeCloseTo(Math.SQRT1_2);
     const state = Object.assign(Object.create(Explorer.prototype), {
       colliders: [wall], colliderTargets: [wall], sceneColliderTargets: new Set([wall]), ray: new THREE.Raycaster(), portalExemptions: 0,
-      greyboxOpenings: [{ center: new THREE.Vector3(), along: new THREE.Vector3(0, 0, 1), across: new THREE.Vector3(1, 0, 0), wallNormal: hit!.wallNormal!, width: 2, depth: 0.6, height: 2.3 }],
+      greyboxOpenings: [{ center: new THREE.Vector3(), along: new THREE.Vector3(0, 0, 1), across: new THREE.Vector3(1, 0, 0), wallNormal: hit!.wallNormal!, width: 2, depth: 1.6, height: 2.3 }],
     });
     expect(state.blockedByColliders(new THREE.Vector3(0, 0, -0.8), new THREE.Vector3(0, 0, 0.5))).toBeNull();
     expect(state.portalExemptions).toBeGreaterThan(0);
