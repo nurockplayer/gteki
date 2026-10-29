@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import type { StationBundle } from "@gteki/schema";
-import { buildGreybox, greyboxTriangleLimit, simplifyGreyboxRun, splitWallsAtOpenings, unmodelledRunsByEdge } from "./greybox.ts";
+import { buildGreybox, createGreyboxBuilder, greyboxTriangleLimit, simplifyGreyboxRun, splitWallsAtOpenings, unmodelledRunsByEdge } from "./greybox.ts";
 import { MODE_WIDTH } from "./graphView.ts";
 import { resolveWalls } from "./walker.ts";
 
@@ -222,5 +222,38 @@ describe("buildGreybox", () => {
     expect(result.stats.meshes).toBeLessThanOrEqual(12);
     expect(result.stats.triangles).toBeLessThanOrEqual(60000);
     expect(bytes).toBeLessThan(2 * 1024 * 1024);
+  });
+});
+
+
+describe("incremental floor-run discovery", () => {
+  const scene = { colliderNear: () => false, wallHit: () => null };
+  const sample = { ...bundle,
+    nodes: [...bundle.nodes, { ...bundle.nodes[0]!, id: "c", position: { x: 100, y: 0, z: 0 } }, { ...bundle.nodes[1]!, id: "d", position: { x: 110, y: 0, z: 0 } }],
+    edges: [bundle.edges[0]!, { ...bundle.edges[0]!, id: "other", from: "c", to: "d" }],
+  };
+  it("matches the one-shot geometry when all edges have been discovered", () => {
+    const builder = createGreyboxBuilder(sample, () => true, () => false, scene, "high");
+    while (!builder.done) builder.probeStep(10);
+    const incremental = builder.emit(), full = buildGreybox(sample, () => true, () => false, scene, "high");
+    expect(incremental.stats.triangles).toBe(full.stats.triangles);
+    expect(incremental.openings).toHaveLength(full.openings.length);
+    expect(new THREE.Box3().setFromObject(incremental.root)).toEqual(new THREE.Box3().setFromObject(full.root));
+  });
+  it("keeps floor discovery within a generous per-step bound", () => {
+    const many = { ...sample, edges: Array.from({ length: 200 }, (_, i) => ({ ...sample.edges[0]!, id: `copy-${i}` })) };
+    const builder = createGreyboxBuilder(many, () => true, () => false, scene, "high");
+    while (!builder.done) {
+      const start = performance.now();
+      builder.probeStep(6);
+      expect(performance.now() - start).toBeLessThan(24);
+    }
+  });
+  it("discovers edges intersecting the requested route bounds", () => {
+    const builder = createGreyboxBuilder(sample, () => true, () => false, scene, "high");
+    expect(builder.ensure(new THREE.Box3(new THREE.Vector3(99, -1, -1), new THREE.Vector3(111, 1, 1)))).toBe(true);
+    expect(builder.runs.map((run) => run.edge.id)).toEqual(["other"]);
+    expect(builder.ensure(new THREE.Box3(new THREE.Vector3(99, -1, -1), new THREE.Vector3(111, 1, 1)))).toBe(false);
+    expect(builder.done).toBe(false);
   });
 });

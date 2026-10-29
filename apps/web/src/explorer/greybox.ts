@@ -10,11 +10,10 @@ export interface UnmodelledEdgeRun {
   points: V3[];
 }
 
-/** Find passage candidates without changing the station or retaining its geometry on disk. */
-export function unmodelledRunsByEdge(bundle: StationBundle, traversable: (edge: Edge) => boolean, hasFloor: (p: V3) => boolean): UnmodelledEdgeRun[] {
+/** Share node, floor and floor-probe caches across independently processed edges. */
+function createRunDetector(bundle: StationBundle, traversable: (edge: Edge) => boolean, hasFloor: (p: V3) => boolean): (edge: Edge) => UnmodelledEdgeRun[] {
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
-  const out: UnmodelledEdgeRun[] = [];
   const cache = new Map<string, boolean>();
   const floor = (p: V3) => {
     const key = `${Math.round(p.x * 100)},${Math.round(p.y * 100)},${Math.round(p.z * 100)}`;
@@ -22,10 +21,11 @@ export function unmodelledRunsByEdge(bundle: StationBundle, traversable: (edge: 
     if (value === undefined) { value = hasFloor(p); cache.set(key, value); }
     return value;
   };
-  for (const edge of bundle.edges) {
-    if (!traversable(edge) || !["walk", "gate", "moving_walkway", "ramp"].includes(edge.mode)) continue;
+  return (edge) => {
+    const out: UnmodelledEdgeRun[] = [];
+    if (!traversable(edge) || !["walk", "gate", "moving_walkway", "ramp"].includes(edge.mode)) return out;
     const points = edgePoints(bundle, edge, nodes, floors).map((p) => ({ x: p.x, y: -p.z, z: p.y }));
-    if (points.length < 2) continue;
+    if (points.length < 2) return out;
     const edgeLength = points.slice(1).reduce((n, p, i) => n + Math.hypot(p.x - points[i]!.x, p.y - points[i]!.y, p.z - points[i]!.z), 0);
     if (edge.attributes?.sceneGap !== true) {
       let remaining = edgeLength / 2, mid = points[0]!;
@@ -35,7 +35,7 @@ export function unmodelledRunsByEdge(bundle: StationBundle, traversable: (edge: 
         remaining -= len;
       }
       const startHasFloor = floor(points[0]!), middleHasFloor = floor(mid), endHasFloor = floor(points.at(-1)!);
-      if (edgeLength <= 5 && startHasFloor && middleHasFloor && endHasFloor) continue;
+      if (edgeLength <= 5 && startHasFloor && middleHasFloor && endHasFloor) return out;
     }
     const samples: V3[] = [points[0]!];
     const distances = [0];
@@ -71,8 +71,14 @@ export function unmodelledRunsByEdge(bundle: StationBundle, traversable: (edge: 
       }
       i = end;
     }
-  }
-  return out;
+    return out;
+  };
+}
+
+/** Find passage candidates without changing the station or retaining its geometry on disk. */
+export function unmodelledRunsByEdge(bundle: StationBundle, traversable: (edge: Edge) => boolean, hasFloor: (p: V3) => boolean): UnmodelledEdgeRun[] {
+  const detect = createRunDetector(bundle, traversable, hasFloor);
+  return bundle.edges.flatMap(detect);
 }
 
 /** An oriented opening in renderer coordinates; center is at floor level, and axes are horizontal unit vectors. */
@@ -219,11 +225,55 @@ class CorridorIndex {
   }
 }
 
+/** Incremental floor-run discovery. Bounds and focus use renderer coordinates.
+ * Scene collider and wall probes still occur in emit; this is not yet a fully time-sliced builder.
+ */
+export function createGreyboxBuilder(bundle: StationBundle, traversable: (edge: Edge) => boolean, hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", focus = new THREE.Vector3()) {
+  const detect = createRunDetector(bundle, traversable, hasFloor);
+  const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
+  const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
+  const entries = bundle.edges.map((edge, index) => {
+    const bounds = new THREE.Box3().setFromPoints(edgePoints(bundle, edge, nodes, floors));
+    return { edge, index, bounds, distance: bounds.distanceToPoint(focus), runs: null as UnmodelledEdgeRun[] | null };
+  }).sort((a, b) => a.distance - b.distance || a.index - b.index);
+  let count = 0;
+  const probe = (entry: typeof entries[number]) => {
+    if (entry.runs !== null) return false;
+    entry.runs = detect(entry.edge); count++;
+    return true;
+  };
+  return {
+    get done() { return count === entries.length; },
+    get progress() { return entries.length ? count / entries.length : 1; },
+    get runs() { return entries.flatMap((entry) => entry.runs ?? []); },
+    probeStep(budgetMs: number) {
+      const start = performance.now();
+      for (const entry of entries) {
+        if (entry.runs !== null) continue;
+        if (performance.now() - start >= budgetMs) break;
+        probe(entry);
+      }
+      return count === entries.length;
+    },
+    ensure(bounds: THREE.Box3) {
+      let changed = false;
+      for (const entry of entries) if (entry.bounds.intersectsBox(bounds)) changed = probe(entry) || changed;
+      return changed;
+    },
+    emit() {
+      // Preserve original edge order so global deduplication is independent of probe order.
+      const runs = [...entries].sort((a, b) => a.index - b.index).flatMap((entry) => entry.runs ?? []);
+      return emitGreybox(bundle, runs, hasFloor, scene, tier);
+    },
+  };
+}
+
 /** Procedural passages, built entirely in memory from the already-loaded graph and scene probes. */
 export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) => boolean, hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low") {
   const started = performance.now();
-  const detected = unmodelledRunsByEdge(bundle, traversable, hasFloor);
-  const result = emitGreybox(bundle, detected, hasFloor, scene, tier);
+  const builder = createGreyboxBuilder(bundle, traversable, hasFloor, scene, tier);
+  builder.probeStep(Infinity);
+  const result = builder.emit();
   result.stats.buildMs = performance.now() - started;
   return result;
 }
