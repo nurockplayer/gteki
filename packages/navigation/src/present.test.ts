@@ -35,6 +35,12 @@ describe("routePolyline", () => {
     const pts = routePolyline(b, route(b, "start", "goal"));
     expect(pts[1]).toMatchObject({ z: 1, zKnown: false });
   });
+
+  it("flags only the points of a sceneGap edge", () => {
+    const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("a-goal", "a", "goal", { attributes: { sceneGap: true } })]);
+    const pts = routePolyline(b, route(b, "start", "goal"));
+    expect(pts.map((p) => p.sceneGap ?? false)).toEqual([false, false, true]);
+  });
 });
 
 describe("describeRoute", () => {
