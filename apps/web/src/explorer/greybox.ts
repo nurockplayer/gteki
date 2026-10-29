@@ -76,16 +76,24 @@ export interface Box {
   center: THREE.Vector3;
   along: THREE.Vector3;
   across: THREE.Vector3;
+  wallNormal?: THREE.Vector3;
   width: number;
   depth: number;
   height: number;
+}
+
+/** Unit normal to the portal wall; passage direction is the fallback when no face was hit. */
+export function portalDepthAxis(box: Box): THREE.Vector3 { return box.wallNormal ?? box.along; }
+export function portalWidthAxis(box: Box): THREE.Vector3 {
+  const n = portalDepthAxis(box);
+  return Math.abs(box.across.x * n.z - box.across.z * n.x) < 1e-6 ? new THREE.Vector3(-n.z, 0, n.x) : box.across;
 }
 
 export interface GreyboxStats { runs: number; lengthM: number; portals: number; meshes: number; triangles: number; buildMs: number; overBudget: string | null }
 export const greyboxTriangleLimit = (tier: "high" | "low"): number => tier === "high" ? 150000 : 100000;
 export interface GreyboxScene {
   colliderNear(p: V3, r: number): boolean;
-  wallHit(a: V3, b: V3): V3 | null;
+  wallHit(a: V3, b: V3): (V3 & { wallNormal?: THREE.Vector3 }) | null;
 }
 
 /** Clip a wall against oriented openings, preserving the wall above and below an opening. */
@@ -99,7 +107,7 @@ export function splitWallsAtOpenings(walls: readonly Segment2[], openings: reado
       let lo = 0, hi = 1;
       const x = w.ax - box.center.x, z = w.az - box.center.z;
       const dx = w.bx - w.ax, dz = w.bz - w.az;
-      for (const [axis, extent] of [[box.across, box.width / 2], [box.along, box.depth / 2]] as const) {
+      for (const [axis, extent] of [[portalWidthAxis(box), box.width / 2], [portalDepthAxis(box), box.depth / 2]] as const) {
         const origin = x * axis.x + z * axis.z, delta = dx * axis.x + dz * axis.z;
         if (Math.abs(delta) < 1e-9) { if (Math.abs(origin) > extent) { lo = 1; hi = 0; break; } continue; }
         const a = (-extent - origin) / delta, b = (extent - origin) / delta;
@@ -411,7 +419,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         const hit = scene.wallHit(pa, pz);
         if (hit) {
           const center = R(hit.x, hit.y, hit.z);
-          openings.push({ center, along: along.clone(), across: across.clone(), width, depth: 0.6, height: 2.3 });
+          openings.push({ center, along: along.clone(), across: across.clone(), ...(hit.wallNormal ? { wallNormal: hit.wallNormal.clone() } : {}), width, depth: 0.6, height: 2.3 });
           const faceAt = (face: number) => {
             const outside = center.clone().addScaledVector(along, face * 0.3);
             const inside = center.clone().addScaledVector(along, -face * 0.3);

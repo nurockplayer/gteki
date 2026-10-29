@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { R, type V3 } from "./geometry.ts";
-import type { Box, GreyboxScene, UnmodelledEdgeRun } from "./greybox.ts";
+import { portalDepthAxis, portalWidthAxis, type Box, type GreyboxScene, type UnmodelledEdgeRun } from "./greybox.ts";
 import { castCamera } from "./raycast.ts";
 import type { Segment2 } from "./walker.ts";
 import { MODE_WIDTH } from "./graphView.ts";
@@ -61,6 +61,7 @@ export function greyboxSceneProbes(colliders: readonly THREE.Object3D[], walls: 
       const from = R(a.x, a.y, a.z), to = R(b.x, b.y, b.z);
       const dx = to.x - from.x, dz = to.z - from.z;
       let best = Infinity;
+      let wallNormal: THREE.Vector3 | undefined;
       const candidates = new Set(largeWalls);
       const x0 = Math.floor(Math.min(from.x, to.x) / wallCellSize), x1 = Math.floor(Math.max(from.x, to.x) / wallCellSize);
       const z0 = Math.floor(Math.min(from.z, to.z) / wallCellSize), z1 = Math.floor(Math.max(from.z, to.z) / wallCellSize);
@@ -80,19 +81,31 @@ export function greyboxSceneProbes(colliders: readonly THREE.Object3D[], walls: 
         ray.set(from.clone().add(new THREE.Vector3(0, 1.2, 0)), delta.divideScalar(length));
         ray.near = 0; ray.far = length;
         const hit = castCamera(ray, colliders, sides)[0];
-        if (hit) best = Math.min(best, hit.distance / length);
+        if (hit && hit.distance <= best * length + 0.3) {
+          best = hit.distance / length;
+          if (hit.face) {
+            const matrix = hit.object.matrixWorld.clone();
+            if (hit.instanceId !== undefined && (hit.object as THREE.InstancedMesh).isInstancedMesh) {
+              const inst = new THREE.Matrix4(); (hit.object as THREE.InstancedMesh).getMatrixAt(hit.instanceId, inst); matrix.multiply(inst);
+            }
+            const normal = hit.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(matrix));
+            normal.y = 0;
+            if (normal.lengthSq() > 1e-12) wallNormal = normal.normalize();
+          }
+        }
       }
       if (!Number.isFinite(best)) return null;
-      return { x: a.x + (b.x - a.x) * best, y: a.y + (b.y - a.y) * best, z: a.z + (b.z - a.z) * best };
+      return { x: a.x + (b.x - a.x) * best, y: a.y + (b.y - a.y) * best, z: a.z + (b.z - a.z) * best, ...(wallNormal ? { wallNormal } : {}) };
     },
   };
 }
 
 export function insideGreyboxOpening(point: THREE.Vector3, box: Box): boolean {
   const dx = point.x - box.center.x, dz = point.z - box.center.z;
+  const across = portalWidthAxis(box), depth = portalDepthAxis(box);
   return point.y >= box.center.y && point.y <= box.center.y + box.height &&
-    Math.abs(dx * box.across.x + dz * box.across.z) <= box.width / 2 &&
-    Math.abs(dx * box.along.x + dz * box.along.z) <= box.depth / 2;
+    Math.abs(dx * across.x + dz * across.z) <= box.width / 2 &&
+    Math.abs(dx * depth.x + dz * depth.z) <= box.depth / 2;
 }
 
 export interface GreyboxSegment { line: THREE.Line3; halfWidth: number }

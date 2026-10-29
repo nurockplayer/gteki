@@ -1,16 +1,16 @@
 import * as THREE from "three";
 import { raycastObject } from "./meshBvh.ts";
-import type { Box } from "./greybox.ts";
+import { portalDepthAxis, portalWidthAxis, type Box } from "./greybox.ts";
 
 const clippedPortals = new WeakMap<THREE.Object3D, readonly Box[]>();
 export function setClippedPortals(mesh: THREE.Object3D, boxes: readonly Box[]): void { clippedPortals.set(mesh, boxes); }
 export function clearClippedPortals(mesh: THREE.Object3D): void { clippedPortals.delete(mesh); }
 export function hasClippedPortals(mesh: THREE.Object3D): boolean { return clippedPortals.has(mesh); }
-export function portalWallNormal(normal: THREE.Vector3, box: Box): boolean { return Math.abs(normal.dot(box.along)) >= Math.sqrt(3) / 2; }
+export function portalWallNormal(normal: THREE.Vector3, box: Box): boolean { return Math.abs(normal.dot(portalDepthAxis(box))) >= Math.sqrt(3) / 2; }
 export function portalPassable(hit: THREE.Intersection): boolean {
   if (!hit.face) return false;
   const normal = hit.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(hit.object.matrixWorld)).normalize();
-  return clippedPortals.get(hit.object)?.some(box => portalWallNormal(normal, box) && hit.point.y >= box.center.y && hit.point.y <= box.center.y + box.height && Math.abs(hit.point.clone().sub(box.center).dot(box.across)) <= box.width / 2 && Math.abs(hit.point.clone().sub(box.center).dot(box.along)) <= box.depth / 2) ?? false;
+  return clippedPortals.get(hit.object)?.some(box => portalWallNormal(normal, box) && hit.point.y >= box.center.y && hit.point.y <= box.center.y + box.height && Math.abs(hit.point.clone().sub(box.center).dot(portalWidthAxis(box))) <= box.width / 2 && Math.abs(hit.point.clone().sub(box.center).dot(portalDepthAxis(box))) <= box.depth / 2) ?? false;
 }
 
 /**

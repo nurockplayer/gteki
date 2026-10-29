@@ -1,17 +1,17 @@
 import * as THREE from "three";
-import type { Box } from "./greybox.ts";
+import { portalDepthAxis, portalWidthAxis, type Box } from "./greybox.ts";
 import { clearClippedPortals, portalWallNormal, setClippedPortals } from "./raycast.ts";
 
 type Vertex = { values: Record<string, number[]>; world: THREE.Vector3 };
 type Plane = (p: THREE.Vector3) => number;
 
 function planes(box: Box): Plane[] {
-  const c = box.center;
+  const c = box.center, across = portalWidthAxis(box), depth = portalDepthAxis(box);
   return [
-    p => box.width / 2 + p.clone().sub(c).dot(box.across),
-    p => box.width / 2 - p.clone().sub(c).dot(box.across),
-    p => box.depth / 2 + p.clone().sub(c).dot(box.along),
-    p => box.depth / 2 - p.clone().sub(c).dot(box.along),
+    p => box.width / 2 + p.clone().sub(c).dot(across),
+    p => box.width / 2 - p.clone().sub(c).dot(across),
+    p => box.depth / 2 + p.clone().sub(c).dot(depth),
+    p => box.depth / 2 - p.clone().sub(c).dot(depth),
     p => p.y - c.y,
     p => c.y + box.height - p.y,
   ];
@@ -54,14 +54,19 @@ export function disposePortalCuts(opts: PortalCutResources): void {
 }
 
 /** Runtime-only portal cuts. The caller owns the returned clones and must dispose them. */
-export function cutPortals(root: THREE.Object3D, openings: readonly Box[], opts: PortalCutResources, walkable: ReadonlySet<THREE.Object3D> = new Set()): { cutTriangles: number; cutMeshes: number; clipped: number; skipped: string[]; skippedWalkable: number; largeSharedVertices: number[] } {
-  const result = { cutTriangles: 0, cutMeshes: 0, clipped: 0, skipped: [] as string[], skippedWalkable: 0, largeSharedVertices: [] as number[] };
+export function cutPortals(root: THREE.Object3D, openings: readonly Box[], opts: PortalCutResources, walkable: ReadonlySet<THREE.Object3D> = new Set()): { cutTriangles: number; cutMeshes: number; clipped: number; skipped: string[]; clonedWalkable: number; clonedWalkableVertices: number[]; largeSharedVertices: number[] } {
+  const result = { cutTriangles: 0, cutMeshes: 0, clipped: 0, skipped: [] as string[], clonedWalkable: 0, clonedWalkableVertices: [] as number[], largeSharedVertices: [] as number[] };
   root.updateWorldMatrix(true, true);
   const uses = new Map<THREE.BufferGeometry, number>();
   root.traverse(o => { const m = o as THREE.Mesh; if (m.isMesh) uses.set(m.geometry, (uses.get(m.geometry) ?? 0) + 1); });
+  const walkableCopies = new WeakSet<THREE.Mesh>();
   const openingBounds = new Map(openings.map(box => {
-    const corners: THREE.Vector3[] = [];
-    for (const a of [-1, 1]) for (const b of [-1, 1]) for (const y of [0, box.height]) corners.push(box.center.clone().addScaledVector(box.along, a * box.depth / 2).addScaledVector(box.across, b * box.width / 2).add(new THREE.Vector3(0, y, 0)));
+    const corners: THREE.Vector3[] = [], across = portalWidthAxis(box), depth = portalDepthAxis(box);
+    const determinant = across.x * depth.z - across.z * depth.x;
+    for (const a of [-1, 1]) for (const b of [-1, 1]) for (const y of [0, box.height]) {
+      const w = a * box.width / 2, d = b * box.depth / 2;
+      corners.push(box.center.clone().add(new THREE.Vector3((w * depth.z - across.z * d) / determinant, y, (across.x * d - w * depth.x) / determinant)));
+    }
     return [box, new THREE.Box3().setFromPoints(corners)] as const;
   }));
   root.traverse(o => {
@@ -75,7 +80,6 @@ export function cutPortals(root: THREE.Object3D, openings: readonly Box[], opts:
     const bounds = (instance.isInstancedMesh && instance.boundingBox ? instance.boundingBox : geometry.boundingBox).clone().applyMatrix4(mesh.matrixWorld);
     const relevant = openings.filter(box => bounds.intersectsBox(openingBounds.get(box)!));
     if (!relevant.length) return;
-    if (walkable.has(mesh) && (instance.isInstancedMesh || (uses.get(geometry) ?? 0) > 1)) { result.skippedWalkable++; return; }
     if (instance.isInstancedMesh) {
       const matrix = new THREE.Matrix4(), world = new THREE.Matrix4();
       for (let i = 0; i < instance.count; i++) {
@@ -98,6 +102,7 @@ export function cutPortals(root: THREE.Object3D, openings: readonly Box[], opts:
         copy.name = instance.name; copy.matrixAutoUpdate = false; copy.matrix.copy(matrix);
         copy.userData = { ...instance.userData, portalInstanceCopy: true };
         copy.castShadow = instance.castShadow; copy.receiveShadow = instance.receiveShadow; copy.layers.mask = instance.layers.mask;
+        if (walkable.has(instance)) walkableCopies.add(copy);
         instance.add(copy); copy.updateWorldMatrix(false, false);
         opts.instances.push({ owner: instance, index: i, matrix: matrix.clone(), copy });
         instance.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
@@ -110,7 +115,9 @@ export function cutPortals(root: THREE.Object3D, openings: readonly Box[], opts:
     if (!position || (mesh as THREE.SkinnedMesh).isSkinnedMesh || Object.keys(geometry.morphAttributes).length || geometry.drawRange.start !== 0 || geometry.drawRange.count !== Infinity) {
       result.skipped.push(`${mesh.name || mesh.uuid}: unsupported geometry`); return;
     }
-    const largeShared = (uses.get(geometry) ?? 0) > 1 && position.count >= 50000;
+    const isWalkable = walkable.has(mesh) || walkableCopies.has(mesh);
+    const shared = (uses.get(geometry) ?? 0) > 1 || walkableCopies.has(mesh);
+    const largeShared = shared && position.count >= 50000;
     // Clipping planes cannot distinguish wall faces from returns or obstacles in the same mesh.
     // If any non-wall triangle intersects the clip volume, use the CPU cut instead.
     const box = relevant[0]!;
@@ -127,9 +134,10 @@ export function cutPortals(root: THREE.Object3D, openings: readonly Box[], opts:
       }
       return false;
     };
-    if (largeShared && relevant.length === 1 && !mesh.userData.portalInstanceCopy && !hasOtherFaces()) {
-      const normals = [box.across.clone().negate(), box.across.clone(), new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, 1, 0), box.along.clone().negate(), box.along.clone()];
-      const points = [box.center.clone().addScaledVector(box.across, -box.width / 2), box.center.clone().addScaledVector(box.across, box.width / 2), box.center.clone().add(new THREE.Vector3(0, 0.05, 0)), box.center.clone().add(new THREE.Vector3(0, box.height, 0)), box.center.clone().addScaledVector(box.along, -box.depth / 2), box.center.clone().addScaledVector(box.along, box.depth / 2)];
+    if (largeShared && !isWalkable && relevant.length === 1 && !mesh.userData.portalInstanceCopy && !hasOtherFaces()) {
+      const across = portalWidthAxis(box), depth = portalDepthAxis(box);
+      const normals = [across.clone().negate(), across.clone(), new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, 1, 0), depth.clone().negate(), depth.clone()];
+      const points = [box.center.clone().addScaledVector(across, -box.width / 2), box.center.clone().addScaledVector(across, box.width / 2), box.center.clone().add(new THREE.Vector3(0, 0.05, 0)), box.center.clone().add(new THREE.Vector3(0, box.height, 0)), box.center.clone().addScaledVector(depth, -box.depth / 2), box.center.clone().addScaledVector(depth, box.depth / 2)];
       const clips = normals.map((n, i) => new THREE.Plane().setFromNormalAndCoplanarPoint(n, points[i]!));
       const clone = (m: THREE.Material) => { const c = m.clone(); c.clippingPlanes = clips; c.clipIntersection = true; c.clipShadows = true; opts.materials.push(c); return c; };
       opts.originals.set(mesh, { geometry: mesh.geometry, material: mesh.material });
@@ -182,6 +190,7 @@ export function cutPortals(root: THREE.Object3D, openings: readonly Box[], opts:
     clone.computeBoundingBox(); clone.computeBoundingSphere();
     opts.originals.set(mesh, { geometry: mesh.geometry, material: mesh.material });
     mesh.geometry = clone; opts.geometries.push(clone); result.cutTriangles += removed; result.cutMeshes++;
+    if (isWalkable && shared) { result.clonedWalkable++; result.clonedWalkableVertices.push(position.count); }
   });
   return result;
 }

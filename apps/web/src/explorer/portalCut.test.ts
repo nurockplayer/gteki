@@ -61,18 +61,40 @@ describe("portal cuts", () => {
     expect(castAll(sideRay, [pillar]).length).toBeGreaterThan(0);
     expect(sideRay.intersectObject(pillar).length).toBeGreaterThan(0);
   });
-  it("does not clip a shared walkable mesh, but CPU cuts an unshared one", () => {
+  it("CPU cuts shared walkable geometry and leaves the other instance unchanged", () => {
     const geometry = new THREE.PlaneGeometry(6, 3, 224, 224), root = new THREE.Group();
     const a = new THREE.Mesh(geometry), b = new THREE.Mesh(geometry);
     a.position.y = 1.5; b.position.set(10, 1.5, 0); root.add(a, b);
     const owned = resources();
     const result = cutPortals(root, [opening], owned, new Set([a]));
-    expect(result.skippedWalkable).toBe(1); expect(result.clipped).toBe(0);
-    expect(a.geometry).toBe(geometry); expect(owned.materials).toHaveLength(0);
+    expect(result.clonedWalkable).toBe(1); expect(result.clonedWalkableVertices).toEqual([geometry.getAttribute("position").count]); expect(result.clipped).toBe(0);
+    expect(a.geometry).not.toBe(geometry); expect(b.geometry).toBe(geometry); expect(owned.materials).toHaveLength(0);
+    prepareRayTrees([a]); expect(ray(a, 0, 1)).toHaveLength(0); expect(ray(a, 2, 1).length).toBeGreaterThan(0);
     const loneRoot = new THREE.Group(), lone = new THREE.Mesh(new THREE.PlaneGeometry(6, 3));
     lone.position.y = 1.5; loneRoot.add(lone);
     const unshared = cutPortals(loneRoot, [opening], resources(), new Set([lone]));
-    expect(unshared.skippedWalkable).toBe(0); expect(unshared.cutMeshes).toBe(1);
+    expect(unshared.clonedWalkable).toBe(0); expect(unshared.cutMeshes).toBe(1);
+  });
+  it("cuts and filters a wall crossed at 45 degrees, leaving a parallel pillar side", () => {
+    const normal = new THREE.Vector3(1, 0, 1).normalize();
+    const box = { ...opening, wallNormal: normal };
+    const root = new THREE.Group(), wall = new THREE.Mesh(new THREE.PlaneGeometry(6, 3), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    wall.rotation.y = Math.PI / 4; wall.position.y = 1.5; root.add(wall);
+    const pillar = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 2), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    pillar.rotation.y = Math.PI / 2; pillar.position.set(0.1, 1, 0); root.add(pillar);
+    cutPortals(root, [box], resources()); prepareRayTrees([wall, pillar]);
+    expect(ray(wall, 0, 1)).toHaveLength(0);
+    expect(castAll(new THREE.Raycaster(new THREE.Vector3(-0.5, 1, 0), new THREE.Vector3(1, 0, 0)), [pillar]).length).toBeGreaterThan(0);
+    const large = new THREE.PlaneGeometry(6, 3, 224, 224), scene = new THREE.Group();
+    const a = new THREE.Mesh(large, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })), b = new THREE.Mesh(large);
+    a.rotation.y = Math.PI / 4; a.position.y = 1.5; b.position.set(20, 0, 0); scene.add(a, b);
+    const owned = resources(), result = cutPortals(scene, [box], owned);
+    expect(result.clipped).toBe(1);
+    const rawHit = ray(a, 0, 1)[0]!; expect(portalPassable(rawHit)).toBe(true);
+    const sideHit = { ...rawHit, face: { ...rawHit.face!, normal: new THREE.Vector3(1, 0, 1).normalize() } };
+    // Local 45-degree normal transformed by the wall matrix is perpendicular to passage.
+    expect(portalPassable(sideHit)).toBe(false);
+    disposePortalCuts(owned);
   });
   it("CPU cuts a large mixed wall so passage-parallel faces remain", () => {
     const geometry = new THREE.BoxGeometry(0.4, 2, 0.4, 100, 100, 100), root = new THREE.Group();

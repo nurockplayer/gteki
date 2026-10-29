@@ -85,6 +85,20 @@ describe("greybox station integration", () => {
     expect(state.greybox.root.getObjectByName("greybox-lights")?.visible).toBe(true);
   });
 
+  it("records the hit face normal and exempts an oblique wall crossing", () => {
+    const wall = new THREE.Mesh(new THREE.PlaneGeometry(6, 3), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    wall.position.y = 1.5; wall.rotation.y = Math.PI / 4; wall.updateMatrixWorld(true);
+    prepareRayTrees([wall]);
+    const hit = greyboxSceneProbes([wall], []).wallHit({ x: 0, y: 1, z: 0 }, { x: 0, y: -1, z: 0 });
+    expect(hit?.wallNormal?.x).toBeCloseTo(Math.SQRT1_2); expect(hit?.wallNormal?.z).toBeCloseTo(Math.SQRT1_2);
+    const state = Object.assign(Object.create(Explorer.prototype), {
+      colliders: [wall], colliderTargets: [wall], sceneColliderTargets: new Set([wall]), ray: new THREE.Raycaster(), portalExemptions: 0,
+      greyboxOpenings: [{ center: new THREE.Vector3(), along: new THREE.Vector3(0, 0, 1), across: new THREE.Vector3(1, 0, 0), wallNormal: hit!.wallNormal!, width: 2, depth: 0.6, height: 2.3 }],
+    });
+    expect(state.blockedByColliders(new THREE.Vector3(0, 0, -0.8), new THREE.Vector3(0, 0, 0.5))).toBeNull();
+    expect(state.portalExemptions).toBeGreaterThan(0);
+  });
+
   it("detects scene wall intersections and bounds openings in the passage frame", () => {
     const scene = greyboxSceneProbes([], [{ ax: 2, az: -3, bx: 2, bz: 3, yMin: 0, yMax: 3 }]);
     expect(scene.wallHit({ x: 1, y: 0, z: 0 }, { x: 3, y: 0, z: 0 })).toEqual({ x: 2, y: 0, z: 0 });
