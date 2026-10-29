@@ -23,7 +23,7 @@ import { darkSampleDistances, routeGroundCounts, sceneMeshNear } from "./routeGr
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
-import { castAll, castCamera, cuttableSigns, explorerTargets, hasClippedPortals } from "./raycast.ts";
+import { castAll, castCamera, cuttableSigns, explorerTargets, hasClippedPortals, portalWallNormal } from "./raycast.ts";
 import { DEFAULT_GUIDE_TIER, guideOnStairs, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx, qaPostFxSettings } from "./postfx.ts";
@@ -943,7 +943,7 @@ export class Explorer {
       this.greyboxSegments = greyboxPathSegments(unmodelledRunsByEdge(bundle, traversable, hasFloor));
       this.greyboxOpenings = this.greybox.openings;
       this.sceneColliderTargets = new Set(originalTargets.collider);
-      this.portalCutStats = cutPortals(this.stationScene.root, this.greyboxOpenings, this.portalCutResources);
+      this.portalCutStats = cutPortals(this.stationScene.root, this.greyboxOpenings, this.portalCutResources, new Set(originalTargets.ground));
       this.renderer.localClippingEnabled = true;
       this.world.add(this.greybox.root);
       this.walkable = [...this.walkable, ...this.greybox.walkable];
@@ -1458,7 +1458,7 @@ export class Explorer {
       const hit = castAll(this.ray, this.colliderTargets).find((h) => {
         if (h.object.userData.greybox || !h.face) return true;
         const normal = hitNormal(h, dir);
-        const exempt = this.greyboxOpenings.some((box) => this.sceneColliderTargets.has(h.object) && insideGreyboxOpening(h.point, box) && Math.abs(normal.y) <= 0.5);
+        const exempt = this.greyboxOpenings.some((box) => this.sceneColliderTargets.has(h.object) && insideGreyboxOpening(h.point, box) && portalWallNormal(normal, box));
         if (exempt) this.portalExemptions++;
         return !exempt;
       });

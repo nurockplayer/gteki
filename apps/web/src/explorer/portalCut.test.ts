@@ -44,12 +44,45 @@ describe("portal cuts", () => {
     expect(result.clipped).toBe(1); expect(a.geometry).toBe(geometry); expect(a.material).not.toBe(material);
     const clippingPlanes = (a.material as THREE.Material).clippingPlanes!;
     expect(clippingPlanes).toHaveLength(6);
+    expect((a.material as THREE.Material).clipShadows).toBe(true);
     const discarded = (p: THREE.Vector3) => clippingPlanes.every(plane => plane.distanceToPoint(p) < 0);
     // A floor triangle inside the opening remains, while a point just above it is clipped.
     for (const p of [new THREE.Vector3(-0.4, 0, -0.1), new THREE.Vector3(0.4, 0, -0.1), new THREE.Vector3(0, 0, 0.1)]) expect(discarded(p)).toBe(false);
     expect(discarded(new THREE.Vector3(0, 0.06, 0))).toBe(true);
     expect(discarded(new THREE.Vector3(0, opening.height + 0.01, 0))).toBe(false);
     const disposed = vi.fn(); owned.materials[0]!.addEventListener("dispose", disposed); owned.materials.forEach(m => m.dispose()); expect(disposed).toHaveBeenCalledOnce();
+  });
+  it("keeps a pillar's passage-parallel faces solid and visible", () => {
+    const root = new THREE.Group();
+    const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.4, 2, 0.4), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    pillar.position.y = 1; root.add(pillar);
+    cutPortals(root, [opening], resources()); prepareRayTrees([pillar]);
+    const sideRay = new THREE.Raycaster(new THREE.Vector3(-0.8, 1, 0), new THREE.Vector3(1, 0, 0));
+    expect(castAll(sideRay, [pillar]).length).toBeGreaterThan(0);
+    expect(sideRay.intersectObject(pillar).length).toBeGreaterThan(0);
+  });
+  it("does not clip a shared walkable mesh, but CPU cuts an unshared one", () => {
+    const geometry = new THREE.PlaneGeometry(6, 3, 224, 224), root = new THREE.Group();
+    const a = new THREE.Mesh(geometry), b = new THREE.Mesh(geometry);
+    a.position.y = 1.5; b.position.set(10, 1.5, 0); root.add(a, b);
+    const owned = resources();
+    const result = cutPortals(root, [opening], owned, new Set([a]));
+    expect(result.skippedWalkable).toBe(1); expect(result.clipped).toBe(0);
+    expect(a.geometry).toBe(geometry); expect(owned.materials).toHaveLength(0);
+    const loneRoot = new THREE.Group(), lone = new THREE.Mesh(new THREE.PlaneGeometry(6, 3));
+    lone.position.y = 1.5; loneRoot.add(lone);
+    const unshared = cutPortals(loneRoot, [opening], resources(), new Set([lone]));
+    expect(unshared.skippedWalkable).toBe(0); expect(unshared.cutMeshes).toBe(1);
+  });
+  it("CPU cuts a large mixed wall so passage-parallel faces remain", () => {
+    const geometry = new THREE.BoxGeometry(0.4, 2, 0.4, 100, 100, 100), root = new THREE.Group();
+    const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+    const a = new THREE.Mesh(geometry, material), b = new THREE.Mesh(geometry, material);
+    a.position.y = 1; b.position.set(10, 1, 0); root.add(a, b);
+    const result = cutPortals(root, [opening], resources());
+    expect(result.clipped).toBe(0); expect(result.cutMeshes).toBe(1);
+    const side = new THREE.Raycaster(new THREE.Vector3(-0.8, 1, 0), new THREE.Vector3(1, 0, 0));
+    expect(castAll(side, [a]).length).toBeGreaterThan(0);
   });
   it("cuts large shared geometry on the CPU for multiple openings", () => {
     const geometry = new THREE.PlaneGeometry(6, 3, 224, 224), root = new THREE.Group();
@@ -100,6 +133,8 @@ describe("portal cuts", () => {
     expect(portalPassable(floorHit)).toBe(false);
     const ceilingHit = { ...wallHit, face: { ...wallHit.face!, normal: new THREE.Vector3(0, -1, 0) } };
     expect(portalPassable(ceilingHit)).toBe(false);
+    const sideHit = { ...wallHit, face: { ...wallHit.face!, normal: new THREE.Vector3(1, 0, 0) } };
+    expect(portalPassable(sideHit)).toBe(false);
     expect(castCamera(shoot(2), [a], new Set([a])).length).toBeGreaterThan(0);
     disposePortalCuts(owned); expect(castAll(shoot(0), [a]).length).toBeGreaterThan(0);
   });

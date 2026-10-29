@@ -257,7 +257,8 @@ PostFx	class	apps/web/src/explorer/postfx.ts	151
 setClippedPortals	function	apps/web/src/explorer/raycast.ts	6
 clearClippedPortals	function	apps/web/src/explorer/raycast.ts	7
 hasClippedPortals	function	apps/web/src/explorer/raycast.ts	8
-portalPassable	function	apps/web/src/explorer/raycast.ts	9
+portalWallNormal	function	apps/web/src/explorer/raycast.ts	9
+portalPassable	function	apps/web/src/explorer/raycast.ts	10
 castTargets	function	apps/web/src/explorer/raycast.ts	24
 ExplorerTargets	interface	apps/web/src/explorer/raycast.ts	61
 explorerTargets	function	apps/web/src/explorer/raycast.ts	74
