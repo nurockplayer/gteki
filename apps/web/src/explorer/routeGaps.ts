@@ -20,8 +20,8 @@ export function unmodelledRuns(points: readonly (V3 & { sceneGap?: boolean })[],
     const n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / STEP_M));
     for (let k = 1; k <= n; k++) {
       samples.push({ x: a.x + (b.x - a.x) * k / n, y: a.y + (b.y - a.y) * k / n, z: a.z + (b.z - a.z) * k / n });
-      // The segment's own end stays forced while the edge goes on (its next vertex is flagged too).
-      forced.push(b.sceneGap === true && (k < n || points[i + 1]?.sceneGap === true));
+      // Every sample of a flagged segment, its end included, so even a sub-step edge is covered.
+      forced.push(b.sceneGap === true);
     }
   }
   const bare = samples.map((s, i) => forced[i]! || !hasFloor(s));
