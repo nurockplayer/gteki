@@ -268,12 +268,14 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
   const requested = (process.env.GTEKI_VANTAGE_NODES ? process.env.GTEKI_VANTAGE_NODES.split(",") : allDefaults).map((s) => s.trim()).filter(Boolean);
   // first wins: a bare id keeps its original group (w_c stays rail) even though it is also a spawn
   const defaultGroup = new Map<string, string>();
-  for (const [g, n] of allDefaults.map((s) => s.split(":") as [string, string])) if (!defaultGroup.has(n)) defaultGroup.set(n, g);
+  for (const [g, n] of allDefaults.map((s) => [s.slice(0, s.indexOf(":")), s.slice(s.indexOf(":") + 1)])) if (!defaultGroup.has(n)) defaultGroup.set(n, g);
   const spots: { group: string; node: string }[] = [];
   const dropped: string[] = [];
   const notInGroups: string[] = [];
   for (const item of requested) {
-    const [g, n] = item.includes(":") ? (item.split(":") as [string, string]) : [undefined, item];
+    // Shinjuku ids carry an "n:" prefix, so a whole item that is a node id wins; otherwise split at the first colon
+    const cut = byId.has(item) ? -1 : item.indexOf(":");
+    const [g, n] = cut < 0 ? [undefined, item] : [item.slice(0, cut), item.slice(cut + 1)];
     const node = byId.get(n!);
     if (!node) { dropped.push(n!); continue; }
     const group = g ?? defaultGroup.get(n!) ?? (node.kind === "ticket_gate" ? "gate" : node.kind === "exit" ? "exit" : "node");
