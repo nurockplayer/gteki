@@ -233,7 +233,7 @@ async function main() {
     if (pathDiagnostics.straightLimit) connectivity = "query_limit";
     const graph=routePolyline(bundle,{...route,nodeIds:[step.fromNodeId,step.toNodeId],steps:[step]});
     const edge=edges.get(step.edgeId);
-    const gaps=missing && connectivity==="disconnected" && edge ? diagnoseGaps(query,probe,graph,dataWidth(edge),provenance.effectiveClimbM ?? provenance.climbM ?? 0.3) : [];
+    const gaps=missing && connectivity==="disconnected" && edge ? diagnoseGaps(query,probe,graph,dataWidth(edge),provenance.effectiveClimbM ?? provenance.climbM ?? 0.3,{radius:provenance.radiusM ?? 0.3,cell:provenance.cellSizeM ?? 0.1}) : [];
     const entry: Entry = { points, missing, reason, stairLink, connector:!!points?.some(p=>p.connector), fallbackUsed:[...fallbackUsed], corridor, gapM: distance(from, to), gapWidthM: missing && !stairLink ? crossSectionWidth(route,step) : null, step, fromSnapped: !!snap(step.fromNodeId), toSnapped: !!snap(step.toNodeId), connectivity, partialEndDistanceM, gaps, graph, pathRejection };
     cache.set(key, entry); return entry;
   };
@@ -416,8 +416,9 @@ async function main() {
   const connectedNoPath = failed.filter(e => e.connectivity === "connected" && e.reason === "no_path");
   const partialDistances = failed.flatMap(e => e.partialEndDistanceM === null ? [] : [e.partialEndDistanceM]);
   const queryDiagnosis = { connectedNoPath: connectedNoPath.length, missingLink: connectedNoPath.filter(e => e.pathRejection === "missing_link").length, wrongLink: connectedNoPath.filter(e => e.pathRejection === "wrong_link").length, unexpectedLink: connectedNoPath.filter(e => e.pathRejection === "unexpected_link").length, reconstruction: connectedNoPath.filter(e => e.pathRejection === "reconstruction").length, other: connectedNoPath.filter(e => e.pathRejection === null).length, partialEndDistanceM:distribution(partialDistances) };
-  const gapClasses:Record<string,number> = {narrow:0,scene_obstruction:0,step:0,missing_floor:0,other:0};
+  const gapClasses:Record<string,number> = {narrow:0,scene_obstruction:0,step:0,missing_floor:0,low_ceiling:0,steep:0,erosion:0,thin_floor:0,other:0,unclassified_disconnect:0};
   const blockingColliderKinds:Record<string,number>={};
+  for (const e of failed) if (e.connectivity==="disconnected" && !e.gaps.length) gapClasses.unclassified_disconnect!++;
   for (const e of failed) for (const gap of e.gaps) { gapClasses[gap.class]!++; if (gap.class==="scene_obstruction") for (const kind of gap.colliderKinds) blockingColliderKinds[kind]=(blockingColliderKinds[kind] ?? 0)+1; }
   const failureClasses: Record<string, number> = {};
   for (const e of failures) {

@@ -261,6 +261,14 @@ Public Ikebukuro and Shinjuku each report zero gaps in every class (narrow, scen
 
 `--bridge-gaps`, ramp and collider-exemption generation, a second bake, and bridge recovery measurements remain **unimplemented**. The present diagnostic does not establish collision-safe bridging. Oracle advice identified centerline-only clearance, stacked floors and broad collider cuts as concrete bridge risks; those need fixtures and validation. Oracle review submission failed with exit 5 at `2026-10-30 03:23 JST`; the review did not run and its run directory is `/Users/tachikoma/.local/state/oracle-ego/runs/20261030-032253-9677-review/`.
 
+## Floor-drop diagnostics, 2026-10-30 03:32 JST
+
+The `other` gap classification now checks sampled floor-to-ceiling rays, world-space floor triangle slope, the existing sampled scene-clearance estimate against radius and cell size, and the hit triangle's minimum altitude. These estimates report `low_ceiling`, `steep`, `erosion` and `thin_floor` respectively, in that order after the existing obstruction, step and missing-floor checks. Instanced floor meshes are not measured for triangle slope or width; an absent measurement stays unknown. The thin-floor heuristic also probes nearby floor support to avoid labeling a finely tessellated wide floor as thin; it remains a sampled estimate. Scene clearance is not navmesh clearance. These classes need further validation before using them to authorize changes to the baked geometry.
+
+On public data at 0.10 m cells, 0.30 m radius and 0.40 m climb, both Ikebukuro and Shinjuku reported zero disconnected non-vertical gaps in all four new classes , `other`, and `unclassified_disconnect`. Ikebukuro had 0/1,054 incomplete routes; Shinjuku had 72/238 and five unique failed edges. These runs do not exercise real station gaps. Synthetic floor, low-ceiling, steep, narrow-clearance and thin-triangle cases exercise the classifier.
+
+`--bridge-gaps`, ceiling or collider exemptions, second-bake recovery measurements, and the link-end floor-strip repair remain unimplemented. No private build was run. Oracle reviewed the diagnostics and identified tessellation, connectivity coverage, mixed-floor runs, stacked floors and scene-clearance ambiguity as risks. Nearby floor-support probes and a separate unclassified-disconnect count were added after review; these fixes were not independently re-reviewed.
+
 ## Integration sketch
 
 - Guide: `apps/web/src/ui/app.ts` creates `routePolyline` and passes it to `Explorer.startGuide`; `Explorer.stepGuide` follows it. Supply per-edge navmesh geometry while preserving step-to-point spans, instructions, floor and lift semantics. Risk: a partial or disconnected path must stop guidance, and snapping can select the wrong floor.

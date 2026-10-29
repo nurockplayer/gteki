@@ -12,6 +12,12 @@ describe("gap diagnosis and fallback clips",()=>{
     expect(gapClass(0.8,0.59,0,0.4,false)).toBe("scene_obstruction");
     expect(gapClass(1,null,0.41,0.4,false)).toBe("step");
     expect(gapClass(1,null,0,0.4,true)).toBe("missing_floor");
+    const evidence={freeHeight:null,slope:null,triangleWidth:null,radius:0.3,cell:0.1};
+    expect(gapClass(1,null,0,0.4,false,{...evidence,freeHeight:1.69})).toBe("low_ceiling");
+    expect(gapClass(1,null,0,0.4,false,{...evidence,slope:40.1})).toBe("steep");
+    expect(gapClass(1,0.7,0,0.4,false,evidence)).toBe("erosion");
+    expect(gapClass(1,null,0,0.4,false,{...evidence,triangleWidth:0.19})).toBe("thin_floor");
+    expect(gapClass(1,null,0,0.4,false,evidence)).toBe("other");
   });
   it("samples disconnected navmesh gaps at no more than 0.25 m",()=>{
     const calls:number[]=[];
@@ -32,4 +38,49 @@ describe("gap diagnosis and fallback clips",()=>{
     expect(result.failed).toEqual(["blocked","off"]); expect(result.totals.wallHits).toBeGreaterThan(0); expect(result.totals.offFloor).toBeGreaterThan(0);
     expect(fallbackGate({fallback:result,unlisted:[],navmesh:{offFloor:0,noFloor:0,wallHits:0},incompleteRoutes:0}).ok).toBe(false);
   });
+});
+
+  it("detects a low ceiling over real floor triangles",()=>{
+    const floor=new THREE.Mesh(new THREE.PlaneGeometry(4,4).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial());
+    const ceiling=new THREE.Mesh(new THREE.BoxGeometry(4,0.1,4),new THREE.MeshBasicMaterial()); ceiling.position.y=1.5;
+    const root=new THREE.Group().add(floor,ceiling); root.updateMatrixWorld(true);
+    const probe=sceneProbe({root,walkable:[floor],colliders:[ceiling],walls:[]} as never);
+    const query={findClosestPoint:({x,y,z}:{x:number;y:number;z:number})=>({success:true,polyRef:0,point:{x,y,z}})};
+    const point=(x:number)=>({x,y:0,z:0,floorId:"f",zKnown:true,stepIndex:0});
+    const gaps=diagnoseGaps(query as never,probe,[point(-0.5),point(0.5)],2,0.4);
+    expect(gaps[0]!.class).toBe("low_ceiling");
+  });
+
+it("detects erosion-sized scene clearance on a supported floor",()=>{
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(4,4).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial());
+  const root=new THREE.Group().add(floor); root.updateMatrixWorld(true);
+  const walls=[-0.35,0.35].map(y=>({a:{x:-2,y},b:{x:2,y},zMin:0,zMax:2}));
+  const probe=sceneProbe({root,walkable:[floor],colliders:[],walls} as never);
+  const query={findClosestPoint:({x,y,z}:{x:number;y:number;z:number})=>({success:true,polyRef:0,point:{x,y,z}})};
+  const point=(x:number)=>({x,y:0,z:0,floorId:"f",zKnown:true,stepIndex:0});
+  expect(diagnoseGaps(query as never,probe,[point(-0.5),point(0.5)],2,0.4)[0]!.class).toBe("erosion");
+});
+
+it("measures steep and thin floor triangles",()=>{
+  const query={findClosestPoint:({x,y,z}:{x:number;y:number;z:number})=>({success:true,polyRef:0,point:{x,y,z}})};
+  const point=(x:number,z:number)=>({x,y:0,z,floorId:"f",zKnown:true,stepIndex:0});
+  const floor=(vertices:number[])=>{
+    const geo=new THREE.BufferGeometry(); geo.setAttribute("position",new THREE.Float32BufferAttribute(vertices,3));
+    const mesh=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));
+    const root=new THREE.Group().add(mesh); root.updateMatrixWorld(true);
+    return sceneProbe({root,walkable:[mesh],colliders:[],walls:[]} as never);
+  };
+  const steep=floor([-2,-2,-2, 0,0,2, 2,2,-2]);
+  expect(diagnoseGaps(query as never,steep,[point(-0.25,-0.25),point(0.25,0.25)],2,1)[0]!.class).toBe("steep");
+  const thin=floor([-1,0,-0.05, 0,0,0.05, 1,0,-0.05]);
+  expect(diagnoseGaps(query as never,thin,[point(-0.25,0),point(0.25,0)],2,0.4)[0]!.class).toBe("thin_floor");
+});
+
+it("does not call a finely tessellated wide floor thin",()=>{
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(4,4,40,40).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial());
+  const root=new THREE.Group().add(floor); root.updateMatrixWorld(true);
+  const probe=sceneProbe({root,walkable:[floor],colliders:[],walls:[]} as never);
+  const query={findClosestPoint:({x,y,z}:{x:number;y:number;z:number})=>({success:true,polyRef:0,point:{x,y,z}})};
+  const point=(x:number)=>({x,y:0,z:0,floorId:"f",zKnown:true,stepIndex:0});
+  expect(diagnoseGaps(query as never,probe,[point(-0.25),point(0.25)],2,0.4)[0]!.class).toBe("other");
 });
