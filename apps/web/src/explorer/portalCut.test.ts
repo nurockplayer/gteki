@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { describe, expect, it, vi } from "vitest";
 import { cutPortals, disposePortalCuts } from "./portalCut.ts";
-import { castAll, castCamera, castTargets } from "./raycast.ts";
+import { castAll, castCamera, castTargets, portalPassable } from "./raycast.ts";
 import { prepareRayTrees, raycastObject } from "./meshBvh.ts";
 
 const opening = { center: new THREE.Vector3(), along: new THREE.Vector3(0, 0, 1), across: new THREE.Vector3(1, 0, 0), width: 2, depth: 0.6, height: 2 };
@@ -42,7 +42,13 @@ describe("portal cuts", () => {
     a.position.y = 1.5; b.position.set(10, 1.5, 0); root.add(a, b);
     const owned = resources(); const result = cutPortals(root, [opening], owned);
     expect(result.clipped).toBe(1); expect(a.geometry).toBe(geometry); expect(a.material).not.toBe(material);
-    expect((a.material as THREE.Material).clippingPlanes).toHaveLength(6);
+    const clippingPlanes = (a.material as THREE.Material).clippingPlanes!;
+    expect(clippingPlanes).toHaveLength(6);
+    const discarded = (p: THREE.Vector3) => clippingPlanes.every(plane => plane.distanceToPoint(p) < 0);
+    // A floor triangle inside the opening remains, while a point just above it is clipped.
+    for (const p of [new THREE.Vector3(-0.4, 0, -0.1), new THREE.Vector3(0.4, 0, -0.1), new THREE.Vector3(0, 0, 0.1)]) expect(discarded(p)).toBe(false);
+    expect(discarded(new THREE.Vector3(0, 0.06, 0))).toBe(true);
+    expect(discarded(new THREE.Vector3(0, opening.height + 0.01, 0))).toBe(false);
     const disposed = vi.fn(); owned.materials[0]!.addEventListener("dispose", disposed); owned.materials.forEach(m => m.dispose()); expect(disposed).toHaveBeenCalledOnce();
   });
   it("cuts large shared geometry on the CPU for multiple openings", () => {
@@ -60,16 +66,23 @@ describe("portal cuts", () => {
     const root = new THREE.Group(), geometry = new THREE.BoxGeometry(6, 3, 0.2);
     const mesh = new THREE.InstancedMesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }), 2);
     const first = new THREE.Matrix4().makeTranslation(0, 1.5, 0), second = new THREE.Matrix4().makeTranslation(10, 1.5, 0);
-    mesh.setMatrixAt(0, first); mesh.setMatrixAt(1, second); root.add(mesh);
+    mesh.setMatrixAt(0, first); mesh.setMatrixAt(1, second);
+    const source = mesh.material as THREE.MeshBasicMaterial;
+    source.color.setRGB(0.8, 0.6, 0.4); mesh.setColorAt(0, new THREE.Color(0.5, 0.25, 1));
+    mesh.setColorAt(1, new THREE.Color(1, 1, 1)); root.add(mesh);
     const owned = resources(); const result = cutPortals(root, [opening], owned);
     expect(result.cutMeshes).toBe(1); expect(owned.instances).toHaveLength(1);
     const copy = owned.instances[0]!.copy, current = new THREE.Matrix4();
+    const tinted = copy.material as THREE.MeshBasicMaterial;
+    expect(tinted).not.toBe(source); expect(tinted.color.r).toBeCloseTo(0.4); expect(tinted.color.g).toBeCloseTo(0.15); expect(tinted.color.b).toBeCloseTo(0.4);
+    expect(source.color.r).toBeCloseTo(0.8);
+    const disposed = vi.fn(); tinted.addEventListener("dispose", disposed);
     mesh.getMatrixAt(0, current); expect(current.determinant()).toBe(0);
     mesh.getMatrixAt(1, current); expect(current.equals(second)).toBe(true);
     prepareRayTrees(castTargets([mesh]));
     expect(castCamera(new THREE.Raycaster(new THREE.Vector3(0, 1, 3), new THREE.Vector3(0, 0, -1)), castTargets([mesh]), new Set(castTargets([mesh])))).toHaveLength(0);
     expect(ray(copy, 2, 1).length).toBeGreaterThan(0);
-    disposePortalCuts(owned); mesh.getMatrixAt(0, current); expect(current.equals(first)).toBe(true);
+    disposePortalCuts(owned); expect(disposed).toHaveBeenCalledOnce(); mesh.getMatrixAt(0, current); expect(current.equals(first)).toBe(true);
     mesh.getMatrixAt(1, current); expect(current.equals(second)).toBe(true); expect(mesh.children).not.toContain(copy);
   });
   it("filters clipped mesh hits for camera and shared casts", () => {
@@ -81,6 +94,12 @@ describe("portal cuts", () => {
     const shoot = (x: number) => new THREE.Raycaster(new THREE.Vector3(x, 1, 3), new THREE.Vector3(0, 0, -1));
     expect(castCamera(shoot(0), [a], new Set([a]))).toHaveLength(0);
     expect(castAll(shoot(0), [a])).toHaveLength(0);
+    const wallHit = ray(a, 0, 1)[0]!;
+    expect(portalPassable(wallHit)).toBe(true);
+    const floorHit = { ...wallHit, face: { ...wallHit.face!, normal: new THREE.Vector3(0, 1, 0) } };
+    expect(portalPassable(floorHit)).toBe(false);
+    const ceilingHit = { ...wallHit, face: { ...wallHit.face!, normal: new THREE.Vector3(0, -1, 0) } };
+    expect(portalPassable(ceilingHit)).toBe(false);
     expect(castCamera(shoot(2), [a], new Set([a])).length).toBeGreaterThan(0);
     disposePortalCuts(owned); expect(castAll(shoot(0), [a]).length).toBeGreaterThan(0);
   });

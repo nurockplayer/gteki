@@ -82,7 +82,18 @@ export function cutPortals(root: THREE.Object3D, openings: readonly Box[], opts:
         world.multiplyMatrices(instance.matrixWorld, matrix);
         const instanceBounds = geometry.boundingBox.clone().applyMatrix4(world);
         if (!relevant.some(box => instanceBounds.intersectsBox(openingBounds.get(box)!))) continue;
-        const copy = new THREE.Mesh(geometry, instance.material);
+        let material = instance.material;
+        if (instance.instanceColor) {
+          const tint = new THREE.Color(); instance.getColorAt(i, tint);
+          const tinted = (source: THREE.Material) => {
+            const clone = source.clone();
+            const colored = clone as THREE.Material & { color?: THREE.Color };
+            colored.color?.multiply(tint);
+            opts.materials.push(clone); return clone;
+          };
+          material = Array.isArray(material) ? material.map(tinted) : tinted(material);
+        }
+        const copy = new THREE.Mesh(geometry, material);
         copy.name = instance.name; copy.matrixAutoUpdate = false; copy.matrix.copy(matrix);
         copy.userData = { ...instance.userData, portalInstanceCopy: true };
         copy.castShadow = instance.castShadow; copy.receiveShadow = instance.receiveShadow; copy.layers.mask = instance.layers.mask;
@@ -102,7 +113,7 @@ export function cutPortals(root: THREE.Object3D, openings: readonly Box[], opts:
     if (largeShared && relevant.length === 1 && !mesh.userData.portalInstanceCopy) {
       const box = relevant[0]!;
       const normals = [box.across.clone().negate(), box.across.clone(), new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, 1, 0), box.along.clone().negate(), box.along.clone()];
-      const points = [box.center.clone().addScaledVector(box.across, -box.width / 2), box.center.clone().addScaledVector(box.across, box.width / 2), box.center, box.center.clone().add(new THREE.Vector3(0, box.height, 0)), box.center.clone().addScaledVector(box.along, -box.depth / 2), box.center.clone().addScaledVector(box.along, box.depth / 2)];
+      const points = [box.center.clone().addScaledVector(box.across, -box.width / 2), box.center.clone().addScaledVector(box.across, box.width / 2), box.center.clone().add(new THREE.Vector3(0, 0.05, 0)), box.center.clone().add(new THREE.Vector3(0, box.height, 0)), box.center.clone().addScaledVector(box.along, -box.depth / 2), box.center.clone().addScaledVector(box.along, box.depth / 2)];
       const clips = normals.map((n, i) => new THREE.Plane().setFromNormalAndCoplanarPoint(n, points[i]!));
       const clone = (m: THREE.Material) => { const c = m.clone(); c.clippingPlanes = clips; c.clipIntersection = true; opts.materials.push(c); return c; };
       opts.originals.set(mesh, { geometry: mesh.geometry, material: mesh.material });

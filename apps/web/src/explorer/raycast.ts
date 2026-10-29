@@ -6,7 +6,12 @@ const clippedPortals = new WeakMap<THREE.Object3D, readonly Box[]>();
 export function setClippedPortals(mesh: THREE.Object3D, boxes: readonly Box[]): void { clippedPortals.set(mesh, boxes); }
 export function clearClippedPortals(mesh: THREE.Object3D): void { clippedPortals.delete(mesh); }
 export function hasClippedPortals(mesh: THREE.Object3D): boolean { return clippedPortals.has(mesh); }
-export function portalPassable(hit: THREE.Intersection): boolean { return clippedPortals.get(hit.object)?.some(box => hit.point.y >= box.center.y && hit.point.y <= box.center.y + box.height && Math.abs(hit.point.clone().sub(box.center).dot(box.across)) <= box.width / 2 && Math.abs(hit.point.clone().sub(box.center).dot(box.along)) <= box.depth / 2) ?? false; }
+export function portalPassable(hit: THREE.Intersection): boolean {
+  if (!hit.face) return false;
+  const normal = hit.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(hit.object.matrixWorld)).normalize();
+  if (Math.abs(normal.y) > 0.5) return false;
+  return clippedPortals.get(hit.object)?.some(box => hit.point.y >= box.center.y && hit.point.y <= box.center.y + box.height && Math.abs(hit.point.clone().sub(box.center).dot(box.across)) <= box.width / 2 && Math.abs(hit.point.clone().sub(box.center).dot(box.along)) <= box.depth / 2) ?? false;
+}
 
 /**
  * The meshes a list of scene objects stands for when ray-tested. A scene's `walkable` / `colliders` are
