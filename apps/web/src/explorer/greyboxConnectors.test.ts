@@ -223,6 +223,29 @@ it("keeps the L-shaped stair path clear and guards the two outside landing edges
   }
 });
 
+it("keeps diagonal turning landings clear while preserving outer guards", () => {
+  for (const degrees of [45, 135]) for (const direction of [-1, 1]) {
+    const angle = degrees * Math.PI / 180, endX = 4 + 4 * Math.cos(angle), endY = direction * 4 * Math.sin(angle);
+    const station = createSyntheticBundle([syntheticEdge("bent", "start", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: [{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: endX, y: endY, z: 4 }] })]);
+    station.nodes.find((n) => n.id === "upper")!.position = { x: endX, y: endY, z: 4 };
+    const result = buildConnectors(station, () => true, { hasFloor: () => true, nearMesh: () => false }, "high");
+    const path = result.pathByEdge.get("bent")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
+    for (let s = 0; s <= total; s += 0.05) {
+      const p = samplePolyline(path, cumulative, s), resolved = resolveWalls(p.x, p.z, 0.3, p.y, 1.7, result.wallSegments);
+      expect(Math.hypot(resolved.x - p.x, resolved.z - p.z), `${degrees}° direction=${direction} s=${s}`).toBeLessThanOrEqual(0.05);
+    }
+    const guards = result.wallSegments.filter((w) => Math.abs(w.yMin - 1.88) < 1e-6 && Math.abs(w.yMax - 2.96) < 1e-6 && Math.hypot(w.bx - w.ax, w.bz - w.az) > 0.05);
+    expect(guards.length, `${degrees}° direction=${direction}`).toBeGreaterThan(0);
+    for (const w of guards) {
+      const x = (w.ax + w.bx) / 2, z = (w.az + w.bz) / 2, resolved = resolveWalls(x, z, 0.3, 2, 1.7, [w]);
+      expect(Math.hypot(resolved.x - x, resolved.z - z)).toBeGreaterThan(0.29);
+      const dx = w.bx - w.ax, dz = w.bz - w.az, normal = new THREE.Vector3(-dz, 0, dx).normalize();
+      const ray = new THREE.Raycaster(new THREE.Vector3(x, 2.4, z).addScaledVector(normal, 0.1), normal.negate(), 0, 0.2);
+      expect(ray.intersectObjects(result.colliders).length).toBeGreaterThan(0);
+    }
+  }
+});
+
 it("marks a bent escalator approximate once per edge", () => {
   const station = createSyntheticBundle([syntheticEdge("bent", "start", "upper", { mode: "escalator", attributes: { sceneGap: true }, geometry: [{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: 4, y: 4, z: 4 }] })]);
   station.nodes.find((n) => n.id === "upper")!.position = { x: 4, y: 4, z: 4 };

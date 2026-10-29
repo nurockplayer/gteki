@@ -215,6 +215,28 @@ function meshFor(parts: readonly ConnectorPart[], material: THREE.Material | THR
   return mesh;
 }
 
+/** Remove the part of a landing side inside a flight's approach corridor. */
+function clipLandingSide(a: THREE.Vector3, b: THREE.Vector3, origin: THREE.Vector3, direction: THREE.Vector3, clearance: number): [THREE.Vector3, THREE.Vector3][] {
+  const distance = (t: number) => {
+    const p = a.clone().lerp(b, t).sub(origin), along = Math.max(0, p.dot(direction));
+    return p.addScaledVector(direction, -along).length();
+  };
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 60; i++) { const x = (2 * lo + hi) / 3, y = (lo + 2 * hi) / 3; if (distance(x) < distance(y)) hi = y; else lo = x; }
+  const middle = (lo + hi) / 2;
+  if (distance(middle) >= clearance - 1e-9) return [[a, b]];
+  let left = 0, right = middle;
+  if (distance(0) >= clearance) for (let i = 0; i < 50; i++) { const m = (left + right) / 2; if (distance(m) >= clearance) left = m; else right = m; }
+  else left = 0;
+  let start = middle, end = 1;
+  if (distance(1) >= clearance) for (let i = 0; i < 50; i++) { const m = (start + end) / 2; if (distance(m) < clearance) start = m; else end = m; }
+  else end = 1;
+  const segments: [THREE.Vector3, THREE.Vector3][] = [];
+  if (left > 1e-8) segments.push([a.clone(), a.clone().lerp(b, left)]);
+  if (end < 1 - 1e-8) segments.push([a.clone().lerp(b, end), b.clone()]);
+  return segments;
+}
+
 /** Build runtime-only batches for missing vertical transport. */
 export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge) => boolean, scope: ConnectorScope, tier: "high" | "low") {
   const root = new THREE.Group(), walkable: THREE.Object3D[] = [], colliders: THREE.Object3D[] = [];
@@ -257,18 +279,34 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
           const a = points[index]!.clone().sub(points[index - 1]!), b = points[index + 1]!.clone().sub(points[index]!); a.y = 0; b.y = 0;
           return a.lengthSq() > 1e-12 && b.lengthSq() > 1e-12 && a.angleTo(b) > 1e-6;
         };
-        const begin = isTurn(i - 1) ? Math.min(width / 2, horizontal / 2) : 0;
+        let begin = 0;
+        if (isTurn(i - 1)) {
+          const prior = points[i - 1]!.clone().sub(points[i - 2]!); prior.y = 0; prior.normalize();
+          const next = new THREE.Vector3(dx / horizontal, 0, dz / horizontal), normal = new THREE.Vector3(-prior.z, 0, prior.x);
+          begin = Math.min((width / 2) / Math.max(Math.abs(next.dot(prior)), Math.abs(next.dot(normal))), horizontal / 2);
+        }
         const end = horizontal - (isTurn(i) ? Math.min(width / 2, horizontal / 2) : 0);
         const n = Math.max(1, Math.ceil((end - begin) / 0.5));
         for (const side of [-1, 1]) for (let k = 0; k < n && end > begin; k++) {
           const t = (begin + (end - begin) * k / n) / horizontal, u = (begin + (end - begin) * (k + 1) / n) / horizontal;
           const ox = -dz / horizontal * half * side, oz = dx / horizontal * half * side;
           const ya = THREE.MathUtils.lerp(from.y, to.y, t), yb = THREE.MathUtils.lerp(from.y, to.y, u);
-          const wall = { ax: THREE.MathUtils.lerp(from.x, to.x, t) + ox, az: THREE.MathUtils.lerp(from.z, to.z, t) + oz, bx: THREE.MathUtils.lerp(from.x, to.x, u) + ox, bz: THREE.MathUtils.lerp(from.z, to.z, u) + oz, yMin: Math.min(ya, yb) - 0.12, yMax: Math.max(ya, yb) + 0.96 };
-          wallSegments.push(wall);
-          if (edge.mode === "stairs") {
-            const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(wall.bz - wall.az), wall.bx - wall.ax)).setPosition((wall.ax + wall.bx) / 2, (wall.yMin + wall.yMax) / 2, (wall.az + wall.bz) / 2);
-            box(parts, "steel", transform, 0, 0, 0, Math.hypot(wall.bx - wall.ax, wall.bz - wall.az), wall.yMax - wall.yMin, 0.04, "collider"); parts.at(-1)!.walkableOnly = true;
+          const a = new THREE.Vector3(THREE.MathUtils.lerp(from.x, to.x, t) + ox, 0, THREE.MathUtils.lerp(from.z, to.z, t) + oz);
+          const b = new THREE.Vector3(THREE.MathUtils.lerp(from.x, to.x, u) + ox, 0, THREE.MathUtils.lerp(from.z, to.z, u) + oz);
+          let pieces: [THREE.Vector3, THREE.Vector3][] = [[a, b]];
+          for (const index of [i - 1, i]) if (isTurn(index)) {
+            const corner = points[index]!, other = index === i ? points[index + 1]!.clone().sub(corner) : points[index - 1]!.clone().sub(corner);
+            other.y = 0; other.normalize();
+            const origin = new THREE.Vector3(corner.x, 0, corner.z);
+            pieces = pieces.flatMap(([start, end]) => clipLandingSide(start, end, origin, other, 0.34));
+          }
+          for (const [start, finish] of pieces) {
+            const wall = { ax: start.x, az: start.z, bx: finish.x, bz: finish.z, yMin: Math.min(ya, yb) - 0.12, yMax: Math.max(ya, yb) + 0.96 };
+            wallSegments.push(wall);
+            if (edge.mode === "stairs") {
+              const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(wall.bz - wall.az), wall.bx - wall.ax)).setPosition((wall.ax + wall.bx) / 2, (wall.yMin + wall.yMax) / 2, (wall.az + wall.bz) / 2);
+              box(parts, "steel", transform, 0, 0, 0, Math.hypot(wall.bx - wall.ax, wall.bz - wall.az), wall.yMax - wall.yMin, 0.04, "collider"); parts.at(-1)!.walkableOnly = true;
+            }
           }
         }
       }
@@ -297,18 +335,21 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         box(parts, edge.mode === "stairs" ? "tread" : "escStep", rotation, 0, -0.04, 0, edge.mode === "stairs" ? width : 1.2, 0.08, edge.mode === "stairs" ? width : 1.2, "walkable");
         if (edge.mode === "stairs") {
           const d = incoming.normalize(), n = new THREE.Vector3(-d.z, 0, d.x), out = outgoing.normalize(), half = width / 2 + 0.03;
-          // The incoming side and the side reached by the outgoing flight stay open.
-          const along = out.dot(d), across = out.dot(n);
-          const exitSide = Math.abs(along) >= Math.abs(across) ? (along >= 0 ? 1 : 0) : (across >= 0 ? 3 : 2);
           const corners = [at.clone().addScaledVector(d, -half).addScaledVector(n, -half), at.clone().addScaledVector(d, half).addScaledVector(n, -half), at.clone().addScaledVector(d, half).addScaledVector(n, half), at.clone().addScaledVector(d, -half).addScaledVector(n, half)];
           const sides = [[corners[3]!, corners[0]!], [corners[1]!, corners[2]!], [corners[0]!, corners[1]!], [corners[2]!, corners[3]!]] as const;
-          for (let side = 1; side < sides.length; side++) {
-            if (side === exitSide) continue;
-            const [a, b] = sides[side]!;
-            const wall = { ax: a.x, az: a.z, bx: b.x, bz: b.z, yMin: at.y - 0.12, yMax: at.y + 0.96 }; wallSegments.push(wall);
-            const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(b.z - a.z), b.x - a.x)).setPosition((a.x + b.x) / 2, at.y, (a.z + b.z) / 2);
-            box(parts, "steel", transform, 0, 0.96, 0, width + 0.06, 0.052, 0.052);
-            box(parts, "steel", transform, 0, 0.42, 0, width + 0.06, 1.08, 0.04, "collider"); parts.at(-1)!.walkableOnly = true;
+          const entry = at.clone().addScaledVector(d, -half);
+          const exit = at.clone().addScaledVector(out, half / Math.max(Math.abs(out.dot(d)), Math.abs(out.dot(n))));
+          const clearance = width / 2 + 0.1;
+          for (const [a, b] of sides) {
+            const afterEntry = clipLandingSide(a, b, entry, d.clone().negate(), clearance);
+            const pieces = afterEntry.flatMap(([start, end]) => clipLandingSide(start, end, exit, out, clearance));
+            for (const [start, end] of pieces) {
+              const length = start.distanceTo(end); if (length < 1e-6) continue;
+              const wall = { ax: start.x, az: start.z, bx: end.x, bz: end.z, yMin: at.y - 0.12, yMax: at.y + 0.96 }; wallSegments.push(wall);
+              const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(end.z - start.z), end.x - start.x)).setPosition((start.x + end.x) / 2, at.y, (start.z + end.z) / 2);
+              box(parts, "steel", transform, 0, 0.96, 0, length, 0.052, 0.052);
+              box(parts, "steel", transform, 0, 0.42, 0, length, 1.08, 0.04, "collider"); parts.at(-1)!.walkableOnly = true;
+            }
           }
         }
       }
