@@ -1,5 +1,12 @@
 import * as THREE from "three";
 import { raycastObject } from "./meshBvh.ts";
+import type { Box } from "./greybox.ts";
+
+const clippedPortals = new WeakMap<THREE.Object3D, readonly Box[]>();
+export function setClippedPortals(mesh: THREE.Object3D, boxes: readonly Box[]): void { clippedPortals.set(mesh, boxes); }
+export function clearClippedPortals(mesh: THREE.Object3D): void { clippedPortals.delete(mesh); }
+export function hasClippedPortals(mesh: THREE.Object3D): boolean { return clippedPortals.has(mesh); }
+export function portalPassable(hit: THREE.Intersection): boolean { return clippedPortals.get(hit.object)?.some(box => hit.point.y >= box.center.y && hit.point.y <= box.center.y + box.height && Math.abs(hit.point.clone().sub(box.center).dot(box.across)) <= box.width / 2 && Math.abs(hit.point.clone().sub(box.center).dot(box.along)) <= box.depth / 2) ?? false; }
 
 /**
  * The meshes a list of scene objects stands for when ray-tested. A scene's `walkable` / `colliders` are
@@ -21,8 +28,10 @@ export function castTargets(objects: readonly THREE.Object3D[], filedElsewhere: 
   for (const o of objects) {
     // A listed mesh may be part of a helper (an ArrowHelper's cone that a GLB role pass picked up).
     if (insideHelper(o)) continue;
-    if ((o as THREE.Mesh).isMesh) out.add(o);
-    else visit(o);
+    if ((o as THREE.Mesh).isMesh) {
+      out.add(o);
+      for (const child of o.children) if (child.userData.portalInstanceCopy) out.add(child);
+    } else visit(o);
   }
   return [...out];
 }
@@ -75,7 +84,7 @@ export function explorerTargets(walkable: readonly THREE.Object3D[], colliders: 
 export function castAll(ray: THREE.Raycaster, targets: readonly THREE.Object3D[]): THREE.Intersection[] {
   const hits: THREE.Intersection[] = [];
   for (const object of targets) if (object.layers.test(ray.layers)) raycastObject(object, ray, hits);
-  return hits.sort((a, b) => a.distance - b.distance);
+  return hits.filter(hit => !portalPassable(hit)).sort((a, b) => a.distance - b.distance);
 }
 
 const TWO_SIDED = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });

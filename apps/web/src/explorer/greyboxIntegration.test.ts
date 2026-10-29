@@ -24,7 +24,7 @@ function fixture() {
     loadGeneration: 0, disposed: false, mode: "walk", quality: "high", stationCaches: { remember: vi.fn() },
     releaseStationCaches: vi.fn(), clearStation: vi.fn(), ensureAudio: () => false,
     buildStationScene: async () => scene, overviewLook: { set: vi.fn() }, street: { restore: vi.fn(), attach: vi.fn() },
-    portalCutResources: { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map() }, portalExemptions: 0, renderer: {},
+    portalCutResources: { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] }, portalExemptions: 0, renderer: {},
     scene: new THREE.Scene(), world: new THREE.Group(), overlays: new THREE.Group(), routeGroup: new THREE.Group(), sceneColliderTargets: new Set(),
     applyLighting: vi.fn(), cameraCut: { apply: () => [] }, attachShadows: vi.fn(), buildOccluders: vi.fn(),
     setupComposer: vi.fn(), frameAll: vi.fn(), events: {}, ray: new THREE.Raycaster(),

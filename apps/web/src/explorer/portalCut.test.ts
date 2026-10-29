@@ -1,10 +1,11 @@
 import * as THREE from "three";
 import { describe, expect, it, vi } from "vitest";
-import { cutPortals } from "./portalCut.ts";
+import { cutPortals, disposePortalCuts } from "./portalCut.ts";
+import { castAll, castCamera, castTargets } from "./raycast.ts";
 import { prepareRayTrees, raycastObject } from "./meshBvh.ts";
 
 const opening = { center: new THREE.Vector3(), along: new THREE.Vector3(0, 0, 1), across: new THREE.Vector3(1, 0, 0), width: 2, depth: 0.6, height: 2 };
-const resources = () => ({ geometries: [] as THREE.BufferGeometry[], materials: [] as THREE.Material[], portalMeshes: new Map<typeof opening, THREE.Mesh[]>(), originals: new Map<THREE.Mesh, { geometry: THREE.BufferGeometry; material: THREE.Material | THREE.Material[] }>() });
+const resources = () => ({ geometries: [] as THREE.BufferGeometry[], materials: [] as THREE.Material[], portalMeshes: new Map<typeof opening, THREE.Mesh[]>(), originals: new Map<THREE.Mesh, { geometry: THREE.BufferGeometry; material: THREE.Material | THREE.Material[] }>(), clippedMeshes: [] as THREE.Mesh[], instances: [] as { owner: THREE.InstancedMesh; index: number; matrix: THREE.Matrix4; copy: THREE.Mesh }[] });
 const ray = (mesh: THREE.Mesh, x: number, y: number) => {
   const hits: THREE.Intersection[] = [];
   raycastObject(mesh, new THREE.Raycaster(new THREE.Vector3(x, y, 3), new THREE.Vector3(0, 0, -1)), hits);
@@ -55,8 +56,32 @@ describe("portal cuts", () => {
     expect(result.clipped).toBe(0); expect(a.geometry).not.toBe(geometry); expect(b.geometry).toBe(geometry);
     prepareRayTrees([a]); expect(ray(a, 0, 1)).toHaveLength(0); expect(ray(a, 2, 1)).toHaveLength(0);
   });
-  it("reports an instanced mesh as skipped", () => {
-    const root = new THREE.Group(), mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial(), 1);
-    root.add(mesh); expect(cutPortals(root, [opening], resources()).skipped[0]).toContain("InstancedMesh");
+  it("extracts and cuts intersecting instances, then restores them on disposal", () => {
+    const root = new THREE.Group(), geometry = new THREE.BoxGeometry(6, 3, 0.2);
+    const mesh = new THREE.InstancedMesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }), 2);
+    const first = new THREE.Matrix4().makeTranslation(0, 1.5, 0), second = new THREE.Matrix4().makeTranslation(10, 1.5, 0);
+    mesh.setMatrixAt(0, first); mesh.setMatrixAt(1, second); root.add(mesh);
+    const owned = resources(); const result = cutPortals(root, [opening], owned);
+    expect(result.cutMeshes).toBe(1); expect(owned.instances).toHaveLength(1);
+    const copy = owned.instances[0]!.copy, current = new THREE.Matrix4();
+    mesh.getMatrixAt(0, current); expect(current.determinant()).toBe(0);
+    mesh.getMatrixAt(1, current); expect(current.equals(second)).toBe(true);
+    prepareRayTrees(castTargets([mesh]));
+    expect(castCamera(new THREE.Raycaster(new THREE.Vector3(0, 1, 3), new THREE.Vector3(0, 0, -1)), castTargets([mesh]), new Set(castTargets([mesh])))).toHaveLength(0);
+    expect(ray(copy, 2, 1).length).toBeGreaterThan(0);
+    disposePortalCuts(owned); mesh.getMatrixAt(0, current); expect(current.equals(first)).toBe(true);
+    mesh.getMatrixAt(1, current); expect(current.equals(second)).toBe(true); expect(mesh.children).not.toContain(copy);
+  });
+  it("filters clipped mesh hits for camera and shared casts", () => {
+    const geometry = new THREE.PlaneGeometry(6, 3, 224, 224), root = new THREE.Group();
+    const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+    const a = new THREE.Mesh(geometry, material), b = new THREE.Mesh(geometry, material);
+    a.position.y = 1.5; b.position.set(10, 1.5, 0); root.add(a, b);
+    const owned = resources(); cutPortals(root, [opening], owned); prepareRayTrees([a]);
+    const shoot = (x: number) => new THREE.Raycaster(new THREE.Vector3(x, 1, 3), new THREE.Vector3(0, 0, -1));
+    expect(castCamera(shoot(0), [a], new Set([a]))).toHaveLength(0);
+    expect(castAll(shoot(0), [a])).toHaveLength(0);
+    expect(castCamera(shoot(2), [a], new Set([a])).length).toBeGreaterThan(0);
+    disposePortalCuts(owned); expect(castAll(shoot(0), [a]).length).toBeGreaterThan(0);
   });
 });

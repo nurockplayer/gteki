@@ -16,14 +16,14 @@ import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
 import { R, chevronTexture, dashTexture, ribbonGeometry } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
-import { cutPortals } from "./portalCut.ts";
+import { cutPortals, disposePortalCuts, type PortalCutResources } from "./portalCut.ts";
 import { buildGreybox, splitWallsAtOpenings, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
 import { greyboxPathSegments, greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
 import { darkSampleDistances, routeGroundCounts, sceneMeshNear } from "./routeGroundQa.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
-import { castAll, castCamera, cuttableSigns, explorerTargets } from "./raycast.ts";
+import { castAll, castCamera, cuttableSigns, explorerTargets, hasClippedPortals } from "./raycast.ts";
 import { DEFAULT_GUIDE_TIER, guideOnStairs, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx, qaPostFxSettings } from "./postfx.ts";
@@ -230,7 +230,7 @@ export class Explorer {
   private stationScene: StationScene | null = null;
   private greybox: ReturnType<typeof buildGreybox> | null = null;
   private greyboxOpenings: Box[] = [];
-  private portalCutResources = { geometries: [] as THREE.BufferGeometry[], materials: [] as THREE.Material[], portalMeshes: new Map<Box, THREE.Mesh[]>(), originals: new Map<THREE.Mesh, { geometry: THREE.BufferGeometry; material: THREE.Material | THREE.Material[] }>() };
+  private portalCutResources: PortalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
   private portalExemptions = 0;
   private portalCutStats: ReturnType<typeof cutPortals> | null = null;
   private sceneColliderTargets = new Set<THREE.Object3D>();
@@ -1020,10 +1020,8 @@ export class Explorer {
       for (const material of materials) material.dispose();
       this.greybox = null;
     }
-    for (const [mesh, original] of this.portalCutResources.originals) { mesh.geometry = original.geometry; mesh.material = original.material; }
-    for (const geometry of this.portalCutResources.geometries) geometry.dispose();
-    for (const material of this.portalCutResources.materials) material.dispose();
-    this.portalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map() };
+    disposePortalCuts(this.portalCutResources);
+    this.portalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
     this.portalCutStats = null;
     this.portalExemptions = 0;
     this.greyboxOpenings = [];
@@ -1882,6 +1880,17 @@ export class Explorer {
         const bvh = currentBvh(o.geometry);
         if (!bvh) continue;
         const parts = meshParts(o.mesh);
+        if (hasClippedPortals(o.mesh)) {
+          const raycaster = new THREE.Raycaster(from, ray.direction, 0, far);
+          const visibleHit = castAll(raycaster, [o.mesh]).some(hit => {
+            const part = parts.find(p => hit.faceIndex !== undefined && hit.faceIndex !== null && hit.faceIndex * 3 >= p.start && hit.faceIndex * 3 < p.start + p.count);
+            if (!part || (!proxy && !blocksView(part.material))) return false;
+            const spans = proxy || !this.cameraCut.cuts(part.material) ? whole : drawn;
+            return spans.some(([t0, t1]) => hit.distance >= t0 * far && hit.distance <= t1 * far);
+          });
+          if (visibleHit) return pass === 0 ? "geometry" : "sign";
+          continue;
+        }
         toLocal.copy(o.mesh.matrixWorld).invert();
         segmentIn(toLocal);
         if (!inst.isInstancedMesh) {
