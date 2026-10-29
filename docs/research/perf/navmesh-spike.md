@@ -286,6 +286,14 @@ The two gap measures have different scopes: the bake samples all traversable non
 
 Oracle's static review flagged physically narrow passages with wider declared graph widths, removal of upper-floor geometry, the original-scene collision mismatch, and unsafe link approaches. The first two follow the requested width rule and scene-triangle exemption; the original-scene hits remain visible above. Link approaches now reject wall crossings and slopes above 40° and do not cut openings. Those subsequent changes were tested but not independently re-reviewed. No private build was run.
 
+## Bridge safety stop
+
+2026-10-30 03:54 JST: The bridge CLI is disabled until cuts can retain collider and face identity, protect wall-tagged or wall-like geometry, and the audit can distinguish every exempt hit from every unexempt hit. Previously emitted bridge meshes must be regenerated after that repair. Non-bridge baking is unchanged.
+
+The requested class-by-class public measurements, affected-tile rebuild, pillar exemption and exempt-hit accounting remain unimplemented; no new public bridge measurements are claimed. The previous public results above remain historical, and must not be treated as a clip-free result.
+
+Oracle's static review of the safety stop found no blocking findings; it did not run tests. The audit guard was moved before reading artifacts after the review began.
+
 ## Integration sketch
 
 - Guide: `apps/web/src/ui/app.ts` creates `routePolyline` and passes it to `Explorer.startGuide`; `Explorer.stepGuide` follows it. Supply per-edge navmesh geometry while preserving step-to-point spans, instructions, floor and lift semantics. Risk: a partial or disconnected path must stop guidance, and snapping can select the wrong floor.

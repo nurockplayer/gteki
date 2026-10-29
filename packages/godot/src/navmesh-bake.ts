@@ -168,6 +168,9 @@ async function main() {
   if (!Number.isFinite(cellSizeM) || cellSizeM <= 0 || !Number.isFinite(climbM) || climbM < 0) throw new Error("cell size must be positive and climb must be non-negative");
   if (!Number.isInteger(tileSize) || tileSize < 1 || tileSize > 256) throw new Error("tile size must be an integer between 1 and 256");
   if (!out) throw new Error("use --station <station> --out <directory>");
+  // Bridge openings currently lose the identity of the source collider before
+  // subtraction. Refuse to emit a mesh that can silently pass through walls.
+  if (bridgeGaps) throw new Error("--bridge-gaps is disabled: collider-aware wall-safe exemptions are not implemented");
   const output = qaDirectory(out);
   const { bundle, privateBuild } = await navmeshBundle(station);
   const scene = await loadScene(station, bundle);

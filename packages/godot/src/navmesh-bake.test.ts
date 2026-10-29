@@ -2,6 +2,16 @@ import { describe, expect, it } from "vitest";
 import { NavMeshQuery } from "recast-navigation";
 import { bakeNavmesh, completePath } from "./navmesh-bake.ts";
 import { validateLinkSnap, verticalLinkCandidates } from "./navmesh-links.ts";
+import { spawnSync } from "node:child_process";
+
+it.each([
+  ["navmesh-bake.ts", "--station", "ikebukuro", "--out", ".qa/navmesh"],
+  ["navmesh-audit.ts", "--station", "ikebukuro", "--navmesh", ".qa/navmesh/ikebukuro.bin", "--json", ".qa/navmesh/audit.json"],
+])("rejects unsafe bridge mode in %s", (script, ...args) => {
+  const result = spawnSync("pnpm", ["tsx", `packages/godot/src/${script}`, ...args, "--bridge-gaps"], { encoding: "utf8" });
+  expect(result.status).not.toBe(0);
+  expect(result.stderr).toContain("--bridge-gaps is disabled: collider-aware wall-safe exemptions are not implemented");
+});
 
 // Two 4 m rooms divided by a wall. The doorway is 1.6 m wide when open.
 function rooms(door: boolean) {

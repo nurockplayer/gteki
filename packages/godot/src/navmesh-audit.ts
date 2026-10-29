@@ -92,6 +92,7 @@ async function main() {
   }
   if (gate && !fallbackList) throw new Error("--gate requires --fallback-list");
   if (!station || !navmeshFile || !json) throw new Error("use --station <station> --navmesh <file> --json <file>");
+  if (bridgeGaps) throw new Error("--bridge-gaps is disabled: collider-aware wall-safe exemptions are not implemented");
   const dest = qaFile(json);
   const loadStart = performance.now();
   const meshBytes = fs.readFileSync(navmeshFile);
