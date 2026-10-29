@@ -251,6 +251,16 @@ For completed routes, scene-height navmesh segments have 0 off-floor, 0 no-floor
 
 Oracle's static review raised snap-floor and wall validation, 3D join distance, and an absolute inter-edge join limit. The scene floor/wall snap validation was added and tested after review. The requested connector limit is explicitly in plan, so a 3D limit was not substituted. Inter-edge joins continue to use the existing scene checks and Detour path validation. Oracle did not rerun or re-review the later changes.
 
+## Gap and fallback diagnostics, 2026-10-30 03:24 JST
+
+This is partial diagnostic work. For failed non-vertical edges classified disconnected, the audit now samples the graph line at intervals no greater than 0.25 m with nearest-poly half extents 0.3 / 0.5 / 0.3 m. JSON records gap length, scene cross-section distances on both sides, floor-height jump, missing-floor samples and a tentative class. Width comes from `attributes.width.m` when present and otherwise `MODE_WIDTH`; the narrow class requires width below 0.8 m. Scene-clearance is a sampled proxy, **not a measurement of navmesh corridor width**, so obstruction and narrow classifications must not yet authorize a bridge or fallback automatically. A missing side remains unknown; the length brackets adjacent successful samples.
+
+Public Ikebukuro and Shinjuku each report zero gaps in every class (narrow, scene obstruction, step, missing floor and other). Neither has a disconnected non-vertical failed edge in this route set, so these zero counts do not test gap classification against a real station obstruction. Ikebukuro has 0/1,054 incomplete routes; Shinjuku has 72/238 and five unique failed edges, all vertical. No collider kinds were reported; when present, counts represent gaps containing each sampled collider-name prefix, not unique colliders.
+
+`--fallback-list` separately audits the graph polyline for each used failed edge on the list, including floor and wall hits. `--gate` requires a list and fails on clipped fallbacks, unlisted failed edges, navmesh-segment clips, or incomplete routes. The gate deliberately fails closed on incomplete routes: fallback paths are not yet assembled into those routes. There are no committed public fallback lists or integrated public-station CI gate, and the public runs above used no fallback list; their zero audited fallback segments do not validate any fallback.
+
+`--bridge-gaps`, ramp and collider-exemption generation, a second bake, and bridge recovery measurements remain **unimplemented**. The present diagnostic does not establish collision-safe bridging. Oracle advice identified centerline-only clearance, stacked floors and broad collider cuts as concrete bridge risks; those need fixtures and validation. Oracle review submission failed with exit 5 at `2026-10-30 03:23 JST`; the review did not run and its run directory is `/Users/tachikoma/.local/state/oracle-ego/runs/20261030-032253-9677-review/`.
+
 ## Integration sketch
 
 - Guide: `apps/web/src/ui/app.ts` creates `routePolyline` and passes it to `Explorer.startGuide`; `Explorer.stepGuide` follows it. Supply per-edge navmesh geometry while preserving step-to-point spans, instructions, floor and lift semantics. Risk: a partial or disconnected path must stop guidance, and snapping can select the wrong floor.

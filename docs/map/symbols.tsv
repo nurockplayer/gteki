@@ -524,9 +524,9 @@ installHeadlessDom	function	packages/godot/src/headless-dom.ts	111
 stubRenderer	function	packages/godot/src/headless-dom.ts	137
 headlessThree	function	packages/godot/src/headless-dom.ts	142
 loadBundle	function	packages/godot/src/load-bundle.ts	6
-queryCompletePath	function	packages/godot/src/navmesh-audit.ts	28
-snapNode	function	packages/godot/src/navmesh-audit.ts	37
-queryPathWithLinks	function	packages/godot/src/navmesh-audit.ts	43
+queryCompletePath	function	packages/godot/src/navmesh-audit.ts	30
+snapNode	function	packages/godot/src/navmesh-audit.ts	39
+queryPathWithLinks	function	packages/godot/src/navmesh-audit.ts	45
 bakeNavmesh	function	packages/godot/src/navmesh-bake.ts	21
 completePath	function	packages/godot/src/navmesh-bake.ts	39
 triangleKey	const	packages/godot/src/navmesh-bake.ts	80
@@ -595,6 +595,8 @@ RouteResult	interface	packages/navigation/src/index.ts	62
 RouteFailureReason	type	packages/navigation/src/index.ts	109
 RouteFailure	interface	packages/navigation/src/index.ts	117
 Router	interface	packages/navigation/src/index.ts	123
+ConnectorPoint	type	packages/navigation/src/navmesh-connector.ts	5
+buildConnectorPath	function	packages/navigation/src/navmesh-connector.ts	8
 RouteEndpoint	type	packages/navigation/src/poi.ts	5
 RouteDestination	type	packages/navigation/src/poi.ts	8
 routeBetween	function	packages/navigation/src/poi.ts	16
