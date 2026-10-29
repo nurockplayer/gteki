@@ -7,10 +7,9 @@ import { MODE_WIDTH } from "./graphView.ts";
 import { currentBvh } from "./meshBvh.ts";
 
 /** Detect station-owned lift geometry in the shaft footprint, before adding greybox meshes. */
-export function sceneHasElevator(root: THREE.Object3D, colliders: readonly THREE.Object3D[], a: THREE.Vector3, b: THREE.Vector3): boolean {
+export function sceneHasElevator(root: THREE.Object3D, _colliders: readonly THREE.Object3D[], a: THREE.Vector3, b: THREE.Vector3): boolean {
   const low = a.y <= b.y ? a : b, high = low === a ? b : a;
   const shaft = new THREE.Box3(new THREE.Vector3(low.x - 1.1, low.y, low.z - 1.1), new THREE.Vector3(low.x + 1.1, high.y, low.z + 1.1));
-  const colliderSet = new Set(colliders);
   let found = false;
   root.updateWorldMatrix(true, true);
   root.traverse((object) => {
@@ -23,11 +22,21 @@ export function sceneHasElevator(root: THREE.Object3D, colliders: readonly THREE
     for (let o: THREE.Object3D | null = mesh; o; o = o.parent) {
       if ([o.userData.gteki_role, o.userData.role, o.userData.kitRole, o.userData.assetRole, o.userData.gteki_name, o.userData.kitId, o.userData.assetId, o.userData.gtekiAsset?.id, o.userData.name].some((v) => typeof v === "string" && /(?:lift|elevator)/i.test(v))) { tagged = true; break; }
     }
-    const insidePlan = bounds.min.x >= shaft.min.x - 0.05 && bounds.max.x <= shaft.max.x + 0.05 && bounds.min.z >= shaft.min.z - 0.05 && bounds.max.z <= shaft.max.z + 0.05;
-    const coveredRise = Math.min(bounds.max.y, high.y) - Math.max(bounds.min.y, low.y);
-    if (tagged || (colliderSet.has(mesh) && insidePlan && coveredRise >= (high.y - low.y) * 0.8)) found = true;
+    if (tagged) found = true;
   });
   return found;
+}
+
+/** Identify existing tall colliders that overlap a proposed shaft. */
+export function sceneElevatorOverlap(colliders: readonly THREE.Object3D[], a: THREE.Vector3, b: THREE.Vector3): boolean {
+  const low = a.y <= b.y ? a : b, high = low === a ? b : a;
+  return colliders.some((object) => {
+    object.updateWorldMatrix(true, true);
+    const bounds = new THREE.Box3().setFromObject(object);
+    return !bounds.isEmpty() && bounds.min.x >= low.x - 1.15 && bounds.max.x <= low.x + 1.15 &&
+      bounds.min.z >= low.z - 1.15 && bounds.max.z <= low.z + 1.15 &&
+      Math.min(bounds.max.y, high.y) - Math.max(bounds.min.y, low.y) >= (high.y - low.y) * 0.8;
+  });
 }
 
 /** Probes against station-owned colliders and walls, before adding generated geometry. */

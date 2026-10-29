@@ -44,7 +44,7 @@ export function unmodelledVerticalEdges(
 }
 
 export type ConnectorMaterial = "tread" | "riser" | "nosing" | "escStep" | "escTruss" | "steel" | "rubber" | "glass" | "light";
-export interface ConnectorPart { material: ConnectorMaterial; position: number[]; normal: number[]; colour: number[]; edgeId?: string; role?: "walkable" | "collider" | "car"; soffit?: boolean; userData?: { fit: "exact" | "approximate"; omittedLandings?: number } }
+export interface ConnectorPart { material: ConnectorMaterial; position: number[]; normal: number[]; colour: number[]; edgeId?: string; role?: "walkable" | "collider" | "car" | "door"; landingY?: number; soffit?: boolean; userData?: { fit: "exact" | "approximate"; omittedLandings?: number } }
 export interface ConnectorOptions { tier: "high" | "low" }
 
 const connectorColours: Record<ConnectorMaterial, string> = {
@@ -122,8 +122,12 @@ export function buildEscalator(from: THREE.Vector3, to: THREE.Vector3, tier: "hi
   const angle = Math.atan2(f.rise, run), incline = Math.hypot(run, f.rise);
   const fit = landing < 0.8 || angle < 27 * Math.PI / 180 || angle > 33 * Math.PI / 180 ? "approximate" : "exact";
   const count = Math.ceil(incline / 0.4 - 1e-9), group = tier === "low" ? 3 : 1;
-  for (const end of [0, 1]) box(parts, "escStep", f.matrix, end ? f.length - landing / 2 : landing / 2, end * f.rise - 0.04, 0, landing, 0.08, 1, "walkable");
   const retained = Array.from({ length: count }, (_, i) => i).filter((i) => (i + 0.5) * 0.4 > 0.2 + 1e-9 && (i + 0.5) * 0.4 < incline - 0.2 - 1e-9);
+  const firstX = retained.length ? landing + retained[0]! * 0.4 * Math.cos(angle) : f.length / 2;
+  const lastIndex = retained.at(-1);
+  const lastEnd = lastIndex === undefined ? f.length / 2 : landing + Math.min(incline, (lastIndex + 1) * 0.4) * Math.cos(angle);
+  box(parts, "escStep", f.matrix, firstX / 2, -0.04, 0, firstX, 0.08, 1, "walkable");
+  box(parts, "escStep", f.matrix, (lastEnd + f.length) / 2, f.rise - 0.04, 0, f.length - lastEnd, 0.08, 1, "walkable");
   for (let i = 0; i < retained.length; i += group) {
     const steps = Math.min(group, retained.length - i), first = retained[i]! * 0.4;
     const last = retained[i + steps - 1]!, finish = last === count - 1 ? incline : (last + 1) * 0.4;
@@ -165,7 +169,7 @@ export function buildElevator(from: THREE.Vector3, to: THREE.Vector3, facing: TH
   for (const y of [0, f.rise]) {
     for (const z of [-1.06, 1.06]) box(parts, "steel", f.matrix, 0, y + 0.04, z, 2.2, 0.08, 0.08);
     for (const x of [-1.06, 1.06]) box(parts, "steel", f.matrix, x, y + 0.04, 0, 0.08, 0.08, 2.2);
-    for (const z of [-0.225, 0.225]) box(parts, "steel", f.matrix, -1.1, y + 1.05, z, 0.04, 2.1, 0.45);
+    for (const z of [-0.225, 0.225]) { box(parts, "steel", f.matrix, -1.1, y + 1.05, z, 0.04, 2.1, 0.45, "door"); parts.at(-1)!.landingY = f.low.y + y; }
     box(parts, "light", f.matrix, -1.11, y + 2.2, 0, 0.02, 0.06, 0.3);
   }
   box(parts, "escTruss", f.matrix, 1.08, height / 2, 0, 0.04, height, 2.2, "collider");
@@ -181,7 +185,7 @@ export function buildElevator(from: THREE.Vector3, to: THREE.Vector3, facing: TH
   return parts;
 }
 
-export interface ConnectorScope { hasFloor: (p: V3) => boolean; nearMesh: (p: THREE.Vector3, radius: number) => boolean; hasElevator?: (a: THREE.Vector3, b: THREE.Vector3) => boolean }
+export interface ConnectorScope { hasFloor: (p: V3) => boolean; nearMesh: (p: THREE.Vector3, radius: number) => boolean; hasElevator?: (a: THREE.Vector3, b: THREE.Vector3) => boolean; elevatorOverlap?: (a: THREE.Vector3, b: THREE.Vector3) => boolean }
 
 function meshFor(parts: readonly ConnectorPart[], material: THREE.Material): THREE.Mesh {
   const geometry = new THREE.BufferGeometry();
@@ -192,7 +196,7 @@ function meshFor(parts: readonly ConnectorPart[], material: THREE.Material): THR
   const ids = [...new Set(parts.map((p) => p.edgeId).filter((id): id is string => id !== undefined))];
   let start = 0;
   const edgeRanges = parts.map((p) => { const range = { start, end: start + p.position.length / 3, edgeId: p.edgeId }; start = range.end; return range; });
-  mesh.userData = { greybox: true, connector: true, approximate: true, edgeId: ids.length === 1 ? ids[0] : ids, edgeRanges };
+  mesh.userData = { greybox: true, connector: true, approximate: true, fit: parts.some((p) => p.userData?.fit === "approximate") ? "approximate" : "exact", edgeId: ids.length === 1 ? ids[0] : ids, edgeRanges };
   return mesh;
 }
 
@@ -200,12 +204,12 @@ function meshFor(parts: readonly ConnectorPart[], material: THREE.Material): THR
 export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge) => boolean, scope: ConnectorScope, tier: "high" | "low") {
   const root = new THREE.Group(), walkable: THREE.Object3D[] = [], colliders: THREE.Object3D[] = [];
   const wallSegments: Segment2[] = [];
-  const cars: { edgeId: string; edgeIds: string[]; mesh: THREE.Mesh; zLow: number; zHigh: number; landings: number[] }[] = [];
+  const cars: { edgeId: string; edgeIds: string[]; mesh: THREE.Mesh; zLow: number; zHigh: number; landings: number[]; doors: { landing: number; mesh: THREE.Mesh }[] }[] = [];
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
   const batches = new Map<string, ConnectorPart[]>();
   const counts = { escalator: 0, stairs: 0, elevator: 0 };
-  let approximateFits = 0, omittedLandings = 0;
+  let approximateFits = 0, omittedLandings = 0, elevatorOverlaps = 0;
   const shellMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, side: THREE.DoubleSide });
   const lightMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, emissive: "#fff6e8", emissiveIntensity: 3.2, side: THREE.DoubleSide });
   const glassMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, opacity: 0.28, depthWrite: false, roughness: 0.32, metalness: 0.08, side: THREE.DoubleSide });
@@ -252,13 +256,14 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         box(parts, edge.mode === "stairs" ? "tread" : "escStep", rotation, 0, -0.04, 0, edge.mode === "stairs" ? width : 1.2, 0.08, edge.mode === "stairs" ? width : 1.2, "walkable");
       }
     }
+    if (edge.mode === "elevator" && scope.elevatorOverlap?.(a, b)) { elevatorOverlaps++; for (const p of parts) p.userData = { ...p.userData, fit: "approximate" }; }
     if (edge.mode === "escalator" && bentEscalator) for (const p of parts) p.userData = { ...p.userData, fit: "approximate" };
     for (const part of parts) part.edgeId = edge.id;
     if (edge.mode === "stairs" || edge.mode === "escalator" || edge.mode === "elevator") counts[edge.mode]++;
     if (parts.some((p) => p.userData?.fit === "approximate")) approximateFits++;
     omittedLandings += edgeOmitted;
     const key = tier === "low" ? "all" : nodes.get(edge.from)?.floorId ?? "";
-    const batch = batches.get(key) ?? []; batch.push(...parts.filter((p) => p.role !== "car")); batches.set(key, batch);
+    const batch = batches.get(key) ?? []; batch.push(...parts.filter((p) => p.role !== "car" && p.role !== "door")); batches.set(key, batch);
     const support = parts.filter((p) => p.role === "walkable"), walls = parts.filter((p) => p.role === "collider");
     if (support.length) walkable.push(meshFor(support, physicalMaterial));
     if (walls.length) colliders.push(meshFor(walls, physicalMaterial));
@@ -266,9 +271,19 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     if (car.length) {
       const low = a.y <= b.y ? a : b;
       const existing = cars.find((c) => Math.hypot(c.mesh.position.x - low.x, c.mesh.position.z - low.z) < 0.1);
+      const addDoors = (target: typeof cars[number]) => {
+        for (const landing of [a.y, b.y]) {
+          if (target.doors.some((door) => Math.abs(door.landing - landing) < 1e-6)) continue;
+          const leaves = parts.filter((p) => p.role === "door" && Math.abs(p.landingY! - landing) < 1e-6);
+          if (!leaves.length) continue;
+          const door = meshFor(leaves, shellMaterial); door.visible = Math.abs(target.mesh.position.y - landing) >= 1e-6;
+          root.add(door); target.doors.push({ landing, mesh: door });
+        }
+      };
       if (existing) {
         existing.edgeIds.push(edge.id); existing.landings = [...new Set([...existing.landings, a.y, b.y])].sort((x, y) => x - y);
         existing.zLow = existing.landings[0]!; existing.zHigh = existing.landings.at(-1)!; existing.mesh.position.y = existing.zLow;
+        addDoors(existing);
         continue;
       }
       const mesh = meshFor(car, shellMaterial), f = frame(a, b);
@@ -277,7 +292,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       for (const item of car) { const size = item.position.length / 3; mesh.geometry.addGroup(start, size, item.material === "light" ? 1 : 0); start += size; }
       mesh.material = [shellMaterial, lightMaterial];
       mesh.position.copy(f.low); mesh.rotation.y = Math.hypot(facing.x, facing.z) > 1e-9 ? Math.atan2(facing.z, -facing.x) : 0;
-      root.add(mesh); cars.push({ edgeId: edge.id, edgeIds: [edge.id], mesh, zLow: f.low.y, zHigh: f.high.y, landings: [f.low.y, f.high.y] });
+      root.add(mesh); const record = { edgeId: edge.id, edgeIds: [edge.id], mesh, zLow: f.low.y, zHigh: f.high.y, landings: [f.low.y, f.high.y], doors: [] as { landing: number; mesh: THREE.Mesh }[] }; cars.push(record); addDoors(record);
       const floor = meshFor(car.filter((p) => p.material === "tread"), physicalMaterial);
       floor.visible = false; mesh.add(floor); walkable.push(floor);
     }
@@ -291,8 +306,8 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       if (material === lightMaterial) lightBatches.push({ mesh, parts });
     }
   }
-  for (const car of cars) triangles += car.mesh.geometry.getAttribute("position").count / 3;
-  const stats = { connectors: counts, meshes: root.children.length, triangles, approximateFits, omittedLandings, overBudget: null as string | null,
+  for (const car of cars) { triangles += car.mesh.geometry.getAttribute("position").count / 3; for (const door of car.doors) triangles += door.mesh.geometry.getAttribute("position").count / 3; for (const door of car.doors) door.mesh.visible = Math.abs(car.mesh.position.y - door.landing) >= 1e-6; }
+  const stats = { connectors: counts, meshes: root.children.length, triangles, approximateFits, omittedLandings, elevatorOverlaps, overBudget: null as string | null,
     dropSoffits() {
       for (const batch of lightBatches) {
         const kept = batch.parts.filter((p) => !p.soffit);

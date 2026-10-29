@@ -95,6 +95,19 @@ describe("endpoint fitting", () => {
     expect(Math.max(...treads.at(-1)!.position.filter((_, i) => i % 3 === 0))).toBeCloseTo(3);
     expect(Math.max(...treads.at(-1)!.position.filter((_, i) => i % 3 === 1))).toBeCloseTo(3.6);
   });
+  it("joins both comb plates to the visible flight in both tiers", () => {
+    for (const tier of ["high", "low"] as const) {
+      const parts = buildEscalator(new THREE.Vector3(), new THREE.Vector3(5.064101615, 2, 0), tier);
+      const surfaces = parts.filter((p) => p.material === "escStep" && p.role === "walkable");
+      const intervals = surfaces.map((p) => {
+        const xs = p.position.filter((_, i) => i % 3 === 0);
+        return [Math.min(...xs), Math.max(...xs)] as const;
+      }).sort((a, b) => a[0] - b[0]);
+      expect(intervals[0]![0]).toBeCloseTo(0);
+      expect(intervals.at(-1)![1]).toBeCloseTo(5.064101615);
+      for (let i = 1; i < intervals.length; i++) expect(intervals[i]![0] - intervals[i - 1]![1]).toBeLessThanOrEqual(0.05);
+    }
+  });
   it("flags escalator pitch outside the range and ends at the node", () => {
     const p = buildEscalator(new THREE.Vector3(), new THREE.Vector3(4, 3.6, 0), "high");
     expect(p.every((v) => v.userData?.fit === "approximate")).toBe(true);
@@ -123,7 +136,9 @@ describe("elevator geometry", () => {
     expect(result.cars[0]!.zLow).toBe(2);
     expect(result.cars[0]!.zHigh).toBe(6);
     expect(result.walkable.some((o) => o.parent === result.cars[0]!.mesh)).toBe(true);
-    expect(result.root.children.length).toBeLessThanOrEqual(4);
+    expect(result.root.children.length).toBeLessThanOrEqual(6);
+    expect(result.cars[0]!.doors).toHaveLength(2);
+    expect(result.stats.triangles).toBe(result.root.children.reduce((sum, child) => sum + ((child as THREE.Mesh).geometry?.getAttribute("position").count ?? 0) / 3, 0));
     const ray = new THREE.Raycaster(new THREE.Vector3(-2, 2.8, 0), new THREE.Vector3(1, 0, 0), 0, 1.3);
     expect(ray.intersectObjects(result.colliders, false)).toHaveLength(0);
     ray.ray.origin.z = 0.8;

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createRouter } from "@gteki/navigation";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 import { Explorer } from "./explorer.ts";
-import { greyboxSceneProbes, sceneHasElevator, insideGreyboxOpening, nearGreybox, routeUsesGreybox } from "./greyboxScene.ts";
+import { greyboxSceneProbes, sceneHasElevator, sceneElevatorOverlap, insideGreyboxOpening, nearGreybox, routeUsesGreybox } from "./greyboxScene.ts";
 import { strings } from "../i18n.ts";
 import { darkSampleDistances } from "./routeGroundQa.ts";
 import { OverviewLook } from "./overviewLook.ts";
@@ -47,27 +47,33 @@ describe("greybox station integration", () => {
     state.mode = "walk"; state.pos.set(8.25, 4, 0); state.yaw = -Math.PI / 2;
     state.input.virtualKeys.add("KeyW"); state.stepWalk(1); state.input.virtualKeys.delete("KeyW");
     expect(state.pos.x).toBeCloseTo(8.25);
+    const checkDoors = () => {
+      const walls = state.elevatorDoorWalls();
+      for (const door of car.doors) expect(door.mesh.visible).toBe(walls.some((w: { yMin: number }) => w.yMin === door.landing));
+    };
+    checkDoors();
     for (let i = 0; i < 100; i++) {
       const before = car.mesh.position.y;
-      state.updateElevatorCars(0.05);
+      state.updateElevatorCars(0.05); checkDoors();
       expect(car.mesh.position.y - before).toBeLessThanOrEqual(0.075001);
       if (car.mesh.position.y < 4 - 1e-6) expect(state.elevatorDoorWalls().some((w: { yMin: number }) => w.yMin === 4)).toBe(true);
     }
     expect(car.mesh.position.y).toBeCloseTo(4);
     expect(state.elevatorDoorWalls().some((w: { yMin: number }) => w.yMin === 4)).toBe(false);
     state.input.virtualKeys.add("KeyW");
-    for (let i = 0; i < 18; i++) { state.stepWalk(0.05); state.updateElevatorCars(0.05); }
+    for (let i = 0; i < 18; i++) { state.stepWalk(0.05); state.updateElevatorCars(0.05); checkDoors(); }
     state.input.virtualKeys.delete("KeyW");
     expect(state.pos.x).toBeGreaterThan(9.2);
-    for (let i = 0; i < 130; i++) { state.stepWalk(0.05); state.updateElevatorCars(0.05); }
+    for (let i = 0; i < 130; i++) { state.stepWalk(0.05); state.updateElevatorCars(0.05); checkDoors(); }
     expect(state.pos.y).toBeCloseTo(0);
   });
-  it("recognizes tagged lift geometry and a tall shaft collider", () => {
+  it("recognizes only tagged lifts and reports tall collider overlap", () => {
     const root = new THREE.Group(), mesh = new THREE.Mesh(new THREE.BoxGeometry(0.1, 3.5, 0.1));
     mesh.position.y = 2; root.add(mesh);
     const a = new THREE.Vector3(), b = new THREE.Vector3(0, 4, 0);
     expect(sceneHasElevator(root, [], a, b)).toBe(false);
-    expect(sceneHasElevator(root, [mesh], a, b)).toBe(true);
+    expect(sceneHasElevator(root, [mesh], a, b)).toBe(false);
+    expect(sceneElevatorOverlap([mesh], a, b)).toBe(true);
     mesh.userData.gteki_role = "elevator";
     expect(sceneHasElevator(root, [], a, b)).toBe(true);
     delete mesh.userData.gteki_role;
@@ -75,7 +81,17 @@ describe("greybox station integration", () => {
     expect(sceneHasElevator(root, [], a, b)).toBe(true);
     delete root.userData.gtekiAsset;
     mesh.position.y = -1.7;
-    expect(sceneHasElevator(root, [mesh], a, b)).toBe(false);
+    expect(sceneElevatorOverlap([mesh], a, b)).toBe(false);
+  });
+  it("builds an approximate elevator when an untagged shaft collider overlaps", async () => {
+    const { state, loaded, scene } = fixture();
+    loaded.bundle = createSyntheticBundle([syntheticEdge("lift", "a", "upper", { mode: "elevator" })]);
+    const obstacle = new THREE.Mesh(new THREE.BoxGeometry(0.1, 4, 0.1), new THREE.MeshBasicMaterial());
+    obstacle.position.set(10, 2, 0); scene.root.add(obstacle); scene.colliders.push(obstacle);
+    await state.loadStation(loaded, createRouter(loaded.bundle));
+    expect(state.connectors.stats.elevatorOverlaps).toBe(1);
+    expect(state.connectors.stats.approximateFits).toBeGreaterThan(0);
+    expect(state.connectors.cars[0].mesh.userData.fit).toBe("approximate");
   });
   it("carries a stationary walking avatar on the car floor between landings", async () => {
     const { state, loaded } = fixture();

@@ -18,7 +18,7 @@ import { R, chevronTexture, dashTexture, ribbonGeometry } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { buildConnectors, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { buildGreybox, splitWallsAtOpenings, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
-import { greyboxPathSegments, greyboxSceneProbes, sceneHasElevator, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
+import { greyboxPathSegments, greyboxSceneProbes, sceneHasElevator, sceneElevatorOverlap, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
 import { darkSampleDistances, routeGroundCounts, sceneMeshNear } from "./routeGroundQa.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
@@ -460,10 +460,10 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { greybox: (GreyboxStats & { connectors: { escalator: number; stairs: number; elevator: number }; rideState: { edgeId: string; status: "waiting" | "riding" | "arrived"; elapsed: number; target: number; direction: 1 | -1 } | null }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
+  sceneInfo(): { greybox: (GreyboxStats & { connectors: { escalator: number; stairs: number; elevator: number }; elevatorOverlaps: number; rideState: { edgeId: string; status: "waiting" | "riding" | "arrived"; elapsed: number; target: number; direction: 1 | -1 } | null }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
-      greybox: this.greybox ? { ...this.greybox.stats, overBudget: this.connectors?.stats.overBudget ?? this.greybox.stats.overBudget, connectors: this.connectors?.stats.connectors ?? { escalator: 0, stairs: 0, elevator: 0 }, rideState: this.liftRide ?? null } : null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
+      greybox: this.greybox ? { ...this.greybox.stats, overBudget: this.connectors?.stats.overBudget ?? this.greybox.stats.overBudget, connectors: this.connectors?.stats.connectors ?? { escalator: 0, stairs: 0, elevator: 0 }, elevatorOverlaps: this.connectors?.stats.elevatorOverlaps ?? 0, rideState: this.liftRide ?? null } : null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
       walkable: this.walkable.length, colliders: this.colliders.length, cameraBlockers: this.cameraBlockers.length, seeThrough: this.seeThrough.length,
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
       bakedAo: { ...this.bakedAo }, assets: this.loadedAssets.map((a) => ({ ...a })),
@@ -947,7 +947,7 @@ export class Explorer {
       this.world.add(this.greybox.root);
       this.walkable = [...this.walkable, ...this.greybox.walkable];
       this.colliders = [...this.colliders, ...this.greybox.colliders];
-      this.connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: (p, radius) => sceneMeshNear([this.stationScene!.root], p, radius), hasElevator: (a, b) => sceneHasElevator(this.stationScene!.root, originalTargets.collider, a, b) }, this.quality);
+      this.connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: (p, radius) => sceneMeshNear([this.stationScene!.root], p, radius), hasElevator: (a, b) => sceneHasElevator(this.stationScene!.root, originalTargets.collider, a, b), elevatorOverlap: (a, b) => sceneElevatorOverlap(originalTargets.collider, a, b) }, this.quality);
       withinGreyboxBudget(this.greybox.stats, this.connectors.stats, this.quality);
       this.world.add(this.connectors.root);
       this.walkable = [...this.walkable, ...this.connectors.walkable];
@@ -2132,7 +2132,7 @@ export class Explorer {
     const moving = movement.x !== 0 || movement.y !== 0;
     const cars = this.connectors?.cars ?? [];
     if (this.mode !== "walk") { this.liftRide = null; this.liftCall = null; }
-    for (const car of cars) {
+    try { for (const car of cars) {
       const dx = this.pos.x - car.mesh.position.x, dz = this.pos.z - car.mesh.position.z;
       const c = Math.cos(car.mesh.rotation.y), s = Math.sin(car.mesh.rotation.y);
       const localX = c * dx - s * dz, localZ = s * dx + c * dz;
@@ -2187,6 +2187,9 @@ export class Explorer {
       const onGuide = this.mode === "guide" && edgeId !== undefined && car.edgeIds.includes(edgeId);
       if (onGuide) car.mesh.position.y = THREE.MathUtils.clamp(this.pos.y, car.zLow, car.zHigh);
       else if (!(this.mode === "walk" && Math.abs(localX) <= 1.1 && Math.abs(localZ) <= 1.1 && Math.abs(this.pos.y - car.mesh.position.y) <= 0.08)) car.mesh.position.y = THREE.MathUtils.damp(car.mesh.position.y, car.zLow, 5, dt);
+    }
+    } finally {
+      for (const car of cars) for (const door of car.doors) door.mesh.visible = Math.abs(car.mesh.position.y - door.landing) >= 1e-6;
     }
   }
 
