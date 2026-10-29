@@ -92,13 +92,13 @@ async function main() {
   }
   if (gate && !fallbackList) throw new Error("--gate requires --fallback-list");
   if (!station || !navmeshFile || !json) throw new Error("use --station <station> --navmesh <file> --json <file>");
-  if (bridgeGaps) throw new Error("--bridge-gaps is disabled: collider-aware wall-safe exemptions are not implemented");
   const dest = qaFile(json);
   const loadStart = performance.now();
   const meshBytes = fs.readFileSync(navmeshFile);
   const provenance = JSON.parse(fs.readFileSync(path.join(path.dirname(navmeshFile), `${station}-bake.json`), "utf8"));
   if (provenance.station !== station || provenance.withGreybox !== withGreybox || provenance.meshSha256 !== createHash("sha256").update(meshBytes).digest("hex")) throw new Error("navmesh bake provenance does not match station, greybox flag, or binary; rebake first");
   if (!!provenance.bridgeGaps !== bridgeGaps) throw new Error("navmesh bake and audit disagree on --bridge-gaps");
+  if (bridgeGaps && provenance.bridgePolicy !== "no-exemptions-v1") throw new Error("obsolete bridge mesh; rebake without exemptions");
   if (!!provenance.snapFallback !== snapFallback) throw new Error("navmesh bake and audit disagree on --snap-fallback");
   await init();
   const nav = importNavMesh(meshBytes).navMesh, query = new NavMeshQuery(nav, { maxNodes: 8192 });

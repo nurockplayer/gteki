@@ -2,17 +2,6 @@ import { describe, expect, it } from "vitest";
 import { NavMeshQuery } from "recast-navigation";
 import { bakeNavmesh, completePath } from "./navmesh-bake.ts";
 import { validateLinkSnap, verticalLinkCandidates } from "./navmesh-links.ts";
-import { spawnSync } from "node:child_process";
-
-it.each([
-  ["navmesh-bake.ts", "--station", "ikebukuro", "--out", ".qa/navmesh"],
-  ["navmesh-audit.ts", "--station", "ikebukuro", "--navmesh", ".qa/navmesh/ikebukuro.bin", "--json", ".qa/navmesh/audit.json"],
-])("rejects unsafe bridge mode in %s", (script, ...args) => {
-  const result = spawnSync("pnpm", ["tsx", `packages/godot/src/${script}`, ...args, "--bridge-gaps"], { encoding: "utf8" });
-  expect(result.status).not.toBe(0);
-  expect(result.stderr).toContain("--bridge-gaps is disabled: collider-aware wall-safe exemptions are not implemented");
-});
-
 // Two 4 m rooms divided by a wall. The doorway is 1.6 m wide when open.
 function rooms(door: boolean) {
   const positions: number[] = [], indices: number[] = [];
@@ -187,31 +176,61 @@ it("cuts only the portal opening out of a scene collider", async () => {
   query.destroy(); baked.navMesh.destroy(); floor.geometry.dispose(); wall.geometry.dispose();
 });
 
-it.each(["pillar","beam"])("bridges a passage blocked by a %s", async kind=>{
-  const THREE=await import("three"), {appendMeshes,applyBridgeGeometry}=await import("./navmesh-bake.ts"), {bridgeGapGeometry}=await import("./navmesh-bridge.ts");
-  const floor=new THREE.Mesh(new THREE.PlaneGeometry(8,4).rotateX(-Math.PI/2).translate(4,0,2),new THREE.MeshBasicMaterial()); floor.updateMatrixWorld(true);
-  const shape=kind==="pillar" ? new THREE.BoxGeometry(0.3,2.5,4) : new THREE.BoxGeometry(1,0.3,4);
-  const obstacle=new THREE.Mesh(shape,new THREE.MeshBasicMaterial()); obstacle.position.set(4,kind==="pillar" ? 1.25 : 1.5,2); obstacle.updateMatrixWorld(true);
-  const positions:number[]=[],indices:number[]=[]; appendMeshes([floor],positions,indices,false); appendMeshes([obstacle],positions,indices,true);
+it("leaves an obstruction intact and does not bridge it", async()=>{
+  const THREE=await import("three"), {appendMeshes,applyBridgeGeometry}=await import("./navmesh-bake.ts"), {bridgeGapGeometry}=await import("./navmesh-bridge.ts"), {auditPolyline}=await import("./route-clip-audit.ts");
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(8,4).rotateX(-Math.PI/2).translate(4,0,2)); floor.updateMatrixWorld(true);
+  const pillar=new THREE.Mesh(new THREE.BoxGeometry(0.3,2.5,4)); pillar.position.set(4,1.25,2); pillar.updateMatrixWorld(true);
+  const positions:number[]=[],indices:number[]=[]; appendMeshes([floor],positions,indices,false); appendMeshes([pillar],positions,indices,true);
+  const line=[{x:2,y:-2,z:0,floorId:"f",zKnown:true,stepIndex:0},{x:6,y:-2,z:0,floorId:"f",zKnown:true,stepIndex:0}];
+  const bridge=bridgeGapGeometry(line,[{startM:1,endM:3,class:"scene_obstruction"}],2); expect(bridge.indices).toHaveLength(0);
+  const old=indices.slice(); applyBridgeGeometry(positions,indices,bridge); expect(indices).toEqual(old);
+  const built=await bakeNavmesh(positions,indices,{cellSizeM:0.1,radiusM:0.3}); if(!built.success) throw new Error(built.error);
+  const q=new NavMeshQuery(built.navMesh); expect(completePath(q,{x:2,y:0,z:2},{x:6,y:0,z:2})).toBeNull();
+  const safe=completePath(q,{x:1,y:0,z:2},{x:2,y:0,z:2}); expect(safe).not.toBeNull();
+  expect(auditPolyline({ground:[floor],collider:[pillar],walls:[]},safe!.map(p=>({...line[0]!,x:p.x,y:-p.z,z:p.y}))).wallHits).toBe(0); q.destroy(); built.navMesh.destroy(); floor.geometry.dispose(); pillar.geometry.dispose();
+});
+
+it("adds a ceiling only over a clear strip and rejects steep step ramps",async()=>{
+  const {bridgeGapGeometry}=await import("./navmesh-bridge.ts"),{ceilingClearance}=await import("./navmesh-bake.ts");
+  const line=[{x:0,y:0,z:0,floorId:"f",zKnown:true,stepIndex:0},{x:2,y:0,z:0,floorId:"f",zKnown:true,stepIndex:0}];
+  const gap={startM:0,endM:2,class:"missing_floor" as const};
+  const clear=bridgeGapGeometry(line,[gap],2,vs=>ceilingClearance([],[],vs));
+  const beam=[0,2,-2,2,2,-2,2,2,2,0,2,2];
+  const blocked=bridgeGapGeometry(line,[gap],2,vs=>ceilingClearance(beam,[0,1,2,0,2,3],vs));
+  expect(blocked.indices.length).toBeLessThan(clear.indices.length);
+  const steep=[line[0]!,{...line[1]!,z:2}]; expect(bridgeGapGeometry(steep,[{...gap,class:"step"}],2).indices).toHaveLength(0);
+  const step=[line[0]!,{...line[0]!,x:1,z:0.6},{...line[1]!,z:0.6}];
+  const ramp=bridgeGapGeometry(step,[{...gap,class:"step"}],2); expect(ramp.indices.length).toBeGreaterThan(0);
+  expect(ramp.positions[13]).toBeCloseTo(0.15);
+});
+
+it("bridges a missing floor",async()=>{
+  const {bridgeGapGeometry}=await import("./navmesh-bridge.ts"), {applyBridgeGeometry}=await import("./navmesh-bake.ts");
+  const positions=[0,0,0,0,0,4,3,0,4,3,0,0,5,0,0,5,0,4,8,0,4,8,0,0],indices=[0,1,2,0,2,3,4,5,6,4,6,7];
   const start={x:2,y:0,z:2},end={x:6,y:0,z:2},base=await bakeNavmesh(positions,indices,{cellSizeM:0.1,radiusM:0.3}); if(!base.success) throw new Error(base.error);
   const q0=new NavMeshQuery(base.navMesh); expect(completePath(q0,start,end)).toBeNull(); q0.destroy(); base.navMesh.destroy();
   const line=[{x:2,y:-2,z:0,floorId:"f",zKnown:true,stepIndex:0},{x:6,y:-2,z:0,floorId:"f",zKnown:true,stepIndex:0}];
-  const bridge=bridgeGapGeometry(line,[{startM:1,endM:3,class:kind==="pillar" ? "scene_obstruction" : "low_ceiling"}],2);
-  expect(bridge.openings.length).toBeGreaterThan(0); expect(bridge.openings[0]!.height).toBeCloseTo(2.25);
-  applyBridgeGeometry(positions,indices,bridge);
+  applyBridgeGeometry(positions,indices,bridgeGapGeometry(line,[{startM:1,endM:3,class:"missing_floor"}],2));
   const rebuilt=await bakeNavmesh(positions,indices,{cellSizeM:0.1,radiusM:0.3}); if(!rebuilt.success) throw new Error(rebuilt.error);
-  const q1=new NavMeshQuery(rebuilt.navMesh); expect(completePath(q1,start,end)).not.toBeNull(); q1.destroy(); rebuilt.navMesh.destroy();
-  floor.geometry.dispose(); shape.dispose();
+  const q=new NavMeshQuery(rebuilt.navMesh); expect(completePath(q,start,end)).not.toBeNull(); q.destroy(); rebuilt.navMesh.destroy();
 });
 
 it("does not bridge narrow gaps and makes 1.5 metre node pads",async()=>{
   const {bridgeGapGeometry,linkPadGeometry}=await import("./navmesh-bridge.ts");
   const line=[{x:0,y:0,z:0,floorId:"f",zKnown:true,stepIndex:0},{x:4,y:0,z:0,floorId:"f",zKnown:true,stepIndex:0}];
   const bridge=bridgeGapGeometry(line,[{startM:1,endM:2,class:"narrow"}],0.5);
-  expect(bridge.openings).toEqual([]); expect(bridge.indices).toEqual([]);
+  expect(bridge.indices).toEqual([]);
   const pad=linkPadGeometry({x:0,y:2,z:0});
   expect(Math.max(...pad.positions.filter((_,i)=>i%3===0))-Math.min(...pad.positions.filter((_,i)=>i%3===0))).toBe(1.5);
   expect(pad.indices).toHaveLength(6);
+});
+
+it("keeps bridge and landing strips within authored endpoints",async()=>{
+  const {bridgeGapGeometry,linkStripGeometry}=await import("./navmesh-bridge.ts"),{auditPolyline}=await import("./route-clip-audit.ts");
+  const a={x:0,y:0,z:0,floorId:"f",zKnown:true,stepIndex:0},b={...a,x:2};
+  const bridge=bridgeGapGeometry([a,b],[{startM:0,endM:2,class:"missing_floor"}],1.5);
+  const strip=linkStripGeometry({ground:[],collider:[],walls:[]},a,b,auditPolyline).geometry!;
+  for (const g of [bridge,strip]) { const xs=g.positions.filter((_,i)=>i%3===0); expect(Math.min(...xs)).toBeGreaterThanOrEqual(0); expect(Math.max(...xs)).toBeLessThanOrEqual(2); }
 });
 
 it("connects a missing link landing with a pad and strip",async()=>{
@@ -229,9 +248,10 @@ it("connects a missing link landing with a pad and strip",async()=>{
 });
 
 it("does not open a wall or construct an overly steep landing strip",async()=>{
-  const {linkStripGeometry}=await import("./navmesh-bridge.ts"),{auditPolyline}=await import("./route-clip-audit.ts");
+  const {linkStripGeometry,linkPadClear}=await import("./navmesh-bridge.ts"),{auditPolyline}=await import("./route-clip-audit.ts");
   const probe={ground:[],collider:[],walls:[{a:{x:0,y:-2},b:{x:0,y:2},zMin:0,zMax:3}]};
   const p=(x:number,z:number)=>({x,y:0,z,floorId:"f",zKnown:true,stepIndex:0});
   expect(linkStripGeometry(probe,p(-1,0),p(1,0),auditPolyline).reason).toBe("wall");
+  expect(linkPadClear(probe,p(0,0),auditPolyline)).toBe(false);
   expect(linkStripGeometry({...probe,walls:[]},p(0,0),p(0.5,0.6),auditPolyline).reason).toBe("steep");
 });

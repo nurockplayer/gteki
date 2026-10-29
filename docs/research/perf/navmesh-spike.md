@@ -286,13 +286,22 @@ The two gap measures have different scopes: the bake samples all traversable non
 
 Oracle's static review flagged physically narrow passages with wider declared graph widths, removal of upper-floor geometry, the original-scene collision mismatch, and unsafe link approaches. The first two follow the requested width rule and scene-triangle exemption; the original-scene hits remain visible above. Link approaches now reject wall crossings and slopes above 40° and do not cut openings. Those subsequent changes were tested but not independently re-reviewed. No private build was run.
 
-## Bridge safety stop
+## Bridges without exemptions
 
-2026-10-30 03:54 JST: The bridge CLI is disabled until cuts can retain collider and face identity, protect wall-tagged or wall-like geometry, and the audit can distinguish every exempt hit from every unexempt hit. Previously emitted bridge meshes must be regenerated after that repair. Non-bridge baking is unchanged.
+2026-10-30 04:08 JST: Bridge mode now appends floor strips and never cuts scene triangles. It skips narrow, scene-obstruction and low-ceiling gaps, and smooths steps into ramps no steeper than 35°; a step without enough length for such a ramp is skipped. A ceiling is added only when the overhead prism is clear of the bake input. The audit rejects bridge artifacts from the earlier exemption-based bake.
 
-The requested class-by-class public measurements, affected-tile rebuild, pillar exemption and exempt-hit accounting remain unimplemented; no new public bridge measurements are claimed. The previous public results above remain historical, and must not be treated as a clip-free result.
+Public runs use greybox, 0.10 m cells, 0.30 m radius, 0.40 m climb and 256-cell tiles. The before results are from the preceding no-bridge run. Wall hits are navmesh segments at scene-raycast height on completed routes.
 
-Oracle's static review of the safety stop found no blocking findings; it did not run tests. The audit guard was moved before reading artifacts after the review began.
+| Station | Failed unique edges before → after | Incomplete routes before → after | Bridge gaps by class | Wall hits before → after | Total bake ms before → after | Bridge rebake ms |
+|---|---:|---:|---|---:|---:|---:|
+| Ikebukuro | 0 → 0 | 0 → 0 / 1,054 | none | 0 → 0 | 2,040 → 5,101 | 0 |
+| Shinjuku | 5 → 3 | 72 → 56 / 238 | erosion: 6 | 0 → 0 | 5,069 → 8,677 | 2,198 |
+
+The bridge sampler covers all traversable non-vertical edges; the audit only measures completed routes. Shinjuku's route-used disconnected gap counts were zero both before and after. The bridge pass rebuilds the whole mesh once; the subsequent link bake remains a separate full rebuild. Shinjuku rejected two pads with no nearby poly and one with a blocked footprint. The measurements are not a swept-body collision proof.
+
+Oracle found that orphan landing pads could create inaccessible link endpoints, and that strip padding extended past authored edge endpoints. The implementation now requires a nearby poly and wall-safe approach before adding a pad, and clamps strips to the authored edge. Tests were added for the footprint and endpoint bounds; Oracle did not re-review those changes.
+
+The fallback-list writer is not present on this branch; obstruction and low-ceiling gaps remain diagnosable in audit gap classes but are not automatically written as fallback entries. Gap-class attribution for nonzero navmesh wall hits is also not implemented; both public runs measured zero.
 
 ## Integration sketch
 
