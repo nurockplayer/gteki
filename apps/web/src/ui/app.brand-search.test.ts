@@ -51,7 +51,7 @@ function app(bundle: StationBundle, originId: string) {
   const a = new App(root) as unknown as Harness;
   a.s.lang = "ja";
   a.layout(); // Mounts the panel and binds the destination field's real input handler.
-  const explorer = { refitOverview: vi.fn(), clearRoute: vi.fn(), showPois: vi.fn(), showRoute: vi.fn(), currentMode: "overview" };
+  const explorer = { connectorRoutePaths: () => new Map(), refitOverview: vi.fn(), clearRoute: vi.fn(), showPois: vi.fn(), showRoute: vi.fn(), currentMode: "overview" };
   a.s.loaded = { bundle };
   a.s.search = createSearchIndex(bundle);
   a.s.router = createRouter(bundle);

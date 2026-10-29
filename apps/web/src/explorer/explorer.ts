@@ -16,6 +16,7 @@ import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
 import { R, chevronTexture, dashTexture, ribbonGeometry } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
+import { buildConnectors, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { cutPortals, disposePortalCuts, type PortalCutResources } from "./portalCut.ts";
 import { buildGreybox, portalWidthAxis, splitWallsAtOpenings, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
 import { greyboxPathSegments, greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
@@ -229,6 +230,7 @@ export class Explorer {
   private station: LoadedStation | null = null;
   private stationScene: StationScene | null = null;
   private greybox: ReturnType<typeof buildGreybox> | null = null;
+  private connectors: ReturnType<typeof buildConnectors> | null = null;
   private greyboxOpenings: Box[] = [];
   private portalCutResources: PortalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
   private portalExemptions = 0;
@@ -459,10 +461,10 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { greybox: (GreyboxStats & { colliderExemptions: number; portalCut: ReturnType<typeof cutPortals> | null }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
+  sceneInfo(): { greybox: (GreyboxStats & { connectors: { escalator: number; stairs: number }; colliderExemptions: number; portalCut: ReturnType<typeof cutPortals> | null }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
-      greybox: this.greybox ? { ...this.greybox.stats, colliderExemptions: this.portalExemptions, portalCut: this.portalCutStats } : null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
+      greybox: this.greybox ? { ...this.greybox.stats, overBudget: this.connectors?.stats.overBudget ?? this.greybox.stats.overBudget, connectors: this.connectors?.stats.connectors ?? { escalator: 0, stairs: 0 }, colliderExemptions: this.portalExemptions, portalCut: this.portalCutStats } : null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
       walkable: this.walkable.length, colliders: this.colliders.length, cameraBlockers: this.cameraBlockers.length, seeThrough: this.seeThrough.length,
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
       bakedAo: { ...this.bakedAo }, assets: this.loadedAssets.map((a) => ({ ...a })),
@@ -964,7 +966,13 @@ export class Explorer {
       this.world.add(this.greybox.root);
       this.walkable = [...this.walkable, ...this.greybox.walkable];
       this.colliders = [...this.colliders, ...this.greybox.colliders];
-      this.walls = splitWallsAtOpenings([...this.walls, ...this.greybox.wallSegments], this.greyboxOpenings);
+      this.connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: (p, radius) => sceneMeshNear([this.stationScene!.root], p, radius) }, this.quality);
+      this.greyboxSegments.push(...this.connectors.segments);
+      withinGreyboxBudget(this.greybox.stats, this.connectors.stats, this.quality);
+      this.world.add(this.connectors.root);
+      this.walkable = [...this.walkable, ...this.connectors.walkable];
+      this.colliders = [...this.colliders, ...this.connectors.colliders];
+      this.walls = splitWallsAtOpenings([...this.walls, ...this.greybox.wallSegments, ...this.connectors.wallSegments], this.greyboxOpenings);
     } else {
       this.world.add(this.graph.root);
       this.walkable = this.graph.walkable;
@@ -1035,6 +1043,15 @@ export class Explorer {
       });
       for (const material of materials) material.dispose();
       this.greybox = null;
+    }
+    if (this.connectors) {
+      this.world.remove(this.connectors.root);
+      const materials = new Set<THREE.Material>(), meshes = new Set<THREE.Mesh>();
+      const dispose = (object: THREE.Object3D) => { const mesh = object as THREE.Mesh; if (!mesh.isMesh || meshes.has(mesh)) return; meshes.add(mesh); mesh.geometry.dispose(); for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) materials.add(material); };
+      this.connectors.root.traverse(dispose);
+      for (const object of [...this.connectors.walkable, ...this.connectors.colliders]) object.traverse(dispose);
+      for (const material of materials) material.dispose();
+      this.connectors = null;
     }
     disposePortalCuts(this.portalCutResources);
     this.portalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
@@ -1350,10 +1367,15 @@ export class Explorer {
     return hit ? hit.point.y : null;
   }
 
+  /** Connector centre lines converted from renderer coordinates to station ENU. */
+  connectorRoutePaths(): Map<string, { x: number; y: number; z: number }[]> {
+    return new Map([...(this.connectors?.pathByEdge ?? [])].map(([id, path]) => [id, path.map((p) => ({ x: p.x, y: -p.z, z: p.y }))]));
+  }
+
   /** QA for the current route: the same ground ray used by the walker, plus connector and image checks. */
   routeGroundCheck(polyline: readonly PolylinePoint[], steps: readonly RouteStep[], guideStopsM: readonly number[] = []) {
-    const roots = [this.stationScene?.root, this.greybox?.root].filter((root): root is THREE.Object3D => Boolean(root));
-    const counts = routeGroundCounts(polyline, (p) => this.groundAt(p.x, p.y + DEFAULT_GROUND.stepUp + 0.05, p.z, DEFAULT_GROUND.stepUp + DEFAULT_GROUND.stepDown + 0.1), steps, this.station?.bundle ?? null, (p, radius) => sceneMeshNear(roots, p, radius));
+    const roots = [this.stationScene?.root, this.greybox?.root, this.connectors?.root].filter((root): root is THREE.Object3D => Boolean(root));
+    const counts = routeGroundCounts(polyline, (p) => this.groundAt(p.x, p.y + DEFAULT_GROUND.stepUp + 0.05, p.z, DEFAULT_GROUND.stepUp + DEFAULT_GROUND.stepDown + 0.1), steps, this.station?.bundle ?? null, (p, radius, edgeId) => sceneMeshNear(roots, p, radius, edgeId), this.connectors?.pathByEdge);
     return { ...counts, darkShare: async (stops?: readonly number[]): Promise<number> => {
       const points = polyline.map((p) => R(p.x, p.y, p.z));
       if (points.length < 2) return 0;
