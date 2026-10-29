@@ -89,7 +89,7 @@ export function portalWidthAxis(box: Box): THREE.Vector3 {
   return Math.abs(box.across.x * n.z - box.across.z * n.x) < 1e-6 ? new THREE.Vector3(-n.z, 0, n.x) : box.across;
 }
 
-export interface GreyboxStats { runs: number; lengthM: number; portals: number; meshes: number; triangles: number; buildMs: number; overBudget: string | null }
+export interface GreyboxStats { runs: number; lengthM: number; portals: number; portalThicknessUnknown: number; meshes: number; triangles: number; buildMs: number; overBudget: string | null }
 export const greyboxTriangleLimit = (tier: "high" | "low"): number => tier === "high" ? 150000 : 100000;
 export interface GreyboxScene {
   colliderNear(p: V3, r: number): boolean;
@@ -339,7 +339,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   };
   const openings: Box[] = [];
   const wallSegments: Segment2[] = [];
-  let lengthM = 0;
+  let lengthM = 0, portalThicknessUnknown = 0;
   const shellMat = new THREE.MeshLambertMaterial({ color: 0x9a9690, emissive: 0x9a9690, emissiveIntensity: 0.35, vertexColors: true, side: THREE.DoubleSide });
   const lightMat = new THREE.MeshBasicMaterial({ color: 0xffffff, vertexColors: true, toneMapped: false, side: THREE.DoubleSide });
   const kerbMat = new THREE.MeshBasicMaterial({ color: 0xffb547, toneMapped: false, side: THREE.DoubleSide });
@@ -418,9 +418,23 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       if (transition) {
         const hit = scene.wallHit(pa, pz);
         if (hit) {
-          const center = R(hit.x, hit.y, hit.z);
-          openings.push({ center, along: along.clone(), across: across.clone(), ...(hit.wallNormal ? { wallNormal: hit.wallNormal.clone() } : {}), width, depth: 0.6, height: 2.3 });
+          const near = R(hit.x, hit.y, hit.z);
+          const start = R(pa.x, pa.y, pa.z).addScaledVector(along, -2);
+          const end = R(pz.x, pz.y, pz.z).addScaledVector(along, 2);
+          const reverse = scene.wallHit(enu(end), enu(start));
+          const farCandidate = reverse ? R(reverse.x, reverse.y, reverse.z) : null;
+          const delta = farCandidate?.clone().sub(near);
+          const normal = hit.wallNormal ?? along;
+          const faceDistance = delta ? Math.abs(delta.dot(normal)) : 0;
+          const matchedNormal = !reverse?.wallNormal || Math.abs(reverse.wallNormal.dot(normal)) >= Math.sqrt(3) / 2;
+          const foundFar = Boolean(delta && delta.dot(along) > 1e-4 && delta.length() <= 2.5 && faceDistance > 1e-4 && matchedNormal);
+          if (!foundFar) portalThicknessUnknown++;
+          const far = foundFar ? farCandidate! : null;
+          const center = far ? near.clone().add(far).multiplyScalar(0.5) : near.clone();
+          const depth = far ? THREE.MathUtils.clamp(faceDistance + 0.2, 0.6, 2.5) : 0.6;
+          openings.push({ center, along: along.clone(), across: across.clone(), ...(hit.wallNormal ? { wallNormal: hit.wallNormal.clone() } : {}), width, depth, height: 2.3 });
           const faceAt = (face: number) => {
+            if (far) return (face < 0 ? near : far).clone().addScaledVector(along, face * 0.02);
             const outside = center.clone().addScaledVector(along, face * 0.3);
             const inside = center.clone().addScaledVector(along, -face * 0.3);
             const surface = scene.wallHit(enu(outside), enu(inside));
@@ -496,5 +510,5 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       if (material === shellMat) { walkable.push(mesh); colliders.push(mesh); }
     }
   }
-  return { root, walkable, colliders, wallSegments, openings, stats: { runs: runs.length, lengthM, portals: openings.length, meshes: root.children.length, triangles, buildMs: performance.now() - started, overBudget: dropped.length ? `Dropped ${dropped.join(", ")}${remainsOver ? `; floor and walls exceed ${triangleCap} triangles` : ` to meet ${triangleCap} triangles`}` : null } satisfies GreyboxStats };
+  return { root, walkable, colliders, wallSegments, openings, stats: { runs: runs.length, lengthM, portals: openings.length, portalThicknessUnknown, meshes: root.children.length, triangles, buildMs: performance.now() - started, overBudget: dropped.length ? `Dropped ${dropped.join(", ")}${remainsOver ? `; floor and walls exceed ${triangleCap} triangles` : ` to meet ${triangleCap} triangles`}` : null } satisfies GreyboxStats };
 }

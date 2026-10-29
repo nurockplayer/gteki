@@ -8,6 +8,7 @@ import { strings } from "../i18n.ts";
 import { darkSampleDistances } from "./routeGroundQa.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { prepareRayTrees } from "./meshBvh.ts";
+import { castCamera } from "./raycast.ts";
 
 const bundle = () => createSyntheticBundle([syntheticEdge("hall", "start", "a")]);
 
@@ -83,6 +84,30 @@ describe("greybox station integration", () => {
     expect((shell.material as THREE.Material).side).toBe(THREE.DoubleSide);
     expect(ray.intersectObject(shell).some((hit) => Math.abs(hit.point.y - 2.6) < 0.001)).toBe(true);
     expect(state.greybox.root.getObjectByName("greybox-lights")?.visible).toBe(true);
+  });
+
+  it("measures a 1.2 m wall and opens both faces for cuts and collider exemptions", async () => {
+    const { state, scene, loaded } = fixture();
+    const wall = scene.colliders[0]!; const second = scene.colliders[1]!;
+    scene.root.remove(second); scene.colliders.splice(1, 1);
+    wall.geometry = new THREE.BoxGeometry(1.2, 3, 6); wall.position.x = 2.65;
+    wall.material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+    scene.root.updateMatrixWorld(true);
+    const original = wall.geometry;
+    await state.loadStation(loaded, createRouter(loaded.bundle));
+    expect(state.greyboxOpenings).toHaveLength(1);
+    const box = state.greyboxOpenings[0];
+    expect(box.center.x).toBeCloseTo(2.65); expect(box.depth).toBeCloseTo(1.4);
+    expect(state.greybox.stats.portalThicknessUnknown).toBe(0);
+    const hit = (x: number, direction: number, z = 0) => castCamera(new THREE.Raycaster(new THREE.Vector3(x, 1, z), new THREE.Vector3(direction, 0, 0), 0, 4), [wall], new Set([wall]));
+    expect(hit(1, 1)).toHaveLength(0); expect(hit(4, -1)).toHaveLength(0);
+    expect(hit(1, 1, 2.5).length).toBeGreaterThan(0);
+    // Reintroduce the original wall to exercise the collider safety net on both faces.
+    const cut = wall.geometry; wall.geometry = original;
+    state.colliders = [wall]; state.colliderTargets = [wall]; state.sceneColliderTargets = new Set([wall]); state.portalExemptions = 0;
+    expect(state.blockedByColliders(new THREE.Vector3(1, 0, 0), new THREE.Vector3(4, 0, 0))).toBeNull();
+    expect(state.portalExemptions).toBeGreaterThanOrEqual(2);
+    wall.geometry = cut;
   });
 
   it("records the hit face normal and exempts an oblique wall crossing", () => {
