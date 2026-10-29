@@ -131,10 +131,13 @@ describe("the shipped mobile kit bundle dresses the escalators", () => {
 
   it("leaves walkable, colliders, camera blockers and the scene lists exactly as the flag-off scene", () => {
     expect(digestSceneLists(on)).toEqual(digestSceneLists(off));
-    const meshes = (s: StationScene) => (ms: readonly THREE.Mesh[] | undefined) => (ms ?? []).map((m) => [m.name, m.geometry.attributes.position?.count, m.geometry.index?.count]);
-    expect(meshes(on)(on.walkable)).toEqual(meshes(off)(off.walkable));
-    expect(meshes(on)(on.colliders)).toEqual(meshes(off)(off.colliders));
-    expect(meshes(on)(on.cameraBlockers)).toEqual(meshes(off)(off.cameraBlockers));
+    const meshes = (os: readonly THREE.Object3D[] | undefined) => (os ?? []).map((o) => {
+      const m = o as THREE.Mesh;
+      return [m.name, m.geometry?.attributes.position?.count, m.geometry?.index?.count];
+    });
+    expect(meshes(on.walkable)).toEqual(meshes(off.walkable));
+    expect(meshes(on.colliders)).toEqual(meshes(off.colliders));
+    expect(meshes(on.cameraBlockers)).toEqual(meshes(off.cameraBlockers));
     expect(on.spawnPoints).toEqual(off.spawnPoints);
     expect(on.walls).toEqual(off.walls);
   });
