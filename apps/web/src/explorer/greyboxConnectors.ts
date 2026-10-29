@@ -298,7 +298,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
             const corner = points[index]!, other = index === i ? points[index + 1]!.clone().sub(corner) : points[index - 1]!.clone().sub(corner);
             other.y = 0; other.normalize();
             const origin = new THREE.Vector3(corner.x, 0, corner.z);
-            pieces = pieces.flatMap(([start, end]) => clipLandingSide(start, end, origin, other, 0.34));
+            pieces = pieces.flatMap(([start, end]) => clipLandingSide(start, end, origin, other, width / 2 + 0.1));
           }
           for (const [start, finish] of pieces) {
             const wall = { ax: start.x, az: start.z, bx: finish.x, bz: finish.z, yMin: Math.min(ya, yb) - 0.12, yMax: Math.max(ya, yb) + 0.96 };
@@ -337,8 +337,8 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
           const d = incoming.normalize(), n = new THREE.Vector3(-d.z, 0, d.x), out = outgoing.normalize(), half = width / 2 + 0.03;
           const corners = [at.clone().addScaledVector(d, -half).addScaledVector(n, -half), at.clone().addScaledVector(d, half).addScaledVector(n, -half), at.clone().addScaledVector(d, half).addScaledVector(n, half), at.clone().addScaledVector(d, -half).addScaledVector(n, half)];
           const sides = [[corners[3]!, corners[0]!], [corners[1]!, corners[2]!], [corners[0]!, corners[1]!], [corners[2]!, corners[3]!]] as const;
-          const entry = at.clone().addScaledVector(d, -half);
-          const exit = at.clone().addScaledVector(out, half / Math.max(Math.abs(out.dot(d)), Math.abs(out.dot(n))));
+          const entry = at;
+          const exit = at;
           const clearance = width / 2 + 0.1;
           for (const [a, b] of sides) {
             const afterEntry = clipLandingSide(a, b, entry, d.clone().negate(), clearance);

@@ -212,12 +212,15 @@ it("keeps the L-shaped stair path clear and guards the two outside landing edges
       const p = samplePolyline(path, cumulative, s), resolved = resolveWalls(p.x, p.z, 0.3, p.y, 1.7, result.wallSegments);
       expect(Math.hypot(resolved.x - p.x, resolved.z - p.z), `direction=${direction}, s=${s}`).toBeLessThanOrEqual(0.05);
     }
-    const outer = [{ x: 4.78, z: 0 }, { x: 4, z: direction * 0.78 }];
-    for (const point of outer) {
-      const resolved = resolveWalls(point.x, point.z, 0.3, 2, 1.7, result.wallSegments);
-      expect(Math.hypot(resolved.x - point.x, resolved.z - point.z)).toBeGreaterThan(0.29);
-      const toward = new THREE.Vector3(point.x - 4, 0, point.z).normalize();
-      const ray = new THREE.Raycaster(new THREE.Vector3(4, 2.4, 0), toward, 0, 0.9);
+    const outer = result.wallSegments.filter((w) => Math.abs(w.yMin - 1.88) < 1e-6 && Math.abs(w.yMax - 2.96) < 1e-6);
+    expect(outer.some((w) => Math.abs(w.ax - 4.78) < 1e-6 && Math.abs(w.bx - 4.78) < 1e-6)).toBe(true);
+    expect(outer.some((w) => Math.abs(w.az - direction * 0.78) < 1e-6 && Math.abs(w.bz - direction * 0.78) < 1e-6)).toBe(true);
+    for (const w of outer) {
+      const x = (w.ax + w.bx) / 2, z = (w.az + w.bz) / 2;
+      const resolved = resolveWalls(x, z, 0.3, 2, 1.7, [w]);
+      expect(Math.hypot(resolved.x - x, resolved.z - z)).toBeGreaterThan(0.29);
+      const normal = new THREE.Vector3(-(w.bz - w.az), 0, w.bx - w.ax).normalize();
+      const ray = new THREE.Raycaster(new THREE.Vector3(x, 2.4, z).addScaledVector(normal, 0.1), normal.negate(), 0, 0.2);
       expect(ray.intersectObjects(result.colliders).length).toBeGreaterThan(0);
     }
   }
@@ -230,9 +233,16 @@ it("keeps diagonal turning landings clear while preserving outer guards", () => 
     station.nodes.find((n) => n.id === "upper")!.position = { x: endX, y: endY, z: 4 };
     const result = buildConnectors(station, () => true, { hasFloor: () => true, nearMesh: () => false }, "high");
     const path = result.pathByEdge.get("bent")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
-    for (let s = 0; s <= total; s += 0.05) {
-      const p = samplePolyline(path, cumulative, s), resolved = resolveWalls(p.x, p.z, 0.3, p.y, 1.7, result.wallSegments);
-      expect(Math.hypot(resolved.x - p.x, resolved.z - p.z), `${degrees}° direction=${direction} s=${s}`).toBeLessThanOrEqual(0.05);
+    const bend = path.findIndex((p) => Math.hypot(p.x - 4, p.y - 2, p.z) < 1e-6), bendS = cumulative[bend]!;
+    expect(bend).toBeGreaterThan(0);
+    for (const offset of [-0.5, 0, 0.5]) for (let s = 0; s <= total; s += 0.05) {
+      const p = samplePolyline(path, cumulative, s), firstFlight = s <= bendS;
+      // Transition between the two parallel paths within the turning landing.
+      const taper = Math.min(1, Math.abs(s - bendS) / 0.75), amount = offset * taper;
+      const nx = firstFlight ? 0 : direction * Math.sin(angle), nz = firstFlight ? 1 : Math.cos(angle);
+      const x = p.x + nx * amount, z = p.z + nz * amount;
+      const resolved = resolveWalls(x, z, 0.3, p.y, 1.7, result.wallSegments);
+      expect(Math.hypot(resolved.x - x, resolved.z - z), `${degrees}° direction=${direction} offset=${offset} s=${s}`).toBeLessThanOrEqual(0.05);
     }
     const guards = result.wallSegments.filter((w) => Math.abs(w.yMin - 1.88) < 1e-6 && Math.abs(w.yMax - 2.96) < 1e-6 && Math.hypot(w.bx - w.ax, w.bz - w.az) > 0.05);
     expect(guards.length, `${degrees}° direction=${direction}`).toBeGreaterThan(0);
