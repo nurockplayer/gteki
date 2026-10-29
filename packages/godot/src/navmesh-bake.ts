@@ -3,6 +3,7 @@ import { pathToFileURL } from "node:url";
 import fs from "node:fs";
 import path from "node:path";
 import { gzipSync } from "node:zlib";
+import { createHash } from "node:crypto";
 import * as THREE from "three";
 import { enuToRenderer } from "@gteki/geo";
 import { createRouter, DEFAULT_PROFILE, nodeDisplayZ } from "@gteki/navigation";
@@ -15,12 +16,15 @@ import { generateTiledNavMesh } from "recast-navigation/generators";
 import { WALKER_BODY } from "@gteki/scene-api";
 
 /** Positions are renderer coordinates; triangle indices must have upward-facing floors. */
-export async function bakeNavmesh(positions: readonly number[], indices: readonly number[]) {
-  await init();
+export async function bakeNavmesh(positions: readonly number[], indices: readonly number[], options: { radiusM?: number; rounding?: "up" | "down" } = {}) {
   const cs = 0.15, ch = 0.1;
+  const radius = options.radiusM ?? WALKER_BODY.radiusM;
+  const radiusCells = options.rounding === "down" ? Math.floor(radius / cs + 1e-6) : Math.ceil(radius / cs - 1e-6);
+  if (!Number.isFinite(radius) || radius <= 0 || radiusCells < 1) throw new Error("radius must produce at least one cell of erosion");
+  await init();
   return generateTiledNavMesh(positions, indices, {
     cs, ch, tileSize: 64,
-    walkableRadius: Math.ceil(WALKER_BODY.radiusM / cs - 1e-6),
+    walkableRadius: radiusCells,
     walkableHeight: Math.ceil(1.7 / ch),
     walkableClimb: Math.floor(0.3 / ch + 1e-6),
     walkableSlopeAngle: 40,
@@ -44,6 +48,11 @@ function cutPortal(poly: THREE.Vector3[], box: Box): THREE.Vector3[][] {
   const axes = [box.across, box.along, new THREE.Vector3(0,1,0)];
   const centers = [box.center, box.center, box.center.clone().add(new THREE.Vector3(0,box.height/2,0))];
   const half = [box.width/2, box.depth/2, box.height/2];
+  // A quick separating-axis test avoids fragmenting triangles outside this portal.
+  for (let k=0; k<3; k++) {
+    const values=poly.map(p => p.clone().sub(centers[k]!).dot(axes[k]!));
+    if (Math.min(...values)>half[k]! || Math.max(...values)<-half[k]!) return [poly];
+  }
   let inside = poly; const outside: THREE.Vector3[][] = [];
   for (let k=0; k<3; k++) for (const side of [-1,1]) {
     if (!inside.length) return outside;
@@ -67,10 +76,11 @@ function cutPortal(poly: THREE.Vector3[], box: Box): THREE.Vector3[][] {
 export const triangleKey = (numbers: readonly number[]) => numbers.map(n => Math.fround(n)).join(",");
 
 /** Transform indexed or non-indexed meshes (including instances) into Recast triangles. */
-export function appendMeshes(objects: readonly THREE.Object3D[], positions: number[], indices: number[], obstacle: boolean, portals = new Map<THREE.Object3D, Box[]>(), skip = new Set<string>()) {
+export function appendMeshes(objects: readonly THREE.Object3D[], positions: number[], indices: number[], obstacle: boolean, portals = new Map<THREE.Object3D, Box[]>(), skip = new Set<string>(), excludeGateTriangles = false) {
   const v = new THREE.Vector3(), instance = new THREE.Matrix4(), world = new THREE.Matrix4();
   for (const object of objects) {
     const mesh = object as THREE.Mesh;
+    const gateTriangles = new Set<number>(excludeGateTriangles ? mesh.userData.gtekiGateTriangles ?? [] : []);
     const geometry = mesh.geometry, attr = geometry?.getAttribute("position");
     if (!attr) continue;
     const count = (mesh as THREE.InstancedMesh).isInstancedMesh ? (mesh as THREE.InstancedMesh).count : 1;
@@ -85,6 +95,7 @@ export function appendMeshes(objects: readonly THREE.Object3D[], positions: numb
       }
       const index = geometry.index, length = index?.count ?? attr.count;
       for (let i = 0; i + 2 < length; i += 3) {
+        if (gateTriangles.has(i / 3)) continue;
         let a = base + (index ? index.getX(i) : i), b = base + (index ? index.getX(i + 1) : i + 1), c = base + (index ? index.getX(i + 2) : i + 2);
         // Obstacle triangles rasterize but must not turn their upward-facing tops into floors.
         const ax = positions[3*a]!, az = positions[3*a+2]!;
@@ -114,14 +125,18 @@ export function appendMeshes(objects: readonly THREE.Object3D[], positions: numb
 }
 
 async function main() {
-  let station = "", out = "", withGreybox = false;
+  let station = "", out = "", withGreybox = false, radiusM: number = WALKER_BODY.radiusM, rounding: "up" | "down" = "up", ignoreGates = false;
   const args = process.argv.slice(2);
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--station" && args[i+1]) station = args[++i]!;
     else if (args[i] === "--out" && args[i+1]) out = args[++i]!;
     else if (args[i] === "--with-greybox") withGreybox = true;
+    else if (args[i] === "--agent-radius" && args[i+1]) radiusM = Number(args[++i]);
+    else if (args[i] === "--radius-rounding" && (args[i+1] === "up" || args[i+1] === "down")) rounding = args[++i] as "up" | "down";
+    else if (args[i] === "--ignore-gate-obstacles") ignoreGates = true;
     else throw new Error(`unknown or incomplete argument: ${args[i]}`);
   }
+  if (!Number.isFinite(radiusM) || radiusM <= 0) throw new Error("radius must be positive");
   if (!out) throw new Error("use --station <station> --out <directory>");
   const output = path.resolve(out), qa = path.resolve(".qa");
   if (output !== qa && !output.startsWith(qa + path.sep)) throw new Error("output must be under .qa/");
@@ -135,7 +150,8 @@ async function main() {
   appendMeshes(ground, positions, indices, false);
   const groundSet = new Set(ground), shared = collider.filter(o => groundSet.has(o));
   if (shared.length) throw new Error(`${shared.length} meshes are both walkable and colliders; surface classification is ambiguous`);
-  appendMeshes(collider, positions, indices, true, grey?.portals);
+  if (ignoreGates && withGreybox) throw new Error("gate experiment is only available without --with-greybox");
+  appendMeshes(collider, positions, indices, true, grey?.portals, new Set(), ignoreGates);
   if (grey) {
     greyboxRuns = grey.grey.stats.runs; walls = grey.walls;
     const data = grey.grey.navFloors ?? [], keys = new Set<string>();
@@ -147,7 +163,10 @@ async function main() {
     }
     appendMeshes(grey.grey.colliders, positions, indices, true, new Map(), keys);
   }
+  const gateWallCount = walls.filter(w => "gtekiGate" in w && w.gtekiGate === true).length;
+  const activeGateWalls = walls.filter(w => "gtekiGate" in w && w.gtekiGate === true && w.zMax > w.zMin).length;
   for (const wall of walls) {
+    if (ignoreGates && "gtekiGate" in wall && wall.gtekiGate === true) continue;
     const dx = wall.b.x-wall.a.x, dz = -(wall.b.y-wall.a.y), len = Math.hypot(dx,dz), h = wall.zMax-wall.zMin;
     if (!len || h <= 0) continue;
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(len, h, 0.05));
@@ -159,7 +178,7 @@ async function main() {
   }
   console.log(`scene input: ${ground.length} ground meshes, ${collider.length} collider meshes, ${walls.length} wall segments, ${indices.length/3} triangles; greybox runs ${greyboxRuns ?? "not measured"}`);
   const start = performance.now();
-  const result = await bakeNavmesh(positions, indices);
+  const result = await bakeNavmesh(positions, indices, { radiusM, rounding });
   const bakeMs = performance.now() - start;
   if (!result.success) throw new Error(`bake failed: ${result.error}`);
   const nav = result.navMesh;
@@ -211,7 +230,9 @@ async function main() {
   const bytes = exportNavMesh(nav), gz = gzipSync(bytes);
   fs.mkdirSync(out, { recursive: true });
   fs.writeFileSync(path.join(out, `${station}.bin`), bytes);
-  const metrics = { station, bakeMs, rawBytes: bytes.length, gzipBytes: gz.length, tiles, polygons, peakRssKiB: process.resourceUsage().maxRSS, greyboxRuns, vertical };
+  const effectiveRadiusCells = rounding === "down" ? Math.floor(radiusM / 0.15 + 1e-6) : Math.ceil(radiusM / 0.15 - 1e-6);
+  const gateTriangles = collider.reduce((n, mesh) => n + (mesh.userData.gtekiGateTriangles?.length ?? 0), 0);
+  const metrics = { station, withGreybox, privateBuild, meshSha256: createHash("sha256").update(bytes).digest("hex"), radiusM, rounding, effectiveRadiusCells, effectiveRadiusM: effectiveRadiusCells * 0.15, ignoreGates, gateWallCount, activeGateWalls, gateTriangles, excludedActiveGateWalls: ignoreGates ? activeGateWalls : 0, excludedGateTriangles: ignoreGates ? gateTriangles : 0, bakeMs, rawBytes: bytes.length, gzipBytes: gz.length, tiles, polygons, peakRssKiB: process.resourceUsage().maxRSS, greyboxRuns, vertical };
   fs.writeFileSync(path.join(out, `${station}-bake.json`), JSON.stringify(metrics, null, 2) + "\n");
   console.log(JSON.stringify(metrics, null, 2));
   query.destroy(); nav.destroy(); scene.dispose();

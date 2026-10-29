@@ -78,11 +78,55 @@ The method change is per-sample detail-height evaluation before the full audit; 
 
 Phone estimates are the Node times multiplied by **4**, not phone measurements: Ikebukuro load 158.82 ms, edge p50/p95 0.0776/1.3885 ms, route p50/p95 0.4241/1.7585 ms. Shinjuku load 151.03 ms, edge p50/p95 0.0325/0.1365 ms, route p50/p95 0.6203/1.5093 ms. The estimate excludes the costs listed above.
 
-`--with-greybox` now builds the explorer's low-tier greybox. The optional bake capture records its generated floor triangles separately from its shell obstacles, clips selected scene collider triangles at portal volumes, and includes split wall segments. The audit adds greybox floors and walls and filters portal collider hits using the explorer's opening rule. The binary and audit must be built with matching flag and input. Both scripts use `GTEKI_PRIVATE_DIR` to build an overlay from a temporary copy; the source private directory is not written. No private station data was run or recorded here. A shell-truncated greybox is rejected rather than silently baked.
+At step 4, `--with-greybox` built the explorer's then-current low-tier greybox. The optional bake capture records its generated floor triangles separately from its shell obstacles, clips selected scene collider triangles at portal volumes, and includes split wall segments. The audit adds greybox floors and walls and filters portal collider hits using the explorer's opening rule. The binary and audit must be built with matching flag and input. Both scripts use `GTEKI_PRIVATE_DIR` to build an overlay from a temporary copy; the source private directory is not written. No private station data was run or recorded here. At that time a shell-truncated greybox was rejected; step 5 replaces this with the updated non-truncating generator.
 
 Both public runs generated **zero greybox passages**. Synthetic tests exercise a non-empty passage, a cut portal and preservation of surrounding wall collision; private overlays and real non-empty station passages have not been validated. Greybox clipping and the winding-based Recast obstacle approximation remain experimental, not a runtime collision guarantee.
 
 Public Shinjuku, with the greybox flag, baked in **1.83 s**, with **341,056 raw / 101,740 gzip bytes**, **111 tiles**, **1,924 polygons** and **589,976 KiB** peak process RSS. It completed within the 3 GB and 20-minute bake limits. Of 238 routable ordered pairs, 36 yielded constructed audit paths and 202 had unresolved non-stair edges; the comparable 36-route scene-height audit reported **0 off-floor / 1 no-floor / 0 wall hits**, as did its graph baseline. There were 19 unique edges without acceptable paths. The 238 route-query timings include partial query sequences for incomplete routes, so they are not complete Shinjuku journey timings.
+
+## Step 5: greybox update and public Shinjuku diagnosis
+
+2026-10-30 01:45 JST. Merged `origin/claude/greybox-passages` at `c7b963e0`. Nav floor capture follows its simplified emitted passage quads and junction discs; the old truncation rejection is removed. Bake and audit now use the updated Explorer rule: every wall-like scene-collider hit within an opening is exempt. A synthetic private overlay forced a non-empty greybox and successfully ran both CLIs with `GTEKI_PRIVATE_DIR` and `--with-greybox`, without writing an overlay to the input directory. No real private data was run.
+
+The public baseline has 238 graph-routable ordered POI pairs, 36 constructed audit paths and **202 incomplete routes**. Failure counts below are **directed edge queries**, not routes. Mode counts of affected routes overlap because one route can contain several failed modes: walk 94, gate 174, escalator 140, elevator 28. The three unique gate edges appear in both directions.
+
+| Non-stair edge class | Directed queries | Both endpoints snap? | Detour result |
+| --- | ---: | --- | --- |
+| Escalator | 7 | Yes | Destination polygon not reached |
+| Elevator | 4 | No, at least one missing | Unknown |
+| Walk | 2 | Yes | Destination polygon not reached |
+| Walk | 3 | No, at least one missing | Unknown |
+| Gate | 6 | Yes | Destination polygon not reached |
+
+The unreached rows are labelled disconnected by the audit when Detour does not report a node or output-buffer limit; this is a bounded path-query result, not an independently computed polygon-component proof. A successful snap also does not prove correct floor or wall side. In addition, six directed stair failures use the existing graph fallback: four have a missing snap and two have a connected path rejected as over twice the graph edge length.
+
+For same-floor failures, the diagnostic samples wall segments at 0.5 m intervals along the graph edge and measures the smallest perpendicular cross-section with a wall within 5 m on each side. This is an **approximate wall-only cross-section**, not a verified doorway width or full body clearance; other mesh obstacles and the actual navmesh path are not measured. Cross-floor results and samples without walls on both sides are unknown. Ten public examples, with endpoint snap state in the listed direction:
+
+| Public edge ID | Mode | From / to snapped | Detour | Sampled wall section m |
+| --- | --- | --- | --- | ---: |
+| e:06a78a8f616c4a75a7b4eece6a295c4c | escalator | yes / yes | destination unreached | unknown |
+| e:203cbf0c5d724f7fa48027cf741e7628 | walk | yes / yes | destination unreached | 2.33 |
+| e:2692fe08625f4a3f92d69a1380a58ccd | escalator | yes / yes | destination unreached | unknown |
+| e:2768d162a2d648cf9df2fc76ca89257f | escalator | yes / yes | destination unreached | unknown |
+| e:27d3ed498cc9423683ee7f502c5d2460 | escalator | yes / yes | destination unreached | unknown |
+| e:3763bee44e4740ac86216e99e212f8d1 | gate | yes / yes | destination unreached | 1.24 |
+| e:4fc06b0d45184e66aaa3bb1ea9ddcd62 | escalator | yes / yes | destination unreached | unknown |
+| e:5ce3f318ea6947d293e646157109d628 | walk | yes / no | unknown | 2.31 |
+| e:65edd7ca50844b609d4dcb25bd296936 | elevator | no / no | unknown | 1.55 |
+| e:80b372f586204d5cbe5769beffcfbf56 | gate | yes / yes | destination unreached | 0.62 |
+
+The 0.62 m section is only about 0.02 m wider than the 0.60 m walker diameter, but the sample alone cannot establish that it is the limiting opening or why the mesh disconnects.
+
+| Experiment | Effective erosion | Incomplete routes | Unique failed edges | Directed failures |
+| --- | ---: | ---: | ---: | ---: |
+| Baseline radius 0.30 m, round up | 0.30 m (2 cells) | 202 | 19 | 28 |
+| Radius 0.25 m, round up | 0.30 m (2 cells) | 202 | 19 | 28 |
+| Radius 0.25 m, round down | 0.15 m (1 cell) | 92 | 11 | 15 |
+| Gate obstacles removed | 0.30 m (2 cells) | 202 | 19 | 28 |
+
+Rounding down admits paths with only 0.15 m of Recast erosion and **does not satisfy the 0.30 m walker radius**. In the round-down run, remaining incomplete-route mode counts are escalator 75 and elevator 28 (overlapping). Gate-machine source walls are tagged for the experiment: eight bands exist, but all eight have empty effective height bands and were already excluded from the baseline obstacle input. The visible gate machines are not themselves scene collider meshes; the gate-off result is therefore a no-op for those eight bands, not evidence that real gates have no effect. All four runs used public data, the same scene and 3 GB container limit.
+
+Each bake now records the binary SHA-256, effective erosion and gate exclusion counts, and the audit checks its accompanying metadata and records it in the output. The gate-off audit still checks collisions against the original scene; in this run no active gate obstacle was removed. The metadata does not fingerprint the full input scene or overlay, so rebake after changing either. Zero-cell erosion is rejected.
 
 ## Evidence and missing measurements
 
@@ -91,7 +135,7 @@ Public Shinjuku, with the greybox flag, baked in **1.83 s**, with **341,056 raw 
 - The earlier synthetic-only run did not measure a station bake; the public step 1 measurements are above.
 - The earlier synthetic-only run did not measure routes; the public step 2 comparison is above.
 - The earlier steps did not measure runtime; the public Node measurements and ×4 estimates are in step 4 above.
-- The earlier combined bake-and-audit command failed because `navmesh-audit.ts` did not exist. Step 1 now provides the bake CLI; the audit remains future work.
+- The earlier combined bake-and-audit command failed because `navmesh-audit.ts` did not yet exist; subsequent steps added and ran it.
 
 ## Integration sketch
 
@@ -107,9 +151,11 @@ Decision deferred pending further diagnosis. Per-sample detail heights reduce th
 
 ## Geometry risks identified during investigation
 
-The greybox shell is both walkable and collider and includes floors, ceilings, sides and underside surfaces, so feeding all its triangles to Recast without classifying them can introduce false floors. Scene wall segments also need representation in the bake. The explorer splits wall segments at openings but handles mesh-collider portals separately; the bake must match that behavior. Greybox shell truncation (`stats.overBudget`) can remove navigation-relevant geometry. Vertical connections require validated endpoints and directionality, and snapping needs floor and wall-side validation. These are code-review risks, not measured station failures. The current synthetic helper proves none of them.
+The greybox shell is both walkable and collider and includes floors, ceilings, sides and underside surfaces, so feeding all its triangles to Recast without classifying them can introduce false floors. Scene wall segments also need representation in the bake. The explorer splits wall segments at openings but handles mesh-collider portals separately; the bake must match that behavior. The old step-1 greybox could truncate navigation-relevant geometry; the step-5 generator does not truncate floor or walls. Vertical connections require validated endpoints and directionality, and snapping needs floor and wall-side validation. These are code-review risks, not measured station failures. The current synthetic helper proves none of them.
 
 ## Independent review
+
+Review started 2026-10-30 01:42 JST: Oracle's static review raised blockers to treating these measurements as validated navigation. Endpoint snaps can cross walls; the specified search extents do not establish reachability from the graph node. The requested Explorer portal rule exempts all wall-like hits in an opening and can also exempt an unrelated obstruction. Rounded-down clearance is optimistic; zero-cell erosion is now rejected and the effective radius recorded. Bake provenance is now attached and checked, and failure classes include rejection reasons. The gate-off collision audit uses the original scene, as identified above. The sampled wall sections do not establish door clearance; junction patches after simplification also need targeted geometry validation. These limitations remain follow-ups before navigation adoption. Oracle did not independently run the station measurements or review those subsequent fixes.
 
 2026-10-30 00:28 JST: Oracle reviewed the explicitly incomplete synthetic experiment and found no blocking defects in that limited scope. It confirmed that station geometry, floor-aware snapping, links, route comparison and benchmarks remain unfinished; it did not independently execute the tests.
 
@@ -127,4 +173,4 @@ The greybox shell is both walkable and collider and includes floors, ceilings, s
 
 ## Step 4 independent review
 
-2026-10-30 01:33 JST: Oracle identified three concerns. Its proposed floor-winding reversal was not applied: for a positive-X passage the captured floor's left side is at negative Z, and the synthetic test asserts an upward normal and successful corridor traversal. The audit now probes the separately captured greybox floor rather than the shell ceiling; a ceiling regression test passes. For a portal intersecting multiple colliders, the implementation intentionally retains the explorer's single-selected-collider behavior, so another collider can remain solid; a two-collider audit test demonstrates that limitation. The measurements are warm offline Node/WASM queries, not application or phone measurements, and Shinjuku includes incomplete routes as described above. Oracle did not run the station measurements.
+2026-10-30 01:33 JST: Oracle identified three concerns. Its proposed floor-winding reversal was not applied: for a positive-X passage the captured floor's left side is at negative Z, and the synthetic test asserts an upward normal and successful corridor traversal. The audit now probes the separately captured greybox floor rather than the shell ceiling; a ceiling regression test passes. At step 4 the implementation retained the explorer's then-current single-selected-collider behavior. Step 5 updates this to the new rule that exempts every wall-like scene hit inside an opening. The measurements are warm offline Node/WASM queries, not application or phone measurements, and Shinjuku includes incomplete routes as described above. Oracle did not run the station measurements.

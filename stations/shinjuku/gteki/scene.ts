@@ -154,6 +154,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     // so WalkWorld's body limits fold into the band: bodyMin → raise zMin, bodyMax → lower zMax.
     zMin: w.bodyMin !== undefined ? Math.max(w.zMin, w.bodyMin + WALKER_BODY.bodyTopM) : w.zMin,
     zMax: w.bodyMax !== undefined ? Math.min(w.zMax, w.bodyMax + WALKER_BODY.bodyBottomM) : w.zMax,
+    ...("gtekiGate" in w && w.gtekiGate === true ? { gtekiGate: true } : {}),
   }));
   // The explorer's follow camera only raycasts colliders + walkable, so without colliders it swung
   // through walls. One invisible DoubleSide mesh of the same wall bands gives it something to hit.
@@ -162,10 +163,11 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   const colliders: THREE.Mesh[] = [];
   if (walls.length) {
     const pos: number[] = [];
-    const idx: number[] = [];
+    const idx: number[] = [], gateTriangles: number[] = [];
     for (const w of walls) {
       if (w.zMax <= w.zMin) continue;
       const i = pos.length / 3;
+      if ("gtekiGate" in w && w.gtekiGate === true) gateTriangles.push(idx.length / 3, idx.length / 3 + 1);
       pos.push(w.a.x, w.zMin, -w.a.y, w.b.x, w.zMin, -w.b.y, w.b.x, w.zMax, -w.b.y, w.a.x, w.zMax, -w.a.y);
       idx.push(i, i + 1, i + 2, i, i + 2, i + 3);
     }
@@ -176,6 +178,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     const m = new T.Mesh(g, proxyMat);
     m.name = "wall collider (invisible)";
     m.userData.gteki_role = "collider";
+    m.userData.gtekiGateTriangles = gateTriangles;
     proxies.add(m);
     colliders.push(m);
   }
