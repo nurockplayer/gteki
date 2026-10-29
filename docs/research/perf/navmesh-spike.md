@@ -191,6 +191,23 @@ The composite link is only meaningful to a consumer that interprets its metadata
 
 At 0.10 m cells, 0.30 m radius, 0.40 m climb and 256-cell tiles, both the default detail-height and scene-raycast-height navmesh segment audits report **0 off-floor / 0 no-floor / 0 wall hits** on the completed public routes for both stations. Incomplete routes are excluded. The scene-height result is the requested gate number, but is not a swept-body clearance test.
 
+## Step 9: landing pads and floor diagnostics
+
+2026-10-30 02:55 JST. The runtime greybox now emits a square landing at each traversable vertical endpoint whose scene floor probe fails, using the node render elevation and at least 1.5 m width. Where an adjacent traversable non-vertical edge reaches a scene floor within 3 m, its sampled geometry supplies a short strip. Pads share shell tags and budget handling with runs; `stats.landingPads` counts distinct nodes. The bake captures pad floor triangles through the existing greybox floor input. A synthetic test finds the pad in the baked navmesh.
+
+Both public stations were measured in the same 3 GB container at 0.10 m cell size, 0.30 m radius, 0.40 m climb and 256-cell tiles, with greybox enabled. The before runs used the previous greybox source inside the isolated container.
+
+| Station | Landing pads before → after | Failed edges before → after | Incomplete routes before → after | Failed vertical endpoints before → after |
+| --- | ---: | ---: | ---: | ---: |
+| Ikebukuro | 0 → 0 | 0 → 0 | 0 / 1,054 → 0 / 1,054 | 0 → 0 |
+| Shinjuku | 0 → 8 | 7 → 6 | 88 / 238 → 72 / 238 | 10 → 6 |
+
+For Shinjuku after pads, the six failed vertical endpoints are three height mismatches and three floor-validation failures. All three nearest mismatched polys are below the node; two of those nodes have a greybox floor at their position within 0.6 m height. Of the three floor failures, the snap-point floor ray hits scene floor twice and greybox floor once; all three fail the approach off-floor rule. Before pads, the three mismatches were all below with no greybox floor at the node; seven floor failures were one missing snap floor, four missing approach floors and two off-floor approaches. Both stations' completed navmesh segments remain **0 off-floor / 0 no-floor / 0 wall hits** for both default and scene-raycast heights. Incomplete routes are excluded, and the check is not swept-body validation.
+
+These public figures do not determine the private result. The lead must rerun the private build. Floor-source and failure-rule diagnostics are aggregate only; detailed outputs remain under `.qa` and must not be published for private builds.
+
+Oracle's static review identified narrower overlapping corridor footprints and horizontal graph edges taking unrelated vertical links as concrete risks. The emitter now retains a wider overlapping run and clips pad side walls against corridor coverage; the audit rejects off-mesh detours on non-vertical edges. These changes postdate that review. The requested trigger checks the node's floor, so partial support elsewhere in a landing remains a follow-up. Earlier short-gap detection and thick-wall portal handling also need separate investigation. Pad orientation, ceilings and overlapping branches need scene-level validation; the synthetic tests do not prove stairwell clearance.
+
 ## Evidence and missing measurements
 
 - `recast-navigation` 0.43.1 is installed only in `@gteki/godot`; its package licence is MIT. It uses WebAssembly and includes the 0.43.1 core and generators packages.

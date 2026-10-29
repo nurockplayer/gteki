@@ -141,6 +141,22 @@ it("bakes a greybox floor and keeps its shell as obstacles", async () => {
   query.destroy(); baked.navMesh.destroy(); geometry.dispose();
 });
 
+it("includes a greybox landing pad in the baked navmesh", async () => {
+  const THREE=await import("three"), {buildGreybox}=await import("../../../apps/web/src/explorer/greybox.ts"), {appendMeshes,triangleKey}=await import("./navmesh-bake.ts");
+  const bundle={floors:[{id:"low",renderElevationM:0},{id:"high",renderElevationM:4}],nodes:[{id:"a",floorId:"low",position:{x:0,y:0,z:0}},{id:"b",floorId:"high",position:{x:0,y:0,z:4}}],edges:[{id:"stairs",from:"a",to:"b",mode:"stairs"}]} as never;
+  const grey=buildGreybox(bundle,()=>true,p=>p.z<2,{colliderNear:()=>false,wallHit:()=>null},"low",true);
+  expect(grey.stats.landingPads).toBe(1);
+  const data=grey.navFloors!, geometry=new THREE.BufferGeometry(); geometry.setAttribute("position",new THREE.Float32BufferAttribute(data,3));
+  const floor=new THREE.Mesh(geometry); floor.updateMatrixWorld(true);
+  const positions:number[]=[], indices:number[]=[], keys=new Set<string>();
+  for (let i=0;i+8<data.length;i+=9) keys.add(triangleKey(data.slice(i,i+9)));
+  appendMeshes([floor],positions,indices,false); appendMeshes(grey.colliders,positions,indices,true,new Map(),keys);
+  const baked=await bakeNavmesh(positions,indices,{cellSizeM:0.1}); if (!baked.success) throw new Error(baked.error);
+  const query=new NavMeshQuery(baked.navMesh), found=query.findClosestPoint({x:0,y:4,z:0},{halfExtents:{x:1,y:0.6,z:1}});
+  expect(found.success && !!found.polyRef && Math.abs(found.point.y-4)<0.6).toBe(true);
+  query.destroy(); baked.navMesh.destroy(); geometry.dispose();
+});
+
 it("cuts only the portal opening out of a scene collider", async () => {
   const THREE = await import("three");
   const { appendMeshes } = await import("./navmesh-bake.ts");

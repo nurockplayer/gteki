@@ -10,9 +10,23 @@ it("classifies missing polygons, wrong heights, missing floor and wall crossings
   expect(diagnoseVerticalSnap(query(node,0),ground,node).reason).toBe("no_poly");
   expect(diagnoseVerticalSnap(query({...node,y:2}),ground,node).reason).toBe("height");
   expect(diagnoseVerticalSnap(query(node),{ground:[],collider:[],walls:[]},node).reason).toBe("floor");
+  expect(diagnoseVerticalSnap(query(node),{ground:[],collider:[],walls:[]},node).floorRule).toBe("snap_no_floor");
+  floor.userData.greybox=true;
+  expect(diagnoseVerticalSnap(query({...node,y:2}),ground,node).greyboxFloorAtNode).toBe(true);
+  floor.userData.greybox=false;
   const wall={...ground,walls:[{a:{x:0,y:-2},b:{x:0,y:2},zMin:0,zMax:2}]};
   expect(diagnoseVerticalSnap(query({x:0.5,y:0,z:0}),wall,node).reason).toBe("wall");
   expect(diagnoseVerticalSnap(query(node,0),ground,node).walkableWithin3m).toBe(true);
+  floor.geometry.dispose(); floor.material.dispose();
+});
+
+it("reports the floor source and missing support along the approach", () => {
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(1,2).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({side:THREE.DoubleSide})); floor.position.x=1.5; floor.updateMatrixWorld(true);
+  const query={findClosestPoint:()=>({success:true,status:0,polyRef:1,point:{x:1.5,y:0,z:0},isPointOverPoly:true})} as unknown as Pick<NavMeshQuery,"findClosestPoint">;
+  const result=diagnoseVerticalSnap(query,{ground:[floor],collider:[],walls:[]},{x:0,y:0,z:0});
+  expect(result.reason).toBe("floor"); expect(result.floorSource).toBe("scene"); expect(result.floorRule).toBe("approach_no_floor");
+  floor.userData.greybox=true;
+  expect(diagnoseVerticalSnap(query,{ground:[floor],collider:[],walls:[]},{x:0,y:0,z:0}).floorSource).toBe("greybox");
   floor.geometry.dispose(); floor.material.dispose();
 });
 

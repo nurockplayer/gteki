@@ -62,9 +62,34 @@ describe("unmodelledRunsByEdge", () => {
 
 describe("buildGreybox", () => {
   const emptyScene = { colliderNear: () => false, wallHit: () => null };
+  it("builds a missing upper stair landing and captures its walkable floor", () => {
+    const station = {
+      ...bundle,
+      floors:[{id:"lower",renderElevationM:0},{id:"upper",renderElevationM:4}],
+      nodes:[{id:"low",floorId:"lower",position:{x:0,y:0,z:0}},{id:"high",floorId:"upper",position:{x:0,y:0,z:4}},{id:"walk",floorId:"upper",position:{x:2,y:0,z:4}}],
+      edges:[{id:"stair",from:"low",to:"high",mode:"stairs"},{id:"path",from:"high",to:"walk",mode:"walk"}],
+    } as unknown as StationBundle;
+    const grey=buildGreybox(station,()=>true,p=>p.z<2 || (p.z>3 && p.x>=1.5),emptyScene,"low",true);
+    expect(grey.stats.landingPads).toBe(1);
+    expect(grey.walkable.length).toBeGreaterThan(0);
+    expect(grey.walkable[0]!.userData.greybox).toBe(true);
+    const vertices=grey.navFloors!;
+    expect(vertices.some((_v,i)=>i%3===1 && Math.abs(vertices[i]!-4)<1e-6)).toBe(true);
+    const ray=new THREE.Raycaster(new THREE.Vector3(0,5,0),new THREE.Vector3(0,-1,0));
+    expect(ray.intersectObjects(grey.walkable).some(hit=>Math.abs(hit.point.y-4)<1e-6)).toBe(true);
+    ray.ray.origin.x=1.25;
+    expect(ray.intersectObjects(grey.walkable).some(hit=>Math.abs(hit.point.y-4)<1e-6)).toBe(true);
+  });
   it("uses the triangle limit for each tier", () => {
     expect(greyboxTriangleLimit("high")).toBe(150000);
     expect(greyboxTriangleLimit("low")).toBe(100000);
+  });
+  it.each([false,true])("preserves the wider floor for overlapping passages (wide first: %s)", (wideFirst) => {
+    const narrow={...bundle.edges[0]!,id:"narrow",mode:"gate" as const}, wide={...bundle.edges[0]!,id:"wide",mode:"walk" as const};
+    const station={...bundle,edges:wideFirst ? [wide,narrow] : [narrow,wide]};
+    const grey=buildGreybox(station,()=>true,()=>false,emptyScene,"low",true);
+    const ray=new THREE.Raycaster(new THREE.Vector3(5,1,1.15),new THREE.Vector3(0,-1,0));
+    expect(ray.intersectObjects(grey.walkable).some(hit=>Math.abs(hit.point.y)<1e-6)).toBe(true);
   });
   it("uses the mode width fallback and self-lit shell", () => {
     const result = buildGreybox(bundle, () => true, () => false, emptyScene, "high");

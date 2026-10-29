@@ -34,16 +34,30 @@ export function diagnoseVerticalSnap(query: Pick<NavMeshQuery, "findClosestPoint
   const found=nearest.success && !!nearest.polyRef && Math.abs(nearest.point.x-node.x)<=1.5 && Math.abs(nearest.point.z-node.z)<=1.5;
   const deltaZ=found ? nearest.point.y-node.y : null;
   const reason = !found ? "no_poly" : Math.abs(deltaZ!)>0.6 ? "height" : validateLinkSnap(probe,node,nearest.point);
-  if (reason === null) return {reason,deltaZ,walkableWithin3m:false};
-  // Sample downward rays in a 3 m disc at the node's floor elevation; a negative result is not an exact geometry proof.
+  let greyboxFloorAtNode = false, floorSource:"scene"|"greybox"|"none" = "none", floorRule:"snap_no_floor"|"snap_height"|"approach_no_floor"|"approach_off_floor"|null = null;
   const ray=new THREE.Raycaster(), down=new THREE.Vector3(0,-1,0);
+  if (reason === "height") {
+    ray.set(new THREE.Vector3(node.x,node.y+0.6,node.z),down); ray.far=1.2;
+    greyboxFloorAtNode=castAll(ray,probe.ground.filter(o=>o.userData.greybox===true)).length>0;
+  }
+  if (reason === "floor") {
+    const snap=nearest.point, p=(v:Point)=>({x:v.x,y:-v.z,z:v.y,zKnown:true,floorId:"",stepIndex:0});
+    ray.set(new THREE.Vector3(snap.x,snap.y+3,snap.z),down); ray.far=6;
+    const hit=castAll(ray,probe.ground).sort((a,b)=>Math.abs(a.point.y-snap.y)-Math.abs(b.point.y-snap.y))[0];
+    floorSource=hit ? (hit.object.userData.greybox===true ? "greybox" : "scene") : "none";
+    if (!hit) floorRule="snap_no_floor";
+    else if (Math.abs(hit.point.y-snap.y)>0.6) floorRule="snap_height";
+    else { const approach=auditPolyline(probe,[p(node),p(snap)]); floorRule=approach.noFloor ? "approach_no_floor" : approach.offFloor ? "approach_off_floor" : null; }
+  }
+  if (reason === null) return {reason,deltaZ,walkableWithin3m:false,greyboxFloorAtNode,floorSource,floorRule};
+  // Sample downward rays in a 3 m disc at the node's floor elevation; a negative result is not an exact geometry proof.
   let walkableWithin3m=false;
   for (let x=-3;x<=3 && !walkableWithin3m;x+=0.5) for (let z=-3;z<=3;z+=0.5) {
     if (x*x+z*z>9) continue;
     ray.set(new THREE.Vector3(node.x+x,node.y+0.6,node.z+z),down); ray.far=1.2;
     if (castAll(ray,probe.ground).length) { walkableWithin3m=true; break; }
   }
-  return {reason,deltaZ,walkableWithin3m};
+  return {reason,deltaZ,walkableWithin3m,greyboxFloorAtNode,floorSource,floorRule};
 }
 
 /** A snap must land on a scene floor and the node-to-snap segment must not cross a wall. */

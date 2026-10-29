@@ -118,10 +118,10 @@ GreyboxStats	interface	apps/web/src/explorer/greybox.ts	83
 greyboxTriangleLimit	const	apps/web/src/explorer/greybox.ts	84
 GreyboxScene	interface	apps/web/src/explorer/greybox.ts	85
 splitWallsAtOpenings	function	apps/web/src/explorer/greybox.ts	91
-simplifyGreyboxRun	function	apps/web/src/explorer/greybox.ts	141
-createGreyboxBuilder	function	apps/web/src/explorer/greybox.ts	220
-buildGreybox	function	apps/web/src/explorer/greybox.ts	261
-emitGreybox	function	apps/web/src/explorer/greybox.ts	271
+simplifyGreyboxRun	function	apps/web/src/explorer/greybox.ts	191
+createGreyboxBuilder	function	apps/web/src/explorer/greybox.ts	272
+buildGreybox	function	apps/web/src/explorer/greybox.ts	320
+emitGreybox	function	apps/web/src/explorer/greybox.ts	330
 greyboxSceneProbes	function	apps/web/src/explorer/greyboxScene.ts	10
 insideGreyboxOpening	function	apps/web/src/explorer/greyboxScene.ts	91
 GreyboxSegment	interface	apps/web/src/explorer/greyboxScene.ts	98
@@ -536,8 +536,8 @@ makeGreybox	function	packages/godot/src/navmesh-greybox.ts	15
 navmeshBundle	function	packages/godot/src/navmesh-input.ts	7
 planFallbackRoute	function	packages/godot/src/navmesh-links.ts	11
 diagnoseVerticalSnap	function	packages/godot/src/navmesh-links.ts	32
-validateLinkSnap	function	packages/godot/src/navmesh-links.ts	49
-verticalLinkCandidates	function	packages/godot/src/navmesh-links.ts	72
+validateLinkSnap	function	packages/godot/src/navmesh-links.ts	64
+verticalLinkCandidates	function	packages/godot/src/navmesh-links.ts	87
 qaDirectory	function	packages/godot/src/navmesh-qa-path.ts	5
 qaFile	function	packages/godot/src/navmesh-qa-path.ts	17
 FLOOR_TOLERANCE_M	const	packages/godot/src/route-clip-audit.ts	27

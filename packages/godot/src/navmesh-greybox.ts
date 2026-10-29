@@ -34,6 +34,7 @@ export function makeGreybox(bundle: StationBundle, scene: StationScene, privateB
   const floorGeometry = new THREE.BufferGeometry();
   floorGeometry.setAttribute("position", new THREE.Float32BufferAttribute(grey.navFloors ?? [],3));
   const floorMesh = new THREE.Mesh(floorGeometry, new THREE.MeshBasicMaterial({ side:THREE.DoubleSide }));
+  floorMesh.userData.greybox = true;
   floorMesh.updateMatrixWorld(true);
   prepareRayTrees([floorMesh, ...grey.colliders]);
   const probe: SceneProbe = { ground:[...targets.ground, floorMesh], collider:[...targets.collider, ...grey.colliders], walls:enuWalls,
