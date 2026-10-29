@@ -1,0 +1,18 @@
+ARG BASE
+FROM ${BASE}
+RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-numpy git ca-certificates zsh jq curl && rm -rf /var/lib/apt/lists/*
+# GitHub release asset digests published in pnpm v12.11.2 release metadata.
+RUN set -eu; case "$(dpkg --print-architecture)" in \
+    arm64) arch=arm64; sha=ad444fa06d7ff344d74ba1e4933f2ed71cc6357cc2d33707a5c60958b7d83085 ;; \
+    amd64) arch=x64; sha=358f30541b42371360c0d48a8daddc0c0850a90c36fcbea598032a9850e2c9ab ;; \
+    *) exit 1 ;; esac; \
+    curl -fsSL "https://github.com/pnpm/pnpm/releases/download/v12.11.2/pnpm-linux-${arch}.tar.gz" -o /tmp/pnpm.tar.gz; \
+    echo "$sha  /tmp/pnpm.tar.gz" | sha256sum -c -; \
+    tar -xzf /tmp/pnpm.tar.gz -C /tmp; \
+    install /tmp/pnpm /usr/local/bin/pnpm; mkdir -p /opt/bench/bin; install /tmp/pnpm /opt/bench/bin/pnpm; rm -rf /tmp/pnpm*; \
+    if ! command -v corepack >/dev/null 2>&1; then \
+      printf '#!/bin/sh\necho "bench: corepack shim (pnpm is pinned)" >&2\n[ "$1" = enable ]\n' > /usr/local/bin/corepack; chmod +x /usr/local/bin/corepack; \
+    fi
+
+# Corepack on stock Node may replace its adjacent pnpm shim on enable.
+ENV PATH="/opt/bench/bin:${PATH}"
