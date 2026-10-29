@@ -477,6 +477,9 @@ enuToRenderer	const	packages/geo/src/index.ts	138
 rendererToEnu	const	packages/geo/src/index.ts	139
 ENU_TO_RENDERER_MATRIX	const	packages/geo/src/index.ts	142
 @gteki/godot:export:scene	script	packages/godot/package.json	7
+drapeEdges	function	packages/godot/src/drape-edges.ts	30
+applyDrapeGeometry	function	packages/godot/src/drape-edges.ts	97
+drapePaths	function	packages/godot/src/drape-edges.ts	117
 SIDECAR_SCHEMA	const	packages/godot/src/export-scene.ts	26
 SceneSidecar	interface	packages/godot/src/export-scene.ts	29
 Bounds	interface	packages/godot/src/export-scene.ts	60
@@ -1950,10 +1953,10 @@ POSITION_RECORD_LABELS	const	tools/gis/src/s03-positions.ts	316
 PointedPosition	interface	tools/gis/src/s03-positions.ts	319
 buildPositionsReceipt	function	tools/gis/src/s03-positions.ts	327
 s03Positions	function	tools/gis/src/s03-positions.ts	360
-PrivateSeam	interface	tools/gis/src/s03-private-seam.ts	11
-renderElevationFor	function	tools/gis/src/s03-private-seam.ts	21
-buildPrivateSeam	function	tools/gis/src/s03-private-seam.ts	33
-s03PrivateSeam	function	tools/gis/src/s03-private-seam.ts	121
+PrivateSeam	interface	tools/gis/src/s03-private-seam.ts	13
+renderElevationFor	function	tools/gis/src/s03-private-seam.ts	23
+buildPrivateSeam	function	tools/gis/src/s03-private-seam.ts	35
+s03PrivateSeam	function	tools/gis/src/s03-private-seam.ts	123
 S03_TRANSFORM_POLICY	const	tools/gis/src/s03-transform.ts	16
 OUTSIDE_SUPPRESSION_MIN_NODES	const	tools/gis/src/s03-transform.ts	17
 SELF_INTERSECTION_MAX_VERTICES	const	tools/gis/src/s03-transform.ts	18
