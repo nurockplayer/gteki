@@ -25,6 +25,13 @@ describe("unmodelled route runs", () => {
     expect(unmodelledRuns(lift, (p) => p.z === 0 || p.z === 8)).toEqual([]);
   });
 
+  it("treats a sceneGap edge as unmodelled even over a floor, joining the floored ends", () => {
+    const runs = unmodelledRuns([{ x: 0, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }, { x: 20, y: 0, z: 0, sceneGap: true }, { x: 30, y: 0, z: 0 }], () => true);
+    expect(runs).toHaveLength(1);
+    expect(runs[0]![0]!.x).toBe(10);
+    expect(runs[0]!.at(-1)!.x).toBe(20);
+  });
+
   it("runs to the route's end when the destination has no floor", () => {
     const runs = unmodelledRuns([{ x: 0, y: 0, z: 0 }, { x: 15, y: 0, z: 0 }], floorOutsideGap);
     expect(runs[0]!.at(-1)!.x).toBe(15);

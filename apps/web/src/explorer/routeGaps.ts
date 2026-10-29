@@ -10,15 +10,20 @@ const MIN_RUN_M = 1;
  * ends on the neighbouring floored sample (or the route's own end), so the "no model" overlay joins the
  * modelled route. Vertical pieces (lifts, under a step of plan length) only probe their ends.
  */
-export function unmodelledRuns(points: readonly V3[], hasFloor: (p: V3) => boolean): V3[][] {
+export function unmodelledRuns(points: readonly (V3 & { sceneGap?: boolean })[], hasFloor: (p: V3) => boolean): V3[][] {
   if (points.length < 2) return [];
   const samples: V3[] = [points[0]!];
+  // A segment ending on a sceneGap point belongs to an edge the scene closes: unmodelled whatever the floor says.
+  const forced: boolean[] = [false];
   for (let i = 1; i < points.length; i++) {
     const a = points[i - 1]!, b = points[i]!;
     const n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / STEP_M));
-    for (let k = 1; k <= n; k++) samples.push({ x: a.x + (b.x - a.x) * k / n, y: a.y + (b.y - a.y) * k / n, z: a.z + (b.z - a.z) * k / n });
+    for (let k = 1; k <= n; k++) {
+      samples.push({ x: a.x + (b.x - a.x) * k / n, y: a.y + (b.y - a.y) * k / n, z: a.z + (b.z - a.z) * k / n });
+      forced.push(b.sceneGap === true && k < n);
+    }
   }
-  const bare = samples.map((s) => !hasFloor(s));
+  const bare = samples.map((s, i) => forced[i]! || !hasFloor(s));
   const runs: V3[][] = [];
   for (let i = 0; i < samples.length; i++) {
     if (!bare[i]) continue;
