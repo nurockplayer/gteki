@@ -32,6 +32,8 @@ export const WALKER_SPEED = { walkMps: 1.45, runMps: 3.4 } as const;
 
 /** Vertical wall in station ENU metres; blocks the walker between zMin and zMax (see WALKER_BODY). */
 export interface WallSegment {
+  source?: string;
+  role?: string;
   a: { x: number; y: number };
   b: { x: number; y: number };
   zMin: number;

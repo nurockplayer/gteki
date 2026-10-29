@@ -30,7 +30,7 @@ export function makeGreybox(bundle: StationBundle, scene: StationScene, privateB
   for (const collider of targets.collider) portals.set(collider, grey.openings);
   const originalCollider = new Set(targets.collider);
   const split = splitWallsAtOpenings([...walls, ...grey.wallSegments], grey.openings);
-  const enuWalls: WallSegment[] = split.map(w => ({ a:{x:w.ax,y:-w.az}, b:{x:w.bx,y:-w.bz}, zMin:w.yMin, zMax:w.yMax }));
+  const enuWalls: WallSegment[] = split.map(w => ({ a:{x:w.ax,y:-w.az}, b:{x:w.bx,y:-w.bz}, zMin:w.yMin, zMax:w.yMax, source:w.source, role:w.role }));
   const floorGeometry = new THREE.BufferGeometry();
   floorGeometry.setAttribute("position", new THREE.Float32BufferAttribute(grey.navFloors ?? [],3));
   const floorMesh = new THREE.Mesh(floorGeometry, new THREE.MeshBasicMaterial({ side:THREE.DoubleSide }));

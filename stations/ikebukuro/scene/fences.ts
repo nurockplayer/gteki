@@ -76,6 +76,7 @@ export function buildFenceCollider(THREE: typeof THREE_NS, fences: AccessFences[
   const collider = new THREE.Mesh(colGeo, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
   collider.name = "access_fences_collider";
   collider.userData.gteki_role = "access_fences_collider";
+  collider.userData.gteki_source = "fence";
   collider.visible = false;
   collider.updateMatrixWorld(true);
   collider.matrixAutoUpdate = false;

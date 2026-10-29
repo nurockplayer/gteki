@@ -72,7 +72,7 @@ export function corridorBlockers(probe:SceneProbe,center:THREE.Vector3) {
     if(wall.zMax<=center.y+0.05 || wall.zMin>=center.y+1.7) continue;
     const ax=wall.a.x,az=-wall.a.y,bx=wall.b.x,bz=-wall.b.y,dx=bx-ax,dz=bz-az,t=Math.max(0,Math.min(1,((center.x-ax)*dx+(center.z-az)*dz)/(dx*dx+dz*dz || 1)));
     const x=ax+t*dx,z=az+t*dz,distance=Math.hypot(x-center.x,z-center.z);
-    if(distance<=0.3) output.push({name:"wall segment",role:"wall_segment",parents:[],source:"unknown",point:{x,y:Math.max(center.y+0.05,wall.zMin),z},facing:"wall-like",distance});
+    if(distance<=0.3) output.push({name:"wall segment",role:wall.role ?? "wall_segment",parents:[],source:(wall.source ?? "unknown") as ReturnType<typeof names>["source"],constructorName:"WallSegment",userDataKeys:[],materialName:"",point:{x,y:Math.max(center.y+0.05,wall.zMin),z},facing:"wall-like",distance});
   }
   return output.sort((a,b)=>a.distance-b.distance).slice(0,3);
 }
@@ -104,7 +104,7 @@ export function sideFaces(probe:SceneProbe,p:THREE.Vector3,dx:number,dy:number) 
       const wx=wall.b.x-wall.a.x,wz=-(wall.b.y-wall.a.y),sx=dir.x*sign,sz=dir.z*sign,cross=sx*wz-sz*wx;
       if(Math.abs(cross)<1e-9) continue;
       const ox=wall.a.x-p.x,oz=-wall.a.y-p.z,d=(ox*wz-oz*wx)/cross,u=(ox*sz-oz*sx)/cross;
-      if(d>=0 && d<=5 && u>=0 && u<=1 && (!result || d<result.distance)) result={name:"wall segment",role:"wall_segment",parents:[],source:"unknown",distance:d,point:{x:p.x+sx*d,y:p.y+0.5,z:p.z+sz*d}};
+      if(d>=0 && d<=5 && u>=0 && u<=1 && (!result || d<result.distance)) result={name:"wall segment",role:wall.role ?? "wall_segment",parents:[],source:(wall.source ?? "unknown") as ReturnType<typeof names>["source"],constructorName:"WallSegment",userDataKeys:[],materialName:"",distance:d,point:{x:p.x+sx*d,y:p.y+0.5,z:p.z+sz*d}};
     }
     return result;};
   return {left:side(1),right:side(-1)};
@@ -140,10 +140,10 @@ async function main() {
   const failures=audit.failureEdges.filter((f:{mode:string})=>!["stairs","escalator","elevator"].includes(f.mode)).map((f:{edgeId:string;mode:string;reason:string;connectivity:string;direction:string;gaps:unknown[]})=>({edgeId:f.edgeId,mode:f.mode,reason:f.reason,connectivity:f.connectivity,direction:f.direction,gaps:f.gaps.length}));
   const result={station,failures,gaps,clipSites}; const dir=fs.mkdtempSync(path.join(path.dirname(dest),".obstacles-"));
   try {const temp=path.join(dir,"report.json");fs.writeFileSync(temp,JSON.stringify(result,null,2)+"\n",{mode:0o600,flag:"wx"});fs.renameSync(temp,dest);} finally {fs.rmSync(dir,{recursive:true,force:true});scene.dispose();}
-  const bySource:Record<string,number>={},byFacing:Record<string,number>={};
-  for(const g of gaps as {blockers:{source:string;facing:string}[]}[]) for(const b of g.blockers) {bySource[b.source]=(bySource[b.source] ?? 0)+1;byFacing[b.facing]=(byFacing[b.facing] ?? 0)+1;}
-  for(const c of clipSites) bySource[c.wall.source]=(bySource[c.wall.source] ?? 0)+1;
-  process.stdout.write(JSON.stringify({gaps:gaps.length,connectorClips:clipSites.filter((s:{kind:string})=>s.kind==="connector").length,fallbackClips:clipSites.filter((s:{kind:string})=>s.kind==="fallback").length,bySource,byFacing})+"\n");
+  const bySource:Record<string,number>={},byFacing:Record<string,number>={},byRole:Record<string,number>={},hitObjects:Record<string,number>={};
+  for(const g of gaps as {blockers:(ReturnType<typeof names> & {facing:string})[]}[]) for(const b of g.blockers) {bySource[b.source]=(bySource[b.source] ?? 0)+1;byFacing[b.facing]=(byFacing[b.facing] ?? 0)+1; if (!privateBuild) { const key=JSON.stringify({constructorName:b.constructorName,name:b.name,userDataKeys:b.userDataKeys,parents:b.parents,materialName:b.materialName}); hitObjects[key]=(hitObjects[key] ?? 0)+1; }}
+  for(const c of clipSites) { bySource[c.wall.source]=(bySource[c.wall.source] ?? 0)+1; const w=c.wall as ReturnType<typeof names>; byRole[w.role || "unknown"]=(byRole[w.role || "unknown"] ?? 0)+1; if (!privateBuild) {const key=JSON.stringify({constructorName:w.constructorName,name:w.name,userDataKeys:w.userDataKeys,parents:w.parents,materialName:w.materialName}); hitObjects[key]=(hitObjects[key] ?? 0)+1;} }
+  process.stdout.write(JSON.stringify({gaps:gaps.length,connectorClips:clipSites.filter((s:{kind:string})=>s.kind==="connector").length,fallbackClips:clipSites.filter((s:{kind:string})=>s.kind==="fallback").length,bySource,byFacing,byRole,...(!privateBuild ? {hitObjects} : {})})+"\n");
 }
 if(process.argv[1] && import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href) {
   console.log=()=>{};console.info=()=>{};console.warn=()=>{};console.error=()=>{};

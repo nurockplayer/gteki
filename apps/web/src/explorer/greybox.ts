@@ -106,7 +106,7 @@ export function splitWallsAtOpenings(walls: readonly Segment2[], openings: reado
       }
       if (lo >= hi) { next.push(w); continue; }
       const piece = (a: number, b: number, yMin: number, yMax: number) => {
-        if (b - a > 1e-9 && yMax > yMin) next.push({ ax: w.ax + dx * a, az: w.az + dz * a, bx: w.ax + dx * b, bz: w.az + dz * b, yMin, yMax });
+        if (b - a > 1e-9 && yMax > yMin) next.push({ source:w.source, role:w.role, ax: w.ax + dx * a, az: w.az + dz * a, bx: w.ax + dx * b, bz: w.az + dz * b, yMin, yMax });
       };
       piece(0, lo, w.yMin, w.yMax); piece(hi, 1, w.yMin, w.yMax);
       piece(lo, hi, w.yMin, Math.min(w.yMax, bottom));
@@ -409,7 +409,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         if (scene.colliderNear(enu(mid),0.3)) continue;
         const topP=p.clone().add(new THREE.Vector3(0,2.6,0)), topQ=q.clone().add(new THREE.Vector3(0,2.6,0));
         if (side<0) quad(b.shell,b.colors,topP,topQ,q,p); else quad(b.shell,b.colors,p,q,topQ,topP);
-        wallSegments.push({ax:p.x,az:p.z,bx:q.x,bz:q.z,yMin:p.y,yMax:p.y+2.6});
+        wallSegments.push({source:"procedural",role:"greybox_wall",ax:p.x,az:p.z,bx:q.x,bz:q.z,yMin:p.y,yMax:p.y+2.6});
       }
     }
   }
@@ -466,7 +466,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
           } else {
             quad(b.shell, b.colors, p, q, topQ, topP, [0.62, 0.62, 0.62, 0.62]);
           }
-          wallSegments.push({ ax: p.x, az: p.z, bx: q.x, bz: q.z, yMin: Math.min(p.y, q.y), yMax: Math.max(p.y, q.y) + 2.6 });
+          wallSegments.push({ source:"procedural", role:"greybox_wall", ax: p.x, az: p.z, bx: q.x, bz: q.z, yMin: Math.min(p.y, q.y), yMax: Math.max(p.y, q.y) + 2.6 });
         }
       }
       quad(b.ceiling, b.ceilingColors, offset(z, -half, 2.6), offset(z, half, 2.6), offset(a, half, 2.6), offset(a, -half, 2.6), [0.62, 0.62, 0.62, 0.62]);
@@ -561,7 +561,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       }
       geometry.setAttribute("normal", new THREE.Int8BufferAttribute(packed, 3, true));
       const mesh = new THREE.Mesh(geometry, material); mesh.name = name;
-      mesh.userData = { greybox: true, approximate: true };
+      mesh.userData = { greybox: true, approximate: true, gteki_source: "procedural", gteki_role: name };
       if (name === "greybox-lights" && hasPortal) {
         const portal = new THREE.Group(); portal.name = "greybox-portal"; portal.add(mesh); root.add(portal);
       } else root.add(mesh);

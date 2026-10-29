@@ -157,6 +157,8 @@ export function createContextBlockers(THREE: ThreeNS, centers: readonly THREE_NS
   const meshes = centers.map((_, i) => {
     const m = new THREE.Mesh(empty, material);
     m.name = `ctx_blocker_${i}`;
+    m.userData.gteki_role = "camera_blocker";
+    m.userData.gteki_source = "plateau";
     m.visible = false;
     m.frustumCulled = false;
     m.layers.set(OFF_LAYER);

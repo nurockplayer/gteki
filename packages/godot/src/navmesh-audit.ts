@@ -276,7 +276,7 @@ async function main() {
   const wallLocations = new Map<string, number>();
   const navTotal = totals(), graphComparable = totals(), graphAll = totals(), ratios: number[] = [];
   const connectorRaw = totals(), walkingRaw = totals(), connectorDetail = totals(), walkingDetail = totals(), connectorScene = totals(), walkingScene = totals();
-  const wallName=(detail:SampleDetail)=>{const object=detail.wallCollider===undefined ? undefined : probe.collider[detail.wallCollider]; return object ? objectNames(object) : {name:detail.wallSegment===undefined ? "unidentified collider" : "wall segment",parents:[] as string[],source:"unknown"};};
+  const wallName=(detail:SampleDetail)=>{const object=detail.wallCollider===undefined ? undefined : probe.collider[detail.wallCollider]; const wall=detail.wallSegment===undefined ? undefined : probe.walls[detail.wallSegment]; return object ? objectNames(object) : {name:wall ? "wall segment" : "unidentified collider",role:wall?.role ?? "",parents:[] as string[],source:wall?.source ?? "unknown",constructorName:"WallSegment",userDataKeys:[] as string[],materialName:""};};
   const clipSites:{kind:"connector"|"fallback";edgeId:string;mode:string;join:boolean;point:{x:number;y:number;z:number}|null;wall:ReturnType<typeof wallName>}[]=[];
   const completedConnectorKeys=new Set<string>();
   const completedEdgeKeys=new Set<string>();

@@ -148,6 +148,8 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   // Level walls only block bodies near their own level (bodyMax); approximate that for the
   // explorer's height-band walker by capping the wall band at bodyMax + 1.7 m body height.
   const walls: WallSegment[] = [...layout.levels.flatMap((lv) => lv.walls), ...layout.runWalls, ...railingWalls(layout), ...built.propWalls].map((w) => ({
+    source: "reason" in w && (w.reason === "fare" || w.reason === "access") ? "fence" : "procedural",
+    role: "reason" in w && (w.reason === "fare" || w.reason === "access") ? "access_fence" : ("gtekiGate" in w && w.gtekiGate === true ? "gate" : "wall_segment"),
     a: w.a,
     b: w.b,
     // The shared walker blocks feet f when zMin ≤ f + bodyTopM and zMax ≥ f + bodyBottomM (WALKER_BODY),
@@ -178,6 +180,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     const m = new T.Mesh(g, proxyMat);
     m.name = "wall collider (invisible)";
     m.userData.gteki_role = "collider";
+    m.userData.gteki_source = "procedural";
     m.userData.gtekiGateTriangles = gateTriangles;
     proxies.add(m);
     colliders.push(m);
@@ -233,6 +236,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
       const m = new T.Mesh(g, proxyMat);
       m.name = "ceiling collider (invisible)";
       m.userData.gteki_role = "collider";
+    m.userData.gteki_source = "procedural";
       proxies.add(m);
       colliders.push(m);
       cameraBlockers.push(m);
@@ -246,7 +250,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     const m = o as THREE.Mesh;
     if (!m.isMesh) return;
     if (m.name.startsWith("sign-faces:") || m.name === "sign-cases" || m.name === "Restricted area" || m.name === "No entry") m.userData.gteki_role = "sign";
-    else if (m.name === "surface-ground" || m.name === "surface-stone") cameraBlockers.push(m);
+    else if (m.name === "surface-ground" || m.name === "surface-stone") { m.userData.gteki_role = "camera_blocker"; m.userData.gteki_source = "procedural"; cameraBlockers.push(m); }
   });
   // Underground station: it owns its lighting, as in the lane app. The explorer's default sun cast hard
   // pillar shadows across B1 floors through no opening at all. Same hemisphere and image-based light as
