@@ -106,6 +106,7 @@ describe("buildGreybox", () => {
     const half = MODE_WIDTH.walk! / 2;
     const side = (z: number) => result.wallSegments.filter((w) => Math.abs(w.az - z) < 1e-6 && Math.abs(w.bz - z) < 1e-6);
     // North in the graph is -z in the renderer: the stair leaves through the -z wall, which opens over its 4 m width.
+    expect(side(-half).length).toBeGreaterThan(0);
     expect(side(-half).every((w) => Math.max(w.ax, w.bx) <= 8 + 1e-5)).toBe(true);
     // The other side wall still runs right up to the node, so nobody walks off the passage there.
     expect(Math.max(...side(half).map((w) => Math.max(w.ax, w.bx)))).toBeGreaterThan(10 - 1e-5);
@@ -119,17 +120,20 @@ describe("buildGreybox", () => {
     const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
     const half = MODE_WIDTH.ramp! / 2, stairHalf = MODE_WIDTH.stairs! / 2;
     const near = result.wallSegments.filter((w) => Math.abs((w.az + w.bz) / 2 + half) < 1e-6);
+    expect(near.length).toBeGreaterThan(0);
     expect(near.every((w) => Math.max(w.ax, w.bx) <= 30 - stairHalf + 1e-5)).toBe(true);
   });
 
-  it("leaves the walls of a corridor that passes a stair mouth", () => {
+  it("opens a passing corridor's wall only inside the stair footprint", () => {
     const floors = [...bundle.floors, { id: "g", renderElevationM: 4 }];
     const nodes = [...bundle.nodes, { id: "c", floorId: "g", position: { x: 10, y: 6, z: 4 } }, { id: "p", floorId: "f", position: { x: 0, y: 2.7, z: 0 } }, { id: "q", floorId: "f", position: { x: 20, y: 2.7, z: 0 } }];
     const edges = [bundle.edges[0]!, { id: "s", from: "b", to: "c", mode: "stairs" }, { id: "pq", from: "p", to: "q", mode: "walk" }];
     const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
     const wallLengthNear = (z: number) => result.wallSegments.filter((w) => Math.abs((w.az + w.bz) / 2 - z) < 0.01).reduce((sum, w) => sum + Math.hypot(w.bx - w.ax, w.bz - w.az), 0);
     // The renderer frame mirrors north into -z; take whichever side the corridor's near wall lands on.
-    expect(Math.max(wallLengthNear(1.4), wallLengthNear(-1.4))).toBeGreaterThan(19.9);
+    // The flight passes through the near wall over its own 2 m width; the rest of that wall stays.
+    expect(Math.max(wallLengthNear(1.4), wallLengthNear(-1.4))).toBeGreaterThan(20 - MODE_WIDTH.stairs! - 1e-3);
+    expect(Math.max(wallLengthNear(1.4), wallLengthNear(-1.4))).toBeLessThan(20 - MODE_WIDTH.stairs! + 1e-3);
   });
 
   it("makes a junction patch and keeps wall segments out of its disc", () => {
