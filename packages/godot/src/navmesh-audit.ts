@@ -38,7 +38,7 @@ export function snapNode(query: NavMeshQuery, p: V3): V3 | null {
 }
 
 /** Obtain the complete corridor and preserve Detour off-mesh link identity and direction. */
-export function queryPathWithLinks(nav: NavMesh, query: NavMeshQuery, from: V3, to: V3): ({ point: V3; link?: { userId: number; end: V3 } })[] | null {
+export function queryPathWithLinks(nav: NavMesh, query: NavMeshQuery, from: V3, to: V3, diagnostics?: { straightLimit: boolean }): ({ point: V3; link?: { userId: number; end: V3 } })[] | null {
   const a=query.findClosestPoint(from, { halfExtents:extents }), b=query.findClosestPoint(to, { halfExtents:extents });
   if (!a.success || !a.polyRef || !b.success || !b.polyRef) return null;
   const corridor=query.findPath(a.polyRef,b.polyRef,from,to,{ maxPathPolys:2048 });
@@ -49,7 +49,8 @@ export function queryPathWithLinks(nav: NavMesh, query: NavMeshQuery, from: V3, 
     const appendWalking=(start:V3,end:V3,polys:number[]) => {
       const straight=query.findStraightPath(start,end,polys,{ maxStraightPathPoints:2048 });
       try {
-        if (!straight.success || statusDetail(straight.status,Detour.DT_BUFFER_TOO_SMALL)) return false;
+        if (statusDetail(straight.status,Detour.DT_BUFFER_TOO_SMALL)) { if (diagnostics) diagnostics.straightLimit = true; return false; }
+        if (!straight.success) return false;
         for (let i=0;i<straight.straightPathCount;i++) result.push({point:{x:straight.straightPath.get(i*3),y:straight.straightPath.get(i*3+1),z:straight.straightPath.get(i*3+2)}});
         return true;
       } finally { straight.straightPath.destroy(); straight.straightPathFlags.destroy(); straight.straightPathRefs.destroy(); }
@@ -89,7 +90,7 @@ async function main() {
   if (provenance.station !== station || provenance.withGreybox !== withGreybox || provenance.meshSha256 !== createHash("sha256").update(meshBytes).digest("hex")) throw new Error("navmesh bake provenance does not match station, greybox flag, or binary; rebake first");
   if (!!provenance.snapFallback !== snapFallback) throw new Error("navmesh bake and audit disagree on --snap-fallback");
   await init();
-  const nav = importNavMesh(meshBytes).navMesh, query = new NavMeshQuery(nav);
+  const nav = importNavMesh(meshBytes).navMesh, query = new NavMeshQuery(nav, { maxNodes: 8192 });
   const loadMs = performance.now() - loadStart, memoryAfterLoad = process.memoryUsage();
   const { bundle, privateBuild } = await navmeshBundle(station);
   if (provenance.privateBuild !== privateBuild) throw new Error("navmesh bake and audit disagree on private overlay; rebake first");
@@ -117,7 +118,7 @@ async function main() {
     }
     return snapped.get(id)!;
   };
-  type Entry = { points: PolylinePoint[] | null; missing: boolean; reason: "snap_failed" | "no_path" | "too_long" | null; stairLink: boolean; connector: boolean; fallbackUsed:string[]; corridor: number[]; gapM: number; gapWidthM: number | null; step: RouteStep; fromSnapped: boolean; toSnapped: boolean; connectivity: "connected" | "disconnected" | "query_limit_or_error" | "unknown_snap" };
+  type Entry = { points: PolylinePoint[] | null; missing: boolean; reason: "snap_failed" | "no_path" | "too_long" | null; stairLink: boolean; connector: boolean; fallbackUsed:string[]; corridor: number[]; gapM: number; gapWidthM: number | null; step: RouteStep; fromSnapped: boolean; toSnapped: boolean; connectivity: "connected" | "disconnected" | "query_limit" | "query_error" | "unknown_snap"; partialEndDistanceM: number | null; pathRejection: "missing_link" | "wrong_link" | "unexpected_link" | "reconstruction" | null };
   const cache = new Map<string, Entry>();
   // Approximate width from scene wall segments perpendicular to the graph edge.
   // This is a sampled cross-section, not proof of a doorway or clearance through the mesh.
@@ -152,9 +153,11 @@ async function main() {
     const from = nodePoint(step.fromNodeId), to = nodePoint(step.toNodeId), link = linksByEdge.get(step.edgeId);
     const a = link ? (step.reversed ? link.connection.endPosition : link.connection.startPosition) : snap(step.fromNodeId);
     const b = link ? (step.reversed ? link.connection.startPosition : link.connection.endPosition) : snap(step.toNodeId);
-    let path = a && b ? queryPathWithLinks(nav,query,a,b) : null;
-    if (["stairs","escalator","elevator"].includes(step.mode) && (!link || !path?.some(p=>p.link?.userId===link.connection.userId))) path=null;
-    if (!["stairs","escalator","elevator"].includes(step.mode) && path?.some(p=>p.link)) path=null;
+    const pathDiagnostics = { straightLimit:false };
+    let path = a && b ? queryPathWithLinks(nav,query,a,b,pathDiagnostics) : null;
+    let pathRejection: Entry["pathRejection"] = null;
+    if (["stairs","escalator","elevator"].includes(step.mode) && (!link || !path?.some(p=>p.link?.userId===link.connection.userId))) { if (path) pathRejection=link ? "wrong_link" : "missing_link"; path=null; }
+    if (!["stairs","escalator","elevator"].includes(step.mode) && path?.some(p=>p.link)) { pathRejection="unexpected_link"; path=null; }
     const tooLong = step.mode === "stairs" && !!path && !path.some(p=>p.link) && length(path.map(p=>p.point)) > 2 * step.lengthM;
     let reason: "snap_failed" | "no_path" | "too_long" | null = !a || !b ? "snap_failed" : !path ? "no_path" : tooLong ? "too_long" : null;
     const stairLink = false;
@@ -189,10 +192,11 @@ async function main() {
         if (first || last) fallbackUsed.add(link.edgeId);
       }
     }
-    if (!points && !reason) reason="no_path";
+    if (!points && !reason) { reason="no_path"; pathRejection="reconstruction"; }
     const missing = reason !== null;
     let corridor: number[] = [];
-    let connectivity: Entry["connectivity"] = a && b ? "query_limit_or_error" : "unknown_snap";
+    let partialEndDistanceM: number | null = null;
+    let connectivity: Entry["connectivity"] = a && b ? "query_error" : "unknown_snap";
     if (a && b) {
       const start = query.findClosestPoint(a, { halfExtents: extents });
       const end = query.findClosestPoint(b, { halfExtents: extents });
@@ -201,14 +205,20 @@ async function main() {
         if (found.success) {
           corridor = Array.from({ length:found.polys.size }, (_,i) => found.polys.get(i));
           const reached = corridor.at(-1) === end.polyRef;
+          if (!reached && corridor.length) {
+            const last = query.closestPointOnPoly(corridor.at(-1)!, b);
+            if (last.success) partialEndDistanceM = distance(last.closestPoint, b);
+          }
           const limited = statusDetail(found.status, Detour.DT_BUFFER_TOO_SMALL) || statusDetail(found.status, Detour.DT_OUT_OF_NODES);
-          connectivity = reached ? "connected" : limited ? "query_limit_or_error" : "disconnected";
+          connectivity = limited ? "query_limit" : reached ? "connected" : "disconnected";
           if (!reached || missing || path?.some(p=>p.link)) corridor = [];
         }
+        else if (statusDetail(found.status, Detour.DT_BUFFER_TOO_SMALL) || statusDetail(found.status, Detour.DT_OUT_OF_NODES)) connectivity = "query_limit";
         found.polys.destroy();
       }
     }
-    const entry: Entry = { points, missing, reason, stairLink, connector:!!points?.some(p=>p.connector), fallbackUsed:[...fallbackUsed], corridor, gapM: distance(from, to), gapWidthM: missing && !stairLink ? crossSectionWidth(route,step) : null, step, fromSnapped: !!a, toSnapped: !!b, connectivity };
+    if (pathDiagnostics.straightLimit) connectivity = "query_limit";
+    const entry: Entry = { points, missing, reason, stairLink, connector:!!points?.some(p=>p.connector), fallbackUsed:[...fallbackUsed], corridor, gapM: distance(from, to), gapWidthM: missing && !stairLink ? crossSectionWidth(route,step) : null, step, fromSnapped: !!snap(step.fromNodeId), toSnapped: !!snap(step.toNodeId), connectivity, partialEndDistanceM, pathRejection };
     cache.set(key, entry); return entry;
   };
   const totals = () => ({ samples: 0, offFloor: 0, noFloor: 0, wallHits: 0 });
@@ -382,12 +392,15 @@ async function main() {
     routeTimes.push(performance.now()-start);
   }
   const runtime = { loadMs, memoryAfterLoad, edgeQueries:uniqueQueryTimes.length, edgeMs:{p50:percentile(uniqueQueryTimes,0.5),p95:percentile(uniqueQueryTimes,0.95)}, routes:routeTimes.length, routeMs:{p50:percentile(routeTimes,0.5),p95:percentile(routeTimes,0.95)}, estimateFactor:4 };
+  const connectedNoPath = failed.filter(e => e.connectivity === "connected" && e.reason === "no_path");
+  const partialDistances = failed.flatMap(e => e.partialEndDistanceM === null ? [] : [e.partialEndDistanceM]);
+  const queryDiagnosis = { connectedNoPath: connectedNoPath.length, missingLink: connectedNoPath.filter(e => e.pathRejection === "missing_link").length, wrongLink: connectedNoPath.filter(e => e.pathRejection === "wrong_link").length, unexpectedLink: connectedNoPath.filter(e => e.pathRejection === "unexpected_link").length, reconstruction: connectedNoPath.filter(e => e.pathRejection === "reconstruction").length, other: connectedNoPath.filter(e => e.pathRejection === null).length, partialEndDistanceM:distribution(partialDistances) };
   const failureClasses: Record<string, number> = {};
   for (const e of failures) {
     const key = `${e.mode} | ${e.fromSnapped && e.toSnapped ? "both snapped" : "snap missing"} | ${e.connectivity} | ${e.reason}`;
     failureClasses[key] = (failureClasses[key] ?? 0)+1;
   }
-  const result = { station, withGreybox, snapFallback, fallbackRecoveredAttached:provenance.fallbackRecovered ?? 0, fallbackEdgesUsed:usedFallbackEdges.size, fallbackRoutesCompleted, unpairedFallbackRoutes, bakeProvenance: provenance, collisionAuditUsesOriginalGateObstacles: provenance.ignoreGates, affectedIncompleteRoutesByMode:affectedByMode, failureClasses, failureEdges:failures, greyboxRuns: grey?.grey.stats.runs ?? null, greyboxLandingPads:grey?.grey.stats.landingPads ?? null, runtime, orderedPoiPairs: pois.length * (pois.length-1), routesAudited: routeCount, failedRoutePairs: routeFailures, completeAuditedRoutes: completed, pureNavmeshRoutes: pure, routesWithConnectors: hybrid, incompleteRoutes: incomplete, invalidJoinRoutes, joinsWithGap, maxJoinGapM,
+  const result = { station, withGreybox, snapFallback, queryMaxNodes:8192, queryDiagnosis, fallbackRecoveredAttached:provenance.fallbackRecovered ?? 0, fallbackEdgesUsed:usedFallbackEdges.size, fallbackRoutesCompleted, unpairedFallbackRoutes, bakeProvenance: provenance, collisionAuditUsesOriginalGateObstacles: provenance.ignoreGates, affectedIncompleteRoutesByMode:affectedByMode, failureClasses, failureEdges:failures, greyboxRuns: grey?.grey.stats.runs ?? null, greyboxLandingPads:grey?.grey.stats.landingPads ?? null, runtime, orderedPoiPairs: pois.length * (pois.length-1), routesAudited: routeCount, failedRoutePairs: routeFailures, completeAuditedRoutes: completed, pureNavmeshRoutes: pure, routesWithConnectors: hybrid, incompleteRoutes: incomplete, invalidJoinRoutes, joinsWithGap, maxJoinGapM,
     edgeUses: stepUses, uniqueEdgesUsed: new Set([...cache.values()].map(e => e.step.edgeId)).size, directedEdgesQueried: cache.size,
     navmeshTotals: navTotal, snapDiagnosis, navmeshSegmentHeights:{default:walkingDetail,gateSceneRaycast:walkingScene}, segmentTotals:{ raw:{connector:connectorRaw,navmesh:walkingRaw}, detail:{connector:connectorDetail,navmesh:walkingDetail}, sceneRaycast:{connector:connectorScene,navmesh:walkingScene} }, diagnosis: { raw: rawTotal, detail: navTotal, sceneRaycast: sceneTotal,
       detailHeightUnavailableSamples: detailMissing, detailUnavailableStairFallback: detailMissingFallback, detailUnavailableJoin: detailMissingJoin, detailUnavailableAmbiguous: detailAmbiguous, detailLargeHeightJumps, detailMaxHeightJump, offFloorWithDetail, offFloorWithoutDetail, heightCorrectionM: { count:heightCorrections.length, p50:percentile(heightCorrections,0.5), p95:percentile(heightCorrections,0.95), max:heightCorrections.length ? heightCorrections.reduce((a,b)=>Math.max(a,b),0) : null }, sceneFloorUnavailableSamples: sceneMissing,
@@ -399,7 +412,7 @@ async function main() {
     snapDistanceM: { count: snapDistances.length, p50: percentile(snapDistances, 0.5), p95: percentile(snapDistances, 0.95), max: snapDistances.length ? Math.max(...snapDistances) : null },
     medianPathToGraphLength: percentile(ratios, 0.5) };
   fs.mkdirSync(path.dirname(dest), { recursive: true }); fs.writeFileSync(dest, JSON.stringify(result, null, 2) + "\n");
-  console.log(`snap diagnosis ${JSON.stringify(snapDiagnosis)}; fallback attached ${result.fallbackRecoveredAttached}, used ${result.fallbackEdgesUsed}, completed routes ${fallbackRoutesCompleted}; navmesh segments ${JSON.stringify(result.navmeshSegmentHeights)}`);
+  console.log(`query diagnosis ${JSON.stringify(queryDiagnosis)}; snap diagnosis ${JSON.stringify(snapDiagnosis)}; fallback attached ${result.fallbackRecoveredAttached}, used ${result.fallbackEdgesUsed}, completed routes ${fallbackRoutesCompleted}; navmesh segments ${JSON.stringify(result.navmeshSegmentHeights)}`);
   query.destroy(); nav.destroy(); scene.dispose();
 }
 

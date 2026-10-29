@@ -217,6 +217,23 @@ Oracle's static review identified narrower overlapping corridor footprints and h
 - The earlier steps did not measure runtime; the public Node measurements and ×4 estimates are in step 4 above.
 - The earlier combined bake-and-audit command failed because `navmesh-audit.ts` did not yet exist; subsequent steps added and ran it.
 
+## Query-capacity diagnostic, 2026-10-30 03:03 JST
+
+The audit query now allocates 8,192 Detour nodes and distinguishes the out-of-nodes or corridor-buffer limit from query errors. A reached corridor is still rejected if it takes a different connector from the graph edge; the new aggregate diagnosis counts that case separately from an absent attached link and reports the distance from the end of a partial corridor to its goal. A partial corridor remains a failure, even when its end is near the goal.
+
+Public data, with greybox, 0.10 m cells, 0.30 m radius, 0.40 m climb and 256-cell tiles:
+
+| Station | Routes | Incomplete | Unique failed edges | Directed failures | Connected but rejected: missing / wrong connector | Query limit / error |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Ikebukuro | 1,054 | 0 | 0 | 0 | 0 / 0 | 0 / 0 |
+| Shinjuku | 238 | 72 | 6 | 9 | 3 / 2 | 0 / 0 |
+
+Both stations have 0 off-floor, 0 no-floor and 0 wall-hit samples on completed navmesh segments, under the scene-raycast audit. These public counts match the preceding run; they do not show whether the increased capacity recovers private failures. No partial corridors occurred in these public failures.
+
+This is a partial diagnostic. Direction and tile-region checks, gap sampling and classification, and a safe bridge-and-rebake pass are not implemented. The missing- and wrong-connector diagnoses do not themselves fix the rejected routes. In particular, do not use these numbers as evidence that a generated bridge clears walls or is walkable at runtime.
+
+Oracle static review at 2026-10-30 03:07 JST identified a partial-path property error, missed straight-path buffer exhaustion, and link anchors being reported as snapped nodes. These were corrected after review; the reviewer did not independently run the tests or review the fixes. Full query-stage diagnostics and targeted synthetic tests for partial corridors and straight-path exhaustion remain follow-ups.
+
 ## Integration sketch
 
 - Guide: `apps/web/src/ui/app.ts` creates `routePolyline` and passes it to `Explorer.startGuide`; `Explorer.stepGuide` follows it. Supply per-edge navmesh geometry while preserving step-to-point spans, instructions, floor and lift semantics. Risk: a partial or disconnected path must stop guidance, and snapping can select the wrong floor.
