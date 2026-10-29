@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import type { PolylinePoint } from "@gteki/navigation";
-import { auditPolyline, sceneProbe, violations } from "./route-clip-audit.ts";
+import { auditPolyline, resampleAudit, sceneProbe, violations } from "./route-clip-audit.ts";
 
 // Renderer frame: y up, ENU (x, y, z) → (x, z, -y). A 20 m floor at z 0 and a wall across x = 5.
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial());
@@ -14,6 +14,16 @@ const line = (...pts: [number, number, number][]): PolylinePoint[] =>
   pts.map(([x, y, z], i) => ({ x, y, z, zKnown: true, stepIndex: i - 1, floorId: "f" }));
 
 describe("route clip audit", () => {
+  it("preserves audit results for explicit samples and a reused cache", () => {
+    const points = line([0.2, 0, 0], [8.2, 0, 0]);
+    const expected = auditPolyline(probe, points);
+    const cache = { floor: new Map<string, number | null>(), wall: new Map() };
+    const details: import("./route-clip-audit.ts").SampleDetail[] = [];
+    expect(auditPolyline(probe, resampleAudit(points), { alreadySampled: true, cache, detail: details })).toEqual(expected);
+    const repeated: import("./route-clip-audit.ts").SampleDetail[] = [];
+    expect(auditPolyline(probe, resampleAudit(points), { alreadySampled: true, cache, detail: repeated })).toEqual(expected);
+    expect(repeated).toEqual(details);
+  });
   it("passes a route on the floor that stays on one side of the wall", () => {
     expect(violations(auditPolyline(probe, line([-8, 0, 0.1], [4, 0, 0.1])))).toBe(0);
   });

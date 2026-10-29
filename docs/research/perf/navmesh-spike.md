@@ -43,6 +43,30 @@ Among 66 distinct successfully snapped nodes, total 3D snap distance is p50 **0.
 
 The source `route-clip-audit.ts --all` iterates graph edges, not POI pairs. This audit enumerates ordered pairs directly with `routeBetween` and the default profile, and compares the same route set. Unsuccessful `routeBetween` results are not counted as routes. For future cases with an unresolved non-stair edge, the comparable graph total excludes that incomplete navmesh route; `graphAllRoutableTotals` also records the full graph baseline separately.
 
+## Step 3: height and wall diagnosis
+
+2026-10-30 01:18 JST. The same 1,054 routes were sampled at identical positions using the step-2 0.5 m sampler. Detail-mesh heights come from `getPolyHeight` on polygons in the queried edge corridor; when overlapping corridor polygons yield heights more than 0.05 m apart, the height is treated as ambiguous and left unchanged. The corridor is reconstructed with a second query, and its equivalence to the original path is not independently established. Graph stair fallbacks and join gaps have no corridor and retain raw height. The scene variant uses the checker's nearest scene-floor ray hit within ±3 m of the raw sample height. The latter is a diagnostic against the same geometry used by the checker, so its zero off-floor count is not independent validation.
+
+| Audit | Samples | Off floor | No floor | Wall hits |
+| --- | ---: | ---: | ---: | ---: |
+| Before: raw straight corner segments | 580,788 | 28,102 | 0 | 1,384 |
+| After: detail height where available | 580,788 | 960 | 0 | 0 |
+| Scene-floor raycast height | 580,788 | 0 | 0 | 0 |
+| Graph baseline (same routes) | 580,808 | 1,216 | 0 | 0 |
+
+Absolute sample-height minus the nearest scene-floor height selected independently for each variant, in metres; the selected floor can differ between variants:
+
+| Variant | p50 | p95 | max |
+| --- | ---: | ---: | ---: |
+| Raw | 0.070 | 0.287 | 2.191 |
+| Detail where available | 0.060 | 0.100 | 0.512 |
+
+Detail heights were unavailable for 36,675 samples (12,568 on stair fallbacks, 592 on joins, 640 with conflicting polygon heights, and 22,875 others); these retain raw heights in the detail row and its distribution. Of the 960 detail-row off-floor samples, 640 have a detail height and 320 retain raw height. Of 544,113 available detail heights, the absolute change from raw is p50 0 m, p95 0.234 m, maximum 2.058 m. The detail variant contains 2,908 consecutive sample pairs with a height change above 0.3 m, maximum 0.442 m; this is a diagnostic, not a movement simulation.
+
+There are **zero variant-b wall-hit samples**, so each requested wall-hit class has count zero and there are no top ten hit walls to list. This does not prove wall avoidance: the checker uses two rays rather than a swept radius, heights can change substantially, 36,675 samples lack detail heights, and sampled routes include unverified joins and stair fallbacks. Public `scene.walls` contains zero 2D wall segments; collider meshes supply the wall checks. All collider meshes were submitted to the bake, using the winding-based obstacle approximation described above. There is no evidence from this run to attribute remaining problems to unbaked wall segments, rasterized corners, joins, or a different corridor.
+
+The method change is per-sample detail-height evaluation before the full audit; it materially changes the counts without changing graph routing or bake geometry. A per-sample scene-floor raycast is useful as a diagnostic but cannot independently prove floor fidelity. No radius inset was added: no variant-b hit established that as a valid fix. The 0.3 m agent radius is already rounded up to two 0.15 m cells in the bake. The same public route set, stair fallbacks and sampling checker were retained.
+
 ## Evidence and missing measurements
 
 - `recast-navigation` 0.43.1 is installed only in `@gteki/godot`; its package licence is MIT. It uses WebAssembly and includes the 0.43.1 core and generators packages.
@@ -62,7 +86,7 @@ The source `route-clip-audit.ts --all` iterates graph edges, not POI pairs. This
 
 ## Recommendation
 
-**Do not adopt yet.** The public route audit shows wall hits and off-floor samples; their causes need investigation before any navigation replacement. Implement and measure the actual scene plus greybox, ensure collider and portal geometry agree with the explorer, test vertical links without introducing wall crossings, and audit identical route pairs before deciding whether to adopt fully, partly, or reject.
+Decision deferred pending further diagnosis. Per-sample detail heights reduce the sampled violations, but missing detail heights, stair fallbacks, unverified joins and collision parity remain unresolved. Implement and measure the actual scene plus greybox, ensure collider and portal geometry agree with the explorer, test vertical links without introducing wall crossings, and audit identical route pairs before deciding whether to adopt fully, partly, or reject.
 
 ## Geometry risks identified during investigation
 
@@ -79,3 +103,7 @@ The greybox shell is both walkable and collider and includes floors, ceilings, s
 ## Step 2 independent review
 
 2026-10-30 00:53 JST: Oracle identified misleading treatment of hybrid stair fallbacks, overly long detours and discontinuous joins, and warned that nearest-poly snapping and endpoint reachability do not establish floor identity, wall side, or traversal of the authored edge. The revised audit distinguishes pure queries from stair-fallback routes, reports missing-path versus excessive-detour reasons and join gaps, and checks both path endpoints. It retains the brief's snap extents and audits join segments; these do not establish navigability across those joins. The reviewer did not run the audit.
+
+## Step 3 independent review
+
+2026-10-30 01:18 JST: Oracle found blockers to treating these diagnostics as authoritative collision or root-cause evidence: unverified node snaps and joins, circular scene projection, overlapping or independently reconstructed corridor polygons, and a two-ray rather than swept-body wall checker. The diagnostic now leaves conflicting polygon heights unchanged and counts them; other limitations remain. Variant-b has no reported hits to classify, so its zero counts provide no evidence of obstacle or rasterisation correctness. Oracle did not execute the station run.

@@ -519,6 +519,8 @@ installHeadlessDom	function	packages/godot/src/headless-dom.ts	111
 stubRenderer	function	packages/godot/src/headless-dom.ts	137
 headlessThree	function	packages/godot/src/headless-dom.ts	142
 loadBundle	function	packages/godot/src/load-bundle.ts	6
+queryCompletePath	function	packages/godot/src/navmesh-audit.ts	22
+snapNode	function	packages/godot/src/navmesh-audit.ts	31
 bakeNavmesh	function	packages/godot/src/navmesh-bake.ts	20
 completePath	function	packages/godot/src/navmesh-bake.ts	33
 FLOOR_TOLERANCE_M	const	packages/godot/src/route-clip-audit.ts	27
@@ -527,8 +529,10 @@ SceneProbe	interface	packages/godot/src/route-clip-audit.ts	40
 SampleDetail	interface	packages/godot/src/route-clip-audit.ts	41
 loadScene	function	packages/godot/src/route-clip-audit.ts	45
 sceneProbe	function	packages/godot/src/route-clip-audit.ts	71
-auditPolyline	function	packages/godot/src/route-clip-audit.ts	109
-violations	const	packages/godot/src/route-clip-audit.ts	164
+resampleAudit	function	packages/godot/src/route-clip-audit.ts	95
+AuditCache	interface	packages/godot/src/route-clip-audit.ts	105
+auditPolyline	function	packages/godot/src/route-clip-audit.ts	114
+violations	const	packages/godot/src/route-clip-audit.ts	181
 WALKABLE_ROLES	const	packages/godot/src/scene-roles.ts	25
 COLLIDER_ROLES	const	packages/godot/src/scene-roles.ts	26
 CAMERA_ROLES	const	packages/godot/src/scene-roles.ts	27

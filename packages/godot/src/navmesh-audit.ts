@@ -5,7 +5,7 @@ import { pathToFileURL } from "node:url";
 import { init, importNavMesh, NavMeshQuery } from "recast-navigation";
 import { createRouter, DEFAULT_PROFILE, nodeDisplayZ, routeBetween, routePolyline, type PolylinePoint, type RouteResult, type RouteStep } from "@gteki/navigation";
 import { parseStationFiles, type StationBundle } from "@gteki/schema";
-import { auditPolyline, loadScene, sceneProbe } from "./route-clip-audit.ts";
+import { auditPolyline, loadScene, sceneProbe, resampleAudit, type SampleDetail, type AuditCache } from "./route-clip-audit.ts";
 
 type V3 = { x: number; y: number; z: number };
 const extents = { x: 1, y: 0.6, z: 1 };
@@ -70,7 +70,7 @@ async function main() {
     }
     return snapped.get(id)!;
   };
-  type Entry = { points: PolylinePoint[] | null; missing: boolean; reason: "snap_failed" | "no_path" | "too_long" | null; stairLink: boolean; gapM: number; step: RouteStep };
+  type Entry = { points: PolylinePoint[] | null; missing: boolean; reason: "snap_failed" | "no_path" | "too_long" | null; stairLink: boolean; corridor: number[]; gapM: number; step: RouteStep };
   const cache = new Map<string, Entry>();
   const edgePath = (route: RouteResult, step: RouteStep): Entry => {
     const key = `${step.edgeId}\0${step.reversed ? 1 : 0}`;
@@ -88,13 +88,50 @@ async function main() {
       points = path.map(p => ({ x: p.x, y: -p.z, z: p.y, zKnown: true, stepIndex: 0,
         floorId: distance(p, from) <= distance(p, to) ? step.fromFloorId : step.toFloorId }));
     }
-    const entry: Entry = { points, missing, reason, stairLink, gapM: distance(from, to), step };
+    let corridor: number[] = [];
+    if (path && !missing && a && b) {
+      const start = query.findClosestPoint(a, { halfExtents: extents });
+      const end = query.findClosestPoint(b, { halfExtents: extents });
+      if (start.polyRef && end.polyRef) {
+        const found = query.findPath(start.polyRef, end.polyRef, a, b, { maxPathPolys:2048 });
+        if (found.success) {
+          corridor = Array.from({ length:found.polys.size }, (_,i) => found.polys.get(i));
+          if (corridor.at(-1) !== end.polyRef) corridor = [];
+        }
+        found.polys.destroy();
+      }
+    }
+    const entry: Entry = { points, missing, reason, stairLink, corridor, gapM: distance(from, to), step };
     cache.set(key, entry); return entry;
   };
   const totals = () => ({ samples: 0, offFloor: 0, noFloor: 0, wallHits: 0 });
   const add = (target: ReturnType<typeof totals>, result: ReturnType<typeof auditPolyline>) => {
     target.samples += result.samples; target.offFloor += result.offFloor; target.noFloor += result.noFloor; target.wallHits += result.wallHits;
   };
+  const auditCache: AuditCache = { floor: new Map(), wall: new Map() };
+  const detailHeights = new Map<string, number | null>(), ambiguousHeights = new Set<string>();
+  const heightKey = (p: PolylinePoint, entry: Entry) => `${entry.step.edgeId},${entry.step.reversed},${p.x},${p.y},${p.z}`;
+  const heightAt = (p: PolylinePoint, entry: Entry | undefined, join: boolean): number | null => {
+    if (!entry || join || entry.stairLink || !entry.corridor.length) return null;
+    const key = heightKey(p, entry);
+    if (detailHeights.has(key)) return detailHeights.get(key)!;
+    const q = { x:p.x, y:p.z, z:-p.y };
+    let value: number | null = null, min = Infinity, max = -Infinity;
+    for (const ref of entry.corridor) {
+      const closest = query.closestPointOnPoly(ref, q);
+      if (!closest.success || !closest.isPointOverPoly) continue;
+      const h = query.getPolyHeight(ref, q);
+      if (h.success) { min = Math.min(min,h.height); max = Math.max(max,h.height); if (value === null || Math.abs(h.height-p.z) < Math.abs(value-p.z)) value = h.height; }
+    }
+    if (max-min > 0.05) { ambiguousHeights.add(key); value = null; }
+    detailHeights.set(key, value); return value;
+  };
+  const rawTotal = totals(), sceneTotal = totals(), rawDiffs: number[] = [], detailDiffs: number[] = [];
+  let detailMissing = 0, detailMissingFallback = 0, detailMissingJoin = 0, detailAmbiguous = 0, sceneMissing = 0, offFloorWithDetail = 0, offFloorWithoutDetail = 0;
+  const heightCorrections: number[] = [];
+  let detailLargeHeightJumps = 0, detailMaxHeightJump = 0;
+  const wallClasses = { notInBake: 0, possibleCornerOrRaster: 0, join: 0, possibleDifferentCorridor: 0, unclassified: 0 };
+  const wallLocations = new Map<string, number>();
   const navTotal = totals(), graphComparable = totals(), graphAll = totals(), ratios: number[] = [];
   let routeCount = 0, completed = 0, pure = 0, hybrid = 0, incomplete = 0, routeFailures = 0, stepUses = 0, joinsWithGap = 0, maxJoinGapM = 0;
   const pois = bundle.pois.filter(p => p.connectorNodeIds.length > 0);
@@ -104,23 +141,74 @@ async function main() {
     if (!route.ok) { routeFailures++; continue; }
     routeCount++; stepUses += route.steps.length;
     const graph = routePolyline(bundle, route);
-    const graphAudit = auditPolyline(probe, graph);
+    const graphAudit = auditPolyline(probe, graph, { cache:auditCache });
     add(graphAll, graphAudit);
     const entries = route.steps.map(step => edgePath(route, step));
     if (entries.some(e => !e.points?.length)) { incomplete++; continue; }
-    const walked: PolylinePoint[] = [];
-    for (const entry of entries) {
+    type Marked = PolylinePoint & { join?: boolean; fallback?: boolean };
+    const walked: Marked[] = [];
+    for (const [entryIndex, entry] of entries.entries()) {
       const pts = entry.points!;
       // Keep both endpoints when snapping/fallback produces a gap, so the audit sees it.
       const last = walked.at(-1), first = pts[0];
       const joinGap = last && first ? Math.hypot(last.x-first.x, last.y-first.y, last.z-first.z) : 0;
       if (joinGap >= 1e-6) { joinsWithGap++; maxJoinGapM = Math.max(maxJoinGapM, joinGap); }
       const skip = last && first && joinGap < 1e-6 ? 1 : 0;
-      walked.push(...pts.slice(skip));
+      walked.push(...pts.slice(skip).map((p, j) => ({ ...p, stepIndex: entryIndex, fallback: entry.stairLink, join: !!last && !skip && j === 0 })));
     }
     if (!walked.length) { incomplete++; continue; }
     completed++; if (entries.some(e => e.stairLink)) hybrid++; else pure++;
-    add(navTotal, auditPolyline(probe, walked)); add(graphComparable, graphAudit);
+    const samples = resampleAudit(walked) as Marked[];
+    const rawDetails: SampleDetail[] = [];
+    add(rawTotal, auditPolyline(probe, samples, { alreadySampled:true, detail:rawDetails, cache:auditCache }));
+    const detailPoints = samples.map((p, i) => {
+      const entry = entries[p.stepIndex];
+      const z = heightAt(p, entry, !!p.join);
+      if (z === null) { detailMissing++; if (p.join) detailMissingJoin++; else if (entry?.stairLink) detailMissingFallback++; else if (entry && ambiguousHeights.has(heightKey(p, entry))) detailAmbiguous++; }
+      else heightCorrections.push(Math.abs(z-p.z));
+      const floor = rawDetails[i]!.floorZ;
+      if (floor !== undefined) rawDiffs.push(Math.abs(p.z-floor));
+      return { ...p, z:z ?? p.z };
+    });
+    for (let i=1; i<detailPoints.length; i++) {
+      const jump = Math.abs(detailPoints[i]!.z-detailPoints[i-1]!.z);
+      detailMaxHeightJump = Math.max(detailMaxHeightJump, jump);
+      if (jump > 0.3) detailLargeHeightJumps++;
+    }
+    const detailInfo: SampleDetail[] = [];
+    add(navTotal, auditPolyline(probe, detailPoints, { alreadySampled:true, detail:detailInfo, cache:auditCache }));
+    const scenePoints = samples.map((p,i) => {
+      const z = rawDetails[i]!.floorZ;
+      if (z === undefined) sceneMissing++;
+      return { ...p, z:z ?? p.z };
+    });
+    add(sceneTotal, auditPolyline(probe, scenePoints, { alreadySampled:true, cache:auditCache }));
+    for (let i = 0; i < samples.length; i++) {
+      const d = detailInfo[i]!, p = samples[i]!;
+      if (d.floorZ !== undefined) detailDiffs.push(Math.abs(detailPoints[i]!.z-d.floorZ));
+      if (d.floor === "off") { if (heightAt(p, entries[p.stepIndex], !!p.join) === null) offFloorWithoutDetail++; else offFloorWithDetail++; }
+      if (!d.wallBefore) continue;
+      const loc = d.wallPoint ?? { x:p.x, y:p.y, z:p.z };
+      const id = d.wallCollider !== undefined ? `collider ${d.wallCollider} ${probe.collider[d.wallCollider]?.name || "unnamed"}` : `wall ${d.wallSegment ?? "unknown"}`;
+      const locKey = `${id} at (${loc.x.toFixed(1)}, ${loc.y.toFixed(1)}, ${loc.z.toFixed(1)})`;
+      wallLocations.set(locKey, (wallLocations.get(locKey) ?? 0)+1);
+      if (p.join) { wallClasses.join++; continue; }
+      if (d.wallCollider === undefined && d.wallSegment === undefined) { wallClasses.unclassified++; continue; }
+      const object = d.wallCollider === undefined ? null : probe.collider[d.wallCollider] as import("three").Mesh;
+      if (object && !object.geometry?.getAttribute("position")) { wallClasses.notInBake++; continue; }
+      const step = route.steps[p.stepIndex];
+      if (!step) { wallClasses.unclassified++; continue; }
+      const edgeLine = routePolyline(bundle, { ...route, nodeIds:[step.fromNodeId,step.toNodeId], steps:[step] });
+      let dist = Infinity;
+      for (let j=1; j<edgeLine.length; j++) {
+        const a=edgeLine[j-1]!, b=edgeLine[j]!, dx=b.x-a.x, dy=b.y-a.y;
+        const t=Math.max(0,Math.min(1,((loc.x-a.x)*dx+(loc.y-a.y)*dy)/(dx*dx+dy*dy || 1)));
+        dist=Math.min(dist,Math.hypot(loc.x-a.x-t*dx,loc.y-a.y-t*dy));
+      }
+      if (dist > 2) wallClasses.possibleDifferentCorridor++;
+      else wallClasses.unclassified++;
+    }
+    add(graphComparable, graphAudit);
     const graphLength = length(graph); if (graphLength > 0) ratios.push(length(walked) / graphLength);
   }
   const failed = [...cache.values()].filter(e => e.missing);
@@ -128,7 +216,11 @@ async function main() {
     .sort((a,b) => b.straightGapM-a.straightGapM || a.edgeId.localeCompare(b.edgeId));
   const result = { station, orderedPoiPairs: pois.length * (pois.length-1), routesAudited: routeCount, failedRoutePairs: routeFailures, completeAuditedRoutes: completed, pureNavmeshRoutes: pure, hybridStairFallbackRoutes: hybrid, incompleteRoutes: incomplete, joinsWithGap, maxJoinGapM,
     edgeUses: stepUses, uniqueEdgesUsed: new Set([...cache.values()].map(e => e.step.edgeId)).size, directedEdgesQueried: cache.size,
-    navmeshTotals: navTotal, graphComparableTotals: graphComparable, graphAllRoutableTotals: graphAll,
+    navmeshTotals: navTotal, diagnosis: { raw: rawTotal, detail: navTotal, sceneRaycast: sceneTotal,
+      detailHeightUnavailableSamples: detailMissing, detailUnavailableStairFallback: detailMissingFallback, detailUnavailableJoin: detailMissingJoin, detailUnavailableAmbiguous: detailAmbiguous, detailLargeHeightJumps, detailMaxHeightJump, offFloorWithDetail, offFloorWithoutDetail, heightCorrectionM: { count:heightCorrections.length, p50:percentile(heightCorrections,0.5), p95:percentile(heightCorrections,0.95), max:heightCorrections.length ? heightCorrections.reduce((a,b)=>Math.max(a,b),0) : null }, sceneFloorUnavailableSamples: sceneMissing,
+      rawAbsDzM: { count:rawDiffs.length, p50:percentile(rawDiffs,0.5), p95:percentile(rawDiffs,0.95), max:rawDiffs.length ? rawDiffs.reduce((a,b)=>Math.max(a,b),0) : null },
+      detailAbsDzM: { count:detailDiffs.length, p50:percentile(detailDiffs,0.5), p95:percentile(detailDiffs,0.95), max:detailDiffs.length ? detailDiffs.reduce((a,b)=>Math.max(a,b),0) : null },
+      wallClasses, topWalls:[...wallLocations.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10).map(([location,hits])=>({location,hits})) }, graphComparableTotals: graphComparable, graphAllRoutableTotals: graphAll,
     directedEdgesWithoutAcceptablePath: failures.length, uniqueEdgesWithoutAcceptablePath: new Set(failures.map(e => e.edgeId)).size, failuresByReason: { snapFailed: failures.filter(e => e.reason === "snap_failed").length, noPath: failures.filter(e => e.reason === "no_path").length, tooLong: failures.filter(e => e.reason === "too_long").length }, worst20: failures.slice(0,20),
     directedStairLinks: failed.filter(e => e.stairLink).length, uniqueStairsNeedingLinks: new Set(failed.filter(e => e.stairLink).map(e => e.step.edgeId)).size,
     snapDistanceM: { count: snapDistances.length, p50: percentile(snapDistances, 0.5), p95: percentile(snapDistances, 0.95), max: snapDistances.length ? Math.max(...snapDistances) : null },
