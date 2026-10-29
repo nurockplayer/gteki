@@ -406,16 +406,12 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         if (hit) {
           const center = R(hit.x, hit.y, hit.z);
           openings.push({ center, along: along.clone(), across: across.clone(), width, depth: 0.6, height: 2.3 });
-          // A panel marks the modelled face; it is decorative and never a collider.
-          const modelledSign = run.edge.attributes?.sceneGap === true ? (i === 1 ? -1 : 1) : (hasFloor(pa) ? -1 : 1);
           const faceAt = (face: number) => {
             const outside = center.clone().addScaledVector(along, face * 0.3);
             const inside = center.clone().addScaledVector(along, -face * 0.3);
             const surface = scene.wallHit(enu(outside), enu(inside));
             return (surface ? R(surface.x, surface.y, surface.z) : center.clone()).addScaledVector(along, face * 0.02);
           };
-          const panel = faceAt(modelledSign);
-          quad(b.portal, b.portalColors, offset(panel, -half, 0), offset(panel, half, 0), offset(panel, half, 2.3), offset(panel, -half, 2.3), [0.16, 0.16, 0.55, 0.55]);
           for (const face of [-1, 1]) {
           const frame = faceAt(face);
           for (const side of [-1, 1]) {

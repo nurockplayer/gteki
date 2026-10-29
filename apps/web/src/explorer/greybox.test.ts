@@ -124,8 +124,6 @@ describe("buildGreybox", () => {
     expect(result.stats.portals).toBe(1);
     expect(result.stats.meshes).toBeLessThanOrEqual(3);
     expect(result.root.getObjectByName("greybox-portal")).toBeTruthy();
-    const panel = result.root.getObjectByName("greybox-lights") as THREE.Mesh;
-    expect(panel.geometry.getAttribute("color").array).toContain(Math.round(0.16 * 255));
     expect(result.openings[0]!.width).toBeCloseTo(MODE_WIDTH.walk!);
     const wall = { ax: 2.25, az: -3, bx: 2.25, bz: 3, yMin: 0, yMax: 3 };
     const split = splitWallsAtOpenings([wall], result.openings);
