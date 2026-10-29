@@ -9,6 +9,7 @@ import { darkSampleDistances } from "./routeGroundQa.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { prepareRayTrees } from "./meshBvh.ts";
 import { castCamera } from "./raycast.ts";
+import { floorProbe } from "./routeGaps.ts";
 
 const bundle = () => createSyntheticBundle([syntheticEdge("hall", "start", "a")]);
 
@@ -108,6 +109,34 @@ describe("greybox station integration", () => {
     expect(state.blockedByColliders(new THREE.Vector3(1, 0, 0), new THREE.Vector3(4, 0, 0))).toBeNull();
     expect(state.portalExemptions).toBeGreaterThanOrEqual(2);
     wall.geometry = cut;
+  });
+
+  it("rejects a separate parallel partition as the far face", async () => {
+    const { state, scene, loaded } = fixture();
+    const wall = scene.colliders[0]!, partition = scene.colliders[1]!;
+    partition.position.x = 3.1; scene.root.updateMatrixWorld(true);
+    const partitionGeometry = partition.geometry;
+    await state.loadStation(loaded, createRouter(loaded.bundle));
+    const box = state.greyboxOpenings[0];
+    expect(box.center.x).toBeCloseTo(2.05); expect(box.depth).toBe(0.6);
+    expect(state.greybox.stats.portalFarFaceRejected).toBe(1);
+    expect(partition.geometry).toBe(partitionGeometry); expect(wall.geometry).not.toBe(partitionGeometry);
+    const hits = castCamera(new THREE.Raycaster(new THREE.Vector3(2.5, 1, 0), new THREE.Vector3(1, 0, 0), 0, 2), [partition], new Set([partition]));
+    expect(hits.length).toBeGreaterThan(0);
+  });
+
+  it("keeps an extracted instanced floor in every ground and collider target set", async () => {
+    const { state, scene, loaded } = fixture();
+    const floor = scene.walkable[0]!; scene.root.remove(floor);
+    const instanced = new THREE.InstancedMesh(floor.geometry, floor.material, 1);
+    instanced.setMatrixAt(0, new THREE.Matrix4().makeTranslation(0, -0.1, 0));
+    scene.root.add(instanced); scene.walkable[0] = instanced; scene.root.updateMatrixWorld(true);
+    await state.loadStation(loaded, createRouter(loaded.bundle));
+    const replacement = state.portalCutResources.instances.find((entry: { owner: THREE.Object3D }) => entry.owner === instanced)?.copy;
+    expect(replacement).toBeDefined();
+    expect(state.sceneGroundTargets).toContain(replacement); expect(state.groundTargets).toContain(replacement);
+    expect(state.colliderTargets).toContain(replacement); expect(state.sceneGroundTargets).not.toContain(instanced);
+    expect(floorProbe(new THREE.Raycaster(), state.sceneGroundTargets)({ x: 1.9, y: 0, z: 0 })).toBe(true);
   });
 
   it("records the hit face normal and exempts an oblique wall crossing", () => {

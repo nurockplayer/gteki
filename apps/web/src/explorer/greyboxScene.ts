@@ -57,17 +57,18 @@ export function greyboxSceneProbes(colliders: readonly THREE.Object3D[], walls: 
       ray.near = 0; ray.far = radius;
       return dirs.some((dir) => { ray.set(origin, dir); return castCamera(ray, dynamic, dynamicSides).length > 0; });
     },
-    wallHit(a, b) {
+    wallHit(a, b, opts) {
       const from = R(a.x, a.y, a.z), to = R(b.x, b.y, b.z);
       const dx = to.x - from.x, dz = to.z - from.z;
       let best = Infinity;
       let wallNormal: THREE.Vector3 | undefined;
+      let backFace: boolean | undefined;
       const candidates = new Set(largeWalls);
       const x0 = Math.floor(Math.min(from.x, to.x) / wallCellSize), x1 = Math.floor(Math.max(from.x, to.x) / wallCellSize);
       const z0 = Math.floor(Math.min(from.z, to.z) / wallCellSize), z1 = Math.floor(Math.max(from.z, to.z) / wallCellSize);
       if ((x1 - x0 + 1) * (z1 - z0 + 1) > 4096) for (const wall of walls) candidates.add(wall);
       else for (let x = x0; x <= x1; x++) for (let z = z0; z <= z1; z++) for (const wall of wallCells.get(`${x},${z}`) ?? []) candidates.add(wall);
-      for (const w of candidates) {
+      for (const w of opts?.faceOnly ? [] : candidates) {
         const wx = w.bx - w.ax, wz = w.bz - w.az;
         const cross = dx * wz - dz * wx;
         if (Math.abs(cross) < 1e-9) continue;
@@ -89,13 +90,14 @@ export function greyboxSceneProbes(colliders: readonly THREE.Object3D[], walls: 
               const inst = new THREE.Matrix4(); (hit.object as THREE.InstancedMesh).getMatrixAt(hit.instanceId, inst); matrix.multiply(inst);
             }
             const normal = hit.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(matrix));
+            backFace = normal.dot(ray.ray.direction) > 0;
             normal.y = 0;
             if (normal.lengthSq() > 1e-12) wallNormal = normal.normalize();
           }
         }
       }
       if (!Number.isFinite(best)) return null;
-      return { x: a.x + (b.x - a.x) * best, y: a.y + (b.y - a.y) * best, z: a.z + (b.z - a.z) * best, ...(wallNormal ? { wallNormal } : {}) };
+      return { x: a.x + (b.x - a.x) * best, y: a.y + (b.y - a.y) * best, z: a.z + (b.z - a.z) * best, ...(wallNormal ? { wallNormal } : {}), ...(backFace !== undefined ? { backFace } : {}) };
     },
   };
 }
