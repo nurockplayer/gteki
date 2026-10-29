@@ -2,7 +2,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, realpathSync } from 'node:fs';
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
-import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import type { Edge, Floor, GraphFile, Node, StationManifestFile } from '../../../packages/schema/src/index.js';
 import { repoRoot } from './common.js';
 import { loadHeldGraph, type HeldGraphDocument } from './s03-nav-graph-route.js';
@@ -126,8 +126,8 @@ export async function s03PrivateSeam(options: { run: string; out: string; privat
   let privateDir: string | undefined;
   if (options.drape) {
     const stationDir = dirname(out), additions = dirname(stationDir);
-    if (stationDir.split(sep).at(-1) !== 'shinjuku' || additions.split(sep).at(-1) !== 'additions')
-      throw new Error('S03 drape: --out must be under additions/shinjuku');
+    if (stationDir.split(sep).at(-1) !== 'shinjuku' || additions.split(sep).at(-1) !== 'additions' || !/^graph(\..+)?\.json$/.test(basename(out)))
+      throw new Error('S03 drape: --out must be an additions/shinjuku/graph*.json overlay file');
     privateDir = dirname(additions);
   }
   const { document } = await loadHeldGraph(options.run, storeRoot);

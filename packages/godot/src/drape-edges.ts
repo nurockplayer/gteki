@@ -93,6 +93,16 @@ export function drapeEdges(probe: SceneProbe, bundle: StationBundle, edgeIds: Se
   return { nodes, geometry, unresolved };
 }
 
+/** Update a successfully draped edge and retain its previous route length. */
+export function applyDrapeGeometry(edge: Edge, geometry: Point[]): void {
+  const length = geometry.slice(1).reduce((sum, p, i) => sum + Math.hypot(p.x - geometry[i]!.x, p.y - geometry[i]!.y), 0);
+  // Scene-floor z stays numeric; geometryMethod records its provenance without making the route approximate.
+  edge.geometry = geometry;
+  edge.attributes = { ...edge.attributes, geometryMethod: "drape:scene-floor-lattice", lengthMethod: "drape-geometry", lengthMBeforeDrape: edge.lengthM };
+  edge.lengthM = Math.round(length * 10) / 10;
+  edge.geometryEvidence = { ...edge.geometryEvidence, method: `${edge.geometryEvidence.method}+drape` };
+}
+
 function privateOutput(out: string): string {
   let ancestor = path.resolve(out); const tail: string[] = [];
   while (!fs.existsSync(ancestor)) { tail.unshift(path.basename(ancestor)); ancestor = path.dirname(ancestor); }
@@ -106,8 +116,12 @@ async function main(): Promise<void> {
   const station = values["--station"], privateDir = values["--private"], file = values["--file"], out = values["--out"];
   if (!station || !privateDir || !file || !out) throw new Error("--station, --private, --file and --out are required");
   process.chdir(repoRoot);
-  const output = privateOutput(out), input = path.resolve(privateDir, file), rel = path.relative(path.resolve(privateDir), input);
-  if (path.isAbsolute(rel) || rel === ".." || rel.startsWith(`..${path.sep}`)) throw new Error("--file must be inside private directory");
+  const output = privateOutput(out), input = path.resolve(privateDir, file);
+  const overlayFile = (p: string) => {
+    const parts = path.relative(path.resolve(privateDir), p).split(path.sep);
+    return station === "shinjuku" && parts.length === 3 && parts[0] === "additions" && parts[1] === station && /^graph(\..+)?\.json$/.test(parts[2]!);
+  };
+  if (!overlayFile(input) || !overlayFile(output)) throw new Error("--file and --out must be additions/shinjuku/graph*.json overlay files inside the private directory");
   const doc = JSON.parse(fs.readFileSync(input, "utf8")) as { nodes: Node[]; edges: Edge[] };
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "gteki-drape-"));
   try {
@@ -120,7 +134,7 @@ async function main(): Promise<void> {
     if (!parsed.ok) throw new Error(`overlay failed validation: ${JSON.stringify(parsed.issues).slice(0, 500)}`);
     const result = drapeEdges(sceneProbe(await loadScene(station, parsed.bundle)), parsed.bundle, new Set(doc.edges.map(e => e.id)), { nodeIds: new Set(doc.nodes.map(n => n.id)) });
     for (const n of doc.nodes) if (result.nodes.has(n.id)) n.renderZ = result.nodes.get(n.id)!;
-    for (const e of doc.edges) { const geometry = result.geometry.get(e.id); if (!geometry) continue; e.geometry = geometry; e.attributes = { ...e.attributes, geometryMethod: "drape:scene-floor-lattice" }; e.geometryEvidence = { ...e.geometryEvidence, method: `${e.geometryEvidence.method}+drape` }; }
+    for (const e of doc.edges) { const geometry = result.geometry.get(e.id); if (!geometry) continue; applyDrapeGeometry(e, geometry); }
     fs.mkdirSync(path.dirname(output), { recursive: true }); fs.writeFileSync(output, `${JSON.stringify(doc, null, 2)}\n`);
     console.log(`nodes ${result.nodes.size}, edges ${result.geometry.size}, unresolved ${result.unresolved.length}`);
     for (const u of result.unresolved) console.log(`${u.edgeId}: ${u.reason}`);
