@@ -299,14 +299,14 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   }
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
-  const junctions = new Map<string, { at: THREE.Vector3; width: number; count: number; floor: string; radius?: number }>();
+  const junctions = new Map<string, { at: THREE.Vector3; width: number; count: number; floor: string; radius?: number; edges: Set<string> }>();
   for (const run of detected) {
     const edgePointsR = edgePoints(bundle, run.edge, nodes, floors);
     for (const [id, point, endpoint] of [[run.edge.from, run.points[0], edgePointsR[0]], [run.edge.to, run.points.at(-1), edgePointsR.at(-1)]] as const) {
       if (!point || !endpoint || R(point.x, point.y, point.z).distanceTo(endpoint) > 1e-5) continue;
       const current = junctions.get(id);
-      if (current) { current.count++; current.width = Math.max(current.width, widthOf(run.edge)); }
-      else junctions.set(id, { at: endpoint, width: widthOf(run.edge), count: 1, floor: nodes.get(id)?.floorId ?? "" });
+      if (current) { current.count++; current.width = Math.max(current.width, widthOf(run.edge)); current.edges.add(run.edge.id); }
+      else junctions.set(id, { at: endpoint, width: widthOf(run.edge), count: 1, floor: nodes.get(id)?.floorId ?? "", edges: new Set([run.edge.id]) });
     }
     // Bends in a single edge need the same patch as graph-node junctions.
     for (let i = 1; i + 1 < run.points.length; i++) {
@@ -314,7 +314,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       const ax = p.x - a.x, ay = p.y - a.y, bx = z.x - p.x, by = z.y - p.y;
       const lengths = Math.hypot(ax, ay) * Math.hypot(bx, by);
       if (lengths > 1e-9 && (ax * bx + ay * by) / lengths < 0.9999) {
-        junctions.set(`${run.edge.id}:bend:${i}`, { at: R(p.x, p.y, p.z), width: widthOf(run.edge), count: 2, floor: nodes.get(run.edge.from)?.floorId ?? "" });
+        junctions.set(`${run.edge.id}:bend:${i}`, { at: R(p.x, p.y, p.z), width: widthOf(run.edge), count: 2, floor: nodes.get(run.edge.from)?.floorId ?? "", edges: new Set([run.edge.id]) });
       }
     }
   }
@@ -366,6 +366,8 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         // Clip the wall centreline against junction discs; the floor and ceiling remain continuous.
         let intervals: [number, number][] = index.uncovered(wa, wz);
         for (const j of activeJunctions) {
+          // A mouth opens only the passages that end there; a corridor that merely passes nearby keeps its walls.
+          if (j.radius !== undefined && !j.edges.has(run.edge.id)) continue;
           const vx = wz.x - wa.x, vz = wz.z - wa.z, ox = wa.x - j.at.x, oz = wa.z - j.at.z;
           const A = vx * vx + vz * vz, B = 2 * (ox * vx + oz * vz), C = ox * ox + oz * oz - (j.radius ?? j.width / 2) ** 2;
           // Compare heights where the wall passes the junction, not at the segment midpoint: a long ramp drifts.

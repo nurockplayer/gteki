@@ -119,6 +119,16 @@ describe("buildGreybox", () => {
     }
   });
 
+  it("leaves the walls of a corridor that passes a stair mouth", () => {
+    const floors = [...bundle.floors, { id: "g", renderElevationM: 4 }];
+    const nodes = [...bundle.nodes, { id: "c", floorId: "g", position: { x: 10, y: 6, z: 4 } }, { id: "p", floorId: "f", position: { x: 0, y: 2.7, z: 0 } }, { id: "q", floorId: "f", position: { x: 20, y: 2.7, z: 0 } }];
+    const edges = [bundle.edges[0]!, { id: "s", from: "b", to: "c", mode: "stairs" }, { id: "pq", from: "p", to: "q", mode: "walk" }];
+    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
+    const wallLengthNear = (z: number) => result.wallSegments.filter((w) => Math.abs((w.az + w.bz) / 2 - z) < 0.01).reduce((sum, w) => sum + Math.hypot(w.bx - w.ax, w.bz - w.az), 0);
+    // The renderer frame mirrors north into -z; take whichever side the corridor's near wall lands on.
+    expect(Math.max(wallLengthNear(1.4), wallLengthNear(-1.4))).toBeGreaterThan(19.9);
+  });
+
   it("makes a junction patch and keeps wall segments out of its disc", () => {
     const junction = { ...bundle, nodes: [...bundle.nodes, { ...bundle.nodes[1]!, id: "c", position: { x: 10, y: 10, z: 0 } }], edges: [bundle.edges[0]!, { ...bundle.edges[0]!, id: "e2", from: "b", to: "c" }] };
     const result = buildGreybox(junction, () => true, () => false, emptyScene, "high");
