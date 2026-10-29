@@ -318,6 +318,14 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       }
     }
   }
+  // A stair, escalator or lift leaves the passage at its end node, so that end needs the same wall-free patch as a junction. Closed ones too: the opening is physical.
+  for (const edge of bundle.edges) {
+    if (!["stairs", "escalator", "elevator"].includes(edge.mode)) continue;
+    for (const id of [edge.from, edge.to]) {
+      const junction = junctions.get(id);
+      if (junction) { junction.count++; junction.width = Math.max(junction.width, widthOf(edge)); }
+    }
+  }
   const activeJunctions = [...junctions.values()].filter((junction) => junction.count >= 2);
   const batches = new Map<string, Batch>();
   const floorBatches = new Map<string, string>();

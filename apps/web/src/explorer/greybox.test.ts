@@ -98,6 +98,16 @@ describe("buildGreybox", () => {
     expect(shell.geometry.boundingBox!.getSize(new THREE.Vector3()).z).toBeCloseTo(4);
   });
 
+  it("keeps passage walls out of the mouth of a stair that leaves a run end", () => {
+    const floors = [...bundle.floors, { id: "g", renderElevationM: 4 }];
+    const nodes = [...bundle.nodes, { id: "c", floorId: "g", position: { x: 10, y: 6, z: 4 } }];
+    const stairs = { id: "s", from: "b", to: "c", mode: "stairs", attributes: { width: { m: 4 } } };
+    const result = buildGreybox({ ...bundle, floors, nodes, edges: [bundle.edges[0]!, stairs] } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
+    for (const wall of result.wallSegments) for (const [x, z] of [[wall.ax, wall.az], [wall.bx, wall.bz]] as const) {
+      expect(Math.hypot(x - 10, z)).toBeGreaterThanOrEqual(2 - 1e-5);
+    }
+  });
+
   it("makes a junction patch and keeps wall segments out of its disc", () => {
     const junction = { ...bundle, nodes: [...bundle.nodes, { ...bundle.nodes[1]!, id: "c", position: { x: 10, y: 10, z: 0 } }], edges: [bundle.edges[0]!, { ...bundle.edges[0]!, id: "e2", from: "b", to: "c" }] };
     const result = buildGreybox(junction, () => true, () => false, emptyScene, "high");
