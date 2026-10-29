@@ -17,7 +17,7 @@ import { loadSignFont } from "../signFont.ts";
 import { R, chevronTexture, dashTexture, ribbonGeometry } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { cutPortals, disposePortalCuts, type PortalCutResources } from "./portalCut.ts";
-import { buildGreybox, splitWallsAtOpenings, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
+import { buildGreybox, portalWidthAxis, splitWallsAtOpenings, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
 import { greyboxPathSegments, greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
 import { darkSampleDistances, routeGroundCounts, sceneMeshNear } from "./routeGroundQa.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
@@ -1428,7 +1428,7 @@ export class Explorer {
         camera.lookAt(midpoint); camera.updateMatrixWorld();
         renderer.render(this.scene, camera);
         renderer.readRenderTargetPixels(target, 0, 0, 512, 512, pixels);
-        const corners = [-0.4, 0.4].flatMap(x => [0.1, 0.9].map(y => box.center.clone().addScaledVector(box.across, x * box.width).add(new THREE.Vector3(0, y * box.height, 0)).project(camera)));
+        const corners = [-0.4, 0.4].flatMap(x => [0.1, 0.9].map(y => box.center.clone().addScaledVector(portalWidthAxis(box), x * box.width).add(new THREE.Vector3(0, y * box.height, 0)).project(camera)));
         const minX = Math.max(0, Math.floor((Math.min(...corners.map(p => p.x)) + 1) * 256));
         const maxX = Math.min(512, Math.ceil((Math.max(...corners.map(p => p.x)) + 1) * 256));
         const minY = Math.max(0, Math.floor((Math.min(...corners.map(p => p.y)) + 1) * 256));

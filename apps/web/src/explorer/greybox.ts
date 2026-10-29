@@ -85,8 +85,9 @@ export interface Box {
 /** Unit normal to the portal wall; passage direction is the fallback when no face was hit. */
 export function portalDepthAxis(box: Box): THREE.Vector3 { return box.wallNormal ?? box.along; }
 export function portalWidthAxis(box: Box): THREE.Vector3 {
-  const n = portalDepthAxis(box);
-  return Math.abs(box.across.x * n.z - box.across.z * n.x) < 1e-6 ? new THREE.Vector3(-n.z, 0, n.x) : box.across;
+  if (!box.wallNormal) return box.across;
+  const n = box.wallNormal;
+  return new THREE.Vector3(-n.z, 0, n.x);
 }
 
 export interface GreyboxStats { runs: number; lengthM: number; portals: number; meshes: number; triangles: number; buildMs: number; overBudget: string | null }
@@ -421,7 +422,9 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
           const near = R(hit.x, hit.y, hit.z);
           const center = near.clone();
           const depth = 0.6;
-          openings.push({ center, along: along.clone(), across: across.clone(), ...(hit.wallNormal ? { wallNormal: hit.wallNormal.clone() } : {}), width, depth, height: 2.3 });
+          const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
+          const openingWidth = width * Math.min(2, 1 / Math.max(cosine, 1e-9));
+          openings.push({ center, along: along.clone(), across: across.clone(), ...(hit.wallNormal ? { wallNormal: hit.wallNormal.clone() } : {}), width: openingWidth, depth, height: 2.3 });
           const faceAt = (face: number) => {
             return near.clone().addScaledVector(along, face * 0.02);
           };

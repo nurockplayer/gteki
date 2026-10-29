@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { portalDepthAxis, portalWidthAxis, type Box } from "./greybox.ts";
 import { clearClippedPortals, portalWallNormal, setClippedPortals } from "./raycast.ts";
+import { currentBvh } from "./meshBvh.ts";
 
 type Vertex = { values: Record<string, number[]>; world: THREE.Vector3 };
 type Plane = (p: THREE.Vector3) => number;
@@ -127,6 +128,42 @@ export function cutPortals(root: THREE.Object3D, openings: readonly Box[], opts:
     const isWalkable = walkable.has(mesh) || walkableCopies.has(mesh);
     const shared = (uses.get(geometry) ?? 0) > 1 || walkableCopies.has(mesh);
     const largeShared = shared && position.count >= 50000;
+    // Test positions only before expanding every vertex attribute into rebuild arrays.
+    const index = geometry.index, count = index ? index.count : position.count;
+    const groups = geometry.groups.length ? geometry.groups : [{ start: 0, count, materialIndex: 0 }];
+    const tree = groups.every(g => g.start % 3 === 0 && g.count % 3 === 0) ? currentBvh(geometry) : null;
+    const inverse = mesh.matrixWorld.clone().invert();
+    const vertices = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
+    const triangle = new THREE.Triangle();
+    const hasCut = relevant.some(box => {
+      const across = portalWidthAxis(box), depth = portalDepthAxis(box);
+      const volume = new THREE.Box3(new THREE.Vector3(-box.width / 2, 0.05, -box.depth / 2), new THREE.Vector3(box.width / 2, box.height, box.depth / 2));
+      const intersects = (i: number) => {
+        for (let j = 0; j < 3; j++) {
+          const k = index ? index.getX(i + j) : i + j;
+          vertices[j]!.set(position.getX(k), position.getY(k), position.getZ(k)).applyMatrix4(mesh.matrixWorld);
+        }
+        const normal = vertices[1]!.clone().sub(vertices[0]!).cross(vertices[2]!.clone().sub(vertices[0]!)).normalize();
+        if (!portalWallNormal(normal, box)) return false;
+        for (let j = 0; j < 3; j++) {
+          const point = vertices[j]!.clone().sub(box.center);
+          [triangle.a, triangle.b, triangle.c][j]!.set(point.dot(across), point.y, point.dot(depth));
+        }
+        return volume.intersectsTriangle(triangle);
+      };
+      if (tree && mesh.matrixWorld.determinant() !== 0) {
+        const localBounds = openingBounds.get(box)!.clone().applyMatrix4(inverse);
+        const sphere = localBounds.getBoundingSphere(new THREE.Sphere()), candidates: number[] = [];
+        tree.pointCandidates(sphere.center.x, sphere.center.y, sphere.center.z, sphere.radius + 1e-6, candidates);
+        return candidates.some(id => {
+          const i = id * 3;
+          return groups.some(g => i >= g.start && i + 3 <= Math.min(g.start + g.count, count)) && intersects(i);
+        });
+      }
+      for (const group of groups) for (let i = group.start; i + 2 < Math.min(group.start + group.count, count); i += 3) if (intersects(i)) return true;
+      return false;
+    });
+    if (!hasCut) return;
     // Clipping planes cannot distinguish wall faces from returns or obstacles in the same mesh.
     // If any non-wall triangle intersects the clip volume, use the CPU cut instead.
     const box = relevant[0]!;
@@ -154,9 +191,6 @@ export function cutPortals(root: THREE.Object3D, openings: readonly Box[], opts:
     if (largeShared) result.largeSharedVertices.push(position.count);
     const attrs = Object.entries(geometry.attributes);
     const output: Record<string, number[]> = Object.fromEntries(attrs.map(([name]) => [name, []]));
-    const index = geometry.index;
-    const count = index ? index.count : position.count;
-    const groups = geometry.groups.length ? geometry.groups : [{ start: 0, count, materialIndex: 0 }];
     const outGroups: { start: number; count: number; materialIndex: number }[] = [];
     let removed = 0;
     for (const group of groups) {

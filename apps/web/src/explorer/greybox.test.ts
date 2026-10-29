@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import type { StationBundle } from "@gteki/schema";
-import { buildGreybox, createGreyboxBuilder, greyboxTriangleLimit, simplifyGreyboxRun, splitWallsAtOpenings, unmodelledRunsByEdge } from "./greybox.ts";
+import { buildGreybox, createGreyboxBuilder, greyboxTriangleLimit, portalDepthAxis, portalWidthAxis, simplifyGreyboxRun, splitWallsAtOpenings, unmodelledRunsByEdge } from "./greybox.ts";
 import { MODE_WIDTH } from "./graphView.ts";
 import { resolveWalls } from "./walker.ts";
 
@@ -170,6 +170,20 @@ describe("buildGreybox", () => {
     const split = splitWallsAtOpenings([wall], result.openings);
     expect(resolveWalls(2.25, 0, 0.2, 0, 1.8, split).x).toBeCloseTo(2.25);
     expect(Math.abs(resolveWalls(2.25, 2.3, 0.2, 0, 1.8, split).x - 2.25)).toBeGreaterThan(0.1);
+  });
+
+  it("limits the wall-tangent opening at a 70 degree crossing while fitting the walker", () => {
+    const angle = THREE.MathUtils.degToRad(70);
+    const normal = new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle));
+    const result = buildGreybox(bundle, () => true, p => p.x <= 2 || p.x >= 6, {
+      colliderNear: () => false,
+      wallHit: (a, b) => a.x < 2.5 && b.x >= 2.5 ? { x: 2.25, y: 0, z: 0, wallNormal: normal } : null,
+    }, "high");
+    const box = result.openings[0]!, passageWidth = MODE_WIDTH.walk!;
+    expect(box.width).toBeCloseTo(2 * passageWidth);
+    expect(portalWidthAxis(box).dot(portalDepthAxis(box))).toBeCloseTo(0);
+    expect(portalDepthAxis(box).dot(normal)).toBeCloseTo(1);
+    expect(box.width * Math.cos(angle)).toBeGreaterThanOrEqual(0.6);
   });
 
   it("preserves the entire floor and walls of a long straight passage", () => {

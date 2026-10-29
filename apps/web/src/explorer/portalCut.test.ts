@@ -13,6 +13,22 @@ const ray = (mesh: THREE.Mesh, x: number, y: number) => {
 };
 
 describe("portal cuts", () => {
+  it.each([false, true])("avoids rebuilding a bounds-only overlap (cached BVH: %s)", (withTree) => {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute([
+      -3, 0, 0, -2, 0, 0, -2, 3, 0,
+      2, 0, 0, 3, 0, 0, 2, 3, 0,
+    ], 3));
+    const uv = new THREE.Float32BufferAttribute(new Float32Array(12), 2);
+    geometry.setAttribute("uv", uv);
+    const expanded = vi.spyOn(uv, "getComponent");
+    const root = new THREE.Group(), mesh = new THREE.Mesh(geometry);
+    root.add(mesh); if (withTree) prepareRayTrees([mesh]);
+    const owned = resources(), result = cutPortals(root, [opening], owned);
+    expect(mesh.geometry).toBe(geometry); expect(result.cutMeshes).toBe(0);
+    expect(owned.geometries).toHaveLength(0); expect(owned.materials).toHaveLength(0);
+    expect(expanded).not.toHaveBeenCalled();
+  });
   it("splits the wall into a rectangular opening, retains floor faces and builds usable ray trees", () => {
     const root = new THREE.Group();
     const wall = new THREE.Mesh(new THREE.BoxGeometry(6, 3, 0.2), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
