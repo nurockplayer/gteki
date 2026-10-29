@@ -251,11 +251,25 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       const from = points[i - 1]!, to = points[i]!;
       const dx = to.x - from.x, dz = to.z - from.z, horizontal = Math.hypot(dx, dz);
       if (horizontal > 1e-6) {
-        const half = (edge.mode === "stairs" ? width : 1.2) / 2 + 0.03, n = Math.max(1, Math.ceil(horizontal / 0.5));
-        for (const side of [-1, 1]) for (let k = 0; k < n; k++) {
-          const t = k / n, u = (k + 1) / n, ox = -dz / horizontal * half * side, oz = dx / horizontal * half * side;
+        const half = (edge.mode === "stairs" ? width : 1.2) / 2 + 0.03;
+        const isTurn = (index: number) => {
+          if (edge.mode !== "stairs" || index <= 0 || index >= points.length - 1) return false;
+          const a = points[index]!.clone().sub(points[index - 1]!), b = points[index + 1]!.clone().sub(points[index]!); a.y = 0; b.y = 0;
+          return a.lengthSq() > 1e-12 && b.lengthSq() > 1e-12 && a.angleTo(b) > 1e-6;
+        };
+        const begin = isTurn(i - 1) ? Math.min(width / 2, horizontal / 2) : 0;
+        const end = horizontal - (isTurn(i) ? Math.min(width / 2, horizontal / 2) : 0);
+        const n = Math.max(1, Math.ceil((end - begin) / 0.5));
+        for (const side of [-1, 1]) for (let k = 0; k < n && end > begin; k++) {
+          const t = (begin + (end - begin) * k / n) / horizontal, u = (begin + (end - begin) * (k + 1) / n) / horizontal;
+          const ox = -dz / horizontal * half * side, oz = dx / horizontal * half * side;
           const ya = THREE.MathUtils.lerp(from.y, to.y, t), yb = THREE.MathUtils.lerp(from.y, to.y, u);
-          wallSegments.push({ ax: THREE.MathUtils.lerp(from.x, to.x, t) + ox, az: THREE.MathUtils.lerp(from.z, to.z, t) + oz, bx: THREE.MathUtils.lerp(from.x, to.x, u) + ox, bz: THREE.MathUtils.lerp(from.z, to.z, u) + oz, yMin: Math.min(ya, yb) - 0.12, yMax: Math.max(ya, yb) + 0.96 });
+          const wall = { ax: THREE.MathUtils.lerp(from.x, to.x, t) + ox, az: THREE.MathUtils.lerp(from.z, to.z, t) + oz, bx: THREE.MathUtils.lerp(from.x, to.x, u) + ox, bz: THREE.MathUtils.lerp(from.z, to.z, u) + oz, yMin: Math.min(ya, yb) - 0.12, yMax: Math.max(ya, yb) + 0.96 };
+          wallSegments.push(wall);
+          if (edge.mode === "stairs") {
+            const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(wall.bz - wall.az), wall.bx - wall.ax)).setPosition((wall.ax + wall.bx) / 2, (wall.yMin + wall.yMax) / 2, (wall.az + wall.bz) / 2);
+            box(parts, "steel", transform, 0, 0, 0, Math.hypot(wall.bx - wall.ax, wall.bz - wall.az), wall.yMax - wall.yMin, 0.04, "collider"); parts.at(-1)!.walkableOnly = true;
+          }
         }
       }
       let flightPath: THREE.Vector3[];
@@ -281,6 +295,22 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         const at = to.clone();
         const rotation = new THREE.Matrix4().makeRotationY(Math.atan2(-(to.z - from.z), to.x - from.x)).setPosition(at);
         box(parts, edge.mode === "stairs" ? "tread" : "escStep", rotation, 0, -0.04, 0, edge.mode === "stairs" ? width : 1.2, 0.08, edge.mode === "stairs" ? width : 1.2, "walkable");
+        if (edge.mode === "stairs") {
+          const d = incoming.normalize(), n = new THREE.Vector3(-d.z, 0, d.x), out = outgoing.normalize(), half = width / 2 + 0.03;
+          // The incoming side and the side reached by the outgoing flight stay open.
+          const along = out.dot(d), across = out.dot(n);
+          const exitSide = Math.abs(along) >= Math.abs(across) ? (along >= 0 ? 1 : 0) : (across >= 0 ? 3 : 2);
+          const corners = [at.clone().addScaledVector(d, -half).addScaledVector(n, -half), at.clone().addScaledVector(d, half).addScaledVector(n, -half), at.clone().addScaledVector(d, half).addScaledVector(n, half), at.clone().addScaledVector(d, -half).addScaledVector(n, half)];
+          const sides = [[corners[3]!, corners[0]!], [corners[1]!, corners[2]!], [corners[0]!, corners[1]!], [corners[2]!, corners[3]!]] as const;
+          for (let side = 1; side < sides.length; side++) {
+            if (side === exitSide) continue;
+            const [a, b] = sides[side]!;
+            const wall = { ax: a.x, az: a.z, bx: b.x, bz: b.z, yMin: at.y - 0.12, yMax: at.y + 0.96 }; wallSegments.push(wall);
+            const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(b.z - a.z), b.x - a.x)).setPosition((a.x + b.x) / 2, at.y, (a.z + b.z) / 2);
+            box(parts, "steel", transform, 0, 0.96, 0, width + 0.06, 0.052, 0.052);
+            box(parts, "steel", transform, 0, 0.42, 0, width + 0.06, 1.08, 0.04, "collider"); parts.at(-1)!.walkableOnly = true;
+          }
+        }
       }
     }
     const lowerFirst = points[0]!.y <= points.at(-1)!.y ? edgePath : edgePath.reverse();

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { StationBundle } from "@gteki/schema";
 import { unmodelledVerticalEdges } from "./greyboxConnectors.ts";
-import { resolveWalls } from "./walker.ts";
+import { cumulativeLengths, resolveWalls, samplePolyline } from "./walker.ts";
 
 const bundle = {
   floors: [{ id: "low", renderElevationM: 0 }, { id: "high", renderElevationM: 3 }],
@@ -200,6 +200,27 @@ it("builds a bent stair edge along both legs with a flat turning landing", () =>
     if (z < -1 && y > 2) second = true;
   }
   expect(first && second).toBe(true);
+});
+
+it("keeps the L-shaped stair path clear and guards the two outside landing edges", () => {
+  for (const direction of [-1, 1]) {
+    const station = createSyntheticBundle([syntheticEdge("bent", "start", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: [{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: 4, y: direction * 4, z: 4 }] })]);
+    station.nodes.find((n) => n.id === "upper")!.position = { x: 4, y: direction * 4, z: 4 };
+    const result = buildConnectors(station, () => true, { hasFloor: () => true, nearMesh: () => false }, "high");
+    const path = result.pathByEdge.get("bent")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
+    for (let s = 0; s <= total; s += 0.05) {
+      const p = samplePolyline(path, cumulative, s), resolved = resolveWalls(p.x, p.z, 0.3, p.y, 1.7, result.wallSegments);
+      expect(Math.hypot(resolved.x - p.x, resolved.z - p.z), `direction=${direction}, s=${s}`).toBeLessThanOrEqual(0.05);
+    }
+    const outer = [{ x: 4.78, z: 0 }, { x: 4, z: direction * 0.78 }];
+    for (const point of outer) {
+      const resolved = resolveWalls(point.x, point.z, 0.3, 2, 1.7, result.wallSegments);
+      expect(Math.hypot(resolved.x - point.x, resolved.z - point.z)).toBeGreaterThan(0.29);
+      const toward = new THREE.Vector3(point.x - 4, 0, point.z).normalize();
+      const ray = new THREE.Raycaster(new THREE.Vector3(4, 2.4, 0), toward, 0, 0.9);
+      expect(ray.intersectObjects(result.colliders).length).toBeGreaterThan(0);
+    }
+  }
 });
 
 it("marks a bent escalator approximate once per edge", () => {
