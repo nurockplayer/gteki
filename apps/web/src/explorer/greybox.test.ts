@@ -125,6 +125,19 @@ describe("buildGreybox", () => {
     expect(near.some((w) => Math.max(w.ax, w.bx) > 15)).toBe(true);
   });
 
+  it("opens a wall the flight meets far from the mouth, but not one on another level", () => {
+    const floors = [...bundle.floors, { id: "g", renderElevationM: 8 }, { id: "h", renderElevationM: -6 }];
+    const nodes = [...bundle.nodes, { id: "c", floorId: "g", position: { x: 10, y: 16, z: 8 } },
+      { id: "p", floorId: "f", position: { x: 0, y: 6, z: 1 } }, { id: "q", floorId: "f", position: { x: 20, y: 6, z: 1 } },
+      { id: "r", floorId: "h", position: { x: 0, y: 3, z: -6 } }, { id: "t", floorId: "h", position: { x: 20, y: 3, z: -6 } }];
+    const edges = [bundle.edges[0]!, { id: "s", from: "b", to: "c", mode: "stairs" }, { id: "pq", from: "p", to: "q", mode: "walk" }, { id: "rt", from: "r", to: "t", mode: "walk" }];
+    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
+    const covers = (z: number, y: number) => result.wallSegments.some((w) => Math.abs(w.az - z) < 1e-6 && Math.min(w.ax, w.bx) < 10.3 && Math.max(w.ax, w.bx) > 10.3 && Math.abs(w.yMin - y) < 1.5);
+    // The flight is 3 m up as it crosses the corridor 6 m north (wall base 1 m): open. The corridor 6 m below stays shut.
+    expect(covers(-6 + MODE_WIDTH.walk! / 2, 1)).toBe(false);
+    expect(covers(-3 + MODE_WIDTH.walk! / 2, -6)).toBe(true);
+  });
+
   it("opens a stair mouth at the end of a long ramp", () => {
     const floors = [...bundle.floors, { id: "g", renderElevationM: 7 }];
     const ramp = [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 30, y: 0, z: 3 } }];
