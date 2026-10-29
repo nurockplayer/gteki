@@ -15,6 +15,8 @@ import { init, NavMeshQuery, exportNavMesh, type OffMeshConnectionParams } from 
 import { generateTiledNavMesh } from "recast-navigation/generators";
 import { WALKER_BODY } from "@gteki/scene-api";
 import { qaDirectory, qaFile } from "./navmesh-qa-path.ts";
+import { bridgeGapGeometry, bridgeFloorTriangles, linkPadGeometry, linkStripGeometry, type BridgeGeometry } from "./navmesh-bridge.ts";
+import { dataWidth, diagnoseGaps } from "./navmesh-gaps.ts";
 import { validateLinkSnap, verticalLinkCandidates } from "./navmesh-links.ts";
 
 /** Positions are renderer coordinates; triangle indices must have upward-facing floors. */
@@ -77,6 +79,23 @@ function cutPortal(poly: THREE.Vector3[], box: Box): THREE.Vector3[][] {
   return outside;
 }
 
+/** Exempt only triangle fragments within bridge volumes, then append the bridge floor and ceiling. */
+export function applyBridgeGeometry(positions:number[],indices:number[],bridge:BridgeGeometry) {
+  const boxes=bridge.openings.map(box=>({box,x:Math.abs(box.along.x)*box.depth/2+Math.abs(box.across.x)*box.width/2,z:Math.abs(box.along.z)*box.depth/2+Math.abs(box.across.z)*box.width/2}));
+  const output:number[]=[];
+  const vertex=(index:number)=>new THREE.Vector3(positions[3*index]!,positions[3*index+1]!,positions[3*index+2]!);
+  for(let i=0;i+2<indices.length;i+=3) {
+    const ids=[indices[i]!,indices[i+1]!,indices[i+2]!], tri=ids.map(vertex);
+    const minX=Math.min(...tri.map(v=>v.x)),maxX=Math.max(...tri.map(v=>v.x)),minY=Math.min(...tri.map(v=>v.y)),maxY=Math.max(...tri.map(v=>v.y)),minZ=Math.min(...tri.map(v=>v.z)),maxZ=Math.max(...tri.map(v=>v.z));
+    const overlapping=boxes.filter(({box,x,z})=>maxX>=box.center.x-x && minX<=box.center.x+x && maxZ>=box.center.z-z && minZ<=box.center.z+z && maxY>=box.center.y && minY<=box.center.y+box.height);
+    if(!overlapping.length) { output.push(...ids); continue; }
+    let parts=[tri]; for(const {box} of overlapping) parts=parts.flatMap(part=>cutPortal(part,box));
+    for(const part of parts) for(let k=1;k+1<part.length;k++) { const base=positions.length/3; for(const p of [part[0]!,part[k]!,part[k+1]!]) positions.push(p.x,p.y,p.z); output.push(base,base+1,base+2); }
+  }
+  const base=positions.length/3; for (const n of bridge.positions) positions.push(n); for (const i of bridge.indices) output.push(i+base);
+  indices.length=0; for (const i of output) indices.push(i);
+}
+
 export const triangleKey = (numbers: readonly number[]) => numbers.map(n => Math.fround(n)).join(",");
 
 /** Transform indexed or non-indexed meshes (including instances) into Recast triangles. */
@@ -129,13 +148,14 @@ export function appendMeshes(objects: readonly THREE.Object3D[], positions: numb
 }
 
 async function main() {
-  let station = "", out = "", withGreybox = false, snapFallback = false, radiusM: number = WALKER_BODY.radiusM, cellSizeM = 0.15, climbM = 0.3, tileSize = 256, rounding: "up" | "down" = "up", ignoreGates = false;
+  let station = "", out = "", withGreybox = false, snapFallback = false, bridgeGaps = false, radiusM: number = WALKER_BODY.radiusM, cellSizeM = 0.15, climbM = 0.3, tileSize = 256, rounding: "up" | "down" = "up", ignoreGates = false;
   const args = process.argv.slice(2);
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--station" && args[i+1]) station = args[++i]!;
     else if (args[i] === "--out" && args[i+1]) out = args[++i]!;
     else if (args[i] === "--with-greybox") withGreybox = true;
     else if (args[i] === "--snap-fallback") snapFallback = true;
+    else if (args[i] === "--bridge-gaps") bridgeGaps = true;
     else if (args[i] === "--agent-radius" && args[i+1]) radiusM = Number(args[++i]);
     else if (args[i] === "--cell-size" && args[i+1]) cellSizeM = Number(args[++i]);
     else if (args[i] === "--walkable-climb" && args[i+1]) climbM = Number(args[++i]);
@@ -187,7 +207,7 @@ async function main() {
   }
   console.log(`scene input: ${ground.length} ground meshes, ${collider.length} collider meshes, ${walls.length} wall segments, ${indices.length/3} triangles; greybox runs ${greyboxRuns ?? "not measured"}`);
   const start = performance.now();
-  const result = await bakeNavmesh(positions, indices, { radiusM, rounding, cellSizeM, climbM, tileSize });
+  let result = await bakeNavmesh(positions, indices, { radiusM, rounding, cellSizeM, climbM, tileSize });
   if (!result.success) throw new Error(`bake failed: ${result.error}`);
   const nodes = new Map(bundle.nodes.map(n => [n.id, n]));
   const floors = new Map(bundle.floors.map(f => [f.id, f]));
@@ -195,8 +215,52 @@ async function main() {
     const [x,y,z] = enuToRenderer({ x: n.position.x, y: n.position.y, z: nodeDisplayZ(n, floors.get(n.floorId)).z });
     return { x,y,z };
   };
-  const initialQuery = new NavMeshQuery(result.navMesh);
+  let initialQuery = new NavMeshQuery(result.navMesh);
   const router = createRouter(bundle, { allowUnverified: privateBuild });
+  const originalProbeForLinks=()=>grey?.probe ?? probe;
+  const bridge:BridgeGeometry={positions:[],indices:[],openings:[]};
+  let bridgedGaps=0, unbridgeableGaps=0, linkPads=0, linkPadsWithoutNearbyPoly=0, linkPadsBlocked=0, linkPadsSteep=0;
+  const mergeBridge=(part:BridgeGeometry) => { const base=bridge.positions.length/3; for (const n of part.positions) bridge.positions.push(n); for (const i of part.indices) bridge.indices.push(i+base); bridge.openings.push(...part.openings); };
+  if (bridgeGaps) {
+    for (const edge of bundle.edges) {
+      if (["stairs","escalator","elevator"].includes(edge.mode) || !router.isTraversable(edge,DEFAULT_PROFILE)) continue;
+      const a=nodes.get(edge.from), b=nodes.get(edge.to); if (!a || !b) continue;
+      const step={edgeId:edge.id,fromNodeId:edge.from,toNodeId:edge.to,reversed:false,mode:edge.mode,lengthM:edge.lengthM ?? 0,fromFloorId:a.floorId,toFloorId:b.floorId};
+      const line=routePolyline(bundle,{nodeIds:[edge.from,edge.to],steps:[step]} as RouteResult), width=dataWidth(edge);
+      const gaps=diagnoseGaps(initialQuery,grey?.probe ?? probe,line,width,climbM,{radius:radiusM,cell:cellSizeM});
+      const wanted=gaps.filter(g=>g.class!=="narrow");
+      for (const gap of wanted) { const part=bridgeGapGeometry(line,[gap],width); if (!part.indices.length) {unbridgeableGaps++;continue;} mergeBridge(part); bridgedGaps++; }
+    }
+    const visited=new Set<string>();
+    for (const edge of bundle.edges) {
+      if (!["stairs","escalator","elevator"].includes(edge.mode) || !router.isTraversable(edge,DEFAULT_PROFILE)) continue;
+      for (const id of [edge.from,edge.to]) {
+        if (visited.has(id)) continue; visited.add(id);
+        const node=nodes.get(id); if (!node) continue;
+        const p=point(node), near=initialQuery.findClosestPoint(p,{halfExtents:{x:0.6,y:0.6,z:0.6}});
+        if (near.success && near.polyRef && Math.abs(near.point.y-p.y)<=0.6 && Math.hypot(near.point.x-p.x,near.point.z-p.z)<=0.6) continue;
+        mergeBridge(linkPadGeometry(p)); linkPads++;
+        const hit=initialQuery.findClosestPoint(p,{halfExtents:{x:3,y:0.6,z:3}});
+        if (!hit.success || !hit.polyRef || Math.abs(hit.point.y-p.y)>0.6 || Math.hypot(hit.point.x-p.x,hit.point.z-p.z)>3) {linkPadsWithoutNearbyPoly++;continue;}
+        const a={x:p.x,y:-p.z,z:p.y,zKnown:true,floorId:node.floorId,stepIndex:0},b={...a,x:hit.point.x,y:-hit.point.z,z:hit.point.y};
+        const strip=linkStripGeometry(originalProbeForLinks(),a,b,auditPolyline);
+        if (strip.reason==="wall") linkPadsBlocked++;
+        if (strip.reason==="steep") linkPadsSteep++;
+        if (strip.geometry) mergeBridge(strip.geometry);
+      }
+    }
+    if (bridge.indices.length) {
+      applyBridgeGeometry(positions,indices,bridge);
+      initialQuery.destroy(); result.navMesh.destroy();
+      result=await bakeNavmesh(positions,indices,{radiusM,rounding,cellSizeM,climbM,tileSize});
+      if (!result.success) throw new Error(`bridge bake failed: ${result.error}`);
+      initialQuery=new NavMeshQuery(result.navMesh);
+    }
+  }
+  const bridgeFloorData=bridgeFloorTriangles(bridge);
+  const bridgeFloorGeometry=new THREE.BufferGeometry(); bridgeFloorGeometry.setAttribute("position",new THREE.Float32BufferAttribute(bridgeFloorData,3));
+  const bridgeFloor=new THREE.Mesh(bridgeFloorGeometry,new THREE.MeshBasicMaterial({side:THREE.DoubleSide})); bridgeFloor.userData.greybox=true; bridgeFloor.updateMatrixWorld(true);
+  const originalProbe=grey?.probe ?? probe, bridgeProbe={...originalProbe,ground:[...originalProbe.ground,...(bridgeFloorData.length ? [bridgeFloor] : [])]};
   const snapRejections = { floor:0, wall:0 };
   const fallback = (id:string, node:{x:number;y:number;z:number}) => {
     const here=nodes.get(id); if (!here) return null;
@@ -217,7 +281,7 @@ async function main() {
     return null;
   };
   const links = verticalLinkCandidates(bundle.edges.filter(e => router.isTraversable(e, DEFAULT_PROFILE)), id => { const n=nodes.get(id); return n ? point(n) : undefined; }, initialQuery,
-    (_id, a, b) => { const reason=validateLinkSnap(grey?.probe ?? probe, a, b); if (reason) snapRejections[reason]++; return !reason; }, snapFallback ? fallback : undefined);
+    (_id, a, b) => { const reason=validateLinkSnap(bridgeProbe, a, b); if (reason) snapRejections[reason]++; return !reason; }, snapFallback ? fallback : undefined);
   initialQuery.destroy(); result.navMesh.destroy();
   const linked = await bakeNavmesh(positions, indices, { radiusM, rounding, cellSizeM, climbM, tileSize, offMeshConnections:links.candidates.map(c => c.connection) });
   if (!linked.success) throw new Error(`linked bake failed: ${linked.error}`);
@@ -287,10 +351,10 @@ async function main() {
   fs.writeFileSync(qaFile(path.join(output, `${station}.bin`)), bytes);
   const effectiveRadiusCells = rounding === "down" ? Math.floor(radiusM / cellSizeM + 1e-6) : Math.ceil(radiusM / cellSizeM - 1e-6);
   const gateTriangles = collider.reduce((n, mesh) => n + (mesh.userData.gtekiGateTriangles?.length ?? 0), 0);
-  const metrics = { station, withGreybox, privateBuild, snapFallback, bundleSha256:createHash("sha256").update(JSON.stringify(bundle)).digest("hex"), meshSha256: createHash("sha256").update(bytes).digest("hex"), radiusM, rounding, cellSizeM, climbM, tileSize, effectiveClimbM: Math.floor(climbM / 0.1 + 1e-6) * 0.1, effectiveRadiusCells, effectiveRadiusM: effectiveRadiusCells * cellSizeM, ignoreGates, gateWallCount, activeGateWalls, gateTriangles, excludedActiveGateWalls: ignoreGates ? activeGateWalls : 0, excludedGateTriangles: ignoreGates ? gateTriangles : 0, bakeMs, rawBytes: bytes.length, gzipBytes: gz.length, tiles, polygons, peakRssKiB: process.resourceUsage().maxRSS, greyboxRuns, greyboxLandingPads:grey?.grey.stats.landingPads ?? null, vertical, links, emittedLinkIds:[...emittedLinkIds].sort((a,b)=>a-b), attachedLinkIds:[...attachedLinkIds].sort((a,b)=>a-b), linkAttachmentDiagnosis, fallbackRecovered:links.candidates.filter(c=>c.fallback && attachedLinkIds.has(c.connection.userId!)).length, snapRejections };
+  const metrics = { station, withGreybox, privateBuild, snapFallback, bridgeGaps, bridgedGaps, unbridgeableGaps, linkPads, linkPadsWithoutNearbyPoly, linkPadsBlocked, linkPadsSteep, bridgeOpenings:bridge.openings, bridgeFloorTriangles:bridgeFloorData, bundleSha256:createHash("sha256").update(JSON.stringify(bundle)).digest("hex"), meshSha256: createHash("sha256").update(bytes).digest("hex"), radiusM, rounding, cellSizeM, climbM, tileSize, effectiveClimbM: Math.floor(climbM / 0.1 + 1e-6) * 0.1, effectiveRadiusCells, effectiveRadiusM: effectiveRadiusCells * cellSizeM, ignoreGates, gateWallCount, activeGateWalls, gateTriangles, excludedActiveGateWalls: ignoreGates ? activeGateWalls : 0, excludedGateTriangles: ignoreGates ? gateTriangles : 0, bakeMs, rawBytes: bytes.length, gzipBytes: gz.length, tiles, polygons, peakRssKiB: process.resourceUsage().maxRSS, greyboxRuns, greyboxLandingPads:grey?.grey.stats.landingPads ?? null, vertical, links, emittedLinkIds:[...emittedLinkIds].sort((a,b)=>a-b), attachedLinkIds:[...attachedLinkIds].sort((a,b)=>a-b), linkAttachmentDiagnosis, fallbackRecovered:links.candidates.filter(c=>c.fallback && attachedLinkIds.has(c.connection.userId!)).length, snapRejections };
   fs.writeFileSync(qaFile(path.join(output, `${station}-bake.json`)), JSON.stringify(metrics, null, 2) + "\n");
-  console.log(JSON.stringify({station,withGreybox,snapFallback,bakeMs,rawBytes:bytes.length,gzipBytes:gz.length,tiles,polygons,landingPads:metrics.greyboxLandingPads,linksAttached:attachedLinkIds.size,fallbackAttached:metrics.fallbackRecovered,linkAttachmentDiagnosis,snapRejections,peakRssKiB:metrics.peakRssKiB}));
-  query.destroy(); nav.destroy(); scene.dispose();
+  console.log(JSON.stringify({station,withGreybox,snapFallback,bridgeGaps,bridgedGaps,unbridgeableGaps,linkPads,linkPadsWithoutNearbyPoly,linkPadsBlocked,linkPadsSteep,bakeMs,rawBytes:bytes.length,gzipBytes:gz.length,tiles,polygons,landingPads:metrics.greyboxLandingPads,linksAttached:attachedLinkIds.size,fallbackAttached:metrics.fallbackRecovered,linkAttachmentDiagnosis,snapRejections,peakRssKiB:metrics.peakRssKiB}));
+  query.destroy(); nav.destroy(); bridgeFloorGeometry.dispose(); (bridgeFloor.material as THREE.Material).dispose(); scene.dispose();
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

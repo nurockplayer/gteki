@@ -269,6 +269,23 @@ On public data at 0.10 m cells, 0.30 m radius and 0.40 m climb, both Ikebukuro a
 
 `--bridge-gaps`, ceiling or collider exemptions, second-bake recovery measurements, and the link-end floor-strip repair remain unimplemented. No private build was run. Oracle reviewed the diagnostics and identified tessellation, connectivity coverage, mixed-floor runs, stacked floors and scene-clearance ambiguity as risks. Nearby floor-support probes and a separate unclassified-disconnect count were added after review; these fixes were not independently re-reviewed.
 
+## Gap bridge experiment, 2026-10-30 03:49 JST
+
+`--bridge-gaps` samples traversable non-vertical graph edges after the first bake, generates floor and 2.4 m ceiling strips for sampled gaps other than `narrow`, removes scene-triangle fragments inside their opening boxes, and rebakes the whole mesh. Boxes and generated floor triangles are recorded in the gitignored bake provenance under `.qa/navmesh/`; an audit of that mesh also takes `--bridge-gaps`. The audit adds the generated floors to its floor probe but checks walls against the original scene. Link nodes without a poly within 0.6 m get a 1.5 m pad; where a poly is within 3 m, a floor strip is added unless the original-scene wall check fails or the strip exceeds 40°. No opening is cut for a link strip.
+
+Public data with greybox, 0.10 m cells, 0.30 m radius, 0.40 m climb and 256-cell tiles:
+
+| Station | Failed unique edges before → after | Incomplete routes before → after | Failed-edge sampled gaps before → after | All-edge gaps bridged | Link pads / without nearby poly |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Ikebukuro | 0 → 0 | 0/1,054 → 0/1,054 | 0 → 0 | 0 | 0 / 0 |
+| Shinjuku | 5 → 3 | 72/238 → 56/238 | 0 → 0 | 6 | 3 / 2 |
+
+The two gap measures have different scopes: the bake samples all traversable non-vertical edges; the audit's gap count describes disconnected failed edges used by routes. Shinjuku generated 31 opening boxes, with zero unbridgeable gaps, wall-blocked link strips or steep link strips. Two pads have no poly within 3 m and therefore no connecting strip.
+
+**The original-scene audit is not clip-free after bridging.** Shinjuku navmesh segments went from 0 to 80 wall hits, and connector segments from 16 to 34; both had zero off-floor and no-floor samples under scene-height sampling. The explorer has not applied the returned boxes, so those 80 hits are real mismatches with its present collision geometry. The spike must not be used as a runtime-safe path without resolving that parity. The opening volume also removes any scene triangle inside it, including an upper-floor triangle if it intersects the volume.
+
+Oracle's static review flagged physically narrow passages with wider declared graph widths, removal of upper-floor geometry, the original-scene collision mismatch, and unsafe link approaches. The first two follow the requested width rule and scene-triangle exemption; the original-scene hits remain visible above. Link approaches now reject wall crossings and slopes above 40° and do not cut openings. Those subsequent changes were tested but not independently re-reviewed. No private build was run.
+
 ## Integration sketch
 
 - Guide: `apps/web/src/ui/app.ts` creates `routePolyline` and passes it to `Explorer.startGuide`; `Explorer.stepGuide` follows it. Supply per-edge navmesh geometry while preserving step-to-point spans, instructions, floor and lift semantics. Risk: a partial or disconnected path must stop guidance, and snapping can select the wrong floor.

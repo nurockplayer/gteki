@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { pathToFileURL } from "node:url";
+import * as THREE from "three";
 import { init, importNavMesh, NavMeshQuery, Detour, statusDetail, type NavMesh } from "recast-navigation";
 import { createRouter, DEFAULT_PROFILE, nodeDisplayZ, routeBetween, routePolyline, type PolylinePoint, type RouteResult, type RouteStep } from "@gteki/navigation";
 import { navmeshBundle } from "./navmesh-input.ts";
@@ -76,7 +77,7 @@ export function queryPathWithLinks(nav: NavMesh, query: NavMeshQuery, from: V3, 
 }
 
 async function main() {
-  let station = "", navmeshFile = "", json = "", fallbackList = "", withGreybox = false, snapFallback = false, gate = false;
+  let station = "", navmeshFile = "", json = "", fallbackList = "", withGreybox = false, snapFallback = false, bridgeGaps = false, gate = false;
   const args = process.argv.slice(2);
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--station" && args[i+1]) station = args[++i]!;
@@ -86,6 +87,7 @@ async function main() {
     else if (args[i] === "--gate") gate = true;
     else if (args[i] === "--with-greybox") withGreybox = true;
     else if (args[i] === "--snap-fallback") snapFallback = true;
+    else if (args[i] === "--bridge-gaps") bridgeGaps = true;
     else throw new Error(`unknown or incomplete argument: ${args[i]}`);
   }
   if (gate && !fallbackList) throw new Error("--gate requires --fallback-list");
@@ -95,6 +97,7 @@ async function main() {
   const meshBytes = fs.readFileSync(navmeshFile);
   const provenance = JSON.parse(fs.readFileSync(path.join(path.dirname(navmeshFile), `${station}-bake.json`), "utf8"));
   if (provenance.station !== station || provenance.withGreybox !== withGreybox || provenance.meshSha256 !== createHash("sha256").update(meshBytes).digest("hex")) throw new Error("navmesh bake provenance does not match station, greybox flag, or binary; rebake first");
+  if (!!provenance.bridgeGaps !== bridgeGaps) throw new Error("navmesh bake and audit disagree on --bridge-gaps");
   if (!!provenance.snapFallback !== snapFallback) throw new Error("navmesh bake and audit disagree on --snap-fallback");
   await init();
   const nav = importNavMesh(meshBytes).navMesh, query = new NavMeshQuery(nav, { maxNodes: 8192 });
@@ -104,7 +107,10 @@ async function main() {
   if (provenance.bundleSha256 !== createHash("sha256").update(JSON.stringify(bundle)).digest("hex")) throw new Error("navmesh bake and audit bundle differ; rebake first");
   const router = createRouter(bundle, { allowUnverified: privateBuild }), scene = await loadScene(station, bundle);
   const grey = withGreybox ? makeGreybox(bundle, scene, privateBuild) : null;
-  const probe = grey?.probe ?? sceneProbe(scene);
+  const originalProbe = grey?.probe ?? sceneProbe(scene);
+  const bridgeFloorGeometry=new THREE.BufferGeometry(); bridgeFloorGeometry.setAttribute("position",new THREE.Float32BufferAttribute(provenance.bridgeFloorTriangles ?? [],3));
+  const bridgeFloor=new THREE.Mesh(bridgeFloorGeometry,new THREE.MeshBasicMaterial({side:THREE.DoubleSide})); bridgeFloor.userData.greybox=true; bridgeFloor.updateMatrixWorld(true);
+  const probe={...originalProbe,ground:[...originalProbe.ground,...(bridgeGaps && bridgeFloorGeometry.getAttribute("position").count ? [bridgeFloor] : [])]};
   const nodes = new Map(bundle.nodes.map(n => [n.id, n])), floors = new Map(bundle.floors.map(f => [f.id, f]));
   const edges = new Map(bundle.edges.map(e => [e.id, e]));
   const attached = new Set<number>(provenance.attachedLinkIds ?? []);
@@ -438,7 +444,7 @@ async function main() {
     medianPathToGraphLength: percentile(ratios, 0.5) };
   fs.mkdirSync(path.dirname(dest), { recursive: true }); fs.writeFileSync(dest, JSON.stringify(result, null, 2) + "\n");
   console.log(`fallback audit ${JSON.stringify(fallbackAudit.totals)}; fallback clipped ${fallbackAudit.failed.length}; gaps ${JSON.stringify(gapClasses)}; collider kinds ${JSON.stringify(blockingColliderKinds)}; link attachment ${JSON.stringify(result.linkAttachmentDiagnosis)}; query diagnosis ${JSON.stringify(queryDiagnosis)}; snap diagnosis ${JSON.stringify(snapDiagnosis)}; fallback attached ${result.fallbackRecoveredAttached}, used ${result.fallbackEdgesUsed}, completed routes ${fallbackRoutesCompleted}; navmesh segments ${JSON.stringify(result.navmeshSegmentHeights)}`);
-  query.destroy(); nav.destroy(); scene.dispose();
+  query.destroy(); nav.destroy(); bridgeFloorGeometry.dispose(); (bridgeFloor.material as THREE.Material).dispose(); scene.dispose();
   if (gate && !gateResult.ok) process.exitCode=1;
 }
 

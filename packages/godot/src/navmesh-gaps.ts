@@ -58,7 +58,7 @@ export function diagnoseGaps(query:Pick<NavMeshQuery,"findClosestPoint">,probe:S
       add({...b,x:a.x+dx*t,y:a.y+dy*t,z:a.z+(b.z-a.z)*t},dx,dy);
     }
   }
-  const gaps:{lengthM:number;leftM:number|null;rightM:number|null;clearanceM:number|null;jumpM:number|null;floorMissing:boolean;class:GapClass;colliderKinds:string[]}[]=[];
+  const gaps:{startM:number;endM:number;lengthM:number;leftM:number|null;rightM:number|null;clearanceM:number|null;jumpM:number|null;floorMissing:boolean;class:GapClass;colliderKinds:string[]}[]=[];
   for (let i=0;i<samples.length;) {
     if (samples[i]!.nav) {i++;continue;}
     const start=i; while (i<samples.length && !samples[i]!.nav) i++; const end=i-1;
@@ -104,7 +104,7 @@ export function diagnoseGaps(query:Pick<NavMeshQuery,"findClosestPoint">,probe:S
       const above=castCamera(ray,blockers,new Set(blockers)).find(h=>!probe.collider.includes(h.object) || !probe.ignoreColliderHit?.(h,ray.ray.direction));
       if (above) { const h=above.distance+0.02; freeHeight=freeHeight===null ? h : Math.min(freeHeight,h); }
     }
-    gaps.push({lengthM:after.at-before.at,leftM:left,rightM:right,clearanceM:clearance,jumpM:jump,floorMissing,class:gapClass(width,clearance,jump,climb,floorMissing,{freeHeight,slope,triangleWidth,radius:options.radius,cell:options.cell}),colliderKinds:[...new Set(run.flatMap(s=>s.colliderKinds))].sort()});
+    gaps.push({startM:before.at,endM:after.at,lengthM:after.at-before.at,leftM:left,rightM:right,clearanceM:clearance,jumpM:jump,floorMissing,class:gapClass(width,clearance,jump,climb,floorMissing,{freeHeight,slope,triangleWidth,radius:options.radius,cell:options.cell}),colliderKinds:[...new Set(run.flatMap(s=>s.colliderKinds))].sort()});
   }
   return gaps;
 }
