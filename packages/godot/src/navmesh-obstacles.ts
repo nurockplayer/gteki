@@ -72,7 +72,7 @@ export function corridorBlockers(probe:SceneProbe,center:THREE.Vector3) {
     if(wall.zMax<=center.y+0.05 || wall.zMin>=center.y+1.7) continue;
     const ax=wall.a.x,az=-wall.a.y,bx=wall.b.x,bz=-wall.b.y,dx=bx-ax,dz=bz-az,t=Math.max(0,Math.min(1,((center.x-ax)*dx+(center.z-az)*dz)/(dx*dx+dz*dz || 1)));
     const x=ax+t*dx,z=az+t*dz,distance=Math.hypot(x-center.x,z-center.z);
-    if(distance<=0.3) output.push({name:"wall segment",parents:[],source:"unknown",point:{x,y:Math.max(center.y+0.05,wall.zMin),z},facing:"wall-like",distance});
+    if(distance<=0.3) output.push({name:"wall segment",role:"wall_segment",parents:[],source:"unknown",point:{x,y:Math.max(center.y+0.05,wall.zMin),z},facing:"wall-like",distance});
   }
   return output.sort((a,b)=>a.distance-b.distance).slice(0,3);
 }
@@ -104,7 +104,7 @@ export function sideFaces(probe:SceneProbe,p:THREE.Vector3,dx:number,dy:number) 
       const wx=wall.b.x-wall.a.x,wz=-(wall.b.y-wall.a.y),sx=dir.x*sign,sz=dir.z*sign,cross=sx*wz-sz*wx;
       if(Math.abs(cross)<1e-9) continue;
       const ox=wall.a.x-p.x,oz=-wall.a.y-p.z,d=(ox*wz-oz*wx)/cross,u=(ox*sz-oz*sx)/cross;
-      if(d>=0 && d<=5 && u>=0 && u<=1 && (!result || d<result.distance)) result={name:"wall segment",parents:[],source:"unknown",distance:d,point:{x:p.x+sx*d,y:p.y+0.5,z:p.z+sz*d}};
+      if(d>=0 && d<=5 && u>=0 && u<=1 && (!result || d<result.distance)) result={name:"wall segment",role:"wall_segment",parents:[],source:"unknown",distance:d,point:{x:p.x+sx*d,y:p.y+0.5,z:p.z+sz*d}};
     }
     return result;};
   return {left:side(1),right:side(-1)};
