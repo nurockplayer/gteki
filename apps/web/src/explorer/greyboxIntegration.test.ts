@@ -110,6 +110,50 @@ describe("greybox station integration", () => {
     expect(state.liftRide.status).toBe("arrived");
   });
 
+  it("cancels a ride on mode change and keeps the avatar at its height", async () => {
+    const { state, loaded } = fixture();
+    loaded.bundle = createSyntheticBundle([syntheticEdge("lift", "a", "upper", { mode: "elevator" })]);
+    await state.loadStation(loaded, createRouter(loaded.bundle));
+    const car = state.connectors.cars[0];
+    state.pos.set(10, 0, 0);
+    for (let i = 0; i < 27; i++) state.updateElevatorCars(0.05);
+    expect(state.liftRide.status).toBe("riding");
+    const height = state.pos.y;
+    Object.assign(state, { camera: { far: 100, updateProjectionMatrix: vi.fn() }, orbit: { enabled: false, target: new THREE.Vector3() }, avatar: { visible: true }, updateGreyboxLegend: vi.fn() });
+    state.setMode("guide");
+    expect(state.pos.y).toBe(height);
+    expect(state.liftRide).toBeNull();
+    expect(car.mesh.position.y).toBeCloseTo(height < 2 ? 0 : 4);
+    for (const door of car.doors) expect(door.mesh.visible).toBe(state.elevatorDoorWalls().some((w: { yMin: number }) => w.yMin === door.landing));
+    state.updateElevatorCars(0.1);
+    expect(state.pos.y).toBe(height);
+    expect(car.mesh.position.y).toBeCloseTo(height < 2 ? 0 : 4);
+    state.guide = { pts: [new THREE.Vector3(10, 4, 0), new THREE.Vector3(10, 0, 0)], cum: [0, 4], steps: [-1, 0], edgeIds: [undefined, "lift"], s: 1, paused: true, stops: [], holding: false, spans: [] };
+    state.pos.y = 3; state.updateElevatorCars(0.05);
+    expect(state.liftRide).toMatchObject({ target: 0, direction: -1 });
+    state.setMode("walk");
+    expect(state.pos.y).toBe(3);
+    expect(car.mesh.position.y).toBe(4);
+    expect(state.liftRide).toBeNull();
+  });
+
+  it("cancels a ride before walkFrom and does not carry the teleported avatar", async () => {
+    const { state, loaded } = fixture();
+    loaded.bundle = createSyntheticBundle([syntheticEdge("lift", "a", "upper", { mode: "elevator" })]);
+    await state.loadStation(loaded, createRouter(loaded.bundle));
+    const car = state.connectors.cars[0];
+    state.pos.set(10, 0, 0);
+    for (let i = 0; i < 35; i++) state.updateElevatorCars(0.05);
+    expect(state.liftRide.status).toBe("riding");
+    state.lastAvatarPos = new THREE.Vector3(); state.frameInitialIdentity = () => false;
+    expect(state.walkFrom({ x: 0, y: 0, z: 0 })).toBe(true);
+    const height = state.pos.y, parked = car.mesh.position.y;
+    expect(state.liftRide).toBeNull();
+    for (let i = 0; i < 30; i++) state.updateElevatorCars(0.05);
+    expect(state.pos.y).toBe(height);
+    expect(car.mesh.position.y).toBe(parked);
+  });
+
   it("continues in the boarding direction after re-arming at an intermediate landing", async () => {
     const { state, loaded } = fixture();
     loaded.bundle = createSyntheticBundle([
@@ -125,6 +169,12 @@ describe("greybox station integration", () => {
     state.input.virtualKeys.add("KeyW"); state.updateElevatorCars(0.05); state.input.virtualKeys.delete("KeyW");
     for (let i = 0; i < 100; i++) state.updateElevatorCars(0.05);
     expect(state.pos.y).toBeCloseTo(8);
+    state.input.virtualKeys.add("KeyW"); state.updateElevatorCars(0.05); state.input.virtualKeys.delete("KeyW");
+    for (let i = 0; i < 100; i++) state.updateElevatorCars(0.05);
+    expect(state.pos.y).toBeCloseTo(4);
+    state.input.virtualKeys.add("KeyW"); state.updateElevatorCars(0.05); state.input.virtualKeys.delete("KeyW");
+    for (let i = 0; i < 100; i++) state.updateElevatorCars(0.05);
+    expect(state.pos.y).toBeCloseTo(0);
   });
 
   it("loads vertical connectors and tracks the elevator car in guide mode", async () => {
@@ -142,6 +192,7 @@ describe("greybox station integration", () => {
     state.guide = { pts: [new THREE.Vector3(10, 0, 0), new THREE.Vector3(10, 4, 0)], cum: [0, 4], steps: [-1, 0], edgeIds: [undefined, "lift"], s: 2, paused: true, stops: [], holding: false, spans: [] };
     state.stepGuide(0.016); state.updateElevatorCars(0.016);
     expect(car.mesh.position.y).toBeCloseTo(2);
+    expect(state.liftRide).toMatchObject({ target: 4, direction: 1 });
     state.mode = "overview"; state.updateElevatorCars(2);
     expect(car.mesh.position.y).toBeLessThan(0.001);
     const steps = [{ edgeId: "lift", mode: "elevator", fromNodeId: "a", toNodeId: "upper" }, { edgeId: "escalator", mode: "escalator", fromNodeId: "start", toNodeId: "upper" }];
