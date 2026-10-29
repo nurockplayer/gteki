@@ -57,10 +57,10 @@ describe("connector geometry", () => {
 
 it("adds rendered and walkable endpoint pads only where floors are missing", () => {
   for (const mode of ["stairs", "escalator"] as const) {
-    const station = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 4, y: 0, z: 3 } }], edges: [{ ...bundle.edges[0]!, mode, attributes: { sceneGap: true } }] } as StationBundle;
+    const station = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 5, y: 0, z: 3 } }], edges: [{ ...bundle.edges[0]!, mode, attributes: { sceneGap: true } }] } as StationBundle;
     const build = (missing: boolean) => buildConnectors(station, () => true, { hasFloor: (p) => !missing || p.z !== 3, nearMesh: () => false }, "high");
     const result = build(true), noPad = build(false);
-    const x = 4.75;
+    const x = 5.75;
     const ray = new THREE.Raycaster(new THREE.Vector3(x, 3.2, 0), new THREE.Vector3(0, -1, 0), 0, 0.4);
     const ground = ray.intersectObjects(result.walkable, false);
     expect(ground[0]?.point.y).toBeCloseTo(3);
@@ -89,9 +89,9 @@ describe("measured connector dimensions", () => {
     const from = new THREE.Vector3(), to = new THREE.Vector3(5.064101615, 2, 0);
     const high = buildEscalator(from, to, "high"), low = buildEscalator(from, to, "low");
     const steps = high.filter((p) => p.material === "escStep" && p.role !== "walkable" && p.position.length === 108 && extent(p, 1) < 0.081);
-    expect(steps).toHaveLength(10); // two landings and eight interior steps
+    expect(steps).toHaveLength(2); // flat landings; flight tops follow the incline
     expect(high.every((v) => v.userData?.fit === "exact")).toBe(true);
-    const indicators = high.filter((p) => p.material === "light" && Math.abs(extent(p, 2) - 0.16) < 1e-5);
+    const indicators = high.filter((p) => ["lampOk", "lampNo"].includes(p.material) && Math.abs(extent(p, 2) - 0.16) < 1e-5);
     expect(indicators).toHaveLength(2);
     expect(indicators[0]!.colour.slice(0, 3)).toEqual([0, 1, 0]);
     expect(indicators[1]!.colour.slice(0, 3)).toEqual([1, 0, 0]);
@@ -207,4 +207,38 @@ it("marks a bent escalator approximate once per edge", () => {
   station.nodes.find((n) => n.id === "upper")!.position = { x: 4, y: 4, z: 4 };
   const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
   expect(result.stats.approximateFits).toBe(1);
+});
+
+
+it("lays out a vertical stair with a usable run and returns to the upper node", () => {
+  const station = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 0, y: 0, z: 4 } }], floors: [{ id: "low", renderElevationM: 0 }, { id: "high", renderElevationM: 4 }], edges: [{ ...bundle.edges[0]!, attributes: { sceneGap: true } }] } as unknown as StationBundle;
+  const result = buildConnectors(station, () => true, { hasFloor: () => true, nearMesh: () => false }, "high");
+  expect(result.stats.approximateFits).toBe(1);
+  const ray = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0));
+  let previous = 0;
+  for (let x = 0.01; x < 4 / Math.tan(35 * Math.PI / 180); x += 0.1) {
+    ray.ray.origin.set(x, Math.min(4, x * Math.tan(35 * Math.PI / 180)) + 0.3, 0);
+    const hit = ray.intersectObjects(result.walkable)[0]; expect(hit).toBeDefined();
+    expect(Math.abs(hit!.point.y - previous)).toBeLessThanOrEqual(0.3); previous = hit!.point.y;
+  }
+  const risers = buildStairs(new THREE.Vector3(), new THREE.Vector3(4 / Math.tan(35 * Math.PI / 180), 4, 0), 1.5, "high").filter((p) => p.role === "walkable" && p.material === "tread");
+  expect(risers.every((p) => Math.max(...p.position.filter((_, i) => i % 3 === 0)) - Math.min(...p.position.filter((_, i) => i % 3 === 0)) > 0.25)).toBe(true);
+});
+
+it("renders the comb and flight at the walkable incline height in both tiers", () => {
+  const station = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 5.2, y: 0, z: 1.5 } }], edges: [{ ...bundle.edges[0]!, mode: "escalator", attributes: { sceneGap: true } }] } as StationBundle;
+  for (const tier of ["high", "low"] as const) {
+    const result = buildConnectors(station, () => true, { hasFloor: () => true, nearMesh: () => false }, tier);
+    const ray = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0));
+    for (let x = 0.01; x < 5.2; x += 0.1) {
+      ray.ray.origin.set(x, 2.05, 0);
+      const physical = ray.intersectObjects(result.walkable)[0], visible = ray.intersectObjects(result.root.children)[0];
+      expect(physical).toBeDefined(); expect(visible).toBeDefined();
+      expect(Math.abs(visible!.point.y - physical!.point.y)).toBeLessThan(0.02);
+    }
+    const lights = result.root.children.find((o) => Array.isArray((o as THREE.Mesh).material)) as THREE.Mesh;
+    const materials = lights.material as THREE.MeshStandardMaterial[];
+    expect(materials[1]!.emissive.getHexString()).toBe("00ff00"); expect(materials[2]!.emissive.getHexString()).toBe("ff0000");
+    expect(new Set(lights.geometry.groups.map((g) => g.materialIndex))).toEqual(new Set([0, 1, 2]));
+  }
 });

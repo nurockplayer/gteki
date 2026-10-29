@@ -1563,6 +1563,7 @@ export class App {
       setCamera: (patch: { yaw?: number; pitch?: number; distance?: number } | null) => this.explorer.setCamera(patch),
       holdAvatarFade: (value: number | null) => this.explorer.holdAvatarFade(value),
       sceneInfo: () => this.explorer.sceneInfo(),
+      portalView: () => this.explorer.portalView(),
       routeGroundCheck: () => this.explorer.routeGroundCheck(this.s.polyline, this.s.route?.ok ? this.s.route.steps : [], guideStops(this.s.polyline, this.s.instructions).map(({ point }) => polylineLengthM(this.s.polyline.slice(0, point + 1)))),
       projectEnu: (points: { x: number; y: number; z: number }[]) => this.explorer.projectEnu(points),
       signFaces: () => this.explorer.signFaces(),

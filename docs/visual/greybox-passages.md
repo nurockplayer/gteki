@@ -47,6 +47,7 @@ The design ships in three PRs, and each one is complete on its own:
 - **#631:** cuts the scene wall's triangles open at each portal at load. That opens the rendered wall, the camera rays and the colliders together, and the door panel goes.
 
 ## Known limits (accepted, ticket A)
+- Walls thicker than 0.6 m may keep their far face; the follow-up PR (`codex/portal-span`) will address this.
 - **Portal collision.** Inside a portal's opening box, every wall-like hit on an original scene collider is exempt (normal within 30° of horizontal), whichever mesh it comes from.
   - A wall-like scene obstacle standing inside the opening box is therefore passable too.
   - Floors, ceilings and non-wall hits still block.

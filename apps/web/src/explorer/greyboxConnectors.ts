@@ -38,13 +38,13 @@ export function unmodelledVerticalEdges(
   });
 }
 
-export type ConnectorMaterial = "tread" | "riser" | "nosing" | "escStep" | "escTruss" | "steel" | "rubber" | "glass" | "light";
+export type ConnectorMaterial = "tread" | "riser" | "nosing" | "escStep" | "escTruss" | "steel" | "rubber" | "glass" | "light" | "lampOk" | "lampNo";
 export interface ConnectorPart { material: ConnectorMaterial; position: number[]; normal: number[]; colour: number[]; edgeId?: string; role?: "walkable" | "collider"; walkableOnly?: boolean; soffit?: boolean; userData?: { fit: "exact" | "approximate"; omittedLandings?: number } }
 export interface ConnectorOptions { tier: "high" | "low" }
 
 const connectorColours: Record<ConnectorMaterial, string> = {
   tread: "#c7c2b8", riser: "#dbdbd6", nosing: "#2a2b2c", escStep: "#3b3f44",
-  escTruss: "#ccccc7", steel: "#aab2b5", rubber: "#121314", glass: "#b4ccd1", light: "#fff6e8",
+  escTruss: "#ccccc7", steel: "#aab2b5", rubber: "#121314", glass: "#b4ccd1", light: "#fff6e8", lampOk: "#00ff00", lampNo: "#ff0000",
 };
 
 /** Emit non-indexed triangles in renderer coordinates, with colour and contact shade baked in. */
@@ -121,8 +121,16 @@ export function buildEscalator(from: THREE.Vector3, to: THREE.Vector3, tier: "hi
   const firstX = retained.length ? landing + retained[0]! * 0.4 * Math.cos(angle) : f.length / 2;
   const lastIndex = retained.at(-1);
   const lastEnd = lastIndex === undefined ? f.length / 2 : landing + Math.min(incline, (lastIndex + 1) * 0.4) * Math.cos(angle);
-  box(parts, "escStep", f.matrix, firstX / 2, -0.04, 0, firstX, 0.08, 1);
-  box(parts, "escStep", f.matrix, (lastEnd + f.length) / 2, f.rise - 0.04, 0, f.length - lastEnd, 0.08, 1);
+  box(parts, "escStep", f.matrix, landing / 2, -0.04, 0, landing, 0.08, 1);
+  box(parts, "escStep", f.matrix, f.length - landing / 2, f.rise - 0.04, 0, landing, 0.08, 1);
+  const comb = (a: number, b: number) => {
+    if (b <= a || !run) return;
+    const length = (b - a) / Math.cos(angle);
+    const geo = new THREE.PlaneGeometry(length, 1); geo.rotateX(-Math.PI / 2);
+    const x = (a + b) / 2, y = (x - landing) * f.rise / run;
+    parts.push(part(geo, "escStep", f.matrix.clone().multiply(new THREE.Matrix4().makeTranslation(x, y, 0)).multiply(new THREE.Matrix4().makeRotationZ(angle))));
+  };
+  comb(landing, firstX); comb(lastEnd, f.length - landing);
   // Physical landings meet the continuous incline at its true endpoints, independently of the extended visual combs.
   for (const end of [0, 1]) {
     box(parts, "escStep", f.matrix, end ? f.length - landing / 2 : landing / 2, end * f.rise - 0.04, 0, landing, 0.08, 1, "walkable");
@@ -136,13 +144,9 @@ export function buildEscalator(from: THREE.Vector3, to: THREE.Vector3, tier: "hi
     const last = retained[i + steps - 1]!, finish = last === count - 1 ? incline : (last + 1) * 0.4;
     const start = (first + finish) / 2;
     const depth = (finish - first) * Math.cos(angle), x = landing + start * Math.cos(angle), y = start * Math.sin(angle);
-    if (tier === "low") {
-      const geo = new THREE.PlaneGeometry(depth, 1); geo.rotateX(-Math.PI / 2);
-      parts.push(part(geo, "escStep", f.matrix.clone().multiply(new THREE.Matrix4().makeTranslation(x, y, 0))));
-    } else {
-      box(parts, "escStep", f.matrix, x, y - 0.025, 0, depth, 0.05, 1);
-      box(parts, "escStep", f.matrix, x - depth / 2, y - 0.1, 0, 0.015, Math.min(0.4, incline - first) * Math.sin(angle), 1);
-    }
+    const geo = new THREE.PlaneGeometry((finish - first), 1); geo.rotateX(-Math.PI / 2);
+    parts.push(part(geo, "escStep", f.matrix.clone().multiply(new THREE.Matrix4().makeTranslation(x, y, 0)).multiply(new THREE.Matrix4().makeRotationZ(angle))));
+    if (tier === "high") box(parts, "escStep", f.matrix, x - depth / 2, y - Math.min(0.4, incline - first) * Math.sin(angle), 0, 0.015, Math.min(0.4, incline - first) * Math.sin(angle), 1);
   }
   const inclined = f.matrix.clone().multiply(new THREE.Matrix4().makeTranslation(landing + run / 2, f.rise / 2, 0)).multiply(new THREE.Matrix4().makeRotationZ(angle));
   box(parts, "escTruss", inclined, 0, -0.7 * Math.cos(angle), 0, incline, 0.9 * Math.cos(angle), 1.5, "collider", 0.6);
@@ -155,7 +159,7 @@ export function buildEscalator(from: THREE.Vector3, to: THREE.Vector3, tier: "hi
   for (let x = 0; x <= incline; x += tier === "low" ? 4 : 2) { box(parts, "light", inclined, x - incline / 2, -1.16, 0, 0.35, 0.02, 0.08); parts.at(-1)!.soffit = true; }
   for (const end of [0, 1]) {
     const indicator: ConnectorPart[] = [];
-    box(indicator, "light", f.matrix, (end ? f.length - landing : landing), end * f.rise + 0.12, 0.64, 0.02, 0.1, 0.16);
+    box(indicator, (end === 0) === (from.y <= to.y) ? "lampOk" : "lampNo", f.matrix, (end ? f.length - landing : landing), end * f.rise + 0.12, 0.64, 0.02, 0.1, 0.16);
     const color = new THREE.Color((end === 0) === (from.y <= to.y) ? "#00ff00" : "#ff0000");
     for (const p of indicator) { for (let i = 0; i < p.colour.length; i += 3) { p.colour[i] = color.r; p.colour[i + 1] = color.g; p.colour[i + 2] = color.b; } parts.push(p); }
   }
@@ -165,11 +169,15 @@ export function buildEscalator(from: THREE.Vector3, to: THREE.Vector3, tier: "hi
 
 export interface ConnectorScope { hasFloor: (p: V3) => boolean; nearMesh: (p: THREE.Vector3, radius: number) => boolean }
 
-function meshFor(parts: readonly ConnectorPart[], material: THREE.Material): THREE.Mesh {
+function meshFor(parts: readonly ConnectorPart[], material: THREE.Material | THREE.Material[]): THREE.Mesh {
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(parts.flatMap((p) => p.position), 3));
   geometry.setAttribute("normal", new THREE.Float32BufferAttribute(parts.flatMap((p) => p.normal), 3));
   geometry.setAttribute("color", new THREE.Float32BufferAttribute(parts.flatMap((p) => p.colour), 3));
+  if (Array.isArray(material)) {
+    let offset = 0;
+    for (const p of parts) { const count = p.position.length / 3; geometry.addGroup(offset, count, p.material === "lampOk" ? 1 : p.material === "lampNo" ? 2 : 0); offset += count; }
+  }
   const mesh = new THREE.Mesh(geometry, material);
   const ids = [...new Set(parts.map((p) => p.edgeId).filter((id): id is string => id !== undefined))];
   let start = 0;
@@ -190,6 +198,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   let approximateFits = 0, omittedLandings = 0;
   const shellMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, side: THREE.DoubleSide });
   const lightMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, emissive: "#fff6e8", emissiveIntensity: 3.2, side: THREE.DoubleSide });
+  const lampMaterials = [lightMaterial, new THREE.MeshStandardMaterial({ color: "#00ff00", emissive: "#00ff00", emissiveIntensity: 3.2 }), new THREE.MeshStandardMaterial({ color: "#ff0000", emissive: "#ff0000", emissiveIntensity: 3.2 })];
   const glassMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, opacity: 0.28, depthWrite: false, roughness: 0.32, metalness: 0.08, side: THREE.DoubleSide });
   const physicalMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
   for (const edge of unmodelledVerticalEdges(bundle, traversable, scope.hasFloor, scope.nearMesh)) {
@@ -207,7 +216,24 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const parts: ConnectorPart[] = [];
     let edgeOmitted = 0;
     for (let i = 1; i < points.length; i++) {
-      const from = points[i - 1]!, to = points[i]!;
+      let from = points[i - 1]!, to = points[i]!;
+      let fallback = false;
+      const minRun = Math.abs(to.y - from.y) / Math.tan(35 * Math.PI / 180);
+      if (edge.mode === "stairs" && Math.hypot(to.x - from.x, to.z - from.z) < minRun && minRun > 0) {
+        const low = from.y <= to.y ? from : to, high = low === from ? to : from;
+        const lowId = low === points[0] ? edge.from : low === points.at(-1) ? edge.to : undefined;
+        let direction = new THREE.Vector3(1, 0, 0);
+        const neighbor = lowId && bundle.edges.find((candidate) => candidate.id !== edge.id && traversable(candidate) && (candidate.from === lowId || candidate.to === lowId) && !["stairs", "escalator", "elevator"].includes(candidate.mode));
+        if (neighbor) { const ps = edgePoints(bundle, neighbor, nodes, floors); const d = neighbor.from === lowId ? ps[1]?.clone().sub(ps[0]!) : ps.at(-2)?.clone().sub(ps.at(-1)!); if (d) { d.y = 0; if (d.lengthSq() > 1e-9) direction = d.normalize(); } }
+        const end = low.clone().addScaledVector(direction, minRun); end.y = high.y;
+        const side = new THREE.Vector3(-direction.z, 0, direction.x).multiplyScalar(width * 1.1);
+        const turn = end.clone().add(side), returnEnd = high.clone().add(side);
+        for (const [start, finish] of [[end, turn], [turn, returnEnd], [returnEnd, high]] as const) {
+          const landingFrame = frame(start, finish);
+          box(parts, "tread", landingFrame.matrix, landingFrame.length / 2, -0.04, 0, landingFrame.length + width, 0.08, width, "walkable");
+        }
+        from = low; to = end; fallback = true;
+      }
       const dx = to.x - from.x, dz = to.z - from.z, horizontal = Math.hypot(dx, dz);
       if (horizontal > 1e-6) {
         const half = (edge.mode === "stairs" ? width : 1.2) / 2 + 0.03, n = Math.max(1, Math.ceil(horizontal / 0.5));
@@ -219,6 +245,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       }
       if (Math.abs(to.y - from.y) > 1e-6) {
         const flight = edge.mode === "stairs" ? buildStairs(from, to, width, tier) : buildEscalator(from, to, tier);
+        if (fallback) for (const p of flight) p.userData = { ...p.userData, fit: "approximate" };
         edgeOmitted += flight[0]?.userData?.omittedLandings ?? 0;
         parts.push(...flight);
       }
@@ -266,10 +293,10 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   let triangles = 0;
   const lightBatches: { mesh: THREE.Mesh; parts: ConnectorPart[] }[] = [];
   for (const batch of batches.values()) {
-    for (const [parts, material] of [[batch.filter((p) => p.material !== "light" && p.material !== "glass"), shellMaterial], [batch.filter((p) => p.material === "light"), lightMaterial], [batch.filter((p) => p.material === "glass"), glassMaterial]] as const) {
+    for (const [parts, material] of [[batch.filter((p) => !(["light", "lampOk", "lampNo", "glass"] as string[]).includes(p.material)), shellMaterial], [batch.filter((p) => ["light", "lampOk", "lampNo"].includes(p.material)), lampMaterials], [batch.filter((p) => p.material === "glass"), glassMaterial]] as const) {
       if (!parts.length) continue;
       const mesh = meshFor(parts, material); root.add(mesh); triangles += mesh.geometry.getAttribute("position").count / 3;
-      if (material === lightMaterial) lightBatches.push({ mesh, parts });
+      if (material === lampMaterials) lightBatches.push({ mesh, parts });
     }
   }
   const stats = { connectors: counts, meshes: root.children.length, triangles, approximateFits, omittedLandings, overBudget: null as string | null,
@@ -278,7 +305,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         const kept = batch.parts.filter((p) => !p.soffit);
         if (kept.length === batch.parts.length) continue;
         stats.triangles -= batch.parts.filter((p) => p.soffit).reduce((n, p) => n + p.position.length / 9, 0);
-        const replacement = meshFor(kept, lightMaterial);
+        const replacement = meshFor(kept, lampMaterials);
         batch.mesh.geometry.dispose(); batch.mesh.geometry = replacement.geometry; batch.mesh.userData.edgeId = replacement.userData.edgeId; batch.mesh.userData.edgeRanges = replacement.userData.edgeRanges; batch.parts = kept;
         if (!kept.length) { root.remove(batch.mesh); stats.meshes--; }
       }

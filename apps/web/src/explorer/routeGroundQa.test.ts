@@ -56,3 +56,13 @@ it("reports missing vertical connector and unsupported interior on an elevator e
   const points = [{ x: 10, y: 0, z: 0 }, { x: 10, y: 0, z: 4 }];
   expect(routeGroundCounts(points, (p) => p.y === 0 || p.y === 4 ? p.y : null, steps, bundle, () => false)).toMatchObject({ samples: 9, noFloor: 7, verticalWithoutConnector: 1 });
 });
+
+
+it("samples the actual bent vertical edge instead of its endpoint midpoint", () => {
+  const bundle = createSyntheticBundle([syntheticEdge("stairs", "start", "a", { mode: "stairs", geometry: [{ x: 0, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }, { x: 10, y: 10, z: 0 }] })]);
+  bundle.nodes.find((n) => n.id === "a")!.position = { x: 10, y: 10, z: 0 };
+  const steps = [{ edgeId: "stairs", mode: "stairs", fromNodeId: "start", toNodeId: "a", reversed: false, lengthM: 20, fromFloorId: "concourse", toFloorId: "concourse" }] as Parameters<typeof routeGroundCounts>[2];
+  const seen: THREE.Vector3[] = [];
+  const result = routeGroundCounts([], () => 0, steps, bundle, (p) => { seen.push(p.clone()); return p.distanceTo(new THREE.Vector3(10, 0, 0)) < 0.01; });
+  expect(result.verticalWithoutConnector).toBe(0); expect(seen[0]!.x).toBeCloseTo(10); expect(seen[0]!.z).toBeCloseTo(0);
+});

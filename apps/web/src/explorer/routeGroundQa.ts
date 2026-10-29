@@ -3,7 +3,7 @@ import type { RouteStep } from "@gteki/navigation";
 import { nodeDisplayZ } from "@gteki/navigation";
 import { roleOf } from "@gteki/scene-api";
 import type { StationBundle } from "@gteki/schema";
-import { R, type V3 } from "./geometry.ts";
+import { R, edgePoints, type V3 } from "./geometry.ts";
 import { cumulativeLengths, samplePolyline } from "./walker.ts";
 
 /** Prioritize all guide stops; spread the remaining samples over the complete route. */
@@ -46,8 +46,10 @@ export function routeGroundCounts(points: readonly V3[], ground: (p: THREE.Vecto
       if (!["stairs", "escalator", "elevator"].includes(step.mode)) continue;
       const a = nodes.get(step.fromNodeId), b = nodes.get(step.toNodeId);
       if (!a || !b) { verticalWithoutConnector++; continue; }
-      const az = nodeDisplayZ(a, floors.get(a.floorId)).z, bz = nodeDisplayZ(b, floors.get(b.floorId)).z;
-      if (!nearMesh(R((a.position.x + b.position.x) / 2, (a.position.y + b.position.y) / 2, (az + bz) / 2), 1.5, step.edgeId)) verticalWithoutConnector++;
+      const edge = bundle.edges.find((e) => e.id === step.edgeId);
+      const path = edge ? edgePoints(bundle, edge, nodes, floors) : [R(a.position.x, a.position.y, nodeDisplayZ(a, floors.get(a.floorId)).z), R(b.position.x, b.position.y, nodeDisplayZ(b, floors.get(b.floorId)).z)];
+      const cumulative = cumulativeLengths(path), midpoint = samplePolyline(path, cumulative, (cumulative.at(-1) ?? 0) / 2);
+      if (!nearMesh(new THREE.Vector3(midpoint.x, midpoint.y, midpoint.z), 1.5, step.edgeId)) verticalWithoutConnector++;
     }
   }
   return { samples, noFloor, verticalWithoutConnector };

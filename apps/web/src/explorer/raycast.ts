@@ -1,5 +1,17 @@
 import * as THREE from "three";
 import { raycastObject } from "./meshBvh.ts";
+import { portalDepthAxis, portalWidthAxis, type Box } from "./greybox.ts";
+
+const clippedPortals = new WeakMap<THREE.Object3D, readonly Box[]>();
+export function setClippedPortals(mesh: THREE.Object3D, boxes: readonly Box[]): void { clippedPortals.set(mesh, boxes); }
+export function clearClippedPortals(mesh: THREE.Object3D): void { clippedPortals.delete(mesh); }
+export function hasClippedPortals(mesh: THREE.Object3D): boolean { return clippedPortals.has(mesh); }
+export function portalWallNormal(normal: THREE.Vector3, box: Box): boolean { return Math.abs(normal.dot(box.wallNormal ?? box.along)) >= Math.sqrt(3) / 2; }
+export function portalPassable(hit: THREE.Intersection): boolean {
+  if (!hit.face) return false;
+  const normal = hit.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(hit.object.matrixWorld)).normalize();
+  return clippedPortals.get(hit.object)?.some(box => portalWallNormal(normal, box) && hit.point.y >= box.center.y + 0.05 && hit.point.y <= box.center.y + box.height && Math.abs(hit.point.clone().sub(box.center).dot(portalWidthAxis(box))) <= box.width / 2 && Math.abs(hit.point.clone().sub(box.center).dot(portalDepthAxis(box))) <= box.depth / 2) ?? false;
+}
 
 /**
  * The meshes a list of scene objects stands for when ray-tested. A scene's `walkable` / `colliders` are
@@ -21,8 +33,10 @@ export function castTargets(objects: readonly THREE.Object3D[], filedElsewhere: 
   for (const o of objects) {
     // A listed mesh may be part of a helper (an ArrowHelper's cone that a GLB role pass picked up).
     if (insideHelper(o)) continue;
-    if ((o as THREE.Mesh).isMesh) out.add(o);
-    else visit(o);
+    if ((o as THREE.Mesh).isMesh) {
+      out.add(o);
+      for (const child of o.children) if (child.userData.portalInstanceCopy) out.add(child);
+    } else visit(o);
   }
   return [...out];
 }
@@ -75,7 +89,7 @@ export function explorerTargets(walkable: readonly THREE.Object3D[], colliders: 
 export function castAll(ray: THREE.Raycaster, targets: readonly THREE.Object3D[]): THREE.Intersection[] {
   const hits: THREE.Intersection[] = [];
   for (const object of targets) if (object.layers.test(ray.layers)) raycastObject(object, ray, hits);
-  return hits.sort((a, b) => a.distance - b.distance);
+  return hits.filter(hit => !portalPassable(hit)).sort((a, b) => a.distance - b.distance);
 }
 
 const TWO_SIDED = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });

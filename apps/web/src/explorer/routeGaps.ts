@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { R, type V3 } from "./geometry.ts";
 import { raycastObject } from "./meshBvh.ts";
-import { castAll } from "./raycast.ts";
+import { castAll, portalPassable } from "./raycast.ts";
 
 /** The route's existing floor test, shared by route overlays and passage generation. */
 export function floorProbe(ray: THREE.Raycaster, groundTargets: readonly THREE.Object3D[], staticTargets = false): (p: V3) => boolean {
@@ -36,7 +36,7 @@ export function floorProbe(ray: THREE.Raycaster, groundTargets: readonly THREE.O
       if (!target.layers.test(ray.layers)) continue;
       hits.length = 0;
       raycastObject(target, ray, hits);
-      if (hits.some((h) => Math.abs(h.point.y - p.z) <= 1)) return true;
+      if (hits.some((h) => !portalPassable(h) && Math.abs(h.point.y - p.z) <= 1)) return true;
     }
     return false;
   };
