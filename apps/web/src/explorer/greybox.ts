@@ -104,8 +104,8 @@ export function splitWallsAtOpenings(walls: readonly Segment2[], openings: reado
   return result;
 }
 
-type Batch = { shell: number[]; colors: number[]; lights: number[]; lightColors: number[]; kerb: number[]; portal: number[]; portalColors: number[] };
-const batch = (): Batch => ({ shell: [], colors: [], lights: [], lightColors: [], kerb: [], portal: [], portalColors: [] });
+type Batch = { shell: number[]; colors: number[]; ceiling: number[]; ceilingColors: number[]; lights: number[]; lightColors: number[]; kerb: number[]; portal: number[]; portalColors: number[] };
+const batch = (): Batch => ({ shell: [], colors: [], ceiling: [], ceilingColors: [], lights: [], lightColors: [], kerb: [], portal: [], portalColors: [] });
 const enu = (v: THREE.Vector3): V3 => ({ x: v.x, y: -v.z, z: v.y });
 
 /** Append a two-sided quad; vertex shade is baked into the shell's vertex colours. */
@@ -212,8 +212,8 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
           wallSegments.push({ ax: p.x, az: p.z, bx: q.x, bz: q.z, yMin: Math.min(p.y, q.y), yMax: Math.max(p.y, q.y) + 2.6 });
         }
       }
-      quad(b.shell, b.colors, offset(z, -half, 2.6), offset(z, 0, 2.6), offset(a, 0, 2.6), offset(a, -half, 2.6), [0.62, 1, 1, 0.62]);
-      quad(b.shell, b.colors, offset(z, 0, 2.6), offset(z, half, 2.6), offset(a, half, 2.6), offset(a, 0, 2.6), [1, 0.62, 0.62, 1]);
+      quad(b.ceiling, b.ceilingColors, offset(z, -half, 2.6), offset(z, 0, 2.6), offset(a, 0, 2.6), offset(a, -half, 2.6), [0.62, 1, 1, 0.62]);
+      quad(b.ceiling, b.ceilingColors, offset(z, 0, 2.6), offset(z, half, 2.6), offset(a, half, 2.6), offset(a, 0, 2.6), [1, 0.62, 0.62, 1]);
       while (nextLight <= travelled + length) {
         const t = (nextLight - travelled) / length;
         if (t >= 0) {
@@ -266,24 +266,21 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
         const center = j.at.clone().add(new THREE.Vector3(0, height, 0));
         const p = center.clone().add(new THREE.Vector3(Math.cos(a) * radius, 0, Math.sin(a) * radius));
         const q = center.clone().add(new THREE.Vector3(Math.cos(z) * radius, 0, Math.sin(z) * radius));
-        quad(b.shell, b.colors, center, height === 0 ? q : p, height === 0 ? p : q, center, [0.72, 0.72, 0.72, 0.72]);
+        quad(height === 0 ? b.shell : b.ceiling, height === 0 ? b.colors : b.ceilingColors, center, height === 0 ? q : p, height === 0 ? p : q, center, [0.72, 0.72, 0.72, 0.72]);
       }
     }
   }
   const root = new THREE.Group(), walkable: THREE.Object3D[] = [], colliders: THREE.Object3D[] = [];
-  const total = () => [...batches.values()].reduce((n, b) => n + (b.shell.length + b.portal.length + b.lights.length + b.kerb.length) / 9, 0);
+  const total = () => [...batches.values()].reduce((n, b) => n + (b.shell.length + b.ceiling.length + b.portal.length + b.lights.length + b.kerb.length) / 9, 0);
   const dropped: string[] = [];
   if (total() > 60000) { for (const b of batches.values()) { b.lights = []; b.lightColors = []; } dropped.push("lights"); }
   if (total() > 60000) { for (const b of batches.values()) b.kerb = []; dropped.push("kerb"); }
-  if (total() > 60000) {
-    let remaining = 60000 * 9;
-    for (const b of batches.values()) for (const [data, colors] of [[b.shell, b.colors], [b.portal, b.portalColors]] as const) {
-      const keep = Math.min(data.length, remaining); data.length = keep; colors.length = keep; remaining -= keep;
-    }
-    dropped.push("shell truncated");
-  }
+  if (total() > 60000) { for (const b of batches.values()) { b.ceiling = []; b.ceilingColors = []; } dropped.push("ceiling"); }
+  const remainsOver = total() > 60000;
   let triangles = 0;
   for (const b of batches.values()) {
+    b.shell = b.shell.concat(b.ceiling);
+    b.colors = b.colors.concat(b.ceilingColors);
     const hasPortal = b.portal.length > 0;
     b.lights = b.lights.concat(b.portal);
     b.lightColors = b.lightColors.concat(b.portalColors);
@@ -312,5 +309,5 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
       if (material === shellMat) { walkable.push(mesh); colliders.push(mesh); }
     }
   }
-  return { root, walkable, colliders, wallSegments, openings, stats: { runs: runs.length, lengthM, portals: openings.length, meshes: root.children.length, triangles, buildMs: performance.now() - started, overBudget: dropped.length ? `Dropped ${dropped.join(", ")} to meet 60k triangles` : null } satisfies GreyboxStats };
+  return { root, walkable, colliders, wallSegments, openings, stats: { runs: runs.length, lengthM, portals: openings.length, meshes: root.children.length, triangles, buildMs: performance.now() - started, overBudget: dropped.length ? `Dropped ${dropped.join(", ")}${remainsOver ? "; floor and walls exceed 60k triangles" : " to meet 60k triangles"}` : null } satisfies GreyboxStats };
 }

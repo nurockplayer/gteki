@@ -129,14 +129,22 @@ describe("buildGreybox", () => {
     expect(Math.abs(resolveWalls(2.25, 2.3, 0.2, 0, 1.8, split).x - 2.25)).toBeGreaterThan(0.1);
   });
 
-  it("drops decorative geometry in order and caps large networks", () => {
+  it("drops lights, kerbs and ceilings but preserves an over-budget floor and walls", () => {
     const long = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 2000, y: 0, z: 0 } }] };
     const result = buildGreybox(long, () => true, () => false, emptyScene, "low");
-    expect(result.stats.triangles).toBeLessThanOrEqual(60000);
+    expect(result.stats.triangles).toBeGreaterThan(60000);
     expect(result.stats.overBudget).toContain("lights");
     expect(result.stats.overBudget).toContain("kerb");
+    expect(result.stats.overBudget).toContain("ceiling");
+    expect(result.stats.overBudget).toContain("floor and walls exceed");
     expect(result.root.getObjectByName("greybox-lights")).toBeUndefined();
     expect(result.root.getObjectByName("greybox-kerb")).toBeUndefined();
+    result.root.updateMatrixWorld(true);
+    for (const x of [0.25, 1000.25, 1999.75]) {
+      const ray = new THREE.Raycaster(new THREE.Vector3(x, 1, 0), new THREE.Vector3(0, -1, 0), 0, 2);
+      expect(ray.intersectObjects(result.walkable, false).some((hit) => Math.abs(hit.point.y) < 0.001)).toBe(true);
+    }
+    expect(result.wallSegments.some((wall) => Math.max(wall.ax, wall.bx) >= 1999.5)).toBe(true);
   });
 
   it("keeps a 400 m two-floor synthetic network within the mesh and triangle budget", () => {
