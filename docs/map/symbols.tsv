@@ -122,6 +122,15 @@ simplifyGreyboxRun	function	apps/web/src/explorer/greybox.ts	141
 createGreyboxBuilder	function	apps/web/src/explorer/greybox.ts	220
 buildGreybox	function	apps/web/src/explorer/greybox.ts	261
 emitGreybox	function	apps/web/src/explorer/greybox.ts	271
+unmodelledVerticalEdges	function	apps/web/src/explorer/greyboxConnectors.ts	6
+ConnectorMaterial	type	apps/web/src/explorer/greyboxConnectors.ts	39
+ConnectorPart	interface	apps/web/src/explorer/greyboxConnectors.ts	40
+ConnectorOptions	interface	apps/web/src/explorer/greyboxConnectors.ts	41
+buildStairs	function	apps/web/src/explorer/greyboxConnectors.ts	77
+buildEscalator	function	apps/web/src/explorer/greyboxConnectors.ts	112
+buildElevator	function	apps/web/src/explorer/greyboxConnectors.ts	153
+ConnectorScope	interface	apps/web/src/explorer/greyboxConnectors.ts	175
+buildConnectors	function	apps/web/src/explorer/greyboxConnectors.ts	188
 greyboxSceneProbes	function	apps/web/src/explorer/greyboxScene.ts	10
 insideGreyboxOpening	function	apps/web/src/explorer/greyboxScene.ts	91
 GreyboxSegment	interface	apps/web/src/explorer/greyboxScene.ts	98

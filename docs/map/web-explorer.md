@@ -11,6 +11,7 @@ Most helpers in the folder are small pure modules with their own tests (camera m
 
 ## Main files and functions
 - `apps/web/src/explorer/greybox.ts` — detects unmodelled edge runs, builds merged runtime passage meshes and portal openings, and splits walls at openings.
+- `apps/web/src/explorer/greyboxConnectors.ts` — identifies missing vertical edges and builds runtime connector geometry; Explorer integration is pending.
 - `apps/web/src/explorer/greyboxScene.ts` — station-only collision probes and runtime greybox legend proximity.
 - `apps/web/src/explorer/routeGroundQa.ts` — route ground and vertical connector sampling for the QA hook.
 - `apps/web/src/main.ts:1-8` — entry: imports the CSS and constructs `App` on the `#app` element, prints a load failure into the page.
