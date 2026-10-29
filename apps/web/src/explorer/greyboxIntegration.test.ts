@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { describe, expect, it, vi } from "vitest";
-import { createRouter } from "@gteki/navigation";
+import { createRouter, routePolyline } from "@gteki/navigation";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 import { Explorer } from "./explorer.ts";
 import { greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox } from "./greyboxScene.ts";
@@ -52,6 +52,16 @@ describe("greybox station integration", () => {
     expect(state.groundTargets).toContain(state.connectors.walkable[0]);
     const steps = [{ edgeId: "stairs", mode: "stairs", fromNodeId: "a", toNodeId: "upper" }, { edgeId: "escalator", mode: "escalator", fromNodeId: "start", toNodeId: "upper" }];
     expect(state.routeGroundCheck([], steps).verticalWithoutConnector).toBe(0);
+  });
+
+  it("checks the relocated stair route against its generated ground", async () => {
+    const { state, loaded } = fixture();
+    loaded.bundle = createSyntheticBundle([syntheticEdge("vertical", "start", "upper", { mode: "stairs", attributes: { sceneGap: true } })]);
+    loaded.bundle.nodes.find((node) => node.id === "upper")!.position = { x: 0, y: 0, z: 4 };
+    const router = createRouter(loaded.bundle); await state.loadStation(loaded, router);
+    const route = router.route("start", "upper"); if (!route.ok) throw new Error("missing route");
+    const polyline = routePolyline(loaded.bundle, route, state.connectorRoutePaths());
+    expect(state.routeGroundCheck(polyline, route.steps)).toMatchObject({ noFloor: 0, verticalWithoutConnector: 0 });
   });
 
   it("shows the legend for a route or walker near generated stairs and escalators", async () => {

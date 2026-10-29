@@ -19,7 +19,7 @@ export function darkSampleDistances(total: number, stops: readonly number[]): nu
 }
 
 /** A deterministic half-metre sampling of the drawn route, including both ends. */
-export function routeGroundCounts(points: readonly V3[], ground: (p: THREE.Vector3) => number | null, verticalSteps: readonly RouteStep[], bundle: StationBundle | null, nearMesh: (p: THREE.Vector3, radius: number, edgeId: string) => boolean) {
+export function routeGroundCounts(points: readonly V3[], ground: (p: THREE.Vector3) => number | null, verticalSteps: readonly RouteStep[], bundle: StationBundle | null, nearMesh: (p: THREE.Vector3, radius: number, edgeId: string) => boolean, connectorPaths?: ReadonlyMap<string, readonly V3[]>) {
   const pts = points.map((p) => R(p.x, p.y, p.z));
   let samples = 0, noFloor = 0;
   if (pts.length === 1) {
@@ -47,7 +47,8 @@ export function routeGroundCounts(points: readonly V3[], ground: (p: THREE.Vecto
       const a = nodes.get(step.fromNodeId), b = nodes.get(step.toNodeId);
       if (!a || !b) { verticalWithoutConnector++; continue; }
       const edge = bundle.edges.find((e) => e.id === step.edgeId);
-      const path = edge ? edgePoints(bundle, edge, nodes, floors) : [R(a.position.x, a.position.y, nodeDisplayZ(a, floors.get(a.floorId)).z), R(b.position.x, b.position.y, nodeDisplayZ(b, floors.get(b.floorId)).z)];
+      const replacement = connectorPaths?.get(step.edgeId);
+      const path = replacement ? replacement.map((p) => new THREE.Vector3(p.x, p.y, p.z)) : edge ? edgePoints(bundle, edge, nodes, floors) : [R(a.position.x, a.position.y, nodeDisplayZ(a, floors.get(a.floorId)).z), R(b.position.x, b.position.y, nodeDisplayZ(b, floors.get(b.floorId)).z)];
       const cumulative = cumulativeLengths(path), midpoint = samplePolyline(path, cumulative, (cumulative.at(-1) ?? 0) / 2);
       if (!nearMesh(new THREE.Vector3(midpoint.x, midpoint.y, midpoint.z), 1.5, step.edgeId)) verticalWithoutConnector++;
     }

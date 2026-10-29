@@ -133,7 +133,7 @@ export function buildEscalator(from: THREE.Vector3, to: THREE.Vector3, tier: "hi
   comb(landing, firstX); comb(lastEnd, f.length - landing);
   // Physical landings meet the continuous incline at its true endpoints, independently of the extended visual combs.
   for (const end of [0, 1]) {
-    box(parts, "escStep", f.matrix, end ? f.length - landing / 2 : landing / 2, end * f.rise - 0.04, 0, landing, 0.08, 1, "walkable");
+    box(parts, "escStep", f.matrix, end ? f.length - landing / 2 : landing / 2, end * f.rise - 0.04, 0, landing + 0.002, 0.08, 1, "walkable");
     parts.at(-1)!.walkableOnly = true;
   }
   const surface = new THREE.PlaneGeometry(incline, 1); surface.rotateX(-Math.PI / 2);
@@ -167,6 +167,35 @@ export function buildEscalator(from: THREE.Vector3, to: THREE.Vector3, tier: "hi
   return parts;
 }
 
+/** Walkable centreline and invisible support for a fitted stair flight. */
+function stairWalk(from: THREE.Vector3, to: THREE.Vector3, width: number, parts: ConnectorPart[]): THREE.Vector3[] {
+  const f = frame(from, to), count = Math.max(1, Math.round(f.rise / 0.18)), rise = f.rise / count;
+  const block = Math.max(1, Math.floor(3 / (rise || 0.18))), needed = Math.floor((count - 1) / block);
+  const omitted = f.length < count * 0.25 + needed * 1.2, tread = (f.length - (omitted ? 0 : needed * 1.2)) / count;
+  const at = (x: number, y: number) => new THREE.Vector3(x, y, 0).applyMatrix4(f.matrix);
+  const path = [at(0, 0)];
+  for (let start = 0; start < count; start += block) {
+    const n = Math.min(block, count - start), x = start * tread + (omitted ? 0 : Math.floor(start / block) * 1.2);
+    const run = n * tread, height = n * rise, length = Math.hypot(run, height), angle = Math.atan2(height, run);
+    const geometry = new THREE.PlaneGeometry(length + 0.002, width, n, 1); geometry.rotateX(-Math.PI / 2);
+    const transform = f.matrix.clone().multiply(new THREE.Matrix4().makeTranslation(x + run / 2, start * rise + height / 2, 0)).multiply(new THREE.Matrix4().makeRotationZ(angle));
+    const support = part(geometry, "tread", transform, "walkable"); support.walkableOnly = true; parts.push(support);
+    for (let k = 1; k <= n; k++) path.push(at(x + k * tread, (start + k) * rise));
+    if (!omitted && start + n < count) {
+      box(parts, "tread", f.matrix, x + run + 0.6, (start + n) * rise - 0.04, 0, 1.2, 0.08, width, "walkable"); parts.at(-1)!.walkableOnly = true;
+      path.push(at(x + run + 1.2, (start + n) * rise));
+    }
+  }
+  return from.y <= to.y ? path : path.reverse();
+}
+
+function escalatorWalk(from: THREE.Vector3, to: THREE.Vector3): THREE.Vector3[] {
+  const f = frame(from, to), landing = Math.min(0.8, f.length / 2);
+  const at = (x: number, y: number) => new THREE.Vector3(x, y, 0).applyMatrix4(f.matrix);
+  const path = [at(0, 0), at(landing, 0), at(f.length - landing, f.rise), at(f.length, f.rise)];
+  return from.y <= to.y ? path : path.reverse();
+}
+
 export interface ConnectorScope { hasFloor: (p: V3) => boolean; nearMesh: (p: THREE.Vector3, radius: number) => boolean }
 
 function meshFor(parts: readonly ConnectorPart[], material: THREE.Material | THREE.Material[]): THREE.Mesh {
@@ -190,6 +219,7 @@ function meshFor(parts: readonly ConnectorPart[], material: THREE.Material | THR
 export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge) => boolean, scope: ConnectorScope, tier: "high" | "low") {
   const root = new THREE.Group(), walkable: THREE.Object3D[] = [], colliders: THREE.Object3D[] = [];
   const wallSegments: Segment2[] = [];
+  const pathByEdge = new Map<string, V3[]>();
   const segments: { line: THREE.Line3; halfWidth: number }[] = [];
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
@@ -206,7 +236,6 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
     const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
     const halfWidth = (edge.mode === "stairs" ? width : 1.2) / 2;
-    for (let i = 1; i < points.length; i++) segments.push({ line: new THREE.Line3(points[i - 1]!.clone(), points[i]!.clone()), halfWidth });
     let bentEscalator = false;
     for (let i = 1; i + 1 < points.length; i++) {
       const before = points[i]!.clone().sub(points[i - 1]!); before.y = 0;
@@ -214,12 +243,17 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       if (before.lengthSq() && after.lengthSq() && before.angleTo(after) > Math.PI / 18) bentEscalator = true;
     }
     const parts: ConnectorPart[] = [];
+    const edgePath: THREE.Vector3[] = [];
     let edgeOmitted = 0;
     for (let i = 1; i < points.length; i++) {
       let from = points[i - 1]!, to = points[i]!;
       let fallback = false;
-      const minRun = Math.abs(to.y - from.y) / Math.tan(35 * Math.PI / 180);
-      if (edge.mode === "stairs" && Math.hypot(to.x - from.x, to.z - from.z) < minRun && minRun > 0) {
+      let returnPath: THREE.Vector3[] = [];
+      const originalFrom = from;
+      const rise = Math.abs(to.y - from.y);
+      const minRun = edge.mode === "stairs" ? rise / Math.tan(35 * Math.PI / 180) : rise / Math.tan(Math.PI / 6) + 1.6;
+      const shortRun = edge.mode === "stairs" ? Math.hypot(to.x - from.x, to.z - from.z) < minRun : Math.hypot(to.x - from.x, to.z - from.z) < 1e-6;
+      if (shortRun && rise > 0) {
         const low = from.y <= to.y ? from : to, high = low === from ? to : from;
         const lowId = low === points[0] ? edge.from : low === points.at(-1) ? edge.to : undefined;
         let direction = new THREE.Vector3(1, 0, 0);
@@ -227,11 +261,14 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         if (neighbor) { const ps = edgePoints(bundle, neighbor, nodes, floors); const d = neighbor.from === lowId ? ps[1]?.clone().sub(ps[0]!) : ps.at(-2)?.clone().sub(ps.at(-1)!); if (d) { d.y = 0; if (d.lengthSq() > 1e-9) direction = d.normalize(); } }
         const end = low.clone().addScaledVector(direction, minRun); end.y = high.y;
         const side = new THREE.Vector3(-direction.z, 0, direction.x).multiplyScalar(width * 1.1);
-        const turn = end.clone().add(side), returnEnd = high.clone().add(side);
-        for (const [start, finish] of [[end, turn], [turn, returnEnd], [returnEnd, high]] as const) {
+        const extension = end.clone().addScaledVector(direction, width);
+        const turn = extension.clone().add(side), returnEnd = high.clone().add(side);
+        returnPath = [extension, turn, returnEnd, high];
+        for (const [start, finish] of [[end, extension], [extension, turn], [turn, returnEnd], [returnEnd, high]] as const) {
           const landingFrame = frame(start, finish);
-          box(parts, "tread", landingFrame.matrix, landingFrame.length / 2, -0.04, 0, landingFrame.length + width, 0.08, width, "walkable");
+          box(parts, "tread", landingFrame.matrix, landingFrame.length / 2, -0.04, 0, landingFrame.length + 0.002, 0.08, width, "walkable");
         }
+        for (const corner of [extension, turn, returnEnd]) box(parts, "tread", new THREE.Matrix4().makeTranslation(corner.x, corner.y, corner.z), 0, -0.04, 0, width, 0.08, width, "walkable");
         from = low; to = end; fallback = true;
       }
       const dx = to.x - from.x, dz = to.z - from.z, horizontal = Math.hypot(dx, dz);
@@ -243,16 +280,28 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
           wallSegments.push({ ax: THREE.MathUtils.lerp(from.x, to.x, t) + ox, az: THREE.MathUtils.lerp(from.z, to.z, t) + oz, bx: THREE.MathUtils.lerp(from.x, to.x, u) + ox, bz: THREE.MathUtils.lerp(from.z, to.z, u) + oz, yMin: Math.min(ya, yb) - 0.12, yMax: Math.max(ya, yb) + 0.96 });
         }
       }
+      let flightPath: THREE.Vector3[];
       if (Math.abs(to.y - from.y) > 1e-6) {
         const flight = edge.mode === "stairs" ? buildStairs(from, to, width, tier) : buildEscalator(from, to, tier);
         if (fallback) for (const p of flight) p.userData = { ...p.userData, fit: "approximate" };
         edgeOmitted += flight[0]?.userData?.omittedLandings ?? 0;
+        if (edge.mode === "stairs") {
+          for (const p of flight) if (p.role === "walkable" && p.material === "tread") p.role = undefined;
+          flightPath = stairWalk(from, to, width, parts);
+        } else flightPath = escalatorWalk(from, to);
         parts.push(...flight);
       }
       else {
+        flightPath = [from.clone(), to.clone()];
         const f = frame(from, to);
         box(parts, edge.mode === "stairs" ? "tread" : "escStep", f.matrix, f.length / 2, -0.04, 0, f.length, 0.08, edge.mode === "stairs" ? width : 1.2, "walkable");
       }
+      if (fallback) {
+        flightPath.push(...returnPath);
+        if (originalFrom.y > points[i]!.y) flightPath.reverse();
+      }
+      if (edgePath.length && edgePath.at(-1)!.distanceTo(flightPath[0]!) < 1e-6) flightPath.shift();
+      edgePath.push(...flightPath);
       const incoming = to.clone().sub(from); incoming.y = 0;
       const outgoing = i < points.length - 1 ? points[i + 1]!.clone().sub(to) : new THREE.Vector3(); outgoing.y = 0;
       if (incoming.lengthSq() && outgoing.lengthSq() && incoming.angleTo(outgoing) > 1e-6) {
@@ -261,6 +310,9 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         box(parts, edge.mode === "stairs" ? "tread" : "escStep", rotation, 0, -0.04, 0, edge.mode === "stairs" ? width : 1.2, 0.08, edge.mode === "stairs" ? width : 1.2, "walkable");
       }
     }
+    const lowerFirst = points[0]!.y <= points.at(-1)!.y ? edgePath : edgePath.reverse();
+    pathByEdge.set(edge.id, lowerFirst.map((p) => ({ x: p.x, y: p.y, z: p.z })));
+    for (let i = 1; i < lowerFirst.length; i++) segments.push({ line: new THREE.Line3(lowerFirst[i - 1]!.clone(), lowerFirst[i]!.clone()), halfWidth });
     // Extend unsupported endpoints into the approaching passage at the landing height.
     const pads: { part: ConnectorPart; floorId: string }[] = [];
     for (const [index, floorNode] of [[0, edge.from], [points.length - 1, edge.to]] as const) {
@@ -310,7 +362,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         if (!kept.length) { root.remove(batch.mesh); stats.meshes--; }
       }
     } };
-  return { root, walkable, colliders, wallSegments, segments, stats };
+  return { root, walkable, colliders, wallSegments, segments, pathByEdge, stats };
 }
 
 /** Apply the shared triangle cap, retaining essential connector and passage geometry. */

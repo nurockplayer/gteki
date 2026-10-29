@@ -242,3 +242,45 @@ it("renders the comb and flight at the walkable incline height in both tiers", (
     expect(new Set(lights.geometry.groups.map((g) => g.materialIndex))).toEqual(new Set([0, 1, 2]));
   }
 });
+
+it("routes over inserted stair landings in both directions on the walkable surface", async () => {
+  const { createRouter, routePolyline } = await import("@gteki/navigation");
+  const { cumulativeLengths, samplePolyline } = await import("./walker.ts");
+  const station = createSyntheticBundle([syntheticEdge("flight", "start", "upper", { mode: "stairs", attributes: { sceneGap: true } })]);
+  station.nodes.find((n) => n.id === "upper")!.position = { x: 7.2, y: 0, z: 3.6 };
+  const result = buildConnectors(station, () => true, { hasFloor: () => true, nearMesh: () => false }, "high");
+  const paths = new Map([...result.pathByEdge].map(([id, path]) => [id, path.map((p) => ({ x: p.x, y: -p.z, z: p.y }))]));
+  for (const [from, to] of [["start", "upper"], ["upper", "start"]]) {
+    const route = createRouter(station).route(from!, to!); expect(route.ok).toBe(true); if (!route.ok) throw new Error("missing route");
+    const polyline = routePolyline(station, route, paths), points = polyline.map((p) => new THREE.Vector3(p.x, p.z, -p.y));
+    const cumulative = cumulativeLengths(points), total = cumulative.at(-1)!;
+    expect(points[0]!.distanceTo(new THREE.Vector3(from === "start" ? 0 : 7.2, from === "start" ? 0 : 3.6, 0))).toBeLessThan(0.05);
+    expect(points.at(-1)!.distanceTo(new THREE.Vector3(to === "start" ? 0 : 7.2, to === "start" ? 0 : 3.6, 0))).toBeLessThan(0.05);
+    const ray = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0));
+    for (let s = 0; s <= total; s += 0.25) {
+      const p = samplePolyline(points, cumulative, s); ray.ray.origin.set(p.x, p.y + 0.04, p.z);
+      const hit = ray.intersectObjects(result.walkable)[0]; expect(hit, `s=${s} p=${JSON.stringify(p)}`).toBeDefined();
+      expect(Math.abs(hit!.point.y - p.y)).toBeLessThan(0.05);
+    }
+  }
+});
+
+it("keeps a relocated stair route grounded and relocates a zero-run escalator", async () => {
+  const { createRouter, routePolyline } = await import("@gteki/navigation");
+  const { routeGroundCounts } = await import("./routeGroundQa.ts");
+  for (const mode of ["stairs", "escalator"] as const) {
+    const station = createSyntheticBundle([syntheticEdge("vertical", "start", "upper", { mode, attributes: { sceneGap: true } })]);
+    station.nodes.find((n) => n.id === "upper")!.position = { x: 0, y: 0, z: 4 };
+    const result = buildConnectors(station, () => true, { hasFloor: () => true, nearMesh: () => false }, "high");
+    expect(result.stats.approximateFits).toBe(1);
+    const path = result.pathByEdge.get("vertical")!; expect(path.length).toBeGreaterThan(4);
+    expect(Math.max(...path.map((p) => p.x))).toBeGreaterThan(5);
+    expect(new THREE.Vector3(path[0]!.x, path[0]!.y, path[0]!.z).length()).toBeLessThan(0.001); expect(new THREE.Vector3(path.at(-1)!.x, path.at(-1)!.y - 4, path.at(-1)!.z).length()).toBeLessThan(0.001);
+    const paths = new Map([["vertical", path.map((p) => ({ x: p.x, y: -p.z, z: p.y }))]]);
+    const route = createRouter(station).route("start", "upper"); if (!route.ok) throw new Error("missing route");
+    const polyline = routePolyline(station, route, paths), ray = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0));
+    const missing: number[][] = [];
+    const counts = routeGroundCounts(polyline, (p) => { ray.ray.origin.set(p.x, p.y + 0.3, p.z); ray.far = 0.65; const height = ray.intersectObjects(result.walkable)[0]?.point.y ?? null; if (height === null || Math.abs(height - p.y) > 0.3) missing.push([p.x, p.y, p.z, height ?? -999]); return height; }, route.steps, station, () => true, result.pathByEdge);
+    expect(counts.noFloor, `${mode}: ${JSON.stringify(missing)}`).toBe(0);
+  }
+});
