@@ -329,18 +329,21 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   }
   // A stair, escalator or lift leaves a run at its end node. Its mouth opens only the walls inside the connector's
   // own footprint, so the passage keeps its side walls wherever there is no stair beside them.
-  const mouths: { at: THREE.Vector3; ux: number; uz: number; half: number; length: number }[] = [];
+  const mouths: { at: THREE.Vector3; ux: number; uz: number; half: number; length: number; y: number }[] = [];
   for (const edge of bundle.edges) {
     if (!["stairs", "escalator", "elevator"].includes(edge.mode)) continue;
     const points = edgePoints(bundle, edge, nodes, floors);
     for (const [id, path] of [[edge.from, points], [edge.to, [...points].reverse()]] as const) {
       const junction = junctions.get(id);
       if (!junction) continue;
-      const start = path[0]!, next = path.find((q) => Math.hypot(q.x - start.x, q.z - start.z) > 0.1);
-      if (!next) continue;
-      const run = Math.hypot(next.x - start.x, next.z - start.z);
-      // Reach past the widest passage wall at the node, wherever the next waypoint lies.
-      mouths.push({ at: junction.at, ux: (next.x - start.x) / run, uz: (next.z - start.z) / run, half: widthOf(edge) / 2, length: junction.width / 2 + 0.5 });
+      // Follow the flight's own plan for its first 4 m: at a shallow angle or after a bend it still meets the wall.
+      let reach = 4;
+      for (let i = 1; i < path.length && reach > 0; i++) {
+        const a = path[i - 1]!, b = path[i]!, run = Math.hypot(b.x - a.x, b.z - a.z);
+        if (run < 1e-6) continue;
+        mouths.push({ at: a, ux: (b.x - a.x) / run, uz: (b.z - a.z) / run, half: widthOf(edge) / 2, length: Math.min(run, reach), y: junction.at.y });
+        reach -= run;
+      }
     }
   }
   const activeJunctions = [...junctions.values()].filter((junction) => junction.count >= 2);
@@ -396,7 +399,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
           // Any wall inside the connector's own footprint at its height is one the flight passes through; walls
           // beside it stay. Footprint, not run ownership: deduplication may keep a run from another edge.
           const along = Math.hypot(wz.x - wa.x, wz.z - wa.z), t = along < 1e-9 ? 0 : Math.min(1, Math.max(0, ((m.at.x - wa.x) * (wz.x - wa.x) + (m.at.z - wa.z) * (wz.z - wa.z)) / along ** 2));
-          if (Math.abs(m.at.y - (a.y + (z.y - a.y) * t)) > 1) continue;
+          if (Math.abs(m.y - (a.y + (z.y - a.y) * t)) > 1) continue;
           // The wall segment in the connector's frame: u along the flight, v across it.
           const du = (wz.x - wa.x) * m.ux + (wz.z - wa.z) * m.uz, dv = -(wz.x - wa.x) * m.uz + (wz.z - wa.z) * m.ux;
           const u0 = (wa.x - m.at.x) * m.ux + (wa.z - m.at.z) * m.uz, v0 = -(wa.x - m.at.x) * m.uz + (wa.z - m.at.z) * m.ux;

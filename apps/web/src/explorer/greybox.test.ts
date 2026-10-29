@@ -112,6 +112,19 @@ describe("buildGreybox", () => {
     expect(Math.max(...side(half).map((w) => Math.max(w.ax, w.bx)))).toBeGreaterThan(10 - 1e-5);
   });
 
+  it("opens the wall a stair crosses at a shallow angle from mid-passage", () => {
+    const floors = [...bundle.floors, { id: "g", renderElevationM: 4 }];
+    const nodes = [...bundle.nodes, { id: "d", floorId: "f", position: { x: 20, y: 0, z: 0 } }, { id: "c", floorId: "g", position: { x: 10 + 15 * Math.cos(Math.PI / 12), y: 15 * Math.sin(Math.PI / 12), z: 4 } }];
+    const edges = [bundle.edges[0]!, { id: "e2", from: "b", to: "d", mode: "walk" }, { id: "s", from: "b", to: "c", mode: "stairs" }];
+    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
+    const half = MODE_WIDTH.walk! / 2;
+    const near = result.wallSegments.filter((w) => Math.abs(w.az + half) < 1e-6 && Math.abs(w.bz + half) < 1e-6);
+    expect(near.length).toBeGreaterThan(0);
+    // The flight crosses the north wall between about x = 11 and 13.8; no wall piece may cover x = 12.5.
+    expect(near.some((w) => Math.min(w.ax, w.bx) < 12.5 && Math.max(w.ax, w.bx) > 12.5)).toBe(false);
+    expect(near.some((w) => Math.max(w.ax, w.bx) > 15)).toBe(true);
+  });
+
   it("opens a stair mouth at the end of a long ramp", () => {
     const floors = [...bundle.floors, { id: "g", renderElevationM: 7 }];
     const ramp = [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 30, y: 0, z: 3 } }];
