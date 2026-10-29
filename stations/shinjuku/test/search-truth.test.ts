@@ -7,6 +7,7 @@ import type { Poi } from "@gteki/schema";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
 import approxPositions from "../sources/s03-approx-positions.json" with { type: "json" };
+import recoveryBatch from "../../../docs/research/merchants/shinjuku-recovery-batch1.json" with { type: "json" };
 
 /**
  * Search truth for the Shinjuku (E27) POIs (issue #106): names are distinct, nothing in a name or
@@ -37,7 +38,8 @@ const WP4_SOURCES = new Set([
 // Non-empty: `every` is true for an empty source list, which would class an unsourced POI as WP4 and skip the E27 checks.
 const isWp4 = (p: Poi) => p.category !== "shop" && p.evidence.sourceIds.length > 0 && p.evidence.sourceIds.every((id) => WP4_SOURCES.has(id));
 /** The E27 (Toei NWD / station map / GSI) POIs: everything the station itself evidences. */
-const isE27 = (p: Poi) => !isS03(p) && !isShop(p) && !isWp4(p);
+const isSeparate = (p: Poi) => p.id.startsWith("poi:sep-");
+const isE27 = (p: Poi) => !isS03(p) && !isShop(p) && !isWp4(p) && !isSeparate(p);
 const exits = pois.filter((p) => p.category === "exit" && isE27(p));
 
 interface PlanFacility { id: string; category: string; x: number; y: number }
@@ -282,10 +284,14 @@ describe("POI aliases", () => {
         return p.category === "exit" && t.includes(" ") ? `${lang}:${tokens(t)}` : k;
       };
       const allowedNorm = new Map([...allowed].map(([k, v]) => [norm(k), v]));
-      // #214: a shop's only aliases are kana readings its directory prints (checked in the shop block below).
+      // Recovery aliases are the shop-page names in the research hand-off; directory aliases are kana readings.
       for (const a of p.aliases) {
-        if (isShop(p)) expect(a.lang, `${p.id} alias ${a.text}`).toBe("ja-Hrkt");
-        else if (isWp4(p)) {
+        if (p.id.startsWith("shop-sjk-rec-")) {
+          expect(recoveryBatch.pois.find((shop) => shop.id === p.id)?.aliases).toContainEqual(a);
+        } else if (isShop(p)) expect(a.lang, `${p.id} alias ${a.text}`).toBe("ja-Hrkt");
+        else if (isSeparate(p)) {
+          expect(["ja"], `${p.id} alias ${a.lang}`).toContain(a.lang);
+        } else if (isWp4(p)) {
           // #501: a Metro exit's alias is the printed code of a 番出口 name (A6 of A6番出口); the Marunouchi POIs
           // also carry the printed M08 and "Marunouchi Line". The exact set is asserted in the WP4 block below.
           expect(["ja", "en"], `${p.id} alias ${a.lang}`).toContain(a.lang);
@@ -409,10 +415,10 @@ describe("facility POIs trace to the GSI facility points", () => {
     // #214: 6 Toei/Tokyo Metro + 576 LUMINE/NEWoMan listings + the Odakyu department store, plus the 12 store
     // POIs for the printed buildings (LUMINE 1/2, LUMINE EST, NEWoMan, 新宿マルイ 本館/アネックス/メン,
     // 伊勢丹新宿店 本館/メンズ館, 京王百貨店, 高島屋タイムズスクエア, サブナード).
-    const SHOP_COUNT = 595;
+    const SHOP_COUNT = 595 + 15; // plus the recovery batch's shop-page POIs
     // #501: 9 Toei station exits + 28 Metro M08 exits + 4 lifts + 2 escalators (see the WP4 block); the 2 M08 gates are held.
     const WP4_COUNT = 43;
-    expect(pois.length).toBe(OLD_COUNT + ADDED.length + S03_COUNT + SHOP_COUNT + WP4_COUNT);
+    expect(pois.length).toBe(OLD_COUNT + ADDED.length + S03_COUNT + SHOP_COUNT + WP4_COUNT + 3);
     const e27Pois = pois.filter(isE27);
     expect(e27Pois.length).toBe(OLD_COUNT + ADDED.length);
     const bySource = { exit: 6, ticket_gate: 3, platform: 1, elevator: 3, toilet: 3 } as const;
@@ -467,7 +473,7 @@ describe("expected search results (docs/stations/shinjuku/search-expected.md)", 
     expect(strong(query).map((h) => h.poi.id)).toContain(id);
   });
 
-  it.each(["JR新宿", "東京メトロ", "Tokyo Metro", "都営新宿線", "E01", "Yamanote", "3番出口", "Exit 3", "屋根なし"])(
+  it.each(["東京メトロ", "Tokyo Metro", "都営新宿線", "Yamanote", "3番出口", "Exit 3", "屋根なし"])(
     "%s returns no Shinjuku POI claim",
     (query) => {
       expect(strong(query)).toEqual([]);
@@ -483,14 +489,14 @@ describe("expected search results (docs/stations/shinjuku/search-expected.md)", 
       const hits = strong(query);
       expect(hits.length).toBeGreaterThan(0);
       for (const h of hits) {
-        expect(isS03(h.poi) || isShop(h.poi) || isWp4(h.poi), h.poi.id).toBe(true);
+        expect(isS03(h.poi) || isShop(h.poi) || isWp4(h.poi) || isSeparate(h.poi), h.poi.id).toBe(true);
         expect(h.poi.connectorNodeIds, h.poi.id).toEqual([]);
       }
     },
   );
 
-  it("returns nothing at all (not even fuzz) for Yamanote, 都営新宿線 and E01", () => {
-    for (const q of ["Yamanote", "都営新宿線", "E01"]) expect(index.search(q, { limit: 10 })).toEqual([]);
+  it("returns nothing at all (not even fuzz) for Yamanote and 都営新宿線", () => {
+    for (const q of ["Yamanote", "都営新宿線"]) expect(index.search(q, { limit: 10 })).toEqual([]);
   });
 });
 
@@ -742,8 +748,8 @@ describe("merchant shops (#214)", () => {
   const shops = pois.filter(isShop);
   const index = createSearchIndex(bundle);
 
-  it("imports the 583 directory listings and the 12 store POIs as search-only shops", () => {
-    expect(shops.length).toBe(595);
+  it("imports directory listings, store POIs and recovery shops as search-only shops", () => {
+    expect(shops.length).toBe(610);
     for (const p of shops) {
       expect(p.evidence.sourceIds.length, p.id).toBe(1);
       expect(bundle.sources.some((s) => s.id === p.evidence.sourceIds[0]), p.id).toBe(true);
@@ -813,3 +819,17 @@ describe("merchant shops (#214)", () => {
 function isShopSource(id: string): boolean {
   return pois.some((p) => isShop(p) && p.evidence.sourceIds.includes(id));
 }
+
+
+it("finds separate-station connection endpoints without a route", () => {
+  const index = createSearchIndex(bundle);
+  for (const [query, id] of [["西武新宿", "poi:sep-seibu-shinjuku"], ["新宿三丁目", "poi:sep-shinjuku-sanchome"], ["新宿西口", "poi:sep-shinjuku-nishiguchi"], ["E01", "poi:sep-shinjuku-nishiguchi"]]) {
+    const hit = index.search(query!, { limit: 20 }).find((h) => h.poi.id === id);
+    expect(hit, query).toBeDefined();
+    expect(hit!.poi.floorId).toBeNull();
+    expect(hit!.poi.displayPosition).toBeNull();
+    expect(hit!.poi.connectorNodeIds).toEqual([]);
+    expect(hit!.routable).toBe(false);
+  }
+  expect(index.search("JR新宿", { limit: 20 }).filter((h) => isSeparate(h.poi))).toEqual([]);
+});

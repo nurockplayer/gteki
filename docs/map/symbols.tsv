@@ -928,7 +928,7 @@ PLAYER_RADIUS	const	stations/shinjuku/app/src/player.ts	146
 Player	class	stations/shinjuku/app/src/player.ts	149
 SearchOnlyRole	type	stations/shinjuku/app/src/search-card.ts	12
 searchRowSub	function	stations/shinjuku/app/src/search-card.ts	20
-searchOnlyText	function	stations/shinjuku/app/src/search-card.ts	31
+searchOnlyText	function	stations/shinjuku/app/src/search-card.ts	33
 LANE_CAMERA	const	stations/shinjuku/app/src/spawn-view.ts	5
 followCameraEnvironment	function	stations/shinjuku/app/src/spawn-view.ts	8
 spawnView	function	stations/shinjuku/app/src/spawn-view.ts	18

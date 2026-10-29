@@ -11,6 +11,16 @@ const { bundle, issues } = loadShinjukuBundle();
 const search = createSearchIndex(bundle).search;
 
 describe("Department store brand search (#419)", () => {
+  it("finds a recovery shop and excludes the removed candidates", () => {
+    expect(search("ゼッテリア")).toEqual(expect.arrayContaining([
+      expect.objectContaining({ poi: expect.objectContaining({ id: "shop-sjk-rec-001", floorId: null }) }),
+    ]));
+    const ids = new Set(bundle.pois.map((poi) => poi.id));
+    for (const id of ["shop-sjk-rec-005", "shop-sjk-rec-006", "shop-sjk-rec-015"]) {
+      expect(ids.has(id)).toBe(false);
+    }
+  });
+
   it("loads the brand directories with no validation errors", () => {
     expect(issues.filter((i) => i.level === "error")).toEqual([]);
     expect(bundle.tenants).toHaveLength(875);

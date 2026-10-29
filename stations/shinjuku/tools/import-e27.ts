@@ -1268,7 +1268,7 @@ if (usedApprox.size !== s03ApproxById.size) throw new Error(`S03 positions: ${s0
 // LUMINE 2, LUMINE EST, NEWoMan and the three 新宿マルイ buildings. It cites the LUMINE floor-guide sources the
 // batch files already registered, so it declares only its own Marui source; the check below catches a typo.
 type MerchantFile = { sources: Source[]; pois: Poi[] };
-const MERCHANT_POI_FILES = ["shinjuku-merchants-batch1.json", "shinjuku-merchants-batch2.json", "shinjuku-odakyu-dept.json", "shinjuku-dept-stores.json"];
+const MERCHANT_POI_FILES = ["shinjuku-merchants-batch1.json", "shinjuku-merchants-batch2.json", "shinjuku-odakyu-dept.json", "shinjuku-dept-stores.json", "shinjuku-recovery-batch1.json"];
 // A file may cite sources another file registered only when the pair is listed here, so a POI cannot
 // borrow an unrelated merchant source and pass the check below. The store POIs reuse the LUMINE /
 // NEWoMan floor-guide sources that batch2 already declares.
@@ -1375,6 +1375,15 @@ for (const raw of wp4Imported) {
     evidence: raw.evidence,
     notes: raw.notes,
   });
+}
+
+// Separate-station connection facts (#603): search only, with no geometry or route.
+const separate = JSON.parse(readFileSync(join(HERE, "../../../docs/research/lines/sjk-separate-stations-pois.json"), "utf8")) as { sources: Source[]; pois: Poi[] };
+const SEPARATE_SOURCE_IDS = new Set(separate.sources.map((s) => s.id));
+for (const source of separate.sources) sources.push(source);
+for (const raw of separate.pois) {
+  if (raw.floorId !== null || raw.displayPosition !== null || raw.paid !== null || raw.connectorNodeIds.length > 0) throw new Error(`Separate station import: ${raw.id} has location, paid status or connectors`);
+  pois.push(raw);
 }
 
 // ---------------------------------------------------------------- line-code and English line-name aliases
@@ -1570,7 +1579,7 @@ const plan = {
   note: "Render-only geometry derived from 構内地図データ（都営地下鉄大江戸線 新宿駅）（国土交通省）, published under the Owner's #16 override; licence basis unconfirmed. Not routing truth. Heights are symbolic.",
   // S03 (#411), the merchant sources (#214), the WP4 line sources (#501) and the kit catalog (nothing in the plan)
   // supply POIs or art only, nothing in the plan, so their credit is not listed here.
-  attribution: sources.filter((s) => s.id !== S03_SOURCE_ID && s.id !== LINE_ALIAS_SOURCE && s.id !== SRC_CATALOG && !MERCHANT_SOURCE_IDS.has(s.id) && !WP4_SOURCE_IDS.has(s.id)).map((s) => s.attribution),
+  attribution: sources.filter((s) => s.id !== S03_SOURCE_ID && s.id !== LINE_ALIAS_SOURCE && s.id !== SRC_CATALOG && !MERCHANT_SOURCE_IDS.has(s.id) && !WP4_SOURCE_IDS.has(s.id) && !SEPARATE_SOURCE_IDS.has(s.id)).map((s) => s.attribution),
   levels: mapLevels.map((ml) => {
     const nwdOrd = ml.ordinal === -5 ? -4.5 : ml.ordinal;
     return {
