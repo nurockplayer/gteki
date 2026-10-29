@@ -22,6 +22,7 @@ describe("vertical connector scope", () => {
 
 import * as THREE from "three";
 import { buildConnectors, buildElevator, buildEscalator, buildStairs, withinGreyboxBudget } from "./greyboxConnectors.ts";
+import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 
 describe("connector geometry", () => {
   const a = new THREE.Vector3(0, 0, 0), b = new THREE.Vector3(5.2, 3, 0);
@@ -130,4 +131,33 @@ it("drops only connector soffits before reporting a combined over-budget result"
   expect(result.stats.triangles).toBeLessThan(before);
   expect(result.stats.overBudget).toMatch(/exceeds 150000/);
   expect(result.walkable.length).toBeGreaterThan(0);
+});
+
+it("builds a bent stair edge along both legs with a flat turning landing", () => {
+  const station = createSyntheticBundle([syntheticEdge("bent", "start", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: [{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: 4, y: 4, z: 4 }] })]);
+  const upper = station.nodes.find((n) => n.id === "upper")!;
+  upper.position = { x: 4, y: 4, z: 4 };
+  const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+  const support = result.walkable[0] as THREE.Mesh;
+  support.updateMatrixWorld(true);
+  const ray = new THREE.Raycaster(new THREE.Vector3(4, 2.1, 0), new THREE.Vector3(0, -1, 0), 0, 0.2);
+  expect(ray.intersectObject(support).some((hit) => Math.abs(hit.point.y - 2) < 0.001)).toBe(true);
+  const pos = support.geometry.getAttribute("position");
+  let first = false, second = false;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), z = pos.getZ(i), y = pos.getY(i);
+    const inFirst = x >= -0.751 && x <= 4.751 && Math.abs(z) <= 0.751;
+    const inSecond = Math.abs(x - 4) <= 0.751 && z <= 0.751 && z >= -4.751;
+    expect(inFirst || inSecond).toBe(true);
+    if (x < 3 && y > 0) first = true;
+    if (z < -1 && y > 2) second = true;
+  }
+  expect(first && second).toBe(true);
+});
+
+it("marks a bent escalator approximate once per edge", () => {
+  const station = createSyntheticBundle([syntheticEdge("bent", "start", "upper", { mode: "escalator", attributes: { sceneGap: true }, geometry: [{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: 4, y: 4, z: 4 }] })]);
+  station.nodes.find((n) => n.id === "upper")!.position = { x: 4, y: 4, z: 4 };
+  const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+  expect(result.stats.approximateFits).toBe(1);
 });

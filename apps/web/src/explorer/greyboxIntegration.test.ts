@@ -37,6 +37,40 @@ function fixture() {
 }
 
 describe("greybox station integration", () => {
+  it("carries a stationary walking avatar on the car floor between landings", async () => {
+    const { state, loaded } = fixture();
+    loaded.bundle = createSyntheticBundle([syntheticEdge("lift", "a", "upper", { mode: "elevator", attributes: { sceneGap: true } })]);
+    await state.loadStation(loaded, createRouter(loaded.bundle));
+    const car = state.connectors.cars[0];
+    state.mode = "walk"; state.pos.set(10, 0, 0);
+    for (let i = 0; i < 200; i++) {
+      if (i === 15) state.input.virtualKeys.add("KeyW");
+      if (i === 40) state.input.virtualKeys.delete("KeyW");
+      state.stepWalk(0.05); state.updateElevatorCars(0.05);
+      expect(state.pos.y).toBeCloseTo(car.mesh.position.y, 6);
+      expect(state.pos.x).toBeCloseTo(10);
+    }
+    expect(state.pos.y).toBeCloseTo(4);
+    expect(state.liftRide.status).toBe("arrived");
+  });
+
+  it("continues in the boarding direction after re-arming at an intermediate landing", async () => {
+    const { state, loaded } = fixture();
+    loaded.bundle = createSyntheticBundle([
+      syntheticEdge("lift-1", "a", "upper", { mode: "elevator", attributes: { sceneGap: true } }),
+      syntheticEdge("lift-2", "upper", "upper-2", { mode: "elevator", attributes: { sceneGap: true } }),
+    ]);
+    loaded.bundle.nodes.find((n) => n.id === "upper-2")!.position = { x: 10, y: 0, z: 8 };
+    await state.loadStation(loaded, createRouter(loaded.bundle));
+    expect(state.connectors.cars).toHaveLength(1);
+    state.mode = "walk"; state.pos.set(10, 0, 0);
+    for (let i = 0; i < 100; i++) state.updateElevatorCars(0.05);
+    expect(state.pos.y).toBeCloseTo(4);
+    state.input.virtualKeys.add("KeyW"); state.updateElevatorCars(0.05); state.input.virtualKeys.delete("KeyW");
+    for (let i = 0; i < 100; i++) state.updateElevatorCars(0.05);
+    expect(state.pos.y).toBeCloseTo(8);
+  });
+
   it("loads vertical connectors and tracks the elevator car in guide mode", async () => {
     const { state, loaded } = fixture();
     loaded.bundle = createSyntheticBundle([

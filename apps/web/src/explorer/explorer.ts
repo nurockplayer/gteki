@@ -230,6 +230,8 @@ export class Explorer {
   private stationScene: StationScene | null = null;
   private greybox: ReturnType<typeof buildGreybox> | null = null;
   private connectors: ReturnType<typeof buildConnectors> | null = null;
+  private liftRide: { edgeId: string; status: "waiting" | "riding" | "arrived"; elapsed: number; target: number; direction: 1 | -1 } | null = null;
+  private liftDirection: 1 | -1 = 1;
   private greyboxOpenings: Box[] = [];
   private sceneColliderTargets = new Set<THREE.Object3D>();
   private greyboxSegments: GreyboxSegment[] = [];
@@ -457,10 +459,10 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { greybox: (GreyboxStats & { connectors: { escalator: number; stairs: number; elevator: number } }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
+  sceneInfo(): { greybox: (GreyboxStats & { connectors: { escalator: number; stairs: number; elevator: number }; rideState: { edgeId: string; status: "waiting" | "riding" | "arrived"; elapsed: number; target: number; direction: 1 | -1 } | null }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
-      greybox: this.greybox ? { ...this.greybox.stats, overBudget: this.connectors?.stats.overBudget ?? this.greybox.stats.overBudget, connectors: this.connectors?.stats.connectors ?? { escalator: 0, stairs: 0, elevator: 0 } } : null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
+      greybox: this.greybox ? { ...this.greybox.stats, overBudget: this.connectors?.stats.overBudget ?? this.greybox.stats.overBudget, connectors: this.connectors?.stats.connectors ?? { escalator: 0, stairs: 0, elevator: 0 }, rideState: this.liftRide ?? null } : null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
       walkable: this.walkable.length, colliders: this.colliders.length, cameraBlockers: this.cameraBlockers.length, seeThrough: this.seeThrough.length,
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
       bakedAo: { ...this.bakedAo }, assets: this.loadedAssets.map((a) => ({ ...a })),
@@ -1030,6 +1032,7 @@ export class Explorer {
       for (const material of materials) material.dispose();
       this.connectors = null;
     }
+    this.liftRide = null;
     this.greyboxOpenings = [];
     this.sceneColliderTargets = new Set();
     this.greyboxSegments = [];
@@ -2124,14 +2127,42 @@ export class Explorer {
     const guide = this.guide;
     const sample = this.mode === "guide" && guide && guide.s < guide.cum.at(-1)! ? samplePolyline(guide.pts, guide.cum, guide.s) : null;
     const edgeId = sample && guide ? guide.edgeIds?.[sample.segment + 1] : undefined;
-    for (const car of this.connectors?.cars ?? []) {
-      const onGuide = this.mode === "guide" && edgeId === car.edgeId;
-      const onWalk = this.mode === "walk" && Math.hypot(this.pos.x - car.mesh.position.x, this.pos.z - car.mesh.position.z) <= 1 && this.pos.y >= car.zLow && this.pos.y <= car.zHigh;
-      car.mesh.position.y = onGuide || onWalk ? THREE.MathUtils.clamp(this.pos.y, car.zLow, car.zHigh) : THREE.MathUtils.damp(car.mesh.position.y, car.zLow, 5, dt);
+    const movement = this.mode === "walk" ? this.input.move() : { x: 0, y: 0 };
+    const moving = movement.x !== 0 || movement.y !== 0;
+    const cars = this.connectors?.cars ?? [];
+    if (this.mode !== "walk") this.liftRide = null;
+    for (const car of cars) {
+      const dx = this.pos.x - car.mesh.position.x, dz = this.pos.z - car.mesh.position.z;
+      const c = Math.cos(car.mesh.rotation.y), s = Math.sin(car.mesh.rotation.y);
+      const inside = Math.abs(c * dx - s * dz) <= 0.8 && Math.abs(s * dx + c * dz) <= 0.75;
+      const onFloor = inside && Math.abs(this.pos.y - car.mesh.position.y) <= 0.08;
+      let ride = this.liftRide;
+      if (this.mode === "walk" && ride?.edgeId === car.edgeId && ride.status === "riding") {
+        const next = THREE.MathUtils.clamp(car.mesh.position.y + ride.direction * 1.5 * dt, Math.min(car.mesh.position.y, ride.target), Math.max(car.mesh.position.y, ride.target));
+        car.mesh.position.y = next; this.pos.y = next;
+        if (Math.abs(next - ride.target) < 1e-6) { ride.status = "arrived"; this.liftDirection = ride.direction; }
+        car.mesh.updateMatrixWorld(true);
+        continue;
+      }
+      if (this.mode === "walk" && ride?.edgeId === car.edgeId && ride.status === "arrived" && (moving || !onFloor)) { this.liftRide = ride = null; }
+      const landingIndex = car.landings.findIndex((y) => Math.abs(y - car.mesh.position.y) < 0.08);
+      if (this.mode === "walk" && !ride && onFloor && !moving && landingIndex >= 0) {
+        const direction: 1 | -1 = landingIndex === 0 ? 1 : landingIndex === car.landings.length - 1 ? -1 : (this.liftDirection ?? 1);
+        const target = car.landings[landingIndex + direction];
+        if (target !== undefined) this.liftRide = ride = { edgeId: car.edgeId, status: "waiting", elapsed: 0, target, direction };
+      }
+      if (ride?.edgeId === car.edgeId && ride.status === "waiting") {
+        if (!onFloor || moving || this.mode !== "walk") this.liftRide = null;
+        else { ride.elapsed += dt; if (ride.elapsed >= 0.5) ride.status = "riding"; }
+      }
+      const onGuide = this.mode === "guide" && edgeId !== undefined && car.edgeIds.includes(edgeId);
+      if (onGuide) car.mesh.position.y = THREE.MathUtils.clamp(this.pos.y, car.zLow, car.zHigh);
+      else if (!(this.mode === "walk" && onFloor)) car.mesh.position.y = THREE.MathUtils.damp(car.mesh.position.y, car.zLow, 5, dt);
     }
   }
 
   private stepWalk(dt: number): void {
+    if (this.liftRide?.status === "riding") return;
     const look = this.input.consumeLook();
     this.yaw -= look.dx * 0.0042;
     this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, LOOK_PITCH.min, LOOK_PITCH.max);

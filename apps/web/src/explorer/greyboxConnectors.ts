@@ -192,7 +192,7 @@ function meshFor(parts: readonly ConnectorPart[], material: THREE.Material): THR
 /** Build runtime-only batches for missing vertical transport. */
 export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge) => boolean, scope: ConnectorScope, tier: "high" | "low") {
   const root = new THREE.Group(), walkable: THREE.Object3D[] = [], colliders: THREE.Object3D[] = [];
-  const cars: { edgeId: string; mesh: THREE.Mesh; zLow: number; zHigh: number }[] = [];
+  const cars: { edgeId: string; edgeIds: string[]; mesh: THREE.Mesh; zLow: number; zHigh: number; landings: number[] }[] = [];
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
   const batches = new Map<string, ConnectorPart[]>();
@@ -205,11 +205,41 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   for (const edge of unmodelledVerticalEdges(bundle, traversable, scope.hasFloor, scope.nearMesh)) {
     const points = edgePoints(bundle, edge, nodes, floors), a = points[0]!, b = points.at(-1)!;
     const facing = a.clone().sub(b); facing.y = 0;
-    const parts = edge.mode === "stairs" ? buildStairs(a, b, 1.5, tier) : edge.mode === "escalator" ? buildEscalator(a, b, tier) : buildElevator(a, b, facing, tier);
+    const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
+    const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
+    let bentEscalator = false;
+    for (let i = 1; i + 1 < points.length; i++) {
+      const before = points[i]!.clone().sub(points[i - 1]!); before.y = 0;
+      const after = points[i + 1]!.clone().sub(points[i]!); after.y = 0;
+      if (before.lengthSq() && after.lengthSq() && before.angleTo(after) > Math.PI / 18) bentEscalator = true;
+    }
+    const parts: ConnectorPart[] = [];
+    let edgeOmitted = 0;
+    if (edge.mode === "elevator") parts.push(...buildElevator(a, b, facing, tier));
+    else for (let i = 1; i < points.length; i++) {
+      const from = points[i - 1]!, to = points[i]!;
+      if (Math.abs(to.y - from.y) > 1e-6) {
+        const flight = edge.mode === "stairs" ? buildStairs(from, to, width, tier) : buildEscalator(from, to, tier);
+        edgeOmitted += flight[0]?.userData?.omittedLandings ?? 0;
+        parts.push(...flight);
+      }
+      else {
+        const f = frame(from, to);
+        box(parts, edge.mode === "stairs" ? "tread" : "escStep", f.matrix, f.length / 2, -0.04, 0, f.length, 0.08, edge.mode === "stairs" ? width : 1.2, "walkable");
+      }
+      const incoming = to.clone().sub(from); incoming.y = 0;
+      const outgoing = i < points.length - 1 ? points[i + 1]!.clone().sub(to) : new THREE.Vector3(); outgoing.y = 0;
+      if (incoming.lengthSq() && outgoing.lengthSq() && incoming.angleTo(outgoing) > 1e-6) {
+        const at = to.clone();
+        const rotation = new THREE.Matrix4().makeRotationY(Math.atan2(-(to.z - from.z), to.x - from.x)).setPosition(at);
+        box(parts, edge.mode === "stairs" ? "tread" : "escStep", rotation, 0, -0.04, 0, edge.mode === "stairs" ? width : 1.2, 0.08, edge.mode === "stairs" ? width : 1.2, "walkable");
+      }
+    }
+    if (edge.mode === "escalator" && bentEscalator) for (const p of parts) p.userData = { ...p.userData, fit: "approximate" };
     for (const part of parts) part.edgeId = edge.id;
     if (edge.mode === "stairs" || edge.mode === "escalator" || edge.mode === "elevator") counts[edge.mode]++;
-    if (parts[0]?.userData?.fit === "approximate") approximateFits++;
-    omittedLandings += parts[0]?.userData?.omittedLandings ?? 0;
+    if (parts.some((p) => p.userData?.fit === "approximate")) approximateFits++;
+    omittedLandings += edgeOmitted;
     const key = tier === "low" ? "all" : nodes.get(edge.from)?.floorId ?? "";
     const batch = batches.get(key) ?? []; batch.push(...parts.filter((p) => p.role !== "car")); batches.set(key, batch);
     const support = parts.filter((p) => p.role === "walkable"), walls = parts.filter((p) => p.role === "collider");
@@ -217,13 +247,20 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     if (walls.length) colliders.push(meshFor(walls, physicalMaterial));
     const car = parts.filter((p) => p.role === "car");
     if (car.length) {
+      const low = a.y <= b.y ? a : b;
+      const existing = cars.find((c) => Math.hypot(c.mesh.position.x - low.x, c.mesh.position.z - low.z) < 0.1);
+      if (existing) {
+        existing.edgeIds.push(edge.id); existing.landings = [...new Set([...existing.landings, a.y, b.y])].sort((x, y) => x - y);
+        existing.zLow = existing.landings[0]!; existing.zHigh = existing.landings.at(-1)!; existing.mesh.position.y = existing.zLow;
+        continue;
+      }
       const mesh = meshFor(car, shellMaterial), f = frame(a, b);
       mesh.geometry.clearGroups();
       let start = 0;
       for (const item of car) { const size = item.position.length / 3; mesh.geometry.addGroup(start, size, item.material === "light" ? 1 : 0); start += size; }
       mesh.material = [shellMaterial, lightMaterial];
       mesh.position.copy(f.low); mesh.rotation.y = Math.hypot(facing.x, facing.z) > 1e-9 ? Math.atan2(facing.z, -facing.x) : 0;
-      root.add(mesh); cars.push({ edgeId: edge.id, mesh, zLow: f.low.y, zHigh: f.high.y });
+      root.add(mesh); cars.push({ edgeId: edge.id, edgeIds: [edge.id], mesh, zLow: f.low.y, zHigh: f.high.y, landings: [f.low.y, f.high.y] });
       const floor = meshFor(car.filter((p) => p.material === "tread"), physicalMaterial);
       floor.visible = false; mesh.add(floor); walkable.push(floor);
     }
