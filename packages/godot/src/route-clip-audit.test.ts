@@ -33,4 +33,13 @@ describe("route clip audit", () => {
   it("passes a lift ride over a low scene wall", () => {
     expect(auditPolyline(probe, line([-5, 2.8, 0], [-5, 3.2, 10]), { skipInteriorFloor: true }).wallHits).toBe(0);
   });
+  it("returns optional sample detail without changing elevator audit counts", () => {
+    const points = line([0.2, 0, 0], [12.2, 0, 0]);
+    const detail: import("./route-clip-audit.ts").SampleDetail[] = [];
+    const withDetail = auditPolyline(probe, points, { skipInteriorFloor: true, detail });
+    expect(withDetail).toEqual(auditPolyline(probe, points, { skipInteriorFloor: true }));
+    expect(detail).toHaveLength(withDetail.samples);
+    expect(detail.some(d => d.wallBefore && d.floor === "ok")).toBe(true);
+    expect(detail.some(d => d.floor === "none")).toBe(true);
+  });
 });

@@ -8,7 +8,7 @@ import { enuToRenderer } from "@gteki/geo";
 import { nodeDisplayZ, routePolyline, type PolylinePoint, type RouteResult } from "@gteki/navigation";
 import { parseStationFiles, type Edge, type Node, type StationBundle } from "@gteki/schema";
 import { castAll } from "../../../apps/web/src/explorer/raycast.ts";
-import { auditPolyline, loadScene, sceneProbe, violations, type SceneProbe } from "./route-clip-audit.ts";
+import { auditPolyline, loadScene, sceneProbe, violations, type SampleDetail, type SceneProbe } from "./route-clip-audit.ts";
 
 type Point = { x: number; y: number; z: number };
 const point = (p: Point): PolylinePoint => ({ ...p, zKnown: false, stepIndex: 0, floorId: "" });
@@ -28,7 +28,7 @@ function drawn(bundle: StationBundle, edge: Edge): PolylinePoint[] {
 
 /** Drape selected edges without mutating the input bundle. */
 export function drapeEdges(probe: SceneProbe, bundle: StationBundle, edgeIds: Set<string>, opts: { maxCells?: number; nodeIds?: Set<string> } = {}): {
-  nodes: Map<string, number>; geometry: Map<string, Point[]>; unresolved: { edgeId: string; reason: string }[];
+  nodes: Map<string, number>; geometry: Map<string, Point[]>; unresolved: { edgeId: string; reason: string }[]; sceneGaps: Map<string, boolean>;
 } {
   const selected = bundle.edges.filter(e => edgeIds.has(e.id)).sort((a, b) => a.id.localeCompare(b.id));
   const nodes = new Map<string, number>(), geometry = new Map<string, Point[]>(), unresolved: { edgeId: string; reason: string }[] = [];
@@ -90,7 +90,19 @@ export function drapeEdges(probe: SceneProbe, bundle: StationBundle, edgeIds: Se
     const count = violations(auditPolyline(probe, simplified.map(point)));
     if (count) unresolved.push({ edgeId: edge.id, reason: `still ${count} violations` }); else geometry.set(edge.id, simplified);
   }
-  return { nodes, geometry, unresolved };
+  const sceneGaps = new Map<string, boolean>();
+  for (const edge of selected) {
+    if (edge.attributes?.sceneGapReason !== "drape-unresolved" && (edge.attributes?.sceneGap !== undefined || edge.attributes?.sceneGapReason !== undefined)) continue;
+    const finalEdge = geometry.has(edge.id) ? { ...edge, geometry: geometry.get(edge.id)! } : edge;
+    const finalBundle = { ...updated, edges: updated.edges.map(e => e.id === edge.id ? finalEdge : e) };
+    const detail: SampleDetail[] = [];
+    const audit = auditPolyline(probe, drawn(finalBundle, finalEdge), { skipInteriorFloor: edge.mode === "elevator", detail });
+    const interiorWall = detail.some((sample, i) => sample.wallBefore && !detail.slice(Math.max(0, i - 2), i + 2).some(d => d.floor === "none"));
+    const flag = audit.offFloor > 0 || interiorWall;
+    // An earlier automatic flag is cleared once no in-model clip remains (no-floor samples alone draw dashed anyway).
+    if (flag || edge.attributes?.sceneGapReason === "drape-unresolved") sceneGaps.set(edge.id, flag);
+  }
+  return { nodes, geometry, unresolved, sceneGaps };
 }
 
 /** Update a successfully draped edge and retain its previous route length. */
@@ -145,9 +157,14 @@ async function main(): Promise<void> {
     if (!parsed.ok) throw new Error(`overlay failed validation: ${JSON.stringify(parsed.issues).slice(0, 500)}`);
     const result = drapeEdges(sceneProbe(await loadScene(station, parsed.bundle)), parsed.bundle, new Set(doc.edges.map(e => e.id)), { nodeIds: new Set(doc.nodes.map(n => n.id)) });
     for (const n of doc.nodes) if (result.nodes.has(n.id)) n.renderZ = result.nodes.get(n.id)!;
-    for (const e of doc.edges) { const geometry = result.geometry.get(e.id); if (!geometry) continue; applyDrapeGeometry(e, geometry); }
+    for (const e of doc.edges) {
+      const geometry = result.geometry.get(e.id); if (geometry) applyDrapeGeometry(e, geometry);
+      const flag = result.sceneGaps.get(e.id);
+      if (flag === true) e.attributes = { ...e.attributes, sceneGap: true, sceneGapReason: "drape-unresolved" };
+      else if (flag === false && e.attributes) { delete e.attributes.sceneGap; delete e.attributes.sceneGapReason; }
+    }
     fs.mkdirSync(path.dirname(output), { recursive: true }); fs.writeFileSync(output, `${JSON.stringify(doc, null, 2)}\n`);
-    console.log(`nodes ${result.nodes.size}, edges ${result.geometry.size}, unresolved ${result.unresolved.length}`);
+    console.log(`nodes ${result.nodes.size}, edges ${result.geometry.size}, unresolved ${result.unresolved.length}, sceneGap flagged ${[...result.sceneGaps.values()].filter(Boolean).length}`);
     for (const u of result.unresolved) console.log(`${u.edgeId}: ${u.reason}`);
   } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
 }
