@@ -7,7 +7,7 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { LightProbeGenerator } from "three/examples/jsm/lights/LightProbeGenerator.js";
 import { ASSET_SCHEME, fencedUrlResolver, stationDir } from "./assetFence.ts";
 import { enuToRenderer } from "@gteki/geo";
-import type { Router, PolylinePoint } from "@gteki/navigation";
+import type { Router, PolylinePoint, RouteStep } from "@gteki/navigation";
 import { DEFAULT_PROFILE, nodeDisplayZ } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
@@ -18,6 +18,7 @@ import { R, chevronTexture, dashTexture, ribbonGeometry } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { buildGreybox, splitWallsAtOpenings, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
 import { greyboxPathSegments, greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
+import { darkSampleDistances, routeGroundCounts, sceneMeshNear } from "./routeGroundQa.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
@@ -1319,6 +1320,65 @@ export class Explorer {
     return hit ? hit.point.y : null;
   }
 
+  /** QA for the current route: the same ground ray used by the walker, plus connector and image checks. */
+  routeGroundCheck(polyline: readonly PolylinePoint[], steps: readonly RouteStep[], guideStopsM: readonly number[] = []) {
+    const roots = [this.stationScene?.root, this.greybox?.root].filter((root): root is THREE.Object3D => Boolean(root));
+    const counts = routeGroundCounts(polyline, (p) => this.groundAt(p.x, p.y + DEFAULT_GROUND.stepUp + 0.05, p.z, DEFAULT_GROUND.stepUp + DEFAULT_GROUND.stepDown + 0.1), steps, this.station?.bundle ?? null, (p, radius) => sceneMeshNear(roots, p, radius));
+    return { ...counts, darkShare: async (stops?: readonly number[]): Promise<number> => {
+      const points = polyline.map((p) => R(p.x, p.y, p.z));
+      if (points.length < 2) return 0;
+      const cum = cumulativeLengths(points), total = cum.at(-1)!;
+      const positions = darkSampleDistances(total, stops ?? guideStopsM);
+      const cameraPosition = this.camera.position.clone(), cameraRotation = this.camera.quaternion.clone(), cameraFov = this.camera.fov;
+      const avatarPosition = this.avatar.position.clone(), avatarVisible = this.avatar.visible;
+      const gl = this.renderer.getContext(), width = gl.drawingBufferWidth, height = gl.drawingBufferHeight;
+      const x = Math.floor(width * 0.2), y = Math.floor(height * 0.2), w = Math.max(1, Math.floor(width * 0.6)), h = Math.max(1, Math.floor(height * 0.6));
+      const pixels = new Uint8Array(w * h * 4);
+      let dark = 0, count = 0;
+      const overview = this.mode === "overview";
+      const xray = this.routeGroup.getObjectByName("route-xray");
+      const xrayVisible = xray?.visible;
+      try {
+        if (overview) {
+          this.overviewLook.set(this.scene, this.world, false);
+          this.graph?.setXray(false); this.routeLines?.setXray(false);
+          if (xray) xray.visible = false;
+        }
+        this.avatar.visible = true;
+        this.camera.fov = FOV.follow; this.camera.updateProjectionMatrix();
+        for (const distance of positions) {
+          const p = samplePolyline(points, cum, distance);
+          const head = new THREE.Vector3(p.x, p.y + EYE, p.z);
+          const direction = p.tx || p.tz ? new THREE.Vector3(p.tx, 0, p.tz).normalize() : new THREE.Vector3(0, 0, -1);
+          this.avatar.position.set(p.x, p.y, p.z);
+          const cameraOffset = direction.clone().multiplyScalar(-this.camDistance).add(new THREE.Vector3(0, 0.3, 0));
+          const length = cameraOffset.length();
+          this.ray.set(head, cameraOffset.clone().divideScalar(length)); this.ray.far = length;
+          const hit = castCamera(this.ray, this.cameraTargets, this.cameraSides)[0];
+          this.camera.position.copy(head).addScaledVector(cameraOffset, hit ? Math.max(0, hit.distance - FOLLOW.clearance) / length : 1);
+          this.camera.lookAt(head.clone().add(direction)); this.camera.updateMatrixWorld();
+          if (this.composer) this.composer.render(0); else this.renderer.render(this.scene, this.camera);
+          gl.readPixels(x, y, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+          for (let i = 0; i < pixels.length; i += 4) {
+            if ((0.2126 * pixels[i]! + 0.7152 * pixels[i + 1]! + 0.0722 * pixels[i + 2]!) / 255 < 0.06) dark++;
+            count++;
+          }
+        }
+      } finally {
+        if (overview) {
+          this.overviewLook.set(this.scene, this.world, true);
+          this.graph?.setXray(true); this.routeLines?.setXray(true);
+          if (xray && xrayVisible !== undefined) xray.visible = xrayVisible;
+        }
+        this.avatar.position.copy(avatarPosition); this.avatar.visible = avatarVisible;
+        this.camera.position.copy(cameraPosition); this.camera.quaternion.copy(cameraRotation); this.camera.fov = cameraFov;
+        this.camera.updateProjectionMatrix(); this.camera.updateMatrixWorld();
+        if (this.composer) this.composer.render(0); else this.renderer.render(this.scene, this.camera);
+      }
+      return count ? dark / count : 0;
+    } };
+  }
+
   /** The collider surface that stops the walker's body going from `from` to `to`, or null when the move is free. */
   private blockedByColliders(from: THREE.Vector3, to: THREE.Vector3): BodyBlock | null {
     if (this.colliders.length === 0) return null;
@@ -1412,7 +1472,7 @@ export class Explorer {
   }
 
   private updateGreyboxLegend(): void {
-    const visible = Boolean(this.routeGroup.userData.greybox) || (this.mode === "walk" && nearGreybox(this.pos, this.greyboxSegments, 15));
+    const visible = Boolean(this.routeGroup.userData.greybox) || (this.mode === "overview" && this.greyboxSegments.length > 0) || (this.mode === "walk" && nearGreybox(this.pos, this.greyboxSegments, 15));
     if (visible !== this.greyboxLegendVisible) {
       this.greyboxLegendVisible = visible;
       this.events.onGreyboxLegend?.(visible);

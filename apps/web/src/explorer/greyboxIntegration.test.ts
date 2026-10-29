@@ -5,6 +5,7 @@ import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navig
 import { Explorer } from "./explorer.ts";
 import { greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox } from "./greyboxScene.ts";
 import { strings } from "../i18n.ts";
+import { darkSampleDistances } from "./routeGroundQa.ts";
 
 const bundle = () => createSyntheticBundle([syntheticEdge("hall", "start", "a")]);
 
@@ -42,6 +43,10 @@ describe("greybox station integration", () => {
     expect(state.groundTargets).toContain(state.greybox.walkable[0]);
     expect(state.colliderTargets).toContain(state.greybox.colliders[0]);
     expect(state.groundAt(4, 0.4, 0, 1)).toBeCloseTo(0);
+    const point = (x: number, y: number) => ({ x, y, z: 0, zKnown: true, stepIndex: 0, floorId: "concourse" });
+    const vertical = [{ mode: "stairs", fromNodeId: "isolated", toNodeId: "upper" }];
+    expect(state.routeGroundCheck([point(0, 0), point(10, 0)], vertical)).toMatchObject({ samples: 21, noFloor: 0, verticalWithoutConnector: 1 });
+    expect(state.routeGroundCheck([point(0, 8), point(10, 8)], [])).toMatchObject({ samples: 21, noFloor: 21, verticalWithoutConnector: 0 });
     const result = state.walkPath([{ x: 5, z: 0 }], { maxSeconds: 10 });
     expect(result).toMatchObject({ done: true, stuck: false });
     expect(state.pos.x).toBeGreaterThan(4.5);
@@ -60,6 +65,33 @@ describe("greybox station integration", () => {
     const box = { center: new THREE.Vector3(2, 0, 0), along: new THREE.Vector3(1, 0, 0), across: new THREE.Vector3(0, 0, 1), width: 2, depth: 0.6, height: 2.3 };
     expect(insideGreyboxOpening(new THREE.Vector3(2, 1, 0), box)).toBe(true);
     expect(insideGreyboxOpening(new THREE.Vector3(2, 1, 2), box)).toBe(false);
+  });
+
+  it("samples dark share with a test renderer and restores the camera", async () => {
+    const { state, loaded } = fixture();
+    await state.loadStation(loaded, createRouter(loaded.bundle));
+    const readPixels = vi.fn((_x, _y, _w, _h, _format, _type, pixels: Uint8Array) => pixels.fill(255));
+    state.renderer = { getContext: () => ({ drawingBufferWidth: 10, drawingBufferHeight: 10, RGBA: 6408, UNSIGNED_BYTE: 5121, readPixels }), render: vi.fn() };
+    state.camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+    state.camera.position.set(20, 10, 5);
+    state.avatar = new THREE.Group(); state.avatar.position.set(1, 0, 0);
+    state.composer = null;
+    state.guideAllStops = [];
+    const route = [{ x: 0, y: 0, z: 0, zKnown: true, stepIndex: -1, floorId: "concourse" }, { x: 10, y: 0, z: 0, zKnown: true, stepIndex: 0, floorId: "concourse" }];
+    const share = await state.routeGroundCheck(route, []).darkShare();
+    expect(share).toBeGreaterThanOrEqual(0);
+    expect(share).toBeLessThanOrEqual(1);
+    expect(readPixels).toHaveBeenCalledTimes(2);
+    expect(state.camera.position.toArray()).toEqual([20, 10, 5]);
+    expect(state.avatar.position.toArray()).toEqual([1, 0, 0]);
+  });
+
+  it("retains late guide stops within the 40-frame cap", () => {
+    const samples = darkSampleDistances(500, [5, 495, 500]);
+    expect(samples).toHaveLength(40);
+    expect(samples).toEqual(expect.arrayContaining([5, 495, 500]));
+    expect(samples).toContain(0);
+    expect(() => darkSampleDistances(500, Array.from({ length: 41 }, (_, i) => i))).toThrow(RangeError);
   });
 
   it("detects a route crossing and walk proximity in 3D", () => {
@@ -87,6 +119,9 @@ describe("greybox station integration", () => {
     state.pos.set(5, 0, 17);
     state.updateGreyboxLegend();
     expect(notify).toHaveBeenLastCalledWith(false);
+    state.mode = "overview";
+    state.updateGreyboxLegend();
+    expect(notify).toHaveBeenLastCalledWith(true);
     expect(strings("ja").greyboxLegend).toBe("示意，非實測");
     expect(strings("en").greyboxLegend).toBe("Approximate, not surveyed");
   });

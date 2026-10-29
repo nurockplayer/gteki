@@ -1,6 +1,6 @@
 import type { Edge, StationBundle } from "@gteki/schema";
 import * as THREE from "three";
-import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { mergeGeometries, mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { edgePoints, R, type V3 } from "./geometry.ts";
 import { MODE_WIDTH } from "./graphView.ts";
 import type { Segment2 } from "./walker.ts";
@@ -139,10 +139,24 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
       if (current) { current.count++; current.width = Math.max(current.width, widthOf(run.edge)); }
       else junctions.set(id, { at: endpoint, width: widthOf(run.edge), count: 1, floor: nodes.get(id)?.floorId ?? "" });
     }
+    // Bends in a single edge need the same patch as graph-node junctions.
+    for (let i = 1; i + 1 < run.points.length; i++) {
+      const a = run.points[i - 1]!, p = run.points[i]!, z = run.points[i + 1]!;
+      const ax = p.x - a.x, ay = p.y - a.y, bx = z.x - p.x, by = z.y - p.y;
+      const lengths = Math.hypot(ax, ay) * Math.hypot(bx, by);
+      if (lengths > 1e-9 && (ax * bx + ay * by) / lengths < 0.9999) {
+        junctions.set(`${run.edge.id}:bend:${i}`, { at: R(p.x, p.y, p.z), width: widthOf(run.edge), count: 2, floor: nodes.get(run.edge.from)?.floorId ?? "" });
+      }
+    }
   }
   const batches = new Map<string, Batch>();
+  const floorBatches = new Map<string, string>();
   const getBatch = (floor: string) => {
-    const key = tier === "low" ? "all" : floor;
+    let key = tier === "low" ? "all" : floorBatches.get(floor);
+    if (key === undefined) {
+      key = batches.size < 4 ? floor : [...batches.keys()][3]!;
+      floorBatches.set(floor, key);
+    }
     let b = batches.get(key); if (!b) { b = batch(); batches.set(key, b); } return b;
   };
   const openings: Box[] = [];
@@ -258,7 +272,8 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
         packed[i * 3 + 2] = Math.round(normal.getZ(i) * 127);
       }
       part.setAttribute("normal", new THREE.Int8BufferAttribute(packed, 3, true));
-      const geometry = mergeGeometries([part])!; part.dispose();
+      const merged = mergeGeometries([part])!; part.dispose();
+      const geometry = mergeVertices(merged); merged.dispose();
       const mesh = new THREE.Mesh(geometry, material); mesh.name = name;
       mesh.userData = { greybox: true, approximate: true };
       if (name === "greybox-portal") {

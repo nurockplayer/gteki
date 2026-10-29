@@ -94,6 +94,14 @@ describe("buildGreybox", () => {
     expect(blocked.wallSegments).toHaveLength(0);
   });
 
+  it("fills the outside corner of a bend inside one edge", () => {
+    const bent = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 5, y: 10, z: 0 } }], edges: [{ ...bundle.edges[0]!, geometry: [{ x: 0, y: 0, z: 0 }, { x: 5, y: 0, z: 0 }, { x: 5, y: 10, z: 0 }] }] };
+    const result = buildGreybox(bent, () => true, () => false, emptyScene, "high");
+    result.root.updateMatrixWorld(true);
+    const ray = new THREE.Raycaster(new THREE.Vector3(5.5, 1, 0.5), new THREE.Vector3(0, -1, 0), 0, 2);
+    expect(ray.intersectObjects(result.walkable, false).some((hit) => Math.abs(hit.point.y) < 0.001)).toBe(true);
+  });
+
   it("builds a short sceneGap passage even above modelled floor", () => {
     const forced = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 0.4, y: 0, z: 0 } }], edges: [{ ...bundle.edges[0]!, attributes: { sceneGap: true } }] };
     const result = buildGreybox(forced, () => true, () => true, emptyScene, "high");
@@ -132,6 +140,26 @@ describe("buildGreybox", () => {
       const geometry = (object as THREE.Mesh).geometry;
       return total + Object.values(geometry.attributes).reduce((sum, attr) => sum + (attr as THREE.BufferAttribute).array.byteLength, 0);
     }, 0);
+    expect(bytes).toBeLessThan(2 * 1024 * 1024);
+  });
+
+  it("keeps a longer network and five floors within the station budgets", () => {
+    const floors = Array.from({ length: 5 }, (_, i) => ({ ...bundle.floors[0]!, id: `floor-${i}`, renderElevationM: i * 4 }));
+    const nodes = floors.flatMap((floor, i) => [
+      { ...bundle.nodes[0]!, id: `a-${i}`, floorId: floor.id, position: { x: 0, y: i * 10, z: i * 4 } },
+      { ...bundle.nodes[1]!, id: `b-${i}`, floorId: floor.id, position: { x: 160, y: i * 10, z: i * 4 } },
+    ]);
+    const edges = floors.map((_floor, i) => ({ ...bundle.edges[0]!, id: `edge-${i}`, from: `a-${i}`, to: `b-${i}` }));
+    const result = buildGreybox({ ...bundle, floors, nodes, edges }, () => true, () => false, emptyScene, "high");
+    let bytes = 0;
+    result.root.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      bytes += Object.values(mesh.geometry.attributes).reduce((sum, attr) => sum + (attr as THREE.BufferAttribute).array.byteLength, 0);
+      bytes += mesh.geometry.index?.array.byteLength ?? 0;
+    });
+    expect(result.stats.meshes).toBeLessThanOrEqual(12);
+    expect(result.stats.triangles).toBeLessThanOrEqual(60000);
     expect(bytes).toBeLessThan(2 * 1024 * 1024);
   });
 });
