@@ -2136,15 +2136,12 @@ export class Explorer {
     this.updateShadows();
   }
 
-  /** Cancel a ride or call without moving the avatar, and leave the car at its nearest landing. */
+  /** Cancel a ride or call at the nearest landing, carrying anyone inside the car. */
   private cancelRide(): void {
     const ids = [this.liftRide?.edgeId, this.liftCall?.edgeId];
     for (const car of this.connectors?.cars ?? []) {
       if (!ids.includes(car.edgeId)) continue;
-      car.mesh.position.y = car.landings.reduce((best, y) => Math.abs(y - car.mesh.position.y) < Math.abs(best - car.mesh.position.y) ? y : best);
-      car.mesh.updateMatrixWorld(true);
-      for (const door of car.doors) door.mesh.visible = Math.abs(car.mesh.position.y - door.landing) >= 1e-6;
-      (this.liftParked ??= new Set()).add(car.edgeId);
+      this.parkLift(car, car.mesh.position.y, this.inLiftFootprint(car));
     }
     this.liftRide = null;
     this.liftCall = null;
@@ -2170,10 +2167,26 @@ export class Explorer {
     return null;
   }
 
-  private inLiftCar(car: NonNullable<Explorer["connectors"]>["cars"][number]): boolean {
+  private inLiftFootprint(car: NonNullable<Explorer["connectors"]>["cars"][number]): boolean {
     const dx = this.pos.x - car.mesh.position.x, dz = this.pos.z - car.mesh.position.z;
     const c = Math.cos(car.mesh.rotation.y), s = Math.sin(car.mesh.rotation.y);
-    return Math.abs(c * dx - s * dz) <= 0.8 && Math.abs(s * dx + c * dz) <= 0.75 && Math.abs(this.pos.y - car.mesh.position.y) <= 0.08;
+    return Math.abs(c * dx - s * dz) <= 0.8 && Math.abs(s * dx + c * dz) <= 0.75;
+  }
+
+  private inLiftCar(car: NonNullable<Explorer["connectors"]>["cars"][number]): boolean {
+    return this.inLiftFootprint(car) && Math.abs(this.pos.y - car.mesh.position.y) <= 0.08;
+  }
+
+  private parkLift(car: NonNullable<Explorer["connectors"]>["cars"][number], height: number, carry: boolean): void {
+    car.mesh.position.y = car.landings.reduce((best, y) => Math.abs(y - height) < Math.abs(best - height) ? y : best);
+    if (carry && this.pos.y !== car.mesh.position.y) {
+      this.pos.y = car.mesh.position.y;
+      this.lastAvatarPos?.copy(this.pos);
+      this.teleported = true;
+    }
+    car.mesh.updateMatrixWorld(true);
+    for (const door of car.doors) door.mesh.visible = Math.abs(car.mesh.position.y - door.landing) >= 1e-6;
+    (this.liftParked ??= new Set()).add(car.edgeId);
   }
 
   private updateElevatorCars(dt: number): void {
@@ -2253,8 +2266,10 @@ export class Explorer {
           this.liftRide = { edgeId: car.edgeId, guideEdgeId: edgeId, status: "riding", elapsed: 0, target, direction };
         }
         car.mesh.position.y = THREE.MathUtils.clamp(this.pos.y, car.zLow, car.zHigh);
-      } else if (this.mode === "guide" && this.liftRide?.edgeId === car.edgeId) this.liftRide = null;
-      else if (!this.liftParked?.has(car.edgeId) && !(this.mode === "walk" && Math.abs(localX) <= 1.1 && Math.abs(localZ) <= 1.1 && Math.abs(this.pos.y - car.mesh.position.y) <= 0.08)) car.mesh.position.y = THREE.MathUtils.damp(car.mesh.position.y, car.zLow, 5, dt);
+      } else if (this.mode === "guide" && ((!sample && inside && this.pos.y >= car.zLow - 0.08 && this.pos.y <= car.zHigh + 0.08) || this.liftRide?.edgeId === car.edgeId)) {
+        if (inside) this.parkLift(car, this.pos.y, true);
+        if (this.liftRide?.edgeId === car.edgeId) this.liftRide = null;
+      } else if (!this.liftParked?.has(car.edgeId) && !(this.mode === "walk" && Math.abs(localX) <= 1.1 && Math.abs(localZ) <= 1.1 && Math.abs(this.pos.y - car.mesh.position.y) <= 0.08)) car.mesh.position.y = THREE.MathUtils.damp(car.mesh.position.y, car.zLow, 5, dt);
     }
     } finally {
       for (const car of cars) for (const door of car.doors) door.mesh.visible = Math.abs(car.mesh.position.y - door.landing) >= 1e-6;
