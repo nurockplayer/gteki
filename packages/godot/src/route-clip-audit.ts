@@ -33,6 +33,8 @@ const BODY_LOW_M = 0.5, BODY_HIGH_M = 1.5;
 export interface EdgeAudit {
   station: string; edgeId: string; sourceFile: string; mode: string; lengthM: number;
   samples: number; offFloor: number; noFloor: number; maxAbsDzM: number; wallHits: number; worst: string;
+  /** The edge is flagged attributes.sceneGap: the viewer draws it as unmodelled, so its hits are known, not a clip. */
+  sceneGap?: true;
 }
 
 export interface SceneProbe { ground: THREE.Object3D[]; collider: THREE.Object3D[]; walls: WallSegment[] }
@@ -218,7 +220,8 @@ async function main(): Promise<void> {
           const a = auditPolyline(probe, edgePolyline(bundle, edge), { skipInteriorFloor: edge.mode === "elevator" });
           total.violations += violations(a); total.samples += a.samples; total.offFloor += a.offFloor; total.noFloor += a.noFloor;
           total.wallHits += a.wallHits; total.maxAbsDzM = Math.max(total.maxAbsDzM, a.maxAbsDzM);
-          results.push({ station, edgeId: edge.id, sourceFile: sourceOf.get(edge.id) ?? "public", mode: edge.mode, lengthM: edge.lengthM ?? 0, ...a });
+          results.push({ station, edgeId: edge.id, sourceFile: sourceOf.get(edge.id) ?? "public", mode: edge.mode, lengthM: edge.lengthM ?? 0, ...a,
+            ...(edge.attributes?.sceneGap === true ? { sceneGap: true as const } : {}) });
           console.log(`edge ${edge.id}  ${edge.mode}  ${sourceOf.get(edge.id) ?? "public"}  violations ${violations(a)} (off-floor ${a.offFloor}, no-floor ${a.noFloor}, wall ${a.wallHits})${a.worst ? `  first: ${a.worst}` : ""}`);
         }
         console.log(`route total: ${total.violations} violations over ${total.samples} samples (off-floor ${total.offFloor}, no-floor ${total.noFloor}, wall ${total.wallHits}, max |dz| ${total.maxAbsDzM.toFixed(2)} m)`);
@@ -228,7 +231,8 @@ async function main(): Promise<void> {
         const sourceFile = sourceOf.get(edge.id);
         if (!sourceFile && !all) continue;
         const a = auditPolyline(probe, edgePolyline(bundle, edge), { skipInteriorFloor: edge.mode === "elevator" });
-        results.push({ station, edgeId: edge.id, sourceFile: sourceFile ?? "public", mode: edge.mode, lengthM: edge.lengthM ?? 0, ...a });
+        results.push({ station, edgeId: edge.id, sourceFile: sourceFile ?? "public", mode: edge.mode, lengthM: edge.lengthM ?? 0, ...a,
+          ...(edge.attributes?.sceneGap === true ? { sceneGap: true as const } : {}) });
       }
       const mine = results.filter((r) => r.station === station);
       const bad = mine.filter((r) => violations(r) > 0);
