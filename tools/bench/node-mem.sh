@@ -18,8 +18,12 @@ for ((rep=1; rep<=reps; rep++)); do
   vm=$(vm_stat -c 3 5)
   if ! awk 'NR > 2 && NF {v=$NF; multiplier=1; if (v ~ /K$/) multiplier=1000; if (v ~ /M$/) multiplier=1000000; if (++n > 1 && (v+0)*multiplier > 2000) bad=1} END {exit (n < 3 || bad)}' <<< "$vm"; then echo 'memory pressure gate: swapouts above 2000 pages or unavailable' >&2; exit 3; fi
   concurrent=0
-  if orb-test --status --porcelain | grep -q $'^running\t'; then concurrent=1; fi
+  # Capture first: grep -q closing the pipe early would fail it under pipefail.
+  status=$(orb-test --status --porcelain 2>/dev/null || true)
+  if [[ ${BENCH_CONCURRENT_HEAVY:-} =~ ^[01]$ ]]; then concurrent=$BENCH_CONCURRENT_HEAVY; elif grep -q $'^running\t' <<< "$status"; then concurrent=1; fi
   memory=3g; cpus=4; [[ $suite == box ]] && { memory=2g; cpus=2; }
   opts=(); ((heavy)) && opts+=(--heavy)
-  orb-test "${opts[@]}" --image "gteki-bench:$variant" --memory "$memory" --cpus "$cpus" --out "$out" --env "BENCH_IMAGE_DIGEST=$digest" --env "BENCH_CONCURRENT_HEAVY=$concurrent" --env "BENCH_MEMORY=$memory" --env "BENCH_CPUS=$cpus" --env "BENCH_SMOKE=$smoke" -- bash tools/bench/node-mem-run.sh --suite "$suite" --rep "$rep" --variant "$variant" --out "/w/$out"
+  orb-test "${opts[@]}" --image "gteki-bench:$variant" --memory "$memory" --cpus "$cpus" --out "$out" --env "BENCH_IMAGE_DIGEST=$digest" --env "BENCH_CONCURRENT_HEAVY=$concurrent" --env "BENCH_MEMORY=$memory" --env "BENCH_CPUS=$cpus" --env "BENCH_SMOKE=$smoke" -- bash tools/bench/node-mem-run.sh --suite "$suite" --rep "$rep" --variant "$variant" --out "/w/$out" \
+    || { code=$?; echo "rep $rep of $variant/$suite failed (exit $code); continuing" >&2; failed=$code; }
 done
+exit "${failed:-0}"
