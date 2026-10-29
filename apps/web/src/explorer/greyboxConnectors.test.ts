@@ -107,7 +107,7 @@ describe("endpoint fitting", () => {
     const treads = p.filter((v) => v.material === "tread");
     expect(Math.min(...treads[0]!.position.filter((_, i) => i % 3 === 0))).toBeCloseTo(0);
     expect(Math.max(...treads.at(-1)!.position.filter((_, i) => i % 3 === 0))).toBeCloseTo(3);
-    expect(Math.max(...treads.at(-1)!.position.filter((_, i) => i % 3 === 1))).toBeCloseTo(3.6);
+    expect(Math.max(...p.filter((v) => v.material === "riser").at(-1)!.position.filter((_, i) => i % 3 === 1))).toBeCloseTo(3.6);
   });
   it("joins both comb plates to the visible flight in both tiers", () => {
     for (const tier of ["high", "low"] as const) {
@@ -210,21 +210,6 @@ it("marks a bent escalator approximate once per edge", () => {
 });
 
 
-it("lays out a vertical stair with a usable run and returns to the upper node", () => {
-  const station = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 0, y: 0, z: 4 } }], floors: [{ id: "low", renderElevationM: 0 }, { id: "high", renderElevationM: 4 }], edges: [{ ...bundle.edges[0]!, attributes: { sceneGap: true } }] } as unknown as StationBundle;
-  const result = buildConnectors(station, () => true, { hasFloor: () => true, nearMesh: () => false }, "high");
-  expect(result.stats.approximateFits).toBe(1);
-  const ray = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0));
-  let previous = 0;
-  for (let x = 0.01; x < 4 / Math.tan(35 * Math.PI / 180); x += 0.1) {
-    ray.ray.origin.set(x, Math.min(4, x * Math.tan(35 * Math.PI / 180)) + 0.3, 0);
-    const hit = ray.intersectObjects(result.walkable)[0]; expect(hit).toBeDefined();
-    expect(Math.abs(hit!.point.y - previous)).toBeLessThanOrEqual(0.3); previous = hit!.point.y;
-  }
-  const risers = buildStairs(new THREE.Vector3(), new THREE.Vector3(4 / Math.tan(35 * Math.PI / 180), 4, 0), 1.5, "high").filter((p) => p.role === "walkable" && p.material === "tread");
-  expect(risers.every((p) => Math.max(...p.position.filter((_, i) => i % 3 === 0)) - Math.min(...p.position.filter((_, i) => i % 3 === 0)) > 0.25)).toBe(true);
-});
-
 it("renders the comb and flight at the walkable incline height in both tiers", () => {
   const station = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 5.2, y: 0, z: 1.5 } }], edges: [{ ...bundle.edges[0]!, mode: "escalator", attributes: { sceneGap: true } }] } as StationBundle;
   for (const tier of ["high", "low"] as const) {
@@ -265,22 +250,45 @@ it("routes over inserted stair landings in both directions on the walkable surfa
   }
 });
 
-it("keeps a relocated stair route grounded and relocates a zero-run escalator", async () => {
-  const { createRouter, routePolyline } = await import("@gteki/navigation");
-  const { routeGroundCounts } = await import("./routeGroundQa.ts");
+it("builds a steep stair in place and skips edges without a usable run", () => {
   for (const mode of ["stairs", "escalator"] as const) {
     const station = createSyntheticBundle([syntheticEdge("vertical", "start", "upper", { mode, attributes: { sceneGap: true } })]);
-    station.nodes.find((n) => n.id === "upper")!.position = { x: 0, y: 0, z: 4 };
+    const upper = station.nodes.find((n) => n.id === "upper")!;
+    upper.position = { x: 1, y: 0, z: 4 };
     const result = buildConnectors(station, () => true, { hasFloor: () => true, nearMesh: () => false }, "high");
-    expect(result.stats.approximateFits).toBe(1);
-    const path = result.pathByEdge.get("vertical")!; expect(path.length).toBeGreaterThan(4);
-    expect(Math.max(...path.map((p) => p.x))).toBeGreaterThan(5);
-    expect(new THREE.Vector3(path[0]!.x, path[0]!.y, path[0]!.z).length()).toBeLessThan(0.001); expect(new THREE.Vector3(path.at(-1)!.x, path.at(-1)!.y - 4, path.at(-1)!.z).length()).toBeLessThan(0.001);
-    const paths = new Map([["vertical", path.map((p) => ({ x: p.x, y: -p.z, z: p.y }))]]);
-    const route = createRouter(station).route("start", "upper"); if (!route.ok) throw new Error("missing route");
-    const polyline = routePolyline(station, route, paths), ray = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0));
-    const missing: number[][] = [];
-    const counts = routeGroundCounts(polyline, (p) => { ray.ray.origin.set(p.x, p.y + 0.3, p.z); ray.far = 0.65; const height = ray.intersectObjects(result.walkable)[0]?.point.y ?? null; if (height === null || Math.abs(height - p.y) > 0.3) missing.push([p.x, p.y, p.z, height ?? -999]); return height; }, route.steps, station, () => true, result.pathByEdge);
-    expect(counts.noFloor, `${mode}: ${JSON.stringify(missing)}`).toBe(0);
+    expect(result.stats.approximateFits).toBe(1); expect(result.stats.connectorsSkipped).toBe(0);
+    const path = result.pathByEdge.get("vertical")!;
+    expect(path.every((p) => Math.abs(p.z) < 1e-6 && p.x >= -1e-6 && p.x <= 1 + 1e-6)).toBe(true);
+    expect(path.at(-1)!.x).toBeCloseTo(1); expect(path.at(-1)!.y).toBeCloseTo(4);
+    if (mode === "stairs") {
+      const parts = buildStairs(new THREE.Vector3(), new THREE.Vector3(1, 4, 0), 1.5, "high");
+      for (const riser of parts.filter((p) => p.material === "riser")) {
+        const ys = riser.position.filter((_, i) => i % 3 === 1);
+        expect(Math.max(...ys) - Math.min(...ys)).toBeLessThanOrEqual(0.3);
+      }
+    }
+    upper.position = { x: 0.2, y: 0, z: 4 };
+    const skipped = buildConnectors(station, () => true, { hasFloor: () => true, nearMesh: () => false }, "high");
+    expect(skipped.stats.connectorsSkipped).toBe(1); expect(skipped.pathByEdge.has("vertical")).toBe(false);
+    expect(skipped.root.children).toHaveLength(0); expect(skipped.walkable).toHaveLength(0);
+  }
+});
+
+it("keeps rendered stair treads at or below the walkable incline", () => {
+  const station = createSyntheticBundle([syntheticEdge("stairs", "start", "upper", { mode: "stairs", attributes: { sceneGap: true } })]);
+  station.nodes.find((n) => n.id === "upper")!.position = { x: 7.2, y: 0, z: 3.6 };
+  for (const tier of ["high", "low"] as const) {
+    const result = buildConnectors(station, () => true, { hasFloor: () => true, nearMesh: () => false }, tier);
+    const ray = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0));
+    const shell = result.root.children.find((o) => { const material = (o as THREE.Mesh).material as THREE.MeshStandardMaterial; return !Array.isArray(material) && material.vertexColors && !material.transparent; })!;
+    let checked = 0;
+    for (let x = 0.013; x < 7.2; x += 0.01) {
+      ray.ray.origin.set(x, 10, 0); const physical = ray.intersectObjects(result.walkable)[0];
+      const visible = ray.intersectObject(shell)[0];
+      expect(physical).toBeDefined();
+      if (!visible) continue; // Float32 tread boundaries can fall between adjacent faces.
+      checked++; expect(visible.point.y - physical!.point.y).toBeLessThanOrEqual(0.010001);
+    }
+    expect(checked).toBeGreaterThan(700);
   }
 });

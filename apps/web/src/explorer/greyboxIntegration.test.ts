@@ -46,6 +46,7 @@ describe("greybox station integration", () => {
       syntheticEdge("stairs", "a", "upper", { mode: "stairs", attributes: { sceneGap: true } }),
       syntheticEdge("escalator", "start", "upper", { mode: "escalator", attributes: { sceneGap: true } }),
     ]);
+    loaded.bundle.nodes.find((node) => node.id === "upper")!.position.x = 12;
     await state.loadStation(loaded, createRouter(loaded.bundle));
     expect(state.connectors.stats.connectors).toEqual({ stairs: 1, escalator: 1 });
     expect(state.connectors.walkable.length).toBeGreaterThan(1);
@@ -54,14 +55,15 @@ describe("greybox station integration", () => {
     expect(state.routeGroundCheck([], steps).verticalWithoutConnector).toBe(0);
   });
 
-  it("checks the relocated stair route against its generated ground", async () => {
+  it("reports a skipped short-run stair as missing", async () => {
     const { state, loaded } = fixture();
     loaded.bundle = createSyntheticBundle([syntheticEdge("vertical", "start", "upper", { mode: "stairs", attributes: { sceneGap: true } })]);
-    loaded.bundle.nodes.find((node) => node.id === "upper")!.position = { x: 0, y: 0, z: 4 };
+    loaded.bundle.nodes.find((node) => node.id === "upper")!.position = { x: 0.2, y: 0, z: 4 };
     const router = createRouter(loaded.bundle); await state.loadStation(loaded, router);
     const route = router.route("start", "upper"); if (!route.ok) throw new Error("missing route");
     const polyline = routePolyline(loaded.bundle, route, state.connectorRoutePaths());
-    expect(state.routeGroundCheck(polyline, route.steps)).toMatchObject({ noFloor: 0, verticalWithoutConnector: 0 });
+    expect(state.connectors.stats.connectorsSkipped).toBe(1);
+    expect(state.routeGroundCheck(polyline, route.steps).verticalWithoutConnector).toBe(1);
   });
 
   it("shows the legend for a route or walker near generated stairs and escalators", async () => {

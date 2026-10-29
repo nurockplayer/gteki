@@ -84,14 +84,14 @@ export function buildStairs(from: THREE.Vector3, to: THREE.Vector3, widthM: numb
   const omitted = f.length < count * 0.25 + needed * landing ? needed : 0;
   const placed = needed - omitted;
   const tread = (f.length - placed * landing) / count;
-  const fit = rise < 0.15 || rise > 0.21 || tread < 0.25 || tread > 0.35 ? "approximate" : "exact";
+  const fit = rise < 0.15 || rise > 0.21 || tread < 0.25 || tread > 0.35 || f.length < f.rise / Math.tan(35 * Math.PI / 180) ? "approximate" : "exact";
   const xAt = (i: number) => i * tread + (omitted ? 0 : Math.floor(i / flightSteps) * landing);
   for (let i = 0; i < count; i++) {
-    const x = xAt(i), y = (i + 1) * rise;
+    const x = xAt(i), y = i * rise;
     box(parts, "tread", f.matrix, x + tread / 2, y - 0.04, 0, tread, 0.08, widthM, "walkable");
-    if (tier === "high") box(parts, "riser", f.matrix, x, y - rise / 2, 0, 0.015, rise, widthM, undefined, 0.55);
+    if (tier === "high") box(parts, "riser", f.matrix, x + tread + 0.0075, y + rise / 2, 0, 0.015, rise, widthM, undefined, 0.55);
     if (tier === "high") box(parts, "nosing", f.matrix, x + 0.0275, y + 0.004, 0, 0.055, 0.008, widthM);
-    if (!omitted && (i + 1) % flightSteps === 0 && i + 1 < count) box(parts, "tread", f.matrix, x + tread + landing / 2, y - 0.04, 0, landing, 0.08, widthM, "walkable");
+    if (!omitted && (i + 1) % flightSteps === 0 && i + 1 < count) box(parts, "tread", f.matrix, x + tread + landing / 2, y + rise - 0.04, 0, landing, 0.08, widthM, "walkable");
   }
   for (const side of [-1, 1]) {
     for (let start = 0; start < count; start += flightSteps) {
@@ -113,7 +113,7 @@ export function buildStairs(from: THREE.Vector3, to: THREE.Vector3, widthM: numb
 /** Build the escalator from lower to higher landing; indicators retain the supplied direction. */
 export function buildEscalator(from: THREE.Vector3, to: THREE.Vector3, tier: "high" | "low"): ConnectorPart[] {
   const f = frame(from, to), parts: ConnectorPart[] = [];
-  const landing = Math.min(0.8, f.length / 2), run = Math.max(0, f.length - 2 * landing);
+  const landing = Math.min(0.8, f.length / 4), run = Math.max(0, f.length - 2 * landing);
   const angle = Math.atan2(f.rise, run), incline = Math.hypot(run, f.rise);
   const fit = landing < 0.8 || angle < 27 * Math.PI / 180 || angle > 33 * Math.PI / 180 ? "approximate" : "exact";
   const count = Math.ceil(incline / 0.4 - 1e-9), group = tier === "low" ? 3 : 1;
@@ -190,7 +190,7 @@ function stairWalk(from: THREE.Vector3, to: THREE.Vector3, width: number, parts:
 }
 
 function escalatorWalk(from: THREE.Vector3, to: THREE.Vector3): THREE.Vector3[] {
-  const f = frame(from, to), landing = Math.min(0.8, f.length / 2);
+  const f = frame(from, to), landing = Math.min(0.8, f.length / 4);
   const at = (x: number, y: number) => new THREE.Vector3(x, y, 0).applyMatrix4(f.matrix);
   const path = [at(0, 0), at(landing, 0), at(f.length - landing, f.rise), at(f.length, f.rise)];
   return from.y <= to.y ? path : path.reverse();
@@ -225,7 +225,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
   const batches = new Map<string, ConnectorPart[]>();
   const counts = { escalator: 0, stairs: 0 };
-  let approximateFits = 0, omittedLandings = 0;
+  let approximateFits = 0, omittedLandings = 0, connectorsSkipped = 0;
   const shellMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, side: THREE.DoubleSide });
   const lightMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, emissive: "#fff6e8", emissiveIntensity: 3.2, side: THREE.DoubleSide });
   const lampMaterials = [lightMaterial, new THREE.MeshStandardMaterial({ color: "#00ff00", emissive: "#00ff00", emissiveIntensity: 3.2 }), new THREE.MeshStandardMaterial({ color: "#ff0000", emissive: "#ff0000", emissiveIntensity: 3.2 })];
@@ -233,6 +233,8 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   const physicalMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
   for (const edge of unmodelledVerticalEdges(bundle, traversable, scope.hasFloor, scope.nearMesh)) {
     const points = edgePoints(bundle, edge, nodes, floors);
+    const planRuns = points.slice(1).map((p, i) => Math.hypot(p.x - points[i]!.x, p.z - points[i]!.z));
+    if (planRuns.reduce((a, b) => a + b, 0) < 0.3 || planRuns.some((run, i) => run < 0.3 && Math.abs(points[i + 1]!.y - points[i]!.y) > 1e-6)) { connectorsSkipped++; continue; }
     const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
     const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
     const halfWidth = (edge.mode === "stairs" ? width : 1.2) / 2;
@@ -246,31 +248,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const edgePath: THREE.Vector3[] = [];
     let edgeOmitted = 0;
     for (let i = 1; i < points.length; i++) {
-      let from = points[i - 1]!, to = points[i]!;
-      let fallback = false;
-      let returnPath: THREE.Vector3[] = [];
-      const originalFrom = from;
-      const rise = Math.abs(to.y - from.y);
-      const minRun = edge.mode === "stairs" ? rise / Math.tan(35 * Math.PI / 180) : rise / Math.tan(Math.PI / 6) + 1.6;
-      const shortRun = edge.mode === "stairs" ? Math.hypot(to.x - from.x, to.z - from.z) < minRun : Math.hypot(to.x - from.x, to.z - from.z) < 1e-6;
-      if (shortRun && rise > 0) {
-        const low = from.y <= to.y ? from : to, high = low === from ? to : from;
-        const lowId = low === points[0] ? edge.from : low === points.at(-1) ? edge.to : undefined;
-        let direction = new THREE.Vector3(1, 0, 0);
-        const neighbor = lowId && bundle.edges.find((candidate) => candidate.id !== edge.id && traversable(candidate) && (candidate.from === lowId || candidate.to === lowId) && !["stairs", "escalator", "elevator"].includes(candidate.mode));
-        if (neighbor) { const ps = edgePoints(bundle, neighbor, nodes, floors); const d = neighbor.from === lowId ? ps[1]?.clone().sub(ps[0]!) : ps.at(-2)?.clone().sub(ps.at(-1)!); if (d) { d.y = 0; if (d.lengthSq() > 1e-9) direction = d.normalize(); } }
-        const end = low.clone().addScaledVector(direction, minRun); end.y = high.y;
-        const side = new THREE.Vector3(-direction.z, 0, direction.x).multiplyScalar(width * 1.1);
-        const extension = end.clone().addScaledVector(direction, width);
-        const turn = extension.clone().add(side), returnEnd = high.clone().add(side);
-        returnPath = [extension, turn, returnEnd, high];
-        for (const [start, finish] of [[end, extension], [extension, turn], [turn, returnEnd], [returnEnd, high]] as const) {
-          const landingFrame = frame(start, finish);
-          box(parts, "tread", landingFrame.matrix, landingFrame.length / 2, -0.04, 0, landingFrame.length + 0.002, 0.08, width, "walkable");
-        }
-        for (const corner of [extension, turn, returnEnd]) box(parts, "tread", new THREE.Matrix4().makeTranslation(corner.x, corner.y, corner.z), 0, -0.04, 0, width, 0.08, width, "walkable");
-        from = low; to = end; fallback = true;
-      }
+      const from = points[i - 1]!, to = points[i]!;
       const dx = to.x - from.x, dz = to.z - from.z, horizontal = Math.hypot(dx, dz);
       if (horizontal > 1e-6) {
         const half = (edge.mode === "stairs" ? width : 1.2) / 2 + 0.03, n = Math.max(1, Math.ceil(horizontal / 0.5));
@@ -283,7 +261,6 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       let flightPath: THREE.Vector3[];
       if (Math.abs(to.y - from.y) > 1e-6) {
         const flight = edge.mode === "stairs" ? buildStairs(from, to, width, tier) : buildEscalator(from, to, tier);
-        if (fallback) for (const p of flight) p.userData = { ...p.userData, fit: "approximate" };
         edgeOmitted += flight[0]?.userData?.omittedLandings ?? 0;
         if (edge.mode === "stairs") {
           for (const p of flight) if (p.role === "walkable" && p.material === "tread") p.role = undefined;
@@ -295,10 +272,6 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         flightPath = [from.clone(), to.clone()];
         const f = frame(from, to);
         box(parts, edge.mode === "stairs" ? "tread" : "escStep", f.matrix, f.length / 2, -0.04, 0, f.length, 0.08, edge.mode === "stairs" ? width : 1.2, "walkable");
-      }
-      if (fallback) {
-        flightPath.push(...returnPath);
-        if (originalFrom.y > points[i]!.y) flightPath.reverse();
       }
       if (edgePath.length && edgePath.at(-1)!.distanceTo(flightPath[0]!) < 1e-6) flightPath.shift();
       edgePath.push(...flightPath);
@@ -351,7 +324,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       if (material === lampMaterials) lightBatches.push({ mesh, parts });
     }
   }
-  const stats = { connectors: counts, meshes: root.children.length, triangles, approximateFits, omittedLandings, overBudget: null as string | null,
+  const stats = { connectors: counts, meshes: root.children.length, triangles, approximateFits, omittedLandings, connectorsSkipped, overBudget: null as string | null,
     dropSoffits() {
       for (const batch of lightBatches) {
         const kept = batch.parts.filter((p) => !p.soffit);
