@@ -138,6 +138,17 @@ describe("buildGreybox", () => {
     expect(covers(-3 + MODE_WIDTH.walk! / 2, -6)).toBe(true);
   });
 
+  it("opens the low part of a wall a rising flight runs along, and keeps the part it has climbed over", () => {
+    const floors = [...bundle.floors, { id: "g", renderElevationM: 6 }];
+    const nodes = [...bundle.nodes, { id: "d", floorId: "f", position: { x: 30, y: 0, z: 0 } }, { id: "c", floorId: "g", position: { x: 20, y: 1, z: 6 } }];
+    const edges = [bundle.edges[0]!, { id: "e2", from: "b", to: "d", mode: "walk" }, { id: "s", from: "b", to: "c", mode: "stairs" }];
+    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
+    const north = result.wallSegments.filter((w) => Math.abs(w.az + MODE_WIDTH.walk! / 2) < 1e-6);
+    const covers = (x: number) => north.some((w) => Math.min(w.ax, w.bx) < x && Math.max(w.ax, w.bx) > x);
+    expect(covers(13.6)).toBe(false);
+    expect(covers(18)).toBe(true);
+  });
+
   it("opens a stair mouth at the end of a long ramp", () => {
     const floors = [...bundle.floors, { id: "g", renderElevationM: 7 }];
     const ramp = [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 30, y: 0, z: 3 } }];

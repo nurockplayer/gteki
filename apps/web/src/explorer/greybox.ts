@@ -407,11 +407,17 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
             lo = Math.max(lo, Math.min(t1, t2)); hi = Math.min(hi, Math.max(t1, t2));
           }
           if (lo >= hi) continue;
-          // The flight's surface where it crosses, against the wall's own span: open only if a walker on the flight
-          // (2 m tall) would meet the wall (2.6 m tall).
-          const mid = (lo + hi) / 2, f = Math.min(1, Math.max(0, (u0 + du * mid) / m.length));
-          const flight = m.y0 + (m.y1 - m.y0) * f, wall = a.y + (z.y - a.y) * mid;
-          if (flight > wall + 2.6 || flight + 2 < wall) continue;
+          // Open only the part where a walker on the flight (2 m tall) would meet the wall (2.6 m tall). Both heights
+          // are linear in t, so their difference is too: keep the t range where it lies in [-2, 2.6].
+          const gap = (t: number) => m.y0 + (m.y1 - m.y0) * Math.min(1, Math.max(0, (u0 + du * t) / m.length)) - (a.y + (z.y - a.y) * t);
+          const g0 = gap(lo), g1 = gap(hi);
+          if (Math.abs(g1 - g0) < 1e-9) { if (g0 < -2 || g0 > 2.6) continue; }
+          else {
+            const tAt = (g: number) => lo + (hi - lo) * (g - g0) / (g1 - g0);
+            const [ta, tb] = [tAt(-2), tAt(2.6)].sort((x, y) => x - y) as [number, number];
+            lo = Math.max(lo, ta); hi = Math.min(hi, tb);
+            if (lo >= hi) continue;
+          }
           intervals = intervals.flatMap(([s, e]) => [[s, Math.min(e, lo)], [Math.max(s, hi), e]].filter(([x, y]) => x! < y!) as [number, number][]);
         }
         const clearIntervals: [number, number][] = [];
