@@ -51,7 +51,8 @@ function createRunDetector(bundle: StationBundle, traversable: (edge: Edge) => b
       if (!bare[i]) continue;
       let end = i;
       while (end + 1 < samples.length && bare[end + 1]) end++;
-      const length = distances[end]! - distances[i]!;
+      // The gap can reach the neighbouring floored samples, so measure up to them: a 1.2 m gap may hold only two bare samples.
+      const length = distances[Math.min(end + 1, samples.length - 1)]! - distances[Math.max(i - 1, 0)]!;
       if (length >= 1 || edge.attributes?.sceneGap === true) {
         const start = Math.max(0, distances[i]! - 0.5);
         const finish = Math.min(distances.at(-1)!, distances[end]! + 0.5);
