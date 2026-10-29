@@ -2,8 +2,18 @@ import { describe, expect, it } from "vitest";
 import { fallbackGate } from "./navmesh-fallback-audit.ts";
 import { measureFallbacks } from "./navmesh-fallback.ts";
 import { fallbackDiff } from "./navmesh-fallback-diff.ts";
+import { baselineForAudit, clipBaselineDiff, makeClipBaseline } from "./navmesh-clip-baseline.ts";
 import fs from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
+
+/** A PR checkout is a merge commit; compare against its first (base) parent. */
+function previousVersion(file:string):unknown|null {
+  const git=(args:string[])=>{const result=spawnSync("git",args,{encoding:"utf8"});if(result.status!==0) throw new Error(`cannot inspect PR base: git ${args[0]}`);return result.stdout;};
+  git(["rev-parse","--verify","HEAD^1"]);
+  const listed=git(["ls-tree","--name-only","HEAD^1","--",file]).trim();
+  return listed ? JSON.parse(git(["show",`HEAD^1:${file}`])) : null;
+}
 
 describe("fallback clip gate",()=>{
   const clean={offFloor:0,noFloor:0,wallHits:0};
@@ -21,25 +31,52 @@ describe("fallback clip gate",()=>{
   });
 });
 
+describe("clip baseline ratchet",()=>{
+  const c=(connectorWallHits:number,fallbackWallHits=0)=>({connectorWallHits,fallbackWallHits,navmeshWallHits:0,offFloor:0});
+  it("fails increases, new edges, and improvements until the baseline is lowered",()=>{
+    const base=makeClipBaseline({a:c(2)},3);
+    expect(clipBaselineDiff(base,makeClipBaseline({a:c(2)},3))).toEqual({increased:[],lowered:[]});
+    expect(clipBaselineDiff(base,makeClipBaseline({a:c(3),b:c(1)},4)).increased.join(" ")).toContain("b.connectorWallHits");
+    expect(clipBaselineDiff(base,makeClipBaseline({a:c(1)},2)).lowered.join(" ")).toContain("a.connectorWallHits");
+    expect(clipBaselineDiff(base,makeClipBaseline({a:c(1)},2)).lowered.join(" ")).toContain("total.unvalidatedJoins");
+  });
+  it("detects lost route coverage and new invalid joins even when incomplete stays constant",()=>{
+    const before=makeClipBaseline({},3,{invalidJoins:0,routablePairs:10,failedRoutePairs:2});
+    const after=makeClipBaseline({},3,{invalidJoins:1,routablePairs:9,failedRoutePairs:3});
+    const errors=clipBaselineDiff(before,after).increased.join(" ");
+    expect(errors).toContain("total.invalidJoins");expect(errors).toContain("total.routablePairs");expect(errors).toContain("total.failedRoutePairs");
+  });
+  it("rejects totals that do not equal their edge entries",()=>{
+    const base=makeClipBaseline({a:c(1)},0);base.total.connectorWallHits=2;
+    expect(()=>clipBaselineDiff(base,makeClipBaseline({a:c(1)},0))).toThrow("inconsistent baseline total");
+  });
+});
+
 describe("public station navmesh gate",()=>{
   it.each(["ikebukuro","shinjuku"])("audits %s against its committed fallback list",station=>{
     const file=path.resolve(`stations/${station}/navmesh-fallback.json`);
     const allowed=JSON.parse(fs.readFileSync(file,"utf8"));
+    const baseline=JSON.parse(fs.readFileSync(path.resolve(`stations/${station}/navmesh-clip-baseline.json`),"utf8"));
     const previous=process.env.GTEKI_PRIVATE_DIR; delete process.env.GTEKI_PRIVATE_DIR;
     let result:ReturnType<typeof measureFallbacks>;
     try { result=measureFallbacks(station,file); } finally { if(previous!==undefined) process.env.GTEKI_PRIVATE_DIR=previous; }
     const diff=fallbackDiff(allowed,result.entries), segment=result.audit.segmentTotals.sceneRaycast;
     console.log(`${station} gate ${Math.round(result.elapsedMs)} ms, bake ${Math.round(result.audit.bakeProvenance.bakeMs)} ms`);
     const errors:string[]=[];
+    if(process.env.GITHUB_EVENT_NAME==="pull_request") {
+      const oldFallback=previousVersion(`stations/${station}/navmesh-fallback.json`),oldBaseline=previousVersion(`stations/${station}/navmesh-clip-baseline.json`);
+      if(oldFallback) {const prior=fallbackDiff(oldFallback as typeof allowed,allowed);if(prior.added.length) errors.push(`fallback list grew from PR base: ${prior.added.join(", ")}`);}
+      if(oldBaseline) {const prior=clipBaselineDiff(oldBaseline as typeof baseline,baseline);if(prior.increased.length) errors.push(`clip baseline grew from PR base: ${prior.increased.join(", ")}`);}
+    }
     if(diff.added.length) errors.push(`unlisted failed edges: ${diff.added.join(", ")}`);
     if(diff.removed.length) errors.push(`remove these from the list: ${diff.removed.join(", ")}`);
     if(diff.duplicateAllowed || diff.duplicateActual || diff.grew) errors.push("duplicate or growing fallback list");
     if(!result.audit.routesAudited || !result.audit.completeAuditedRoutes) errors.push("no completed routable routes were audited");
-    if(result.audit.incompleteRoutes) errors.push(`incomplete routes not yet validated with fallback joins: ${result.audit.incompleteRoutes}`);
-    if(result.audit.invalidJoinRoutes) errors.push(`invalid route joins: ${result.audit.invalidJoinRoutes}`);
-    for(const kind of ["navmesh","connector"]) if(segment[kind].wallHits || segment[kind].offFloor || segment[kind].noFloor) errors.push(`${kind} clips: ${JSON.stringify(segment[kind])}`);
-    for(const kind of ["navmesh","connector"]) if(result.audit.uniqueEdgeScene[kind].wallHits || result.audit.uniqueEdgeScene[kind].offFloor || result.audit.uniqueEdgeScene[kind].noFloor) errors.push(`unique ${kind} clips: ${JSON.stringify(result.audit.uniqueEdgeScene[kind])}`);
-    if(result.audit.fallbackAudit.failed.length) errors.push(`fallback clips: ${JSON.stringify(result.audit.fallbackAudit.totals)}; edges: ${result.audit.fallbackAudit.failed.join(", ")}`);
+    const clips=clipBaselineDiff(baseline,baselineForAudit(result.audit));
+    if(clips.increased.length) errors.push(`clip baseline exceeded: ${clips.increased.join(", ")}`);
+    if(clips.lowered.length) errors.push(`lower the baseline for: ${clips.lowered.join(", ")}`);
+    for(const kind of ["navmesh","connector"]) if(segment[kind].noFloor || result.audit.uniqueEdgeScene[kind].noFloor) errors.push(`${kind} has samples without floor`);
+    if(result.audit.fallbackAudit.totals.noFloor) errors.push(`fallback has ${result.audit.fallbackAudit.totals.noFloor} samples without floor`);
     expect(errors,errors.join("\n")).toEqual([]);
   },180_000);
 });

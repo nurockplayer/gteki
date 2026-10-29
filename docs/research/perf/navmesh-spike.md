@@ -316,6 +316,16 @@ The Shinjuku unique-edge audit also found two connector wall hits. The fallback 
 
 Oracle's review found that the audit does not assemble hybrid routes or validate their fallback joins, and only covers edges used by selected routes. The gate therefore fails closed on incomplete routes until hybrid route validation exists; it is not yet a usable green gate for a station with legitimate fallbacks. It also requires a completed route, checks successful edges on incomplete routes and rejects fallback off-floor/no-floor results as well as wall hits. Other unresolved review risks include direct `--gate` versus test parity, POI and directed-edge coverage, and private intermediate files if the process is killed. The user's specified scene-raycast height remains the gate variant.
 
+## Clip ratchet
+
+2026-10-30 04:54 JST: Public baselines record the existing scene-height samples rather than requiring zero. Ikebukuro has no recorded clips; Shinjuku records 16 connector and three fallback wall-hit samples, zero navmesh wall hits and zero off-floor samples. The `unvalidatedJoins` total is 72 for Shinjuku and zero for Ikebukuro: this is the number of incomplete routes whose fallback joins have not been assembled, not a count of distinct physical joins. Invalid join counts and route coverage are tracked separately.
+
+The gate rejects any edge or total increase, and asks for a baseline reduction when a count falls. PR CI also compares the two committed lists to the base parent, allowing removals and decreases but rejecting additions and increases; first-time seeding is allowed if the base lacks the files. The baseline writer accepts `--write-baseline` and applies the same private-output restriction as the fallback writer.
+
+The 3 GB test run at 2026-10-30 04:56 JST passed all 1,348 tests, including both station gates. The PR-base comparison depends on the GitHub pull-request merge checkout and has not been exercised in hosted CI on this spike.
+
+Oracle flagged that route-weighted clip counts can change when route frequency changes, that route counts alone do not preserve pair identities or failure direction, and that scene projection can hide raw height differences. These remain limitations: the director explicitly requested the measured 16/3 route-weighted baseline and previously selected scene-raycast heights. Coverage and invalid-join counts and baseline-total consistency checks were added after review, but were not independently re-reviewed. The ratchet is a transition mechanism; it does not validate fallback joins or make existing clips safe.
+
 ## Obstacle report
 
 2026-10-30 04:40 JST: Public Shinjuku's failed non-vertical edges yielded no sampled gaps. The report captured 16 connector and 3 fallback wall-hit samples; all 19 were attributed to greybox geometry. There were no gap blockers to count by source or facing. The detailed public report is `.qa/navmesh/shinjuku-obstacles.json`; private reports must be written under `GTEKI_PRIVATE_DIR`.

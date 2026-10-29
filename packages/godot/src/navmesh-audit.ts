@@ -279,6 +279,9 @@ async function main() {
   const wallName=(detail:SampleDetail)=>{const object=detail.wallCollider===undefined ? undefined : probe.collider[detail.wallCollider]; return object ? objectNames(object) : {name:detail.wallSegment===undefined ? "unidentified collider" : "wall segment",parents:[] as string[],source:"unknown"};};
   const clipSites:{kind:"connector"|"fallback";edgeId:string;mode:string;join:boolean;point:{x:number;y:number;z:number}|null;wall:ReturnType<typeof wallName>}[]=[];
   const completedConnectorKeys=new Set<string>();
+  const completedEdgeKeys=new Set<string>();
+  const clipCounts:Record<string,{connectorWallHits:number;fallbackWallHits:number;navmeshWallHits:number;offFloor:number}>=Object.create(null);
+  const recordClip=(id:string,field:"connectorWallHits"|"fallbackWallHits"|"navmeshWallHits"|"offFloor")=>{const c=clipCounts[id] ??= {connectorWallHits:0,fallbackWallHits:0,navmeshWallHits:0,offFloor:0};c[field]++;};
   const onLine=(line:readonly PolylinePoint[],p:PolylinePoint)=>line.slice(1).some((b,j)=>{const a=line[j]!,dx=b.x-a.x,dy=b.y-a.y,dz=b.z-a.z,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy+(p.z-a.z)*dz)/(dx*dx+dy*dy+dz*dz || 1)));return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy,p.z-a.z-t*dz)<0.05;});
   let routeCount = 0, completed = 0, pure = 0, hybrid = 0, incomplete = 0, invalidJoinRoutes = 0, unpairedFallbackRoutes = 0, fallbackRoutesCompleted = 0, routeFailures = 0, stepUses = 0, joinsWithGap = 0, maxJoinGapM = 0;
   const routeSteps: RouteStep[][] = [];
@@ -329,7 +332,7 @@ async function main() {
       walked.push(...pts.slice(skip).map((p, j) => ({ ...p, stepIndex: entryIndex, fallback: entry.stairLink, join: !!last && !skip && j === 0 })));
     }
     if (!walked.length) { incomplete++; continue; }
-    completed++; if (consumed.size) fallbackRoutesCompleted++; for (const entry of entries) {for (const id of entry.fallbackUsed) usedFallbackEdges.add(id);if(entry.connector) completedConnectorKeys.add(`${entry.step.edgeId}\0${entry.step.reversed ? 1:0}`);} if (entries.some(e => e.connector)) hybrid++; else pure++;
+    completed++; if (consumed.size) fallbackRoutesCompleted++; for (const entry of entries) {for (const id of entry.fallbackUsed) usedFallbackEdges.add(id);const key=`${entry.step.edgeId}\0${entry.step.reversed ? 1:0}`;completedEdgeKeys.add(key);if(entry.connector) completedConnectorKeys.add(key);} if (entries.some(e => e.connector)) hybrid++; else pure++;
     const samples = resampleAudit(walked) as Marked[];
     const rawDetails: SampleDetail[] = [];
     add(rawTotal, auditPolyline(probe, samples, { alreadySampled:true, detail:rawDetails, cache:auditCache }));
@@ -361,6 +364,8 @@ async function main() {
         target.samples++; if (detail.floor === "off") target.offFloor++; if (detail.floor === "none") target.noFloor++; if (detail.wallBefore) target.wallHits++;
       }
       const sample=samples[i]!, detail=sceneInfo[i]!, entry=entries[sample.stepIndex];
+      if (entry && detail.floor === "off") recordClip(entry.step.edgeId,"offFloor");
+      if (entry && detail.wallBefore) recordClip(entry.step.edgeId,sample.connector ? "connectorWallHits" : "navmeshWallHits");
       if (sample.connector && detail.wallBefore && entry) {
         const join=!!sample.join || !onLine(entry.graph,sample) || (i>0 && !onLine(entry.graph,samples[i-1]!));
         clipSites.push({kind:"connector",edgeId:entry.step.edgeId,mode:entry.step.mode,join,point:detail.wallPoint ? {x:detail.wallPoint.x,y:detail.wallPoint.z,z:-detail.wallPoint.y} : null,wall:wallName(detail)});
@@ -406,6 +411,7 @@ async function main() {
     for(let i=0;i<details.length;i++) {
       const d=details[i]!,target=samples[i]!.connector ? uniqueEdgeScene.connector : uniqueEdgeScene.navmesh;
       target.samples++; if(d.floor==="off") target.offFloor++; if(d.floor==="none") target.noFloor++; if(d.wallBefore) target.wallHits++;
+      if(!completedEdgeKeys.has(key)) {if(d.floor==="off") recordClip(entry.step.edgeId,"offFloor");if(d.wallBefore) recordClip(entry.step.edgeId,samples[i]!.connector ? "connectorWallHits":"navmeshWallHits");}
       if(samples[i]!.connector && d.wallBefore && !completedConnectorKeys.has(key)) clipSites.push({kind:"connector",edgeId:entry.step.edgeId,mode:entry.step.mode,join:!onLine(entry.graph,samples[i]!) || (i>0 && !onLine(entry.graph,samples[i-1]!)),point:d.wallPoint ? {x:d.wallPoint.x,y:d.wallPoint.z,z:-d.wallPoint.y}:null,wall:wallName(d)});
     }
   }
@@ -415,7 +421,7 @@ async function main() {
   const fallbackAudit=auditFallbackSegments(probe,failed.filter(e=>allowedIds.has(e.step.edgeId)).map(e=>({edgeId:e.step.edgeId,points:e.graph})));
   for (const entry of failed.filter(e=>allowedIds.has(e.step.edgeId))) {
     const details:SampleDetail[]=[]; auditPolyline(probe,entry.graph,{detail:details});
-    for (const detail of details) if(detail.wallBefore) clipSites.push({kind:"fallback",edgeId:entry.step.edgeId,mode:entry.step.mode,join:false,point:detail.wallPoint ? {x:detail.wallPoint.x,y:detail.wallPoint.z,z:-detail.wallPoint.y} : null,wall:wallName(detail)});
+    for (const detail of details) {if(detail.floor==="off") recordClip(entry.step.edgeId,"offFloor");if(detail.wallBefore) {recordClip(entry.step.edgeId,"fallbackWallHits");clipSites.push({kind:"fallback",edgeId:entry.step.edgeId,mode:entry.step.mode,join:false,point:detail.wallPoint ? {x:detail.wallPoint.x,y:detail.wallPoint.z,z:-detail.wallPoint.y} : null,wall:wallName(detail)});}}
   }
   const diagnosed = new Map<string, ReturnType<typeof diagnoseVerticalSnap>>();
   for (const step of usedVerticalSteps.values()) {
@@ -460,7 +466,7 @@ async function main() {
     const key = `${e.mode} | ${e.fromSnapped && e.toSnapped ? "both snapped" : "snap missing"} | ${e.connectivity} | ${e.reason}`;
     failureClasses[key] = (failureClasses[key] ?? 0)+1;
   }
-  const result = { station, withGreybox, snapFallback, queryMaxNodes:8192, queryDiagnosis, fallbackAudit, clipSites, gateResult:gate ? gateResult : null, gapClasses, blockingColliderKinds, linkAttachmentDiagnosis:provenance.linkAttachmentDiagnosis ?? null, fallbackRecoveredAttached:provenance.fallbackRecovered ?? 0, fallbackEdgesUsed:usedFallbackEdges.size, fallbackRoutesCompleted, unpairedFallbackRoutes, bakeProvenance: provenance, collisionAuditUsesOriginalGateObstacles: provenance.ignoreGates, affectedIncompleteRoutesByMode:affectedByMode, failureClasses, failureEdges:failures, greyboxRuns: grey?.grey.stats.runs ?? null, greyboxLandingPads:grey?.grey.stats.landingPads ?? null, runtime, orderedPoiPairs: pois.length * (pois.length-1), routesAudited: routeCount, failedRoutePairs: routeFailures, completeAuditedRoutes: completed, pureNavmeshRoutes: pure, routesWithConnectors: hybrid, incompleteRoutes: incomplete, invalidJoinRoutes, joinsWithGap, maxJoinGapM,
+  const result = { station, withGreybox, snapFallback, queryMaxNodes:8192, queryDiagnosis, fallbackAudit, clipSites, clipCounts, gateResult:gate ? gateResult : null, gapClasses, blockingColliderKinds, linkAttachmentDiagnosis:provenance.linkAttachmentDiagnosis ?? null, fallbackRecoveredAttached:provenance.fallbackRecovered ?? 0, fallbackEdgesUsed:usedFallbackEdges.size, fallbackRoutesCompleted, unpairedFallbackRoutes, bakeProvenance: provenance, collisionAuditUsesOriginalGateObstacles: provenance.ignoreGates, affectedIncompleteRoutesByMode:affectedByMode, failureClasses, failureEdges:failures, greyboxRuns: grey?.grey.stats.runs ?? null, greyboxLandingPads:grey?.grey.stats.landingPads ?? null, runtime, orderedPoiPairs: pois.length * (pois.length-1), routesAudited: routeCount, failedRoutePairs: routeFailures, completeAuditedRoutes: completed, pureNavmeshRoutes: pure, routesWithConnectors: hybrid, incompleteRoutes: incomplete, invalidJoinRoutes, joinsWithGap, maxJoinGapM,
     edgeUses: stepUses, uniqueEdgesUsed: new Set([...cache.values()].map(e => e.step.edgeId)).size, directedEdgesQueried: cache.size,
     navmeshTotals: navTotal, snapDiagnosis, navmeshSegmentHeights:{default:walkingDetail,gateSceneRaycast:walkingScene}, uniqueEdgeScene, segmentTotals:{ raw:{connector:connectorRaw,navmesh:walkingRaw}, detail:{connector:connectorDetail,navmesh:walkingDetail}, sceneRaycast:{connector:connectorScene,navmesh:walkingScene} }, diagnosis: { raw: rawTotal, detail: navTotal, sceneRaycast: sceneTotal,
       detailHeightUnavailableSamples: detailMissing, detailUnavailableStairFallback: detailMissingFallback, detailUnavailableJoin: detailMissingJoin, detailUnavailableAmbiguous: detailAmbiguous, detailLargeHeightJumps, detailMaxHeightJump, offFloorWithDetail, offFloorWithoutDetail, heightCorrectionM: { count:heightCorrections.length, p50:percentile(heightCorrections,0.5), p95:percentile(heightCorrections,0.95), max:heightCorrections.length ? heightCorrections.reduce((a,b)=>Math.max(a,b),0) : null }, sceneFloorUnavailableSamples: sceneMissing,

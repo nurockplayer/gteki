@@ -3,6 +3,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import { qaDirectory } from "./navmesh-qa-path.ts";
+import { baselineForAudit } from "./navmesh-clip-baseline.ts";
 
 type Failure = { edgeId:string; mode:string; reason:string|null; connectivity:string; gaps:{class:string}[] };
 export type FallbackEntry = {edgeId:string; mode:string; reason:string};
@@ -56,22 +57,21 @@ export function measureFallbacks(station:string, fallbackList?:string, includeFa
 }
 
 function main() {
-  const args=process.argv.slice(2); let station="",write="";
+  const args=process.argv.slice(2); let station="",write="",writeBaseline="";
   for(let i=0;i<args.length;i++) {
     if(args[i]==="--station" && args[i+1]) station=args[++i]!;
     else if(args[i]==="--write" && args[i+1]) write=args[++i]!;
+    else if(args[i]==="--write-baseline" && args[i+1]) writeBaseline=args[++i]!;
     else if(args[i]==="--with-greybox") { /* greybox is the default */ }
     else throw new Error(`unknown or incomplete argument: ${args[i]}`);
   }
-  if(!station || !write) throw new Error("use --station <station> [--with-greybox] --write <path>");
-  const dest=fallbackDestination(write,process.env.GTEKI_PRIVATE_DIR);
-  const result=measureFallbacks(station);
-  const dir=fs.mkdtempSync(path.join(path.dirname(dest),".fallback-"));
-  try {
-    const temporary=path.join(dir,"list.json");
-    fs.writeFileSync(temporary,JSON.stringify(result.entries,null,2)+"\n",{mode:0o600,flag:"wx"});
-    fs.renameSync(temporary,dest);
-  } finally {fs.rmSync(dir,{recursive:true,force:true});}
+  if(!station || (!write && !writeBaseline)) throw new Error("use --station <station> [--with-greybox] [--write <path>] [--write-baseline <path>]");
+  const dest=write ? fallbackDestination(write,process.env.GTEKI_PRIVATE_DIR) : "", baselineDest=writeBaseline ? fallbackDestination(writeBaseline,process.env.GTEKI_PRIVATE_DIR) : "";
+  if(dest && dest===baselineDest) throw new Error("fallback and baseline output must differ");
+  const result=measureFallbacks(station,undefined,!!baselineDest);
+  const publish=(file:string,content:unknown)=>{const dir=fs.mkdtempSync(path.join(path.dirname(file),".fallback-"));try {const temporary=path.join(dir,"list.json");fs.writeFileSync(temporary,JSON.stringify(content,null,2)+"\n",{mode:0o600,flag:"wx"});fs.renameSync(temporary,file);} finally {fs.rmSync(dir,{recursive:true,force:true});}};
+  if(dest) publish(dest,result.entries);
+  if(baselineDest) publish(baselineDest,baselineForAudit(result.audit));
   console.log(JSON.stringify({station,edges:result.entries.length,bakeMs:result.audit.bakeProvenance.bakeMs,elapsedMs:result.elapsedMs}));
 }
 if (process.argv[1] && import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href) main();
