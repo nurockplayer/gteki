@@ -84,6 +84,11 @@ describe("scene floor draping", () => {
   it("does not flag unmodelled floor alone", () => {
     expect(drapeEdges({ ground: [], collider: [], walls: [] }, bundle(), new Set(["edge"])).sceneGaps.has("edge")).toBe(false);
   });
+  it("clears an automatic flag when only unmodelled floor remains", () => {
+    const b = bundle();
+    b.edges[0]!.attributes = { ...b.edges[0]!.attributes, sceneGap: true, sceneGapReason: "drape-unresolved" };
+    expect(drapeEdges({ ground: [], collider: [], walls: [] }, b, new Set(["edge"])).sceneGaps.get("edge")).toBe(false);
+  });
   it.each([[0, true], [2.9, false]])("distinguishes a wall at x=%s from the model boundary", (wallX, flagged) => {
     const floor = new THREE.Mesh(new THREE.BoxGeometry(6, 0.2, 10), new THREE.MeshBasicMaterial());
     floor.position.y = -0.1; floor.updateMatrixWorld(true);

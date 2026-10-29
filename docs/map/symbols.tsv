@@ -478,8 +478,8 @@ rendererToEnu	const	packages/geo/src/index.ts	139
 ENU_TO_RENDERER_MATRIX	const	packages/geo/src/index.ts	142
 @gteki/godot:export:scene	script	packages/godot/package.json	7
 drapeEdges	function	packages/godot/src/drape-edges.ts	30
-applyDrapeGeometry	function	packages/godot/src/drape-edges.ts	108
-drapePaths	function	packages/godot/src/drape-edges.ts	128
+applyDrapeGeometry	function	packages/godot/src/drape-edges.ts	109
+drapePaths	function	packages/godot/src/drape-edges.ts	129
 SIDECAR_SCHEMA	const	packages/godot/src/export-scene.ts	26
 SceneSidecar	interface	packages/godot/src/export-scene.ts	29
 Bounds	interface	packages/godot/src/export-scene.ts	60

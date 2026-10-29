@@ -99,7 +99,8 @@ export function drapeEdges(probe: SceneProbe, bundle: StationBundle, edgeIds: Se
     const audit = auditPolyline(probe, drawn(finalBundle, finalEdge), { skipInteriorFloor: edge.mode === "elevator", detail });
     const interiorWall = detail.some((sample, i) => sample.wallBefore && !detail.slice(Math.max(0, i - 2), i + 2).some(d => d.floor === "none"));
     const flag = audit.offFloor > 0 || interiorWall;
-    if (flag || edge.attributes?.sceneGapReason === "drape-unresolved" && violations(audit) === 0) sceneGaps.set(edge.id, flag);
+    // An earlier automatic flag is cleared once no in-model clip remains (no-floor samples alone draw dashed anyway).
+    if (flag || edge.attributes?.sceneGapReason === "drape-unresolved") sceneGaps.set(edge.id, flag);
   }
   return { nodes, geometry, unresolved, sceneGaps };
 }
