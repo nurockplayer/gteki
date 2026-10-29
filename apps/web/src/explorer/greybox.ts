@@ -68,7 +68,7 @@ export interface Box {
   height: number;
 }
 
-export interface GreyboxStats { runs: number; lengthM: number; portals: number; meshes: number; triangles: number; buildMs: number }
+export interface GreyboxStats { runs: number; lengthM: number; portals: number; meshes: number; triangles: number; buildMs: number; overBudget: string | null }
 export interface GreyboxScene {
   colliderNear(p: V3, r: number): boolean;
   wallHit(a: V3, b: V3): V3 | null;
@@ -104,8 +104,8 @@ export function splitWallsAtOpenings(walls: readonly Segment2[], openings: reado
   return result;
 }
 
-type Batch = { shell: number[]; colors: number[]; lights: number[]; kerb: number[]; portal: number[]; portalColors: number[] };
-const batch = (): Batch => ({ shell: [], colors: [], lights: [], kerb: [], portal: [], portalColors: [] });
+type Batch = { shell: number[]; colors: number[]; lights: number[]; lightColors: number[]; kerb: number[]; portal: number[]; portalColors: number[] };
+const batch = (): Batch => ({ shell: [], colors: [], lights: [], lightColors: [], kerb: [], portal: [], portalColors: [] });
 const enu = (v: THREE.Vector3): V3 => ({ x: v.x, y: -v.z, z: v.y });
 
 /** Append a two-sided quad; vertex shade is baked into the shell's vertex colours. */
@@ -163,7 +163,7 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
   const wallSegments: Segment2[] = [];
   let lengthM = 0;
   const shellMat = new THREE.MeshLambertMaterial({ color: 0x9a9690, emissive: 0x9a9690, emissiveIntensity: 0.35, vertexColors: true, side: THREE.DoubleSide });
-  const lightMat = new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false, side: THREE.DoubleSide });
+  const lightMat = new THREE.MeshBasicMaterial({ color: 0xffffff, vertexColors: true, toneMapped: false, side: THREE.DoubleSide });
   const kerbMat = new THREE.MeshBasicMaterial({ color: 0xffb547, toneMapped: false, side: THREE.DoubleSide });
   for (const run of runs) {
     const width = widthOf(run.edge), half = width / 2;
@@ -178,8 +178,8 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
       const across = new THREE.Vector3(-along.z, 0, along.x);
       const offset = (p: THREE.Vector3, side: number, height: number) => p.clone().addScaledVector(across, side).add(new THREE.Vector3(0, height, 0));
       const al = offset(a, -half, 0), ar = offset(a, half, 0), zl = offset(z, -half, 0), zr = offset(z, half, 0);
-      quad(b.shell, b.colors, al, zl, z, a, [0.62, 0.62, 1, 1]);
-      quad(b.shell, b.colors, a, z, zr, ar, [1, 1, 0.62, 0.62]);
+      quad(b.shell, b.colors, a, z, zl, al, [1, 1, 0.62, 0.62]);
+      quad(b.shell, b.colors, ar, zr, z, a, [0.62, 0.62, 1, 1]);
       quad(b.shell, b.colors, offset(a, -half, -0.12), offset(a, half, -0.12), offset(z, half, -0.12), offset(z, -half, -0.12));
       for (const side of [-1, 1]) {
         quad(b.shell, b.colors, offset(a, side * half, -0.12), offset(z, side * half, -0.12), offset(z, side * half, 0), offset(a, side * half, 0));
@@ -201,19 +201,25 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
           mid.y += 1.3;
           if (scene.colliderNear(enu(mid), 0.3)) continue;
           const pm = p.clone().add(new THREE.Vector3(0, 1.3, 0)), qm = q.clone().add(new THREE.Vector3(0, 1.3, 0));
-          quad(b.shell, b.colors, p, q, qm, pm, [0.62, 0.62, 1, 1]);
-          quad(b.shell, b.colors, pm, qm, q.clone().add(new THREE.Vector3(0, 2.6, 0)), p.clone().add(new THREE.Vector3(0, 2.6, 0)), [1, 1, 0.62, 0.62]);
+          const topP = p.clone().add(new THREE.Vector3(0, 2.6, 0)), topQ = q.clone().add(new THREE.Vector3(0, 2.6, 0));
+          if (side < 0) {
+            quad(b.shell, b.colors, pm, qm, q, p, [1, 1, 0.62, 0.62]);
+            quad(b.shell, b.colors, topP, topQ, qm, pm, [0.62, 0.62, 1, 1]);
+          } else {
+            quad(b.shell, b.colors, p, q, qm, pm, [0.62, 0.62, 1, 1]);
+            quad(b.shell, b.colors, pm, qm, topQ, topP, [1, 1, 0.62, 0.62]);
+          }
           wallSegments.push({ ax: p.x, az: p.z, bx: q.x, bz: q.z, yMin: Math.min(p.y, q.y), yMax: Math.max(p.y, q.y) + 2.6 });
         }
       }
-      quad(b.shell, b.colors, offset(a, -half, 2.6), offset(a, 0, 2.6), offset(z, 0, 2.6), offset(z, -half, 2.6), [0.62, 1, 1, 0.62]);
-      quad(b.shell, b.colors, offset(a, 0, 2.6), offset(a, half, 2.6), offset(z, half, 2.6), offset(z, 0, 2.6), [1, 0.62, 0.62, 1]);
+      quad(b.shell, b.colors, offset(z, -half, 2.6), offset(z, 0, 2.6), offset(a, 0, 2.6), offset(a, -half, 2.6), [0.62, 1, 1, 0.62]);
+      quad(b.shell, b.colors, offset(z, 0, 2.6), offset(z, half, 2.6), offset(a, half, 2.6), offset(a, 0, 2.6), [1, 0.62, 0.62, 1]);
       while (nextLight <= travelled + length) {
         const t = (nextLight - travelled) / length;
         if (t >= 0) {
           const center = a.clone().lerp(z, t).add(new THREE.Vector3(0, 2.59, 0));
           const p = center.clone().addScaledVector(along, -0.6), q = center.clone().addScaledVector(along, 0.6);
-          quad(b.lights, null, p.clone().addScaledVector(across, -0.075), q.clone().addScaledVector(across, -0.075), q.clone().addScaledVector(across, 0.075), p.clone().addScaledVector(across, 0.075));
+          quad(b.lights, b.lightColors, p.clone().addScaledVector(across, -0.075), q.clone().addScaledVector(across, -0.075), q.clone().addScaledVector(across, 0.075), p.clone().addScaledVector(across, 0.075));
         }
         nextLight += 6;
       }
@@ -226,14 +232,26 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
         if (hit) {
           const center = R(hit.x, hit.y, hit.z);
           openings.push({ center, along: along.clone(), across: across.clone(), width, depth: 0.6, height: 2.3 });
-          // Thin planar jambs and lintel; amber strips make the reveal visible.
+          // A panel marks the modelled face; it is decorative and never a collider.
+          const modelledSign = run.edge.attributes?.sceneGap === true ? (i === 1 ? -1 : 1) : (hasFloor(pa) ? -1 : 1);
+          const faceAt = (face: number) => {
+            const outside = center.clone().addScaledVector(along, face * 0.3);
+            const inside = center.clone().addScaledVector(along, -face * 0.3);
+            const surface = scene.wallHit(enu(outside), enu(inside));
+            return (surface ? R(surface.x, surface.y, surface.z) : center.clone()).addScaledVector(along, face * 0.02);
+          };
+          const panel = faceAt(modelledSign);
+          quad(b.portal, b.portalColors, offset(panel, -half, 0), offset(panel, half, 0), offset(panel, half, 2.3), offset(panel, -half, 2.3), [0.16, 0.16, 0.55, 0.55]);
+          for (const face of [-1, 1]) {
+          const frame = faceAt(face);
           for (const side of [-1, 1]) {
             const outer = side * (half + 0.08), inner = side * half;
-            quad(b.portal, b.portalColors, offset(center, inner, 0), offset(center, outer, 0), offset(center, outer, 2.4), offset(center, inner, 2.4));
-            quad(b.kerb, null, offset(center, inner, 0), offset(center, inner + side * 0.03, 0), offset(center, inner + side * 0.03, 2.3), offset(center, inner, 2.3));
+            quad(b.portal, b.portalColors, offset(frame, inner, 0), offset(frame, outer, 0), offset(frame, outer, 2.4), offset(frame, inner, 2.4));
+            quad(b.kerb, null, offset(frame, inner, 0), offset(frame, inner + side * 0.03, 0), offset(frame, inner + side * 0.03, 2.3), offset(frame, inner, 2.3));
           }
-          quad(b.portal, b.portalColors, offset(center, -half - 0.08, 2.3), offset(center, half + 0.08, 2.3), offset(center, half + 0.08, 2.4), offset(center, -half - 0.08, 2.4));
-          quad(b.kerb, null, offset(center, -half, 2.3), offset(center, half, 2.3), offset(center, half, 2.33), offset(center, -half, 2.33));
+          quad(b.portal, b.portalColors, offset(frame, -half - 0.08, 2.3), offset(frame, half + 0.08, 2.3), offset(frame, half + 0.08, 2.4), offset(frame, -half - 0.08, 2.4));
+          quad(b.kerb, null, offset(frame, -half, 2.3), offset(frame, half, 2.3), offset(frame, half, 2.33), offset(frame, -half, 2.33));
+          }
         }
       }
       travelled += length; lengthM += length;
@@ -248,17 +266,28 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
         const center = j.at.clone().add(new THREE.Vector3(0, height, 0));
         const p = center.clone().add(new THREE.Vector3(Math.cos(a) * radius, 0, Math.sin(a) * radius));
         const q = center.clone().add(new THREE.Vector3(Math.cos(z) * radius, 0, Math.sin(z) * radius));
-        quad(b.shell, b.colors, center, p, q, center, [0.72, 0.72, 0.72, 0.72]);
+        quad(b.shell, b.colors, center, height === 0 ? q : p, height === 0 ? p : q, center, [0.72, 0.72, 0.72, 0.72]);
       }
     }
   }
   const root = new THREE.Group(), walkable: THREE.Object3D[] = [], colliders: THREE.Object3D[] = [];
+  const total = () => [...batches.values()].reduce((n, b) => n + (b.shell.length + b.portal.length + b.lights.length + b.kerb.length) / 9, 0);
+  const dropped: string[] = [];
+  if (total() > 60000) { for (const b of batches.values()) { b.lights = []; b.lightColors = []; } dropped.push("lights"); }
+  if (total() > 60000) { for (const b of batches.values()) b.kerb = []; dropped.push("kerb"); }
+  if (total() > 60000) {
+    let remaining = 60000 * 9;
+    for (const b of batches.values()) for (const [data, colors] of [[b.shell, b.colors], [b.portal, b.portalColors]] as const) {
+      const keep = Math.min(data.length, remaining); data.length = keep; colors.length = keep; remaining -= keep;
+    }
+    dropped.push("shell truncated");
+  }
   let triangles = 0;
   for (const b of batches.values()) {
-    const shellName = b.portal.length ? "greybox-portal" : "greybox-shell";
-    b.shell = b.shell.concat(b.portal);
-    b.colors = b.colors.concat(b.portalColors);
-    for (const [name, data, colors, material] of [[shellName, b.shell, b.colors, shellMat], ["greybox-lights", b.lights, null, lightMat], ["greybox-kerb", b.kerb, null, kerbMat]] as const) {
+    const hasPortal = b.portal.length > 0;
+    b.lights = b.lights.concat(b.portal);
+    b.lightColors = b.lightColors.concat(b.portalColors);
+    for (const [name, data, colors, material] of [["greybox-shell", b.shell, b.colors, shellMat], ["greybox-lights", b.lights, b.lightColors, lightMat], ["greybox-kerb", b.kerb, null, kerbMat]] as const) {
       if (!data.length) continue;
       const part = new THREE.BufferGeometry();
       part.setAttribute("position", new THREE.Float32BufferAttribute(data, 3));
@@ -276,12 +305,12 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
       const geometry = mergeVertices(merged); merged.dispose();
       const mesh = new THREE.Mesh(geometry, material); mesh.name = name;
       mesh.userData = { greybox: true, approximate: true };
-      if (name === "greybox-portal") {
-        const shell = new THREE.Group(); shell.name = "greybox-shell"; shell.add(mesh); root.add(shell);
+      if (name === "greybox-lights" && hasPortal) {
+        const portal = new THREE.Group(); portal.name = "greybox-portal"; portal.add(mesh); root.add(portal);
       } else root.add(mesh);
       triangles += data.length / 9;
       if (material === shellMat) { walkable.push(mesh); colliders.push(mesh); }
     }
   }
-  return { root, walkable, colliders, wallSegments, openings, stats: { runs: runs.length, lengthM, portals: openings.length, meshes: root.children.length, triangles, buildMs: performance.now() - started } satisfies GreyboxStats };
+  return { root, walkable, colliders, wallSegments, openings, stats: { runs: runs.length, lengthM, portals: openings.length, meshes: root.children.length, triangles, buildMs: performance.now() - started, overBudget: dropped.length ? `Dropped ${dropped.join(", ")} to meet 60k triangles` : null } satisfies GreyboxStats };
 }

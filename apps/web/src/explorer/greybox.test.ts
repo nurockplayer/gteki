@@ -55,6 +55,9 @@ describe("buildGreybox", () => {
     shell.geometry.computeBoundingBox();
     expect(shell.geometry.boundingBox!.max.z - shell.geometry.boundingBox!.min.z).toBeCloseTo(MODE_WIDTH.walk!);
     const mat = shell.material as THREE.MeshLambertMaterial;
+    expect(mat.side).toBe(THREE.DoubleSide);
+    const position = shell.geometry.getAttribute("position"), normal = shell.geometry.getAttribute("normal");
+    expect(Array.from({ length: position.count }, (_, i) => i).some((i) => Math.abs(position.getY(i) - 2.6) < 0.001 && normal.getY(i) < -0.9)).toBe(true);
     expect(mat.emissiveIntensity).toBeGreaterThanOrEqual(0.35);
     expect(mat.emissive.r).toBeCloseTo(mat.color.r);
     const colors = shell.geometry.getAttribute("color");
@@ -117,11 +120,23 @@ describe("buildGreybox", () => {
     expect(result.stats.portals).toBe(1);
     expect(result.stats.meshes).toBeLessThanOrEqual(3);
     expect(result.root.getObjectByName("greybox-portal")).toBeTruthy();
+    const panel = result.root.getObjectByName("greybox-lights") as THREE.Mesh;
+    expect(panel.geometry.getAttribute("color").array).toContain(Math.round(0.16 * 255));
     expect(result.openings[0]!.width).toBeCloseTo(MODE_WIDTH.walk!);
     const wall = { ax: 2.25, az: -3, bx: 2.25, bz: 3, yMin: 0, yMax: 3 };
     const split = splitWallsAtOpenings([wall], result.openings);
     expect(resolveWalls(2.25, 0, 0.2, 0, 1.8, split).x).toBeCloseTo(2.25);
     expect(Math.abs(resolveWalls(2.25, 2.3, 0.2, 0, 1.8, split).x - 2.25)).toBeGreaterThan(0.1);
+  });
+
+  it("drops decorative geometry in order and caps large networks", () => {
+    const long = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 2000, y: 0, z: 0 } }] };
+    const result = buildGreybox(long, () => true, () => false, emptyScene, "low");
+    expect(result.stats.triangles).toBeLessThanOrEqual(60000);
+    expect(result.stats.overBudget).toContain("lights");
+    expect(result.stats.overBudget).toContain("kerb");
+    expect(result.root.getObjectByName("greybox-lights")).toBeUndefined();
+    expect(result.root.getObjectByName("greybox-kerb")).toBeUndefined();
   });
 
   it("keeps a 400 m two-floor synthetic network within the mesh and triangle budget", () => {

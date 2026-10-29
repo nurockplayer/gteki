@@ -6,6 +6,7 @@ import { Explorer } from "./explorer.ts";
 import { greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox } from "./greyboxScene.ts";
 import { strings } from "../i18n.ts";
 import { darkSampleDistances } from "./routeGroundQa.ts";
+import { OverviewLook } from "./overviewLook.ts";
 
 const bundle = () => createSyntheticBundle([syntheticEdge("hall", "start", "a")]);
 
@@ -21,7 +22,7 @@ function fixture() {
     loadGeneration: 0, disposed: false, mode: "walk", quality: "high", stationCaches: { remember: vi.fn() },
     releaseStationCaches: vi.fn(), clearStation: vi.fn(), ensureAudio: () => false,
     buildStationScene: async () => scene, overviewLook: { set: vi.fn() }, street: { restore: vi.fn(), attach: vi.fn() },
-    scene: new THREE.Scene(), world: new THREE.Group(), overlays: new THREE.Group(), routeGroup: new THREE.Group(),
+    scene: new THREE.Scene(), world: new THREE.Group(), overlays: new THREE.Group(), routeGroup: new THREE.Group(), greyboxPortalColliders: new Map(),
     applyLighting: vi.fn(), cameraCut: { apply: () => [] }, attachShadows: vi.fn(), buildOccluders: vi.fn(),
     setupComposer: vi.fn(), frameAll: vi.fn(), events: {}, ray: new THREE.Raycaster(),
     pos: new THREE.Vector3(1, 0, 0), yaw: -Math.PI / 2, pitch: 0, camDistance: 3,
@@ -51,12 +52,32 @@ describe("greybox station integration", () => {
     expect(result).toMatchObject({ done: true, stuck: false });
     expect(state.pos.x).toBeGreaterThan(4.5);
     expect(state.pos.y).toBeCloseTo(0);
+    const obstacle = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.5, 0.4), new THREE.MeshBasicMaterial());
+    obstacle.position.set(2.3, 0.75, 0); obstacle.updateMatrixWorld(true);
+    state.colliderTargets.push(obstacle);
+    expect(state.blockedByColliders(new THREE.Vector3(1.5, 0, 0), new THREE.Vector3(2.35, 0, 0))).not.toBeNull();
+    state.colliderTargets.pop();
     expect(state.blockedByColliders(new THREE.Vector3(1.5, 0, 2.3), new THREE.Vector3(2.2, 0, 2.3))).not.toBeNull();
     state.mode = "guide";
     state.guideIdentityHoldS = 0;
     state.guide = { pts: [new THREE.Vector3(0, 0, 0), new THREE.Vector3(10, 0, 0)], cum: [0, 10], steps: [-1, 0], s: 2.05, paused: true, stops: [], holding: false, spans: [] };
     state.stepGuide(0.016);
     expect(state.pos.x).toBeCloseTo(2.05);
+  });
+
+  it("cuts away the ceiling in overview and restores it in walk mode", async () => {
+    const { state, loaded } = fixture();
+    state.overviewLook = new OverviewLook(); state.mode = "overview";
+    await state.loadStation(loaded, createRouter(loaded.bundle));
+    const shell = state.greybox.walkable[0] as THREE.Mesh;
+    const ray = new THREE.Raycaster(new THREE.Vector3(5, 10, 0), new THREE.Vector3(0, -1, 0), 0, 9.9);
+    expect((shell.material as THREE.Material).side).toBe(THREE.FrontSide);
+    expect(ray.intersectObject(shell)).toHaveLength(0);
+    expect(state.greybox.root.getObjectByName("greybox-lights")?.visible).toBe(false);
+    state.overviewLook.set(state.scene, state.world, false);
+    expect((shell.material as THREE.Material).side).toBe(THREE.DoubleSide);
+    expect(ray.intersectObject(shell).some((hit) => Math.abs(hit.point.y - 2.6) < 0.001)).toBe(true);
+    expect(state.greybox.root.getObjectByName("greybox-lights")?.visible).toBe(true);
   });
 
   it("detects scene wall intersections and bounds openings in the passage frame", () => {

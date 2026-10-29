@@ -44,7 +44,7 @@ Greybox geometry is built at runtime from the graph that is already loaded, and 
 - **Draw calls:** everything is merged by material per floor, which gives at most 3 meshes per floor (shell, light strips, kerb) plus 1 per elevator car. Station total: at most +12 on desktop and at most +6 on phone (phone merges all floors into one shell).
 - **Triangles:** at most 60 k for the passages and connectors of a whole station; phone treads drop to one quad per 3 steps.
 - **Textures:** none new (procedural only); GPU memory below 2 MiB of vertex buffers.
-- **Build time at load:** at most 30 ms desktop and at most 80 ms phone, measured. If it's over, the build moves to an idle callback after the first frame.
+- **Build time at load:** at most 30 ms desktop and at most 80 ms phone, measured; idle fallback only if real-station acceptance measures it over budget.
 - **Shadows:** none on any tier.
 
 ## Acceptance

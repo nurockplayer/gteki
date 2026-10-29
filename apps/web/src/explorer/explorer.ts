@@ -229,6 +229,7 @@ export class Explorer {
   private stationScene: StationScene | null = null;
   private greybox: ReturnType<typeof buildGreybox> | null = null;
   private greyboxOpenings: Box[] = [];
+  private greyboxPortalColliders = new Map<Box, THREE.Object3D>();
   private greyboxSegments: GreyboxSegment[] = [];
   private greyboxLegendVisible = false;
   private sceneGroundTargets: THREE.Object3D[] = [];
@@ -936,6 +937,13 @@ export class Explorer {
       this.greybox = buildGreybox(bundle, traversable, hasFloor, scene, this.quality);
       this.greyboxSegments = greyboxPathSegments(unmodelledRunsByEdge(bundle, traversable, hasFloor));
       this.greyboxOpenings = this.greybox.openings;
+      this.greyboxPortalColliders.clear();
+      for (const box of this.greyboxOpenings) {
+        const ray = new THREE.Raycaster(box.center.clone().addScaledVector(box.along, -box.depth / 2).add(new THREE.Vector3(0, 1.2, 0)), box.along, 0, box.depth);
+        const hits = castCamera(ray, originalTargets.collider, new Set(originalTargets.collider));
+        const wall = hits.sort((a, b) => Math.abs(a.point.clone().sub(box.center).dot(box.along)) - Math.abs(b.point.clone().sub(box.center).dot(box.along)))[0];
+        if (wall) this.greyboxPortalColliders.set(box, wall.object);
+      }
       this.world.add(this.greybox.root);
       this.walkable = [...this.walkable, ...this.greybox.walkable];
       this.colliders = [...this.colliders, ...this.greybox.colliders];
@@ -1012,6 +1020,7 @@ export class Explorer {
       this.greybox = null;
     }
     this.greyboxOpenings = [];
+    this.greyboxPortalColliders = new Map();
     this.greyboxSegments = [];
     this.sceneGroundTargets = [];
     this.updateGreyboxLegend();
@@ -1385,7 +1394,11 @@ export class Explorer {
     return bodyBlock(from, to, (origin, dir, far) => {
       this.ray.set(origin, dir);
       this.ray.far = far;
-      const hit = castAll(this.ray, this.colliderTargets).find((h) => h.object.userData.greybox || !this.greyboxOpenings.some((box) => insideGreyboxOpening(h.point, box)));
+      const hit = castAll(this.ray, this.colliderTargets).find((h) => {
+        if (h.object.userData.greybox || !h.face) return true;
+        const normal = hitNormal(h, dir);
+        return !this.greyboxOpenings.some((box) => this.greyboxPortalColliders.get(box) === h.object && insideGreyboxOpening(h.point, box) && Math.abs(normal.y) <= 0.5);
+      });
       return hit ? { distance: hit.distance, normal: hitNormal(hit, dir) } : null;
     }, RADIUS);
   }
