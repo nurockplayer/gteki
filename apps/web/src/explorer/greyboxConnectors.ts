@@ -506,7 +506,9 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
           const mine = landingSquares.find((square) => square.index === i)!;
           const others = landingSquares.filter((square) => square !== mine && squaresOverlap(mine, square, half));
           for (const [a, b] of sides) {
-            const cover = [d.clone().negate(), out].flatMap((u) => footprintOn(a, b, at, u, half))
+            // The landing's own flights open the outline only as far as their legs reach, like a neighbour's flights, but
+            // always out to the square's own boundary: a leg ending inside the square must still leave it.
+            const cover = mine.flights.flatMap((f) => footprintOn(a, b, at, f.dir, half, Math.max(f.reach, half * Math.SQRT2 + 0.05)))
               .concat(others.flatMap((square) => square.flights.flatMap((f) => footprintOn(a, b, square.centre, f.dir, half, f.reach))), sideCover(a, b, mine, others, half));
             for (const [t0, t1] of gapsOutside(cover)) {
               const start = a.clone().lerp(b, t0), finish = a.clone().lerp(b, t1);
