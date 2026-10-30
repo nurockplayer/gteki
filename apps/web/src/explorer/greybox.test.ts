@@ -43,6 +43,23 @@ describe("unmodelledRunsByEdge", () => {
     expect(unmodelledRunsByEdge(forced, () => true, () => true)[0]!.points.at(-1)!.x).toBe(10);
   });
 
+  it("yields the whole run of a skipped stairs edge, whatever its mode", () => {
+    const stairs = { ...bundle, edges: [{ id: "s", from: "a", to: "b", mode: "stairs" }] } as unknown as StationBundle;
+    const runs = unmodelledRunsByEdge(stairs, () => true, () => true, new Set(["s"]));
+    expect(runs).toHaveLength(1);
+    expect(runs[0]!.edge.id).toBe("s");
+    expect(runs[0]!.points.at(-1)!.x).toBe(10);
+    expect(unmodelledRunsByEdge(stairs, () => false, () => true, new Set(["s"]))).toEqual([]);
+  });
+
+  it("marks a skipped connector's run exactly as a sceneGap edge's", () => {
+    const sceneGap = { ...bundle, edges: [{ ...bundle.edges[0]!, attributes: { sceneGap: true } }] };
+    const skipped = unmodelledRunsByEdge(bundle, () => true, () => true, new Set(["e"]));
+    expect(skipped).toHaveLength(1);
+    expect(skipped.map((run) => run.points)).toEqual(unmodelledRunsByEdge(sceneGap, () => true, () => true).map((run) => run.points));
+    expect(unmodelledRunsByEdge(bundle, () => true, () => true, new Set(["other"]))).toEqual([]);
+  });
+
   it("keeps a short forced edge and extends by arc length across short segments", () => {
     const short = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 0.4, y: 0, z: 0 } }], edges: [{ ...bundle.edges[0]!, attributes: { sceneGap: true } }] };
     expect(unmodelledRunsByEdge(short, () => true, () => true)).toHaveLength(1);

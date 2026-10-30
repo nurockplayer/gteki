@@ -16,7 +16,7 @@ import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
 import { R, chevronTexture, dashTexture, ribbonGeometry } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
-import { buildConnectors, withinGreyboxBudget } from "./greyboxConnectors.ts";
+import { buildConnectors, skippedConnectorPath, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { cutPortals, disposePortalCuts, type PortalCutResources } from "./portalCut.ts";
 import { cutStairwells, stairwellWells, type StairwellCut, type StairwellStats } from "./stairwellCut.ts";
 import { decodeRecipe, type CutRecipe } from "./cutRecipe.ts";
@@ -236,6 +236,8 @@ export class Explorer {
   private releasedTextures: { textures: number; canvases: number } | null = null;
   private greybox: ReturnType<typeof buildGreybox> | null = null;
   private connectors: ReturnType<typeof buildConnectors> | null = null;
+  /** Stair and escalator edges whose connector was skipped: routed as unmodelled, like sceneGap edges. */
+  private skippedEdgeIds = new Set<string>();
   private greyboxOpenings: Box[] = [];
   private portalCutResources: PortalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
   private portalExemptions = 0;
@@ -1012,6 +1014,8 @@ export class Explorer {
       this.connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: (p, radius) => sceneMeshNear([this.stationScene!.root], p, radius) }, this.quality);
       lap("connectors");
       this.greyboxSegments.push(...this.connectors.segments);
+      this.skippedEdgeIds = new Set(this.connectors.skippedEdgeIds);
+      this.greyboxSegments.push(...greyboxPathSegments(unmodelledRunsByEdge(bundle, (edge) => traversable(edge) && this.skippedEdgeIds.has(edge.id), hasFloor, this.skippedEdgeIds)));
       withinGreyboxBudget(this.greybox.stats, this.connectors.stats, this.quality);
       this.world.add(this.connectors.root);
       this.walkable = [...this.walkable, ...this.connectors.walkable];
@@ -1127,6 +1131,7 @@ export class Explorer {
     this.greyboxOpenings = [];
     this.sceneColliderTargets = new Set();
     this.greyboxSegments = [];
+    this.skippedEdgeIds = new Set();
     this.sceneGroundTargets = [];
     this.updateGreyboxLegend();
     if (this.stationScene) {
@@ -1441,7 +1446,14 @@ export class Explorer {
 
   /** Connector centre lines converted from renderer coordinates to station ENU. */
   connectorRoutePaths(): Map<string, { x: number; y: number; z: number }[]> {
-    return new Map([...(this.connectors?.pathByEdge ?? [])].map(([id, path]) => [id, path.map((p) => ({ x: p.x, y: -p.z, z: p.y }))]));
+    const paths = new Map([...(this.connectors?.pathByEdge ?? [])].map(([id, path]) => [id, path.map((p) => ({ x: p.x, y: -p.z, z: p.y }))]));
+    // A skipped stair has no connector path: its own points stand in, flagged as unmodelled in the route.
+    if (this.station) {
+      for (const edge of this.station.bundle.edges) {
+        if (this.skippedEdgeIds.has(edge.id)) paths.set(edge.id, skippedConnectorPath(this.station.bundle, edge));
+      }
+    }
+    return paths;
   }
 
   /** QA for the current route: the same ground ray used by the walker, plus connector and image checks. */

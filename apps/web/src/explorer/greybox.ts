@@ -11,7 +11,7 @@ export interface UnmodelledEdgeRun {
 }
 
 /** Share node, floor and floor-probe caches across independently processed edges. */
-function createRunDetector(bundle: StationBundle, traversable: (edge: Edge) => boolean, hasFloor: (p: V3) => boolean): (edge: Edge) => UnmodelledEdgeRun[] {
+function createRunDetector(bundle: StationBundle, traversable: (edge: Edge) => boolean, hasFloor: (p: V3) => boolean, forced: ReadonlySet<string> = new Set()): (edge: Edge) => UnmodelledEdgeRun[] {
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
   const cache = new Map<string, boolean>();
@@ -23,7 +23,8 @@ function createRunDetector(bundle: StationBundle, traversable: (edge: Edge) => b
   };
   return (edge) => {
     const out: UnmodelledEdgeRun[] = [];
-    if (!traversable(edge) || !["walk", "gate", "moving_walkway", "ramp"].includes(edge.mode)) return out;
+    // Forced edges (skipped connectors) are detected whatever their mode, as they are unmodelled whole.
+    if (!traversable(edge) || (!forced.has(edge.id) && !["walk", "gate", "moving_walkway", "ramp"].includes(edge.mode))) return out;
     const points = edgePoints(bundle, edge, nodes, floors).map((p) => ({ x: p.x, y: -p.z, z: p.y }));
     if (points.length < 2) return out;
     const samples: V3[] = [points[0]!];
@@ -46,14 +47,16 @@ function createRunDetector(bundle: StationBundle, traversable: (edge: Edge) => b
       const t = span ? (distance - distances[k - 1]!) / span : 0;
       return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, z: a.z + (b.z - a.z) * t };
     };
-    const bare = samples.map((p) => edge.attributes?.sceneGap === true || !floor(p));
+    // Forced edges (skipped connectors) are unmodelled whole, as sceneGap edges are.
+    const flagged = edge.attributes?.sceneGap === true || forced.has(edge.id);
+    const bare = samples.map((p) => flagged || !floor(p));
     for (let i = 0; i < samples.length; i++) {
       if (!bare[i]) continue;
       let end = i;
       while (end + 1 < samples.length && bare[end + 1]) end++;
       // The gap can reach the neighbouring floored samples, so measure up to them: a 1.2 m gap may hold only two bare samples.
       const length = distances[Math.min(end + 1, samples.length - 1)]! - distances[Math.max(i - 1, 0)]!;
-      if (length >= 1 || edge.attributes?.sceneGap === true) {
+      if (length >= 1 || flagged) {
         const start = Math.max(0, distances[i]! - 0.5);
         const finish = Math.min(distances.at(-1)!, distances[end]! + 0.5);
         const inside = samples.filter((_p, k) => distances[k]! > start && distances[k]! < finish);
@@ -66,8 +69,8 @@ function createRunDetector(bundle: StationBundle, traversable: (edge: Edge) => b
 }
 
 /** Find passage candidates without changing the station or retaining its geometry on disk. */
-export function unmodelledRunsByEdge(bundle: StationBundle, traversable: (edge: Edge) => boolean, hasFloor: (p: V3) => boolean): UnmodelledEdgeRun[] {
-  const detect = createRunDetector(bundle, traversable, hasFloor);
+export function unmodelledRunsByEdge(bundle: StationBundle, traversable: (edge: Edge) => boolean, hasFloor: (p: V3) => boolean, forced: ReadonlySet<string> = new Set()): UnmodelledEdgeRun[] {
+  const detect = createRunDetector(bundle, traversable, hasFloor, forced);
   return bundle.edges.flatMap(detect);
 }
 
