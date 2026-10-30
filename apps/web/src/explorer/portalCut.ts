@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { portalDepthAxis, portalWidthAxis, type Box } from "./greybox.ts";
 import { clearClippedPortals, portalWallNormal, setClippedPortals } from "./raycast.ts";
 import { currentBvh } from "./meshBvh.ts";
+import { StaleRecipe, bytesOf, fnv1a, type MeshRecord, type RecipeHooks } from "./cutRecipe.ts";
 
 /**
  * A polygon corner. A triangle corner names its index in the triangle (`corner`); a clipped corner is the lerp of
@@ -77,6 +78,21 @@ function componentOf(v: Vertex, attr: THREE.BufferAttribute | THREE.InterleavedB
   return a + (b - a) * v.t!;
 }
 
+/** Mesh identity for a recipe: vertex count, FNV-1a of the position and index arrays, and of the world matrix. */
+function meshKey(mesh: THREE.Mesh, geometry: THREE.BufferGeometry, position: THREE.BufferAttribute | THREE.InterleavedBufferAttribute): { count: number; hash: number; matrix: number } {
+  const bytes = (a: ArrayLike<number>) => (ArrayBuffer.isView(a) ? bytesOf(a) : bytesOf(Float64Array.from(a)));
+  let hash = fnv1a(bytes((position as THREE.BufferAttribute).array));
+  if (geometry.index) hash = fnv1a(bytes(geometry.index.array), hash);
+  return { count: position.count, hash, matrix: fnv1a(bytesOf(new Float64Array(mesh.matrixWorld.elements))) };
+}
+
+/** (u, v) of a polygon corner: its weights over the triangle's corners are (1 - u - v, u, v). Follows the same tree as `componentOf`. */
+function baryUV(v: Vertex): [number, number] {
+  if (v.corner !== undefined) return v.corner === 0 ? [0, 0] : v.corner === 1 ? [1, 0] : [0, 1];
+  const [au, av] = baryUV(v.a!), [bu, bv] = baryUV(v.b!), t = v.t!;
+  return [au + (bu - au) * t, av + (bv - av) * t];
+}
+
 /** Key of a 2 m x/z grid cell. */
 const cellKey = (ix: number, iz: number): number => ix * 1_000_000 + iz;
 
@@ -119,6 +135,8 @@ export interface CutResult {
   heights: Map<object, number[]>;
   /** Maximum world height of each removed polygon, per region key. */
   maxHeights: Map<object, number[]>;
+  /** Hash of every mesh the triangle stage reached, as the recipe header keeps it; 0 without a recipe. */
+  meshKeysHash: number;
 }
 
 /** Side of a grid cell in x/z, for finding the regions near a triangle. */
@@ -147,9 +165,10 @@ function regionGrid(regions: readonly CutRegion[]): Map<number, CutRegion[]> {
  * `clip` allows the render-only GPU fallback (portals); stairwells pass false, so a shared mesh is
  * always CPU-cut or reported as skipped.
  */
-export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], regions: readonly CutRegion[], opts: PortalCutResources, walkable: ReadonlySet<THREE.Object3D> = new Set(), clip = true, vertexLimit = Infinity): CutResult {
+export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], regions: readonly CutRegion[], opts: PortalCutResources, walkable: ReadonlySet<THREE.Object3D> = new Set(), clip = true, vertexLimit = Infinity, recipe?: RecipeHooks): CutResult {
   const started = performance.now();
-  const result: CutResult = { cutTriangles: 0, cutMs: 0, cutMeshes: 0, clipped: 0, skipped: [], clonedWalkable: 0, clonedWalkableVertices: [], largeSharedVertices: [], perRegion: new Map(), heights: new Map(), maxHeights: new Map() };
+  if (recipe && clip) throw new Error("a recipe cut never clips");
+  const result: CutResult = { cutTriangles: 0, cutMs: 0, cutMeshes: 0, clipped: 0, skipped: [], clonedWalkable: 0, clonedWalkableVertices: [], largeSharedVertices: [], perRegion: new Map(), heights: new Map(), maxHeights: new Map(), meshKeysHash: 0 };
   const roots: readonly THREE.Object3D[] = root instanceof THREE.Object3D ? [root] : root;
   for (const r of roots) r.updateWorldMatrix(true, true);
   const uses = new Map<THREE.BufferGeometry, number>();
@@ -159,6 +178,9 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
   const walkableCopies = new WeakSet<THREE.Mesh>();
   const grid = regionGrid(regions);
   const countRegion = (key: object) => result.perRegion.set(key, (result.perRegion.get(key) ?? 0) + 1);
+  // Recipe: region index of each key, the running hash of the mesh stage, and the stage counter.
+  const keyIndex = new Map((recipe?.keys ?? []).map((key, n) => [key, n] as const));
+  let stage = 0, keysHash = 0x811c9dc5;
   // Visited once even when two roots share it; copies made during the walk are visited as before.
   const done = new Set<THREE.Object3D>();
   const visit = (o: THREE.Object3D) => {
@@ -221,7 +243,17 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
     // Test positions only before expanding every vertex attribute into rebuild arrays.
     const index = geometry.index, count = index ? index.count : position.count;
     const groups = geometry.groups.length ? geometry.groups : [{ start: 0, count, materialIndex: 0 }];
-    const tree = groups.every(g => g.start % 3 === 0 && g.count % 3 === 0) ? currentBvh(geometry) : null;
+    // Recipe stage: a replayed mesh must match its record, and then skips the clipping below; a recorded one keeps its draft.
+    const key = recipe ? meshKey(mesh, geometry, position) : null;
+    if (key) keysHash = fnv1a(bytesOf(Uint32Array.of(key.count, key.hash, key.matrix)), keysHash);
+    const replaying: MeshRecord | null = recipe?.replay ? recipe.replay[stage] ?? null : null;
+    if (recipe?.replay && (!replaying || replaying.count !== key!.count || replaying.hash !== key!.hash || replaying.matrix !== key!.matrix)) {
+      throw new StaleRecipe(`${mesh.name || mesh.uuid}: changed since the recipe was baked`);
+    }
+    const draft: MeshRecord | null = recipe?.record ? { count: key!.count, hash: key!.hash, matrix: key!.matrix, hasCut: false, groups: [], codes: [], weights: [], events: [] } : null;
+    if (draft) recipe!.record!.push(draft);
+    stage++;
+    const tree = !replaying && groups.every(g => g.start % 3 === 0 && g.count % 3 === 0) ? currentBvh(geometry) : null;
     const inverse = mesh.matrixWorld.clone().invert();
     const vertices = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
     const triangleBounds = new THREE.Box3();
@@ -274,7 +306,7 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
       }
       return false;
     };
-    const hasCut = tree && mesh.matrixWorld.determinant() !== 0 ? active.some(region => {
+    const hasCut = replaying ? replaying.hasCut : tree && mesh.matrixWorld.determinant() !== 0 ? active.some(region => {
       const localBounds = region.bounds.clone().applyMatrix4(inverse);
       const sphere = localBounds.getBoundingSphere(new THREE.Sphere()), candidates: number[] = [];
       tree.pointCandidates(sphere.center.x, sphere.center.y, sphere.center.z, sphere.radius + 1e-6, candidates);
@@ -285,6 +317,7 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
         return cutBy(region);
       });
     }) : flatCut();
+    if (draft) draft.hasCut = hasCut;
     if (!hasCut) return;
     // Clipping planes cannot distinguish the cut faces from returns or obstacles in the same mesh.
     // If any non-cut triangle intersects the clip volume, use the CPU cut instead.
@@ -315,7 +348,40 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
     const output: Record<string, number[]> = Object.fromEntries(attrs.map(([name]) => [name, []]));
     const outGroups: { start: number; count: number; materialIndex: number }[] = [];
     let removed = 0;
-    for (const group of groups) {
+    if (replaying) {
+      if (replaying.events.length && replaying.groups.length !== groups.length) throw new StaleRecipe(`${mesh.name || mesh.uuid}: group layout changed`);
+      // Replay: the recorded removals in live order, then the recorded output triangles, group by group.
+      for (let e = 0; e < replaying.events.length; e += 3) {
+        const regionKey = recipe!.keys[replaying.events[e]!]!;
+        countRegion(regionKey);
+        const heights = result.heights.get(regionKey) ?? [];
+        heights.push(replaying.events[e + 1]!); result.heights.set(regionKey, heights);
+        const maxHeights = result.maxHeights.get(regionKey) ?? [];
+        maxHeights.push(replaying.events[e + 2]!); result.maxHeights.set(regionKey, maxHeights);
+        removed++;
+      }
+      let t = 0, p = 0;
+      for (let g = 0; g < groups.length; g++) {
+        const group = groups[g]!;
+        const start = output.position!.length / position.itemSize;
+        for (let n = 0; n < replaying.groups[g]!; n++, t++) {
+          const code = replaying.codes[t]!, i = code >>> 1;
+          const corners = [0, 1, 2].map(j => (index ? index.getX(i + j) : i + j));
+          if (!(code & 1)) {
+            for (let j = 0; j < 3; j++) for (const [name, attr] of attrs) for (let c = 0; c < attr.itemSize; c++) output[name]!.push(attr.getComponent(corners[j]!, c));
+          } else {
+            for (let j = 0; j < 3; j++, p += 2) {
+              const u = replaying.weights[p]!, w = replaying.weights[p + 1]!;
+              for (const [name, attr] of attrs) for (let c = 0; c < attr.itemSize; c++) {
+                output[name]!.push((1 - u - w) * attr.getComponent(corners[0]!, c) + u * attr.getComponent(corners[1]!, c) + w * attr.getComponent(corners[2]!, c));
+              }
+            }
+          }
+        }
+        outGroups.push({ start, count: output.position!.length / position.itemSize - start, materialIndex: group.materialIndex ?? 0 });
+      }
+    }
+    for (const group of replaying ? [] : groups) {
       const start = output.position!.length / position.itemSize;
       for (let i = group.start; i + 2 < Math.min(group.start + group.count, count); i += 3) {
         readTriangle(i);
@@ -327,6 +393,7 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
           && !region.planes.some(plane => plane(vertices[0]!) < 0 && plane(vertices[1]!) < 0 && plane(vertices[2]!) < 0));
         if (!touched.length) {
           // Nothing changes the triangle: copy its attributes through unchanged, without objects.
+          if (draft) draft.codes.push(i * 2);
           for (let j = 0; j < 3; j++) {
             const k = index ? index.getX(i + j) : i + j;
             for (const [name, attr] of attrs) for (let n = 0; n < attr.itemSize; n++) output[name]!.push(attr.getComponent(k, n));
@@ -354,16 +421,25 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
               const maxHeights = result.maxHeights.get(region.key) ?? [];
               maxHeights.push(Math.max(...inside.map(v => v.world.y)));
               result.maxHeights.set(region.key, maxHeights);
+              if (draft) draft.events.push(keyIndex.get(region.key)!, heights.at(-1)!, maxHeights.at(-1)!);
               next.push(...outside);
             } else next.push(poly);
           }
           polys = next;
         }
-        for (const poly of polys) for (let j = 1; j + 1 < poly.length; j++) for (const v of [poly[0]!, poly[j]!, poly[j + 1]!]) for (const [name, attr] of attrs) for (let n = 0; n < attr.itemSize; n++) output[name]!.push(componentOf(v, attr, n, corners));
+        for (const poly of polys) for (let j = 1; j + 1 < poly.length; j++) {
+          const tri = [poly[0]!, poly[j]!, poly[j + 1]!];
+          if (draft) { draft.codes.push(i * 2 + 1); for (const v of tri) { const [u, w] = baryUV(v); draft.weights.push(u, w); } }
+          for (const v of tri) for (const [name, attr] of attrs) for (let n = 0; n < attr.itemSize; n++) output[name]!.push(componentOf(v, attr, n, corners));
+        }
       }
       outGroups.push({ start, count: output.position!.length / position.itemSize - start, materialIndex: group.materialIndex ?? 0 });
+      if (draft) draft.groups.push((output.position!.length / position.itemSize - start) / 3);
     }
-    if (!removed) return;
+    if (!removed) {
+      if (draft) { draft.codes = []; draft.weights = []; draft.groups = []; }
+      return;
+    }
     const clone = new THREE.BufferGeometry();
     for (const [name, attr] of attrs) clone.setAttribute(name, new THREE.Float32BufferAttribute(output[name]!, attr.itemSize, false));
     if (geometry.groups.length) for (const group of outGroups) clone.addGroup(group.start, group.count, group.materialIndex);
@@ -373,6 +449,8 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
     if (isWalkable && shared) { result.clonedWalkable++; result.clonedWalkableVertices.push(position.count); }
   };
   for (const r of roots) r.traverse(visit);
+  if (recipe?.replay && stage !== recipe.replay.length) throw new StaleRecipe(`${stage} meshes reached the cut, the recipe has ${recipe.replay.length}`);
+  result.meshKeysHash = keysHash;
   result.cutMs = performance.now() - started;
   return result;
 }

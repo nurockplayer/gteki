@@ -19,6 +19,7 @@ import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { buildConnectors, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { cutPortals, disposePortalCuts, type PortalCutResources } from "./portalCut.ts";
 import { cutStairwells, stairwellWells, type StairwellCut, type StairwellStats } from "./stairwellCut.ts";
+import { decodeRecipe, type CutRecipe } from "./cutRecipe.ts";
 import { buildGreybox, portalWidthAxis, splitWallsAtOpenings, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
 import { greyboxPathSegments, greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
 import { darkSampleDistances, routeGroundCounts, sceneMeshNear } from "./routeGroundQa.ts";
@@ -895,6 +896,8 @@ export class Explorer {
 
     this.sceneError = null;
     this.phase = "scene";
+    // The baked stairwell recipe (#650) loads alongside the scene build; a missing or failed one means the live cut.
+    const stairwellRecipe = this.loadStairwellRecipe(station, this.quality);
     let built: StationScene | null = null;
     let sceneError: string | null = null;
     try {
@@ -963,10 +966,14 @@ export class Explorer {
       this.sceneColliderTargets = new Set(originalTargets.collider);
       this.portalCutStats = cutPortals(this.stationScene.root, this.greyboxOpenings, this.portalCutResources, new Set(originalTargets.ground));
       lap("portalCut");
+      // The portal cut is the step before this one, so this lap is only the wait for the recipe.
+      const recipe = await stairwellRecipe;
+      lap("stairwellRecipe");
       this.stairwellCut = cutStairwells(this.stationScene.root, stairwellWells(bundle, traversable), {
         walkable: new Set(originalTargets.ground), tier: this.quality, greyboxRoot: this.greybox.root,
         // Collision proxies may sit outside the station root: cut them with the visible slabs, before the trees are rebuilt.
         collision: [...this.walkable, ...this.colliders, ...this.cameraBlockers],
+        recipe,
       });
       lap("stairwellCut");
       this.stairwellStats = this.stairwellCut.stats;
@@ -1043,6 +1050,19 @@ export class Explorer {
     this.overviewLook.set(this.scene, this.world, this.mode === "overview");
     this.phase = "ready";
     return true;
+  }
+
+  /** The station's baked stairwell recipe for this tier, or null: no recipe, a failed fetch or a malformed file all mean the live cut. */
+  private async loadStairwellRecipe(station: LoadedStation, tier: "high" | "low"): Promise<CutRecipe | null> {
+    try {
+      const url = await station.scene?.stairwellRecipeUrl?.(tier);
+      if (!url) return null;
+      const response = await fetch(url);
+      if (!response.ok) return null;
+      return decodeRecipe(await response.arrayBuffer());
+    } catch {
+      return null;
+    }
   }
 
   private async buildStationScene(station: LoadedStation, ctx: SceneContext): Promise<StationScene | null> {

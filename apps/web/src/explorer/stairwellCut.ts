@@ -2,7 +2,8 @@ import type { Edge, StationBundle } from "@gteki/schema";
 import * as THREE from "three";
 import { edgePoints } from "./geometry.ts";
 import { widthOf } from "./greybox.ts";
-import { cutRegions, disposePortalCuts, type CutRegion, type Plane, type PortalCutResources } from "./portalCut.ts";
+import { cutRegions, disposePortalCuts, type CutRegion, type CutResult, type Plane, type PortalCutResources } from "./portalCut.ts";
+import { RECIPE_VERSION, StaleRecipe, canonicalJson, sha256Hex, type CutRecipe, type MeshRecord, type RecipeHooks } from "./cutRecipe.ts";
 import type { Segment2 } from "./walker.ts";
 
 /** A plan piece flatter than this is a landing. */
@@ -65,6 +66,8 @@ export interface StairwellStats {
   cutMs: number;
   /** Connectors left uncut because their arrival side could not be determined. */
   skippedWells: number;
+  /** How the cut was made: replayed from a recipe, cut live, or live after a recipe was refused (stale). */
+  recipe: "replayed" | "live" | "stale";
 }
 
 export interface StairwellCut {
@@ -81,6 +84,8 @@ export interface StairwellCut {
   /** Meshes the cut could not process, as `name: reason`. */
   skipped: string[];
   resources: PortalCutResources;
+  /** Hash of the cut-stage mesh keys, as a recipe header keeps it. */
+  meshKeysHash: number;
   /** Restore the scene geometry the cut replaced. */
   dispose(): void;
 }
@@ -93,6 +98,10 @@ export interface StairwellOptions {
   vertexLimit?: number;
   /** Collision meshes that may sit outside `root` (walkable, collider and camera-blocker proxies); cut with the same regions. */
   collision?: readonly THREE.Object3D[];
+  /** A baked recipe for this tier: replayed when it matches the live wells and scene, otherwise the live cut runs. */
+  recipe?: CutRecipe | null;
+  /** Bake only: the live cut records every mesh it reaches here. */
+  record?: MeshRecord[];
 }
 
 /** One well per traversable stairs / escalator edge that has a vertical run worth cutting. */
@@ -222,10 +231,33 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
 
 /** Cut the scene's horizontal slabs open along every traversable vertical connector; finish the well edges and rails. */
 export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWell[], options: StairwellOptions): StairwellCut {
-  const resources: PortalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
+  const freshResources = (): PortalCutResources => ({ geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] });
+  let resources = freshResources();
   const live = wells.filter((well) => !well.skipped);
   const regions = stairwellRegions(live);
-  const cut = cutRegions([root, ...(options.collision ?? [])], regions, resources, options.walkable ?? new Set(), false, options.vertexLimit ?? STAIRWELL_VERTEX_LIMIT);
+  // Events name their region by its rectangle's index in this order.
+  const keys = live.flatMap((well) => well.rects);
+  const cutLive = (hooks?: RecipeHooks): CutResult => cutRegions([root, ...(options.collision ?? [])], regions, resources, options.walkable ?? new Set(), false, options.vertexLimit ?? STAIRWELL_VERTEX_LIMIT, hooks);
+  let recipe: StairwellStats["recipe"] = "live";
+  let cut: CutResult;
+  const baked = options.recipe;
+  if (options.record) cut = cutLive({ keys, record: options.record });
+  else if (baked && recipeMatches(baked, wells, options.tier, keys.length)) {
+    try {
+      cut = cutLive({ keys, replay: baked.meshes });
+      if (cut.meshKeysHash !== baked.meshKeysHash) throw new StaleRecipe("the cut meshes differ from the recipe");
+      recipe = "replayed";
+    } catch (error) {
+      if (!(error instanceof StaleRecipe)) throw error;
+      // Put back what the replay replaced, then cut live from the untouched scene.
+      disposePortalCuts(resources);
+      resources = freshResources();
+      cut = cutLive(); recipe = "stale";
+    }
+  } else {
+    cut = cutLive();
+    if (baked) recipe = "stale";
+  }
   const cutWells = live.filter((well) => well.rects.some((rect) => (cut.perRegion.get(rect) ?? 0) > 0));
   const heights = new Map<StairwellRect, number[]>();
   for (const well of live) for (const rect of well.rects) heights.set(rect, cut.heights.get(rect) ?? []);
@@ -286,7 +318,8 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   finish.traverse((o) => { const mesh = o as THREE.Mesh; if (mesh.isMesh) finishTriangles += mesh.geometry.getAttribute("position").count / 3; });
   finishTriangles = Math.round(finishTriangles);
   return {
-    stats: { wells: cutWells.length, cutTriangles: cut.cutTriangles, skippedMeshes: cut.skipped.length, railM, cutMeshes: cut.cutMeshes, cutMs: cut.cutMs, skippedWells: wells.length - live.length },
+    stats: { wells: cutWells.length, cutTriangles: cut.cutTriangles, skippedMeshes: cut.skipped.length, railM, cutMeshes: cut.cutMeshes, cutMs: cut.cutMs, skippedWells: wells.length - live.length, recipe },
+    meshKeysHash: cut.meshKeysHash,
     walls, colliders, finish: finish.children.length ? finish : null, bandTriangles, finishTriangles, skipped: cut.skipped,
     resources, dispose: () => {
       // The finish meshes are ours; the cut meshes' originals are restored by disposePortalCuts.
@@ -299,6 +332,11 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
       disposePortalCuts(resources);
     },
   };
+}
+
+/** A baked recipe applies to these wells only when its version, tier, region count and wells hash all match. */
+function recipeMatches(recipe: CutRecipe, wells: readonly StairwellWell[], tier: "high" | "low", keyCount: number): boolean {
+  return recipe.version === RECIPE_VERSION && recipe.tier === tier && recipe.keyCount === keyCount && recipe.wellsSha256 === sha256Hex(canonicalJson(wells));
 }
 
 /** Outer portions of each opened rectangle, except the arrival side (the end side of the top flight piece's rectangle, through `arrival`). */

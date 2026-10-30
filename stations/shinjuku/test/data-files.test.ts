@@ -48,7 +48,19 @@ const planPolygons = (): string[] => {
   return [MAP];
 };
 
+/** Stairwell recipes (#650) replay this bundle's cut: the sources the graph cites, and those the other scene files cite. */
+const stairwellSources = (): string[] => {
+  const cited = [
+    ...graph.nodes.flatMap((n: Node) => n.sourceRefs.map((r) => r.sourceId)),
+    ...graph.edges.flatMap((e: Edge) => [...(e.geometryEvidence?.sourceIds ?? []), ...(e.accessEvidence?.sourceIds ?? [])]),
+    ...(station.dataFiles as DataFile[]).filter((d) => !d.path.startsWith("scene/stairwell-cut.")).flatMap((d) => d.sourceIds),
+  ];
+  return [...new Set(cited)];
+};
+
 const EXPECTED: Record<string, { script: string; sources: () => string[] }> = {
+  "scene/stairwell-cut.high.bin": { script: "packages/godot/src/stairwell-bake.ts", sources: stairwellSources },
+  "scene/stairwell-cut.low.bin": { script: "packages/godot/src/stairwell-bake.ts", sources: stairwellSources },
   "scene/shop_bays.json": { script: "tools/shop-bays.ts", sources: () => [NWD, MAP] },
   "scene/shop_placements.json": { script: "scene/shop_placements.json", sources: () => ["gteki-kit-0-1-0"] },
   "scene/shop_kit.json": { script: "scene/shop_kit.json", sources: () => ["gteki-kit-0-1-0"] },

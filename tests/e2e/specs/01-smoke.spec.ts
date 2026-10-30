@@ -25,6 +25,8 @@ for (const key of STATIONS) {
     // Ratchet: the stairwell cut, greybox and connectors together stay under the budget (#650).
     const cutAndShell = (steps.stairwellCut ?? NaN) + (steps.greybox ?? NaN) + (steps.connectors ?? NaN);
     expect(cutAndShell, `${key}: stairwellCut + greybox + connectors (ms), budget ${LOAD_BUDGET_MS}`).toBeLessThanOrEqual(LOAD_BUDGET_MS);
+    // Shinjuku's baked stairwell recipe (#650) replays; a stale one would fall back to live. Ikebukuro stays live.
+    expect(info.greybox?.stairwells?.recipe, `${key}: stairwell cut recipe`).toBe(key === "shinjuku" ? "replayed" : "live");
     // A station scene, not the L0 fallback: real geometry, walkable surfaces and colliders.
     expect.soft(info.world.length, "world bounding box").toBe(6);
     expect.soft(info.walkable, "walkable meshes").toBeGreaterThan(0);
