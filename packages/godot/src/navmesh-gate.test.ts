@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { fallbackGate } from "./navmesh-fallback-audit.ts";
-import { measureFallbacks } from "./navmesh-fallback.ts";
+import { measureFallbacks, navPathsDiff, NAVMESH_BAKE } from "./navmesh-fallback.ts";
 import { fallbackDiff } from "./navmesh-fallback-diff.ts";
 import { baselineForAudit, clipBaselineDiff, makeClipBaseline } from "./navmesh-clip-baseline.ts";
 import fs from "node:fs";
@@ -82,6 +82,13 @@ describe("public station navmesh gate",()=>{
     const clips=clipBaselineDiff(baseline,baselineForAudit(result.audit));
     if(clips.increased.length) errors.push(`clip baseline exceeded: ${clips.increased.join(", ")}`);
     if(clips.lowered.length) errors.push(`lower the baseline for: ${clips.lowered.join(", ")}`);
+    const committedPaths=JSON.parse(fs.readFileSync(path.resolve(`stations/${station}/navmesh-paths.json`),"utf8"));
+    const pathsDiff=navPathsDiff(committedPaths.edges,result.audit.navPaths);
+    const staleKeys=[...pathsDiff.missing,...pathsDiff.extra,...pathsDiff.moved].slice(0,10);
+    if(pathsDiff.missing.length+pathsDiff.extra.length+pathsDiff.moved.length) errors.push(`navmesh paths stale (${staleKeys.join(", ")}): run pnpm tsx packages/godot/src/navmesh-fallback.ts --station ${station} --write-paths stations/${station}/navmesh-paths.json`);
+    if(JSON.stringify(committedPaths.bake)!==JSON.stringify(NAVMESH_BAKE)) errors.push(`navmesh paths bake header is ${JSON.stringify(committedPaths.bake)}, expected ${JSON.stringify(NAVMESH_BAKE)}: regenerate with --write-paths`);
+    const header={version:committedPaths.version,station:committedPaths.station,frame:committedPaths.frame};
+    if(header.version!==1 || header.station!==station || header.frame!=="ENU") errors.push(`navmesh paths header is ${JSON.stringify(header)}, expected ${JSON.stringify({version:1,station,frame:"ENU"})}: the app reads these coordinates in that frame`);
     for(const kind of ["navmesh","connector"]) if(segment[kind].noFloor || result.audit.uniqueEdgeScene[kind].noFloor) errors.push(`${kind} has samples without floor`);
     if(result.audit.fallbackAudit.totals.noFloor) errors.push(`fallback has ${result.audit.fallbackAudit.totals.noFloor} samples without floor`);
     expect(errors,errors.join("\n")).toEqual([]);

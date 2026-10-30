@@ -506,7 +506,26 @@ async function main() {
     directedStairLinks: [...cache.values()].filter(e => e.step.mode === "stairs" && e.connector).length, uniqueStairsWithoutPath: new Set(failed.filter(e => e.step.mode === "stairs").map(e => e.step.edgeId)).size,
     snapDistanceM: { count: snapDistances.length, p50: percentile(snapDistances, 0.5), p95: percentile(snapDistances, 0.95), max: snapDistances.length ? Math.max(...snapDistances) : null },
     medianPathToGraphLength: percentile(ratios, 0.5) };
-  fs.mkdirSync(path.dirname(dest), { recursive: true }); fs.writeFileSync(dest, JSON.stringify(result, null, 2) + "\n");
+  // Walk path per edge and direction for the app's guide (#647): non-vertical, non-suspect and traversable edges
+  // whose navmesh path is clean (no link) only. ENU points as edgePath returns them, rounded to 0.01 m.
+  const navPaths: Record<string, { forward?: number[][]; reverse?: number[][] }> = {};
+  const round2 = (v: number) => Math.round(v * 100) / 100;
+  const oneStepRoute = (step: RouteStep): RouteResult => ({ ok:true, profile:DEFAULT_PROFILE, nodeIds:[step.fromNodeId,step.toNodeId], steps:[step], totalLengthM:step.lengthM, estimatedSeconds:0, waitSeconds:0, floorChanges:step.fromFloorId===step.toFloorId ? 0 : 1, crossesFareBoundary:null, unknowns:[], sourceIds:[], endpointSourceIds:[], evidenceCheckedDate:null, oldestSourceDate:null, undatedSourceIds:[], expiredSourceIds:[], stale:null, synthetic:false, timeRestricted:[], operatorIds:[] });
+  for (const edge of [...bundle.edges].sort((a,b) => a.id.localeCompare(b.id))) {
+    if (["stairs","escalator","elevator"].includes(edge.mode) || suspectIds.has(edge.id) || !router.isTraversable(edge, DEFAULT_PROFILE)) continue;
+    const dirs: { forward?: number[][]; reverse?: number[][] } = {};
+    for (const reversed of edge.direction === "both" ? [false, true] : [false]) {
+      const fromNode = nodes.get(reversed ? edge.to : edge.from), toNode = nodes.get(reversed ? edge.from : edge.to);
+      if (!fromNode || !toNode) continue;
+      const step: RouteStep = { edgeId:edge.id, fromNodeId:fromNode.id, toNodeId:toNode.id, reversed, mode:edge.mode, lengthM:edge.lengthM ?? 0, fromFloorId:fromNode.floorId, toFloorId:toNode.floorId };
+      const entry = edgePath(oneStepRoute(step), step);
+      if (!entry.points || entry.points.length < 2 || entry.reason !== null || entry.suspect || entry.connector) continue;
+      const points = entry.points.map(p => [round2(p.x), round2(p.y), round2(p.z)]);
+      if (reversed) dirs.reverse = points; else dirs.forward = points;
+    }
+    if (dirs.forward || dirs.reverse) navPaths[edge.id] = dirs;
+  }
+  fs.mkdirSync(path.dirname(dest), { recursive: true }); fs.writeFileSync(dest, JSON.stringify({ ...result, navPaths }, null, 2) + "\n");
   console.log(`fallback audit ${JSON.stringify(fallbackAudit.totals)}; fallback clipped ${fallbackAudit.failed.length}; gaps ${JSON.stringify(gapClasses)}; collider kinds ${JSON.stringify(blockingColliderKinds)}; link attachment ${JSON.stringify(result.linkAttachmentDiagnosis)}; query diagnosis ${JSON.stringify(queryDiagnosis)}; snap diagnosis ${JSON.stringify(snapDiagnosis)}; fallback attached ${result.fallbackRecoveredAttached}, used ${result.fallbackEdgesUsed}, completed routes ${fallbackRoutesCompleted}; navmesh segments ${JSON.stringify(result.navmeshSegmentHeights)}`);
   query.destroy(); nav.destroy(); bridgeFloorGeometry.dispose(); (bridgeFloor.material as THREE.Material).dispose(); scene.dispose();
   if (gate && !gateResult.ok) process.exitCode=1;
