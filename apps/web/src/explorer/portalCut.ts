@@ -99,19 +99,27 @@ export interface CutResult {
 }
 
 /**
- * Remove each region's interior from the meshes under `root`, in render and collision alike.
+ * Remove each region's interior from the meshes under `root` (or under any of several roots, for collision
+ * proxies that sit outside the scene root), in render and collision alike. A mesh under two roots is cut once.
  * `clip` allows the render-only GPU fallback (portals); stairwells pass false, so a shared mesh is
  * always CPU-cut or reported as skipped.
  */
-export function cutRegions(root: THREE.Object3D, regions: readonly CutRegion[], opts: PortalCutResources, walkable: ReadonlySet<THREE.Object3D> = new Set(), clip = true, vertexLimit = Infinity): CutResult {
+export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], regions: readonly CutRegion[], opts: PortalCutResources, walkable: ReadonlySet<THREE.Object3D> = new Set(), clip = true, vertexLimit = Infinity): CutResult {
   const started = performance.now();
   const result: CutResult = { cutTriangles: 0, cutMs: 0, cutMeshes: 0, clipped: 0, skipped: [], clonedWalkable: 0, clonedWalkableVertices: [], largeSharedVertices: [], perRegion: new Map(), heights: new Map(), maxHeights: new Map() };
-  root.updateWorldMatrix(true, true);
+  const roots: readonly THREE.Object3D[] = root instanceof THREE.Object3D ? [root] : root;
+  for (const r of roots) r.updateWorldMatrix(true, true);
   const uses = new Map<THREE.BufferGeometry, number>();
-  root.traverse(o => { const m = o as THREE.Mesh; if (m.isMesh) uses.set(m.geometry, (uses.get(m.geometry) ?? 0) + 1); });
+  const listed = new Set<THREE.Object3D>();
+  for (const r of roots) r.traverse(o => { listed.add(o); });
+  for (const o of listed) { const m = o as THREE.Mesh; if (m.isMesh) uses.set(m.geometry, (uses.get(m.geometry) ?? 0) + 1); }
   const walkableCopies = new WeakSet<THREE.Mesh>();
   const countRegion = (key: object) => result.perRegion.set(key, (result.perRegion.get(key) ?? 0) + 1);
-  root.traverse(o => {
+  // Visited once even when two roots share it; copies made during the walk are visited as before.
+  const done = new Set<THREE.Object3D>();
+  const visit = (o: THREE.Object3D) => {
+    if (done.has(o)) return;
+    done.add(o);
     const mesh = o as THREE.Mesh;
     if (!mesh.isMesh) return;
     const geometry = mesh.geometry;
@@ -271,7 +279,8 @@ export function cutRegions(root: THREE.Object3D, regions: readonly CutRegion[], 
     opts.originals.set(mesh, { geometry: mesh.geometry, material: mesh.material });
     mesh.geometry = clone; opts.geometries.push(clone); result.cutTriangles += removed; result.cutMeshes++;
     if (isWalkable && shared) { result.clonedWalkable++; result.clonedWalkableVertices.push(position.count); }
-  });
+  };
+  for (const r of roots) r.traverse(visit);
   result.cutMs = performance.now() - started;
   return result;
 }

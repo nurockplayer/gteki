@@ -39,8 +39,10 @@ export interface StairwellWell {
   lowerY: number;
   upperY: number;
   rects: StairwellRect[];
-  /** Plan point of the upper end: the arrival side of the well. */
+  /** Plan point where the top flight piece's centreline ends: its rectangle's end side is the arrival side, never railed. */
   arrival: THREE.Vector3;
+  /** Set when the connector cannot be cut cleanly: it has no rects, nothing is cut or railed, and it counts as skipped. */
+  skipped?: string;
 }
 
 export interface StairwellStats {
@@ -50,6 +52,8 @@ export interface StairwellStats {
   railM: number;
   cutMeshes: number;
   cutMs: number;
+  /** Connectors left uncut because their arrival side could not be determined. */
+  skippedWells: number;
 }
 
 export interface StairwellCut {
@@ -76,6 +80,8 @@ export interface StairwellOptions {
   /** The greybox shell that receives the edge band; null puts it in the finish group. */
   greyboxRoot?: THREE.Object3D | null;
   vertexLimit?: number;
+  /** Collision meshes that may sit outside `root` (walkable, collider and camera-blocker proxies); cut with the same regions. */
+  collision?: readonly THREE.Object3D[];
 }
 
 /** One well per traversable stairs / escalator edge that has a vertical run worth cutting. */
@@ -94,6 +100,7 @@ export function stairwellWells(bundle: StationBundle, traversable: (edge: Edge) 
     const rects: StairwellRect[] = [];
     const rising = ordered.slice(1).map((point, i) => Math.abs(point.y - ordered[i]!.y) >= MIN_PIECE_RISE_M);
     const firstFlight = rising.indexOf(true), lastFlight = rising.lastIndexOf(true);
+    if (lastFlight < 0) continue;
     for (let i = 1; i < ordered.length; i++) {
       const a = ordered[i - 1]!, b = ordered[i]!;
       const dx = b.x - a.x, dz = b.z - a.z, length = Math.hypot(dx, dz);
@@ -103,9 +110,15 @@ export function stairwellWells(bundle: StationBundle, traversable: (edge: Edge) 
       const across = new THREE.Vector3(-along.z, 0, along.x);
       rects.push({ center: new THREE.Vector3((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2), along, across, halfLength: length / 2, halfWidth: (widthOf(edge) + 0.2) / 2, rise: b.y - a.y });
     }
-    if (!rects.length) continue;
-    const arrival = ordered.at(-1)!;
-    wells.push({ edgeId: edge.id, mode: edge.mode, lowerY, upperY, rects, arrival: new THREE.Vector3(arrival.x, 0, arrival.z) });
+    // The arrival is where the top flight piece's centreline ends (not the end of any landing after it).
+    // Its rectangle is cut only when that piece is long enough to have one; otherwise the connector is skipped.
+    const exit = ordered[lastFlight]!, end = ordered[lastFlight + 1]!;
+    const arrival = new THREE.Vector3(end.x, 0, end.z);
+    if (Math.hypot(end.x - exit.x, end.z - exit.z) < 0.5) {
+      wells.push({ edgeId: edge.id, mode: edge.mode, lowerY, upperY, rects: [], arrival, skipped: "top flight piece too short for an arrival side" });
+      continue;
+    }
+    wells.push({ edgeId: edge.id, mode: edge.mode, lowerY, upperY, rects, arrival });
   }
   return wells;
 }
@@ -146,11 +159,12 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
 /** Cut the scene's horizontal slabs open along every traversable vertical connector; finish the well edges and rails. */
 export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWell[], options: StairwellOptions): StairwellCut {
   const resources: PortalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
-  const regions = stairwellRegions(wells);
-  const cut = cutRegions(root, regions, resources, options.walkable ?? new Set(), false, options.vertexLimit ?? STAIRWELL_VERTEX_LIMIT);
-  const cutWells = wells.filter((well) => well.rects.some((rect) => (cut.perRegion.get(rect) ?? 0) > 0));
+  const live = wells.filter((well) => !well.skipped);
+  const regions = stairwellRegions(live);
+  const cut = cutRegions([root, ...(options.collision ?? [])], regions, resources, options.walkable ?? new Set(), false, options.vertexLimit ?? STAIRWELL_VERTEX_LIMIT);
+  const cutWells = live.filter((well) => well.rects.some((rect) => (cut.perRegion.get(rect) ?? 0) > 0));
   const heights = new Map<StairwellRect, number[]>();
-  for (const well of wells) for (const rect of well.rects) heights.set(rect, cut.heights.get(rect) ?? []);
+  for (const well of live) for (const rect of well.rects) heights.set(rect, cut.heights.get(rect) ?? []);
 
   const bands: number[] = [];
   for (const well of cutWells) {
@@ -208,7 +222,7 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   finish.traverse((o) => { const mesh = o as THREE.Mesh; if (mesh.isMesh) finishTriangles += mesh.geometry.getAttribute("position").count / 3; });
   finishTriangles = Math.round(finishTriangles);
   return {
-    stats: { wells: cutWells.length, cutTriangles: cut.cutTriangles, skippedMeshes: cut.skipped.length, railM, cutMeshes: cut.cutMeshes, cutMs: cut.cutMs },
+    stats: { wells: cutWells.length, cutTriangles: cut.cutTriangles, skippedMeshes: cut.skipped.length, railM, cutMeshes: cut.cutMeshes, cutMs: cut.cutMs, skippedWells: wells.length - live.length },
     walls, colliders, finish: finish.children.length ? finish : null, bandTriangles, finishTriangles, skipped: cut.skipped,
     resources, dispose: () => {
       // The finish meshes are ours; the cut meshes' originals are restored by disposePortalCuts.
@@ -223,7 +237,7 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   };
 }
 
-/** Outer portions of each opened rectangle, except the arrival side. */
+/** Outer portions of each opened rectangle, except the arrival side (the end side of the top flight piece's rectangle, through `arrival`). */
 function railSides(rect: StairwellRect, arrival: THREE.Vector3, opened: readonly StairwellRect[]): [THREE.Vector3, THREE.Vector3][] {
   const corners = rectCorners(rect, 0), sides: [THREE.Vector3, THREE.Vector3][] = [];
   for (let i = 0; i < 4; i++) {

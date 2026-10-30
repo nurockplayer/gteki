@@ -8,6 +8,11 @@ import { resolveWalls } from "./walker.ts";
 const bundle = (mode: Edge["mode"] = "stairs") => createSyntheticBundle([syntheticEdge("start-upper", "start", "upper", { mode, lengthM: 10.77 })]);
 const flight = (geometry: { x: number; y: number; z: number }[]) =>
   createSyntheticBundle([syntheticEdge("start-upper", "start", "upper", { mode: "stairs", lengthM: 10.77, geometry })]);
+/** A flight whose geometry ends at `end` (the upper node), so a landing can follow the top of the flight. */
+const landed = (geometry: { x: number; y: number; z: number }[], end = { x: 12, y: 0, z: 4 }) => {
+  const built = createSyntheticBundle([syntheticEdge("start-upper", "start", "upper", { mode: "stairs", lengthM: 12, geometry })]);
+  return { ...built, nodes: built.nodes.map((node) => node.id === "upper" ? { ...node, position: end } : node) };
+};
 const traversable = () => true;
 
 /** Two floors 4 m apart with a ceiling slab, an upper slab and a straight flight under x 0→10. */
@@ -173,6 +178,52 @@ describe("stairwell cuts", () => {
       expect([0, 1, 2].every(j => Math.abs(positions.getX(i + j) - 5) < 1e-6)).toBe(false);
     }
     result.dispose();
+  });
+
+  it("leaves no rail across the exit when the flight ends in a flat landing", () => {
+    const withLanding = landed([{ x: 0, y: 0, z: 0 }, { x: 10, y: 0, z: 4 }, { x: 12, y: 0, z: 4 }]);
+    const wells = stairwellWells(withLanding, traversable);
+    expect(wells).toHaveLength(1);
+    expect(wells[0]!.rects).toHaveLength(1);
+    const s = scene();
+    const result = cutStairwells(s.root, wells, { tier: "low" });
+    expect(result.walls).toHaveLength(3);
+    expect(result.walls.some(w => Math.abs(w.ax - 10) < 1e-6 && Math.abs(w.bx - 10) < 1e-6)).toBe(false);
+    // A walker along the centreline walks off the top unblocked, before and after the exit.
+    for (const x of [9.5, 9.9, 10, 10.1, 10.5, 11.5]) expect(resolveWalls(x, 0, 0.3, 4, 1.7, result.walls).x).toBeCloseTo(x);
+    result.dispose();
+  });
+
+  it("skips a connector whose top flight piece is too short for an arrival side", () => {
+    // The last rising piece runs 0.3 m across the plan (from height 3.8 to 4.0), too short for a rectangle.
+    const short = landed([{ x: 0, y: 0, z: 0 }, { x: 9, y: 0, z: 3.8 }, { x: 9.3, y: 0, z: 4 }], { x: 9.3, y: 0, z: 4 });
+    const wells = stairwellWells(short, traversable);
+    expect(wells).toHaveLength(1);
+    const s = scene();
+    const ceilingOriginal = s.ceiling.geometry;
+    const result = cutStairwells(s.root, wells, { tier: "high" });
+    expect(result.stats.wells).toBe(0);
+    expect(result.stats.skippedWells).toBe(1);
+    expect(result.stats.cutTriangles).toBe(0);
+    expect(result.walls).toHaveLength(0);
+    expect(result.finish).toBeNull();
+    expect(s.ceiling.geometry).toBe(ceilingOriginal);
+    result.dispose();
+  });
+
+  it("cuts a collision proxy outside the root with the visible slab, and restores it on dispose", () => {
+    const s = scene();
+    const ceilingOriginal = s.ceiling.geometry;
+    const proxy = new THREE.Mesh(new THREE.BoxGeometry(16, 0.2, 6), new THREE.MeshBasicMaterial());
+    proxy.position.set(5, 2.7, 0); proxy.name = "ceiling-proxy"; proxy.updateMatrixWorld(true);
+    const proxyOriginal = proxy.geometry;
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high", collision: [proxy] });
+    expect(proxy.geometry).not.toBe(proxyOriginal);
+    expect(s.ceiling.geometry).not.toBe(ceilingOriginal);
+    expect(up(proxy, 5, 2)).toHaveLength(0);
+    expect(up(s.ceiling, 5, 2)).toHaveLength(0);
+    result.dispose();
+    expect(proxy.geometry).toBe(proxyOriginal);
   });
 
 });

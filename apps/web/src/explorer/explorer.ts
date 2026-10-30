@@ -949,6 +949,8 @@ export class Explorer {
       this.portalCutStats = cutPortals(this.stationScene.root, this.greyboxOpenings, this.portalCutResources, new Set(originalTargets.ground));
       this.stairwellCut = cutStairwells(this.stationScene.root, stairwellWells(bundle, traversable), {
         walkable: new Set(originalTargets.ground), tier: this.quality, greyboxRoot: this.greybox.root,
+        // Collision proxies may sit outside the station root: cut them with the visible slabs, before the trees are rebuilt.
+        collision: [...this.walkable, ...this.colliders, ...this.cameraBlockers],
       });
       this.stairwellStats = this.stairwellCut.stats;
       this.greybox.stats.triangles += this.stairwellCut.bandTriangles;
