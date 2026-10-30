@@ -85,6 +85,9 @@ describe("public station navmesh gate",()=>{
     const committedPaths=JSON.parse(fs.readFileSync(path.resolve(`stations/${station}/navmesh-paths.json`),"utf8"));
     const pathsDiff=navPathsDiff(committedPaths.edges,result.audit.navPaths);
     const staleKeys=[...pathsDiff.missing,...pathsDiff.extra,...pathsDiff.moved].slice(0,10);
+    const rejected=(result.audit.navPathsRejected ?? []) as string[];
+    if(rejected.length) errors.push(`navmesh walk paths leave the floor or meet a wall (fix the scene or greybox, or list the edge as a fallback): ${rejected.join(", ")}`);
+    if(!result.audit.navPathsScene?.samples) errors.push("no navmesh walk path samples were audited");
     if(pathsDiff.missing.length+pathsDiff.extra.length+pathsDiff.moved.length) errors.push(`navmesh paths stale (${staleKeys.join(", ")}): run pnpm tsx packages/godot/src/navmesh-fallback.ts --station ${station} --write-paths stations/${station}/navmesh-paths.json`);
     if(JSON.stringify(committedPaths.bake)!==JSON.stringify(NAVMESH_BAKE)) errors.push(`navmesh paths bake header is ${JSON.stringify(committedPaths.bake)}, expected ${JSON.stringify(NAVMESH_BAKE)}: regenerate with --write-paths`);
     const header={version:committedPaths.version,station:committedPaths.station,frame:committedPaths.frame};
