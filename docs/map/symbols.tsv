@@ -75,11 +75,11 @@ canonicalJson	function	apps/web/src/explorer/cutRecipe.ts	66
 sha256Hex	function	apps/web/src/explorer/cutRecipe.ts	87
 encodeRecipe	function	apps/web/src/explorer/cutRecipe.ts	120
 decodeRecipe	function	apps/web/src/explorer/cutRecipe.ts	142
-ExplorerMode	type	apps/web/src/explorer/explorer.ts	58
-ExplorerPose	interface	apps/web/src/explorer/explorer.ts	60
-ExplorerOptions	interface	apps/web/src/explorer/explorer.ts	62
-ExplorerEvents	interface	apps/web/src/explorer/explorer.ts	84
-Explorer	class	apps/web/src/explorer/explorer.ts	192
+ExplorerMode	type	apps/web/src/explorer/explorer.ts	59
+ExplorerPose	interface	apps/web/src/explorer/explorer.ts	61
+ExplorerOptions	interface	apps/web/src/explorer/explorer.ts	63
+ExplorerEvents	interface	apps/web/src/explorer/explorer.ts	85
+Explorer	class	apps/web/src/explorer/explorer.ts	193
 FloorReflectionSettings	interface	apps/web/src/explorer/floorReflectionPass.ts	12
 FLOOR_REFLECTION_DEFAULTS	const	apps/web/src/explorer/floorReflectionPass.ts	26
 FloorReflectionPass	class	apps/web/src/explorer/floorReflectionPass.ts	138
@@ -1012,8 +1012,8 @@ releaseShinjukuCaches	function	stations/shinjuku/gteki/scene.ts	56
 releaseCaches	const	stations/shinjuku/gteki/scene.ts	59
 stairwellRecipeUrl	const	stations/shinjuku/gteki/scene.ts	62
 buildScene	const	stations/shinjuku/gteki/scene.ts	71
-planBundle	function	stations/shinjuku/gteki/scene.ts	84
-assembleScene	const	stations/shinjuku/gteki/scene.ts	95
+planBundle	function	stations/shinjuku/gteki/scene.ts	92
+assembleScene	const	stations/shinjuku/gteki/scene.ts	103
 @gteki/station-shinjuku:dev	script	stations/shinjuku/package.json	24
 @gteki/station-shinjuku:build	script	stations/shinjuku/package.json	25
 @gteki/station-shinjuku:preview	script	stations/shinjuku/package.json	26

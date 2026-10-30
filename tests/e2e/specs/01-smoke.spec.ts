@@ -95,7 +95,7 @@ test("station switching drops the previous station's state", async ({ page }) =>
     const g = (window as any).__gteki;
     const heapMB = Math.round(((performance as any).memory?.usedJSHeapSize ?? 0) / 1e6);
     const measures = performance.getEntriesByType("measure").filter((m) => m.name.startsWith("sjk:")).map((m) => [m.name, Math.round(m.startTime), Math.round(m.duration)]);
-    return { phase: g.phase(), routeNull: g.route() === null, heapMB, opens: g.openTimings?.(), steps: g.sceneInfo?.()?.loadTimings, measures };
+    return { phase: g.phase(), routeNull: g.route() === null, heapMB, opens: g.openTimings?.(), steps: g.sceneInfo?.()?.loadTimings, released: g.sceneInfo?.()?.releasedTextures, measures };
   });
   try {
     await page.waitForFunction(() => (window as any).__gteki.phase() === "ready" && (window as any).__gteki.route() === null, null, { polling: 250 });
