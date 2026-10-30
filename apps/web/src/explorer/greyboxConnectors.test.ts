@@ -364,3 +364,82 @@ it("keeps rendered stair treads at or below the walkable incline", () => {
     expect(checked).toBeGreaterThan(700);
   }
 });
+
+/** A two-flight stair whose second leg turns by `degrees` (plan view) toward `direction` (-1 or 1). */
+function turningStair(degrees: number, direction: number) {
+  const angle = degrees * Math.PI / 180, endX = 4 + 4 * Math.cos(angle), endY = direction * 4 * Math.sin(angle);
+  const station = createSyntheticBundle([syntheticEdge("turn", "start", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: [{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: endX, y: endY, z: 4 }] })]);
+  station.nodes.find((n) => n.id === "upper")!.position = { x: endX, y: endY, z: 4 };
+  return { station, angle, endX, endY };
+}
+
+describe("turning landing guards", () => {
+  const flat = { hasFloor: () => true, nearMesh: () => false };
+  const landingWalls = (walls: { ax: number; az: number; bx: number; bz: number; yMin: number; yMax: number }[]) =>
+    walls.filter((w) => Math.abs(w.yMin - 1.88) < 1e-6 && Math.abs(w.yMax - 2.96) < 1e-6);
+
+  it("stops a walker leaving the landing through every outer side and corner at 15, 90 and 165 degrees", () => {
+    for (const degrees of [15, 90, 165]) for (const direction of [-1, 1]) {
+      const { station, angle, endX, endY } = turningStair(degrees, direction);
+      const result = buildConnectors(station, () => true, flat, "high");
+      const inDir = new THREE.Vector2(1, 0), outDir = new THREE.Vector2(endX - 4, -endY).normalize();
+      const outerNormal = new THREE.Vector2(-inDir.y, inDir.x).multiplyScalar(direction).normalize();
+      const centre = new THREE.Vector2(4, 0);
+      for (let deg = 0; deg < 360; deg += 3) {
+        const heading = deg * Math.PI / 180, dir = new THREE.Vector2(Math.cos(heading), Math.sin(heading));
+        if (dir.dot(outerNormal) < -1e-9) continue; // inner side of the bend
+        // Skip headings that pass through a flight opening rather than the landing outline.
+        const probe = dir.clone().multiplyScalar(1.3);
+        const inCorridor = (d: THREE.Vector2) => probe.dot(d) >= 0 && Math.abs(probe.x * d.y - probe.y * d.x) <= 0.78;
+        if (inCorridor(outDir) || inCorridor(inDir.clone().negate())) continue;
+        let stopped = false;
+        for (let step = 1; step <= 50 && !stopped; step++) {
+          const x = centre.x + dir.x * 0.03 * step, z = centre.y + dir.y * 0.03 * step;
+          const resolved = resolveWalls(x, z, 0.3, 2, 1.7, result.wallSegments);
+          if (Math.hypot(resolved.x - x, resolved.z - z) > 0.05) stopped = true;
+        }
+        expect(stopped, `${degrees}° direction=${direction} heading=${deg} angle=${angle}`).toBe(true);
+      }
+    }
+  });
+
+  it("lets a centreline walker and a walker 0.5 m off centre pass at 15, 90 and 165 degrees", () => {
+    for (const degrees of [15, 90, 165]) for (const direction of [-1, 1]) {
+      const { station, angle } = turningStair(degrees, direction);
+      const result = buildConnectors(station, () => true, flat, "high");
+      const path = result.pathByEdge.get("turn")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
+      const bendS = cumulative[path.findIndex((p) => Math.hypot(p.x - 4, p.y - 2, p.z) < 1e-6)]!;
+      for (const offset of [-0.5, 0, 0.5]) for (let s = 0; s <= total; s += 0.05) {
+        const p = samplePolyline(path, cumulative, s), firstFlight = s <= bendS;
+        const amount = offset * Math.min(1, Math.abs(s - bendS) / 0.75);
+        const nx = firstFlight ? 0 : direction * Math.sin(angle), nz = firstFlight ? 1 : Math.cos(angle);
+        const x = p.x + nx * amount, z = p.z + nz * amount;
+        const resolved = resolveWalls(x, z, 0.3, p.y, 1.7, result.wallSegments);
+        expect(Math.hypot(resolved.x - x, resolved.z - z), `${degrees}° direction=${direction} offset=${offset} s=${s}`).toBeLessThanOrEqual(0.05);
+      }
+    }
+  });
+
+  it("keeps every landing guard segment within the landing's diagonal", () => {
+    const diagonal = 2 * (1.5 / 2 + 0.03) * Math.SQRT2;
+    for (const degrees of [15, 90, 165]) for (const direction of [-1, 1]) {
+      const { station } = turningStair(degrees, direction);
+      const result = buildConnectors(station, () => true, flat, "high");
+      const guards = landingWalls(result.wallSegments);
+      expect(guards.length, `${degrees}° direction=${direction}`).toBeGreaterThan(0);
+      for (const w of guards) expect(Math.hypot(w.bx - w.ax, w.bz - w.az), `${degrees}° direction=${direction}`).toBeLessThanOrEqual(diagonal + 1e-6);
+    }
+  });
+
+  it("skips the connector and counts it when a stair turns past 170 degrees", () => {
+    for (const degrees of [175, 180]) for (const direction of [-1, 1]) {
+      const { station } = turningStair(degrees, direction);
+      const result = buildConnectors(station, () => true, flat, "high");
+      expect(result.stats.connectorsSkipped, `${degrees}° direction=${direction}`).toBe(1);
+      expect(result.root.children).toHaveLength(0);
+      expect(result.walkable).toHaveLength(0);
+      expect(result.colliders).toHaveLength(0);
+      expect(result.pathByEdge.has("turn")).toBe(false);
+    }
+  });
+});

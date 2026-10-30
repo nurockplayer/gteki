@@ -217,25 +217,51 @@ function meshFor(parts: readonly ConnectorPart[], material: THREE.Material | THR
 
 /** Remove the part of a landing side inside a flight's approach corridor. */
 function clipLandingSide(a: THREE.Vector3, b: THREE.Vector3, origin: THREE.Vector3, direction: THREE.Vector3, clearance: number): [THREE.Vector3, THREE.Vector3][] {
-  const distance = (t: number) => {
-    const p = a.clone().lerp(b, t).sub(origin), along = Math.max(0, p.dot(direction));
-    return p.addScaledVector(direction, -along).length();
+  // Points of a..b that lie ahead of the origin along the corridor and within `clearance` of its centreline.
+  // Points behind the origin are not in the corridor, so a side that faces away from it is kept whole.
+  const u = direction.clone().setY(0).normalize(), p0 = a.clone().sub(origin), d = b.clone().sub(a);
+  const along0 = p0.dot(u), along1 = d.dot(u), side0 = p0.x * u.z - p0.z * u.x, side1 = d.x * u.z - d.z * u.x;
+  let lo = -Infinity, hi = Infinity;
+  const need = (c0: number, c1: number) => { // require c0 + t * c1 >= 0
+    if (Math.abs(c1) < 1e-12) { if (c0 < 0) { lo = Infinity; } return; }
+    if (c1 > 0) lo = Math.max(lo, -c0 / c1); else hi = Math.min(hi, -c0 / c1);
   };
-  let lo = 0, hi = 1;
-  for (let i = 0; i < 60; i++) { const x = (2 * lo + hi) / 3, y = (lo + 2 * hi) / 3; if (distance(x) < distance(y)) hi = y; else lo = x; }
-  const middle = (lo + hi) / 2;
-  if (distance(middle) >= clearance - 1e-9) return [[a, b]];
-  let left = 0, right = middle;
-  if (distance(0) >= clearance) for (let i = 0; i < 50; i++) { const m = (left + right) / 2; if (distance(m) >= clearance) left = m; else right = m; }
-  else left = 0;
-  let start = middle, end = 1;
-  if (distance(1) >= clearance) for (let i = 0; i < 50; i++) { const m = (start + end) / 2; if (distance(m) < clearance) start = m; else end = m; }
-  else end = 1;
+  need(along0, along1);
+  need(clearance - side0, -side1);
+  need(clearance + side0, side1);
+  const left = Math.max(0, lo), right = Math.min(1, hi);
+  if (!(left < right)) return [[a, b]];
   const segments: [THREE.Vector3, THREE.Vector3][] = [];
   if (left > 1e-8) segments.push([a.clone(), a.clone().lerp(b, left)]);
-  if (end < 1 - 1e-8) segments.push([a.clone().lerp(b, end), b.clone()]);
+  if (right < 1 - 1e-8) segments.push([a.clone().lerp(b, right), b.clone()]);
   return segments;
 }
+
+/** Plan-view deflection between two legs, and which side (-1 or 1) lies outside the bend (0 when straight). */
+function bendOf(incoming: THREE.Vector3, outgoing: THREE.Vector3): { angle: number; outer: number } {
+  const a = new THREE.Vector3(incoming.x, 0, incoming.z).normalize(), b = new THREE.Vector3(outgoing.x, 0, outgoing.z).normalize();
+  return { angle: a.angleTo(b), outer: -Math.sign(a.x * b.z - a.z * b.x) };
+}
+
+/** Clip a segment to the square of half-size `half` centred on `centre`, with axes `u` and `v`. */
+function clipToSquare(a: THREE.Vector3, b: THREE.Vector3, centre: THREE.Vector3, u: THREE.Vector3, half: number): [THREE.Vector3, THREE.Vector3] | null {
+  const v = new THREE.Vector3(-u.z, 0, u.x), limit = half + 1e-6;
+  let t0 = 0, t1 = 1;
+  for (const axis of [u, v]) {
+    const p0 = a.clone().sub(centre).dot(axis), dp = b.clone().sub(a).dot(axis);
+    if (Math.abs(dp) < 1e-12) { if (Math.abs(p0) > limit) return null; continue; }
+    let ta = (-limit - p0) / dp, tb = (limit - p0) / dp;
+    if (ta > tb) [ta, tb] = [tb, ta];
+    t0 = Math.max(t0, ta); t1 = Math.min(t1, tb);
+    if (t0 > t1) return null;
+  }
+  return [a.clone().lerp(b, t0), a.clone().lerp(b, t1)];
+}
+
+/** Bends shallower than this keep their outer wall and join it at the landing. */
+const SHALLOW_BEND = Math.PI / 6;
+/** Stair turns sharper than this have no clean landing guard, so the edge gets no greybox connector. */
+const MAX_STAIR_TURN = (170 * Math.PI) / 180;
 
 /** Build runtime-only batches for missing vertical transport. */
 export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge) => boolean, scope: ConnectorScope, tier: "high" | "low") {
@@ -257,6 +283,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const points = edgePoints(bundle, edge, nodes, floors);
     const planRuns = points.slice(1).map((p, i) => Math.hypot(p.x - points[i]!.x, p.z - points[i]!.z));
     if (planRuns.reduce((a, b) => a + b, 0) < 0.3 || planRuns.some((run, i) => run < 0.3 && Math.abs(points[i + 1]!.y - points[i]!.y) > 1e-6)) { connectorsSkipped++; continue; }
+    if (edge.mode === "stairs" && points.some((p, i) => i > 0 && i + 1 < points.length && bendOf(p.clone().sub(points[i - 1]!), points[i + 1]!.clone().sub(p)).angle > MAX_STAIR_TURN)) { connectorsSkipped++; continue; }
     const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
     const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
     const halfWidth = (edge.mode === "stairs" ? width : 1.2) / 2;
@@ -299,6 +326,9 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
           for (const index of [i - 1, i]) if (isTurn(index)) {
             const corner = points[index]!, other = index === i ? points[index + 1]!.clone().sub(corner) : points[index - 1]!.clone().sub(corner);
             other.y = 0; other.normalize();
+            // A shallow bend keeps its outer wall whole: it runs to the landing and is joined there.
+            const bend = index === i ? bendOf(new THREE.Vector3(dx, 0, dz), other) : bendOf(other.clone().negate(), new THREE.Vector3(dx, 0, dz));
+            if (bend.angle < SHALLOW_BEND && side === bend.outer) continue;
             const origin = new THREE.Vector3(corner.x, 0, corner.z);
             pieces = pieces.flatMap(([start, end]) => clipLandingSide(start, end, origin, other, width / 2 + 0.1));
           }
@@ -363,8 +393,8 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     for (const landing of landingGuards) {
       const at = points[landing.index]!, incoming = at.clone().sub(points[landing.index - 1]!), outgoing = points[landing.index + 1]!.clone().sub(at);
       incoming.y = 0; outgoing.y = 0; incoming.normalize(); outgoing.normalize();
-      const side = -Math.sign(incoming.x * outgoing.z - incoming.z * outgoing.x);
-      if (!side || !landing.endpoints.length) continue;
+      const { angle, outer: side } = bendOf(incoming, outgoing), shallow = angle < SHALLOW_BEND;
+      if (!side || (!shallow && !landing.endpoints.length)) continue;
       const ends = [landing.index - 1, landing.index].map((leg) => {
         const candidates = flightWalls.filter((entry) => entry.leg === leg && entry.side === side);
         const points = candidates.flatMap(({ wall }) => [new THREE.Vector3(wall.ax, at.y, wall.az), new THREE.Vector3(wall.bx, at.y, wall.bz)]);
@@ -375,10 +405,14 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       const delta = second.clone().sub(first);
       const along = (delta.x * outgoing.z - delta.z * outgoing.x) / cross;
       const join = first.clone().addScaledVector(incoming, along);
-      const guard = landing.endpoints.reduce((best, value) => value.distanceToSquared(join) < best.distanceToSquared(join) ? value : best);
+      const guard = landing.endpoints.length ? landing.endpoints.reduce((best, value) => value.distanceToSquared(join) < best.distanceToSquared(join) ? value : best) : null;
       const pairs: [THREE.Vector3, THREE.Vector3][] = [[first, join], [join, second]];
-      if (join.distanceTo(guard) < 0.2) pairs.push([join, guard]);
-      for (const [start, end] of pairs) {
+      if (guard && join.distanceTo(guard) < 0.2) pairs.push([join, guard]);
+      for (const pair of pairs) {
+        // Clamp to the landing square so a near-reversal join cannot run past the landing.
+        const clipped = clipToSquare(pair[0], pair[1], at, incoming, width / 2 + 0.03);
+        if (!clipped) continue;
+        const [start, end] = clipped;
         const length = start.distanceTo(end); if (length < 1e-6) continue;
         const wall = { ax: start.x, az: start.z, bx: end.x, bz: end.z, yMin: at.y - 0.12, yMax: at.y + 0.96 }; wallSegments.push(wall);
         const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(end.z - start.z), end.x - start.x)).setPosition((start.x + end.x) / 2, at.y, (start.z + end.z) / 2);
