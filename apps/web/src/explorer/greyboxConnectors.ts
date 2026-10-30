@@ -427,6 +427,37 @@ function flightsStacked(points: readonly THREE.Vector3[], half: number, squares:
   return false;
 }
 
+/**
+ * Whether a flight's side wall cuts another flight's walking footprint (that flight's plan rectangle of treads) at a height the
+ * walker stands in: the wall's height span overlaps the surface + 0.1 to + 2.0 m there. A wall's own flight is not tested.
+ */
+function wallCutsFlight(flightWalls: readonly { leg: number; wall: Segment2 }[], points: readonly THREE.Vector3[], width: number, squares: readonly LandingSquare[]): boolean {
+  const half = width / 2;
+  // A flight runs between real landings: legs joined by shallow bends are one flight, so they never cut each other.
+  const flightOf = (leg: number) => squares.filter((square) => square.index > 0 && square.index <= leg).length;
+  for (const { leg, wall } of flightWalls) {
+    const length = Math.hypot(wall.bx - wall.ax, wall.bz - wall.az);
+    const samples = Math.max(1, Math.ceil(length / 0.05));
+    for (let j = 1; j < points.length; j++) {
+      if (flightOf(j - 1) === flightOf(leg)) continue;
+      const from = points[j - 1]!, to = points[j]!;
+      const run = to.clone().sub(from); run.y = 0;
+      const reach = run.length();
+      if (reach < 1e-6) continue;
+      const dir = run.clone().divideScalar(reach), normal = new THREE.Vector3(-dir.z, 0, dir.x);
+      for (let s = 0; s <= samples; s++) {
+        const t = s / samples;
+        const rx = wall.ax + (wall.bx - wall.ax) * t - from.x, rz = wall.az + (wall.bz - wall.az) * t - from.z;
+        const along = rx * dir.x + rz * dir.z, lateral = rx * normal.x + rz * normal.z;
+        if (along < 0 || along > reach || Math.abs(lateral) > half) continue;
+        const surface = from.y + (to.y - from.y) * (along / reach);
+        if (wall.yMin <= surface + 2.0 && wall.yMax >= surface + 0.1) return true;
+      }
+    }
+  }
+  return false;
+}
+
 /** Build runtime-only batches for missing vertical transport. */
 export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge) => boolean, scope: ConnectorScope, tier: "high" | "low") {
   const root = new THREE.Group(), walkable: THREE.Object3D[] = [], colliders: THREE.Object3D[] = [];
@@ -460,6 +491,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       if (before.lengthSq() && after.lengthSq() && before.angleTo(after) > Math.PI / 18) bentEscalator = true;
     }
     const parts: ConnectorPart[] = [];
+    const wallStart = wallSegments.length, flightWalls: { leg: number; wall: Segment2 }[] = [];
     const edgePath: THREE.Vector3[] = [];
     let edgeOmitted = 0;
     for (let i = 1; i < points.length; i++) {
@@ -500,6 +532,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
             const ya = THREE.MathUtils.lerp(from.y, to.y, THREE.MathUtils.clamp(s0 / horizontal, 0, 1)), yb = THREE.MathUtils.lerp(from.y, to.y, THREE.MathUtils.clamp(s1 / horizontal, 0, 1));
             const wall = { ax: a.x, az: a.z, bx: b.x, bz: b.z, yMin: Math.min(ya, yb) - 0.12, yMax: Math.max(ya, yb) + 0.96 };
             wallSegments.push(wall);
+            flightWalls.push({ leg: i - 1, wall });
             if (edge.mode === "stairs") {
               const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(wall.bz - wall.az), wall.bx - wall.ax)).setPosition((wall.ax + wall.bx) / 2, (wall.yMin + wall.yMax) / 2, (wall.az + wall.bz) / 2);
               box(parts, "steel", transform, 0, 0, 0, Math.hypot(wall.bx - wall.ax, wall.bz - wall.az), wall.yMax - wall.yMin, 0.04, "collider"); parts.at(-1)!.walkableOnly = true;
@@ -555,6 +588,8 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         }
       }
     }
+    // A side wall that cuts another flight's walking footprint would block the route: such a stair is skipped, not guarded.
+    if (edge.mode === "stairs" && wallCutsFlight(flightWalls, points, width, landingSquares)) { wallSegments.length = wallStart; connectorsSkipped++; continue; }
     const lowerFirst = points[0]!.y <= points.at(-1)!.y ? edgePath : edgePath.reverse();
     pathByEdge.set(edge.id, lowerFirst.map((p) => ({ x: p.x, y: p.y, z: p.z })));
     for (let i = 1; i < lowerFirst.length; i++) segments.push({ line: new THREE.Line3(lowerFirst[i - 1]!.clone(), lowerFirst[i]!.clone()), halfWidth });

@@ -450,8 +450,9 @@ describe("turning landing guards", () => {
   });
 
   // A single-vertex 135 degree return passes over its own first flight with under 2.1 m of headroom: skipped, not guarded.
-  // Three 10 degree bends 0.6 m apart are one continuous flight, with no landing of their own, before a real 90 degree turn.
-  it("builds a run of three 10 degree bends 0.6 m apart followed by a 90 degree turn, in both directions", () => {
+  // Three 10 degree bends 0.6 m apart, then a 90 degree turn toward the run's curve: the run's inner side wall, about 1 m back
+  // from the turn, lies across the next flight's treads at its height, so the stair is skipped rather than guarded.
+  it("skips a run of three 10 degree bends 0.6 m apart whose side wall crosses the 90 degree turn's flight, in both directions", () => {
     const deg = (d: number) => (d * Math.PI) / 180;
     const headings = [0, 10, 20, 30, 120], lengths = [0.6, 0.6, 0.6, 0.6, 4], heights = [0, 0.2, 0.4, 0.6, 0.8, 2.8];
     const pts: [number, number, number][] = [[0, 0, 0]];
@@ -459,6 +460,27 @@ describe("turning landing guards", () => {
     headings.forEach((heading, i) => { x += lengths[i]! * Math.cos(deg(heading)); z += lengths[i]! * Math.sin(deg(heading)); pts.push([x, heights[i + 1]!, z]); });
     for (const direction of [-1, 1]) {
       const waypoints = pts.map(([px, h, pz]): [number, number, number] => [px, h, direction * pz]);
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(1);
+      expect(result.root.children).toHaveLength(0);
+    }
+  });
+
+  // A 100 degree turn below the sharp-return rule: the first flight's inner side wall runs into the second flight's treads.
+  it("skips a 100 degree turn whose inner side wall of the first flight crosses the second flight's treads", () => {
+    for (const direction of [-1, 1]) {
+      const result = buildConnectors(stairThrough(stackedWaypoints(100, direction)), () => true, flat, "high");
+      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(1);
+      expect(result.root.children).toHaveLength(0);
+      expect(result.wallSegments).toHaveLength(0);
+    }
+  });
+
+  // A normal 90 degree landing turn: each side wall ends at the landing outline, clear of the next flight's treads.
+  it("builds a normal 90 degree landing turn in both directions", () => {
+    for (const direction of [-1, 1]) {
+      const turn: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 4, 4]];
+      const waypoints = turn.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
       expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(0);
       expect(result.pathByEdge.has("turn")).toBe(true);
