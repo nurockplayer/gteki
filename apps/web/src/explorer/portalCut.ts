@@ -201,6 +201,11 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
     if (position && position.count > vertexLimit) {
       result.skipped.push(`${mesh.name || mesh.uuid}: ${position.count} vertices over ${vertexLimit}`); return;
     }
+    // Animated instances (dynamic usage: escalator steps, doors, trains) are rewritten every frame: a frozen copy
+    // would stay behind while the animation restores the original matrix.
+    if (instance.isInstancedMesh && instance.instanceMatrix.usage === THREE.DynamicDrawUsage) {
+      result.skipped.push(`${mesh.name || mesh.uuid}: animated instances`); return;
+    }
     if (instance.isInstancedMesh) {
       const matrix = new THREE.Matrix4(), world = new THREE.Matrix4();
       for (let i = 0; i < instance.count; i++) {

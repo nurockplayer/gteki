@@ -5,7 +5,7 @@
  */
 
 /** Bump whenever the cut logic changes: a recipe baked by another version is stale. */
-export const RECIPE_VERSION = 2;
+export const RECIPE_VERSION = 3;
 const MAGIC = "GTSR";
 const FORMAT = 1;
 
