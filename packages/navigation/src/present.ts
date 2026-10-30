@@ -22,7 +22,8 @@ export interface PolylinePoint {
   floorId: string;
   /**
    * Set on the points of an edge flagged `attributes.sceneGap`: the scene closes or lacks the passage the edge
-   * records, so a viewer draws it as unmodelled (ruling A) instead of through the model.
+   * records, so a viewer draws it as unmodelled (ruling A) instead of through the model. Also set for
+   * `attributes.displayHeightApprox`, whose display heights are approximate.
    */
   sceneGap?: true;
 }
@@ -60,7 +61,8 @@ export function routePolyline(bundle: StationBundle, route: RouteResult, edgePat
       return;
     }
     const symbolicPolyline = edge?.geometryZ === "symbolic";
-    const sceneGap = edge?.attributes?.sceneGap === true;
+    // An edge whose display height is approximate (#644) is drawn the same way: dashed, never through the model.
+    const sceneGap = edge?.attributes?.sceneGap === true || edge?.attributes?.displayHeightApprox === true;
     const drawn = edge?.geometry && edge.geometry.length >= 2 ? edge.geometry : null;
     const raw = drawn ? [...drawn] : [from.position, to.position];
     // Only drawn geometry is stored in edge direction; the node-to-node fallback already runs from → to.
