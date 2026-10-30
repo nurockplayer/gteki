@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 import type { Edge } from "@gteki/schema";
 import { cutStairwells, stairwellWells } from "./stairwellCut.ts";
+import { canonicalJson, decodeRecipe, encodeRecipe, RECIPE_VERSION, sha256Hex, type CutRecipe, type MeshRecord } from "./cutRecipe.ts";
 import { resolveWalls } from "./walker.ts";
 
 const bundle = (mode: Edge["mode"] = "stairs") => createSyntheticBundle([syntheticEdge("start-upper", "start", "upper", { mode, lengthM: 10.77 })]);
@@ -577,4 +578,47 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+});
+
+describe("stairwell cut recipes", () => {
+  const recipeFor = (wells: ReturnType<typeof stairwellWells>): CutRecipe => {
+    const s = scene(), recorded: MeshRecord[] = [];
+    const live = cutStairwells(s.root, wells, { tier: "high", record: recorded });
+    const recipe: CutRecipe = { version: RECIPE_VERSION, tier: "high", wellsSha256: sha256Hex(canonicalJson(wells)),
+      keyCount: wells.flatMap((w) => w.skipped ? [] : w.rects).length, meshKeysHash: live.meshKeysHash, meshes: recorded };
+    live.dispose();
+    return decodeRecipe(encodeRecipe(recipe));
+  };
+  const positions = (mesh: THREE.Mesh) => Array.from(mesh.geometry.getAttribute("position").array as ArrayLike<number>);
+
+  it("replays a matching recipe to the live cut", () => {
+    const wells = stairwellWells(bundle(), traversable);
+    const recipe = recipeFor(wells);
+    const live = scene(), replay = scene();
+    const a = cutStairwells(live.root, wells, { tier: "high" }), b = cutStairwells(replay.root, wells, { tier: "high", recipe });
+    expect(b.stats.recipe).toBe("replayed");
+    expect(b.stats.cutTriangles).toBe(a.stats.cutTriangles);
+    for (const name of ["ceiling", "upper"] as const) positions(replay[name]).forEach((v, k) => expect(v).toBeCloseTo(positions(live[name])[k]!, 4));
+  });
+
+  it("falls back to a clean live cut when a later mesh no longer matches, undoing the meshes it already replayed", () => {
+    const wells = stairwellWells(bundle(), traversable);
+    const recipe = recipeFor(wells);
+    // The upper slab is reached after the ceiling: nudging a vertex far from the well changes its key only.
+    const nudge = (s: ReturnType<typeof scene>) => {
+      const attr = s.upper.geometry.getAttribute("position") as THREE.BufferAttribute;
+      let far = 0;
+      for (let i = 1; i < attr.count; i++) if (attr.getX(i) > attr.getX(far)) far = i;
+      attr.setY(far, attr.getY(far) + 0.001); attr.needsUpdate = true;
+      return s;
+    };
+    const live = nudge(scene()), replay = nudge(scene());
+    const a = cutStairwells(live.root, wells, { tier: "high" });
+    const b = cutStairwells(replay.root, wells, { tier: "high", recipe });
+    expect(b.stats.recipe).toBe("stale");
+    expect(b.stats.cutTriangles).toBe(a.stats.cutTriangles);
+    // The ceiling was replayed before the mismatch: it must be cut once, exactly as the live run cuts it.
+    for (const name of ["ceiling", "upper"] as const) expect(positions(replay[name])).toEqual(positions(live[name]));
+    b.dispose();
+  });
 });

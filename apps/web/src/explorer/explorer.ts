@@ -969,6 +969,8 @@ export class Explorer {
       // The portal cut is the step before this one, so this lap is only the wait for the recipe.
       const recipe = await stairwellRecipe;
       lap("stairwellRecipe");
+      // Superseded or disposed while the recipe loaded: clearStation already released this load's scene, greybox and cuts.
+      if (generation !== this.loadGeneration || this.disposed || !this.stationScene) return false;
       this.stairwellCut = cutStairwells(this.stationScene.root, stairwellWells(bundle, traversable), {
         walkable: new Set(originalTargets.ground), tier: this.quality, greyboxRoot: this.greybox.root,
         // Collision proxies may sit outside the station root: cut them with the visible slabs, before the trees are rebuilt.

@@ -82,6 +82,7 @@ function outcomeOf(cut: StairwellCut, shell: THREE.Mesh | undefined): Outcome {
 /** Max abs difference between the two runs, or throws when the structure differs. */
 function compareOutcomes(live: Outcome, replay: Outcome): number {
   const same = (a: unknown, b: unknown, what: string) => { if (JSON.stringify(a) !== JSON.stringify(b)) throw new Error(`replay differs: ${what}`); };
+  let maxErr = 0;
   same({ ...live.stats, cutMs: 0, recipe: "" }, { ...replay.stats, cutMs: 0, recipe: "" }, "stats");
   same(live.walls, replay.walls, "walls");
   same(live.bandTriangles, replay.bandTriangles, "band triangles");
@@ -98,7 +99,6 @@ function compareOutcomes(live: Outcome, replay: Outcome): number {
       });
     }
   }
-  let maxErr = 0;
   live.finish.forEach((positions, n) => {
     same(positions.length, replay.finish[n]!.length, "finish geometry size");
     positions.forEach((v, k) => {
