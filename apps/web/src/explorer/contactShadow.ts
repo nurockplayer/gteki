@@ -8,7 +8,7 @@ export function contactShadow(radiusM = 0.5, opacity = 0.42): THREE.Mesh<THREE.P
   const size = 64;
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
-  const g = canvas.getContext("2d")!;
+  const g = canvas.getContext("2d", { willReadFrequently: true })!;
   const grd = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
   grd.addColorStop(0, "rgba(0,0,0,1)");
   grd.addColorStop(0.45, "rgba(0,0,0,0.55)");
