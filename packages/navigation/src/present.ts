@@ -38,7 +38,8 @@ export function nodeDisplayZ(node: Node, floor: Floor | undefined): { z: number;
 /** Baked navmesh walk polylines per edge and direction, in the station ENU frame (see NavmeshPaths in @gteki/scene-api). */
 export type NavmeshEdgePaths = Readonly<Record<string, { forward?: readonly (readonly number[])[]; reverse?: readonly (readonly number[])[] }>>;
 
-const VERTICAL_MODES = new Set(["stairs", "escalator", "elevator"]);
+/** Edges that never take a navmesh walk path: vertical connectors, and fare gates (their barriers block the navmesh). */
+const NO_NAVMESH_MODES = new Set(["stairs", "escalator", "elevator", "gate"]);
 
 /**
  * Polyline along the route, following edge geometry (reversed when traversed backwards). With `navPaths`, a walk
@@ -70,7 +71,7 @@ export function routePolyline(bundle: StationBundle, route: RouteResult, edgePat
       }
       return;
     }
-    const walk = !VERTICAL_MODES.has(step.mode);
+    const walk = !NO_NAVMESH_MODES.has(step.mode);
     const nav = walk ? navPaths?.[step.edgeId]?.[step.reversed ? "reverse" : "forward"] : undefined;
     if (nav && nav.length >= 2) {
       // The path starts at the start node's snap, not the node itself: no straight node-to-snap join.

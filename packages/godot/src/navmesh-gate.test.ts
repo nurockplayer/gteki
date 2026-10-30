@@ -88,6 +88,16 @@ describe("public station navmesh gate",()=>{
     const rejected=(result.audit.navPathsRejected ?? []) as string[];
     if(rejected.length) errors.push(`navmesh walk paths leave the floor or meet a wall (fix the scene or greybox, or list the edge as a fallback): ${rejected.join(", ")}`);
     if(!result.audit.navPathsScene?.samples) errors.push("no navmesh walk path samples were audited");
+    // Detours (a navmesh path much longer than its edge) are drawn dashed like fallbacks: committed, and the list may only shrink.
+    const detours=(result.audit.navPathsDetours ?? []) as string[], committedDetours=(committedPaths.detours ?? []) as string[];
+    const newDetours=detours.filter(d=>!committedDetours.includes(d));
+    if(newDetours.length) errors.push(`new navmesh detours: ${newDetours.join(", ")}`);
+    if(JSON.stringify(detours)!==JSON.stringify(committedDetours)) errors.push("navmesh detour list differs from the committed one: regenerate with --write-paths");
+    if(process.env.GITHUB_EVENT_NAME==="pull_request") {
+      const oldPaths=previousVersion(`stations/${station}/navmesh-paths.json`) as {detours?:string[]}|null;
+      const grew=oldPaths ? committedDetours.filter(d=>!(oldPaths.detours ?? []).includes(d)) : [];
+      if(grew.length) errors.push(`navmesh detour list grew from PR base: ${grew.join(", ")}`);
+    }
     if(pathsDiff.missing.length+pathsDiff.extra.length+pathsDiff.moved.length) errors.push(`navmesh paths stale (${staleKeys.join(", ")}): run pnpm tsx packages/godot/src/navmesh-fallback.ts --station ${station} --write-paths stations/${station}/navmesh-paths.json`);
     if(JSON.stringify(committedPaths.bake)!==JSON.stringify(NAVMESH_BAKE)) errors.push(`navmesh paths bake header is ${JSON.stringify(committedPaths.bake)}, expected ${JSON.stringify(NAVMESH_BAKE)}: regenerate with --write-paths`);
     const header={version:committedPaths.version,station:committedPaths.station,frame:committedPaths.frame};

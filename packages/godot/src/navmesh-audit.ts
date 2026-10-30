@@ -509,11 +509,12 @@ async function main() {
   // Walk path per edge and direction for the app's guide (#647): non-vertical, non-suspect and traversable edges
   // whose navmesh path is clean (no link) only. ENU points as edgePath returns them, rounded to 0.01 m.
   const navPaths: Record<string, { forward?: number[][]; reverse?: number[][] }> = {};
-  const navPathsScene = { samples: 0 }, navPathsRejected: string[] = [];
+  const navPathsScene = { samples: 0 }, navPathsRejected: string[] = [], navPathsDetours: string[] = [];
   const round2 = (v: number) => Math.round(v * 100) / 100;
   const oneStepRoute = (step: RouteStep): RouteResult => ({ ok:true, profile:DEFAULT_PROFILE, nodeIds:[step.fromNodeId,step.toNodeId], steps:[step], totalLengthM:step.lengthM, estimatedSeconds:0, waitSeconds:0, floorChanges:step.fromFloorId===step.toFloorId ? 0 : 1, crossesFareBoundary:null, unknowns:[], sourceIds:[], endpointSourceIds:[], evidenceCheckedDate:null, oldestSourceDate:null, undatedSourceIds:[], expiredSourceIds:[], stale:null, synthetic:false, timeRestricted:[], operatorIds:[] });
   for (const edge of [...bundle.edges].sort((a,b) => a.id.localeCompare(b.id))) {
-    if (["stairs","escalator","elevator"].includes(edge.mode) || suspectIds.has(edge.id) || !router.isTraversable(edge, DEFAULT_PROFILE)) continue;
+    // Fare gates keep their graph polyline: the gate barriers block the navmesh, so a path around them is never the gate (#669 r1).
+    if (["stairs","escalator","elevator","gate"].includes(edge.mode) || suspectIds.has(edge.id) || !router.isTraversable(edge, DEFAULT_PROFILE)) continue;
     const dirs: { forward?: number[][]; reverse?: number[][] } = {};
     for (const reversed of edge.direction === "both" ? [false, true] : [false]) {
       const fromNode = nodes.get(reversed ? edge.to : edge.from), toNode = nodes.get(reversed ? edge.from : edge.to);
@@ -521,6 +522,9 @@ async function main() {
       const step: RouteStep = { edgeId:edge.id, fromNodeId:fromNode.id, toNodeId:toNode.id, reversed, mode:edge.mode, lengthM:edge.lengthM ?? 0, fromFloorId:fromNode.floorId, toFloorId:toNode.floorId };
       const entry = edgePath(oneStepRoute(step), step);
       if (!entry.points || entry.points.length < 2 || entry.reason !== null || entry.suspect || entry.connector) continue;
+      // A detour is not the edge: Detour may find an unrelated longer way round (#669 r1). Same rule as the stairs check.
+      const graphM = length(routePolyline(bundle, oneStepRoute(step)).map(p => ({ x:p.x, y:p.z, z:-p.y })));
+      if (length(entry.points.map(p => ({ x:p.x, y:p.z, z:-p.y }))) > 1.5 * graphM + 2) { navPathsDetours.push(`${edge.id}:${reversed ? "reverse" : "forward"}`); continue; }
       // The same scene-height samples as the route audit: an edge no audited route walks is checked here, and a path that
       // leaves the floor or meets a wall is not committed (the gate fails on it, so no unlisted fallback appears).
       const samples = resampleAudit(entry.points) as PolylinePoint[];
@@ -534,7 +538,7 @@ async function main() {
     }
     if (dirs.forward || dirs.reverse) navPaths[edge.id] = dirs;
   }
-  fs.mkdirSync(path.dirname(dest), { recursive: true }); fs.writeFileSync(dest, JSON.stringify({ ...result, navPaths, navPathsScene, navPathsRejected }, null, 2) + "\n");
+  fs.mkdirSync(path.dirname(dest), { recursive: true }); fs.writeFileSync(dest, JSON.stringify({ ...result, navPaths, navPathsScene, navPathsRejected, navPathsDetours }, null, 2) + "\n");
   console.log(`fallback audit ${JSON.stringify(fallbackAudit.totals)}; fallback clipped ${fallbackAudit.failed.length}; gaps ${JSON.stringify(gapClasses)}; collider kinds ${JSON.stringify(blockingColliderKinds)}; link attachment ${JSON.stringify(result.linkAttachmentDiagnosis)}; query diagnosis ${JSON.stringify(queryDiagnosis)}; snap diagnosis ${JSON.stringify(snapDiagnosis)}; fallback attached ${result.fallbackRecoveredAttached}, used ${result.fallbackEdgesUsed}, completed routes ${fallbackRoutesCompleted}; navmesh segments ${JSON.stringify(result.navmeshSegmentHeights)}`);
   query.destroy(); nav.destroy(); bridgeFloorGeometry.dispose(); (bridgeFloor.material as THREE.Material).dispose(); scene.dispose();
   if (gate && !gateResult.ok) process.exitCode=1;

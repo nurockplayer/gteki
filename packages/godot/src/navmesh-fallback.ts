@@ -95,7 +95,7 @@ function main() {
   if(dest) publish(dest,result.entries);
   if(baselineDest) publish(baselineDest,baselineForAudit(result.audit));
   if(suspectDest) publish(suspectDest,(result.audit.bakeProvenance.suspectEdges as {edgeId:string;mode:string;reason:string}[]).map(({edgeId,mode,reason})=>({edgeId,mode,reason})).sort((a,b)=>a.edgeId.localeCompare(b.edgeId)));
-  if(pathsDest) publish(pathsDest,{version:1,station,frame:"ENU",bake:NAVMESH_BAKE,edges:result.audit.navPaths as NavPaths});
+  if(pathsDest) publish(pathsDest,{version:1,station,frame:"ENU",bake:NAVMESH_BAKE,edges:result.audit.navPaths as NavPaths,detours:result.audit.navPathsDetours as string[]});
   console.log(JSON.stringify({station,edges:result.entries.length,bakeMs:result.audit.bakeProvenance.bakeMs,elapsedMs:result.elapsedMs}));
 }
 if (process.argv[1] && import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href) main();
