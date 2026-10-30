@@ -79,6 +79,25 @@ export function queryPathWithLinks(nav: NavMesh, query: NavMeshQuery, from: V3, 
 }
 
 /** Clip totals over the samples that count: samples of suspect edges never do (their heights cannot be built). */
+/** Snap a path's vertices to the floor height floorAt reports. Between two vertices the floor is sampled every 0.25 m of
+ * plan length; where the straight line leaves it by more than 0.05 m, the path is split at the worst sample, at floor
+ * height, and both halves are checked again (#669 r2: a ramp foot between vertices). */
+export function floorSnapPath<P extends { x: number; y: number; z: number }>(points: readonly P[], floorAt: (p: P) => number): P[] {
+  const dense: P[] = [];
+  const refine = (a: P, b: P, depth: number) => {
+    const span = Math.hypot(b.x-a.x, b.y-a.y), steps = Math.min(64, Math.ceil(span / 0.25));
+    let worst: P | null = null, worstOff = 0.05;
+    for (let i = 1; i < steps; i++) {
+      const t = i / steps, q = { ...a, x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t, z:a.z+(b.z-a.z)*t }, floorZ = floorAt(q);
+      if (Math.abs(floorZ - q.z) > worstOff) { worstOff = Math.abs(floorZ - q.z); worst = { ...q, z:floorZ }; }
+    }
+    if (worst && depth < 8) { refine(a, worst, depth+1); dense.push(worst); refine(worst, b, depth+1); }
+  };
+  const snapped = points.map(p => ({ ...p, z:floorAt(p) }));
+  snapped.forEach((p,i) => { if (i) refine(snapped[i-1]!, p, 0); dense.push(p); });
+  return dense;
+}
+
 export function countedTotals(details: readonly Pick<SampleDetail,"floor"|"wallBefore">[], samples: readonly { suspect?: boolean }[]) {
   const total = { samples: 0, offFloor: 0, noFloor: 0, wallHits: 0 };
   details.forEach((d, i) => {
@@ -528,15 +547,8 @@ async function main() {
       // Commit the vertices at the scene's floor height (navmesh detail heights can sit above it), rounded as written, then
       // audit exactly that polyline with the route audit's samples: one that leaves the floor or meets a wall is not
       // committed, and the gate fails on it (#669 r2). An edge no audited route walks is checked here too.
-      // Where the floor bends between two vertices (a ramp foot), the midpoint at floor height is added, down to 0.25 m spans.
       const floorAt = (p: PolylinePoint) => { const d: SampleDetail[] = []; auditPolyline(probe, [p], { alreadySampled:true, detail:d, cache:auditCache }); return d[0]?.floorZ ?? p.z; };
-      const dense: PolylinePoint[] = [];
-      const refine = (a: PolylinePoint, b: PolylinePoint, depth: number) => {
-        const mid = { ...a, x:(a.x+b.x)/2, y:(a.y+b.y)/2, z:(a.z+b.z)/2 }, floorZ = floorAt(mid);
-        if (depth < 5 && Math.hypot(b.x-a.x, b.y-a.y) > 0.25 && Math.abs(floorZ - mid.z) > 0.05) { const m = { ...mid, z:floorZ }; refine(a, m, depth+1); dense.push(m); refine(m, b, depth+1); }
-      };
-      const snappedVertices = entry.points.map(p => ({ ...p, z:floorAt(p) }));
-      snappedVertices.forEach((p,i) => { if (i) refine(snappedVertices[i-1]!, p, 0); dense.push(p); });
+      const dense = floorSnapPath(entry.points, floorAt);
       const points = dense.map(p => [round2(p.x), round2(p.y), round2(p.z)]);
       const committed = dense.map((p,i) => ({ ...p, x:points[i]![0]!, y:points[i]![1]!, z:points[i]![2]! }));
       const samples = resampleAudit(committed) as PolylinePoint[], details: SampleDetail[] = [];
