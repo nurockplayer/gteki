@@ -51,7 +51,7 @@ import { hooks, openStation, stationData } from "../lib/gteki.ts";
  * (the point about 2 m from the node); then +90, +180, +270. The walker spawns facing north (walkFrom resets yaw),
  * so the probe turns by dragging the canvas (yaw -= dx * 0.0042, as specs 04 and 10 steer) and tracks the yaw it
  * has sent; the camera's measured facing is recorded next to it as a cross-check (`facing`, flagged "(!)" when
- * more than 25 degrees off).
+ * more than 3 degrees (HEADING_TOL_DEG) off after up to three closed-loop corrections, and listed in a report warning).
  *
  * Per view: wait 2 animation frames after the turn plus GTEKI_VANTAGE_SETTLE_MS (default 600) for the follow
  * camera, count FRAMES rendered frames (default 5), sample frame intervals if GTEKI_VANTAGE_FRAMETIME_MS is set,
@@ -99,6 +99,8 @@ const DEFAULT_NODES = [
 const DEFAULT_HEADINGS = ["0", "90", "180", "270"];
 const FRAMES = Number(process.env.GTEKI_VANTAGE_FRAMES ?? 5);
 const SETTLE_MS = Number(process.env.GTEKI_VANTAGE_SETTLE_MS ?? 600);
+/** Facing error (degrees) the closed-loop turn aims under; a view still further off is flagged in the report. */
+const HEADING_TOL_DEG = 3;
 const LOW_DRAW_LIMIT = Number(process.env.GTEKI_VANTAGE_LOW_DRAWS ?? 28);
 const FRAMETIME_MS = Number(process.env.GTEKI_VANTAGE_FRAMETIME_MS ?? 0);
 const GROUPS = (process.env.GTEKI_VANTAGE_GROUPS ?? "").split(",").map((s) => s.trim()).filter(Boolean);
@@ -369,7 +371,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       // 2026-10-29 shop hero run (#209). Up to three corrections, then carry the real yaw to the next heading.
       for (let i = 0; i < 3; i++) {
         const err = ((heading - (await facingOf(page)) + 540) % 360) - 180;
-        if (Math.abs(err) < 3) break;
+        if (Math.abs(err) < HEADING_TOL_DEG) break;
         await drag(page, at, Math.round((err * Math.PI) / 180 / LOOK_RAD_PER_PX));
         await page.waitForTimeout(SETTLE_MS);
       }
@@ -392,7 +394,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       const any = info as Record<string, unknown>;
       const renderInfo = any.renderer ?? any.info ?? any.render ?? null;
       rows.push({
-        ...base, offsetDeg: h.deg, absolute: h.absolute, heading, facing, headingOk: diff <= 25,
+        ...base, offsetDeg: h.deg, absolute: h.absolute, heading, facing, headingOk: diff <= HEADING_TOL_DEG,
         draws: drawsP50, drawsMax, tris: pct(m.tris, 0.5), trisMax: Math.max(...m.tris), frames: m.draws.length, zeroFrames: m.zeroFrames,
         ...ft, visibility: vis.visibility, focused: vis.focused,
         overLowLimit: tier === "low" && drawsMax > LOW_DRAW_LIMIT,
@@ -424,10 +426,16 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
     ? [`${hiddenViews.length} of ${measured.length} measured views were hidden or unfocused (${[...new Set(hiddenViews.map((r) => `${r.node} h${r.heading}: ${r.visibility}${r.focused === false ? ", unfocused" : ""}`))].join(", ")}): requestAnimationFrame may have been throttled, so their frame times are not comparable to a foreground run.`]
     : [];
   for (const w of warnings) console.warn(`vantage: ${w}`);
+  // Views the closed-loop turn left more than HEADING_TOL_DEG off: the shot may miss what the heading aimed at.
+  const offHeading = rows.filter((r) => r.headingOk === false);
+  const headingWarnings = offHeading.length
+    ? [`${offHeading.length} view(s) ended more than ${HEADING_TOL_DEG} degrees off the requested heading after the turn corrections: ${offHeading.map((r) => `${r.node} h${r.heading} -> facing ${r.facing}`).join(", ")}.`]
+    : [];
+  for (const w of headingWarnings) console.warn(`vantage: ${w}`);
   const result = {
     probe: "ikebukuro-vantage-shots", station: STATION, label, tier, project, viewport, dpr, loadMs, gl, gpuValid,
     frames: FRAMES, settleMs: SETTLE_MS, lowDrawLimit: LOW_DRAW_LIMIT, headings: headings.map((h) => (h.absolute ? `@${h.deg}` : String(h.deg))),
-    frametimeMs: FRAMETIME_MS, groupsRequested: GROUPS, visibilityWarnings: warnings,
+    frametimeMs: FRAMETIME_MS, groupsRequested: GROUPS, visibilityWarnings: warnings, headingTolDeg: HEADING_TOL_DEG, headingWarnings,
     requested, dropped, notInGroups, groups, rows,
   };
   const base = path.join(outDir, `vantage-${project}`);
@@ -445,6 +453,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       ? `- Frame time: rAF intervals over ${FRAMETIME_MS} ms per view, sampled after the draw count and before the screenshot, with no input during the window. ms per frame; lower is better. A foreground window is required for these numbers to mean anything.`
       : "- Frame time: off (GTEKI_VANTAGE_FRAMETIME_MS=0). Draw counts are unaffected by window visibility; frame time is not.",
     ...warnings.map((w) => `- **WARNING**: ${w}`),
+    ...headingWarnings.map((w) => `- **WARNING**: ${w}`),
     `- Window state: every view records document.visibilityState and document.hasFocus(); a view that was not \`visible\` is flagged \`HIDDEN\` in the table.`,
     `- Headings: edge bearing (first verified edge at the node) ${result.headings.map((h) => (h.startsWith("@") ? `${h.slice(1)} (absolute)` : `+${h}`)).join(", ")}.`,
     tier === "low" ? `- Rows with draws max over ${LOW_DRAW_LIMIT} on the low tier are marked OVER.` : `- Not the low tier: no row is marked against the ${LOW_DRAW_LIMIT}-draw low-tier limit (run phone-chromium for that).`,
