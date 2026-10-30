@@ -290,6 +290,22 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("never cuts a stairs_ramps flight that passes above the footprint, but still cuts a ceiling there", () => {
+    const s = scene();
+    const flightAbove = new THREE.Mesh(new THREE.PlaneGeometry(2, 1.8, 4, 4).rotateX(-Math.PI / 2).translate(2, 3, 0), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    flightAbove.userData.gteki_role = "stairs_ramps";
+    const ceilingAbove = new THREE.Mesh(new THREE.PlaneGeometry(2, 1.8, 4, 4).rotateX(-Math.PI / 2).translate(7, 3, 0), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    ceilingAbove.userData.gteki_role = "ceiling";
+    s.root.add(flightAbove, ceilingAbove); s.root.updateMatrixWorld(true);
+    const flightOriginal = flightAbove.geometry, ceilingOriginal = ceilingAbove.geometry;
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
+    // Surface at x = 2 is 0.8 m; the flight at 3.0 m is well above the 0.3 m primary rule.
+    expect(flightAbove.geometry).toBe(flightOriginal);
+    expect(down(flightAbove, 2, 5).some(hit => Math.abs(hit.point.y - 3) < 1e-6)).toBe(true);
+    expect(ceilingAbove.geometry).not.toBe(ceilingOriginal);
+    result.dispose();
+  });
+
   it("keeps a stairs_ramps tread and an unroled mesh wholly inside the footprint near the top", () => {
     const s = scene();
     const tread = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.6, 8, 8).rotateX(-Math.PI / 2).translate(9.5, 3.7, 0), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));

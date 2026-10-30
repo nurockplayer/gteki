@@ -159,7 +159,11 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
   for (const well of wells) {
     for (const rect of well.rects) {
       const corners = [...rectCorners(rect, rect.center.y - Math.abs(rect.rise) / 2 + WALK_CLEAR_M), ...rectCorners(rect, well.upperY + UPPER_CLEAR_M)];
-      regions.push({ key: rect, bounds: new THREE.Box3().setFromPoints(corners), planes: rectPlanes(rect, well.upperY), clip: null, accepts: horizontal });
+      regions.push({
+        key: rect, bounds: new THREE.Box3().setFromPoints(corners), planes: rectPlanes(rect, well.upperY), clip: null, accepts: horizontal,
+        // A stair model is never cut, even where another flight passes above the footprint.
+        admits: (_vertices, mesh) => mesh.userData.gteki_role !== "stairs_ramps",
+      });
       const floorY = well.upperY - SLAB_BAND_M;
       const band = [...rectCorners(rect, floorY), ...rectCorners(rect, well.upperY + UPPER_CLEAR_M)];
       const planes = rectPlanes(rect, well.upperY).slice(0, 4);
