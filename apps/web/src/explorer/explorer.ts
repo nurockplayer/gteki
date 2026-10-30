@@ -2235,9 +2235,6 @@ export class Explorer {
     this.timer.update();
     const dt = Math.min(0.05, this.timer.getDelta());
     this.step(dt, this.timer.getElapsed());
-    // While a station loads, the canvas sits under the identity card: drawing it (with the previous station's post
-    // effects) only takes CPU from the build, which SwiftShader and phones share with the GPU work (#647).
-    if (this.phase === "graph" || this.phase === "scene" || this.phase === "composer") return;
     this.render(dt);
   }
 
