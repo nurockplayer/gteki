@@ -63,4 +63,35 @@ describe("symbolic heights stay display-only", () => {
     for (const l of shown) expect(l).toMatch(/推定.*est\./);
     expect(main).toContain("高さは推定 Heights estimated");
   });
+
+  it("marks stairs and escalators whose anchored display rise is impossible (gteki #644)", () => {
+    const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
+    const floorById = new Map(bundle.floors.map((f) => [f.id, f]));
+    const displayZ = (id: string) => {
+      const n = nodeById.get(id)!;
+      return n.position.z ?? n.renderZ ?? floorById.get(n.floorId)!.renderElevationM;
+    };
+    // Shrink-only (gteki #644): remove an id when field work fixes its floor id; never add one without a ruling.
+    const APPROX_ALLOWED = new Set([
+      "e:c690df6cad7b48bba7b3b30fee65eda2",
+      "e:c3fe6342f158400ab602dd610f636329",
+      "e:dcbc1a258ceb41b09ab50e417aabc8b4",
+      "e:bdcdf9229c9f49dc9bc02bec79c4a8fe",
+      "e:c7fa5f74d72f43498ef2cb3b1dbea7e4",
+      "e:c2c4ebb36e374e1da3dde94d3a5257d6",
+      "e:45ebdab487134925b3b47cd29bffb99c",
+      "e:4038cecf024c417a87310ab9859a7404",
+    ]);
+    for (const e of bundle.edges) {
+      if (e.mode === "stairs" || e.mode === "escalator") {
+        const a = nodeById.get(e.from)!;
+        const b = nodeById.get(e.to)!;
+        const plan = Math.hypot(a.position.x - b.position.x, a.position.y - b.position.y);
+        const rise = Math.abs(displayZ(e.from) - displayZ(e.to));
+        if ((plan > 0 && rise / plan > 1.0) || rise < 0.05) expect(e.attributes?.displayHeightApprox, e.id).toBe(true);
+      }
+      if (e.attributes?.displayHeightApprox) expect(APPROX_ALLOWED.has(e.id), e.id).toBe(true);
+      if (e.mode === "elevator") expect(e.attributes?.displayHeightApprox).toBeUndefined();
+    }
+  });
 });

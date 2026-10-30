@@ -374,6 +374,8 @@ function renderNodeHeights(H: Map<number, number>) {
   // its own height. The rise between the anchors is spread over the chain by flight length (walks
   // stay flat). Display only: floor ids and routing are untouched.
   const landingSpread: string[] = [];
+  const steepSpread: string[] = [];
+  const flatVertical: string[] = [];
   const other = (l: (typeof links)[0], id: string) => (l.properties.start_id === id ? l.properties.end_id : l.properties.start_id);
   const rise = (l: (typeof links)[0]) => (isVertical(l.properties.link_id) ? l.properties.distance : 0);
   const spreadDone = new Set<string>();
@@ -409,6 +411,13 @@ function renderNodeHeights(H: Map<number, number>) {
     const zb = B.leave ? nodeZ.get(other(B.leave, B.end))! : nodeZ.get(B.end)!;
     const total = (A.leave ? rise(A.leave) : 0) + seq.reduce((t, l) => t + rise(l), 0) + (B.leave ? rise(B.leave) : 0);
     if (!total) continue;
+    // Display only: an anchored rise steeper than 45° or a flat vertical flight is a floor-id/height
+    // conflict in the source (gteki #644), marked so the explorer and navmesh draw it approximate.
+    const chainIds = [...seq.map((l) => l.properties.link_id), A.leave?.properties.link_id, B.leave?.properties.link_id]
+      .filter((id): id is string => !!id && isVertical(id))
+      .map((id) => `e:${id}`);
+    if (Math.abs(zb - za) / total > 1.0) steepSpread.push(...chainIds);
+    else if (Math.abs(zb - za) < 0.05) flatVertical.push(...chainIds);
     let acc = A.leave ? rise(A.leave) : 0;
     for (let i = 0; i < nodesSeq.length; i++) {
       if (i > 0) acc += rise(seq[i - 1]!);
@@ -419,7 +428,7 @@ function renderNodeHeights(H: Map<number, number>) {
     }
   }
 
-  return { nodeZ, displayHeightAdjusted, landingSpread };
+  return { nodeZ, displayHeightAdjusted, landingSpread, steepSpread: [...new Set(steepSpread)].sort(), flatVertical: [...new Set(flatVertical)].sort() };
 }
 
 // Heights after interpolation are affine in the floor heights, including switchback landings.
@@ -527,7 +536,8 @@ for (let pass = 0; pass < 100; pass++) {
   if (!changed) break;
   if (pass === 99) throw new Error("Symbolic clearance solve failed to converge");
 }
-const { nodeZ, displayHeightAdjusted, landingSpread } = renderNodeHeights(H);
+const { nodeZ, displayHeightAdjusted, landingSpread, steepSpread, flatVertical } = renderNodeHeights(H);
+const approxIds = new Set([...steepSpread, ...flatVertical]);
 
 const floors: Floor[] = floorOrdinals.map((o) => {
   const ml = mapLevels.find((m) => m.ordinal === o);
@@ -678,6 +688,7 @@ const edges: Edge[] = links.map((l) => {
       rank: p.rank,
       maint_date: p.maint_date,
       H_F: p.H_F,
+      ...(approxIds.has(`e:${p.link_id}`) ? { displayHeightApprox: true } : {}),
     },
   };
 });
@@ -1600,7 +1611,7 @@ const plan = {
   }),
   // Render heights for every node (chain-interpolated on stairs/escalators), keyed by bundle node id.
   nodeRenderZ: Object.fromEntries(raw.nodes.map((n) => [`n:${n.properties.node_id}`, round(nodeZ.get(n.properties.node_id)!, 2)])),
-  heightModel: { escalatorDegrees: 30, escalatorFlatM: ESC_FLAT, stairRiseRatio: STAIR_RATIO, constraints: constraints.length, overheadClearanceM: 2.3, overheadConstraints: clearanceConstraints.length, displayHeightAdjusted, landingSpread },
+  heightModel: { escalatorDegrees: 30, escalatorFlatM: ESC_FLAT, stairRiseRatio: STAIR_RATIO, constraints: constraints.length, overheadClearanceM: 2.3, overheadConstraints: clearanceConstraints.length, displayHeightAdjusted, landingSpread, steepSpread, flatVertical },
 };
 
 // ---------------------------------------------------------------- report & write
