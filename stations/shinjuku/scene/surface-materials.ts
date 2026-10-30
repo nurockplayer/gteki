@@ -7,7 +7,7 @@ function texture(c: HTMLCanvasElement) {
   const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
 }
 export function pavingTexture(asphalt = false) {
-  const c = document.createElement("canvas"); c.width = c.height = 256; const x = c.getContext("2d")!;
+  const c = document.createElement("canvas"); c.width = c.height = 256; const x = c.getContext("2d", { willReadFrequently: true })!;
   x.fillStyle = asphalt ? "#55595a" : "#a4a6a4"; x.fillRect(0, 0, 256, 256);
   if (!asphalt) for (let y = 0; y < 16; y++) for (let i = -1; i < 8; i++) {
     const v = 174 + hash(`${i}:${y}`) % 15;
@@ -19,7 +19,7 @@ export function pavingTexture(asphalt = false) {
 
 /** 4 bays by 8 storeys; five original facade families with restrained lit rooms. */
 export function facadeTexture(style: number) {
-  const c = document.createElement("canvas"); c.width = 512; c.height = 1024; const x = c.getContext("2d")!;
+  const c = document.createElement("canvas"); c.width = 512; c.height = 1024; const x = c.getContext("2d", { willReadFrequently: true })!;
   const bases = ["#50727d", "#bdbcb4", "#9caaa9", "#d1ccc0", "#626e76"];
   x.fillStyle = bases[style]!; x.fillRect(0, 0, c.width, c.height);
   for (let r = 0; r < 8; r++) for (let col = 0; col < 4; col++) {
