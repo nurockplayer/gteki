@@ -1,8 +1,9 @@
 /**
  * Bake the stairwell cut recipe (#650) for public stations, headless, with the explorer's own cut inputs:
  *   pnpm tsx packages/godot/src/stairwell-bake.ts --station <s> [--station <s>] [--check] [--out <dir>]
- * Writes stations/<s>/scene/stairwell-cut.<tier>.bin for both tiers (under --out <dir>/<s>/ when given, for runs
- * inside a container whose writes come back only through a bind mount). Each bake first runs the live cut with
+ * Writes stations/<s>/scene/stairwell-cut.<tier>.b64.txt for both tiers: the recipe bytes base64-encoded, one line with no
+ * trailing newline (a declared data file, bundled as text with `?raw`). Under --out <dir>/<s>/ when given, for runs
+ * inside a container whose writes come back only through a bind mount. Each bake first runs the live cut with
  * the portal cut applied (as Explorer.loadStation does), then replays the file's recipe on the same scene and
  * compares the two. `--check` exits 1 when a committed file differs from a fresh bake or the replay disagrees.
  */
@@ -206,13 +207,13 @@ async function main(): Promise<void> {
     const bundle = readBundle(path.join(root, "stations", station, "gteki"));
     for (const tier of ["high", "low"] as const) {
       const { bytes, report } = await bakeTier(station, bundle, tier);
-      const file = outDir ? path.join(outDir, station, `stairwell-cut.${tier}.bin`) : path.join(root, "stations", station, "scene", `stairwell-cut.${tier}.bin`);
+      const file = outDir ? path.join(outDir, station, `stairwell-cut.${tier}.b64.txt`) : path.join(root, "stations", station, "scene", `stairwell-cut.${tier}.b64.txt`);
+      const text = Buffer.from(bytes).toString("base64");
       fs.mkdirSync(path.dirname(file), { recursive: true });
       if (check) {
-        const committed = fs.existsSync(file) ? new Uint8Array(fs.readFileSync(file)) : null;
-        const same = committed !== null && Buffer.compare(Buffer.from(committed), Buffer.from(bytes)) === 0;
-        if (!same) { stale++; process.stderr.write(`${file}: stale, run pnpm bake:stairwells\n`); }
-      } else fs.writeFileSync(file, bytes);
+        const committed = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null;
+        if (committed !== text) { stale++; process.stderr.write(`${file}: stale, run pnpm bake:stairwells\n`); }
+      } else fs.writeFileSync(file, text);
       console.log(JSON.stringify({ ...report, file: path.relative(root, file), check }));
     }
   }

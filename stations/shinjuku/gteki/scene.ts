@@ -58,9 +58,9 @@ export function releaseShinjukuCaches() {
 }
 export const releaseCaches = releaseShinjukuCaches;
 
-/** Baked stairwell cut recipe for a tier (#650). A dynamic import keeps the `?url` binaries out of headless loads. */
+/** Baked stairwell cut recipe for a tier (#650), as a data URL. Dynamic imports keep the bundled recipe text out of headless loads and load one tier only. */
 export const stairwellRecipeUrl = async (tier: "high" | "low"): Promise<string | null> =>
-  (await import("../scene/stairwell-recipe.ts")).stairwellRecipeUrls[tier];
+  (tier === "high" ? await import("../scene/stairwell-recipe-high.ts") : await import("../scene/stairwell-recipe-low.ts")).default;
 
 /**
  * The explorer hook. The Lane E kit swap (Issue #94) is ON by default for the escalator role only: with no query
