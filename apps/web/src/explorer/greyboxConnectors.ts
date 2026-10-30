@@ -309,11 +309,12 @@ function simplifyPlan(points: readonly THREE.Vector3[]): THREE.Vector3[] {
     const last = out.at(-1);
     // A repeated point (under 0.01 m apart in plan and height) adds nothing: keep the first.
     if (last && Math.hypot(p.x - last.x, p.z - last.z) < 0.01 && Math.abs(p.y - last.y) < 0.01) continue;
-    // A point on the straight line between its neighbours is dropped, so a flat corner never hides a turn.
+    // The previous point is dropped when it lies on the straight line between its neighbours (within the segment a–p), so a
+    // flat corner never hides a turn. A collinear reversal (b beyond p) is kept: it is a sharp return.
     while (out.length >= 2) {
       const a = out.at(-2)!, b = out.at(-1)!;
-      const ab = b.clone().sub(a), ap = p.clone().sub(a), t = ab.lengthSq() ? ap.dot(ab) / ab.lengthSq() : 0;
-      if (t < 0 || t > 1 || p.distanceTo(a.clone().addScaledVector(ab, t)) >= 0.01) break;
+      const ap = p.clone().sub(a), ab = b.clone().sub(a), t = ap.lengthSq() ? ab.dot(ap) / ap.lengthSq() : -1;
+      if (t < 0 || t > 1 || b.distanceTo(a.clone().addScaledVector(ap, t)) >= 0.01) break;
       out.pop();
     }
     out.push(p);
@@ -337,6 +338,9 @@ function supportedShape(points: readonly THREE.Vector3[], squares: readonly Land
   if (squares.length > 1) return false;
   const square = squares[0]!;
   if (bendAngle(points, square.index) >= SHARP_RETURN) return false;
+  // A turning landing with a shallow bend on either leg is not built (#640 r17): its landing opening follows only the
+  // adjacent segment, so its guard could cut the bent flight's walking lane. Such a stair is routed as unmodelled.
+  for (let i = 1; i < points.length - 1; i++) if (i !== square.index && bendAngle(points, i) > 1e-6) return false;
   return planLength(points, 0, square.index) >= 1 && planLength(points, square.index, points.length - 1) >= 1;
 }
 

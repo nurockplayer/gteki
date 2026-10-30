@@ -377,6 +377,15 @@ function shallowThenTurn(direction: number): [number, number, number][] {
   headings.forEach((heading, i) => { x += lengths[i]! * Math.cos(deg(heading)); z += lengths[i]! * Math.sin(deg(heading)); pts.push([x, heights[i + 1]!, z]); });
   return mirror(pts, direction);
 }
+/** #640 r17: shallow bends before a 90 degree landing; the landing opening would follow only the last bent segment. */
+function bentLegThenTurn(direction: number): [number, number, number][] {
+  const deg = (d: number) => (d * Math.PI) / 180;
+  const headings = [0, 19, 38, -52], lengths = [4, 0.35, 0.35, 4], heights = [0, 2, 2.15, 2.3, 4.3];
+  const pts: [number, number, number][] = [[0, 0, 0]];
+  let x = 0, z = 0;
+  headings.forEach((heading, i) => { x += lengths[i]! * Math.cos(deg(heading)); z += lengths[i]! * Math.sin(deg(heading)); pts.push([x, heights[i + 1]!, z]); });
+  return mirror(pts, direction);
+}
 /** One turning landing of a supported shape, mirrored for each direction. */
 const singleTurnCases = [15, 45, 90].flatMap((degrees) => [-1, 1].map((direction) => ({ name: `single ${degrees} degree turn, direction=${direction}`, waypoints: stackedWaypoints(degrees, direction) })));
 /** Shapes outside the supported set (two or more turning landings, overlapping landings, sharp returns, flights crossing or walls cutting). */
@@ -393,6 +402,7 @@ const unsupportedShapes: { name: string; waypoints: (direction: number) => [numb
   { name: "single-vertex 165 degree sharp return", waypoints: (d) => stackedWaypoints(165, d) },
   { name: "single 100 degree turn whose inner wall crosses the next flight", waypoints: (d) => stackedWaypoints(100, d) },
   { name: "three 10 degree bends 0.6 m apart and a 90 degree turn", waypoints: (d) => shallowThenTurn(d) },
+  { name: "19 degree bends on the leg into a 90 degree landing (safe path, #640 r17)", waypoints: (d) => bentLegThenTurn(d) },
 ];
 const unsupportedCases = unsupportedShapes.flatMap((shape) => [-1, 1].map((direction) => ({ name: `${shape.name}, direction=${direction}`, waypoints: shape.waypoints(direction) })));
 
