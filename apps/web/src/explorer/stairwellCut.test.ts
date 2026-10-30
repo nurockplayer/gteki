@@ -398,6 +398,95 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("cuts a downward-facing underside at the walking height, and keeps an upward landing there", () => {
+    const s = scene();
+    // Both at 3.8 m, inside the footprint, narrow in x so the walking surface stays within 5 cm of 3.8 m across them:
+    // the landing faces up (kept); the underside faces down (cut).
+    const landing = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.8, 1, 4).rotateX(-Math.PI / 2).translate(9.5, 3.8, 0.5), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    landing.userData.gteki_role = "floor";
+    const underside = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.8, 1, 4).rotateX(Math.PI / 2).translate(9.5, 3.8, -0.5), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    underside.userData.gteki_role = "floor";
+    s.root.add(landing, underside); s.root.updateMatrixWorld(true);
+    const landingOriginal = landing.geometry, undersideOriginal = underside.geometry;
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
+    expect(landing.geometry).toBe(landingOriginal);
+    expect(underside.geometry).not.toBe(undersideOriginal);
+    result.dispose();
+  });
+
+  it("keeps the inside piece of an upward landing that extends past the footprint, lying on the walking surface", () => {
+    // The intermediate landing at 3.6 m (x 5 to 9) on a flight whose footprint is 1.1 m either side of the centreline.
+    const stepped = flight([{ x: 0, y: 0, z: 0 }, { x: 5, y: 0, z: 3.6 }, { x: 9, y: 0, z: 3.6 }, { x: 10, y: 0, z: 4 }]);
+    const wells = stairwellWells(stepped, traversable);
+    expect(wells[0]!.rects).toHaveLength(3);
+    // A landing quad (x 5 to 9) reaching 2.1 m either side: 1 m past the footprint. Each triangle faces up.
+    const positions = [5, 3.6, -2.1, 9, 3.6, 2.1, 9, 3.6, -2.1, 5, 3.6, -2.1, 5, 3.6, 2.1, 9, 3.6, 2.1];
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    const landing = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    landing.userData.gteki_role = "floor";
+    const root = new THREE.Group(); root.add(landing); root.updateMatrixWorld(true);
+    const original = landing.geometry;
+    const result = cutStairwells(root, wells, { tier: "high" });
+    // Nothing is cut: the inside piece is on the walking surface, and the parts outside the footprint are never cut.
+    expect(landing.geometry).toBe(original);
+    expect(down(landing, 7, 5, 0.5)[0]!.point.y).toBeCloseTo(3.6, 6);
+    result.dispose();
+  });
+
+  it("keeps every flat tread of an unroled stepped flight, whose corners sit off the linear walking surface", () => {
+    // Six flat treads (0.28 m deep) at 0.18 m risers, inside the footprint and in the band; a 0.4 slope puts their
+    // corners up to 0.056 m off the straight walking surface. A plate at the 3.42 m tread level reaches past the
+    // footprint, so that level is admitted and only the walking-surface rule keeps the treads.
+    const treadHeights = [2.88, 3.06, 3.24, 3.42, 3.60, 3.78];
+    const positions: number[] = [];
+    treadHeights.forEach((h) => {
+      const c = h / 0.4;
+      // Wound so each triangle's normal points up (the walking surface side).
+      positions.push(c - 0.14, h, -0.5, c - 0.14, h, 0.5, c + 0.14, h, 0.5, c - 0.14, h, -0.5, c + 0.14, h, 0.5, c + 0.14, h, -0.5);
+    });
+    positions.push(9.8, 3.42, -0.5, 9.8, 3.42, 0.5, 11, 3.42, 0.5, 9.8, 3.42, -0.5, 11, 3.42, 0.5, 11, 3.42, -0.5);
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    const steps = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    const root = new THREE.Group(); root.add(steps); root.updateMatrixWorld(true);
+    const result = cutStairwells(root, stairwellWells(bundle(), traversable), { tier: "high" });
+    treadHeights.forEach((h) => {
+      const c = h / 0.4;
+      expect(down(steps, c, 5)[0]!.point.y).toBeCloseTo(h, 6);
+    });
+    result.dispose();
+  });
+
+  it("classifies an unroled sloped slab triangle by its whole triangle, so its clipped piece is still cut", () => {
+    // Whole triangle: two corners outside the footprint at 3.0 m, one inside at 3.9 m; mean 3.3 m. Its piece inside
+    // the footprint (x 0 to 1) has a mean of 3.6 m, a different 5 cm level, and lies above the 2.1 m headroom, so only the
+    // band cuts it.
+    const positions = [-1, 3.0, -2, -1, 3.0, 2, 1, 3.9, 0];
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    const slab = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    const root = new THREE.Group(); root.add(slab); root.updateMatrixWorld(true);
+    const original = slab.geometry;
+    const result = cutStairwells(root, stairwellWells(bundle(), traversable), { tier: "high" });
+    expect(slab.geometry).not.toBe(original);
+    result.dispose();
+  });
+
+  it("cuts a large upward floor triangle whose centroid is on the walking surface but whose corners are not", () => {
+    // Corners at 0.3 m above, below, and on the walking surface (y = 0.4 x), inside the footprint. Wound to face up.
+    const positions = [8.5, 3.7, -0.5, 9.0, 3.6, 0.5, 9.5, 3.5, -0.5];
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    const triangle = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    triangle.userData.gteki_role = "floor";
+    const root = new THREE.Group(); root.add(triangle); root.updateMatrixWorld(true);
+    const original = triangle.geometry;
+    const result = cutStairwells(root, stairwellWells(bundle(), traversable), { tier: "high" });
+    expect(triangle.geometry).not.toBe(original);
+    result.dispose();
+  });
+
   it("cuts both faces of a 1.0 m-thick floor slab that runs past the footprint, over the last 0.5 m", () => {
     const slab = new THREE.Mesh(new THREE.BoxGeometry(16, 1.0, 6), new THREE.MeshBasicMaterial());
     slab.position.set(5, 3.5, 0); slab.userData.gteki_role = "floor";
