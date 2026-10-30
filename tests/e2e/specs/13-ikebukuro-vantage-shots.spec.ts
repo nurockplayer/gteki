@@ -339,7 +339,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
   fs.mkdirSync(outDir, { recursive: true });
 
   const rows: Row[] = [];
-  for (const spot of spots) {
+  for (const [si, spot] of spots.entries()) {
     const node = byId.get(spot.node)!;
     const eb = edgeBearing(spot.node);
     const fenceM = nearestSegment({ x: node.position.x, y: node.position.y }, fences);
@@ -402,7 +402,8 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       const facing = await facingOf(page);
       const diff = Math.abs(((facing - heading + 540) % 360) - 180);
 
-      const file = `${spot.group}-${spot.node}-h${pad3(heading)}.png`;
+      // Spots that walk off the graph carry their list index, so two targets from one node never share a file.
+      const file = `${spot.group}-${spot.node}${spot.walkTo.length ? `-w${si}` : ""}-h${pad3(heading)}.png`;
       await page.screenshot({ path: path.join(outDir, file) });
 
       const drawsP50 = pct(m.draws, 0.5), drawsMax = Math.max(...m.draws);
