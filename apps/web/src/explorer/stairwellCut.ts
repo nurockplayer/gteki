@@ -24,6 +24,11 @@ const SLAB_BAND_M = 1.2;
 const SLAB_ROLES = new Set(["floor", "ceiling"]);
 /** Side faces of a slab are near-vertical: |normal.y| below this. */
 const VERTICAL_NORMAL_M = 0.1;
+/**
+ * How far a corner may sit from the walking surface and still count as on it. The surface is a straight line through
+ * a flight, but real treads are flat steps that sit up to half a riser off it: 0.2 m maximum riser, half of it plus margin.
+ */
+const WALKING_SURFACE_TOLERANCE_M = 0.15;
 /** Headroom above the walking surface that the primary cut clears: higher faces obstruct nothing and stay. */
 const HEADROOM_M = 2.1;
 
@@ -165,7 +170,7 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
       regions.push({
         key: rect, bounds: new THREE.Box3().setFromPoints(corners), planes: rectPlanes(rect, well.upperY), clip: null, accepts: horizontal,
         // A stair model is never cut, even where another flight passes above the footprint.
-        admits: (vertices, mesh) => mesh.userData.gteki_role !== "stairs_ramps" && !onWalkingSurface(vertices, well),
+        admits: (piece, mesh, triangle) => mesh.userData.gteki_role !== "stairs_ramps" && !onWalkingSurface(piece, triangle, well),
       });
       const floorY = well.upperY - SLAB_BAND_M;
       const band = [...rectCorners(rect, floorY), ...rectCorners(rect, well.upperY + UPPER_CLEAR_M)];
@@ -181,11 +186,12 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
         key: rect, bounds: new THREE.Box3().setFromPoints(band), planes, clip: null,
         // Horizontal faces, and near-vertical side faces that the slab levels below decide.
         accepts: (normal) => horizontal(normal) || Math.abs(normal.y) < VERTICAL_NORMAL_M,
-        admits: (vertices, mesh) => {
+        admits: (piece, mesh, triangle) => {
           const role = mesh.userData.gteki_role;
           if (role !== undefined && !SLAB_ROLES.has(role)) return false;
-          if (onWalkingSurface(vertices, well)) return false;
-          const [a, b, c] = vertices as [THREE.Vector3, THREE.Vector3, THREE.Vector3];
+          if (onWalkingSurface(piece, triangle, well)) return false;
+          // The triangle, not its clipped piece, decides the orientation and the height span.
+          const [a, b, c] = triangle as [THREE.Vector3, THREE.Vector3, THREE.Vector3];
           const normal = b.clone().sub(a).cross(c.clone().sub(a));
           if (normal.lengthSq() === 0) return false;
           normal.normalize();
@@ -326,23 +332,26 @@ function sideRemainder(from: THREE.Vector3, to: THREE.Vector3, self: StairwellRe
 const levelOf = (y: number): number => Math.round(y * 20) / 20;
 
 /**
- * True for a horizontal face lying within 5 cm of a walking surface of the well (a flight or an intermediate
- * landing) at its plan point. Faces at the upper floor's own level are not walking surfaces, so the upper
- * slab is still cut. No region cuts these.
+ * True for a piece of an upward-facing triangle (orientation from the whole triangle, as its winding stores it)
+ * whose every corner lies within WALKING_SURFACE_TOLERANCE_M of a walking surface of the well (a flight or an intermediate landing) at
+ * that corner's plan point. Faces at the upper floor's own level are not walking surfaces, so the upper slab is
+ * still cut. No region cuts these.
  */
-function onWalkingSurface(vertices: readonly THREE.Vector3[], well: StairwellWell): boolean {
-  const [a, b, c] = vertices as [THREE.Vector3, THREE.Vector3, THREE.Vector3];
+function onWalkingSurface(piece: readonly THREE.Vector3[], triangle: readonly THREE.Vector3[], well: StairwellWell): boolean {
+  const [a, b, c] = triangle as [THREE.Vector3, THREE.Vector3, THREE.Vector3];
+  // Only an upward-facing face (as its winding stores it) can be a walking surface; an underside never is.
   const normal = b.clone().sub(a).cross(c.clone().sub(a));
-  if (normal.lengthSq() === 0 || !horizontal(normal.normalize())) return false;
-  const y = (a.y + b.y + c.y) / 3;
-  if (y >= well.upperY - 0.1) return false;
-  const x = (a.x + b.x + c.x) / 3, z = (a.z + b.z + c.z) / 3;
-  return well.rects.some((rect) => {
-    const dx = x - rect.center.x, dz = z - rect.center.z;
-    const along = dx * rect.along.x + dz * rect.along.z, across = dx * rect.across.x + dz * rect.across.z;
-    if (Math.abs(along) > rect.halfLength + 1e-3 || Math.abs(across) > rect.halfWidth + 1e-3) return false;
-    const surface = rect.center.y + along * rect.rise / (2 * rect.halfLength);
-    return Math.abs(y - surface) <= 0.05 + 1e-6;
+  if (normal.lengthSq() === 0 || normal.normalize().y <= 0.7) return false;
+  // Every corner must sit on a walking surface at its own plan point: a large triangle that crosses the headroom is cut.
+  return piece.every((v) => {
+    if (v.y >= well.upperY - 0.1) return false;
+    return well.rects.some((rect) => {
+      const dx = v.x - rect.center.x, dz = v.z - rect.center.z;
+      const along = dx * rect.along.x + dz * rect.along.z, across = dx * rect.across.x + dz * rect.across.z;
+      if (Math.abs(along) > rect.halfLength + 1e-3 || Math.abs(across) > rect.halfWidth + 1e-3) return false;
+      const surface = rect.center.y + along * rect.rise / (2 * rect.halfLength);
+      return Math.abs(v.y - surface) <= WALKING_SURFACE_TOLERANCE_M + 1e-6;
+    });
   });
 }
 

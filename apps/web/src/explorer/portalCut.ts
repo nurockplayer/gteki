@@ -16,8 +16,12 @@ export interface CutRegion {
   /** GPU clip volume for the shared-mesh fallback; null means the region is always CPU-cut. */
   clip: THREE.Plane[] | null;
   accepts(normal: THREE.Vector3): boolean;
-  /** Optional per-triangle filter on its world-space vertices and mesh, checked after `accepts`. */
-  admits?(vertices: readonly THREE.Vector3[], mesh: THREE.Object3D): boolean;
+  /**
+   * Optional filter, checked after `accepts`. It is called on each piece of a triangle that lies inside the region,
+   * after clipping to the region's planes (`piece`), with the mesh and the whole triangle's world vertices. Only an
+   * accepted piece is removed.
+   */
+  admits?(piece: readonly THREE.Vector3[], mesh: THREE.Object3D, triangle: readonly THREE.Vector3[]): boolean;
 }
 
 function planes(box: Box): Plane[] {
@@ -247,8 +251,8 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
         let polys = [vertices];
         for (const region of relevant) {
           if (!region.accepts(normal)) continue;
-          if (region.admits && !region.admits(vertices.map(v => v.world), mesh)) continue;
           const next: Vertex[][] = [];
+          const triangle = vertices.map(v => v.world);
           for (const poly of polys) {
             let inside = poly;
             const outside: Vertex[][] = [];
@@ -257,7 +261,7 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
               if (out.length >= 3) outside.push(out);
               if (inside.length < 3) break;
             }
-            if (inside.length >= 3) {
+            if (inside.length >= 3 && (!region.admits || region.admits(inside.map(v => v.world), mesh, triangle))) {
               removed++; countRegion(region.key);
               const heights = result.heights.get(region.key) ?? [];
               heights.push(inside.reduce((sum, v) => sum + v.world.y, 0) / inside.length);
