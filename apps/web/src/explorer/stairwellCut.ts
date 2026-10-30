@@ -326,8 +326,8 @@ function sideRemainder(from: THREE.Vector3, to: THREE.Vector3, self: StairwellRe
 const levelOf = (y: number): number => Math.round(y * 20) / 20;
 
 /**
- * True for an upward-facing horizontal face lying within 5 cm of a walking surface of the well (a flight or an
- * intermediate landing) at its plan point. Faces at the upper floor's own level are not walking surfaces, so the upper
+ * True for an upward-facing face whose every corner lies within 5 cm of a walking surface of the well (a flight or an
+ * intermediate landing) at that corner's plan point. Faces at the upper floor's own level are not walking surfaces, so the upper
  * slab is still cut. No region cuts these.
  */
 function onWalkingSurface(vertices: readonly THREE.Vector3[], well: StairwellWell): boolean {
@@ -335,15 +335,16 @@ function onWalkingSurface(vertices: readonly THREE.Vector3[], well: StairwellWel
   // Only an upward-facing face (as its winding stores it) can be a walking surface; an underside never is.
   const normal = b.clone().sub(a).cross(c.clone().sub(a));
   if (normal.lengthSq() === 0 || normal.normalize().y <= 0.7) return false;
-  const y = (a.y + b.y + c.y) / 3;
-  if (y >= well.upperY - 0.1) return false;
-  const x = (a.x + b.x + c.x) / 3, z = (a.z + b.z + c.z) / 3;
-  return well.rects.some((rect) => {
-    const dx = x - rect.center.x, dz = z - rect.center.z;
-    const along = dx * rect.along.x + dz * rect.along.z, across = dx * rect.across.x + dz * rect.across.z;
-    if (Math.abs(along) > rect.halfLength + 1e-3 || Math.abs(across) > rect.halfWidth + 1e-3) return false;
-    const surface = rect.center.y + along * rect.rise / (2 * rect.halfLength);
-    return Math.abs(y - surface) <= 0.05 + 1e-6;
+  // Every corner must sit on a walking surface at its own plan point: a large triangle that crosses the headroom is cut.
+  return [a, b, c].every((v) => {
+    if (v.y >= well.upperY - 0.1) return false;
+    return well.rects.some((rect) => {
+      const dx = v.x - rect.center.x, dz = v.z - rect.center.z;
+      const along = dx * rect.along.x + dz * rect.along.z, across = dx * rect.across.x + dz * rect.across.z;
+      if (Math.abs(along) > rect.halfLength + 1e-3 || Math.abs(across) > rect.halfWidth + 1e-3) return false;
+      const surface = rect.center.y + along * rect.rise / (2 * rect.halfLength);
+      return Math.abs(v.y - surface) <= 0.05 + 1e-6;
+    });
   });
 }
 

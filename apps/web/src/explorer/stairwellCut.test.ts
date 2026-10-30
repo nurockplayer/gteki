@@ -414,6 +414,20 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("cuts a large upward floor triangle whose centroid is on the walking surface but whose corners are not", () => {
+    // Corners at 0.3 m above, below, and on the walking surface (y = 0.4 x), inside the footprint. Wound to face up.
+    const positions = [8.5, 3.7, -0.5, 9.0, 3.6, 0.5, 9.5, 3.5, -0.5];
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    const triangle = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    triangle.userData.gteki_role = "floor";
+    const root = new THREE.Group(); root.add(triangle); root.updateMatrixWorld(true);
+    const original = triangle.geometry;
+    const result = cutStairwells(root, stairwellWells(bundle(), traversable), { tier: "high" });
+    expect(triangle.geometry).not.toBe(original);
+    result.dispose();
+  });
+
   it("cuts both faces of a 1.0 m-thick floor slab that runs past the footprint, over the last 0.5 m", () => {
     const slab = new THREE.Mesh(new THREE.BoxGeometry(16, 1.0, 6), new THREE.MeshBasicMaterial());
     slab.position.set(5, 3.5, 0); slab.userData.gteki_role = "floor";
