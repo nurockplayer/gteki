@@ -73,7 +73,7 @@ for (const key of STATIONS) {
 
 /** One route per station picked purely through the visible search UI, as a user would. */
 const uiPicks: Record<StationKey, { from: [string, RegExp]; to: [string, RegExp]; alias: [string, RegExp] }> = {
-  ikebukuro: { from: ["中央2", /JR Central Gate 2/], to: ["35", /^Exit 35$/], alias: ["東口", /East Exit/] },
+  ikebukuro: { from: ["中央2", /JR 中央2改札/], to: ["35", /^35番出口$/], alias: ["東口", /東口（地下）/] },
   shinjuku: { from: ["exit", /street level, north side/], to: ["大江戸", /Oedo Line platform/], alias: ["トイレ", /Toilet/] },
 };
 

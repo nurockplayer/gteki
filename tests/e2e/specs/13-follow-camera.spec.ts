@@ -55,8 +55,8 @@ test.use({ trace: "off" });
 
 const walks: Record<StationKey, { from: [string, RegExp]; to: [string, RegExp]; label: string; why: string }[]> = {
   ikebukuro: [
-    { from: ["中央2", /JR Central Gate 2/], to: ["35", /^Exit 35$/], label: "jrc2-exit35", why: "Exit 35 stair" },
-    { from: ["West Exit", /^West Exit \(B1\)$/], to: ["West Exit (South)", /^Exit 4$/], label: "westb1-exit4", why: "tight B1 corridor" },
+    { from: ["中央2", /JR 中央2改札/], to: ["35", /^35番出口$/], label: "jrc2-exit35", why: "Exit 35 stair" },
+    { from: ["西口（地下）", /^西口（地下）$/], to: ["4番出口", /^4番出口$/], label: "westb1-exit4", why: "tight B1 corridor" },
   ],
   shinjuku: [
     { from: ["north side", /street level, north side/], to: ["platform", /Oedo Line platform/], label: "exit1-platform", why: "escalators under hanging signs" },
