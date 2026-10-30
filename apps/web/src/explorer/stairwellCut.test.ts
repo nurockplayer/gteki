@@ -300,11 +300,11 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
-  it("keeps an unroled stepped mesh with four tread heights in the band, and an unroled plate inside the footprint", () => {
+  it("keeps an unroled stepped mesh with four tread levels inside the footprint, and an unroled plate inside it", () => {
     const s = scene();
-    // Four horizontal quads at 3.40, 3.45, 3.50 and 3.55 m, from x 9 to 12 (past the footprint's end at x = 10).
+    // Four horizontal quads at 3.40, 3.45, 3.50 and 3.55 m, all inside the footprint (x 9.1 to 9.9).
     const quads: number[] = [];
-    [3.4, 3.45, 3.5, 3.55].forEach((y) => quads.push(9, y, -0.9, 12, y, -0.9, 12, y, 0.9, 9, y, -0.9, 12, y, 0.9, 9, y, 0.9));
+    [3.4, 3.45, 3.5, 3.55].forEach((y) => quads.push(9.1, y, -0.9, 9.9, y, -0.9, 9.9, y, 0.9, 9.1, y, -0.9, 9.9, y, 0.9, 9.1, y, 0.9));
     const stepsGeometry = new THREE.BufferGeometry();
     stepsGeometry.setAttribute("position", new THREE.Float32BufferAttribute(quads, 3));
     const steps = new THREE.Mesh(stepsGeometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
@@ -330,6 +330,51 @@ describe("stairwell cuts", () => {
     expect(flightAbove.geometry).toBe(flightOriginal);
     expect(down(flightAbove, 2, 5).some(hit => Math.abs(hit.point.y - 3) < 1e-6)).toBe(true);
     expect(ceilingAbove.geometry).not.toBe(ceilingOriginal);
+    result.dispose();
+  });
+
+  it("keeps a sloped ceiling 3.5 m above the walking surface, and cuts a ceiling only inside the 2.1 m headroom", () => {
+    const s = scene();
+    // Sloped with the flight from x = 2 to 10, always 3.5 m above the walking surface (y = 0.4 x).
+    const sloped = new THREE.Mesh(new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(2, 4.3, -0.9), new THREE.Vector3(10, 7.5, -0.9), new THREE.Vector3(10, 7.5, 0.9),
+      new THREE.Vector3(2, 4.3, -0.9), new THREE.Vector3(10, 7.5, 0.9), new THREE.Vector3(2, 4.3, 0.9),
+    ]), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    sloped.userData.gteki_role = "ceiling";
+    // Flat at 2.6 m: above the headroom where the flight is low, under it where the flight has risen.
+    const plate = new THREE.Mesh(new THREE.PlaneGeometry(10, 1.8, 20, 2).rotateX(-Math.PI / 2).translate(5, 2.6, 0), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    plate.userData.gteki_role = "ceiling";
+    s.root.add(sloped, plate); s.root.updateMatrixWorld(true);
+    const slopedOriginal = sloped.geometry, plateGeometry = plate.geometry;
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
+    expect(sloped.geometry).toBe(slopedOriginal);
+    expect(down(sloped, 6, 9)[0]!.point.y).toBeCloseTo(0.4 * 6 + 3.5, 6);
+    // Where the surface is at 1.2 m the plate is 1.4 m above it: cut. Where it is at 0.2 m it is 2.4 m above: kept.
+    expect(down(plate, 3, 5)).toHaveLength(0);
+    expect(down(plate, 0.5, 5)[0]!.point.y).toBeCloseTo(2.6, 6);
+    expect(plate.geometry).not.toBe(plateGeometry);
+    result.dispose();
+  });
+
+  it("cuts an unroled mesh's slab faces that run past the footprint, and keeps its tread levels inside", () => {
+    const s = scene();
+    const quad = (x0: number, x1: number, y: number, z0: number, z1: number) => [x0, y, z0, x1, y, z0, x1, y, z1, x0, y, z0, x1, y, z1, x0, y, z1];
+    // Slab: top at 4.0 and underside at 3.6 m, both running past the footprint on every side.
+    // Treads: three levels (3.45, 3.50, 3.55 m) entirely inside it.
+    const positions = [...quad(-1, 11, 4, -2, 2), ...quad(-1, 11, 3.6, -2, 2), ...quad(9.1, 9.9, 3.45, -0.5, 0.5), ...quad(9.1, 9.9, 3.5, -0.5, 0.5), ...quad(9.1, 9.9, 3.55, -0.5, 0.5)];
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    const mixed = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    s.root.add(mixed); s.root.updateMatrixWorld(true);
+    const original = mixed.geometry;
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
+    expect(mixed.geometry).not.toBe(original);
+    // From above, the topmost face over the flight is the 3.55 m tread; the slab top is gone there.
+    expect(down(mixed, 9.5, 5)[0]!.point.y).toBeCloseTo(3.55, 6);
+    // From below, the lowest face is the 3.45 m tread: the slab underside is gone there.
+    expect(up(mixed, 9.5, 3.0)[0]!.point.y).toBeCloseTo(3.45, 6);
+    // Past the footprint the slab's top is untouched.
+    expect(down(mixed, 10.5, 5)[0]!.point.y).toBeCloseTo(4, 6);
     result.dispose();
   });
 

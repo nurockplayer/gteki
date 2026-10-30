@@ -304,8 +304,8 @@ StairwellStats	interface	apps/web/src/explorer/stairwellCut.ts	54
 StairwellCut	interface	apps/web/src/explorer/stairwellCut.ts	65
 StairwellOptions	interface	apps/web/src/explorer/stairwellCut.ts	83
 stairwellWells	function	apps/web/src/explorer/stairwellCut.ts	94
-stairwellRegions	function	apps/web/src/explorer/stairwellCut.ts	159
-cutStairwells	function	apps/web/src/explorer/stairwellCut.ts	193
+stairwellRegions	function	apps/web/src/explorer/stairwellCut.ts	161
+cutStairwells	function	apps/web/src/explorer/stairwellCut.ts	197
 shouldRelease	function	apps/web/src/explorer/stationCaches.ts	8
 StationCaches	class	apps/web/src/explorer/stationCaches.ts	17
 STREET	const	apps/web/src/explorer/streetBackdrop.ts	12

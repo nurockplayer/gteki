@@ -24,8 +24,8 @@ const POST_SPACING_M = 1.5;
 const SLAB_BAND_M = 0.6;
 /** Mesh roles (`userData.gteki_role`) whose horizontal faces are slabs: always cut in the band. `stairs_ramps` never is. */
 const SLAB_ROLES = new Set(["floor", "ceiling"]);
-/** Heights (rounded to 5 cm) a slab-like unroled mesh may take inside the band: a top face and an underside. */
-const SLAB_MAX_HEIGHTS = 2;
+/** Headroom above the walking surface that the primary cut clears: higher faces obstruct nothing and stay. */
+const HEADROOM_M = 2.1;
 
 /** The plan rectangle of one straight piece of a connector, in renderer coordinates. */
 export interface StairwellRect {
@@ -139,6 +139,8 @@ function rectPlanes(rect: StairwellRect, upperY: number): Plane[] {
     p => rect.halfWidth - dot(p, across),
     p => p.y - c.y - dot(p, along) * rect.rise / (2 * rect.halfLength) - WALK_CLEAR_M - 1e-6,
     p => upperY + UPPER_CLEAR_M - p.y,
+    // Only faces inside the headroom above the flight are cut.
+    p => HEADROOM_M - (p.y - c.y - dot(p, along) * rect.rise / (2 * rect.halfLength)),
   ];
 }
 
@@ -170,18 +172,20 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
       const band = [...rectCorners(rect, floorY), ...rectCorners(rect, well.upperY + UPPER_CLEAR_M)];
       const planes = rectPlanes(rect, well.upperY).slice(0, 4);
       planes.push(p => p.y - floorY - 1e-6, p => well.upperY + UPPER_CLEAR_M - p.y);
-      const verdicts = new WeakMap<THREE.Object3D, boolean>();
-      const admitted = (mesh: THREE.Object3D): boolean => {
-        let verdict = verdicts.get(mesh);
-        if (verdict === undefined) { verdict = bandSlabLike(mesh, rect, floorY, well.upperY + UPPER_CLEAR_M); verdicts.set(mesh, verdict); }
-        return verdict;
+      const levels = new WeakMap<THREE.Object3D, Set<number>>();
+      const admittedLevels = (mesh: THREE.Object3D): Set<number> => {
+        let found = levels.get(mesh);
+        if (!found) { found = bandLevels(mesh, rect, floorY, well.upperY + UPPER_CLEAR_M); levels.set(mesh, found); }
+        return found;
       };
       regions.push({
         key: rect, bounds: new THREE.Box3().setFromPoints(band), planes, clip: null, accepts: horizontal,
-        admits: (_vertices, mesh) => {
+        admits: (vertices, mesh) => {
           const role = mesh.userData.gteki_role;
           if (SLAB_ROLES.has(role)) return true;
-          return role === undefined && admitted(mesh);
+          if (role !== undefined) return false;
+          const mean = (vertices[0]!.y + vertices[1]!.y + vertices[2]!.y) / 3;
+          return admittedLevels(mesh).has(levelOf(mean));
         },
       });
     }
@@ -306,36 +310,35 @@ function sideRemainder(from: THREE.Vector3, to: THREE.Vector3, self: StairwellRe
   return intervals.filter(([a, b]) => b - a > 1e-6).map(([a, b]) => [from.clone().addScaledVector(delta, a), from.clone().addScaledVector(delta, b)]);
 }
 
+const levelOf = (y: number): number => Math.round(y * 20) / 20;
+
 /**
- * An unroled mesh that looks like a slab: its horizontal faces inside the band take at most two heights
- * (a top face and an underside), and its bounding box runs past the rectangle in plan. Stepped meshes
- * (three or more heights) and small plates inside the footprint stay uncut.
+ * For an unroled mesh: the height levels (5 cm) of its horizontal triangles inside the band that have a vertex
+ * outside the rectangle in plan. A slab's faces run past the footprint, so their levels are admitted; a tread
+ * level whose triangles all lie inside the footprint is not.
  */
-function bandSlabLike(mesh: THREE.Object3D, rect: StairwellRect, floorY: number, topY: number): boolean {
+function bandLevels(mesh: THREE.Object3D, rect: StairwellRect, floorY: number, topY: number): Set<number> {
+  const found = new Set<number>();
   const geometry = (mesh as THREE.Mesh).geometry as THREE.BufferGeometry | undefined;
   const position = geometry?.getAttribute("position");
-  if (!geometry || !position) return false;
+  if (!geometry || !position) return found;
   mesh.updateWorldMatrix(true, false);
   const index = geometry.index, count = index ? index.count : position.count;
-  const heights = new Set<number>();
-  const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
-  const vertex = (k: number, into: THREE.Vector3) => into.fromBufferAttribute(position, k).applyMatrix4(mesh.matrixWorld);
+  const vs = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
+  const outsidePlan = (p: THREE.Vector3) => {
+    const d = (p.x - rect.center.x) * rect.along.x + (p.z - rect.center.z) * rect.along.z;
+    const a = (p.x - rect.center.x) * rect.across.x + (p.z - rect.center.z) * rect.across.z;
+    return Math.abs(d) > rect.halfLength + 1e-3 || Math.abs(a) > rect.halfWidth + 1e-3;
+  };
   for (let i = 0; i + 2 < count; i += 3) {
-    vertex(index ? index.getX(i) : i, a); vertex(index ? index.getX(i + 1) : i + 1, b); vertex(index ? index.getX(i + 2) : i + 2, c);
-    const normal = b.clone().sub(a).cross(c.clone().sub(a));
+    for (let j = 0; j < 3; j++) vs[j]!.fromBufferAttribute(position, index ? index.getX(i + j) : i + j).applyMatrix4(mesh.matrixWorld);
+    const normal = vs[1]!.clone().sub(vs[0]!).cross(vs[2]!.clone().sub(vs[0]!));
     if (normal.lengthSq() === 0 || !horizontal(normal.normalize())) continue;
-    const y = (a.y + b.y + c.y) / 3;
+    const y = (vs[0]!.y + vs[1]!.y + vs[2]!.y) / 3;
     if (y < floorY - 1e-6 || y > topY + 1e-6) continue;
-    heights.add(Math.round(y * 20) / 20);
-    if (heights.size > SLAB_MAX_HEIGHTS) return false;
+    if (vs.some(outsidePlan)) found.add(levelOf(y));
   }
-  if (heights.size === 0) return false;
-  geometry.computeBoundingBox();
-  const box = geometry.boundingBox!.clone().applyMatrix4(mesh.matrixWorld);
-  const corners = rectCorners(rect, 0);
-  const xs = corners.map((p) => p.x), zs = corners.map((p) => p.z);
-  const eps = 1e-3;
-  return box.min.x < Math.min(...xs) - eps || box.max.x > Math.max(...xs) + eps || box.min.z < Math.min(...zs) - eps || box.max.z > Math.max(...zs) + eps;
+  return found;
 }
 
 /** Band around one rectangle's cut boundary, on the sides no other piece of the same well covers. */
