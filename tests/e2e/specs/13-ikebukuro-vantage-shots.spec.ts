@@ -69,7 +69,10 @@ import { hooks, openStation, stationData } from "../lib/gteki.ts";
  *                                          build exposes on it (sceneInfo().renderer / .info / .render)
  *
  * Env: GTEKI_VANTAGE_NODES    comma list of graph node ids; an item may be `group:node` to pick the group
- *                             (otherwise the default group, else gate / exit by node kind and floor, else `node`)
+ *                             (otherwise the default group, else gate / exit by node kind and floor, else `node`);
+ *                             an item may end with `>x/y` waypoints (station ENU metres) the walker walks to from the
+ *                             node before the views (walkPath, 40 s cap); a walk that does not arrive is shot anyway
+ *                             and listed in a report warning
  *      GTEKI_VANTAGE_HEADINGS comma list of degrees added to the edge bearing (default 0,90,180,270); prefix an item
  *                             with `@` for an absolute compass heading (`@45`)
  *      GTEKI_VANTAGE_OUT      output dir (default <GTEKI_ROOT>/.qa/<station>-vantage/<project>)
@@ -252,6 +255,8 @@ interface Row {
   visibility: string | null; focused: boolean | null;
   overLowLimit: boolean; streetActive: boolean | null; streetOpacity: number | null;
   walker: { x: number; y: number; z: number } | null; file: string | null; error?: string;
+  /** The off-graph waypoints walked from the node (">x/y" text, null when none) and the walkPath result. */
+  walkTo: string | null; walk: { done: boolean; stuck: boolean; timedOut: boolean } | null;
   renderInfo: unknown; sceneInfo: unknown;
 }
 
@@ -271,18 +276,22 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
   // first wins: a bare id keeps its original group (w_c stays rail) even though it is also a spawn
   const defaultGroup = new Map<string, string>();
   for (const [g, n] of allDefaults.map((s) => [s.slice(0, s.indexOf(":")), s.slice(s.indexOf(":") + 1)])) if (!defaultGroup.has(n)) defaultGroup.set(n, g);
-  const spots: { group: string; node: string }[] = [];
+  const spots: { group: string; node: string; walkTo: { x: number; y: number }[] }[] = [];
   const dropped: string[] = [];
   const notInGroups: string[] = [];
   for (const item of requested) {
+    // `>x/y` suffixes are off-graph waypoints the walker walks to from the node (station ENU metres, x east, y north)
+    const [head = "", ...legs] = item.split(">");
+    const walkTo = legs.map((s) => s.split("/").map(Number)).map(([x, y]) => ({ x: x!, y: y! }));
+    expect(walkTo.every((p) => Number.isFinite(p.x) && Number.isFinite(p.y)), `waypoints in ${item}`).toBe(true);
     // Shinjuku ids carry an "n:" prefix, so a whole item that is a node id wins; otherwise split at the first colon
-    const cut = byId.has(item) ? -1 : item.indexOf(":");
-    const [g, n] = cut < 0 ? [undefined, item] : [item.slice(0, cut), item.slice(cut + 1)];
+    const cut = byId.has(head) ? -1 : head.indexOf(":");
+    const [g, n] = cut < 0 ? [undefined, head] : [head.slice(0, cut), head.slice(cut + 1)];
     const node = byId.get(n!);
     if (!node) { dropped.push(n!); continue; }
     const group = g ?? defaultGroup.get(n!) ?? (node.kind === "ticket_gate" ? "gate" : node.kind === "exit" ? "exit" : "node");
     if (GROUPS.length && !GROUPS.includes(group)) { notInGroups.push(item); continue; }
-    spots.push({ group, node: n! });
+    spots.push({ group, node: n!, walkTo });
   }
   if (dropped.length) console.warn(`vantage: dropped nodes not in the graph: ${dropped.join(", ")}`);
   if (notInGroups.length) console.warn(`vantage: skipped by GTEKI_VANTAGE_GROUPS=${GROUPS.join(",")}: ${notInGroups.join(", ")}`);
@@ -337,6 +346,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
     const ok = await hooks.walkFromNode(page, spot.node);
     const base = {
       group: spot.group, node: spot.node, nodeKind: node.kind ?? null, floor: node.floorId, fenceM: fenceM === null ? null : round(fenceM),
+      walkTo: spot.walkTo.length ? spot.walkTo.map((p) => `${p.x}/${p.y}`).join(">") : null,
     };
     if (!ok) {
       for (const h of headings) {
@@ -344,12 +354,18 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
           ...base, offsetDeg: h.deg, absolute: h.absolute, heading: Math.round((h.absolute ? h.deg : eb.deg + h.deg) % 360), facing: null, headingOk: null,
           draws: null, drawsMax: null, tris: null, trisMax: null, frames: 0, zeroFrames: 0, ftP50: null, ftP95: null, ftMax: null, ftFrames: null,
           visibility: null, focused: null, overLowLimit: false, streetActive: null, streetOpacity: null,
-          walker: null, file: null, error: "walkFromNode returned false (no walkable ground at the node)", renderInfo: null, sceneInfo: null,
+          walker: null, walk: null, file: null, error: "walkFromNode returned false (no walkable ground at the node)", renderInfo: null, sceneInfo: null,
         });
       }
       continue;
     }
     await expect.poll(() => hooks.mode(page)).toBe("walk");
+    // Shop vantage points off the graph: walk there through normal walk input (renderer frame: x east, z = -north).
+    let walk: Row["walk"] = null;
+    if (spot.walkTo.length) {
+      const r = await page.evaluate((p) => (window as any).__gteki.walkPath(p, { maxSeconds: 40 }), spot.walkTo.map((p) => ({ x: p.x, z: -p.y })));
+      walk = { done: r.done, stuck: r.stuck, timedOut: r.timedOut };
+    }
     if (node.floorId === "street") {
       // The street gate lags the camera by a frame and the backdrop fades in: wait for it, never fail on it.
       await page.waitForFunction(() => (window as any).__gteki.sceneInfo().street.active, null, { timeout: 8_000 }).catch(() => undefined);
@@ -399,7 +415,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
         ...ft, visibility: vis.visibility, focused: vis.focused,
         overLowLimit: tier === "low" && drawsMax > LOW_DRAW_LIMIT,
         streetActive: info.street.active, streetOpacity: info.street.opacity,
-        walker: { x: round(av.x), y: round(av.y), z: round(av.z) }, file, renderInfo, sceneInfo: info,
+        walker: { x: round(av.x), y: round(av.y), z: round(av.z) }, walk, file, renderInfo, sceneInfo: info,
       });
     }
   }
@@ -432,10 +448,16 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
     ? [`${offHeading.length} view(s) ended more than ${HEADING_TOL_DEG} degrees off the requested heading after the turn corrections: ${offHeading.map((r) => `${r.node} h${r.heading} -> facing ${r.facing}`).join(", ")}.`]
     : [];
   for (const w of headingWarnings) console.warn(`vantage: ${w}`);
+  // Spots whose off-graph walk did not arrive: still shot, but the shot may be from somewhere else.
+  const missedWalks = [...new Map(rows.filter((r) => r.walk && !r.walk.done).map((r) => [`${r.group} ${r.node}`, r])).values()];
+  const walkWarnings = missedWalks.length
+    ? [`${missedWalks.length} spot(s) did not reach their walk target: ${missedWalks.map((r) => `${r.group} ${r.node} >${r.walkTo}: ${r.walk!.stuck ? "stuck" : r.walk!.timedOut ? "timed out" : "not reached"} at walker ${r.walker?.x}/${r.walker?.y}`).join(", ")}.`]
+    : [];
+  for (const w of walkWarnings) console.warn(`vantage: ${w}`);
   const result = {
     probe: "ikebukuro-vantage-shots", station: STATION, label, tier, project, viewport, dpr, loadMs, gl, gpuValid,
     frames: FRAMES, settleMs: SETTLE_MS, lowDrawLimit: LOW_DRAW_LIMIT, headings: headings.map((h) => (h.absolute ? `@${h.deg}` : String(h.deg))),
-    frametimeMs: FRAMETIME_MS, groupsRequested: GROUPS, visibilityWarnings: warnings, headingTolDeg: HEADING_TOL_DEG, headingWarnings,
+    frametimeMs: FRAMETIME_MS, groupsRequested: GROUPS, visibilityWarnings: warnings, headingTolDeg: HEADING_TOL_DEG, headingWarnings, walkWarnings,
     requested, dropped, notInGroups, groups, rows,
   };
   const base = path.join(outDir, `vantage-${project}`);
@@ -454,6 +476,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       : "- Frame time: off (GTEKI_VANTAGE_FRAMETIME_MS=0). Draw counts are unaffected by window visibility; frame time is not.",
     ...warnings.map((w) => `- **WARNING**: ${w}`),
     ...headingWarnings.map((w) => `- **WARNING**: ${w}`),
+    ...walkWarnings.map((w) => `- **WARNING**: ${w}`),
     `- Window state: every view records document.visibilityState and document.hasFocus(); a view that was not \`visible\` is flagged \`HIDDEN\` in the table.`,
     `- Headings: edge bearing (first verified edge at the node) ${result.headings.map((h) => (h.startsWith("@") ? `${h.slice(1)} (absolute)` : `+${h}`)).join(", ")}.`,
     tier === "low" ? `- Rows with draws max over ${LOW_DRAW_LIMIT} on the low tier are marked OVER.` : `- Not the low tier: no row is marked against the ${LOW_DRAW_LIMIT}-draw low-tier limit (run phone-chromium for that).`,
@@ -468,10 +491,10 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
     "",
     "## Views",
     "",
-    "| group | node | fence m | heading | facing | draws p50 | draws max | tris p50 | tris max | ft p50 ms | ft p95 ms | ft max ms | ft frames | vis | street.active | file |",
-    "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+    "| group | node | fence m | heading | facing | walk | draws p50 | draws max | tris p50 | tris max | ft p50 ms | ft p95 ms | ft max ms | ft frames | vis | street.active | file |",
+    "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ...rows.map((r) =>
-      `| ${r.group} | ${r.node} | ${cell(r.fenceM)} | ${r.heading} | ${cell(r.facing)}${r.headingOk === false ? " (!)" : ""} | ${cell(r.draws)} | ${cell(r.drawsMax)}${r.overLowLimit ? " OVER" : ""} | ${cell(r.tris)} | ${cell(r.trisMax)} | ${cell(r.ftP50)} | ${cell(r.ftP95)} | ${cell(r.ftMax)} | ${cell(r.ftFrames)} | ${cell(r.visibility)}${r.visibility !== null && r.visibility !== "visible" ? " HIDDEN" : ""}${r.focused === false ? " (unfocused)" : ""} | ${cell(r.streetActive)} | ${r.file ? `[${r.file}](${r.file})` : `ERROR: ${r.error}`} |`),
+      `| ${r.group} | ${r.node} | ${cell(r.fenceM)} | ${r.heading} | ${cell(r.facing)}${r.headingOk === false ? " (!)" : ""} | ${r.walk === null ? "" : r.walk.done ? "ok" : r.walk.stuck ? "STUCK" : r.walk.timedOut ? "TIMEOUT" : "MISS"} | ${cell(r.draws)} | ${cell(r.drawsMax)}${r.overLowLimit ? " OVER" : ""} | ${cell(r.tris)} | ${cell(r.trisMax)} | ${cell(r.ftP50)} | ${cell(r.ftP95)} | ${cell(r.ftMax)} | ${cell(r.ftFrames)} | ${cell(r.visibility)}${r.visibility !== null && r.visibility !== "visible" ? " HIDDEN" : ""}${r.focused === false ? " (unfocused)" : ""} | ${cell(r.streetActive)} | ${r.file ? `[${r.file}](${r.file})` : `ERROR: ${r.error}`} |`),
     "",
     "`fence m` is the distance from the node to the nearest fence segment in scene/access_fences.json (blank when the file is absent).",
     "",
