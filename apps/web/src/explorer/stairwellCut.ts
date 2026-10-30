@@ -20,8 +20,10 @@ const RAIL_HEIGHT_M = 1.1;
 const RAIL_RADIUS_M = 0.026;
 const POST_RADIUS_M = 0.02;
 const POST_SPACING_M = 1.5;
-/** Upper-slab faces this far below the upper landing, and up to just above it, are cut wherever they run past the footprint. */
+/** Upper-slab faces this far below the upper landing, and up to just above it, are cut where the mesh is a slab. */
 const SLAB_BAND_M = 0.6;
+/** Mesh roles (`userData.gteki_role`) whose horizontal faces are slabs: cut in the band. Treads, kit and unknown meshes never are. */
+const SLAB_ROLES = new Set(["floor", "ceiling"]);
 
 /** The plan rectangle of one straight piece of a connector, in renderer coordinates. */
 export interface StairwellRect {
@@ -148,9 +150,9 @@ function rectCorners(rect: StairwellRect, height: number): THREE.Vector3[] {
 
 /**
  * Convex regions for the cut. The first is from above the walking surface to just above the upper landing.
- * The second is the upper slab's band inside the footprint, for faces that run past it: those are cut
- * whatever the walking surface is, so both faces of a slab over the top of the flight go, while a face
- * or tread that lies entirely inside the footprint stays.
+ * The second is the upper slab's band inside the footprint: every horizontal face of a `floor` or `ceiling`
+ * mesh is cut there, wherever it lies, so both faces of a slab over the top of the flight go. Any other
+ * mesh (stairs, kit, or no role) is left to the first region alone.
  */
 export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
   const regions: CutRegion[] = [];
@@ -164,7 +166,7 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
       planes.push(p => p.y - floorY - 1e-6, p => well.upperY + UPPER_CLEAR_M - p.y);
       regions.push({
         key: rect, bounds: new THREE.Box3().setFromPoints(band), planes, clip: null, accepts: horizontal,
-        admits: (vertices) => vertices.some((v) => !coversPlan(rect, v)),
+        admits: (_vertices, mesh) => SLAB_ROLES.has(mesh.userData.gteki_role),
       });
     }
   }

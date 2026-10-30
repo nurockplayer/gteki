@@ -82,6 +82,8 @@ export function cutSceneProbe(scene: StationScene, bundle: StationBundle, qualit
   const router = createRouter(bundle, { allowUnverified: true });
   const cut = cutStairwells(scene.root, stairwellWells(bundle, (edge) => router.isTraversable(edge, DEFAULT_PROFILE)), {
     walkable: new Set(castTargets(scene.walkable, scene.colliders ?? [])), tier: quality,
+    // Collision proxies may sit outside scene.root: cut them with the slabs, as Explorer.loadStation does.
+    collision: [...scene.walkable, ...(scene.colliders ?? []), ...(scene.cameraBlockers ?? [])],
   });
   if (cut.finish) scene.root.add(cut.finish);
   const probe = sceneProbe(scene);

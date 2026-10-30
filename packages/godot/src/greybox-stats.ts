@@ -35,7 +35,10 @@ export function greyboxStats(bundle: StationBundle, scene: StationScene, tier: "
   const traversable = (edge: StationBundle["edges"][number]) => router.isTraversable(edge, DEFAULT_PROFILE);
   const greybox = buildGreybox(bundle, traversable, hasFloor,
     greyboxSceneProbes(targets.collider, (scene.walls ?? []).map(wallToRenderer)), tier);
-  const cut = cutStairwells(scene.root, stairwellWells(bundle, traversable), { walkable: new Set(targets.ground), tier, greyboxRoot: greybox.root });
+  const cut = cutStairwells(scene.root, stairwellWells(bundle, traversable), {
+    walkable: new Set(targets.ground), tier, greyboxRoot: greybox.root,
+    collision: [...scene.walkable, ...(scene.colliders ?? []), ...(scene.cameraBlockers ?? [])],
+  });
   if (cut.finish) greybox.root.add(cut.finish);
   const stats = { ...greybox.stats, triangles: greybox.stats.triangles + cut.bandTriangles, stairwells: cut.stats };
   greybox.root.traverse((o) => {

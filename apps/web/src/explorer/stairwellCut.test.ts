@@ -228,6 +228,7 @@ describe("stairwell cuts", () => {
 
   it("removes both faces of an upper slab that runs past the footprint, the last 0.5 m included", () => {
     const s = scene();
+    s.upper.userData.gteki_role = "floor";
     const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
     for (const x of [7, 9.1, 9.6, 9.9]) {
       expect(down(s.root, x, 5).filter(hit => hit.point.y > 3.5)).toHaveLength(0);
@@ -253,6 +254,33 @@ describe("stairwell cuts", () => {
       expect(tread.geometry).toBe(original);
       expect(down(tread, i + 0.5, 5).some(hit => Math.abs(hit.point.y - 0.4 * (i + 0.5)) < 1e-5)).toBe(true);
     }
+    result.dispose();
+  });
+
+  it("cuts a tessellated floor-role slab wholly inside the footprint over the last 0.5 m", () => {
+    const s = scene();
+    const slab = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.6, 8, 8).rotateX(-Math.PI / 2).translate(9.5, 3.8, 0), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    slab.userData.gteki_role = "floor"; slab.name = "tessellated-floor";
+    s.root.add(slab); s.root.updateMatrixWorld(true);
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
+    expect(slab.geometry.getAttribute("position").count).toBe(0);
+    expect(down(slab, 9.5, 5)).toHaveLength(0);
+    expect(up(slab, 9.85, 2)).toHaveLength(0);
+    result.dispose();
+  });
+
+  it("keeps a stairs_ramps tread and an unroled mesh wholly inside the footprint near the top", () => {
+    const s = scene();
+    const tread = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.6, 8, 8).rotateX(-Math.PI / 2).translate(9.5, 3.7, 0), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    tread.userData.gteki_role = "stairs_ramps";
+    const unroled = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.6, 8, 8).rotateX(-Math.PI / 2).translate(8.5, 3.4, 0), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    s.root.add(tread, unroled); s.root.updateMatrixWorld(true);
+    const treadOriginal = tread.geometry, unroledOriginal = unroled.geometry;
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
+    expect(tread.geometry).toBe(treadOriginal);
+    expect(unroled.geometry).toBe(unroledOriginal);
+    expect(down(tread, 9.5, 5).some(hit => Math.abs(hit.point.y - 3.7) < 1e-6)).toBe(true);
+    expect(down(unroled, 8.5, 5).some(hit => Math.abs(hit.point.y - 3.4) < 1e-6)).toBe(true);
     result.dispose();
   });
 

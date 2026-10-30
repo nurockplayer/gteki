@@ -16,8 +16,8 @@ export interface CutRegion {
   /** GPU clip volume for the shared-mesh fallback; null means the region is always CPU-cut. */
   clip: THREE.Plane[] | null;
   accepts(normal: THREE.Vector3): boolean;
-  /** Optional per-triangle filter on its world-space vertices, checked after `accepts`. */
-  admits?(vertices: readonly THREE.Vector3[]): boolean;
+  /** Optional per-triangle filter on its world-space vertices and mesh, checked after `accepts`. */
+  admits?(vertices: readonly THREE.Vector3[], mesh: THREE.Object3D): boolean;
 }
 
 function planes(box: Box): Plane[] {
@@ -247,7 +247,7 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
         let polys = [vertices];
         for (const region of relevant) {
           if (!region.accepts(normal)) continue;
-          if (region.admits && !region.admits(vertices.map(v => v.world))) continue;
+          if (region.admits && !region.admits(vertices.map(v => v.world), mesh)) continue;
           const next: Vertex[][] = [];
           for (const poly of polys) {
             let inside = poly;
