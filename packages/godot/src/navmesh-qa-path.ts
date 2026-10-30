@@ -1,10 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
 
-/** Resolve an output directory under the real repository .qa directory. */
-export function qaDirectory(directory: string): string {
-  const repo = fs.realpathSync(process.cwd()), qa = path.join(repo, ".qa"), dest = path.resolve(directory);
-  if (dest !== qa && !dest.startsWith(qa + path.sep)) throw new Error("output must be under .qa/");
+/** The QA output root: the repository's .qa, or GTEKI_PRIVATE_DIR's .qa when a private overlay is loaded, so private-derived meshes and audits never land in the repository (#669 r3). */
+export function qaRoot(privateDir = process.env.GTEKI_PRIVATE_DIR): string {
+  return path.join(fs.realpathSync(privateDir || process.cwd()), ".qa");
+}
+
+/** Resolve an output directory under the real QA root (see qaRoot). */
+export function qaDirectory(directory: string, privateDir = process.env.GTEKI_PRIVATE_DIR): string {
+  const qa = qaRoot(privateDir), dest = path.resolve(directory);
+  if (dest !== qa && !dest.startsWith(qa + path.sep)) throw new Error(privateDir ? "output must be under GTEKI_PRIVATE_DIR/.qa/" : "output must be under .qa/");
   fs.mkdirSync(qa, { recursive: true });
   if (fs.realpathSync(qa) !== qa) throw new Error(".qa must not be a symlink");
   fs.mkdirSync(dest, { recursive: true });
@@ -14,8 +19,8 @@ export function qaDirectory(directory: string): string {
 }
 
 /** Reject an existing symlink at the file itself as well as escaped parents. */
-export function qaFile(file: string): string {
-  const dir = qaDirectory(path.dirname(path.resolve(file))), dest = path.join(dir, path.basename(file));
+export function qaFile(file: string, privateDir = process.env.GTEKI_PRIVATE_DIR): string {
+  const dir = qaDirectory(path.dirname(path.resolve(file)), privateDir), dest = path.join(dir, path.basename(file));
   try { if (fs.lstatSync(dest).isSymbolicLink()) throw new Error("output file must not be a symlink"); }
   catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
   return dest;

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { NavMeshQuery } from "recast-navigation";
 import { bakeNavmesh } from "./navmesh-bake.ts";
-import { queryCompletePath, snapNode } from "./navmesh-audit.ts";
+import { floorSnapPath, queryCompletePath, snapNode } from "./navmesh-audit.ts";
 import { auditPolyline, sceneProbe } from "./route-clip-audit.ts";
 
 function fixture(open: boolean) {
@@ -85,4 +85,26 @@ it("rejects a connector snap across a wall", async () => {
   const line=[{x:3.8,y:-2,z:0,zKnown:true,floorId:"f",stepIndex:0},{x:6,y:-2,z:0,zKnown:true,floorId:"f",stepIndex:0}];
   expect(buildConnectorPath(query,from,to,line,(node,snap)=>validateLinkSnap(probe,node,snap)===null).reason).toBe("snap_failed");
   query.destroy(); baked.navMesh.destroy();
+});
+
+describe("floorSnapPath", () => {
+  // Flat to x=2, then a 1:4 ramp up to x=6 (1 m high), flat after.
+  const floor = (p: { x: number }) => p.x <= 2 ? 0 : p.x >= 6 ? 1 : (p.x - 2) / 4;
+  it("snaps every vertex to the floor and adds points where the floor bends between vertices", () => {
+    const out = floorSnapPath([{ x:0, y:0, z:0.4 }, { x:8, y:0, z:0.4 }], floor);
+    expect(out[0]).toEqual({ x:0, y:0, z:0 });
+    expect(out.at(-1)).toEqual({ x:8, y:0, z:1 });
+    expect(out.every(p => Math.abs(p.z - floor(p)) < 1e-9)).toBe(true);
+    // Between consecutive points the straight line stays within 0.05 m of the floor wherever the span is over 0.25 m.
+    for (let i = 1; i < out.length; i++) {
+      const a = out[i-1]!, b = out[i]!;
+      if (b.x - a.x <= 0.25) continue;
+      for (let t = 0.1; t < 1; t += 0.1) { const x = a.x + (b.x - a.x) * t; expect(Math.abs(a.z + (b.z - a.z) * t - floor({ x }))).toBeLessThan(0.05 + 1e-9); }
+    }
+    expect(out.map(p => p.x)).toEqual([...out.map(p => p.x)].sort((m, n) => m - n));
+  });
+  it("adds nothing on a flat floor or a uniform ramp", () => {
+    expect(floorSnapPath([{ x:0, y:0, z:0.3 }, { x:2, y:0, z:0.3 }], floor)).toEqual([{ x:0, y:0, z:0 }, { x:2, y:0, z:0 }]);
+    expect(floorSnapPath([{ x:2, y:0, z:0 }, { x:6, y:0, z:0 }], floor)).toHaveLength(2);
+  });
 });

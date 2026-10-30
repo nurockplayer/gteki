@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
-import { qaDirectory } from "./navmesh-qa-path.ts";
+import { qaDirectory, qaRoot } from "./navmesh-qa-path.ts";
 import { baselineForAudit } from "./navmesh-clip-baseline.ts";
 
 type Failure = { edgeId:string; mode:string; reason:string|null; connectivity:string; gaps:{class:string}[] };
@@ -52,7 +52,7 @@ export function fallbackDestination(file:string, privateDir?:string):string {
 /** Bake and audit in a disposable .qa directory, retaining only aggregate results. */
 export function measureFallbacks(station:string, fallbackList?:string, includeFallbackSites=false) {
   if (!/^(ikebukuro|shinjuku)$/.test(station)) throw new Error("unsupported station");
-  const dir=fs.mkdtempSync(path.join(qaDirectory(".qa/navmesh"),"fallback-")), start=performance.now();
+  const dir=fs.mkdtempSync(path.join(qaDirectory(path.join(qaRoot(),"navmesh")),"fallback-")), start=performance.now();
   const run=(script:string,args:string[])=>{
     const child=spawnSync("pnpm",["tsx",`packages/godot/src/${script}`,...args],{encoding:"utf8",maxBuffer:32*1024*1024,timeout:180_000});
     if (child.status!==0) throw new Error(`${script} failed: ${child.error?.message ?? `exit ${child.status}`}`);

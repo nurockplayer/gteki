@@ -31,7 +31,8 @@ it("bakes and audits a synthetic private overlay with a generated greybox", asyn
     const edge = graph.edges.find(e => e.mode === "walk" && e.verification === "verified");
     if (!edge) throw new Error("no public walk edge for fixture");
     fs.writeFileSync(path.join(additions,"graph.json"),JSON.stringify({nodes:[],edges:[{...edge,attributes:{...edge.attributes,sceneGap:true}}]}));
-    const out = path.join(dir,"out");
+    // Private-derived output must go under the private directory's .qa (#669 r3).
+    const out = path.join(dir,"private",".qa","out");
     const env = {...process.env, GTEKI_PRIVATE_DIR:path.join(dir,"private")};
     const run = (args:string[]) => execFileSync("pnpm",["exec","tsx",...args],{cwd:process.cwd(),env,stdio:"pipe",maxBuffer:16*1024*1024,timeout:120_000});
     run(["packages/godot/src/navmesh-bake.ts","--station","ikebukuro","--with-greybox","--out",out]);

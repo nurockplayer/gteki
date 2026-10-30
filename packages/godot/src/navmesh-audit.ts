@@ -79,6 +79,25 @@ export function queryPathWithLinks(nav: NavMesh, query: NavMeshQuery, from: V3, 
 }
 
 /** Clip totals over the samples that count: samples of suspect edges never do (their heights cannot be built). */
+/** Snap a path's vertices to the floor height floorAt reports. Between two vertices the floor is sampled every 0.25 m of
+ * plan length; where the straight line leaves it by more than 0.05 m, the path is split at the worst sample, at floor
+ * height, and both halves are checked again (#669 r2: a ramp foot between vertices). */
+export function floorSnapPath<P extends { x: number; y: number; z: number }>(points: readonly P[], floorAt: (p: P) => number): P[] {
+  const dense: P[] = [];
+  const refine = (a: P, b: P, depth: number) => {
+    const span = Math.hypot(b.x-a.x, b.y-a.y), steps = Math.min(64, Math.ceil(span / 0.25));
+    let worst: P | null = null, worstOff = 0.05;
+    for (let i = 1; i < steps; i++) {
+      const t = i / steps, q = { ...a, x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t, z:a.z+(b.z-a.z)*t }, floorZ = floorAt(q);
+      if (Math.abs(floorZ - q.z) > worstOff) { worstOff = Math.abs(floorZ - q.z); worst = { ...q, z:floorZ }; }
+    }
+    if (worst && depth < 8) { refine(a, worst, depth+1); dense.push(worst); refine(worst, b, depth+1); }
+  };
+  const snapped = points.map(p => ({ ...p, z:floorAt(p) }));
+  snapped.forEach((p,i) => { if (i) refine(snapped[i-1]!, p, 0); dense.push(p); });
+  return dense;
+}
+
 export function countedTotals(details: readonly Pick<SampleDetail,"floor"|"wallBefore">[], samples: readonly { suspect?: boolean }[]) {
   const total = { samples: 0, offFloor: 0, noFloor: 0, wallHits: 0 };
   details.forEach((d, i) => {
@@ -525,15 +544,17 @@ async function main() {
       // A detour is not the edge: Detour may find an unrelated longer way round (#669 r1). Same rule as the stairs check.
       const graphM = length(routePolyline(bundle, oneStepRoute(step)).map(p => ({ x:p.x, y:p.z, z:-p.y })));
       if (length(entry.points.map(p => ({ x:p.x, y:p.z, z:-p.y }))) > 1.5 * graphM + 2) { navPathsDetours.push(`${edge.id}:${reversed ? "reverse" : "forward"}`); continue; }
-      // The same scene-height samples as the route audit: an edge no audited route walks is checked here, and a path that
-      // leaves the floor or meets a wall is not committed (the gate fails on it, so no unlisted fallback appears).
-      const samples = resampleAudit(entry.points) as PolylinePoint[];
-      const raw: SampleDetail[] = []; auditPolyline(probe, samples, { alreadySampled:true, detail:raw, cache:auditCache });
-      const projected = samples.map((p,i) => ({ ...p, z: raw[i]!.floorZ ?? p.z })), details: SampleDetail[] = [];
-      auditPolyline(probe, projected, { alreadySampled:true, detail:details, cache:auditCache });
+      // Commit the vertices at the scene's floor height (navmesh detail heights can sit above it), rounded as written, then
+      // audit exactly that polyline with the route audit's samples: one that leaves the floor or meets a wall is not
+      // committed, and the gate fails on it (#669 r2). An edge no audited route walks is checked here too.
+      const floorAt = (p: PolylinePoint) => { const d: SampleDetail[] = []; auditPolyline(probe, [p], { alreadySampled:true, detail:d, cache:auditCache }); return d[0]?.floorZ ?? p.z; };
+      const dense = floorSnapPath(entry.points, floorAt);
+      const points = dense.map(p => [round2(p.x), round2(p.y), round2(p.z)]);
+      const committed = dense.map((p,i) => ({ ...p, x:points[i]![0]!, y:points[i]![1]!, z:points[i]![2]! }));
+      const samples = resampleAudit(committed) as PolylinePoint[], details: SampleDetail[] = [];
+      auditPolyline(probe, samples, { alreadySampled:true, detail:details, cache:auditCache });
       navPathsScene.samples += details.length;
       if (details.some(d => d.floor === "off" || d.floor === "none" || d.wallBefore)) { navPathsRejected.push(`${edge.id}:${reversed ? "reverse" : "forward"}`); continue; }
-      const points = entry.points.map(p => [round2(p.x), round2(p.y), round2(p.z)]);
       if (reversed) dirs.reverse = points; else dirs.forward = points;
     }
     if (dirs.forward || dirs.reverse) navPaths[edge.id] = dirs;
