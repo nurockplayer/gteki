@@ -264,7 +264,8 @@ describe("stairwell cuts", () => {
 
   it("cuts a tessellated floor-role slab wholly inside the footprint over the last 0.5 m", () => {
     const s = scene();
-    const slab = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.6, 8, 8).rotateX(-Math.PI / 2).translate(9.5, 3.8, 0), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    // At the upper floor's own level (4 m): a face on the walking surface itself (3.8 m here) is never cut.
+    const slab = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.6, 8, 8).rotateX(-Math.PI / 2).translate(9.5, 4, 0), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
     slab.userData.gteki_role = "floor"; slab.name = "tessellated-floor";
     s.root.add(slab); s.root.updateMatrixWorld(true);
     const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
@@ -377,6 +378,37 @@ describe("stairwell cuts", () => {
     expect(result.stats.cutTriangles).toBe(0);
     expect(result.walls).toHaveLength(0);
     expect(result.finish).toBeNull();
+    result.dispose();
+  });
+
+  it("keeps an intermediate landing 0.4 m below the upper floor, and still cuts the upper slab", () => {
+    // Flight: up to a landing at 3.6 m (x 5 to 9), then a short last rise to the upper floor at 4 m.
+    const stepped = flight([{ x: 0, y: 0, z: 0 }, { x: 5, y: 0, z: 3.6 }, { x: 9, y: 0, z: 3.6 }, { x: 10, y: 0, z: 4 }]);
+    const wells = stairwellWells(stepped, traversable);
+    expect(wells[0]!.rects).toHaveLength(3);
+    const s = scene();
+    s.upper.userData.gteki_role = "floor";
+    const landing = new THREE.Mesh(new THREE.PlaneGeometry(3, 1.6, 4, 2).rotateX(-Math.PI / 2).translate(7, 3.6, 0), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    landing.userData.gteki_role = "floor";
+    s.root.add(landing); s.root.updateMatrixWorld(true);
+    const landingOriginal = landing.geometry;
+    const result = cutStairwells(s.root, wells, { tier: "high" });
+    expect(landing.geometry).toBe(landingOriginal);
+    expect(down(s.upper, 9.5, 5).filter(hit => hit.point.y > 3.9)).toHaveLength(0);
+    result.dispose();
+  });
+
+  it("cuts both faces of a 1.0 m-thick floor slab that runs past the footprint, over the last 0.5 m", () => {
+    const slab = new THREE.Mesh(new THREE.BoxGeometry(16, 1.0, 6), new THREE.MeshBasicMaterial());
+    slab.position.set(5, 3.5, 0); slab.userData.gteki_role = "floor";
+    const root = new THREE.Group(); root.add(slab); root.updateMatrixWorld(true);
+    const result = cutStairwells(root, stairwellWells(bundle(), traversable), { tier: "high" });
+    for (const x of [9.5, 9.9]) {
+      expect(down(slab, x, 5).filter(hit => hit.point.y > 3.9)).toHaveLength(0);
+      expect(up(slab, x, 2.0)).toHaveLength(0);
+    }
+    // Past the footprint the slab's top is still there.
+    expect(down(slab, 12.5, 5)[0]!.point.y).toBeCloseTo(4, 6);
     result.dispose();
   });
 

@@ -19,7 +19,7 @@ const RAIL_RADIUS_M = 0.026;
 const POST_RADIUS_M = 0.02;
 const POST_SPACING_M = 1.5;
 /** Upper-slab faces this far below the upper landing, and up to just above it, are cut where the mesh is a slab. */
-const SLAB_BAND_M = 0.6;
+const SLAB_BAND_M = 1.2;
 /** Mesh roles (`userData.gteki_role`) whose horizontal faces are slabs: always cut in the band. `stairs_ramps` never is. */
 const SLAB_ROLES = new Set(["floor", "ceiling"]);
 /** Side faces of a slab are near-vertical: |normal.y| below this. */
@@ -165,7 +165,7 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
       regions.push({
         key: rect, bounds: new THREE.Box3().setFromPoints(corners), planes: rectPlanes(rect, well.upperY), clip: null, accepts: horizontal,
         // A stair model is never cut, even where another flight passes above the footprint.
-        admits: (_vertices, mesh) => mesh.userData.gteki_role !== "stairs_ramps",
+        admits: (vertices, mesh) => mesh.userData.gteki_role !== "stairs_ramps" && !onWalkingSurface(vertices, well),
       });
       const floorY = well.upperY - SLAB_BAND_M;
       const band = [...rectCorners(rect, floorY), ...rectCorners(rect, well.upperY + UPPER_CLEAR_M)];
@@ -184,6 +184,7 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
         admits: (vertices, mesh) => {
           const role = mesh.userData.gteki_role;
           if (role !== undefined && !SLAB_ROLES.has(role)) return false;
+          if (onWalkingSurface(vertices, well)) return false;
           const [a, b, c] = vertices as [THREE.Vector3, THREE.Vector3, THREE.Vector3];
           const normal = b.clone().sub(a).cross(c.clone().sub(a));
           if (normal.lengthSq() === 0) return false;
@@ -323,6 +324,27 @@ function sideRemainder(from: THREE.Vector3, to: THREE.Vector3, self: StairwellRe
 }
 
 const levelOf = (y: number): number => Math.round(y * 20) / 20;
+
+/**
+ * True for a horizontal face lying within 5 cm of a walking surface of the well (a flight or an intermediate
+ * landing) at its plan point. Faces at the upper floor's own level are not walking surfaces, so the upper
+ * slab is still cut. No region cuts these.
+ */
+function onWalkingSurface(vertices: readonly THREE.Vector3[], well: StairwellWell): boolean {
+  const [a, b, c] = vertices as [THREE.Vector3, THREE.Vector3, THREE.Vector3];
+  const normal = b.clone().sub(a).cross(c.clone().sub(a));
+  if (normal.lengthSq() === 0 || !horizontal(normal.normalize())) return false;
+  const y = (a.y + b.y + c.y) / 3;
+  if (y >= well.upperY - 0.1) return false;
+  const x = (a.x + b.x + c.x) / 3, z = (a.z + b.z + c.z) / 3;
+  return well.rects.some((rect) => {
+    const dx = x - rect.center.x, dz = z - rect.center.z;
+    const along = dx * rect.along.x + dz * rect.along.z, across = dx * rect.across.x + dz * rect.across.z;
+    if (Math.abs(along) > rect.halfLength + 1e-3 || Math.abs(across) > rect.halfWidth + 1e-3) return false;
+    const surface = rect.center.y + along * rect.rise / (2 * rect.halfLength);
+    return Math.abs(y - surface) <= 0.05 + 1e-6;
+  });
+}
 
 /**
  * For an unroled mesh: the height levels (5 cm) of its horizontal triangles inside the band that have a vertex

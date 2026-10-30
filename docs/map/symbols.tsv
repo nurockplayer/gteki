@@ -64,11 +64,11 @@ slideAlong	function	apps/web/src/explorer/bodyCollision.ts	124
 CameraCut	class	apps/web/src/explorer/cameraCut.ts	16
 injectCut	function	apps/web/src/explorer/cameraCut.ts	158
 contactShadow	function	apps/web/src/explorer/contactShadow.ts	7
-ExplorerMode	type	apps/web/src/explorer/explorer.ts	56
-ExplorerPose	interface	apps/web/src/explorer/explorer.ts	58
-ExplorerOptions	interface	apps/web/src/explorer/explorer.ts	60
-ExplorerEvents	interface	apps/web/src/explorer/explorer.ts	82
-Explorer	class	apps/web/src/explorer/explorer.ts	190
+ExplorerMode	type	apps/web/src/explorer/explorer.ts	57
+ExplorerPose	interface	apps/web/src/explorer/explorer.ts	59
+ExplorerOptions	interface	apps/web/src/explorer/explorer.ts	61
+ExplorerEvents	interface	apps/web/src/explorer/explorer.ts	83
+Explorer	class	apps/web/src/explorer/explorer.ts	191
 FloorReflectionSettings	interface	apps/web/src/explorer/floorReflectionPass.ts	12
 FLOOR_REFLECTION_DEFAULTS	const	apps/web/src/explorer/floorReflectionPass.ts	26
 FloorReflectionPass	class	apps/web/src/explorer/floorReflectionPass.ts	138
@@ -313,7 +313,7 @@ StairwellCut	interface	apps/web/src/explorer/stairwellCut.ts	65
 StairwellOptions	interface	apps/web/src/explorer/stairwellCut.ts	83
 stairwellWells	function	apps/web/src/explorer/stairwellCut.ts	94
 stairwellRegions	function	apps/web/src/explorer/stairwellCut.ts	160
-cutStairwells	function	apps/web/src/explorer/stairwellCut.ts	209
+cutStairwells	function	apps/web/src/explorer/stairwellCut.ts	210
 shouldRelease	function	apps/web/src/explorer/stationCaches.ts	8
 StationCaches	class	apps/web/src/explorer/stationCaches.ts	17
 STREET	const	apps/web/src/explorer/streetBackdrop.ts	12
