@@ -290,6 +290,33 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("cuts an unroled two-face slab that runs past the footprint, the last 0.5 m included", () => {
+    const s = scene();
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
+    for (const x of [9.6, 9.9]) {
+      expect(down(s.root, x, 5).filter(hit => hit.point.y > 3.5)).toHaveLength(0);
+      expect(up(s.upper, x, 2)).toHaveLength(0);
+    }
+    result.dispose();
+  });
+
+  it("keeps an unroled stepped mesh with four tread heights in the band, and an unroled plate inside the footprint", () => {
+    const s = scene();
+    // Four horizontal quads at 3.40, 3.45, 3.50 and 3.55 m, from x 9 to 12 (past the footprint's end at x = 10).
+    const quads: number[] = [];
+    [3.4, 3.45, 3.5, 3.55].forEach((y) => quads.push(9, y, -0.9, 12, y, -0.9, 12, y, 0.9, 9, y, -0.9, 12, y, 0.9, 9, y, 0.9));
+    const stepsGeometry = new THREE.BufferGeometry();
+    stepsGeometry.setAttribute("position", new THREE.Float32BufferAttribute(quads, 3));
+    const steps = new THREE.Mesh(stepsGeometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    const plate = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.6, 4, 4).rotateX(-Math.PI / 2).translate(9.5, 3.6, 0), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    s.root.add(steps, plate); s.root.updateMatrixWorld(true);
+    const stepsOriginal = steps.geometry, plateOriginal = plate.geometry;
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
+    expect(steps.geometry).toBe(stepsOriginal);
+    expect(plate.geometry).toBe(plateOriginal);
+    result.dispose();
+  });
+
   it("never cuts a stairs_ramps flight that passes above the footprint, but still cuts a ceiling there", () => {
     const s = scene();
     const flightAbove = new THREE.Mesh(new THREE.PlaneGeometry(2, 1.8, 4, 4).rotateX(-Math.PI / 2).translate(2, 3, 0), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));

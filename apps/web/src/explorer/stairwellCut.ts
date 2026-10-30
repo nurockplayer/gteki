@@ -22,8 +22,10 @@ const POST_RADIUS_M = 0.02;
 const POST_SPACING_M = 1.5;
 /** Upper-slab faces this far below the upper landing, and up to just above it, are cut where the mesh is a slab. */
 const SLAB_BAND_M = 0.6;
-/** Mesh roles (`userData.gteki_role`) whose horizontal faces are slabs: cut in the band. Treads, kit and unknown meshes never are. */
+/** Mesh roles (`userData.gteki_role`) whose horizontal faces are slabs: always cut in the band. `stairs_ramps` never is. */
 const SLAB_ROLES = new Set(["floor", "ceiling"]);
+/** Heights (rounded to 5 cm) a slab-like unroled mesh may take inside the band: a top face and an underside. */
+const SLAB_MAX_HEIGHTS = 2;
 
 /** The plan rectangle of one straight piece of a connector, in renderer coordinates. */
 export interface StairwellRect {
@@ -168,9 +170,19 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
       const band = [...rectCorners(rect, floorY), ...rectCorners(rect, well.upperY + UPPER_CLEAR_M)];
       const planes = rectPlanes(rect, well.upperY).slice(0, 4);
       planes.push(p => p.y - floorY - 1e-6, p => well.upperY + UPPER_CLEAR_M - p.y);
+      const verdicts = new WeakMap<THREE.Object3D, boolean>();
+      const admitted = (mesh: THREE.Object3D): boolean => {
+        let verdict = verdicts.get(mesh);
+        if (verdict === undefined) { verdict = bandSlabLike(mesh, rect, floorY, well.upperY + UPPER_CLEAR_M); verdicts.set(mesh, verdict); }
+        return verdict;
+      };
       regions.push({
         key: rect, bounds: new THREE.Box3().setFromPoints(band), planes, clip: null, accepts: horizontal,
-        admits: (_vertices, mesh) => SLAB_ROLES.has(mesh.userData.gteki_role),
+        admits: (_vertices, mesh) => {
+          const role = mesh.userData.gteki_role;
+          if (SLAB_ROLES.has(role)) return true;
+          return role === undefined && admitted(mesh);
+        },
       });
     }
   }
@@ -292,6 +304,38 @@ function sideRemainder(from: THREE.Vector3, to: THREE.Vector3, self: StairwellRe
     intervals = intervals.flatMap(([a, b]) => hi <= a || lo >= b ? [[a, b]] : [ ...(lo > a ? [[a, lo] as [number, number]] : []), ...(hi < b ? [[hi, b] as [number, number]] : []) ]);
   }
   return intervals.filter(([a, b]) => b - a > 1e-6).map(([a, b]) => [from.clone().addScaledVector(delta, a), from.clone().addScaledVector(delta, b)]);
+}
+
+/**
+ * An unroled mesh that looks like a slab: its horizontal faces inside the band take at most two heights
+ * (a top face and an underside), and its bounding box runs past the rectangle in plan. Stepped meshes
+ * (three or more heights) and small plates inside the footprint stay uncut.
+ */
+function bandSlabLike(mesh: THREE.Object3D, rect: StairwellRect, floorY: number, topY: number): boolean {
+  const geometry = (mesh as THREE.Mesh).geometry as THREE.BufferGeometry | undefined;
+  const position = geometry?.getAttribute("position");
+  if (!geometry || !position) return false;
+  mesh.updateWorldMatrix(true, false);
+  const index = geometry.index, count = index ? index.count : position.count;
+  const heights = new Set<number>();
+  const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+  const vertex = (k: number, into: THREE.Vector3) => into.fromBufferAttribute(position, k).applyMatrix4(mesh.matrixWorld);
+  for (let i = 0; i + 2 < count; i += 3) {
+    vertex(index ? index.getX(i) : i, a); vertex(index ? index.getX(i + 1) : i + 1, b); vertex(index ? index.getX(i + 2) : i + 2, c);
+    const normal = b.clone().sub(a).cross(c.clone().sub(a));
+    if (normal.lengthSq() === 0 || !horizontal(normal.normalize())) continue;
+    const y = (a.y + b.y + c.y) / 3;
+    if (y < floorY - 1e-6 || y > topY + 1e-6) continue;
+    heights.add(Math.round(y * 20) / 20);
+    if (heights.size > SLAB_MAX_HEIGHTS) return false;
+  }
+  if (heights.size === 0) return false;
+  geometry.computeBoundingBox();
+  const box = geometry.boundingBox!.clone().applyMatrix4(mesh.matrixWorld);
+  const corners = rectCorners(rect, 0);
+  const xs = corners.map((p) => p.x), zs = corners.map((p) => p.z);
+  const eps = 1e-3;
+  return box.min.x < Math.min(...xs) - eps || box.max.x > Math.max(...xs) + eps || box.min.z < Math.min(...zs) - eps || box.max.z > Math.max(...zs) + eps;
 }
 
 /** Band around one rectangle's cut boundary, on the sides no other piece of the same well covers. */
