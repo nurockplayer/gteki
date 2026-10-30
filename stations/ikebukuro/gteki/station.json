@@ -2779,6 +2779,15 @@
   }
  ],
  "dataFiles": [
+   {
+    "id": "navmesh-paths",
+    "path": "navmesh-paths.json",
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "modified": true,
+    "derivation": "packages/godot/src/navmesh-fallback.ts --write-paths: navmesh walk paths baked from the public scene and greybox (#647 navmesh switch)."
+   },
   {
    "id": "signage",
    "path": "scene/signage.json",

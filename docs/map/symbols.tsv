@@ -598,9 +598,13 @@ auditFallbackSegments	function	packages/godot/src/navmesh-fallback-audit.ts	5
 fallbackGate	function	packages/godot/src/navmesh-fallback-audit.ts	17
 fallbackDiff	function	packages/godot/src/navmesh-fallback-diff.ts	2
 FallbackEntry	type	packages/godot/src/navmesh-fallback.ts	9
-fallbackEntries	function	packages/godot/src/navmesh-fallback.ts	12
-fallbackDestination	function	packages/godot/src/navmesh-fallback.ts	24
-measureFallbacks	function	packages/godot/src/navmesh-fallback.ts	37
+NAVMESH_BAKE	const	packages/godot/src/navmesh-fallback.ts	12
+NavEdgePaths	type	packages/godot/src/navmesh-fallback.ts	14
+NavPaths	type	packages/godot/src/navmesh-fallback.ts	15
+navPathsDiff	function	packages/godot/src/navmesh-fallback.ts	18
+fallbackEntries	function	packages/godot/src/navmesh-fallback.ts	28
+fallbackDestination	function	packages/godot/src/navmesh-fallback.ts	40
+measureFallbacks	function	packages/godot/src/navmesh-fallback.ts	53
 GapClass	type	packages/godot/src/navmesh-gaps.ts	8
 gapClass	function	packages/godot/src/navmesh-gaps.ts	9
 dataWidth	function	packages/godot/src/navmesh-gaps.ts	19

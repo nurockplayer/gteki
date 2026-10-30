@@ -69,6 +69,8 @@ const EXPECTED: Record<string, { script: string; sources: () => string[] }> = {
   "scene/fare-restricted.generated.json": { script: "test/helpers/generate-restricted-fences.ts", sources: () => [...planPolygons(), ...verifiedEdges()] },
   // #121: derived from surface.json, the bundle and the plan together.
   "data/surface-baked.json": { script: "tools/bake-surface.ts", sources: () => [PLATEAU, ...surfaceExits(), NWD, MAP] },
+  // #647: navmesh walk paths are baked from the scene and greybox; the verified graph's geometry is their input.
+  "navmesh-paths.json": { script: "packages/godot/src/navmesh-fallback.ts", sources: () => [NWD] },
 };
 
 const declared: DataFile[] = station.dataFiles;
