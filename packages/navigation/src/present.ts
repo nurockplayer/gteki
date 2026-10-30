@@ -34,7 +34,7 @@ export function nodeDisplayZ(node: Node, floor: Floor | undefined): { z: number;
 }
 
 /** Polyline along the route, following edge geometry (reversed when traversed backwards). */
-export function routePolyline(bundle: StationBundle, route: RouteResult): PolylinePoint[] {
+export function routePolyline(bundle: StationBundle, route: RouteResult, edgePaths?: ReadonlyMap<string, readonly { x: number; y: number; z: number }[]>): PolylinePoint[] {
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
   const edges = new Map(bundle.edges.map((e) => [e.id, e]));
@@ -49,6 +49,16 @@ export function routePolyline(bundle: StationBundle, route: RouteResult): Polyli
     const a = nodeDisplayZ(from, floors.get(from.floorId));
     const b = nodeDisplayZ(to, floors.get(to.floorId));
     const edge = edges.get(step.edgeId);
+    const replacement = edgePaths?.get(step.edgeId);
+    if (replacement && replacement.length >= 2) {
+      const distance = (p: { x: number; y: number; z: number }) => Math.hypot(p.x - from.position.x, p.y - from.position.y, p.z - a.z);
+      const ordered = distance(replacement[0]!) <= distance(replacement[replacement.length - 1]!) ? replacement : [...replacement].reverse();
+      for (let i = 1; i < ordered.length; i++) {
+        const p = ordered[i]!, last = i === ordered.length - 1;
+        points.push({ x: p.x, y: p.y, z: p.z, zKnown: false, stepIndex, floorId: last ? to.floorId : from.floorId, sceneGap: true });
+      }
+      return;
+    }
     const symbolicPolyline = edge?.geometryZ === "symbolic";
     const sceneGap = edge?.attributes?.sceneGap === true;
     const drawn = edge?.geometry && edge.geometry.length >= 2 ? edge.geometry : null;
