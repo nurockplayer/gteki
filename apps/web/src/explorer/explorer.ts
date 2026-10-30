@@ -899,7 +899,6 @@ export class Explorer {
     let sceneError: string | null = null;
     try {
       built = await this.buildStationScene(station, ctx);
-      lap("scene");
     } catch (err) {
       // A broken visual scene never hides valid routing data: fall back to the L0 graph view.
       console.warn("[gteki] station scene failed; using L0 graph view", err);
@@ -907,6 +906,8 @@ export class Explorer {
       // A failed build returns no disposer, so silence anything it already connected.
       if (audioBus) { audioBus.disconnect(); if (this.stationAudio === audioBus) this.stationAudio = null; }
     }
+    // A failed build still ends the scene step, so its time is not counted against later steps.
+    lap("scene");
     if (generation !== this.loadGeneration || this.disposed) {
       built?.dispose();
       return false;

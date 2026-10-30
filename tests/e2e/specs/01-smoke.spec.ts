@@ -13,7 +13,10 @@ for (const key of STATIONS) {
 
     const info = await hooks.sceneInfo(page);
     // Load-time breakdown in the CI log, so every PR shows where opening a station spends its time (#650).
-    console.log(`[load-timings] ${key} ${JSON.stringify({ loadMs, steps: (info as { loadTimings?: unknown }).loadTimings })}`);
+    const steps = (info as { loadTimings?: Record<string, number> }).loadTimings ?? {};
+    console.log(`[load-timings] ${key} ${JSON.stringify({ loadMs, steps })}`);
+    for (const step of ["scene", "greybox", "stairwellCut", "connectors", "rayTrees", "total"]) expect.soft(Number.isFinite(steps[step]) && steps[step]! >= 0, `load timing ${step}`).toBe(true);
+    expect.soft(steps.total ?? 0, "load timing total").toBeGreaterThan(0);
     // A station scene, not the L0 fallback: real geometry, walkable surfaces and colliders.
     expect.soft(info.world.length, "world bounding box").toBe(6);
     expect.soft(info.walkable, "walkable meshes").toBeGreaterThan(0);
