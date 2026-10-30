@@ -3,6 +3,11 @@ import { hooks, imageStats, textIf, toasts, labelUiOverlaps, openStation, save, 
 
 /** CI's e2e-smoke sets this (.github/workflows/e2e-smoke.yml): under SwiftShader the spec checks flow only and skips screenshots that time out (#76, #118). */
 const FLOW_ONLY = !!process.env.GTEKI_GUIDE_FLOW_ONLY;
+/**
+ * Load budget (ms) for the stairwell cut, greybox and connectors steps together, measured under CI SwiftShader (#650).
+ * May only be lowered; never raise it to make a run pass.
+ */
+const LOAD_BUDGET_MS = 1500;
 
 /** Opening each station from a plain browser URL: no install, real scene, honest banners, no errors. */
 for (const key of STATIONS) {
@@ -12,6 +17,16 @@ for (const key of STATIONS) {
     expect(phase).toBe("ready");
 
     const info = await hooks.sceneInfo(page);
+    // Load-time breakdown in the CI log, so every PR shows where opening a station spends its time (#650).
+    const steps = (info as { loadTimings?: Record<string, number> }).loadTimings ?? {};
+    console.log(`[load-timings] ${key} ${JSON.stringify({ loadMs, steps })}`);
+    for (const step of ["scene", "greybox", "stairwellCut", "connectors", "rayTrees", "total"]) expect.soft(Number.isFinite(steps[step]) && steps[step]! >= 0, `load timing ${step}`).toBe(true);
+    expect.soft(steps.total ?? 0, "load timing total").toBeGreaterThan(0);
+    // Ratchet: the stairwell cut, greybox and connectors together stay under the budget (#650).
+    const cutAndShell = (steps.stairwellCut ?? NaN) + (steps.greybox ?? NaN) + (steps.connectors ?? NaN);
+    expect(cutAndShell, `${key}: stairwellCut + greybox + connectors (ms), budget ${LOAD_BUDGET_MS}`).toBeLessThanOrEqual(LOAD_BUDGET_MS);
+    // Shinjuku's baked stairwell recipe (#650) replays; a stale one would fall back to live. Ikebukuro stays live.
+    expect(info.greybox?.stairwells?.recipe, `${key}: stairwell cut recipe`).toBe(key === "shinjuku" ? "replayed" : "live");
     // A station scene, not the L0 fallback: real geometry, walkable surfaces and colliders.
     expect.soft(info.world.length, "world bounding box").toBe(6);
     expect.soft(info.walkable, "walkable meshes").toBeGreaterThan(0);

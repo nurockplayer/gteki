@@ -19,6 +19,7 @@ import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { buildConnectors, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { cutPortals, disposePortalCuts, type PortalCutResources } from "./portalCut.ts";
 import { cutStairwells, stairwellWells, type StairwellCut, type StairwellStats } from "./stairwellCut.ts";
+import { decodeRecipe, type CutRecipe } from "./cutRecipe.ts";
 import { buildGreybox, portalWidthAxis, splitWallsAtOpenings, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
 import { greyboxPathSegments, greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
 import { darkSampleDistances, routeGroundCounts, sceneMeshNear } from "./routeGroundQa.ts";
@@ -259,6 +260,8 @@ export class Explorer {
   private blockerTargets: ReadonlySet<THREE.Object3D> = new Set();
   /** What the ray targets' trees cost to build at load (see prepareRayTrees). */
   private rayTrees = { trees: 0, triangles: 0, bytes: 0, buildMs: 0 };
+  /** Milliseconds each step of the last station load took, in order (#650). */
+  private loadTimings: Record<string, number> = {};
   private colliders: THREE.Object3D[] = [];
   /** Camera-only blockers (ceilings): stop the follow camera, never the walker. */
   private cameraBlockers: THREE.Object3D[] = [];
@@ -464,12 +467,12 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { greybox: (GreyboxStats & { connectors: { escalator: number; stairs: number }; colliderExemptions: number; portalCut: ReturnType<typeof cutPortals> | null; stairwells: StairwellStats | null }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
+  sceneInfo(): { loadTimings: Record<string, number>; greybox: (GreyboxStats & { connectors: { escalator: number; stairs: number }; colliderExemptions: number; portalCut: ReturnType<typeof cutPortals> | null; stairwells: StairwellStats | null }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       greybox: this.greybox ? { ...this.greybox.stats, overBudget: this.connectors?.stats.overBudget ?? this.greybox.stats.overBudget, connectors: this.connectors?.stats.connectors ?? { escalator: 0, stairs: 0 }, colliderExemptions: this.portalExemptions, portalCut: this.portalCutStats, stairwells: this.stairwellStats } : null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
       walkable: this.walkable.length, colliders: this.colliders.length, cameraBlockers: this.cameraBlockers.length, seeThrough: this.seeThrough.length,
-      rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
+      rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 }, loadTimings: { ...this.loadTimings },
       bakedAo: { ...this.bakedAo }, assets: this.loadedAssets.map((a) => ({ ...a })),
       camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), fov: Math.round(this.camera.fov * 100) / 100, far: this.camera.far, aspect: Math.round(this.camera.aspect * 1000) / 1000, mode: this.mode,
       lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
@@ -844,6 +847,10 @@ export class Explorer {
   async loadStation(station: LoadedStation, router: Router): Promise<boolean> {
     const generation = ++this.loadGeneration;
     this.phase = "graph";
+    const timings: Record<string, number> = {};
+    const loadStart = performance.now();
+    let lapStart = loadStart;
+    const lap = (name: string) => { const now = performance.now(); timings[name] = Math.round(now - lapStart); lapStart = now; };
     // Leaving another station drops its retained caches first; the same station reopening keeps them.
     this.releaseStationCaches(station.key);
     this.clearStation();
@@ -854,6 +861,7 @@ export class Explorer {
     this.graph = buildGraphView(bundle, router);
     this.routablePts = routablePoints(bundle, (e) => router.isTraversable(e, DEFAULT_PROFILE));
     this.routableBox = toBox3(pointsBounds(this.routablePts));
+    lap("graph");
     // One loading manager per station: every request (GLB, its external buffers/images, textures)
     // must resolve through this station's fenced asset map.
     const refused: string[] = [];
@@ -888,6 +896,8 @@ export class Explorer {
 
     this.sceneError = null;
     this.phase = "scene";
+    // The baked stairwell recipe (#650) loads alongside the scene build; a missing or failed one means the live cut.
+    const stairwellRecipe = this.loadStairwellRecipe(station, this.quality);
     let built: StationScene | null = null;
     let sceneError: string | null = null;
     try {
@@ -899,6 +909,8 @@ export class Explorer {
       // A failed build returns no disposer, so silence anything it already connected.
       if (audioBus) { audioBus.disconnect(); if (this.stationAudio === audioBus) this.stationAudio = null; }
     }
+    // A failed build still ends the scene step, so its time is not counted against later steps.
+    lap("scene");
     if (generation !== this.loadGeneration || this.disposed) {
       built?.dispose();
       return false;
@@ -932,7 +944,9 @@ export class Explorer {
       this.street.attach(this.stationScene.root);
       this.world.updateMatrixWorld(true);
       const originalTargets = explorerTargets(this.walkable, this.colliders, this.cameraBlockers);
+      lap("attach");
       prepareRayTrees(originalTargets.camera);
+      lap("sceneRayTrees");
       this.sceneGroundTargets = originalTargets.ground;
       const scene = greyboxSceneProbes(originalTargets.collider, this.walls);
       const probe = floorProbe(new THREE.Raycaster(), originalTargets.ground, true);
@@ -945,15 +959,25 @@ export class Explorer {
       };
       const traversable = (edge: StationBundle["edges"][number]) => router.isTraversable(edge, DEFAULT_PROFILE);
       this.greybox = buildGreybox(bundle, traversable, hasFloor, scene, this.quality);
+      lap("greybox");
       this.greyboxSegments = greyboxPathSegments(unmodelledRunsByEdge(bundle, traversable, hasFloor));
+      lap("greyboxSegments");
       this.greyboxOpenings = this.greybox.openings;
       this.sceneColliderTargets = new Set(originalTargets.collider);
       this.portalCutStats = cutPortals(this.stationScene.root, this.greyboxOpenings, this.portalCutResources, new Set(originalTargets.ground));
+      lap("portalCut");
+      // The portal cut is the step before this one, so this lap is only the wait for the recipe.
+      const recipe = await stairwellRecipe;
+      lap("stairwellRecipe");
+      // Superseded or disposed while the recipe loaded: clearStation already released this load's scene, greybox and cuts.
+      if (generation !== this.loadGeneration || this.disposed || !this.stationScene) return false;
       this.stairwellCut = cutStairwells(this.stationScene.root, stairwellWells(bundle, traversable), {
         walkable: new Set(originalTargets.ground), tier: this.quality, greyboxRoot: this.greybox.root,
         // Collision proxies may sit outside the station root: cut them with the visible slabs, before the trees are rebuilt.
         collision: [...this.walkable, ...this.colliders, ...this.cameraBlockers],
+        recipe,
       });
+      lap("stairwellCut");
       this.stairwellStats = this.stairwellCut.stats;
       this.greybox.stats.triangles += this.stairwellCut.bandTriangles;
       if (this.stairwellCut.finish) this.greybox.root.add(this.stairwellCut.finish);
@@ -978,7 +1002,9 @@ export class Explorer {
       this.world.add(this.greybox.root);
       this.walkable = [...this.walkable, ...this.greybox.walkable];
       this.colliders = [...this.colliders, ...this.greybox.colliders, ...this.stairwellCut.colliders];
+      lap("cutTargets");
       this.connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: (p, radius) => sceneMeshNear([this.stationScene!.root], p, radius) }, this.quality);
+      lap("connectors");
       this.greyboxSegments.push(...this.connectors.segments);
       withinGreyboxBudget(this.greybox.stats, this.connectors.stats, this.quality);
       this.world.add(this.connectors.root);
@@ -997,8 +1023,10 @@ export class Explorer {
     this.cameraTargets = targets.camera;
     this.cameraSides = new Set(targets.camera);
     this.blockerTargets = targets.blockers;
+    lap("walls");
     // Every ray target is in the camera set (walls, floors, blockers); trees are built here, never mid-frame.
     this.rayTrees = prepareRayTrees(targets.camera);
+    lap("rayTrees");
     if (this.stationScene) {
       // A sign that stands, or sits under a listed group, among the walkable/collider/camera targets is never cut:
       // a mesh that is both a sign and a camera blocker stops the camera and stays solid.
@@ -1014,12 +1042,29 @@ export class Explorer {
     this.bakedAo = this.stationScene ? applyBakedAo(this.stationScene.root, this.quality) : { materials: 0, scaled: 0, disabled: 0, textureBytes: 0 };
     this.loadedAssets = [];
     this.stationScene?.root.traverse((o) => { if (o.userData.gtekiAsset) this.loadedAssets.push(o.userData.gtekiAsset as LoadedAsset); });
+    lap("signsShadowsAo");
     this.phase = "composer";
     this.setupComposer();
     this.frameAll();
+    lap("composer");
+    timings.total = Math.round(performance.now() - loadStart);
+    this.loadTimings = timings;
     this.overviewLook.set(this.scene, this.world, this.mode === "overview");
     this.phase = "ready";
     return true;
+  }
+
+  /** The station's baked stairwell recipe for this tier, or null: no recipe, a failed fetch or a malformed file all mean the live cut. */
+  private async loadStairwellRecipe(station: LoadedStation, tier: "high" | "low"): Promise<CutRecipe | null> {
+    try {
+      const url = await station.scene?.stairwellRecipeUrl?.(tier);
+      if (!url) return null;
+      const response = await fetch(url);
+      if (!response.ok) return null;
+      return decodeRecipe(await response.arrayBuffer());
+    } catch {
+      return null;
+    }
   }
 
   private async buildStationScene(station: LoadedStation, ctx: SceneContext): Promise<StationScene | null> {
