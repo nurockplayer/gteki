@@ -383,7 +383,7 @@ describe("turning landing guards", () => {
   };
 
   it("stops a walker leaving any turning landing except through a flight opening", () => {
-    for (const { name, waypoints } of [...turnCases, ...singleVertexReturns, ...equalCases]) {
+    for (const { name, waypoints } of [...turnCases, ...equalCases]) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
       const landings = landingsOf(waypoints);
       for (const landing of landings) {
@@ -450,24 +450,13 @@ describe("turning landing guards", () => {
     }
   });
 
-  // Unwalkable stacked layout: the 135 degree return passes over the first flight with under 2.1 m of headroom,
-  // so a 1.7 m body cannot walk under it. Whatever the construction does there must not leave an open gap.
-  it("guards or skips a stacked return where two flights overlap in plan with under 2.1 m of headroom", () => {
+  // A single-vertex 135 degree return passes over its own first flight with under 2.1 m of headroom: skipped, not guarded.
+  it("skips a single-vertex 135 degree return whose flights overlap in plan with under 2.1 m of headroom", () => {
     for (const direction of [-1, 1]) {
       const result = buildConnectors(stairThrough(stackedWaypoints(135, direction)), () => true, flat, "high");
-      if (result.stats.connectorsSkipped === 1) {
-        expect(result.root.children).toHaveLength(0);
-        expect(result.wallSegments).toHaveLength(0);
-        continue;
-      }
-      const path = result.pathByEdge.get("turn")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
-      let blocked = false;
-      for (let s = 0; s <= total && !blocked; s += 0.05) {
-        const p = samplePolyline(path, cumulative, s);
-        const resolved = resolveWalls(p.x, p.z, 0.3, p.y, 1.7, result.wallSegments);
-        if (Math.hypot(resolved.x - p.x, resolved.z - p.z) > 0.05) blocked = true;
-      }
-      expect(blocked, `direction=${direction}`).toBe(true);
+      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(1);
+      expect(result.root.children).toHaveLength(0);
+      expect(result.wallSegments).toHaveLength(0);
     }
   });
 

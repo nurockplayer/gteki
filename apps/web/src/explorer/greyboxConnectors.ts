@@ -358,8 +358,12 @@ function sideCover(a: THREE.Vector3, b: THREE.Vector3, mine: LandingSquare, othe
 
 /**
  * Whether two flights that do not share a landing overlap in plan with under 2.1 m between them vertically
- * (a stacked layout a walker cannot pass under). Flights that meet at one landing are guarded by that landing instead.
+ * (a stacked layout a walker cannot pass under). Flights that meet at one landing are guarded by that landing instead, except
+ * a sharp return (135 degrees or more) that overlaps its own first flight.
  */
+/** Plan bend (radians) from which a single-vertex return can stack its return flight over its first flight. */
+const SHARP_RETURN = 135 * Math.PI / 180;
+
 function flightsStacked(points: readonly THREE.Vector3[], half: number, squares: readonly LandingSquare[], heightGap = 2.1): boolean {
   const legs: { a: THREE.Vector3; b: THREE.Vector3; length: number; dir: THREE.Vector3 }[] = [];
   for (let k = 1; k < points.length; k++) {
@@ -379,7 +383,8 @@ function flightsStacked(points: readonly THREE.Vector3[], half: number, squares:
         const p = leg.a.clone().addScaledVector(leg.dir, s).addScaledVector(normal, lateral);
         if (squares.some((square) => insideSquare(p, square, half))) continue;
         for (let m = 0; m < legs.length; m++) {
-          if (Math.abs(m - k) < 2) continue;
+          // Flights sharing a landing are guarded there, unless the landing is a sharp return that stacks over its first flight.
+          if (m === k || (Math.abs(m - k) === 1 && bendAngle(points, Math.max(k, m)) < SHARP_RETURN)) continue;
           const other = legs[m]!;
           if (other.length < 1e-6) continue;
           const rel = p.clone().sub(other.a); rel.y = 0;
