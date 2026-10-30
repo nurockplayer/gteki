@@ -11,7 +11,7 @@ test.use({ trace: "off" });
 
 const sizes = [{ width: 375, height: 667 }, { width: 375, height: 812 }];
 const routes: Record<StationKey, { from: [string, RegExp]; to: [string, RegExp] }> = {
-  ikebukuro: { from: ["中央2", /JR Central Gate 2/], to: ["35", /^Exit 35$/] },
+  ikebukuro: { from: ["中央2", /JR 中央2改札/], to: ["35", /^35番出口$/] },
   shinjuku: { from: ["north side", /street level, north side/], to: ["platform", /Oedo Line platform/] },
 };
 
