@@ -42,8 +42,8 @@ describe("stairwell cuts", () => {
     expect(ceiling.geometry).not.toBe(originals.ceiling);
     expect(upper.geometry).not.toBe(originals.upper);
     expect(floor.geometry).toBe(originals.floor);
-    // The flight's nosing line is clear for 2.1 m straight up.
-    for (let x = 1; x <= 9; x += 1) expect(up(root, x, 0.4 * x)).toHaveLength(0);
+    // Slabs are cut where they are more than 0.3 m above the flight.
+    expect(up(root, 3, 1.2)).toHaveLength(0);
     // A face outside the footprint stays solid, and both landings keep their walking surface.
     expect(up(root, 5, 1, 2.5).length).toBeGreaterThan(0);
     expect(down(root, 5, 1).some((hit) => Math.abs(hit.point.y) < 1e-6)).toBe(true);
@@ -115,18 +115,48 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
-  it("keeps a flat landing piece closed and only cuts the flights either side", () => {
-    // Bottom 0 → 4 flight to 2 m, a flat landing 4 → 7 at 2 m, then the flight 7 → 10 up to 4 m.
-    const landing = flight([{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: 7, y: 0, z: 2 }, { x: 10, y: 0, z: 4 }]);
+  it("cuts the slab over an intermediate landing in an L stair", () => {
+    const landing = flight([{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: 4, y: 3, z: 2 }, { x: 10, y: 3, z: 4 }]);
     const wells = stairwellWells(landing, traversable);
     expect(wells).toHaveLength(1);
-    expect(wells[0]!.rects).toHaveLength(2);
+    expect(wells[0]!.rects).toHaveLength(3);
     const s = scene();
     const result = cutStairwells(s.root, wells, { tier: "high" });
-    // The slab over the landing stays solid; both flights are clear for 2.1 m.
-    expect(up(s.root, 5.5, 2).length).toBeGreaterThan(0);
-    expect(up(s.root, 2, 0.8)).toHaveLength(0);
-    expect(up(s.root, 9, 3.2)).toHaveLength(0);
+    expect(up(s.ceiling, 4, 2, -1.5)).toHaveLength(0);
+    expect(down(s.upper, 4, 5, -1.5)).toHaveLength(0);
+    result.dispose();
+  });
+
+  it("preserves modelled treads while cutting the slab above them", () => {
+    const s = scene();
+    const treads: THREE.Mesh[] = [];
+    for (let i = 0; i < 10; i++) {
+      const tread = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.04, 1), new THREE.MeshBasicMaterial());
+      tread.position.set(i + 0.5, 0.4 * (i + 0.5) - 0.02, 0);
+      s.root.add(tread); treads.push(tread);
+    }
+    s.root.updateMatrixWorld(true);
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "low" });
+    for (let i = 0; i < treads.length; i++) {
+      expect(down(treads[i]!, i + 0.5, 5).some(hit => Math.abs(hit.point.y - 0.4 * (i + 0.5)) < 1e-5)).toBe(true);
+    }
+    expect(down(s.upper, 3, 5).filter(hit => hit.point.y > 3.5)).toHaveLength(0);
+    result.dispose();
+  });
+
+  it("rails the outer sides of both opened pieces and puts every rail in collision", () => {
+    const split = flight([{ x: 0, y: 0, z: 0 }, { x: 5, y: 0, z: 2 }, { x: 10, y: 0, z: 4 }]);
+    const s = scene();
+    const result = cutStairwells(s.root, stairwellWells(split, traversable), { tier: "low" });
+    expect(result.walls).toHaveLength(5);
+    expect(result.stats.railM).toBeCloseTo(22.2, 5);
+    expect(result.walls.every(w => w.yMin === 4 && w.yMax === 5.1)).toBe(true);
+    const rails = result.finish!.children.filter(child => child.name === "greybox-stairwell-rail");
+    expect(rails).toHaveLength(1);
+    expect(result.colliders).toContain(rails[0]);
+    expect(resolveWalls(2, 1.2, 0.3, 4, 1.7, result.walls).z).toBeCloseTo(1.4);
+    expect(resolveWalls(7, 1.2, 0.3, 4, 1.7, result.walls).z).toBeCloseTo(1.4);
+    expect(resolveWalls(5, 0, 0.3, 4, 1.7, result.walls).x).toBeCloseTo(5);
     result.dispose();
   });
 
@@ -136,9 +166,12 @@ describe("stairwell cuts", () => {
     expect(wells[0]!.rects).toHaveLength(2);
     const s = scene();
     const result = cutStairwells(s.root, wells, { tier: "high" });
-    // Two pieces, three open sides each (the shared side is skipped), four slab faces cut
-    // (ceiling 2.6 and 2.8, upper slab underside 3.6 and top 4.0).
-    expect(result.bandTriangles).toBe(2 * 3 * 4 * 2);
+    const band = result.finish!.getObjectByName("greybox-stairwell-band") as THREE.Mesh;
+    const positions = band.geometry.getAttribute("position");
+    expect(positions.count).toBeGreaterThan(0);
+    for (let i = 0; i < positions.count; i += 3) {
+      expect([0, 1, 2].every(j => Math.abs(positions.getX(i + j) - 5) < 1e-6)).toBe(false);
+    }
     result.dispose();
   });
 

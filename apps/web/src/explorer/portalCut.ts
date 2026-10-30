@@ -94,6 +94,8 @@ export interface CutResult {
   perRegion: Map<object, number>;
   /** World heights of the removed triangles per region key. */
   heights: Map<object, number[]>;
+  /** Maximum world height of each removed polygon, per region key. */
+  maxHeights: Map<object, number[]>;
 }
 
 /**
@@ -103,7 +105,7 @@ export interface CutResult {
  */
 export function cutRegions(root: THREE.Object3D, regions: readonly CutRegion[], opts: PortalCutResources, walkable: ReadonlySet<THREE.Object3D> = new Set(), clip = true, vertexLimit = Infinity): CutResult {
   const started = performance.now();
-  const result: CutResult = { cutTriangles: 0, cutMs: 0, cutMeshes: 0, clipped: 0, skipped: [], clonedWalkable: 0, clonedWalkableVertices: [], largeSharedVertices: [], perRegion: new Map(), heights: new Map() };
+  const result: CutResult = { cutTriangles: 0, cutMs: 0, cutMeshes: 0, clipped: 0, skipped: [], clonedWalkable: 0, clonedWalkableVertices: [], largeSharedVertices: [], perRegion: new Map(), heights: new Map(), maxHeights: new Map() };
   root.updateWorldMatrix(true, true);
   const uses = new Map<THREE.BufferGeometry, number>();
   root.traverse(o => { const m = o as THREE.Mesh; if (m.isMesh) uses.set(m.geometry, (uses.get(m.geometry) ?? 0) + 1); });
@@ -249,6 +251,9 @@ export function cutRegions(root: THREE.Object3D, regions: readonly CutRegion[], 
               const heights = result.heights.get(region.key) ?? [];
               heights.push(inside.reduce((sum, v) => sum + v.world.y, 0) / inside.length);
               result.heights.set(region.key, heights);
+              const maxHeights = result.maxHeights.get(region.key) ?? [];
+              maxHeights.push(Math.max(...inside.map(v => v.world.y)));
+              result.maxHeights.set(region.key, maxHeights);
               next.push(...outside);
             } else next.push(poly);
           }

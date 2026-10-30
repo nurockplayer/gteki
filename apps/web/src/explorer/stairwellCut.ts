@@ -7,10 +7,10 @@ import type { Segment2 } from "./walker.ts";
 
 /** Floor-to-floor rise below which no slab fits the headroom band: nothing to cut. */
 export const MIN_WELL_RISE_M = 2.15;
-/** A plan piece flatter than this is a landing: it stays closed, so it gets no cut rectangle. */
+/** A plan piece flatter than this is a landing. */
 const MIN_PIECE_RISE_M = 0.05;
-/** Headroom kept above the lower landing and past the upper landing: the band takes the whole slab, both faces. */
-const HEADROOM_M = 2.1, UPPER_CLEAR_M = 0.05;
+/** Clearance above the walking surface and past the upper landing. */
+const WALK_CLEAR_M = 0.3, UPPER_CLEAR_M = 0.05;
 /** Vertical connectors whose footprint is cut through horizontal slabs. Elevators come with their own follow-up. */
 const VERTICAL_MODES = new Set(["stairs", "escalator"]);
 /** A stored mesh larger than this is reported as skipped instead of CPU-cut (load time). */
@@ -28,6 +28,8 @@ export interface StairwellRect {
   across: THREE.Vector3;
   halfLength: number;
   halfWidth: number;
+  /** Height change along the piece, from its start to its end. */
+  rise: number;
 }
 
 export interface StairwellWell {
@@ -90,14 +92,16 @@ export function stairwellWells(bundle: StationBundle, traversable: (edge: Edge) 
     // Order bottom to top, so the last rectangle is the arrival piece.
     const ordered = points[0]!.y <= points.at(-1)!.y ? points : [...points].reverse();
     const rects: StairwellRect[] = [];
+    const rising = ordered.slice(1).map((point, i) => Math.abs(point.y - ordered[i]!.y) >= MIN_PIECE_RISE_M);
+    const firstFlight = rising.indexOf(true), lastFlight = rising.lastIndexOf(true);
     for (let i = 1; i < ordered.length; i++) {
       const a = ordered[i - 1]!, b = ordered[i]!;
       const dx = b.x - a.x, dz = b.z - a.z, length = Math.hypot(dx, dz);
-      // Landing and vertical pieces leave no plan rectangle of their own: landings stay closed.
-      if (length < 0.5 || Math.abs(b.y - a.y) < MIN_PIECE_RISE_M) continue;
+      // Exclude the terminal landings and pieces without a usable plan footprint.
+      if (length < 0.5 || (!rising[i - 1] && (i - 1 < firstFlight || i - 1 > lastFlight))) continue;
       const along = new THREE.Vector3(dx / length, 0, dz / length);
       const across = new THREE.Vector3(-along.z, 0, along.x);
-      rects.push({ center: new THREE.Vector3((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2), along, across, halfLength: length / 2, halfWidth: (widthOf(edge) + 0.2) / 2 });
+      rects.push({ center: new THREE.Vector3((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2), along, across, halfLength: length / 2, halfWidth: (widthOf(edge) + 0.2) / 2, rise: b.y - a.y });
     }
     if (!rects.length) continue;
     const arrival = ordered.at(-1)!;
@@ -106,7 +110,7 @@ export function stairwellWells(bundle: StationBundle, traversable: (edge: Edge) 
   return wells;
 }
 
-function rectPlanes(rect: StairwellRect, lowerY: number, upperY: number): Plane[] {
+function rectPlanes(rect: StairwellRect, upperY: number): Plane[] {
   const along = rect.along, across = rect.across, c = rect.center;
   const dot = (p: THREE.Vector3, axis: THREE.Vector3) => (p.x - c.x) * axis.x + (p.z - c.z) * axis.z;
   return [
@@ -114,7 +118,7 @@ function rectPlanes(rect: StairwellRect, lowerY: number, upperY: number): Plane[
     p => rect.halfLength - dot(p, along),
     p => rect.halfWidth + dot(p, across),
     p => rect.halfWidth - dot(p, across),
-    p => p.y - lowerY - HEADROOM_M,
+    p => p.y - c.y - dot(p, along) * rect.rise / (2 * rect.halfLength) - WALK_CLEAR_M - 1e-6,
     p => upperY + UPPER_CLEAR_M - p.y,
   ];
 }
@@ -127,13 +131,13 @@ function rectCorners(rect: StairwellRect, height: number): THREE.Vector3[] {
     .setY(height));
 }
 
-/** Convex region: the plan rectangle from the lower landing + 2.1 m to the upper landing + 0.05 m. */
+/** Convex region from above the walking surface to just above the upper landing. */
 export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
   const regions: CutRegion[] = [];
   for (const well of wells) {
     for (const rect of well.rects) {
-      const corners = [...rectCorners(rect, well.lowerY + HEADROOM_M), ...rectCorners(rect, well.upperY + UPPER_CLEAR_M)];
-      regions.push({ key: rect, bounds: new THREE.Box3().setFromPoints(corners), planes: rectPlanes(rect, well.lowerY, well.upperY), clip: null, accepts: horizontal });
+      const corners = [...rectCorners(rect, rect.center.y - Math.abs(rect.rise) / 2 + WALK_CLEAR_M), ...rectCorners(rect, well.upperY + UPPER_CLEAR_M)];
+      regions.push({ key: rect, bounds: new THREE.Box3().setFromPoints(corners), planes: rectPlanes(rect, well.upperY), clip: null, accepts: horizontal });
     }
   }
   return regions;
@@ -159,8 +163,8 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   const railPositions: number[] = [], railColors: number[] = [], glassPositions: number[] = [], walls: Segment2[] = [];
   const steel = new THREE.Color(0xaab2b5).toArray();
   for (const well of cutWells) {
-    const rect = well.rects.filter((candidate) => (cut.perRegion.get(candidate) ?? 0) > 0).at(-1)!;
-    for (const [from, to] of railSides(rect, well.arrival)) {
+    const opened = well.rects.filter((rect) => (cut.maxHeights.get(rect) ?? []).some((y) => y >= well.upperY - 0.3 - 1e-6));
+    for (const rect of opened) for (const [from, to] of railSides(rect, well.arrival, opened)) {
       addRail(railPositions, railColors, from, to, well.upperY, steel);
       walls.push({ ax: from.x, az: from.z, bx: to.x, bz: to.z, yMin: well.upperY, yMax: well.upperY + RAIL_HEIGHT_M });
       if (options.tier === "high") addGlass(glassPositions, from, to, well.upperY);
@@ -219,16 +223,31 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   };
 }
 
-/** The three sides of the arrival piece left open to the floor: the arrival side itself has no rail. */
-function railSides(rect: StairwellRect, arrival: THREE.Vector3): [[THREE.Vector3, THREE.Vector3], [THREE.Vector3, THREE.Vector3], [THREE.Vector3, THREE.Vector3]] {
-  const sign = (arrival.x - rect.center.x) * rect.along.x + (arrival.z - rect.center.z) * rect.along.z >= 0 ? 1 : -1;
-  const at = (l: number, w: number) => rect.center.clone().addScaledVector(rect.along, l * rect.halfLength).addScaledVector(rect.across, w * rect.halfWidth);
-  const far = -sign;
-  return [
-    [at(-1, -1), at(1, -1)],
-    [at(-1, 1), at(1, 1)],
-    [at(far, -1), at(far, 1)],
-  ];
+/** Outer portions of each opened rectangle, except the arrival side. */
+function railSides(rect: StairwellRect, arrival: THREE.Vector3, opened: readonly StairwellRect[]): [THREE.Vector3, THREE.Vector3][] {
+  const corners = rectCorners(rect, 0), sides: [THREE.Vector3, THREE.Vector3][] = [];
+  for (let i = 0; i < 4; i++) {
+    const from = corners[i]!, to = corners[(i + 1) % 4]!, delta = to.clone().sub(from);
+    const tArrival = arrival.clone().sub(from).dot(delta) / delta.lengthSq();
+    if (tArrival >= -1e-6 && tArrival <= 1 + 1e-6 && from.clone().addScaledVector(delta, tArrival).distanceTo(arrival) < 1e-3) continue;
+    let intervals: [number, number][] = [[0, 1]];
+    for (const other of opened) {
+      if (other === rect) continue;
+      let lo = 0, hi = 1;
+      for (const [axis, half] of [[other.along, other.halfLength], [other.across, other.halfWidth]] as const) {
+        const start = from.clone().sub(other.center).dot(axis), step = delta.dot(axis);
+        if (Math.abs(step) < 1e-9) { if (Math.abs(start) > half + 1e-6) { lo = 1; hi = 0; break; } }
+        else {
+          const a = (-half - start) / step, b = (half - start) / step;
+          lo = Math.max(lo, Math.min(a, b)); hi = Math.min(hi, Math.max(a, b));
+        }
+      }
+      if (hi - lo < 1e-6) continue;
+      intervals = intervals.flatMap(([a, b]) => hi <= a || lo >= b ? [[a, b]] : [ ...(lo > a ? [[a, lo] as [number, number]] : []), ...(hi < b ? [[hi, b] as [number, number]] : []) ]);
+    }
+    for (const [a, b] of intervals) if (b - a > 1e-6) sides.push([from.clone().addScaledVector(delta, a), from.clone().addScaledVector(delta, b)]);
+  }
+  return sides;
 }
 
 /** Band around one rectangle's cut boundary; sides shared with another piece of the same well stay open. */
