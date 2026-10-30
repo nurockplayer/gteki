@@ -42,14 +42,22 @@ The design ships in three PRs, and each one is complete on its own:
 - **Ticket A (#630):** passages, portal frames with locally opened walker collision, the legend, and the QA hooks.
   - Vertical edges get no geometry in A.
   - The scene wall at a portal is still drawn and still blocks the follow camera.
-- **Ticket B:** the vertical connectors above.
+- **Ticket B:** the stairs and escalators above.
+- **Elevator:** ships in a follow-up PR.
 - **#631:** cuts the scene wall's triangles open at each portal at load. That opens the rendered wall, the camera rays and the colliders together, and the door panel goes.
+
+## Known limits (accepted, ticket A)
+- Walls thicker than 0.6 m may keep their far face; the follow-up PR (`codex/portal-span`) will address this.
+- **Portal collision.** Inside a portal's opening box, every wall-like hit on an original scene collider is exempt (normal within 30° of horizontal), whichever mesh it comes from.
+  - A wall-like scene obstacle standing inside the opening box is therefore passable too.
+  - Floors, ceilings and non-wall hits still block.
+  - Accepted 2026-10-30 JST: #631 cuts the wall geometry itself at load, and after that the exemption is only a safety net.
 
 ## Privacy ★
 Greybox geometry is built at runtime from the graph that is already loaded, and is never written to disk. Nothing built from a private graph may go into a public asset, a GLB export, a snapshot fixture or a CI artifact. Tests use synthetic bundles only.
 
 ## Budget (both tickets together)
-- **Draw calls:** everything is merged by material per floor, which gives at most 3 meshes per floor (shell, light strips, kerb) plus 1 per elevator car. Station total: at most +12 on desktop and at most +6 on phone (phone merges all floors into one shell).
+- **Draw calls:** A and B keep separate per-floor batches; B adds at most 3 meshes per floor plus one per elevator car. The extra draw calls are accepted (lead decision 2026-10-30 JST); phone merges B's floors.
 - **Triangles:** 150 k on high tier and 100 k on low tier for the passages and connectors of a whole station. With five merged meshes the GPU cost at these counts is small. Drop lights, kerbs, then ceilings when over the tier budget; retain floors and walls even if they alone exceed it. Phone treads drop to one quad per 3 steps.
 - **Textures:** none new (procedural only); GPU memory below 2 MiB of vertex buffers.
 - **Build time at load:** synchronous in ticket A. Headless on the private build: Ikebukuro 68–88 ms, Shinjuku 308–433 ms. Accepted 2026-10-30 JST. Spawn-first, per-frame slices are #632, for when device acceptance shows a stall.

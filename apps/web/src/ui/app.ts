@@ -887,7 +887,7 @@ export class App {
     // Only after a no_path: re-ask with the user's own options relaxed to say which one refused.
     if (!best.ok && best.reason === "no_path") this.s.noPath = explainNoPathBetween(router, loaded.bundle, origin, destination, profile);
     if (best.ok) {
-      this.s.polyline = routePolyline(loaded.bundle, best);
+      this.s.polyline = routePolyline(loaded.bundle, best, this.explorer.connectorRoutePaths());
       this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination, origin.kind === "poi" ? origin.poi : undefined);
       this.s.activeInstruction = 0;
       this.explorer.showRoute(this.s.polyline);
@@ -1563,6 +1563,7 @@ export class App {
       setCamera: (patch: { yaw?: number; pitch?: number; distance?: number } | null) => this.explorer.setCamera(patch),
       holdAvatarFade: (value: number | null) => this.explorer.holdAvatarFade(value),
       sceneInfo: () => this.explorer.sceneInfo(),
+      portalView: () => this.explorer.portalView(),
       routeGroundCheck: () => this.explorer.routeGroundCheck(this.s.polyline, this.s.route?.ok ? this.s.route.steps : [], guideStops(this.s.polyline, this.s.instructions).map(({ point }) => polylineLengthM(this.s.polyline.slice(0, point + 1)))),
       projectEnu: (points: { x: number; y: number; z: number }[]) => this.explorer.projectEnu(points),
       signFaces: () => this.explorer.signFaces(),

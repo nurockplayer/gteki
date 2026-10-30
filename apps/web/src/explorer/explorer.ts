@@ -16,13 +16,15 @@ import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
 import { R, chevronTexture, dashTexture, ribbonGeometry } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
-import { buildGreybox, splitWallsAtOpenings, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
+import { buildConnectors, withinGreyboxBudget } from "./greyboxConnectors.ts";
+import { cutPortals, disposePortalCuts, type PortalCutResources } from "./portalCut.ts";
+import { buildGreybox, portalWidthAxis, splitWallsAtOpenings, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
 import { greyboxPathSegments, greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
 import { darkSampleDistances, routeGroundCounts, sceneMeshNear } from "./routeGroundQa.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
-import { castAll, castCamera, cuttableSigns, explorerTargets } from "./raycast.ts";
+import { castAll, castCamera, cuttableSigns, explorerTargets, hasClippedPortals, portalWallNormal } from "./raycast.ts";
 import { DEFAULT_GUIDE_TIER, guideOnStairs, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx, qaPostFxSettings } from "./postfx.ts";
@@ -228,7 +230,11 @@ export class Explorer {
   private station: LoadedStation | null = null;
   private stationScene: StationScene | null = null;
   private greybox: ReturnType<typeof buildGreybox> | null = null;
+  private connectors: ReturnType<typeof buildConnectors> | null = null;
   private greyboxOpenings: Box[] = [];
+  private portalCutResources: PortalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
+  private portalExemptions = 0;
+  private portalCutStats: ReturnType<typeof cutPortals> | null = null;
   private sceneColliderTargets = new Set<THREE.Object3D>();
   private greyboxSegments: GreyboxSegment[] = [];
   private greyboxLegendVisible = false;
@@ -455,10 +461,10 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { greybox: GreyboxStats | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
+  sceneInfo(): { greybox: (GreyboxStats & { connectors: { escalator: number; stairs: number }; colliderExemptions: number; portalCut: ReturnType<typeof cutPortals> | null }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
-      greybox: this.greybox?.stats ?? null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
+      greybox: this.greybox ? { ...this.greybox.stats, overBudget: this.connectors?.stats.overBudget ?? this.greybox.stats.overBudget, connectors: this.connectors?.stats.connectors ?? { escalator: 0, stairs: 0 }, colliderExemptions: this.portalExemptions, portalCut: this.portalCutStats } : null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
       walkable: this.walkable.length, colliders: this.colliders.length, cameraBlockers: this.cameraBlockers.length, seeThrough: this.seeThrough.length,
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
       bakedAo: { ...this.bakedAo }, assets: this.loadedAssets.map((a) => ({ ...a })),
@@ -939,10 +945,34 @@ export class Explorer {
       this.greyboxSegments = greyboxPathSegments(unmodelledRunsByEdge(bundle, traversable, hasFloor));
       this.greyboxOpenings = this.greybox.openings;
       this.sceneColliderTargets = new Set(originalTargets.collider);
+      this.portalCutStats = cutPortals(this.stationScene.root, this.greyboxOpenings, this.portalCutResources, new Set(originalTargets.ground));
+      const instances = this.portalCutResources.instances;
+      const extracted = new Map<THREE.InstancedMesh, number>();
+      for (const { owner } of instances) extracted.set(owner, (extracted.get(owner) ?? 0) + 1);
+      const fullyHidden = new Set([...extracted].filter(([owner, count]) => count === owner.count).map(([owner]) => owner));
+      const retain = (objects: readonly THREE.Object3D[]) => objects.filter(object => !fullyHidden.has(object as THREE.InstancedMesh));
+      const copiesOf = (sources: readonly THREE.Object3D[]) => {
+        const sourceSet = new Set(sources);
+        return instances.filter(({ owner }) => sourceSet.has(owner)).map(({ copy }) => copy);
+      };
+      const groundCopies = copiesOf(originalTargets.ground), colliderCopies = copiesOf(originalTargets.collider);
+      const blockerCopies = copiesOf([...originalTargets.blockers]);
+      this.sceneGroundTargets = [...new Set([...retain(originalTargets.ground), ...groundCopies])];
+      this.sceneColliderTargets = new Set([...retain(originalTargets.collider), ...colliderCopies]);
+      this.walkable = [...new Set([...retain(this.walkable), ...groundCopies])];
+      this.colliders = [...new Set([...retain(this.colliders), ...colliderCopies])];
+      this.cameraBlockers = [...new Set([...retain(this.cameraBlockers), ...blockerCopies])];
+      this.renderer.localClippingEnabled = true;
       this.world.add(this.greybox.root);
       this.walkable = [...this.walkable, ...this.greybox.walkable];
       this.colliders = [...this.colliders, ...this.greybox.colliders];
-      this.walls = splitWallsAtOpenings([...this.walls, ...this.greybox.wallSegments], this.greyboxOpenings);
+      this.connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: (p, radius) => sceneMeshNear([this.stationScene!.root], p, radius) }, this.quality);
+      this.greyboxSegments.push(...this.connectors.segments);
+      withinGreyboxBudget(this.greybox.stats, this.connectors.stats, this.quality);
+      this.world.add(this.connectors.root);
+      this.walkable = [...this.walkable, ...this.connectors.walkable];
+      this.colliders = [...this.colliders, ...this.connectors.colliders];
+      this.walls = splitWallsAtOpenings([...this.walls, ...this.greybox.wallSegments, ...this.connectors.wallSegments], this.greyboxOpenings);
     } else {
       this.world.add(this.graph.root);
       this.walkable = this.graph.walkable;
@@ -1014,6 +1044,19 @@ export class Explorer {
       for (const material of materials) material.dispose();
       this.greybox = null;
     }
+    if (this.connectors) {
+      this.world.remove(this.connectors.root);
+      const materials = new Set<THREE.Material>(), meshes = new Set<THREE.Mesh>();
+      const dispose = (object: THREE.Object3D) => { const mesh = object as THREE.Mesh; if (!mesh.isMesh || meshes.has(mesh)) return; meshes.add(mesh); mesh.geometry.dispose(); for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) materials.add(material); };
+      this.connectors.root.traverse(dispose);
+      for (const object of [...this.connectors.walkable, ...this.connectors.colliders]) object.traverse(dispose);
+      for (const material of materials) material.dispose();
+      this.connectors = null;
+    }
+    disposePortalCuts(this.portalCutResources);
+    this.portalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
+    this.portalCutStats = null;
+    this.portalExemptions = 0;
     this.greyboxOpenings = [];
     this.sceneColliderTargets = new Set();
     this.greyboxSegments = [];
@@ -1324,10 +1367,15 @@ export class Explorer {
     return hit ? hit.point.y : null;
   }
 
+  /** Connector centre lines converted from renderer coordinates to station ENU. */
+  connectorRoutePaths(): Map<string, { x: number; y: number; z: number }[]> {
+    return new Map([...(this.connectors?.pathByEdge ?? [])].map(([id, path]) => [id, path.map((p) => ({ x: p.x, y: -p.z, z: p.y }))]));
+  }
+
   /** QA for the current route: the same ground ray used by the walker, plus connector and image checks. */
   routeGroundCheck(polyline: readonly PolylinePoint[], steps: readonly RouteStep[], guideStopsM: readonly number[] = []) {
-    const roots = [this.stationScene?.root, this.greybox?.root].filter((root): root is THREE.Object3D => Boolean(root));
-    const counts = routeGroundCounts(polyline, (p) => this.groundAt(p.x, p.y + DEFAULT_GROUND.stepUp + 0.05, p.z, DEFAULT_GROUND.stepUp + DEFAULT_GROUND.stepDown + 0.1), steps, this.station?.bundle ?? null, (p, radius) => sceneMeshNear(roots, p, radius));
+    const roots = [this.stationScene?.root, this.greybox?.root, this.connectors?.root].filter((root): root is THREE.Object3D => Boolean(root));
+    const counts = routeGroundCounts(polyline, (p) => this.groundAt(p.x, p.y + DEFAULT_GROUND.stepUp + 0.05, p.z, DEFAULT_GROUND.stepUp + DEFAULT_GROUND.stepDown + 0.1), steps, this.station?.bundle ?? null, (p, radius, edgeId) => sceneMeshNear(roots, p, radius, edgeId), this.connectors?.pathByEdge);
     return { ...counts, darkShare: async (stops?: readonly number[]): Promise<number> => {
       const points = polyline.map((p) => R(p.x, p.y, p.z));
       if (points.length < 2) return 0;
@@ -1383,6 +1431,62 @@ export class Explorer {
     } };
   }
 
+  /** Sample the opening and render its intersecting scene meshes as an ID mask. */
+  portalView(): { throughShare: number; meanLuminance: number }[] {
+    const renderer = this.renderer, camera = this.camera;
+    const target = new THREE.WebGLRenderTarget(512, 512);
+    const oldTarget = renderer.getRenderTarget();
+    const position = camera.position.clone(), rotation = camera.quaternion.clone();
+    const fov = camera.fov, aspect = camera.aspect, avatarVisible = this.avatar.visible;
+    const pixels = new Uint8Array(512 * 512 * 4), mask = new Uint8Array(pixels.length);
+    const result: { throughShare: number; meanLuminance: number }[] = [];
+    try {
+      this.avatar.visible = false;
+      camera.fov = FOV.follow; camera.aspect = 1; camera.updateProjectionMatrix();
+      renderer.setRenderTarget(target);
+      for (const box of this.greyboxOpenings) {
+        const midpoint = box.center.clone().add(new THREE.Vector3(0, box.height / 2, 0));
+        camera.position.copy(midpoint).addScaledVector(box.along, -2);
+        camera.lookAt(midpoint); camera.updateMatrixWorld();
+        renderer.render(this.scene, camera);
+        renderer.readRenderTargetPixels(target, 0, 0, 512, 512, pixels);
+        const corners = [-0.4, 0.4].flatMap(x => [0.1, 0.9].map(y => box.center.clone().addScaledVector(portalWidthAxis(box), x * box.width).add(new THREE.Vector3(0, y * box.height, 0)).project(camera)));
+        const minX = Math.max(0, Math.floor((Math.min(...corners.map(p => p.x)) + 1) * 256));
+        const maxX = Math.min(512, Math.ceil((Math.max(...corners.map(p => p.x)) + 1) * 256));
+        const minY = Math.max(0, Math.floor((Math.min(...corners.map(p => p.y)) + 1) * 256));
+        const maxY = Math.min(512, Math.ceil((Math.max(...corners.map(p => p.y)) + 1) * 256));
+        const idScene = new THREE.Scene(); idScene.background = new THREE.Color(0);
+        const idMaterials: THREE.Material[] = [];
+        for (const mesh of this.portalCutResources.portalMeshes.get(box) ?? []) {
+          const clone = mesh.clone(false);
+          clone.matrixAutoUpdate = false; clone.matrix.copy(mesh.matrixWorld); clone.matrixWorld.copy(mesh.matrixWorld);
+          const id = (source: THREE.Material) => {
+            const material = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, toneMapped: false });
+            material.clippingPlanes = source.clippingPlanes; material.clipIntersection = source.clipIntersection;
+            idMaterials.push(material); return material;
+          };
+          clone.material = Array.isArray(mesh.material) ? mesh.material.map(id) : id(mesh.material);
+          idScene.add(clone);
+        }
+        renderer.render(idScene, camera);
+        renderer.readRenderTargetPixels(target, 0, 0, 512, 512, mask);
+        idMaterials.forEach(material => material.dispose());
+        let count = 0, through = 0, luminance = 0;
+        for (let y = minY; y < maxY; y++) for (let x = minX; x < maxX; x++) {
+          const i = (y * 512 + x) * 4;
+          count++; if (mask[i]! < 128) through++;
+          luminance += (0.2126 * pixels[i]! + 0.7152 * pixels[i + 1]! + 0.0722 * pixels[i + 2]!) / 255;
+        }
+        result.push({ throughShare: count ? through / count : 0, meanLuminance: count ? luminance / count : 0 });
+      }
+    } finally {
+      renderer.setRenderTarget(oldTarget); target.dispose(); this.avatar.visible = avatarVisible;
+      camera.position.copy(position); camera.quaternion.copy(rotation); camera.fov = fov; camera.aspect = aspect;
+      camera.updateProjectionMatrix(); camera.updateMatrixWorld();
+    }
+    return result;
+  }
+
   /** The collider surface that stops the walker's body going from `from` to `to`, or null when the move is free. */
   private blockedByColliders(from: THREE.Vector3, to: THREE.Vector3): BodyBlock | null {
     if (this.colliders.length === 0) return null;
@@ -1392,7 +1496,9 @@ export class Explorer {
       const hit = castAll(this.ray, this.colliderTargets).find((h) => {
         if (h.object.userData.greybox || !h.face) return true;
         const normal = hitNormal(h, dir);
-        return !this.greyboxOpenings.some((box) => this.sceneColliderTargets.has(h.object) && insideGreyboxOpening(h.point, box) && Math.abs(normal.y) <= 0.5);
+        const exempt = this.greyboxOpenings.some((box) => this.sceneColliderTargets.has(h.object) && insideGreyboxOpening(h.point, box) && portalWallNormal(normal, box));
+        if (exempt) this.portalExemptions++;
+        return !exempt;
       });
       return hit ? { distance: hit.distance, normal: hitNormal(hit, dir) } : null;
     }, RADIUS);
@@ -1812,6 +1918,17 @@ export class Explorer {
         const bvh = currentBvh(o.geometry);
         if (!bvh) continue;
         const parts = meshParts(o.mesh);
+        if (hasClippedPortals(o.mesh)) {
+          const raycaster = new THREE.Raycaster(from, ray.direction, 0, far);
+          const visibleHit = castCamera(raycaster, [o.mesh], proxy ? new Set([o.mesh]) : new Set()).some(hit => {
+            const part = parts.find(p => hit.faceIndex !== undefined && hit.faceIndex !== null && hit.faceIndex * 3 >= p.start && hit.faceIndex * 3 < p.start + p.count);
+            if (!part || (!proxy && !blocksView(part.material))) return false;
+            const spans = proxy || !this.cameraCut.cuts(part.material) ? whole : drawn;
+            return spans.some(([t0, t1]) => hit.distance >= t0 * far && hit.distance <= t1 * far);
+          });
+          if (visibleHit) return pass === 0 ? "geometry" : "sign";
+          continue;
+        }
         toLocal.copy(o.mesh.matrixWorld).invert();
         segmentIn(toLocal);
         if (!inst.isInstancedMesh) {
