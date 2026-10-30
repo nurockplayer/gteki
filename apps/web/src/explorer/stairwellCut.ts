@@ -203,7 +203,9 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
         key: rect, bounds: new THREE.Box3().setFromPoints(band), planes, clip: null,
         // Horizontal faces, and near-vertical side faces that the slab levels below decide.
         accepts: (normal) => horizontal(normal) || Math.abs(normal.y) < VERTICAL_NORMAL_M,
-        rejectsMesh: (mesh) => { const role = mesh.userData.gteki_role; return role !== undefined && !SLAB_ROLES.has(role); },
+        // A collision proxy (the merged ceiling caps) is cut by its own slab levels, as an untagged mesh is, so it opens
+        // with the visible ceiling it stands in for; other tagged roles are never band slabs.
+        rejectsMesh: (mesh) => { const role = mesh.userData.gteki_role; return role !== undefined && role !== "collider" && !SLAB_ROLES.has(role); },
         admits: (piece, mesh, triangle) => {
           const role = mesh.userData.gteki_role;
           if (onWalkingSurface(piece, triangle, well)) return false;

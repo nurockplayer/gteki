@@ -246,6 +246,21 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("opens a ceiling collision proxy with the slab it stands in for, band included", () => {
+    const s = scene();
+    s.upper.userData.gteki_role = "floor";
+    // The merged, invisible ceiling collider: same slab, tagged as a collider, outside the station root.
+    const proxy = new THREE.Mesh(s.upper.geometry.clone(), new THREE.MeshBasicMaterial());
+    proxy.position.copy(s.upper.position); proxy.userData.gteki_role = "collider"; proxy.updateMatrixWorld(true);
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high", collision: [proxy] });
+    for (const x of [7, 9.1, 9.6, 9.9]) {
+      expect(down(proxy, x, 5)).toHaveLength(0);
+      expect(up(proxy, x, 2)).toHaveLength(0);
+    }
+    expect(down(proxy, 12, 5).some(hit => Math.abs(hit.point.y - 4) < 1e-6)).toBe(true);
+    result.dispose();
+  });
+
   it("keeps treads that lie entirely inside the footprint near the top", () => {
     const s = scene();
     const treads = [8, 9].map((i) => {
