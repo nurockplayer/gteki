@@ -555,6 +555,31 @@ describe("turning landing guards", () => {
     for (const [x, z] of open) expect(covered(x, z), `open ${x},${z}`).toBe(false);
   });
 
+  // The same 90 degree landing turned by 30 and 45 degrees: openings sit on each flight's centreline, solid elsewhere.
+  it.each([0, 30, 45])("opens a 90 degree landing turned by %d degrees only where each flight enters", (degrees) => {
+    const angle = (degrees * Math.PI) / 180, c = Math.cos(angle), sn = Math.sin(angle);
+    const rotate = ([x, h, z]: [number, number, number]): [number, number, number] => [x * c - z * sn, h, x * sn + z * c];
+    const waypoints = ([[0, 0, 0], [4, 2, 0], [4, 4, 4]] as [number, number, number][]).map(rotate);
+    const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+    expect(result.stats.connectorsSkipped).toBe(0);
+    const guards = result.wallSegments.filter((w) => Math.abs(w.yMin - 1.88) < 1e-6 && Math.abs(w.yMax - 2.96) < 1e-6);
+    const covered = (x: number, z: number) => guards.some((w) => {
+      const dx = w.bx - w.ax, dz = w.bz - w.az, length2 = dx * dx + dz * dz;
+      const t = THREE.MathUtils.clamp(((x - w.ax) * dx + (z - w.az) * dz) / length2, 0, 1);
+      return Math.hypot(x - (w.ax + dx * t), z - (w.az + dz * t)) < 0.01;
+    });
+    // Square frame: centre C, axis u along leg 0, v across it. Leg 0 enters on -u, leg 1 leaves on +v (both at their centrelines).
+    const C = new THREE.Vector2(waypoints[1]![0], waypoints[1]![2]);
+    const u = new THREE.Vector2(c, sn), v = new THREE.Vector2(-sn, c);
+    const point = (along: number, across: number) => C.clone().addScaledVector(u, along).addScaledVector(v, across);
+    const h = 0.78;
+    for (const [x, z] of [point(-h, 0), point(0, h)].map((p) => [p.x, p.y])) expect(covered(x!, z!), `open entry ${degrees}`).toBe(false);
+    for (const offset of [-0.5, 0, 0.5]) {
+      const solid = [point(h, offset), point(offset, -h)];
+      for (const p of solid) expect(covered(p.x, p.y), `solid ${degrees} offset=${offset}`).toBe(true);
+    }
+  });
+
   // A repeated corner and a point on the straight line between its neighbours do not hide the turn.
   it("builds a 90 degree turn with a repeated corner and a collinear point, with its landing guard", () => {
     const result = buildConnectors(stairThrough([[0, 0, 0], [2, 1, 0], [4, 2, 0], [4, 2, 0], [4, 4, 4]]), () => true, flat, "high");

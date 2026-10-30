@@ -505,7 +505,9 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
             // Each flight opens the outline over exactly its own width, and only as far as the square's boundary.
             // The reach is the square's own extent along the flight (its half side for an axis-aligned flight, up to half of the
             // diagonal for an oblique one), with 1 cm past the outline so a side lying exactly on it is not cut away.
-            const cover = mine.flights.flatMap((f) => footprintOn(a, b, at, f.dir, width / 2, half * (Math.abs(f.dir.x) + Math.abs(f.dir.z)) + 0.01));
+            // The square's own axes: its extent along a flight is half a side along each, so a flight's exit is always reached.
+            const u = mine.axis, v = acrossAxis(u);
+            const cover = mine.flights.flatMap((f) => footprintOn(a, b, at, f.dir, width / 2, half * (Math.abs(f.dir.dot(u)) + Math.abs(f.dir.dot(v))) + 0.01));
             for (const [t0, t1] of gapsOutside(cover)) {
               const start = a.clone().lerp(b, t0), finish = a.clone().lerp(b, t1);
               const length = start.distanceTo(finish); if (length < 1e-6) continue;

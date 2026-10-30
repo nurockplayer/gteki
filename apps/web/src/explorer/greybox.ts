@@ -23,7 +23,8 @@ function createRunDetector(bundle: StationBundle, traversable: (edge: Edge) => b
   };
   return (edge) => {
     const out: UnmodelledEdgeRun[] = [];
-    if (!traversable(edge) || !["walk", "gate", "moving_walkway", "ramp"].includes(edge.mode)) return out;
+    // Forced edges (skipped connectors) are detected whatever their mode, as they are unmodelled whole.
+    if (!traversable(edge) || (!forced.has(edge.id) && !["walk", "gate", "moving_walkway", "ramp"].includes(edge.mode))) return out;
     const points = edgePoints(bundle, edge, nodes, floors).map((p) => ({ x: p.x, y: -p.z, z: p.y }));
     if (points.length < 2) return out;
     const samples: V3[] = [points[0]!];
