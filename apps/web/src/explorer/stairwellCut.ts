@@ -261,41 +261,43 @@ function railSides(rect: StairwellRect, arrival: THREE.Vector3, opened: readonly
     const from = corners[i]!, to = corners[(i + 1) % 4]!, delta = to.clone().sub(from);
     const tArrival = arrival.clone().sub(from).dot(delta) / delta.lengthSq();
     if (tArrival >= -1e-6 && tArrival <= 1 + 1e-6 && from.clone().addScaledVector(delta, tArrival).distanceTo(arrival) < 1e-3) continue;
-    let intervals: [number, number][] = [[0, 1]];
-    for (const other of opened) {
-      if (other === rect) continue;
-      let lo = 0, hi = 1;
-      for (const [axis, half] of [[other.along, other.halfLength], [other.across, other.halfWidth]] as const) {
-        const start = from.clone().sub(other.center).dot(axis), step = delta.dot(axis);
-        if (Math.abs(step) < 1e-9) { if (Math.abs(start) > half + 1e-6) { lo = 1; hi = 0; break; } }
-        else {
-          const a = (-half - start) / step, b = (half - start) / step;
-          lo = Math.max(lo, Math.min(a, b)); hi = Math.min(hi, Math.max(a, b));
-        }
-      }
-      if (hi - lo < 1e-6) continue;
-      intervals = intervals.flatMap(([a, b]) => hi <= a || lo >= b ? [[a, b]] : [ ...(lo > a ? [[a, lo] as [number, number]] : []), ...(hi < b ? [[hi, b] as [number, number]] : []) ]);
-    }
-    for (const [a, b] of intervals) if (b - a > 1e-6) sides.push([from.clone().addScaledVector(delta, a), from.clone().addScaledVector(delta, b)]);
+    sides.push(...sideRemainder(from, to, rect, opened));
   }
   return sides;
 }
 
-/** Band around one rectangle's cut boundary; sides shared with another piece of the same well stay open. */
-function addBand(out: number[], rect: StairwellRect, level: number, pieces: readonly StairwellRect[]): void {
-  const top = rectCorners(rect, level), bottom = rectCorners(rect, level - BAND_DEPTH_M);
-  for (let i = 0; i < 4; i++) {
-    const j = (i + 1) % 4;
-    const middle = top[i]!.clone().add(top[j]!).multiplyScalar(0.5);
-    if (pieces.some((piece) => piece !== rect && coversPlan(piece, middle))) continue;
-    quad(out, top[i]!, top[j]!, bottom[j]!, bottom[i]!);
+/**
+ * The parts of the plan side `from`→`to` of `self` that are neither inside nor on another rectangle of
+ * `others`: a 1-D interval subtraction along the side, so an L-shaped opening keeps only its outer parts.
+ */
+function sideRemainder(from: THREE.Vector3, to: THREE.Vector3, self: StairwellRect, others: readonly StairwellRect[]): [THREE.Vector3, THREE.Vector3][] {
+  const delta = to.clone().sub(from);
+  let intervals: [number, number][] = [[0, 1]];
+  for (const other of others) {
+    if (other === self) continue;
+    let lo = 0, hi = 1;
+    for (const [axis, half] of [[other.along, other.halfLength], [other.across, other.halfWidth]] as const) {
+      const start = from.clone().sub(other.center).dot(axis), step = delta.dot(axis);
+      if (Math.abs(step) < 1e-9) { if (Math.abs(start) > half + 1e-6) { lo = 1; hi = 0; break; } }
+      else {
+        const a = (-half - start) / step, b = (half - start) / step;
+        lo = Math.max(lo, Math.min(a, b)); hi = Math.min(hi, Math.max(a, b));
+      }
+    }
+    if (hi - lo < 1e-6) continue;
+    intervals = intervals.flatMap(([a, b]) => hi <= a || lo >= b ? [[a, b]] : [ ...(lo > a ? [[a, lo] as [number, number]] : []), ...(hi < b ? [[hi, b] as [number, number]] : []) ]);
   }
+  return intervals.filter(([a, b]) => b - a > 1e-6).map(([a, b]) => [from.clone().addScaledVector(delta, a), from.clone().addScaledVector(delta, b)]);
 }
 
-/** True when the plan point lies on or inside the rectangle, within a millimetre. */
-function coversPlan(rect: StairwellRect, point: THREE.Vector3): boolean {
-  const dot = (axis: THREE.Vector3) => (point.x - rect.center.x) * axis.x + (point.z - rect.center.z) * axis.z;
-  return Math.abs(dot(rect.along)) <= rect.halfLength + 1e-3 && Math.abs(dot(rect.across)) <= rect.halfWidth + 1e-3;
+/** Band around one rectangle's cut boundary, on the sides no other piece of the same well covers. */
+function addBand(out: number[], rect: StairwellRect, level: number, pieces: readonly StairwellRect[]): void {
+  const corners = rectCorners(rect, 0);
+  for (let i = 0; i < 4; i++) {
+    for (const [from, to] of sideRemainder(corners[i]!, corners[(i + 1) % 4]!, rect, pieces)) {
+      quad(out, from.clone().setY(level), to.clone().setY(level), to.clone().setY(level - BAND_DEPTH_M), from.clone().setY(level - BAND_DEPTH_M));
+    }
+  }
 }
 
 function addRail(out: number[], colors: number[], from: THREE.Vector3, to: THREE.Vector3, baseY: number, color: number[]): void {

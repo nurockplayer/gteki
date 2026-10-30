@@ -269,6 +269,27 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("emits no band inside an L-shaped opening, and keeps bands on its outer edges", () => {
+    const landing = flight([{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: 4, y: 3, z: 2 }, { x: 10, y: 3, z: 4 }]);
+    const wells = stairwellWells(landing, traversable);
+    const s = scene();
+    const result = cutStairwells(s.root, wells, { tier: "high" });
+    const band = result.finish!.getObjectByName("greybox-stairwell-band") as THREE.Mesh;
+    const positions = band.geometry.getAttribute("position");
+    const rects = wells[0]!.rects;
+    // Strictly inside any piece of the opening (the boundary itself is allowed).
+    const strictlyInside = (x: number, z: number) => rects.some((r) => {
+      const d = (x - r.center.x) * r.along.x + (z - r.center.z) * r.along.z;
+      const a = (x - r.center.x) * r.across.x + (z - r.center.z) * r.across.z;
+      return Math.abs(d) < r.halfLength - 1e-3 && Math.abs(a) < r.halfWidth - 1e-3;
+    });
+    for (let i = 0; i < positions.count; i++) expect(strictlyInside(positions.getX(i), positions.getZ(i))).toBe(false);
+    // The first flight's outer ends, on both long sides at x = 0, still carry bands.
+    const vertex = (x: number, z: number) => { for (let i = 0; i < positions.count; i++) if (Math.abs(positions.getX(i) - x) < 1e-6 && Math.abs(positions.getZ(i) - z) < 1e-6) return true; return false; };
+    expect(vertex(0, -1.1) && vertex(0, 1.1)).toBe(true);
+    result.dispose();
+  });
+
   it("keeps a stairs_ramps tread and an unroled mesh wholly inside the footprint near the top", () => {
     const s = scene();
     const tread = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.6, 8, 8).rotateX(-Math.PI / 2).translate(9.5, 3.7, 0), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
