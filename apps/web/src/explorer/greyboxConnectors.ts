@@ -267,6 +267,8 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       if (before.lengthSq() && after.lengthSq() && before.angleTo(after) > Math.PI / 18) bentEscalator = true;
     }
     const parts: ConnectorPart[] = [];
+    const flightWalls: { leg: number; side: number; wall: Segment2 }[] = [];
+    const landingGuards: { index: number; endpoints: THREE.Vector3[] }[] = [];
     const edgePath: THREE.Vector3[] = [];
     let edgeOmitted = 0;
     for (let i = 1; i < points.length; i++) {
@@ -304,6 +306,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
             const wall = { ax: start.x, az: start.z, bx: finish.x, bz: finish.z, yMin: Math.min(ya, yb) - 0.12, yMax: Math.max(ya, yb) + 0.96 };
             wallSegments.push(wall);
             if (edge.mode === "stairs") {
+              flightWalls.push({ leg: i - 1, side, wall });
               const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(wall.bz - wall.az), wall.bx - wall.ax)).setPosition((wall.ax + wall.bx) / 2, (wall.yMin + wall.yMax) / 2, (wall.az + wall.bz) / 2);
               box(parts, "steel", transform, 0, 0, 0, Math.hypot(wall.bx - wall.ax, wall.bz - wall.az), wall.yMax - wall.yMin, 0.04, "collider"); parts.at(-1)!.walkableOnly = true;
             }
@@ -340,11 +343,14 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
           const entry = at;
           const exit = at;
           const clearance = width / 2 + 0.1;
+          const endpoints: THREE.Vector3[] = [];
+          landingGuards.push({ index: i, endpoints });
           for (const [a, b] of sides) {
             const afterEntry = clipLandingSide(a, b, entry, d.clone().negate(), clearance);
             const pieces = afterEntry.flatMap(([start, end]) => clipLandingSide(start, end, exit, out, clearance));
             for (const [start, end] of pieces) {
               const length = start.distanceTo(end); if (length < 1e-6) continue;
+              endpoints.push(start, end);
               const wall = { ax: start.x, az: start.z, bx: end.x, bz: end.z, yMin: at.y - 0.12, yMax: at.y + 0.96 }; wallSegments.push(wall);
               const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(end.z - start.z), end.x - start.x)).setPosition((start.x + end.x) / 2, at.y, (start.z + end.z) / 2);
               box(parts, "steel", transform, 0, 0.96, 0, length, 0.052, 0.052);
@@ -352,6 +358,32 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
             }
           }
         }
+      }
+    }
+    for (const landing of landingGuards) {
+      const at = points[landing.index]!, incoming = at.clone().sub(points[landing.index - 1]!), outgoing = points[landing.index + 1]!.clone().sub(at);
+      incoming.y = 0; outgoing.y = 0; incoming.normalize(); outgoing.normalize();
+      const side = -Math.sign(incoming.x * outgoing.z - incoming.z * outgoing.x);
+      if (!side || !landing.endpoints.length) continue;
+      const ends = [landing.index - 1, landing.index].map((leg) => {
+        const candidates = flightWalls.filter((entry) => entry.leg === leg && entry.side === side);
+        const points = candidates.flatMap(({ wall }) => [new THREE.Vector3(wall.ax, at.y, wall.az), new THREE.Vector3(wall.bx, at.y, wall.bz)]);
+        return points.length ? points.reduce((best, value) => value.distanceToSquared(at) < best.distanceToSquared(at) ? value : best) : null;
+      });
+      const [first, second] = ends; if (!first || !second) continue;
+      const cross = incoming.x * outgoing.z - incoming.z * outgoing.x;
+      const delta = second.clone().sub(first);
+      const along = (delta.x * outgoing.z - delta.z * outgoing.x) / cross;
+      const join = first.clone().addScaledVector(incoming, along);
+      const guard = landing.endpoints.reduce((best, value) => value.distanceToSquared(join) < best.distanceToSquared(join) ? value : best);
+      const pairs: [THREE.Vector3, THREE.Vector3][] = [[first, join], [join, second]];
+      if (join.distanceTo(guard) < 0.2) pairs.push([join, guard]);
+      for (const [start, end] of pairs) {
+        const length = start.distanceTo(end); if (length < 1e-6) continue;
+        const wall = { ax: start.x, az: start.z, bx: end.x, bz: end.z, yMin: at.y - 0.12, yMax: at.y + 0.96 }; wallSegments.push(wall);
+        const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(end.z - start.z), end.x - start.x)).setPosition((start.x + end.x) / 2, at.y, (start.z + end.z) / 2);
+        box(parts, "steel", transform, 0, 0.96, 0, length, 0.052, 0.052);
+        box(parts, "steel", transform, 0, 0.42, 0, length, 1.08, 0.04, "collider"); parts.at(-1)!.walkableOnly = true;
       }
     }
     const lowerFirst = points[0]!.y <= points.at(-1)!.y ? edgePath : edgePath.reverse();

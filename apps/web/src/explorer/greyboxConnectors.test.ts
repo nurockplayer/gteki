@@ -256,6 +256,24 @@ it("keeps diagonal turning landings clear while preserving outer guards", () => 
   }
 });
 
+it("stops walkers moving outward through landing sides and corners", () => {
+  for (const degrees of [45, 90, 135]) for (const direction of [-1, 1]) {
+    const angle = degrees * Math.PI / 180, endX = 4 + 4 * Math.cos(angle), endY = direction * 4 * Math.sin(angle);
+    const station = createSyntheticBundle([syntheticEdge("bent", "start", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: [{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: endX, y: endY, z: 4 }] })]);
+    station.nodes.find((n) => n.id === "upper")!.position = { x: endX, y: endY, z: 4 };
+    const result = buildConnectors(station, () => true, { hasFloor: () => true, nearMesh: () => false }, "high");
+    for (let i = 0; i <= 20; i++) {
+      const heading = direction * (Math.PI - angle) * i / 20, dx = Math.cos(heading) * 0.03, dz = Math.sin(heading) * 0.03;
+      let stopped = false;
+      for (let step = 1; step <= 50; step++) {
+        const x = 4 + dx * step, z = dz * step, resolved = resolveWalls(x, z, 0.3, 2, 1.7, result.wallSegments);
+        if (Math.hypot(resolved.x - x, resolved.z - z) > 0.05) { stopped = true; break; }
+      }
+      expect(stopped, `${degrees}° direction=${direction} heading=${i}`).toBe(true);
+    }
+  }
+});
+
 it("marks a bent escalator approximate once per edge", () => {
   const station = createSyntheticBundle([syntheticEdge("bent", "start", "upper", { mode: "escalator", attributes: { sceneGap: true }, geometry: [{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: 4, y: 4, z: 4 }] })]);
   station.nodes.find((n) => n.id === "upper")!.position = { x: 4, y: 4, z: 4 };
