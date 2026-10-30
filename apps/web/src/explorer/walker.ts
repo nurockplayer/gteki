@@ -5,6 +5,8 @@ import { WALKER_BODY } from "@gteki/scene-api";
  */
 
 export interface Segment2 {
+  source?: string;
+  role?: string;
   ax: number;
   az: number;
   bx: number;
@@ -14,8 +16,8 @@ export interface Segment2 {
 }
 
 /** Station-ENU wall → renderer-frame segment. */
-export function wallToRenderer(w: { a: { x: number; y: number }; b: { x: number; y: number }; zMin: number; zMax: number }): Segment2 {
-  return { ax: w.a.x, az: -w.a.y, bx: w.b.x, bz: -w.b.y, yMin: w.zMin, yMax: w.zMax };
+export function wallToRenderer(w: { a: { x: number; y: number }; b: { x: number; y: number }; zMin: number; zMax: number; source?: string; role?: string }): Segment2 {
+  return { ax: w.a.x, az: -w.a.y, bx: w.b.x, bz: -w.b.y, yMin: w.zMin, yMax: w.zMax, source: w.source, role: w.role };
 }
 
 /** Push a circle (x, z, radius) out of every wall segment whose height span overlaps the body. */

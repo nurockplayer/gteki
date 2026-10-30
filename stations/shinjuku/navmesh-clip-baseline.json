@@ -1,0 +1,18 @@
+{
+  "e:ed7e56a8e6234197be06280fcb24aecc": {
+    "connectorWallHits": 0,
+    "fallbackWallHits": 2,
+    "navmeshWallHits": 0,
+    "offFloor": 0
+  },
+  "total": {
+    "connectorWallHits": 0,
+    "fallbackWallHits": 2,
+    "navmeshWallHits": 0,
+    "offFloor": 0,
+    "unvalidatedJoins": 72,
+    "invalidJoins": 0,
+    "routablePairs": 238,
+    "failedRoutePairs": 2
+  }
+}

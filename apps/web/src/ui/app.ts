@@ -887,7 +887,8 @@ export class App {
     // Only after a no_path: re-ask with the user's own options relaxed to say which one refused.
     if (!best.ok && best.reason === "no_path") this.s.noPath = explainNoPathBetween(router, loaded.bundle, origin, destination, profile);
     if (best.ok) {
-      this.s.polyline = routePolyline(loaded.bundle, best, this.explorer.connectorRoutePaths());
+      // Baked navmesh paths are public-graph data: the private build keeps its graph polylines (gteki-private#4).
+      this.s.polyline = routePolyline(loaded.bundle, best, this.explorer.connectorRoutePaths(), PRIVATE_BUILD ? null : this.explorer.navmeshRoutePaths());
       this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination, origin.kind === "poi" ? origin.poi : undefined);
       this.s.activeInstruction = 0;
       this.explorer.showRoute(this.s.polyline);

@@ -152,7 +152,7 @@ function solidDoors(THREE: ThreeNS, mesh: THREE_NS.Mesh, routes: [THREE_NS.Vecto
 const TILE = 8;
 function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[], byRole = false): THREE_NS.Mesh<THREE_NS.BufferGeometry, THREE_NS.MeshBasicMaterial>[] {
   const sides = new Map<number, THREE_NS.MeshBasicMaterial>();
-  const buckets = new Map<string, { side: number; role: string; pos: number[] }>();
+  const buckets = new Map<string, { side: number; role: string; source: string; pos: number[] }>();
   const v = new THREE.Vector3();
   for (const o of meshes) {
     const m = o as THREE_NS.Mesh;
@@ -160,7 +160,8 @@ function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[], byRole = fals
     m.updateWorldMatrix(true, false);
     const mat = m.material as THREE_NS.Material | THREE_NS.Material[];
     const side = Array.isArray(mat) ? THREE.DoubleSide : mat.side;
-    const role = byRole ? ((m.userData.gteki_role as string | undefined) ?? m.name) : "";
+    const role = (m.userData.gteki_role as string | undefined) || m.name || (byRole ? "floor" : "collider");
+    const source = (m.userData.gteki_source as string | undefined) || "plateau";
     const g = m.geometry;
     const src = g.attributes.position!;
     const idx = g.index;
@@ -171,9 +172,9 @@ function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[], byRole = fals
         v.fromBufferAttribute(src, idx ? idx.getX(i + k) : i + k).applyMatrix4(m.matrixWorld);
         tri[k * 3] = v.x; tri[k * 3 + 1] = v.y; tri[k * 3 + 2] = v.z;
       }
-      const key = `${side}:${role}:${Math.floor((tri[0]! + tri[3]! + tri[6]!) / 3 / TILE)}:${Math.floor((tri[2]! + tri[5]! + tri[8]!) / 3 / TILE)}`;
+      const key = `${side}:${source}:${role}:${Math.floor((tri[0]! + tri[3]! + tri[6]!) / 3 / TILE)}:${Math.floor((tri[2]! + tri[5]! + tri[8]!) / 3 / TILE)}`;
       let b = buckets.get(key);
-      if (!b) buckets.set(key, (b = { side, role, pos: [] }));
+      if (!b) buckets.set(key, (b = { side, role, source, pos: [] }));
       b.pos.push(...tri);
     }
   }
@@ -186,7 +187,8 @@ function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[], byRole = fals
     geo.computeBoundingSphere();
     geo.computeBoundingBox();
     const t = new THREE.Mesh(geo, mat);
-    if (b.role) t.userData.gteki_role = b.role;
+    t.userData.gteki_role = b.role;
+    t.userData.gteki_source = b.source;
     t.visible = false;
     t.matrixAutoUpdate = false;
     t.updateMatrixWorld(true);
@@ -320,11 +322,13 @@ export function assembleCollision(
     const m = obj as THREE_NS.Mesh;
     if (!m.isMesh) return;
     const role = (m.userData.gteki_role as string) ?? m.name;
+    m.userData.gteki_source = "plateau";
     meshesByRole.set(role, [...(meshesByRole.get(role) ?? []), m]);
     if (role === "portals") {
       const { sky, beyond } = splitPortals(THREE, m);
       const beyondMesh = new THREE.Mesh(beyond, o.materialFor("portal_beyond"));
       beyondMesh.userData.gteki_role = "portal_beyond";
+      beyondMesh.userData.gteki_source = "boundary";
       // Nothing past these openings is modelled: block walker and camera there.
       colliders.push(beyondMesh);
       extra.push(new THREE.Mesh(sky, o.materialFor("portal_sky")), beyondMesh);
@@ -342,6 +346,7 @@ export function assembleCollision(
       const solid = new THREE.Mesh(solidDoors(THREE, m, routeSegments), o.materialFor("portal_beyond"));
       solid.visible = false;
       solid.userData.gteki_role = `${role}_solid`;
+      solid.userData.gteki_source = "boundary";
       colliders.push(solid);
       extra.push(solid);
     }
@@ -366,6 +371,7 @@ export function assembleCollision(
     bridges = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })); // winding varies per crack
     bridges.name = "walk_bridges";
     bridges.userData.gteki_role = "walk_bridges";
+    bridges.userData.gteki_source = "procedural";
     bridges.visible = false;
     bridges.updateMatrixWorld(true);
     bridges.matrixAutoUpdate = false;

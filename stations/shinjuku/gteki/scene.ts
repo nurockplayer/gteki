@@ -3,7 +3,7 @@
  * renderer-neutral layout + Three.js builder; geometry is a visual/physical approximation and
  * never adds routes (the explorer routes only on graph.json).
  */
-import { WALKER_BODY, type BuildScene, type SpawnPoint, type StationScene, type WallSegment } from "@gteki/scene-api";
+import { WALKER_BODY, type BuildScene, type NavmeshPaths, type SpawnPoint, type StationScene, type WallSegment } from "@gteki/scene-api";
 import type * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
@@ -151,14 +151,23 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
 
   // Level walls only block bodies near their own level (bodyMax); approximate that for the
   // explorer's height-band walker by capping the wall band at bodyMax + 1.7 m body height.
-  const walls: WallSegment[] = [...layout.levels.flatMap((lv) => lv.walls), ...layout.runWalls, ...railingWalls(layout), ...built.propWalls].map((w) => ({
-    a: w.a,
-    b: w.b,
-    // The shared walker blocks feet f when zMin ≤ f + bodyTopM and zMax ≥ f + bodyBottomM (WALKER_BODY),
-    // so WalkWorld's body limits fold into the band: bodyMin → raise zMin, bodyMax → lower zMax.
-    zMin: w.bodyMin !== undefined ? Math.max(w.zMin, w.bodyMin + WALKER_BODY.bodyTopM) : w.zMin,
-    zMax: w.bodyMax !== undefined ? Math.min(w.zMax, w.bodyMax + WALKER_BODY.bodyBottomM) : w.zMax,
-  }));
+  const walls: WallSegment[] = [...layout.levels.flatMap((lv) => lv.walls), ...layout.runWalls, ...railingWalls(layout), ...built.propWalls].map((w) => {
+    const fence = "reason" in w && (w.reason === "fare" || w.reason === "access");
+    const gate = "gtekiGate" in w && w.gtekiGate === true;
+    const wall: WallSegment = {
+      a: w.a, b: w.b,
+      // Body limits fold into the walker height band.
+      zMin: w.bodyMin !== undefined ? Math.max(w.zMin, w.bodyMin + WALKER_BODY.bodyTopM) : w.zMin,
+      zMax: w.bodyMax !== undefined ? Math.min(w.zMax, w.bodyMax + WALKER_BODY.bodyBottomM) : w.zMax,
+    };
+    // Attribution is available to the audit without changing the serialized wall contract.
+    Object.defineProperties(wall, {
+      source: { value: fence ? "fence" : "procedural", writable: true, configurable: true },
+      role: { value: fence ? "access_fence" : gate ? "gate" : "wall_segment", writable: true, configurable: true },
+      ...(gate ? { gtekiGate: { value: true, writable: true, configurable: true } } : {}),
+    });
+    return wall;
+  });
   // The explorer's follow camera only raycasts colliders + walkable, so without colliders it swung
   // through walls. One invisible DoubleSide mesh of the same wall bands gives it something to hit.
   // It cannot block more than `walls` already does: a collider ray at feet + h (0.2 ≤ h ≤ 1.7) only
@@ -166,10 +175,11 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   const colliders: THREE.Mesh[] = [];
   if (walls.length) {
     const pos: number[] = [];
-    const idx: number[] = [];
+    const idx: number[] = [], gateTriangles: number[] = [];
     for (const w of walls) {
       if (w.zMax <= w.zMin) continue;
       const i = pos.length / 3;
+      if ("gtekiGate" in w && w.gtekiGate === true) gateTriangles.push(idx.length / 3, idx.length / 3 + 1);
       pos.push(w.a.x, w.zMin, -w.a.y, w.b.x, w.zMin, -w.b.y, w.b.x, w.zMax, -w.b.y, w.a.x, w.zMax, -w.a.y);
       idx.push(i, i + 1, i + 2, i, i + 2, i + 3);
     }
@@ -180,6 +190,8 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     const m = new T.Mesh(g, proxyMat);
     m.name = "wall collider (invisible)";
     m.userData.gteki_role = "collider";
+    Object.defineProperty(m.userData, "gteki_source", { value: "procedural", writable: true, configurable: true });
+    Object.defineProperty(m.userData, "gtekiGateTriangles", { value: gateTriangles, writable: true, configurable: true });
     proxies.add(m);
     colliders.push(m);
   }
@@ -234,6 +246,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
       const m = new T.Mesh(g, proxyMat);
       m.name = "ceiling collider (invisible)";
       m.userData.gteki_role = "collider";
+      Object.defineProperty(m.userData, "gteki_source", { value: "procedural", writable: true, configurable: true });
       proxies.add(m);
       colliders.push(m);
       cameraBlockers.push(m);
@@ -247,7 +260,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     const m = o as THREE.Mesh;
     if (!m.isMesh) return;
     if (m.name.startsWith("sign-faces:") || m.name === "sign-cases" || m.name === "Restricted area" || m.name === "No entry") m.userData.gteki_role = "sign";
-    else if (m.name === "surface-ground" || m.name === "surface-stone") cameraBlockers.push(m);
+    else if (m.name === "surface-ground" || m.name === "surface-stone") { Object.defineProperty(m.userData, "gteki_source", { value: "procedural", writable: true, configurable: true }); cameraBlockers.push(m); }
   });
   // Underground station: it owns its lighting, as in the lane app. The explorer's default sun cast hard
   // pillar shadows across B1 floors through no opening at all. Same hemisphere and image-based light as
@@ -310,3 +323,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   };
   return scene;
 };
+
+/** Baked navmesh walk paths for the guide (packages/godot/src/navmesh-fallback.ts --write-paths), loaded on demand. */
+export const navmeshPaths = async (): Promise<NavmeshPaths | null> =>
+  (await import("../navmesh-paths.json", { with: { type: "json" } })).default as unknown as NavmeshPaths;

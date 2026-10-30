@@ -1,0 +1,12 @@
+{
+  "total": {
+    "connectorWallHits": 0,
+    "fallbackWallHits": 0,
+    "navmeshWallHits": 0,
+    "offFloor": 0,
+    "unvalidatedJoins": 0,
+    "invalidJoins": 0,
+    "routablePairs": 1054,
+    "failedRoutePairs": 2
+  }
+}

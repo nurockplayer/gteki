@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import type { PolylinePoint } from "@gteki/navigation";
-import { auditPolyline, cutSceneProbe, sceneProbe, violations } from "./route-clip-audit.ts";
+import { auditPolyline, cutSceneProbe, resampleAudit, sceneProbe, violations } from "./route-clip-audit.ts";
 import { createSyntheticBundle, syntheticEdge } from "../../navigation/src/fixtures.ts";
 
 // Renderer frame: y up, ENU (x, y, z) → (x, z, -y). A 20 m floor at z 0 and a wall across x = 5.
@@ -15,6 +15,25 @@ const line = (...pts: [number, number, number][]): PolylinePoint[] =>
   pts.map(([x, y, z], i) => ({ x, y, z, zKnown: true, stepIndex: i - 1, floorId: "f" }));
 
 describe("route clip audit", () => {
+  it("attributes a hit to the earliest obstacle across both body heights",()=>{
+    const near=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.3,2),new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));near.position.set(0.3,1.5,0);
+    const far=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.3,2),new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));far.position.set(0.7,0.5,0);
+    near.updateMatrixWorld(true);far.updateMatrixWorld(true);
+    const details:import("./route-clip-audit.ts").SampleDetail[]=[];
+    auditPolyline({ground:[],collider:[near,far],walls:[]},line([0,0,0],[1,0,0]),{alreadySampled:true,detail:details});
+    expect(details[1]!.wallCollider).toBe(0);
+    near.geometry.dispose();far.geometry.dispose();
+  });
+  it("preserves audit results for explicit samples and a reused cache", () => {
+    const points = line([0.2, 0, 0], [8.2, 0, 0]);
+    const expected = auditPolyline(probe, points);
+    const cache = { floor: new Map<string, number | null>(), wall: new Map() };
+    const details: import("./route-clip-audit.ts").SampleDetail[] = [];
+    expect(auditPolyline(probe, resampleAudit(points), { alreadySampled: true, cache, detail: details })).toEqual(expected);
+    const repeated: import("./route-clip-audit.ts").SampleDetail[] = [];
+    expect(auditPolyline(probe, resampleAudit(points), { alreadySampled: true, cache, detail: repeated })).toEqual(expected);
+    expect(repeated).toEqual(details);
+  });
   it("passes a route on the floor that stays on one side of the wall", () => {
     expect(violations(auditPolyline(probe, line([-8, 0, 0.1], [4, 0, 0.1])))).toBe(0);
   });

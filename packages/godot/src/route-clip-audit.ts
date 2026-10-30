@@ -38,8 +38,8 @@ export interface EdgeAudit {
   sceneGap?: true;
 }
 
-export interface SceneProbe { ground: THREE.Object3D[]; collider: THREE.Object3D[]; walls: WallSegment[] }
-export interface SampleDetail { i: number; floor: "ok" | "off" | "none"; wallBefore: boolean }
+export interface SceneProbe { ground: THREE.Object3D[]; collider: THREE.Object3D[]; walls: WallSegment[]; ignoreColliderHit?: (hit: THREE.Intersection, direction: THREE.Vector3) => boolean }
+export interface SampleDetail { i: number; floor: "ok" | "off" | "none"; wallBefore: boolean; floorZ?: number; wallCollider?: number; wallPoint?: { x: number; y: number; z: number }; wallSegment?: number }
 
 const repoRoot = process.cwd();
 
@@ -108,63 +108,81 @@ function segmentsCross(p: { x: number; y: number }, q: { x: number; y: number },
 }
 
 /** Resample a polyline every STEP_M (keeping every vertex), z linear along each piece. */
-function resample(points: readonly PolylinePoint[]): { x: number; y: number; z: number }[] {
-  const out = [{ x: points[0]!.x, y: points[0]!.y, z: points[0]!.z }];
+export function resampleAudit(points: readonly PolylinePoint[]): PolylinePoint[] {
+  const out = [{ ...points[0]! }];
   for (let i = 1; i < points.length; i++) {
     const a = points[i - 1]!, b = points[i]!;
     const n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / STEP_M));
-    for (let k = 1; k <= n; k++) out.push({ x: a.x + (b.x - a.x) * k / n, y: a.y + (b.y - a.y) * k / n, z: a.z + (b.z - a.z) * k / n });
+    for (let k = 1; k <= n; k++) out.push({ ...b, x: a.x + (b.x - a.x) * k / n, y: a.y + (b.y - a.y) * k / n, z: a.z + (b.z - a.z) * k / n });
   }
   return out;
+}
+
+export interface AuditCache {
+  floor: Map<string, number | null>;
+  wall: Map<string, { crossed: boolean; wallCollider?: number; wallPoint?: SampleDetail["wallPoint"]; wallSegment?: number }>;
 }
 
 const ray = new THREE.Raycaster();
 const down = new THREE.Vector3(0, -1, 0);
 
 /** Audit one drawn polyline against the scene. */
-export function auditPolyline(probe: SceneProbe, points: readonly PolylinePoint[], opts: { skipInteriorFloor?: boolean; detail?: SampleDetail[] } = {}):
+export function auditPolyline(probe: SceneProbe, points: readonly PolylinePoint[], opts: { skipInteriorFloor?: boolean; detail?: SampleDetail[]; alreadySampled?: boolean; cache?: AuditCache } = {}):
   Pick<EdgeAudit, "samples" | "offFloor" | "noFloor" | "maxAbsDzM" | "wallHits" | "worst"> {
-  const samples = resample(points);
+  const samples = opts.alreadySampled ? points : resampleAudit(points);
   let offFloor = 0, noFloor = 0, maxAbsDzM = 0, wallHits = 0, worst = "";
   const twoSided = new Set(probe.collider);
   samples.forEach((s, i) => {
     const interior = i > 0 && i < samples.length - 1;
     const countFloor = !(opts.skipInteriorFloor && interior);
-    let floor: SampleDetail["floor"] = "ok";
+    let floor: SampleDetail["floor"] = "ok", floorZ: number | undefined;
     if (countFloor || opts.detail) {
-      const [x, y, z] = enuToRenderer({ x: s.x, y: s.y, z: s.z + PROBE_M });
-      ray.set(new THREE.Vector3(x, y, z), down);
-      ray.far = 2 * PROBE_M;
-      // Nearest walkable to the drawn height, not the first one down: a mezzanine above must not count.
-      const hit = castAll(ray, probe.ground).sort((a, b) => Math.abs(s.z - a.point.y) - Math.abs(s.z - b.point.y))[0];
-      if (!hit) { floor = "none"; if (countFloor) { noFloor++; if (!worst) worst = `no floor at (${s.x.toFixed(1)}, ${s.y.toFixed(1)}, z ${s.z.toFixed(2)})`; } }
+      const key = `${s.x},${s.y},${s.z}`;
+      let height = opts.cache?.floor.get(key);
+      if (height === undefined) {
+        const [x, y, z] = enuToRenderer({ x: s.x, y: s.y, z: s.z + PROBE_M });
+        ray.set(new THREE.Vector3(x, y, z), down); ray.far = 2 * PROBE_M;
+        const hit = castAll(ray, probe.ground).sort((a, b) => Math.abs(s.z - a.point.y) - Math.abs(s.z - b.point.y))[0];
+        height = hit?.point.y ?? null;
+        opts.cache?.floor.set(key, height);
+      }
+      if (height === null) { floor = "none"; if (countFloor) { noFloor++; if (!worst) worst = `no floor at (${s.x.toFixed(1)}, ${s.y.toFixed(1)}, z ${s.z.toFixed(2)})`; } }
       else {
-        const dz = s.z - hit.point.y;
+        floorZ = height;
+        const dz = s.z - height;
         if (countFloor && Math.abs(dz) > maxAbsDzM) maxAbsDzM = Math.abs(dz);
-        if (Math.abs(dz) > FLOOR_TOLERANCE_M) { floor = "off"; if (countFloor) { offFloor++; if (!worst) worst = `route z ${s.z.toFixed(2)} vs floor ${hit.point.y.toFixed(2)} at (${s.x.toFixed(1)}, ${s.y.toFixed(1)})`; } }
+        if (Math.abs(dz) > FLOOR_TOLERANCE_M) { floor = "off"; if (countFloor) { offFloor++; if (!worst) worst = `route z ${s.z.toFixed(2)} vs floor ${height.toFixed(2)} at (${s.x.toFixed(1)}, ${s.y.toFixed(1)})`; } }
       }
     }
-    if (i === 0) { opts.detail?.push({ i, floor, wallBefore: false }); return; }
+    if (i === 0) { opts.detail?.push({ i, floor, wallBefore: false, floorZ }); return; }
     const p = samples[i - 1]!;
-    let crossed = false;
-    for (const lift of [BODY_LOW_M, BODY_HIGH_M]) {
-      const a = new THREE.Vector3(...enuToRenderer({ x: p.x, y: p.y, z: p.z + lift }));
-      const b = new THREE.Vector3(...enuToRenderer({ x: s.x, y: s.y, z: s.z + lift }));
-      const len = a.distanceTo(b);
-      if (len < 1e-6) continue;
-      ray.set(a, b.clone().sub(a).normalize());
-      ray.far = len;
-      if (castCamera(ray, probe.collider, twoSided).length > 0) crossed = true;
-    }
-    for (const w of probe.walls) {
-      const t = segmentsCross(p, s, w);
-      if (t === null) continue;
-      // The body's height where the route crosses the wall in plan, not the whole segment's span.
-      const z = t === 0 && p.z !== s.z ? Math.min(p.z, s.z) : p.z + (s.z - p.z) * t;
-      if (w.zMax > z + BODY_LOW_M && w.zMin < z + BODY_HIGH_M) { crossed = true; break; }
+    let crossed = false, wallCollider: number | undefined, wallPoint: SampleDetail["wallPoint"], wallSegment: number | undefined;
+    const wallKey = `${p.x},${p.y},${p.z};${s.x},${s.y},${s.z}`;
+    const cachedWall = opts.cache?.wall.get(wallKey);
+    if (cachedWall) ({ crossed, wallCollider, wallPoint, wallSegment } = cachedWall);
+    else {
+      let firstT=Infinity;
+      for (const lift of [BODY_LOW_M, BODY_HIGH_M]) {
+        const a = new THREE.Vector3(...enuToRenderer({ x: p.x, y: p.y, z: p.z + lift }));
+        const b = new THREE.Vector3(...enuToRenderer({ x: s.x, y: s.y, z: s.z + lift }));
+        const len = a.distanceTo(b);
+        if (len < 1e-6) continue;
+        ray.set(a, b.clone().sub(a).normalize());
+        ray.far = len;
+        const hit = castCamera(ray, probe.collider, twoSided).find(h => !probe.ignoreColliderHit?.(h, ray.ray.direction));
+        if (hit) { crossed = true; const t=hit.distance/len; if (t<firstT) { firstT=t; wallCollider = probe.collider.indexOf(hit.object); wallSegment=undefined; wallPoint = { x: hit.point.x, y: -hit.point.z, z: hit.point.y }; } }
+      }
+      for (const [wi, w] of probe.walls.entries()) {
+        const t = segmentsCross(p, s, w);
+        if (t === null) continue;
+        // The body's height where the route crosses the wall in plan, not the whole segment's span.
+        const z = t === 0 && p.z !== s.z ? Math.min(p.z, s.z) : p.z + (s.z - p.z) * t;
+        if (w.zMax > z + BODY_LOW_M && w.zMin < z + BODY_HIGH_M) { crossed = true; if(t<firstT) {firstT=t;wallSegment = wi;wallCollider=undefined;wallPoint={x:p.x+(s.x-p.x)*t,y:p.y+(s.y-p.y)*t,z:(Math.max(z+BODY_LOW_M,w.zMin)+Math.min(z+BODY_HIGH_M,w.zMax))/2};} }
+      }
+      opts.cache?.wall.set(wallKey, { crossed, wallCollider, wallPoint, wallSegment });
     }
     if (crossed) { wallHits++; if (!worst) worst = `crosses a wall near (${s.x.toFixed(1)}, ${s.y.toFixed(1)}, z ${s.z.toFixed(2)})`; }
-    opts.detail?.push({ i, floor, wallBefore: crossed });
+    opts.detail?.push({ i, floor, wallBefore: crossed, floorZ, wallCollider, wallPoint, wallSegment });
   });
   return { samples: samples.length, offFloor, noFloor, maxAbsDzM, wallHits, worst };
 }

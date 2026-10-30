@@ -10,7 +10,7 @@ import { enuToRenderer } from "@gteki/geo";
 import type { Router, PolylinePoint, RouteStep } from "@gteki/navigation";
 import { DEFAULT_PROFILE, nodeDisplayZ } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
-import type { SceneContext, StationScene } from "@gteki/scene-api";
+import type { NavmeshPaths, SceneContext, StationScene } from "@gteki/scene-api";
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
@@ -232,6 +232,7 @@ export class Explorer {
 
   private station: LoadedStation | null = null;
   private stationScene: StationScene | null = null;
+  private navmeshPaths: NavmeshPaths | null = null;
   /** What the last station switch freed from the previous scene (for the e2e log). */
   private releasedTextures: { textures: number; canvases: number } | null = null;
   private greybox: ReturnType<typeof buildGreybox> | null = null;
@@ -906,6 +907,8 @@ export class Explorer {
     this.phase = "scene";
     // The baked stairwell recipe (#650) loads alongside the scene build; a missing or failed one means the live cut.
     const stairwellRecipe = this.loadStairwellRecipe(station, this.quality);
+    // Baked navmesh walk paths for the guide; a missing or failed file keeps the graph polylines.
+    const navmeshPaths = station.scene?.navmeshPaths?.().catch((err) => { console.warn("[gteki] navmesh paths failed to load", err); return null; }) ?? Promise.resolve(null);
     let built: StationScene | null = null;
     let sceneError: string | null = null;
     try {
@@ -1053,6 +1056,11 @@ export class Explorer {
     this.loadedAssets = [];
     this.stationScene?.root.traverse((o) => { if (o.userData.gtekiAsset) this.loadedAssets.push(o.userData.gtekiAsset as LoadedAsset); });
     lap("signsShadowsAo");
+    // Only over the station's own scene: the L0 graph view keeps the graph polylines.
+    const paths = await navmeshPaths;
+    if (generation !== this.loadGeneration || this.disposed) return false;
+    this.navmeshPaths = this.stationScene && paths?.station === station.key ? paths : null;
+    lap("navmeshPaths");
     this.phase = "composer";
     this.setupComposer();
     this.frameAll();
@@ -1112,6 +1120,7 @@ export class Explorer {
       for (const material of materials) material.dispose();
       this.greybox = null;
     }
+    this.navmeshPaths = null;
     this.stairwellCut?.dispose();
     this.stairwellCut = null;
     this.stairwellStats = null;
@@ -1445,6 +1454,11 @@ export class Explorer {
   }
 
   /** Connector centre lines converted from renderer coordinates to station ENU. */
+  /** The station's baked navmesh walk paths per edge (ENU), or null: no file, a failed load or the L0 graph view. */
+  navmeshRoutePaths(): NavmeshPaths["edges"] | null {
+    return this.navmeshPaths?.edges ?? null;
+  }
+
   connectorRoutePaths(): Map<string, { x: number; y: number; z: number }[]> {
     const paths = new Map([...(this.connectors?.pathByEdge ?? [])].map(([id, path]) => [id, path.map((p) => ({ x: p.x, y: -p.z, z: p.y }))]));
     // A skipped stair has no connector path: its own points stand in, flagged as unmodelled in the route.
