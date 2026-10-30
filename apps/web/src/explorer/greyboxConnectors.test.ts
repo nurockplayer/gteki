@@ -499,7 +499,8 @@ describe("turning landing guards", () => {
         for (const leg of legs) {
           const rel = p.clone().sub(leg.origin);
           const along = rel.dot(leg.dir), lateral = Math.abs(rel.x * leg.dir.y - rel.y * leg.dir.x);
-          const crosses = along > 0.05 && along < leg.length - 0.05 && lateral < half - 0.02;
+          // The flight's own half width, 1 cm in: a guard piece starts exactly on that edge.
+          const crosses = along > 0.05 && along < leg.length - 0.05 && lateral < half - 0.04;
           expect(crosses, `${name} guard (${w.ax}, ${w.az})-(${w.bx}, ${w.bz}) at (${p.x}, ${p.y})`).toBe(false);
         }
       }
@@ -537,6 +538,34 @@ describe("turning landing guards", () => {
       expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(0);
       expect(result.pathByEdge.has("turn")).toBe(true);
     }
+  });
+
+  // A 90 degree landing: the outline is open only where each flight enters, at that flight's width, and solid elsewhere.
+  it("opens a 90 degree landing's outline only where each flight enters, and is solid elsewhere", () => {
+    const result = buildConnectors(stairThrough([[0, 0, 0], [4, 2, 0], [4, 4, 4]]), () => true, flat, "high");
+    const guards = result.wallSegments.filter((w) => Math.abs(w.yMin - 1.88) < 1e-6 && Math.abs(w.yMax - 2.96) < 1e-6);
+    const covered = (x: number, z: number) => guards.some((w) => {
+      const dx = w.bx - w.ax, dz = w.bz - w.az, length2 = dx * dx + dz * dz;
+      const t = THREE.MathUtils.clamp(((x - w.ax) * dx + (z - w.az) * dz) / length2, 0, 1);
+      return Math.hypot(x - (w.ax + dx * t), z - (w.az + dz * t)) < 0.01;
+    });
+    // The approach enters on x = 3.22 over z in (-0.75, 0.75); the departure leaves on z = 0.78 over x in (3.25, 4.75).
+    const solid: [number, number][] = [[4.78, 0.5], [4.78, -0.5], [3.5, -0.78], [4.5, -0.78]], open: [number, number][] = [[3.22, 0], [3.22, -0.4], [3.5, 0.78], [4.5, 0.78]];
+    for (const [x, z] of solid) expect(covered(x, z), `solid ${x},${z}`).toBe(true);
+    for (const [x, z] of open) expect(covered(x, z), `open ${x},${z}`).toBe(false);
+  });
+
+  // A repeated corner and a point on the straight line between its neighbours do not hide the turn.
+  it("builds a 90 degree turn with a repeated corner and a collinear point, with its landing guard", () => {
+    const result = buildConnectors(stairThrough([[0, 0, 0], [2, 1, 0], [4, 2, 0], [4, 2, 0], [4, 4, 4]]), () => true, flat, "high");
+    expect(result.stats.connectorsSkipped).toBe(0);
+    const guards = result.wallSegments.filter((w) => Math.abs(w.yMin - 1.88) < 1e-6 && Math.abs(w.yMax - 2.96) < 1e-6);
+    expect(guards.length).toBeGreaterThan(0);
+  });
+
+  it("lists a skipped stair's edge in skippedEdgeIds", () => {
+    const result = buildConnectors(stairThrough([[0, 0, 0], [4, 1, 0], [4, 2, -2], [0, 3, -2]]), () => true, flat, "high");
+    expect(result.skippedEdgeIds).toEqual(["turn"]);
   });
 
   // Every shape outside the supported set is deliberately skipped, not guarded.

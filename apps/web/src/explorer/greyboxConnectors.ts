@@ -302,6 +302,25 @@ function turningSquares(points: readonly THREE.Vector3[]): LandingSquare[] {
   return squares;
 }
 
+/** Drop repeated plan points and points on the straight line between their neighbours, so a flat corner never hides a turn. */
+function simplifyPlan(points: readonly THREE.Vector3[]): THREE.Vector3[] {
+  const out: THREE.Vector3[] = [];
+  for (const p of points) {
+    const last = out.at(-1);
+    // A repeated point (under 0.01 m apart in plan and height) adds nothing: keep the first.
+    if (last && Math.hypot(p.x - last.x, p.z - last.z) < 0.01 && Math.abs(p.y - last.y) < 0.01) continue;
+    // A point on the straight line between its neighbours is dropped, so a flat corner never hides a turn.
+    while (out.length >= 2) {
+      const a = out.at(-2)!, b = out.at(-1)!;
+      const ab = b.clone().sub(a), ap = p.clone().sub(a), t = ab.lengthSq() ? ap.dot(ab) / ab.lengthSq() : 0;
+      if (t < 0 || t > 1 || p.distanceTo(a.clone().addScaledVector(ab, t)) >= 0.01) break;
+      out.pop();
+    }
+    out.push(p);
+  }
+  return out;
+}
+
 /** Plan length of the polyline from point index `from` to point index `to`. */
 function planLength(points: readonly THREE.Vector3[], from: number, to: number): number {
   let total = 0;
@@ -381,21 +400,22 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   const counts = { escalator: 0, stairs: 0 };
   let approximateFits = 0, omittedLandings = 0, connectorsSkipped = 0;
   const connectorsSkippedByReason: Record<"unsupported_shape" | "short_run", number> = { unsupported_shape: 0, short_run: 0 };
-  const skip = (reason: keyof typeof connectorsSkippedByReason) => { connectorsSkipped++; connectorsSkippedByReason[reason]++; };
+  const skippedEdgeIds: string[] = [];
+  const skip = (reason: keyof typeof connectorsSkippedByReason, edgeId: string) => { connectorsSkipped++; connectorsSkippedByReason[reason]++; skippedEdgeIds.push(edgeId); };
   const shellMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, side: THREE.DoubleSide });
   const lightMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, emissive: "#fff6e8", emissiveIntensity: 3.2, side: THREE.DoubleSide });
   const lampMaterials = [lightMaterial, new THREE.MeshStandardMaterial({ color: "#00ff00", emissive: "#00ff00", emissiveIntensity: 3.2 }), new THREE.MeshStandardMaterial({ color: "#ff0000", emissive: "#ff0000", emissiveIntensity: 3.2 })];
   const glassMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, opacity: 0.28, depthWrite: false, roughness: 0.32, metalness: 0.08, side: THREE.DoubleSide });
   const physicalMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
   for (const edge of unmodelledVerticalEdges(bundle, traversable, scope.hasFloor, scope.nearMesh)) {
-    const points = edgePoints(bundle, edge, nodes, floors);
+    const points = simplifyPlan(edgePoints(bundle, edge, nodes, floors));
     const planRuns = points.slice(1).map((p, i) => Math.hypot(p.x - points[i]!.x, p.z - points[i]!.z));
-    if (planRuns.reduce((a, b) => a + b, 0) < 0.3 || planRuns.some((run, i) => run < 0.3 && Math.abs(points[i + 1]!.y - points[i]!.y) > 1e-6)) { skip("short_run"); continue; }
+    if (planRuns.reduce((a, b) => a + b, 0) < 0.3 || planRuns.some((run, i) => run < 0.3 && Math.abs(points[i + 1]!.y - points[i]!.y) > 1e-6)) { skip("short_run", edge.id); continue; }
     const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
     const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
     const halfWidth = (edge.mode === "stairs" ? width : 1.2) / 2;
     const landingSquares = turningSquares(points);
-    if (!supportedShape(points, landingSquares)) { skip("unsupported_shape"); continue; }
+    if (!supportedShape(points, landingSquares)) { skip("unsupported_shape", edge.id); continue; }
     let bentEscalator = false;
     for (let i = 1; i + 1 < points.length; i++) {
       const before = points[i]!.clone().sub(points[i - 1]!); before.y = 0;
@@ -482,9 +502,10 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
           const sides = [[corners[3]!, corners[0]!], [corners[1]!, corners[2]!], [corners[0]!, corners[1]!], [corners[2]!, corners[3]!]] as const;
           const mine = landingSquares.find((square) => square.index === i)!;
           for (const [a, b] of sides) {
-            // The landing's own flights open the outline only as far as their legs reach, like a neighbour's flights, but
-            // always out to the square's own boundary: a leg ending inside the square must still leave it.
-            const cover = mine.flights.flatMap((f) => footprintOn(a, b, at, f.dir, half, Math.max(f.reach, half * Math.SQRT2 + 0.05)));
+            // Each flight opens the outline over exactly its own width, and only as far as the square's boundary.
+            // The reach is the square's own extent along the flight (its half side for an axis-aligned flight, up to half of the
+            // diagonal for an oblique one), with 1 cm past the outline so a side lying exactly on it is not cut away.
+            const cover = mine.flights.flatMap((f) => footprintOn(a, b, at, f.dir, width / 2, half * (Math.abs(f.dir.x) + Math.abs(f.dir.z)) + 0.01));
             for (const [t0, t1] of gapsOutside(cover)) {
               const start = a.clone().lerp(b, t0), finish = a.clone().lerp(b, t1);
               const length = start.distanceTo(finish); if (length < 1e-6) continue;
@@ -498,7 +519,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       }
     }
     // A side wall that cuts another flight's walking footprint would block the route: such a stair is skipped, not guarded.
-    if (wallCutsFlight(flightWalls, points, edge.mode === "stairs" ? width : 1.2, landingSquares)) { wallSegments.length = wallStart; skip("unsupported_shape"); continue; }
+    if (wallCutsFlight(flightWalls, points, edge.mode === "stairs" ? width : 1.2, landingSquares)) { wallSegments.length = wallStart; skip("unsupported_shape", edge.id); continue; }
     const lowerFirst = points[0]!.y <= points.at(-1)!.y ? edgePath : edgePath.reverse();
     pathByEdge.set(edge.id, lowerFirst.map((p) => ({ x: p.x, y: p.y, z: p.z })));
     for (let i = 1; i < lowerFirst.length; i++) segments.push({ line: new THREE.Line3(lowerFirst[i - 1]!.clone(), lowerFirst[i]!.clone()), halfWidth });
@@ -551,7 +572,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         if (!kept.length) { root.remove(batch.mesh); stats.meshes--; }
       }
     } };
-  return { root, walkable, colliders, wallSegments, segments, pathByEdge, stats };
+  return { root, walkable, colliders, wallSegments, segments, pathByEdge, stats, skippedEdgeIds };
 }
 
 /** Apply the shared triangle cap, retaining essential connector and passage geometry. */
