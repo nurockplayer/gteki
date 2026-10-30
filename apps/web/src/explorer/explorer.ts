@@ -955,7 +955,8 @@ export class Explorer {
       this.stairwellStats = this.stairwellCut.stats;
       this.greybox.stats.triangles += this.stairwellCut.bandTriangles;
       if (this.stairwellCut.finish) this.greybox.root.add(this.stairwellCut.finish);
-      const instances = this.portalCutResources.instances;
+      // Instances pulled out of an InstancedMesh by either cut stand in for their owner in every target list.
+      const instances = [...this.portalCutResources.instances, ...this.stairwellCut.resources.instances];
       const extracted = new Map<THREE.InstancedMesh, number>();
       for (const { owner } of instances) extracted.set(owner, (extracted.get(owner) ?? 0) + 1);
       const fullyHidden = new Set([...extracted].filter(([owner, count]) => count === owner.count).map(([owner]) => owner));
