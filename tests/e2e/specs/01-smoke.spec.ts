@@ -73,6 +73,13 @@ for (const key of STATIONS) {
 test("station switching drops the previous station's state", async ({ page }) => {
   await openStation(page, "ikebukuro", "&from=jr-central-gate-2&to=exit-35");
   expect((await hooks.route(page))?.ok).toBe(true);
+  // Experiment (#647): let Ikebukuro finish its first frames (shader compiles) before switching, and log how long that took.
+  const settleMs = await page.evaluate(() => new Promise<number>((resolve) => {
+    const start = performance.now(); let last = start, quick = 0;
+    const tick = (now: number) => { quick = now - last < 200 ? quick + 1 : 0; last = now; if (quick >= 3 || now - start > 30_000) resolve(Math.round(now - start)); else requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  }));
+  console.log(`[switch-settle] ${JSON.stringify({ ikebukuroSettleMs: settleMs })}`);
   // CPU profile of the switch (#647): self time by function and the garbage collector's share, logged below.
   const heapBeforeMB = await page.evaluate(() => Math.round(((performance as any).memory?.usedJSHeapSize ?? 0) / 1e6));
   const cdp = await page.context().newCDPSession(page);
