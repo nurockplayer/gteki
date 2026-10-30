@@ -69,11 +69,19 @@ export const stairwellRecipeUrl = async (tier: "high" | "low"): Promise<string |
  * swap off entirely, which is still the same synchronous build as before the kit.
  */
 export const buildScene: BuildScene = (ctx) => {
+  // User Timing measures (sjk:kit, sjk:shops, sjk:assemble) say where a slow open spends its scene step (#647).
+  const start = performance.now();
+  const measure = (name: string, from: number) => { try { performance.measure(name, { start: from, end: performance.now() }); } catch { /* no User Timing */ } };
   const request = kitSwapRequested(typeof location === "undefined" ? undefined : location.search);
-  const swap = request.enabled ? prepareKitSwap(ctx, { lineColour: OEDO_MAGENTA, ...(request.tier ? { tier: request.tier } : {}), ...(request.roles ? { roles: request.roles } : {}) }) : Promise.resolve(null);
+  const swap = (request.enabled ? prepareKitSwap(ctx, { lineColour: OEDO_MAGENTA, ...(request.tier ? { tier: request.tier } : {}), ...(request.roles ? { roles: request.roles } : {}) }) : Promise.resolve(null))
+    .finally(() => measure("sjk:kit", start));
   const shops = loadShopKit(ctx.THREE, ctx, shopKitManifest as KitManifest, shopPlacements.shops as Shop[], shopBays.openings as Opening[], ctx.quality === "low")
-    .catch((error: unknown) => { console.warn("[shinjuku] shop kit failed", error); return null; });
-  return Promise.all([swap, shops]).then(([kit, shopKit]) => assembleScene(ctx, kit ?? undefined, shopKit ?? undefined));
+    .catch((error: unknown) => { console.warn("[shinjuku] shop kit failed", error); return null; })
+    .finally(() => measure("sjk:shops", start));
+  return Promise.all([swap, shops]).then(([kit, shopKit]) => {
+    const assembling = performance.now();
+    try { return assembleScene(ctx, kit ?? undefined, shopKit ?? undefined); } finally { measure("sjk:assemble", assembling); }
+  });
 };
 
 /**

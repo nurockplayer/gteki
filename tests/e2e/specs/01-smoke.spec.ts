@@ -19,7 +19,8 @@ for (const key of STATIONS) {
     const info = await hooks.sceneInfo(page);
     // Load-time breakdown in the CI log, so every PR shows where opening a station spends its time (#650).
     const steps = (info as { loadTimings?: Record<string, number> }).loadTimings ?? {};
-    console.log(`[load-timings] ${key} ${JSON.stringify({ loadMs, steps })}`);
+    const measures = await page.evaluate(() => performance.getEntriesByType("measure").filter((m) => m.name.startsWith("sjk:")).map((m) => [m.name, Math.round(m.duration)]));
+    console.log(`[load-timings] ${key} ${JSON.stringify({ loadMs, steps, measures })}`);
     for (const step of ["scene", "greybox", "stairwellCut", "connectors", "rayTrees", "total"]) expect.soft(Number.isFinite(steps[step]) && steps[step]! >= 0, `load timing ${step}`).toBe(true);
     expect.soft(steps.total ?? 0, "load timing total").toBeGreaterThan(0);
     // Ratchet: the stairwell cut, greybox and connectors together stay under the budget (#650).
@@ -76,7 +77,9 @@ test("station switching drops the previous station's state", async ({ page }) =>
   // Where the switch spends its time (#647): logged pass or fail, so a timeout shows which step ran long.
   const switchState = () => page.evaluate(() => {
     const g = (window as any).__gteki;
-    return { phase: g.phase(), routeNull: g.route() === null, opens: g.openTimings?.(), steps: g.sceneInfo?.()?.loadTimings };
+    const heapMB = Math.round(((performance as any).memory?.usedJSHeapSize ?? 0) / 1e6);
+    const measures = performance.getEntriesByType("measure").filter((m) => m.name.startsWith("sjk:")).map((m) => [m.name, Math.round(m.startTime), Math.round(m.duration)]);
+    return { phase: g.phase(), routeNull: g.route() === null, heapMB, opens: g.openTimings?.(), steps: g.sceneInfo?.()?.loadTimings, measures };
   });
   try {
     await page.waitForFunction(() => (window as any).__gteki.phase() === "ready" && (window as any).__gteki.route() === null);
