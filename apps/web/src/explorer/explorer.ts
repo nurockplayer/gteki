@@ -398,6 +398,8 @@ export class Explorer {
     this.quality = matchMedia("(pointer: coarse)").matches || Math.min(screen.width, screen.height) < 700 ? "low" : "high";
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.quality === "high" ? 2 : 1.5));
+    // Experiment (#647): no synchronous shader status queries (getProgramiv / getShaderiv) after each compile.
+    this.renderer.debug.checkShaderErrors = false;
     // Set before any material compiles. The high tier's OutputPass reads it; the low tier tone-maps in the material shaders.
     this.renderer.toneMapping = THREE.AgXToneMapping;
     this.renderer.toneMappingExposure = resolveLighting().toneMappingExposure;
