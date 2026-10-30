@@ -341,14 +341,14 @@ function stairThrough(waypoints: [number, number, number][]) {
   return station;
 }
 
-/** Each turning landing: centre (x, z), height, and the plan unit directions of its two flights, pointing away from the centre. */
+/** Each turning landing (plan bend of 20 degrees or more): centre (x, z), height, and the plan unit directions of its two flights, pointing away from the centre. */
 function landingsOf(waypoints: [number, number, number][]) {
   return waypoints.slice(1, -1).map(([x, h, z], index) => {
     const centre = new THREE.Vector2(x, z);
     const before = new THREE.Vector2(waypoints[index]![0], waypoints[index]![2]).sub(centre).normalize();
     const after = new THREE.Vector2(waypoints[index + 2]![0], waypoints[index + 2]![2]).sub(centre).normalize();
-    return { centre, height: h, flights: [before, after] };
-  });
+    return { centre, height: h, flights: [before, after], bend: Math.PI - before.angleTo(after) };
+  }).filter((landing) => landing.bend >= 20 * Math.PI / 180 - 1e-9);
 }
 
 const zigzag: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 4, -4], [8, 6, -4]];
@@ -408,6 +408,7 @@ describe("turning landing guards", () => {
     for (const { name, waypoints } of turnCases) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
       const heights = landingsOf(waypoints).map((landing) => landing.height);
+      if (heights.length === 0) continue; // only shallow bends: no landing guard to check
       const guards = result.wallSegments.filter((w) => heights.some((h) => Math.abs(w.yMin - (h - 0.12)) < 1e-6 && Math.abs(w.yMax - (h + 0.96)) < 1e-6));
       expect(guards.length, name).toBeGreaterThan(0);
       for (const w of guards) expect(Math.hypot(w.bx - w.ax, w.bz - w.az), name).toBeLessThanOrEqual(diagonal + 1e-6);
@@ -441,6 +442,39 @@ describe("turning landing guards", () => {
         if (Math.hypot(resolved.x - p.x, resolved.z - p.z) > 0.05) blocked = true;
       }
       expect(blocked, `direction=${direction}`).toBe(true);
+    }
+  });
+
+  it("builds two landings that overlap in plan when they are 3 m apart vertically", () => {
+    for (const direction of [-1, 1]) {
+      const tall: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 5, -0.5], [8, 7, -0.5]];
+      const waypoints = tall.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(0);
+      expect(result.pathByEdge.has("turn")).toBe(true);
+    }
+  });
+
+  // Shallow bends are walked as one continuous flight: no landing square or guard, so the flights' mitred walls keep the passage clear.
+  it("builds a stair with two 10 degree bends 0.5 m apart and lets both walkers pass", () => {
+    const a = (10 * Math.PI) / 180, b = (20 * Math.PI) / 180;
+    const p2: [number, number, number] = [4 + 0.5 * Math.cos(a), 2.5, 0.5 * Math.sin(a)];
+    const shallow: [number, number, number][] = [[0, 0, 0], [4, 2, 0], p2, [p2[0] + 4 * Math.cos(b), 4.5, p2[2] + 4 * Math.sin(b)]];
+    for (const direction of [-1, 1]) {
+      const waypoints = shallow.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(0);
+      const path = result.pathByEdge.get("turn")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
+      const bendS = waypoints.slice(1, -1).map(([x, h, z]) => cumulative[path.findIndex((q) => Math.hypot(q.x - x, q.y - h, q.z - z) < 1e-6)]!);
+      for (const offset of [-0.5, 0, 0.5]) for (let s = 0; s <= total; s += 0.05) {
+        const q = samplePolyline(path, cumulative, s);
+        const leg = bendS.filter((bs) => s > bs).length;
+        const [x0, , z0] = waypoints[leg]!, [x1, , z1] = waypoints[leg + 1]!;
+        const length = Math.hypot(x1 - x0, z1 - z0);
+        const x = q.x - (z1 - z0) / length * offset, z = q.z + (x1 - x0) / length * offset;
+        const resolved = resolveWalls(x, z, 0.3, q.y, 1.7, result.wallSegments);
+        expect(Math.hypot(resolved.x - x, resolved.z - z), `direction=${direction} offset=${offset} s=${s}`).toBeLessThanOrEqual(0.05);
+      }
     }
   });
 

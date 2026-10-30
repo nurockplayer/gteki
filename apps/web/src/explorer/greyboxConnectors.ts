@@ -262,20 +262,43 @@ function clipToSquare(a: THREE.Vector3, b: THREE.Vector3, centre: THREE.Vector3,
   return [a.clone().lerp(b, t0), a.clone().lerp(b, t1)];
 }
 
-/** Whether two turning landings of one stair have outline squares that overlap in plan (gaps under `tolerance` count as overlap). */
-function turningLandingsOverlap(points: readonly THREE.Vector3[], half: number, tolerance = 0.02): boolean {
-  const squares: { centre: THREE.Vector3; axis: THREE.Vector3 }[] = [];
+/** Plan deflection between a stair's two legs at interior vertex `index`, in radians (0 at an end or on a straight run). */
+function bendAngle(points: readonly THREE.Vector3[], index: number): number {
+  if (index <= 0 || index >= points.length - 1) return 0;
+  const a = points[index]!.clone().sub(points[index - 1]!); a.y = 0;
+  const b = points[index + 1]!.clone().sub(points[index]!); b.y = 0;
+  return a.lengthSq() > 1e-12 && b.lengthSq() > 1e-12 ? a.angleTo(b) : 0;
+}
+
+/** Plan bends shallower than this are walked as one continuous flight: mitred side walls, no landing square or guard. */
+const SHALLOW_BEND = (20 * Math.PI) / 180;
+
+/** Plan point where `vertex + latA + s * dirA` meets `vertex + latB + t * dirB`, for two offset wall lines. */
+function mitre(vertex: THREE.Vector3, dirA: THREE.Vector3, latA: THREE.Vector3, dirB: THREE.Vector3, latB: THREE.Vector3): THREE.Vector3 {
+  const r = latB.clone().sub(latA);
+  // Solve s * dirA - t * dirB = r for s in plan.
+  const det = -dirA.x * dirB.z + dirB.x * dirA.z;
+  const s = Math.abs(det) < 1e-9 ? 0 : (-r.x * dirB.z + dirB.x * r.z) / det;
+  return vertex.clone().add(latA).addScaledVector(dirA, s);
+}
+
+/**
+ * Whether two turning landings of one stair have outline squares that overlap in plan and sit under `heightGap` apart
+ * vertically (gaps under `tolerance` count as overlap). Shallow bends are not landings and never take part.
+ */
+function turningLandingsOverlap(points: readonly THREE.Vector3[], half: number, tolerance = 0.02, heightGap = 2.1): boolean {
+  const squares: { centre: THREE.Vector3; height: number; axis: THREE.Vector3 }[] = [];
   for (let j = 1; j + 1 < points.length; j++) {
+    if (bendAngle(points, j) < SHALLOW_BEND) continue;
     const incoming = points[j]!.clone().sub(points[j - 1]!); incoming.y = 0;
-    const outgoing = points[j + 1]!.clone().sub(points[j]!); outgoing.y = 0;
-    if (incoming.lengthSq() > 1e-12 && outgoing.lengthSq() > 1e-12 && incoming.angleTo(outgoing) > 1e-6) {
-      const centre = points[j]!.clone(); centre.y = 0;
-      squares.push({ centre, axis: incoming.normalize() });
-    }
+    const centre = points[j]!.clone(); centre.y = 0;
+    squares.push({ centre, height: points[j]!.y, axis: incoming.normalize() });
   }
   const across = (axis: THREE.Vector3) => new THREE.Vector3(-axis.z, 0, axis.x);
   for (let a = 0; a < squares.length; a++) for (let b = a + 1; b < squares.length; b++) {
-    const first = squares[a]!, second = squares[b]!, delta = second.centre.clone().sub(first.centre);
+    const first = squares[a]!, second = squares[b]!;
+    if (Math.abs(first.height - second.height) >= heightGap) continue;
+    const delta = second.centre.clone().sub(first.centre);
     const axes = [first.axis, across(first.axis), second.axis, across(second.axis)];
     const reach = (square: { axis: THREE.Vector3 }, axis: THREE.Vector3) => half * (Math.abs(axis.dot(square.axis)) + Math.abs(axis.dot(across(square.axis))));
     const separated = axes.some((axis) => Math.abs(delta.dot(axis)) > reach(first, axis) + reach(second, axis) + tolerance);
@@ -322,32 +345,38 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       const from = points[i - 1]!, to = points[i]!;
       const dx = to.x - from.x, dz = to.z - from.z, horizontal = Math.hypot(dx, dz);
       const half = (edge.mode === "stairs" ? width : 1.2) / 2 + 0.03;
-      const isTurn = (index: number) => {
-        if (edge.mode !== "stairs" || index <= 0 || index >= points.length - 1) return false;
-        const a = points[index]!.clone().sub(points[index - 1]!), b = points[index + 1]!.clone().sub(points[index]!); a.y = 0; b.y = 0;
-        return a.lengthSq() > 1e-12 && b.lengthSq() > 1e-12 && a.angleTo(b) > 1e-6;
-      };
+      const bendAt = (index: number) => (edge.mode === "stairs" ? bendAngle(points, index) : 0);
+      const isTurn = (index: number) => bendAt(index) >= SHALLOW_BEND;
+      const isShallow = (index: number) => bendAt(index) > 1e-6 && bendAt(index) < SHALLOW_BEND;
       if (horizontal > 1e-6) {
         const leg = new THREE.Vector3(dx / horizontal, 0, dz / horizontal), normal = new THREE.Vector3(-leg.z, 0, leg.x);
         for (const side of [-1, 1]) {
           const lateral = normal.clone().multiplyScalar(half * side);
-          // Each side wall runs from its far end to the outline of a turning landing it meets; otherwise it spans the whole leg.
+          // A side wall runs from its far end to the outline of a turning landing it meets, mitres at a shallow bend, and otherwise spans the whole leg.
           let begin = 0, end = horizontal;
           if (isTurn(i - 1)) {
             const axis = points[i - 1]!.clone().sub(points[i - 2]!); axis.y = 0; axis.normalize();
             const exit = squareCrossing(from, axis, leg, lateral, half, "exit");
             begin = exit ? exit.clone().sub(from).dot(leg) : 0;
+          } else if (isShallow(i - 1)) {
+            const prev = points[i - 1]!.clone().sub(points[i - 2]!); prev.y = 0; prev.normalize();
+            const prevLateral = new THREE.Vector3(-prev.z, 0, prev.x).multiplyScalar(half * side);
+            begin = mitre(from, prev, prevLateral, leg, lateral).clone().sub(from).dot(leg);
           }
           if (isTurn(i)) {
             const entry = squareCrossing(to, leg, leg, lateral, half, "entry");
             end = entry ? entry.clone().sub(from).dot(leg) : horizontal;
+          } else if (isShallow(i)) {
+            const next = points[i + 1]!.clone().sub(to); next.y = 0; next.normalize();
+            const nextLateral = new THREE.Vector3(-next.z, 0, next.x).multiplyScalar(half * side);
+            end = mitre(to, leg, lateral, next, nextLateral).clone().sub(from).dot(leg);
           }
           const n = Math.max(1, Math.ceil((end - begin) / 0.5));
           for (let k = 0; k < n && end > begin; k++) {
             const s0 = begin + (end - begin) * k / n, s1 = begin + (end - begin) * (k + 1) / n;
             const a = from.clone().addScaledVector(leg, s0).add(lateral), b = from.clone().addScaledVector(leg, s1).add(lateral);
             a.y = 0; b.y = 0;
-            const ya = THREE.MathUtils.lerp(from.y, to.y, s0 / horizontal), yb = THREE.MathUtils.lerp(from.y, to.y, s1 / horizontal);
+            const ya = THREE.MathUtils.lerp(from.y, to.y, THREE.MathUtils.clamp(s0 / horizontal, 0, 1)), yb = THREE.MathUtils.lerp(from.y, to.y, THREE.MathUtils.clamp(s1 / horizontal, 0, 1));
             const wall = { ax: a.x, az: a.z, bx: b.x, bz: b.z, yMin: Math.min(ya, yb) - 0.12, yMax: Math.max(ya, yb) + 0.96 };
             wallSegments.push(wall);
             if (edge.mode === "stairs") {
@@ -380,7 +409,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         const at = to.clone();
         const rotation = new THREE.Matrix4().makeRotationY(Math.atan2(-(to.z - from.z), to.x - from.x)).setPosition(at);
         box(parts, edge.mode === "stairs" ? "tread" : "escStep", rotation, 0, -0.04, 0, edge.mode === "stairs" ? width : 1.2, 0.08, edge.mode === "stairs" ? width : 1.2, "walkable");
-        if (edge.mode === "stairs") {
+        if (edge.mode === "stairs" && isTurn(i)) {
           // The square's outline is guarded except where each attached flight's footprint meets it; each guard piece ends where that flight's side wall ends.
           const d = incoming.clone().normalize(), out = outgoing.clone().normalize(), n = new THREE.Vector3(-d.z, 0, d.x);
           const corners = [at.clone().addScaledVector(d, -half).addScaledVector(n, -half), at.clone().addScaledVector(d, half).addScaledVector(n, -half), at.clone().addScaledVector(d, half).addScaledVector(n, half), at.clone().addScaledVector(d, -half).addScaledVector(n, half)];
