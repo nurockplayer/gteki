@@ -20,6 +20,8 @@ const RAIL_HEIGHT_M = 1.1;
 const RAIL_RADIUS_M = 0.026;
 const POST_RADIUS_M = 0.02;
 const POST_SPACING_M = 1.5;
+/** Upper-slab faces this far below the upper landing, and up to just above it, are cut wherever they run past the footprint. */
+const SLAB_BAND_M = 0.6;
 
 /** The plan rectangle of one straight piece of a connector, in renderer coordinates. */
 export interface StairwellRect {
@@ -144,13 +146,26 @@ function rectCorners(rect: StairwellRect, height: number): THREE.Vector3[] {
     .setY(height));
 }
 
-/** Convex region from above the walking surface to just above the upper landing. */
+/**
+ * Convex regions for the cut. The first is from above the walking surface to just above the upper landing.
+ * The second is the upper slab's band inside the footprint, for faces that run past it: those are cut
+ * whatever the walking surface is, so both faces of a slab over the top of the flight go, while a face
+ * or tread that lies entirely inside the footprint stays.
+ */
 export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
   const regions: CutRegion[] = [];
   for (const well of wells) {
     for (const rect of well.rects) {
       const corners = [...rectCorners(rect, rect.center.y - Math.abs(rect.rise) / 2 + WALK_CLEAR_M), ...rectCorners(rect, well.upperY + UPPER_CLEAR_M)];
       regions.push({ key: rect, bounds: new THREE.Box3().setFromPoints(corners), planes: rectPlanes(rect, well.upperY), clip: null, accepts: horizontal });
+      const floorY = well.upperY - SLAB_BAND_M;
+      const band = [...rectCorners(rect, floorY), ...rectCorners(rect, well.upperY + UPPER_CLEAR_M)];
+      const planes = rectPlanes(rect, well.upperY).slice(0, 4);
+      planes.push(p => p.y - floorY - 1e-6, p => well.upperY + UPPER_CLEAR_M - p.y);
+      regions.push({
+        key: rect, bounds: new THREE.Box3().setFromPoints(band), planes, clip: null, accepts: horizontal,
+        admits: (vertices) => vertices.some((v) => !coversPlan(rect, v)),
+      });
     }
   }
   return regions;

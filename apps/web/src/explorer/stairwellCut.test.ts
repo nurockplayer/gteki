@@ -226,4 +226,34 @@ describe("stairwell cuts", () => {
     expect(proxy.geometry).toBe(proxyOriginal);
   });
 
+  it("removes both faces of an upper slab that runs past the footprint, the last 0.5 m included", () => {
+    const s = scene();
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
+    for (const x of [7, 9.1, 9.6, 9.9]) {
+      expect(down(s.root, x, 5).filter(hit => hit.point.y > 3.5)).toHaveLength(0);
+      expect(down(s.upper, x, 5)).toHaveLength(0);
+      expect(up(s.upper, x, 2)).toHaveLength(0);
+    }
+    // The slab past the footprint is still there.
+    expect(down(s.root, 12, 5).some(hit => Math.abs(hit.point.y - 4) < 1e-6)).toBe(true);
+    result.dispose();
+  });
+
+  it("keeps treads that lie entirely inside the footprint near the top", () => {
+    const s = scene();
+    const treads = [8, 9].map((i) => {
+      const tread = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.04, 1), new THREE.MeshBasicMaterial());
+      tread.position.set(i + 0.5, 0.4 * (i + 0.5) - 0.02, 0);
+      s.root.add(tread);
+      return { i, tread, original: tread.geometry };
+    });
+    s.root.updateMatrixWorld(true);
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
+    for (const { i, tread, original } of treads) {
+      expect(tread.geometry).toBe(original);
+      expect(down(tread, i + 0.5, 5).some(hit => Math.abs(hit.point.y - 0.4 * (i + 0.5)) < 1e-5)).toBe(true);
+    }
+    result.dispose();
+  });
+
 });
