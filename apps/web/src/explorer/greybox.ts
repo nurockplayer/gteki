@@ -147,7 +147,7 @@ function widthOf(edge: Edge): number {
   return typeof width === "number" && Number.isFinite(width) && width > 0 ? width : MODE_WIDTH[edge.mode] ?? 2;
 }
 
-type LandingPad = { nodeId:string; floorId:string; center:THREE.Vector3; along:THREE.Vector3; width:number; openSides:Set<number>; strip?:UnmodelledEdgeRun };
+type LandingPad = { nodeId:string; floorId:string; center:THREE.Vector3; along:THREE.Vector3; width:number; openSides:Set<number>; shifted:boolean; strip?:UnmodelledEdgeRun };
 
 /** A pad uses the node's render elevation; its optional strip follows an adjacent graph edge. */
 function landingPadsForEdge(bundle:StationBundle, edge:Edge, traversable:(edge:Edge)=>boolean, hasFloor:(p:V3)=>boolean, nodes:Map<string,StationBundle["nodes"][number]>, floors:Map<string,StationBundle["floors"][number]>): LandingPad[] {
@@ -158,7 +158,12 @@ function landingPadsForEdge(bundle:StationBundle, edge:Edge, traversable:(edge:E
     const node=nodes.get(id); if (!node || hasFloor(enu(center))) continue;
     const adjacent=bundle.edges.filter(e=>!["stairs","escalator","elevator"].includes(e.mode) && (e.from===id || e.to===id) && traversable(e));
     let along=other.clone().sub(center); along.y=0;
+    // A rising flight's pad lies beside it, on the landing side, so the flight never passes through its floor or ceiling.
+    // A level edge keeps its pad centred: it has nothing to pass through, and its far end needs the floor.
+    // A lift keeps its pad centred on the car node (#645 follow-up).
+    let away=edge.mode==="elevator" || Math.abs(other.y-center.y)<0.2 ? 0 : -1;
     if (along.lengthSq()<1e-10) {
+      if (away) away=1;
       const e=adjacent[0], points=e ? edgePoints(bundle,e,nodes,floors) : [];
       if (e?.to===id) points.reverse();
       along=points.length>1 ? points[1]!.clone().sub(center) : new THREE.Vector3(1,0,0); along.y=0;
@@ -192,7 +197,8 @@ function landingPadsForEdge(bundle:StationBundle, edge:Edge, traversable:(edge:E
         distance+=len; if (hit) break;
       }
     }
-    result.push({nodeId:id,floorId:node.floorId,center,along,width:Math.max(1.5,widthOf(edge)),openSides,...(best ? {strip:best.strip} : {})});
+    const width=Math.max(1.5,widthOf(edge));
+    result.push({nodeId:id,floorId:node.floorId,center:center.clone().addScaledVector(along,away*width/2),along,width,openSides,shifted:away!==0,...(best ? {strip:best.strip} : {})});
   }
   return result;
 }
@@ -318,7 +324,8 @@ export function createGreyboxBuilder(bundle: StationBundle, traversable: (edge: 
       const pads = new Map<string, LandingPad>();
       for (const entry of [...entries].sort((a, b) => a.index - b.index)) for (const pad of entry.pads) {
         const previous = pads.get(pad.nodeId);
-        if (!previous || pad.width > previous.width) pads.set(pad.nodeId, pad);
+        // A pad set beside a rising flight wins over a centred one, which that flight would pass through.
+        if (!previous || (pad.shifted && !previous.shifted) || (pad.shifted === previous.shifted && pad.width > previous.width)) pads.set(pad.nodeId, pad);
         else for (const side of pad.openSides) previous.openSides.add(side);
       }
       return emitGreybox(bundle, [...runs, ...[...pads.values()].flatMap((p) => p.strip ? [p.strip] : [])], hasFloor, scene, tier, captureNav, [...pads.values()]);

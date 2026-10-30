@@ -85,6 +85,20 @@ describe("buildGreybox", () => {
     ray.ray.origin.x=1.25;
     expect(ray.intersectObjects(grey.walkable).some(hit=>Math.abs(hit.point.y-4)<1e-6)).toBe(true);
   });
+  it("lays a landing pad beside the flight, never over it", () => {
+    const station = {
+      ...bundle,
+      floors:[{id:"lower",renderElevationM:0},{id:"upper",renderElevationM:4}],
+      nodes:[{id:"low",floorId:"lower",position:{x:0,y:0,z:0}},{id:"high",floorId:"upper",position:{x:4,y:0,z:4}},{id:"walk",floorId:"upper",position:{x:8,y:0,z:4}}],
+      edges:[{id:"stair",from:"low",to:"high",mode:"stairs"},{id:"path",from:"high",to:"walk",mode:"walk"}],
+    } as unknown as StationBundle;
+    const grey=buildGreybox(station,()=>true,p=>p.z<2 || (p.z>3 && p.x>=7),emptyScene,"low",true);
+    expect(grey.stats.landingPads).toBe(1);
+    const ray=new THREE.Raycaster(new THREE.Vector3(2.5,10,0),new THREE.Vector3(0,-1,0));
+    expect(ray.intersectObjects(grey.colliders).filter(hit=>hit.point.y>2)).toEqual([]);
+    ray.ray.origin.x=4.5;
+    expect(ray.intersectObjects(grey.walkable).some(hit=>Math.abs(hit.point.y-4)<1e-6)).toBe(true);
+  });
   it("uses the triangle limit for each tier", () => {
     expect(greyboxTriangleLimit("high")).toBe(150000);
     expect(greyboxTriangleLimit("low")).toBe(100000);
