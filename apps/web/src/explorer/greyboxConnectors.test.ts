@@ -450,6 +450,21 @@ describe("turning landing guards", () => {
   });
 
   // A single-vertex 135 degree return passes over its own first flight with under 2.1 m of headroom: skipped, not guarded.
+  // Three 10 degree bends 0.6 m apart are one continuous flight, with no landing of their own, before a real 90 degree turn.
+  it("builds a run of three 10 degree bends 0.6 m apart followed by a 90 degree turn, in both directions", () => {
+    const deg = (d: number) => (d * Math.PI) / 180;
+    const headings = [0, 10, 20, 30, 120], lengths = [0.6, 0.6, 0.6, 0.6, 4], heights = [0, 0.2, 0.4, 0.6, 0.8, 2.8];
+    const pts: [number, number, number][] = [[0, 0, 0]];
+    let x = 0, z = 0;
+    headings.forEach((heading, i) => { x += lengths[i]! * Math.cos(deg(heading)); z += lengths[i]! * Math.sin(deg(heading)); pts.push([x, heights[i + 1]!, z]); });
+    for (const direction of [-1, 1]) {
+      const waypoints = pts.map(([px, h, pz]): [number, number, number] => [px, h, direction * pz]);
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(0);
+      expect(result.pathByEdge.has("turn")).toBe(true);
+    }
+  });
+
   // A flight that passes through a turning landing it does not serve, 1 m above that landing: unresolved, so skipped.
   it("skips a stair whose flight crosses a non-adjacent turning landing at 1 m height difference", () => {
     for (const direction of [-1, 1]) {

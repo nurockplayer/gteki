@@ -385,10 +385,20 @@ function flightsStacked(points: readonly THREE.Vector3[], half: number, squares:
     const length = run.length();
     legs.push({ a, b, length, dir: length > 1e-9 ? run.normalize() : run });
   }
+  // Real landings (turns of 20 degrees or more) split the path into flights: a run of shallow bends between two landings is
+  // one continuous flight, so its own legs never count as stacked on each other.
+  const landingAt = new Set(squares.map((square) => square.index));
+  const runStart = [0], runOf: number[] = [];
+  for (let k = 0; k < legs.length; k++) {
+    if (k > 0 && landingAt.has(k)) runStart.push(k);
+    runOf.push(runStart.length - 1);
+  }
+  const runEnd = (r: number) => (r + 1 < runStart.length ? runStart[r + 1]! : legs.length);
   const margin = half - 0.02;
   for (let k = 0; k < legs.length; k++) {
     const leg = legs[k]!;
     if (leg.length < 1e-6) continue;
+    const r = runOf[k]!;
     const normal = acrossAxis(leg.dir);
     for (let s = 0; s <= leg.length; s += 0.1) {
       const hk = leg.a.y + (leg.b.y - leg.a.y) * (s / leg.length);
@@ -396,12 +406,13 @@ function flightsStacked(points: readonly THREE.Vector3[], half: number, squares:
         const p = leg.a.clone().addScaledVector(leg.dir, s).addScaledVector(normal, lateral);
         // A flight is exempt only inside the two landings it starts and ends at. Inside any other landing, under 2.1 m
         // vertical difference, the flight passes through a landing it does not serve: a layout that cannot be resolved here.
-        const own = (square: LandingSquare) => square.index === k || square.index === k + 1;
+        const own = (square: LandingSquare) => square.index === runStart[r] || square.index === runEnd(r);
         if (squares.some((square) => own(square) && insideSquare(p, square, half))) continue;
         if (squares.some((square) => !own(square) && insideSquare(p, square, half) && Math.abs(square.height - hk) < heightGap)) return true;
         for (let m = 0; m < legs.length; m++) {
           // Flights sharing a landing are guarded there, unless the landing is a sharp return that stacks over its first flight.
-          if (m === k || (Math.abs(m - k) === 1 && bendAngle(points, Math.max(k, m)) < SHARP_RETURN)) continue;
+          const q = runOf[m]!;
+          if (q === r || (Math.abs(q - r) === 1 && bendAngle(points, runStart[Math.max(q, r)]!) < SHARP_RETURN)) continue;
           const other = legs[m]!;
           if (other.length < 1e-6) continue;
           const rel = p.clone().sub(other.a); rel.y = 0;
