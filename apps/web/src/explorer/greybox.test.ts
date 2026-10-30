@@ -200,6 +200,30 @@ describe("buildGreybox", () => {
     expect(at.length).toBe(0);
   });
 
+  it("keeps the wall a flight rising along it has not reached yet", () => {
+    const floors = [...bundle.floors, { id: "g", renderElevationM: 6 }];
+    const nodes = [...bundle.nodes, { id: "d", floorId: "f", position: { x: 30, y: 0, z: 0 } }, { id: "c", floorId: "g", position: { x: 20, y: 1, z: 6 } }];
+    const edges = [bundle.edges[0]!, { id: "e2", from: "b", to: "d", mode: "walk" }, { id: "s", from: "b", to: "c", mode: "stairs" }];
+    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
+    const north = result.wallSegments.filter((w) => Math.abs(w.az + MODE_WIDTH.walk! / 2) < 1e-6);
+    // Past x = 15 the flight is over 2 m up: the corridor below keeps a wall up to the flight's underside.
+    expect(north.some((w) => Math.min(w.ax, w.bx) < 16 && Math.max(w.ax, w.bx) > 16 && w.yMin < 0.1 && w.yMax > 1.5)).toBe(true);
+  });
+
+  it("opens a near-parallel wall that crosses into the stair footprint", () => {
+    const floors = [...bundle.floors, { id: "g", renderElevationM: 4 }];
+    const stairHalf = MODE_WIDTH.stairs! / 2, half = MODE_WIDTH.walk! / 2;
+    // A corridor whose east wall starts on the stair's west side line and drifts 0.3 m into the footprint.
+    const x0 = 10 - stairHalf - half;
+    const nodes = [...bundle.nodes, { id: "c", floorId: "g", position: { x: 10, y: 6, z: 4 } },
+      { id: "p", floorId: "f", position: { x: x0, y: 1, z: 0 } }, { id: "q", floorId: "f", position: { x: x0 + 0.3, y: 6, z: 0 } }];
+    const edges = [bundle.edges[0]!, { id: "s", from: "b", to: "c", mode: "stairs" }, { id: "pq", from: "p", to: "q", mode: "walk" }];
+    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
+    // Near q the wall is inside the footprint at about 2.6 m up the flight: no full-height wall may stand there.
+    const near = result.wallSegments.filter((w) => Math.max(w.az, w.bz) < -5 && Math.min(w.ax, w.bx) > 10 - stairHalf - 0.01 && Math.min(w.ax, w.bx) < 10 - stairHalf + 0.4);
+    expect(near.every((w) => w.yMax < 2.9 + 0.5)).toBe(true);
+  });
+
   it("opens a stair mouth at the end of a long ramp", () => {
     const floors = [...bundle.floors, { id: "g", renderElevationM: 7 }];
     const ramp = [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 30, y: 0, z: 3 } }];

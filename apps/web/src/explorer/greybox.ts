@@ -405,8 +405,9 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
           const du = (wz.x - wa.x) * m.ux + (wz.z - wa.z) * m.uz, dv = -(wz.x - wa.x) * m.uz + (wz.z - wa.z) * m.ux;
           const u0 = (wa.x - m.at.x) * m.ux + (wa.z - m.at.z) * m.uz, v0 = -(wa.x - m.at.x) * m.uz + (wa.z - m.at.z) * m.ux;
           let lo = 0, hi = 1;
-          // A wall running along the footprint's side line is beside the flight, not across it.
-          if (Math.abs(dv) < 0.05 * Math.hypot(du, dv) && Math.abs(v0) > m.half - 0.05) continue;
+          // A wall running along the footprint's side line, end to end, is beside the flight, not across it.
+          const v1 = v0 + dv;
+          if (Math.abs(dv) < 0.05 * Math.hypot(du, dv) && Math.sign(v0) === Math.sign(v1) && Math.min(Math.abs(v0), Math.abs(v1)) > m.half - 0.05) continue;
           for (const [p0, dp, min, max] of [[u0, du, -0.05, m.length], [v0, dv, -m.half, m.half]] as const) {
             if (Math.abs(dp) < 1e-9) { if (p0 < min || p0 > max) { lo = 1; hi = 0; } continue; }
             const t1 = (min - p0) / dp, t2 = (max - p0) / dp;
@@ -424,9 +425,13 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
             lo = Math.max(lo, ta); hi = Math.min(hi, tb);
             if (lo >= hi) continue;
           }
-          const gl = gap(lo), gh = gap(hi);
+          // In steps of at most 0.5 m along the wall, so a flight rising along it keeps the wall it has not reached yet.
           // 0.4 m under the flight's lowest point keeps a band clear of the walker's feet and the step it climbs.
-          cuts.push({ lo, hi, below: Math.min(gl, gh) - 0.4, above: Math.max(gl, gh) + 2.6 });
+          const steps = Math.max(1, Math.ceil(wa.distanceTo(wz) * (hi - lo) / 0.5));
+          for (let n = 0; n < steps; n++) {
+            const cs = lo + (hi - lo) * n / steps, ce = lo + (hi - lo) * (n + 1) / steps, gs = gap(cs), ge = gap(ce);
+            cuts.push({ lo: cs, hi: ce, below: Math.min(gs, ge) - 0.4, above: Math.max(gs, ge) + 2.6 });
+          }
           intervals = intervals.flatMap(([s, e]) => [[s, Math.min(e, lo)], [Math.max(s, hi), e]].filter(([x, y]) => x! < y!) as [number, number][]);
         }
         const clearIntervals: [number, number][] = [];
