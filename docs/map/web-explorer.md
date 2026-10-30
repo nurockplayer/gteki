@@ -12,7 +12,8 @@ Most helpers in the folder are small pure modules with their own tests (camera m
 ## Main files and functions
 - `apps/web/src/explorer/greybox.ts` — detects unmodelled edge runs, builds merged runtime passage meshes and portal openings, and splits walls at openings.
 - `apps/web/src/explorer/greyboxConnectors.ts` — builds runtime vertical connectors, batches their geometry and checks the shared triangle budget.
-- `apps/web/src/explorer/portalCut.ts` — runtime scene wall cuts and shared-mesh clipping fallback at greybox openings.
+- `apps/web/src/explorer/portalCut.ts` — `cutRegions()` (the generic CPU triangle cut with a clipping-plane fallback) plus `cutPortals()` for greybox openings.
+- `apps/web/src/explorer/stairwellCut.ts` — `stairwellWells()` builds a plan rectangle per straight piece of a traversable stairs/escalator edge (including intermediate landings), `stairwellRegions()` turns them into walking-surface-relative cut regions, `cutStairwells()` runs the CPU cut, adds the 0.30 m edge band into the greybox shell and builds the upper-floor guard rail (mesh + wall segments + colliders). Elevators are not handled yet.
 - `apps/web/src/explorer/greyboxScene.ts` — station-only collision probes and runtime greybox legend proximity.
 - `apps/web/src/explorer/routeGroundQa.ts` — route ground and vertical connector sampling for the QA hook.
 - `apps/web/src/main.ts:1-8` — entry: imports the CSS and constructs `App` on the `#app` element, prints a load failure into the page.
@@ -56,6 +57,7 @@ Most helpers in the folder are small pure modules with their own tests (camera m
 
 ## Data flow
 - Runtime greybox: `Explorer.loadStation()` probes the original station ground and colliders, builds passages and piecewise stairs and escalators from traversable graph edges, then adds their ground and walls to walker and camera targets. Missing connector endpoint floors receive landing pads. Connector walk paths replace edge geometry in the shared guide, route ribbon, minimap and ground QA polyline. Portal openings split scene wall segments and cut intersecting scene meshes before final ray trees are built; collider filtering is a fallback. `portalView()` samples the opening with an ID mask. Elevators are deferred to a follow-up PR.
+- Runtime stairwell cut: right after `cutPortals`, `cutStairwells` cuts the horizontal faces over every traversable stairs/escalator footprint (more than 0.3 m above the local walking surface up to upper landing + 0.05 m). It never clips: shared PLATEAU meshes go through the same CPU split with `cutRegions`, and a mesh over `STAIRWELL_VERTEX_LIMIT` is reported in `skipped`. Its wall segments and colliders join `this.walls`/`this.colliders` before the ray trees; stats land in `sceneInfo().greybox.stairwells`.
 - Station data: `apps/web/src/registry.ts` `listStations()` (line 50) reads the Vite virtual module `virtual:gteki-stations` (built by `apps/web/stations-plugin.ts` from the `stations/` folders). `GTEKI_PRIVATE_OVERLAY` can replace contract JSON for matching public station names while scene code and assets stay public; the module exports `privateBuild`, surfaced by `PRIVATE_BUILD` and the UI badge. Each entry's `load()` returns a LoadedStation: the parsed bundle from the schema package, optional `scene` module, `sceneImportError`, and `assetUrls`. The synthetic demo entry is added at the end and has no scene.
 - `apps/web/src/ui/app.ts` `openStation()` (283-353) creates the router (`createRouter`) and the search index, then calls `Explorer.loadStation`. The explorer never parses station files itself.
 - Route: `app.ts` `computeRoute()` (775-801) calls `routeBetween`, then `Explorer.showRoute` and `minimap.setRoute`. In overview it also calls `focusPoints`.
@@ -80,6 +82,7 @@ Most helpers in the folder are small pure modules with their own tests (camera m
 - Overview framing is in the free area left by the panel and the phone sheet. Changing the panel changes the framing (`setPanel`, `setSheet`).
 - Walk mode and guide mode use different camera code paths (`stepWalk` vs `stepGuide`). A fix in one often needs the other.
 - QA hooks (`walkPath`, `signClearance`, `sceneInfo`) are read by tests. Keep their return shapes stable.
+- Stairwell cuts must stay off the clipping-plane path: a clip volume on a shared slab would cut every clone of that mesh. `cutStairwells` passes `clip: false`; keep it, and remember `packages/godot/src/route-clip-audit.ts` (`cutSceneProbe`) and `greybox-stats.ts` repeat the same cut, so a change to the well geometry or rail height changes all three call sites and their tests.
 
 ## Related PRs and issues
 - #109 — overview framing: phone overview half the viewport, skip street context; `f5da91f2`, `2bb25ef2`.
@@ -95,4 +98,5 @@ Most helpers in the folder are small pure modules with their own tests (camera m
 - #400 — POI chips kept off station-name boards and declutter where the identity nudge draws them (`e311178d`, `28537923`, PR #483).
 - Guide identity held in view during the guide hold (`0f1f365a`; branch name points at #399).
 - #137 — persistent data-credit line (PR #187).
+- Stairwells — the slab cut through vertical connectors and the upper-floor guard rail (`stairwellCut.ts`), on top of the #633 `cutRegions` refactor of `portalCut.ts`.
 - See also [[web-ui]] for the shell that drives this class, [[pkg-scene-api]] for the scene contract, [[pkg-navigation]] for routes, and [[INDEX]].

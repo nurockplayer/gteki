@@ -141,7 +141,7 @@ function quad(out: number[], colors: number[] | null, a: THREE.Vector3, b: THREE
   }
 }
 
-function widthOf(edge: Edge): number {
+export function widthOf(edge: Edge): number {
   // The public schema currently permits only scalar attributes; accept a structured runtime width when supplied.
   const width = (edge.attributes as unknown as { width?: { m?: unknown } } | undefined)?.width?.m;
   return typeof width === "number" && Number.isFinite(width) && width > 0 ? width : MODE_WIDTH[edge.mode] ?? 2;
