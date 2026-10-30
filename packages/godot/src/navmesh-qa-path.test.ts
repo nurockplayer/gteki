@@ -15,3 +15,13 @@ it("rejects output paths escaping .qa via a directory or file symlink", () => {
     expect(qaFile(path.join(dir, "valid.json"))).toBe(path.join(dir, "valid.json"));
   } finally { fs.rmSync(dir, { recursive:true, force:true }); fs.rmSync(outside, { recursive:true, force:true }); }
 });
+
+it("keeps QA output under the private directory when a private overlay is loaded", () => {
+  const priv = fs.mkdtempSync(path.join(os.tmpdir(), "gteki-private-test-"));
+  try {
+    const real = fs.realpathSync(priv);
+    expect(() => qaDirectory(path.resolve(".qa", "navmesh"), priv)).toThrow(/GTEKI_PRIVATE_DIR/);
+    expect(qaDirectory(path.join(priv, ".qa", "navmesh"), priv)).toBe(path.join(real, ".qa", "navmesh"));
+    expect(qaFile(path.join(priv, ".qa", "audit.json"), priv)).toBe(path.join(real, ".qa", "audit.json"));
+  } finally { fs.rmSync(priv, { recursive:true, force:true }); }
+});
