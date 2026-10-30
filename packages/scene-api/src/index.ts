@@ -145,6 +145,19 @@ export interface StationSceneModule {
    * explorer falls back to the live cut for a missing or failed fetch.
    */
   stairwellRecipeUrl?: (tier: "high" | "low") => Promise<string | null>;
+  /**
+   * Navmesh walk paths baked offline for this station's walk edges (`stations/<id>/navmesh-paths.json`), or null.
+   * The guide walks these instead of the graph polylines; an edge without one is drawn as a fallback (dashed).
+   */
+  navmeshPaths?: () => Promise<NavmeshPaths | null>;
+}
+
+/** One walk edge's baked navmesh polylines in the station ENU frame ([x, y, z] metres), snapped end to end. */
+export interface NavmeshPaths {
+  version: 1;
+  station: string;
+  frame: "ENU";
+  edges: Record<string, { forward?: [number, number, number][]; reverse?: [number, number, number][] }>;
 }
 
 const WALKABLE_ROLES = new Set(["floor", "stairs_ramps", "walkable", "ramp", "stairs"]);
