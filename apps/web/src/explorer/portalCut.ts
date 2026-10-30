@@ -17,6 +17,11 @@ export interface CutRegion {
   clip: THREE.Plane[] | null;
   accepts(normal: THREE.Vector3): boolean;
   /**
+   * Optional mesh-only filter, asked once per mesh before any triangle work. True skips this region for that mesh; it
+   * must be what `admits` would answer false to on every piece, and depend on the mesh alone.
+   */
+  rejectsMesh?(mesh: THREE.Object3D): boolean;
+  /**
    * Optional filter, checked after `accepts`. It is called on each piece of a triangle that lies inside the region,
    * after clipping to the region's planes (`piece`), with the mesh and the whole triangle's world vertices. Only an
    * accepted piece is removed.
@@ -104,6 +109,26 @@ export interface CutResult {
   maxHeights: Map<object, number[]>;
 }
 
+/** Side of a grid cell in x/z, for finding the regions near a triangle. */
+const GRID_CELL_M = 2;
+
+/** Regions filed under every 2 m x/z cell their bounds touch, so a triangle meets only the regions beside it. */
+function regionGrid(regions: readonly CutRegion[]): Map<string, CutRegion[]> {
+  const cells = new Map<string, CutRegion[]>();
+  for (const region of regions) {
+    if (region.bounds.isEmpty()) continue;
+    const { min, max } = region.bounds;
+    for (let ix = Math.floor(min.x / GRID_CELL_M); ix <= Math.floor(max.x / GRID_CELL_M); ix++) {
+      for (let iz = Math.floor(min.z / GRID_CELL_M); iz <= Math.floor(max.z / GRID_CELL_M); iz++) {
+        const key = `${ix},${iz}`;
+        const list = cells.get(key);
+        if (list) list.push(region); else cells.set(key, [region]);
+      }
+    }
+  }
+  return cells;
+}
+
 /**
  * Remove each region's interior from the meshes under `root` (or under any of several roots, for collision
  * proxies that sit outside the scene root), in render and collision alike. A mesh under two roots is cut once.
@@ -120,6 +145,7 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
   for (const r of roots) r.traverse(o => { listed.add(o); });
   for (const o of listed) { const m = o as THREE.Mesh; if (m.isMesh) uses.set(m.geometry, (uses.get(m.geometry) ?? 0) + 1); }
   const walkableCopies = new WeakSet<THREE.Mesh>();
+  const grid = regionGrid(regions);
   const countRegion = (key: object) => result.perRegion.set(key, (result.perRegion.get(key) ?? 0) + 1);
   // Visited once even when two roots share it; copies made during the walk are visited as before.
   const done = new Set<THREE.Object3D>();
@@ -175,6 +201,8 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
     if (!position || (mesh as THREE.SkinnedMesh).isSkinnedMesh || Object.keys(geometry.morphAttributes).length || geometry.drawRange.start !== 0 || geometry.drawRange.count !== Infinity) {
       result.skipped.push(`${mesh.name || mesh.uuid}: unsupported geometry`); return;
     }
+    const active = relevant.filter(region => !region.rejectsMesh?.(mesh));
+    if (!active.length) return;
     const isWalkable = walkable.has(mesh) || walkableCopies.has(mesh);
     const shared = (uses.get(geometry) ?? 0) > 1 || walkableCopies.has(mesh);
     const largeShared = shared && position.count >= 50000;
@@ -189,25 +217,46 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
       const k = index ? index.getX(i) : i;
       return into.set(position.getX(k), position.getY(k), position.getZ(k)).applyMatrix4(mesh.matrixWorld);
     };
-    const hasCut = relevant.some(region => {
-      const intersects = (i: number) => {
-        for (let j = 0; j < 3; j++) readWorld(i + j, vertices[j]!);
-        const normal = vertices[1]!.clone().sub(vertices[0]!).cross(vertices[2]!.clone().sub(vertices[0]!)).normalize();
-        if (!region.accepts(normal)) return false;
-        return triangleBounds.setFromPoints(vertices).intersectsBox(region.bounds);
-      };
-      if (tree && mesh.matrixWorld.determinant() !== 0) {
-        const localBounds = region.bounds.clone().applyMatrix4(inverse);
-        const sphere = localBounds.getBoundingSphere(new THREE.Sphere()), candidates: number[] = [];
-        tree.pointCandidates(sphere.center.x, sphere.center.y, sphere.center.z, sphere.radius + 1e-6, candidates);
-        return candidates.some(id => {
-          const i = id * 3;
-          return groups.some(g => i >= g.start && i + 3 <= Math.min(g.start + g.count, count)) && intersects(i);
-        });
+    // Reads triangle i's world corners into `vertices` and their bounds into `triangleBounds`.
+    const readTriangle = (i: number) => {
+      for (let j = 0; j < 3; j++) readWorld(i + j, vertices[j]!);
+      triangleBounds.setFromPoints(vertices);
+    };
+    // Unit normal of the triangle just read, in scratch vectors (same arithmetic as the rebuild's normal below).
+    const edgeA = new THREE.Vector3(), edgeB = new THREE.Vector3(), faceNormal = new THREE.Vector3();
+    const readNormal = (): THREE.Vector3 => faceNormal.crossVectors(edgeA.copy(vertices[1]!).sub(vertices[0]!), edgeB.copy(vertices[2]!).sub(vertices[0]!)).normalize();
+    // Whether the triangle just read is cut by `region`: its bounds touch the region's and its normal is accepted.
+    const cutBy = (region: CutRegion): boolean => triangleBounds.intersectsBox(region.bounds) && region.accepts(readNormal());
+    // Without a BVH: one pass over the triangles, each tested only against the active regions in its grid cells.
+    const flatCut = (): boolean => {
+      const activeSet = new Set(active), seen = new Map<CutRegion, number>();
+      let stamp = 0;
+      for (const group of groups) for (let i = group.start; i + 2 < Math.min(group.start + group.count, count); i += 3) {
+        readTriangle(i);
+        stamp++;
+        for (let ix = Math.floor(triangleBounds.min.x / GRID_CELL_M); ix <= Math.floor(triangleBounds.max.x / GRID_CELL_M); ix++) {
+          for (let iz = Math.floor(triangleBounds.min.z / GRID_CELL_M); iz <= Math.floor(triangleBounds.max.z / GRID_CELL_M); iz++) {
+            for (const region of grid.get(`${ix},${iz}`) ?? []) {
+              if (!activeSet.has(region) || seen.get(region) === stamp) continue;
+              seen.set(region, stamp);
+              if (cutBy(region)) return true;
+            }
+          }
+        }
       }
-      for (const group of groups) for (let i = group.start; i + 2 < Math.min(group.start + group.count, count); i += 3) if (intersects(i)) return true;
       return false;
-    });
+    };
+    const hasCut = tree && mesh.matrixWorld.determinant() !== 0 ? active.some(region => {
+      const localBounds = region.bounds.clone().applyMatrix4(inverse);
+      const sphere = localBounds.getBoundingSphere(new THREE.Sphere()), candidates: number[] = [];
+      tree.pointCandidates(sphere.center.x, sphere.center.y, sphere.center.z, sphere.radius + 1e-6, candidates);
+      return candidates.some(id => {
+        const i = id * 3;
+        if (!groups.some(g => i >= g.start && i + 3 <= Math.min(g.start + g.count, count))) return false;
+        readTriangle(i);
+        return cutBy(region);
+      });
+    }) : flatCut();
     if (!hasCut) return;
     // Clipping planes cannot distinguish the cut faces from returns or obstacles in the same mesh.
     // If any non-cut triangle intersects the clip volume, use the CPU cut instead.
@@ -241,6 +290,16 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
     for (const group of groups) {
       const start = output.position!.length / position.itemSize;
       for (let i = group.start; i + 2 < Math.min(group.start + group.count, count); i += 3) {
+        readTriangle(i);
+        // A region changes the triangle only if it touches the region's bounds and accepts its normal; otherwise it is copied.
+        if (!active.some(region => triangleBounds.intersectsBox(region.bounds) && region.accepts(readNormal()))) {
+          // No active region can touch this triangle: copy its attributes through unchanged, without objects.
+          for (let j = 0; j < 3; j++) {
+            const k = index ? index.getX(i + j) : i + j;
+            for (const [name, attr] of attrs) for (let n = 0; n < attr.itemSize; n++) output[name]!.push(attr.getComponent(k, n));
+          }
+          continue;
+        }
         const vertices = [0, 1, 2].map(j => {
           const k = index ? index.getX(i + j) : i + j;
           const values: Record<string, number[]> = {};
@@ -249,7 +308,7 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
         });
         const normal = vertices[1]!.world.clone().sub(vertices[0]!.world).cross(vertices[2]!.world.clone().sub(vertices[0]!.world)).normalize();
         let polys = [vertices];
-        for (const region of relevant) {
+        for (const region of active) {
           if (!region.accepts(normal)) continue;
           const next: Vertex[][] = [];
           const triangle = vertices.map(v => v.world);
@@ -274,7 +333,7 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
           }
           polys = next;
         }
-        for (const poly of polys) for (let j = 1; j + 1 < poly.length; j++) for (const v of [poly[0]!, poly[j]!, poly[j + 1]!]) for (const [name] of attrs) output[name]!.push(...v.values[name]!);
+        for (const poly of polys) for (let j = 1; j + 1 < poly.length; j++) for (const v of [poly[0]!, poly[j]!, poly[j + 1]!]) for (const [name] of attrs) for (const x of v.values[name]!) output[name]!.push(x);
       }
       outGroups.push({ start, count: output.position!.length / position.itemSize - start, materialIndex: group.materialIndex ?? 0 });
     }

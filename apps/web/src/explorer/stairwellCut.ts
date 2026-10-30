@@ -164,13 +164,21 @@ function rectCorners(rect: StairwellRect, height: number): THREE.Vector3[] {
  */
 export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
   const regions: CutRegion[] = [];
+  // Each mesh's horizontal faces are read once, however many rectangles ask about it.
+  const facesCache = new WeakMap<THREE.Object3D, HorizontalFace[]>();
+  const horizontalFacesOf = (mesh: THREE.Object3D): HorizontalFace[] => {
+    let found = facesCache.get(mesh);
+    if (!found) { found = horizontalFaces(mesh); facesCache.set(mesh, found); }
+    return found;
+  };
   for (const well of wells) {
     for (const rect of well.rects) {
       const corners = [...rectCorners(rect, rect.center.y - Math.abs(rect.rise) / 2 + WALK_CLEAR_M), ...rectCorners(rect, well.upperY + UPPER_CLEAR_M)];
       regions.push({
         key: rect, bounds: new THREE.Box3().setFromPoints(corners), planes: rectPlanes(rect, well.upperY), clip: null, accepts: horizontal,
         // A stair model is never cut, even where another flight passes above the footprint.
-        admits: (piece, mesh, triangle) => mesh.userData.gteki_role !== "stairs_ramps" && !onWalkingSurface(piece, triangle, well),
+        rejectsMesh: (mesh) => mesh.userData.gteki_role === "stairs_ramps",
+        admits: (piece, mesh, triangle) => !onWalkingSurface(piece, triangle, well),
       });
       const floorY = well.upperY - SLAB_BAND_M;
       const band = [...rectCorners(rect, floorY), ...rectCorners(rect, well.upperY + UPPER_CLEAR_M)];
@@ -179,16 +187,16 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
       const levelCache = new WeakMap<THREE.Object3D, BandLevels>();
       const levelsOf = (mesh: THREE.Object3D): BandLevels => {
         let found = levelCache.get(mesh);
-        if (!found) { found = bandLevels(mesh, rect, floorY, well.upperY + UPPER_CLEAR_M); levelCache.set(mesh, found); }
+        if (!found) { found = bandLevels(horizontalFacesOf(mesh), rect, floorY, well.upperY + UPPER_CLEAR_M); levelCache.set(mesh, found); }
         return found;
       };
       regions.push({
         key: rect, bounds: new THREE.Box3().setFromPoints(band), planes, clip: null,
         // Horizontal faces, and near-vertical side faces that the slab levels below decide.
         accepts: (normal) => horizontal(normal) || Math.abs(normal.y) < VERTICAL_NORMAL_M,
+        rejectsMesh: (mesh) => { const role = mesh.userData.gteki_role; return role !== undefined && !SLAB_ROLES.has(role); },
         admits: (piece, mesh, triangle) => {
           const role = mesh.userData.gteki_role;
-          if (role !== undefined && !SLAB_ROLES.has(role)) return false;
           if (onWalkingSurface(piece, triangle, well)) return false;
           // The triangle, not its clipped piece, decides the orientation and the height span.
           const [a, b, c] = triangle as [THREE.Vector3, THREE.Vector3, THREE.Vector3];
@@ -355,6 +363,9 @@ function onWalkingSurface(piece: readonly THREE.Vector3[], triangle: readonly TH
   });
 }
 
+/** A horizontal triangle of a mesh, in world space: its mean height and its corners as x, y, z triples. */
+interface HorizontalFace { y: number; corners: number[] }
+
 /**
  * For an unroled mesh: the height levels (5 cm) of its horizontal triangles inside the band that have a vertex
  * outside the rectangle in plan. A slab's faces run past the footprint, so their levels are admitted; a tread
@@ -367,27 +378,37 @@ interface BandLevels {
   outside: Set<number>;
 }
 
-function bandLevels(mesh: THREE.Object3D, rect: StairwellRect, floorY: number, topY: number): BandLevels {
-  const all = new Set<number>(), outside = new Set<number>();
+/** The horizontal triangles of a mesh, in world space. One pass over the mesh, shared by every rectangle. */
+function horizontalFaces(mesh: THREE.Object3D): HorizontalFace[] {
+  const faces: HorizontalFace[] = [];
   const geometry = (mesh as THREE.Mesh).geometry as THREE.BufferGeometry | undefined;
   const position = geometry?.getAttribute("position");
-  if (!geometry || !position) return { all, outside };
+  if (!geometry || !position) return faces;
   mesh.updateWorldMatrix(true, false);
   const index = geometry.index, count = index ? index.count : position.count;
   const vs = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
-  const outsidePlan = (p: THREE.Vector3) => {
-    const d = (p.x - rect.center.x) * rect.along.x + (p.z - rect.center.z) * rect.along.z;
-    const a = (p.x - rect.center.x) * rect.across.x + (p.z - rect.center.z) * rect.across.z;
-    return Math.abs(d) > rect.halfLength + 1e-3 || Math.abs(a) > rect.halfWidth + 1e-3;
-  };
   for (let i = 0; i + 2 < count; i += 3) {
     for (let j = 0; j < 3; j++) vs[j]!.fromBufferAttribute(position, index ? index.getX(i + j) : i + j).applyMatrix4(mesh.matrixWorld);
     const normal = vs[1]!.clone().sub(vs[0]!).cross(vs[2]!.clone().sub(vs[0]!));
     if (normal.lengthSq() === 0 || !horizontal(normal.normalize())) continue;
-    const y = (vs[0]!.y + vs[1]!.y + vs[2]!.y) / 3;
+    faces.push({ y: (vs[0]!.y + vs[1]!.y + vs[2]!.y) / 3, corners: vs.flatMap((v) => [v.x, v.y, v.z]) });
+  }
+  return faces;
+}
+
+function bandLevels(faces: readonly HorizontalFace[], rect: StairwellRect, floorY: number, topY: number): BandLevels {
+  const all = new Set<number>(), outside = new Set<number>();
+  const outsidePlan = (x: number, z: number) => {
+    const d = (x - rect.center.x) * rect.along.x + (z - rect.center.z) * rect.along.z;
+    const a = (x - rect.center.x) * rect.across.x + (z - rect.center.z) * rect.across.z;
+    return Math.abs(d) > rect.halfLength + 1e-3 || Math.abs(a) > rect.halfWidth + 1e-3;
+  };
+  for (const face of faces) {
+    const y = face.y;
     if (y < floorY - 1e-6 || y > topY + 1e-6) continue;
     all.add(levelOf(y));
-    if (vs.some(outsidePlan)) outside.add(levelOf(y));
+    const c = face.corners;
+    if (outsidePlan(c[0]!, c[2]!) || outsidePlan(c[3]!, c[5]!) || outsidePlan(c[6]!, c[8]!)) outside.add(levelOf(y));
   }
   return { all, outside };
 }
