@@ -16,13 +16,14 @@ import * as THREE from "three";
 import { GLTFLoader, type GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { enuToRenderer } from "@gteki/geo";
-import { createRouter, nodeDisplayZ, routeBetween, routePolyline, type PolylinePoint, type RouteResult } from "@gteki/navigation";
+import { createRouter, DEFAULT_PROFILE, nodeDisplayZ, routeBetween, routePolyline, type PolylinePoint, type RouteResult } from "@gteki/navigation";
 import { parseStationFiles, type Edge, type StationBundle } from "@gteki/schema";
 import { glbPrimitivePlugin, type SceneContext, type StationScene, type StationSceneModule, type WallSegment } from "@gteki/scene-api";
 import { headlessGltfTextures, headlessThree, installHeadlessDom, newShimUsage, stubRenderer } from "./headless-dom.ts";
 import { settleScene } from "./export-scene.ts";
 import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { castAll, castCamera, castTargets } from "../../../apps/web/src/explorer/raycast.ts";
+import { cutStairwells, stairwellWells } from "../../../apps/web/src/explorer/stairwellCut.ts";
 
 export const FLOOR_TOLERANCE_M = 0.3;
 const STEP_M = 0.5;
@@ -74,6 +75,21 @@ export function sceneProbe(scene: StationScene): SceneProbe {
   const collider = castTargets(colliders, scene.walkable);
   prepareRayTrees([...ground, ...collider]);
   return { ground, collider, walls: scene.walls ?? [] };
+}
+
+/** Probe a scene the way Explorer.loadStation draws it: slabs cut open along vertical connectors, rails included. */
+export function cutSceneProbe(scene: StationScene, bundle: StationBundle, quality: "high" | "low" = "low"): SceneProbe {
+  const router = createRouter(bundle, { allowUnverified: true });
+  const cut = cutStairwells(scene.root, stairwellWells(bundle, (edge) => router.isTraversable(edge, DEFAULT_PROFILE)), {
+    walkable: new Set(castTargets(scene.walkable, scene.colliders ?? [])), tier: quality,
+    // Collision proxies may sit outside scene.root: cut them with the slabs, as Explorer.loadStation does.
+    collision: [...scene.walkable, ...(scene.colliders ?? []), ...(scene.cameraBlockers ?? [])],
+  });
+  if (cut.finish) scene.root.add(cut.finish);
+  const probe = sceneProbe(scene);
+  probe.collider.push(...cut.colliders);
+  probe.walls = [...probe.walls, ...cut.walls.map((w) => ({ a: { x: w.ax, y: -w.az }, b: { x: w.bx, y: -w.bz }, zMin: w.yMin, zMax: w.yMax }))];
+  return probe;
 }
 
 function cross2(a: { x: number; y: number }, b: { x: number; y: number }, c: { x: number; y: number }): number {
@@ -222,7 +238,7 @@ async function main(): Promise<void> {
         fs.existsSync(path.join(dir, "tenants.json")) ? read("tenants.json") : undefined, { privateTier: true });
       if (!parsed.ok) throw new Error(`${station}: overlay failed validation: ${JSON.stringify(parsed.issues).slice(0, 500)}`);
       const bundle = parsed.bundle;
-      const probe = sceneProbe(await loadScene(station, bundle));
+      const probe = cutSceneProbe(await loadScene(station, bundle), bundle);
       const sourceOf = additionsEdgeFiles(path.join(tmp, "additions", station));
       if (route) {
         const poi = (id: string) => { const p = bundle.pois.find((x) => x.id === id); if (!p) throw new Error(`${station}: no POI ${id}`); return p; };

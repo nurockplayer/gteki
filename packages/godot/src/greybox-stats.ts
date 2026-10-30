@@ -13,11 +13,12 @@ import { greyboxSceneProbes } from "../../../apps/web/src/explorer/greyboxScene.
 import { floorProbe } from "../../../apps/web/src/explorer/routeGaps.ts";
 import { explorerTargets } from "../../../apps/web/src/explorer/raycast.ts";
 import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
+import { cutStairwells, stairwellWells, type StairwellStats } from "../../../apps/web/src/explorer/stairwellCut.ts";
 import { wallToRenderer } from "../../../apps/web/src/explorer/walker.ts";
 import { loadScene, sceneProbe } from "./route-clip-audit.ts";
 
-/** Build using the same targets and traversal profile as Explorer.loadStation. */
-export function greyboxStats(bundle: StationBundle, scene: StationScene, tier: "high" | "low", allowUnverified = false): GreyboxStats {
+/** Build using the same targets and traversal profile as Explorer.loadStation, including the stairwell cut. */
+export function greyboxStats(bundle: StationBundle, scene: StationScene, tier: "high" | "low", allowUnverified = false): GreyboxStats & { stairwells: StairwellStats } {
   scene.root.updateMatrixWorld(true);
   sceneProbe(scene);
   const targets = explorerTargets(scene.walkable, scene.colliders ?? [], scene.cameraBlockers ?? []);
@@ -31,15 +32,23 @@ export function greyboxStats(bundle: StationBundle, scene: StationScene, tier: "
     return value;
   };
   const router = createRouter(bundle, { allowUnverified });
-  const greybox = buildGreybox(bundle, (edge) => router.isTraversable(edge, DEFAULT_PROFILE), hasFloor,
+  const traversable = (edge: StationBundle["edges"][number]) => router.isTraversable(edge, DEFAULT_PROFILE);
+  const greybox = buildGreybox(bundle, traversable, hasFloor,
     greyboxSceneProbes(targets.collider, (scene.walls ?? []).map(wallToRenderer)), tier);
+  const cut = cutStairwells(scene.root, stairwellWells(bundle, traversable), {
+    walkable: new Set(targets.ground), tier, greyboxRoot: greybox.root,
+    collision: [...scene.walkable, ...(scene.colliders ?? []), ...(scene.cameraBlockers ?? [])],
+  });
+  if (cut.finish) greybox.root.add(cut.finish);
+  const stats = { ...greybox.stats, triangles: greybox.stats.triangles + cut.bandTriangles, stairwells: cut.stats };
   greybox.root.traverse((o) => {
     const mesh = o as THREE.Mesh;
     if (!mesh.isMesh) return;
     mesh.geometry.dispose();
     for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) material.dispose();
   });
-  return greybox.stats;
+  cut.dispose();
+  return stats;
 }
 
 function readBundle(dir: string, privateTier: boolean): StationBundle {

@@ -69,7 +69,7 @@
         "wheelchair×3"
       ],
       "stale": true,
-      "sources": 4,
+      "sources": 3,
       "nodes": 4,
       "modes": [
         "walk"
@@ -79,7 +79,7 @@
         "Go ~20 m",
         "Turn left, ~152 m",
         "Turn right, ~14 m",
-        "Stairs to Exit 4 start here"
+        "Stairs to 4番出口 start here"
       ],
       "steps": [
         ">w_c__w_cj",
@@ -107,7 +107,7 @@
         "wheelchair×7"
       ],
       "stale": true,
-      "sources": 4,
+      "sources": 3,
       "nodes": 9,
       "modes": [
         "walk",
@@ -257,7 +257,7 @@
         "stairs"
       ],
       "instructions": [
-        "Start at the foot of the Exit 13 stairs (the stairs are not part of this route)",
+        "Start at the foot of the 13番出口 stairs (the stairs are not part of this route)",
         "Go ~7 m",
         "Turn left, ~33 m. After ~13 m, continue straight through the junction.",
         "Turn right, ~112 m. After ~100 m, keep left at the junction.",

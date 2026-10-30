@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import type { PolylinePoint } from "@gteki/navigation";
-import { auditPolyline, resampleAudit, sceneProbe, violations } from "./route-clip-audit.ts";
+import { auditPolyline, cutSceneProbe, resampleAudit, sceneProbe, violations } from "./route-clip-audit.ts";
+import { createSyntheticBundle, syntheticEdge } from "../../navigation/src/fixtures.ts";
 
 // Renderer frame: y up, ENU (x, y, z) → (x, z, -y). A 20 m floor at z 0 and a wall across x = 5.
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial());
@@ -60,5 +61,13 @@ describe("route clip audit", () => {
     expect(detail).toHaveLength(withDetail.samples);
     expect(detail.some(d => d.wallBefore && d.floor === "ok")).toBe(true);
     expect(detail.some(d => d.floor === "none")).toBe(true);
+  });
+  it("cuts a collider proxy outside the scene root with the slabs, as the browser does", () => {
+    const bundle = createSyntheticBundle([syntheticEdge("start-upper", "start", "upper", { mode: "stairs", lengthM: 10.77 })]);
+    const proxy = new THREE.Mesh(new THREE.BoxGeometry(16, 0.4, 6), new THREE.MeshBasicMaterial());
+    proxy.position.set(5, 3.8, 0); proxy.updateMatrixWorld(true);
+    const original = proxy.geometry;
+    cutSceneProbe({ root: new THREE.Group(), walkable: [], colliders: [proxy], cameraBlockers: [], walls: [] } as never, bundle, "high");
+    expect(proxy.geometry).not.toBe(original);
   });
 });
