@@ -95,16 +95,18 @@ export async function openStation(page: Page, key: StationKey, query = ""): Prom
  * seconds; a click dispatched then waits for its input to be handled and can outlast the 15 s action timeout (#647).
  * Polls on a timer, gives up after 60 s without failing, and logs how long it waited as [frame-settle].
  */
-export async function settleFrames(page: Page, label: string): Promise<number> {
+export async function settleFrames(page: Page, label: string, capMs = 60_000): Promise<number> {
   const t0 = Date.now();
   const mark = await page.evaluate(() => (window as any).__qa?.frames?.length ?? 0);
-  await page.waitForFunction((from) => {
+  const settled = await page.waitForFunction((from) => {
     const frames: number[] = (window as any).__qa?.frames ?? [];
     const recent = frames.slice(Math.max(from, frames.length - 3));
     return recent.length >= 3 && recent.every((ms) => ms < 1000);
-  }, mark, { timeout: 60_000, polling: 250 }).catch(() => undefined);
+  }, mark, { timeout: capMs, polling: 250 }).then(() => true, () => false);
   const waited = Date.now() - t0;
-  console.log(`[frame-settle] ${JSON.stringify({ label, waitedMs: waited })}`);
+  // At the cap, log the latest frame intervals so the threshold can be checked against what SwiftShader really does.
+  const lastFramesMs = settled ? undefined : await page.evaluate(() => ((window as any).__qa?.frames ?? []).slice(-5).map((ms: number) => Math.round(ms)));
+  console.log(`[frame-settle] ${JSON.stringify({ label, waitedMs: waited, settled, lastFramesMs })}`);
   return waited;
 }
 
