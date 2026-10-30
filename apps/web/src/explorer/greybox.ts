@@ -460,20 +460,24 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
           else quad(b.shell, b.colors, lowP, lowQ, topQ, topP, [0.62, 0.62, 0.62, 0.62]);
         };
         for (const [s, e] of clearIntervals) band(s, e, 0, 2.6);
-        // The kept bands of the cuts. Where cuts overlap (the same connector seen from both ends, or crossing flights),
-        // keep only what is clear of all of them: the lowest band below and the highest band above.
+        // The kept bands of the cuts. Each cut opens the height range (below, above) of the wall; where cuts overlap,
+        // the wall keeps every height outside all of their ranges, so a wall between two flights stays.
         const stops = [...new Set(cuts.flatMap((c) => [c.lo, c.hi]))].sort((x, y) => x - y);
         for (let k = 1; k < stops.length; k++) {
           const over = cuts.filter((c) => c.lo <= stops[k - 1]! && c.hi >= stops[k]!);
           if (!over.length) continue;
-          const below = Math.min(...over.map((c) => c.below)), above = Math.max(...over.map((c) => c.above));
+          // A band under a flight is kept only from 1 m up (it would only snag the walker below that), so a lower
+          // cut opening starts at 0.
+          const open = over.map((c) => [c.below >= 1 ? c.below : 0, c.above] as [number, number]).sort((x, y) => x[0] - y[0]);
+          const kept: [number, number][] = [];
+          let floor = 0;
+          for (const [o0, o1] of open) { if (o0 > floor) kept.push([floor, Math.min(o0, 2.6)]); floor = Math.max(floor, o1); }
+          if (floor < 2.6) kept.push([floor, 2.6]);
           // Only where the wall stood before the cuts: a junction disc or another passage's floor stays open.
           for (const [s, e] of standing) {
             const lo = Math.max(s, stops[k - 1]!), hi = Math.min(e, stops[k]!);
             if (lo >= hi) continue;
-            // A band is kept only where it can stop someone: 1 m or more of wall under a flight overhead, or any wall
-            // left above a flight passing below. A lower stub under the flight's own steps would only snag the walker.
-            for (const [y0, y1] of [[0, below >= 1 ? Math.min(below, 2.6) : 0], [Math.max(above, 0), 2.6]] as const) {
+            for (const [y0, y1] of kept) {
               if (y1 - y0 < 0.05) continue;
               // In pieces of at most 2 m, and like the full-height wall, none where the scene already stands.
               const pieces = Math.max(1, Math.ceil(wa.distanceTo(wz) * (hi - lo) / 2));
