@@ -43,8 +43,8 @@ const MAX_GAP_M = 30;
 const AHEAD_M = 25;
 
 const walks = [
-  { from: ["中央2", /JR Central Gate 2/] as [string, RegExp], to: ["35", /^Exit 35$/] as [string, RegExp], label: "jrc2-exit35" },
-  { from: ["West Exit", /^West Exit \(B1\)$/] as [string, RegExp], to: ["West Exit (South)", /^Exit 4$/] as [string, RegExp], label: "westb1-exit4" },
+  { from: ["中央2", /JR 中央2改札/] as [string, RegExp], to: ["35", /^35番出口$/] as [string, RegExp], label: "jrc2-exit35" },
+  { from: ["西口（地下）", /^西口（地下）$/] as [string, RegExp], to: ["4番出口", /^4番出口$/] as [string, RegExp], label: "westb1-exit4" },
 ];
 
 for (const w of walks) {
