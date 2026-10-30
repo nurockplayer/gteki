@@ -72,7 +72,7 @@ import { hooks, openStation, stationData } from "../lib/gteki.ts";
  *                             (otherwise the default group, else gate / exit by node kind and floor, else `node`)
  *      GTEKI_VANTAGE_HEADINGS comma list of degrees added to the edge bearing (default 0,90,180,270); prefix an item
  *                             with `@` for an absolute compass heading (`@45`)
- *      GTEKI_VANTAGE_OUT      output dir (default <GTEKI_ROOT>/.qa/ikebukuro-vantage/<project>)
+ *      GTEKI_VANTAGE_OUT      output dir (default <GTEKI_ROOT>/.qa/<station>-vantage/<project>)
  *      GTEKI_VANTAGE_LABEL    free text recorded in the report, e.g. the candidate SHAs
  *      GTEKI_VANTAGE_FRAMES   frames counted per view (default 5)
  *      GTEKI_VANTAGE_SETTLE_MS extra settle after the turn (default 600)
@@ -324,7 +324,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
   const project = testInfo.project.name;
   const label = process.env.GTEKI_VANTAGE_LABEL ?? "";
 
-  const outDir = process.env.GTEKI_VANTAGE_OUT ?? path.join(root, ".qa", "ikebukuro-vantage", project);
+  const outDir = process.env.GTEKI_VANTAGE_OUT ?? path.join(root, ".qa", `${STATION}-vantage`, project);
   fs.mkdirSync(outDir, { recursive: true });
 
   const rows: Row[] = [];
@@ -425,7 +425,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
     : [];
   for (const w of warnings) console.warn(`vantage: ${w}`);
   const result = {
-    probe: "ikebukuro-vantage-shots", label, tier, project, viewport, dpr, loadMs, gl, gpuValid,
+    probe: "ikebukuro-vantage-shots", station: STATION, label, tier, project, viewport, dpr, loadMs, gl, gpuValid,
     frames: FRAMES, settleMs: SETTLE_MS, lowDrawLimit: LOW_DRAW_LIMIT, headings: headings.map((h) => (h.absolute ? `@${h.deg}` : String(h.deg))),
     frametimeMs: FRAMETIME_MS, groupsRequested: GROUPS, visibilityWarnings: warnings,
     requested, dropped, notInGroups, groups, rows,
@@ -435,7 +435,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
 
   const cell = (v: unknown) => (v === null || v === undefined ? "n/a" : String(v));
   const md = [
-    `# Ikebukuro vantage shots: ${tier} tier (${project})`,
+    `# ${STATION[0]!.toUpperCase()}${STATION.slice(1)} vantage shots: ${tier} tier (${project})`,
     "",
     `- Label: ${label || "(none)"}`,
     `- Renderer: ${gl?.renderer ?? "unknown"} (vendor ${gl?.vendor ?? "unknown"}, gpuValid=${gpuValid})`,
