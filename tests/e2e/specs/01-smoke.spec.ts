@@ -84,6 +84,11 @@ test("station switching drops the previous station's state", async ({ page }) =>
   const heapBeforeMB = await page.evaluate(() => Math.round(((performance as any).memory?.usedJSHeapSize ?? 0) / 1e6));
   const cdp = await page.context().newCDPSession(page);
   await cdp.send("Profiler.enable"); await cdp.send("Profiler.setSamplingInterval", { interval: 1000 }); await cdp.send("Profiler.start");
+  // Browser-wide trace (#647): what the GPU process (SwiftShader) is busy with while Shinjuku builds after the switch.
+  const traceEvents: { name: string; pid: number; tid: number; ph: string; dur?: number; cat: string; args?: { name?: string } }[] = [];
+  cdp.on("Tracing.dataCollected", (e: { value: typeof traceEvents }) => { traceEvents.push(...e.value); });
+  const traced = new Promise<void>((resolve) => cdp.once("Tracing.tracingComplete", () => resolve()));
+  await cdp.send("Tracing.start", { transferMode: "ReportEvents", traceConfig: { includedCategories: ["gpu", "toplevel", "disabled-by-default-gpu.service", "v8", "blink.user_timing"] } });
   await page.locator(".station-select").selectOption("shinjuku");
   // Where the switch spends its time (#647): logged pass or fail, so a timeout shows which step ran long.
   const switchState = () => page.evaluate(() => {
@@ -107,6 +112,14 @@ test("station switching drops the previous station's state", async ({ page }) =>
     const total = [...self.values()].reduce((a, b) => a + b, 0);
     const top = [...self].sort((a, b) => b[1] - a[1]).slice(0, 15).map(([k, ms]) => [k, Math.round(ms)]);
     console.log(`[switch-profile] ${JSON.stringify({ totalMs: Math.round(total), gcMs: Math.round(self.get("(garbage collector) :0") ?? 0), top })}`);
+    await cdp.send("Tracing.end"); await traced;
+    const processNames = new Map(traceEvents.filter((e) => e.ph === "M" && e.name === "process_name").map((e) => [e.pid, e.args?.name ?? "?"]));
+    const busy = new Map<string, number>();
+    for (const e of traceEvents) if (e.ph === "X" && e.dur) {
+      const key = `${processNames.get(e.pid) ?? e.pid}: ${e.name}`;
+      busy.set(key, (busy.get(key) ?? 0) + e.dur / 1000);
+    }
+    console.log(`[switch-trace] ${JSON.stringify([...busy].sort((a, b) => b[1] - a[1]).slice(0, 20).map(([k, ms]) => [k, Math.round(ms)]))}`);
     await cdp.detach();
   }
   await expect(page.locator("#gteki-from")).toHaveValue("");
