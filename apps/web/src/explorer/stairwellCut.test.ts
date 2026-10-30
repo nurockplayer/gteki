@@ -398,6 +398,22 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("cuts a downward-facing underside at the walking height, and keeps an upward landing there", () => {
+    const s = scene();
+    // Both at 3.8 m, inside the footprint, narrow in x so the walking surface stays within 5 cm of 3.8 m across them:
+    // the landing faces up (kept); the underside faces down (cut).
+    const landing = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.8, 1, 4).rotateX(-Math.PI / 2).translate(9.5, 3.8, 0.5), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    landing.userData.gteki_role = "floor";
+    const underside = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.8, 1, 4).rotateX(Math.PI / 2).translate(9.5, 3.8, -0.5), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    underside.userData.gteki_role = "floor";
+    s.root.add(landing, underside); s.root.updateMatrixWorld(true);
+    const landingOriginal = landing.geometry, undersideOriginal = underside.geometry;
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
+    expect(landing.geometry).toBe(landingOriginal);
+    expect(underside.geometry).not.toBe(undersideOriginal);
+    result.dispose();
+  });
+
   it("cuts both faces of a 1.0 m-thick floor slab that runs past the footprint, over the last 0.5 m", () => {
     const slab = new THREE.Mesh(new THREE.BoxGeometry(16, 1.0, 6), new THREE.MeshBasicMaterial());
     slab.position.set(5, 3.5, 0); slab.userData.gteki_role = "floor";
