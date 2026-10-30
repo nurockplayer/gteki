@@ -12,6 +12,8 @@ for (const key of STATIONS) {
     expect(phase).toBe("ready");
 
     const info = await hooks.sceneInfo(page);
+    // Load-time breakdown in the CI log, so every PR shows where opening a station spends its time (#650).
+    console.log(`[load-timings] ${key} ${JSON.stringify({ loadMs, steps: (info as { loadTimings?: unknown }).loadTimings })}`);
     // A station scene, not the L0 fallback: real geometry, walkable surfaces and colliders.
     expect.soft(info.world.length, "world bounding box").toBe(6);
     expect.soft(info.walkable, "walkable meshes").toBeGreaterThan(0);
