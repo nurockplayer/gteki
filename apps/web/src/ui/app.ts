@@ -121,6 +121,7 @@ export class App {
     railBtn: el("button", "ghost rail-launch"),
     hint: el("div", "hint"),
     credit: el("footer", "credit-line"),
+    greyboxLegend: el("div", "greybox-legend"),
     panel: el("section", "panel"),
     more: el("button", "ghost more", "⋯"),
     live: new LiveRegion(() => this.t),
@@ -143,6 +144,7 @@ export class App {
     const params = new URLSearchParams(location.search);
     this.explorer = new Explorer(this.root.querySelector(".viewport") as HTMLElement, {
       onMode: (mode) => this.onMode(mode),
+      onGreyboxLegend: (visible) => { this.ui.greyboxLegend.hidden = !visible; },
       onGuideProgress: (p) => this.onGuideProgress(p),
       onGuideStop: (index) => this.onGuideStop(index),
       onPoiClick: (id) => {
@@ -243,12 +245,14 @@ export class App {
     panel.append(this.identityView.overview, this.ui.banner, fields, filterRow, this.ui.firstRun, this.ui.spawnChips, this.ui.profile, this.ui.more);
 
     this.ui.hint.setAttribute("role", "note");
-    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.minimap.el, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit);
+    this.ui.greyboxLegend.hidden = true;
+    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.minimap.el, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit, this.ui.greyboxLegend);
     this.layoutText();
   }
 
   private layoutText(): void {
     const t = this.t;
+    this.ui.greyboxLegend.textContent = t.greyboxLegend;
     document.documentElement.lang = this.s.lang;
     this.ui.langBtn.textContent = t.language;
     this.ui.langBtn.dataset.short = this.s.lang === "ja" ? "EN" : "日本語";
@@ -883,7 +887,7 @@ export class App {
     // Only after a no_path: re-ask with the user's own options relaxed to say which one refused.
     if (!best.ok && best.reason === "no_path") this.s.noPath = explainNoPathBetween(router, loaded.bundle, origin, destination, profile);
     if (best.ok) {
-      this.s.polyline = routePolyline(loaded.bundle, best);
+      this.s.polyline = routePolyline(loaded.bundle, best, this.explorer.connectorRoutePaths());
       this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination, origin.kind === "poi" ? origin.poi : undefined);
       this.s.activeInstruction = 0;
       this.explorer.showRoute(this.s.polyline);
@@ -1559,6 +1563,8 @@ export class App {
       setCamera: (patch: { yaw?: number; pitch?: number; distance?: number } | null) => this.explorer.setCamera(patch),
       holdAvatarFade: (value: number | null) => this.explorer.holdAvatarFade(value),
       sceneInfo: () => this.explorer.sceneInfo(),
+      portalView: () => this.explorer.portalView(),
+      routeGroundCheck: () => this.explorer.routeGroundCheck(this.s.polyline, this.s.route?.ok ? this.s.route.steps : [], guideStops(this.s.polyline, this.s.instructions).map(({ point }) => polylineLengthM(this.s.polyline.slice(0, point + 1)))),
       projectEnu: (points: { x: number; y: number; z: number }[]) => this.explorer.projectEnu(points),
       signFaces: () => this.explorer.signFaces(),
       identity: () => this.explorer.identity(),

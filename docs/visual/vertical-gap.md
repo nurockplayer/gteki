@@ -95,8 +95,16 @@ Ordered by play-view gain per effort. "Heavy" means Blender or WebGL QA in the w
    - Coordinate with the merchant lead (w6:p14) before touching kit.ts/scene.ts.
 7. **Walkability stays with the station lead.** Ikebukuro escalators are not walkable or guided today. The art work above does not depend on that ruling.
 
+### Shinjuku S03 own floors (#623, added 2026-10-29 13:10 JST)
+8. **Model the S03-only B levels (and the few upper floors) in the Shinjuku scene (worker, M–L, heavy). Last in the order, and blocked on two preconditions.**
+   - The problem: the private S03 seam adds 5 floors the scene has no slab for. 3 routed private edges (one escalator, two walks, in the south-west underground) clip and are drawn as the dashed `sceneGap` band (`drape-unresolved`, #621). The dashed band is the accepted interim (ruling A).
+   - Why it goes last: only private-tier builds route over these edges, so the public play view does not change. Items 5, 6 and 2–4 change what every player sees. The work also touches walkable, colliders and walls, not only art: new slabs at 5 heights, plus their stair and escalator wells.
+   - Precondition 1 (a ruling, not ours): a source for the slab outlines and heights. The scene has no private-tier geometry path (`privateTier` only reaches graph, POIs and tenants in `parseStationFiles`), so a slab ships to every player. If S03 is the only source for those floors, building public geometry from it needs a ruling from the director or GIS lead: the 2026-10-24 positions ruling says "No other S03 geometry ships", while NOTICE 4.7 covers the geometry subset under CC BY 4.0. Without that ruling, the alternative is a new private-tier scene layer (a loader plus tests, M on its own).
+   - Precondition 2: the #622 floor-height rule, with the overlapping-slab ambiguity that oracle flagged, has an Owner disposition. The heights the drape measures depend on it.
+   - Done when: `s03-private-seam … --private-tier --drape` clears the 3 `drape-unresolved` flags by itself, and route-clip-audit on both stations shows no routed in-model clips (#623 steps 1–2).
+
 ### Order and workers
-- Order: 1 → 5 → 6 → 2 → 3 → 4.
+- Order: 1 → 5 → 6 → 2 → 3 → 4 → 8. Item 8 starts only when both of its preconditions are met; until then the dashed band stays.
 - Worker items go to whichever worker `quota-advisor` names (Codex weekly reset 2026-10-28 17:2x JST).
 - Every implementation PR runs through review-bundle → oracle → review-gate.
 - Evidence uses spec 21 (Shinjuku). Ikebukuro needs an equivalent fixed-spot spec, which is part of item 5.

@@ -75,6 +75,11 @@ describe('S03 private seam (synthetic only)', () => {
     expect(result.floors.map(f => f.id)).toEqual(['p:sjk:s03:f:10', 'p:sjk:s03:f:20']);
   });
 
+  it('refuses a filename the overlay does not load before writing', async () => {
+    await expect(s03PrivateSeam({ run: runId, out: '/tmp/synthetic-private/additions/shinjuku/seam.json', privateTier: true, drape: true }, '/nonexistent'))
+      .rejects.toThrow(/graph\*\.json overlay file/);
+  });
+
   it('refuses missing opt-in and repository output before loading a held run', async () => {
     await expect(s03PrivateSeam({ run: runId, out: '/unused/private/graph.s03.json', privateTier: false }, '/nonexistent'))
       .rejects.toThrow(/--private-tier/);

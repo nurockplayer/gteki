@@ -7,6 +7,7 @@ export type Lang = "ja" | "en";
 
 const STRINGS = {
   ja: {
+    greyboxLegend: "示意，非實測",
     minimap: "ミニマップ",
     minimapPlayerUp: "キャラクターの向きが上",
     minimapNorthUp: "北を上に固定",
@@ -238,6 +239,7 @@ const STRINGS = {
     language: "English",
   },
   en: {
+    greyboxLegend: "Approximate, not surveyed",
     minimap: "Minimap",
     minimapPlayerUp: "Player facing up",
     minimapNorthUp: "North up",

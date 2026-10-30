@@ -1457,6 +1457,9 @@ const spawnHeadings = Object.fromEntries(spawnNodeIds.flatMap((id) => (id in SPA
 // Non-code data the web bundle inlines (#186). Declared here so station.json carries the same
 // source and rights gate as assets; each derivation names the script that writes the file.
 const dataFiles: DataFile[] = [
+  { id: "shop-bays", path: "scene/shop_bays.json", sourceIds: [SRC_NWD, SRC_MAP].sort(), modified: true, derivation: "tools/shop-bays.ts: illustrative bays derived from the scene layout, visual only." },
+  { id: "shop-placements", path: "scene/shop_placements.json", sourceIds: ["gteki-kit-0-1-0"], modified: true, derivation: "scene/shop_placements.json: original illustrative shop categories, visual only." },
+  { id: "shop-kit", path: "scene/shop_kit.json", sourceIds: ["gteki-kit-0-1-0"], modified: true, derivation: "scene/shop_kit.json: shopfront piece specification copied from the GTEki kit." },
   {
     id: "plan",
     path: "data/plan.json",
@@ -1509,6 +1512,14 @@ sources.push({
   sha256: kitSha,
   notes: "Visual only: every piece has gteki_role null, so nothing here is walkable, a collider or route evidence; collision, walkable floors and camera blockers stay the station's own layout geometry (test/kit-bundle.test.ts checks the lists are unchanged). Mobile profile only (one bundle, KTX2 not decoded by the explorer yet). Rebuild: tools/blender build.sh (mobile profile) then python3 tools/blender/bundle_kit.py bundle --library <output> --all --out stations/shinjuku/gteki/assets/kit/mobile.glb; the sidecar manifest is that build's manifest.json with its catalog pointer made repo-relative.",
 });
+sources.push({
+  id: "gteki-kit-0-1-0", title: "GTEki station shopfront kit 0.1.0 (Lane E)", publisher: "GTEki contributors",
+  url: "https://github.com/nurockplayer/gteki/tree/main/assets/library", license: { name: "CC BY 4.0", url: "https://creativecommons.org/licenses/by/4.0/" },
+  rights: "REUSABLE_WITH_CONDITIONS", attribution: "GTEki contributors, CC BY 4.0. Original unbranded shopfront kit copied unmodified from Ikebukuro.", modified: false,
+  retrievedAt: "2026-10-22T00:00:00Z", datasetDate: "2026-10",
+  sha256: Object.fromEntries(["kit/high/gteki_shopfront_door_w2000.glb", "kit/low/gteki_shopfront_door_w2000.glb"].map((f) => [f, createHash("sha256").update(readFileSync(join(OUT_GTEKI, f))).digest("hex")])),
+  notes: "Original generic project art; illustrative, not a survey.",
+});
 const nodeFloor = new Map(nodes.map((n) => [n.id, n.floorId]));
 const kitFloorIds = floors.map((f) => f.id).filter((id) => edges.some((e) => e.mode === "escalator" && (nodeFloor.get(e.from) === id || nodeFloor.get(e.to) === id)));
 const assets: Asset[] = [{
@@ -1521,6 +1532,7 @@ const assets: Asset[] = [{
   files: [KIT_MANIFEST],
   derivation: "tools/blender build + bundle_kit.py bundle (mobile profile) from stations/shinjuku/kit/catalog.json: ten escalator dressings (balustrade, handrail, newel, comb; AO baked), one self-contained GLB with shared textures. Loaded by the scene's kit swap (scene/kit/load.ts), not by the asset loader: visual only, never walkable, never a collider, never route evidence. The manifest beside it is what scene/kit/manifest.ts reads.",
 }];
+assets.push({ id: "shopfront-kit", uri: "kit/high/gteki_shopfront_door_w2000.glb", uriMobile: "kit/low/gteki_shopfront_door_w2000.glb", format: "glb", floorIds: kitFloorIds, role: "visual", sourceIds: ["gteki-kit-0-1-0"], derivation: "Original GTEki shopfront kit, copied from Ikebukuro; visual only." });
 
 const bundle: StationBundle = {
   schema: SCHEMA_VERSION,
