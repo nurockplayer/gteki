@@ -1,0 +1,2 @@
+stations/*/scene/stairwell-cut.*.b64.txt -diff linguist-generated=true
+stations/*/data/surface-baked.json -diff linguist-generated=true

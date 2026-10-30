@@ -3,6 +3,11 @@ import { hooks, imageStats, textIf, toasts, labelUiOverlaps, openStation, save, 
 
 /** CI's e2e-smoke sets this (.github/workflows/e2e-smoke.yml): under SwiftShader the spec checks flow only and skips screenshots that time out (#76, #118). */
 const FLOW_ONLY = !!process.env.GTEKI_GUIDE_FLOW_ONLY;
+/**
+ * Load budget (ms) for the stairwell cut, greybox and connectors steps together, measured under CI SwiftShader (#650).
+ * May only be lowered; never raise it to make a run pass.
+ */
+const LOAD_BUDGET_MS = 1500;
 
 /** Opening each station from a plain browser URL: no install, real scene, honest banners, no errors. */
 for (const key of STATIONS) {
@@ -12,6 +17,16 @@ for (const key of STATIONS) {
     expect(phase).toBe("ready");
 
     const info = await hooks.sceneInfo(page);
+    // Load-time breakdown in the CI log, so every PR shows where opening a station spends its time (#650).
+    const steps = (info as { loadTimings?: Record<string, number> }).loadTimings ?? {};
+    console.log(`[load-timings] ${key} ${JSON.stringify({ loadMs, steps })}`);
+    for (const step of ["scene", "greybox", "stairwellCut", "connectors", "rayTrees", "total"]) expect.soft(Number.isFinite(steps[step]) && steps[step]! >= 0, `load timing ${step}`).toBe(true);
+    expect.soft(steps.total ?? 0, "load timing total").toBeGreaterThan(0);
+    // Ratchet: the stairwell cut, greybox and connectors together stay under the budget (#650).
+    const cutAndShell = (steps.stairwellCut ?? NaN) + (steps.greybox ?? NaN) + (steps.connectors ?? NaN);
+    expect(cutAndShell, `${key}: stairwellCut + greybox + connectors (ms), budget ${LOAD_BUDGET_MS}`).toBeLessThanOrEqual(LOAD_BUDGET_MS);
+    // Shinjuku's baked stairwell recipe (#650) replays; a stale one would fall back to live. Ikebukuro stays live.
+    expect(info.greybox?.stairwells?.recipe, `${key}: stairwell cut recipe`).toBe(key === "shinjuku" ? "replayed" : "live");
     // A station scene, not the L0 fallback: real geometry, walkable surfaces and colliders.
     expect.soft(info.world.length, "world bounding box").toBe(6);
     expect.soft(info.walkable, "walkable meshes").toBeGreaterThan(0);
@@ -58,7 +73,12 @@ test("station switching drops the previous station's state", async ({ page }) =>
   await openStation(page, "ikebukuro", "&from=jr-central-gate-2&to=exit-35");
   expect((await hooks.route(page))?.ok).toBe(true);
   await page.locator(".station-select").selectOption("shinjuku");
-  await page.waitForFunction(() => (window as any).__gteki.phase() === "ready" && (window as any).__gteki.route() === null);
+  // Poll on a timer, not on animation frames (#647): this waits for the station to be ready, and the first frames
+  // after it can each take seconds under SwiftShader while shaders compile. The 15 s timeout is unchanged.
+  await page.waitForFunction(() => (window as any).__gteki.phase() === "ready" && (window as any).__gteki.route() === null, null, { polling: 250 });
+  // Log only: how long the first frame after ready takes, so the shader-compile stall stays visible (#647).
+  const firstFrameMs = await page.evaluate(() => new Promise<number>((resolve) => { const t = performance.now(); requestAnimationFrame(() => resolve(Math.round(performance.now() - t))); }));
+  console.log(`[switch-timings] ${JSON.stringify({ readyToFirstFrameMs: firstFrameMs })}`);
   await expect(page.locator("#gteki-from")).toHaveValue("");
   await expect(page.locator("#gteki-to")).toHaveValue("");
   expect(page.url()).toContain("station=shinjuku");

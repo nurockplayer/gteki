@@ -140,6 +140,11 @@ export interface StationSceneModule {
    * textures, merged buffers) here so a big station does not hold memory while another one is shown.
    */
   releaseCaches?: () => void;
+  /**
+   * URL of the baked stairwell cut recipe for a quality tier (#650), or null when the station has none. The
+   * explorer falls back to the live cut for a missing or failed fetch.
+   */
+  stairwellRecipeUrl?: (tier: "high" | "low") => Promise<string | null>;
 }
 
 const WALKABLE_ROLES = new Set(["floor", "stairs_ramps", "walkable", "ramp", "stairs"]);

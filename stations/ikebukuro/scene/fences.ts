@@ -20,7 +20,7 @@ function paintLabel(label: { ja: string; en: string }): HTMLCanvasElement {
   const c = document.createElement("canvas");
   c.width = 512;
   c.height = 256;
-  const g = c.getContext("2d")!;
+  const g = c.getContext("2d", { willReadFrequently: true })!;
   g.fillStyle = "rgba(24, 22, 18, 0.82)";
   g.fillRect(0, 0, c.width, c.height);
   // Hazard bands top and bottom: reads as a temporary barrier, not as a wall.
