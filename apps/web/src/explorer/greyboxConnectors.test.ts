@@ -351,14 +351,11 @@ function landingsOf(waypoints: [number, number, number][]) {
   }).filter((landing) => landing.bend >= 20 * Math.PI / 180 - 1e-9);
 }
 
-const zigzag: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 4, -4], [8, 6, -4]];
 /** Two 90 degree turns 0.5 m apart: an S-shaped stair whose two landing squares overlap. */
 function closeS(direction: number): [number, number, number][] {
   const base: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 2.5, -0.5], [8, 4.5, -0.5]];
   return base.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
 }
-/** Single-vertex 135 and 165 degree turns: their flights share one landing, so the landing guard alone keeps them closed. */
-const singleVertexReturns = [135, 165].flatMap((degrees) => [-1, 1].map((direction) => ({ name: `single ${degrees} degree turn, direction=${direction}`, waypoints: stackedWaypoints(degrees, direction) })));
 /**
  * A 0.78 m flat step, then a rise away from the landing: the two landing squares are equal, sit level and overlap by half, with
  * flush outer edges on x = 4.78 (the step runs toward -z). The second flight leaves the x = 4.78 edge over z in [-1.54, -0.02].
@@ -367,11 +364,37 @@ function equalSquaresWaypoints(direction: number): [number, number, number][] {
   const base: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 2, -0.78], [8, 4, -0.78]];
   return base.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
 }
-const equalCases = [-1, 1].map((direction) => ({ name: `two equal squares overlapping by half, direction=${direction}`, waypoints: equalSquaresWaypoints(direction) }));
-const turnCases = [
-  ...[15, 45, 90, 135, 165, 180].flatMap((degrees) => [-1, 1].map((direction) => ({ name: degrees < 135 ? `single ${degrees} degree turn, direction=${direction}` : `switchback ${degrees} degrees, direction=${direction}`, waypoints: switchbackWaypoints(degrees, direction) }))),
-  ...[-1, 1].map((direction) => ({ name: `two consecutive 90 degree turns, direction=${direction}`, waypoints: zigzag.map(([x, h, z]): [number, number, number] => [x, h, direction * z]) })),
+/** Mirror renderer waypoints [x, height, z] across the plan's x axis when `direction` is -1. */
+function mirror(waypoints: [number, number, number][], direction: number): [number, number, number][] {
+  return waypoints.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
+}
+/** A 90 degree turn after three 10 degree bends 0.6 m apart, all turning the same way. */
+function shallowThenTurn(direction: number): [number, number, number][] {
+  const deg = (d: number) => (d * Math.PI) / 180;
+  const headings = [0, 10, 20, 30, 120], lengths = [0.6, 0.6, 0.6, 0.6, 4], heights = [0, 0.2, 0.4, 0.6, 0.8, 2.8];
+  const pts: [number, number, number][] = [[0, 0, 0]];
+  let x = 0, z = 0;
+  headings.forEach((heading, i) => { x += lengths[i]! * Math.cos(deg(heading)); z += lengths[i]! * Math.sin(deg(heading)); pts.push([x, heights[i + 1]!, z]); });
+  return mirror(pts, direction);
+}
+/** One turning landing of a supported shape, mirrored for each direction. */
+const singleTurnCases = [15, 45, 90].flatMap((degrees) => [-1, 1].map((direction) => ({ name: `single ${degrees} degree turn, direction=${direction}`, waypoints: stackedWaypoints(degrees, direction) })));
+/** Shapes outside the supported set (two or more turning landings, overlapping landings, sharp returns, flights crossing or walls cutting). */
+const unsupportedShapes: { name: string; waypoints: (direction: number) => [number, number, number][] }[] = [
+  { name: "U-turn", waypoints: (d) => mirror([[0, 0, 0], [4, 1, 0], [4, 2, -2], [0, 3, -2]], d) },
+  { name: "two 90 degree turns 0.5 m apart", waypoints: (d) => closeS(d) },
+  { name: "two equal overlapping landing squares", waypoints: (d) => equalSquaresWaypoints(d) },
+  { name: "landings 3 m apart vertically", waypoints: (d) => mirror([[0, 0, 0], [4, 2, 0], [4, 5, -0.5], [8, 7, -0.5]], d) },
+  { name: "flight crossing a non-adjacent landing at 1 m", waypoints: (d) => mirror([[0, 0, 0], [4, 1, 0], [4, 1.2, 4], [2, 1.5, 0], [2, 2, -4]], d) },
+  { name: "stacked non-adjacent flights", waypoints: (d) => mirror([[0, 0, 0], [4, 2, 0], [4, 2.2, 1.0], [0, 2.6, 1.0]], d) },
+  { name: "switchback 135 degrees", waypoints: (d) => switchbackWaypoints(135, d) },
+  { name: "switchback 180 degrees", waypoints: (d) => switchbackWaypoints(180, d) },
+  { name: "single-vertex 135 degree sharp return", waypoints: (d) => stackedWaypoints(135, d) },
+  { name: "single-vertex 165 degree sharp return", waypoints: (d) => stackedWaypoints(165, d) },
+  { name: "single 100 degree turn whose inner wall crosses the next flight", waypoints: (d) => stackedWaypoints(100, d) },
+  { name: "three 10 degree bends 0.6 m apart and a 90 degree turn", waypoints: (d) => shallowThenTurn(d) },
 ];
+const unsupportedCases = unsupportedShapes.flatMap((shape) => [-1, 1].map((direction) => ({ name: `${shape.name}, direction=${direction}`, waypoints: shape.waypoints(direction) })));
 
 describe("turning landing guards", () => {
   const flat = { hasFloor: () => true, nearMesh: () => false };
@@ -382,7 +405,7 @@ describe("turning landing guards", () => {
   };
 
   it("stops a walker leaving any turning landing except through a flight opening", () => {
-    for (const { name, waypoints } of [...turnCases, ...equalCases]) {
+    for (const { name, waypoints } of singleTurnCases) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
       const landings = landingsOf(waypoints);
       for (const landing of landings) {
@@ -410,7 +433,7 @@ describe("turning landing guards", () => {
   });
 
   it("lets a centreline walker and a walker 0.5 m off centre pass bottom to top", () => {
-    for (const { name, waypoints } of turnCases) {
+    for (const { name, waypoints } of singleTurnCases) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
       const path = result.pathByEdge.get("turn")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
       const bendS = waypoints.slice(1, -1).map(([x, h, z]) => cumulative[path.findIndex((p) => Math.hypot(p.x - x, p.y - h, p.z - z) < 1e-6)]!);
@@ -430,7 +453,7 @@ describe("turning landing guards", () => {
 
   it("keeps every landing guard segment within the landing's diagonal", () => {
     const diagonal = 2 * half * Math.SQRT2;
-    for (const { name, waypoints } of turnCases) {
+    for (const { name, waypoints } of singleTurnCases) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
       const heights = landingsOf(waypoints).map((landing) => landing.height);
       if (heights.length === 0) continue; // only shallow bends: no landing guard to check
@@ -440,101 +463,6 @@ describe("turning landing guards", () => {
     }
   });
 
-  it("builds every turn, including 180 degree switchbacks and consecutive turns, without skipping", () => {
-    for (const { name, waypoints } of turnCases) {
-      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
-      expect(result.stats.connectorsSkipped, name).toBe(0);
-      expect(result.stats.connectors.stairs, name).toBe(1);
-      expect(result.pathByEdge.has("turn"), name).toBe(true);
-    }
-  });
-
-  // A single-vertex 135 degree return passes over its own first flight with under 2.1 m of headroom: skipped, not guarded.
-  // Three 10 degree bends 0.6 m apart, then a 90 degree turn toward the run's curve: the run's inner side wall, about 1 m back
-  // from the turn, lies across the next flight's treads at its height, so the stair is skipped rather than guarded.
-  it("skips a run of three 10 degree bends 0.6 m apart whose side wall crosses the 90 degree turn's flight, in both directions", () => {
-    const deg = (d: number) => (d * Math.PI) / 180;
-    const headings = [0, 10, 20, 30, 120], lengths = [0.6, 0.6, 0.6, 0.6, 4], heights = [0, 0.2, 0.4, 0.6, 0.8, 2.8];
-    const pts: [number, number, number][] = [[0, 0, 0]];
-    let x = 0, z = 0;
-    headings.forEach((heading, i) => { x += lengths[i]! * Math.cos(deg(heading)); z += lengths[i]! * Math.sin(deg(heading)); pts.push([x, heights[i + 1]!, z]); });
-    for (const direction of [-1, 1]) {
-      const waypoints = pts.map(([px, h, pz]): [number, number, number] => [px, h, direction * pz]);
-      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
-      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(1);
-      expect(result.root.children).toHaveLength(0);
-    }
-  });
-
-  // A 100 degree turn below the sharp-return rule: the first flight's inner side wall runs into the second flight's treads.
-  it("skips a 100 degree turn whose inner side wall of the first flight crosses the second flight's treads", () => {
-    for (const direction of [-1, 1]) {
-      const result = buildConnectors(stairThrough(stackedWaypoints(100, direction)), () => true, flat, "high");
-      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(1);
-      expect(result.root.children).toHaveLength(0);
-      expect(result.wallSegments).toHaveLength(0);
-    }
-  });
-
-  // A normal 90 degree landing turn: each side wall ends at the landing outline, clear of the next flight's treads.
-  it("builds a normal 90 degree landing turn in both directions", () => {
-    for (const direction of [-1, 1]) {
-      const turn: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 4, 4]];
-      const waypoints = turn.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
-      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
-      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(0);
-      expect(result.pathByEdge.has("turn")).toBe(true);
-    }
-  });
-
-  // A flight that passes through a turning landing it does not serve, 1 m above that landing: unresolved, so skipped.
-  it("skips a stair whose flight crosses a non-adjacent turning landing at 1 m height difference", () => {
-    for (const direction of [-1, 1]) {
-      const crossing: [number, number, number][] = [[0, 0, 0], [4, 1, 0], [4, 1.2, 4], [2, 1.5, 0], [2, 2, -4]];
-      const waypoints = crossing.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
-      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
-      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(1);
-      expect(result.root.children).toHaveLength(0);
-      expect(result.wallSegments).toHaveLength(0);
-    }
-  });
-
-  // A U-turn: each flight touches only its own two landings, and the return flight is 2 m clear of the first.
-  it("builds a U-turn stair whose flights touch only their own landings", () => {
-    for (const direction of [-1, 1]) {
-      const uturn: [number, number, number][] = [[0, 0, 0], [4, 1, 0], [4, 2, -2], [0, 3, -2]];
-      const waypoints = uturn.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
-      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
-      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(0);
-      expect(result.pathByEdge.has("turn")).toBe(true);
-    }
-  });
-
-  it("skips a single-vertex 135 degree return whose flights overlap in plan with under 2.1 m of headroom", () => {
-    for (const direction of [-1, 1]) {
-      const result = buildConnectors(stairThrough(stackedWaypoints(135, direction)), () => true, flat, "high");
-      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(1);
-      expect(result.root.children).toHaveLength(0);
-      expect(result.wallSegments).toHaveLength(0);
-    }
-  });
-
-  // Landings 3 m apart in height are independent floors: both build, each with its own guard at its own height.
-  it("builds two landings that overlap in plan when they are 3 m apart vertically, each guarded at its own height", () => {
-    for (const direction of [-1, 1]) {
-      const tall: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 5, -0.5], [8, 7, -0.5]];
-      const waypoints = tall.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
-      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
-      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(0);
-      expect(result.pathByEdge.has("turn")).toBe(true);
-      for (const height of [2, 5]) {
-        const guards = result.wallSegments.filter((w) => Math.abs(w.yMin - (height - 0.12)) < 1e-6 && Math.abs(w.yMax - (height + 0.96)) < 1e-6);
-        expect(guards.length, `direction=${direction} height=${height}`).toBeGreaterThan(0);
-      }
-    }
-  });
-
-  // Shallow bends are walked as one continuous flight: no landing square or guard, so the flights' mitred walls keep the passage clear.
   it("builds a stair with two 10 degree bends 0.5 m apart and lets both walkers pass", () => {
     const a = (10 * Math.PI) / 180, b = (20 * Math.PI) / 180;
     const p2: [number, number, number] = [4 + 0.5 * Math.cos(a), 2.5, 0.5 * Math.sin(a)];
@@ -557,18 +485,8 @@ describe("turning landing guards", () => {
     }
   });
 
-  // Two turns 0.5 m apart form an S: the landings overlap but sit 0.5 m apart in height, so the stair is stacked and skipped.
-  it("skips the S-shaped stair whose overlapping turning landings sit 0.5 m apart in height", () => {
-    for (const direction of [-1, 1]) {
-      const result = buildConnectors(stairThrough(closeS(direction)), () => true, flat, "high");
-      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(1);
-      expect(result.root.children).toHaveLength(0);
-      expect(result.wallSegments).toHaveLength(0);
-    }
-  });
-
   it("keeps every landing guard off the flights, in every stair", () => {
-    for (const { name, waypoints } of [...turnCases, ...equalCases]) {
+    for (const { name, waypoints } of singleTurnCases) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
       const heights = landingsOf(waypoints).map((landing) => landing.height);
       const legs = waypoints.slice(1).map((p, i) => {
@@ -588,27 +506,8 @@ describe("turning landing guards", () => {
     }
   });
 
-  // Two equal squares overlapping by half, flush on the outer side: the union's flush edge is guarded end to end.
-  it("guards the flush outer edge of two equal overlapping squares end to end, once", () => {
-    for (const direction of [-1, 1]) {
-      const result = buildConnectors(stairThrough(equalSquaresWaypoints(direction)), () => true, flat, "high");
-      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(0);
-      const landingWalls = result.wallSegments.filter((w) => Math.abs(w.yMin - 1.88) < 1e-6 && Math.abs(w.yMax - 2.96) < 1e-6);
-      const flush = landingWalls.filter((w) => Math.abs(w.ax - 4.78) < 1e-6 && Math.abs(w.bx - 4.78) < 1e-6)
-        .map((w) => [Math.min(w.az, w.bz), Math.max(w.az, w.bz)] as const).sort((x, y) => x[0] - y[0]);
-      // The first square's free corner (z = sign * 0.78) to the second flight's opening, which starts at z = 0: slivers
-      // under 0.05 m beside the opening are not emitted, so one piece covers the flush edge.
-      const sign = direction > 0 ? 1 : -1;
-      expect(flush.length, `direction=${direction}`).toBe(1);
-      const [z0, z1] = flush[0]!;
-      expect(Math.abs(z0 - Math.min(sign * 0.78, 0)), `direction=${direction} start`).toBeLessThan(0.05);
-      expect(Math.abs(z1 - Math.max(sign * 0.78, 0)), `direction=${direction} end`).toBeLessThan(0.05);
-    }
-  });
-
-  // No two landing guard segments may duplicate the same stretch of one line.
   it("never builds two guard segments on the same stretch of a line", () => {
-    for (const { name, waypoints } of [...turnCases, ...singleVertexReturns, ...equalCases]) {
+    for (const { name, waypoints } of singleTurnCases) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
       const heights = landingsOf(waypoints).map((landing) => landing.height);
       const guards = result.wallSegments.filter((w) => heights.some((h) => Math.abs(w.yMin - (h - 0.12)) < 1e-6 && Math.abs(w.yMax - (h + 0.96)) < 1e-6));
@@ -630,15 +529,33 @@ describe("turning landing guards", () => {
     }
   });
 
-  // Flights that do not share a landing and overlap in plan under 2.1 m of headroom are a stacked layout: skipped.
-  it("skips a stair whose non-adjacent flights overlap in plan under 2.1 m apart", () => {
-    const stacked: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 2.2, 1.0], [0, 2.6, 1.0]];
+  it("builds a normal 90 degree landing turn in both directions", () => {
     for (const direction of [-1, 1]) {
-      const result = buildConnectors(stairThrough(stacked.map(([x, h, z]): [number, number, number] => [x, h, direction * z])), () => true, flat, "high");
-      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(1);
-      expect(result.wallSegments).toHaveLength(0);
-      expect(result.root.children).toHaveLength(0);
+      const turn: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 4, 4]];
+      const waypoints = turn.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(0);
+      expect(result.pathByEdge.has("turn")).toBe(true);
     }
   });
+
+  // Every shape outside the supported set is deliberately skipped, not guarded.
+  it.each(unsupportedCases)("skips $name as unsupported_shape", ({ waypoints }) => {
+    const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+    expect(result.stats.connectorsSkipped).toBe(1);
+    expect(result.stats.connectorsSkippedByReason.unsupported_shape).toBe(1);
+    expect(result.root.children).toHaveLength(0);
+    expect(result.wallSegments).toHaveLength(0);
+  });
+
+  // A straight flight is built.
+  it("builds a straight stair in both directions", () => {
+    for (const direction of [-1, 1]) {
+      const result = buildConnectors(stairThrough(mirror([[0, 0, 0], [4, 2, 0]], direction)), () => true, flat, "high");
+      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(0);
+      expect(result.pathByEdge.has("turn")).toBe(true);
+    }
+  });
+
 });
 
