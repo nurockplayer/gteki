@@ -103,7 +103,9 @@ export function planBundle(bundle: Parameters<BuildScene>[0]["bundle"]): Paramet
 export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, shopKit?: LoadedShopKit): StationScene => {
   const T = ctx.THREE;
   const sceneBundle = planBundle(ctx.bundle);
+  const buildStart = performance.now();
   const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, reuseLayout: true, verifyRestrictedInput: true, ...(kit ? { kit } : {}) });
+  try { performance.measure("sjk:buildStation", { start: buildStart, end: performance.now() }); } catch { /* no User Timing */ }
   const { layout } = built;
 
   // Invisible walk proxies: the explorer raycasts these from above (non-recursive), so each is a Mesh.
@@ -265,10 +267,12 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   built.root.add(hemi);
   let envTarget: THREE.WebGLRenderTarget | null = null;
   if (ctx.renderer) {
+    const pmremStart = performance.now();
     const pmrem = new T.PMREMGenerator(ctx.renderer);
     const room = new RoomEnvironment();
     envTarget = pmrem.fromScene(room, 0.04);
     pmrem.dispose();
+    try { performance.measure("sjk:pmrem", { start: pmremStart, end: performance.now() }); } catch { /* no User Timing */ }
     room.dispose(); // the capture scene's geometry/materials are throwaway
     const tex = envTarget.texture;
     built.root.traverse((o) => {
