@@ -193,7 +193,7 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
           const levels = levelsOf(mesh);
           if (horizontal(normal)) {
             if (SLAB_ROLES.has(role)) return true;
-            return levels.outside.has(levelOf(piece.reduce((sum, v) => sum + v.y, 0) / piece.length));
+            return levels.outside.has(levelOf((a.y + b.y + c.y) / 3));
           }
           // A side face is cut only when its height span lies within the mesh's admitted slab levels (+/- 5 cm).
           const slab = SLAB_ROLES.has(role) ? levels.all : levels.outside;

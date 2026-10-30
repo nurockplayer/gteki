@@ -434,6 +434,21 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("classifies an unroled sloped slab triangle by its whole triangle, so its clipped piece is still cut", () => {
+    // Whole triangle: two corners outside the footprint at 3.0 m, one inside at 3.9 m; mean 3.3 m. Its piece inside
+    // the footprint (x 0 to 1) has a mean of 3.6 m, a different 5 cm level, and lies above the 2.1 m headroom, so only the
+    // band cuts it.
+    const positions = [-1, 3.0, -2, -1, 3.0, 2, 1, 3.9, 0];
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    const slab = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    const root = new THREE.Group(); root.add(slab); root.updateMatrixWorld(true);
+    const original = slab.geometry;
+    const result = cutStairwells(root, stairwellWells(bundle(), traversable), { tier: "high" });
+    expect(slab.geometry).not.toBe(original);
+    result.dispose();
+  });
+
   it("cuts a large upward floor triangle whose centroid is on the walking surface but whose corners are not", () => {
     // Corners at 0.3 m above, below, and on the walking surface (y = 0.4 x), inside the footprint. Wound to face up.
     const positions = [8.5, 3.7, -0.5, 9.0, 3.6, 0.5, 9.5, 3.5, -0.5];
