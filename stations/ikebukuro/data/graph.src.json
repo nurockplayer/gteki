@@ -2715,16 +2715,8 @@
      "text": "22番出口"
     },
     {
-     "lang": "en",
-     "text": "Exit 22"
-    },
-    {
      "lang": "ja",
      "text": "東口（北）"
-    },
-    {
-     "lang": "en",
-     "text": "East Exit (North)"
     }
    ],
    "aliases": [
@@ -2789,10 +2781,6 @@
     {
      "lang": "ja",
      "text": "26番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 26"
     }
    ],
    "aliases": [
@@ -2840,10 +2828,6 @@
     {
      "lang": "ja",
      "text": "28番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 28"
     }
    ],
    "aliases": [
@@ -2891,10 +2875,6 @@
     {
      "lang": "ja",
      "text": "32番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 32"
     }
    ],
    "aliases": [
@@ -2942,10 +2922,6 @@
     {
      "lang": "ja",
      "text": "33番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 33"
     }
    ],
    "aliases": [
@@ -2993,10 +2969,6 @@
     {
      "lang": "ja",
      "text": "27番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 27"
     }
    ],
    "aliases": [
@@ -3044,10 +3016,6 @@
     {
      "lang": "ja",
      "text": "34番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 34"
     }
    ],
    "aliases": [
@@ -3095,10 +3063,6 @@
     {
      "lang": "ja",
      "text": "35番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 35"
     }
    ],
    "aliases": [
@@ -3146,10 +3110,6 @@
     {
      "lang": "ja",
      "text": "36番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 36"
     }
    ],
    "aliases": [
@@ -3199,16 +3159,8 @@
      "text": "37番出口"
     },
     {
-     "lang": "en",
-     "text": "Exit 37"
-    },
-    {
      "lang": "ja",
      "text": "東口（中央）"
-    },
-    {
-     "lang": "en",
-     "text": "East Exit (Central)"
     }
    ],
    "aliases": [
@@ -3273,10 +3225,6 @@
     {
      "lang": "ja",
      "text": "42番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 42"
     }
    ],
    "aliases": [
@@ -3324,10 +3272,6 @@
     {
      "lang": "ja",
      "text": "43番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 43"
     }
    ],
    "aliases": [
@@ -3375,10 +3319,6 @@
     {
      "lang": "ja",
      "text": "41番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 41"
     }
    ],
    "aliases": [
@@ -3428,16 +3368,8 @@
      "text": "38番出口"
     },
     {
-     "lang": "en",
-     "text": "Exit 38"
-    },
-    {
      "lang": "ja",
      "text": "東口（南）"
-    },
-    {
-     "lang": "en",
-     "text": "East Exit (South)"
     }
    ],
    "aliases": [
@@ -3502,10 +3434,6 @@
     {
      "lang": "ja",
      "text": "39番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 39"
     }
    ],
    "aliases": [
@@ -3553,10 +3481,6 @@
     {
      "lang": "ja",
      "text": "40番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 40"
     }
    ],
    "aliases": [
@@ -3606,16 +3530,8 @@
      "text": "19番出口"
     },
     {
-     "lang": "en",
-     "text": "Exit 19"
-    },
-    {
      "lang": "ja",
      "text": "西口（中央）"
-    },
-    {
-     "lang": "en",
-     "text": "West Exit (Central)"
     }
    ],
    "aliases": [
@@ -3678,10 +3594,6 @@
     {
      "lang": "ja",
      "text": "5番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 5"
     }
    ],
    "aliases": [
@@ -3727,10 +3639,6 @@
     {
      "lang": "ja",
      "text": "6a番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 6a"
     }
    ],
    "aliases": [
@@ -3776,10 +3684,6 @@
     {
      "lang": "ja",
      "text": "6b番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 6b"
     }
    ],
    "aliases": [
@@ -3825,10 +3729,6 @@
     {
      "lang": "ja",
      "text": "7番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 7"
     }
    ],
    "aliases": [
@@ -3874,10 +3774,6 @@
     {
      "lang": "ja",
      "text": "8番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 8"
     }
    ],
    "aliases": [
@@ -3923,10 +3819,6 @@
     {
      "lang": "ja",
      "text": "9番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 9"
     }
    ],
    "aliases": [
@@ -3972,10 +3864,6 @@
     {
      "lang": "ja",
      "text": "14番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 14"
     }
    ],
    "aliases": [
@@ -4021,10 +3909,6 @@
     {
      "lang": "ja",
      "text": "16番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 16"
     }
    ],
    "aliases": [
@@ -4070,10 +3954,6 @@
     {
      "lang": "ja",
      "text": "23番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 23"
     }
    ],
    "aliases": [
@@ -4119,10 +3999,6 @@
     {
      "lang": "ja",
      "text": "24番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 24"
     }
    ],
    "aliases": [
@@ -4168,10 +4044,6 @@
     {
      "lang": "ja",
      "text": "25番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 25"
     }
    ],
    "aliases": [
@@ -4217,10 +4089,6 @@
     {
      "lang": "ja",
      "text": "29番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 29"
     }
    ],
    "aliases": [
@@ -4266,10 +4134,6 @@
     {
      "lang": "ja",
      "text": "30番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 30"
     }
    ],
    "aliases": [
@@ -4315,10 +4179,6 @@
     {
      "lang": "ja",
      "text": "31番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 31"
     }
    ],
    "aliases": [
@@ -4364,10 +4224,6 @@
     {
      "lang": "ja",
      "text": "JR 中央2改札"
-    },
-    {
-     "lang": "en",
-     "text": "JR Central Gate 2"
     }
    ],
    "aliases": [
@@ -4436,10 +4292,6 @@
     {
      "lang": "ja",
      "text": "JR 中央1改札"
-    },
-    {
-     "lang": "en",
-     "text": "JR Central Gate 1"
     }
    ],
    "aliases": [
@@ -4889,10 +4741,6 @@
     {
      "lang": "ja",
      "text": "東武東上線 中央1改札"
-    },
-    {
-     "lang": "en",
-     "text": "Tobu Tojo Line Central Gate 1"
     }
    ],
    "aliases": [
@@ -4976,10 +4824,6 @@
     {
      "lang": "ja",
      "text": "東武東上線 中央2改札"
-    },
-    {
-     "lang": "en",
-     "text": "Tobu Tojo Line Central Gate 2"
     }
    ],
    "aliases": [
@@ -5063,10 +4907,6 @@
     {
      "lang": "ja",
      "text": "中央通路"
-    },
-    {
-     "lang": "en",
-     "text": "Central Passage"
     }
    ],
    "aliases": [
@@ -5113,10 +4953,6 @@
     {
      "lang": "ja",
      "text": "10番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 10"
     }
    ],
    "aliases": [
@@ -5164,10 +5000,6 @@
     {
      "lang": "ja",
      "text": "11番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 11"
     }
    ],
    "aliases": [
@@ -5215,10 +5047,6 @@
     {
      "lang": "ja",
      "text": "15番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 15"
     }
    ],
    "aliases": [
@@ -5266,10 +5094,6 @@
     {
      "lang": "ja",
      "text": "17番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 17"
     }
    ],
    "aliases": [
@@ -5317,10 +5141,6 @@
     {
      "lang": "ja",
      "text": "18番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 18"
     }
    ],
    "aliases": [
@@ -5370,16 +5190,8 @@
      "text": "4番出口"
     },
     {
-     "lang": "en",
-     "text": "Exit 4"
-    },
-    {
      "lang": "ja",
      "text": "西口（南）"
-    },
-    {
-     "lang": "en",
-     "text": "West Exit (South)"
     }
    ],
    "aliases": [
@@ -5444,10 +5256,6 @@
     {
      "lang": "ja",
      "text": "13番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 13"
     }
    ],
    "aliases": [
@@ -5495,10 +5303,6 @@
     {
      "lang": "ja",
      "text": "JR 南改札"
-    },
-    {
-     "lang": "en",
-     "text": "JR South Gate"
     }
    ],
    "aliases": [
@@ -5557,10 +5361,6 @@
     {
      "lang": "ja",
      "text": "北通路"
-    },
-    {
-     "lang": "en",
-     "text": "North Passage"
     }
    ],
    "aliases": [
@@ -5598,10 +5398,6 @@
     {
      "lang": "ja",
      "text": "南通路"
-    },
-    {
-     "lang": "en",
-     "text": "South Passage"
     }
    ],
    "aliases": [
@@ -5639,10 +5435,6 @@
     {
      "lang": "ja",
      "text": "東口（地下）"
-    },
-    {
-     "lang": "en",
-     "text": "East Exit (B1)"
     }
    ],
    "aliases": [
@@ -5688,10 +5480,6 @@
     {
      "lang": "ja",
      "text": "西口（地下）"
-    },
-    {
-     "lang": "en",
-     "text": "West Exit (B1)"
     }
    ],
    "aliases": [
@@ -5737,10 +5525,6 @@
     {
      "lang": "ja",
      "text": "西口（南）（地下）"
-    },
-    {
-     "lang": "en",
-     "text": "West Exit South (B1)"
     }
    ],
    "aliases": [
@@ -11743,10 +11527,6 @@
     {
      "lang": "ja",
      "text": "1a番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 1a"
     }
    ],
    "aliases": [
@@ -11784,10 +11564,6 @@
     {
      "lang": "ja",
      "text": "2a番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 2a"
     }
    ],
    "aliases": [
@@ -11825,10 +11601,6 @@
     {
      "lang": "ja",
      "text": "1b番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 1b"
     }
    ],
    "aliases": [
@@ -11866,10 +11638,6 @@
     {
      "lang": "ja",
      "text": "2b番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 2b"
     }
    ],
    "aliases": [
@@ -11907,10 +11675,6 @@
     {
      "lang": "ja",
      "text": "3番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 3"
     }
    ],
    "aliases": [
@@ -11948,10 +11712,6 @@
     {
      "lang": "ja",
      "text": "C1番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit C1"
     }
    ],
    "aliases": [
@@ -11989,10 +11749,6 @@
     {
      "lang": "ja",
      "text": "C1b番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit C1b"
     }
    ],
    "aliases": [
@@ -12030,10 +11786,6 @@
     {
      "lang": "ja",
      "text": "C2番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit C2"
     }
    ],
    "aliases": [
@@ -12071,10 +11823,6 @@
     {
      "lang": "ja",
      "text": "C3番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit C3"
     }
    ],
    "aliases": [
@@ -12112,10 +11860,6 @@
     {
      "lang": "ja",
      "text": "C4番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit C4"
     }
    ],
    "aliases": [
@@ -12153,10 +11897,6 @@
     {
      "lang": "ja",
      "text": "C6番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit C6"
     }
    ],
    "aliases": [
@@ -12194,10 +11934,6 @@
     {
      "lang": "ja",
      "text": "C7番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit C7"
     }
    ],
    "aliases": [
@@ -12235,10 +11971,6 @@
     {
      "lang": "ja",
      "text": "C8番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit C8"
     }
    ],
    "aliases": [
@@ -12276,10 +12008,6 @@
     {
      "lang": "ja",
      "text": "C9番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit C9"
     }
    ],
    "aliases": [
@@ -12317,10 +12045,6 @@
     {
      "lang": "ja",
      "text": "C10番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit C10"
     }
    ],
    "aliases": [
@@ -12504,10 +12228,6 @@
     {
      "lang": "ja",
      "text": "JR 北改札"
-    },
-    {
-     "lang": "en",
-     "text": "JR North Gate"
     }
    ],
    "aliases": [
@@ -12545,10 +12265,6 @@
     {
      "lang": "ja",
      "text": "東武東上線 北改札"
-    },
-    {
-     "lang": "en",
-     "text": "Tobu Tojo Line North Gate"
     }
    ],
    "aliases": [
@@ -24562,10 +24278,6 @@
     {
      "lang": "ja",
      "text": "西武池袋線 1番ホーム"
-    },
-    {
-     "lang": "en",
-     "text": "Seibu Ikebukuro Line Platform 1"
     }
    ],
    "aliases": [],
@@ -24606,10 +24318,6 @@
     {
      "lang": "ja",
      "text": "西武池袋線 2番ホーム"
-    },
-    {
-     "lang": "en",
-     "text": "Seibu Ikebukuro Line Platform 2"
     }
    ],
    "aliases": [],
@@ -24650,10 +24358,6 @@
     {
      "lang": "ja",
      "text": "西武池袋線 3番ホーム"
-    },
-    {
-     "lang": "en",
-     "text": "Seibu Ikebukuro Line Platform 3"
     }
    ],
    "aliases": [],
@@ -24694,10 +24398,6 @@
     {
      "lang": "ja",
      "text": "西武池袋線 4番ホーム"
-    },
-    {
-     "lang": "en",
-     "text": "Seibu Ikebukuro Line Platform 4"
     }
    ],
    "aliases": [],
@@ -24738,10 +24438,6 @@
     {
      "lang": "ja",
      "text": "西武池袋線 5番ホーム"
-    },
-    {
-     "lang": "en",
-     "text": "Seibu Ikebukuro Line Platform 5"
     }
    ],
    "aliases": [],
@@ -24782,10 +24478,6 @@
     {
      "lang": "ja",
      "text": "西武池袋線 6番ホーム"
-    },
-    {
-     "lang": "en",
-     "text": "Seibu Ikebukuro Line Platform 6"
     }
    ],
    "aliases": [],
@@ -24826,10 +24518,6 @@
     {
      "lang": "ja",
      "text": "西武池袋線 7番ホーム"
-    },
-    {
-     "lang": "en",
-     "text": "Seibu Ikebukuro Line Platform 7"
     }
    ],
    "aliases": [],
@@ -25001,10 +24689,6 @@
     {
      "lang": "ja",
      "text": "東武東上線 南改札口"
-    },
-    {
-     "lang": "en",
-     "text": "Tobu Tojo Line South Gate"
     }
    ],
    "aliases": [
@@ -25047,10 +24731,6 @@
     {
      "lang": "ja",
      "text": "東武東上線 JR線のりかえ改札口"
-    },
-    {
-     "lang": "en",
-     "text": "Tobu Tojo Line JR Transfer Gate"
     }
    ],
    "aliases": [
@@ -25092,10 +24772,6 @@
     {
      "lang": "ja",
      "text": "JR メトロポリタン改札"
-    },
-    {
-     "lang": "en",
-     "text": "JR Metropolitan Gate"
     }
    ],
    "aliases": [
@@ -25133,10 +24809,6 @@
     {
      "lang": "ja",
      "text": "20a番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 20a"
     }
    ],
    "aliases": [
@@ -25174,10 +24846,6 @@
     {
      "lang": "ja",
      "text": "20b番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 20b"
     }
    ],
    "aliases": [
@@ -25215,10 +24883,6 @@
     {
      "lang": "ja",
      "text": "20c番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 20c"
     }
    ],
    "aliases": [
@@ -25256,10 +24920,6 @@
     {
      "lang": "ja",
      "text": "C1a番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit C1a"
     }
    ],
    "aliases": [
