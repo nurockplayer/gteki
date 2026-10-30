@@ -24,6 +24,7 @@ describe("vertical connector scope", () => {
 
 import * as THREE from "three";
 import { buildConnectors, buildEscalator, buildStairs, withinGreyboxBudget } from "./greyboxConnectors.ts";
+import { buildConnectors as buildLegacyConnectors } from "./greyboxConnectorsLegacy.ts";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 
 it("leaves elevator edges to the follow-up, including scene gaps", () => {
@@ -610,18 +611,28 @@ describe("turning landing guards", () => {
     expect(path.map((p) => p.x)).toEqual([0, 5, 10]);
   });
 
-  it("lists a skipped stair's edge in skippedEdgeIds", () => {
+  it("does not list an unsupported shape in skippedEdgeIds: main's builder builds it (#640 r18)", () => {
     const result = buildConnectors(stairThrough([[0, 0, 0], [4, 1, 0], [4, 2, -2], [0, 3, -2]]), () => true, flat, "high");
-    expect(result.skippedEdgeIds).toEqual(["turn"]);
+    expect(result.skippedEdgeIds).toEqual([]);
+    expect(result.stats.legacyConnectors).toBe(1);
   });
 
-  // Every shape outside the supported set is deliberately skipped, not guarded.
-  it.each(unsupportedCases)("skips $name as unsupported_shape", ({ waypoints }) => {
-    const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
-    expect(result.stats.connectorsSkipped).toBe(1);
-    expect(result.stats.connectorsSkippedByReason.unsupported_shape).toBe(1);
-    expect(result.root.children).toHaveLength(0);
-    expect(result.wallSegments).toHaveLength(0);
+  // Every shape outside the supported set is built exactly as main builds it today (#640 r18 ruling; its clipping is #668).
+  const positions = (objects: readonly THREE.Object3D[]) => objects.map((o) => Array.from(((o as THREE.Mesh).geometry.getAttribute("position").array as Float32Array)));
+  it.each(unsupportedCases)("builds $name with main's legacy builder, unchanged", ({ waypoints }) => {
+    for (const tier of ["high", "low"] as const) {
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, tier);
+      const legacy = buildLegacyConnectors(stairThrough(waypoints), () => true, flat, tier);
+      expect(result.stats.connectorsSkippedByReason.unsupported_shape).toBe(1);
+      expect(result.stats.legacyConnectors).toBe(1);
+      expect(result.root.children.length).toBeGreaterThan(0);
+      expect(positions(result.root.children)).toEqual(positions(legacy.root.children));
+      expect(positions(result.walkable)).toEqual(positions(legacy.walkable));
+      expect(positions(result.colliders)).toEqual(positions(legacy.colliders));
+      expect(result.wallSegments).toEqual(legacy.wallSegments);
+      expect([...result.pathByEdge]).toEqual([...legacy.pathByEdge]);
+      expect(result.stats.triangles).toBe(legacy.stats.triangles);
+    }
   });
 
   // A straight flight is built.

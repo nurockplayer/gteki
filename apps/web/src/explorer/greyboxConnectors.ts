@@ -2,6 +2,7 @@ import type { Edge, StationBundle } from "@gteki/schema";
 import * as THREE from "three";
 import { edgePoints, type V3 } from "./geometry.ts";
 import type { Segment2 } from "./walker.ts";
+import { buildConnectors as buildLegacyConnectors } from "./greyboxConnectorsLegacy.ts";
 
 /** Find vertical edges for which the original scene lacks a complete connector. */
 export function unmodelledVerticalEdges(
@@ -415,7 +416,12 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   let approximateFits = 0, omittedLandings = 0, connectorsSkipped = 0;
   const connectorsSkippedByReason: Record<"unsupported_shape" | "short_run", number> = { unsupported_shape: 0, short_run: 0 };
   const skippedEdgeIds: string[] = [];
-  const skip = (reason: keyof typeof connectorsSkippedByReason, edgeId: string) => { connectorsSkipped++; connectorsSkippedByReason[reason]++; skippedEdgeIds.push(edgeId); };
+  // An unsupported shape is not left out: main's builder builds it as before (#640 r18 ruling), so it is not a skipped edge.
+  const legacyEdgeIds = new Set<string>();
+  const skip = (reason: keyof typeof connectorsSkippedByReason, edgeId: string) => {
+    connectorsSkipped++; connectorsSkippedByReason[reason]++;
+    if (reason === "unsupported_shape") legacyEdgeIds.add(edgeId); else skippedEdgeIds.push(edgeId);
+  };
   const shellMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, side: THREE.DoubleSide });
   const lightMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, emissive: "#fff6e8", emissiveIntensity: 3.2, side: THREE.DoubleSide });
   const lampMaterials = [lightMaterial, new THREE.MeshStandardMaterial({ color: "#00ff00", emissive: "#00ff00", emissiveIntensity: 3.2 }), new THREE.MeshStandardMaterial({ color: "#ff0000", emissive: "#ff0000", emissiveIntensity: 3.2 })];
@@ -577,7 +583,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       if (material === lampMaterials) lightBatches.push({ mesh, parts });
     }
   }
-  const stats = { connectors: counts, meshes: root.children.length, triangles, approximateFits, omittedLandings, connectorsSkipped, connectorsSkippedByReason, overBudget: null as string | null,
+  const stats = { connectors: counts, meshes: root.children.length, triangles, approximateFits, omittedLandings, connectorsSkipped, connectorsSkippedByReason, legacyConnectors: legacyEdgeIds.size, overBudget: null as string | null,
     dropSoffits() {
       for (const batch of lightBatches) {
         const kept = batch.parts.filter((p) => !p.soffit);
@@ -587,7 +593,17 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         batch.mesh.geometry.dispose(); batch.mesh.geometry = replacement.geometry; batch.mesh.userData.edgeId = replacement.userData.edgeId; batch.mesh.userData.edgeRanges = replacement.userData.edgeRanges; batch.parts = kept;
         if (!kept.length) { root.remove(batch.mesh); stats.meshes--; }
       }
+      if (legacy) { const before = legacy.stats.triangles; legacy.stats.dropSoffits(); stats.triangles -= before - legacy.stats.triangles; }
     } };
+  // Unsupported shapes: exactly what main builds today, railing clipping included (#668).
+  const legacy = legacyEdgeIds.size ? buildLegacyConnectors(bundle, (edge) => legacyEdgeIds.has(edge.id) && traversable(edge), scope, tier) : null;
+  if (legacy) {
+    for (const child of [...legacy.root.children]) root.add(child);
+    walkable.push(...legacy.walkable); colliders.push(...legacy.colliders); wallSegments.push(...legacy.wallSegments); segments.push(...legacy.segments);
+    for (const [edgeId, path] of legacy.pathByEdge) pathByEdge.set(edgeId, path);
+    counts.stairs += legacy.stats.connectors.stairs; counts.escalator += legacy.stats.connectors.escalator;
+    stats.meshes = root.children.length; stats.triangles += legacy.stats.triangles;
+  }
   return { root, walkable, colliders, wallSegments, segments, pathByEdge, stats, skippedEdgeIds };
 }
 
