@@ -904,10 +904,10 @@ LoadedSignKit	interface	stations/ikebukuro/scene/kit_signs.ts	116
 loadSignKit	function	stations/ikebukuro/scene/kit_signs.ts	126
 roleSide	function	stations/ikebukuro/scene/materials.ts	12
 normalFromHeight	function	stations/ikebukuro/scene/materials.ts	56
-LIGHTMAP_BALANCE	const	stations/ikebukuro/scene/materials.ts	484
-ENV_INTENSITY	const	stations/ikebukuro/scene/materials.ts	486
-StationMaterials	interface	stations/ikebukuro/scene/materials.ts	621
-createMaterials	function	stations/ikebukuro/scene/materials.ts	646
+LIGHTMAP_BALANCE	const	stations/ikebukuro/scene/materials.ts	487
+ENV_INTENSITY	const	stations/ikebukuro/scene/materials.ts	489
+StationMaterials	interface	stations/ikebukuro/scene/materials.ts	624
+createMaterials	function	stations/ikebukuro/scene/materials.ts	649
 N02_GLB	const	stations/ikebukuro/scene/n02_overlay.ts	8
 N02_OFFSET_M	const	stations/ikebukuro/scene/n02_overlay.ts	9
 N02_RENDER_ORDER	const	stations/ikebukuro/scene/n02_overlay.ts	11
