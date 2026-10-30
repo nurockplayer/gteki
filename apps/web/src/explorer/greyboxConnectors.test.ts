@@ -443,4 +443,22 @@ describe("turning landing guards", () => {
       expect(blocked, `direction=${direction}`).toBe(true);
     }
   });
+
+  // Two turning landings whose squares overlap would let one guard cut the other's flight, so the stair gets no connector.
+  it("skips a stair whose two turning landings are 0.5 m apart, with no walls, and still builds the distant zigzag", () => {
+    const close: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 2.5, -0.5], [8, 4.5, -0.5]];
+    for (const direction of [-1, 1]) {
+      const mirrored = close.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
+      const result = buildConnectors(stairThrough(mirrored), () => true, flat, "high");
+      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(1);
+      expect(result.root.children).toHaveLength(0);
+      expect(result.walkable).toHaveLength(0);
+      expect(result.colliders).toHaveLength(0);
+      expect(result.wallSegments).toHaveLength(0);
+      expect(result.pathByEdge.has("turn")).toBe(false);
+      const far = buildConnectors(stairThrough(zigzag.map(([x, h, z]): [number, number, number] => [x, h, direction * z])), () => true, flat, "high");
+      expect(far.stats.connectorsSkipped, `zigzag direction=${direction}`).toBe(0);
+      expect(far.pathByEdge.has("turn")).toBe(true);
+    }
+  });
 });

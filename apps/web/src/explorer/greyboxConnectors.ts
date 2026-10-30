@@ -262,6 +262,28 @@ function clipToSquare(a: THREE.Vector3, b: THREE.Vector3, centre: THREE.Vector3,
   return [a.clone().lerp(b, t0), a.clone().lerp(b, t1)];
 }
 
+/** Whether two turning landings of one stair have outline squares that overlap in plan (gaps under `tolerance` count as overlap). */
+function turningLandingsOverlap(points: readonly THREE.Vector3[], half: number, tolerance = 0.02): boolean {
+  const squares: { centre: THREE.Vector3; axis: THREE.Vector3 }[] = [];
+  for (let j = 1; j + 1 < points.length; j++) {
+    const incoming = points[j]!.clone().sub(points[j - 1]!); incoming.y = 0;
+    const outgoing = points[j + 1]!.clone().sub(points[j]!); outgoing.y = 0;
+    if (incoming.lengthSq() > 1e-12 && outgoing.lengthSq() > 1e-12 && incoming.angleTo(outgoing) > 1e-6) {
+      const centre = points[j]!.clone(); centre.y = 0;
+      squares.push({ centre, axis: incoming.normalize() });
+    }
+  }
+  const across = (axis: THREE.Vector3) => new THREE.Vector3(-axis.z, 0, axis.x);
+  for (let a = 0; a < squares.length; a++) for (let b = a + 1; b < squares.length; b++) {
+    const first = squares[a]!, second = squares[b]!, delta = second.centre.clone().sub(first.centre);
+    const axes = [first.axis, across(first.axis), second.axis, across(second.axis)];
+    const reach = (square: { axis: THREE.Vector3 }, axis: THREE.Vector3) => half * (Math.abs(axis.dot(square.axis)) + Math.abs(axis.dot(across(square.axis))));
+    const separated = axes.some((axis) => Math.abs(delta.dot(axis)) > reach(first, axis) + reach(second, axis) + tolerance);
+    if (!separated) return true;
+  }
+  return false;
+}
+
 /** Build runtime-only batches for missing vertical transport. */
 export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge) => boolean, scope: ConnectorScope, tier: "high" | "low") {
   const root = new THREE.Group(), walkable: THREE.Object3D[] = [], colliders: THREE.Object3D[] = [];
@@ -285,6 +307,8 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
     const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
     const halfWidth = (edge.mode === "stairs" ? width : 1.2) / 2;
+    // Two turning landings whose squares overlap would let one guard cut the other's flight, so such a stair gets no connector.
+    if (edge.mode === "stairs" && turningLandingsOverlap(points, width / 2 + 0.03)) { connectorsSkipped++; continue; }
     let bentEscalator = false;
     for (let i = 1; i + 1 < points.length; i++) {
       const before = points[i]!.clone().sub(points[i - 1]!); before.y = 0;
