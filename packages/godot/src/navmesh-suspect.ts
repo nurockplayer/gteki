@@ -8,7 +8,7 @@ import { nodeDisplayZ } from "@gteki/navigation";
 import type { Edge, StationBundle } from "@gteki/schema";
 import { castAll } from "../../../apps/web/src/explorer/raycast.ts";
 
-export type SuspectEdge = { edgeId: string; mode: string; reason: "slope" | "end_height"; detail: string };
+export type SuspectEdge = { edgeId: string; mode: string; reason: "display_height_approx" | "slope" | "end_height"; detail: string };
 /** ENU metres, z up. Returns the walkable surface height nearest to z within ±1.5 m, or null. */
 export type FloorHeightNear = (x: number, y: number, z: number) => number | null;
 
@@ -58,8 +58,11 @@ export function suspectVerticalEdges(bundle: StationBundle, floorHeightNear: Flo
       const floor = floorHeightNear(node.position.x, node.position.y, z);
       if (floor !== null && Math.abs(floor - z) > END_HEIGHT_LIMIT_M) details.push(`${label} end ${z.toFixed(2)} m vs floor ${floor.toFixed(2)} m`);
     }
+    // The importer flags edges whose display heights it could not model (#644): the committed source of truth.
+    const approx = edge.attributes?.displayHeightApprox === true;
+    if (approx) details.unshift("attributes.displayHeightApprox");
     if (!details.length) continue;
-    out.push({ edgeId: edge.id, mode: edge.mode, reason: slope ? "slope" : "end_height", detail: details.join("; ") });
+    out.push({ edgeId: edge.id, mode: edge.mode, reason: approx ? "display_height_approx" : slope ? "slope" : "end_height", detail: details.join("; ") });
   }
   return out.sort((x, y) => x.edgeId.localeCompare(y.edgeId));
 }

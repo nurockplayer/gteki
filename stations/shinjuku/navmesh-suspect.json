@@ -1,12 +1,42 @@
 [
   {
+    "edgeId": "e:4038cecf024c417a87310ab9859a7404",
+    "mode": "stairs",
+    "reason": "display_height_approx"
+  },
+  {
+    "edgeId": "e:45ebdab487134925b3b47cd29bffb99c",
+    "mode": "stairs",
+    "reason": "display_height_approx"
+  },
+  {
+    "edgeId": "e:bdcdf9229c9f49dc9bc02bec79c4a8fe",
+    "mode": "stairs",
+    "reason": "display_height_approx"
+  },
+  {
+    "edgeId": "e:c2c4ebb36e374e1da3dde94d3a5257d6",
+    "mode": "stairs",
+    "reason": "display_height_approx"
+  },
+  {
     "edgeId": "e:c3fe6342f158400ab602dd610f636329",
     "mode": "stairs",
-    "reason": "slope"
+    "reason": "display_height_approx"
   },
   {
     "edgeId": "e:c690df6cad7b48bba7b3b30fee65eda2",
     "mode": "stairs",
-    "reason": "slope"
+    "reason": "display_height_approx"
+  },
+  {
+    "edgeId": "e:c7fa5f74d72f43498ef2cb3b1dbea7e4",
+    "mode": "escalator",
+    "reason": "display_height_approx"
+  },
+  {
+    "edgeId": "e:dcbc1a258ceb41b09ab50e417aabc8b4",
+    "mode": "stairs",
+    "reason": "display_height_approx"
   }
 ]

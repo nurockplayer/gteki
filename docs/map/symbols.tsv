@@ -121,10 +121,10 @@ greyboxTriangleLimit	const	apps/web/src/explorer/greybox.ts	94
 GreyboxScene	interface	apps/web/src/explorer/greybox.ts	95
 splitWallsAtOpenings	function	apps/web/src/explorer/greybox.ts	101
 widthOf	function	apps/web/src/explorer/greybox.ts	144
-simplifyGreyboxRun	function	apps/web/src/explorer/greybox.ts	208
-createGreyboxBuilder	function	apps/web/src/explorer/greybox.ts	288
-buildGreybox	function	apps/web/src/explorer/greybox.ts	337
-emitGreybox	function	apps/web/src/explorer/greybox.ts	347
+simplifyGreyboxRun	function	apps/web/src/explorer/greybox.ts	210
+createGreyboxBuilder	function	apps/web/src/explorer/greybox.ts	290
+buildGreybox	function	apps/web/src/explorer/greybox.ts	339
+emitGreybox	function	apps/web/src/explorer/greybox.ts	349
 unmodelledVerticalEdges	function	apps/web/src/explorer/greyboxConnectors.ts	7
 ConnectorMaterial	type	apps/web/src/explorer/greyboxConnectors.ts	41
 ConnectorPart	interface	apps/web/src/explorer/greyboxConnectors.ts	42

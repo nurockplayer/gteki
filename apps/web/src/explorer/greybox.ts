@@ -147,6 +147,8 @@ export function widthOf(edge: Edge): number {
   return typeof width === "number" && Number.isFinite(width) && width > 0 ? width : MODE_WIDTH[edge.mode] ?? 2;
 }
 
+// A shifted pad reaches this far past its node, so the node and the walk edges leaving it stand on floor, not on the pad's rim.
+const PAD_OVERLAP_M = 0.3;
 type LandingPad = { nodeId:string; floorId:string; center:THREE.Vector3; along:THREE.Vector3; width:number; openSides:Set<number>; shifted:boolean; strip?:UnmodelledEdgeRun };
 
 /** A pad uses the node's render elevation; its optional strip follows an adjacent graph edge. */
@@ -198,7 +200,7 @@ function landingPadsForEdge(bundle:StationBundle, edge:Edge, traversable:(edge:E
       }
     }
     const width=Math.max(1.5,widthOf(edge));
-    result.push({nodeId:id,floorId:node.floorId,center:center.clone().addScaledVector(along,away*width/2),along,width,openSides,shifted:away!==0,...(best ? {strip:best.strip} : {})});
+    result.push({nodeId:id,floorId:node.floorId,center:center.clone().addScaledVector(along,away*(width/2-PAD_OVERLAP_M)),along,width,openSides,shifted:away!==0,...(best ? {strip:best.strip} : {})});
   }
   return result;
 }

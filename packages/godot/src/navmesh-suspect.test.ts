@@ -28,6 +28,12 @@ describe("suspect vertical edges", () => {
     expect(suspectVerticalEdges(b, noFloor, any)).toEqual([]);
   });
 
+  it("flags an edge the importer marks displayHeightApprox, even a level one", () => {
+    const flagged = { ...edge("e1", "stairs", "a", "b"), attributes: { displayHeightApprox: true } };
+    const b = bundle([node("a", 0, 0, 0), node("b", 4, 0, 0)], [flagged as ReturnType<typeof edge>]);
+    expect(suspectVerticalEdges(b, noFloor, any)).toMatchObject([{ edgeId: "e1", reason: "display_height_approx" }]);
+  });
+
   it("does not flag a stair rising 3 m over 6 m", () => {
     const b = bundle([node("a", 0, 0, 0), node("b", 6, 0, 3)], [edge("e1", "stairs", "a", "b")]);
     expect(suspectVerticalEdges(b, noFloor, any)).toEqual([]);
