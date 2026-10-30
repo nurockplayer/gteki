@@ -13,6 +13,11 @@ const landed = (geometry: { x: number; y: number; z: number }[], end = { x: 12, 
   const built = createSyntheticBundle([syntheticEdge("start-upper", "start", "upper", { mode: "stairs", lengthM: 12, geometry })]);
   return { ...built, nodes: built.nodes.map((node) => node.id === "upper" ? { ...node, position: end } : node) };
 };
+/** A flight of the given rise: the upper node sits at `rise` metres (node heights win over floor elevations). */
+const lowBundle = (rise: number) => {
+  const built = createSyntheticBundle([syntheticEdge("start-upper", "start", "upper", { mode: "stairs", lengthM: 10.77 })]);
+  return { ...built, nodes: built.nodes.map((node) => node.id === "upper" ? { ...node, position: { x: 10, y: 0, z: rise } } : node) };
+};
 const traversable = () => true;
 
 /** Two floors 4 m apart with a ceiling slab, an upper slab and a straight flight under x 0→10. */
@@ -314,6 +319,64 @@ describe("stairwell cuts", () => {
     const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
     expect(steps.geometry).toBe(stepsOriginal);
     expect(plate.geometry).toBe(plateOriginal);
+    result.dispose();
+  });
+
+  it("cuts a slab's modelled edge face inside the footprint, but keeps a wall rising above the slab", () => {
+    const s = scene();
+    const quad = (a: number[], b: number[], c: number[], d: number[]) => [...a, ...b, ...c, ...a, ...c, ...d];
+    const top = (x0: number, x1: number, y: number, z0: number, z1: number) => quad([x0, y, z0], [x1, y, z0], [x1, y, z1], [x0, y, z1]);
+    // A floor-role slab (3.6 to 4.0 m) with a lip inside the footprint at x = 9.5 and an end face beyond it at x = 11.
+    const lip = quad([9.5, 3.6, -0.5], [9.5, 4.0, -0.5], [9.5, 4.0, 0.5], [9.5, 3.6, 0.5]);
+    const end = quad([11, 3.6, -2], [11, 4.0, -2], [11, 4.0, 2], [11, 3.6, 2]);
+    const slabGeometry = new THREE.BufferGeometry();
+    slabGeometry.setAttribute("position", new THREE.Float32BufferAttribute([...top(-1, 11, 4, -2, 2), ...top(-1, 11, 3.6, -2, 2), ...lip, ...end], 3));
+    const slab = new THREE.Mesh(slabGeometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    slab.userData.gteki_role = "floor";
+    // A wall with no horizontal faces, rising from the slab's underside to 6 m, inside the footprint.
+    const wall = new THREE.Mesh(new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(9.5, 3.6, -0.5), new THREE.Vector3(9.5, 6, -0.5), new THREE.Vector3(9.5, 6, 0.5),
+      new THREE.Vector3(9.5, 3.6, -0.5), new THREE.Vector3(9.5, 6, 0.5), new THREE.Vector3(9.5, 3.6, 0.5),
+    ]), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    s.root.add(slab, wall); s.root.updateMatrixWorld(true);
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
+    // Horizontal ray from x = 7 at 3.8 m toward +x: the nearest hit is the end face at 11 m, not the lip at 9.5 m.
+    const along = new THREE.Raycaster(new THREE.Vector3(7, 3.8, 0), new THREE.Vector3(1, 0, 0)).intersectObject(slab, true);
+    expect(along[0]!.point.x).toBeCloseTo(11, 6);
+    // The wall rises above the slab (its span 3.6 to 6 m is outside the slab levels), so it is kept.
+    const beside = new THREE.Raycaster(new THREE.Vector3(7, 5, 0), new THREE.Vector3(1, 0, 0)).intersectObject(wall, true);
+    expect(beside[0]!.point.x).toBeCloseTo(9.5, 6);
+    result.dispose();
+  });
+
+  it("cuts a 1.2 m-rise flight under a floor slab", () => {
+    const short = lowBundle(1.2);
+    const wells = stairwellWells(short, traversable);
+    expect(wells).toHaveLength(1);
+    const slab = new THREE.Mesh(new THREE.BoxGeometry(16, 0.4, 6), new THREE.MeshBasicMaterial());
+    slab.position.set(5, 1.0, 0); slab.userData.gteki_role = "floor";
+    const root = new THREE.Group(); root.add(slab); root.updateMatrixWorld(true);
+    const original = slab.geometry;
+    const result = cutStairwells(root, wells, { tier: "high" });
+    expect(slab.geometry).not.toBe(original);
+    expect(down(slab, 5, 5)).toHaveLength(0);
+    expect(down(slab, 12.5, 5)[0]!.point.y).toBeCloseTo(1.2, 6);
+    result.dispose();
+  });
+
+  it("changes nothing for a 1.2 m-rise flight with nothing above it, and adds no rail", () => {
+    const wells = stairwellWells(lowBundle(1.2), traversable);
+    expect(wells).toHaveLength(1);
+    const s = scene();
+    // Keep the floor and the upper slab (well above the headroom); drop the ceiling, which is within it.
+    s.ceiling.removeFromParent();
+    const floorOriginal = s.floor.geometry, upperOriginal = s.upper.geometry;
+    const result = cutStairwells(s.root, wells, { tier: "high" });
+    expect(s.floor.geometry).toBe(floorOriginal);
+    expect(s.upper.geometry).toBe(upperOriginal);
+    expect(result.stats.cutTriangles).toBe(0);
+    expect(result.walls).toHaveLength(0);
+    expect(result.finish).toBeNull();
     result.dispose();
   });
 

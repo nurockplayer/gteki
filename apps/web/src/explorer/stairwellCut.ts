@@ -5,8 +5,6 @@ import { widthOf } from "./greybox.ts";
 import { cutRegions, disposePortalCuts, type CutRegion, type Plane, type PortalCutResources } from "./portalCut.ts";
 import type { Segment2 } from "./walker.ts";
 
-/** Floor-to-floor rise below which no slab fits the headroom band: nothing to cut. */
-export const MIN_WELL_RISE_M = 2.15;
 /** A plan piece flatter than this is a landing. */
 const MIN_PIECE_RISE_M = 0.05;
 /** Clearance above the walking surface and past the upper landing. */
@@ -24,6 +22,8 @@ const POST_SPACING_M = 1.5;
 const SLAB_BAND_M = 0.6;
 /** Mesh roles (`userData.gteki_role`) whose horizontal faces are slabs: always cut in the band. `stairs_ramps` never is. */
 const SLAB_ROLES = new Set(["floor", "ceiling"]);
+/** Side faces of a slab are near-vertical: |normal.y| below this. */
+const VERTICAL_NORMAL_M = 0.1;
 /** Headroom above the walking surface that the primary cut clears: higher faces obstruct nothing and stay. */
 const HEADROOM_M = 2.1;
 
@@ -100,7 +100,6 @@ export function stairwellWells(bundle: StationBundle, traversable: (edge: Edge) 
     const points = edgePoints(bundle, edge, nodes, floors);
     if (points.length < 2) continue;
     const lowerY = Math.min(points[0]!.y, points.at(-1)!.y), upperY = Math.max(points[0]!.y, points.at(-1)!.y);
-    if (upperY - lowerY < MIN_WELL_RISE_M) continue;
     // Order bottom to top, so the last rectangle is the arrival piece.
     const ordered = points[0]!.y <= points.at(-1)!.y ? points : [...points].reverse();
     const rects: StairwellRect[] = [];
@@ -172,20 +171,33 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
       const band = [...rectCorners(rect, floorY), ...rectCorners(rect, well.upperY + UPPER_CLEAR_M)];
       const planes = rectPlanes(rect, well.upperY).slice(0, 4);
       planes.push(p => p.y - floorY - 1e-6, p => well.upperY + UPPER_CLEAR_M - p.y);
-      const levels = new WeakMap<THREE.Object3D, Set<number>>();
-      const admittedLevels = (mesh: THREE.Object3D): Set<number> => {
-        let found = levels.get(mesh);
-        if (!found) { found = bandLevels(mesh, rect, floorY, well.upperY + UPPER_CLEAR_M); levels.set(mesh, found); }
+      const levelCache = new WeakMap<THREE.Object3D, BandLevels>();
+      const levelsOf = (mesh: THREE.Object3D): BandLevels => {
+        let found = levelCache.get(mesh);
+        if (!found) { found = bandLevels(mesh, rect, floorY, well.upperY + UPPER_CLEAR_M); levelCache.set(mesh, found); }
         return found;
       };
       regions.push({
-        key: rect, bounds: new THREE.Box3().setFromPoints(band), planes, clip: null, accepts: horizontal,
+        key: rect, bounds: new THREE.Box3().setFromPoints(band), planes, clip: null,
+        // Horizontal faces, and near-vertical side faces that the slab levels below decide.
+        accepts: (normal) => horizontal(normal) || Math.abs(normal.y) < VERTICAL_NORMAL_M,
         admits: (vertices, mesh) => {
           const role = mesh.userData.gteki_role;
-          if (SLAB_ROLES.has(role)) return true;
-          if (role !== undefined) return false;
-          const mean = (vertices[0]!.y + vertices[1]!.y + vertices[2]!.y) / 3;
-          return admittedLevels(mesh).has(levelOf(mean));
+          if (role !== undefined && !SLAB_ROLES.has(role)) return false;
+          const [a, b, c] = vertices as [THREE.Vector3, THREE.Vector3, THREE.Vector3];
+          const normal = b.clone().sub(a).cross(c.clone().sub(a));
+          if (normal.lengthSq() === 0) return false;
+          normal.normalize();
+          const levels = levelsOf(mesh);
+          if (horizontal(normal)) {
+            if (SLAB_ROLES.has(role)) return true;
+            return levels.outside.has(levelOf((a.y + b.y + c.y) / 3));
+          }
+          // A side face is cut only when its height span lies within the mesh's admitted slab levels (+/- 5 cm).
+          const slab = SLAB_ROLES.has(role) ? levels.all : levels.outside;
+          if (!slab.size) return false;
+          const lo = Math.min(...slab) - 0.05 - 1e-6, hi = Math.max(...slab) + 0.05 + 1e-6;
+          return Math.min(a.y, b.y, c.y) >= lo && Math.max(a.y, b.y, c.y) <= hi;
         },
       });
     }
@@ -317,11 +329,18 @@ const levelOf = (y: number): number => Math.round(y * 20) / 20;
  * outside the rectangle in plan. A slab's faces run past the footprint, so their levels are admitted; a tread
  * level whose triangles all lie inside the footprint is not.
  */
-function bandLevels(mesh: THREE.Object3D, rect: StairwellRect, floorY: number, topY: number): Set<number> {
-  const found = new Set<number>();
+interface BandLevels {
+  /** Levels of every horizontal triangle inside the band. */
+  all: Set<number>;
+  /** The levels that have a horizontal triangle with a vertex outside the rectangle in plan. */
+  outside: Set<number>;
+}
+
+function bandLevels(mesh: THREE.Object3D, rect: StairwellRect, floorY: number, topY: number): BandLevels {
+  const all = new Set<number>(), outside = new Set<number>();
   const geometry = (mesh as THREE.Mesh).geometry as THREE.BufferGeometry | undefined;
   const position = geometry?.getAttribute("position");
-  if (!geometry || !position) return found;
+  if (!geometry || !position) return { all, outside };
   mesh.updateWorldMatrix(true, false);
   const index = geometry.index, count = index ? index.count : position.count;
   const vs = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
@@ -336,9 +355,10 @@ function bandLevels(mesh: THREE.Object3D, rect: StairwellRect, floorY: number, t
     if (normal.lengthSq() === 0 || !horizontal(normal.normalize())) continue;
     const y = (vs[0]!.y + vs[1]!.y + vs[2]!.y) / 3;
     if (y < floorY - 1e-6 || y > topY + 1e-6) continue;
-    if (vs.some(outsidePlan)) found.add(levelOf(y));
+    all.add(levelOf(y));
+    if (vs.some(outsidePlan)) outside.add(levelOf(y));
   }
-  return found;
+  return { all, outside };
 }
 
 /** Band around one rectangle's cut boundary, on the sides no other piece of the same well covers. */
