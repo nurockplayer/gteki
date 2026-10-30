@@ -304,13 +304,25 @@ function turningSquares(points: readonly THREE.Vector3[]): LandingSquare[] {
 
 const acrossAxis = (axis: THREE.Vector3) => new THREE.Vector3(-axis.z, 0, axis.x);
 
-/** Whether two landing squares overlap in plan (gaps under `tolerance` count as overlap) while sitting under `heightGap` apart vertically. */
-function squaresOverlap(a: LandingSquare, b: LandingSquare, half: number, tolerance = 0.02, heightGap = 2.1): boolean {
-  if (Math.abs(a.height - b.height) >= heightGap) return false;
+/** Landings within this height of each other are one level: their squares merge into one guard outline. */
+const LEVEL = 0.05;
+/** Landings this far apart vertically are independent floors. */
+const STACK_GAP = 2.1;
+
+/** Whether two landing squares overlap in plan (gaps under `tolerance` count as overlap). */
+function squaresOverlap(a: LandingSquare, b: LandingSquare, half: number, tolerance = 0.02): boolean {
   const delta = b.centre.clone().sub(a.centre);
   const reach = (square: LandingSquare, axis: THREE.Vector3) => half * (Math.abs(axis.dot(square.axis)) + Math.abs(axis.dot(acrossAxis(square.axis))));
   const axes = [a.axis, acrossAxis(a.axis), b.axis, acrossAxis(b.axis)];
   return !axes.some((axis) => Math.abs(delta.dot(axis)) > reach(a, axis) + reach(b, axis) + tolerance);
+}
+
+/** Whether two landings overlap in plan at heights between LEVEL and STACK_GAP apart: a stacked layout the walker cannot use. */
+function squaresStacked(squares: readonly LandingSquare[], half: number): boolean {
+  return squares.some((a, i) => squares.slice(i + 1).some((b) => {
+    const gap = Math.abs(a.height - b.height);
+    return gap > LEVEL && gap < STACK_GAP && squaresOverlap(a, b, half);
+  }));
 }
 
 /** Whether plan point p lies in the closed landing square. */
@@ -423,7 +435,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
     const halfWidth = (edge.mode === "stairs" ? width : 1.2) / 2;
     const landingSquares = turningSquares(points);
-    if (edge.mode === "stairs" && flightsStacked(points, width / 2 + 0.03, landingSquares)) { connectorsSkipped++; continue; }
+    if (edge.mode === "stairs" && (flightsStacked(points, width / 2 + 0.03, landingSquares) || squaresStacked(landingSquares, width / 2 + 0.03))) { connectorsSkipped++; continue; }
     // Two turning landings whose squares overlap would let one guard cut the other's flight, so such a stair gets no connector.
     let bentEscalator = false;
     for (let i = 1; i + 1 < points.length; i++) {
@@ -509,7 +521,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
           const sides = [[corners[3]!, corners[0]!], [corners[1]!, corners[2]!], [corners[0]!, corners[1]!], [corners[2]!, corners[3]!]] as const;
           // Turning landings whose squares overlap this one: their interiors are open, so this outline stops at their edges.
           const mine = landingSquares.find((square) => square.index === i)!;
-          const others = landingSquares.filter((square) => square !== mine && squaresOverlap(mine, square, half));
+          const others = landingSquares.filter((square) => square !== mine && Math.abs(square.height - mine.height) <= LEVEL && squaresOverlap(mine, square, half));
           for (const [a, b] of sides) {
             // The landing's own flights open the outline only as far as their legs reach, like a neighbour's flights, but
             // always out to the square's own boundary: a leg ending inside the square must still leave it.

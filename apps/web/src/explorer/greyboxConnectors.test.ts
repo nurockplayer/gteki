@@ -360,17 +360,16 @@ function closeS(direction: number): [number, number, number][] {
 /** Single-vertex 135 and 165 degree turns: their flights share one landing, so the landing guard alone keeps them closed. */
 const singleVertexReturns = [135, 165].flatMap((degrees) => [-1, 1].map((direction) => ({ name: `single ${degrees} degree turn, direction=${direction}`, waypoints: stackedWaypoints(degrees, direction) })));
 /**
- * Two 90 degree turns with a 0.78 m flat step: the two landing squares are equal and overlap by half, with flush outer edges
- * on x = 4.78 (the step runs toward -z) and x = 3.22.
+ * A 0.78 m flat step, then a rise away from the landing: the two landing squares are equal, sit level and overlap by half, with
+ * flush outer edges on x = 4.78 (the step runs toward -z). The second flight leaves the x = 4.78 edge over z in [-1.54, -0.02].
  */
 function equalSquaresWaypoints(direction: number): [number, number, number][] {
-  const base: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 3.95, -0.78], [0, 4.35, -0.78]];
+  const base: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 2, -0.78], [8, 4, -0.78]];
   return base.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
 }
 const equalCases = [-1, 1].map((direction) => ({ name: `two equal squares overlapping by half, direction=${direction}`, waypoints: equalSquaresWaypoints(direction) }));
 const turnCases = [
   ...[15, 45, 90, 135, 165, 180].flatMap((degrees) => [-1, 1].map((direction) => ({ name: degrees < 135 ? `single ${degrees} degree turn, direction=${direction}` : `switchback ${degrees} degrees, direction=${direction}`, waypoints: switchbackWaypoints(degrees, direction) }))),
-  ...[-1, 1].map((direction) => ({ name: `S, two 90 degree turns 0.5 m apart, direction=${direction}`, waypoints: closeS(direction) })),
   ...[-1, 1].map((direction) => ({ name: `two consecutive 90 degree turns, direction=${direction}`, waypoints: zigzag.map(([x, h, z]): [number, number, number] => [x, h, direction * z]) })),
 ];
 
@@ -460,13 +459,18 @@ describe("turning landing guards", () => {
     }
   });
 
-  it("builds two landings that overlap in plan when they are 3 m apart vertically", () => {
+  // Landings 3 m apart in height are independent floors: both build, each with its own guard at its own height.
+  it("builds two landings that overlap in plan when they are 3 m apart vertically, each guarded at its own height", () => {
     for (const direction of [-1, 1]) {
       const tall: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 5, -0.5], [8, 7, -0.5]];
       const waypoints = tall.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
       expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(0);
       expect(result.pathByEdge.has("turn")).toBe(true);
+      for (const height of [2, 5]) {
+        const guards = result.wallSegments.filter((w) => Math.abs(w.yMin - (height - 0.12)) < 1e-6 && Math.abs(w.yMax - (height + 0.96)) < 1e-6);
+        expect(guards.length, `direction=${direction} height=${height}`).toBeGreaterThan(0);
+      }
     }
   });
 
@@ -493,12 +497,13 @@ describe("turning landing guards", () => {
     }
   });
 
-  // Two turns 0.5 m apart form an S: the landing squares overlap, so their guards merge into the union's outer outline.
-  it("builds the S-shaped stair whose turning landings are 0.5 m apart", () => {
+  // Two turns 0.5 m apart form an S: the landings overlap but sit 0.5 m apart in height, so the stair is stacked and skipped.
+  it("skips the S-shaped stair whose overlapping turning landings sit 0.5 m apart in height", () => {
     for (const direction of [-1, 1]) {
       const result = buildConnectors(stairThrough(closeS(direction)), () => true, flat, "high");
-      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(0);
-      expect(result.pathByEdge.has("turn")).toBe(true);
+      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(1);
+      expect(result.root.children).toHaveLength(0);
+      expect(result.wallSegments).toHaveLength(0);
     }
   });
 
@@ -528,14 +533,16 @@ describe("turning landing guards", () => {
     for (const direction of [-1, 1]) {
       const result = buildConnectors(stairThrough(equalSquaresWaypoints(direction)), () => true, flat, "high");
       expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(0);
-      const landingWalls = result.wallSegments.filter((w) => Math.abs(w.yMin - 1.88) < 1e-6 && Math.abs(w.yMax - 2.96) < 1e-6 || Math.abs(w.yMin - 3.83) < 1e-6 && Math.abs(w.yMax - 4.91) < 1e-6);
+      const landingWalls = result.wallSegments.filter((w) => Math.abs(w.yMin - 1.88) < 1e-6 && Math.abs(w.yMax - 2.96) < 1e-6);
       const flush = landingWalls.filter((w) => Math.abs(w.ax - 4.78) < 1e-6 && Math.abs(w.bx - 4.78) < 1e-6)
         .map((w) => [Math.min(w.az, w.bz), Math.max(w.az, w.bz)] as const).sort((x, y) => x[0] - y[0]);
-      const lo = direction > 0 ? -1.56 : -0.78, hi = direction > 0 ? 0.78 : 1.56;
-      expect(flush.length, `direction=${direction}`).toBeGreaterThan(0);
-      expect(flush[0]![0], `direction=${direction} start`).toBeCloseTo(lo, 6);
-      expect(flush.at(-1)![1], `direction=${direction} end`).toBeCloseTo(hi, 6);
-      for (let i = 1; i < flush.length; i++) expect(flush[i]![0] - flush[i - 1]![1], `direction=${direction} gap`).toBeLessThanOrEqual(1e-4);
+      // The first square's free corner (z = sign * 0.78) to the second flight's opening, which starts at z = 0: slivers
+      // under 0.05 m beside the opening are not emitted, so one piece covers the flush edge.
+      const sign = direction > 0 ? 1 : -1;
+      expect(flush.length, `direction=${direction}`).toBe(1);
+      const [z0, z1] = flush[0]!;
+      expect(Math.abs(z0 - Math.min(sign * 0.78, 0)), `direction=${direction} start`).toBeLessThan(0.05);
+      expect(Math.abs(z1 - Math.max(sign * 0.78, 0)), `direction=${direction} end`).toBeLessThan(0.05);
     }
   });
 
@@ -574,3 +581,4 @@ describe("turning landing guards", () => {
     }
   });
 });
+
