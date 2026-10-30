@@ -135,7 +135,7 @@ export interface CutResult {
   heights: Map<object, number[]>;
   /** Maximum world height of each removed polygon, per region key. */
   maxHeights: Map<object, number[]>;
-  /** Hash of every mesh the triangle stage reached, as the recipe header keeps it; 0 without a recipe. */
+  /** Hash of every mesh the triangle stage reached, as the recipe header keeps it (FNV-1a; the offset basis when no mesh was reached). */
   meshKeysHash: number;
 }
 

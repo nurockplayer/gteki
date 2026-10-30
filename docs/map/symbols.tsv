@@ -273,7 +273,7 @@ PortalCutResources	interface	apps/web/src/explorer/portalCut.ts	114
 disposePortalCuts	function	apps/web/src/explorer/portalCut.ts	121
 CutResult	interface	apps/web/src/explorer/portalCut.ts	129
 cutRegions	function	apps/web/src/explorer/portalCut.ts	168
-cutPortals	function	apps/web/src/explorer/portalCut.ts	459
+cutPortals	function	apps/web/src/explorer/portalCut.ts	464
 headingFromYaw	function	apps/web/src/explorer/pose.ts	2
 PostFxSettings	interface	apps/web/src/explorer/postfx.ts	18
 POSTFX_HIGH	const	apps/web/src/explorer/postfx.ts	27
@@ -324,7 +324,7 @@ StairwellCut	interface	apps/web/src/explorer/stairwellCut.ts	73
 StairwellOptions	interface	apps/web/src/explorer/stairwellCut.ts	93
 stairwellWells	function	apps/web/src/explorer/stairwellCut.ts	108
 stairwellRegions	function	apps/web/src/explorer/stairwellCut.ts	174
-cutStairwells	function	apps/web/src/explorer/stairwellCut.ts	233
+cutStairwells	function	apps/web/src/explorer/stairwellCut.ts	235
 shouldRelease	function	apps/web/src/explorer/stationCaches.ts	8
 StationCaches	class	apps/web/src/explorer/stationCaches.ts	17
 STREET	const	apps/web/src/explorer/streetBackdrop.ts	12
