@@ -11,7 +11,7 @@ import { R, edgePoints, ribbonGeometry } from "./geometry.ts";
  * default profile may traverse (so free walking never leaves the known graph).
  */
 
-const MODE_WIDTH: Record<string, number> = { walk: 2.6, gate: 1.8, stairs: 2.0, escalator: 1.4, ramp: 2.2, moving_walkway: 1.6, elevator: 1.6 };
+export const MODE_WIDTH: Record<string, number> = { walk: 2.6, gate: 1.8, stairs: 2.0, escalator: 1.4, ramp: 2.2, moving_walkway: 1.6, elevator: 1.6 };
 
 export interface GraphView {
   root: THREE.Group;

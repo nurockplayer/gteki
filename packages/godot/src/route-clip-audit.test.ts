@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import type { PolylinePoint } from "@gteki/navigation";
-import { auditPolyline, sceneProbe, violations } from "./route-clip-audit.ts";
+import { auditPolyline, cutSceneProbe, sceneProbe, violations } from "./route-clip-audit.ts";
+import { createSyntheticBundle, syntheticEdge } from "../../navigation/src/fixtures.ts";
 
 // Renderer frame: y up, ENU (x, y, z) → (x, z, -y). A 20 m floor at z 0 and a wall across x = 5.
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial());
@@ -32,5 +33,22 @@ describe("route clip audit", () => {
   });
   it("passes a lift ride over a low scene wall", () => {
     expect(auditPolyline(probe, line([-5, 2.8, 0], [-5, 3.2, 10]), { skipInteriorFloor: true }).wallHits).toBe(0);
+  });
+  it("returns optional sample detail without changing elevator audit counts", () => {
+    const points = line([0.2, 0, 0], [12.2, 0, 0]);
+    const detail: import("./route-clip-audit.ts").SampleDetail[] = [];
+    const withDetail = auditPolyline(probe, points, { skipInteriorFloor: true, detail });
+    expect(withDetail).toEqual(auditPolyline(probe, points, { skipInteriorFloor: true }));
+    expect(detail).toHaveLength(withDetail.samples);
+    expect(detail.some(d => d.wallBefore && d.floor === "ok")).toBe(true);
+    expect(detail.some(d => d.floor === "none")).toBe(true);
+  });
+  it("cuts a collider proxy outside the scene root with the slabs, as the browser does", () => {
+    const bundle = createSyntheticBundle([syntheticEdge("start-upper", "start", "upper", { mode: "stairs", lengthM: 10.77 })]);
+    const proxy = new THREE.Mesh(new THREE.BoxGeometry(16, 0.4, 6), new THREE.MeshBasicMaterial());
+    proxy.position.set(5, 3.8, 0); proxy.updateMatrixWorld(true);
+    const original = proxy.geometry;
+    cutSceneProbe({ root: new THREE.Group(), walkable: [], colliders: [proxy], cameraBlockers: [], walls: [] } as never, bundle, "high");
+    expect(proxy.geometry).not.toBe(original);
   });
 });

@@ -11,6 +11,7 @@ export class OverviewLook {
   private active = false;
   private fog: THREE.Scene["fog"] = null;
   private readonly sides = new Map<THREE.Material, THREE.Side>();
+  private readonly hidden = new Map<THREE.Object3D, boolean>();
 
   get isActive(): boolean {
     return this.active;
@@ -23,6 +24,9 @@ export class OverviewLook {
       this.fog = scene.fog;
       scene.fog = null;
       root.traverse((o) => {
+        if (o.userData.greybox && (o.name === "greybox-lights" || o.name === "greybox-kerb")) {
+          this.hidden.set(o, o.visible); o.visible = false;
+        }
         const m = (o as THREE.Mesh).material;
         if (!(o as THREE.Mesh).isMesh || !m) return;
         for (const mat of Array.isArray(m) ? m : [m]) {
@@ -36,6 +40,8 @@ export class OverviewLook {
       this.fog = null;
       for (const [mat, side] of this.sides) mat.side = side;
       this.sides.clear();
+      for (const [object, visible] of this.hidden) object.visible = visible;
+      this.hidden.clear();
     }
   }
 }

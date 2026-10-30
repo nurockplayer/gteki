@@ -20,6 +20,7 @@ function runtime(boardZ = -10) {
   const e = Object.create(Explorer.prototype) as any;
   Object.assign(e, {
     scene, stationScene: { root }, identityBoards: collectIdentityBoards(root), identityPlaced: false,
+    greybox: null, greyboxOpenings: [], greyboxSegments: [], greyboxLegendVisible: false, sceneGroundTargets: [],
     pos: new THREE.Vector3(), lastAvatarPos: new THREE.Vector3(), yaw: 0, pitch: -0.12, bodyYaw: 0,
     mode: "overview", camera: new THREE.PerspectiveCamera(50, 9 / 19.5, 0.05, 100),
     cameraTargets: [], skyTargets: [], ray: new THREE.Raycaster(), occluders: [], proxies: new Set(), signMeshes: new Set(), cameraCut: new CameraCut(),
@@ -78,6 +79,7 @@ describe("initial identity placement", () => {
     const { e, root } = runtime();
     e.walkFrom({ x: 0, y: 0, z: 0 });
     Object.assign(e, {
+      portalCutResources: { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] },
       street: { restore: vi.fn(), attach: vi.fn() }, streetProbe: { at: new THREE.Vector3() },
       overviewLook: { set: vi.fn() }, world: new THREE.Group(), graph: null,
     });

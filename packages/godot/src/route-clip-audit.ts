@@ -16,13 +16,14 @@ import * as THREE from "three";
 import { GLTFLoader, type GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { enuToRenderer } from "@gteki/geo";
-import { createRouter, nodeDisplayZ, routeBetween, routePolyline, type PolylinePoint, type RouteResult } from "@gteki/navigation";
+import { createRouter, DEFAULT_PROFILE, nodeDisplayZ, routeBetween, routePolyline, type PolylinePoint, type RouteResult } from "@gteki/navigation";
 import { parseStationFiles, type Edge, type StationBundle } from "@gteki/schema";
 import { glbPrimitivePlugin, type SceneContext, type StationScene, type StationSceneModule, type WallSegment } from "@gteki/scene-api";
 import { headlessGltfTextures, headlessThree, installHeadlessDom, newShimUsage, stubRenderer } from "./headless-dom.ts";
 import { settleScene } from "./export-scene.ts";
 import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { castAll, castCamera, castTargets } from "../../../apps/web/src/explorer/raycast.ts";
+import { cutStairwells, stairwellWells } from "../../../apps/web/src/explorer/stairwellCut.ts";
 
 export const FLOOR_TOLERANCE_M = 0.3;
 const STEP_M = 0.5;
@@ -33,13 +34,16 @@ const BODY_LOW_M = 0.5, BODY_HIGH_M = 1.5;
 export interface EdgeAudit {
   station: string; edgeId: string; sourceFile: string; mode: string; lengthM: number;
   samples: number; offFloor: number; noFloor: number; maxAbsDzM: number; wallHits: number; worst: string;
+  /** The edge is flagged attributes.sceneGap: the viewer draws it as unmodelled, so its hits are known, not a clip. */
+  sceneGap?: true;
 }
 
 export interface SceneProbe { ground: THREE.Object3D[]; collider: THREE.Object3D[]; walls: WallSegment[] }
+export interface SampleDetail { i: number; floor: "ok" | "off" | "none"; wallBefore: boolean }
 
 const repoRoot = process.cwd();
 
-export async function loadScene(station: string, bundle: StationBundle): Promise<StationScene> {
+export async function loadScene(station: string, bundle: StationBundle, quality: "high" | "low" = "low"): Promise<StationScene> {
   const gtekiDir = path.join(repoRoot, "stations", station, "gteki");
   const usage = newShimUsage();
   installHeadlessDom(usage);
@@ -54,7 +58,7 @@ export async function loadScene(station: string, bundle: StationBundle): Promise
       return new Promise<GLTF>((ok, fail) => loader.parse(ab, "", ok, fail));
     },
     loadTexture: async () => new THREE.Texture(),
-    quality: "low",
+    quality,
     renderer: stubRenderer(),
   };
   const module = (await import(pathToFileURL(path.join(gtekiDir, "scene.ts")).href)) as StationSceneModule;
@@ -71,6 +75,21 @@ export function sceneProbe(scene: StationScene): SceneProbe {
   const collider = castTargets(colliders, scene.walkable);
   prepareRayTrees([...ground, ...collider]);
   return { ground, collider, walls: scene.walls ?? [] };
+}
+
+/** Probe a scene the way Explorer.loadStation draws it: slabs cut open along vertical connectors, rails included. */
+export function cutSceneProbe(scene: StationScene, bundle: StationBundle, quality: "high" | "low" = "low"): SceneProbe {
+  const router = createRouter(bundle, { allowUnverified: true });
+  const cut = cutStairwells(scene.root, stairwellWells(bundle, (edge) => router.isTraversable(edge, DEFAULT_PROFILE)), {
+    walkable: new Set(castTargets(scene.walkable, scene.colliders ?? [])), tier: quality,
+    // Collision proxies may sit outside scene.root: cut them with the slabs, as Explorer.loadStation does.
+    collision: [...scene.walkable, ...(scene.colliders ?? []), ...(scene.cameraBlockers ?? [])],
+  });
+  if (cut.finish) scene.root.add(cut.finish);
+  const probe = sceneProbe(scene);
+  probe.collider.push(...cut.colliders);
+  probe.walls = [...probe.walls, ...cut.walls.map((w) => ({ a: { x: w.ax, y: -w.az }, b: { x: w.bx, y: -w.bz }, zMin: w.yMin, zMax: w.yMax }))];
+  return probe;
 }
 
 function cross2(a: { x: number; y: number }, b: { x: number; y: number }, c: { x: number; y: number }): number {
@@ -103,27 +122,29 @@ const ray = new THREE.Raycaster();
 const down = new THREE.Vector3(0, -1, 0);
 
 /** Audit one drawn polyline against the scene. */
-export function auditPolyline(probe: SceneProbe, points: readonly PolylinePoint[], opts: { skipInteriorFloor?: boolean } = {}):
+export function auditPolyline(probe: SceneProbe, points: readonly PolylinePoint[], opts: { skipInteriorFloor?: boolean; detail?: SampleDetail[] } = {}):
   Pick<EdgeAudit, "samples" | "offFloor" | "noFloor" | "maxAbsDzM" | "wallHits" | "worst"> {
   const samples = resample(points);
   let offFloor = 0, noFloor = 0, maxAbsDzM = 0, wallHits = 0, worst = "";
   const twoSided = new Set(probe.collider);
   samples.forEach((s, i) => {
     const interior = i > 0 && i < samples.length - 1;
-    if (!(opts.skipInteriorFloor && interior)) {
+    const countFloor = !(opts.skipInteriorFloor && interior);
+    let floor: SampleDetail["floor"] = "ok";
+    if (countFloor || opts.detail) {
       const [x, y, z] = enuToRenderer({ x: s.x, y: s.y, z: s.z + PROBE_M });
       ray.set(new THREE.Vector3(x, y, z), down);
       ray.far = 2 * PROBE_M;
       // Nearest walkable to the drawn height, not the first one down: a mezzanine above must not count.
       const hit = castAll(ray, probe.ground).sort((a, b) => Math.abs(s.z - a.point.y) - Math.abs(s.z - b.point.y))[0];
-      if (!hit) { noFloor++; if (!worst) worst = `no floor at (${s.x.toFixed(1)}, ${s.y.toFixed(1)}, z ${s.z.toFixed(2)})`; }
+      if (!hit) { floor = "none"; if (countFloor) { noFloor++; if (!worst) worst = `no floor at (${s.x.toFixed(1)}, ${s.y.toFixed(1)}, z ${s.z.toFixed(2)})`; } }
       else {
         const dz = s.z - hit.point.y;
-        if (Math.abs(dz) > maxAbsDzM) maxAbsDzM = Math.abs(dz);
-        if (Math.abs(dz) > FLOOR_TOLERANCE_M) { offFloor++; if (!worst) worst = `route z ${s.z.toFixed(2)} vs floor ${hit.point.y.toFixed(2)} at (${s.x.toFixed(1)}, ${s.y.toFixed(1)})`; }
+        if (countFloor && Math.abs(dz) > maxAbsDzM) maxAbsDzM = Math.abs(dz);
+        if (Math.abs(dz) > FLOOR_TOLERANCE_M) { floor = "off"; if (countFloor) { offFloor++; if (!worst) worst = `route z ${s.z.toFixed(2)} vs floor ${hit.point.y.toFixed(2)} at (${s.x.toFixed(1)}, ${s.y.toFixed(1)})`; } }
       }
     }
-    if (i === 0) return;
+    if (i === 0) { opts.detail?.push({ i, floor, wallBefore: false }); return; }
     const p = samples[i - 1]!;
     let crossed = false;
     for (const lift of [BODY_LOW_M, BODY_HIGH_M]) {
@@ -143,6 +164,7 @@ export function auditPolyline(probe: SceneProbe, points: readonly PolylinePoint[
       if (w.zMax > z + BODY_LOW_M && w.zMin < z + BODY_HIGH_M) { crossed = true; break; }
     }
     if (crossed) { wallHits++; if (!worst) worst = `crosses a wall near (${s.x.toFixed(1)}, ${s.y.toFixed(1)}, z ${s.z.toFixed(2)})`; }
+    opts.detail?.push({ i, floor, wallBefore: crossed });
   });
   return { samples: samples.length, offFloor, noFloor, maxAbsDzM, wallHits, worst };
 }
@@ -198,7 +220,7 @@ async function main(): Promise<void> {
         fs.existsSync(path.join(dir, "tenants.json")) ? read("tenants.json") : undefined, { privateTier: true });
       if (!parsed.ok) throw new Error(`${station}: overlay failed validation: ${JSON.stringify(parsed.issues).slice(0, 500)}`);
       const bundle = parsed.bundle;
-      const probe = sceneProbe(await loadScene(station, bundle));
+      const probe = cutSceneProbe(await loadScene(station, bundle), bundle);
       const sourceOf = additionsEdgeFiles(path.join(tmp, "additions", station));
       if (route) {
         const poi = (id: string) => { const p = bundle.pois.find((x) => x.id === id); if (!p) throw new Error(`${station}: no POI ${id}`); return p; };
@@ -218,7 +240,8 @@ async function main(): Promise<void> {
           const a = auditPolyline(probe, edgePolyline(bundle, edge), { skipInteriorFloor: edge.mode === "elevator" });
           total.violations += violations(a); total.samples += a.samples; total.offFloor += a.offFloor; total.noFloor += a.noFloor;
           total.wallHits += a.wallHits; total.maxAbsDzM = Math.max(total.maxAbsDzM, a.maxAbsDzM);
-          results.push({ station, edgeId: edge.id, sourceFile: sourceOf.get(edge.id) ?? "public", mode: edge.mode, lengthM: edge.lengthM ?? 0, ...a });
+          results.push({ station, edgeId: edge.id, sourceFile: sourceOf.get(edge.id) ?? "public", mode: edge.mode, lengthM: edge.lengthM ?? 0, ...a,
+            ...(edge.attributes?.sceneGap === true ? { sceneGap: true as const } : {}) });
           console.log(`edge ${edge.id}  ${edge.mode}  ${sourceOf.get(edge.id) ?? "public"}  violations ${violations(a)} (off-floor ${a.offFloor}, no-floor ${a.noFloor}, wall ${a.wallHits})${a.worst ? `  first: ${a.worst}` : ""}`);
         }
         console.log(`route total: ${total.violations} violations over ${total.samples} samples (off-floor ${total.offFloor}, no-floor ${total.noFloor}, wall ${total.wallHits}, max |dz| ${total.maxAbsDzM.toFixed(2)} m)`);
@@ -228,7 +251,8 @@ async function main(): Promise<void> {
         const sourceFile = sourceOf.get(edge.id);
         if (!sourceFile && !all) continue;
         const a = auditPolyline(probe, edgePolyline(bundle, edge), { skipInteriorFloor: edge.mode === "elevator" });
-        results.push({ station, edgeId: edge.id, sourceFile: sourceFile ?? "public", mode: edge.mode, lengthM: edge.lengthM ?? 0, ...a });
+        results.push({ station, edgeId: edge.id, sourceFile: sourceFile ?? "public", mode: edge.mode, lengthM: edge.lengthM ?? 0, ...a,
+          ...(edge.attributes?.sceneGap === true ? { sceneGap: true as const } : {}) });
       }
       const mine = results.filter((r) => r.station === station);
       const bad = mine.filter((r) => violations(r) > 0);

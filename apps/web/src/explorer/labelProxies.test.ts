@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import { Explorer } from "./explorer.ts";
 import { CameraCut } from "./cameraCut.ts";
-import { explorerTargets } from "./raycast.ts";
+import { clearClippedPortals, explorerTargets, setClippedPortals } from "./raycast.ts";
 
 describe("label occlusion proxies", () => {
   it("are walls and floors only: a hidden camera-only blocker never hides a POI label", () => {
@@ -64,6 +64,21 @@ describe("label blocker classification", () => {
     expect(classify([], [])).toBe("none");
     expect(classify([wall], [])).toBe("geometry");
     expect(classify([sign], [sign])).toBe("sign");
+  });
+
+  it("keeps a clipped FrontSide collision proxy two-sided outside its opening", () => {
+    const wall = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), new THREE.MeshBasicMaterial({ side: THREE.FrontSide }));
+    wall.position.z = 5; wall.rotation.y = Math.PI;
+    const scene = new THREE.Scene(), root = new THREE.Group().add(wall); scene.add(root);
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.05, 100); camera.position.z = 10;
+    scene.updateMatrixWorld(true); camera.updateMatrixWorld(true);
+    const state: Stand = { occluders: [], proxies: new Set(), skyTargets: [wall], signMeshes: new Set(), labelSweepDoneAt: 0, scene, camera, cameraCut: new CameraCut() };
+    setClippedPortals(wall, [{ center: new THREE.Vector3(3, -1, 5), along: new THREE.Vector3(0, 0, 1), across: new THREE.Vector3(1, 0, 0), width: 1, depth: 0.6, height: 2 }]);
+    try {
+      proto.buildOccluders.call(state, root); proto.refreshOccluders.call(state);
+      const obj = new THREE.Object3D(); scene.add(obj); obj.updateMatrixWorld(true);
+      expect(proto.labelOccluded.call(state, { obj, occluded: "none" })).toBe("geometry");
+    } finally { clearClippedPortals(wall); }
   });
 
   it("reports geometry when a wall stands anywhere along a ray a sign also blocks", () => {

@@ -1,5 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { unmodelledRuns } from "./routeGaps.ts";
+import * as THREE from "three";
+import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
+
+describe("floorProbe", () => {
+  it("uses the old six metre ray and accepts only hits within one metre of route height", () => {
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    floor.updateMatrixWorld(true);
+    const ray = new THREE.Raycaster();
+    const probe = floorProbe(ray, [floor]);
+    const indexed = floorProbe(new THREE.Raycaster(), [floor], true);
+    expect(probe({ x: 0, y: 0, z: 1 })).toBe(true);
+    expect(probe({ x: 0, y: 0, z: 1.01 })).toBe(false);
+    expect(probe({ x: 6, y: 0, z: 0 })).toBe(false);
+    for (const p of [{ x: 0, y: 0, z: 1 }, { x: 0, y: 0, z: 1.01 }, { x: 6, y: 0, z: 0 }]) expect(indexed(p)).toBe(probe(p));
+    expect(ray.far).toBe(6);
+    floor.geometry.dispose();
+    floor.material.dispose();
+  });
+});
 
 // Floor everywhere except x in (10, 20).
 const floorOutsideGap = (p: { x: number }) => p.x <= 10 || p.x >= 20;
@@ -23,6 +41,25 @@ describe("unmodelled route runs", () => {
   it("probes only the ends of a vertical piece", () => {
     const lift = [{ x: 5, y: 0, z: 0 }, { x: 5, y: 0, z: 8 }];
     expect(unmodelledRuns(lift, (p) => p.z === 0 || p.z === 8)).toEqual([]);
+  });
+
+  it("treats a sceneGap edge as unmodelled even over a floor, joining the floored ends", () => {
+    const runs = unmodelledRuns([{ x: 0, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }, { x: 20, y: 0, z: 0, sceneGap: true }, { x: 30, y: 0, z: 0 }], () => true);
+    expect(runs).toHaveLength(1);
+    expect(runs[0]![0]!.x).toBe(10);
+    // The band ends one sample past the edge's end node.
+    expect(runs[0]!.at(-1)!.x).toBe(20.5);
+  });
+
+  it("keeps a densely sampled sceneGap edge whole, and a short one too", () => {
+    const dense = [{ x: 0, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }, ...Array.from({ length: 20 }, (_, i) => ({ x: 10 + (i + 1) * 0.4, y: 0, z: 0, sceneGap: true })), { x: 20, y: 0, z: 0 }];
+    const runs = unmodelledRuns(dense, () => true);
+    expect(runs).toHaveLength(1);
+    expect(runs[0]![0]!.x).toBe(10);
+    expect(runs[0]!.at(-1)!.x).toBeCloseTo(18.5, 5);
+    expect(unmodelledRuns([{ x: 0, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }, { x: 10.8, y: 0, z: 0, sceneGap: true }, { x: 20, y: 0, z: 0 }], () => true)).toHaveLength(1);
+    // A single segment of half a metre or less.
+    expect(unmodelledRuns([{ x: 0, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }, { x: 10.4, y: 0, z: 0, sceneGap: true }, { x: 20, y: 0, z: 0 }], () => true)).toHaveLength(1);
   });
 
   it("runs to the route's end when the destination has no floor", () => {

@@ -20,6 +20,11 @@ export interface PolylinePoint {
   /** Index into route.steps of the segment ending at this point; -1 for the start point. */
   stepIndex: number;
   floorId: string;
+  /**
+   * Set on the points of an edge flagged `attributes.sceneGap`: the scene closes or lacks the passage the edge
+   * records, so a viewer draws it as unmodelled (ruling A) instead of through the model.
+   */
+  sceneGap?: true;
 }
 
 export function nodeDisplayZ(node: Node, floor: Floor | undefined): { z: number; known: boolean } {
@@ -29,7 +34,7 @@ export function nodeDisplayZ(node: Node, floor: Floor | undefined): { z: number;
 }
 
 /** Polyline along the route, following edge geometry (reversed when traversed backwards). */
-export function routePolyline(bundle: StationBundle, route: RouteResult): PolylinePoint[] {
+export function routePolyline(bundle: StationBundle, route: RouteResult, edgePaths?: ReadonlyMap<string, readonly { x: number; y: number; z: number }[]>): PolylinePoint[] {
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
   const edges = new Map(bundle.edges.map((e) => [e.id, e]));
@@ -44,7 +49,18 @@ export function routePolyline(bundle: StationBundle, route: RouteResult): Polyli
     const a = nodeDisplayZ(from, floors.get(from.floorId));
     const b = nodeDisplayZ(to, floors.get(to.floorId));
     const edge = edges.get(step.edgeId);
+    const replacement = edgePaths?.get(step.edgeId);
+    if (replacement && replacement.length >= 2) {
+      const distance = (p: { x: number; y: number; z: number }) => Math.hypot(p.x - from.position.x, p.y - from.position.y, p.z - a.z);
+      const ordered = distance(replacement[0]!) <= distance(replacement[replacement.length - 1]!) ? replacement : [...replacement].reverse();
+      for (let i = 1; i < ordered.length; i++) {
+        const p = ordered[i]!, last = i === ordered.length - 1;
+        points.push({ x: p.x, y: p.y, z: p.z, zKnown: false, stepIndex, floorId: last ? to.floorId : from.floorId, sceneGap: true });
+      }
+      return;
+    }
     const symbolicPolyline = edge?.geometryZ === "symbolic";
+    const sceneGap = edge?.attributes?.sceneGap === true;
     const drawn = edge?.geometry && edge.geometry.length >= 2 ? edge.geometry : null;
     const raw = drawn ? [...drawn] : [from.position, to.position];
     // Only drawn geometry is stored in edge direction; the node-to-node fallback already runs from → to.
@@ -59,7 +75,8 @@ export function routePolyline(bundle: StationBundle, route: RouteResult): Polyli
       const t = lengths[i]! / total;
       const known = p.z !== null && !symbolicPolyline && (last ? b.known : true);
       const z = last ? b.z : p.z !== null ? p.z : a.z + (b.z - a.z) * t;
-      points.push({ x: last ? to.position.x : p.x, y: last ? to.position.y : p.y, z, zKnown: known, stepIndex, floorId: last ? to.floorId : from.floorId });
+      points.push({ x: last ? to.position.x : p.x, y: last ? to.position.y : p.y, z, zKnown: known, stepIndex, floorId: last ? to.floorId : from.floorId,
+        ...(sceneGap ? { sceneGap: true as const } : {}) });
     }
   });
   return points;
