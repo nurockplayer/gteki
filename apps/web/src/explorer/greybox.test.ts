@@ -158,7 +158,7 @@ describe("buildGreybox", () => {
     const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
     // The flight is 2.4 m up where it crosses the corridor's near wall, 2.4 m north: a walker in the corridor
     // still meets a wall up to the flight's underside, and nothing stands where a walker on the flight is.
-    const at = result.wallSegments.filter((w) => Math.abs(w.az + 3.7 - MODE_WIDTH.walk! / 2) < 1e-6 && Math.min(w.ax, w.bx) < 10 && Math.max(w.ax, w.bx) > 10);
+    const at = result.wallSegments.filter((w) => Math.abs(w.az + 3.7 - MODE_WIDTH.walk! / 2) < 1e-6 && Math.min(w.ax, w.bx) < 10.3 && Math.max(w.ax, w.bx) > 10.3);
     expect(at.some((w) => w.yMin < 0.1 && w.yMax > 1.9)).toBe(true);
     expect(at.every((w) => w.yMax < 2.5 || w.yMin > 4.4)).toBe(true);
   });
@@ -169,7 +169,7 @@ describe("buildGreybox", () => {
       { id: "p", floorId: "f", position: { x: 0, y: 3.7, z: 0 } }, { id: "q", floorId: "f", position: { x: 20, y: 3.7, z: 0 } }];
     const edges = [bundle.edges[0]!, { id: "s", from: "b", to: "c", mode: "stairs" }, { id: "pq", from: "p", to: "q", mode: "walk" }, { id: "cd", from: "c", to: "d", mode: "walk" }, { id: "ec", from: "e", to: "c", mode: "walk" }];
     const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
-    const at = result.wallSegments.filter((w) => Math.abs(w.az + 3.7 - MODE_WIDTH.walk! / 2) < 1e-6 && Math.min(w.ax, w.bx) < 10 && Math.max(w.ax, w.bx) > 10);
+    const at = result.wallSegments.filter((w) => Math.abs(w.az + 3.7 - MODE_WIDTH.walk! / 2) < 1e-6 && Math.min(w.ax, w.bx) < 10.3 && Math.max(w.ax, w.bx) > 10.3);
     expect(at.some((w) => w.yMin < 0.1 && w.yMax > 1.9)).toBe(true);
     expect(at.every((w) => w.yMax < 2.5 || w.yMin > 4.4)).toBe(true);
   });
@@ -186,6 +186,18 @@ describe("buildGreybox", () => {
     const length = east.reduce((sum, w) => sum + Math.abs(w.bz - w.az), 0);
     // Without the side-line rule the stair footprint cuts it down to about 2 m.
     expect(length).toBeGreaterThan(4.5);
+  });
+
+  it("keeps no band where the scene already stands", () => {
+    const floors = [...bundle.floors, { id: "g", renderElevationM: 8 }];
+    const nodes = [...bundle.nodes, { id: "c", floorId: "g", position: { x: 10, y: 8, z: 8 } },
+      { id: "p", floorId: "f", position: { x: 0, y: 3.7, z: 0 } }, { id: "q", floorId: "f", position: { x: 20, y: 3.7, z: 0 } }];
+    const edges = [bundle.edges[0]!, { id: "s", from: "b", to: "c", mode: "stairs" }, { id: "pq", from: "p", to: "q", mode: "walk" }];
+    // A scene collider (ENU: y north, z up) low on the corridor's near wall, under the flight: no band over it.
+    const scene = { ...emptyScene, colliderNear: (p: { x: number; y: number; z: number }) => Math.abs(p.y - 2.4) < 0.5 && p.x > 8 && p.x < 12 && p.z < 2 };
+    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, scene, "high");
+    const at = result.wallSegments.filter((w) => Math.abs(w.az + 3.7 - MODE_WIDTH.walk! / 2) < 1e-6 && Math.min(w.ax, w.bx) < 10.3 && Math.max(w.ax, w.bx) > 10.3);
+    expect(at.length).toBe(0);
   });
 
   it("opens a stair mouth at the end of a long ramp", () => {

@@ -470,9 +470,16 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
             // left above a flight passing below. A lower stub under the flight's own steps would only snag the walker.
             for (const [y0, y1] of [[0, below >= 1 ? Math.min(below, 2.6) : 0], [Math.max(above, 0), 2.6]] as const) {
               if (y1 - y0 < 0.05) continue;
-              const p = wa.clone().lerp(wz, lo), q = wa.clone().lerp(wz, hi);
-              wallSegments.push({ ax: p.x, az: p.z, bx: q.x, bz: q.z, yMin: Math.min(p.y, q.y) + (y0 === 0 ? -0.12 : y0), yMax: Math.max(p.y, q.y) + y1 });
-              band(lo, hi, y0, y1);
+              // In pieces of at most 2 m, and like the full-height wall, none where the scene already stands.
+              const pieces = Math.max(1, Math.ceil(wa.distanceTo(wz) * (hi - lo) / 2));
+              for (let n = 0; n < pieces; n++) {
+                const ps = lo + (hi - lo) * n / pieces, pe = lo + (hi - lo) * (n + 1) / pieces;
+                const mid = wa.clone().lerp(wz, (ps + pe) / 2); mid.y += (y0 + y1) / 2;
+                if (scene.colliderNear(enu(mid), 0.3)) continue;
+                const p = wa.clone().lerp(wz, ps), q = wa.clone().lerp(wz, pe);
+                wallSegments.push({ ax: p.x, az: p.z, bx: q.x, bz: q.z, yMin: Math.min(p.y, q.y) + (y0 === 0 ? -0.12 : y0), yMax: Math.max(p.y, q.y) + y1 });
+                band(ps, pe, y0, y1);
+              }
             }
           }
         }
