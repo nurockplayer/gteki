@@ -38,7 +38,8 @@ import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners,
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { collectIdentityBoards, identityBoardObjects, identityFront, identityNameBehind, identityNameCentre, identityNameCorners, identityNameSamples, identityRegionRect, intersectsRect, protectIdentityChip, withinObject, type IdentityBoard, type ScreenRect } from "./identityBoards.ts";
 import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming } from "./identityFraming.ts";
-import { StationCaches } from "./stationCaches.ts";
+import { StationCaches, shouldRelease } from "./stationCaches.ts";
+import { releaseSceneTextures } from "./releaseTextures.ts";
 import { STREET, STREET_SURFACE_FLAG, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatarRig, type AvatarSelection } from "./avatarSelection.ts";
 import { avatarMotion } from "./avatarMotion.ts";
@@ -231,6 +232,8 @@ export class Explorer {
 
   private station: LoadedStation | null = null;
   private stationScene: StationScene | null = null;
+  /** What the last station switch freed from the previous scene (for the e2e log). */
+  private releasedTextures: { textures: number; canvases: number } | null = null;
   private greybox: ReturnType<typeof buildGreybox> | null = null;
   private connectors: ReturnType<typeof buildConnectors> | null = null;
   private greyboxOpenings: Box[] = [];
@@ -467,7 +470,7 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { loadTimings: Record<string, number>; greybox: (GreyboxStats & { connectors: { escalator: number; stairs: number }; colliderExemptions: number; portalCut: ReturnType<typeof cutPortals> | null; stairwells: StairwellStats | null }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
+  sceneInfo(): { loadTimings: Record<string, number>; greybox: (GreyboxStats & { connectors: { escalator: number; stairs: number }; colliderExemptions: number; portalCut: ReturnType<typeof cutPortals> | null; stairwells: StairwellStats | null }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number }; releasedTextures?: { textures: number; canvases: number } | null } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       greybox: this.greybox ? { ...this.greybox.stats, overBudget: this.connectors?.stats.overBudget ?? this.greybox.stats.overBudget, connectors: this.connectors?.stats.connectors ?? { escalator: 0, stairs: 0 }, colliderExemptions: this.portalExemptions, portalCut: this.portalCutStats, stairwells: this.stairwellStats } : null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
@@ -480,6 +483,7 @@ export class Explorer {
       environmentIntensity: this.envProbe.visible || this.scene.environment ? this.scene.environmentIntensity : null, exposure: this.renderer.toneMappingExposure, overlayToneResidual: this.overlayResidual === null ? null : Math.round(this.overlayResidual * 100) / 100,
       street: { active: this.street.active, opacity: Math.round(this.street.opacity * 1000) / 1000 },
       shadows: { following: this.shadowFit !== null, fit: this.shadowFit?.fitted ?? null, texelM: this.shadowFit?.fitted === "follow" ? this.shadowOut.texelM : 0, halfExtent: this.shadowFit?.walkHalf ?? 0, casters: this.shadowFit?.casters ?? 0, candidates: this.shadowFit?.candidates.length ?? 0, tallCandidates: this.shadowFit?.tallCandidates ?? 0, receivers: this.shadowFit?.receivers ?? 0 },
+      releasedTextures: this.releasedTextures,
     };
   }
 
@@ -837,8 +841,9 @@ export class Explorer {
    */
   cancelPendingLoad(nextId: string): void {
     this.loadGeneration++;
+    const leaving = shouldRelease(this.station?.key ?? null, nextId);
     this.releaseStationCaches(nextId);
-    this.clearStation();
+    this.clearStation(leaving);
     this.station = null;
     this.phase = "idle";
   }
@@ -852,8 +857,9 @@ export class Explorer {
     let lapStart = loadStart;
     const lap = (name: string) => { const now = performance.now(); timings[name] = Math.round(now - lapStart); lapStart = now; };
     // Leaving another station drops its retained caches first; the same station reopening keeps them.
+    const leaving = shouldRelease(this.station?.key ?? null, station.key);
     this.releaseStationCaches(station.key);
-    this.clearStation();
+    this.clearStation(leaving);
     void this.avatarRig?.loadGlb();
     this.station = station;
     this.stationCaches.remember(station.key, station.scene);
@@ -1077,7 +1083,8 @@ export class Explorer {
     return await manifestScene(assets, ctx);
   }
 
-  private clearStation(): void {
+  /** `leaving`: the explorer is switching to a different station (or disposing), so the previous station's GPU textures are freed. */
+  private clearStation(leaving = false): void {
     this.avatarRig?.cancelPendingLoad();
     this.street.restore(this.scene);
     this.street.attach(null);
@@ -1122,7 +1129,12 @@ export class Explorer {
     this.greyboxSegments = [];
     this.sceneGroundTargets = [];
     this.updateGreyboxLegend();
-    if (this.stationScene) { this.world.remove(this.stationScene.root); this.stationScene.dispose(); this.stationScene = null; }
+    if (this.stationScene) {
+      this.world.remove(this.stationScene.root);
+      if (leaving) this.releasedTextures = releaseSceneTextures(this.stationScene.root, { freeCanvases: true });
+      this.stationScene.dispose();
+      this.stationScene = null;
+    }
     if (this.graph) { this.world.remove(this.graph.root); this.overlays.remove(this.graph.overlay); this.graph.dispose(); this.graph = null; }
     this.routableBox = null;
     this.routablePts = [];
@@ -2556,7 +2568,7 @@ export class Explorer {
     this.audio = null;
     this.renderer.setAnimationLoop(null);
     this.releaseStationCaches(null);
-    this.clearStation();
+    this.clearStation(true);
     this.input.dispose();
     this.disposeComposer();
     this.avatarRig?.dispose();
