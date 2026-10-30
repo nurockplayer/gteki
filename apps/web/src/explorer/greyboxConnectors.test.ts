@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { StationBundle } from "@gteki/schema";
-import { unmodelledVerticalEdges } from "./greyboxConnectors.ts";
+import type { Edge, StationBundle } from "@gteki/schema";
+import { skippedConnectorPath, unmodelledVerticalEdges } from "./greyboxConnectors.ts";
 import { cumulativeLengths, resolveWalls, samplePolyline } from "./walker.ts";
 
 const bundle = {
@@ -586,6 +586,18 @@ describe("turning landing guards", () => {
     expect(result.stats.connectorsSkipped).toBe(0);
     const guards = result.wallSegments.filter((w) => Math.abs(w.yMin - 1.88) < 1e-6 && Math.abs(w.yMax - 2.96) < 1e-6);
     expect(guards.length).toBeGreaterThan(0);
+  });
+
+  // A skipped stair's route path: end heights come from its floors (z null on the nodes), middle heights are interpolated.
+  it("gives a skipped stair's route path its end heights from the floors and interpolates the middle", () => {
+    const floorsBundle = {
+      floors: [{ id: "lower", renderElevationM: 0 }, { id: "upper", renderElevationM: 4 }],
+      nodes: [{ id: "a", floorId: "lower", position: { x: 0, y: 0, z: null } }, { id: "b", floorId: "upper", position: { x: 10, y: 0, z: null } }],
+      edges: [{ id: "s", from: "a", to: "b", mode: "stairs", geometry: [{ x: 0, y: 0, z: null }, { x: 5, y: 0, z: null }, { x: 10, y: 0, z: null }] }],
+    } as unknown as StationBundle;
+    const path = skippedConnectorPath(floorsBundle, floorsBundle.edges[0] as unknown as Edge);
+    expect(path.map((p) => p.z)).toEqual([0, 2, 4]);
+    expect(path.map((p) => p.x)).toEqual([0, 5, 10]);
   });
 
   it("lists a skipped stair's edge in skippedEdgeIds", () => {

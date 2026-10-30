@@ -382,6 +382,16 @@ function wallCutsFlight(flightWalls: readonly { leg: number; wall: Segment2 }[],
 }
 
 /**
+ * A skipped connector's route path in station ENU: the edge's own points, with endpoint heights from their nodes and floors
+ * and unknown heights interpolated by arc length (never defaulted to zero), the same frame as the built connector paths.
+ */
+export function skippedConnectorPath(bundle: StationBundle, edge: Edge): { x: number; y: number; z: number }[] {
+  const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
+  const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
+  return edgePoints(bundle, edge, nodes, floors).map((p) => ({ x: p.x, y: -p.z, z: p.y }));
+}
+
+/**
  * Build runtime-only batches for missing vertical transport.
  *
  * Supported shapes: (a) a straight flight, with bends under 20 degrees mitred and counted as straight; (b) exactly one turning

@@ -16,7 +16,7 @@ import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
 import { R, chevronTexture, dashTexture, ribbonGeometry } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
-import { buildConnectors, withinGreyboxBudget } from "./greyboxConnectors.ts";
+import { buildConnectors, skippedConnectorPath, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { cutPortals, disposePortalCuts, type PortalCutResources } from "./portalCut.ts";
 import { buildGreybox, portalWidthAxis, splitWallsAtOpenings, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
 import { greyboxPathSegments, greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
@@ -1375,9 +1375,11 @@ export class Explorer {
   /** Connector centre lines converted from renderer coordinates to station ENU. */
   connectorRoutePaths(): Map<string, { x: number; y: number; z: number }[]> {
     const paths = new Map([...(this.connectors?.pathByEdge ?? [])].map(([id, path]) => [id, path.map((p) => ({ x: p.x, y: -p.z, z: p.y }))]));
-    // A skipped stair has no connector path: its drawn geometry stands in, flagged as unmodelled in the route.
-    for (const edge of this.station?.bundle.edges ?? []) {
-      if (this.skippedEdgeIds.has(edge.id) && edge.geometry && edge.geometry.length >= 2) paths.set(edge.id, edge.geometry.map((p) => ({ x: p.x, y: p.y, z: p.z ?? 0 })));
+    // A skipped stair has no connector path: its own points stand in, flagged as unmodelled in the route.
+    if (this.station) {
+      for (const edge of this.station.bundle.edges) {
+        if (this.skippedEdgeIds.has(edge.id)) paths.set(edge.id, skippedConnectorPath(this.station.bundle, edge));
+      }
     }
     return paths;
   }
