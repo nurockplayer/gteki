@@ -57,20 +57,27 @@ describe("public station navmesh gate",()=>{
     const file=path.resolve(`stations/${station}/navmesh-fallback.json`);
     const allowed=JSON.parse(fs.readFileSync(file,"utf8"));
     const baseline=JSON.parse(fs.readFileSync(path.resolve(`stations/${station}/navmesh-clip-baseline.json`),"utf8"));
+    const suspectAllowed=JSON.parse(fs.readFileSync(path.resolve(`stations/${station}/navmesh-suspect.json`),"utf8"));
     const previous=process.env.GTEKI_PRIVATE_DIR; delete process.env.GTEKI_PRIVATE_DIR;
     let result:ReturnType<typeof measureFallbacks>;
     try { result=measureFallbacks(station,file); } finally { if(previous!==undefined) process.env.GTEKI_PRIVATE_DIR=previous; }
     const diff=fallbackDiff(allowed,result.entries), segment=result.audit.segmentTotals.sceneRaycast;
+    const suspectComputed=result.audit.bakeProvenance.suspectEdges as {edgeId:string}[], suspectDiff=fallbackDiff(suspectAllowed,suspectComputed);
     console.log(`${station} gate ${Math.round(result.elapsedMs)} ms, bake ${Math.round(result.audit.bakeProvenance.bakeMs)} ms`);
     const errors:string[]=[];
     if(process.env.GITHUB_EVENT_NAME==="pull_request") {
       const oldFallback=previousVersion(`stations/${station}/navmesh-fallback.json`),oldBaseline=previousVersion(`stations/${station}/navmesh-clip-baseline.json`);
       if(oldFallback) {const prior=fallbackDiff(oldFallback as typeof allowed,allowed);if(prior.added.length) errors.push(`fallback list grew from PR base: ${prior.added.join(", ")}`);}
       if(oldBaseline) {const prior=clipBaselineDiff(oldBaseline as typeof baseline,baseline);if(prior.increased.length) errors.push(`clip baseline grew from PR base: ${prior.increased.join(", ")}`);}
+      const oldSuspect=previousVersion(`stations/${station}/navmesh-suspect.json`);
+      if(oldSuspect) {const prior=fallbackDiff(oldSuspect as typeof suspectAllowed,suspectAllowed);if(prior.added.length) errors.push(`suspect list grew from PR base: ${prior.added.join(", ")}`);}
     }
     if(diff.added.length) errors.push(`unlisted failed edges: ${diff.added.join(", ")}`);
     if(diff.removed.length) errors.push(`remove these from the list: ${diff.removed.join(", ")}`);
     if(diff.duplicateAllowed || diff.duplicateActual || diff.grew) errors.push("duplicate or growing fallback list");
+    if(suspectDiff.added.length) errors.push(`unlisted suspect edges: ${suspectDiff.added.join(", ")}`);
+    if(suspectDiff.removed.length) errors.push(`remove these from the suspect list: ${suspectDiff.removed.join(", ")}`);
+    if(suspectDiff.duplicateAllowed || suspectDiff.duplicateActual) errors.push("duplicate suspect list entries");
     if(!result.audit.routesAudited || !result.audit.completeAuditedRoutes) errors.push("no completed routable routes were audited");
     const clips=clipBaselineDiff(baseline,baselineForAudit(result.audit));
     if(clips.increased.length) errors.push(`clip baseline exceeded: ${clips.increased.join(", ")}`);

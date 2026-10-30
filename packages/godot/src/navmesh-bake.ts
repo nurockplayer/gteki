@@ -18,6 +18,7 @@ import { qaDirectory, qaFile } from "./navmesh-qa-path.ts";
 import { bridgeGapGeometry, bridgeFloorTriangles, linkPadGeometry, linkPadClear, linkStripGeometry, type BridgeGeometry } from "./navmesh-bridge.ts";
 import { dataWidth, diagnoseGaps } from "./navmesh-gaps.ts";
 import { validateLinkSnap, verticalLinkCandidates } from "./navmesh-links.ts";
+import { makeFloorHeightNear, suspectVerticalEdges } from "./navmesh-suspect.ts";
 
 /** Positions are renderer coordinates; triangle indices must have upward-facing floors. */
 export async function bakeNavmesh(positions: readonly number[], indices: readonly number[], options: { radiusM?: number; rounding?: "up" | "down"; cellSizeM?: number; climbM?: number; tileSize?: number; offMeshConnections?: OffMeshConnectionParams[] } = {}) {
@@ -216,6 +217,9 @@ async function main() {
   };
   let initialQuery = new NavMeshQuery(result.navMesh);
   const router = createRouter(bundle, { allowUnverified: privateBuild });
+  // Same probe as the audit's originalProbe (no bridge floors), so both sides compute identical suspects.
+  const suspect = suspectVerticalEdges(bundle, makeFloorHeightNear(grey?.probe ?? probe), e => router.isTraversable(e, DEFAULT_PROFILE));
+  const suspectIds = new Set(suspect.map(s => s.edgeId));
   const originalProbeForLinks=()=>grey?.probe ?? probe;
   const bridge:BridgeGeometry={positions:[],indices:[]};
   const bridgedByClass:Record<string,number>={}; let bridgeRebakeMs=0;
@@ -233,7 +237,7 @@ async function main() {
     }
     const visited=new Set<string>();
     for (const edge of bundle.edges) {
-      if (!["stairs","escalator","elevator"].includes(edge.mode) || !router.isTraversable(edge,DEFAULT_PROFILE)) continue;
+      if (!["stairs","escalator","elevator"].includes(edge.mode) || suspectIds.has(edge.id) || !router.isTraversable(edge,DEFAULT_PROFILE)) continue;
       for (const id of [edge.from,edge.to]) {
         if (visited.has(id)) continue; visited.add(id);
         const node=nodes.get(id); if (!node) continue;
@@ -280,7 +284,7 @@ async function main() {
     }
     return null;
   };
-  const links = verticalLinkCandidates(bundle.edges.filter(e => router.isTraversable(e, DEFAULT_PROFILE)), id => { const n=nodes.get(id); return n ? point(n) : undefined; }, initialQuery,
+  const links = verticalLinkCandidates(bundle.edges.filter(e => !suspectIds.has(e.id) && router.isTraversable(e, DEFAULT_PROFILE)), id => { const n=nodes.get(id); return n ? point(n) : undefined; }, initialQuery,
     (_id, a, b) => { const reason=validateLinkSnap(bridgeProbe, a, b); if (reason) snapRejections[reason]++; return !reason; }, snapFallback ? fallback : undefined);
   initialQuery.destroy(); result.navMesh.destroy();
   const linked = await bakeNavmesh(positions, indices, { radiusM, rounding, cellSizeM, climbM, tileSize, offMeshConnections:links.candidates.map(c => c.connection) });
@@ -351,7 +355,7 @@ async function main() {
   fs.writeFileSync(qaFile(path.join(output, `${station}.bin`)), bytes);
   const effectiveRadiusCells = rounding === "down" ? Math.floor(radiusM / cellSizeM + 1e-6) : Math.ceil(radiusM / cellSizeM - 1e-6);
   const gateTriangles = collider.reduce((n, mesh) => n + (mesh.userData.gtekiGateTriangles?.length ?? 0), 0);
-  const metrics = { station, withGreybox, privateBuild, snapFallback, bridgeGaps, bridgePolicy:bridgeGaps ? "no-exemptions-v1" : null, bridgedGaps, bridgedByClass, bridgeRebakeMs, unbridgeableGaps, linkPads, linkPadsWithoutNearbyPoly, linkPadsBlocked, linkPadsSteep, bridgeFloorTriangles:bridgeFloorData, bundleSha256:createHash("sha256").update(JSON.stringify(bundle)).digest("hex"), meshSha256: createHash("sha256").update(bytes).digest("hex"), radiusM, rounding, cellSizeM, climbM, tileSize, effectiveClimbM: Math.floor(climbM / 0.1 + 1e-6) * 0.1, effectiveRadiusCells, effectiveRadiusM: effectiveRadiusCells * cellSizeM, ignoreGates, gateWallCount, activeGateWalls, gateTriangles, excludedActiveGateWalls: ignoreGates ? activeGateWalls : 0, excludedGateTriangles: ignoreGates ? gateTriangles : 0, bakeMs, rawBytes: bytes.length, gzipBytes: gz.length, tiles, polygons, peakRssKiB: process.resourceUsage().maxRSS, greyboxRuns, greyboxLandingPads:grey?.grey.stats.landingPads ?? null, vertical, links, emittedLinkIds:[...emittedLinkIds].sort((a,b)=>a-b), attachedLinkIds:[...attachedLinkIds].sort((a,b)=>a-b), linkAttachmentDiagnosis, fallbackRecovered:links.candidates.filter(c=>c.fallback && attachedLinkIds.has(c.connection.userId!)).length, snapRejections };
+  const metrics = { station, withGreybox, privateBuild, snapFallback, bridgeGaps, bridgePolicy:bridgeGaps ? "no-exemptions-v1" : null, bridgedGaps, bridgedByClass, bridgeRebakeMs, unbridgeableGaps, linkPads, linkPadsWithoutNearbyPoly, linkPadsBlocked, linkPadsSteep, bridgeFloorTriangles:bridgeFloorData, bundleSha256:createHash("sha256").update(JSON.stringify(bundle)).digest("hex"), meshSha256: createHash("sha256").update(bytes).digest("hex"), radiusM, rounding, cellSizeM, climbM, tileSize, effectiveClimbM: Math.floor(climbM / 0.1 + 1e-6) * 0.1, effectiveRadiusCells, effectiveRadiusM: effectiveRadiusCells * cellSizeM, ignoreGates, gateWallCount, activeGateWalls, gateTriangles, excludedActiveGateWalls: ignoreGates ? activeGateWalls : 0, excludedGateTriangles: ignoreGates ? gateTriangles : 0, bakeMs, rawBytes: bytes.length, gzipBytes: gz.length, tiles, polygons, peakRssKiB: process.resourceUsage().maxRSS, suspectEdges: suspect, greyboxRuns, greyboxLandingPads:grey?.grey.stats.landingPads ?? null, vertical, links, emittedLinkIds:[...emittedLinkIds].sort((a,b)=>a-b), attachedLinkIds:[...attachedLinkIds].sort((a,b)=>a-b), linkAttachmentDiagnosis, fallbackRecovered:links.candidates.filter(c=>c.fallback && attachedLinkIds.has(c.connection.userId!)).length, snapRejections };
   fs.writeFileSync(qaFile(path.join(output, `${station}-bake.json`)), JSON.stringify(metrics, null, 2) + "\n");
   console.log(JSON.stringify({station,withGreybox,snapFallback,bridgeGaps,bridgedGaps,bridgedByClass,bridgeRebakeMs,unbridgeableGaps,linkPads,linkPadsWithoutNearbyPoly,linkPadsBlocked,linkPadsSteep,bakeMs,rawBytes:bytes.length,gzipBytes:gz.length,tiles,polygons,landingPads:metrics.greyboxLandingPads,linksAttached:attachedLinkIds.size,fallbackAttached:metrics.fallbackRecovered,linkAttachmentDiagnosis,snapRejections,peakRssKiB:metrics.peakRssKiB}));
   query.destroy(); nav.destroy(); bridgeFloorGeometry.dispose(); (bridgeFloor.material as THREE.Material).dispose(); scene.dispose();

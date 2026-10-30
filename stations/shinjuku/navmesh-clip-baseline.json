@@ -5,12 +5,6 @@
     "navmeshWallHits": 0,
     "offFloor": 0
   },
-  "e:c690df6cad7b48bba7b3b30fee65eda2": {
-    "connectorWallHits": 16,
-    "fallbackWallHits": 0,
-    "navmeshWallHits": 0,
-    "offFloor": 0
-  },
   "e:ed7e56a8e6234197be06280fcb24aecc": {
     "connectorWallHits": 0,
     "fallbackWallHits": 2,
@@ -18,7 +12,7 @@
     "offFloor": 0
   },
   "total": {
-    "connectorWallHits": 16,
+    "connectorWallHits": 0,
     "fallbackWallHits": 3,
     "navmeshWallHits": 0,
     "offFloor": 0,

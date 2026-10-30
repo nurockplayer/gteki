@@ -57,21 +57,25 @@ export function measureFallbacks(station:string, fallbackList?:string, includeFa
 }
 
 function main() {
-  const args=process.argv.slice(2); let station="",write="",writeBaseline="";
+  const args=process.argv.slice(2); let station="",write="",writeBaseline="",writeSuspect="";
   for(let i=0;i<args.length;i++) {
     if(args[i]==="--station" && args[i+1]) station=args[++i]!;
     else if(args[i]==="--write" && args[i+1]) write=args[++i]!;
     else if(args[i]==="--write-baseline" && args[i+1]) writeBaseline=args[++i]!;
+    else if(args[i]==="--write-suspect" && args[i+1]) writeSuspect=args[++i]!;
     else if(args[i]==="--with-greybox") { /* greybox is the default */ }
     else throw new Error(`unknown or incomplete argument: ${args[i]}`);
   }
-  if(!station || (!write && !writeBaseline)) throw new Error("use --station <station> [--with-greybox] [--write <path>] [--write-baseline <path>]");
+  if(!station || (!write && !writeBaseline && !writeSuspect)) throw new Error("use --station <station> [--with-greybox] [--write <path>] [--write-baseline <path>] [--write-suspect <path>]");
   const dest=write ? fallbackDestination(write,process.env.GTEKI_PRIVATE_DIR) : "", baselineDest=writeBaseline ? fallbackDestination(writeBaseline,process.env.GTEKI_PRIVATE_DIR) : "";
+  const suspectDest=writeSuspect ? fallbackDestination(writeSuspect,process.env.GTEKI_PRIVATE_DIR) : "";
   if(dest && dest===baselineDest) throw new Error("fallback and baseline output must differ");
+  if(suspectDest && [dest,baselineDest].includes(suspectDest)) throw new Error("suspect output must differ from fallback and baseline output");
   const result=measureFallbacks(station,undefined,!!baselineDest);
   const publish=(file:string,content:unknown)=>{const dir=fs.mkdtempSync(path.join(path.dirname(file),".fallback-"));try {const temporary=path.join(dir,"list.json");fs.writeFileSync(temporary,JSON.stringify(content,null,2)+"\n",{mode:0o600,flag:"wx"});fs.renameSync(temporary,file);} finally {fs.rmSync(dir,{recursive:true,force:true});}};
   if(dest) publish(dest,result.entries);
   if(baselineDest) publish(baselineDest,baselineForAudit(result.audit));
+  if(suspectDest) publish(suspectDest,(result.audit.bakeProvenance.suspectEdges as {edgeId:string;mode:string;reason:string}[]).map(({edgeId,mode,reason})=>({edgeId,mode,reason})).sort((a,b)=>a.edgeId.localeCompare(b.edgeId)));
   console.log(JSON.stringify({station,edges:result.entries.length,bakeMs:result.audit.bakeProvenance.bakeMs,elapsedMs:result.elapsedMs}));
 }
 if (process.argv[1] && import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href) main();
