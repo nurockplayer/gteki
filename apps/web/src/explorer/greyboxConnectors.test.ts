@@ -450,6 +450,29 @@ describe("turning landing guards", () => {
   });
 
   // A single-vertex 135 degree return passes over its own first flight with under 2.1 m of headroom: skipped, not guarded.
+  // A flight that passes through a turning landing it does not serve, 1 m above that landing: unresolved, so skipped.
+  it("skips a stair whose flight crosses a non-adjacent turning landing at 1 m height difference", () => {
+    for (const direction of [-1, 1]) {
+      const crossing: [number, number, number][] = [[0, 0, 0], [4, 1, 0], [4, 1.2, 4], [2, 1.5, 0], [2, 2, -4]];
+      const waypoints = crossing.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(1);
+      expect(result.root.children).toHaveLength(0);
+      expect(result.wallSegments).toHaveLength(0);
+    }
+  });
+
+  // A U-turn: each flight touches only its own two landings, and the return flight is 2 m clear of the first.
+  it("builds a U-turn stair whose flights touch only their own landings", () => {
+    for (const direction of [-1, 1]) {
+      const uturn: [number, number, number][] = [[0, 0, 0], [4, 1, 0], [4, 2, -2], [0, 3, -2]];
+      const waypoints = uturn.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(0);
+      expect(result.pathByEdge.has("turn")).toBe(true);
+    }
+  });
+
   it("skips a single-vertex 135 degree return whose flights overlap in plan with under 2.1 m of headroom", () => {
     for (const direction of [-1, 1]) {
       const result = buildConnectors(stairThrough(stackedWaypoints(135, direction)), () => true, flat, "high");
