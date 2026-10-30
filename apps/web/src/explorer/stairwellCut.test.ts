@@ -414,6 +414,26 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("keeps the inside piece of an upward landing that extends past the footprint, lying on the walking surface", () => {
+    // The intermediate landing at 3.6 m (x 5 to 9) on a flight whose footprint is 1.1 m either side of the centreline.
+    const stepped = flight([{ x: 0, y: 0, z: 0 }, { x: 5, y: 0, z: 3.6 }, { x: 9, y: 0, z: 3.6 }, { x: 10, y: 0, z: 4 }]);
+    const wells = stairwellWells(stepped, traversable);
+    expect(wells[0]!.rects).toHaveLength(3);
+    // A landing quad (x 5 to 9) reaching 2.1 m either side: 1 m past the footprint. Each triangle faces up.
+    const positions = [5, 3.6, -2.1, 9, 3.6, 2.1, 9, 3.6, -2.1, 5, 3.6, -2.1, 5, 3.6, 2.1, 9, 3.6, 2.1];
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    const landing = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    landing.userData.gteki_role = "floor";
+    const root = new THREE.Group(); root.add(landing); root.updateMatrixWorld(true);
+    const original = landing.geometry;
+    const result = cutStairwells(root, wells, { tier: "high" });
+    // Nothing is cut: the inside piece is on the walking surface, and the parts outside the footprint are never cut.
+    expect(landing.geometry).toBe(original);
+    expect(down(landing, 7, 5, 0.5)[0]!.point.y).toBeCloseTo(3.6, 6);
+    result.dispose();
+  });
+
   it("cuts a large upward floor triangle whose centroid is on the walking surface but whose corners are not", () => {
     // Corners at 0.3 m above, below, and on the walking surface (y = 0.4 x), inside the footprint. Wound to face up.
     const positions = [8.5, 3.7, -0.5, 9.0, 3.6, 0.5, 9.5, 3.5, -0.5];
