@@ -24,6 +24,11 @@ const SLAB_BAND_M = 1.2;
 const SLAB_ROLES = new Set(["floor", "ceiling"]);
 /** Side faces of a slab are near-vertical: |normal.y| below this. */
 const VERTICAL_NORMAL_M = 0.1;
+/**
+ * How far a corner may sit from the walking surface and still count as on it. The surface is a straight line through
+ * a flight, but real treads are flat steps that sit up to half a riser off it: 0.2 m maximum riser, half of it plus margin.
+ */
+const WALKING_SURFACE_TOLERANCE_M = 0.15;
 /** Headroom above the walking surface that the primary cut clears: higher faces obstruct nothing and stay. */
 const HEADROOM_M = 2.1;
 
@@ -328,7 +333,7 @@ const levelOf = (y: number): number => Math.round(y * 20) / 20;
 
 /**
  * True for a piece of an upward-facing triangle (orientation from the whole triangle, as its winding stores it)
- * whose every corner lies within 5 cm of a walking surface of the well (a flight or an intermediate landing) at
+ * whose every corner lies within WALKING_SURFACE_TOLERANCE_M of a walking surface of the well (a flight or an intermediate landing) at
  * that corner's plan point. Faces at the upper floor's own level are not walking surfaces, so the upper slab is
  * still cut. No region cuts these.
  */
@@ -345,7 +350,7 @@ function onWalkingSurface(piece: readonly THREE.Vector3[], triangle: readonly TH
       const along = dx * rect.along.x + dz * rect.along.z, across = dx * rect.across.x + dz * rect.across.z;
       if (Math.abs(along) > rect.halfLength + 1e-3 || Math.abs(across) > rect.halfWidth + 1e-3) return false;
       const surface = rect.center.y + along * rect.rise / (2 * rect.halfLength);
-      return Math.abs(v.y - surface) <= 0.05 + 1e-6;
+      return Math.abs(v.y - surface) <= WALKING_SURFACE_TOLERANCE_M + 1e-6;
     });
   });
 }

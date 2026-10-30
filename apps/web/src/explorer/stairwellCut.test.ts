@@ -434,6 +434,30 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("keeps every flat tread of an unroled stepped flight, whose corners sit off the linear walking surface", () => {
+    // Six flat treads (0.28 m deep) at 0.18 m risers, inside the footprint and in the band; a 0.4 slope puts their
+    // corners up to 0.056 m off the straight walking surface. A plate at the 3.42 m tread level reaches past the
+    // footprint, so that level is admitted and only the walking-surface rule keeps the treads.
+    const treadHeights = [2.88, 3.06, 3.24, 3.42, 3.60, 3.78];
+    const positions: number[] = [];
+    treadHeights.forEach((h) => {
+      const c = h / 0.4;
+      // Wound so each triangle's normal points up (the walking surface side).
+      positions.push(c - 0.14, h, -0.5, c - 0.14, h, 0.5, c + 0.14, h, 0.5, c - 0.14, h, -0.5, c + 0.14, h, 0.5, c + 0.14, h, -0.5);
+    });
+    positions.push(9.8, 3.42, -0.5, 9.8, 3.42, 0.5, 11, 3.42, 0.5, 9.8, 3.42, -0.5, 11, 3.42, 0.5, 11, 3.42, -0.5);
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    const steps = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    const root = new THREE.Group(); root.add(steps); root.updateMatrixWorld(true);
+    const result = cutStairwells(root, stairwellWells(bundle(), traversable), { tier: "high" });
+    treadHeights.forEach((h) => {
+      const c = h / 0.4;
+      expect(down(steps, c, 5)[0]!.point.y).toBeCloseTo(h, 6);
+    });
+    result.dispose();
+  });
+
   it("classifies an unroled sloped slab triangle by its whole triangle, so its clipped piece is still cut", () => {
     // Whole triangle: two corners outside the footprint at 3.0 m, one inside at 3.9 m; mean 3.3 m. Its piece inside
     // the footprint (x 0 to 1) has a mean of 3.6 m, a different 5 cm level, and lies above the 2.1 m headroom, so only the
