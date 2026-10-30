@@ -215,32 +215,36 @@ function meshFor(parts: readonly ConnectorPart[], material: THREE.Material | THR
   return mesh;
 }
 
-/** Remove the part of a landing side inside a flight's approach corridor. */
-function clipLandingSide(a: THREE.Vector3, b: THREE.Vector3, origin: THREE.Vector3, direction: THREE.Vector3, clearance: number): [THREE.Vector3, THREE.Vector3][] {
-  // Points of a..b that lie ahead of the origin along the corridor and within `clearance` of its centreline.
-  // Points behind the origin are not in the corridor, so a side that faces away from it is kept whole.
-  const u = direction.clone().setY(0).normalize(), p0 = a.clone().sub(origin), d = b.clone().sub(a);
-  const along0 = p0.dot(u), along1 = d.dot(u), side0 = p0.x * u.z - p0.z * u.x, side1 = d.x * u.z - d.z * u.x;
-  let lo = -Infinity, hi = Infinity;
-  const need = (c0: number, c1: number) => { // require c0 + t * c1 >= 0
-    if (Math.abs(c1) < 1e-12) { if (c0 < 0) { lo = Infinity; } return; }
-    if (c1 > 0) lo = Math.max(lo, -c0 / c1); else hi = Math.min(hi, -c0 / c1);
-  };
-  need(along0, along1);
-  need(clearance - side0, -side1);
-  need(clearance + side0, side1);
-  const left = Math.max(0, lo), right = Math.min(1, hi);
-  if (!(left < right)) return [[a, b]];
-  const segments: [THREE.Vector3, THREE.Vector3][] = [];
-  if (left > 1e-8) segments.push([a.clone(), a.clone().lerp(b, left)]);
-  if (right < 1 - 1e-8) segments.push([a.clone().lerp(b, right), b.clone()]);
-  return segments;
+/** Where the line `centre + t * dir + lateral` enters (`entry`) or leaves (`exit`) a square of half-size `half` aligned with `axis`. */
+function squareCrossing(centre: THREE.Vector3, axis: THREE.Vector3, dir: THREE.Vector3, lateral: THREE.Vector3, half: number, pick: "entry" | "exit"): THREE.Vector3 | null {
+  const a = centre.clone().addScaledVector(dir, -10).add(lateral), b = centre.clone().addScaledVector(dir, 10).add(lateral);
+  const clipped = clipToSquare(a, b, centre, axis, half);
+  if (!clipped) return null;
+  return pick === "entry" ? clipped[0] : clipped[1];
 }
 
-/** Plan-view deflection between two legs, and which side (-1 or 1) lies outside the bend (0 when straight). */
-function bendOf(incoming: THREE.Vector3, outgoing: THREE.Vector3): { angle: number; outer: number } {
-  const a = new THREE.Vector3(incoming.x, 0, incoming.z).normalize(), b = new THREE.Vector3(outgoing.x, 0, outgoing.z).normalize();
-  return { angle: a.angleTo(b), outer: -Math.sign(a.x * b.z - a.z * b.x) };
+/** Parameter spans of segment a-b inside a flight's footprint: ahead of the landing centre along `u` and within `half` of its centreline. */
+function footprintOn(a: THREE.Vector3, b: THREE.Vector3, centre: THREE.Vector3, u: THREE.Vector3, half: number): [number, number][] {
+  const v = new THREE.Vector3(-u.z, 0, u.x), p = a.clone().sub(centre), q = b.clone().sub(a);
+  const constraints: [number, number][] = [[p.dot(u), q.dot(u)], [half + p.dot(v), q.dot(v)], [half - p.dot(v), -q.dot(v)]];
+  let lo = 0, hi = 1;
+  for (const [c0, c1] of constraints) { // require c0 + c1 * t > 0
+    if (Math.abs(c1) < 1e-12) { if (c0 <= 1e-9) return []; continue; }
+    if (c1 > 0) lo = Math.max(lo, -c0 / c1); else hi = Math.min(hi, -c0 / c1);
+  }
+  return hi - lo > 1e-6 ? [[lo, hi]] : [];
+}
+
+/** The spans of [0, 1] that `cover` leaves uncovered. */
+function gapsOutside(cover: [number, number][]): [number, number][] {
+  const gaps: [number, number][] = [];
+  let at = 0;
+  for (const [lo, hi] of [...cover].sort((x, y) => x[0] - y[0])) {
+    if (lo > at + 1e-9) gaps.push([at, lo]);
+    at = Math.max(at, hi);
+  }
+  if (at < 1 - 1e-9) gaps.push([at, 1]);
+  return gaps;
 }
 
 /** Clip a segment to the square of half-size `half` centred on `centre`, with axes `u` and `v`. */
@@ -257,11 +261,6 @@ function clipToSquare(a: THREE.Vector3, b: THREE.Vector3, centre: THREE.Vector3,
   }
   return [a.clone().lerp(b, t0), a.clone().lerp(b, t1)];
 }
-
-/** Bends shallower than this keep their outer wall and join it at the landing. */
-const SHALLOW_BEND = Math.PI / 6;
-/** Stair turns sharper than this have no clean landing guard, so the edge gets no greybox connector. */
-const MAX_STAIR_TURN = (170 * Math.PI) / 180;
 
 /** Build runtime-only batches for missing vertical transport. */
 export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge) => boolean, scope: ConnectorScope, tier: "high" | "low") {
@@ -283,7 +282,6 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const points = edgePoints(bundle, edge, nodes, floors);
     const planRuns = points.slice(1).map((p, i) => Math.hypot(p.x - points[i]!.x, p.z - points[i]!.z));
     if (planRuns.reduce((a, b) => a + b, 0) < 0.3 || planRuns.some((run, i) => run < 0.3 && Math.abs(points[i + 1]!.y - points[i]!.y) > 1e-6)) { connectorsSkipped++; continue; }
-    if (edge.mode === "stairs" && points.some((p, i) => i > 0 && i + 1 < points.length && bendOf(p.clone().sub(points[i - 1]!), points[i + 1]!.clone().sub(p)).angle > MAX_STAIR_TURN)) { connectorsSkipped++; continue; }
     const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
     const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
     const halfWidth = (edge.mode === "stairs" ? width : 1.2) / 2;
@@ -294,49 +292,41 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       if (before.lengthSq() && after.lengthSq() && before.angleTo(after) > Math.PI / 18) bentEscalator = true;
     }
     const parts: ConnectorPart[] = [];
-    const flightWalls: { leg: number; side: number; wall: Segment2 }[] = [];
-    const landingGuards: { index: number; endpoints: THREE.Vector3[] }[] = [];
     const edgePath: THREE.Vector3[] = [];
     let edgeOmitted = 0;
     for (let i = 1; i < points.length; i++) {
       const from = points[i - 1]!, to = points[i]!;
       const dx = to.x - from.x, dz = to.z - from.z, horizontal = Math.hypot(dx, dz);
+      const half = (edge.mode === "stairs" ? width : 1.2) / 2 + 0.03;
+      const isTurn = (index: number) => {
+        if (edge.mode !== "stairs" || index <= 0 || index >= points.length - 1) return false;
+        const a = points[index]!.clone().sub(points[index - 1]!), b = points[index + 1]!.clone().sub(points[index]!); a.y = 0; b.y = 0;
+        return a.lengthSq() > 1e-12 && b.lengthSq() > 1e-12 && a.angleTo(b) > 1e-6;
+      };
       if (horizontal > 1e-6) {
-        const half = (edge.mode === "stairs" ? width : 1.2) / 2 + 0.03;
-        const isTurn = (index: number) => {
-          if (edge.mode !== "stairs" || index <= 0 || index >= points.length - 1) return false;
-          const a = points[index]!.clone().sub(points[index - 1]!), b = points[index + 1]!.clone().sub(points[index]!); a.y = 0; b.y = 0;
-          return a.lengthSq() > 1e-12 && b.lengthSq() > 1e-12 && a.angleTo(b) > 1e-6;
-        };
-        let begin = 0;
-        if (isTurn(i - 1)) {
-          const prior = points[i - 1]!.clone().sub(points[i - 2]!); prior.y = 0; prior.normalize();
-          const next = new THREE.Vector3(dx / horizontal, 0, dz / horizontal), normal = new THREE.Vector3(-prior.z, 0, prior.x);
-          begin = Math.min((width / 2) / Math.max(Math.abs(next.dot(prior)), Math.abs(next.dot(normal))), horizontal / 2);
-        }
-        const end = horizontal - (isTurn(i) ? Math.min(width / 2, horizontal / 2) : 0);
-        const n = Math.max(1, Math.ceil((end - begin) / 0.5));
-        for (const side of [-1, 1]) for (let k = 0; k < n && end > begin; k++) {
-          const t = (begin + (end - begin) * k / n) / horizontal, u = (begin + (end - begin) * (k + 1) / n) / horizontal;
-          const ox = -dz / horizontal * half * side, oz = dx / horizontal * half * side;
-          const ya = THREE.MathUtils.lerp(from.y, to.y, t), yb = THREE.MathUtils.lerp(from.y, to.y, u);
-          const a = new THREE.Vector3(THREE.MathUtils.lerp(from.x, to.x, t) + ox, 0, THREE.MathUtils.lerp(from.z, to.z, t) + oz);
-          const b = new THREE.Vector3(THREE.MathUtils.lerp(from.x, to.x, u) + ox, 0, THREE.MathUtils.lerp(from.z, to.z, u) + oz);
-          let pieces: [THREE.Vector3, THREE.Vector3][] = [[a, b]];
-          for (const index of [i - 1, i]) if (isTurn(index)) {
-            const corner = points[index]!, other = index === i ? points[index + 1]!.clone().sub(corner) : points[index - 1]!.clone().sub(corner);
-            other.y = 0; other.normalize();
-            // A shallow bend keeps its outer wall whole: it runs to the landing and is joined there.
-            const bend = index === i ? bendOf(new THREE.Vector3(dx, 0, dz), other) : bendOf(other.clone().negate(), new THREE.Vector3(dx, 0, dz));
-            if (bend.angle < SHALLOW_BEND && side === bend.outer) continue;
-            const origin = new THREE.Vector3(corner.x, 0, corner.z);
-            pieces = pieces.flatMap(([start, end]) => clipLandingSide(start, end, origin, other, width / 2 + 0.1));
+        const leg = new THREE.Vector3(dx / horizontal, 0, dz / horizontal), normal = new THREE.Vector3(-leg.z, 0, leg.x);
+        for (const side of [-1, 1]) {
+          const lateral = normal.clone().multiplyScalar(half * side);
+          // Each side wall runs from its far end to the outline of a turning landing it meets; otherwise it spans the whole leg.
+          let begin = 0, end = horizontal;
+          if (isTurn(i - 1)) {
+            const axis = points[i - 1]!.clone().sub(points[i - 2]!); axis.y = 0; axis.normalize();
+            const exit = squareCrossing(from, axis, leg, lateral, half, "exit");
+            begin = exit ? exit.clone().sub(from).dot(leg) : 0;
           }
-          for (const [start, finish] of pieces) {
-            const wall = { ax: start.x, az: start.z, bx: finish.x, bz: finish.z, yMin: Math.min(ya, yb) - 0.12, yMax: Math.max(ya, yb) + 0.96 };
+          if (isTurn(i)) {
+            const entry = squareCrossing(to, leg, leg, lateral, half, "entry");
+            end = entry ? entry.clone().sub(from).dot(leg) : horizontal;
+          }
+          const n = Math.max(1, Math.ceil((end - begin) / 0.5));
+          for (let k = 0; k < n && end > begin; k++) {
+            const s0 = begin + (end - begin) * k / n, s1 = begin + (end - begin) * (k + 1) / n;
+            const a = from.clone().addScaledVector(leg, s0).add(lateral), b = from.clone().addScaledVector(leg, s1).add(lateral);
+            a.y = 0; b.y = 0;
+            const ya = THREE.MathUtils.lerp(from.y, to.y, s0 / horizontal), yb = THREE.MathUtils.lerp(from.y, to.y, s1 / horizontal);
+            const wall = { ax: a.x, az: a.z, bx: b.x, bz: b.z, yMin: Math.min(ya, yb) - 0.12, yMax: Math.max(ya, yb) + 0.96 };
             wallSegments.push(wall);
             if (edge.mode === "stairs") {
-              flightWalls.push({ leg: i - 1, side, wall });
               const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(wall.bz - wall.az), wall.bx - wall.ax)).setPosition((wall.ax + wall.bx) / 2, (wall.yMin + wall.yMax) / 2, (wall.az + wall.bz) / 2);
               box(parts, "steel", transform, 0, 0, 0, Math.hypot(wall.bx - wall.ax, wall.bz - wall.az), wall.yMax - wall.yMin, 0.04, "collider"); parts.at(-1)!.walkableOnly = true;
             }
@@ -367,57 +357,22 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         const rotation = new THREE.Matrix4().makeRotationY(Math.atan2(-(to.z - from.z), to.x - from.x)).setPosition(at);
         box(parts, edge.mode === "stairs" ? "tread" : "escStep", rotation, 0, -0.04, 0, edge.mode === "stairs" ? width : 1.2, 0.08, edge.mode === "stairs" ? width : 1.2, "walkable");
         if (edge.mode === "stairs") {
-          const d = incoming.normalize(), n = new THREE.Vector3(-d.z, 0, d.x), out = outgoing.normalize(), half = width / 2 + 0.03;
+          // The square's outline is guarded except where each attached flight's footprint meets it; each guard piece ends where that flight's side wall ends.
+          const d = incoming.clone().normalize(), out = outgoing.clone().normalize(), n = new THREE.Vector3(-d.z, 0, d.x);
           const corners = [at.clone().addScaledVector(d, -half).addScaledVector(n, -half), at.clone().addScaledVector(d, half).addScaledVector(n, -half), at.clone().addScaledVector(d, half).addScaledVector(n, half), at.clone().addScaledVector(d, -half).addScaledVector(n, half)];
           const sides = [[corners[3]!, corners[0]!], [corners[1]!, corners[2]!], [corners[0]!, corners[1]!], [corners[2]!, corners[3]!]] as const;
-          const entry = at;
-          const exit = at;
-          const clearance = width / 2 + 0.1;
-          const endpoints: THREE.Vector3[] = [];
-          landingGuards.push({ index: i, endpoints });
           for (const [a, b] of sides) {
-            const afterEntry = clipLandingSide(a, b, entry, d.clone().negate(), clearance);
-            const pieces = afterEntry.flatMap(([start, end]) => clipLandingSide(start, end, exit, out, clearance));
-            for (const [start, end] of pieces) {
-              const length = start.distanceTo(end); if (length < 1e-6) continue;
-              endpoints.push(start, end);
-              const wall = { ax: start.x, az: start.z, bx: end.x, bz: end.z, yMin: at.y - 0.12, yMax: at.y + 0.96 }; wallSegments.push(wall);
-              const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(end.z - start.z), end.x - start.x)).setPosition((start.x + end.x) / 2, at.y, (start.z + end.z) / 2);
+            const cover = [d.clone().negate(), out].flatMap((u) => footprintOn(a, b, at, u, half));
+            for (const [t0, t1] of gapsOutside(cover)) {
+              const start = a.clone().lerp(b, t0), finish = a.clone().lerp(b, t1);
+              const length = start.distanceTo(finish); if (length < 1e-6) continue;
+              const wall = { ax: start.x, az: start.z, bx: finish.x, bz: finish.z, yMin: at.y - 0.12, yMax: at.y + 0.96 }; wallSegments.push(wall);
+              const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(finish.z - start.z), finish.x - start.x)).setPosition((start.x + finish.x) / 2, at.y, (start.z + finish.z) / 2);
               box(parts, "steel", transform, 0, 0.96, 0, length, 0.052, 0.052);
               box(parts, "steel", transform, 0, 0.42, 0, length, 1.08, 0.04, "collider"); parts.at(-1)!.walkableOnly = true;
             }
           }
         }
-      }
-    }
-    for (const landing of landingGuards) {
-      const at = points[landing.index]!, incoming = at.clone().sub(points[landing.index - 1]!), outgoing = points[landing.index + 1]!.clone().sub(at);
-      incoming.y = 0; outgoing.y = 0; incoming.normalize(); outgoing.normalize();
-      const { angle, outer: side } = bendOf(incoming, outgoing), shallow = angle < SHALLOW_BEND;
-      if (!side || (!shallow && !landing.endpoints.length)) continue;
-      const ends = [landing.index - 1, landing.index].map((leg) => {
-        const candidates = flightWalls.filter((entry) => entry.leg === leg && entry.side === side);
-        const points = candidates.flatMap(({ wall }) => [new THREE.Vector3(wall.ax, at.y, wall.az), new THREE.Vector3(wall.bx, at.y, wall.bz)]);
-        return points.length ? points.reduce((best, value) => value.distanceToSquared(at) < best.distanceToSquared(at) ? value : best) : null;
-      });
-      const [first, second] = ends; if (!first || !second) continue;
-      const cross = incoming.x * outgoing.z - incoming.z * outgoing.x;
-      const delta = second.clone().sub(first);
-      const along = (delta.x * outgoing.z - delta.z * outgoing.x) / cross;
-      const join = first.clone().addScaledVector(incoming, along);
-      const guard = landing.endpoints.length ? landing.endpoints.reduce((best, value) => value.distanceToSquared(join) < best.distanceToSquared(join) ? value : best) : null;
-      const pairs: [THREE.Vector3, THREE.Vector3][] = [[first, join], [join, second]];
-      if (guard && join.distanceTo(guard) < 0.2) pairs.push([join, guard]);
-      for (const pair of pairs) {
-        // Clamp to the landing square so a near-reversal join cannot run past the landing.
-        const clipped = clipToSquare(pair[0], pair[1], at, incoming, width / 2 + 0.03);
-        if (!clipped) continue;
-        const [start, end] = clipped;
-        const length = start.distanceTo(end); if (length < 1e-6) continue;
-        const wall = { ax: start.x, az: start.z, bx: end.x, bz: end.z, yMin: at.y - 0.12, yMax: at.y + 0.96 }; wallSegments.push(wall);
-        const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(end.z - start.z), end.x - start.x)).setPosition((start.x + end.x) / 2, at.y, (start.z + end.z) / 2);
-        box(parts, "steel", transform, 0, 0.96, 0, length, 0.052, 0.052);
-        box(parts, "steel", transform, 0, 0.42, 0, length, 1.08, 0.04, "collider"); parts.at(-1)!.walkableOnly = true;
       }
     }
     const lowerFirst = points[0]!.y <= points.at(-1)!.y ? edgePath : edgePath.reverse();

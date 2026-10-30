@@ -226,54 +226,6 @@ it("keeps the L-shaped stair path clear and guards the two outside landing edges
   }
 });
 
-it("keeps diagonal turning landings clear while preserving outer guards", () => {
-  for (const degrees of [45, 135]) for (const direction of [-1, 1]) {
-    const angle = degrees * Math.PI / 180, endX = 4 + 4 * Math.cos(angle), endY = direction * 4 * Math.sin(angle);
-    const station = createSyntheticBundle([syntheticEdge("bent", "start", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: [{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: endX, y: endY, z: 4 }] })]);
-    station.nodes.find((n) => n.id === "upper")!.position = { x: endX, y: endY, z: 4 };
-    const result = buildConnectors(station, () => true, { hasFloor: () => true, nearMesh: () => false }, "high");
-    const path = result.pathByEdge.get("bent")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
-    const bend = path.findIndex((p) => Math.hypot(p.x - 4, p.y - 2, p.z) < 1e-6), bendS = cumulative[bend]!;
-    expect(bend).toBeGreaterThan(0);
-    for (const offset of [-0.5, 0, 0.5]) for (let s = 0; s <= total; s += 0.05) {
-      const p = samplePolyline(path, cumulative, s), firstFlight = s <= bendS;
-      // Transition between the two parallel paths within the turning landing.
-      const taper = Math.min(1, Math.abs(s - bendS) / 0.75), amount = offset * taper;
-      const nx = firstFlight ? 0 : direction * Math.sin(angle), nz = firstFlight ? 1 : Math.cos(angle);
-      const x = p.x + nx * amount, z = p.z + nz * amount;
-      const resolved = resolveWalls(x, z, 0.3, p.y, 1.7, result.wallSegments);
-      expect(Math.hypot(resolved.x - x, resolved.z - z), `${degrees}° direction=${direction} offset=${offset} s=${s}`).toBeLessThanOrEqual(0.05);
-    }
-    const guards = result.wallSegments.filter((w) => Math.abs(w.yMin - 1.88) < 1e-6 && Math.abs(w.yMax - 2.96) < 1e-6 && Math.hypot(w.bx - w.ax, w.bz - w.az) > 0.05);
-    expect(guards.length, `${degrees}° direction=${direction}`).toBeGreaterThan(0);
-    for (const w of guards) {
-      const x = (w.ax + w.bx) / 2, z = (w.az + w.bz) / 2, resolved = resolveWalls(x, z, 0.3, 2, 1.7, [w]);
-      expect(Math.hypot(resolved.x - x, resolved.z - z)).toBeGreaterThan(0.29);
-      const dx = w.bx - w.ax, dz = w.bz - w.az, normal = new THREE.Vector3(-dz, 0, dx).normalize();
-      const ray = new THREE.Raycaster(new THREE.Vector3(x, 2.4, z).addScaledVector(normal, 0.1), normal.negate(), 0, 0.2);
-      expect(ray.intersectObjects(result.colliders).length).toBeGreaterThan(0);
-    }
-  }
-});
-
-it("stops walkers moving outward through landing sides and corners", () => {
-  for (const degrees of [45, 90, 135]) for (const direction of [-1, 1]) {
-    const angle = degrees * Math.PI / 180, endX = 4 + 4 * Math.cos(angle), endY = direction * 4 * Math.sin(angle);
-    const station = createSyntheticBundle([syntheticEdge("bent", "start", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: [{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: endX, y: endY, z: 4 }] })]);
-    station.nodes.find((n) => n.id === "upper")!.position = { x: endX, y: endY, z: 4 };
-    const result = buildConnectors(station, () => true, { hasFloor: () => true, nearMesh: () => false }, "high");
-    for (let i = 0; i <= 20; i++) {
-      const heading = direction * (Math.PI - angle) * i / 20, dx = Math.cos(heading) * 0.03, dz = Math.sin(heading) * 0.03;
-      let stopped = false;
-      for (let step = 1; step <= 50; step++) {
-        const x = 4 + dx * step, z = dz * step, resolved = resolveWalls(x, z, 0.3, 2, 1.7, result.wallSegments);
-        if (Math.hypot(resolved.x - x, resolved.z - z) > 0.05) { stopped = true; break; }
-      }
-      expect(stopped, `${degrees}° direction=${direction} heading=${i}`).toBe(true);
-    }
-  }
-});
-
 it("marks a bent escalator approximate once per edge", () => {
   const station = createSyntheticBundle([syntheticEdge("bent", "start", "upper", { mode: "escalator", attributes: { sceneGap: true }, geometry: [{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: 4, y: 4, z: 4 }] })]);
   station.nodes.find((n) => n.id === "upper")!.position = { x: 4, y: 4, z: 4 };
@@ -365,81 +317,130 @@ it("keeps rendered stair treads at or below the walkable incline", () => {
   }
 });
 
-/** A two-flight stair whose second leg turns by `degrees` (plan view) toward `direction` (-1 or 1). */
-function turningStair(degrees: number, direction: number) {
-  const angle = degrees * Math.PI / 180, endX = 4 + 4 * Math.cos(angle), endY = direction * 4 * Math.sin(angle);
-  const station = createSyntheticBundle([syntheticEdge("turn", "start", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: [{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: endX, y: endY, z: 4 }] })]);
-  station.nodes.find((n) => n.id === "upper")!.position = { x: endX, y: endY, z: 4 };
-  return { station, angle, endX, endY };
+/** Renderer waypoints [x, height, z] of a stair with one turn of `degrees` toward `direction` (-1 or 1); legs are 4 m long in plan. */
+function stackedWaypoints(degrees: number, direction: number): [number, number, number][] {
+  const angle = degrees * Math.PI / 180;
+  return [[0, 0, 0], [4, 2, 0], [4 + 4 * Math.cos(angle), 4, -direction * 4 * Math.sin(angle)]];
 }
+
+/**
+ * Turns from 135 degrees up return past the first flight, so their flights would stack in plan with about 1 m of headroom.
+ * Those layouts step 1.7 m (flight width + 0.2 m) sideways at a short second leg before the final leg, so the flights sit side by side.
+ */
+function turningWaypoints(degrees: number, direction: number): [number, number, number][] {
+  if (degrees < 135) return stackedWaypoints(degrees, direction);
+  const angle = degrees * Math.PI / 180;
+  return [[0, 0, 0], [4, 2, 0], [4, 3, 1.7 * direction], [4 + 4 * Math.cos(angle), 5, direction * (1.7 + 4 * Math.sin(angle))]];
+}
+
+/** Synthetic stair through renderer waypoints; the station frame is (x, -z, height). */
+function stairThrough(waypoints: [number, number, number][]) {
+  const geometry = waypoints.map(([x, h, z]) => ({ x, y: -z, z: h }));
+  const station = createSyntheticBundle([syntheticEdge("turn", "start", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry })]);
+  station.nodes.find((n) => n.id === "upper")!.position = { ...geometry.at(-1)! };
+  return station;
+}
+
+/** Each turning landing: centre (x, z), height, and the plan unit directions of its two flights, pointing away from the centre. */
+function landingsOf(waypoints: [number, number, number][]) {
+  return waypoints.slice(1, -1).map(([x, h, z], index) => {
+    const centre = new THREE.Vector2(x, z);
+    const before = new THREE.Vector2(waypoints[index]![0], waypoints[index]![2]).sub(centre).normalize();
+    const after = new THREE.Vector2(waypoints[index + 2]![0], waypoints[index + 2]![2]).sub(centre).normalize();
+    return { centre, height: h, flights: [before, after] };
+  });
+}
+
+const zigzag: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 4, -4], [8, 6, -4]];
+const turnCases = [
+  ...[15, 45, 90, 135, 165, 180].flatMap((degrees) => [-1, 1].map((direction) => ({ name: `${degrees} degrees, direction=${direction}`, waypoints: turningWaypoints(degrees, direction) }))),
+  ...[-1, 1].map((direction) => ({ name: `two consecutive 90 degree turns, direction=${direction}`, waypoints: zigzag.map(([x, h, z]): [number, number, number] => [x, h, direction * z]) })),
+];
 
 describe("turning landing guards", () => {
   const flat = { hasFloor: () => true, nearMesh: () => false };
-  const landingWalls = (walls: { ax: number; az: number; bx: number; bz: number; yMin: number; yMax: number }[]) =>
-    walls.filter((w) => Math.abs(w.yMin - 1.88) < 1e-6 && Math.abs(w.yMax - 2.96) < 1e-6);
+  const half = 1.5 / 2 + 0.03;
 
-  it("stops a walker leaving the landing through every outer side and corner at 15, 90 and 165 degrees", () => {
-    for (const degrees of [15, 90, 165]) for (const direction of [-1, 1]) {
-      const { station, angle, endX, endY } = turningStair(degrees, direction);
-      const result = buildConnectors(station, () => true, flat, "high");
-      const inDir = new THREE.Vector2(1, 0), outDir = new THREE.Vector2(endX - 4, -endY).normalize();
-      const outerNormal = new THREE.Vector2(-inDir.y, inDir.x).multiplyScalar(direction).normalize();
-      const centre = new THREE.Vector2(4, 0);
-      for (let deg = 0; deg < 360; deg += 3) {
-        const heading = deg * Math.PI / 180, dir = new THREE.Vector2(Math.cos(heading), Math.sin(heading));
-        if (dir.dot(outerNormal) < -1e-9) continue; // inner side of the bend
-        // Skip headings that pass through a flight opening rather than the landing outline.
-        const probe = dir.clone().multiplyScalar(1.3);
-        const inCorridor = (d: THREE.Vector2) => probe.dot(d) >= 0 && Math.abs(probe.x * d.y - probe.y * d.x) <= 0.78;
-        if (inCorridor(outDir) || inCorridor(inDir.clone().negate())) continue;
-        let stopped = false;
-        for (let step = 1; step <= 50 && !stopped; step++) {
-          const x = centre.x + dir.x * 0.03 * step, z = centre.y + dir.y * 0.03 * step;
-          const resolved = resolveWalls(x, z, 0.3, 2, 1.7, result.wallSegments);
-          if (Math.hypot(resolved.x - x, resolved.z - z) > 0.05) stopped = true;
+  it("stops a walker leaving any turning landing except through a flight opening", () => {
+    for (const { name, waypoints } of turnCases) {
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      for (const { centre, height, flights } of landingsOf(waypoints)) {
+        const axis = flights[0]!.clone().negate(), normal = new THREE.Vector2(-axis.y, axis.x);
+        for (let k = 0; k < 36; k++) {
+          const heading = k * Math.PI / 18, dir = new THREE.Vector2(Math.cos(heading), Math.sin(heading));
+          // The ray leaves the square at `r`; it passes an opening when that exit lies inside a flight's footprint.
+          const r = half / Math.max(Math.abs(dir.dot(axis)), Math.abs(dir.dot(normal)));
+          const exit = dir.clone().multiplyScalar(r);
+          if (flights.some((u) => exit.dot(u) > 1e-6 && Math.abs(exit.x * u.y - exit.y * u.x) < half - 1e-6)) continue;
+          let stopped = false;
+          for (let step = 1; step <= 50 && !stopped; step++) {
+            const x = centre.x + dir.x * 0.03 * step, z = centre.y + dir.y * 0.03 * step;
+            const resolved = resolveWalls(x, z, 0.3, height, 1.7, result.wallSegments);
+            if (Math.hypot(resolved.x - x, resolved.z - z) > 0.05) stopped = true;
+          }
+          expect(stopped, `${name} landing=(${centre.x}, ${centre.y}) heading=${k * 10}`).toBe(true);
         }
-        expect(stopped, `${degrees}° direction=${direction} heading=${deg} angle=${angle}`).toBe(true);
       }
     }
   });
 
-  it("lets a centreline walker and a walker 0.5 m off centre pass at 15, 90 and 165 degrees", () => {
-    for (const degrees of [15, 90, 165]) for (const direction of [-1, 1]) {
-      const { station, angle } = turningStair(degrees, direction);
-      const result = buildConnectors(station, () => true, flat, "high");
+  it("lets a centreline walker and a walker 0.5 m off centre pass bottom to top", () => {
+    for (const { name, waypoints } of turnCases) {
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
       const path = result.pathByEdge.get("turn")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
-      const bendS = cumulative[path.findIndex((p) => Math.hypot(p.x - 4, p.y - 2, p.z) < 1e-6)]!;
+      const bendS = waypoints.slice(1, -1).map(([x, h, z]) => cumulative[path.findIndex((p) => Math.hypot(p.x - x, p.y - h, p.z - z) < 1e-6)]!);
       for (const offset of [-0.5, 0, 0.5]) for (let s = 0; s <= total; s += 0.05) {
-        const p = samplePolyline(path, cumulative, s), firstFlight = s <= bendS;
-        const amount = offset * Math.min(1, Math.abs(s - bendS) / 0.75);
-        const nx = firstFlight ? 0 : direction * Math.sin(angle), nz = firstFlight ? 1 : Math.cos(angle);
-        const x = p.x + nx * amount, z = p.z + nz * amount;
+        const p = samplePolyline(path, cumulative, s);
+        const leg = bendS.filter((b) => s > b).length;
+        const [x0, , z0] = waypoints[leg]!, [x1, , z1] = waypoints[leg + 1]!;
+        const length = Math.hypot(x1 - x0, z1 - z0);
+        // Offsets fade to the centreline at each turn and grow again along the next flight.
+        const amount = offset * Math.min(1, Math.min(...bendS.map((b) => Math.abs(s - b))) / 0.75);
+        const x = p.x - (z1 - z0) / length * amount, z = p.z + (x1 - x0) / length * amount;
         const resolved = resolveWalls(x, z, 0.3, p.y, 1.7, result.wallSegments);
-        expect(Math.hypot(resolved.x - x, resolved.z - z), `${degrees}° direction=${direction} offset=${offset} s=${s}`).toBeLessThanOrEqual(0.05);
+        expect(Math.hypot(resolved.x - x, resolved.z - z), `${name} offset=${offset} s=${s}`).toBeLessThanOrEqual(0.05);
       }
     }
   });
 
   it("keeps every landing guard segment within the landing's diagonal", () => {
-    const diagonal = 2 * (1.5 / 2 + 0.03) * Math.SQRT2;
-    for (const degrees of [15, 90, 165]) for (const direction of [-1, 1]) {
-      const { station } = turningStair(degrees, direction);
-      const result = buildConnectors(station, () => true, flat, "high");
-      const guards = landingWalls(result.wallSegments);
-      expect(guards.length, `${degrees}° direction=${direction}`).toBeGreaterThan(0);
-      for (const w of guards) expect(Math.hypot(w.bx - w.ax, w.bz - w.az), `${degrees}° direction=${direction}`).toBeLessThanOrEqual(diagonal + 1e-6);
+    const diagonal = 2 * half * Math.SQRT2;
+    for (const { name, waypoints } of turnCases) {
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      const heights = landingsOf(waypoints).map((landing) => landing.height);
+      const guards = result.wallSegments.filter((w) => heights.some((h) => Math.abs(w.yMin - (h - 0.12)) < 1e-6 && Math.abs(w.yMax - (h + 0.96)) < 1e-6));
+      expect(guards.length, name).toBeGreaterThan(0);
+      for (const w of guards) expect(Math.hypot(w.bx - w.ax, w.bz - w.az), name).toBeLessThanOrEqual(diagonal + 1e-6);
     }
   });
 
-  it("skips the connector and counts it when a stair turns past 170 degrees", () => {
-    for (const degrees of [175, 180]) for (const direction of [-1, 1]) {
-      const { station } = turningStair(degrees, direction);
-      const result = buildConnectors(station, () => true, flat, "high");
-      expect(result.stats.connectorsSkipped, `${degrees}° direction=${direction}`).toBe(1);
-      expect(result.root.children).toHaveLength(0);
-      expect(result.walkable).toHaveLength(0);
-      expect(result.colliders).toHaveLength(0);
-      expect(result.pathByEdge.has("turn")).toBe(false);
+  it("builds every turn, including 180 degree switchbacks and consecutive turns, without skipping", () => {
+    for (const { name, waypoints } of turnCases) {
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      expect(result.stats.connectorsSkipped, name).toBe(0);
+      expect(result.stats.connectors.stairs, name).toBe(1);
+      expect(result.pathByEdge.has("turn"), name).toBe(true);
+    }
+  });
+
+  // Unwalkable stacked layout: the 135 degree return passes over the first flight with under 2.1 m of headroom,
+  // so a 1.7 m body cannot walk under it. Whatever the construction does there must not leave an open gap.
+  it("guards or skips a stacked return where two flights overlap in plan with under 2.1 m of headroom", () => {
+    for (const direction of [-1, 1]) {
+      const result = buildConnectors(stairThrough(stackedWaypoints(135, direction)), () => true, flat, "high");
+      if (result.stats.connectorsSkipped === 1) {
+        expect(result.root.children).toHaveLength(0);
+        expect(result.wallSegments).toHaveLength(0);
+        continue;
+      }
+      const path = result.pathByEdge.get("turn")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
+      let blocked = false;
+      for (let s = 0; s <= total && !blocked; s += 0.05) {
+        const p = samplePolyline(path, cumulative, s);
+        const resolved = resolveWalls(p.x, p.z, 0.3, p.y, 1.7, result.wallSegments);
+        if (Math.hypot(resolved.x - p.x, resolved.z - p.z) > 0.05) blocked = true;
+      }
+      expect(blocked, `direction=${direction}`).toBe(true);
     }
   });
 });
