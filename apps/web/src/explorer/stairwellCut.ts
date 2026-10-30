@@ -387,11 +387,13 @@ function horizontalFaces(mesh: THREE.Object3D): HorizontalFace[] {
   mesh.updateWorldMatrix(true, false);
   const index = geometry.index, count = index ? index.count : position.count;
   const vs = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
+  const e1 = new THREE.Vector3(), e2 = new THREE.Vector3(), n = new THREE.Vector3();
   for (let i = 0; i + 2 < count; i += 3) {
     for (let j = 0; j < 3; j++) vs[j]!.fromBufferAttribute(position, index ? index.getX(i + j) : i + j).applyMatrix4(mesh.matrixWorld);
-    const normal = vs[1]!.clone().sub(vs[0]!).cross(vs[2]!.clone().sub(vs[0]!));
-    if (normal.lengthSq() === 0 || !horizontal(normal.normalize())) continue;
-    faces.push({ y: (vs[0]!.y + vs[1]!.y + vs[2]!.y) / 3, corners: vs.flatMap((v) => [v.x, v.y, v.z]) });
+    // Same arithmetic as normal.normalize() in `horizontal`, without the temporaries.
+    n.crossVectors(e1.copy(vs[1]!).sub(vs[0]!), e2.copy(vs[2]!).sub(vs[0]!));
+    if (n.lengthSq() === 0 || !horizontal(n.normalize())) continue;
+    faces.push({ y: (vs[0]!.y + vs[1]!.y + vs[2]!.y) / 3, corners: [vs[0]!.x, vs[0]!.y, vs[0]!.z, vs[1]!.x, vs[1]!.y, vs[1]!.z, vs[2]!.x, vs[2]!.y, vs[2]!.z] });
   }
   return faces;
 }
