@@ -324,10 +324,10 @@ function stackedWaypoints(degrees: number, direction: number): [number, number, 
 }
 
 /**
- * Turns from 135 degrees up return past the first flight, so their flights would stack in plan with about 1 m of headroom.
- * Those layouts step 1.7 m (flight width + 0.2 m) sideways at a short second leg before the final leg, so the flights sit side by side.
+ * Switchbacks of 135 degrees and more: two turns with a 1.7 m flat step (flight width + 0.2 m) between them,
+ * so the return flight sits beside the first one instead of stacked on it. Below 135 degrees the single turn is kept.
  */
-function turningWaypoints(degrees: number, direction: number): [number, number, number][] {
+function switchbackWaypoints(degrees: number, direction: number): [number, number, number][] {
   if (degrees < 135) return stackedWaypoints(degrees, direction);
   const angle = degrees * Math.PI / 180;
   return [[0, 0, 0], [4, 2, 0], [4, 3, 1.7 * direction], [4 + 4 * Math.cos(angle), 5, direction * (1.7 + 4 * Math.sin(angle))]];
@@ -352,19 +352,33 @@ function landingsOf(waypoints: [number, number, number][]) {
 }
 
 const zigzag: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 4, -4], [8, 6, -4]];
+/** Two 90 degree turns 0.5 m apart: an S-shaped stair whose two landing squares overlap. */
+function closeS(direction: number): [number, number, number][] {
+  const base: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 2.5, -0.5], [8, 4.5, -0.5]];
+  return base.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
+}
+/** Single-vertex 135 and 165 degree turns: their flights share one landing, so the landing guard alone keeps them closed. */
+const singleVertexReturns = [135, 165].flatMap((degrees) => [-1, 1].map((direction) => ({ name: `single ${degrees} degree turn, direction=${direction}`, waypoints: stackedWaypoints(degrees, direction) })));
 const turnCases = [
-  ...[15, 45, 90, 135, 165, 180].flatMap((degrees) => [-1, 1].map((direction) => ({ name: `${degrees} degrees, direction=${direction}`, waypoints: turningWaypoints(degrees, direction) }))),
+  ...[15, 45, 90, 135, 165, 180].flatMap((degrees) => [-1, 1].map((direction) => ({ name: degrees < 135 ? `single ${degrees} degree turn, direction=${direction}` : `switchback ${degrees} degrees, direction=${direction}`, waypoints: switchbackWaypoints(degrees, direction) }))),
+  ...[-1, 1].map((direction) => ({ name: `S, two 90 degree turns 0.5 m apart, direction=${direction}`, waypoints: closeS(direction) })),
   ...[-1, 1].map((direction) => ({ name: `two consecutive 90 degree turns, direction=${direction}`, waypoints: zigzag.map(([x, h, z]): [number, number, number] => [x, h, direction * z]) })),
 ];
 
 describe("turning landing guards", () => {
   const flat = { hasFloor: () => true, nearMesh: () => false };
   const half = 1.5 / 2 + 0.03;
+  const insideLanding = (p: THREE.Vector2, landing: { centre: THREE.Vector2; flights: THREE.Vector2[] }) => {
+    const axis = landing.flights[0]!.clone().negate(), across = new THREE.Vector2(-axis.y, axis.x), rel = p.clone().sub(landing.centre);
+    return Math.abs(rel.dot(axis)) <= half + 1e-6 && Math.abs(rel.dot(across)) <= half + 1e-6;
+  };
 
   it("stops a walker leaving any turning landing except through a flight opening", () => {
-    for (const { name, waypoints } of turnCases) {
+    for (const { name, waypoints } of [...turnCases, ...singleVertexReturns]) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
-      for (const { centre, height, flights } of landingsOf(waypoints)) {
+      const landings = landingsOf(waypoints);
+      for (const landing of landings) {
+        const { centre, height, flights } = landing;
         const axis = flights[0]!.clone().negate(), normal = new THREE.Vector2(-axis.y, axis.x);
         for (let k = 0; k < 36; k++) {
           const heading = k * Math.PI / 18, dir = new THREE.Vector2(Math.cos(heading), Math.sin(heading));
@@ -372,6 +386,9 @@ describe("turning landing guards", () => {
           const r = half / Math.max(Math.abs(dir.dot(axis)), Math.abs(dir.dot(normal)));
           const exit = dir.clone().multiplyScalar(r);
           if (flights.some((u) => exit.dot(u) > 1e-6 && Math.abs(exit.x * u.y - exit.y * u.x) < half - 1e-6)) continue;
+          // Where two landings overlap, an exit inside the other square is open into it, not a gap.
+          const absolute = centre.clone().add(exit);
+          if (landings.some((other) => other !== landing && insideLanding(absolute, other))) continue;
           let stopped = false;
           for (let step = 1; step <= 50 && !stopped; step++) {
             const x = centre.x + dir.x * 0.03 * step, z = centre.y + dir.y * 0.03 * step;
@@ -478,21 +495,44 @@ describe("turning landing guards", () => {
     }
   });
 
-  // Two turning landings whose squares overlap would let one guard cut the other's flight, so the stair gets no connector.
-  it("skips a stair whose two turning landings are 0.5 m apart, with no walls, and still builds the distant zigzag", () => {
-    const close: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 2.5, -0.5], [8, 4.5, -0.5]];
+  // Two turns 0.5 m apart form an S: the landing squares overlap, so their guards merge into the union's outer outline.
+  it("builds the S-shaped stair whose turning landings are 0.5 m apart", () => {
     for (const direction of [-1, 1]) {
-      const mirrored = close.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
-      const result = buildConnectors(stairThrough(mirrored), () => true, flat, "high");
+      const result = buildConnectors(stairThrough(closeS(direction)), () => true, flat, "high");
+      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(0);
+      expect(result.pathByEdge.has("turn")).toBe(true);
+    }
+  });
+
+  it("keeps every landing guard off the flights, in every stair", () => {
+    for (const { name, waypoints } of turnCases) {
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      const heights = landingsOf(waypoints).map((landing) => landing.height);
+      const legs = waypoints.slice(1).map((p, i) => {
+        const a = waypoints[i]!, run = new THREE.Vector2(p[0] - a[0], p[2] - a[2]);
+        return { origin: new THREE.Vector2(a[0], a[2]), dir: run.clone().normalize(), length: run.length() };
+      }).filter((leg) => leg.length > 1e-6);
+      const guards = result.wallSegments.filter((w) => heights.some((h) => Math.abs(w.yMin - (h - 0.12)) < 1e-6 && Math.abs(w.yMax - (h + 0.96)) < 1e-6));
+      for (const w of guards) for (let t = 0; t <= 1; t += 0.01) {
+        const p = new THREE.Vector2(w.ax + (w.bx - w.ax) * t, w.az + (w.bz - w.az) * t);
+        for (const leg of legs) {
+          const rel = p.clone().sub(leg.origin);
+          const along = rel.dot(leg.dir), lateral = Math.abs(rel.x * leg.dir.y - rel.y * leg.dir.x);
+          const crosses = along > 0.05 && along < leg.length - 0.05 && lateral < half - 0.02;
+          expect(crosses, `${name} guard (${w.ax}, ${w.az})-(${w.bx}, ${w.bz}) at (${p.x}, ${p.y})`).toBe(false);
+        }
+      }
+    }
+  });
+
+  // Flights that do not share a landing and overlap in plan under 2.1 m of headroom are a stacked layout: skipped.
+  it("skips a stair whose non-adjacent flights overlap in plan under 2.1 m apart", () => {
+    const stacked: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 2.2, 1.0], [0, 2.6, 1.0]];
+    for (const direction of [-1, 1]) {
+      const result = buildConnectors(stairThrough(stacked.map(([x, h, z]): [number, number, number] => [x, h, direction * z])), () => true, flat, "high");
       expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(1);
-      expect(result.root.children).toHaveLength(0);
-      expect(result.walkable).toHaveLength(0);
-      expect(result.colliders).toHaveLength(0);
       expect(result.wallSegments).toHaveLength(0);
-      expect(result.pathByEdge.has("turn")).toBe(false);
-      const far = buildConnectors(stairThrough(zigzag.map(([x, h, z]): [number, number, number] => [x, h, direction * z])), () => true, flat, "high");
-      expect(far.stats.connectorsSkipped, `zigzag direction=${direction}`).toBe(0);
-      expect(far.pathByEdge.has("turn")).toBe(true);
+      expect(result.root.children).toHaveLength(0);
     }
   });
 });

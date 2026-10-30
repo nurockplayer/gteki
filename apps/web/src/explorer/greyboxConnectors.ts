@@ -282,27 +282,82 @@ function mitre(vertex: THREE.Vector3, dirA: THREE.Vector3, latA: THREE.Vector3, 
   return vertex.clone().add(latA).addScaledVector(dirA, s);
 }
 
-/**
- * Whether two turning landings of one stair have outline squares that overlap in plan and sit under `heightGap` apart
- * vertically (gaps under `tolerance` count as overlap). Shallow bends are not landings and never take part.
- */
-function turningLandingsOverlap(points: readonly THREE.Vector3[], half: number, tolerance = 0.02, heightGap = 2.1): boolean {
-  const squares: { centre: THREE.Vector3; height: number; axis: THREE.Vector3 }[] = [];
+/** A turning landing's outline square in plan: centre, unit axis along its incoming flight, and height. */
+interface LandingSquare { index: number; centre: THREE.Vector3; axis: THREE.Vector3; height: number }
+
+/** The turning landings (plan bends of at least SHALLOW_BEND) of one stair, as outline squares. */
+function turningSquares(points: readonly THREE.Vector3[]): LandingSquare[] {
+  const squares: LandingSquare[] = [];
   for (let j = 1; j + 1 < points.length; j++) {
     if (bendAngle(points, j) < SHALLOW_BEND) continue;
     const incoming = points[j]!.clone().sub(points[j - 1]!); incoming.y = 0;
     const centre = points[j]!.clone(); centre.y = 0;
-    squares.push({ centre, height: points[j]!.y, axis: incoming.normalize() });
+    squares.push({ index: j, centre, axis: incoming.normalize(), height: points[j]!.y });
   }
-  const across = (axis: THREE.Vector3) => new THREE.Vector3(-axis.z, 0, axis.x);
-  for (let a = 0; a < squares.length; a++) for (let b = a + 1; b < squares.length; b++) {
-    const first = squares[a]!, second = squares[b]!;
-    if (Math.abs(first.height - second.height) >= heightGap) continue;
-    const delta = second.centre.clone().sub(first.centre);
-    const axes = [first.axis, across(first.axis), second.axis, across(second.axis)];
-    const reach = (square: { axis: THREE.Vector3 }, axis: THREE.Vector3) => half * (Math.abs(axis.dot(square.axis)) + Math.abs(axis.dot(across(square.axis))));
-    const separated = axes.some((axis) => Math.abs(delta.dot(axis)) > reach(first, axis) + reach(second, axis) + tolerance);
-    if (!separated) return true;
+  return squares;
+}
+
+const acrossAxis = (axis: THREE.Vector3) => new THREE.Vector3(-axis.z, 0, axis.x);
+
+/** Whether two landing squares overlap in plan (gaps under `tolerance` count as overlap) while sitting under `heightGap` apart vertically. */
+function squaresOverlap(a: LandingSquare, b: LandingSquare, half: number, tolerance = 0.02, heightGap = 2.1): boolean {
+  if (Math.abs(a.height - b.height) >= heightGap) return false;
+  const delta = b.centre.clone().sub(a.centre);
+  const reach = (square: LandingSquare, axis: THREE.Vector3) => half * (Math.abs(axis.dot(square.axis)) + Math.abs(axis.dot(acrossAxis(square.axis))));
+  const axes = [a.axis, acrossAxis(a.axis), b.axis, acrossAxis(b.axis)];
+  return !axes.some((axis) => Math.abs(delta.dot(axis)) > reach(a, axis) + reach(b, axis) + tolerance);
+}
+
+/** Whether plan point p lies in the closed landing square. */
+function insideSquare(p: THREE.Vector3, square: LandingSquare, half: number): boolean {
+  const rel = p.clone().sub(square.centre); rel.y = 0;
+  return Math.abs(rel.dot(square.axis)) <= half + 1e-6 && Math.abs(rel.dot(acrossAxis(square.axis))) <= half + 1e-6;
+}
+
+/** Parameter span [t0, t1] of segment a-b that lies inside a closed landing square (empty when it lies outside). */
+function insideSpan(a: THREE.Vector3, b: THREE.Vector3, centre: THREE.Vector3, axis: THREE.Vector3, half: number): [number, number][] {
+  const clipped = clipToSquare(a, b, centre, axis, half);
+  const d = b.clone().sub(a), length2 = d.lengthSq();
+  if (!clipped || length2 < 1e-12) return [];
+  const at = (p: THREE.Vector3) => THREE.MathUtils.clamp(p.clone().sub(a).dot(d) / length2, 0, 1);
+  const t0 = at(clipped[0]), t1 = at(clipped[1]);
+  return t1 - t0 > 1e-6 ? [[t0, t1]] : [];
+}
+
+/**
+ * Whether two flights that do not share a landing overlap in plan with under 2.1 m between them vertically
+ * (a stacked layout a walker cannot pass under). Flights that meet at one landing are guarded by that landing instead.
+ */
+function flightsStacked(points: readonly THREE.Vector3[], half: number, squares: readonly LandingSquare[], heightGap = 2.1): boolean {
+  const legs: { a: THREE.Vector3; b: THREE.Vector3; length: number; dir: THREE.Vector3 }[] = [];
+  for (let k = 1; k < points.length; k++) {
+    const a = points[k - 1]!, b = points[k]!;
+    const run = b.clone().sub(a); run.y = 0;
+    const length = run.length();
+    legs.push({ a, b, length, dir: length > 1e-9 ? run.normalize() : run });
+  }
+  const margin = half - 0.02;
+  for (let k = 0; k < legs.length; k++) {
+    const leg = legs[k]!;
+    if (leg.length < 1e-6) continue;
+    const normal = acrossAxis(leg.dir);
+    for (let s = 0; s <= leg.length; s += 0.1) {
+      const hk = leg.a.y + (leg.b.y - leg.a.y) * (s / leg.length);
+      for (let lateral = -margin; lateral <= margin; lateral += 0.05) {
+        const p = leg.a.clone().addScaledVector(leg.dir, s).addScaledVector(normal, lateral);
+        if (squares.some((square) => insideSquare(p, square, half))) continue;
+        for (let m = 0; m < legs.length; m++) {
+          if (Math.abs(m - k) < 2) continue;
+          const other = legs[m]!;
+          if (other.length < 1e-6) continue;
+          const rel = p.clone().sub(other.a); rel.y = 0;
+          const along = rel.dot(other.dir), across = rel.dot(acrossAxis(other.dir));
+          if (along < 0.05 || along > other.length - 0.05 || Math.abs(across) >= margin) continue;
+          const hm = other.a.y + (other.b.y - other.a.y) * (along / other.length);
+          if (Math.abs(hk - hm) < heightGap) return true;
+        }
+      }
+    }
   }
   return false;
 }
@@ -330,8 +385,9 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
     const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
     const halfWidth = (edge.mode === "stairs" ? width : 1.2) / 2;
+    const landingSquares = turningSquares(points);
+    if (edge.mode === "stairs" && flightsStacked(points, width / 2 + 0.03, landingSquares)) { connectorsSkipped++; continue; }
     // Two turning landings whose squares overlap would let one guard cut the other's flight, so such a stair gets no connector.
-    if (edge.mode === "stairs" && turningLandingsOverlap(points, width / 2 + 0.03)) { connectorsSkipped++; continue; }
     let bentEscalator = false;
     for (let i = 1; i + 1 < points.length; i++) {
       const before = points[i]!.clone().sub(points[i - 1]!); before.y = 0;
@@ -414,8 +470,12 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
           const d = incoming.clone().normalize(), out = outgoing.clone().normalize(), n = new THREE.Vector3(-d.z, 0, d.x);
           const corners = [at.clone().addScaledVector(d, -half).addScaledVector(n, -half), at.clone().addScaledVector(d, half).addScaledVector(n, -half), at.clone().addScaledVector(d, half).addScaledVector(n, half), at.clone().addScaledVector(d, -half).addScaledVector(n, half)];
           const sides = [[corners[3]!, corners[0]!], [corners[1]!, corners[2]!], [corners[0]!, corners[1]!], [corners[2]!, corners[3]!]] as const;
+          // Turning landings whose squares overlap this one: their interiors are open, so this outline stops at their edges.
+          const mine = landingSquares.find((square) => square.index === i)!;
+          const others = landingSquares.filter((square) => square !== mine && squaresOverlap(mine, square, half));
           for (const [a, b] of sides) {
-            const cover = [d.clone().negate(), out].flatMap((u) => footprintOn(a, b, at, u, half));
+            const cover = [d.clone().negate(), out].flatMap((u) => footprintOn(a, b, at, u, half))
+              .concat(others.flatMap((square) => insideSpan(a, b, square.centre, square.axis, half)));
             for (const [t0, t1] of gapsOutside(cover)) {
               const start = a.clone().lerp(b, t0), finish = a.clone().lerp(b, t1);
               const length = start.distanceTo(finish); if (length < 1e-6) continue;
