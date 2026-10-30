@@ -224,9 +224,10 @@ function squareCrossing(centre: THREE.Vector3, axis: THREE.Vector3, dir: THREE.V
 }
 
 /** Parameter spans of segment a-b inside a flight's footprint: ahead of the landing centre along `u` and within `half` of its centreline. */
-function footprintOn(a: THREE.Vector3, b: THREE.Vector3, centre: THREE.Vector3, u: THREE.Vector3, half: number): [number, number][] {
+function footprintOn(a: THREE.Vector3, b: THREE.Vector3, centre: THREE.Vector3, u: THREE.Vector3, half: number, reach = Infinity): [number, number][] {
   const v = new THREE.Vector3(-u.z, 0, u.x), p = a.clone().sub(centre), q = b.clone().sub(a);
   const constraints: [number, number][] = [[p.dot(u), q.dot(u)], [half + p.dot(v), q.dot(v)], [half - p.dot(v), -q.dot(v)]];
+  if (Number.isFinite(reach)) constraints.push([reach - p.dot(u), -q.dot(u)]); // the opening ends where the flight's leg ends
   let lo = 0, hi = 1;
   for (const [c0, c1] of constraints) { // require c0 + c1 * t > 0
     if (Math.abs(c1) < 1e-12) { if (c0 <= 1e-9) return []; continue; }
@@ -283,7 +284,7 @@ function mitre(vertex: THREE.Vector3, dirA: THREE.Vector3, latA: THREE.Vector3, 
 }
 
 /** A turning landing's outline square in plan: centre, unit axis along its incoming flight, and height. */
-interface LandingSquare { index: number; centre: THREE.Vector3; axis: THREE.Vector3; height: number }
+interface LandingSquare { index: number; centre: THREE.Vector3; axis: THREE.Vector3; height: number; flights: { dir: THREE.Vector3; reach: number }[] }
 
 /** The turning landings (plan bends of at least SHALLOW_BEND) of one stair, as outline squares. */
 function turningSquares(points: readonly THREE.Vector3[]): LandingSquare[] {
@@ -291,8 +292,12 @@ function turningSquares(points: readonly THREE.Vector3[]): LandingSquare[] {
   for (let j = 1; j + 1 < points.length; j++) {
     if (bendAngle(points, j) < SHALLOW_BEND) continue;
     const incoming = points[j]!.clone().sub(points[j - 1]!); incoming.y = 0;
+    const outgoing = points[j + 1]!.clone().sub(points[j]!); outgoing.y = 0;
     const centre = points[j]!.clone(); centre.y = 0;
-    squares.push({ index: j, centre, axis: incoming.normalize(), height: points[j]!.y });
+    const inLength = incoming.length(), outLength = outgoing.length();
+    const axis = incoming.normalize();
+    // Each flight reaches only as far as its own leg: beyond that its strip is not a flight.
+    squares.push({ index: j, centre, axis, height: points[j]!.y, flights: [{ dir: axis.clone().negate(), reach: inLength }, { dir: outgoing.normalize(), reach: outLength }] });
   }
   return squares;
 }
@@ -314,14 +319,41 @@ function insideSquare(p: THREE.Vector3, square: LandingSquare, half: number): bo
   return Math.abs(rel.dot(square.axis)) <= half + 1e-6 && Math.abs(rel.dot(acrossAxis(square.axis))) <= half + 1e-6;
 }
 
-/** Parameter span [t0, t1] of segment a-b that lies inside a closed landing square (empty when it lies outside). */
-function insideSpan(a: THREE.Vector3, b: THREE.Vector3, centre: THREE.Vector3, axis: THREE.Vector3, half: number): [number, number][] {
-  const clipped = clipToSquare(a, b, centre, axis, half);
-  const d = b.clone().sub(a), length2 = d.lengthSq();
-  if (!clipped || length2 < 1e-12) return [];
-  const at = (p: THREE.Vector3) => THREE.MathUtils.clamp(p.clone().sub(a).dot(d) / length2, 0, 1);
-  const t0 = at(clipped[0]), t1 = at(clipped[1]);
-  return t1 - t0 > 1e-6 ? [[t0, t1]] : [];
+/** Whether plan point p lies on a side of the closed landing square (within 1e-6). */
+function onSquareBoundary(p: THREE.Vector3, square: LandingSquare, half: number): boolean {
+  const rel = p.clone().sub(square.centre); rel.y = 0;
+  return Math.abs(Math.abs(rel.dot(square.axis)) - half) < 1e-6 || Math.abs(Math.abs(rel.dot(acrossAxis(square.axis))) - half) < 1e-6;
+}
+
+/**
+ * Spans of side a-b of square `mine` that its guard must not build. A part strictly inside another overlapping square is
+ * open. A part on another square's side is kept only where the union's outside lies (a point 0.05 m outward is inside no
+ * square of the group), and a part shared by two squares is kept once, from the lower-index square.
+ */
+function sideCover(a: THREE.Vector3, b: THREE.Vector3, mine: LandingSquare, others: readonly LandingSquare[], half: number): [number, number][] {
+  const along = b.clone().sub(a); along.y = 0;
+  const length2 = along.lengthSq();
+  if (length2 < 1e-12) return [];
+  const across = acrossAxis(along.clone().normalize());
+  const parameter = (p: THREE.Vector3) => THREE.MathUtils.clamp(p.clone().sub(a).dot(along) / length2, 0, 1);
+  const outward = (centre: THREE.Vector3, p: THREE.Vector3) => { const rel = p.clone().sub(centre); rel.y = 0; return rel.dot(across) >= 0 ? across.clone() : across.clone().negate(); };
+  const group = [mine, ...others];
+  const cover: [number, number][] = [];
+  for (const q of others) {
+    const clipped = clipToSquare(a, b, q.centre, q.axis, half);
+    if (!clipped) continue;
+    const t0 = parameter(clipped[0]), t1 = parameter(clipped[1]);
+    if (t1 - t0 <= 1e-6) continue;
+    const mid = clipped[0].clone().lerp(clipped[1], 0.5);
+    if (!onSquareBoundary(mid, q, half)) { cover.push([t0, t1]); continue; }
+    // Collinear with a side of q: keep it only on the union's outline, and only once when q and mine both face outward.
+    const mineOut = outward(mine.centre, mid), qOut = outward(q.centre, mid);
+    const probe = mid.clone().addScaledVector(mineOut, 0.05);
+    const onOutline = !group.some((square) => insideSquare(probe, square, half));
+    const sharedFromLower = q.index < mine.index && mineOut.dot(qOut) > 0;
+    if (!onOutline || sharedFromLower) cover.push([t0, t1]);
+  }
+  return cover;
 }
 
 /**
@@ -475,7 +507,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
           const others = landingSquares.filter((square) => square !== mine && squaresOverlap(mine, square, half));
           for (const [a, b] of sides) {
             const cover = [d.clone().negate(), out].flatMap((u) => footprintOn(a, b, at, u, half))
-              .concat(others.flatMap((square) => insideSpan(a, b, square.centre, square.axis, half)));
+              .concat(others.flatMap((square) => square.flights.flatMap((f) => footprintOn(a, b, square.centre, f.dir, half, f.reach))), sideCover(a, b, mine, others, half));
             for (const [t0, t1] of gapsOutside(cover)) {
               const start = a.clone().lerp(b, t0), finish = a.clone().lerp(b, t1);
               const length = start.distanceTo(finish); if (length < 1e-6) continue;

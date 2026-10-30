@@ -359,6 +359,15 @@ function closeS(direction: number): [number, number, number][] {
 }
 /** Single-vertex 135 and 165 degree turns: their flights share one landing, so the landing guard alone keeps them closed. */
 const singleVertexReturns = [135, 165].flatMap((degrees) => [-1, 1].map((direction) => ({ name: `single ${degrees} degree turn, direction=${direction}`, waypoints: stackedWaypoints(degrees, direction) })));
+/**
+ * Two 90 degree turns with a 0.78 m flat step: the two landing squares are equal and overlap by half, with flush outer edges
+ * on x = 4.78 (the step runs toward -z) and x = 3.22.
+ */
+function equalSquaresWaypoints(direction: number): [number, number, number][] {
+  const base: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 3.95, -0.78], [0, 4.35, -0.78]];
+  return base.map(([x, h, z]): [number, number, number] => [x, h, direction * z]);
+}
+const equalCases = [-1, 1].map((direction) => ({ name: `two equal squares overlapping by half, direction=${direction}`, waypoints: equalSquaresWaypoints(direction) }));
 const turnCases = [
   ...[15, 45, 90, 135, 165, 180].flatMap((degrees) => [-1, 1].map((direction) => ({ name: degrees < 135 ? `single ${degrees} degree turn, direction=${direction}` : `switchback ${degrees} degrees, direction=${direction}`, waypoints: switchbackWaypoints(degrees, direction) }))),
   ...[-1, 1].map((direction) => ({ name: `S, two 90 degree turns 0.5 m apart, direction=${direction}`, waypoints: closeS(direction) })),
@@ -374,7 +383,7 @@ describe("turning landing guards", () => {
   };
 
   it("stops a walker leaving any turning landing except through a flight opening", () => {
-    for (const { name, waypoints } of [...turnCases, ...singleVertexReturns]) {
+    for (const { name, waypoints } of [...turnCases, ...singleVertexReturns, ...equalCases]) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
       const landings = landingsOf(waypoints);
       for (const landing of landings) {
@@ -505,7 +514,7 @@ describe("turning landing guards", () => {
   });
 
   it("keeps every landing guard off the flights, in every stair", () => {
-    for (const { name, waypoints } of turnCases) {
+    for (const { name, waypoints } of [...turnCases, ...equalCases]) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
       const heights = landingsOf(waypoints).map((landing) => landing.height);
       const legs = waypoints.slice(1).map((p, i) => {
@@ -521,6 +530,46 @@ describe("turning landing guards", () => {
           const crosses = along > 0.05 && along < leg.length - 0.05 && lateral < half - 0.02;
           expect(crosses, `${name} guard (${w.ax}, ${w.az})-(${w.bx}, ${w.bz}) at (${p.x}, ${p.y})`).toBe(false);
         }
+      }
+    }
+  });
+
+  // Two equal squares overlapping by half, flush on the outer side: the union's flush edge is guarded end to end.
+  it("guards the flush outer edge of two equal overlapping squares end to end, once", () => {
+    for (const direction of [-1, 1]) {
+      const result = buildConnectors(stairThrough(equalSquaresWaypoints(direction)), () => true, flat, "high");
+      expect(result.stats.connectorsSkipped, `direction=${direction}`).toBe(0);
+      const landingWalls = result.wallSegments.filter((w) => Math.abs(w.yMin - 1.88) < 1e-6 && Math.abs(w.yMax - 2.96) < 1e-6 || Math.abs(w.yMin - 3.83) < 1e-6 && Math.abs(w.yMax - 4.91) < 1e-6);
+      const flush = landingWalls.filter((w) => Math.abs(w.ax - 4.78) < 1e-6 && Math.abs(w.bx - 4.78) < 1e-6)
+        .map((w) => [Math.min(w.az, w.bz), Math.max(w.az, w.bz)] as const).sort((x, y) => x[0] - y[0]);
+      const lo = direction > 0 ? -1.56 : -0.78, hi = direction > 0 ? 0.78 : 1.56;
+      expect(flush.length, `direction=${direction}`).toBeGreaterThan(0);
+      expect(flush[0]![0], `direction=${direction} start`).toBeCloseTo(lo, 6);
+      expect(flush.at(-1)![1], `direction=${direction} end`).toBeCloseTo(hi, 6);
+      for (let i = 1; i < flush.length; i++) expect(flush[i]![0] - flush[i - 1]![1], `direction=${direction} gap`).toBeLessThanOrEqual(1e-4);
+    }
+  });
+
+  // No two landing guard segments may duplicate the same stretch of one line.
+  it("never builds two guard segments on the same stretch of a line", () => {
+    for (const { name, waypoints } of [...turnCases, ...singleVertexReturns, ...equalCases]) {
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      const heights = landingsOf(waypoints).map((landing) => landing.height);
+      const guards = result.wallSegments.filter((w) => heights.some((h) => Math.abs(w.yMin - (h - 0.12)) < 1e-6 && Math.abs(w.yMax - (h + 0.96)) < 1e-6));
+      for (let i = 0; i < guards.length; i++) for (let j = i + 1; j < guards.length; j++) {
+        const u = guards[i]!, v = guards[j]!;
+        const du = new THREE.Vector2(u.bx - u.ax, u.bz - u.az), dv = new THREE.Vector2(v.bx - v.ax, v.bz - v.az);
+        if (du.length() < 1e-9 || dv.length() < 1e-9) continue;
+        const unit = du.clone().normalize();
+        const parallel = Math.abs(unit.x * dv.clone().normalize().y - unit.y * dv.clone().normalize().x) < 1e-9;
+        if (!parallel) continue;
+        const offset = new THREE.Vector2(v.ax - u.ax, v.az - u.az);
+        if (Math.abs(unit.x * offset.y - unit.y * offset.x) > 1e-6) continue;
+        const t = (q: THREE.Vector2) => q.dot(unit);
+        const overlap = Math.min(t(new THREE.Vector2(u.ax, u.az)), t(new THREE.Vector2(u.bx, u.bz))) >= 0 ? 0 : 0;
+        const a0 = Math.min(t(new THREE.Vector2(u.ax, u.az)), t(new THREE.Vector2(u.bx, u.bz))), a1 = Math.max(t(new THREE.Vector2(u.ax, u.az)), t(new THREE.Vector2(u.bx, u.bz)));
+        const b0 = Math.min(t(new THREE.Vector2(v.ax, v.az)), t(new THREE.Vector2(v.bx, v.bz))), b1 = Math.max(t(new THREE.Vector2(v.ax, v.az)), t(new THREE.Vector2(v.bx, v.bz)));
+        expect(Math.min(a1, b1) - Math.max(a0, b0) - overlap <= 1e-6, `${name} duplicate guard (${u.ax}, ${u.az})-(${u.bx}, ${u.bz}) and (${v.ax}, ${v.az})-(${v.bx}, ${v.bz})`).toBe(true);
       }
     }
   });
