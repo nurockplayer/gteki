@@ -73,6 +73,10 @@ for (const key of STATIONS) {
 test("station switching drops the previous station's state", async ({ page }) => {
   await openStation(page, "ikebukuro", "&from=jr-central-gate-2&to=exit-35");
   expect((await hooks.route(page))?.ok).toBe(true);
+  // CPU profile of the switch (#647): self time by function and the garbage collector's share, logged below.
+  const heapBeforeMB = await page.evaluate(() => Math.round(((performance as any).memory?.usedJSHeapSize ?? 0) / 1e6));
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Profiler.enable"); await cdp.send("Profiler.setSamplingInterval", { interval: 1000 }); await cdp.send("Profiler.start");
   await page.locator(".station-select").selectOption("shinjuku");
   // Where the switch spends its time (#647): logged pass or fail, so a timeout shows which step ran long.
   const switchState = () => page.evaluate(() => {
@@ -84,7 +88,19 @@ test("station switching drops the previous station's state", async ({ page }) =>
   try {
     await page.waitForFunction(() => (window as any).__gteki.phase() === "ready" && (window as any).__gteki.route() === null);
   } finally {
-    console.log(`[switch-timings] ${JSON.stringify(await switchState())}`);
+    console.log(`[switch-timings] ${JSON.stringify({ heapBeforeMB, ...(await switchState()) })}`);
+    const { profile } = await cdp.send("Profiler.stop") as { profile: { nodes: { id: number; callFrame: { functionName: string; url: string; lineNumber: number } }[]; samples: number[]; timeDeltas: number[] } };
+    const frames = new Map(profile.nodes.map((n) => [n.id, n.callFrame]));
+    const self = new Map<string, number>();
+    profile.samples.forEach((id, i) => {
+      const f = frames.get(id)!, file = f.url.split("/").pop()?.split("?")[0] ?? "";
+      const key = `${f.functionName || "(anonymous)"} ${file}:${f.lineNumber + 1}`;
+      self.set(key, (self.get(key) ?? 0) + (profile.timeDeltas[i] ?? 0) / 1000);
+    });
+    const total = [...self.values()].reduce((a, b) => a + b, 0);
+    const top = [...self].sort((a, b) => b[1] - a[1]).slice(0, 15).map(([k, ms]) => [k, Math.round(ms)]);
+    console.log(`[switch-profile] ${JSON.stringify({ totalMs: Math.round(total), gcMs: Math.round(self.get("(garbage collector) :0") ?? 0), top })}`);
+    await cdp.detach();
   }
   await expect(page.locator("#gteki-from")).toHaveValue("");
   await expect(page.locator("#gteki-to")).toHaveValue("");
