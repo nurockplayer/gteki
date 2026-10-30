@@ -174,6 +174,20 @@ describe("buildGreybox", () => {
     expect(at.every((w) => w.yMax < 2.5 || w.yMin > 4.4)).toBe(true);
   });
 
+  it("keeps a corridor wall that only runs along a stair's side line", () => {
+    const floors = [...bundle.floors, { id: "g", renderElevationM: 4 }];
+    const half = MODE_WIDTH.walk! / 2, stairHalf = MODE_WIDTH.stairs! / 2;
+    // A corridor whose north wall lies exactly on the stair's west side line, running north beside it.
+    const nodes = [...bundle.nodes, { id: "c", floorId: "g", position: { x: 10, y: 6, z: 4 } },
+      { id: "p", floorId: "f", position: { x: 10 - stairHalf - half, y: 1, z: 0 } }, { id: "q", floorId: "f", position: { x: 10 - stairHalf - half, y: 6, z: 0 } }];
+    const edges = [bundle.edges[0]!, { id: "s", from: "b", to: "c", mode: "stairs" }, { id: "pq", from: "p", to: "q", mode: "walk" }];
+    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
+    const east = result.wallSegments.filter((w) => Math.abs(w.ax - (10 - stairHalf)) < 1e-6 && Math.abs(w.bx - (10 - stairHalf)) < 1e-6);
+    const length = east.reduce((sum, w) => sum + Math.abs(w.bz - w.az), 0);
+    // Without the side-line rule the stair footprint cuts it down to about 2 m.
+    expect(length).toBeGreaterThan(4.5);
+  });
+
   it("opens a stair mouth at the end of a long ramp", () => {
     const floors = [...bundle.floors, { id: "g", renderElevationM: 7 }];
     const ramp = [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 30, y: 0, z: 3 } }];

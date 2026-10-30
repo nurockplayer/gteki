@@ -405,6 +405,8 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
           const du = (wz.x - wa.x) * m.ux + (wz.z - wa.z) * m.uz, dv = -(wz.x - wa.x) * m.uz + (wz.z - wa.z) * m.ux;
           const u0 = (wa.x - m.at.x) * m.ux + (wa.z - m.at.z) * m.uz, v0 = -(wa.x - m.at.x) * m.uz + (wa.z - m.at.z) * m.ux;
           let lo = 0, hi = 1;
+          // A wall running along the footprint's side line is beside the flight, not across it.
+          if (Math.abs(dv) < 0.05 * Math.hypot(du, dv) && Math.abs(v0) > m.half - 0.05) continue;
           for (const [p0, dp, min, max] of [[u0, du, -0.05, m.length], [v0, dv, -m.half, m.half]] as const) {
             if (Math.abs(dp) < 1e-9) { if (p0 < min || p0 > max) { lo = 1; hi = 0; } continue; }
             const t1 = (min - p0) / dp, t2 = (max - p0) / dp;
