@@ -51,7 +51,7 @@ import { hooks, openStation, stationData } from "../lib/gteki.ts";
  * (the point about 2 m from the node); then +90, +180, +270. The walker spawns facing north (walkFrom resets yaw),
  * so the probe turns by dragging the canvas (yaw -= dx * 0.0042, as specs 04 and 10 steer) and tracks the yaw it
  * has sent; the camera's measured facing is recorded next to it as a cross-check (`facing`, flagged "(!)" when
- * more than 25 degrees off).
+ * more than 3 degrees (HEADING_TOL_DEG) off after up to three closed-loop corrections, and listed in a report warning).
  *
  * Per view: wait 2 animation frames after the turn plus GTEKI_VANTAGE_SETTLE_MS (default 600) for the follow
  * camera, count FRAMES rendered frames (default 5), sample frame intervals if GTEKI_VANTAGE_FRAMETIME_MS is set,
@@ -69,15 +69,19 @@ import { hooks, openStation, stationData } from "../lib/gteki.ts";
  *                                          build exposes on it (sceneInfo().renderer / .info / .render)
  *
  * Env: GTEKI_VANTAGE_NODES    comma list of graph node ids; an item may be `group:node` to pick the group
- *                             (otherwise the default group, else gate / exit by node kind and floor, else `node`)
+ *                             (otherwise the default group, else gate / exit by node kind and floor, else `node`);
+ *                             an item may end with `>x/y` waypoints (station ENU metres) the walker walks to from the
+ *                             node before the views (walkPath, 40 s cap); a walk that does not arrive is shot anyway
+ *                             and listed in a report warning
  *      GTEKI_VANTAGE_HEADINGS comma list of degrees added to the edge bearing (default 0,90,180,270); prefix an item
  *                             with `@` for an absolute compass heading (`@45`)
- *      GTEKI_VANTAGE_OUT      output dir (default <GTEKI_ROOT>/.qa/ikebukuro-vantage/<project>)
+ *      GTEKI_VANTAGE_OUT      output dir (default <GTEKI_ROOT>/.qa/<station>-vantage/<project>)
  *      GTEKI_VANTAGE_LABEL    free text recorded in the report, e.g. the candidate SHAs
  *      GTEKI_VANTAGE_FRAMES   frames counted per view (default 5)
  *      GTEKI_VANTAGE_SETTLE_MS extra settle after the turn (default 600)
  *      GTEKI_VANTAGE_LOW_DRAWS draw-call limit marked on the low tier (default 28)
  *      GTEKI_VANTAGE_TIER     assert the explorer tier ("low" or "high")
+ *      GTEKI_VANTAGE_STATION  station id to open (default ikebukuro); pass GTEKI_VANTAGE_NODES with it
  *      GTEKI_VANTAGE_FRAMETIME_MS frame intervals sampled per view before its screenshot (default 0 = off)
  *      GTEKI_VANTAGE_GROUPS   comma list of groups to keep (gate, rail, exit, control, spawn)
  *
@@ -98,10 +102,14 @@ const DEFAULT_NODES = [
 const DEFAULT_HEADINGS = ["0", "90", "180", "270"];
 const FRAMES = Number(process.env.GTEKI_VANTAGE_FRAMES ?? 5);
 const SETTLE_MS = Number(process.env.GTEKI_VANTAGE_SETTLE_MS ?? 600);
+/** Facing error (degrees) the closed-loop turn aims under; a view still further off is flagged in the report. */
+const HEADING_TOL_DEG = 3;
 const LOW_DRAW_LIMIT = Number(process.env.GTEKI_VANTAGE_LOW_DRAWS ?? 28);
 const FRAMETIME_MS = Number(process.env.GTEKI_VANTAGE_FRAMETIME_MS ?? 0);
 const GROUPS = (process.env.GTEKI_VANTAGE_GROUPS ?? "").split(",").map((s) => s.trim()).filter(Boolean);
 const LOOK_RAD_PER_PX = 0.0042;
+/** Station to shoot (default ikebukuro); the default spots below are Ikebukuro nodes, so name nodes for another. */
+const STATION = process.env.GTEKI_VANTAGE_STATION ?? "ikebukuro";
 
 /** Counts draw calls and triangles per rendered frame at the WebGL boundary (independent of lib PROBE_SCRIPT; as in spec 10). */
 const TRI_PROBE = `(() => {
@@ -153,6 +161,13 @@ async function drag(page: Page, at: Pt, dx: number): Promise<number> {
     sent += chunk;
   }
   return sent;
+}
+
+/** Where the camera looks, compass degrees (0 = north, 90 = east): avatar minus camera, renderer frame (x, up, -north). */
+async function facingOf(page: Page): Promise<number> {
+  const cam = (await hooks.sceneInfo(page)).camera as number[];
+  const av = await hooks.avatar(page);
+  return Math.round(((Math.atan2(av.x - cam[0]!, -(-av.y - cam[2]!)) * 180) / Math.PI + 360) % 360);
 }
 
 /** A point on the canvas that is not covered by UI, to start drags from. */
@@ -240,6 +255,8 @@ interface Row {
   visibility: string | null; focused: boolean | null;
   overLowLimit: boolean; streetActive: boolean | null; streetOpacity: number | null;
   walker: { x: number; y: number; z: number } | null; file: string | null; error?: string;
+  /** The off-graph waypoints walked from the node (">x/y" text, null when none) and the walkPath result. */
+  walkTo: string | null; walk: { done: boolean; stuck: boolean; timedOut: boolean } | null;
   renderInfo: unknown; sceneInfo: unknown;
 }
 
@@ -248,7 +265,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
   const root = process.env.GTEKI_ROOT;
   if (!root) throw new Error("GTEKI_ROOT must point at the candidate checkout");
 
-  const { graph, station } = stationData("ikebukuro");
+  const { graph, station } = stationData(STATION);
   const byId = new Map(graph.nodes.map((n) => [n.id, n as typeof n & { kind?: string }]));
 
   // ---- spot list ------------------------------------------------------------------------------------
@@ -258,17 +275,23 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
   const requested = (process.env.GTEKI_VANTAGE_NODES ? process.env.GTEKI_VANTAGE_NODES.split(",") : allDefaults).map((s) => s.trim()).filter(Boolean);
   // first wins: a bare id keeps its original group (w_c stays rail) even though it is also a spawn
   const defaultGroup = new Map<string, string>();
-  for (const [g, n] of allDefaults.map((s) => s.split(":") as [string, string])) if (!defaultGroup.has(n)) defaultGroup.set(n, g);
-  const spots: { group: string; node: string }[] = [];
+  for (const [g, n] of allDefaults.map((s) => [s.slice(0, s.indexOf(":")), s.slice(s.indexOf(":") + 1)])) if (!defaultGroup.has(n)) defaultGroup.set(n, g);
+  const spots: { group: string; node: string; walkTo: { x: number; y: number }[] }[] = [];
   const dropped: string[] = [];
   const notInGroups: string[] = [];
   for (const item of requested) {
-    const [g, n] = item.includes(":") ? (item.split(":") as [string, string]) : [undefined, item];
+    // `>x/y` suffixes are off-graph waypoints the walker walks to from the node (station ENU metres, x east, y north)
+    const [head = "", ...legs] = item.split(">");
+    const walkTo = legs.map((s) => s.split("/").map(Number)).map(([x, y]) => ({ x: x!, y: y! }));
+    expect(walkTo.every((p) => Number.isFinite(p.x) && Number.isFinite(p.y)), `waypoints in ${item}`).toBe(true);
+    // Shinjuku ids carry an "n:" prefix, so a whole item that is a node id wins; otherwise split at the first colon
+    const cut = byId.has(head) ? -1 : head.indexOf(":");
+    const [g, n] = cut < 0 ? [undefined, head] : [head.slice(0, cut), head.slice(cut + 1)];
     const node = byId.get(n!);
     if (!node) { dropped.push(n!); continue; }
     const group = g ?? defaultGroup.get(n!) ?? (node.kind === "ticket_gate" ? "gate" : node.kind === "exit" ? "exit" : "node");
     if (GROUPS.length && !GROUPS.includes(group)) { notInGroups.push(item); continue; }
-    spots.push({ group, node: n! });
+    spots.push({ group, node: n!, walkTo });
   }
   if (dropped.length) console.warn(`vantage: dropped nodes not in the graph: ${dropped.join(", ")}`);
   if (notInGroups.length) console.warn(`vantage: skipped by GTEKI_VANTAGE_GROUPS=${GROUPS.join(",")}: ${notInGroups.join(", ")}`);
@@ -297,12 +320,12 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
     return { deg: Math.round(bearing(here, target)), edge: e.id };
   };
 
-  const accessFile = path.join(root, "stations", "ikebukuro", "scene", "access_fences.json");
+  const accessFile = path.join(root, "stations", STATION, "scene", "access_fences.json");
   const fences: { a: number[]; b: number[] }[] = fs.existsSync(accessFile) ? (JSON.parse(fs.readFileSync(accessFile, "utf8")).fences ?? []) : [];
 
   // ---- page ------------------------------------------------------------------------------------------
   await page.addInitScript(TRI_PROBE);
-  const { loadMs } = await openStation(page, "ikebukuro");
+  const { loadMs } = await openStation(page, STATION);
   const tier = await hooks.quality(page);
   if (process.env.GTEKI_VANTAGE_TIER) expect(tier, "explorer quality tier").toBe(process.env.GTEKI_VANTAGE_TIER);
   const gl = await page.evaluate(() => (window as any).__qa?.gl ?? null);
@@ -312,17 +335,18 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
   const project = testInfo.project.name;
   const label = process.env.GTEKI_VANTAGE_LABEL ?? "";
 
-  const outDir = process.env.GTEKI_VANTAGE_OUT ?? path.join(root, ".qa", "ikebukuro-vantage", project);
+  const outDir = process.env.GTEKI_VANTAGE_OUT ?? path.join(root, ".qa", `${STATION}-vantage`, project);
   fs.mkdirSync(outDir, { recursive: true });
 
   const rows: Row[] = [];
-  for (const spot of spots) {
+  for (const [si, spot] of spots.entries()) {
     const node = byId.get(spot.node)!;
     const eb = edgeBearing(spot.node);
     const fenceM = nearestSegment({ x: node.position.x, y: node.position.y }, fences);
     const ok = await hooks.walkFromNode(page, spot.node);
     const base = {
       group: spot.group, node: spot.node, nodeKind: node.kind ?? null, floor: node.floorId, fenceM: fenceM === null ? null : round(fenceM),
+      walkTo: spot.walkTo.length ? spot.walkTo.map((p) => `${p.x}/${p.y}`).join(">") : null,
     };
     if (!ok) {
       for (const h of headings) {
@@ -330,12 +354,18 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
           ...base, offsetDeg: h.deg, absolute: h.absolute, heading: Math.round((h.absolute ? h.deg : eb.deg + h.deg) % 360), facing: null, headingOk: null,
           draws: null, drawsMax: null, tris: null, trisMax: null, frames: 0, zeroFrames: 0, ftP50: null, ftP95: null, ftMax: null, ftFrames: null,
           visibility: null, focused: null, overLowLimit: false, streetActive: null, streetOpacity: null,
-          walker: null, file: null, error: "walkFromNode returned false (no walkable ground at the node)", renderInfo: null, sceneInfo: null,
+          walker: null, walk: null, file: null, error: "walkFromNode returned false (no walkable ground at the node)", renderInfo: null, sceneInfo: null,
         });
       }
       continue;
     }
     await expect.poll(() => hooks.mode(page)).toBe("walk");
+    // Shop vantage points off the graph: walk there through normal walk input (renderer frame: x east, z = -north).
+    let walk: Row["walk"] = null;
+    if (spot.walkTo.length) {
+      const r = await page.evaluate((p) => (window as any).__gteki.walkPath(p, { maxSeconds: 40 }), spot.walkTo.map((p) => ({ x: p.x, z: -p.y })));
+      walk = { done: r.done, stuck: r.stuck, timedOut: r.timedOut };
+    }
     if (node.floorId === "street") {
       // The street gate lags the camera by a frame and the backdrop fades in: wait for it, never fail on it.
       await page.waitForFunction(() => (window as any).__gteki.sceneInfo().street.active, null, { timeout: 8_000 }).catch(() => undefined);
@@ -353,6 +383,15 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       if (Math.abs(dx) >= 1) yaw = wrapRad(yaw - (await drag(page, at, dx)) * LOOK_RAD_PER_PX);
       await page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
       await page.waitForTimeout(SETTLE_MS);
+      // Close the loop on the measured facing: the open-loop drag landed 50-77 degrees off on every view of the
+      // 2026-10-29 shop hero run (#209). Up to three corrections, then carry the real yaw to the next heading.
+      for (let i = 0; i < 3; i++) {
+        const err = ((heading - (await facingOf(page)) + 540) % 360) - 180;
+        if (Math.abs(err) < HEADING_TOL_DEG) break;
+        await drag(page, at, Math.round((err * Math.PI) / 180 / LOOK_RAD_PER_PX));
+        await page.waitForTimeout(SETTLE_MS);
+      }
+      yaw = wrapRad((-(await facingOf(page)) * Math.PI) / 180);
 
       const m = await measure(page, FRAMES);
       // Frame pacing after the draw sample, before the screenshot: nothing touches the page during the window.
@@ -360,12 +399,11 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       const vis = await visibilityOf(page);
       const info = await hooks.sceneInfo(page);
       const av = await hooks.avatar(page);
-      // Where the camera looks: avatar minus camera, renderer frame is (x, up, -north). 0 = north, 90 = east.
-      const cam = info.camera as number[];
-      const facing = Math.round(((Math.atan2(av.x - cam[0]!, -(-av.y - cam[2]!)) * 180) / Math.PI + 360) % 360);
+      const facing = await facingOf(page);
       const diff = Math.abs(((facing - heading + 540) % 360) - 180);
 
-      const file = `${spot.group}-${spot.node}-h${pad3(heading)}.png`;
+      // Spots that walk off the graph carry their list index, so two targets from one node never share a file.
+      const file = `${spot.group}-${spot.node}${spot.walkTo.length ? `-w${si}` : ""}-h${pad3(heading)}.png`;
       await page.screenshot({ path: path.join(outDir, file) });
 
       const drawsP50 = pct(m.draws, 0.5), drawsMax = Math.max(...m.draws);
@@ -373,12 +411,12 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       const any = info as Record<string, unknown>;
       const renderInfo = any.renderer ?? any.info ?? any.render ?? null;
       rows.push({
-        ...base, offsetDeg: h.deg, absolute: h.absolute, heading, facing, headingOk: diff <= 25,
+        ...base, offsetDeg: h.deg, absolute: h.absolute, heading, facing, headingOk: diff <= HEADING_TOL_DEG,
         draws: drawsP50, drawsMax, tris: pct(m.tris, 0.5), trisMax: Math.max(...m.tris), frames: m.draws.length, zeroFrames: m.zeroFrames,
         ...ft, visibility: vis.visibility, focused: vis.focused,
         overLowLimit: tier === "low" && drawsMax > LOW_DRAW_LIMIT,
         streetActive: info.street.active, streetOpacity: info.street.opacity,
-        walker: { x: round(av.x), y: round(av.y), z: round(av.z) }, file, renderInfo, sceneInfo: info,
+        walker: { x: round(av.x), y: round(av.y), z: round(av.z) }, walk, file, renderInfo, sceneInfo: info,
       });
     }
   }
@@ -405,10 +443,22 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
     ? [`${hiddenViews.length} of ${measured.length} measured views were hidden or unfocused (${[...new Set(hiddenViews.map((r) => `${r.node} h${r.heading}: ${r.visibility}${r.focused === false ? ", unfocused" : ""}`))].join(", ")}): requestAnimationFrame may have been throttled, so their frame times are not comparable to a foreground run.`]
     : [];
   for (const w of warnings) console.warn(`vantage: ${w}`);
+  // Views the closed-loop turn left more than HEADING_TOL_DEG off: the shot may miss what the heading aimed at.
+  const offHeading = rows.filter((r) => r.headingOk === false);
+  const headingWarnings = offHeading.length
+    ? [`${offHeading.length} view(s) ended more than ${HEADING_TOL_DEG} degrees off the requested heading after the turn corrections: ${offHeading.map((r) => `${r.node} h${r.heading} -> facing ${r.facing}`).join(", ")}.`]
+    : [];
+  for (const w of headingWarnings) console.warn(`vantage: ${w}`);
+  // Spots whose off-graph walk did not arrive: still shot, but the shot may be from somewhere else.
+  const missedWalks = [...new Map(rows.filter((r) => r.walk && !r.walk.done).map((r) => [`${r.group} ${r.node}`, r])).values()];
+  const walkWarnings = missedWalks.length
+    ? [`${missedWalks.length} spot(s) did not reach their walk target: ${missedWalks.map((r) => `${r.group} ${r.node} >${r.walkTo}: ${r.walk!.stuck ? "stuck" : r.walk!.timedOut ? "timed out" : "not reached"} at walker ${r.walker?.x}/${r.walker?.y}`).join(", ")}.`]
+    : [];
+  for (const w of walkWarnings) console.warn(`vantage: ${w}`);
   const result = {
-    probe: "ikebukuro-vantage-shots", label, tier, project, viewport, dpr, loadMs, gl, gpuValid,
+    probe: "ikebukuro-vantage-shots", station: STATION, label, tier, project, viewport, dpr, loadMs, gl, gpuValid,
     frames: FRAMES, settleMs: SETTLE_MS, lowDrawLimit: LOW_DRAW_LIMIT, headings: headings.map((h) => (h.absolute ? `@${h.deg}` : String(h.deg))),
-    frametimeMs: FRAMETIME_MS, groupsRequested: GROUPS, visibilityWarnings: warnings,
+    frametimeMs: FRAMETIME_MS, groupsRequested: GROUPS, visibilityWarnings: warnings, headingTolDeg: HEADING_TOL_DEG, headingWarnings, walkWarnings,
     requested, dropped, notInGroups, groups, rows,
   };
   const base = path.join(outDir, `vantage-${project}`);
@@ -416,7 +466,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
 
   const cell = (v: unknown) => (v === null || v === undefined ? "n/a" : String(v));
   const md = [
-    `# Ikebukuro vantage shots: ${tier} tier (${project})`,
+    `# ${STATION[0]!.toUpperCase()}${STATION.slice(1)} vantage shots: ${tier} tier (${project})`,
     "",
     `- Label: ${label || "(none)"}`,
     `- Renderer: ${gl?.renderer ?? "unknown"} (vendor ${gl?.vendor ?? "unknown"}, gpuValid=${gpuValid})`,
@@ -426,6 +476,8 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       ? `- Frame time: rAF intervals over ${FRAMETIME_MS} ms per view, sampled after the draw count and before the screenshot, with no input during the window. ms per frame; lower is better. A foreground window is required for these numbers to mean anything.`
       : "- Frame time: off (GTEKI_VANTAGE_FRAMETIME_MS=0). Draw counts are unaffected by window visibility; frame time is not.",
     ...warnings.map((w) => `- **WARNING**: ${w}`),
+    ...headingWarnings.map((w) => `- **WARNING**: ${w}`),
+    ...walkWarnings.map((w) => `- **WARNING**: ${w}`),
     `- Window state: every view records document.visibilityState and document.hasFocus(); a view that was not \`visible\` is flagged \`HIDDEN\` in the table.`,
     `- Headings: edge bearing (first verified edge at the node) ${result.headings.map((h) => (h.startsWith("@") ? `${h.slice(1)} (absolute)` : `+${h}`)).join(", ")}.`,
     tier === "low" ? `- Rows with draws max over ${LOW_DRAW_LIMIT} on the low tier are marked OVER.` : `- Not the low tier: no row is marked against the ${LOW_DRAW_LIMIT}-draw low-tier limit (run phone-chromium for that).`,
@@ -440,10 +492,10 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
     "",
     "## Views",
     "",
-    "| group | node | fence m | heading | facing | draws p50 | draws max | tris p50 | tris max | ft p50 ms | ft p95 ms | ft max ms | ft frames | vis | street.active | file |",
-    "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+    "| group | node | fence m | heading | facing | walk | draws p50 | draws max | tris p50 | tris max | ft p50 ms | ft p95 ms | ft max ms | ft frames | vis | street.active | file |",
+    "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ...rows.map((r) =>
-      `| ${r.group} | ${r.node} | ${cell(r.fenceM)} | ${r.heading} | ${cell(r.facing)}${r.headingOk === false ? " (!)" : ""} | ${cell(r.draws)} | ${cell(r.drawsMax)}${r.overLowLimit ? " OVER" : ""} | ${cell(r.tris)} | ${cell(r.trisMax)} | ${cell(r.ftP50)} | ${cell(r.ftP95)} | ${cell(r.ftMax)} | ${cell(r.ftFrames)} | ${cell(r.visibility)}${r.visibility !== null && r.visibility !== "visible" ? " HIDDEN" : ""}${r.focused === false ? " (unfocused)" : ""} | ${cell(r.streetActive)} | ${r.file ? `[${r.file}](${r.file})` : `ERROR: ${r.error}`} |`),
+      `| ${r.group} | ${r.node} | ${cell(r.fenceM)} | ${r.heading} | ${cell(r.facing)}${r.headingOk === false ? " (!)" : ""} | ${r.walk === null ? "" : r.walk.done ? "ok" : r.walk.stuck ? "STUCK" : r.walk.timedOut ? "TIMEOUT" : "MISS"} | ${cell(r.draws)} | ${cell(r.drawsMax)}${r.overLowLimit ? " OVER" : ""} | ${cell(r.tris)} | ${cell(r.trisMax)} | ${cell(r.ftP50)} | ${cell(r.ftP95)} | ${cell(r.ftMax)} | ${cell(r.ftFrames)} | ${cell(r.visibility)}${r.visibility !== null && r.visibility !== "visible" ? " HIDDEN" : ""}${r.focused === false ? " (unfocused)" : ""} | ${cell(r.streetActive)} | ${r.file ? `[${r.file}](${r.file})` : `ERROR: ${r.error}`} |`),
     "",
     "`fence m` is the distance from the node to the nearest fence segment in scene/access_fences.json (blank when the file is absent).",
     "",

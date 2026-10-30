@@ -844,6 +844,8 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         const count = Math.ceil(L3 / stepLen);
         const stepGeo = track(escalatorStepGeometry(stepLen * (L / L3), stepLen * (dz / L3), r.width - 0.1));
         const steps = new THREE.InstancedMesh(stepGeo, mat.escStep, count);
+        // Animated every frame: dynamic usage also tells the explorer's cuts to leave these instances alone.
+        steps.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
         steps.name = `escalator-steps:${r.edgeId}`;
         steps.userData = { lo, hi, yaw, count, L3, stepLen };
         root.add(steps);
@@ -1227,6 +1229,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         add(merged(panels), mat.psd);
         add(merged(caps), mat.accent);
         const leafMesh = new THREE.InstancedMesh(track(new THREE.BoxGeometry(doorW / 2 - 0.04, 1.2, 0.06)), mat.psdLeaf, Math.max(1, leaves.length));
+        leafMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
         leafMesh.count = leaves.length;
         g.add(leafMesh);
 
@@ -1270,6 +1273,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     const carBounds = new THREE.Sphere(new THREE.Vector3(), 8.6);
     const meshes = [[body, mat.trainBody], [windowBand, mat.trainWindow], [stripe, mat.accent], [skirt, mat.darkSteel], [doorGeo, mat.trainDoor]].map(([geo, material]) => {
       const mesh = new THREE.InstancedMesh(geo as THREE.BufferGeometry, material as THREE.Material, n);
+      mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       mesh.name = "train-cars:instanced-finish";
       mesh.visible = false;
       // A whole eight-car bounding sphere can intersect an upstairs camera even when
@@ -1577,7 +1581,7 @@ function bakeFloorLightPools(
   const canvas = document.createElement("canvas");
   canvas.width = cols * cell;
   canvas.height = rows * cell;
-  const ctx = canvas.getContext("2d")!;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
   const { min, max } = layout.bounds;
   const dx = max.x - min.x + 8, dy = max.y - min.y + 8;
   const uv = (p: XY) => ({ x: (p.x - min.x + 4) / dx, y: (p.y - min.y + 4) / dy });
@@ -1866,7 +1870,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
       const canvas = document.createElement("canvas");
       canvas.width = Math.round(pageW * atlasScale);
       canvas.height = Math.round(pageH * atlasScale);
-      const ctx = canvas.getContext("2d")!;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
       // Draw in full-resolution coordinates; the canvas and the rects stay proportional at either scale.
       if (atlasScale !== 1) ctx.scale(atlasScale, atlasScale);
       const rects: { u0: number; v0: number; u1: number; v1: number }[] = [];

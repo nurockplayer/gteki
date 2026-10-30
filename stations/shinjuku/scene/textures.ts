@@ -54,7 +54,7 @@ function canvas(w: number, h: number) {
   const c = document.createElement("canvas");
   c.width = w;
   c.height = h;
-  return [c, c.getContext("2d")!] as const;
+  return [c, c.getContext("2d", { willReadFrequently: true })!] as const;
 }
 
 function rng(seed: number) {

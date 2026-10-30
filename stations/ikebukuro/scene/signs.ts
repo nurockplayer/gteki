@@ -147,7 +147,7 @@ function paintIdentity(board: IdentityBoard, pxPerM: number, nameScale: number, 
   c.width = Math.round(board.widthM * pxPerM);
   const fullHeight = Math.round(board.heightM * pxPerM);
   c.height = fullHeight;
-  const g = c.getContext("2d")!;
+  const g = c.getContext("2d", { willReadFrequently: true })!;
   // Paint in physical units, so pixel rounding never changes glyph aspect or metadata bounds.
   const w = board.widthM, h = board.heightM;
   g.setTransform(c.width/w, 0, 0, fullHeight/h, 0, 0);
@@ -200,7 +200,7 @@ function paintIdentity(board: IdentityBoard, pxPerM: number, nameScale: number, 
     canvas.width = c.width;
     // Retain every measured name glyph plus one texel; crop only the unused transfer band.
     canvas.height = Math.min(fullHeight, Math.max(Math.ceil(fullHeight*0.72), Math.ceil(bounds.maxY/h*fullHeight)+1));
-    canvas.getContext("2d")!.drawImage(c, 0, 0);
+    canvas.getContext("2d", { willReadFrequently: true })!.drawImage(c, 0, 0);
   }
   const croppedH = h*canvas.height/fullHeight;
   return { canvas, widthM: board.widthM, h: croppedH, centerY: (h-croppedH)/2, transferCapM, bg: board.kind === "meeting-point" ? THEME_PLACE.panel : "#263d48",
@@ -226,7 +226,7 @@ function paint(blocks: SignContent[], theme: Theme): { canvas: HTMLCanvasElement
   const c = document.createElement("canvas");
   c.width = Math.min(ATLAS_W - 2 * GUTTER, width);
   c.height = h;
-  const g = c.getContext("2d")!;
+  const g = c.getContext("2d", { willReadFrequently: true })!;
   g.fillStyle = theme.panel;
   g.fillRect(0, 0, c.width, c.height);
   g.fillStyle = theme.rule;
@@ -257,7 +257,7 @@ function paintFitted(blocks: SignContent[], maxW: number, theme: Theme = THEME_D
 }
 
 function blockParts(spec: SignContent, h: number, pad: number): Part[] {
-  const measure = document.createElement("canvas").getContext("2d")!;
+  const measure = document.createElement("canvas").getContext("2d", { willReadFrequently: true })!;
   const badge = h - 2 * pad - 34;
   const parts: Part[] = [];
   const arrow = spec.arrow ?? "up";
@@ -417,7 +417,7 @@ function packAtlas(faces: HTMLCanvasElement[], backgrounds: string[], scale: num
     // Power-of-two sides keep mipmapping cheap on every GPU; a short last page also narrows.
     c.height = Math.min(cap(pi), 2 ** Math.ceil(Math.log2(GUTTER + rows * rowH)));
     c.width = rows > 1 ? side : 2 ** Math.ceil(Math.log2(Math.max(64, ...slots.filter((s) => s.page === pi).map((s) => s.x + s.w + GUTTER))));
-    const g = c.getContext("2d")!;
+    const g = c.getContext("2d", { willReadFrequently: true })!;
     g.fillStyle = "#1c222b";
     g.fillRect(0, 0, c.width, c.height);
     g.imageSmoothingQuality = "high";
@@ -425,7 +425,7 @@ function packAtlas(faces: HTMLCanvasElement[], backgrounds: string[], scale: num
   });
   faces.forEach((c, i) => {
     const s = slots[i]!;
-    const g = pages[s.page]!.getContext("2d")!;
+    const g = pages[s.page]!.getContext("2d", { willReadFrequently: true })!;
     // Half the gutter around a face takes its own panel colour, so mip filtering never pulls a neighbour's in.
     g.fillStyle = backgrounds[i]!;
     g.fillRect(s.x - GUTTER / 2, s.y - GUTTER / 2, s.w + GUTTER, s.h + GUTTER);
@@ -446,7 +446,7 @@ function packIdentity(art: ReturnType<typeof paintIdentity>[]) {
   const page = document.createElement("canvas");
   page.width = Math.max(...art.map((a) => a.canvas.width)) + 2*GUTTER;
   page.height = y;
-  const g = page.getContext("2d")!;
+  const g = page.getContext("2d", { willReadFrequently: true })!;
   art.forEach((a, i) => {
     const s = slots[i]!;
     g.fillStyle = a.bg;

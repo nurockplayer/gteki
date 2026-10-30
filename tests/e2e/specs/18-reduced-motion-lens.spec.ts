@@ -12,7 +12,7 @@ test.use({ trace: "off" });
  * different floor height (the teleport reset in 8ec5794) and squeezes the boom in the corridor.
  */
 const routes: Record<StationKey, { from: [string, RegExp]; to: [string, RegExp]; label: string }> = {
-  ikebukuro: { from: ["中央2", /JR Central Gate 2/], to: ["35", /^Exit 35$/], label: "jrc2-exit35" },
+  ikebukuro: { from: ["中央2", /JR 中央2改札/], to: ["35", /^35番出口$/], label: "jrc2-exit35" },
   shinjuku: { from: ["platform", /Oedo Line platform/], to: ["northwest", /street level, northwest side/], label: "platform-exit2" },
 };
 

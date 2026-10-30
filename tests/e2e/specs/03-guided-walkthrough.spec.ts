@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { chooseBySearch, hooks, textIf, toasts, imageStats, labelUiOverlaps, openStation, perfWindow, save, shotPath, stationData, STATIONS, type StationKey } from "../lib/gteki.ts";
+import { chooseBySearch, hooks, settleFrames, textIf, toasts, imageStats, labelUiOverlaps, openStation, perfWindow, save, shotPath, stationData, STATIONS, type StationKey } from "../lib/gteki.ts";
 
 /** The HUD's "fast" guide tier (m/s), `GUIDE_TIERS` in apps/web/src/explorer/guidePace.ts. */
 const FAST_MPS = 6.8;
@@ -19,8 +19,8 @@ const FLOW_ONLY = !!process.env.GTEKI_GUIDE_FLOW_ONLY;
  */
 const walks: Record<StationKey, { from: [string, RegExp]; to: [string, RegExp]; label: string; gpuOnly?: string }[]> = {
   ikebukuro: [
-    { from: ["中央2", /JR Central Gate 2/], to: ["35", /^Exit 35$/], label: "jrc2-exit35" },
-    { from: ["West Exit", /^West Exit \(B1\)$/], to: ["West Exit (South)", /^Exit 4$/], label: "westb1-exit4" },
+    { from: ["中央2", /JR 中央2改札/], to: ["35", /^35番出口$/], label: "jrc2-exit35" },
+    { from: ["西口（地下）", /^西口（地下）$/], to: ["4番出口", /^4番出口$/], label: "westb1-exit4" },
   ],
   shinjuku: [
     { from: ["north side", /street level, north side/], to: ["platform", /Oedo Line platform/], label: "exit1-platform" },
@@ -101,6 +101,8 @@ for (const key of STATIONS) {
         // ~0.13× and a long first leg (Shinjuku's GL–B1 stair) can outlast the budget on one instruction (#261). After
         // 15 s on the same line, step on with the HUD's own "Next instruction" button, as a user would.
         if (FLOW_ONLY && Date.now() - t0 >= 15_000 && !steppedOn) {
+          // Mid-walk, Shinjuku can stay above 1 s a frame under SwiftShader: wait at most 20 s, then click anyway.
+          await settleFrames(page, `${key} ${w.label} next`, 20_000);
           await page.locator(".guide-next").click();
           steppedOn = true;
         }
