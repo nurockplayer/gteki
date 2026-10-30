@@ -73,7 +73,16 @@ test("station switching drops the previous station's state", async ({ page }) =>
   await openStation(page, "ikebukuro", "&from=jr-central-gate-2&to=exit-35");
   expect((await hooks.route(page))?.ok).toBe(true);
   await page.locator(".station-select").selectOption("shinjuku");
-  await page.waitForFunction(() => (window as any).__gteki.phase() === "ready" && (window as any).__gteki.route() === null);
+  // Where the switch spends its time (#647): logged pass or fail, so a timeout shows which step ran long.
+  const switchState = () => page.evaluate(() => {
+    const g = (window as any).__gteki;
+    return { phase: g.phase(), routeNull: g.route() === null, opens: g.openTimings?.(), steps: g.sceneInfo?.()?.loadTimings };
+  });
+  try {
+    await page.waitForFunction(() => (window as any).__gteki.phase() === "ready" && (window as any).__gteki.route() === null);
+  } finally {
+    console.log(`[switch-timings] ${JSON.stringify(await switchState())}`);
+  }
   await expect(page.locator("#gteki-from")).toHaveValue("");
   await expect(page.locator("#gteki-to")).toHaveValue("");
   expect(page.url()).toContain("station=shinjuku");

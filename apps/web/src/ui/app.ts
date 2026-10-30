@@ -320,6 +320,8 @@ export class App {
   private openGeneration = 0;
   /** True only once the selected station's data and scene are both current; endpoint controls wait for it. */
   private stationReady = false;
+  /** Wall-clock marks of each openStation call (ms since its start), for the QA hooks: where a station switch spends its time. */
+  private openTimings: { key: string; unloadMs?: number; dataMs?: number; loadMs?: number; readyMs?: number; outcome?: string }[] = [];
 
   private async openStation(entry: StationEntry, fromId?: string | null, toId?: string | null, fromRide = false): Promise<void> {
     if (!fromRide) { this.railRide?.dispose(); this.railRide = null; }
@@ -327,7 +329,11 @@ export class App {
     // A later selection supersedes this one: never let a slow station overwrite the one now selected.
     const generation = ++this.openGeneration;
     const current = () => generation === this.openGeneration;
+    const started = performance.now(), timing: (typeof this.openTimings)[number] = { key: entry.key };
+    const mark = (name: "unloadMs" | "dataMs" | "loadMs" | "readyMs") => { timing[name] = Math.round(performance.now() - started); };
+    this.openTimings = [...this.openTimings.slice(-7), timing];
     this.explorer.cancelPendingLoad(entry.key);
+    mark("unloadMs");
     this.s.entry = entry;
     this.ui.stationSelect.value = entry.key;
     // Drop the previous station's services now, not after the await: nothing may search or route
@@ -360,15 +366,17 @@ export class App {
     this.ui.live.announce(`${names.ja} ${names.kana} ${names.en} · ${this.t.loading}`);
     try {
       const loaded = await entry.load();
-      if (!current()) return;
+      mark("dataMs");
+      if (!current()) { timing.outcome = "superseded"; return; }
       this.identityView.showCard(loaded.bundle.station.identity, entry.label, this.s.lang);
       this.s.loaded = loaded;
       this.s.router = createRouter(loaded.bundle, { allowUnverified: PRIVATE_BUILD });
       this.s.search = createSearchIndex(loaded.bundle);
       const ready = await this.explorer.loadStation(loaded, this.s.router);
-      if (!current()) return;
+      mark("loadMs");
+      if (!current()) { timing.outcome = "superseded"; return; }
       this.identityView.hideCard();
-      if (!ready) return;
+      if (!ready) { timing.outcome = "not ready"; return; }
       this.ui.minimap.setStation(loaded.bundle, this.s.lang);
       this.toast(this.explorer.sceneError ? `${this.t.sceneFallback}: ${this.explorer.sceneError}` : "", this.explorer.sceneError ? 6000 : 0);
       // Beneath the search fields (the toast fades): the 3D scene failed and the line map is shown instead.
@@ -383,6 +391,7 @@ export class App {
       return;
     }
     this.stationReady = true;
+    mark("readyMs"); timing.outcome = "ready";
     this.ui.railBtn.hidden = railDemoLink(entry.key) === null;
     const pois = this.s.loaded.bundle.pois;
     const from = pois.find((p) => p.id === fromId);
@@ -1570,6 +1579,7 @@ export class App {
       identity: () => this.explorer.identity(),
       setRouteMarkersVisible: (visible: boolean) => this.explorer.setRouteMarkersVisible(visible),
       phase: () => this.explorer.phase,
+      openTimings: () => this.openTimings.map((t) => ({ ...t })),
       audio: () => this.explorer.audioInfo(),
       walkFromNode: (nodeId: string) => (this.s.loaded ? this.explorer.walkFromNode(
         this.s.loaded.bundle,
