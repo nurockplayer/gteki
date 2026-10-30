@@ -12,6 +12,13 @@ const bundle = {
 } as unknown as StationBundle;
 
 describe("unmodelledRunsByEdge", () => {
+  it("builds a level stairs edge as a passage, like a walk", () => {
+    const flat = { ...bundle, edges: [{ id: "e", from: "a", to: "b", mode: "stairs" }] } as unknown as StationBundle;
+    expect(unmodelledRunsByEdge(flat, () => true, (p) => p.x <= 2 || p.x >= 6)).toHaveLength(1);
+    const rising = { ...bundle, nodes: [bundle.nodes[0]!, { id: "b", floorId: "f", position: { x: 10, y: 0, z: 0.3 } }], edges: flat.edges } as unknown as StationBundle;
+    expect(unmodelledRunsByEdge(rising, () => true, (p) => p.x <= 2 || p.x >= 6)).toHaveLength(0);
+  });
+
   it("detects a floorless run and extends it into the adjacent samples", () => {
     const runs = unmodelledRunsByEdge(bundle, () => true, (p) => p.x <= 2 || p.x >= 6);
     expect(runs).toHaveLength(1);

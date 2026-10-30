@@ -69,6 +69,17 @@ export function edgePoints(bundle: StationBundle, edge: Edge, nodes: Map<string,
 }
 
 /** Canvas texture of chevrons for the animated route ribbon. */
+/** Below this rise a stairs, escalator or lift edge is level in the data, so it is built and walked as a passage. */
+export const FLAT_VERTICAL_RISE_M = 0.2;
+
+/** The mode an edge is built as: a vertical edge whose ends sit within 0.2 m of each other is a walk. */
+export function builtMode(bundle: StationBundle, edge: Edge, nodes: Map<string, StationBundle["nodes"][number]>, floors: Map<string, StationBundle["floors"][number]>): Edge["mode"] {
+  if (!["stairs", "escalator", "elevator"].includes(edge.mode)) return edge.mode;
+  const points = edgePoints(bundle, edge, nodes, floors);
+  if (points.length < 2) return edge.mode;
+  return Math.abs(points.at(-1)!.y - points[0]!.y) < FLAT_VERTICAL_RISE_M ? "walk" : edge.mode;
+}
+
 export function chevronTexture(color = "#5ef0ff"): THREE.CanvasTexture {
   const c = document.createElement("canvas");
   c.width = 128;

@@ -13,6 +13,11 @@ const bundle = {
 } as unknown as StationBundle;
 
 describe("vertical connector scope", () => {
+  it("leaves a level stairs or escalator edge to the passages", () => {
+    const flat = { ...bundle, nodes: [bundle.nodes[0]!, { id: "b", floorId: "low", position: { x: 4, y: 0, z: 0.1 } }], edges: [bundle.edges[0]!, { id: "x", from: "a", to: "b", mode: "escalator" }] } as unknown as StationBundle;
+    expect(unmodelledVerticalEdges(flat, () => true, () => false, () => false)).toEqual([]);
+  });
+
   it("excludes modelled and non-traversable edges, and detects a single missing sample", () => {
     expect(unmodelledVerticalEdges(bundle, () => true, () => true, () => true)).toEqual([]);
     expect(unmodelledVerticalEdges(bundle, () => false, () => false, () => false)).toEqual([]);

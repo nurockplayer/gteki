@@ -1,6 +1,6 @@
 import type { Edge, StationBundle } from "@gteki/schema";
 import * as THREE from "three";
-import { edgePoints, R, type V3 } from "./geometry.ts";
+import { builtMode, edgePoints, R, type V3 } from "./geometry.ts";
 import { MODE_WIDTH } from "./graphView.ts";
 import type { Segment2 } from "./walker.ts";
 
@@ -23,7 +23,7 @@ function createRunDetector(bundle: StationBundle, traversable: (edge: Edge) => b
   };
   return (edge) => {
     const out: UnmodelledEdgeRun[] = [];
-    if (!traversable(edge) || !["walk", "gate", "moving_walkway", "ramp"].includes(edge.mode)) return out;
+    if (!traversable(edge) || !["walk", "gate", "moving_walkway", "ramp"].includes(builtMode(bundle, edge, nodes, floors))) return out;
     const points = edgePoints(bundle, edge, nodes, floors).map((p) => ({ x: p.x, y: -p.z, z: p.y }));
     if (points.length < 2) return out;
     const samples: V3[] = [points[0]!];
@@ -331,7 +331,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   // own footprint, so the passage keeps its side walls wherever there is no stair beside them.
   const mouths: { at: THREE.Vector3; ux: number; uz: number; half: number; length: number; y0: number; y1: number }[] = [];
   for (const edge of bundle.edges) {
-    if (!["stairs", "escalator", "elevator"].includes(edge.mode)) continue;
+    if (!["stairs", "escalator", "elevator"].includes(builtMode(bundle, edge, nodes, floors))) continue;
     const points = edgePoints(bundle, edge, nodes, floors);
     for (const [id, path] of [[edge.from, points], [edge.to, [...points].reverse()]] as const) {
       const junction = junctions.get(id);

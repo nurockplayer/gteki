@@ -1,6 +1,6 @@
 import type { Edge, StationBundle } from "@gteki/schema";
 import * as THREE from "three";
-import { edgePoints, type V3 } from "./geometry.ts";
+import { builtMode, edgePoints, type V3 } from "./geometry.ts";
 import type { Segment2 } from "./walker.ts";
 
 /** Find vertical edges for which the original scene lacks a complete connector. */
@@ -13,7 +13,7 @@ export function unmodelledVerticalEdges(
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
   return bundle.edges.filter((edge) => {
-    if (!traversable(edge) || !["stairs", "escalator"].includes(edge.mode)) return false;
+    if (!traversable(edge) || !["stairs", "escalator"].includes(builtMode(bundle, edge, nodes, floors))) return false;
     const points = edgePoints(bundle, edge, nodes, floors);
     if (points.length < 2) return false;
     if (edge.attributes?.sceneGap === true) return true;
