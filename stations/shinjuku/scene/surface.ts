@@ -134,7 +134,7 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
   }
   const entrances=surfaceEntrances(layout,opts.bundle);
   const atlas=document.createElement("canvas");atlas.width=2048;atlas.height=entrances.length*384;
-  const ctx=atlas.getContext("2d")!;
+  const ctx=atlas.getContext("2d", { willReadFrequently: true })!;
   entrances.forEach((e,index)=>{
     const y=index*384;
     ctx.fillStyle="#edf0ee";ctx.fillRect(0,y,2048,384);

@@ -1581,7 +1581,7 @@ function bakeFloorLightPools(
   const canvas = document.createElement("canvas");
   canvas.width = cols * cell;
   canvas.height = rows * cell;
-  const ctx = canvas.getContext("2d")!;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
   const { min, max } = layout.bounds;
   const dx = max.x - min.x + 8, dy = max.y - min.y + 8;
   const uv = (p: XY) => ({ x: (p.x - min.x + 4) / dx, y: (p.y - min.y + 4) / dy });
@@ -1870,7 +1870,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
       const canvas = document.createElement("canvas");
       canvas.width = Math.round(pageW * atlasScale);
       canvas.height = Math.round(pageH * atlasScale);
-      const ctx = canvas.getContext("2d")!;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
       // Draw in full-resolution coordinates; the canvas and the rects stay proportional at either scale.
       if (atlasScale !== 1) ctx.scale(atlasScale, atlasScale);
       const rects: { u0: number; v0: number; u1: number; v1: number }[] = [];
