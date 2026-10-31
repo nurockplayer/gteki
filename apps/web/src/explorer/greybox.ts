@@ -556,7 +556,9 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         // the wall keeps every height outside all of their ranges, so a wall between two flights stays.
         const stops = [...new Set(cuts.flatMap((c) => [c.lo, c.hi]))].sort((x, y) => x - y);
         for (let k = 1; k < stops.length; k++) {
-          // Two cuts' bounds that differ only by rounding leave a sliver between them: it would make a zero-length wall.
+          // Two cuts' bounds that differ only by rounding leave a sliver between them. Skipping it here drops its band and
+          // its wall piece together: a zero-length wall blocks nothing in the navmesh bake (which drops it), is an invisible
+          // post to the walker, and the route audit's crossing test matched it along a whole line.
           if ((stops[k]! - stops[k - 1]!) * wa.distanceTo(wz) < 1e-3) continue;
           const over = cuts.filter((c) => c.lo <= stops[k - 1]! && c.hi >= stops[k]!);
           if (!over.length) continue;
@@ -684,8 +686,5 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       if (material === shellMat) { walkable.push(mesh); colliders.push(mesh); }
     }
   }
-  // A wall piece with no plan length blocks nothing: the navmesh bake drops it, the walker would meet an invisible post,
-  // and the route audit's crossing test matched it along a whole line. Kept as a guard for every emitter.
-  const walls = wallSegments.filter((w) => Math.hypot(w.bx - w.ax, w.bz - w.az) >= 1e-3);
-  return { root, walkable, colliders, wallSegments: walls, openings, navFloors: captureNav ? navFloors : undefined, stats: { runs: runs.length, landingPads: pads.length, lengthM, portals: openings.length, meshes: root.children.length, triangles, buildMs: performance.now() - started, overBudget: dropped.length ? `Dropped ${dropped.join(", ")}${remainsOver ? `; floor and walls exceed ${triangleCap} triangles` : ` to meet ${triangleCap} triangles`}` : null } satisfies GreyboxStats };
+  return { root, walkable, colliders, wallSegments, openings, navFloors: captureNav ? navFloors : undefined, stats: { runs: runs.length, landingPads: pads.length, lengthM, portals: openings.length, meshes: root.children.length, triangles, buildMs: performance.now() - started, overBudget: dropped.length ? `Dropped ${dropped.join(", ")}${remainsOver ? `; floor and walls exceed ${triangleCap} triangles` : ` to meet ${triangleCap} triangles`}` : null } satisfies GreyboxStats };
 }
