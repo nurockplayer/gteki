@@ -13,7 +13,7 @@ import { greyboxSceneProbes } from "../../../apps/web/src/explorer/greyboxScene.
 import { floorProbe } from "../../../apps/web/src/explorer/routeGaps.ts";
 import { explorerTargets } from "../../../apps/web/src/explorer/raycast.ts";
 import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
-import { cutStairwells, stairwellWells, type StairwellStats } from "../../../apps/web/src/explorer/stairwellCut.ts";
+import { cutStairwells, stairwellWells, walkCrossings, type StairwellStats } from "../../../apps/web/src/explorer/stairwellCut.ts";
 import { wallToRenderer } from "../../../apps/web/src/explorer/walker.ts";
 import { loadScene, sceneProbe } from "./route-clip-audit.ts";
 
@@ -36,7 +36,7 @@ export function greyboxStats(bundle: StationBundle, scene: StationScene, tier: "
   const greybox = buildGreybox(bundle, traversable, hasFloor,
     greyboxSceneProbes(targets.collider, (scene.walls ?? []).map(wallToRenderer)), tier);
   const cut = cutStairwells(scene.root, stairwellWells(bundle, traversable), {
-    walkable: new Set(targets.ground), tier, greyboxRoot: greybox.root,
+    walkable: new Set(targets.ground), tier, greyboxRoot: greybox.root, crossings: walkCrossings(bundle, traversable),
     collision: [...scene.walkable, ...(scene.colliders ?? []), ...(scene.cameraBlockers ?? [])],
   });
   if (cut.finish) greybox.root.add(cut.finish);

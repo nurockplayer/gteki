@@ -380,6 +380,13 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   }
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
+  // Traversable walk edges: a run's side wall opens where one crosses it on the same floor, so the passage does not
+  // block the walker's own path (#684). Each path keeps its plan bounds, to skip the runs it cannot reach.
+  const walkPaths = bundle.edges
+    .filter((edge) => !["stairs", "escalator", "elevator"].includes(edge.mode) && traversable(edge))
+    .map((edge) => ({ edge, points: edgePoints(bundle, edge, nodes, floors), width: widthOf(edge) }))
+    .filter((path) => path.points.length >= 2)
+    .map((path) => ({ ...path, bounds: new THREE.Box3().setFromPoints(path.points) }));
   const junctions = new Map<string, { at: THREE.Vector3; width: number; count: number; floor: string; edges: Set<string> }>();
   for (const run of detected) {
     const edgePointsR = edgePoints(bundle, run.edge, nodes, floors);
@@ -468,6 +475,9 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     const width = widthOf(run.edge), half = width / 2;
     const b = getBatch(nodes.get(run.edge.from)?.floorId ?? "");
     const pts = run.points.map((p) => R(p.x, p.y, p.z));
+    // Walk paths that can reach this run at all: the rest are skipped once here instead of per side.
+    const runBounds = new THREE.Box3().setFromPoints(pts).expandByVector(new THREE.Vector3(1, 0.3, 1));
+    const reach = walkPaths.filter((path) => path.edge.id !== run.edge.id && path.bounds.intersectsBox(runBounds));
     const finishesRun = !!runEnds.get(run.edge.id)?.some((p) => same(p, run.points.at(-1)));
     // What lies beyond a run's end: the edge's own geometry before/after it, or, at the edge's node, the next point of
     // every other edge there.
@@ -503,6 +513,34 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         quad(b.shell, b.colors, offset(a, side * half, -0.12), offset(z, side * half, -0.12), offset(z, side * half, 0), offset(a, side * half, 0));
         quad(b.kerb, null, offset(a, side * (half - 0.05), 0.005), offset(z, side * (half - 0.05), 0.005), offset(z, side * half, 0.005), offset(a, side * half, 0.005));
         const wa = offset(a, side * half, 0), wz = offset(z, side * half, 0);
+        // Open the wall where a walk edge crosses it on the same floor: the portal runs along the run and through its
+        // side wall, with the opening width cosine-scaled and capped at twice the edge width.
+        const minX = Math.min(wa.x, wz.x) - 1, maxX = Math.max(wa.x, wz.x) + 1;
+        const minZ = Math.min(wa.z, wz.z) - 1, maxZ = Math.max(wa.z, wz.z) + 1;
+        const minY = Math.min(wa.y, wz.y) - 0.3, maxY = Math.max(wa.y, wz.y) + 0.3;
+        for (const path of reach) {
+          const bounds = path.bounds;
+          if (bounds.max.x < minX || bounds.min.x > maxX || bounds.max.z < minZ || bounds.min.z > maxZ || bounds.max.y < minY || bounds.min.y > maxY) continue;
+          for (let k = 1; k < path.points.length; k++) {
+            const p = path.points[k - 1]!, q = path.points[k]!;
+            const ex = q.x - p.x, ez = q.z - p.z, sx = wz.x - wa.x, sz = wz.z - wa.z;
+            const denominator = sx * ez - sz * ex;
+            // A path running along the wall never crosses it.
+            if (Math.abs(denominator) < 1e-12) continue;
+            const ox = p.x - wa.x, oz = p.z - wa.z;
+            const t = (ox * ez - oz * ex) / denominator, u = (sz * ox - sx * oz) / denominator;
+            if (t < 0 || t > 1 || u < 0 || u > 1) continue;
+            // Same floor only: the wall's height at the crossing against the path's height there.
+            if (Math.abs(p.y + (q.y - p.y) * u - (wa.y + (wz.y - wa.y) * t)) > 0.3) continue;
+            const plan = Math.hypot(ex, ez);
+            if (plan < 1e-9) continue;
+            const cosine = Math.abs((ex * across.x + ez * across.z) / plan);
+            const near = wa.clone().lerp(wz, t), width = path.width * Math.min(2, 1 / Math.max(cosine, 1e-9));
+            if (!openings.some((box) => box.center.distanceToSquared(near) < 0.01 && box.width + 1e-9 >= width && Math.abs((box.wallNormal ?? box.along).dot(across)) > 0.999)) {
+              openings.push({ center: near.clone(), along: along.clone(), across: across.clone(), wallNormal: across.clone(), width, depth: 0.6, height: 2.3 });
+            }
+          }
+        }
         // Clip the wall centreline against junction discs; the floor and ceiling remain continuous.
         let intervals: [number, number][] = index.uncovered(wa, wz);
         for (const j of activeJunctions) {

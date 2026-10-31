@@ -23,7 +23,7 @@ import { headlessGltfTextures, headlessThree, installHeadlessDom, newShimUsage, 
 import { settleScene } from "./export-scene.ts";
 import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { castAll, castCamera, castTargets } from "../../../apps/web/src/explorer/raycast.ts";
-import { cutStairwells, stairwellWells } from "../../../apps/web/src/explorer/stairwellCut.ts";
+import { cutStairwells, stairwellWells, walkCrossings } from "../../../apps/web/src/explorer/stairwellCut.ts";
 
 export const FLOOR_TOLERANCE_M = 0.3;
 const STEP_M = 0.5;
@@ -80,8 +80,9 @@ export function sceneProbe(scene: StationScene): SceneProbe {
 /** Probe a scene the way Explorer.loadStation draws it: slabs cut open along vertical connectors, rails included. */
 export function cutSceneProbe(scene: StationScene, bundle: StationBundle, quality: "high" | "low" = "low"): SceneProbe {
   const router = createRouter(bundle, { allowUnverified: true });
-  const cut = cutStairwells(scene.root, stairwellWells(bundle, (edge) => router.isTraversable(edge, DEFAULT_PROFILE)), {
-    walkable: new Set(castTargets(scene.walkable, scene.colliders ?? [])), tier: quality,
+  const traversable = (edge: StationBundle["edges"][number]) => router.isTraversable(edge, DEFAULT_PROFILE);
+  const cut = cutStairwells(scene.root, stairwellWells(bundle, traversable), {
+    walkable: new Set(castTargets(scene.walkable, scene.colliders ?? [])), tier: quality, crossings: walkCrossings(bundle, traversable),
     // Collision proxies may sit outside scene.root: cut them with the slabs, as Explorer.loadStation does.
     collision: [...scene.walkable, ...(scene.colliders ?? []), ...(scene.cameraBlockers ?? [])],
   });

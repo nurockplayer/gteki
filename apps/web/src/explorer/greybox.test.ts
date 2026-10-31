@@ -210,6 +210,37 @@ describe("buildGreybox", () => {
     expect(near.some((w) => Math.max(w.ax, w.bx) > 15)).toBe(true);
   });
 
+  it("opens a run's side wall where a traversable walk edge crosses it on the same floor", () => {
+    // A forced floorless run along x from 0 to 10, and a walk edge on the same floor crossing it at x = 5.
+    const station = {
+      floors: [{ id: "f", renderElevationM: 0 }],
+      nodes: [
+        { id: "a", floorId: "f", position: { x: 0, y: 0, z: 0 } },
+        { id: "b", floorId: "f", position: { x: 10, y: 0, z: 0 } },
+        { id: "p", floorId: "f", position: { x: 5, y: 5, z: 0 } },
+        { id: "q", floorId: "f", position: { x: 5, y: -5, z: 0 } },
+      ],
+      edges: [
+        { id: "run", from: "a", to: "b", mode: "walk", attributes: { sceneGap: true } },
+        { id: "cross", from: "p", to: "q", mode: "walk" },
+      ],
+    } as unknown as StationBundle;
+    const result = buildGreybox(station, () => true, () => true, emptyScene, "high");
+    const half = MODE_WIDTH.walk! / 2;
+    for (const z of [half, -half]) {
+      const opening = result.openings.filter((box) => Math.abs(box.center.z - z) < 1e-6);
+      expect(opening).toHaveLength(1);
+      expect(opening[0]!.center.x).toBeCloseTo(5, 6);
+      expect(opening[0]!.width).toBeCloseTo(MODE_WIDTH.walk!, 6);
+      // The crossing opens the wall: no wall piece covers x = 5 on that side.
+      // The opening keeps the wall below the sill and above the lintel; no wall crosses the walker's own height at x = 5.
+      const side = splitWallsAtOpenings(result.wallSegments, result.openings).filter((w) => Math.abs(w.az - z) < 1e-6 && Math.abs(w.bz - z) < 1e-6);
+      const blocking = side.filter((w) => w.yMax > 0.05 && w.yMin < 1.7);
+      expect(blocking.length).toBeGreaterThan(0);
+      expect(blocking.some((w) => Math.min(w.ax, w.bx) < 5 && Math.max(w.ax, w.bx) > 5)).toBe(false);
+    }
+  });
+
   it("opens a wall the flight meets far from the mouth, but not one on another level", () => {
     const floors = [...bundle.floors, { id: "g", renderElevationM: 8 }, { id: "h", renderElevationM: -6 }];
     const nodes = [...bundle.nodes, { id: "c", floorId: "g", position: { x: 10, y: 16, z: 8 } },

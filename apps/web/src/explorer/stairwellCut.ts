@@ -102,6 +102,8 @@ export interface StairwellOptions {
   recipe?: CutRecipe | null;
   /** Bake only: the live cut records every mesh it reaches here. */
   record?: MeshRecord[];
+  /** Traversable walk edges' renderer polylines: a rail side opens where one crosses it on the well's upper floor (#684). */
+  crossings?: readonly { points: THREE.Vector3[]; width: number }[];
 }
 
 /** One well per traversable stairs / escalator edge that has a vertical run worth cutting. */
@@ -140,6 +142,55 @@ export function stairwellWells(bundle: StationBundle, traversable: (edge: Edge) 
     wells.push({ edgeId: edge.id, mode: edge.mode, lowerY, upperY, rects, arrival });
   }
   return wells;
+}
+
+/**
+ * Renderer polylines of the traversable walk (non-vertical) edges, with their widths: the paths whose crossings open
+ * a rail side on the upper floor. Elevators are out of scope, as their wells are (#648).
+ */
+export function walkCrossings(bundle: StationBundle, traversable: (edge: Edge) => boolean): { points: THREE.Vector3[]; width: number }[] {
+  const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
+  const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
+  const crossings: { points: THREE.Vector3[]; width: number }[] = [];
+  for (const edge of bundle.edges) {
+    if (VERTICAL_MODES.has(edge.mode) || edge.mode === "elevator" || !traversable(edge)) continue;
+    const points = edgePoints(bundle, edge, nodes, floors);
+    if (points.length >= 2) crossings.push({ points, width: widthOf(edge) });
+  }
+  return crossings;
+}
+
+/** How far a walk edge may sit from the well's upper landing and still cross its rail on that floor. */
+const UPPER_FLOOR_TOLERANCE_M = 0.3;
+
+/**
+ * The parts of the rail side `from`→`to` left after each traversable walk edge's opening (#684). An opening is centred
+ * where the edge's polyline crosses the side on the well's upper floor, and is as wide as the walker needs there: the
+ * edge's width divided by the crossing cosine, capped at twice the width (the same rule as greybox.ts openAt).
+ */
+function crossingRemainder(from: THREE.Vector3, to: THREE.Vector3, upperY: number, crossings: readonly { points: THREE.Vector3[]; width: number }[]): [THREE.Vector3, THREE.Vector3][] {
+  const delta = to.clone().sub(from), length = Math.hypot(delta.x, delta.z);
+  if (length < 1e-9) return [];
+  const normal = new THREE.Vector3(-delta.z / length, 0, delta.x / length);
+  let intervals: [number, number][] = [[0, 1]];
+  for (const crossing of crossings) for (let i = 1; i < crossing.points.length; i++) {
+    const a = crossing.points[i - 1]!, b = crossing.points[i]!;
+    const ex = b.x - a.x, ez = b.z - a.z, denominator = delta.x * ez - delta.z * ex;
+    // A polyline running along the side never crosses it.
+    if (Math.abs(denominator) < 1e-12) continue;
+    const ox = a.x - from.x, oz = a.z - from.z;
+    const t = (ox * ez - oz * ex) / denominator, u = (delta.z * ox - delta.x * oz) / denominator;
+    if (t < 0 || t > 1 || u < 0 || u > 1) continue;
+    // Only a crossing on the well's upper floor opens the rail; one below or above it passes elsewhere.
+    if (Math.abs(a.y + (b.y - a.y) * u - upperY) > UPPER_FLOOR_TOLERANCE_M) continue;
+    const plan = Math.hypot(ex, ez);
+    if (plan < 1e-9) continue;
+    const cosine = Math.abs((ex * normal.x + ez * normal.z) / plan);
+    const half = crossing.width * Math.min(2, 1 / Math.max(cosine, 1e-9)) / 2;
+    const lo = t - half / length, hi = t + half / length;
+    intervals = intervals.flatMap(([s, e]) => hi <= s || lo >= e ? [[s, e]] : [ ...(lo > s ? [[s, lo] as [number, number]] : []), ...(hi < e ? [[hi, e] as [number, number]] : []) ]);
+  }
+  return intervals.filter(([s, e]) => e - s > 1e-6).map(([s, e]) => [from.clone().addScaledVector(delta, s), from.clone().addScaledVector(delta, e)]);
 }
 
 function rectPlanes(rect: StairwellRect, upperY: number): Plane[] {
@@ -274,12 +325,15 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
 
   const railPositions: number[] = [], railColors: number[] = [], glassPositions: number[] = [], walls: Segment2[] = [];
   const steel = new THREE.Color(0xaab2b5).toArray();
+  const crossings = options.crossings ?? [];
   for (const well of cutWells) {
     const opened = well.rects.filter((rect) => (cut.maxHeights.get(rect) ?? []).some((y) => y >= well.upperY - 0.3 - 1e-6));
     for (const rect of opened) for (const [from, to] of railSides(rect, well.arrival, opened, well.rects)) {
-      addRail(railPositions, railColors, from, to, well.upperY, steel);
-      walls.push({ ax: from.x, az: from.z, bx: to.x, bz: to.z, yMin: well.upperY, yMax: well.upperY + RAIL_HEIGHT_M });
-      if (options.tier === "high") addGlass(glassPositions, from, to, well.upperY);
+      for (const [a, b] of crossingRemainder(from, to, well.upperY, crossings)) {
+        addRail(railPositions, railColors, a, b, well.upperY, steel);
+        walls.push({ ax: a.x, az: a.z, bx: b.x, bz: b.z, yMin: well.upperY, yMax: well.upperY + RAIL_HEIGHT_M });
+        if (options.tier === "high") addGlass(glassPositions, a, b, well.upperY);
+      }
     }
   }
 

@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 import type { Edge } from "@gteki/schema";
-import { cutStairwells, stairwellWells } from "./stairwellCut.ts";
+import { cutStairwells, stairwellWells, walkCrossings } from "./stairwellCut.ts";
 import { canonicalJson, decodeRecipe, encodeRecipe, RECIPE_VERSION, sha256Hex, type CutRecipe, type MeshRecord } from "./cutRecipe.ts";
 import { resolveWalls } from "./walker.ts";
 
@@ -105,6 +105,35 @@ describe("stairwell cuts", () => {
     // Below the upper floor there is no rail.
     expect(resolveWalls(5, 1.2, 0.3, 0, body, result.walls).z).toBeCloseTo(1.2);
     expect(result.finishTriangles + result.bandTriangles).toBeLessThan(2000);
+    result.dispose();
+  });
+
+  it("opens a rail side where a traversable walk edge crosses it on the upper floor, keeping the rest railed", () => {
+    // A walk edge on the upper floor crosses the well at x = 5, from renderer z = 3 to z = -3.
+    const built = bundle();
+    const crossed = {
+      ...built,
+      nodes: [...built.nodes,
+        { id: "west", floorId: "upper", position: { x: 5, y: -3, z: 4 } },
+        { id: "east", floorId: "upper", position: { x: 5, y: 3, z: 4 } }],
+      edges: [...built.edges, syntheticEdge("west-east", "west", "east")],
+    } as unknown as typeof built;
+    const crossings = walkCrossings(crossed, traversable);
+    expect(crossings).toHaveLength(1);
+    const s = scene();
+    const result = cutStairwells(s.root, stairwellWells(crossed, traversable), { tier: "high", crossings });
+    // The walk edge is 2.6 m wide, so each long side opens 2.6 m centred at x = 5: two 3.7 m pieces and the short side.
+    expect(result.walls).toHaveLength(5);
+    expect(result.stats.railM).toBeCloseTo(3.7 * 4 + 2.2, 5);
+    for (const z of [-1.1, 1.1]) {
+      const side = result.walls.filter((w) => Math.abs(w.az - z) < 1e-6 && Math.abs(w.bz - z) < 1e-6);
+      expect(side).toHaveLength(2);
+      expect(side.some((w) => Math.min(w.ax, w.bx) < 5 && Math.max(w.ax, w.bx) > 5)).toBe(false);
+      expect(side.some((w) => Math.min(w.ax, w.bx) <= 2 && Math.max(w.ax, w.bx) >= 2)).toBe(true);
+      expect(side.some((w) => Math.min(w.ax, w.bx) <= 8 && Math.max(w.ax, w.bx) >= 8)).toBe(true);
+    }
+    // The arrival-side neighbour wall at x = 0 keeps its whole rail.
+    expect(result.walls.filter((w) => Math.abs(w.ax) < 1e-6 && Math.abs(w.bx) < 1e-6)).toHaveLength(1);
     result.dispose();
   });
 
