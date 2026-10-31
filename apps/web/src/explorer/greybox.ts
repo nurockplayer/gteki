@@ -431,6 +431,20 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     }
   }
   const activeJunctions = [...junctions.values()].filter((junction) => junction.count >= 2);
+  // A landing's symbolic render height can sit only ~1.6 m above the floor below, so an intermediate level's slab,
+  // walls and ceiling would make a low ceiling over a passage underneath. Where an intermediate run segment, landing pad
+  // or junction patch lies over a run on another floor in plan, build no piece for it: the edge falls back to its
+  // existing path. Conservative on slopes: the slab underside (−0.12 m) against the lower segment's highest point.
+  const runSegments: { floor: string; a: THREE.Vector3; z: THREE.Vector3; half: number; top: number }[] = [];
+  for (const run of runs) {
+    const pts = run.points.map((p) => R(p.x, p.y, p.z)), floor = nodes.get(run.edge.from)?.floorId ?? "";
+    for (let i = 1; i < pts.length; i++) runSegments.push({ floor, a: pts[i - 1]!, z: pts[i]!, half: widthOf(run.edge) / 2, top: Math.max(pts[i - 1]!.y, pts[i]!.y) });
+  }
+  const overLowPassage = (floorId: string, a: THREE.Vector3, z: THREE.Vector3, half: number) => {
+    if (floors.get(floorId)?.intermediate !== true) return false;
+    const y = Math.min(a.y, z.y);
+    return runSegments.some((o) => o.floor !== floorId && o.top < y && y - 0.12 - o.top < 2.3 && planSegmentDistance(a, z, o.a, o.z) < half + o.half);
+  };
   const batches = new Map<string, Batch>();
   const floorBatches = new Map<string, string>();
   const getBatch = (floor: string) => {
@@ -449,6 +463,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   const lightMat = new THREE.MeshBasicMaterial({ color: 0xffffff, vertexColors: true, toneMapped: false, side: THREE.DoubleSide });
   const kerbMat = new THREE.MeshBasicMaterial({ color: 0xffb547, toneMapped: false, side: THREE.DoubleSide });
   for (const pad of pads) {
+    if (overLowPassage(pad.floorId, pad.center.clone().addScaledVector(pad.along, -pad.width / 2), pad.center.clone().addScaledVector(pad.along, pad.width / 2), pad.width / 2)) continue;
     const b=getBatch(pad.floorId), half=pad.width/2, across=new THREE.Vector3(-pad.along.z,0,pad.along.x);
     const corner=(a:number,s:number,h:number)=>pad.center.clone().addScaledVector(pad.along,a*half).addScaledVector(across,s*half).add(new THREE.Vector3(0,h,0));
     const al=corner(-1,-1,0), ar=corner(-1,1,0), zl=corner(1,-1,0), zr=corner(1,1,0);
@@ -467,21 +482,8 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       }
     }
   }
-  // A landing's symbolic render height can sit only ~1.6 m above the floor below, so an intermediate level's slab,
-  // walls and ceiling would make a low ceiling over a passage underneath. Where an intermediate run lies over another
-  // run in plan, build no piece for it: the edge then falls back to its existing path.
-  // Conservative on slopes: the upper segment's lowest slab underside (−0.12 m) against the lower segment's highest point.
-  const runSegments: { run: UnmodelledEdgeRun; a: THREE.Vector3; z: THREE.Vector3; half: number; y: number; top: number }[] = [];
-  for (const run of runs) {
-    const pts = run.points.map((p) => R(p.x, p.y, p.z));
-    for (let i = 1; i < pts.length; i++) {
-      const a = pts[i - 1]!, z = pts[i]!;
-      runSegments.push({ run, a, z, half: widthOf(run.edge) / 2, y: Math.min(a.y, z.y), top: Math.max(a.y, z.y) });
-    }
-  }
   for (const run of runs) {
     const width = widthOf(run.edge), half = width / 2;
-    const intermediate = floors.get(nodes.get(run.edge.from)?.floorId ?? "")?.intermediate === true;
     const b = getBatch(nodes.get(run.edge.from)?.floorId ?? "");
     const pts = run.points.map((p) => R(p.x, p.y, p.z));
     let travelled = 0, nextLight = 0;
@@ -489,8 +491,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       const a = pts[i - 1]!, z = pts[i]!;
       const diff = z.clone().sub(a), length = diff.length(), flat = Math.hypot(diff.x, diff.z);
       if (length < 1e-8 || flat < 1e-8) continue;
-      const y = Math.min(a.y, z.y);
-      if (intermediate && runSegments.some((other) => other.run !== run && y - other.y > 0 && y - 0.12 - other.top < 2.3 && planSegmentDistance(a, z, other.a, other.z) < half + other.half)) { travelled += length; continue; }
+      if (overLowPassage(nodes.get(run.edge.from)?.floorId ?? "", a, z, half)) { travelled += length; continue; }
       const along = new THREE.Vector3(diff.x / flat, 0, diff.z / flat);
       const across = new THREE.Vector3(-along.z, 0, along.x);
       const offset = (p: THREE.Vector3, side: number, height: number) => p.clone().addScaledVector(across, side).add(new THREE.Vector3(0, height, 0));
@@ -660,6 +661,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     }
   }
   for (const j of activeJunctions) {
+    if (overLowPassage(j.floor, j.at, j.at, j.width / 2)) continue;
     const b = getBatch(j.floor), radius = j.width / 2;
     for (let i = 0; i < 24; i++) {
       const a = i * Math.PI * 2 / 24, z = (i + 1) * Math.PI * 2 / 24;

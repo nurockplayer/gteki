@@ -513,6 +513,21 @@ describe("buildGreybox", () => {
     expect(levels(3.3, 1).some((y) => Math.abs(y - 3.3) < 1e-6)).toBe(false);
   });
 
+  it("drops an intermediate junction patch over a lower passage, and keeps a rising intermediate passage with nothing below", () => {
+    const floors = [{ ...bundle.floors[0]!, id: "low", renderElevationM: 0 }, { ...bundle.floors[0]!, id: "landing", renderElevationM: 1.6, intermediate: true }];
+    const node = (id: string, floorId: string, x: number, y: number, z: number | null = null) => ({ ...bundle.nodes[0]!, id, floorId, position: { x, y, z } });
+    const build = (nodes: unknown[], edges: unknown[]) => buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high", true).navFloors!.filter((_v, i) => i % 3 === 1);
+    const walk = (id: string, from: string, to: string) => ({ ...bundle.edges[0]!, id, from, to });
+    // A bend on the landing (junction of two landing edges) right over a lower corridor: no floor at 1.6 m at all.
+    const stacked = build([node("a", "low", -5, 0), node("b", "low", 15, 0), node("c", "landing", 0, 0), node("d", "landing", 5, 0), node("e", "landing", 5, 5)],
+      [walk("low", "a", "b"), walk("l1", "c", "d"), walk("l2", "d", "e")]);
+    expect(stacked.some((y) => Math.abs(y - 1.6) < 1e-6)).toBe(false);
+    // Two connected landing edges rising 1.6 → 1.7 → 1.8 m with no other floor below: both are built.
+    const rising = build([node("c", "landing", 0, 0, 1.6), node("d", "landing", 5, 0, 1.7), node("e", "landing", 10, 0, 1.8)], [walk("l1", "c", "d"), walk("l2", "d", "e")]);
+    expect(rising.some((y) => Math.abs(y - 1.6) < 1e-6)).toBe(true);
+    expect(rising.some((y) => Math.abs(y - 1.8) < 1e-6)).toBe(true);
+  });
+
   it("builds 16 km of overlapping passages on five floors within budget", () => {
     const floors = Array.from({ length: 5 }, (_, i) => ({ ...bundle.floors[0]!, id: `f${i}`, renderElevationM: i * 4 }));
     const nodes = floors.flatMap((floor, i) => [
