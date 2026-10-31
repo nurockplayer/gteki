@@ -417,6 +417,7 @@ const multiTurnCases = ([
   { name: "switchback 180 degrees", waypoints: (d: number) => switchbackWaypoints(180, d) },
   { name: "switchback 135 degrees (a 45 degree landing)", waypoints: (d: number) => switchbackWaypoints(135, d) },
   { name: "19 degree bends on the leg into a 90 degree landing (safe path, #640 r17)", waypoints: (d: number) => bentLegThenTurn(d) },
+  { name: "a zigzag of three 90 degree landings (#673 r6)", waypoints: (d: number) => mirror([[0, 0, 0], [3, 1, 0], [3, 2, 3], [6, 3, 3], [6, 4, 6]], d) },
 ] as const).flatMap((shape) => [-1, 1].map((direction) => ({ name: `${shape.name}, direction=${direction}`, waypoints: shape.waypoints(direction) })));
 /** Every stair with a turning landing whose guard the property tests check. */
 const guardedCases = [...singleTurnCases, ...multiTurnCases];
