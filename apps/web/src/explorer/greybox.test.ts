@@ -457,8 +457,14 @@ describe("buildGreybox", () => {
 
   it("opens a wall through a shared node that the next walk edge continues from", () => {
     const chain = { ...bundle, nodes: [...bundle.nodes, { id: "c", floorId: "f", position: { x: 20, y: 0, z: 0 } }], edges: [...bundle.edges, { id: "e2", from: "b", to: "c", mode: "walk" }] } as unknown as StationBundle;
-    const scene = { colliderNear: () => false, wallHit: (a: { x: number }, b: { x: number }) => a.x <= 10 && b.x >= 10 ? { x: 10, y: 0, z: 0 } : null };
+    const scene = { colliderNear: () => false, wallHit: (a: { x: number }, b: { x: number }) => a.x <= 10 && b.x >= 10 ? { x: 10, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) } : null };
     expect(buildGreybox(chain, () => true, () => true, scene, "high").openings.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("opens no wall at a node that every walk edge reaches from the same side", () => {
+    const fork = { ...bundle, nodes: [...bundle.nodes, { id: "c", floorId: "f", position: { x: 0, y: 5, z: 0 } }], edges: [...bundle.edges, { id: "e2", from: "c", to: "b", mode: "walk" }] } as unknown as StationBundle;
+    const scene = { colliderNear: () => false, wallHit: (a: { x: number }, b: { x: number }) => a.x < 10 && b.x >= 10 ? { x: 10, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) } : null };
+    expect(buildGreybox(fork, () => true, () => true, scene, "high").openings).toHaveLength(0);
   });
 
   it("opens nothing where a floored walk edge crosses no scene wall", () => {

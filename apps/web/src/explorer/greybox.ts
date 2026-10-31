@@ -650,7 +650,17 @@ export function emitGreybox(bundle: StationBundle, traversable: (edge: Edge) => 
   // between two floored samples, where the run detector sees no transition: without an opening the bake, the route
   // audit and the live walker are all blocked by that wall.
   const floored = bundle.edges.filter((edge) => traversable(edge) && !["stairs", "escalator", "elevator"].includes(edge.mode));
-  const deadEnd = (nodeId: string) => floored.filter((e) => e.from === nodeId || e.to === nodeId).length < 2;
+  // A wall at an edge's end node is crossed only if another floored walk edge leaves that node on the wall's far side.
+  const continuesAcross = (edge: Edge, nodeId: string, at: THREE.Vector3, normal: THREE.Vector3 | undefined, own: THREE.Vector3) => {
+    if (!normal) return false;
+    const side = (p: THREE.Vector3) => Math.sign(normal.x * (p.x - at.x) + normal.z * (p.z - at.z));
+    const mine = side(own);
+    return mine !== 0 && floored.some((e) => {
+      if (e.id === edge.id || (e.from !== nodeId && e.to !== nodeId)) return false;
+      const p = edgePoints(bundle, e, nodes, floors), next = e.from === nodeId ? p[1] : p.at(-2);
+      return !!next && side(next) === -mine;
+    });
+  };
   for (const edge of floored) {
     const pts = edgePoints(bundle, edge, nodes, floors);
     for (let i = 1; i < pts.length; i++) {
@@ -667,8 +677,8 @@ export function emitGreybox(bundle: StationBundle, traversable: (edge: Edge) => 
         const at = R(hit.x, hit.y, hit.z);
         const atT = (at.x - a.x) * along.x + (at.z - a.z) * along.z;
         if (atT < startT - 1e-9) break; // a hit behind the resumed start would repeat forever
-        // A wall at a dead-end node is one the edge only ends on; at a node another walk edge continues from, it is crossed.
-        if ((i === 1 && atT < 0.05 && deadEnd(edge.from)) || (i === pts.length - 1 && atT > flat - 0.05 && deadEnd(edge.to))) { startT = Math.max(atT, startT) + 0.05; if (startT >= flat) break; continue; }
+        // A wall the edge only starts or ends on is crossed only where another walk edge carries on beyond it.
+        if ((i === 1 && atT < 0.05 && !continuesAcross(edge, edge.from, at, hit.wallNormal, b)) || (i === pts.length - 1 && atT > flat - 0.05 && !continuesAcross(edge, edge.to, at, hit.wallNormal, a))) { startT = Math.max(atT, startT) + 0.05; if (startT >= flat) break; continue; }
         const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
         const width = widthOf(edge) * Math.min(2, 1 / Math.max(cosine, 1e-9));
         // A floor transition already opened this wall wide enough, along the same direction: don't open it twice.
