@@ -432,6 +432,7 @@ const unsupportedShapes: { name: string; waypoints: (direction: number) => [numb
   { name: "four 90 degree turns, the last flight passing 4.3 m over the first landing (#673 r1)", waypoints: (d) => overFirstLanding(d) },
   { name: "a spiral of 15 degree bends whose lower turns pass under its top landing (#673 r3)", waypoints: (d) => spiral(d) },
   { name: "a spiral of 15 degree bends rising 1.2 m per turn, with no turning landing (#673 r4)", waypoints: (d) => flatSpiral(d) },
+  { name: "a last flight whose corner cuts an earlier landing's square 1.6 m above it (#673 r10)", waypoints: (d) => mirror([[0, 0, 0], [4, 2, 0], [4, 2.4, -10], [15, 2.8, -10], [15, 3.2, 5.4], [10, 3.6, 5.4], [4.92, 3.6, 0.32]], d) },
   { name: "a last flight whose side wall stands 0.4 m over an earlier landing (#673 r7)", waypoints: (d) => mirror([[0, 0, 0], [4, 1, 0], [4, 1.2, -4], [8, 1.2, -4], [8, 1.3, 2], [5.3, 1.4, 2], [5.3, 1.4, 0.1]], d) },
   { name: "a rising flight whose side wall runs through an earlier landing 0 to 0.9 m above it (#673 r5)", waypoints: (d) => mirror([[0, 0, 0], [4, 1, 0], [4, 1.3, -3], [5.2, 1.6, -3], [5.2, 1.9, 1.5]], d) },
   { name: "two 90 degree landings 1.2 m apart whose squares overlap (#673 r1)", waypoints: (d) => mirror([[0, 0, 0], [4, 2, 0], [4, 2.5, -1.2], [8, 4.5, -1.2]], d) },

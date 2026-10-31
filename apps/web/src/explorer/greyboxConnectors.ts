@@ -380,12 +380,13 @@ function passesOverItself(points: readonly THREE.Vector3[], squares: readonly La
     const length = dir.length();
     legs.push({ from: points[j - 1]!, to: points[j]!, dir: length > 1e-6 ? dir.divideScalar(length) : dir, length });
   }
-  // Samples across and along each leg, with the leg's surface height there.
+  // Samples across and along each leg, at most 0.1 m apart both ways, with the leg's surface height there: three lateral
+  // samples missed a flight's corner cutting another landing's square (#673 r10).
   const samples = (k: number) => {
     const { from, to, dir, length } = legs[k]!, across = new THREE.Vector3(-dir.z, 0, dir.x), out: { p: THREE.Vector3; y: number; along: number }[] = [];
-    const n = Math.max(1, Math.ceil(length / 0.25));
-    for (let s = 0; s <= n; s++) for (const lateral of [-half, 0, half]) {
-      const p = from.clone().addScaledVector(dir, length * s / n).addScaledVector(across, lateral); p.y = 0;
+    const n = Math.max(1, Math.ceil(length / 0.1)), m = Math.max(2, Math.ceil((2 * half) / 0.1));
+    for (let s = 0; s <= n; s++) for (let c = 0; c <= m; c++) {
+      const p = from.clone().addScaledVector(dir, length * s / n).addScaledVector(across, -half + (2 * half * c) / m); p.y = 0;
       out.push({ p, y: THREE.MathUtils.lerp(from.y, to.y, s / n), along: length * s / n });
     }
     return out;
@@ -417,7 +418,10 @@ function passesOverItself(points: readonly THREE.Vector3[], squares: readonly La
       const rel = p.clone().sub(from); rel.y = 0;
       const along = rel.dot(dir), across = Math.abs(rel.x * dir.z - rel.z * dir.x);
       if (along < 0 || along > length || across > half) continue;
-      // Two flights entering one landing overlap at its corner, inside its square.
+      // Neighbouring parts of one run overlap at a bend's inner mitre: points this close along the stair are not one part
+      // passing over another (#673 r10); a spiral's overlap is a whole turn apart. Two flights entering one landing overlap at
+      // its corner, inside its square.
+      if (planLength(points, a + 1, b) + length - along + alongB <= reach) continue;
       if (squares.some((square) => inside(p, square) && entering(a, along, square) && entering(b, alongB, square))) continue;
       if (Math.abs(y - THREE.MathUtils.lerp(from.y, to.y, length > 1e-6 ? along / length : 0)) >= STACKED) return true;
     }
