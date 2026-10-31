@@ -362,6 +362,17 @@ function planSegmentDistance(a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector
   return Math.min(pointSegment(a, c, d), pointSegment(b, c, d), pointSegment(c, a, b), pointSegment(d, a, b));
 }
 
+/** Split segments longer than `step` into equal collinear pieces. */
+function densify(pts: readonly V3[], step: number): readonly V3[] {
+  if (!Number.isFinite(step) || pts.length < 2) return pts;
+  const out: V3[] = [pts[0]!];
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1]!, b = pts[i]!, n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) / step));
+    for (let k = 1; k <= n; k++) out.push({ x: a.x + (b.x - a.x) * k / n, y: a.y + (b.y - a.y) * k / n, z: a.z + (b.z - a.z) * k / n });
+  }
+  return out;
+}
+
 /** Emit the globally deduplicated passage geometry for already-detected runs. */
 export function emitGreybox(bundle: StationBundle, detected: readonly UnmodelledEdgeRun[], hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", captureNav = false, pads: readonly LandingPad[] = []) {
   const started = performance.now();
@@ -435,15 +446,16 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   // walls and ceiling would make a low ceiling over a passage underneath. Where an intermediate run segment, landing pad
   // or junction patch lies over a run on another floor in plan, build no piece for it: the edge falls back to its
   // existing path. Conservative on slopes: the slab underside (−0.12 m) against the lower segment's highest point.
-  const runSegments: { floor: string; a: THREE.Vector3; z: THREE.Vector3; half: number; top: number }[] = [];
+  // Only greybox runs count as the lower passage; scene-modelled ones are out of scope (#680).
+  const runSegments: { floor: string; a: THREE.Vector3; z: THREE.Vector3; half: number; bottom: number; top: number }[] = [];
   for (const run of runs) {
     const pts = run.points.map((p) => R(p.x, p.y, p.z)), floor = nodes.get(run.edge.from)?.floorId ?? "";
-    for (let i = 1; i < pts.length; i++) runSegments.push({ floor, a: pts[i - 1]!, z: pts[i]!, half: widthOf(run.edge) / 2, top: Math.max(pts[i - 1]!.y, pts[i]!.y) });
+    for (let i = 1; i < pts.length; i++) runSegments.push({ floor, a: pts[i - 1]!, z: pts[i]!, half: widthOf(run.edge) / 2, bottom: Math.min(pts[i - 1]!.y, pts[i]!.y), top: Math.max(pts[i - 1]!.y, pts[i]!.y) });
   }
   const overLowPassage = (floorId: string, a: THREE.Vector3, z: THREE.Vector3, half: number) => {
     if (floors.get(floorId)?.intermediate !== true) return false;
     const y = Math.min(a.y, z.y);
-    return runSegments.some((o) => o.floor !== floorId && o.top < y && y - 0.12 - o.top < 2.3 && planSegmentDistance(a, z, o.a, o.z) < half + o.half);
+    return runSegments.some((o) => o.floor !== floorId && o.bottom < y && y - 0.12 - o.top < 2.3 && planSegmentDistance(a, z, o.a, o.z) < half + o.half);
   };
   const batches = new Map<string, Batch>();
   const floorBatches = new Map<string, string>();
@@ -485,7 +497,9 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   for (const run of runs) {
     const width = widthOf(run.edge), half = width / 2;
     const b = getBatch(nodes.get(run.edge.from)?.floorId ?? "");
-    const pts = run.points.map((p) => R(p.x, p.y, p.z));
+    // On an intermediate level, check clearance per ≤2 m piece so one crossing drops only the part over it.
+    const points = densify(run.points, floors.get(nodes.get(run.edge.from)?.floorId ?? "")?.intermediate === true ? 2 : Infinity);
+    const pts = points.map((p) => R(p.x, p.y, p.z));
     let travelled = 0, nextLight = 0;
     for (let i = 1; i < pts.length; i++) {
       const a = pts[i - 1]!, z = pts[i]!;
@@ -629,7 +643,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         }
         nextLight += 6;
       }
-      const pa = run.points[i - 1]!, pz = run.points[i]!;
+      const pa = points[i - 1]!, pz = points[i]!;
       const transition = run.edge.attributes?.sceneGap === true
         ? (i === 1 && hasFloor(pa)) || (i === pts.length - 1 && hasFloor(pz))
         : hasFloor(pa) !== hasFloor(pz);

@@ -519,13 +519,37 @@ describe("buildGreybox", () => {
     const build = (nodes: unknown[], edges: unknown[]) => buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high", true).navFloors!.filter((_v, i) => i % 3 === 1);
     const walk = (id: string, from: string, to: string) => ({ ...bundle.edges[0]!, id, from, to });
     // A bend on the landing (junction of two landing edges) right over a lower corridor: no floor at 1.6 m at all.
-    const stacked = build([node("a", "low", -5, 0), node("b", "low", 15, 0), node("c", "landing", 0, 0), node("d", "landing", 5, 0), node("e", "landing", 5, 5)],
-      [walk("low", "a", "b"), walk("l1", "c", "d"), walk("l2", "d", "e")]);
-    expect(stacked.some((y) => Math.abs(y - 1.6) < 1e-6)).toBe(false);
+    const stackedNav = buildGreybox({ ...bundle, floors, nodes: [node("a", "low", -5, 0), node("b", "low", 15, 0), node("c", "landing", 0, 0), node("d", "landing", 5, 0), node("e", "landing", 5, 9)],
+      edges: [walk("low", "a", "b"), walk("l1", "c", "d"), walk("l2", "d", "e")] } as unknown as StationBundle, () => true, () => false, emptyScene, "high", true).navFloors!;
+    const landingZ = stackedNav.filter((_v, i) => i % 3 === 2 && Math.abs(stackedNav[i - 1]! - 1.6) < 1e-6);
+    expect(landingZ.length).toBeGreaterThan(0);
+    expect(Math.min(...landingZ.map(Math.abs))).toBeGreaterThan(2);
     // Two connected landing edges rising 1.6 → 1.7 → 1.8 m with no other floor below: both are built.
     const rising = build([node("c", "landing", 0, 0, 1.6), node("d", "landing", 5, 0, 1.7), node("e", "landing", 10, 0, 1.8)], [walk("l1", "c", "d"), walk("l2", "d", "e")]);
     expect(rising.some((y) => Math.abs(y - 1.6) < 1e-6)).toBe(true);
     expect(rising.some((y) => Math.abs(y - 1.8) < 1e-6)).toBe(true);
+    // A short lower corridor under one end of a 20 m landing drops only the part over it.
+    const partial = buildGreybox({ ...bundle, floors, nodes: [node("a", "low", 0, -2), node("b", "low", 0, 2), node("c", "landing", -1, 0), node("d", "landing", 19, 0)], edges: [walk("low", "a", "b"), walk("l1", "c", "d")] } as unknown as StationBundle, () => true, () => false, emptyScene, "high", true).navFloors!;
+    const landingX = partial.filter((_v, i) => i % 3 === 0 && Math.abs(partial[i + 1]! - 1.6) < 1e-6);
+    expect(landingX.length).toBeGreaterThan(0);
+    expect(Math.min(...landingX)).toBeGreaterThan(1);
+    // A lower ramp rising past the landing still counts where it passes under it.
+    const ramp = build([node("a", "low", 0, -2, 0), node("b", "low", 0, 8, 3), node("c", "landing", -3, 0, 2), node("d", "landing", 3, 0, 2)], [walk("low", "a", "b"), walk("l1", "c", "d")]);
+    expect(ramp.some((y) => Math.abs(y - 2) < 1e-6)).toBe(false);
+  });
+
+  it("checks intermediate clearance only against greybox runs, not scene-modelled floors (#680)", () => {
+    const floors = [{ ...bundle.floors[0]!, id: "low", renderElevationM: 0 }, { ...bundle.floors[0]!, id: "landing", renderElevationM: 1.6, intermediate: true }];
+    const nodes = [
+      { ...bundle.nodes[0]!, id: "a", floorId: "low", position: { x: 0, y: 0, z: null } },
+      { ...bundle.nodes[1]!, id: "b", floorId: "low", position: { x: 10, y: 0, z: null } },
+      { ...bundle.nodes[0]!, id: "c", floorId: "landing", position: { x: 0, y: 0, z: null } },
+      { ...bundle.nodes[1]!, id: "d", floorId: "landing", position: { x: 10, y: 0, z: null } },
+    ];
+    const edges = [{ ...bundle.edges[0]!, id: "low", from: "a", to: "b" }, { ...bundle.edges[0]!, id: "landing", from: "c", to: "d" }];
+    // The lower floor is modelled by the scene (hasFloor true at 0 m), so it is no run and the landing is built.
+    const nav = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, (p) => p.z < 1, emptyScene, "high", true).navFloors!.filter((_v, i) => i % 3 === 1);
+    expect(nav.some((y) => Math.abs(y - 1.6) < 1e-6)).toBe(true);
   });
 
   it("builds 16 km of overlapping passages on five floors within budget", () => {
