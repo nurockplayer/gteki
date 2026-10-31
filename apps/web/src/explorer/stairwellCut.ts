@@ -266,9 +266,9 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
 
   const bands: number[] = [];
   for (const well of cutWells) {
-    for (const rect of well.rects) {
+    for (const [index, rect] of well.rects.entries()) {
       const levels = new Set((heights.get(rect) ?? []).map((y) => Math.round(y * 20) / 20));
-      for (const level of levels) addBand(bands, rect, level, well.rects);
+      for (const level of levels) addBand(bands, rect, level, well.rects, index);
     }
   }
 
@@ -276,7 +276,7 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   const steel = new THREE.Color(0xaab2b5).toArray();
   for (const well of cutWells) {
     const opened = well.rects.filter((rect) => (cut.maxHeights.get(rect) ?? []).some((y) => y >= well.upperY - 0.3 - 1e-6));
-    for (const rect of opened) for (const [from, to] of railSides(rect, well.arrival, opened)) {
+    for (const rect of opened) for (const [from, to] of railSides(rect, well.arrival, opened, well.rects)) {
       addRail(railPositions, railColors, from, to, well.upperY, steel);
       walls.push({ ax: from.x, az: from.z, bx: to.x, bz: to.z, yMin: well.upperY, yMax: well.upperY + RAIL_HEIGHT_M });
       if (options.tier === "high") addGlass(glassPositions, from, to, well.upperY);
@@ -341,16 +341,30 @@ function recipeMatches(recipe: CutRecipe, wells: readonly StairwellWell[], tier:
   return recipe.version === RECIPE_VERSION && recipe.tier === tier && recipe.keyCount === keyCount && recipe.wellsSha256 === sha256Hex(canonicalJson(wells));
 }
 
-/** Outer portions of each opened rectangle, except the arrival side (the end side of the top flight piece's rectangle, through `arrival`). */
-function railSides(rect: StairwellRect, arrival: THREE.Vector3, opened: readonly StairwellRect[]): [THREE.Vector3, THREE.Vector3][] {
+/**
+ * Outer portions of each opened rectangle, except the arrival side (the end side of the top flight piece's rectangle,
+ * through `arrival`) and the joint sides, which the walker on the flight crosses: the start side at the stair mouth,
+ * and the end side wherever a later piece of the same well follows.
+ */
+function railSides(rect: StairwellRect, arrival: THREE.Vector3, opened: readonly StairwellRect[], pieces: readonly StairwellRect[]): [THREE.Vector3, THREE.Vector3][] {
   const corners = rectCorners(rect, 0), sides: [THREE.Vector3, THREE.Vector3][] = [];
+  const last = pieces.at(-1) === rect;
   for (let i = 0; i < 4; i++) {
     const from = corners[i]!, to = corners[(i + 1) % 4]!, delta = to.clone().sub(from);
     const tArrival = arrival.clone().sub(from).dot(delta) / delta.lengthSq();
     if (tArrival >= -1e-6 && tArrival <= 1 + 1e-6 && from.clone().addScaledVector(delta, tArrival).distanceTo(arrival) < 1e-3) continue;
+    // The stair mouth and a seam to the next piece are lines the walker crosses, so no rail is put across the path.
+    const along = alongOf(rect, from, to);
+    if (along < -rect.halfLength + 1e-3 || (!last && along > rect.halfLength - 1e-3)) continue;
     sides.push(...sideRemainder(from, to, rect, opened));
   }
   return sides;
+}
+
+/** The plan offset of the midpoint of the side `from`→`to` along the rectangle's own axis. */
+function alongOf(rect: StairwellRect, from: THREE.Vector3, to: THREE.Vector3): number {
+  const mid = from.clone().add(to).multiplyScalar(0.5);
+  return (mid.x - rect.center.x) * rect.along.x + (mid.z - rect.center.z) * rect.along.z;
 }
 
 /**
@@ -456,11 +470,14 @@ function bandLevels(faces: readonly HorizontalFace[], rect: StairwellRect, floor
 }
 
 /** Band around one rectangle's cut boundary, on the sides no other piece of the same well covers. */
-function addBand(out: number[], rect: StairwellRect, level: number, pieces: readonly StairwellRect[]): void {
+function addBand(out: number[], rect: StairwellRect, level: number, pieces: readonly StairwellRect[], index: number): void {
   const corners = rectCorners(rect, 0);
   for (let i = 0; i < 4; i++) {
-    for (const [from, to] of sideRemainder(corners[i]!, corners[(i + 1) % 4]!, rect, pieces)) {
-      quad(out, from.clone().setY(level), to.clone().setY(level), to.clone().setY(level - BAND_DEPTH_M), from.clone().setY(level - BAND_DEPTH_M));
+    const from = corners[i]!, to = corners[(i + 1) % 4]!;
+    // The stair mouth: the first piece's start side and the last piece's end side meet the floors, not a slab edge.
+    if ((index === 0 && alongOf(rect, from, to) < -rect.halfLength + 1e-3) || (index === pieces.length - 1 && alongOf(rect, from, to) > rect.halfLength - 1e-3)) continue;
+    for (const [a, b] of sideRemainder(from, to, rect, pieces)) {
+      quad(out, a.clone().setY(level), b.clone().setY(level), b.clone().setY(level - BAND_DEPTH_M), a.clone().setY(level - BAND_DEPTH_M));
     }
   }
 }
