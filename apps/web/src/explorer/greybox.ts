@@ -639,11 +639,11 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       }
       // A floorless run is a passage the station model lacks. It can cross a station wall where its floor never changes
       // (a 2F deck walkway through a building facade), where no transition portal opens: open every station wall the
-      // segment crosses, the same way. Up to 8 walls per segment, each opening resuming 0.05 m past its wall.
+      // segment crosses, the same way, each opening resuming 0.05 m past its wall (256 walls per segment at most).
       const span = Math.hypot(pz.x - pa.x, pz.z - pa.z);
       if (span > 1e-9) {
         let start = 0;
-        for (let n = 0; n < 8; n++) {
+        for (let n = 0; n < 256; n++) {
           const t = Math.min(1, start / span);
           const from = { x: pa.x + (pz.x - pa.x) * t, y: pa.y + (pz.y - pa.y) * t, z: pa.z + (pz.z - pa.z) * t };
           const hit = scene.wallHit(from, pz, true);
@@ -653,10 +653,11 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
           if (at < start - 1e-9) break; // a hit behind the resumed start would repeat forever
           // A hit at a segment end is a vertex: cross it only if the path carries on beyond the wall, by the next
           // segment's end on the wall's far side, or at a run end, which meets floor or another passage beyond it.
-          // A hit at a segment start after a bend was already decided by the previous segment.
-          const side = (p: THREE.Vector3) => hit.wallNormal ? Math.sign(hit.wallNormal.x * (p.x - near.x) + hit.wallNormal.z * (p.z - near.z)) : 0;
+          // A hit near a segment start counts when the segment's start and end lie on opposite sides of the wall; a wall
+          // through the start vertex itself (side 0) was already decided by the previous segment.
+          const side = (p: THREE.Vector3) => { const d = hit.wallNormal ? hit.wallNormal.x * (p.x - near.x) + hit.wallNormal.z * (p.z - near.z) : 0; return Math.abs(d) < 1e-3 ? 0 : Math.sign(d); };
           const atEnd = at > flat - 0.05;
-          const crossed = atEnd ? (i === pts.length - 1 ? finishesRun : side(a) !== 0 && side(a) === -side(pts[i + 1]!)) : at >= 0.05;
+          const crossed = atEnd ? (i === pts.length - 1 ? finishesRun : side(a) !== 0 && side(a) === -side(pts[i + 1]!)) : at >= 0.05 || (side(a) !== 0 && side(a) === -side(z));
           if (crossed) {
             const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
             const openingWidth = width * Math.min(2, 1 / Math.max(cosine, 1e-9));

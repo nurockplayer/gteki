@@ -446,6 +446,18 @@ describe("buildGreybox", () => {
     expect(result.openings[0]!.center.x).toBeCloseTo(4.75);
   });
 
+  it("opens every station wall a floorless run crosses, including one just past its start and more than eight", () => {
+    const walls = [0.03, ...Array.from({ length: 9 }, (_, i) => 1 + i)];
+    const result = buildGreybox(bundle, () => true, () => false, {
+      colliderNear: () => false,
+      wallHit: (a, b, wallsOnly) => {
+        const x = wallsOnly ? walls.find((w) => a.x < w && b.x >= w) : undefined;
+        return x === undefined ? null : { x, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) };
+      },
+    }, "high");
+    expect(result.openings.map((box) => box.center.x).sort((p, q) => p - q)).toEqual(walls.map((w) => expect.closeTo(w)));
+  });
+
   it("opens no wall that a floorless run only touches at an inner bend", () => {
     const bent = { ...bundle, nodes: [bundle.nodes[0]!, { id: "b", floorId: "f", position: { x: 0, y: 5, z: 0 } }], edges: [{ id: "e", from: "a", to: "b", mode: "walk", geometry: [{ x: 0, y: 0 }, { x: 5, y: 0 }, { x: 0, y: 5 }] }] } as unknown as StationBundle;
     const result = buildGreybox(bent, () => true, () => false, {
