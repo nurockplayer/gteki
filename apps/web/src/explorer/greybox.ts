@@ -1,4 +1,5 @@
 import type { Edge, StationBundle } from "@gteki/schema";
+import { WALKER_BODY } from "@gteki/scene-api";
 import * as THREE from "three";
 import { edgePoints, R, type V3 } from "./geometry.ts";
 import { MODE_WIDTH } from "./graphView.ts";
@@ -155,13 +156,25 @@ export function widthOf(edge: Edge): number {
 const PAD_OVERLAP_M = 0.3;
 type LandingPad = { nodeId:string; floorId:string; center:THREE.Vector3; along:THREE.Vector3; width:number; openSides:Set<number>; shifted:boolean; strip?:UnmodelledEdgeRun };
 
+/** Floor at the node is not enough: a stair-top cell narrower than the walker's footprint erodes away in the bake,
+ * leaving no polygon for the connector's end to snap to, so a pad is laid there too (#684). */
+function floorsAgentFootprint(hasFloor:(p:V3)=>boolean, center:THREE.Vector3): boolean {
+  const p=enu(center);
+  if (!hasFloor(p)) return false;
+  for (let i=0;i<8;i++) {
+    const t=i/8*2*Math.PI;
+    if (!hasFloor({x:p.x+Math.cos(t)*WALKER_BODY.radiusM,y:p.y+Math.sin(t)*WALKER_BODY.radiusM,z:p.z})) return false;
+  }
+  return true;
+}
+
 /** A pad uses the node's render elevation; its optional strip follows an adjacent graph edge. */
 function landingPadsForEdge(bundle:StationBundle, edge:Edge, traversable:(edge:Edge)=>boolean, hasFloor:(p:V3)=>boolean, nodes:Map<string,StationBundle["nodes"][number]>, floors:Map<string,StationBundle["floors"][number]>): LandingPad[] {
   if (!traversable(edge) || !["stairs","escalator","elevator"].includes(edge.mode)) return [];
   const vertical=edgePoints(bundle,edge,nodes,floors); if (vertical.length<2) return [];
   const result:LandingPad[]=[];
   for (const [id,center,other] of [[edge.from,vertical[0]!,vertical.at(-1)!],[edge.to,vertical.at(-1)!,vertical[0]!]] as const) {
-    const node=nodes.get(id); if (!node || hasFloor(enu(center))) continue;
+    const node=nodes.get(id); if (!node || floorsAgentFootprint(hasFloor,center)) continue;
     const adjacent=bundle.edges.filter(e=>!["stairs","escalator","elevator"].includes(e.mode) && (e.from===id || e.to===id) && traversable(e));
     let along=other.clone().sub(center); along.y=0;
     // A rising flight's pad lies beside it, on the landing side, so the flight never passes through its floor or ceiling.

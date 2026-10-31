@@ -130,6 +130,20 @@ describe("buildGreybox", () => {
     ray.ray.origin.x=1.25;
     expect(ray.intersectObjects(grey.walkable).some(hit=>Math.abs(hit.point.y-4)<1e-6)).toBe(true);
   });
+  it("lays a landing pad where the floor at the node is narrower than the walker", () => {
+    const station = {
+      ...bundle,
+      floors:[{id:"lower",renderElevationM:0},{id:"upper",renderElevationM:4}],
+      nodes:[{id:"low",floorId:"lower",position:{x:0,y:0,z:0}},{id:"high",floorId:"upper",position:{x:0,y:0,z:4}},{id:"walk",floorId:"upper",position:{x:2,y:0,z:4}}],
+      edges:[{id:"stair",from:"low",to:"high",mode:"stairs"},{id:"path",from:"high",to:"walk",mode:"walk"}],
+    } as unknown as StationBundle;
+    // The upper node has floor, but only in a 0.5 m patch: narrower than the agent, so the bake would erode it away (#684).
+    const narrow = (p: { x: number; y: number; z: number }) => p.z < 2 || (Math.abs(p.x) < 0.25 && Math.abs(p.y) < 0.25);
+    expect(buildGreybox(station,()=>true,narrow,emptyScene,"low",true).stats.landingPads).toBe(1);
+    // Floor covering the agent's footprint at the node: no pad.
+    const wide = (p: { x: number; y: number; z: number }) => p.z < 2 || (Math.abs(p.x) <= 0.4 && Math.abs(p.y) <= 0.4);
+    expect(buildGreybox(station,()=>true,wide,emptyScene,"low",true).stats.landingPads).toBe(0);
+  });
   it("lays a landing pad beside the flight, never over it", () => {
     const station = {
       ...bundle,
