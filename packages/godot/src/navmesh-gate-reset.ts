@@ -72,10 +72,12 @@ export function readAtRevision(revision: string) {
 }
 export const readWorkTree = (file: string): unknown | null => fs.existsSync(path.resolve(file)) ? JSON.parse(fs.readFileSync(path.resolve(file), "utf8")) : null;
 
-// Write a reset record after regenerating the gate files: --station <s> --base <rev> --date <YYYY-MM-DD> --ruling <text> --follow-ups #1,#2
+// Write a reset record after regenerating the gate files: --station <s> --base <rev> --date <YYYY-MM-DD> --ruling <text> --follow-ups '#1,#2'
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2), value = (flag: string) => { const i = args.indexOf(flag); if (i < 0 || !args[i + 1]) throw new Error(`missing ${flag}`); return args[i + 1]!; };
-  const station = value("--station"), head = readGateSnapshot(station, readWorkTree) as GateSnapshot;
+  const station = value("--station");
+  if (!/^[a-z0-9-]+$/.test(station) || !fs.existsSync(path.resolve("stations", station))) throw new Error(`--station must be a station id under stations/: ${station}`);
+  const head = readGateSnapshot(station, readWorkTree) as GateSnapshot;
   const record: GateReset = { version: 1, station, date: value("--date"), ruling: value("--ruling"), followUps: value("--follow-ups").split(",").map(s => s.trim()), before: readGateSnapshot(station, readAtRevision(value("--base"))), after: head };
   fs.writeFileSync(path.resolve(gateResetFile(station)), `${JSON.stringify(record, null, 2)}\n`);
   console.log(JSON.stringify({ station, wrote: gateResetFile(station) }));
