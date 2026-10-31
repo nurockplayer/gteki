@@ -97,7 +97,8 @@ export interface GreyboxStats { runs: number; landingPads: number; lengthM: numb
 export const greyboxTriangleLimit = (tier: "high" | "low"): number => tier === "high" ? 150000 : 100000;
 export interface GreyboxScene {
   colliderNear(p: V3, r: number): boolean;
-  wallHit(a: V3, b: V3): (V3 & { wallNormal?: THREE.Vector3 }) | null;
+  /** `wallsOnly`: only the station's wall segments count, never a collider such as a column or a ticket machine. */
+  wallHit(a: V3, b: V3, wallsOnly?: boolean): (V3 & { wallNormal?: THREE.Vector3 }) | null;
 }
 
 /** Clip a wall against oriented openings, preserving the wall above and below an opening. */
@@ -453,10 +454,21 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       }
     }
   }
+  // A corridor piece ends at a run end only where the detected run itself ends; a piece cut at a bend continues
+  // past it, and that wall is decided by the piece's own vertices.
+  const runEnds = new Map<string, V3[]>();
+  for (const run of detected) {
+    const last = run.points.at(-1);
+    if (!last) continue;
+    const list = runEnds.get(run.edge.id);
+    if (list) list.push(last); else runEnds.set(run.edge.id, [last]);
+  }
+  const same = (a: V3 | undefined, b: V3 | undefined) => !!a && !!b && Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z) < 1e-6;
   for (const run of runs) {
     const width = widthOf(run.edge), half = width / 2;
     const b = getBatch(nodes.get(run.edge.from)?.floorId ?? "");
     const pts = run.points.map((p) => R(p.x, p.y, p.z));
+    const finishesRun = !!runEnds.get(run.edge.id)?.some((p) => same(p, run.points.at(-1)));
     let travelled = 0, nextLight = 0;
     for (let i = 1; i < pts.length; i++) {
       const a = pts[i - 1]!, z = pts[i]!;
@@ -600,22 +612,11 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         nextLight += 6;
       }
       const pa = run.points[i - 1]!, pz = run.points[i]!;
-      const transition = run.edge.attributes?.sceneGap === true
-        ? (i === 1 && hasFloor(pa)) || (i === pts.length - 1 && hasFloor(pz))
-        : hasFloor(pa) !== hasFloor(pz);
-      if (transition) {
-        const hit = scene.wallHit(pa, pz);
-        if (hit) {
-          const near = R(hit.x, hit.y, hit.z);
-          const center = near.clone();
-          const depth = 0.6;
-          const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
-          const openingWidth = width * Math.min(2, 1 / Math.max(cosine, 1e-9));
-          openings.push({ center, along: along.clone(), across: across.clone(), ...(hit.wallNormal ? { wallNormal: hit.wallNormal.clone() } : {}), width: openingWidth, depth, height: 2.3 });
-          const faceAt = (face: number) => {
-            return near.clone().addScaledVector(along, face * 0.02);
-          };
-          for (const face of [-1, 1]) {
+      // A wall portal: the opening and the frame on both faces, shared by a floor transition and any other wall.
+      const openAt = (near: THREE.Vector3, openingWidth: number, wallNormal: THREE.Vector3 | undefined) => {
+        openings.push({ center: near.clone(), along: along.clone(), across: across.clone(), ...(wallNormal ? { wallNormal: wallNormal.clone() } : {}), width: openingWidth, depth: 0.6, height: 2.3 });
+        const faceAt = (face: number) => near.clone().addScaledVector(along, face * 0.02);
+        for (const face of [-1, 1]) {
           const frame = faceAt(face);
           for (const side of [-1, 1]) {
             const outer = side * (half + 0.08), inner = side * half;
@@ -624,7 +625,46 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
           }
           quad(b.portal, b.portalColors, offset(frame, -half - 0.08, 2.3), offset(frame, half + 0.08, 2.3), offset(frame, half + 0.08, 2.4), offset(frame, -half - 0.08, 2.4));
           quad(b.kerb, null, offset(frame, -half, 2.3), offset(frame, half, 2.3), offset(frame, half, 2.33), offset(frame, -half, 2.33));
+        }
+      };
+      const transition = run.edge.attributes?.sceneGap === true
+        ? (i === 1 && hasFloor(pa)) || (i === pts.length - 1 && hasFloor(pz))
+        : hasFloor(pa) !== hasFloor(pz);
+      if (transition) {
+        const hit = scene.wallHit(pa, pz);
+        if (hit) {
+          const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
+          openAt(R(hit.x, hit.y, hit.z), width * Math.min(2, 1 / Math.max(cosine, 1e-9)), hit.wallNormal);
+        }
+      }
+      // A floorless run is a passage the station model lacks. It can cross a station wall where its floor never changes
+      // (a 2F deck walkway through a building facade), where no transition portal opens: open every station wall the
+      // segment crosses, the same way. Up to 8 walls per segment, each opening resuming 0.05 m past its wall.
+      const span = Math.hypot(pz.x - pa.x, pz.z - pa.z);
+      if (span > 1e-9) {
+        let start = 0;
+        for (let n = 0; n < 8; n++) {
+          const t = Math.min(1, start / span);
+          const from = { x: pa.x + (pz.x - pa.x) * t, y: pa.y + (pz.y - pa.y) * t, z: pa.z + (pz.z - pa.z) * t };
+          const hit = scene.wallHit(from, pz, true);
+          if (!hit) break;
+          const near = R(hit.x, hit.y, hit.z);
+          const at = (near.x - a.x) * along.x + (near.z - a.z) * along.z;
+          if (at < start - 1e-9) break; // a hit behind the resumed start would repeat forever
+          // A hit at a segment end is a vertex: cross it only if the path carries on beyond the wall, by the next
+          // segment's end on the wall's far side, or at a run end, which meets floor or another passage beyond it.
+          // A hit at a segment start after a bend was already decided by the previous segment.
+          const side = (p: THREE.Vector3) => hit.wallNormal ? Math.sign(hit.wallNormal.x * (p.x - near.x) + hit.wallNormal.z * (p.z - near.z)) : 0;
+          const atEnd = at > flat - 0.05;
+          const crossed = atEnd ? (i === pts.length - 1 ? finishesRun : side(a) !== 0 && side(a) === -side(pts[i + 1]!)) : at >= 0.05;
+          if (crossed) {
+            const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
+            const openingWidth = width * Math.min(2, 1 / Math.max(cosine, 1e-9));
+            // A floor transition already opened this wall wide enough, along the same direction: don't open it twice.
+            if (!openings.some((box) => box.center.distanceToSquared(near) < 0.01 && box.width + 1e-9 >= openingWidth && Math.abs(box.along.dot(along)) > 0.999)) openAt(near, openingWidth, hit.wallNormal);
           }
+          start = at + 0.05;
+          if (start >= flat) break;
         }
       }
       travelled += length; lengthM += length;

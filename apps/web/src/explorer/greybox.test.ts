@@ -436,6 +436,25 @@ describe("buildGreybox", () => {
     expect(box.width * Math.cos(angle)).toBeGreaterThanOrEqual(0.6);
   });
 
+  it("opens a station wall a floorless run crosses mid-segment, though its floor never changes", () => {
+    const result = buildGreybox(bundle, () => true, () => false, {
+      colliderNear: () => false,
+      wallHit: (a, b, wallsOnly) => wallsOnly && a.x < 4.75 && b.x >= 4.75 ? { x: 4.75, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) } : null,
+    }, "high");
+    expect(result.openings).toHaveLength(1);
+    expect(result.stats.portals).toBe(1);
+    expect(result.openings[0]!.center.x).toBeCloseTo(4.75);
+  });
+
+  it("opens no wall that a floorless run only touches at an inner bend", () => {
+    const bent = { ...bundle, nodes: [bundle.nodes[0]!, { id: "b", floorId: "f", position: { x: 0, y: 5, z: 0 } }], edges: [{ id: "e", from: "a", to: "b", mode: "walk", geometry: [{ x: 0, y: 0 }, { x: 5, y: 0 }, { x: 0, y: 5 }] }] } as unknown as StationBundle;
+    const result = buildGreybox(bent, () => true, () => false, {
+      colliderNear: () => false,
+      wallHit: (a, b, wallsOnly) => wallsOnly && a.x < 5 && b.x >= 5 ? { x: 5, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) } : null,
+    }, "high");
+    expect(result.openings).toHaveLength(0);
+  });
+
   it("preserves the entire floor and walls of a long straight passage", () => {
     const long = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 2000, y: 0, z: 0 } }] };
     const result = buildGreybox(long, () => true, () => false, emptyScene, "low");
