@@ -75,11 +75,11 @@ canonicalJson	function	apps/web/src/explorer/cutRecipe.ts	66
 sha256Hex	function	apps/web/src/explorer/cutRecipe.ts	87
 encodeRecipe	function	apps/web/src/explorer/cutRecipe.ts	120
 decodeRecipe	function	apps/web/src/explorer/cutRecipe.ts	142
-ExplorerMode	type	apps/web/src/explorer/explorer.ts	59
-ExplorerPose	interface	apps/web/src/explorer/explorer.ts	61
-ExplorerOptions	interface	apps/web/src/explorer/explorer.ts	63
-ExplorerEvents	interface	apps/web/src/explorer/explorer.ts	85
-Explorer	class	apps/web/src/explorer/explorer.ts	193
+ExplorerMode	type	apps/web/src/explorer/explorer.ts	60
+ExplorerPose	interface	apps/web/src/explorer/explorer.ts	62
+ExplorerOptions	interface	apps/web/src/explorer/explorer.ts	64
+ExplorerEvents	interface	apps/web/src/explorer/explorer.ts	86
+Explorer	class	apps/web/src/explorer/explorer.ts	194
 FloorReflectionSettings	interface	apps/web/src/explorer/floorReflectionPass.ts	12
 FLOOR_REFLECTION_DEFAULTS	const	apps/web/src/explorer/floorReflectionPass.ts	26
 FloorReflectionPass	class	apps/web/src/explorer/floorReflectionPass.ts	138
@@ -248,6 +248,10 @@ BLOOM_THRESHOLD	const	apps/web/src/explorer/lighting.ts	14
 LightingEnv	interface	apps/web/src/explorer/lighting.ts	17
 LightingPlan	interface	apps/web/src/explorer/lighting.ts	23
 resolveLighting	function	apps/web/src/explorer/lighting.ts	48
+ExtractedInstance	interface	apps/web/src/explorer/liveScene.ts	15
+LiveSceneOptions	interface	apps/web/src/explorer/liveScene.ts	20
+LiveScene	interface	apps/web/src/explorer/liveScene.ts	43
+buildLiveScene	function	apps/web/src/explorer/liveScene.ts	59
 LoadedAsset	interface	apps/web/src/explorer/manifestScene.ts	8
 manifestScene	function	apps/web/src/explorer/manifestScene.ts	16
 disposeObject	function	apps/web/src/explorer/manifestScene.ts	78
@@ -620,7 +624,7 @@ GapClass	type	packages/godot/src/navmesh-gaps.ts	8
 gapClass	function	packages/godot/src/navmesh-gaps.ts	9
 dataWidth	function	packages/godot/src/navmesh-gaps.ts	19
 diagnoseGaps	function	packages/godot/src/navmesh-gaps.ts	26
-makeGreybox	function	packages/godot/src/navmesh-greybox.ts	17
+makeGreybox	function	packages/godot/src/navmesh-greybox.ts	16
 navmeshBundle	function	packages/godot/src/navmesh-input.ts	7
 planFallbackRoute	function	packages/godot/src/navmesh-links.ts	11
 diagnoseVerticalSnap	function	packages/godot/src/navmesh-links.ts	32
