@@ -431,6 +431,7 @@ const unsupportedShapes: { name: string; waypoints: (direction: number) => [numb
   { name: "four 90 degree turns, the last flight passing 4.3 m over the first landing (#673 r1)", waypoints: (d) => overFirstLanding(d) },
   { name: "a spiral of 15 degree bends whose lower turns pass under its top landing (#673 r3)", waypoints: (d) => spiral(d) },
   { name: "a spiral of 15 degree bends rising 1.2 m per turn, with no turning landing (#673 r4)", waypoints: (d) => flatSpiral(d) },
+  { name: "a rising flight whose side wall runs through an earlier landing 0 to 0.9 m above it (#673 r5)", waypoints: (d) => mirror([[0, 0, 0], [4, 1, 0], [4, 1.3, -3], [5.2, 1.6, -3], [5.2, 1.9, 1.5]], d) },
   { name: "two 90 degree landings 1.2 m apart whose squares overlap (#673 r1)", waypoints: (d) => mirror([[0, 0, 0], [4, 2, 0], [4, 2.5, -1.2], [8, 4.5, -1.2]], d) },
   { name: "single-vertex 135 degree sharp return", waypoints: (d) => stackedWaypoints(135, d) },
   { name: "single-vertex 165 degree sharp return", waypoints: (d) => stackedWaypoints(165, d) },

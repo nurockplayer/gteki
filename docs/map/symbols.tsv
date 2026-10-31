@@ -143,9 +143,9 @@ ConnectorOptions	interface	apps/web/src/explorer/greyboxConnectors.ts	44
 buildStairs	function	apps/web/src/explorer/greyboxConnectors.ts	80
 buildEscalator	function	apps/web/src/explorer/greyboxConnectors.ts	115
 ConnectorScope	interface	apps/web/src/explorer/greyboxConnectors.ts	200
-skippedConnectorPath	function	apps/web/src/explorer/greyboxConnectors.ts	473
-buildConnectors	function	apps/web/src/explorer/greyboxConnectors.ts	487
-withinGreyboxBudget	function	apps/web/src/explorer/greyboxConnectors.ts	715
+skippedConnectorPath	function	apps/web/src/explorer/greyboxConnectors.ts	491
+buildConnectors	function	apps/web/src/explorer/greyboxConnectors.ts	505
+withinGreyboxBudget	function	apps/web/src/explorer/greyboxConnectors.ts	733
 unmodelledVerticalEdges	function	apps/web/src/explorer/greyboxConnectorsLegacy.ts	11
 ConnectorMaterial	type	apps/web/src/explorer/greyboxConnectorsLegacy.ts	45
 ConnectorPart	interface	apps/web/src/explorer/greyboxConnectorsLegacy.ts	46

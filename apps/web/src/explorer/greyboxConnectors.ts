@@ -360,13 +360,19 @@ function planLength(points: readonly THREE.Vector3[], from: number, to: number):
  * SHARP_RETURN (a stacked return flight), and at least 1 m of plan length between neighbouring turning landings and from each
  * end to its nearest landing, so the landing squares never overlap.
  */
-/** Height difference from which two parts of one stair that overlap in plan are stacked, one passing over the other. */
-const STACKED = 1;
+/**
+ * Height difference from which two parts of one stair that overlap in plan intrude on each other: one passes over, under or
+ * through the other (#673 r3, r5). Below it the overlap is a shared floor, which wallSpans and the guard rule handle.
+ */
+const STACKED = 0.5;
+/** The same inside a landing square, between that landing's own flights: a steep flight rises up to ~0.8 m across it (#673 r2). */
+const STACKED_OWN = 1;
 
 /**
  * Whether any part of the stair passes over or under another part of itself (#673 r3): a leg over a non-adjacent leg's
- * footprint, or over a landing square it does not meet, at least STACKED apart in height. Such a stair (a spiral, a flight
- * crossing high over an earlier landing) is not built; its guards and walls would open onto the wrong level.
+ * footprint, or over a landing square it does not meet, at least STACKED apart in height anywhere along the overlap. Such a
+ * stair (a spiral, a flight crossing over or into an earlier landing) is not built; its guards and walls would open onto the
+ * wrong level, or stand inside the other part's walking surface.
  */
 function passesOverItself(points: readonly THREE.Vector3[], squares: readonly LandingSquare[], half: number): boolean {
   const legs: { from: THREE.Vector3; to: THREE.Vector3; dir: THREE.Vector3; length: number }[] = [];
@@ -385,20 +391,30 @@ function passesOverItself(points: readonly THREE.Vector3[], squares: readonly La
     }
     return out;
   };
+  // legs[k] runs from vertex k to k + 1. It is one of a landing's own flights when it reaches that landing through shallow
+  // bends only: no other turning landing lies between them.
+  const own = (k: number, square: LandingSquare) => {
+    const i = square.index, lo = k + 1 <= i ? k + 1 : i + 1, hi = k + 1 <= i ? i - 1 : k;
+    return !squares.some((other) => other.index >= lo && other.index <= hi);
+  };
+  const inside = (p: THREE.Vector3, square: LandingSquare) => {
+    const rel = p.clone().sub(square.centre); rel.y = 0;
+    const v = new THREE.Vector3(-square.axis.z, 0, square.axis.x);
+    return Math.abs(rel.dot(square.axis)) <= half && Math.abs(rel.dot(v)) <= half;
+  };
   for (let b = 0; b < legs.length; b++) for (const { p, y } of samples(b)) {
     for (let a = 0; a + 1 < b; a++) {
       const { from, to, dir, length } = legs[a]!;
       const rel = p.clone().sub(from); rel.y = 0;
       const along = rel.dot(dir), across = Math.abs(rel.x * dir.z - rel.z * dir.x);
       if (along < 0 || along > length || across > half) continue;
-      if (Math.abs(y - THREE.MathUtils.lerp(from.y, to.y, length > 1e-6 ? along / length : 0)) >= STACKED) return true;
+      // Two flights of one landing overlap at its corner, inside its square.
+      const limit = squares.some((square) => own(a, square) && own(b, square) && inside(p, square)) ? STACKED_OWN : STACKED;
+      if (Math.abs(y - THREE.MathUtils.lerp(from.y, to.y, length > 1e-6 ? along / length : 0)) >= limit) return true;
     }
     for (const square of squares) {
-      // A leg meets the landing at its own vertex: legs b and b + 1 end and start there.
-      if (square.index === b || square.index === b + 1) continue;
-      const rel = p.clone().sub(square.centre); rel.y = 0;
-      const v = new THREE.Vector3(-square.axis.z, 0, square.axis.x);
-      if (Math.abs(rel.dot(square.axis)) <= half && Math.abs(rel.dot(v)) <= half && Math.abs(y - square.height) >= STACKED) return true;
+      // A leg rises into its own landing's square below the landing's height by design; any other leg must not cross it.
+      if (inside(p, square) && Math.abs(y - square.height) >= (own(b, square) ? STACKED_OWN : STACKED)) return true;
     }
   }
   return false;
