@@ -46,9 +46,10 @@ export function makeGreybox(bundle: StationBundle, scene: StationScene, privateB
   floorMesh.userData.greybox = true;
   floorMesh.updateMatrixWorld(true);
   const ground = [...live.sceneGroundTargets, ...live.connectors.walkable];
-  const collider = [...live.sceneColliderTargets, ...grey.colliders, ...live.stairwellCut.colliders, ...live.connectors.colliders];
-  prepareRayTrees([floorMesh, ...live.sceneGroundTargets, ...collider, ...live.connectors.walkable]);
-  const probe: SceneProbe = { ground:[...ground, floorMesh], collider, walls:enuWalls,
+  // Greybox colliders stay out of `targets`: navmesh-bake appends them itself so its nav-floor triangle skip still applies.
+  const collider = [...live.sceneColliderTargets, ...live.stairwellCut.colliders, ...live.connectors.colliders];
+  prepareRayTrees([floorMesh, ...live.sceneGroundTargets, ...collider, ...grey.colliders, ...live.connectors.walkable]);
+  const probe: SceneProbe = { ground:[...ground, floorMesh], collider:[...collider, ...grey.colliders], walls:enuWalls,
     ignoreColliderHit: (hit, direction) => !!hit.face && sceneCollider.has(hit.object) && !hit.object.userData.greybox && grey.openings.some(box => insideGreyboxOpening(hit.point, box) && Math.abs(hitNormal(hit, direction).y) <= 0.5) };
   return { grey, probe, portals, walls:enuWalls, targets:{ ground, collider }, stairwellCut: live.stairwellCut, connectors: live.connectors };
 }

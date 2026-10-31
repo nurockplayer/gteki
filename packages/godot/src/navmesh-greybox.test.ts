@@ -22,7 +22,9 @@ it("bakes the live scene: the probe holds the stairwell cut and the connectors (
   expect(made.connectors.walkable.length).toBeGreaterThan(0);
   for (const walkable of made.connectors.walkable) expect(made.probe.ground).toContain(walkable);
   // buildLiveScene returns the lists the bake appends; the probe adds only its nav-floor mesh.
-  expect(made.probe.collider).toBe(made.targets.collider);
+  // Greybox colliders reach the probe but not the bake targets: navmesh-bake appends them with its nav-floor skip.
+  expect(made.probe.collider.slice(0, made.targets.collider.length)).toEqual(made.targets.collider);
+  expect(made.probe.collider.slice(made.targets.collider.length)).toEqual(made.grey.colliders);
   expect(made.probe.ground.slice(0, -1)).toEqual(made.targets.ground);
 });
 
