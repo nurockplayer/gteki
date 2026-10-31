@@ -882,6 +882,27 @@ describe("connectors leaving one node together", () => {
       return Math.hypot(x, z) > 4 && near(x, z, line) < half + 0.1;
     }).length, `walls along (${line.at(-1)!})`).toBeGreaterThan(0);
     // A walker on either stair's centreline is never pushed aside.
+    expectFreeWalk(both);
+  });
+
+  it("drops a wall that overlaps the body of a walker crossing it on a rising flight, not only one at the same height", () => {
+    // Stair B climbs across stair A's flat leg (z = 0) at about 0.67 m: 0.6 m from A's floor, but its walker's body still
+    // meets A's 0.96 m side wall there.
+    const lineA: [number, number, number][] = [[0, 0, 0], [3, 0, 0], [3 + 6 * Math.SQRT1_2, 4, -6 * Math.SQRT1_2]];
+    const lineB: [number, number, number][] = [[0, 0, 0], [1.5, 0, -1], [1.5, 4, 5]];
+    const edge = (id: string, to: string, line: [number, number, number][]): Edge => syntheticEdge(id, "start", to, {
+      mode: "stairs", attributes: { sceneGap: true }, geometry: line.map(([x, h, z]) => ({ x, y: -z, z: h })),
+    });
+    const station = createSyntheticBundle([edge("flat-a", "upper", lineA), edge("climb-b", "upper-2", lineB)]);
+    for (const [id, top] of [["upper", lineA.at(-1)!], ["upper-2", lineB.at(-1)!]] as const) station.nodes.find((n) => n.id === id)!.position = { x: top[0], y: -top[2], z: 4 };
+    const both = buildConnectors(station, () => true, { hasFloor: () => true, nearMesh: () => false }, "high");
+    expect(both.pathByEdge.size).toBe(2);
+    expectFreeWalk(both);
+  });
+});
+
+function expectFreeWalk(both: ReturnType<typeof buildConnectors>) {
+  {
     for (const [id, path] of both.pathByEdge) {
       const cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
       for (let s = 0; s <= total; s += 0.05) {
@@ -889,6 +910,6 @@ describe("connectors leaving one node together", () => {
         expect(Math.hypot(resolved.x - p.x, resolved.z - p.z), `${id} s=${s.toFixed(2)}`).toBeLessThanOrEqual(0.05);
       }
     }
-  });
-});
+  }
+}
 
