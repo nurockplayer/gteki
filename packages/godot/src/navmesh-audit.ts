@@ -145,7 +145,7 @@ async function main() {
   const grey = withGreybox ? makeGreybox(bundle, scene, privateBuild) : null;
   const originalProbe = grey?.probe ?? sceneProbe(scene);
   // Recomputed exactly as the bake does; a difference means the bake and this audit see different inputs.
-  const suspect = suspectVerticalEdges(bundle, makeFloorHeightNear(originalProbe), e => router.isTraversable(e, DEFAULT_PROFILE));
+  const suspect = suspectVerticalEdges(bundle, makeFloorHeightNear(grey?.suspectProbe ?? originalProbe), e => router.isTraversable(e, DEFAULT_PROFILE));
   if (JSON.stringify(suspect) !== JSON.stringify(provenance.suspectEdges ?? null)) throw new Error("navmesh bake and audit disagree on suspect vertical edges; rebake first");
   // Vertical edges follow the built connector paths, as app.ts passes connectorRoutePaths().
   const connectorPaths = grey?.connectors ? new Map([...grey.connectors.pathByEdge].map(([id,path]) => [id, path.map(q => ({ x:q.x, y:-q.z, z:q.y }))])) : undefined;

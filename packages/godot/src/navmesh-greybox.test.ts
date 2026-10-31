@@ -26,6 +26,9 @@ it("bakes the live scene: the probe holds the stairwell cut and the connectors (
   expect(made.probe.collider.slice(0, made.targets.collider.length)).toEqual(made.targets.collider);
   expect(made.probe.collider.slice(made.targets.collider.length)).toEqual(made.grey.colliders);
   expect(made.probe.ground.slice(0, -1)).toEqual(made.targets.ground);
+  // Vertical-edge height checks keep the scene's own floor: connector landings would confirm the height they were built at.
+  for (const walkable of made.connectors.walkable) expect(made.suspectProbe.ground).not.toContain(walkable);
+  expect(made.suspectProbe.ground.at(-1)).toBe(made.probe.ground.at(-1));
 });
 
 it("audits the generated portal as open while leaving the surrounding collider solid", () => {

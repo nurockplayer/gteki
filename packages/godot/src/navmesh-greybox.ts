@@ -51,5 +51,8 @@ export function makeGreybox(bundle: StationBundle, scene: StationScene, privateB
   prepareRayTrees([floorMesh, ...live.sceneGroundTargets, ...collider, ...grey.colliders, ...live.connectors.walkable]);
   const probe: SceneProbe = { ground:[...ground, floorMesh], collider:[...collider, ...grey.colliders], walls:enuWalls,
     ignoreColliderHit: (hit, direction) => !!hit.face && sceneCollider.has(hit.object) && !hit.object.userData.greybox && grey.openings.some(box => insideGreyboxOpening(hit.point, box) && Math.abs(hitNormal(hit, direction).y) <= 0.5) };
-  return { grey, probe, portals, walls:enuWalls, targets:{ ground, collider }, stairwellCut: live.stairwellCut, connectors: live.connectors };
+  // Vertical-edge height checks must not see connector landings: those are built exactly where the scene lacks a floor,
+  // so they would confirm the graph height they were built at (#685 r1).
+  const suspectProbe: SceneProbe = { ...probe, ground:[...targets.ground, floorMesh] };
+  return { grey, probe, suspectProbe, portals, walls:enuWalls, targets:{ ground, collider }, stairwellCut: live.stairwellCut, connectors: live.connectors };
 }
