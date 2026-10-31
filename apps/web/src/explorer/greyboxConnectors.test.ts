@@ -549,6 +549,20 @@ describe("turning landing guards", () => {
     }
   });
 
+  // #673 r14: an escalator has no landing geometry, so with two turns it stays on main's legacy builder.
+  it("builds a two-turn escalator with main's legacy builder, unchanged", () => {
+    const geometry = ([[0, 0, 0], [4, 2, 0], [4, 2, 3], [8, 4, 3]] as const).map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const escalator = () => {
+      const station = createSyntheticBundle([syntheticEdge("turn", "start", "upper", { mode: "escalator", attributes: { sceneGap: true }, geometry })]);
+      station.nodes.find((n) => n.id === "upper")!.position = { ...geometry.at(-1)! };
+      return station;
+    };
+    const result = buildConnectors(escalator(), () => true, flat, "high"), legacy = buildLegacyConnectors(escalator(), () => true, flat, "high");
+    expect(result.stats.connectorsSkippedByReason.unsupported_shape).toBe(1);
+    expect(result.stats.legacyConnectors).toBe(1);
+    expect(result.wallSegments).toEqual(legacy.wallSegments);
+  });
+
   // #673 r13: the floor continues past both ends of a stair, so nothing may stand across either exit.
   it("lets a walker reach and step past both exits of every built shape", () => {
     const shortOutgoing = [-1, 1].map((d) => ({ name: `short 1.05 m outgoing flight, direction=${d}`, waypoints: shortOutgoingLeg(d) }));

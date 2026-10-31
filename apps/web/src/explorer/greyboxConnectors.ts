@@ -548,7 +548,9 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
     const halfWidth = (edge.mode === "stairs" ? width : 1.2) / 2;
     const landingSquares = turningSquares(points);
-    if (!supportedShape(points, landingSquares, halfWidth + 0.03)) { skip("unsupported_shape", edge.id); continue; }
+    // Several turning landings are a stair's shape only: an escalator has no landing geometry (bendAt is 0 for it), so with
+    // more than one turn it stays on main's legacy builder (#673 r14).
+    if ((edge.mode !== "stairs" && landingSquares.length > 1) || !supportedShape(points, landingSquares, halfWidth + 0.03)) { skip("unsupported_shape", edge.id); continue; }
     let bentEscalator = false;
     for (let i = 1; i + 1 < points.length; i++) {
       const before = points[i]!.clone().sub(points[i - 1]!); before.y = 0;
