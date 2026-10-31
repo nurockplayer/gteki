@@ -360,6 +360,50 @@ function planLength(points: readonly THREE.Vector3[], from: number, to: number):
  * SHARP_RETURN (a stacked return flight), and at least 1 m of plan length between neighbouring turning landings and from each
  * end to its nearest landing, so the landing squares never overlap.
  */
+/** Height difference from which two parts of one stair that overlap in plan are stacked, one passing over the other. */
+const STACKED = 1;
+
+/**
+ * Whether any part of the stair passes over or under another part of itself (#673 r3): a leg over a non-adjacent leg's
+ * footprint, or over a landing square it does not meet, at least STACKED apart in height. Such a stair (a spiral, a flight
+ * crossing high over an earlier landing) is not built; its guards and walls would open onto the wrong level.
+ */
+function passesOverItself(points: readonly THREE.Vector3[], squares: readonly LandingSquare[], half: number): boolean {
+  const legs: { from: THREE.Vector3; to: THREE.Vector3; dir: THREE.Vector3; length: number }[] = [];
+  for (let j = 1; j < points.length; j++) {
+    const dir = points[j]!.clone().sub(points[j - 1]!); dir.y = 0;
+    const length = dir.length();
+    legs.push({ from: points[j - 1]!, to: points[j]!, dir: length > 1e-6 ? dir.divideScalar(length) : dir, length });
+  }
+  // Samples across and along each leg, with the leg's surface height there.
+  const samples = (k: number) => {
+    const { from, to, dir, length } = legs[k]!, across = new THREE.Vector3(-dir.z, 0, dir.x), out: { p: THREE.Vector3; y: number }[] = [];
+    const n = Math.max(1, Math.ceil(length / 0.25));
+    for (let s = 0; s <= n; s++) for (const lateral of [-half, 0, half]) {
+      const p = from.clone().addScaledVector(dir, length * s / n).addScaledVector(across, lateral); p.y = 0;
+      out.push({ p, y: THREE.MathUtils.lerp(from.y, to.y, s / n) });
+    }
+    return out;
+  };
+  for (let b = 0; b < legs.length; b++) for (const { p, y } of samples(b)) {
+    for (let a = 0; a + 1 < b; a++) {
+      const { from, to, dir, length } = legs[a]!;
+      const rel = p.clone().sub(from); rel.y = 0;
+      const along = rel.dot(dir), across = Math.abs(rel.x * dir.z - rel.z * dir.x);
+      if (along < 0 || along > length || across > half) continue;
+      if (Math.abs(y - THREE.MathUtils.lerp(from.y, to.y, length > 1e-6 ? along / length : 0)) >= STACKED) return true;
+    }
+    for (const square of squares) {
+      // A leg meets the landing at its own vertex: legs b and b + 1 end and start there.
+      if (square.index === b || square.index === b + 1) continue;
+      const rel = p.clone().sub(square.centre); rel.y = 0;
+      const v = new THREE.Vector3(-square.axis.z, 0, square.axis.x);
+      if (Math.abs(rel.dot(square.axis)) <= half && Math.abs(rel.dot(v)) <= half && Math.abs(y - square.height) >= STACKED) return true;
+    }
+  }
+  return false;
+}
+
 /** Whether two landing squares of half-size `half` overlap in plan (separating axes: each square's own two axes). */
 function squaresOverlap(p: LandingSquare, q: LandingSquare, half: number): boolean {
   const corners = (sq: LandingSquare) => { const u = sq.axis, v = new THREE.Vector3(-u.z, 0, u.x); return [[1, 1], [1, -1], [-1, -1], [-1, 1]].map(([a, b]) => sq.centre.clone().addScaledVector(u, a! * half).addScaledVector(v, b! * half)); };
@@ -379,7 +423,7 @@ function supportedShape(points: readonly THREE.Vector3[], squares: readonly Land
   for (let i = 1; i < stops.length; i++) if (planLength(points, stops[i - 1]!, stops[i]!) < 1) return false;
   // 1 m of polyline between landings does not keep their squares apart (#673 r1): overlapping squares are not built.
   for (let a = 0; a < squares.length; a++) for (let b = a + 1; b < squares.length; b++) if (squaresOverlap(squares[a]!, squares[b]!, half)) return false;
-  return true;
+  return !passesOverItself(points, squares, half);
 }
 
 /** Plan bend (radians) from which a single-vertex return can stack its return flight over its first flight. */
