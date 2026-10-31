@@ -517,6 +517,17 @@ describe("turning landing guards", () => {
     }
   });
 
+  // #673 r8: a wide flight lies further below its landing inside the square; it is still the landing's own flight.
+  it("builds a 4 m wide single-turn stair with the new builder", () => {
+    for (const direction of [-1, 1]) {
+      const station = stairThrough(mirror([[0, 0, 0], [4, 2, 0], [4, 4, 4]], direction));
+      (station.edges[0]!.attributes as Record<string, unknown>).width = { m: 4 };
+      const result = buildConnectors(station, () => true, flat, "high");
+      expect(result.stats.legacyConnectors, `direction=${direction}`).toBe(0);
+      expect(result.stats.connectorsSkippedByReason.unsupported_shape ?? 0, `direction=${direction}`).toBe(0);
+    }
+  });
+
   // #673 r2: a steep flight is still the landing's own flight, so its entrance stays open.
   it("leaves a steep flight's entrance to its landing open", () => {
     for (const direction of [-1, 1]) {

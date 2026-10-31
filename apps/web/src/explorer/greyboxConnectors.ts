@@ -366,8 +366,6 @@ function planLength(points: readonly THREE.Vector3[], from: number, to: number):
  * threshold, so no overlap falls between kept-and-unclipped and rejected (#673 r7).
  */
 const STACKED = 0.35;
-/** The same inside a landing square, between that landing's own flights: a steep flight rises up to ~0.8 m across it (#673 r2). */
-const STACKED_OWN = 1;
 
 /**
  * Whether any part of the stair passes over or under another part of itself (#673 r3): a leg over a non-adjacent leg's
@@ -384,11 +382,11 @@ function passesOverItself(points: readonly THREE.Vector3[], squares: readonly La
   }
   // Samples across and along each leg, with the leg's surface height there.
   const samples = (k: number) => {
-    const { from, to, dir, length } = legs[k]!, across = new THREE.Vector3(-dir.z, 0, dir.x), out: { p: THREE.Vector3; y: number }[] = [];
+    const { from, to, dir, length } = legs[k]!, across = new THREE.Vector3(-dir.z, 0, dir.x), out: { p: THREE.Vector3; y: number; along: number }[] = [];
     const n = Math.max(1, Math.ceil(length / 0.25));
     for (let s = 0; s <= n; s++) for (const lateral of [-half, 0, half]) {
       const p = from.clone().addScaledVector(dir, length * s / n).addScaledVector(across, lateral); p.y = 0;
-      out.push({ p, y: THREE.MathUtils.lerp(from.y, to.y, s / n) });
+      out.push({ p, y: THREE.MathUtils.lerp(from.y, to.y, s / n), along: length * s / n });
     }
     return out;
   };
@@ -398,24 +396,34 @@ function passesOverItself(points: readonly THREE.Vector3[], squares: readonly La
     const i = square.index, lo = k + 1 <= i ? k + 1 : i + 1, hi = k + 1 <= i ? i - 1 : k;
     return !squares.some((other) => other.index >= lo && other.index <= hi);
   };
+  // Whether the point `along` metres into legs[k] is still entering (or leaving) its own landing: within the square's
+  // half-diagonal of the landing vertex, measured along the stair. There a flight lies below or above the landing by design,
+  // by an amount that grows with the stair's width (#673 r8); a flight that comes back around later is far along the stair.
+  const reach = half * Math.SQRT2 + 0.05;
+  const entering = (k: number, along: number, square: LandingSquare) => {
+    if (!own(k, square)) return false;
+    const i = square.index;
+    const distance = k + 1 <= i ? planLength(points, k + 1, i) + legs[k]!.length - along : planLength(points, i, k) + along;
+    return distance <= reach;
+  };
   const inside = (p: THREE.Vector3, square: LandingSquare) => {
     const rel = p.clone().sub(square.centre); rel.y = 0;
     const v = new THREE.Vector3(-square.axis.z, 0, square.axis.x);
     return Math.abs(rel.dot(square.axis)) <= half && Math.abs(rel.dot(v)) <= half;
   };
-  for (let b = 0; b < legs.length; b++) for (const { p, y } of samples(b)) {
+  for (let b = 0; b < legs.length; b++) for (const { p, y, along: alongB } of samples(b)) {
     for (let a = 0; a + 1 < b; a++) {
       const { from, to, dir, length } = legs[a]!;
       const rel = p.clone().sub(from); rel.y = 0;
       const along = rel.dot(dir), across = Math.abs(rel.x * dir.z - rel.z * dir.x);
       if (along < 0 || along > length || across > half) continue;
-      // Two flights of one landing overlap at its corner, inside its square.
-      const limit = squares.some((square) => own(a, square) && own(b, square) && inside(p, square)) ? STACKED_OWN : STACKED;
-      if (Math.abs(y - THREE.MathUtils.lerp(from.y, to.y, length > 1e-6 ? along / length : 0)) >= limit) return true;
+      // Two flights entering one landing overlap at its corner, inside its square.
+      if (squares.some((square) => inside(p, square) && entering(a, along, square) && entering(b, alongB, square))) continue;
+      if (Math.abs(y - THREE.MathUtils.lerp(from.y, to.y, length > 1e-6 ? along / length : 0)) >= STACKED) return true;
     }
     for (const square of squares) {
-      // A leg rises into its own landing's square below the landing's height by design; any other leg must not cross it.
-      if (inside(p, square) && Math.abs(y - square.height) >= (own(b, square) ? STACKED_OWN : STACKED)) return true;
+      // A flight entering its own landing lies below or above it by design; any other part must not cross the square.
+      if (inside(p, square) && !entering(b, alongB, square) && Math.abs(y - square.height) >= STACKED) return true;
     }
   }
   return false;
