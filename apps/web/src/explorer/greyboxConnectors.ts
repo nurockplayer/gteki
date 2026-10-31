@@ -656,16 +656,17 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
               // A shallow bend mitres beyond its vertex by half * tan(bend / 2) on its outer side: reach exactly that far back
               // and forward, not a whole half-width, which opened the guard where no flight reaches (#673 r11).
               const wedge = (bend: number) => (bend > 1e-6 && bend < SHALLOW_BEND ? half * Math.tan(bend / 2) : 0);
-              // At the stair's two ends the floor continues: the first and last legs open the outline through to its far side
-              // (#673 r13). Only a leg between two landings stops at its own end, where the guard closes the corner (#640 r19).
-              const mouth = 4 * half, opensBack = j === 1 ? mouth : 0, opensForward = j === points.length - 1 ? mouth : 0;
-              const legStart = legFrom.clone().addScaledVector(leg, -0.01 - wedge(before) - opensBack); legStart.y = 0;
-              const reach = length + 0.02 + wedge(before) + wedge(after) + opensBack + opensForward;
               // A leg that reaches this landing through shallow bends only is one of its own flights: it always opens the
               // outline, however steep (#673 r2). Only another landing's legs need the height test.
               let ownFlight = true;
               // Leg j runs from vertex j - 1 to vertex j: the vertices between it and the landing are j .. i - 1 before it, i + 1 .. j - 1 after.
               for (let k = j <= i ? j : i + 1; k <= (j <= i ? i - 1 : j - 1); k++) if (isTurn(k)) ownFlight = false;
+              // At the stair's two ends the floor continues: the first and last legs open their own landing's outline through
+              // to its far side (#673 r13). Another landing sees only the leg's real extent (#673 r15). A leg between two
+              // landings stops at its own end, where the guard closes the corner (#640 r19).
+              const mouth = ownFlight ? 4 * half : 0, opensBack = j === 1 ? mouth : 0, opensForward = j === points.length - 1 ? mouth : 0;
+              const legStart = legFrom.clone().addScaledVector(leg, -0.01 - wedge(before) - opensBack); legStart.y = 0;
+              const reach = length + 0.02 + wedge(before) + wedge(after) + opensBack + opensForward;
               for (const span of footprintOn(a, b, legStart, leg, half, reach)) {
                 if (ownFlight) { cover.push(span); continue; }
                 const mid = a.clone().lerp(b, (span[0] + span[1]) / 2);
