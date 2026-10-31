@@ -2,6 +2,7 @@ import type { Edge, StationBundle } from "@gteki/schema";
 import * as THREE from "three";
 import { edgePoints, type V3 } from "./geometry.ts";
 import type { Segment2 } from "./walker.ts";
+import { WALKER_BODY } from "@gteki/scene-api";
 import { buildConnectors as buildLegacyConnectors } from "./greyboxConnectorsLegacy.ts";
 
 /** Find vertical edges for which the original scene lacks a complete connector. */
@@ -568,10 +569,12 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
     return { id: edge.id, points: simplifyPlan(edgePoints(bundle, edge, nodes, floors)), half: (edge.mode === "stairs" ? width : 1.2) / 2 + 0.03 };
   });
-  const onOtherWalk = (edgeId: string, a: THREE.Vector3, b: THREE.Vector3, y: number) => walkLines.some((line) => line.id !== edgeId && line.points.slice(1).some((q, j) => {
+  // A wall band [yMin, yMax] blocks a walker on another connector when it overlaps that walker's body there.
+  const onOtherWalk = (edgeId: string, a: THREE.Vector3, b: THREE.Vector3, yMin: number, yMax: number) => walkLines.some((line) => line.id !== edgeId && line.points.slice(1).some((q, j) => {
     const p = line.points[j]!;
     const { gap, t } = planGap(a.x, a.z, b.x, b.z, p.x, p.z, q.x, q.z);
-    return gap <= line.half && Math.abs(y - THREE.MathUtils.lerp(p.y, q.y, t)) < 0.6;
+    const feet = THREE.MathUtils.lerp(p.y, q.y, t);
+    return gap <= line.half && yMin <= feet + WALKER_BODY.bodyTopM && yMax >= feet + WALKER_BODY.bodyBottomM;
   }));
   for (const edge of connectorEdges) {
     const points = simplifyPlan(edgePoints(bundle, edge, nodes, floors));
@@ -636,7 +639,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
               const a = from.clone().addScaledVector(leg, s0).add(lateral), b = from.clone().addScaledVector(leg, s1).add(lateral);
               a.y = 0; b.y = 0;
               const ya = THREE.MathUtils.lerp(from.y, to.y, THREE.MathUtils.clamp(s0 / horizontal, 0, 1)), yb = THREE.MathUtils.lerp(from.y, to.y, THREE.MathUtils.clamp(s1 / horizontal, 0, 1));
-              if (onOtherWalk(edge.id, a, b, (ya + yb) / 2)) continue;
+              if (onOtherWalk(edge.id, a, b, Math.min(ya, yb) - 0.12, Math.max(ya, yb) + 0.96)) continue;
               const wall = { ax: a.x, az: a.z, bx: b.x, bz: b.z, yMin: Math.min(ya, yb) - 0.12, yMax: Math.max(ya, yb) + 0.96 };
               wallSegments.push(wall);
               flightWalls.push({ leg: i - 1, wall });
@@ -713,7 +716,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
             for (const [t0, t1] of gapsOutside(cover)) {
               const start = a.clone().lerp(b, t0), finish = a.clone().lerp(b, t1);
               const length = start.distanceTo(finish); if (length < 1e-6) continue;
-              if (onOtherWalk(edge.id, start, finish, at.y)) continue;
+              if (onOtherWalk(edge.id, start, finish, at.y - 0.12, at.y + 0.96)) continue;
               const wall = { ax: start.x, az: start.z, bx: finish.x, bz: finish.z, yMin: at.y - 0.12, yMax: at.y + 0.96 }; wallSegments.push(wall);
               flightWalls.push({ leg: -1, wall });
               const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(finish.z - start.z), finish.x - start.x)).setPosition((start.x + finish.x) / 2, at.y, (start.z + finish.z) / 2);
