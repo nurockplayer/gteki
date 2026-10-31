@@ -265,10 +265,12 @@ function clipToSquare(a: THREE.Vector3, b: THREE.Vector3, centre: THREE.Vector3,
 }
 
 /**
- * The spans of a leg's side wall, measured along its unit direction, that lie outside every turning landing's square: a wall
- * mitred at a shallow bend just before a landing otherwise runs a short way into the landing it leads to.
+ * The spans of a leg's side wall, measured along its unit direction, that lie outside every turning landing's square at the
+ * wall's own height: a wall mitred at a shallow bend just before a landing otherwise runs a short way into the landing it
+ * leads to. A landing more than 0.35 m above or below the leg where they meet in plan clips nothing (#673 r1): it is not a
+ * floor beside the flight. `height(s)` is the leg's surface height at distance s along it.
  */
-function wallSpans(begin: number, end: number, from: THREE.Vector3, leg: THREE.Vector3, lateral: THREE.Vector3, half: number, squares: readonly LandingSquare[]): [number, number][] {
+function wallSpans(begin: number, end: number, from: THREE.Vector3, leg: THREE.Vector3, lateral: THREE.Vector3, half: number, squares: readonly LandingSquare[], height: (s: number) => number): [number, number][] {
   let spans: [number, number][] = end > begin ? [[begin, end]] : [];
   for (const square of squares) {
     const offset = from.clone().add(lateral).sub(square.centre); offset.y = 0;
@@ -282,7 +284,7 @@ function wallSpans(begin: number, end: number, from: THREE.Vector3, leg: THREE.V
         const a = (-half - p0) / slope, b = (half - p0) / slope;
         lo = Math.max(lo, Math.min(a, b)); hi = Math.min(hi, Math.max(a, b));
       }
-      if (clear || hi <= lo) { next.push([s0, s1]); continue; }
+      if (clear || hi <= lo || Math.abs(height((lo + hi) / 2) - square.height) >= 0.35) { next.push([s0, s1]); continue; }
       if (lo > s0) next.push([s0, lo]);
       if (s1 > hi) next.push([hi, s1]);
     }
@@ -358,12 +360,25 @@ function planLength(points: readonly THREE.Vector3[], from: number, to: number):
  * SHARP_RETURN (a stacked return flight), and at least 1 m of plan length between neighbouring turning landings and from each
  * end to its nearest landing, so the landing squares never overlap.
  */
-function supportedShape(points: readonly THREE.Vector3[], squares: readonly LandingSquare[]): boolean {
+/** Whether two landing squares of half-size `half` overlap in plan (separating axes: each square's own two axes). */
+function squaresOverlap(p: LandingSquare, q: LandingSquare, half: number): boolean {
+  const corners = (sq: LandingSquare) => { const u = sq.axis, v = new THREE.Vector3(-u.z, 0, u.x); return [[1, 1], [1, -1], [-1, -1], [-1, 1]].map(([a, b]) => sq.centre.clone().addScaledVector(u, a! * half).addScaledVector(v, b! * half)); };
+  const cp = corners(p), cq = corners(q);
+  for (const sq of [p, q]) for (const axis of [sq.axis, new THREE.Vector3(-sq.axis.z, 0, sq.axis.x)]) {
+    const rp = cp.map((c) => c.dot(axis)), rq = cq.map((c) => c.dot(axis));
+    if (Math.max(...rp) <= Math.min(...rq) + 1e-6 || Math.max(...rq) <= Math.min(...rp) + 1e-6) return false;
+  }
+  return true;
+}
+
+function supportedShape(points: readonly THREE.Vector3[], squares: readonly LandingSquare[], half: number): boolean {
   if (squares.length === 0) return true;
   // The bend is a float angle: a plan 135 degree turn must stay a sharp return, never slip under by rounding.
   if (squares.some((square) => bendAngle(points, square.index) >= SHARP_RETURN - 1e-9)) return false;
   const stops = [0, ...squares.map((square) => square.index), points.length - 1];
   for (let i = 1; i < stops.length; i++) if (planLength(points, stops[i - 1]!, stops[i]!) < 1) return false;
+  // 1 m of polyline between landings does not keep their squares apart (#673 r1): overlapping squares are not built.
+  for (let a = 0; a < squares.length; a++) for (let b = a + 1; b < squares.length; b++) if (squaresOverlap(squares[a]!, squares[b]!, half)) return false;
   return true;
 }
 
@@ -456,7 +471,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
     const halfWidth = (edge.mode === "stairs" ? width : 1.2) / 2;
     const landingSquares = turningSquares(points);
-    if (!supportedShape(points, landingSquares)) { skip("unsupported_shape", edge.id); continue; }
+    if (!supportedShape(points, landingSquares, halfWidth + 0.03)) { skip("unsupported_shape", edge.id); continue; }
     let bentEscalator = false;
     for (let i = 1; i + 1 < points.length; i++) {
       const before = points[i]!.clone().sub(points[i - 1]!); before.y = 0;
@@ -497,7 +512,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
             const nextLateral = new THREE.Vector3(-next.z, 0, next.x).multiplyScalar(half * side);
             end = mitre(to, leg, lateral, next, nextLateral).clone().sub(from).dot(leg);
           }
-          const spans = edge.mode === "stairs" ? wallSpans(begin, end, from, leg, lateral, half, landingSquares) : end > begin ? [[begin, end] as [number, number]] : [];
+          const spans = edge.mode === "stairs" ? wallSpans(begin, end, from, leg, lateral, half, landingSquares, (s) => THREE.MathUtils.lerp(from.y, to.y, THREE.MathUtils.clamp(s / horizontal, 0, 1))) : end > begin ? [[begin, end] as [number, number]] : [];
           for (const [lo, hi] of spans) {
             const n = Math.max(1, Math.ceil((hi - lo) / 0.5));
             for (let k = 0; k < n; k++) {

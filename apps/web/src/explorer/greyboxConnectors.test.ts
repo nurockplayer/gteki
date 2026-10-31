@@ -389,6 +389,10 @@ function bentLegThenTurn(direction: number): [number, number, number][] {
 }
 /** One turning landing of a supported shape, mirrored for each direction. */
 const singleTurnCases = [15, 45, 90].flatMap((degrees) => [-1, 1].map((direction) => ({ name: `single ${degrees} degree turn, direction=${direction}`, waypoints: stackedWaypoints(degrees, direction) })));
+/** #673 r1: four 90 degree turns; the last flight crosses the first landing's square in plan, about 4.3 m above it. */
+function overFirstLanding(direction: number): [number, number, number][] {
+  return mirror([[0, 0, 0], [4, 1, 0], [4, 2, 4], [-4, 3, 4], [-4, 4, 0], [8, 6, 0]], direction);
+}
 /** A single 45 degree turn whose outgoing leg is only 1.05 m long (#668 r19). */
 function shortOutgoingLeg(direction: number): [number, number, number][] {
   const run = 1.05, angle = Math.PI / 4;
@@ -400,6 +404,7 @@ const multiTurnCases = ([
   { name: "switchback 180 degrees", waypoints: (d: number) => switchbackWaypoints(180, d) },
   { name: "switchback 135 degrees (a 45 degree landing)", waypoints: (d: number) => switchbackWaypoints(135, d) },
   { name: "19 degree bends on the leg into a 90 degree landing (safe path, #640 r17)", waypoints: (d: number) => bentLegThenTurn(d) },
+  { name: "four 90 degree turns, the last flight passing 4.3 m over the first landing (#673 r1)", waypoints: (d: number) => overFirstLanding(d) },
 ] as const).flatMap((shape) => [-1, 1].map((direction) => ({ name: `${shape.name}, direction=${direction}`, waypoints: shape.waypoints(direction) })));
 /** Every stair with a turning landing whose guard the property tests check. */
 const guardedCases = [...singleTurnCases, ...multiTurnCases];
@@ -411,6 +416,7 @@ const unsupportedShapes: { name: string; waypoints: (direction: number) => [numb
   { name: "flight crossing a non-adjacent landing at 1 m", waypoints: (d) => mirror([[0, 0, 0], [4, 1, 0], [4, 1.2, 4], [2, 1.5, 0], [2, 2, -4]], d) },
   { name: "stacked non-adjacent flights", waypoints: (d) => mirror([[0, 0, 0], [4, 2, 0], [4, 2.2, 1.0], [0, 2.6, 1.0]], d) },
   { name: "three 10 degree bends 0.6 m apart and a 90 degree turn", waypoints: (d) => shallowThenTurn(d) },
+  { name: "two 90 degree landings 1.2 m apart whose squares overlap (#673 r1)", waypoints: (d) => mirror([[0, 0, 0], [4, 2, 0], [4, 2.5, -1.2], [8, 4.5, -1.2]], d) },
   { name: "single-vertex 135 degree sharp return", waypoints: (d) => stackedWaypoints(135, d) },
   { name: "single-vertex 165 degree sharp return", waypoints: (d) => stackedWaypoints(165, d) },
   { name: "single 100 degree turn whose inner wall crosses the next flight", waypoints: (d) => stackedWaypoints(100, d) },
@@ -481,6 +487,20 @@ describe("turning landing guards", () => {
       const guards = result.wallSegments.filter((w) => heights.some((h) => Math.abs(w.yMin - (h - 0.12)) < 1e-6 && Math.abs(w.yMax - (h + 0.96)) < 1e-6));
       expect(guards.length, name).toBeGreaterThan(0);
       for (const w of guards) expect(Math.hypot(w.bx - w.ax, w.bz - w.az), name).toBeLessThanOrEqual(diagonal + 1e-6);
+    }
+  });
+
+  // #673 r1: a landing far below a flight is no floor beside it, so the flight keeps both side walls over it.
+  it("keeps a flight's side walls where it passes high over an earlier landing", () => {
+    for (const direction of [-1, 1]) {
+      const result = buildConnectors(stairThrough(overFirstLanding(direction)), () => true, flat, "high");
+      expect(result.stats.legacyConnectors).toBe(0);
+      // The last flight runs along z = 0 from x = -4 (height 4) to x = 8 (height 6); its walls stand at z = ±half.
+      for (const side of [-1, 1]) for (let x = 3.25; x <= 4.75; x += 0.25) {
+        const covered = result.wallSegments.some((w) => Math.abs(w.az - side * half) < 1e-3 && Math.abs(w.bz - side * half) < 1e-3
+          && Math.min(w.ax, w.bx) <= x + 1e-6 && Math.max(w.ax, w.bx) >= x - 1e-6 && w.yMin > 3);
+        expect(covered, `direction=${direction} side=${side} x=${x}`).toBe(true);
+      }
     }
   });
 
