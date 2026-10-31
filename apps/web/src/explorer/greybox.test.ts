@@ -446,6 +446,13 @@ describe("buildGreybox", () => {
     expect(result.openings[0]!.center.x).toBeCloseTo(5);
     expect(result.openings[0]!.along.x).toBeCloseTo(1);
     expect(result.openings[0]!.width).toBeCloseTo(MODE_WIDTH.walk!);
+    expect(result.openings[0]!.noCut).toBe(true);
+  });
+
+  it("opens no wall that a floored walk edge only ends on", () => {
+    const end = bundle.nodes[1]!.position.x;
+    const scene = { colliderNear: () => false, wallHit: (a: { x: number }, b: { x: number }) => a.x < end && b.x >= end ? { x: end, y: 0, z: 0 } : null };
+    expect(buildGreybox(bundle, () => true, () => true, scene, "high").openings).toHaveLength(0);
   });
 
   it("opens nothing where a floored walk edge crosses no scene wall", () => {

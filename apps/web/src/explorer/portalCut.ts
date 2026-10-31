@@ -462,5 +462,5 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
 
 /** Runtime-only portal cuts. The caller owns the returned clones and must dispose them. */
 export function cutPortals(root: THREE.Object3D, openings: readonly Box[], opts: PortalCutResources, walkable: ReadonlySet<THREE.Object3D> = new Set()): CutResult {
-  return cutRegions(root, openings.map(portalRegion), opts, walkable);
+  return cutRegions(root, openings.filter((box) => !box.noCut).map(portalRegion), opts, walkable);
 }

@@ -83,6 +83,8 @@ export interface Box {
   width: number;
   depth: number;
   height: number;
+  /** Collision and wall-split only: no visible scene geometry is cut (a floored doorway through an invisible wall). */
+  noCut?: boolean;
 }
 
 /** Unit normal to the portal wall; passage direction is the fallback when no face was hit. */
@@ -664,11 +666,13 @@ export function emitGreybox(bundle: StationBundle, traversable: (edge: Edge) => 
         const at = R(hit.x, hit.y, hit.z);
         const atT = (at.x - a.x) * along.x + (at.z - a.z) * along.z;
         if (atT < startT - 1e-9) break; // a hit behind the resumed start would repeat forever
+        // A wall the edge only starts or ends on is not one it passes through.
+        if ((i === 1 && atT < 0.05) || (i === pts.length - 1 && atT > flat - 0.05)) { startT = Math.max(atT, startT) + 0.05; if (startT >= flat) break; continue; }
         const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
         const width = widthOf(edge) * Math.min(2, 1 / Math.max(cosine, 1e-9));
         // A floor transition already opened this wall wide enough, along the same direction: don't open it twice.
         if (!openings.some((box) => box.center.distanceToSquared(at) < 1e-4 && box.width + 1e-9 >= width && Math.abs(box.along.dot(along)) > 0.999)) {
-          openings.push({ center: at, along: along.clone(), across: across.clone(), ...(hit.wallNormal ? { wallNormal: hit.wallNormal.clone() } : {}), width, depth: 0.6, height: 2.3 });
+          openings.push({ center: at, along: along.clone(), across: across.clone(), ...(hit.wallNormal ? { wallNormal: hit.wallNormal.clone() } : {}), width, depth: 0.6, height: 2.3, noCut: true });
         }
         startT = Math.max(atT, startT) + 0.05;
         if (startT >= flat) break;
