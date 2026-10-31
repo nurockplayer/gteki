@@ -466,8 +466,20 @@ describe("buildGreybox", () => {
     expect(buildGreybox(bundle, () => true, () => false, wallAt(9.98), "high").openings).toHaveLength(1);
     // Starts on a wall that another edge at that node comes through: opened.
     const through = { ...bundle, nodes: [...bundle.nodes, { id: "c", floorId: "f", position: { x: -5, y: 0, z: 0 } }], edges: [...bundle.edges, { ...bundle.edges[0]!, id: "e2", from: "c", to: "a" }] } as unknown as StationBundle;
-    const openings = buildGreybox(through, (e) => e.id !== "e2", () => false, wallAt(0), "high").openings;
+    const openings = buildGreybox(through, () => true, () => false, wallAt(0), "high").openings;
     expect(openings.some((box) => Math.abs(box.center.x) < 1e-6)).toBe(true);
+    // The same edge closed: nothing carries on beyond the wall, so it stays shut.
+    expect(buildGreybox(through, (e) => e.id !== "e2", () => false, wallAt(0), "high").openings).toHaveLength(0);
+  });
+
+  it("opens both of two differently oriented walls crossed 0.08 m apart", () => {
+    const result = buildGreybox(bundle, () => true, () => false, {
+      colliderNear: () => false,
+      wallHit: (a, b, wallsOnly) => !wallsOnly ? null
+        : a.x < 5 && b.x >= 5 ? { x: 5, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) }
+        : a.x < 5.08 && b.x >= 5.08 ? { x: 5.08, y: 0, z: 0, wallNormal: new THREE.Vector3(Math.SQRT1_2, 0, Math.SQRT1_2) } : null,
+    }, "high");
+    expect(result.openings).toHaveLength(2);
   });
 
   it("opens no wall that a floorless run only touches at an inner bend", () => {

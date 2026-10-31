@@ -334,7 +334,7 @@ export function createGreyboxBuilder(bundle: StationBundle, traversable: (edge: 
         if (!previous || (pad.shifted && !previous.shifted) || (pad.shifted === previous.shifted && pad.width > previous.width)) pads.set(pad.nodeId, pad);
         else for (const side of pad.openSides) previous.openSides.add(side);
       }
-      return emitGreybox(bundle, [...runs, ...[...pads.values()].flatMap((p) => p.strip ? [p.strip] : [])], hasFloor, scene, tier, captureNav, [...pads.values()]);
+      return emitGreybox(bundle, [...runs, ...[...pads.values()].flatMap((p) => p.strip ? [p.strip] : [])], hasFloor, scene, tier, captureNav, [...pads.values()], traversable);
     },
   };
 }
@@ -350,7 +350,7 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
 }
 
 /** Emit the globally deduplicated passage geometry for already-detected runs. */
-export function emitGreybox(bundle: StationBundle, detected: readonly UnmodelledEdgeRun[], hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", captureNav = false, pads: readonly LandingPad[] = []) {
+export function emitGreybox(bundle: StationBundle, detected: readonly UnmodelledEdgeRun[], hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", captureNav = false, pads: readonly LandingPad[] = [], traversable: (edge: Edge) => boolean = () => true) {
   const started = performance.now();
   const index = new CorridorIndex();
   for (const pad of pads) index.add(pad.center.clone().addScaledVector(pad.along, -pad.width / 2), pad.center.clone().addScaledVector(pad.along, pad.width / 2), pad.width / 2);
@@ -481,7 +481,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         const index = first ? (Math.hypot(end.x - p.x, end.z - p.z) < 1e-3 ? k - 1 : k) : (Math.hypot(end.x - q.x, end.z - q.z) < 1e-3 ? k + 2 : k + 1);
         if (index >= 0 && index < edgePts.length) return [edgePts[index]!];
         const node = first ? run.edge.from : run.edge.to;
-        return bundle.edges.filter((e) => e.id !== run.edge.id && (e.from === node || e.to === node))
+        return bundle.edges.filter((e) => e.id !== run.edge.id && (e.from === node || e.to === node) && traversable(e))
           .map((e) => { const q2 = edgePoints(bundle, e, nodes, floors); return e.from === node ? q2[1] : q2.at(-2); })
           .filter((q2): q2 is THREE.Vector3 => !!q2);
       }
@@ -684,7 +684,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
             const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
             const openingWidth = width * Math.min(2, 1 / Math.max(cosine, 1e-9));
             // A floor transition already opened this wall wide enough, along the same direction: don't open it twice.
-            if (!openings.some((box) => box.center.distanceToSquared(near) < 0.01 && box.width + 1e-9 >= openingWidth && Math.abs(box.along.dot(along)) > 0.999)) openAt(near, openingWidth, hit.wallNormal);
+            if (!openings.some((box) => box.center.distanceToSquared(near) < 0.01 && box.width + 1e-9 >= openingWidth && Math.abs(box.along.dot(along)) > 0.999 && (!box.wallNormal || !hit.wallNormal || Math.abs(box.wallNormal.dot(hit.wallNormal)) > 0.999))) openAt(near, openingWidth, hit.wallNormal);
           }
           start = at + 0.05;
           if (start >= flat) break;
