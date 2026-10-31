@@ -832,3 +832,63 @@ describe("turning landing guards", () => {
 
 });
 
+// #683: two stairs leave one node on 3 m flat legs 30 degrees apart. Each stair's flat-leg side walls and foot-landing guards
+// would stand in the other's lane; those pieces are left out, while each stair keeps its walls along its own flight.
+describe("connectors leaving one node together", () => {
+  it("keeps each stair's walls and guards off the other's walk path", () => {
+    const half = 1.5 / 2 + 0.03, degrees = (d: number) => (d * Math.PI) / 180;
+    /** Renderer waypoints [x, height, z]: a 3 m flat leg from the shared node, then a 45 degree turn onto a 6 m flight. */
+    const waypoints = (heading: number, turn: number): [number, number, number][] => {
+      const foot: [number, number, number] = [3 * Math.cos(heading), 0, 3 * Math.sin(heading)];
+      return [[0, 0, 0], foot, [foot[0] + 6 * Math.cos(heading + turn), 4, foot[2] + 6 * Math.sin(heading + turn)]];
+    };
+    // Each stair turns its flight away from the other one, so only the flat legs and their foot landings meet.
+    const centrelines = [waypoints(degrees(0), degrees(-45)), waypoints(degrees(30), degrees(45))];
+    const edge = (id: string, to: string, line: [number, number, number][]): Edge => syntheticEdge(id, "start", to, {
+      mode: "stairs", attributes: { sceneGap: true }, geometry: line.map(([x, h, z]) => ({ x, y: -z, z: h })),
+    });
+    const build = (edges: Edge[]) => {
+      const station = createSyntheticBundle(edges);
+      for (const [id, top] of [["upper", centrelines[0]!.at(-1)!], ["upper-2", centrelines[1]!.at(-1)!]] as const) {
+        station.nodes.find((n) => n.id === id)!.position = { x: top[0], y: -top[2], z: 4 };
+      }
+      return buildConnectors(station, () => true, { hasFloor: () => true, nearMesh: () => false }, "high");
+    };
+    const a = edge("flat-a", "upper", centrelines[0]!), b = edge("flat-b", "upper-2", centrelines[1]!);
+    const both = build([a, b]), onlyA = build([a]), onlyB = build([b]);
+    expect(both.stats.legacyConnectors).toBe(0);
+    expect(both.pathByEdge.size).toBe(2);
+
+    /** Plan distance from (x, z) to a renderer waypoint polyline. */
+    const near = (x: number, z: number, line: [number, number, number][]) => Math.min(...line.slice(1).map(([x1, , z1], i) => {
+      const [x0, , z0] = line[i]!;
+      const dx = x1 - x0, dz = z1 - z0, lengthSq = dx * dx + dz * dz;
+      const t = lengthSq ? THREE.MathUtils.clamp(((x - x0) * dx + (z - z0) * dz) / lengthSq, 0, 1) : 0;
+      return Math.hypot(x - x0 - dx * t, z - z0 - dz * t);
+    }));
+    // No wall or guard piece stands within a stair's half width of the other stair's centreline (its own walls sit exactly at
+    // half; a landing guard may come 0.04 m inside its own flight, #673).
+    for (const w of both.wallSegments) for (let t = 0; t <= 1; t += 0.05) {
+      const x = w.ax + (w.bx - w.ax) * t, z = w.az + (w.bz - w.az) * t;
+      for (const line of centrelines) expect(near(x, z, line), `wall (${w.ax}, ${w.az})-(${w.bx}, ${w.bz}) at (${x}, ${z})`).toBeGreaterThan(half - 0.05);
+    }
+    // The skipped pieces lose their colliders, but each stair still carries a collider set and its flight's side walls.
+    const boxes = (result: ReturnType<typeof build>) => result.colliders.reduce((n, o) => n + (o as THREE.Mesh).geometry.getAttribute("position").count / 36, 0);
+    expect(both.colliders).toHaveLength(2);
+    expect(boxes(both)).toBeGreaterThan(0);
+    expect(boxes(both)).toBeLessThan(boxes(onlyA) + boxes(onlyB));
+    for (const line of centrelines) expect(both.wallSegments.filter((w) => {
+      const x = (w.ax + w.bx) / 2, z = (w.az + w.bz) / 2;
+      return Math.hypot(x, z) > 4 && near(x, z, line) < half + 0.1;
+    }).length, `walls along (${line.at(-1)!})`).toBeGreaterThan(0);
+    // A walker on either stair's centreline is never pushed aside.
+    for (const [id, path] of both.pathByEdge) {
+      const cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
+      for (let s = 0; s <= total; s += 0.05) {
+        const p = samplePolyline(path, cumulative, s), resolved = resolveWalls(p.x, p.z, 0.3, p.y, 1.7, both.wallSegments);
+        expect(Math.hypot(resolved.x - p.x, resolved.z - p.z), `${id} s=${s.toFixed(2)}`).toBeLessThanOrEqual(0.05);
+      }
+    }
+  });
+});
+
