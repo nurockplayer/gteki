@@ -90,6 +90,24 @@ describe("unmodelledRunsByEdge", () => {
 
 describe("buildGreybox", () => {
   const emptyScene = { colliderNear: () => false, wallHit: () => null };
+  it("emits no wall piece without plan length where two stair cuts' bounds differ only by rounding", () => {
+    // A flight whose both ends are on passages is cut from each end, in opposite directions: on a wall it crosses the
+    // two cut grids can differ by rounding only, and the slivers between them made zero-length walls (found by a
+    // random search over diagonal layouts; this is one of them).
+    const station = {
+      floors: [{ id: "f", renderElevationM: 0 }, { id: "g", renderElevationM: 4 }],
+      nodes: [{ id: "a", floorId: "f", position: { x: -2.515371093766471, y: 4.158027066922758, z: 0 } }, { id: "b", floorId: "f", position: { x: -7.491887125499859, y: 11.096805121450734, z: 0 } },
+        { id: "m", floorId: "f", position: { x: -5.369720649737605, y: 8.137859128676528, z: 0 } }, { id: "c", floorId: "g", position: { x: -11.767454803262858, y: 3.7334887520153144, z: 4 } },
+        { id: "d", floorId: "g", position: { x: -11.767454803262858 + 6 * Math.cos(3.7445089313623328), y: 3.7334887520153144 + 6 * Math.sin(3.7445089313623328), z: 4 } }],
+      edges: [{ id: "e1", from: "a", to: "m", mode: "walk" }, { id: "e2", from: "m", to: "b", mode: "walk" }, { id: "s", from: "m", to: "c", mode: "stairs" },
+        { id: "up", from: "c", to: "d", mode: "walk" }, { id: "x", from: "a", to: "c", mode: "walk" }],
+    } as unknown as StationBundle;
+    for (const tier of ["high", "low"] as const) {
+      const result = buildGreybox(station, () => true, () => false, emptyScene, tier);
+      expect(result.wallSegments.length).toBeGreaterThan(0);
+      expect(result.wallSegments.filter((w) => Math.hypot(w.bx - w.ax, w.bz - w.az) < 1e-3)).toEqual([]);
+    }
+  });
   it("builds a missing upper stair landing and captures its walkable floor", () => {
     const station = {
       ...bundle,

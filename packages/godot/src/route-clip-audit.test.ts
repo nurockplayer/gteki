@@ -71,3 +71,16 @@ describe("route clip audit", () => {
     expect(proxy.geometry).not.toBe(original);
   });
 });
+
+describe("zero-length walls", () => {
+  it("never cross a path, while a real wall on the same line still does", () => {
+    const at = (walls: { a: { x: number; y: number }; b: { x: number; y: number } }[]) => {
+      const details: { wallBefore: boolean }[] = [];
+      auditPolyline({ ground: [], collider: [], walls: walls.map((w) => ({ ...w, zMin: 0, zMax: 2 })) } as never, line([-1, 0, 0], [1, 0, 0]), { alreadySampled: true, detail: details as never });
+      return details.some((d) => d.wallBefore);
+    };
+    // A point wall 180 m north on the path's crossing line x = 0 (the collinear branch used to match the whole line).
+    expect(at([{ a: { x: 0, y: 180 }, b: { x: 0, y: 180 } }])).toBe(false);
+    expect(at([{ a: { x: 0, y: -1 }, b: { x: 0, y: 1 } }])).toBe(true);
+  });
+});

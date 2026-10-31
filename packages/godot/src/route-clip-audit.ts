@@ -97,6 +97,8 @@ function cross2(a: { x: number; y: number }, b: { x: number; y: number }, c: { x
 }
 /** Where p→q crosses the wall in plan, as a fraction along p→q; null when it doesn't. */
 function segmentsCross(p: { x: number; y: number }, q: { x: number; y: number }, w: WallSegment): number | null {
+  // A zero-length wall cannot be crossed in plan; the collinear test below would match it along a whole line.
+  if (w.a.x === w.b.x && w.a.y === w.b.y) return null;
   const d1 = cross2(w.a, w.b, p), d2 = cross2(w.a, w.b, q), d3 = cross2(p, q, w.a), d4 = cross2(p, q, w.b);
   if (d1 === 0 && d2 === 0) {
     // Collinear: running along inside the wall counts when the two segments overlap.
