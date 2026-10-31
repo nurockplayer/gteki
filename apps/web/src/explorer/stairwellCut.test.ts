@@ -108,6 +108,50 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("rails no sliver across the path where two pieces of one flight meet at a small tilt", () => {
+    // A 1.3-degree bend at the joint: the plan runs (0, 0) -> (5, 0.057) -> (10, 0) in renderer x, z.
+    const bent = flight([{ x: 0, y: 0, z: 0 }, { x: 5, y: -0.057, z: 2 }, { x: 10, y: 0, z: 4 }]);
+    const wells = stairwellWells(bent, traversable);
+    expect(wells[0]!.rects).toHaveLength(2);
+    const s = scene();
+    const result = cutStairwells(s.root, wells, { tier: "low" });
+    // Distance from a plan point to the stair's centreline.
+    const centre: [number, number][] = [[0, 0], [5, 0.057], [10, 0]];
+    const toCentre = (x: number, z: number) => Math.min(...centre.slice(1).map(([bx, bz], i) => {
+      const [ax, az] = centre[i]!;
+      const dx = bx - ax, dz = bz - az;
+      const t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz)));
+      return Math.hypot(x - ax - t * dx, z - az - t * dz);
+    }));
+    const halfWidth = wells[0]!.rects[0]!.halfWidth;
+    for (const w of result.walls) {
+      // The mouth rail at x = 0 stands a storey above the foot; only the joint near x = 5 is on the walker's way.
+      for (const [x, z] of [[w.ax, w.az], [w.bx, w.bz], [(w.ax + w.bx) / 2, (w.az + w.bz) / 2]]) {
+        if (x! < 1e-3) continue;
+        expect(toCentre(x!, z!)).toBeGreaterThan(halfWidth - 1e-3);
+      }
+    }
+    result.dispose();
+  });
+
+  it("puts no edge band across the stair mouth at the foot or at the arrival", () => {
+    const split = flight([{ x: 0, y: 0, z: 0 }, { x: 5, y: 0, z: 2 }, { x: 10, y: 0, z: 4 }]);
+    const wells = stairwellWells(split, traversable);
+    expect(wells[0]!.rects).toHaveLength(2);
+    const s = scene();
+    const result = cutStairwells(s.root, wells, { tier: "high" });
+    const band = result.finish!.getObjectByName("greybox-stairwell-band") as THREE.Mesh;
+    const positions = band.geometry.getAttribute("position");
+    expect(positions.count).toBeGreaterThan(0);
+    // No quad lies wholly on the first piece's start side (x = 0) or the last piece's end side (x = 10).
+    for (let i = 0; i < positions.count; i += 6) {
+      const xs = [0, 1, 2, 3, 4, 5].map(j => positions.getX(i + j));
+      expect(xs.every(x => Math.abs(x) < 1e-6)).toBe(false);
+      expect(xs.every(x => Math.abs(x - 10) < 1e-6)).toBe(false);
+    }
+    result.dispose();
+  });
+
   it("merges the well edge into the greybox shell instead of adding a mesh", () => {
     const s = scene();
     const shellGeometry = new THREE.BufferGeometry();
@@ -135,6 +179,19 @@ describe("stairwell cuts", () => {
     const result = cutStairwells(s.root, wells, { tier: "high" });
     expect(up(s.ceiling, 4, 2, -1.5)).toHaveLength(0);
     expect(down(s.upper, 4, 5, -1.5)).toHaveLength(0);
+    result.dispose();
+  });
+
+  it("keeps the rail on the outer corner of an L stair's turn, where no piece covers the seam", () => {
+    const landing = flight([{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: 4, y: 3, z: 2 }, { x: 10, y: 3, z: 4 }]);
+    const s = scene();
+    const result = cutStairwells(s.root, stairwellWells(landing, traversable), { tier: "low" });
+    // From the upper floor beyond the landing's outer corner, a body is pushed back rather than stepping into the well.
+    // The landing's seam with the first flight (z = 0) is open over the flight (x < 4) and railed beyond it; its outer
+    // long side (x = 5.1) is railed.
+    const feet = 4, body = 1.7;
+    expect(resolveWalls(4.6, 0.15, 0.3, feet, body, result.walls).z).toBeGreaterThan(0.25);
+    expect(resolveWalls(5.25, -0.5, 0.3, feet, body, result.walls).x).toBeGreaterThan(5.35);
     result.dispose();
   });
 
