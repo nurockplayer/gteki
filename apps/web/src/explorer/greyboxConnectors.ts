@@ -2,6 +2,7 @@ import type { Edge, StationBundle } from "@gteki/schema";
 import * as THREE from "three";
 import { edgePoints, type V3 } from "./geometry.ts";
 import type { Segment2 } from "./walker.ts";
+import { WALKER_BODY } from "@gteki/scene-api";
 import { buildConnectors as buildLegacyConnectors } from "./greyboxConnectorsLegacy.ts";
 
 /** Find vertical edges for which the original scene lacks a complete connector. */
@@ -435,6 +436,26 @@ function passesOverItself(points: readonly THREE.Vector3[], squares: readonly La
   return false;
 }
 
+/** Plan distance between segment a–b and segment p–q, and the parameter along p–q of their nearest points. */
+function planGap(ax: number, az: number, bx: number, bz: number, px: number, pz: number, qx: number, qz: number): { gap: number; t: number } {
+  const dx = bx - ax, dz = bz - az, ex = qx - px, ez = qz - pz, wx = px - ax, wz = pz - az;
+  const den = dx * ez - dz * ex;
+  if (Math.abs(den) > 1e-12) {
+    const s = (wx * ez - wz * ex) / den, t = (wx * dz - wz * dx) / den;
+    if (s >= 0 && s <= 1 && t >= 0 && t <= 1) return { gap: 0, t };
+  }
+  const near = (x: number, z: number, ox: number, oz: number, ux: number, uz: number) => {
+    const lengthSq = ux * ux + uz * uz;
+    const t = lengthSq ? THREE.MathUtils.clamp(((x - ox) * ux + (z - oz) * uz) / lengthSq, 0, 1) : 0;
+    return { gap: Math.hypot(x - ox - ux * t, z - oz - uz * t), t };
+  };
+  // Non-parallel segments only meet at an endpoint projection; parallel ones are covered by the same four candidates.
+  return [
+    near(ax, az, px, pz, ex, ez), near(bx, bz, px, pz, ex, ez),
+    { gap: near(px, pz, ax, az, dx, dz).gap, t: 0 }, { gap: near(qx, qz, ax, az, dx, dz).gap, t: 1 },
+  ].reduce((best, candidate) => (candidate.gap < best.gap ? candidate : best));
+}
+
 /** Whether two landing squares of half-size `half` overlap in plan (separating axes: each square's own two axes). */
 function squaresOverlap(p: LandingSquare, q: LandingSquare, half: number): boolean {
   const corners = (sq: LandingSquare) => { const u = sq.axis, v = new THREE.Vector3(-u.z, 0, u.x); return [[1, 1], [1, -1], [-1, -1], [-1, 1]].map(([a, b]) => sq.centre.clone().addScaledVector(u, a! * half).addScaledVector(v, b! * half)); };
@@ -540,7 +561,22 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   const lampMaterials = [lightMaterial, new THREE.MeshStandardMaterial({ color: "#00ff00", emissive: "#00ff00", emissiveIntensity: 3.2 }), new THREE.MeshStandardMaterial({ color: "#ff0000", emissive: "#ff0000", emissiveIntensity: 3.2 })];
   const glassMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, opacity: 0.28, depthWrite: false, roughness: 0.32, metalness: 0.08, side: THREE.DoubleSide });
   const physicalMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
-  for (const edge of unmodelledVerticalEdges(bundle, traversable, scope.hasFloor, scope.nearMesh)) {
+  const connectorEdges = unmodelledVerticalEdges(bundle, traversable, scope.hasFloor, scope.nearMesh);
+  // Two stairs can leave one node on flat legs a few degrees apart: each one's side wall and landing guards would stand in the
+  // other's lane (#683), so any such piece is left out below.
+  const walkLines = connectorEdges.map((edge) => {
+    const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
+    const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
+    return { id: edge.id, points: simplifyPlan(edgePoints(bundle, edge, nodes, floors)), half: (edge.mode === "stairs" ? width : 1.2) / 2 + 0.03 };
+  });
+  // A wall band [yMin, yMax] blocks a walker on another connector when it overlaps that walker's body there.
+  const onOtherWalk = (edgeId: string, a: THREE.Vector3, b: THREE.Vector3, yMin: number, yMax: number) => walkLines.some((line) => line.id !== edgeId && line.points.slice(1).some((q, j) => {
+    const p = line.points[j]!;
+    const { gap, t } = planGap(a.x, a.z, b.x, b.z, p.x, p.z, q.x, q.z);
+    const feet = THREE.MathUtils.lerp(p.y, q.y, t);
+    return gap <= line.half && yMin <= feet + WALKER_BODY.bodyTopM && yMax >= feet + WALKER_BODY.bodyBottomM;
+  }));
+  for (const edge of connectorEdges) {
     const points = simplifyPlan(edgePoints(bundle, edge, nodes, floors));
     const planRuns = points.slice(1).map((p, i) => Math.hypot(p.x - points[i]!.x, p.z - points[i]!.z));
     if (planRuns.reduce((a, b) => a + b, 0) < 0.3 || planRuns.some((run, i) => run < 0.3 && Math.abs(points[i + 1]!.y - points[i]!.y) > 1e-6)) { skip("short_run", edge.id); continue; }
@@ -603,6 +639,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
               const a = from.clone().addScaledVector(leg, s0).add(lateral), b = from.clone().addScaledVector(leg, s1).add(lateral);
               a.y = 0; b.y = 0;
               const ya = THREE.MathUtils.lerp(from.y, to.y, THREE.MathUtils.clamp(s0 / horizontal, 0, 1)), yb = THREE.MathUtils.lerp(from.y, to.y, THREE.MathUtils.clamp(s1 / horizontal, 0, 1));
+              if (onOtherWalk(edge.id, a, b, Math.min(ya, yb) - 0.12, Math.max(ya, yb) + 0.96)) continue;
               const wall = { ax: a.x, az: a.z, bx: b.x, bz: b.z, yMin: Math.min(ya, yb) - 0.12, yMax: Math.max(ya, yb) + 0.96 };
               wallSegments.push(wall);
               flightWalls.push({ leg: i - 1, wall });
@@ -679,6 +716,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
             for (const [t0, t1] of gapsOutside(cover)) {
               const start = a.clone().lerp(b, t0), finish = a.clone().lerp(b, t1);
               const length = start.distanceTo(finish); if (length < 1e-6) continue;
+              if (onOtherWalk(edge.id, start, finish, at.y - 0.12, at.y + 0.96)) continue;
               const wall = { ax: start.x, az: start.z, bx: finish.x, bz: finish.z, yMin: at.y - 0.12, yMax: at.y + 0.96 }; wallSegments.push(wall);
               flightWalls.push({ leg: -1, wall });
               const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(finish.z - start.z), finish.x - start.x)).setPosition((start.x + finish.x) / 2, at.y, (start.z + finish.z) / 2);
