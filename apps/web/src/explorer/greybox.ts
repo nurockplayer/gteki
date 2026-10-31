@@ -461,6 +461,8 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     const y = Math.min(a.y, z.y);
     return runSegments.some((o) => o.floor !== floorId && o.bottom < y - 0.5 && y - 0.12 - o.top < 2.3 && planSegmentDistance(a, z, o.a, o.z) < half + o.half);
   };
+  // A suppressed junction neither builds its patch nor clips the walls of the passages it meets.
+  const builtJunctions = activeJunctions.filter((j) => !overLowPassage(j.floor, j.at, j.at, j.width / 2));
   const batches = new Map<string, Batch>();
   const floorBatches = new Map<string, string>();
   const getBatch = (floor: string) => {
@@ -523,7 +525,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         const wa = offset(a, side * half, 0), wz = offset(z, side * half, 0);
         // Clip the wall centreline against junction discs; the floor and ceiling remain continuous.
         let intervals: [number, number][] = index.uncovered(wa, wz);
-        for (const j of activeJunctions) {
+        for (const j of builtJunctions) {
           const vx = wz.x - wa.x, vz = wz.z - wa.z, ox = wa.x - j.at.x, oz = wa.z - j.at.z;
           const A = vx * vx + vz * vz, B = 2 * (ox * vx + oz * vz), C = ox * ox + oz * oz - (j.width / 2) ** 2;
           // Compare heights where the wall passes the junction, not at the segment midpoint: a long ramp drifts.
@@ -678,8 +680,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       travelled += length; lengthM += length;
     }
   }
-  for (const j of activeJunctions) {
-    if (overLowPassage(j.floor, j.at, j.at, j.width / 2)) continue;
+  for (const j of builtJunctions) {
     const b = getBatch(j.floor), radius = j.width / 2;
     for (let i = 0; i < 24; i++) {
       const a = i * Math.PI * 2 / 24, z = (i + 1) * Math.PI * 2 / 24;

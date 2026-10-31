@@ -552,6 +552,36 @@ describe("buildGreybox", () => {
     expect(ramp.some((y) => Math.abs(y - 2) < 1e-6)).toBe(false);
   });
 
+  it("lays no intermediate landing pad over a lower passage, and keeps it when the level is a full floor", () => {
+    const station = (intermediate: boolean) => ({
+      ...bundle,
+      floors: [{ id: "lower", renderElevationM: 0 }, { id: "upper", renderElevationM: 1.6, intermediate }],
+      nodes: [{ id: "w0", floorId: "lower", position: { x: -5, y: 0, z: 0 } }, { id: "w1", floorId: "lower", position: { x: 5, y: 0, z: 0 } },
+        { id: "low", floorId: "lower", position: { x: 0, y: -6, z: 0 } }, { id: "high", floorId: "upper", position: { x: 0, y: 0, z: 1.6 } },
+        { id: "walk", floorId: "upper", position: { x: 0, y: 2, z: 1.6 } }],
+      edges: [{ id: "under", from: "w0", to: "w1", mode: "walk" }, { id: "stair", from: "low", to: "high", mode: "stairs" }, { id: "path", from: "high", to: "walk", mode: "walk" }],
+    }) as unknown as StationBundle;
+    // Lower stair foot has floor; the corridor under the landing and the landing itself do not.
+    const hasFloor = (p: { x: number; y: number; z: number }) => p.y < -4;
+    const at16 = (intermediate: boolean) => { const nav = buildGreybox(station(intermediate), () => true, hasFloor, emptyScene, "low", true).navFloors!; return nav.filter((_v, i) => i % 3 === 1).some((y) => Math.abs(y - 1.6) < 1e-6); };
+    const full = buildGreybox(station(false), () => true, hasFloor, emptyScene, "low", true);
+    expect(full.stats.landingPads).toBe(1);
+    expect(at16(false)).toBe(true);
+    expect(at16(true)).toBe(false);
+  });
+
+  it("clips no lower wall with a suppressed intermediate junction", () => {
+    const floors = [{ ...bundle.floors[0]!, id: "low", renderElevationM: 0.8 }, { ...bundle.floors[0]!, id: "landing", renderElevationM: 1.6, intermediate: true }];
+    const node = (id: string, floorId: string, x: number, y: number) => ({ ...bundle.nodes[0]!, id, floorId, position: { x, y, z: null } });
+    const walk = (id: string, from: string, to: string, m: number) => ({ ...bundle.edges[0]!, id, from, to, attributes: { width: { m } } });
+    const walls = (withLanding: boolean) => buildGreybox({ ...bundle, floors,
+      nodes: [node("a", "low", 0, 0), node("b", "low", 10, 0), ...(withLanding ? [node("c", "landing", 5, -4), node("d", "landing", 5, 0), node("e", "landing", 9, 0)] : [])],
+      edges: [walk("low", "a", "b", 2), ...(withLanding ? [walk("l1", "c", "d", 4), walk("l2", "d", "e", 4)] : [])] } as unknown as StationBundle,
+      () => true, () => false, emptyScene, "high").wallSegments.filter((w) => w.yMin < 1 && Math.abs(w.az) > 0.5 && Math.abs(w.az - w.bz) < 1e-6);
+    const length = (ws: { ax: number; bx: number }[]) => ws.reduce((sum, w) => sum + Math.abs(w.bx - w.ax), 0);
+    expect(length(walls(true))).toBeCloseTo(length(walls(false)));
+  });
+
   it("checks intermediate clearance only against greybox runs, not scene-modelled floors (#680)", () => {
     const floors = [{ ...bundle.floors[0]!, id: "low", renderElevationM: 0 }, { ...bundle.floors[0]!, id: "landing", renderElevationM: 1.6, intermediate: true }];
     const nodes = [
