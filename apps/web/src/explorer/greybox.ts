@@ -333,7 +333,7 @@ export function createGreyboxBuilder(bundle: StationBundle, traversable: (edge: 
         if (!previous || (pad.shifted && !previous.shifted) || (pad.shifted === previous.shifted && pad.width > previous.width)) pads.set(pad.nodeId, pad);
         else for (const side of pad.openSides) previous.openSides.add(side);
       }
-      return emitGreybox(bundle, [...runs, ...[...pads.values()].flatMap((p) => p.strip ? [p.strip] : [])], hasFloor, scene, tier, captureNav, [...pads.values()]);
+      return emitGreybox(bundle, traversable, [...runs, ...[...pads.values()].flatMap((p) => p.strip ? [p.strip] : [])], hasFloor, scene, tier, captureNav, [...pads.values()]);
     },
   };
 }
@@ -349,7 +349,7 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
 }
 
 /** Emit the globally deduplicated passage geometry for already-detected runs. */
-export function emitGreybox(bundle: StationBundle, detected: readonly UnmodelledEdgeRun[], hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", captureNav = false, pads: readonly LandingPad[] = []) {
+export function emitGreybox(bundle: StationBundle, traversable: (edge: Edge) => boolean, detected: readonly UnmodelledEdgeRun[], hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", captureNav = false, pads: readonly LandingPad[] = []) {
   const started = performance.now();
   const index = new CorridorIndex();
   for (const pad of pads) index.add(pad.center.clone().addScaledVector(pad.along, -pad.width / 2), pad.center.clone().addScaledVector(pad.along, pad.width / 2), pad.width / 2);
@@ -640,6 +640,37 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         const q = center.clone().add(new THREE.Vector3(Math.cos(z) * radius, 0, Math.sin(z) * radius));
         quad(height === 0 ? b.shell : b.ceiling, height === 0 ? b.colors : b.ceilingColors, center, height === 0 ? q : p, height === 0 ? p : q, center, [0.72, 0.72, 0.72, 0.72]);
         if (captureNav && height === 0) quad(navFloors, null, center, q, p, center);
+      }
+    }
+  }
+  // A floored walk edge can cross a scene wall (an invisible walk-proxy wall the station model has no doorway for)
+  // between two floored samples, where the run detector sees no transition: without an opening the bake, the route
+  // audit and the live walker are all blocked by that wall.
+  for (const edge of bundle.edges) {
+    if (!traversable(edge) || ["stairs", "escalator", "elevator"].includes(edge.mode)) continue;
+    const pts = edgePoints(bundle, edge, nodes, floors);
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1]!, b = pts[i]!;
+      if (!hasFloor(enu(a)) || !hasFloor(enu(b))) continue;
+      const dx = b.x - a.x, dz = b.z - a.z, flat = Math.hypot(dx, dz);
+      if (flat < 1e-9) continue;
+      const along = new THREE.Vector3(dx / flat, 0, dz / flat), across = new THREE.Vector3(-along.z, 0, along.x);
+      // Up to 8 walls on one segment: each opening resumes 0.05 m past its wall.
+      let startT = 0;
+      for (let n = 0; n < 8; n++) {
+        const hit = scene.wallHit(enu(a.clone().lerp(b, startT / flat)), enu(b));
+        if (!hit) break;
+        const at = R(hit.x, hit.y, hit.z);
+        const atT = (at.x - a.x) * along.x + (at.z - a.z) * along.z;
+        if (atT < startT - 1e-9) break; // a hit behind the resumed start would repeat forever
+        const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
+        const width = widthOf(edge) * Math.min(2, 1 / Math.max(cosine, 1e-9));
+        // A floor transition already opened this wall wide enough, along the same direction: don't open it twice.
+        if (!openings.some((box) => box.center.distanceToSquared(at) < 1e-4 && box.width + 1e-9 >= width && Math.abs(box.along.dot(along)) > 0.999)) {
+          openings.push({ center: at, along: along.clone(), across: across.clone(), ...(hit.wallNormal ? { wallNormal: hit.wallNormal.clone() } : {}), width, depth: 0.6, height: 2.3 });
+        }
+        startT = Math.max(atT, startT) + 0.05;
+        if (startT >= flat) break;
       }
     }
   }

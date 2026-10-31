@@ -13,7 +13,7 @@ it("profiles 15 km of synthetic corridors", () => {
   }
   const bundle = { ...base, nodes, edges }, floor = () => false, scene = { colliderNear: () => false, wallHit: () => null };
   const runs = unmodelledRunsByEdge(bundle, () => true, floor);
-  const result = emitGreybox(bundle, runs, floor, scene, "high");
+  const result = emitGreybox(bundle, () => true, runs, floor, scene, "high");
   expect(result.stats.lengthM).toBeCloseTo(15000);
   expect(result.stats.buildMs).toBeLessThanOrEqual(120);
   expect(result.stats.triangles).toBe(7800);

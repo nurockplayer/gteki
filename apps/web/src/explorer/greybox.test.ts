@@ -436,6 +436,23 @@ describe("buildGreybox", () => {
     expect(box.width * Math.cos(angle)).toBeGreaterThanOrEqual(0.6);
   });
 
+  it("opens a scene wall that a floored walk edge crosses", () => {
+    const scene = {
+      colliderNear: () => false,
+      wallHit: (a: { x: number }, b: { x: number }) => a.x < 5 && b.x >= 5 ? { x: 5, y: 0, z: 0 } : null,
+    };
+    const result = buildGreybox(bundle, () => true, () => true, scene, "high");
+    expect(result.openings).toHaveLength(1);
+    expect(result.openings[0]!.center.x).toBeCloseTo(5);
+    expect(result.openings[0]!.along.x).toBeCloseTo(1);
+    expect(result.openings[0]!.width).toBeCloseTo(MODE_WIDTH.walk!);
+  });
+
+  it("opens nothing where a floored walk edge crosses no scene wall", () => {
+    const result = buildGreybox(bundle, () => true, () => true, emptyScene, "high");
+    expect(result.openings).toHaveLength(0);
+  });
+
   it("preserves the entire floor and walls of a long straight passage", () => {
     const long = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 2000, y: 0, z: 0 } }] };
     const result = buildGreybox(long, () => true, () => false, emptyScene, "low");
