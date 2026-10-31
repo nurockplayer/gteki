@@ -4,6 +4,28 @@ import { createSyntheticBundle, syntheticEdge } from "../../navigation/src/fixtu
 import { makeGreybox } from "./navmesh-greybox.ts";
 import { auditPolyline } from "./route-clip-audit.ts";
 
+it("bakes the live scene: the probe holds the stairwell cut and the connectors (#676)", () => {
+  const bundle = createSyntheticBundle([
+    syntheticEdge("stair", "start", "upper", { mode: "stairs", geometry: [{ x: 0, y: 0, z: null }, { x: 5, y: 0, z: null }, { x: 10, y: 0, z: null }] }),
+    syntheticEdge("upper-walk", "upper", "upper-2"),
+  ]);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 10).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+  // The slab the flight passes under: the stairwell cut opens it and rails the upper floor.
+  const upper = new THREE.Mesh(new THREE.PlaneGeometry(14, 4).rotateX(-Math.PI / 2).translate(8, 4, 0), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+  const root = new THREE.Group().add(floor, upper); root.updateMatrixWorld(true);
+  const scene = { root, walkable: [floor, upper], colliders: [], cameraBlockers: [], walls: [] } as never;
+  const made = makeGreybox(bundle, scene, false);
+  expect(made.stairwellCut.stats.wells).toBe(1);
+  // The navigable probe is the live scene: the cut's rail colliders and the connector floor are in it.
+  expect(made.stairwellCut.colliders.length).toBeGreaterThan(0);
+  for (const collider of made.stairwellCut.colliders) expect(made.probe.collider).toContain(collider);
+  expect(made.connectors.walkable.length).toBeGreaterThan(0);
+  for (const walkable of made.connectors.walkable) expect(made.probe.ground).toContain(walkable);
+  // buildLiveScene returns the lists the bake appends; the probe adds only its nav-floor mesh.
+  expect(made.probe.collider).toBe(made.targets.collider);
+  expect(made.probe.ground.slice(0, -1)).toEqual(made.targets.ground);
+});
+
 it("audits the generated portal as open while leaving the surrounding collider solid", () => {
   const bundle = createSyntheticBundle([syntheticEdge("e","start","a")]);
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(10,10).rotateX(-Math.PI/2).translate(-1,0,0),new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));

@@ -18,9 +18,10 @@ import { R, chevronTexture, dashTexture, ribbonGeometry } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { buildConnectors, skippedConnectorPath, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { cutPortals, disposePortalCuts, type PortalCutResources } from "./portalCut.ts";
-import { cutStairwells, stairwellWells, type StairwellCut, type StairwellStats } from "./stairwellCut.ts";
+import { type StairwellCut, type StairwellStats } from "./stairwellCut.ts";
 import { decodeRecipe, type CutRecipe } from "./cutRecipe.ts";
-import { buildGreybox, portalWidthAxis, splitWallsAtOpenings, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
+import { buildGreybox, portalWidthAxis, unmodelledRunsByEdge, type Box, type GreyboxStats } from "./greybox.ts";
+import { buildLiveScene } from "./liveScene.ts";
 import { greyboxPathSegments, greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
 import { darkSampleDistances, routeGroundCounts, sceneMeshNear } from "./routeGroundQa.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
@@ -982,48 +983,32 @@ export class Explorer {
       lap("stairwellRecipe");
       // Superseded or disposed while the recipe loaded: clearStation already released this load's scene, greybox and cuts.
       if (generation !== this.loadGeneration || this.disposed || !this.stationScene) return false;
-      this.stairwellCut = cutStairwells(this.stationScene.root, stairwellWells(bundle, traversable), {
-        walkable: new Set(originalTargets.ground), tier: this.quality, greyboxRoot: this.greybox.root,
-        // Collision proxies may sit outside the station root: cut them with the visible slabs, before the trees are rebuilt.
-        collision: [...this.walkable, ...this.colliders, ...this.cameraBlockers],
-        recipe,
+      // The live scene: stairwell cut, instance retarget, greybox and connectors — shared with the navmesh bake and audit (#676).
+      const live = buildLiveScene({
+        root: this.stationScene.root, bundle, traversable, hasFloor, greybox: this.greybox, openings: this.greyboxOpenings,
+        originalTargets, walkable: this.walkable, colliders: this.colliders, cameraBlockers: this.cameraBlockers, walls: this.walls,
+        tier: this.quality, recipe, portalInstances: this.portalCutResources.instances,
       });
       lap("stairwellCut");
-      this.stairwellStats = this.stairwellCut.stats;
-      this.greybox.stats.triangles += this.stairwellCut.bandTriangles;
-      if (this.stairwellCut.finish) this.greybox.root.add(this.stairwellCut.finish);
-      // Instances pulled out of an InstancedMesh by either cut stand in for their owner in every target list.
-      const instances = [...this.portalCutResources.instances, ...this.stairwellCut.resources.instances];
-      const extracted = new Map<THREE.InstancedMesh, number>();
-      for (const { owner } of instances) extracted.set(owner, (extracted.get(owner) ?? 0) + 1);
-      const fullyHidden = new Set([...extracted].filter(([owner, count]) => count === owner.count).map(([owner]) => owner));
-      const retain = (objects: readonly THREE.Object3D[]) => objects.filter(object => !fullyHidden.has(object as THREE.InstancedMesh));
-      const copiesOf = (sources: readonly THREE.Object3D[]) => {
-        const sourceSet = new Set(sources);
-        return instances.filter(({ owner }) => sourceSet.has(owner)).map(({ copy }) => copy);
-      };
-      const groundCopies = copiesOf(originalTargets.ground), colliderCopies = copiesOf(originalTargets.collider);
-      const blockerCopies = copiesOf([...originalTargets.blockers]);
-      this.sceneGroundTargets = [...new Set([...retain(originalTargets.ground), ...groundCopies])];
-      this.sceneColliderTargets = new Set([...retain(originalTargets.collider), ...colliderCopies]);
-      this.walkable = [...new Set([...retain(this.walkable), ...groundCopies])];
-      this.colliders = [...new Set([...retain(this.colliders), ...colliderCopies])];
-      this.cameraBlockers = [...new Set([...retain(this.cameraBlockers), ...blockerCopies])];
+      this.stairwellCut = live.stairwellCut;
+      this.stairwellStats = live.stairwellCut.stats;
+      this.greybox.stats.triangles += live.stairwellCut.bandTriangles;
+      if (live.stairwellCut.finish) this.greybox.root.add(live.stairwellCut.finish);
+      this.sceneGroundTargets = live.sceneGroundTargets;
+      this.sceneColliderTargets = live.sceneColliderTargets;
       this.renderer.localClippingEnabled = true;
       this.world.add(this.greybox.root);
-      this.walkable = [...this.walkable, ...this.greybox.walkable];
-      this.colliders = [...this.colliders, ...this.greybox.colliders, ...this.stairwellCut.colliders];
-      lap("cutTargets");
-      this.connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: (p, radius) => sceneMeshNear([this.stationScene!.root], p, radius) }, this.quality);
+      this.walkable = live.walkable;
+      this.colliders = live.colliders;
+      this.cameraBlockers = live.cameraBlockers;
+      this.connectors = live.connectors;
       lap("connectors");
-      this.greyboxSegments.push(...this.connectors.segments);
-      this.skippedEdgeIds = new Set(this.connectors.skippedEdgeIds);
+      this.greyboxSegments.push(...live.connectors.segments);
+      this.skippedEdgeIds = new Set(live.connectors.skippedEdgeIds);
       this.greyboxSegments.push(...greyboxPathSegments(unmodelledRunsByEdge(bundle, (edge) => traversable(edge) && this.skippedEdgeIds.has(edge.id), hasFloor, this.skippedEdgeIds)));
-      withinGreyboxBudget(this.greybox.stats, this.connectors.stats, this.quality);
-      this.world.add(this.connectors.root);
-      this.walkable = [...this.walkable, ...this.connectors.walkable];
-      this.colliders = [...this.colliders, ...this.connectors.colliders];
-      this.walls = splitWallsAtOpenings([...this.walls, ...this.greybox.wallSegments, ...this.stairwellCut.walls, ...this.connectors.wallSegments], this.greyboxOpenings);
+      withinGreyboxBudget(this.greybox.stats, live.connectors.stats, this.quality);
+      this.world.add(live.connectors.root);
+      this.walls = live.walls;
     } else {
       this.world.add(this.graph.root);
       this.walkable = this.graph.walkable;
