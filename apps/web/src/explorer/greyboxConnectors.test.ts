@@ -901,6 +901,39 @@ describe("connectors leaving one node together", () => {
   });
 });
 
+describe("connectors leaving one node together, walker body", () => {
+  it("never pushes a walker anywhere its own stair's walls let it stand", () => {
+    // #687 r2: stair A has a 4 m flat leg, stair B a 3 m one, 30 degrees apart; A keeps a wall about 0.825 m from B's
+    // landing centreline. B's own walls stand at half + 0.03, so B's walker centre stays within half + 0.03 - 0.3 of it.
+    const degrees = (d: number) => (d * Math.PI) / 180;
+    const waypoints = (heading: number, turn: number, flat: number): [number, number, number][] => {
+      const foot: [number, number, number] = [flat * Math.cos(heading), 0, flat * Math.sin(heading)];
+      return [[0, 0, 0], foot, [foot[0] + 6 * Math.cos(heading + turn), 4, foot[2] + 6 * Math.sin(heading + turn)]];
+    };
+    const lines = [waypoints(0, degrees(-45), 4), waypoints(degrees(30), degrees(45), 3)];
+    const edge = (id: string, to: string, line: [number, number, number][]): Edge => syntheticEdge(id, "start", to, {
+      mode: "stairs", attributes: { sceneGap: true }, geometry: line.map(([x, h, z]) => ({ x, y: -z, z: h })),
+    });
+    const station = createSyntheticBundle([edge("a", "upper", lines[0]!), edge("b", "upper-2", lines[1]!)]);
+    for (const [id, top] of [["upper", lines[0]!.at(-1)!], ["upper-2", lines[1]!.at(-1)!]] as const) station.nodes.find((n) => n.id === id)!.position = { x: top[0], y: -top[2], z: 4 };
+    const both = buildConnectors(station, () => true, { hasFloor: () => true, nearMesh: () => false }, "high");
+    const reach = 1.5 / 2 + 0.03 - 0.3 - 0.02;
+    for (const [id, path] of both.pathByEdge) {
+      const cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
+      for (let s = 0.05; s <= total - 0.05; s += 0.05) {
+        const p = samplePolyline(path, cumulative, s), q = samplePolyline(path, cumulative, Math.min(total, s + 0.05));
+        const dx = q.x - p.x, dz = q.z - p.z, length = Math.hypot(dx, dz);
+        if (length < 1e-6) continue;
+        for (const side of [-1, 1]) {
+          const x = p.x - (dz / length) * reach * side, z = p.z + (dx / length) * reach * side;
+          const resolved = resolveWalls(x, z, 0.3, p.y, 1.7, both.wallSegments);
+          expect(Math.hypot(resolved.x - x, resolved.z - z), `${id} s=${s.toFixed(2)} side ${side}`).toBeLessThanOrEqual(0.05);
+        }
+      }
+    }
+  });
+});
+
 function expectFreeWalk(both: ReturnType<typeof buildConnectors>) {
   {
     for (const [id, path] of both.pathByEdge) {
