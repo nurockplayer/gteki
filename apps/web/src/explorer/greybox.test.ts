@@ -461,6 +461,13 @@ describe("buildGreybox", () => {
     expect(buildGreybox(chain, () => true, () => true, scene, "high").openings.length).toBeGreaterThanOrEqual(1);
   });
 
+  it("opens no wall that a bent walk edge only touches at a bend", () => {
+    const nodes = [bundle.nodes[0]!, { id: "b", floorId: "f", position: { x: 0, y: 5, z: 0 } }];
+    const bent = { ...bundle, nodes, edges: [{ id: "e", from: "a", to: "b", mode: "walk", geometry: [{ x: 0, y: 0 }, { x: 5, y: 0 }, { x: 0, y: 5 }] }] } as unknown as StationBundle;
+    const scene = { colliderNear: () => false, wallHit: (a: { x: number }, b: { x: number }) => a.x < 5 && b.x >= 5 ? { x: 5, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) } : null };
+    expect(buildGreybox(bent, () => true, () => true, scene, "high").openings).toHaveLength(0);
+  });
+
   it("opens no wall at a node that every walk edge reaches from the same side", () => {
     const fork = { ...bundle, nodes: [...bundle.nodes, { id: "c", floorId: "f", position: { x: 0, y: 5, z: 0 } }], edges: [...bundle.edges, { id: "e2", from: "c", to: "b", mode: "walk" }] } as unknown as StationBundle;
     const scene = { colliderNear: () => false, wallHit: (a: { x: number }, b: { x: number }) => a.x < 10 && b.x >= 10 ? { x: 10, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) } : null };

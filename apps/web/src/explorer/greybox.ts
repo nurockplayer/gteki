@@ -677,8 +677,14 @@ export function emitGreybox(bundle: StationBundle, traversable: (edge: Edge) => 
         const at = R(hit.x, hit.y, hit.z);
         const atT = (at.x - a.x) * along.x + (at.z - a.z) * along.z;
         if (atT < startT - 1e-9) break; // a hit behind the resumed start would repeat forever
-        // A wall the edge only starts or ends on is crossed only where another walk edge carries on beyond it.
-        if ((i === 1 && atT < 0.05 && !continuesAcross(edge, edge.from, at, hit.wallNormal, b)) || (i === pts.length - 1 && atT > flat - 0.05 && !continuesAcross(edge, edge.to, at, hit.wallNormal, a))) { startT = Math.max(atT, startT) + 0.05; if (startT >= flat) break; continue; }
+        // A wall met at a vertex is crossed only if the path carries on beyond it: at a bend, the next segment's end is on the
+        // far side; at the edge's end node, another walk edge leaves on the far side. A start-vertex hit after a bend was
+        // already decided as the previous segment's end.
+        const opposite = (p: THREE.Vector3, q: THREE.Vector3) => { const n = hit.wallNormal; if (!n) return false; const s = (v: THREE.Vector3) => Math.sign(n.x * (v.x - at.x) + n.z * (v.z - at.z)); return s(p) !== 0 && s(p) === -s(q); };
+        const atStart = atT < 0.05, atEnd = atT > flat - 0.05;
+        const crossed = atEnd ? (i < pts.length - 1 ? opposite(a, pts[i + 1]!) : continuesAcross(edge, edge.to, at, hit.wallNormal, a))
+          : atStart ? (i === 1 && continuesAcross(edge, edge.from, at, hit.wallNormal, b)) : true;
+        if (!crossed) { startT = Math.max(atT, startT) + 0.05; if (startT >= flat) break; continue; }
         const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
         const width = widthOf(edge) * Math.min(2, 1 / Math.max(cosine, 1e-9));
         // A floor transition already opened this wall wide enough, along the same direction: don't open it twice.
