@@ -581,11 +581,11 @@ installHeadlessDom	function	packages/godot/src/headless-dom.ts	111
 stubRenderer	function	packages/godot/src/headless-dom.ts	137
 headlessThree	function	packages/godot/src/headless-dom.ts	142
 loadBundle	function	packages/godot/src/load-bundle.ts	6
-queryCompletePath	function	packages/godot/src/navmesh-audit.ts	33
-snapNode	function	packages/godot/src/navmesh-audit.ts	42
-queryPathWithLinks	function	packages/godot/src/navmesh-audit.ts	48
-floorSnapPath	function	packages/godot/src/navmesh-audit.ts	84
-countedTotals	function	packages/godot/src/navmesh-audit.ts	101
+queryCompletePath	function	packages/godot/src/navmesh-audit.ts	34
+snapNode	function	packages/godot/src/navmesh-audit.ts	43
+queryPathWithLinks	function	packages/godot/src/navmesh-audit.ts	49
+floorSnapPath	function	packages/godot/src/navmesh-audit.ts	85
+countedTotals	function	packages/godot/src/navmesh-audit.ts	102
 bakeNavmesh	function	packages/godot/src/navmesh-bake.ts	24
 completePath	function	packages/godot/src/navmesh-bake.ts	42
 applyBridgeGeometry	function	packages/godot/src/navmesh-bake.ts	84
@@ -620,7 +620,7 @@ GapClass	type	packages/godot/src/navmesh-gaps.ts	8
 gapClass	function	packages/godot/src/navmesh-gaps.ts	9
 dataWidth	function	packages/godot/src/navmesh-gaps.ts	19
 diagnoseGaps	function	packages/godot/src/navmesh-gaps.ts	26
-makeGreybox	function	packages/godot/src/navmesh-greybox.ts	15
+makeGreybox	function	packages/godot/src/navmesh-greybox.ts	17
 navmeshBundle	function	packages/godot/src/navmesh-input.ts	7
 planFallbackRoute	function	packages/godot/src/navmesh-links.ts	11
 diagnoseVerticalSnap	function	packages/godot/src/navmesh-links.ts	32
