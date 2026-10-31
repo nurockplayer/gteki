@@ -78,7 +78,6 @@ export function queryPathWithLinks(nav: NavMesh, query: NavMeshQuery, from: V3, 
   } finally { corridor.polys.destroy(); }
 }
 
-/** Clip totals over the samples that count: samples of suspect edges never do (their heights cannot be built). */
 /** Snap a path's vertices to the floor height floorAt reports. Between two vertices the floor is sampled every 0.25 m of
  * plan length; where the straight line leaves it by more than 0.05 m, the path is split at the worst sample, at floor
  * height, and both halves are checked again (#669 r2: a ramp foot between vertices). */
@@ -98,6 +97,7 @@ export function floorSnapPath<P extends { x: number; y: number; z: number }>(poi
   return dense;
 }
 
+/** Clip totals over the samples that count: samples of suspect edges never do (their heights cannot be built). */
 export function countedTotals(details: readonly Pick<SampleDetail,"floor"|"wallBefore">[], samples: readonly { suspect?: boolean }[]) {
   const total = { samples: 0, offFloor: 0, noFloor: 0, wallHits: 0 };
   details.forEach((d, i) => {
@@ -210,7 +210,9 @@ async function main() {
       const entry: Entry = {suspect:true,points:line,missing:false,reason:null,stairLink:false,connector:false,fallbackUsed:[],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:false,toSnapped:false,connectivity:"unknown_snap",partialEndDistanceM:null,gaps:[],graph:line,pathRejection:null};
       cache.set(key,entry); return entry;
     }
-    if (["stairs","escalator","elevator"].includes(step.mode)) {
+    // Fare gates walk their graph line between navmesh snaps, as the app draws them (gteki#669): the gate barriers
+    // block the navmesh, so a Detour path is either none or a detour round the gate.
+    if (["stairs","escalator","elevator","gate"].includes(step.mode)) {
       const line=routePolyline(bundle,{...route,nodeIds:[step.fromNodeId,step.toNodeId],steps:[step]});
       const built=buildConnectorPath(query,from,to,line,(node,snapped)=>validateLinkSnap(probe,node,snapped)===null);
       const entry: Entry = {suspect:false,points:built.points,missing:built.reason!==null,reason:built.reason,stairLink:false,connector:!!built.points,fallbackUsed:[],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:built.fromSnapped,toSnapped:built.toSnapped,connectivity:link ? "link_attached" : "link_unattached",partialEndDistanceM:null,gaps:[],graph:line,pathRejection:null};
@@ -415,7 +417,7 @@ async function main() {
       if (entry && detail.wallBefore) recordClip(entry.step.edgeId,sample.connector ? "connectorWallHits" : "navmeshWallHits");
       if (sample.connector && detail.wallBefore && entry) {
         const join=!!sample.join || !onLine(entry.graph,sample) || (i>0 && !onLine(entry.graph,samples[i-1]!));
-        clipSites.push({kind:"connector",edgeId:entry.step.edgeId,mode:entry.step.mode,join,point:detail.wallPoint ? {x:detail.wallPoint.x,y:detail.wallPoint.z,z:-detail.wallPoint.y} : null,wall:wallName(detail)});
+        clipSites.push({kind:"connector",edgeId:entry.step.edgeId,mode:entry.step.mode,join,point:detail.wallPoint ?? null,wall:wallName(detail)});
       }
     }
     for (let i = 0; i < samples.length; i++) {
@@ -460,7 +462,7 @@ async function main() {
       const d=details[i]!,target=samples[i]!.connector ? uniqueEdgeScene.connector : uniqueEdgeScene.navmesh;
       target.samples++; if(d.floor==="off") target.offFloor++; if(d.floor==="none") target.noFloor++; if(d.wallBefore) target.wallHits++;
       if(!completedEdgeKeys.has(key)) {if(d.floor==="off") recordClip(entry.step.edgeId,"offFloor");if(d.wallBefore) recordClip(entry.step.edgeId,samples[i]!.connector ? "connectorWallHits":"navmeshWallHits");}
-      if(samples[i]!.connector && d.wallBefore && !completedConnectorKeys.has(key)) clipSites.push({kind:"connector",edgeId:entry.step.edgeId,mode:entry.step.mode,join:!onLine(entry.graph,samples[i]!) || (i>0 && !onLine(entry.graph,samples[i-1]!)),point:d.wallPoint ? {x:d.wallPoint.x,y:d.wallPoint.z,z:-d.wallPoint.y}:null,wall:wallName(d)});
+      if(samples[i]!.connector && d.wallBefore && !completedConnectorKeys.has(key)) clipSites.push({kind:"connector",edgeId:entry.step.edgeId,mode:entry.step.mode,join:!onLine(entry.graph,samples[i]!) || (i>0 && !onLine(entry.graph,samples[i-1]!)),point:d.wallPoint ?? null,wall:wallName(d)});
     }
   }
   const allowedFallbacks = fallbackList ? JSON.parse(fs.readFileSync(fallbackList,"utf8")) as {edgeId:string}[] : [];
@@ -469,7 +471,7 @@ async function main() {
   const fallbackAudit=auditFallbackSegments(probe,failed.filter(e=>allowedIds.has(e.step.edgeId)).map(e=>({edgeId:e.step.edgeId,points:e.graph})));
   for (const entry of failed.filter(e=>allowedIds.has(e.step.edgeId))) {
     const details:SampleDetail[]=[]; auditPolyline(probe,entry.graph,{detail:details});
-    for (const detail of details) {if(detail.floor==="off") recordClip(entry.step.edgeId,"offFloor");if(detail.wallBefore) {recordClip(entry.step.edgeId,"fallbackWallHits");clipSites.push({kind:"fallback",edgeId:entry.step.edgeId,mode:entry.step.mode,join:false,point:detail.wallPoint ? {x:detail.wallPoint.x,y:detail.wallPoint.z,z:-detail.wallPoint.y} : null,wall:wallName(detail)});}}
+    for (const detail of details) {if(detail.floor==="off") recordClip(entry.step.edgeId,"offFloor");if(detail.wallBefore) {recordClip(entry.step.edgeId,"fallbackWallHits");clipSites.push({kind:"fallback",edgeId:entry.step.edgeId,mode:entry.step.mode,join:false,point:detail.wallPoint ?? null,wall:wallName(detail)});}}
   }
   const diagnosed = new Map<string, ReturnType<typeof diagnoseVerticalSnap>>();
   for (const step of usedVerticalSteps.values()) {
