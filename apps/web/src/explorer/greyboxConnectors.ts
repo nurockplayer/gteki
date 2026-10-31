@@ -362,9 +362,10 @@ function planLength(points: readonly THREE.Vector3[], from: number, to: number):
  */
 /**
  * Height difference from which two parts of one stair that overlap in plan intrude on each other: one passes over, under or
- * through the other (#673 r3, r5). Below it the overlap is a shared floor, which wallSpans and the guard rule handle.
+ * through the other (#673 r3, r5). Below it the overlap is a shared floor, which wallSpans clips; it is wallSpans' own 0.35 m
+ * threshold, so no overlap falls between kept-and-unclipped and rejected (#673 r7).
  */
-const STACKED = 0.5;
+const STACKED = 0.35;
 /** The same inside a landing square, between that landing's own flights: a steep flight rises up to ~0.8 m across it (#673 r2). */
 const STACKED_OWN = 1;
 
