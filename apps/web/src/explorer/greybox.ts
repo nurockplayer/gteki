@@ -556,6 +556,10 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         // the wall keeps every height outside all of their ranges, so a wall between two flights stays.
         const stops = [...new Set(cuts.flatMap((c) => [c.lo, c.hi]))].sort((x, y) => x - y);
         for (let k = 1; k < stops.length; k++) {
+          // Two cuts' bounds that differ only by rounding leave a sliver between them. Skipping it here drops its band and
+          // its wall piece together: a zero-length wall blocks nothing in the navmesh bake (which drops it), is an invisible
+          // post to the walker, and the route audit's crossing test matched it along a whole line.
+          if ((stops[k]! - stops[k - 1]!) * wa.distanceTo(wz) < 1e-3) continue;
           const over = cuts.filter((c) => c.lo <= stops[k - 1]! && c.hi >= stops[k]!);
           if (!over.length) continue;
           // A band under a flight is kept only from 1 m up (it would only snag the walker below that), so a lower
