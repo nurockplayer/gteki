@@ -172,11 +172,11 @@ describe("truthfulness: lines are fixed strings that cannot carry route facts", 
 });
 
 describe("MascotSlot", () => {
-  it("markup: figure and bubble are aria-hidden, the whole slot is marked as placeholder art", () => {
+  it("markup: figure and bubble are aria-hidden, and no placeholder marker remains", () => {
     const { root, figure, bubble } = slot();
     expect(root.className).toBe("mascot");
-    expect(root.dataset.placeholder).toBe("true");
-    expect(figure.dataset.placeholder).toBe("true");
+    expect(root.dataset.placeholder).toBeUndefined();
+    expect(figure.dataset.placeholder).toBeUndefined();
     expect(figure.getAttribute("aria-hidden")).toBe("true");
     expect(bubble.getAttribute("aria-hidden")).toBe("true");
     expect(root.getAttribute("aria-live")).toBeNull();
@@ -185,14 +185,14 @@ describe("MascotSlot", () => {
   it("starts hidden; say shows the bubble, the character and the expression", () => {
     const { s, root, figure, bubble } = slot("en");
     expect(root.hidden).toBe(true);
-    expect(s.info()).toEqual({ visible: false, character: null, expression: "neutral", lineKey: null, motion: "off", placeholder: true });
+    expect(s.info()).toEqual({ visible: false, character: null, expression: "neutral", lineKey: null, motion: "off" });
     s.say({ kind: "no_path", reason: "search_limit" });
     expect(root.hidden).toBe(false);
     expect(bubble.hidden).toBe(false);
     expect(bubble.textContent).toBe(strings("en").mascot.noPath.search_limit);
     expect(root.dataset).toMatchObject({ character: "cat", expression: "unsure" });
     expect(figure.innerHTML).toBe(MASCOT_ART.cat.unsure);
-    expect(s.info()).toMatchObject({ visible: true, character: "cat", expression: "unsure", lineKey: "no_path.search_limit", placeholder: true });
+    expect(s.info()).toMatchObject({ visible: true, character: "cat", expression: "unsure", lineKey: "no_path.search_limit" });
   });
 
   it("speaks in the current language", () => {
@@ -275,17 +275,20 @@ describe("MascotSlot", () => {
   });
 });
 
-describe("placeholder art cost guard", () => {
+describe("mascot art cost guard", () => {
   const all = (["cat", "dog"] as MascotId[]).flatMap((c) => EXPRESSIONS.map((e) => [c, e, MASCOT_ART[c][e]] as const));
 
-  it("has an svg for every (character, expression): 2 characters x 5 expressions", () => {
+  it("has all ten faces (2 characters x 5 expressions), each a 64x64 Lane E SVG inlined without xmlns", () => {
     expect(all).toHaveLength(10);
     for (const c of ["cat", "dog"] as MascotId[]) expect(Object.keys(MASCOT_ART[c]).sort()).toEqual([...EXPRESSIONS].sort());
-    for (const [c, e, art] of all) expect(art, `${c}/${e}`).toMatch(/^<svg [^>]*viewBox="0 0 48 48"/);
+    for (const [c, e, art] of all) {
+      expect(art, `${c}/${e}`).toMatch(/^<svg [^>]*viewBox="0 0 64 64"/);
+      expect(art, `${c}/${e}`).not.toContain("xmlns");
+    }
   });
 
-  it("each svg is under 1 KB", () => {
-    for (const [c, e, art] of all) expect(new TextEncoder().encode(art).length, `${c}/${e}`).toBeLessThan(1024);
+  it("each svg is under 4 KB (Lane E's 4096 B limit)", () => {
+    for (const [c, e, art] of all) expect(new TextEncoder().encode(art).length, `${c}/${e}`).toBeLessThan(4096);
   });
 
   it("no images, url() references, links or scripts: inline shapes only", () => {
@@ -299,12 +302,10 @@ describe("placeholder art cost guard", () => {
     expect(new Set(all.map(([, , art]) => art)).size).toBe(10);
   });
 
-  it("unsure is a face, not a question mark: flat brows, a slanted mouth, no glyphs or text", () => {
+  it("unsure is a face, not a question mark: no glyphs or text, and its own drawing", () => {
     for (const c of ["cat", "dog"] as MascotId[]) {
       const art = MASCOT_ART[c].unsure;
       expect(art, c).not.toMatch(/<text|\?|？/);
-      // A straight horizontal brow on each side (the sorry face's brows slope; this one does not).
-      expect(art, c).toMatch(/d="M[\d. ]+h6M[\d. ]+h6"/);
       expect(art, c).not.toBe(MASCOT_ART[c].neutral);
       expect(art, c).not.toBe(MASCOT_ART[c].sorry);
     }
