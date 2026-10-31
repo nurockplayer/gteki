@@ -462,6 +462,8 @@ describe("buildGreybox", () => {
     const wallAt = (x: number) => ({ colliderNear: () => false, wallHit: (a: { x: number }, b: { x: number }, wallsOnly?: boolean) => wallsOnly && Math.min(a.x, b.x) <= x && Math.max(a.x, b.x) >= x ? { x, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) } : null });
     // Ends on a wall with nothing beyond it: no opening.
     expect(buildGreybox(bundle, () => true, () => false, wallAt(10), "high").openings).toHaveLength(0);
+    // Crosses a wall 0.02 m before its end: opened, as anywhere else on the segment.
+    expect(buildGreybox(bundle, () => true, () => false, wallAt(9.98), "high").openings).toHaveLength(1);
     // Starts on a wall that another edge at that node comes through: opened.
     const through = { ...bundle, nodes: [...bundle.nodes, { id: "c", floorId: "f", position: { x: -5, y: 0, z: 0 } }], edges: [...bundle.edges, { ...bundle.edges[0]!, id: "e2", from: "c", to: "a" }] } as unknown as StationBundle;
     const openings = buildGreybox(through, (e) => e.id !== "e2", () => false, wallAt(0), "high").openings;

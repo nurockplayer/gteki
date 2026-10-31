@@ -678,7 +678,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
           const throughRunEnd = (end: THREE.Vector3, inside: THREE.Vector3, first: boolean) => side(inside) !== 0 && beyondRun(end, first).some((p) => side(p) === -side(inside));
           const atEnd = at > flat - 0.05;
           const crossed = atEnd
-            ? (i === pts.length - 1 ? finishesRun && throughRunEnd(z, a, false) : side(a) !== 0 && side(a) === -side(pts[i + 1]!))
+            ? (i === pts.length - 1 ? (side(a) !== 0 && side(a) === -side(z)) || (finishesRun && throughRunEnd(z, a, false)) : side(a) !== 0 && side(a) === -side(pts[i + 1]!))
             : at >= 0.05 || (side(a) !== 0 && side(a) === -side(z)) || (i === 1 && side(a) === 0 && throughRunEnd(a, z, true));
           if (crossed) {
             const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
