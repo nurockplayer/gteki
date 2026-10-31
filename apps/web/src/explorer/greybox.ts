@@ -470,12 +470,13 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   // A landing's symbolic render height can sit only ~1.6 m above the floor below, so an intermediate level's slab,
   // walls and ceiling would make a low ceiling over a passage underneath. Where an intermediate run lies over another
   // run in plan, build no piece for it: the edge then falls back to its existing path.
-  const runSegments: { run: UnmodelledEdgeRun; a: THREE.Vector3; z: THREE.Vector3; half: number; y: number }[] = [];
+  // Conservative on slopes: the upper segment's lowest slab underside (−0.12 m) against the lower segment's highest point.
+  const runSegments: { run: UnmodelledEdgeRun; a: THREE.Vector3; z: THREE.Vector3; half: number; y: number; top: number }[] = [];
   for (const run of runs) {
     const pts = run.points.map((p) => R(p.x, p.y, p.z));
     for (let i = 1; i < pts.length; i++) {
       const a = pts[i - 1]!, z = pts[i]!;
-      runSegments.push({ run, a, z, half: widthOf(run.edge) / 2, y: Math.min(a.y, z.y) });
+      runSegments.push({ run, a, z, half: widthOf(run.edge) / 2, y: Math.min(a.y, z.y), top: Math.max(a.y, z.y) });
     }
   }
   for (const run of runs) {
@@ -489,7 +490,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       const diff = z.clone().sub(a), length = diff.length(), flat = Math.hypot(diff.x, diff.z);
       if (length < 1e-8 || flat < 1e-8) continue;
       const y = Math.min(a.y, z.y);
-      if (intermediate && runSegments.some((other) => other.run !== run && y - other.y > 0 && y - other.y < 2.3 && planSegmentDistance(a, z, other.a, other.z) < half + other.half)) { travelled += length; continue; }
+      if (intermediate && runSegments.some((other) => other.run !== run && y - other.y > 0 && y - 0.12 - other.top < 2.3 && planSegmentDistance(a, z, other.a, other.z) < half + other.half)) { travelled += length; continue; }
       const along = new THREE.Vector3(diff.x / flat, 0, diff.z / flat);
       const across = new THREE.Vector3(-along.z, 0, along.x);
       const offset = (p: THREE.Vector3, side: number, height: number) => p.clone().addScaledVector(across, side).add(new THREE.Vector3(0, height, 0));

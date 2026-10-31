@@ -489,11 +489,11 @@ describe("buildGreybox", () => {
   it("builds no piece on an intermediate level standing under 2.3 m over another passage", () => {
     // A landing's symbolic height can put it ~1.6 m over the floor below; its slab and ceiling would leave that
     // passage a 1.49 m ceiling. Safe path: no piece for the intermediate level, so its edge falls back.
-    const levels = (elevation: number) => {
+    const levels = (elevation: number, rampTop: number | null = null) => {
       const floors = [{ ...bundle.floors[0]!, id: "low", renderElevationM: 0 }, { ...bundle.floors[0]!, id: "landing", renderElevationM: elevation, intermediate: true }];
       const nodes = [
         { ...bundle.nodes[0]!, id: "a", floorId: "low", position: { x: 0, y: 0, z: null } },
-        { ...bundle.nodes[1]!, id: "b", floorId: "low", position: { x: 10, y: 0, z: null } },
+        { ...bundle.nodes[1]!, id: "b", floorId: "low", position: { x: 10, y: 0, z: rampTop } },
         { ...bundle.nodes[0]!, id: "c", floorId: "landing", position: { x: 0, y: 1, z: null } },
         { ...bundle.nodes[1]!, id: "d", floorId: "landing", position: { x: 10, y: 1, z: null } },
       ];
@@ -507,6 +507,10 @@ describe("buildGreybox", () => {
     const far = levels(3);
     expect(far.some((y) => Math.abs(y) < 1e-6)).toBe(true);
     expect(far.some((y) => Math.abs(y - 3) < 1e-6)).toBe(true);
+    // The slab's 0.12 m underside counts: 2.35 m over the floor below leaves 2.23 m.
+    expect(levels(2.35).some((y) => Math.abs(y - 2.35) < 1e-6)).toBe(false);
+    // On a slope the lower passage's highest point counts: a ramp up to 1 m under a landing at 3.3 m leaves 2.18 m.
+    expect(levels(3.3, 1).some((y) => Math.abs(y - 3.3) < 1e-6)).toBe(false);
   });
 
   it("builds 16 km of overlapping passages on five floors within budget", () => {
