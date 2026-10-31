@@ -218,7 +218,7 @@ async function main() {
   let initialQuery = new NavMeshQuery(result.navMesh);
   const router = createRouter(bundle, { allowUnverified: privateBuild });
   // Same probe as the audit's originalProbe (no bridge floors), so both sides compute identical suspects.
-  const suspect = suspectVerticalEdges(bundle, makeFloorHeightNear(grey?.probe ?? probe), e => router.isTraversable(e, DEFAULT_PROFILE));
+  const suspect = suspectVerticalEdges(bundle, makeFloorHeightNear(grey?.suspectProbe ?? probe), e => router.isTraversable(e, DEFAULT_PROFILE));
   const suspectIds = new Set(suspect.map(s => s.edgeId));
   const originalProbeForLinks=()=>grey?.probe ?? probe;
   const bridge:BridgeGeometry={positions:[],indices:[]};

@@ -1,1 +1,42 @@
-[]
+[
+  {
+    "edgeId": "ne_e__ne_k",
+    "mode": "walk",
+    "reason": "erosion"
+  },
+  {
+    "edgeId": "ne_j__x26",
+    "mode": "stairs",
+    "reason": "snap_failed"
+  },
+  {
+    "edgeId": "ne_k__x32",
+    "mode": "stairs",
+    "reason": "snap_failed"
+  },
+  {
+    "edgeId": "ne_m__ne_e",
+    "mode": "walk",
+    "reason": "disconnected"
+  },
+  {
+    "edgeId": "s39_f__x39",
+    "mode": "stairs",
+    "reason": "snap_failed"
+  },
+  {
+    "edgeId": "w_c__w_n",
+    "mode": "walk",
+    "reason": "other"
+  },
+  {
+    "edgeId": "w_nw__w_n",
+    "mode": "walk",
+    "reason": "other"
+  },
+  {
+    "edgeId": "w_w__w_nw",
+    "mode": "walk",
+    "reason": "other"
+  }
+]

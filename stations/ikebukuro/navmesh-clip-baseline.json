@@ -1,10 +1,82 @@
 {
-  "total": {
-    "connectorWallHits": 0,
+  "e_low__x34": {
+    "connectorWallHits": 46,
     "fallbackWallHits": 0,
     "navmeshWallHits": 0,
+    "offFloor": 0
+  },
+  "e_low__x35": {
+    "connectorWallHits": 92,
+    "fallbackWallHits": 0,
+    "navmeshWallHits": 0,
+    "offFloor": 0
+  },
+  "ne_e__ne_k": {
+    "connectorWallHits": 0,
+    "fallbackWallHits": 2,
+    "navmeshWallHits": 0,
+    "offFloor": 0
+  },
+  "ne_m__x28": {
+    "connectorWallHits": 46,
+    "fallbackWallHits": 0,
+    "navmeshWallHits": 0,
+    "offFloor": 0
+  },
+  "s39_f__x39": {
+    "connectorWallHits": 0,
+    "fallbackWallHits": 4,
+    "navmeshWallHits": 0,
+    "offFloor": 0
+  },
+  "se_j__x42": {
+    "connectorWallHits": 46,
+    "fallbackWallHits": 0,
+    "navmeshWallHits": 0,
+    "offFloor": 0
+  },
+  "se_j__x43": {
+    "connectorWallHits": 92,
+    "fallbackWallHits": 0,
+    "navmeshWallHits": 0,
+    "offFloor": 0
+  },
+  "w_c__w_n": {
+    "connectorWallHits": 0,
+    "fallbackWallHits": 2,
+    "navmeshWallHits": 0,
+    "offFloor": 0
+  },
+  "w_n__x15": {
+    "connectorWallHits": 4,
+    "fallbackWallHits": 0,
+    "navmeshWallHits": 0,
+    "offFloor": 0
+  },
+  "w_n__x17": {
+    "connectorWallHits": 4,
+    "fallbackWallHits": 0,
+    "navmeshWallHits": 0,
+    "offFloor": 0
+  },
+  "w_nw__w_n": {
+    "connectorWallHits": 0,
+    "fallbackWallHits": 4,
+    "navmeshWallHits": 0,
+    "offFloor": 0
+  },
+  "w_w__w_nw": {
+    "connectorWallHits": 0,
+    "fallbackWallHits": 2,
+    "navmeshWallHits": 0,
+    "offFloor": 0
+  },
+  "total": {
+    "connectorWallHits": 330,
+    "fallbackWallHits": 14,
+    "navmeshWallHits": 0,
     "offFloor": 0,
-    "unvalidatedJoins": 0,
+    "unvalidatedJoins": 496,
     "invalidJoins": 0,
     "routablePairs": 1054,
     "failedRoutePairs": 2

@@ -6,13 +6,12 @@ import { baselineForAudit, clipBaselineDiff, makeClipBaseline } from "./navmesh-
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { gateResetErrors, gateResetFile, gateSnapshot, readAtRevision, readGateSnapshot, readWorkTree, type GateSnapshot } from "./navmesh-gate-reset.ts";
 
 /** A PR checkout is a merge commit; compare against its first (base) parent. */
-function previousVersion(file:string):unknown|null {
-  const git=(args:string[])=>{const result=spawnSync("git",args,{encoding:"utf8"});if(result.status!==0) throw new Error(`cannot inspect PR base: git ${args[0]}`);return result.stdout;};
-  git(["rev-parse","--verify","HEAD^1"]);
-  const listed=git(["ls-tree","--name-only","HEAD^1","--",file]).trim();
-  return listed ? JSON.parse(git(["show",`HEAD^1:${file}`])) : null;
+function prBase() {
+  if(spawnSync("git",["rev-parse","--verify","HEAD^1"]).status!==0) throw new Error("cannot inspect PR base: git rev-parse");
+  return readAtRevision("HEAD^1");
 }
 
 describe("fallback clip gate",()=>{
@@ -52,6 +51,30 @@ describe("clip baseline ratchet",()=>{
   });
 });
 
+describe("one-time gate reset",()=>{
+  const c=(connectorWallHits:number)=>({connectorWallHits,fallbackWallHits:0,navmeshWallHits:0,offFloor:0});
+  const base:GateSnapshot={fallback:["a"],suspect:[],detours:[],clipBaseline:makeClipBaseline({a:c(1)},0)};
+  const head:GateSnapshot={fallback:["a","b"],suspect:[],detours:["b"],clipBaseline:makeClipBaseline({a:c(1),b:c(4)},2)};
+  const record={version:1,station:"s",date:"2026-11-01",ruling:"director 2026-11-01 01:0x JST",followUps:["#684"],before:base,after:head};
+  it("fails growth from the PR base without a new reset record",()=>{
+    const errors=gateResetErrors("s",base,head,null,null).join("\n");
+    expect(errors).toContain("fallback list grew from PR base: b");expect(errors).toContain("clip baseline grew");expect(errors).toContain("navmesh detour list grew");
+    expect(errors).toContain("navmesh-gate-reset.json");
+    // A record an earlier PR committed allows no further growth.
+    expect(gateResetErrors("s",base,head,record,record).length).toBeGreaterThan(0);
+  });
+  it("accepts growth only when the new record's before is the PR base and its after is the committed baseline",()=>{
+    expect(gateResetErrors("s",base,head,record,null)).toEqual([]);
+    expect(gateResetErrors("s",base,head,JSON.parse(JSON.stringify(record)),null)).toEqual([]);
+    expect(gateResetErrors("s",base,{...head,fallback:["a","b","c"]},record,null).join(" ")).toContain("after must equal the committed baseline");
+    expect(gateResetErrors("s",{...base,fallback:[]},head,record,null).join(" ")).toContain("before must equal the PR base");
+    for(const [field,value] of [["ruling",""],["date","1 Nov"],["followUps",[]],["station","t"]] as const) expect(gateResetErrors("s",base,head,{...record,[field]:value},null).length,field).toBeGreaterThan(0);
+  });
+  it("needs no record when nothing grows",()=>{
+    expect(gateResetErrors("s",head,base,null,null)).toEqual([]);
+  });
+});
+
 describe("public station navmesh gate",()=>{
   it.each(["ikebukuro","shinjuku"])("audits %s against its committed fallback list",station=>{
     const file=path.resolve(`stations/${station}/navmesh-fallback.json`);
@@ -65,12 +88,12 @@ describe("public station navmesh gate",()=>{
     const suspectComputed=result.audit.bakeProvenance.suspectEdges as {edgeId:string}[], suspectDiff=fallbackDiff(suspectAllowed,suspectComputed);
     console.log(`${station} gate ${Math.round(result.elapsedMs)} ms, bake ${Math.round(result.audit.bakeProvenance.bakeMs)} ms`);
     const errors:string[]=[];
+    const committedPaths=JSON.parse(fs.readFileSync(path.resolve(`stations/${station}/navmesh-paths.json`),"utf8"));
+    const committedDetours=(committedPaths.detours ?? []) as string[];
+    // Shrink-only from the PR base, unless the PR adds a reviewed one-time reset record (navmesh-gate-reset.ts).
     if(process.env.GITHUB_EVENT_NAME==="pull_request") {
-      const oldFallback=previousVersion(`stations/${station}/navmesh-fallback.json`),oldBaseline=previousVersion(`stations/${station}/navmesh-clip-baseline.json`);
-      if(oldFallback) {const prior=fallbackDiff(oldFallback as typeof allowed,allowed);if(prior.added.length) errors.push(`fallback list grew from PR base: ${prior.added.join(", ")}`);}
-      if(oldBaseline) {const prior=clipBaselineDiff(oldBaseline as typeof baseline,baseline);if(prior.increased.length) errors.push(`clip baseline grew from PR base: ${prior.increased.join(", ")}`);}
-      const oldSuspect=previousVersion(`stations/${station}/navmesh-suspect.json`);
-      if(oldSuspect) {const prior=fallbackDiff(oldSuspect as typeof suspectAllowed,suspectAllowed);if(prior.added.length) errors.push(`suspect list grew from PR base: ${prior.added.join(", ")}`);}
+      const base=prBase();
+      errors.push(...gateResetErrors(station,readGateSnapshot(station,base),gateSnapshot(allowed,suspectAllowed,committedDetours,baseline),readWorkTree(gateResetFile(station)),base(gateResetFile(station))));
     }
     if(diff.added.length) errors.push(`unlisted failed edges: ${diff.added.join(", ")}`);
     if(diff.removed.length) errors.push(`remove these from the list: ${diff.removed.join(", ")}`);
@@ -82,22 +105,16 @@ describe("public station navmesh gate",()=>{
     const clips=clipBaselineDiff(baseline,baselineForAudit(result.audit));
     if(clips.increased.length) errors.push(`clip baseline exceeded: ${clips.increased.join(", ")}`);
     if(clips.lowered.length) errors.push(`lower the baseline for: ${clips.lowered.join(", ")}`);
-    const committedPaths=JSON.parse(fs.readFileSync(path.resolve(`stations/${station}/navmesh-paths.json`),"utf8"));
     const pathsDiff=navPathsDiff(committedPaths.edges,result.audit.navPaths);
     const staleKeys=[...pathsDiff.missing,...pathsDiff.extra,...pathsDiff.moved].slice(0,10);
     const rejected=(result.audit.navPathsRejected ?? []) as string[];
     if(rejected.length) errors.push(`navmesh walk paths leave the floor or meet a wall (fix the scene or greybox, or list the edge as a fallback): ${rejected.join(", ")}`);
     if(!result.audit.navPathsScene?.samples) errors.push("no navmesh walk path samples were audited");
     // Detours (a navmesh path much longer than its edge) are drawn dashed like fallbacks: committed, and the list may only shrink.
-    const detours=(result.audit.navPathsDetours ?? []) as string[], committedDetours=(committedPaths.detours ?? []) as string[];
+    const detours=(result.audit.navPathsDetours ?? []) as string[];
     const newDetours=detours.filter(d=>!committedDetours.includes(d));
     if(newDetours.length) errors.push(`new navmesh detours: ${newDetours.join(", ")}`);
     if(JSON.stringify(detours)!==JSON.stringify(committedDetours)) errors.push("navmesh detour list differs from the committed one: regenerate with --write-paths");
-    if(process.env.GITHUB_EVENT_NAME==="pull_request") {
-      const oldPaths=previousVersion(`stations/${station}/navmesh-paths.json`) as {detours?:string[]}|null;
-      const grew=oldPaths ? committedDetours.filter(d=>!(oldPaths.detours ?? []).includes(d)) : [];
-      if(grew.length) errors.push(`navmesh detour list grew from PR base: ${grew.join(", ")}`);
-    }
     if(pathsDiff.missing.length+pathsDiff.extra.length+pathsDiff.moved.length) errors.push(`navmesh paths stale (${staleKeys.join(", ")}): run pnpm tsx packages/godot/src/navmesh-fallback.ts --station ${station} --write-paths stations/${station}/navmesh-paths.json`);
     if(JSON.stringify(committedPaths.bake)!==JSON.stringify(NAVMESH_BAKE)) errors.push(`navmesh paths bake header is ${JSON.stringify(committedPaths.bake)}, expected ${JSON.stringify(NAVMESH_BAKE)}: regenerate with --write-paths`);
     const header={version:committedPaths.version,station:committedPaths.station,frame:committedPaths.frame};

@@ -1,8 +1,18 @@
 [
   {
-    "edgeId": "e:41b6ebb3ce0846719aa1c9985f9cd4d1",
-    "mode": "stairs",
-    "reason": "snap_failed"
+    "edgeId": "e:008b0f9c620c47d7b99a1dbe04b40ff8",
+    "mode": "walk",
+    "reason": "low_ceiling"
+  },
+  {
+    "edgeId": "e:04881586eea54d7f92cd7ab0076a6004",
+    "mode": "walk",
+    "reason": "other"
+  },
+  {
+    "edgeId": "e:4600d5cb18f740f48db0dfe8a2d8bcf6",
+    "mode": "walk",
+    "reason": "other"
   },
   {
     "edgeId": "e:65edd7ca50844b609d4dcb25bd296936",
@@ -10,13 +20,53 @@
     "reason": "snap_failed"
   },
   {
-    "edgeId": "e:e9a119f724e44645899a1b1bc14ace69",
-    "mode": "stairs",
-    "reason": "snap_failed"
+    "edgeId": "e:6ac033af77914fe5a9786676088b952c",
+    "mode": "walk",
+    "reason": "other"
+  },
+  {
+    "edgeId": "e:82b122a9cea8444c93cde3c497fcba06",
+    "mode": "walk",
+    "reason": "low_ceiling"
+  },
+  {
+    "edgeId": "e:82c9a2c2cd704a348fbeb423d07cb125",
+    "mode": "walk",
+    "reason": "other"
+  },
+  {
+    "edgeId": "e:94453b6d55ba4ff4af92d0665a0375fa",
+    "mode": "walk",
+    "reason": "other"
+  },
+  {
+    "edgeId": "e:95ca788ef5854e8ea979323ece21e54e",
+    "mode": "walk",
+    "reason": "low_ceiling"
+  },
+  {
+    "edgeId": "e:a4ed9fc953984c52a914f0cbe73cd318",
+    "mode": "walk",
+    "reason": "other"
+  },
+  {
+    "edgeId": "e:e4561908aad344cb83b5716b92b213d5",
+    "mode": "walk",
+    "reason": "other"
   },
   {
     "edgeId": "e:ed7e56a8e6234197be06280fcb24aecc",
     "mode": "elevator",
     "reason": "snap_failed"
+  },
+  {
+    "edgeId": "e:f7671c07bc8d4f059fafa42d307f6873",
+    "mode": "walk",
+    "reason": "other"
+  },
+  {
+    "edgeId": "e:fe47ddc531474c1aa0cd814f33680ecc",
+    "mode": "walk",
+    "reason": "other"
   }
 ]

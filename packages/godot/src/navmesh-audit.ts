@@ -112,7 +112,7 @@ export function countedTotals(details: readonly Pick<SampleDetail,"floor"|"wallB
 }
 
 async function main() {
-  let station = "", navmeshFile = "", json = "", fallbackList = "", withGreybox = false, withConnectors = false, snapFallback = false, bridgeGaps = false, gate = false;
+  let station = "", navmeshFile = "", json = "", fallbackList = "", withGreybox = false, snapFallback = false, bridgeGaps = false, gate = false;
   const args = process.argv.slice(2);
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--station" && args[i+1]) station = args[++i]!;
@@ -121,12 +121,10 @@ async function main() {
     else if (args[i] === "--fallback-list" && args[i+1]) fallbackList = args[++i]!;
     else if (args[i] === "--gate") gate = true;
     else if (args[i] === "--with-greybox") withGreybox = true;
-    else if (args[i] === "--with-connectors") withConnectors = true;
     else if (args[i] === "--snap-fallback") snapFallback = true;
     else if (args[i] === "--bridge-gaps") bridgeGaps = true;
     else throw new Error(`unknown or incomplete argument: ${args[i]}`);
   }
-  if (withConnectors && !withGreybox) throw new Error("--with-connectors requires --with-greybox");
   if (gate && !fallbackList) throw new Error("--gate requires --fallback-list");
   if (!station || !navmeshFile || !json) throw new Error("use --station <station> --navmesh <file> --json <file>");
   const dest = qaFile(json);
@@ -144,12 +142,12 @@ async function main() {
   if (provenance.privateBuild !== privateBuild) throw new Error("navmesh bake and audit disagree on private overlay; rebake first");
   if (provenance.bundleSha256 !== createHash("sha256").update(JSON.stringify(bundle)).digest("hex")) throw new Error("navmesh bake and audit bundle differ; rebake first");
   const router = createRouter(bundle, { allowUnverified: privateBuild }), scene = await loadScene(station, bundle);
-  const grey = withGreybox ? makeGreybox(bundle, scene, privateBuild, { connectors:withConnectors }) : null;
+  const grey = withGreybox ? makeGreybox(bundle, scene, privateBuild) : null;
   const originalProbe = grey?.probe ?? sceneProbe(scene);
-  // Recomputed exactly as the bake does (without connectors); a difference means the bake and this audit see different inputs.
-  const suspect = suspectVerticalEdges(bundle, makeFloorHeightNear(grey?.baseProbe ?? originalProbe), e => router.isTraversable(e, DEFAULT_PROFILE));
+  // Recomputed exactly as the bake does; a difference means the bake and this audit see different inputs.
+  const suspect = suspectVerticalEdges(bundle, makeFloorHeightNear(grey?.suspectProbe ?? originalProbe), e => router.isTraversable(e, DEFAULT_PROFILE));
   if (JSON.stringify(suspect) !== JSON.stringify(provenance.suspectEdges ?? null)) throw new Error("navmesh bake and audit disagree on suspect vertical edges; rebake first");
-  // With --with-connectors, vertical edges follow the built connector paths, as app.ts passes connectorRoutePaths().
+  // Vertical edges follow the built connector paths, as app.ts passes connectorRoutePaths().
   const connectorPaths = grey?.connectors ? new Map([...grey.connectors.pathByEdge].map(([id,path]) => [id, path.map(q => ({ x:q.x, y:-q.z, z:q.y }))])) : undefined;
   if (grey?.connectors) for (const edge of bundle.edges) if (grey.connectors.skippedEdgeIds.includes(edge.id)) connectorPaths!.set(edge.id, skippedConnectorPath(bundle, edge));
   const suspectIds = new Set(suspect.map(s => s.edgeId)), usedSuspect = new Set<string>();
@@ -458,7 +456,7 @@ async function main() {
   const failed = [...cache.values()].filter(e => e.missing);
   // Include successful edges on incomplete routes as well as completed routes.
   const uniqueEdgeScene={navmesh:totals(),connector:totals()};
-  // Connector samples by the step's mode; with --with-connectors, no-floor samples split by whether the explorer builds the edge.
+  // Connector samples by the step's mode; no-floor samples split by whether the explorer builds the edge.
   const connectorByMode:Record<string,ReturnType<typeof totals>>=Object.create(null);
   let noFloorOnBuiltEdge:number|null=grey?.connectors ? 0 : null, noFloorOnUnbuiltEdge:number|null=grey?.connectors ? 0 : null;
   for (const [key,entry] of cache) {
@@ -531,7 +529,7 @@ async function main() {
   }
   const result = { station, withGreybox, snapFallback, queryMaxNodes:8192, suspectEdges:[...usedSuspect].sort(), queryDiagnosis, fallbackAudit, clipSites, clipCounts, gateResult:gate ? gateResult : null, gapClasses, blockingColliderKinds, linkAttachmentDiagnosis:provenance.linkAttachmentDiagnosis ?? null, fallbackRecoveredAttached:provenance.fallbackRecovered ?? 0, fallbackEdgesUsed:usedFallbackEdges.size, fallbackRoutesCompleted, unpairedFallbackRoutes, bakeProvenance: provenance, collisionAuditUsesOriginalGateObstacles: provenance.ignoreGates, affectedIncompleteRoutesByMode:affectedByMode, failureClasses, failureEdges:failures, greyboxRuns: grey?.grey.stats.runs ?? null, greyboxLandingPads:grey?.grey.stats.landingPads ?? null, runtime, orderedPoiPairs: pois.length * (pois.length-1), routesAudited: routeCount, failedRoutePairs: routeFailures, completeAuditedRoutes: completed, pureNavmeshRoutes: pure, routesWithConnectors: hybrid, incompleteRoutes: incomplete, invalidJoinRoutes, joinsWithGap, maxJoinGapM,
     edgeUses: stepUses, uniqueEdgesUsed: new Set([...cache.values()].map(e => e.step.edgeId)).size, directedEdgesQueried: cache.size,
-    navmeshTotals: navTotal, snapDiagnosis, navmeshSegmentHeights:{default:walkingDetail,gateSceneRaycast:walkingScene}, uniqueEdgeScene, connectorByMode, noFloorOnBuiltEdge, noFloorOnUnbuiltEdge, withConnectors, probeOmits: withConnectors ? ["stairwellCut"] : null, segmentTotals:{ raw:{connector:connectorRaw,navmesh:walkingRaw}, detail:{connector:connectorDetail,navmesh:walkingDetail}, sceneRaycast:{connector:connectorScene,navmesh:walkingScene} }, diagnosis: { raw: rawTotal, detail: navTotal, sceneRaycast: sceneTotal,
+    navmeshTotals: navTotal, snapDiagnosis, navmeshSegmentHeights:{default:walkingDetail,gateSceneRaycast:walkingScene}, uniqueEdgeScene, connectorByMode, noFloorOnBuiltEdge, noFloorOnUnbuiltEdge, segmentTotals:{ raw:{connector:connectorRaw,navmesh:walkingRaw}, detail:{connector:connectorDetail,navmesh:walkingDetail}, sceneRaycast:{connector:connectorScene,navmesh:walkingScene} }, diagnosis: { raw: rawTotal, detail: navTotal, sceneRaycast: sceneTotal,
       detailHeightUnavailableSamples: detailMissing, detailUnavailableStairFallback: detailMissingFallback, detailUnavailableJoin: detailMissingJoin, detailUnavailableAmbiguous: detailAmbiguous, detailLargeHeightJumps, detailMaxHeightJump, offFloorWithDetail, offFloorWithoutDetail, heightCorrectionM: { count:heightCorrections.length, p50:percentile(heightCorrections,0.5), p95:percentile(heightCorrections,0.95), max:heightCorrections.length ? heightCorrections.reduce((a,b)=>Math.max(a,b),0) : null }, sceneFloorUnavailableSamples: sceneMissing,
       rawAbsDzM: { count:rawDiffs.length, p50:percentile(rawDiffs,0.5), p95:percentile(rawDiffs,0.95), max:rawDiffs.length ? rawDiffs.reduce((a,b)=>Math.max(a,b),0) : null },
       detailAbsDzM: { count:detailDiffs.length, p50:percentile(detailDiffs,0.5), p95:percentile(detailDiffs,0.95), max:detailDiffs.length ? detailDiffs.reduce((a,b)=>Math.max(a,b),0) : null },
