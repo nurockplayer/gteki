@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "station": "shinjuku",
+  "date": "2026-11-01",
+  "ruling": "director 2026-11-01 01:0x JST: the navmesh bake and audit check the walker's live scene (#676); the public gate moves once in #685, then shrink-only",
+  "followUps": [
+    "#683",
+    "#684",
+    "#687",
+    "#688"
+  ],
+  "before": {
+    "fallback": [
+      "e:41b6ebb3ce0846719aa1c9985f9cd4d1",
+      "e:65edd7ca50844b609d4dcb25bd296936",
+      "e:e9a119f724e44645899a1b1bc14ace69",
+      "e:ed7e56a8e6234197be06280fcb24aecc"
+    ],
+    "suspect": [
+      "e:4038cecf024c417a87310ab9859a7404",
+      "e:45ebdab487134925b3b47cd29bffb99c",
+      "e:bdcdf9229c9f49dc9bc02bec79c4a8fe",
+      "e:c2c4ebb36e374e1da3dde94d3a5257d6",
+      "e:c3fe6342f158400ab602dd610f636329",
+      "e:c690df6cad7b48bba7b3b30fee65eda2",
+      "e:c7fa5f74d72f43498ef2cb3b1dbea7e4",
+      "e:dcbc1a258ceb41b09ab50e417aabc8b4"
+    ],
+    "detours": [],
+    "clipBaseline": {
+      "e:ed7e56a8e6234197be06280fcb24aecc": {
+        "connectorWallHits": 0,
+        "fallbackWallHits": 2,
+        "navmeshWallHits": 0,
+        "offFloor": 0
+      },
+      "total": {
+        "connectorWallHits": 0,
+        "fallbackWallHits": 2,
+        "navmeshWallHits": 0,
+        "offFloor": 0,
+        "unvalidatedJoins": 72,
+        "invalidJoins": 0,
+        "routablePairs": 238,
+        "failedRoutePairs": 2
+      }
+    }
+  },
+  "after": {
+    "fallback": [
+      "e:008b0f9c620c47d7b99a1dbe04b40ff8",
+      "e:04881586eea54d7f92cd7ab0076a6004",
+      "e:4600d5cb18f740f48db0dfe8a2d8bcf6",
+      "e:65edd7ca50844b609d4dcb25bd296936",
+      "e:6ac033af77914fe5a9786676088b952c",
+      "e:82b122a9cea8444c93cde3c497fcba06",
+      "e:82c9a2c2cd704a348fbeb423d07cb125",
+      "e:94453b6d55ba4ff4af92d0665a0375fa",
+      "e:95ca788ef5854e8ea979323ece21e54e",
+      "e:a4ed9fc953984c52a914f0cbe73cd318",
+      "e:e4561908aad344cb83b5716b92b213d5",
+      "e:ed7e56a8e6234197be06280fcb24aecc",
+      "e:f7671c07bc8d4f059fafa42d307f6873",
+      "e:fe47ddc531474c1aa0cd814f33680ecc"
+    ],
+    "suspect": [
+      "e:4038cecf024c417a87310ab9859a7404",
+      "e:45ebdab487134925b3b47cd29bffb99c",
+      "e:bdcdf9229c9f49dc9bc02bec79c4a8fe",
+      "e:c2c4ebb36e374e1da3dde94d3a5257d6",
+      "e:c3fe6342f158400ab602dd610f636329",
+      "e:c690df6cad7b48bba7b3b30fee65eda2",
+      "e:c7fa5f74d72f43498ef2cb3b1dbea7e4",
+      "e:dcbc1a258ceb41b09ab50e417aabc8b4"
+    ],
+    "detours": [
+      "e:1075213aa60b4d9fa79c5cb0b29b1b5a:reverse",
+      "e:4fcb23c2d1fc4ddfb267916a3190dc00:forward",
+      "e:6d50f884e12d43979ed80980ea53b58b:forward",
+      "e:d4bdd351c95f4b2eaca81535c64dd313:forward"
+    ],
+    "clipBaseline": {
+      "e:008b0f9c620c47d7b99a1dbe04b40ff8": {
+        "connectorWallHits": 0,
+        "fallbackWallHits": 4,
+        "navmeshWallHits": 0,
+        "offFloor": 0
+      },
+      "e:04881586eea54d7f92cd7ab0076a6004": {
+        "connectorWallHits": 0,
+        "fallbackWallHits": 4,
+        "navmeshWallHits": 0,
+        "offFloor": 0
+      },
+      "e:4600d5cb18f740f48db0dfe8a2d8bcf6": {
+        "connectorWallHits": 0,
+        "fallbackWallHits": 2,
+        "navmeshWallHits": 0,
+        "offFloor": 0
+      },
+      "e:6ac033af77914fe5a9786676088b952c": {
+        "connectorWallHits": 0,
+        "fallbackWallHits": 4,
+        "navmeshWallHits": 0,
+        "offFloor": 0
+      },
+      "e:82b122a9cea8444c93cde3c497fcba06": {
+        "connectorWallHits": 0,
+        "fallbackWallHits": 8,
+        "navmeshWallHits": 0,
+        "offFloor": 0
+      },
+      "e:82c9a2c2cd704a348fbeb423d07cb125": {
+        "connectorWallHits": 0,
+        "fallbackWallHits": 4,
+        "navmeshWallHits": 0,
+        "offFloor": 0
+      },
+      "e:94453b6d55ba4ff4af92d0665a0375fa": {
+        "connectorWallHits": 0,
+        "fallbackWallHits": 2,
+        "navmeshWallHits": 0,
+        "offFloor": 0
+      },
+      "e:95ca788ef5854e8ea979323ece21e54e": {
+        "connectorWallHits": 0,
+        "fallbackWallHits": 6,
+        "navmeshWallHits": 0,
+        "offFloor": 0
+      },
+      "e:e4561908aad344cb83b5716b92b213d5": {
+        "connectorWallHits": 0,
+        "fallbackWallHits": 2,
+        "navmeshWallHits": 0,
+        "offFloor": 0
+      },
+      "e:ed7e56a8e6234197be06280fcb24aecc": {
+        "connectorWallHits": 0,
+        "fallbackWallHits": 2,
+        "navmeshWallHits": 0,
+        "offFloor": 0
+      },
+      "e:fe47ddc531474c1aa0cd814f33680ecc": {
+        "connectorWallHits": 0,
+        "fallbackWallHits": 4,
+        "navmeshWallHits": 0,
+        "offFloor": 0
+      },
+      "total": {
+        "connectorWallHits": 0,
+        "fallbackWallHits": 42,
+        "navmeshWallHits": 0,
+        "offFloor": 0,
+        "unvalidatedJoins": 196,
+        "invalidJoins": 0,
+        "routablePairs": 238,
+        "failedRoutePairs": 2
+      }
+    }
+  }
+}

@@ -624,6 +624,15 @@ GapClass	type	packages/godot/src/navmesh-gaps.ts	8
 gapClass	function	packages/godot/src/navmesh-gaps.ts	9
 dataWidth	function	packages/godot/src/navmesh-gaps.ts	19
 diagnoseGaps	function	packages/godot/src/navmesh-gaps.ts	26
+GateSnapshot	type	packages/godot/src/navmesh-gate-reset.ts	8
+GateReset	type	packages/godot/src/navmesh-gate-reset.ts	10
+gateResetFile	const	packages/godot/src/navmesh-gate-reset.ts	12
+gateSnapshot	function	packages/godot/src/navmesh-gate-reset.ts	14
+gateGrowth	function	packages/godot/src/navmesh-gate-reset.ts	21
+gateResetErrors	function	packages/godot/src/navmesh-gate-reset.ts	38
+readGateSnapshot	function	packages/godot/src/navmesh-gate-reset.ts	54
+readAtRevision	function	packages/godot/src/navmesh-gate-reset.ts	67
+readWorkTree	const	packages/godot/src/navmesh-gate-reset.ts	73
 makeGreybox	function	packages/godot/src/navmesh-greybox.ts	16
 navmeshBundle	function	packages/godot/src/navmesh-input.ts	7
 planFallbackRoute	function	packages/godot/src/navmesh-links.ts	11
