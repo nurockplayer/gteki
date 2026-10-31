@@ -267,10 +267,12 @@ function clipToSquare(a: THREE.Vector3, b: THREE.Vector3, centre: THREE.Vector3,
 /**
  * The spans of a leg's side wall, measured along its unit direction, that lie outside every turning landing's square at the
  * wall's own height: a wall mitred at a shallow bend just before a landing otherwise runs a short way into the landing it
- * leads to. A landing more than 0.35 m above or below the leg where they meet in plan clips nothing (#673 r1): it is not a
- * floor beside the flight. `height(s)` is the leg's surface height at distance s along it.
+ * leads to. A flight's walls always stop at the squares of its own landings (those it reaches through shallow bends only), as
+ * main's did, whatever the height there (#673 r12). Another landing more than 0.35 m above or below the leg clips nothing
+ * (#673 r1): it is not a floor beside the flight, and passesOverItself rejects the stair. `height(s)` is the leg's surface
+ * height at distance s along it; `own(square)` whether the leg belongs to that landing.
  */
-function wallSpans(begin: number, end: number, from: THREE.Vector3, leg: THREE.Vector3, lateral: THREE.Vector3, half: number, squares: readonly LandingSquare[], height: (s: number) => number): [number, number][] {
+function wallSpans(begin: number, end: number, from: THREE.Vector3, leg: THREE.Vector3, lateral: THREE.Vector3, half: number, squares: readonly LandingSquare[], height: (s: number) => number, own: (square: LandingSquare) => boolean): [number, number][] {
   let spans: [number, number][] = end > begin ? [[begin, end]] : [];
   for (const square of squares) {
     const offset = from.clone().add(lateral).sub(square.centre); offset.y = 0;
@@ -284,7 +286,7 @@ function wallSpans(begin: number, end: number, from: THREE.Vector3, leg: THREE.V
         const a = (-half - p0) / slope, b = (half - p0) / slope;
         lo = Math.max(lo, Math.min(a, b)); hi = Math.min(hi, Math.max(a, b));
       }
-      if (clear || hi <= lo || Math.abs(height((lo + hi) / 2) - square.height) >= 0.35) { next.push([s0, s1]); continue; }
+      if (clear || hi <= lo || (!own(square) && Math.abs(height((lo + hi) / 2) - square.height) >= 0.35)) { next.push([s0, s1]); continue; }
       if (lo > s0) next.push([s0, lo]);
       if (s1 > hi) next.push([hi, s1]);
     }
@@ -587,7 +589,11 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
             const nextLateral = new THREE.Vector3(-next.z, 0, next.x).multiplyScalar(half * side);
             end = mitre(to, leg, lateral, next, nextLateral).clone().sub(from).dot(leg);
           }
-          const spans = edge.mode === "stairs" ? wallSpans(begin, end, from, leg, lateral, half, landingSquares, (s) => THREE.MathUtils.lerp(from.y, to.y, THREE.MathUtils.clamp(s / horizontal, 0, 1))) : end > begin ? [[begin, end] as [number, number]] : [];
+          const spans = edge.mode === "stairs" ? wallSpans(begin, end, from, leg, lateral, half, landingSquares, (s) => THREE.MathUtils.lerp(from.y, to.y, THREE.MathUtils.clamp(s / horizontal, 0, 1)), (square) => {
+            // This leg runs from vertex i - 1 to i: the turning vertices between it and the landing must be none.
+            const lo = i <= square.index ? i : square.index + 1, hi = i <= square.index ? square.index - 1 : i - 1;
+            return !landingSquares.some((other) => other.index >= lo && other.index <= hi);
+          }) : end > begin ? [[begin, end] as [number, number]] : [];
           for (const [lo, hi] of spans) {
             const n = Math.max(1, Math.ceil((hi - lo) / 0.5));
             for (let k = 0; k < n; k++) {

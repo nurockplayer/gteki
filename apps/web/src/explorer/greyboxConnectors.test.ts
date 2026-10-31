@@ -530,6 +530,25 @@ describe("turning landing guards", () => {
     }
   });
 
+  // #673 r12: an earlier flight's side wall stops at its own landing's square, whatever its height there, so it never stands
+  // in the outgoing flight's lane.
+  it("keeps the outgoing lane clear on a 3 m wide stair with a shallow bend before its landing", () => {
+    for (const direction of [-1, 1]) {
+      const waypoints = mirror([[0, 0, 0], [4, 2, 0], [4.394, 2.2, 0.069], [5.089, 3.7, -3.87]], direction);
+      const station = stairThrough(waypoints);
+      (station.edges[0]!.attributes as Record<string, unknown>).width = { m: 3 };
+      const result = buildConnectors(station, () => true, flat, "high");
+      expect(result.stats.legacyConnectors, `direction=${direction}`).toBe(0);
+      const [x0, y0, z0] = waypoints[2]!, [x1, y1, z1] = waypoints[3]!;
+      const length = Math.hypot(x1 - x0, z1 - z0), ux = (x1 - x0) / length, uz = (z1 - z0) / length;
+      for (const offset of [-1, 0, 1]) for (let s = 0; s <= length; s += 0.05) {
+        const x = x0 + ux * s - uz * offset, z = z0 + uz * s + ux * offset, y = y0 + (y1 - y0) * s / length;
+        const resolved = resolveWalls(x, z, 0.3, y, 1.7, result.wallSegments);
+        expect(Math.hypot(resolved.x - x, resolved.z - z), `direction=${direction} offset=${offset} s=${s.toFixed(2)}`).toBeLessThanOrEqual(0.05);
+      }
+    }
+  });
+
   // #673 r2: a steep flight is still the landing's own flight, so its entrance stays open.
   it("leaves a steep flight's entrance to its landing open", () => {
     for (const direction of [-1, 1]) {
