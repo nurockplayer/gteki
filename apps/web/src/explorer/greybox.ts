@@ -348,6 +348,20 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
   return result;
 }
 
+/** Plan (XZ) distance between two segments; 0 when they cross. */
+function planSegmentDistance(a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3, d: THREE.Vector3): number {
+  const cross = (ox: number, oz: number, px: number, pz: number, qx: number, qz: number) => (px - ox) * (qz - oz) - (pz - oz) * (qx - ox);
+  const d1 = cross(c.x, c.z, d.x, d.z, a.x, a.z), d2 = cross(c.x, c.z, d.x, d.z, b.x, b.z);
+  const d3 = cross(a.x, a.z, b.x, b.z, c.x, c.z), d4 = cross(a.x, a.z, b.x, b.z, d.x, d.z);
+  if (((d1 > 0) !== (d2 > 0)) && d1 !== 0 && d2 !== 0 && ((d3 > 0) !== (d4 > 0)) && d3 !== 0 && d4 !== 0) return 0;
+  const pointSegment = (p: THREE.Vector3, s: THREE.Vector3, e: THREE.Vector3) => {
+    const dx = e.x - s.x, dz = e.z - s.z, length2 = dx * dx + dz * dz;
+    const t = length2 ? Math.min(1, Math.max(0, ((p.x - s.x) * dx + (p.z - s.z) * dz) / length2)) : 0;
+    return Math.hypot(p.x - (s.x + dx * t), p.z - (s.z + dz * t));
+  };
+  return Math.min(pointSegment(a, c, d), pointSegment(b, c, d), pointSegment(c, a, b), pointSegment(d, a, b));
+}
+
 /** Emit the globally deduplicated passage geometry for already-detected runs. */
 export function emitGreybox(bundle: StationBundle, detected: readonly UnmodelledEdgeRun[], hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", captureNav = false, pads: readonly LandingPad[] = []) {
   const started = performance.now();
@@ -453,8 +467,20 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       }
     }
   }
+  // A landing's symbolic render height can sit only ~1.6 m above the floor below, so an intermediate level's slab,
+  // walls and ceiling would make a low ceiling over a passage underneath. Where an intermediate run lies over another
+  // run in plan, build no piece for it: the edge then falls back to its existing path.
+  const runSegments: { run: UnmodelledEdgeRun; a: THREE.Vector3; z: THREE.Vector3; half: number; y: number }[] = [];
+  for (const run of runs) {
+    const pts = run.points.map((p) => R(p.x, p.y, p.z));
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1]!, z = pts[i]!;
+      runSegments.push({ run, a, z, half: widthOf(run.edge) / 2, y: Math.min(a.y, z.y) });
+    }
+  }
   for (const run of runs) {
     const width = widthOf(run.edge), half = width / 2;
+    const intermediate = floors.get(nodes.get(run.edge.from)?.floorId ?? "")?.intermediate === true;
     const b = getBatch(nodes.get(run.edge.from)?.floorId ?? "");
     const pts = run.points.map((p) => R(p.x, p.y, p.z));
     let travelled = 0, nextLight = 0;
@@ -462,6 +488,8 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       const a = pts[i - 1]!, z = pts[i]!;
       const diff = z.clone().sub(a), length = diff.length(), flat = Math.hypot(diff.x, diff.z);
       if (length < 1e-8 || flat < 1e-8) continue;
+      const y = Math.min(a.y, z.y);
+      if (intermediate && runSegments.some((other) => other.run !== run && y - other.y > 0 && y - other.y < 2.3 && planSegmentDistance(a, z, other.a, other.z) < half + other.half)) { travelled += length; continue; }
       const along = new THREE.Vector3(diff.x / flat, 0, diff.z / flat);
       const across = new THREE.Vector3(-along.z, 0, along.x);
       const offset = (p: THREE.Vector3, side: number, height: number) => p.clone().addScaledVector(across, side).add(new THREE.Vector3(0, height, 0));

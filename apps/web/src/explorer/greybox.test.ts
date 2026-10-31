@@ -486,6 +486,29 @@ describe("buildGreybox", () => {
     expect(result.stats.lengthM).toBeCloseTo(20 * Math.SQRT2);
   });
 
+  it("builds no piece on an intermediate level standing under 2.3 m over another passage", () => {
+    // A landing's symbolic height can put it ~1.6 m over the floor below; its slab and ceiling would leave that
+    // passage a 1.49 m ceiling. Safe path: no piece for the intermediate level, so its edge falls back.
+    const levels = (elevation: number) => {
+      const floors = [{ ...bundle.floors[0]!, id: "low", renderElevationM: 0 }, { ...bundle.floors[0]!, id: "landing", renderElevationM: elevation, intermediate: true }];
+      const nodes = [
+        { ...bundle.nodes[0]!, id: "a", floorId: "low", position: { x: 0, y: 0, z: null } },
+        { ...bundle.nodes[1]!, id: "b", floorId: "low", position: { x: 10, y: 0, z: null } },
+        { ...bundle.nodes[0]!, id: "c", floorId: "landing", position: { x: 0, y: 1, z: null } },
+        { ...bundle.nodes[1]!, id: "d", floorId: "landing", position: { x: 10, y: 1, z: null } },
+      ];
+      const edges = [{ ...bundle.edges[0]!, id: "low", from: "a", to: "b" }, { ...bundle.edges[0]!, id: "landing", from: "c", to: "d" }];
+      const station = { ...bundle, floors, nodes, edges } as unknown as StationBundle;
+      return buildGreybox(station, () => true, () => false, emptyScene, "high", true).navFloors!.filter((_v, i) => i % 3 === 1);
+    };
+    const near = levels(1.6);
+    expect(near.some((y) => Math.abs(y) < 1e-6)).toBe(true);
+    expect(near.some((y) => Math.abs(y - 1.6) < 1e-6)).toBe(false);
+    const far = levels(3);
+    expect(far.some((y) => Math.abs(y) < 1e-6)).toBe(true);
+    expect(far.some((y) => Math.abs(y - 3) < 1e-6)).toBe(true);
+  });
+
   it("builds 16 km of overlapping passages on five floors within budget", () => {
     const floors = Array.from({ length: 5 }, (_, i) => ({ ...bundle.floors[0]!, id: `f${i}`, renderElevationM: i * 4 }));
     const nodes = floors.flatMap((floor, i) => [
