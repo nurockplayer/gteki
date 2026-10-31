@@ -436,6 +436,61 @@ describe("buildGreybox", () => {
     expect(box.width * Math.cos(angle)).toBeGreaterThanOrEqual(0.6);
   });
 
+  it("opens a station wall a floorless run crosses mid-segment, though its floor never changes", () => {
+    const result = buildGreybox(bundle, () => true, () => false, {
+      colliderNear: () => false,
+      wallHit: (a, b, wallsOnly) => wallsOnly && a.x < 4.75 && b.x >= 4.75 ? { x: 4.75, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) } : null,
+    }, "high");
+    expect(result.openings).toHaveLength(1);
+    expect(result.stats.portals).toBe(1);
+    expect(result.openings[0]!.center.x).toBeCloseTo(4.75);
+  });
+
+  it("opens every station wall a floorless run crosses, including one just past its start and more than eight", () => {
+    const walls = [0.03, ...Array.from({ length: 9 }, (_, i) => 1 + i)];
+    const result = buildGreybox(bundle, () => true, () => false, {
+      colliderNear: () => false,
+      wallHit: (a, b, wallsOnly) => {
+        const x = wallsOnly ? walls.find((w) => a.x < w && b.x >= w) : undefined;
+        return x === undefined ? null : { x, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) };
+      },
+    }, "high");
+    expect(result.openings.map((box) => box.center.x).sort((p, q) => p - q)).toEqual(walls.map((w) => expect.closeTo(w)));
+  });
+
+  it("opens a wall through a run's end only when the route carries on beyond it", () => {
+    const wallAt = (x: number) => ({ colliderNear: () => false, wallHit: (a: { x: number }, b: { x: number }, wallsOnly?: boolean) => wallsOnly && Math.min(a.x, b.x) <= x && Math.max(a.x, b.x) >= x ? { x, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) } : null });
+    // Ends on a wall with nothing beyond it: no opening.
+    expect(buildGreybox(bundle, () => true, () => false, wallAt(10), "high").openings).toHaveLength(0);
+    // Crosses a wall 0.02 m before its end: opened, as anywhere else on the segment.
+    expect(buildGreybox(bundle, () => true, () => false, wallAt(9.98), "high").openings).toHaveLength(1);
+    // Starts on a wall that another edge at that node comes through: opened.
+    const through = { ...bundle, nodes: [...bundle.nodes, { id: "c", floorId: "f", position: { x: -5, y: 0, z: 0 } }], edges: [...bundle.edges, { ...bundle.edges[0]!, id: "e2", from: "c", to: "a" }] } as unknown as StationBundle;
+    const openings = buildGreybox(through, () => true, () => false, wallAt(0), "high").openings;
+    expect(openings.some((box) => Math.abs(box.center.x) < 1e-6)).toBe(true);
+    // The same edge closed: nothing carries on beyond the wall, so it stays shut.
+    expect(buildGreybox(through, (e) => e.id !== "e2", () => false, wallAt(0), "high").openings).toHaveLength(0);
+  });
+
+  it("opens both of two differently oriented walls crossed 0.08 m apart", () => {
+    const result = buildGreybox(bundle, () => true, () => false, {
+      colliderNear: () => false,
+      wallHit: (a, b, wallsOnly) => !wallsOnly ? null
+        : a.x < 5 && b.x >= 5 ? { x: 5, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) }
+        : a.x < 5.08 && b.x >= 5.08 ? { x: 5.08, y: 0, z: 0, wallNormal: new THREE.Vector3(Math.SQRT1_2, 0, Math.SQRT1_2) } : null,
+    }, "high");
+    expect(result.openings).toHaveLength(2);
+  });
+
+  it("opens no wall that a floorless run only touches at an inner bend", () => {
+    const bent = { ...bundle, nodes: [bundle.nodes[0]!, { id: "b", floorId: "f", position: { x: 0, y: 5, z: 0 } }], edges: [{ id: "e", from: "a", to: "b", mode: "walk", geometry: [{ x: 0, y: 0 }, { x: 5, y: 0 }, { x: 0, y: 5 }] }] } as unknown as StationBundle;
+    const result = buildGreybox(bent, () => true, () => false, {
+      colliderNear: () => false,
+      wallHit: (a, b, wallsOnly) => wallsOnly && a.x < 5 && b.x >= 5 ? { x: 5, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) } : null,
+    }, "high");
+    expect(result.openings).toHaveLength(0);
+  });
+
   it("preserves the entire floor and walls of a long straight passage", () => {
     const long = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 2000, y: 0, z: 0 } }] };
     const result = buildGreybox(long, () => true, () => false, emptyScene, "low");

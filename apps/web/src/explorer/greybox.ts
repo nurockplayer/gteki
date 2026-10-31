@@ -97,7 +97,8 @@ export interface GreyboxStats { runs: number; landingPads: number; lengthM: numb
 export const greyboxTriangleLimit = (tier: "high" | "low"): number => tier === "high" ? 150000 : 100000;
 export interface GreyboxScene {
   colliderNear(p: V3, r: number): boolean;
-  wallHit(a: V3, b: V3): (V3 & { wallNormal?: THREE.Vector3 }) | null;
+  /** `wallsOnly`: only the station's wall segments count, never a collider such as a column or a ticket machine. */
+  wallHit(a: V3, b: V3, wallsOnly?: boolean): (V3 & { wallNormal?: THREE.Vector3 }) | null;
 }
 
 /** Clip a wall against oriented openings, preserving the wall above and below an opening. */
@@ -333,7 +334,7 @@ export function createGreyboxBuilder(bundle: StationBundle, traversable: (edge: 
         if (!previous || (pad.shifted && !previous.shifted) || (pad.shifted === previous.shifted && pad.width > previous.width)) pads.set(pad.nodeId, pad);
         else for (const side of pad.openSides) previous.openSides.add(side);
       }
-      return emitGreybox(bundle, [...runs, ...[...pads.values()].flatMap((p) => p.strip ? [p.strip] : [])], hasFloor, scene, tier, captureNav, [...pads.values()]);
+      return emitGreybox(bundle, [...runs, ...[...pads.values()].flatMap((p) => p.strip ? [p.strip] : [])], hasFloor, scene, tier, captureNav, [...pads.values()], traversable);
     },
   };
 }
@@ -349,7 +350,7 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
 }
 
 /** Emit the globally deduplicated passage geometry for already-detected runs. */
-export function emitGreybox(bundle: StationBundle, detected: readonly UnmodelledEdgeRun[], hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", captureNav = false, pads: readonly LandingPad[] = []) {
+export function emitGreybox(bundle: StationBundle, detected: readonly UnmodelledEdgeRun[], hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", captureNav = false, pads: readonly LandingPad[] = [], traversable: (edge: Edge) => boolean = () => true) {
   const started = performance.now();
   const index = new CorridorIndex();
   for (const pad of pads) index.add(pad.center.clone().addScaledVector(pad.along, -pad.width / 2), pad.center.clone().addScaledVector(pad.along, pad.width / 2), pad.width / 2);
@@ -453,10 +454,39 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       }
     }
   }
+  // A corridor piece ends at a run end only where the detected run itself ends; a piece cut at a bend continues
+  // past it, and that wall is decided by the piece's own vertices.
+  const runEnds = new Map<string, V3[]>();
+  for (const run of detected) {
+    const last = run.points.at(-1);
+    if (!last) continue;
+    const list = runEnds.get(run.edge.id);
+    if (list) list.push(last); else runEnds.set(run.edge.id, [last]);
+  }
+  const same = (a: V3 | undefined, b: V3 | undefined) => !!a && !!b && Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z) < 1e-6;
   for (const run of runs) {
     const width = widthOf(run.edge), half = width / 2;
     const b = getBatch(nodes.get(run.edge.from)?.floorId ?? "");
     const pts = run.points.map((p) => R(p.x, p.y, p.z));
+    const finishesRun = !!runEnds.get(run.edge.id)?.some((p) => same(p, run.points.at(-1)));
+    // What lies beyond a run's end: the edge's own geometry before/after it, or, at the edge's node, the next point of
+    // every other edge there.
+    const edgePts = edgePoints(bundle, run.edge, nodes, floors);
+    const beyondRun = (end: THREE.Vector3, first: boolean): THREE.Vector3[] => {
+      for (let k = 0; k + 1 < edgePts.length; k++) {
+        const p = edgePts[k]!, q = edgePts[k + 1]!, dx = q.x - p.x, dz = q.z - p.z, length2 = dx * dx + dz * dz;
+        if (!length2) continue;
+        const t = ((end.x - p.x) * dx + (end.z - p.z) * dz) / length2;
+        if (t < -1e-6 || t > 1 + 1e-6 || Math.hypot(p.x + dx * t - end.x, p.z + dz * t - end.z) > 1e-3) continue;
+        const index = first ? (Math.hypot(end.x - p.x, end.z - p.z) < 1e-3 ? k - 1 : k) : (Math.hypot(end.x - q.x, end.z - q.z) < 1e-3 ? k + 2 : k + 1);
+        if (index >= 0 && index < edgePts.length) return [edgePts[index]!];
+        const node = first ? run.edge.from : run.edge.to;
+        return bundle.edges.filter((e) => e.id !== run.edge.id && (e.from === node || e.to === node) && traversable(e))
+          .map((e) => { const q2 = edgePoints(bundle, e, nodes, floors); return e.from === node ? q2[1] : q2.at(-2); })
+          .filter((q2): q2 is THREE.Vector3 => !!q2);
+      }
+      return [];
+    };
     let travelled = 0, nextLight = 0;
     for (let i = 1; i < pts.length; i++) {
       const a = pts[i - 1]!, z = pts[i]!;
@@ -600,22 +630,11 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         nextLight += 6;
       }
       const pa = run.points[i - 1]!, pz = run.points[i]!;
-      const transition = run.edge.attributes?.sceneGap === true
-        ? (i === 1 && hasFloor(pa)) || (i === pts.length - 1 && hasFloor(pz))
-        : hasFloor(pa) !== hasFloor(pz);
-      if (transition) {
-        const hit = scene.wallHit(pa, pz);
-        if (hit) {
-          const near = R(hit.x, hit.y, hit.z);
-          const center = near.clone();
-          const depth = 0.6;
-          const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
-          const openingWidth = width * Math.min(2, 1 / Math.max(cosine, 1e-9));
-          openings.push({ center, along: along.clone(), across: across.clone(), ...(hit.wallNormal ? { wallNormal: hit.wallNormal.clone() } : {}), width: openingWidth, depth, height: 2.3 });
-          const faceAt = (face: number) => {
-            return near.clone().addScaledVector(along, face * 0.02);
-          };
-          for (const face of [-1, 1]) {
+      // A wall portal: the opening and the frame on both faces, shared by a floor transition and any other wall.
+      const openAt = (near: THREE.Vector3, openingWidth: number, wallNormal: THREE.Vector3 | undefined) => {
+        openings.push({ center: near.clone(), along: along.clone(), across: across.clone(), ...(wallNormal ? { wallNormal: wallNormal.clone() } : {}), width: openingWidth, depth: 0.6, height: 2.3 });
+        const faceAt = (face: number) => near.clone().addScaledVector(along, face * 0.02);
+        for (const face of [-1, 1]) {
           const frame = faceAt(face);
           for (const side of [-1, 1]) {
             const outer = side * (half + 0.08), inner = side * half;
@@ -624,7 +643,51 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
           }
           quad(b.portal, b.portalColors, offset(frame, -half - 0.08, 2.3), offset(frame, half + 0.08, 2.3), offset(frame, half + 0.08, 2.4), offset(frame, -half - 0.08, 2.4));
           quad(b.kerb, null, offset(frame, -half, 2.3), offset(frame, half, 2.3), offset(frame, half, 2.33), offset(frame, -half, 2.33));
+        }
+      };
+      const transition = run.edge.attributes?.sceneGap === true
+        ? (i === 1 && hasFloor(pa)) || (i === pts.length - 1 && hasFloor(pz))
+        : hasFloor(pa) !== hasFloor(pz);
+      if (transition) {
+        const hit = scene.wallHit(pa, pz);
+        if (hit) {
+          const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
+          openAt(R(hit.x, hit.y, hit.z), width * Math.min(2, 1 / Math.max(cosine, 1e-9)), hit.wallNormal);
+        }
+      }
+      // A floorless run is a passage the station model lacks. It can cross a station wall where its floor never changes
+      // (a 2F deck walkway through a building facade), where no transition portal opens: open every station wall the
+      // segment crosses, the same way, each opening resuming 0.05 m past its wall (256 walls per segment at most).
+      const span = Math.hypot(pz.x - pa.x, pz.z - pa.z);
+      if (span > 1e-9) {
+        let start = 0;
+        for (let n = 0; n < 256; n++) {
+          const t = Math.min(1, start / span);
+          const from = { x: pa.x + (pz.x - pa.x) * t, y: pa.y + (pz.y - pa.y) * t, z: pa.z + (pz.z - pa.z) * t };
+          const hit = scene.wallHit(from, pz, true);
+          if (!hit) break;
+          const near = R(hit.x, hit.y, hit.z);
+          const at = (near.x - a.x) * along.x + (near.z - a.z) * along.z;
+          if (at < start - 1e-9) break; // a hit behind the resumed start would repeat forever
+          // A hit at a segment end is a vertex: cross it only if the path carries on beyond the wall, by the next
+          // segment's end on the wall's far side, or at a run end, which meets floor or another passage beyond it.
+          // A hit near a segment start counts when the segment's start and end lie on opposite sides of the wall; a wall
+          // through the start vertex itself (side 0) was already decided by the previous segment.
+          const side = (p: THREE.Vector3) => { const d = hit.wallNormal ? hit.wallNormal.x * (p.x - near.x) + hit.wallNormal.z * (p.z - near.z) : 0; return Math.abs(d) < 1e-3 ? 0 : Math.sign(d); };
+          // A wall through a run's own end is crossed only if something beyond the run lies on the wall's far side.
+          const throughRunEnd = (end: THREE.Vector3, inside: THREE.Vector3, first: boolean) => side(inside) !== 0 && beyondRun(end, first).some((p) => side(p) === -side(inside));
+          const atEnd = at > flat - 0.05;
+          const crossed = atEnd
+            ? (i === pts.length - 1 ? (side(a) !== 0 && side(a) === -side(z)) || (finishesRun && throughRunEnd(z, a, false)) : side(a) !== 0 && side(a) === -side(pts[i + 1]!))
+            : at >= 0.05 || (side(a) !== 0 && side(a) === -side(z)) || (i === 1 && side(a) === 0 && throughRunEnd(a, z, true));
+          if (crossed) {
+            const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
+            const openingWidth = width * Math.min(2, 1 / Math.max(cosine, 1e-9));
+            // A floor transition already opened this wall wide enough, along the same direction: don't open it twice.
+            if (!openings.some((box) => box.center.distanceToSquared(near) < 0.01 && box.width + 1e-9 >= openingWidth && Math.abs(box.along.dot(along)) > 0.999 && (!box.wallNormal || !hit.wallNormal || Math.abs(box.wallNormal.dot(hit.wallNormal)) > 0.999))) openAt(near, openingWidth, hit.wallNormal);
           }
+          start = at + 0.05;
+          if (start >= flat) break;
         }
       }
       travelled += length; lengthM += length;
