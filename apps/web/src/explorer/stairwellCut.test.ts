@@ -95,8 +95,8 @@ describe("stairwell cuts", () => {
 
   it("rails the open sides of the upper well and leaves the arrival side open", () => {
     const { result } = cut();
-    expect(result.walls).toHaveLength(2);
-    expect(result.stats.railM).toBeCloseTo(10 + 10, 5);
+    expect(result.walls).toHaveLength(3);
+    expect(result.stats.railM).toBeCloseTo(10 + 10 + 2.2, 5);
     const feet = 4, body = 1.7;
     // A body reaching the rail line from the upper floor is pushed back out of the well.
     expect(resolveWalls(5, 1.2, 0.3, feet, body, result.walls).z).toBeCloseTo(1.4);
@@ -105,19 +105,6 @@ describe("stairwell cuts", () => {
     // Below the upper floor there is no rail.
     expect(resolveWalls(5, 1.2, 0.3, 0, body, result.walls).z).toBeCloseTo(1.2);
     expect(result.finishTriangles + result.bandTriangles).toBeLessThan(2000);
-    result.dispose();
-  });
-
-  it("leaves the start side open where the flight enters the well, and rails the long sides", () => {
-    const { result } = cut();
-    expect(result.walls).toHaveLength(2);
-    expect(result.stats.railM).toBeCloseTo(20, 5);
-    // The long sides stay railed; nothing crosses the stair at its foot (x = 0).
-    expect(Math.min(...result.walls.map(w => w.az))).toBeCloseTo(-1.1, 6);
-    expect(Math.max(...result.walls.map(w => w.az))).toBeCloseTo(1.1, 6);
-    for (const w of result.walls) { expect(Math.min(w.ax, w.bx)).toBeCloseTo(0, 6); expect(Math.max(w.ax, w.bx)).toBeCloseTo(10, 6); }
-    // A walker at the foot of the flight is not pushed sideways across the mouth.
-    expect(resolveWalls(0.2, 0, 0.3, 4, 1.7, result.walls).x).toBeCloseTo(0.2);
     result.dispose();
   });
 
@@ -138,7 +125,9 @@ describe("stairwell cuts", () => {
     }));
     const halfWidth = wells[0]!.rects[0]!.halfWidth;
     for (const w of result.walls) {
+      // The mouth rail at x = 0 stands a storey above the foot; only the joint near x = 5 is on the walker's way.
       for (const [x, z] of [[w.ax, w.az], [w.bx, w.bz], [(w.ax + w.bx) / 2, (w.az + w.bz) / 2]]) {
+        if (x! < 1e-3) continue;
         expect(toCentre(x!, z!)).toBeGreaterThan(halfWidth - 1e-3);
       }
     }
@@ -193,6 +182,19 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("keeps the rail on the outer corner of an L stair's turn, where no piece covers the seam", () => {
+    const landing = flight([{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: 4, y: 3, z: 2 }, { x: 10, y: 3, z: 4 }]);
+    const s = scene();
+    const result = cutStairwells(s.root, stairwellWells(landing, traversable), { tier: "low" });
+    // From the upper floor beyond the landing's outer corner, a body is pushed back rather than stepping into the well.
+    // The landing's seam with the first flight (z = 0) is open over the flight (x < 4) and railed beyond it; its outer
+    // long side (x = 5.1) is railed.
+    const feet = 4, body = 1.7;
+    expect(resolveWalls(4.6, 0.15, 0.3, feet, body, result.walls).z).toBeGreaterThan(0.25);
+    expect(resolveWalls(5.25, -0.5, 0.3, feet, body, result.walls).x).toBeGreaterThan(5.35);
+    result.dispose();
+  });
+
   it("preserves modelled treads while cutting the slab above them", () => {
     const s = scene();
     const treads: THREE.Mesh[] = [];
@@ -214,8 +216,8 @@ describe("stairwell cuts", () => {
     const split = flight([{ x: 0, y: 0, z: 0 }, { x: 5, y: 0, z: 2 }, { x: 10, y: 0, z: 4 }]);
     const s = scene();
     const result = cutStairwells(s.root, stairwellWells(split, traversable), { tier: "low" });
-    expect(result.walls).toHaveLength(4);
-    expect(result.stats.railM).toBeCloseTo(20, 5);
+    expect(result.walls).toHaveLength(5);
+    expect(result.stats.railM).toBeCloseTo(22.2, 5);
     expect(result.walls.every(w => w.yMin === 4 && w.yMax === 5.1)).toBe(true);
     const rails = result.finish!.children.filter(child => child.name === "greybox-stairwell-rail");
     expect(rails).toHaveLength(1);
@@ -248,7 +250,7 @@ describe("stairwell cuts", () => {
     expect(wells[0]!.rects).toHaveLength(1);
     const s = scene();
     const result = cutStairwells(s.root, wells, { tier: "low" });
-    expect(result.walls).toHaveLength(2);
+    expect(result.walls).toHaveLength(3);
     expect(result.walls.some(w => Math.abs(w.ax - 10) < 1e-6 && Math.abs(w.bx - 10) < 1e-6)).toBe(false);
     // A walker along the centreline walks off the top unblocked, before and after the exit.
     for (const x of [9.5, 9.9, 10, 10.1, 10.5, 11.5]) expect(resolveWalls(x, 0, 0.3, 4, 1.7, result.walls).x).toBeCloseTo(x);

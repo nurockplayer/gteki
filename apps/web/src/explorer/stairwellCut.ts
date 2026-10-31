@@ -343,20 +343,21 @@ function recipeMatches(recipe: CutRecipe, wells: readonly StairwellWell[], tier:
 
 /**
  * Outer portions of each opened rectangle, except the arrival side (the end side of the top flight piece's rectangle,
- * through `arrival`) and the joint sides, which the walker on the flight crosses: the start side at the stair mouth,
- * and the end side wherever a later piece of the same well follows.
+ * through `arrival`) and, on a seam between two pieces of the well, the part the neighbouring piece covers: the walker
+ * on the flight crosses it. The neighbour is grown by 0.05 m so a slightly tilted joint leaves no sliver on the path;
+ * a seam's part outside the neighbour (the outer corner of a turn) keeps its rail.
  */
 function railSides(rect: StairwellRect, arrival: THREE.Vector3, opened: readonly StairwellRect[], pieces: readonly StairwellRect[]): [THREE.Vector3, THREE.Vector3][] {
   const corners = rectCorners(rect, 0), sides: [THREE.Vector3, THREE.Vector3][] = [];
-  const last = pieces.at(-1) === rect;
+  const index = pieces.indexOf(rect);
+  const grown = (piece: StairwellRect | undefined): StairwellRect[] => piece ? [{ ...piece, halfLength: piece.halfLength + 0.05, halfWidth: piece.halfWidth + 0.05 }] : [];
   for (let i = 0; i < 4; i++) {
     const from = corners[i]!, to = corners[(i + 1) % 4]!, delta = to.clone().sub(from);
     const tArrival = arrival.clone().sub(from).dot(delta) / delta.lengthSq();
     if (tArrival >= -1e-6 && tArrival <= 1 + 1e-6 && from.clone().addScaledVector(delta, tArrival).distanceTo(arrival) < 1e-3) continue;
-    // The stair mouth and a seam to the next piece are lines the walker crosses, so no rail is put across the path.
     const along = alongOf(rect, from, to);
-    if (along < -rect.halfLength + 1e-3 || (!last && along > rect.halfLength - 1e-3)) continue;
-    sides.push(...sideRemainder(from, to, rect, opened));
+    const neighbour = along < -rect.halfLength + 1e-3 && index > 0 ? pieces[index - 1] : along > rect.halfLength - 1e-3 && index >= 0 ? pieces[index + 1] : undefined;
+    sides.push(...sideRemainder(from, to, rect, [...opened, ...grown(neighbour)]));
   }
   return sides;
 }
