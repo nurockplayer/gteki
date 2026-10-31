@@ -573,7 +573,13 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
               // A shallow bend mitres beyond its vertex: reach back over the mitre wedge, and forward over the next leg's.
               const legStart = legFrom.clone().addScaledVector(leg, before > 1e-6 && before < SHALLOW_BEND ? -width / 2 : -0.01); legStart.y = 0;
               const reach = length + 0.02 + (after > 1e-6 && after < SHALLOW_BEND ? width / 2 : 0);
+              // A leg that reaches this landing through shallow bends only is one of its own flights: it always opens the
+              // outline, however steep (#673 r2). Only another landing's legs need the height test.
+              let ownFlight = true;
+              // Leg j runs from vertex j - 1 to vertex j: the vertices between it and the landing are j .. i - 1 before it, i + 1 .. j - 1 after.
+              for (let k = j <= i ? j : i + 1; k <= (j <= i ? i - 1 : j - 1); k++) if (isTurn(k)) ownFlight = false;
               for (const span of footprintOn(a, b, legStart, leg, half, reach)) {
+                if (ownFlight) { cover.push(span); continue; }
                 const mid = a.clone().lerp(b, (span[0] + span[1]) / 2);
                 const s = THREE.MathUtils.clamp(mid.clone().sub(legFrom).dot(leg), 0, length);
                 // A flight rising at a walking grade stays within half a metre over the 0.78 m from the landing centre; a leg of

@@ -504,6 +504,20 @@ describe("turning landing guards", () => {
     }
   });
 
+  // #673 r2: a steep flight is still the landing's own flight, so its entrance stays open.
+  it("leaves a steep flight's entrance to its landing open", () => {
+    for (const direction of [-1, 1]) {
+      const waypoints = mirror([[0, 0, 0], [4, 3.2, 0], [4, 4, 4]], direction);
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      expect(result.stats.legacyConnectors).toBe(0);
+      // Walk the incoming flight's centreline up onto the landing: nothing may push the walker aside.
+      for (let x = 2.5; x <= 4; x += 0.05) {
+        const y = 3.2 * x / 4, resolved = resolveWalls(x, 0, 0.3, y, 1.7, result.wallSegments);
+        expect(Math.hypot(resolved.x - x, resolved.z), `direction=${direction} x=${x.toFixed(2)}`).toBeLessThanOrEqual(0.05);
+      }
+    }
+  });
+
   // #668 r19: the opening follows each flight's own leg length, not the landing square's extent, so the guard closes the
   // corner a 45 degree flight of 1.05 m never reaches.
   it("stops a walker at every landing exit past the end of a short outgoing flight", () => {
