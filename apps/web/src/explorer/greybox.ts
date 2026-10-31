@@ -475,8 +475,9 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     const width = widthOf(run.edge), half = width / 2;
     const b = getBatch(nodes.get(run.edge.from)?.floorId ?? "");
     const pts = run.points.map((p) => R(p.x, p.y, p.z));
-    // Walk paths that can reach this run at all: the rest are skipped once here instead of per side.
-    const runBounds = new THREE.Box3().setFromPoints(pts).expandByVector(new THREE.Vector3(1, 0.3, 1));
+    // Walk paths that can reach this run at all: the rest are skipped once here instead of per side. The run's side
+    // walls stand half a width off its centreline, so the bounds reach at least that far (#684 r1).
+    const runBounds = new THREE.Box3().setFromPoints(pts).expandByVector(new THREE.Vector3(half + 1, 0.3, half + 1));
     const reach = walkPaths.filter((path) => path.edge.id !== run.edge.id && path.bounds.intersectsBox(runBounds));
     const finishesRun = !!runEnds.get(run.edge.id)?.some((p) => same(p, run.points.at(-1)));
     // What lies beyond a run's end: the edge's own geometry before/after it, or, at the edge's node, the next point of
@@ -529,7 +530,8 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
             if (Math.abs(denominator) < 1e-12) continue;
             const ox = p.x - wa.x, oz = p.z - wa.z;
             const t = (ox * ez - oz * ex) / denominator, u = (sz * ox - sx * oz) / denominator;
-            if (t < 0 || t > 1 || u < 0 || u > 1) continue;
+            // A real pass-through only: a path that ends on the wall or grazes its end never opens it (#684 r1).
+            if (t <= 0 || t >= 1 || u <= 0 || u >= 1) continue;
             // Same floor only: the wall's height at the crossing against the path's height there.
             if (Math.abs(p.y + (q.y - p.y) * u - (wa.y + (wz.y - wa.y) * t)) > 0.3) continue;
             const plan = Math.hypot(ex, ez);

@@ -180,7 +180,9 @@ function crossingRemainder(from: THREE.Vector3, to: THREE.Vector3, upperY: numbe
     if (Math.abs(denominator) < 1e-12) continue;
     const ox = a.x - from.x, oz = a.z - from.z;
     const t = (ox * ez - oz * ex) / denominator, u = (delta.z * ox - delta.x * oz) / denominator;
-    if (t < 0 || t > 1 || u < 0 || u > 1) continue;
+    // Only a real pass-through opens the rail: a path that merely ends on the side or grazes the well's corner at t = 0/1
+    // would otherwise leave an unguarded opening beside the floor cut (#684 r1).
+    if (t <= 0 || t >= 1 || u <= 0 || u >= 1) continue;
     // Only a crossing on the well's upper floor opens the rail; one below or above it passes elsewhere.
     if (Math.abs(a.y + (b.y - a.y) * u - upperY) > UPPER_FLOOR_TOLERANCE_M) continue;
     const plan = Math.hypot(ex, ez);
