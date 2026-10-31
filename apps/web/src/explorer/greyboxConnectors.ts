@@ -264,6 +264,33 @@ function clipToSquare(a: THREE.Vector3, b: THREE.Vector3, centre: THREE.Vector3,
   return [a.clone().lerp(b, t0), a.clone().lerp(b, t1)];
 }
 
+/**
+ * The spans of a leg's side wall, measured along its unit direction, that lie outside every turning landing's square: a wall
+ * mitred at a shallow bend just before a landing otherwise runs a short way into the landing it leads to.
+ */
+function wallSpans(begin: number, end: number, from: THREE.Vector3, leg: THREE.Vector3, lateral: THREE.Vector3, half: number, squares: readonly LandingSquare[]): [number, number][] {
+  let spans: [number, number][] = end > begin ? [[begin, end]] : [];
+  for (const square of squares) {
+    const offset = from.clone().add(lateral).sub(square.centre); offset.y = 0;
+    const next: [number, number][] = [];
+    for (const [s0, s1] of spans) {
+      let lo = s0, hi = s1, clear = false;
+      for (const axis of [square.axis, new THREE.Vector3(-square.axis.z, 0, square.axis.x)]) {
+        const p0 = offset.dot(axis), slope = leg.dot(axis);
+        // Parallel to this side: either wholly within the slab or wholly outside it.
+        if (Math.abs(slope) < 1e-12) { if (Math.abs(p0) > half) clear = true; continue; }
+        const a = (-half - p0) / slope, b = (half - p0) / slope;
+        lo = Math.max(lo, Math.min(a, b)); hi = Math.min(hi, Math.max(a, b));
+      }
+      if (clear || hi <= lo) { next.push([s0, s1]); continue; }
+      if (lo > s0) next.push([s0, lo]);
+      if (s1 > hi) next.push([hi, s1]);
+    }
+    spans = next;
+  }
+  return spans;
+}
+
 /** Plan deflection between a stair's two legs at interior vertex `index`, in radians (0 at an end or on a straight run). */
 function bendAngle(points: readonly THREE.Vector3[], index: number): number {
   if (index <= 0 || index >= points.length - 1) return 0;
@@ -285,7 +312,7 @@ function mitre(vertex: THREE.Vector3, dirA: THREE.Vector3, latA: THREE.Vector3, 
 }
 
 /** A turning landing's outline square in plan: centre, unit axis along its incoming flight, and height. */
-interface LandingSquare { index: number; centre: THREE.Vector3; axis: THREE.Vector3; height: number; flights: { dir: THREE.Vector3; reach: number }[] }
+interface LandingSquare { index: number; centre: THREE.Vector3; axis: THREE.Vector3; height: number }
 
 /** The turning landings (plan bends of at least SHALLOW_BEND) of one stair, as outline squares. */
 function turningSquares(points: readonly THREE.Vector3[]): LandingSquare[] {
@@ -293,12 +320,8 @@ function turningSquares(points: readonly THREE.Vector3[]): LandingSquare[] {
   for (let j = 1; j + 1 < points.length; j++) {
     if (bendAngle(points, j) < SHALLOW_BEND) continue;
     const incoming = points[j]!.clone().sub(points[j - 1]!); incoming.y = 0;
-    const outgoing = points[j + 1]!.clone().sub(points[j]!); outgoing.y = 0;
     const centre = points[j]!.clone(); centre.y = 0;
-    const inLength = incoming.length(), outLength = outgoing.length();
-    const axis = incoming.normalize();
-    // Each flight reaches only as far as its own leg: beyond that its strip is not a flight.
-    squares.push({ index: j, centre, axis, height: points[j]!.y, flights: [{ dir: axis.clone().negate(), reach: inLength }, { dir: outgoing.normalize(), reach: outLength }] });
+    squares.push({ index: j, centre, axis: incoming.normalize(), height: points[j]!.y });
   }
   return squares;
 }
@@ -331,28 +354,26 @@ function planLength(points: readonly THREE.Vector3[], from: number, to: number):
 }
 
 /**
- * The shapes a missing connector may take: a straight run (bends under 20 degrees only), or exactly one turning landing that is
- * not a sharp return, with at least 1 m of plan length on each side of it.
+ * The shapes a missing connector may take: any number of turning landings and shallow bends, with no turn at or above
+ * SHARP_RETURN (a stacked return flight), and at least 1 m of plan length between neighbouring turning landings and from each
+ * end to its nearest landing, so the landing squares never overlap.
  */
 function supportedShape(points: readonly THREE.Vector3[], squares: readonly LandingSquare[]): boolean {
   if (squares.length === 0) return true;
-  if (squares.length > 1) return false;
-  const square = squares[0]!;
-  if (bendAngle(points, square.index) >= SHARP_RETURN) return false;
-  // A turning landing with a shallow bend on either leg is not built (#640 r17): its landing opening follows only the
-  // adjacent segment, so its guard could cut the bent flight's walking lane. Such a stair is routed as unmodelled.
-  for (let i = 1; i < points.length - 1; i++) if (i !== square.index && bendAngle(points, i) > 1e-6) return false;
-  return planLength(points, 0, square.index) >= 1 && planLength(points, square.index, points.length - 1) >= 1;
+  // The bend is a float angle: a plan 135 degree turn must stay a sharp return, never slip under by rounding.
+  if (squares.some((square) => bendAngle(points, square.index) >= SHARP_RETURN - 1e-9)) return false;
+  const stops = [0, ...squares.map((square) => square.index), points.length - 1];
+  for (let i = 1; i < stops.length; i++) if (planLength(points, stops[i - 1]!, stops[i]!) < 1) return false;
+  return true;
 }
-
-const acrossAxis = (axis: THREE.Vector3) => new THREE.Vector3(-axis.z, 0, axis.x);
 
 /** Plan bend (radians) from which a single-vertex return can stack its return flight over its first flight. */
 const SHARP_RETURN = 135 * Math.PI / 180;
 
 /**
  * Whether a flight's side wall cuts another flight's walking footprint (that flight's plan rectangle of treads) at a height the
- * walker stands in: the wall's height span overlaps the surface + 0.1 to + 2.0 m there. A wall's own flight is not tested.
+ * walker stands in: the wall's height span overlaps the surface + 0.1 to + 2.0 m there. A wall's own flight is not tested; a
+ * landing guard (`leg` -1) is tested against every flight, since it must never cut one.
  */
 function wallCutsFlight(flightWalls: readonly { leg: number; wall: Segment2 }[], points: readonly THREE.Vector3[], width: number, squares: readonly LandingSquare[]): boolean {
   const half = width / 2;
@@ -365,7 +386,7 @@ function wallCutsFlight(flightWalls: readonly { leg: number; wall: Segment2 }[],
     const length = Math.hypot(wall.bx - wall.ax, wall.bz - wall.az);
     const samples = Math.max(1, Math.ceil(length / 0.05));
     for (let j = 1; j < points.length; j++) {
-      if (flightOf(j - 1) === flightOf(leg)) continue;
+      if (leg !== -1 && flightOf(j - 1) === flightOf(leg)) continue;
       const from = points[j - 1]!, to = points[j]!;
       const run = to.clone().sub(from); run.y = 0;
       const reach = run.length();
@@ -399,10 +420,10 @@ export function skippedConnectorPath(bundle: StationBundle, edge: Edge): { x: nu
 /**
  * Build runtime-only batches for missing vertical transport.
  *
- * Supported shapes: (a) a straight flight, with bends under 20 degrees mitred and counted as straight; (b) exactly one turning
- * landing (a bend of 20 degrees or more, under 135 degrees) with at least 1 m of plan length on each side, whose flights pass
- * the side-wall check. Every other shape (two or more turning landings, overlapping landings, sharp returns) is deliberately
- * skipped and counted under `connectorsSkippedByReason.unsupported_shape`; a run shorter than 0.3 m under `short_run`.
+ * Supported shapes: any number of turning landings (bends of 20 degrees or more, under 135 degrees) and shallow bends (under
+ * 20 degrees, mitred and counted as straight), with at least 1 m of plan length between neighbouring landings, whose flights
+ * and landing guards pass the wall check. Every other shape (overlapping landings, sharp returns, a wall cutting a flight) is
+ * deliberately skipped and counted under `connectorsSkippedByReason.unsupported_shape`; a run shorter than 0.3 m under `short_run`.
  */
 export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge) => boolean, scope: ConnectorScope, tier: "high" | "low") {
   const root = new THREE.Group(), walkable: THREE.Object3D[] = [], colliders: THREE.Object3D[] = [];
@@ -476,18 +497,21 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
             const nextLateral = new THREE.Vector3(-next.z, 0, next.x).multiplyScalar(half * side);
             end = mitre(to, leg, lateral, next, nextLateral).clone().sub(from).dot(leg);
           }
-          const n = Math.max(1, Math.ceil((end - begin) / 0.5));
-          for (let k = 0; k < n && end > begin; k++) {
-            const s0 = begin + (end - begin) * k / n, s1 = begin + (end - begin) * (k + 1) / n;
-            const a = from.clone().addScaledVector(leg, s0).add(lateral), b = from.clone().addScaledVector(leg, s1).add(lateral);
-            a.y = 0; b.y = 0;
-            const ya = THREE.MathUtils.lerp(from.y, to.y, THREE.MathUtils.clamp(s0 / horizontal, 0, 1)), yb = THREE.MathUtils.lerp(from.y, to.y, THREE.MathUtils.clamp(s1 / horizontal, 0, 1));
-            const wall = { ax: a.x, az: a.z, bx: b.x, bz: b.z, yMin: Math.min(ya, yb) - 0.12, yMax: Math.max(ya, yb) + 0.96 };
-            wallSegments.push(wall);
-            flightWalls.push({ leg: i - 1, wall });
-            if (edge.mode === "stairs") {
-              const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(wall.bz - wall.az), wall.bx - wall.ax)).setPosition((wall.ax + wall.bx) / 2, (wall.yMin + wall.yMax) / 2, (wall.az + wall.bz) / 2);
-              box(parts, "steel", transform, 0, 0, 0, Math.hypot(wall.bx - wall.ax, wall.bz - wall.az), wall.yMax - wall.yMin, 0.04, "collider"); parts.at(-1)!.walkableOnly = true;
+          const spans = edge.mode === "stairs" ? wallSpans(begin, end, from, leg, lateral, half, landingSquares) : end > begin ? [[begin, end] as [number, number]] : [];
+          for (const [lo, hi] of spans) {
+            const n = Math.max(1, Math.ceil((hi - lo) / 0.5));
+            for (let k = 0; k < n; k++) {
+              const s0 = lo + (hi - lo) * k / n, s1 = lo + (hi - lo) * (k + 1) / n;
+              const a = from.clone().addScaledVector(leg, s0).add(lateral), b = from.clone().addScaledVector(leg, s1).add(lateral);
+              a.y = 0; b.y = 0;
+              const ya = THREE.MathUtils.lerp(from.y, to.y, THREE.MathUtils.clamp(s0 / horizontal, 0, 1)), yb = THREE.MathUtils.lerp(from.y, to.y, THREE.MathUtils.clamp(s1 / horizontal, 0, 1));
+              const wall = { ax: a.x, az: a.z, bx: b.x, bz: b.z, yMin: Math.min(ya, yb) - 0.12, yMax: Math.max(ya, yb) + 0.96 };
+              wallSegments.push(wall);
+              flightWalls.push({ leg: i - 1, wall });
+              if (edge.mode === "stairs") {
+                const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(wall.bz - wall.az), wall.bx - wall.ax)).setPosition((wall.ax + wall.bx) / 2, (wall.yMin + wall.yMax) / 2, (wall.az + wall.bz) / 2);
+                box(parts, "steel", transform, 0, 0, 0, Math.hypot(wall.bx - wall.ax, wall.bz - wall.az), wall.yMax - wall.yMin, 0.04, "collider"); parts.at(-1)!.walkableOnly = true;
+              }
             }
           }
         }
@@ -516,22 +540,37 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         const rotation = new THREE.Matrix4().makeRotationY(Math.atan2(-(to.z - from.z), to.x - from.x)).setPosition(at);
         box(parts, edge.mode === "stairs" ? "tread" : "escStep", rotation, 0, -0.04, 0, edge.mode === "stairs" ? width : 1.2, 0.08, edge.mode === "stairs" ? width : 1.2, "walkable");
         if (edge.mode === "stairs" && isTurn(i)) {
-          // The square's outline is guarded except where each attached flight's footprint meets it; each guard piece ends where that flight's side wall ends.
+          // The square's outline is guarded except where a flight's footprint meets it; each guard piece ends where that flight's side wall ends.
           const d = incoming.clone().normalize(), out = outgoing.clone().normalize(), n = new THREE.Vector3(-d.z, 0, d.x);
           const corners = [at.clone().addScaledVector(d, -half).addScaledVector(n, -half), at.clone().addScaledVector(d, half).addScaledVector(n, -half), at.clone().addScaledVector(d, half).addScaledVector(n, half), at.clone().addScaledVector(d, -half).addScaledVector(n, half)];
           const sides = [[corners[3]!, corners[0]!], [corners[1]!, corners[2]!], [corners[0]!, corners[1]!], [corners[2]!, corners[3]!]] as const;
-          const mine = landingSquares.find((square) => square.index === i)!;
           for (const [a, b] of sides) {
-            // Each flight opens the outline over exactly its own width, and only as far as the square's boundary.
-            // The reach is the square's own extent along the flight (its half side for an axis-aligned flight, up to half of the
-            // diagonal for an oblique one), with 1 cm past the outline so a side lying exactly on it is not cut away.
-            // The square's own axes: its extent along a flight is half a side along each, so a flight's exit is always reached.
-            const u = mine.axis, v = acrossAxis(u);
-            const cover = mine.flights.flatMap((f) => footprintOn(a, b, at, f.dir, width / 2, half * (Math.abs(f.dir.dot(u)) + Math.abs(f.dir.dot(v))) + 0.01));
+            // The outline opens over every leg's real footprint, wherever that leg runs at this landing's height: a bent or a
+            // non-adjacent leg opens exactly where it reaches, not over the square's whole diagonal (#668 r17, r19).
+            const cover: [number, number][] = [];
+            for (let j = 1; j < points.length; j++) {
+              const legFrom = points[j - 1]!, legTo = points[j]!;
+              const run = legTo.clone().sub(legFrom); run.y = 0;
+              const length = run.length();
+              if (length <= 1e-6) continue;
+              const leg = run.clone().divideScalar(length);
+              const before = bendAngle(points, j - 1), after = bendAngle(points, j);
+              // A shallow bend mitres beyond its vertex: reach back over the mitre wedge, and forward over the next leg's.
+              const legStart = legFrom.clone().addScaledVector(leg, before > 1e-6 && before < SHALLOW_BEND ? -width / 2 : -0.01); legStart.y = 0;
+              const reach = length + 0.02 + (after > 1e-6 && after < SHALLOW_BEND ? width / 2 : 0);
+              for (const span of footprintOn(a, b, legStart, leg, half, reach)) {
+                const mid = a.clone().lerp(b, (span[0] + span[1]) / 2);
+                const s = THREE.MathUtils.clamp(mid.clone().sub(legFrom).dot(leg), 0, length);
+                // A flight rising at a walking grade stays within half a metre over the 0.78 m from the landing centre; a leg of
+                // another level is a storey away, and must not open this landing.
+                if (Math.abs(THREE.MathUtils.lerp(legFrom.y, legTo.y, s / length) - at.y) < 0.6) cover.push(span);
+              }
+            }
             for (const [t0, t1] of gapsOutside(cover)) {
               const start = a.clone().lerp(b, t0), finish = a.clone().lerp(b, t1);
               const length = start.distanceTo(finish); if (length < 1e-6) continue;
               const wall = { ax: start.x, az: start.z, bx: finish.x, bz: finish.z, yMin: at.y - 0.12, yMax: at.y + 0.96 }; wallSegments.push(wall);
+              flightWalls.push({ leg: -1, wall });
               const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(finish.z - start.z), finish.x - start.x)).setPosition((start.x + finish.x) / 2, at.y, (start.z + finish.z) / 2);
               box(parts, "steel", transform, 0, 0.96, 0, length, 0.052, 0.052);
               box(parts, "steel", transform, 0, 0.42, 0, length, 1.08, 0.04, "collider"); parts.at(-1)!.walkableOnly = true;
