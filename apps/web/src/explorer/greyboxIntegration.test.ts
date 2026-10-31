@@ -211,6 +211,15 @@ describe("greybox station integration", () => {
     expect(state.portalExemptions).toBeGreaterThan(0);
   });
 
+  it("wallsOnly ignores colliders such as a column and reports only station wall segments", () => {
+    const column = new THREE.Mesh(new THREE.PlaneGeometry(6, 3), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    column.position.y = 1.5; column.updateMatrixWorld(true);
+    prepareRayTrees([column]);
+    expect(greyboxSceneProbes([column], []).wallHit({ x: 0, y: 1, z: 0 }, { x: 0, y: -1, z: 0 }, true)).toBeNull();
+    const hit = greyboxSceneProbes([column], [{ ax: 2, az: -3, bx: 2, bz: 3, yMin: 0, yMax: 3 }]).wallHit({ x: 1, y: 0, z: 0 }, { x: 3, y: 0, z: 0 }, true);
+    expect(hit?.x).toBeCloseTo(2); expect(Math.abs(hit!.wallNormal!.x)).toBeCloseTo(1);
+  });
+
   it("detects scene wall intersections and bounds openings in the passage frame", () => {
     const scene = greyboxSceneProbes([], [{ ax: 2, az: -3, bx: 2, bz: 3, yMin: 0, yMax: 3 }]);
     expect(scene.wallHit({ x: 1, y: 0, z: 0 }, { x: 3, y: 0, z: 0 })).toEqual({ x: 2, y: 0, z: 0 });
