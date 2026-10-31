@@ -10,6 +10,7 @@ it("rejects output paths escaping .qa via a directory or file symlink", () => {
   try {
     fs.symlinkSync(outside, path.join(dir, "outside"));
     expect(() => qaDirectory(path.join(dir, "outside", "nested"), "")).toThrow(/outside/);
+    expect(fs.existsSync(path.join(outside, "nested"))).toBe(false);
     fs.symlinkSync(path.join(outside, "output"), path.join(dir, "file"));
     expect(() => qaFile(path.join(dir, "file"), "")).toThrow(/symlink/);
     expect(qaFile(path.join(dir, "valid.json"), "")).toBe(path.join(dir, "valid.json"));

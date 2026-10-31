@@ -584,7 +584,7 @@ loadBundle	function	packages/godot/src/load-bundle.ts	6
 queryCompletePath	function	packages/godot/src/navmesh-audit.ts	33
 snapNode	function	packages/godot/src/navmesh-audit.ts	42
 queryPathWithLinks	function	packages/godot/src/navmesh-audit.ts	48
-floorSnapPath	function	packages/godot/src/navmesh-audit.ts	85
+floorSnapPath	function	packages/godot/src/navmesh-audit.ts	84
 countedTotals	function	packages/godot/src/navmesh-audit.ts	101
 bakeNavmesh	function	packages/godot/src/navmesh-bake.ts	24
 completePath	function	packages/godot/src/navmesh-bake.ts	42
@@ -631,7 +631,7 @@ ceilingAbove	function	packages/godot/src/navmesh-obstacles.ts	81
 sideFaces	function	packages/godot/src/navmesh-obstacles.ts	96
 qaRoot	function	packages/godot/src/navmesh-qa-path.ts	5
 qaDirectory	function	packages/godot/src/navmesh-qa-path.ts	10
-qaFile	function	packages/godot/src/navmesh-qa-path.ts	22
+qaFile	function	packages/godot/src/navmesh-qa-path.ts	26
 objectSource	function	packages/godot/src/navmesh-source.ts	5
 objectNames	function	packages/godot/src/navmesh-source.ts	22
 SuspectEdge	type	packages/godot/src/navmesh-suspect.ts	11

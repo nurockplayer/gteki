@@ -12,6 +12,10 @@ export function qaDirectory(directory: string, privateDir = process.env.GTEKI_PR
   if (dest !== qa && !dest.startsWith(qa + path.sep)) throw new Error(privateDir ? "output must be under GTEKI_PRIVATE_DIR/.qa/" : "output must be under .qa/");
   fs.mkdirSync(qa, { recursive: true });
   if (fs.realpathSync(qa) !== qa) throw new Error(".qa must not be a symlink");
+  // Check the deepest existing ancestor before creating anything, so a symlink escape creates no directory outside (#670 r3).
+  let existing = dest; while (!fs.existsSync(existing)) existing = path.dirname(existing);
+  const realExisting = fs.realpathSync(existing);
+  if (realExisting !== qa && !realExisting.startsWith(qa + path.sep)) throw new Error("output resolves outside .qa/");
   fs.mkdirSync(dest, { recursive: true });
   const real = fs.realpathSync(dest);
   if (real !== qa && !real.startsWith(qa + path.sep)) throw new Error("output resolves outside .qa/");
