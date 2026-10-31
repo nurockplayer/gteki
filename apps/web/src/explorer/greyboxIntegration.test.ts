@@ -220,6 +220,16 @@ describe("greybox station integration", () => {
     expect(hit?.x).toBeCloseTo(2); expect(Math.abs(hit!.wallNormal!.x)).toBeCloseTo(1);
   });
 
+  it("wallsOnly gives no doorway where the wall segment has a visible face, and one where it is an invisible proxy", () => {
+    const face = (visible: boolean) => {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(6, 3), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, visible }));
+      m.position.set(2, 1.5, 0); m.rotation.y = Math.PI / 2; m.updateMatrixWorld(true); prepareRayTrees([m]); return m;
+    };
+    const wall = { ax: 2, az: -3, bx: 2, bz: 3, yMin: 0, yMax: 3 };
+    expect(greyboxSceneProbes([face(true)], [wall]).wallHit({ x: 1, y: 0, z: 0 }, { x: 3, y: 0, z: 0 }, true)).toBeNull();
+    expect(greyboxSceneProbes([face(false)], [wall]).wallHit({ x: 1, y: 0, z: 0 }, { x: 3, y: 0, z: 0 }, true)?.x).toBeCloseTo(2);
+  });
+
   it("detects scene wall intersections and bounds openings in the passage frame", () => {
     const scene = greyboxSceneProbes([], [{ ax: 2, az: -3, bx: 2, bz: 3, yMin: 0, yMax: 3 }]);
     expect(scene.wallHit({ x: 1, y: 0, z: 0 }, { x: 3, y: 0, z: 0 })).toEqual({ x: 2, y: 0, z: 0 });

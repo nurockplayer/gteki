@@ -99,7 +99,7 @@ export interface GreyboxStats { runs: number; landingPads: number; lengthM: numb
 export const greyboxTriangleLimit = (tier: "high" | "low"): number => tier === "high" ? 150000 : 100000;
 export interface GreyboxScene {
   colliderNear(p: V3, r: number): boolean;
-  /** `wallsOnly`: only the station's wall segments count, never a collider such as a column or a ticket machine. */
+  /** `wallsOnly`: only an invisible station wall segment counts: never a collider such as a column, nor a wall with a visible face there. */
   wallHit(a: V3, b: V3, wallsOnly?: boolean): (V3 & { wallNormal?: THREE.Vector3 }) | null;
 }
 
@@ -649,8 +649,9 @@ export function emitGreybox(bundle: StationBundle, traversable: (edge: Edge) => 
   // A floored walk edge can cross a scene wall (an invisible walk-proxy wall the station model has no doorway for)
   // between two floored samples, where the run detector sees no transition: without an opening the bake, the route
   // audit and the live walker are all blocked by that wall.
-  for (const edge of bundle.edges) {
-    if (!traversable(edge) || ["stairs", "escalator", "elevator"].includes(edge.mode)) continue;
+  const floored = bundle.edges.filter((edge) => traversable(edge) && !["stairs", "escalator", "elevator"].includes(edge.mode));
+  const deadEnd = (nodeId: string) => floored.filter((e) => e.from === nodeId || e.to === nodeId).length < 2;
+  for (const edge of floored) {
     const pts = edgePoints(bundle, edge, nodes, floors);
     for (let i = 1; i < pts.length; i++) {
       const a = pts[i - 1]!, b = pts[i]!;
@@ -666,8 +667,8 @@ export function emitGreybox(bundle: StationBundle, traversable: (edge: Edge) => 
         const at = R(hit.x, hit.y, hit.z);
         const atT = (at.x - a.x) * along.x + (at.z - a.z) * along.z;
         if (atT < startT - 1e-9) break; // a hit behind the resumed start would repeat forever
-        // A wall the edge only starts or ends on is not one it passes through.
-        if ((i === 1 && atT < 0.05) || (i === pts.length - 1 && atT > flat - 0.05)) { startT = Math.max(atT, startT) + 0.05; if (startT >= flat) break; continue; }
+        // A wall at a dead-end node is one the edge only ends on; at a node another walk edge continues from, it is crossed.
+        if ((i === 1 && atT < 0.05 && deadEnd(edge.from)) || (i === pts.length - 1 && atT > flat - 0.05 && deadEnd(edge.to))) { startT = Math.max(atT, startT) + 0.05; if (startT >= flat) break; continue; }
         const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
         const width = widthOf(edge) * Math.min(2, 1 / Math.max(cosine, 1e-9));
         // A floor transition already opened this wall wide enough, along the same direction: don't open it twice.

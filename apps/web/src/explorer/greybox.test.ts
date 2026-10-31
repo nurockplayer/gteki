@@ -455,6 +455,12 @@ describe("buildGreybox", () => {
     expect(buildGreybox(bundle, () => true, () => true, scene, "high").openings).toHaveLength(0);
   });
 
+  it("opens a wall through a shared node that the next walk edge continues from", () => {
+    const chain = { ...bundle, nodes: [...bundle.nodes, { id: "c", floorId: "f", position: { x: 20, y: 0, z: 0 } }], edges: [...bundle.edges, { id: "e2", from: "b", to: "c", mode: "walk" }] } as unknown as StationBundle;
+    const scene = { colliderNear: () => false, wallHit: (a: { x: number }, b: { x: number }) => a.x <= 10 && b.x >= 10 ? { x: 10, y: 0, z: 0 } : null };
+    expect(buildGreybox(chain, () => true, () => true, scene, "high").openings.length).toBeGreaterThanOrEqual(1);
+  });
+
   it("opens nothing where a floored walk edge crosses no scene wall", () => {
     const result = buildGreybox(bundle, () => true, () => true, emptyScene, "high");
     expect(result.openings).toHaveLength(0);

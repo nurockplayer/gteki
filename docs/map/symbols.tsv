@@ -156,11 +156,11 @@ ConnectorScope	interface	apps/web/src/explorer/greyboxConnectorsLegacy.ts	203
 buildConnectors	function	apps/web/src/explorer/greyboxConnectorsLegacy.ts	223
 withinGreyboxBudget	function	apps/web/src/explorer/greyboxConnectorsLegacy.ts	346
 greyboxSceneProbes	function	apps/web/src/explorer/greyboxScene.ts	10
-insideGreyboxOpening	function	apps/web/src/explorer/greyboxScene.ts	106
-GreyboxSegment	interface	apps/web/src/explorer/greyboxScene.ts	114
-greyboxPathSegments	function	apps/web/src/explorer/greyboxScene.ts	116
-nearGreybox	function	apps/web/src/explorer/greyboxScene.ts	125
-routeUsesGreybox	function	apps/web/src/explorer/greyboxScene.ts	138
+insideGreyboxOpening	function	apps/web/src/explorer/greyboxScene.ts	113
+GreyboxSegment	interface	apps/web/src/explorer/greyboxScene.ts	121
+greyboxPathSegments	function	apps/web/src/explorer/greyboxScene.ts	123
+nearGreybox	function	apps/web/src/explorer/greyboxScene.ts	132
+routeUsesGreybox	function	apps/web/src/explorer/greyboxScene.ts	145
 GUIDE_TIERS	const	apps/web/src/explorer/guidePace.ts	6
 GuideTierId	type	apps/web/src/explorer/guidePace.ts	12
 DEFAULT_GUIDE_TIER	const	apps/web/src/explorer/guidePace.ts	14

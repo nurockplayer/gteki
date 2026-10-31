@@ -80,6 +80,13 @@ export function greyboxSceneProbes(colliders: readonly THREE.Object3D[], walls: 
         }
       }
       const delta = to.clone().sub(from), length = delta.length();
+      // wallsOnly: an invisible wall segment only. A visible collider face at the crossing is a wall the player sees, so it gets no doorway.
+      if (wallsOnly && Number.isFinite(best) && length > 1e-9) {
+        ray.set(from.clone().add(new THREE.Vector3(0, 1.2, 0)), delta.clone().divideScalar(length));
+        ray.near = 0; ray.far = length;
+        const seen = (o: THREE.Object3D) => { const m = (o as THREE.Mesh).material; return o.visible && (Array.isArray(m) ? m.some((x) => x.visible) : m?.visible !== false); };
+        if (castCamera(ray, colliders, sides).some((h) => Math.abs(h.distance - best * length) <= 0.3 && seen(h.object))) return null;
+      }
       if (!wallsOnly && length > 1e-9) {
         ray.set(from.clone().add(new THREE.Vector3(0, 1.2, 0)), delta.divideScalar(length));
         ray.near = 0; ray.far = length;
