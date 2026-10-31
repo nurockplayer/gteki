@@ -549,6 +549,25 @@ describe("turning landing guards", () => {
     }
   });
 
+  // #673 r13: the floor continues past both ends of a stair, so nothing may stand across either exit.
+  it("lets a walker reach and step past both exits of every built shape", () => {
+    const shortOutgoing = [-1, 1].map((d) => ({ name: `short 1.05 m outgoing flight, direction=${d}`, waypoints: shortOutgoingLeg(d) }));
+    for (const { name, waypoints } of [...guardedCases, ...shortOutgoing]) {
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      expect(result.stats.legacyConnectors, name).toBe(0);
+      for (const [end, prev] of [[0, 1], [waypoints.length - 1, waypoints.length - 2]] as const) {
+        const [ex, ey, ez] = waypoints[end]!, [px, , pz] = waypoints[prev]!;
+        const length = Math.hypot(ex - px, ez - pz), ux = (ex - px) / length, uz = (ez - pz) / length;
+        // From 0.6 m inside the stair to 0.6 m past its end, on the centreline and 0.4 m to each side.
+        for (const offset of [-0.4, 0, 0.4]) for (let s = -0.6; s <= 0.6 + 1e-9; s += 0.05) {
+          const x = ex + ux * s - uz * offset, z = ez + uz * s + ux * offset;
+          const resolved = resolveWalls(x, z, 0.3, ey, 1.7, result.wallSegments);
+          expect(Math.hypot(resolved.x - x, resolved.z - z), `${name} end=${end} offset=${offset} s=${s.toFixed(2)}`).toBeLessThanOrEqual(0.05);
+        }
+      }
+    }
+  });
+
   // #673 r2: a steep flight is still the landing's own flight, so its entrance stays open.
   it("leaves a steep flight's entrance to its landing open", () => {
     for (const direction of [-1, 1]) {
@@ -563,10 +582,11 @@ describe("turning landing guards", () => {
     }
   });
 
-  // #668 r19: the opening follows each flight's own leg length, not the landing square's extent, so the guard closes the
-  // corner a 45 degree flight of 1.05 m never reaches.
-  it("stops a walker at every landing exit past the end of a short outgoing flight", () => {
-    const legLengths = [4, 1.05];
+  // #668 r19: the opening follows each flight's own width, not the landing square's extent, so the guard closes the corner
+  // beside a 45 degree flight of 1.05 m. Both legs end at the stair's mouths, where the floor continues (#673 r13), so only
+  // the lateral bound applies.
+  it("stops a walker at every landing exit beside a short outgoing flight", () => {
+    const legLengths = [Infinity, Infinity];
     for (const direction of [-1, 1]) {
       const waypoints = shortOutgoingLeg(direction);
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
@@ -593,8 +613,8 @@ describe("turning landing guards", () => {
     }
   });
 
-  it("guards the landing outline beyond the end of a short angled flight", () => {
-    const legLengths = [4, 1.05];
+  it("guards the landing outline beside a short angled flight", () => {
+    const legLengths = [Infinity, Infinity];
     for (const direction of [-1, 1]) {
       const waypoints = shortOutgoingLeg(direction);
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
@@ -616,7 +636,7 @@ describe("turning landing guards", () => {
         });
         for (let k = 0; k <= 200; k++) {
           const t = k / 200, p = a.clone().lerp(b, t).sub(centre);
-          // A walker steps off the landing only where a flight's own leg reaches the outline; past the leg's end it is a drop.
+          // A walker steps off the landing only within a flight's width; beside it is a drop.
           if (flights.some((u, i) => p.dot(u) > 1e-6 && p.dot(u) <= legLengths[i]! + 0.02 && Math.abs(p.x * u.y - p.y * u.x) < half + 1e-6)) continue;
           const guarded = guards.some(([lo, hi]) => t >= lo - 1e-6 && t <= hi + 1e-6);
           expect(guarded, `direction=${direction} unguarded outline point (${p.x.toFixed(2)}, ${p.y.toFixed(2)})`).toBe(true);
