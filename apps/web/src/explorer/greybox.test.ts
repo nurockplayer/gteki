@@ -458,6 +458,16 @@ describe("buildGreybox", () => {
     expect(result.openings.map((box) => box.center.x).sort((p, q) => p - q)).toEqual(walls.map((w) => expect.closeTo(w)));
   });
 
+  it("opens a wall through a run's end only when the route carries on beyond it", () => {
+    const wallAt = (x: number) => ({ colliderNear: () => false, wallHit: (a: { x: number }, b: { x: number }, wallsOnly?: boolean) => wallsOnly && Math.min(a.x, b.x) <= x && Math.max(a.x, b.x) >= x ? { x, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) } : null });
+    // Ends on a wall with nothing beyond it: no opening.
+    expect(buildGreybox(bundle, () => true, () => false, wallAt(10), "high").openings).toHaveLength(0);
+    // Starts on a wall that another edge at that node comes through: opened.
+    const through = { ...bundle, nodes: [...bundle.nodes, { id: "c", floorId: "f", position: { x: -5, y: 0, z: 0 } }], edges: [...bundle.edges, { ...bundle.edges[0]!, id: "e2", from: "c", to: "a" }] } as unknown as StationBundle;
+    const openings = buildGreybox(through, (e) => e.id !== "e2", () => false, wallAt(0), "high").openings;
+    expect(openings.some((box) => Math.abs(box.center.x) < 1e-6)).toBe(true);
+  });
+
   it("opens no wall that a floorless run only touches at an inner bend", () => {
     const bent = { ...bundle, nodes: [bundle.nodes[0]!, { id: "b", floorId: "f", position: { x: 0, y: 5, z: 0 } }], edges: [{ id: "e", from: "a", to: "b", mode: "walk", geometry: [{ x: 0, y: 0 }, { x: 5, y: 0 }, { x: 0, y: 5 }] }] } as unknown as StationBundle;
     const result = buildGreybox(bent, () => true, () => false, {

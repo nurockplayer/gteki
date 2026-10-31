@@ -469,6 +469,24 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     const b = getBatch(nodes.get(run.edge.from)?.floorId ?? "");
     const pts = run.points.map((p) => R(p.x, p.y, p.z));
     const finishesRun = !!runEnds.get(run.edge.id)?.some((p) => same(p, run.points.at(-1)));
+    // What lies beyond a run's end: the edge's own geometry before/after it, or, at the edge's node, the next point of
+    // every other edge there.
+    const edgePts = edgePoints(bundle, run.edge, nodes, floors);
+    const beyondRun = (end: THREE.Vector3, first: boolean): THREE.Vector3[] => {
+      for (let k = 0; k + 1 < edgePts.length; k++) {
+        const p = edgePts[k]!, q = edgePts[k + 1]!, dx = q.x - p.x, dz = q.z - p.z, length2 = dx * dx + dz * dz;
+        if (!length2) continue;
+        const t = ((end.x - p.x) * dx + (end.z - p.z) * dz) / length2;
+        if (t < -1e-6 || t > 1 + 1e-6 || Math.hypot(p.x + dx * t - end.x, p.z + dz * t - end.z) > 1e-3) continue;
+        const index = first ? (Math.hypot(end.x - p.x, end.z - p.z) < 1e-3 ? k - 1 : k) : (Math.hypot(end.x - q.x, end.z - q.z) < 1e-3 ? k + 2 : k + 1);
+        if (index >= 0 && index < edgePts.length) return [edgePts[index]!];
+        const node = first ? run.edge.from : run.edge.to;
+        return bundle.edges.filter((e) => e.id !== run.edge.id && (e.from === node || e.to === node))
+          .map((e) => { const q2 = edgePoints(bundle, e, nodes, floors); return e.from === node ? q2[1] : q2.at(-2); })
+          .filter((q2): q2 is THREE.Vector3 => !!q2);
+      }
+      return [];
+    };
     let travelled = 0, nextLight = 0;
     for (let i = 1; i < pts.length; i++) {
       const a = pts[i - 1]!, z = pts[i]!;
@@ -656,8 +674,12 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
           // A hit near a segment start counts when the segment's start and end lie on opposite sides of the wall; a wall
           // through the start vertex itself (side 0) was already decided by the previous segment.
           const side = (p: THREE.Vector3) => { const d = hit.wallNormal ? hit.wallNormal.x * (p.x - near.x) + hit.wallNormal.z * (p.z - near.z) : 0; return Math.abs(d) < 1e-3 ? 0 : Math.sign(d); };
+          // A wall through a run's own end is crossed only if something beyond the run lies on the wall's far side.
+          const throughRunEnd = (end: THREE.Vector3, inside: THREE.Vector3, first: boolean) => side(inside) !== 0 && beyondRun(end, first).some((p) => side(p) === -side(inside));
           const atEnd = at > flat - 0.05;
-          const crossed = atEnd ? (i === pts.length - 1 ? finishesRun : side(a) !== 0 && side(a) === -side(pts[i + 1]!)) : at >= 0.05 || (side(a) !== 0 && side(a) === -side(z));
+          const crossed = atEnd
+            ? (i === pts.length - 1 ? finishesRun && throughRunEnd(z, a, false) : side(a) !== 0 && side(a) === -side(pts[i + 1]!))
+            : at >= 0.05 || (side(a) !== 0 && side(a) === -side(z)) || (i === 1 && side(a) === 0 && throughRunEnd(a, z, true));
           if (crossed) {
             const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
             const openingWidth = width * Math.min(2, 1 / Math.max(cosine, 1e-9));
