@@ -447,7 +447,8 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   // or junction patch lies over a run on another floor in plan, build no piece for it: the edge falls back to its
   // existing path. Conservative on slopes: the slab underside (−0.12 m) against the lower segment's highest point.
   // Greybox runs (in ≤2 m pieces, so a long slope counts its height near the crossing) and landing pads count as the
-  // lower passage; scene-modelled ones are out of scope (#680).
+  // lower passage; scene-modelled ones are out of scope (#680). A lower passage within 0.5 m of the upper piece's low
+  // end is a same-level crossing, not one under the slab.
   const runSegments: { floor: string; a: THREE.Vector3; z: THREE.Vector3; half: number; bottom: number; top: number }[] = [];
   const addLower = (floor: string, a: THREE.Vector3, z: THREE.Vector3, half: number) => runSegments.push({ floor, a, z, half, bottom: Math.min(a.y, z.y), top: Math.max(a.y, z.y) });
   for (const run of runs) {
@@ -458,7 +459,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   const overLowPassage = (floorId: string, a: THREE.Vector3, z: THREE.Vector3, half: number) => {
     if (floors.get(floorId)?.intermediate !== true) return false;
     const y = Math.min(a.y, z.y);
-    return runSegments.some((o) => o.floor !== floorId && o.bottom < y && y - 0.12 - o.top < 2.3 && planSegmentDistance(a, z, o.a, o.z) < half + o.half);
+    return runSegments.some((o) => o.floor !== floorId && o.bottom < y - 0.5 && y - 0.12 - o.top < 2.3 && planSegmentDistance(a, z, o.a, o.z) < half + o.half);
   };
   const batches = new Map<string, Batch>();
   const floorBatches = new Map<string, string>();

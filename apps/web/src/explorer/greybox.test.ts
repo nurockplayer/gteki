@@ -538,6 +538,15 @@ describe("buildGreybox", () => {
     const landingX = partial.filter((_v, i) => i % 3 === 0 && Math.abs(partial[i + 1]! - 1.6) < 1e-6);
     expect(landingX.length).toBeGreaterThan(0);
     expect(Math.min(...landingX)).toBeGreaterThan(1);
+    // A passage within 0.5 m below the landing's low end is a same-level crossing: the landing keeps its slab.
+    const crossing = build([node("a", "low", 0, -4, 1.3), node("b", "low", 0, 4, 1.3), node("c", "landing", -4, 0, 1.6), node("d", "landing", 4, 0, 1.6)], [walk("low", "a", "b"), walk("l1", "c", "d")]);
+    expect(crossing.some((y) => Math.abs(y - 1.6) < 1e-6)).toBe(true);
+    // Intended safe fallback (#680): with three stacked levels, the suppressed middle one still suppresses the top one.
+    const stacked3 = buildGreybox({ ...bundle, floors: [...floors, { ...bundle.floors[0]!, id: "upper", renderElevationM: 4, intermediate: true }],
+      nodes: [node("a", "low", 0, 0), node("b", "low", 10, 0), node("c", "landing", 0, 0), node("d", "landing", 10, 0), node("e", "upper", 0, 0), node("f", "upper", 10, 0)],
+      edges: [walk("low", "a", "b"), walk("l1", "c", "d"), walk("u1", "e", "f")] } as unknown as StationBundle, () => true, () => false, emptyScene, "high", true).navFloors!.filter((_v, i) => i % 3 === 1);
+    expect(stacked3.some((y) => Math.abs(y) < 1e-6)).toBe(true);
+    expect(stacked3.some((y) => Math.abs(y - 1.6) < 1e-6 || Math.abs(y - 4) < 1e-6)).toBe(false);
     // A lower ramp rising past the landing still counts where it passes under it.
     const ramp = build([node("a", "low", 0, -2, 0), node("b", "low", 0, 8, 3), node("c", "landing", -3, 0, 2), node("d", "landing", 3, 0, 2)], [walk("low", "a", "b"), walk("l1", "c", "d")]);
     expect(ramp.some((y) => Math.abs(y - 2) < 1e-6)).toBe(false);
