@@ -645,9 +645,11 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
               if (length <= 1e-6) continue;
               const leg = run.clone().divideScalar(length);
               const before = bendAngle(points, j - 1), after = bendAngle(points, j);
-              // A shallow bend mitres beyond its vertex: reach back over the mitre wedge, and forward over the next leg's.
-              const legStart = legFrom.clone().addScaledVector(leg, before > 1e-6 && before < SHALLOW_BEND ? -width / 2 : -0.01); legStart.y = 0;
-              const reach = length + 0.02 + (after > 1e-6 && after < SHALLOW_BEND ? width / 2 : 0);
+              // A shallow bend mitres beyond its vertex by half * tan(bend / 2) on its outer side: reach exactly that far back
+              // and forward, not a whole half-width, which opened the guard where no flight reaches (#673 r11).
+              const wedge = (bend: number) => (bend > 1e-6 && bend < SHALLOW_BEND ? half * Math.tan(bend / 2) : 0);
+              const legStart = legFrom.clone().addScaledVector(leg, -0.01 - wedge(before)); legStart.y = 0;
+              const reach = length + 0.02 + wedge(before) + wedge(after);
               // A leg that reaches this landing through shallow bends only is one of its own flights: it always opens the
               // outline, however steep (#673 r2). Only another landing's legs need the height test.
               let ownFlight = true;
