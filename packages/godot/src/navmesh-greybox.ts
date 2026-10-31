@@ -42,7 +42,8 @@ export function makeGreybox(bundle: StationBundle, scene: StationScene, privateB
   const baseProbe: SceneProbe = { ground:[...targets.ground, floorMesh], collider:[...targets.collider, ...grey.colliders], walls:enuWalls,
     ignoreColliderHit: (hit, direction) => !!hit.face && originalCollider.has(hit.object) && !hit.object.userData.greybox && grey.openings.some(box => insideGreyboxOpening(hit.point, box) && Math.abs(hitNormal(hit, direction).y) <= 0.5) };
   if (!opts.connectors) return { grey, probe: baseProbe, baseProbe, portals, walls:enuWalls, targets, connectors: null };
-  // The explorer's own connectors, built and read exactly as explorer.ts builds them: geometry for vertical edges the scene does not model.
+  // The explorer's own connectors, built as explorer.ts builds them: geometry for vertical edges the scene does not model.
+  // Measurement only: the explorer's stairwell cut (cut slabs, guardrails) is still not modelled here (#676).
   const connectors = buildConnectors(bundle, e => router.isTraversable(e, DEFAULT_PROFILE), { hasFloor, nearMesh: (p, radius) => sceneMeshNear([scene.root], p, radius) }, "low");
   connectors.root.updateMatrixWorld(true);
   prepareRayTrees([...connectors.walkable, ...connectors.colliders]);
