@@ -389,21 +389,58 @@ function bentLegThenTurn(direction: number): [number, number, number][] {
 }
 /** One turning landing of a supported shape, mirrored for each direction. */
 const singleTurnCases = [15, 45, 90].flatMap((degrees) => [-1, 1].map((direction) => ({ name: `single ${degrees} degree turn, direction=${direction}`, waypoints: stackedWaypoints(degrees, direction) })));
-/** Shapes outside the supported set (two or more turning landings, overlapping landings, sharp returns, flights crossing or walls cutting). */
+/** #673 r1: four 90 degree turns; the last flight crosses the first landing's square in plan, about 4.3 m above it. */
+function overFirstLanding(direction: number): [number, number, number][] {
+  return mirror([[0, 0, 0], [4, 1, 0], [4, 2, 4], [-4, 3, 4], [-4, 4, 0], [8, 6, 0]], direction);
+}
+/** #673 r4: one revolution of 15 degree bends on a 2 m radius rising only 1.2 m, with no turning landing. */
+function flatSpiral(direction: number): [number, number, number][] {
+  const pts: [number, number, number][] = [];
+  for (let deg = 0; deg <= 360; deg += 15) { const t = (deg * Math.PI) / 180; pts.push([2 * Math.sin(t), (1.2 * deg) / 360, 2 * (1 - Math.cos(t))]); }
+  return mirror(pts, direction);
+}
+/** #673 r3: one revolution of 15 degree bends on a 2 m radius rising 4.8 m, then a turning landing into a 4 m leg. */
+function spiral(direction: number): [number, number, number][] {
+  const pts: [number, number, number][] = [];
+  for (let deg = 0; deg <= 360; deg += 15) { const t = (deg * Math.PI) / 180; pts.push([2 * Math.sin(t), (4.8 * deg) / 360, 2 * (1 - Math.cos(t))]); }
+  pts.push([pts.at(-1)![0], 5.5, pts.at(-1)![2] - 4]);
+  return mirror(pts, direction);
+}
+/** A single 45 degree turn whose outgoing leg is only 1.05 m long (#668 r19). */
+function shortOutgoingLeg(direction: number): [number, number, number][] {
+  const run = 1.05, angle = Math.PI / 4;
+  return mirror([[0, 0, 0], [4, 2, 0], [4 + run * Math.cos(angle), 2.5, -run * Math.sin(angle)]], direction);
+}
+/** Shapes with several turning landings or shallow bends, which the general landing guard builds (#668). */
+const multiTurnCases = ([
+  { name: "U-turn", waypoints: (d: number) => mirror([[0, 0, 0], [4, 1, 0], [4, 2, -2], [0, 3, -2]], d) },
+  { name: "switchback 180 degrees", waypoints: (d: number) => switchbackWaypoints(180, d) },
+  { name: "switchback 135 degrees (a 45 degree landing)", waypoints: (d: number) => switchbackWaypoints(135, d) },
+  { name: "19 degree bends on the leg into a 90 degree landing (safe path, #640 r17)", waypoints: (d: number) => bentLegThenTurn(d) },
+  { name: "a 10 degree bend just before a 45 degree landing (#673 r11)", waypoints: (d: number) => mirror([[0, 0, 0], [4, 2, 0], [4.345, 2.2, 0.061], [6.639, 4.2, 3.337]], d) },
+  { name: "a last flight ending 1.7 m short of the first landing's square (#673 r15)", waypoints: (d: number) => mirror([[0, 0, 0], [4, 2, 0], [4, 2.1, 4], [9, 2.2, 4], [9, 2.3, 0], [6.5, 2.4, 0]], d) },
+  { name: "a zigzag of three 90 degree landings (#673 r6)", waypoints: (d: number) => mirror([[0, 0, 0], [3, 1, 0], [3, 2, 3], [6, 3, 3], [6, 4, 6]], d) },
+] as const).flatMap((shape) => [-1, 1].map((direction) => ({ name: `${shape.name}, direction=${direction}`, waypoints: shape.waypoints(direction) })));
+/** Every stair with a turning landing whose guard the property tests check. */
+const guardedCases = [...singleTurnCases, ...multiTurnCases];
+/** Shapes outside the supported set (overlapping landings, sharp returns, flights crossing or walls cutting). */
 const unsupportedShapes: { name: string; waypoints: (direction: number) => [number, number, number][] }[] = [
-  { name: "U-turn", waypoints: (d) => mirror([[0, 0, 0], [4, 1, 0], [4, 2, -2], [0, 3, -2]], d) },
   { name: "two 90 degree turns 0.5 m apart", waypoints: (d) => closeS(d) },
   { name: "two equal overlapping landing squares", waypoints: (d) => equalSquaresWaypoints(d) },
   { name: "landings 3 m apart vertically", waypoints: (d) => mirror([[0, 0, 0], [4, 2, 0], [4, 5, -0.5], [8, 7, -0.5]], d) },
   { name: "flight crossing a non-adjacent landing at 1 m", waypoints: (d) => mirror([[0, 0, 0], [4, 1, 0], [4, 1.2, 4], [2, 1.5, 0], [2, 2, -4]], d) },
   { name: "stacked non-adjacent flights", waypoints: (d) => mirror([[0, 0, 0], [4, 2, 0], [4, 2.2, 1.0], [0, 2.6, 1.0]], d) },
-  { name: "switchback 135 degrees", waypoints: (d) => switchbackWaypoints(135, d) },
-  { name: "switchback 180 degrees", waypoints: (d) => switchbackWaypoints(180, d) },
+  { name: "three 10 degree bends 0.6 m apart and a 90 degree turn", waypoints: (d) => shallowThenTurn(d) },
+  { name: "four 90 degree turns, the last flight passing 4.3 m over the first landing (#673 r1)", waypoints: (d) => overFirstLanding(d) },
+  { name: "a spiral of 15 degree bends whose lower turns pass under its top landing (#673 r3)", waypoints: (d) => spiral(d) },
+  { name: "a spiral of 15 degree bends rising 1.2 m per turn, with no turning landing (#673 r4)", waypoints: (d) => flatSpiral(d) },
+  { name: "a last flight whose corner cuts an earlier landing's square 1.6 m above it (#673 r10)", waypoints: (d) => mirror([[0, 0, 0], [4, 2, 0], [4, 2.4, -10], [15, 2.8, -10], [15, 3.2, 5.4], [10, 3.6, 5.4], [4.92, 3.6, 0.32]], d) },
+  { name: "a last flight whose side wall stands 0.4 m over an earlier landing (#673 r7)", waypoints: (d) => mirror([[0, 0, 0], [4, 1, 0], [4, 1.2, -4], [8, 1.2, -4], [8, 1.3, 2], [5.3, 1.4, 2], [5.3, 1.4, 0.1]], d) },
+  { name: "a rising flight whose side wall runs through an earlier landing 0 to 0.9 m above it (#673 r5)", waypoints: (d) => mirror([[0, 0, 0], [4, 1, 0], [4, 1.3, -3], [5.2, 1.6, -3], [5.2, 1.9, 1.5]], d) },
+  { name: "two 90 degree landings 1.2 m apart whose squares overlap (#673 r1)", waypoints: (d) => mirror([[0, 0, 0], [4, 2, 0], [4, 2.5, -1.2], [8, 4.5, -1.2]], d) },
   { name: "single-vertex 135 degree sharp return", waypoints: (d) => stackedWaypoints(135, d) },
   { name: "single-vertex 165 degree sharp return", waypoints: (d) => stackedWaypoints(165, d) },
   { name: "single 100 degree turn whose inner wall crosses the next flight", waypoints: (d) => stackedWaypoints(100, d) },
-  { name: "three 10 degree bends 0.6 m apart and a 90 degree turn", waypoints: (d) => shallowThenTurn(d) },
-  { name: "19 degree bends on the leg into a 90 degree landing (safe path, #640 r17)", waypoints: (d) => bentLegThenTurn(d) },
 ];
 const unsupportedCases = unsupportedShapes.flatMap((shape) => [-1, 1].map((direction) => ({ name: `${shape.name}, direction=${direction}`, waypoints: shape.waypoints(direction) })));
 
@@ -416,8 +453,11 @@ describe("turning landing guards", () => {
   };
 
   it("stops a walker leaving any turning landing except through a flight opening", () => {
-    for (const { name, waypoints } of singleTurnCases) {
+    for (const { name, waypoints } of guardedCases) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      // The new builder must build it: a silent fallback to legacy would pass the geometry checks below (#673 r4).
+      expect(result.stats.legacyConnectors, name).toBe(0);
+      expect(result.stats.connectorsSkippedByReason.unsupported_shape ?? 0, name).toBe(0);
       const landings = landingsOf(waypoints);
       for (const landing of landings) {
         const { centre, height, flights } = landing;
@@ -444,8 +484,11 @@ describe("turning landing guards", () => {
   });
 
   it("lets a centreline walker and a walker 0.5 m off centre pass bottom to top", () => {
-    for (const { name, waypoints } of singleTurnCases) {
+    for (const { name, waypoints } of guardedCases) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      // The new builder must build it: a silent fallback to legacy would pass the geometry checks below (#673 r4).
+      expect(result.stats.legacyConnectors, name).toBe(0);
+      expect(result.stats.connectorsSkippedByReason.unsupported_shape ?? 0, name).toBe(0);
       const path = result.pathByEdge.get("turn")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
       const bendS = waypoints.slice(1, -1).map(([x, h, z]) => cumulative[path.findIndex((p) => Math.hypot(p.x - x, p.y - h, p.z - z) < 1e-6)]!);
       for (const offset of [-0.5, 0, 0.5]) for (let s = 0; s <= total; s += 0.05) {
@@ -464,13 +507,156 @@ describe("turning landing guards", () => {
 
   it("keeps every landing guard segment within the landing's diagonal", () => {
     const diagonal = 2 * half * Math.SQRT2;
-    for (const { name, waypoints } of singleTurnCases) {
+    for (const { name, waypoints } of guardedCases) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      // The new builder must build it: a silent fallback to legacy would pass the geometry checks below (#673 r4).
+      expect(result.stats.legacyConnectors, name).toBe(0);
+      expect(result.stats.connectorsSkippedByReason.unsupported_shape ?? 0, name).toBe(0);
       const heights = landingsOf(waypoints).map((landing) => landing.height);
       if (heights.length === 0) continue; // only shallow bends: no landing guard to check
       const guards = result.wallSegments.filter((w) => heights.some((h) => Math.abs(w.yMin - (h - 0.12)) < 1e-6 && Math.abs(w.yMax - (h + 0.96)) < 1e-6));
       expect(guards.length, name).toBeGreaterThan(0);
       for (const w of guards) expect(Math.hypot(w.bx - w.ax, w.bz - w.az), name).toBeLessThanOrEqual(diagonal + 1e-6);
+    }
+  });
+
+  // #673 r8: a wide flight lies further below its landing inside the square; it is still the landing's own flight.
+  it("builds a 4 m wide single-turn stair with the new builder", () => {
+    for (const direction of [-1, 1]) {
+      const station = stairThrough(mirror([[0, 0, 0], [4, 2, 0], [4, 4, 4]], direction));
+      (station.edges[0]!.attributes as Record<string, unknown>).width = { m: 4 };
+      const result = buildConnectors(station, () => true, flat, "high");
+      expect(result.stats.legacyConnectors, `direction=${direction}`).toBe(0);
+      expect(result.stats.connectorsSkippedByReason.unsupported_shape ?? 0, `direction=${direction}`).toBe(0);
+    }
+  });
+
+  // #673 r12: an earlier flight's side wall stops at its own landing's square, whatever its height there, so it never stands
+  // in the outgoing flight's lane.
+  it("keeps the outgoing lane clear on a 3 m wide stair with a shallow bend before its landing", () => {
+    for (const direction of [-1, 1]) {
+      const waypoints = mirror([[0, 0, 0], [4, 2, 0], [4.394, 2.2, 0.069], [5.089, 3.7, -3.87]], direction);
+      const station = stairThrough(waypoints);
+      (station.edges[0]!.attributes as Record<string, unknown>).width = { m: 3 };
+      const result = buildConnectors(station, () => true, flat, "high");
+      expect(result.stats.legacyConnectors, `direction=${direction}`).toBe(0);
+      const [x0, y0, z0] = waypoints[2]!, [x1, y1, z1] = waypoints[3]!;
+      const length = Math.hypot(x1 - x0, z1 - z0), ux = (x1 - x0) / length, uz = (z1 - z0) / length;
+      for (const offset of [-1, 0, 1]) for (let s = 0; s <= length; s += 0.05) {
+        const x = x0 + ux * s - uz * offset, z = z0 + uz * s + ux * offset, y = y0 + (y1 - y0) * s / length;
+        const resolved = resolveWalls(x, z, 0.3, y, 1.7, result.wallSegments);
+        expect(Math.hypot(resolved.x - x, resolved.z - z), `direction=${direction} offset=${offset} s=${s.toFixed(2)}`).toBeLessThanOrEqual(0.05);
+      }
+    }
+  });
+
+  // #673 r14: an escalator has no landing geometry, so with two turns it stays on main's legacy builder.
+  it("builds a two-turn escalator with main's legacy builder, unchanged", () => {
+    const geometry = ([[0, 0, 0], [4, 2, 0], [4, 2, 3], [8, 4, 3]] as const).map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const escalator = () => {
+      const station = createSyntheticBundle([syntheticEdge("turn", "start", "upper", { mode: "escalator", attributes: { sceneGap: true }, geometry })]);
+      station.nodes.find((n) => n.id === "upper")!.position = { ...geometry.at(-1)! };
+      return station;
+    };
+    const result = buildConnectors(escalator(), () => true, flat, "high"), legacy = buildLegacyConnectors(escalator(), () => true, flat, "high");
+    expect(result.stats.connectorsSkippedByReason.unsupported_shape).toBe(1);
+    expect(result.stats.legacyConnectors).toBe(1);
+    expect(result.wallSegments).toEqual(legacy.wallSegments);
+  });
+
+  // #673 r13: the floor continues past both ends of a stair, so nothing may stand across either exit.
+  it("lets a walker reach and step past both exits of every built shape", () => {
+    const shortOutgoing = [-1, 1].map((d) => ({ name: `short 1.05 m outgoing flight, direction=${d}`, waypoints: shortOutgoingLeg(d) }));
+    for (const { name, waypoints } of [...guardedCases, ...shortOutgoing]) {
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      expect(result.stats.legacyConnectors, name).toBe(0);
+      for (const [end, prev] of [[0, 1], [waypoints.length - 1, waypoints.length - 2]] as const) {
+        const [ex, ey, ez] = waypoints[end]!, [px, , pz] = waypoints[prev]!;
+        const length = Math.hypot(ex - px, ez - pz), ux = (ex - px) / length, uz = (ez - pz) / length;
+        // From 0.6 m inside the stair to 0.6 m past its end, on the centreline and 0.4 m to each side.
+        for (const offset of [-0.4, 0, 0.4]) for (let s = -0.6; s <= 0.6 + 1e-9; s += 0.05) {
+          const x = ex + ux * s - uz * offset, z = ez + uz * s + ux * offset;
+          const resolved = resolveWalls(x, z, 0.3, ey, 1.7, result.wallSegments);
+          expect(Math.hypot(resolved.x - x, resolved.z - z), `${name} end=${end} offset=${offset} s=${s.toFixed(2)}`).toBeLessThanOrEqual(0.05);
+        }
+      }
+    }
+  });
+
+  // #673 r2: a steep flight is still the landing's own flight, so its entrance stays open.
+  it("leaves a steep flight's entrance to its landing open", () => {
+    for (const direction of [-1, 1]) {
+      const waypoints = mirror([[0, 0, 0], [4, 3.2, 0], [4, 4, 4]], direction);
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      expect(result.stats.legacyConnectors).toBe(0);
+      // Walk the incoming flight's centreline up onto the landing: nothing may push the walker aside.
+      for (let x = 2.5; x <= 4; x += 0.05) {
+        const y = 3.2 * x / 4, resolved = resolveWalls(x, 0, 0.3, y, 1.7, result.wallSegments);
+        expect(Math.hypot(resolved.x - x, resolved.z), `direction=${direction} x=${x.toFixed(2)}`).toBeLessThanOrEqual(0.05);
+      }
+    }
+  });
+
+  // #668 r19: the opening follows each flight's own width, not the landing square's extent, so the guard closes the corner
+  // beside a 45 degree flight of 1.05 m. Both legs end at the stair's mouths, where the floor continues (#673 r13), so only
+  // the lateral bound applies.
+  it("stops a walker at every landing exit beside a short outgoing flight", () => {
+    const legLengths = [Infinity, Infinity];
+    for (const direction of [-1, 1]) {
+      const waypoints = shortOutgoingLeg(direction);
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      expect(result.stats.connectorsSkippedByReason.unsupported_shape, `direction=${direction}`).toBe(0);
+      const { centre, height, flights } = landingsOf(waypoints)[0]!;
+      const axis = flights[0]!.clone().negate(), normal = new THREE.Vector2(-axis.y, axis.x);
+      let outside = 0;
+      for (let k = 0; k < 36; k++) {
+        const heading = (k * Math.PI) / 18, dir = new THREE.Vector2(Math.cos(heading), Math.sin(heading));
+        const r = half / Math.max(Math.abs(dir.dot(axis)), Math.abs(dir.dot(normal)));
+        const exit = dir.clone().multiplyScalar(r);
+        // An exit inside a flight's real footprint, no further than that flight's own leg reaches, is a walking opening.
+        if (flights.some((u, i) => exit.dot(u) > 1e-6 && exit.dot(u) <= legLengths[i]! && Math.abs(exit.x * u.y - exit.y * u.x) < half - 1e-6)) continue;
+        outside++;
+        let stopped = false;
+        for (let step = 1; step <= 50 && !stopped; step++) {
+          const x = centre.x + dir.x * 0.03 * step, z = centre.y + dir.y * 0.03 * step;
+          const resolved = resolveWalls(x, z, 0.3, height, 1.7, result.wallSegments);
+          if (Math.hypot(resolved.x - x, resolved.z - z) > 0.05) stopped = true;
+        }
+        expect(stopped, `direction=${direction} heading=${k * 10}`).toBe(true);
+      }
+      expect(outside, `direction=${direction}`).toBeGreaterThan(0);
+    }
+  });
+
+  it("guards the landing outline beside a short angled flight", () => {
+    const legLengths = [Infinity, Infinity];
+    for (const direction of [-1, 1]) {
+      const waypoints = shortOutgoingLeg(direction);
+      const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      expect(result.stats.connectorsSkippedByReason.unsupported_shape, `direction=${direction}`).toBe(0);
+      const { centre, flights } = landingsOf(waypoints)[0]!;
+      const d = flights[0]!.clone().negate(), n = new THREE.Vector2(-d.y, d.x);
+      const corner = (along: number, across: number) => centre.clone().addScaledVector(d, along * half).addScaledVector(n, across * half);
+      const sides: [THREE.Vector2, THREE.Vector2][] = [
+        [corner(-1, 1), corner(-1, -1)], [corner(1, -1), corner(1, 1)], [corner(-1, -1), corner(1, -1)], [corner(1, 1), corner(-1, 1)],
+      ];
+      for (const [a, b] of sides) {
+        const run = b.clone().sub(a);
+        // The parameter spans of this side that a wall lies on: every landing guard runs exactly along the outline.
+        const guards = result.wallSegments.flatMap((w): [number, number][] => {
+          const p = new THREE.Vector2(w.ax, w.az), q = new THREE.Vector2(w.bx, w.bz);
+          const tp = p.clone().sub(a).dot(run) / run.lengthSq(), tq = q.clone().sub(a).dot(run) / run.lengthSq();
+          const offP = p.clone().sub(a).addScaledVector(run, -tp).length(), offQ = q.clone().sub(a).addScaledVector(run, -tq).length();
+          return offP < 1e-3 && offQ < 1e-3 ? [[Math.min(tp, tq), Math.max(tp, tq)]] : [];
+        });
+        for (let k = 0; k <= 200; k++) {
+          const t = k / 200, p = a.clone().lerp(b, t).sub(centre);
+          // A walker steps off the landing only within a flight's width; beside it is a drop.
+          if (flights.some((u, i) => p.dot(u) > 1e-6 && p.dot(u) <= legLengths[i]! + 0.02 && Math.abs(p.x * u.y - p.y * u.x) < half + 1e-6)) continue;
+          const guarded = guards.some(([lo, hi]) => t >= lo - 1e-6 && t <= hi + 1e-6);
+          expect(guarded, `direction=${direction} unguarded outline point (${p.x.toFixed(2)}, ${p.y.toFixed(2)})`).toBe(true);
+        }
+      }
     }
   });
 
@@ -612,7 +798,7 @@ describe("turning landing guards", () => {
   });
 
   it("does not list an unsupported shape in skippedEdgeIds: main's builder builds it (#640 r18)", () => {
-    const result = buildConnectors(stairThrough([[0, 0, 0], [4, 1, 0], [4, 2, -2], [0, 3, -2]]), () => true, flat, "high");
+    const result = buildConnectors(stairThrough(closeS(1)), () => true, flat, "high");
     expect(result.skippedEdgeIds).toEqual([]);
     expect(result.stats.legacyConnectors).toBe(1);
   });
