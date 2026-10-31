@@ -348,6 +348,31 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
   return result;
 }
 
+/** Plan (XZ) distance between two segments; 0 when they cross. */
+function planSegmentDistance(a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3, d: THREE.Vector3): number {
+  const cross = (ox: number, oz: number, px: number, pz: number, qx: number, qz: number) => (px - ox) * (qz - oz) - (pz - oz) * (qx - ox);
+  const d1 = cross(c.x, c.z, d.x, d.z, a.x, a.z), d2 = cross(c.x, c.z, d.x, d.z, b.x, b.z);
+  const d3 = cross(a.x, a.z, b.x, b.z, c.x, c.z), d4 = cross(a.x, a.z, b.x, b.z, d.x, d.z);
+  if (((d1 > 0) !== (d2 > 0)) && d1 !== 0 && d2 !== 0 && ((d3 > 0) !== (d4 > 0)) && d3 !== 0 && d4 !== 0) return 0;
+  const pointSegment = (p: THREE.Vector3, s: THREE.Vector3, e: THREE.Vector3) => {
+    const dx = e.x - s.x, dz = e.z - s.z, length2 = dx * dx + dz * dz;
+    const t = length2 ? Math.min(1, Math.max(0, ((p.x - s.x) * dx + (p.z - s.z) * dz) / length2)) : 0;
+    return Math.hypot(p.x - (s.x + dx * t), p.z - (s.z + dz * t));
+  };
+  return Math.min(pointSegment(a, c, d), pointSegment(b, c, d), pointSegment(c, a, b), pointSegment(d, a, b));
+}
+
+/** Split segments longer than `step` into equal collinear pieces. */
+function densify(pts: readonly V3[], step: number): readonly V3[] {
+  if (!Number.isFinite(step) || pts.length < 2) return pts;
+  const out: V3[] = [pts[0]!];
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1]!, b = pts[i]!, n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) / step));
+    for (let k = 1; k <= n; k++) out.push({ x: a.x + (b.x - a.x) * k / n, y: a.y + (b.y - a.y) * k / n, z: a.z + (b.z - a.z) * k / n });
+  }
+  return out;
+}
+
 /** Emit the globally deduplicated passage geometry for already-detected runs. */
 export function emitGreybox(bundle: StationBundle, detected: readonly UnmodelledEdgeRun[], hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", captureNav = false, pads: readonly LandingPad[] = []) {
   const started = performance.now();
@@ -417,6 +442,27 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     }
   }
   const activeJunctions = [...junctions.values()].filter((junction) => junction.count >= 2);
+  // A landing's symbolic render height can sit only ~1.6 m above the floor below, so an intermediate level's slab,
+  // walls and ceiling would make a low ceiling over a passage underneath. Where an intermediate run segment, landing pad
+  // or junction patch lies over a run on another floor in plan, build no piece for it: the edge falls back to its
+  // existing path. Conservative on slopes: the slab underside (−0.12 m) against the lower segment's highest point.
+  // Greybox runs (in ≤2 m pieces, so a long slope counts its height near the crossing) and landing pads count as the
+  // lower passage; scene-modelled ones are out of scope (#680). A lower passage within 0.5 m of the upper piece's low
+  // end is a same-level crossing, not one under the slab.
+  const runSegments: { floor: string; a: THREE.Vector3; z: THREE.Vector3; half: number; bottom: number; top: number }[] = [];
+  const addLower = (floor: string, a: THREE.Vector3, z: THREE.Vector3, half: number) => runSegments.push({ floor, a, z, half, bottom: Math.min(a.y, z.y), top: Math.max(a.y, z.y) });
+  for (const run of runs) {
+    const pts = densify(run.points, 2).map((p) => R(p.x, p.y, p.z)), floor = nodes.get(run.edge.from)?.floorId ?? "";
+    for (let i = 1; i < pts.length; i++) addLower(floor, pts[i - 1]!, pts[i]!, widthOf(run.edge) / 2);
+  }
+  for (const pad of pads) addLower(pad.floorId, pad.center.clone().addScaledVector(pad.along, -pad.width / 2), pad.center.clone().addScaledVector(pad.along, pad.width / 2), pad.width / 2);
+  const overLowPassage = (floorId: string, a: THREE.Vector3, z: THREE.Vector3, half: number) => {
+    if (floors.get(floorId)?.intermediate !== true) return false;
+    const y = Math.min(a.y, z.y);
+    return runSegments.some((o) => o.floor !== floorId && o.bottom < y - 0.5 && y - 0.12 - o.top < 2.3 && planSegmentDistance(a, z, o.a, o.z) < half + o.half);
+  };
+  // A suppressed junction neither builds its patch nor clips the walls of the passages it meets.
+  const builtJunctions = activeJunctions.filter((j) => !overLowPassage(j.floor, j.at, j.at, j.width / 2));
   const batches = new Map<string, Batch>();
   const floorBatches = new Map<string, string>();
   const getBatch = (floor: string) => {
@@ -435,6 +481,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   const lightMat = new THREE.MeshBasicMaterial({ color: 0xffffff, vertexColors: true, toneMapped: false, side: THREE.DoubleSide });
   const kerbMat = new THREE.MeshBasicMaterial({ color: 0xffb547, toneMapped: false, side: THREE.DoubleSide });
   for (const pad of pads) {
+    if (overLowPassage(pad.floorId, pad.center.clone().addScaledVector(pad.along, -pad.width / 2), pad.center.clone().addScaledVector(pad.along, pad.width / 2), pad.width / 2)) continue;
     const b=getBatch(pad.floorId), half=pad.width/2, across=new THREE.Vector3(-pad.along.z,0,pad.along.x);
     const corner=(a:number,s:number,h:number)=>pad.center.clone().addScaledVector(pad.along,a*half).addScaledVector(across,s*half).add(new THREE.Vector3(0,h,0));
     const al=corner(-1,-1,0), ar=corner(-1,1,0), zl=corner(1,-1,0), zr=corner(1,1,0);
@@ -456,12 +503,15 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   for (const run of runs) {
     const width = widthOf(run.edge), half = width / 2;
     const b = getBatch(nodes.get(run.edge.from)?.floorId ?? "");
-    const pts = run.points.map((p) => R(p.x, p.y, p.z));
+    // On an intermediate level, check clearance per ≤2 m piece so one crossing drops only the part over it.
+    const points = densify(run.points, floors.get(nodes.get(run.edge.from)?.floorId ?? "")?.intermediate === true ? 2 : Infinity);
+    const pts = points.map((p) => R(p.x, p.y, p.z));
     let travelled = 0, nextLight = 0;
     for (let i = 1; i < pts.length; i++) {
       const a = pts[i - 1]!, z = pts[i]!;
       const diff = z.clone().sub(a), length = diff.length(), flat = Math.hypot(diff.x, diff.z);
       if (length < 1e-8 || flat < 1e-8) continue;
+      if (overLowPassage(nodes.get(run.edge.from)?.floorId ?? "", a, z, half)) { travelled += length; continue; }
       const along = new THREE.Vector3(diff.x / flat, 0, diff.z / flat);
       const across = new THREE.Vector3(-along.z, 0, along.x);
       const offset = (p: THREE.Vector3, side: number, height: number) => p.clone().addScaledVector(across, side).add(new THREE.Vector3(0, height, 0));
@@ -475,7 +525,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         const wa = offset(a, side * half, 0), wz = offset(z, side * half, 0);
         // Clip the wall centreline against junction discs; the floor and ceiling remain continuous.
         let intervals: [number, number][] = index.uncovered(wa, wz);
-        for (const j of activeJunctions) {
+        for (const j of builtJunctions) {
           const vx = wz.x - wa.x, vz = wz.z - wa.z, ox = wa.x - j.at.x, oz = wa.z - j.at.z;
           const A = vx * vx + vz * vz, B = 2 * (ox * vx + oz * vz), C = ox * ox + oz * oz - (j.width / 2) ** 2;
           // Compare heights where the wall passes the junction, not at the segment midpoint: a long ramp drifts.
@@ -599,7 +649,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
         }
         nextLight += 6;
       }
-      const pa = run.points[i - 1]!, pz = run.points[i]!;
+      const pa = points[i - 1]!, pz = points[i]!;
       const transition = run.edge.attributes?.sceneGap === true
         ? (i === 1 && hasFloor(pa)) || (i === pts.length - 1 && hasFloor(pz))
         : hasFloor(pa) !== hasFloor(pz);
@@ -630,7 +680,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       travelled += length; lengthM += length;
     }
   }
-  for (const j of activeJunctions) {
+  for (const j of builtJunctions) {
     const b = getBatch(j.floor), radius = j.width / 2;
     for (let i = 0; i < 24; i++) {
       const a = i * Math.PI * 2 / 24, z = (i + 1) * Math.PI * 2 / 24;

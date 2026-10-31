@@ -135,7 +135,7 @@ widthOf	function	apps/web/src/explorer/greybox.ts	147
 simplifyGreyboxRun	function	apps/web/src/explorer/greybox.ts	213
 createGreyboxBuilder	function	apps/web/src/explorer/greybox.ts	293
 buildGreybox	function	apps/web/src/explorer/greybox.ts	342
-emitGreybox	function	apps/web/src/explorer/greybox.ts	352
+emitGreybox	function	apps/web/src/explorer/greybox.ts	377
 unmodelledVerticalEdges	function	apps/web/src/explorer/greyboxConnectors.ts	8
 ConnectorMaterial	type	apps/web/src/explorer/greyboxConnectors.ts	42
 ConnectorPart	interface	apps/web/src/explorer/greyboxConnectors.ts	43
