@@ -446,12 +446,15 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   // walls and ceiling would make a low ceiling over a passage underneath. Where an intermediate run segment, landing pad
   // or junction patch lies over a run on another floor in plan, build no piece for it: the edge falls back to its
   // existing path. Conservative on slopes: the slab underside (−0.12 m) against the lower segment's highest point.
-  // Only greybox runs count as the lower passage; scene-modelled ones are out of scope (#680).
+  // Greybox runs (in ≤2 m pieces, so a long slope counts its height near the crossing) and landing pads count as the
+  // lower passage; scene-modelled ones are out of scope (#680).
   const runSegments: { floor: string; a: THREE.Vector3; z: THREE.Vector3; half: number; bottom: number; top: number }[] = [];
+  const addLower = (floor: string, a: THREE.Vector3, z: THREE.Vector3, half: number) => runSegments.push({ floor, a, z, half, bottom: Math.min(a.y, z.y), top: Math.max(a.y, z.y) });
   for (const run of runs) {
-    const pts = run.points.map((p) => R(p.x, p.y, p.z)), floor = nodes.get(run.edge.from)?.floorId ?? "";
-    for (let i = 1; i < pts.length; i++) runSegments.push({ floor, a: pts[i - 1]!, z: pts[i]!, half: widthOf(run.edge) / 2, bottom: Math.min(pts[i - 1]!.y, pts[i]!.y), top: Math.max(pts[i - 1]!.y, pts[i]!.y) });
+    const pts = densify(run.points, 2).map((p) => R(p.x, p.y, p.z)), floor = nodes.get(run.edge.from)?.floorId ?? "";
+    for (let i = 1; i < pts.length; i++) addLower(floor, pts[i - 1]!, pts[i]!, widthOf(run.edge) / 2);
   }
+  for (const pad of pads) addLower(pad.floorId, pad.center.clone().addScaledVector(pad.along, -pad.width / 2), pad.center.clone().addScaledVector(pad.along, pad.width / 2), pad.width / 2);
   const overLowPassage = (floorId: string, a: THREE.Vector3, z: THREE.Vector3, half: number) => {
     if (floors.get(floorId)?.intermediate !== true) return false;
     const y = Math.min(a.y, z.y);

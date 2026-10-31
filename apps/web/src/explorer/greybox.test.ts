@@ -489,7 +489,7 @@ describe("buildGreybox", () => {
   it("builds no piece on an intermediate level standing under 2.3 m over another passage", () => {
     // A landing's symbolic height can put it ~1.6 m over the floor below; its slab and ceiling would leave that
     // passage a 1.49 m ceiling. Safe path: no piece for the intermediate level, so its edge falls back.
-    const levels = (elevation: number, rampTop: number | null = null) => {
+    const levels = (elevation: number, rampTop: number | null = null, raw = false) => {
       const floors = [{ ...bundle.floors[0]!, id: "low", renderElevationM: 0 }, { ...bundle.floors[0]!, id: "landing", renderElevationM: elevation, intermediate: true }];
       const nodes = [
         { ...bundle.nodes[0]!, id: "a", floorId: "low", position: { x: 0, y: 0, z: null } },
@@ -499,7 +499,8 @@ describe("buildGreybox", () => {
       ];
       const edges = [{ ...bundle.edges[0]!, id: "low", from: "a", to: "b" }, { ...bundle.edges[0]!, id: "landing", from: "c", to: "d" }];
       const station = { ...bundle, floors, nodes, edges } as unknown as StationBundle;
-      return buildGreybox(station, () => true, () => false, emptyScene, "high", true).navFloors!.filter((_v, i) => i % 3 === 1);
+      const nav = buildGreybox(station, () => true, () => false, emptyScene, "high", true).navFloors!;
+      return raw ? nav : nav.filter((_v, i) => i % 3 === 1);
     };
     const near = levels(1.6);
     expect(near.some((y) => Math.abs(y) < 1e-6)).toBe(true);
@@ -509,8 +510,12 @@ describe("buildGreybox", () => {
     expect(far.some((y) => Math.abs(y - 3) < 1e-6)).toBe(true);
     // The slab's 0.12 m underside counts: 2.35 m over the floor below leaves 2.23 m.
     expect(levels(2.35).some((y) => Math.abs(y - 2.35) < 1e-6)).toBe(false);
-    // On a slope the lower passage's highest point counts: a ramp up to 1 m under a landing at 3.3 m leaves 2.18 m.
-    expect(levels(3.3, 1).some((y) => Math.abs(y - 3.3) < 1e-6)).toBe(false);
+    // On a slope the height near the crossing counts: a ramp rising to 1 m under a landing at 3.3 m leaves 2.18 m at
+    // its high end, so only the landing's low-end part (over the ramp's foot) is built.
+    const sloped = levels(3.3, 1, true);
+    const slopedX = sloped.filter((_v, i) => i % 3 === 0 && Math.abs(sloped[i + 1]! - 3.3) < 1e-6);
+    expect(slopedX.length).toBeGreaterThan(0);
+    expect(Math.max(...slopedX)).toBeLessThan(8);
   });
 
   it("drops an intermediate junction patch over a lower passage, and keeps a rising intermediate passage with nothing below", () => {
