@@ -1,24 +1,12 @@
 {
-  "e_27j__x27": {
-    "connectorWallHits": 88,
-    "fallbackWallHits": 0,
-    "navmeshWallHits": 0,
-    "offFloor": 0
-  },
-  "e_hall_stair_top__e_hall_stair_foot": {
-    "connectorWallHits": 84,
-    "fallbackWallHits": 0,
-    "navmeshWallHits": 0,
-    "offFloor": 0
-  },
   "e_low__x34": {
-    "connectorWallHits": 44,
+    "connectorWallHits": 46,
     "fallbackWallHits": 0,
     "navmeshWallHits": 0,
     "offFloor": 0
   },
   "e_low__x35": {
-    "connectorWallHits": 88,
+    "connectorWallHits": 92,
     "fallbackWallHits": 0,
     "navmeshWallHits": 0,
     "offFloor": 0
@@ -29,21 +17,9 @@
     "navmeshWallHits": 0,
     "offFloor": 0
   },
-  "ne_j__x26": {
-    "connectorWallHits": 0,
-    "fallbackWallHits": 4,
-    "navmeshWallHits": 0,
-    "offFloor": 0
-  },
-  "ne_k__x32": {
-    "connectorWallHits": 0,
-    "fallbackWallHits": 4,
-    "navmeshWallHits": 0,
-    "offFloor": 0
-  },
   "ne_m__x28": {
-    "connectorWallHits": 0,
-    "fallbackWallHits": 6,
+    "connectorWallHits": 46,
+    "fallbackWallHits": 0,
     "navmeshWallHits": 0,
     "offFloor": 0
   },
@@ -54,13 +30,13 @@
     "offFloor": 0
   },
   "se_j__x42": {
-    "connectorWallHits": 44,
+    "connectorWallHits": 46,
     "fallbackWallHits": 0,
     "navmeshWallHits": 0,
     "offFloor": 0
   },
   "se_j__x43": {
-    "connectorWallHits": 88,
+    "connectorWallHits": 92,
     "fallbackWallHits": 0,
     "navmeshWallHits": 0,
     "offFloor": 0
@@ -96,11 +72,11 @@
     "offFloor": 0
   },
   "total": {
-    "connectorWallHits": 444,
-    "fallbackWallHits": 28,
+    "connectorWallHits": 330,
+    "fallbackWallHits": 14,
     "navmeshWallHits": 0,
     "offFloor": 0,
-    "unvalidatedJoins": 542,
+    "unvalidatedJoins": 496,
     "invalidJoins": 0,
     "routablePairs": 1054,
     "failedRoutePairs": 2

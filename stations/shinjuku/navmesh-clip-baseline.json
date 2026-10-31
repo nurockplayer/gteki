@@ -5,21 +5,9 @@
     "navmeshWallHits": 0,
     "offFloor": 0
   },
-  "e:03bd24ff9bc0412b92016f57625f0ba5": {
-    "connectorWallHits": 8,
-    "fallbackWallHits": 0,
-    "navmeshWallHits": 0,
-    "offFloor": 0
-  },
   "e:04881586eea54d7f92cd7ab0076a6004": {
     "connectorWallHits": 0,
     "fallbackWallHits": 4,
-    "navmeshWallHits": 0,
-    "offFloor": 0
-  },
-  "e:1cc1c57ea635401cac4ac6bf895feece": {
-    "connectorWallHits": 2,
-    "fallbackWallHits": 0,
     "navmeshWallHits": 0,
     "offFloor": 0
   },
@@ -31,7 +19,7 @@
   },
   "e:6ac033af77914fe5a9786676088b952c": {
     "connectorWallHits": 0,
-    "fallbackWallHits": 6,
+    "fallbackWallHits": 4,
     "navmeshWallHits": 0,
     "offFloor": 0
   },
@@ -42,12 +30,6 @@
     "offFloor": 0
   },
   "e:82c9a2c2cd704a348fbeb423d07cb125": {
-    "connectorWallHits": 0,
-    "fallbackWallHits": 6,
-    "navmeshWallHits": 0,
-    "offFloor": 0
-  },
-  "e:8ee41370226046abbed431ca6a539b55": {
     "connectorWallHits": 0,
     "fallbackWallHits": 4,
     "navmeshWallHits": 0,
@@ -62,18 +44,6 @@
   "e:95ca788ef5854e8ea979323ece21e54e": {
     "connectorWallHits": 0,
     "fallbackWallHits": 6,
-    "navmeshWallHits": 0,
-    "offFloor": 0
-  },
-  "e:cebac08a8d8b4de2a187fa543e1ccb5c": {
-    "connectorWallHits": 8,
-    "fallbackWallHits": 0,
-    "navmeshWallHits": 0,
-    "offFloor": 0
-  },
-  "e:d4bdd351c95f4b2eaca81535c64dd313": {
-    "connectorWallHits": 0,
-    "fallbackWallHits": 2,
     "navmeshWallHits": 0,
     "offFloor": 0
   },
@@ -96,8 +66,8 @@
     "offFloor": 0
   },
   "total": {
-    "connectorWallHits": 18,
-    "fallbackWallHits": 52,
+    "connectorWallHits": 0,
+    "fallbackWallHits": 42,
     "navmeshWallHits": 0,
     "offFloor": 0,
     "unvalidatedJoins": 196,

@@ -20,11 +20,6 @@
     "reason": "disconnected"
   },
   {
-    "edgeId": "ne_m__x28",
-    "mode": "stairs",
-    "reason": "snap_failed"
-  },
-  {
     "edgeId": "s39_f__x39",
     "mode": "stairs",
     "reason": "snap_failed"

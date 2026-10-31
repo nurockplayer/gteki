@@ -10,17 +10,7 @@
     "reason": "other"
   },
   {
-    "edgeId": "e:41b6ebb3ce0846719aa1c9985f9cd4d1",
-    "mode": "stairs",
-    "reason": "snap_failed"
-  },
-  {
     "edgeId": "e:4600d5cb18f740f48db0dfe8a2d8bcf6",
-    "mode": "walk",
-    "reason": "other"
-  },
-  {
-    "edgeId": "e:4fcb23c2d1fc4ddfb267916a3190dc00",
     "mode": "walk",
     "reason": "other"
   },
@@ -35,22 +25,12 @@
     "reason": "other"
   },
   {
-    "edgeId": "e:6d50f884e12d43979ed80980ea53b58b",
-    "mode": "walk",
-    "reason": "other"
-  },
-  {
     "edgeId": "e:82b122a9cea8444c93cde3c497fcba06",
     "mode": "walk",
     "reason": "low_ceiling"
   },
   {
     "edgeId": "e:82c9a2c2cd704a348fbeb423d07cb125",
-    "mode": "walk",
-    "reason": "other"
-  },
-  {
-    "edgeId": "e:8ee41370226046abbed431ca6a539b55",
     "mode": "walk",
     "reason": "other"
   },
@@ -68,21 +48,6 @@
     "edgeId": "e:a4ed9fc953984c52a914f0cbe73cd318",
     "mode": "walk",
     "reason": "other"
-  },
-  {
-    "edgeId": "e:a622b94372e643d69f5f2f6c20d00186",
-    "mode": "stairs",
-    "reason": "snap_failed"
-  },
-  {
-    "edgeId": "e:b1899352851f46119f96ae2d5dbc5581",
-    "mode": "walk",
-    "reason": "steep"
-  },
-  {
-    "edgeId": "e:d4bdd351c95f4b2eaca81535c64dd313",
-    "mode": "walk",
-    "reason": "scene_obstruction"
   },
   {
     "edgeId": "e:e4561908aad344cb83b5716b92b213d5",
