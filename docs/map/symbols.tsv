@@ -372,6 +372,12 @@ IndexAccessor	interface	apps/web/src/explorer/triangleBvh.ts	16
 Cull	type	apps/web/src/explorer/triangleBvh.ts	22
 segmentHitsBox	function	apps/web/src/explorer/triangleBvh.ts	35
 TriangleBvh	class	apps/web/src/explorer/triangleBvh.ts	74
+PlanPoint	type	apps/web/src/explorer/walkableModel.ts	4
+Region	type	apps/web/src/explorer/walkableModel.ts	7
+BoundaryWall	type	apps/web/src/explorer/walkableModel.ts	14
+PlanPolygon	type	apps/web/src/explorer/walkableModel.ts	17
+regionPolygon	function	apps/web/src/explorer/walkableModel.ts	26
+buildWalkableModel	function	apps/web/src/explorer/walkableModel.ts	288
 Segment2	interface	apps/web/src/explorer/walker.ts	7
 wallToRenderer	function	apps/web/src/explorer/walker.ts	19
 resolveWalls	function	apps/web/src/explorer/walker.ts	24
