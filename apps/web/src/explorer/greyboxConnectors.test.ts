@@ -393,6 +393,12 @@ const singleTurnCases = [15, 45, 90].flatMap((degrees) => [-1, 1].map((direction
 function overFirstLanding(direction: number): [number, number, number][] {
   return mirror([[0, 0, 0], [4, 1, 0], [4, 2, 4], [-4, 3, 4], [-4, 4, 0], [8, 6, 0]], direction);
 }
+/** #673 r4: one revolution of 15 degree bends on a 2 m radius rising only 1.2 m, with no turning landing. */
+function flatSpiral(direction: number): [number, number, number][] {
+  const pts: [number, number, number][] = [];
+  for (let deg = 0; deg <= 360; deg += 15) { const t = (deg * Math.PI) / 180; pts.push([2 * Math.sin(t), (1.2 * deg) / 360, 2 * (1 - Math.cos(t))]); }
+  return mirror(pts, direction);
+}
 /** #673 r3: one revolution of 15 degree bends on a 2 m radius rising 4.8 m, then a turning landing into a 4 m leg. */
 function spiral(direction: number): [number, number, number][] {
   const pts: [number, number, number][] = [];
@@ -424,6 +430,7 @@ const unsupportedShapes: { name: string; waypoints: (direction: number) => [numb
   { name: "three 10 degree bends 0.6 m apart and a 90 degree turn", waypoints: (d) => shallowThenTurn(d) },
   { name: "four 90 degree turns, the last flight passing 4.3 m over the first landing (#673 r1)", waypoints: (d) => overFirstLanding(d) },
   { name: "a spiral of 15 degree bends whose lower turns pass under its top landing (#673 r3)", waypoints: (d) => spiral(d) },
+  { name: "a spiral of 15 degree bends rising 1.2 m per turn, with no turning landing (#673 r4)", waypoints: (d) => flatSpiral(d) },
   { name: "two 90 degree landings 1.2 m apart whose squares overlap (#673 r1)", waypoints: (d) => mirror([[0, 0, 0], [4, 2, 0], [4, 2.5, -1.2], [8, 4.5, -1.2]], d) },
   { name: "single-vertex 135 degree sharp return", waypoints: (d) => stackedWaypoints(135, d) },
   { name: "single-vertex 165 degree sharp return", waypoints: (d) => stackedWaypoints(165, d) },
@@ -442,6 +449,9 @@ describe("turning landing guards", () => {
   it("stops a walker leaving any turning landing except through a flight opening", () => {
     for (const { name, waypoints } of guardedCases) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      // The new builder must build it: a silent fallback to legacy would pass the geometry checks below (#673 r4).
+      expect(result.stats.legacyConnectors, name).toBe(0);
+      expect(result.stats.connectorsSkippedByReason.unsupported_shape ?? 0, name).toBe(0);
       const landings = landingsOf(waypoints);
       for (const landing of landings) {
         const { centre, height, flights } = landing;
@@ -470,6 +480,9 @@ describe("turning landing guards", () => {
   it("lets a centreline walker and a walker 0.5 m off centre pass bottom to top", () => {
     for (const { name, waypoints } of guardedCases) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      // The new builder must build it: a silent fallback to legacy would pass the geometry checks below (#673 r4).
+      expect(result.stats.legacyConnectors, name).toBe(0);
+      expect(result.stats.connectorsSkippedByReason.unsupported_shape ?? 0, name).toBe(0);
       const path = result.pathByEdge.get("turn")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
       const bendS = waypoints.slice(1, -1).map(([x, h, z]) => cumulative[path.findIndex((p) => Math.hypot(p.x - x, p.y - h, p.z - z) < 1e-6)]!);
       for (const offset of [-0.5, 0, 0.5]) for (let s = 0; s <= total; s += 0.05) {
@@ -490,6 +503,9 @@ describe("turning landing guards", () => {
     const diagonal = 2 * half * Math.SQRT2;
     for (const { name, waypoints } of guardedCases) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+      // The new builder must build it: a silent fallback to legacy would pass the geometry checks below (#673 r4).
+      expect(result.stats.legacyConnectors, name).toBe(0);
+      expect(result.stats.connectorsSkippedByReason.unsupported_shape ?? 0, name).toBe(0);
       const heights = landingsOf(waypoints).map((landing) => landing.height);
       if (heights.length === 0) continue; // only shallow bends: no landing guard to check
       const guards = result.wallSegments.filter((w) => heights.some((h) => Math.abs(w.yMin - (h - 0.12)) < 1e-6 && Math.abs(w.yMax - (h + 0.96)) < 1e-6));

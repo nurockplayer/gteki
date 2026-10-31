@@ -416,6 +416,8 @@ function squaresOverlap(p: LandingSquare, q: LandingSquare, half: number): boole
 }
 
 function supportedShape(points: readonly THREE.Vector3[], squares: readonly LandingSquare[], half: number): boolean {
+  // Checked first: a shallow-bend spiral has no turning landing at all, yet stacks its own flights (#673 r4).
+  if (passesOverItself(points, squares, half)) return false;
   if (squares.length === 0) return true;
   // The bend is a float angle: a plan 135 degree turn must stay a sharp return, never slip under by rounding.
   if (squares.some((square) => bendAngle(points, square.index) >= SHARP_RETURN - 1e-9)) return false;
@@ -423,7 +425,7 @@ function supportedShape(points: readonly THREE.Vector3[], squares: readonly Land
   for (let i = 1; i < stops.length; i++) if (planLength(points, stops[i - 1]!, stops[i]!) < 1) return false;
   // 1 m of polyline between landings does not keep their squares apart (#673 r1): overlapping squares are not built.
   for (let a = 0; a < squares.length; a++) for (let b = a + 1; b < squares.length; b++) if (squaresOverlap(squares[a]!, squares[b]!, half)) return false;
-  return !passesOverItself(points, squares, half);
+  return true;
 }
 
 /** Plan bend (radians) from which a single-vertex return can stack its return flight over its first flight. */
