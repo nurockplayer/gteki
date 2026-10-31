@@ -97,7 +97,8 @@ export interface GreyboxStats { runs: number; landingPads: number; lengthM: numb
 export const greyboxTriangleLimit = (tier: "high" | "low"): number => tier === "high" ? 150000 : 100000;
 export interface GreyboxScene {
   colliderNear(p: V3, r: number): boolean;
-  wallHit(a: V3, b: V3): (V3 & { wallNormal?: THREE.Vector3 }) | null;
+  /** `wallsOnly`: only the station's wall segments count, never a collider such as a column or a ticket machine. */
+  wallHit(a: V3, b: V3, wallsOnly?: boolean): (V3 & { wallNormal?: THREE.Vector3 }) | null;
 }
 
 /** Clip a wall against oriented openings, preserving the wall above and below an opening. */
@@ -658,7 +659,7 @@ export function emitGreybox(bundle: StationBundle, traversable: (edge: Edge) => 
       // Up to 8 walls on one segment: each opening resumes 0.05 m past its wall.
       let startT = 0;
       for (let n = 0; n < 8; n++) {
-        const hit = scene.wallHit(enu(a.clone().lerp(b, startT / flat)), enu(b));
+        const hit = scene.wallHit(enu(a.clone().lerp(b, startT / flat)), enu(b), true);
         if (!hit) break;
         const at = R(hit.x, hit.y, hit.z);
         const atT = (at.x - a.x) * along.x + (at.z - a.z) * along.z;
