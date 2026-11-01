@@ -1307,10 +1307,11 @@ for (const file of MERCHANT_POI_FILES) {
 }
 
 // ---------------------------------------------------------------- printed shop hours (OD-32)
-// Transcription: docs/research/merchants/shinjuku-hours-batch1.json. Each row is the hours line an official
-// page printed for one shop (matched by poiId) or for a whole building (poiId null → station.json
-// buildingHours). Text stays as printed; nothing is parsed into open/closed state. Rows for shops that are
-// not shipped yet (the recovery batch) have no POI here and are skipped.
+// Transcription: docs/research/merchants/shinjuku-hours-batch1.json and shinjuku-hours-batch3.json (batch 3:
+// the six department-store POIs). Each row is the hours line an official page printed for one shop (matched by
+// poiId) or for a whole building (poiId null → station.json buildingHours). Text stays as printed; nothing is
+// parsed into open/closed state. Rows for shops that are not shipped yet (the recovery batch) have no POI here
+// and are skipped. A poiId may appear in only one hours file.
 type HoursEntry = {
   poiId: string | null;
   building?: string;
@@ -1322,7 +1323,15 @@ type HoursEntry = {
   basis?: HoursText["basis"];
   note?: string;
 };
-const hoursResearch = JSON.parse(readFileSync(join(HERE, "../../../docs/research/merchants/shinjuku-hours-batch1.json"), "utf8")) as { entries: HoursEntry[] };
+const readHours = (file: string): HoursEntry[] =>
+  (JSON.parse(readFileSync(join(HERE, "../../../docs/research/merchants", file), "utf8")) as { entries: HoursEntry[] }).entries;
+const hoursResearch = { entries: [...readHours("shinjuku-hours-batch1.json"), ...readHours("shinjuku-hours-batch3.json")] };
+const hoursPoiIds = new Set<string>();
+for (const e of hoursResearch.entries) {
+  if (e.poiId === null) continue;
+  if (hoursPoiIds.has(e.poiId)) throw new Error(`hours import: ${e.poiId} appears in more than one hours row`);
+  hoursPoiIds.add(e.poiId);
+}
 const hoursOf = (e: HoursEntry): HoursText => ({
   ...(e.status === "OK" ? { text: e.hoursText! } : {}),
   sourceUrl: e.url,
@@ -1498,6 +1507,30 @@ const dataFiles: DataFile[] = [
     sourceIds: [SRC_NWD, SRC_MAP].sort(),
     modified: true,
     derivation: "test/helpers/generate-restricted-fences.ts: fare/access containment geometry recomputed from the bundle's verified edges (gteki/graph.json) and the restricted spaces/ 構内地図 polygons in data/plan.json; it never supplies or alters routing edges.",
+  },
+  // Baked scene add-ons: the files are written by the godot scripts (#650 stairwell cut, #647 navmesh paths), not
+  // by this tool, but station.json is the bundle's single declaration list, so they are declared here too. The
+  // entries were added by hand in #650/#669; listing them keeps a regeneration from dropping them.
+  {
+    id: "stairwell-cut-high",
+    path: "scene/stairwell-cut.high.b64.txt",
+    sourceIds: ["gteki-kit-0-1-0", SRC_NWD, SRC_MAP, "plateau-13104-shinjuku-ku-2025"],
+    modified: true,
+    derivation: "packages/godot/src/stairwell-bake.ts: the stairwell cut recipe (#650) for both tiers, baked headless from this station's bundle, scene and greybox by the explorer's own cut inputs, stored as base64 text (one line) and bundled with ?raw; replayed at load, live when stale. Derived from the scene and graph sources.",
+  },
+  {
+    id: "stairwell-cut-low",
+    path: "scene/stairwell-cut.low.b64.txt",
+    sourceIds: ["gteki-kit-0-1-0", SRC_NWD, SRC_MAP, "plateau-13104-shinjuku-ku-2025"],
+    modified: true,
+    derivation: "packages/godot/src/stairwell-bake.ts: the stairwell cut recipe (#650) for both tiers, baked headless from this station's bundle, scene and greybox by the explorer's own cut inputs, stored as base64 text (one line) and bundled with ?raw; replayed at load, live when stale. Derived from the scene and graph sources.",
+  },
+  {
+    id: "navmesh-paths",
+    path: "navmesh-paths.json",
+    sourceIds: [SRC_NWD],
+    modified: true,
+    derivation: "packages/godot/src/navmesh-fallback.ts --write-paths: navmesh walk paths baked from the public scene and greybox (#647 navmesh switch).",
   },
 ];
 
