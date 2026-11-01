@@ -309,6 +309,7 @@ function fromClipping(polygon: Polygon): PlanPolygon {
 export function buildWalkableModel(
   regions: readonly Region[],
   isAttachment?: (wall: BoundaryWall, outside: { x: number; y: number; z: number }) => boolean,
+  stepM = 0,
 ): { levels: Map<string, PlanPolygon[]>; walls: BoundaryWall[] } {
   const byLevel = new Map<string, Region[]>();
   for (const region of regions) {
@@ -316,7 +317,7 @@ export function buildWalkableModel(
     if (list) list.push(region); else byLevel.set(region.level, [region]);
   }
   const levels = new Map<string, PlanPolygon[]>();
-  const walls: BoundaryWall[] = [];
+  const built: { level: string; union: PlanPolygon[]; sources: HeightSource[]; connectors: PlanPoint[][] }[] = [];
   for (const [level, list] of byLevel) {
     const polygons: Polygon[] = [];
     for (const region of list) for (const polygon of regionPolygon(region)) polygons.push([polygon[0]!.map((p): [number, number] => [p.x, p.z])]);
@@ -324,7 +325,15 @@ export function buildWalkableModel(
     const union = polygonClipping.union(polygons[0]!, ...polygons.slice(1)).map(fromClipping);
     levels.set(level, union);
     const connectors = list.filter((region) => region.kind === "connector").flatMap((region) => regionPolygon(region).map((polygon) => polygon[0]!));
-    walls.push(...boundaryWalls(union, list.map(heightSource), connectors, level, isAttachment));
+    built.push({ level, union, sources: list.map(heightSource), connectors });
+  }
+  const walls: BoundaryWall[] = [];
+  for (const { level, union, sources, connectors } of built) {
+    // A boundary where another level's floor carries on within a step of it (a ramp meeting the floor it climbs to)
+    // is an attachment too; levels themselves never union, so floors stacked in plan keep their own outlines.
+    const continues = (outside: { x: number; y: number; z: number }) => stepM > 0 && built.some((other) => other.level !== level
+      && pointInLevel(outside, other.union) && Math.abs(heightAtVertex(outside, other.sources) - outside.y) <= stepM);
+    walls.push(...boundaryWalls(union, sources, connectors, level, (wall, outside) => continues(outside) || !!isAttachment?.(wall, outside)));
   }
   return { levels, walls };
 }

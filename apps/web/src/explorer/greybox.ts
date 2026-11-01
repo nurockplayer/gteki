@@ -1,4 +1,5 @@
 import type { Edge, StationBundle } from "@gteki/schema";
+import { WALKER_BODY } from "@gteki/scene-api";
 import * as THREE from "three";
 import { edgePoints, R, type V3 } from "./geometry.ts";
 import { MODE_WIDTH } from "./graphView.ts";
@@ -463,13 +464,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   }
   // Every wall comes from one per-level walkable union: strips, pads, junction discs and the connector footprints the
   // mouths cut. A boundary edge inside a connector's own footprint belongs to that connector, not to the corridor.
-  // A level is a connected walkable surface: floors that a run (a ramp) joins share one union.
-  const parent = new Map<string, string>();
-  const levelOf = (floor: string): string => { let f = floor; while (parent.has(f) && parent.get(f) !== f) f = parent.get(f)!; return f; };
-  for (const run of runs) {
-    const from = levelOf(nodes.get(run.edge.from)?.floorId ?? ""), to = levelOf(nodes.get(run.edge.to)?.floorId ?? "");
-    if (from !== to) parent.set(to, from);
-  }
+  const levelOf = (floor: string): string => floor;
   const regions: Region[] = [];
   for (const run of runs) {
     regions.push({ kind: "strip", level: levelOf(nodes.get(run.edge.from)?.floorId ?? ""), points: run.points.map((p) => R(p.x, p.y, p.z)), halfWidth: widthOf(run.edge) / 2 });
@@ -485,7 +480,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     const nx = -mouth.uz * mouth.half, nz = mouth.ux * mouth.half;
     regions.push({ kind: "connector", level: levelOf(mouth.floor), y: mouth.y0, quad: [{ x: ax + nx, z: az + nz }, { x: bx + nx, z: bz + nz }, { x: bx - nx, z: bz - nz }, { x: ax - nx, z: az - nz }] });
   }
-  const model = buildWalkableModel(regions, (_wall, outside) => hasFloor(enu(new THREE.Vector3(outside.x, outside.y, outside.z))));
+  const model = buildWalkableModel(regions, (_wall, outside) => hasFloor(enu(new THREE.Vector3(outside.x, outside.y, outside.z))), WALKER_BODY.stepUpM);
   for (const wall of model.walls) {
     const wb = getBatch(wall.level);
     const p = new THREE.Vector3(wall.ax, wall.ay, wall.az), q = new THREE.Vector3(wall.bx, wall.by, wall.bz);
@@ -501,17 +496,27 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     const pieces = crossing.length ? Math.max(1, Math.ceil(length / 0.5)) : Math.abs(wall.by - wall.ay) > 1e-6 ? Math.max(1, Math.ceil(length / 2)) : 1;
     for (let n = 0; n < pieces; n++) {
       const s0 = p.clone().lerp(q, n / pieces), s1 = p.clone().lerp(q, (n + 1) / pieces), mid = s0.clone().lerp(s1, 0.5);
-      let top = 2.6, open = false;
+      // Each flight crossing here opens the heights from 0.4 m under it to 2.6 m over it (an opening starting below
+      // 1 m starts at the floor); the wall keeps whatever heights are left, so a wall between two flights stays.
+      const opens: [number, number][] = [];
       for (const f of crossing) {
         const u = (mid.x - f.at.x) * f.ux + (mid.z - f.at.z) * f.uz, v = -(mid.x - f.at.x) * f.uz + (mid.z - f.at.z) * f.ux;
         if (u < 0 || u > f.length || Math.abs(v) > f.half) continue;
         const gap = f.y0 + (f.y1 - f.y0) * u / f.length - mid.y;
-        if (gap >= -2 && gap <= 1.4) open = true;
-        else if (gap > 1.4 && gap <= 2.6) top = Math.min(top, gap - 0.4);
+        if (gap < -2 || gap > 2.6) continue;
+        opens.push([gap - 0.4 >= 1 ? gap - 0.4 : 0, gap + 2.6]);
       }
-      if (open) continue;
-      quad(wb.shell, wb.colors, s0, s1, s1.clone().add(new THREE.Vector3(0, top, 0)), s0.clone().add(new THREE.Vector3(0, top, 0)), [0.62, 0.62, 0.62, 0.62]);
-      wallSegments.push({ source: "procedural", role: "greybox_wall", ax: s0.x, az: s0.z, bx: s1.x, bz: s1.z, yMin: Math.min(s0.y, s1.y) - 0.12, yMax: Math.max(s0.y, s1.y) + top });
+      opens.sort((x, y) => x[0] - y[0]);
+      const kept: [number, number][] = [];
+      let floor = 0;
+      for (const [o0, o1] of opens) { if (o0 > floor) kept.push([floor, Math.min(o0, 2.6)]); floor = Math.max(floor, o1); }
+      if (floor < 2.6) kept.push([floor, 2.6]);
+      for (const [y0, y1] of kept) {
+        if (y1 - y0 < 0.05) continue;
+        const lift = (v: THREE.Vector3, h: number) => v.clone().add(new THREE.Vector3(0, h, 0));
+        quad(wb.shell, wb.colors, lift(s0, y0), lift(s1, y0), lift(s1, y1), lift(s0, y1), [0.62, 0.62, 0.62, 0.62]);
+        wallSegments.push({ source: "procedural", role: "greybox_wall", ax: s0.x, az: s0.z, bx: s1.x, bz: s1.z, yMin: Math.min(s0.y, s1.y) + (y0 === 0 ? -0.12 : y0), yMax: Math.max(s0.y, s1.y) + y1 });
+      }
     }
   }
   // A corridor piece ends at a run end only where the detected run itself ends; a piece cut at a bend continues
