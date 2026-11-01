@@ -215,23 +215,23 @@ const ceilingHeightPaint: Paint = (g, size, rnd) => {
   }
 };
 
-// ---- stairs: granite --------------------------------------------------------------------------------------
+// ---- stairs: terrazzo (matches Shinjuku's vertical_hero treads, docs/visual/vertical-gap.md item 5) ---------------
 
-/** Granite-like stair treads. */
+/** Light terrazzo stair treads: a pale cement ground with fine grey and warm aggregate chips. */
 const stairPaint: Paint = (g, size, rnd) => {
-  g.fillStyle = "#77736d";
+  g.fillStyle = "#c7c2b8";
   g.fillRect(0, 0, size, size);
-  // flamed / crystalline cloudiness first, then the grain on top
-  for (let n = 0; n < 260; n++) {
+  // faint cloudiness in the ground, then the chips on top
+  for (let n = 0; n < 160; n++) {
     const x = rnd() * size, y = rnd() * size, r = size * (0.02 + rnd() * 0.06);
     const gr = g.createRadialGradient(x, y, 0, x, y, r);
-    const l = rnd() < 0.5;
-    gr.addColorStop(0, l ? "rgba(190,184,172,0.10)" : "rgba(40,38,34,0.12)");
+    gr.addColorStop(0, rnd() < 0.5 ? "rgba(225,220,210,0.08)" : "rgba(120,114,104,0.08)");
     gr.addColorStop(1, "rgba(0,0,0,0)");
     g.fillStyle = gr;
     g.fillRect(x - r, y - r, 2 * r, 2 * r);
   }
-  speckle(g, size, rnd, size * 28, 0.5, "#b9b4ab", "#3f3c38");
+  speckle(g, size, rnd, size * 22, 0.55, "#a49c8f", "#6f6a63");
+  speckle(g, size, rnd, size * 6, 0.45, "#e8e4dc", "#8a7a66");
 };
 
 const stairHeightPaint: Paint = (g, size, rnd) => {
@@ -418,6 +418,9 @@ float gtEnvBoost = 1.0;
   diffuseColor.rgb = mix(diffuseColor.rgb, nose, strip);
   diffuseColor.rgb *= 1.0 - 0.45 * groove * aa;
   roughnessFactor = mix(roughnessFactor, 0.85, strip);
+  // enamel risers (#dbdbd6, as Shinjuku): vertical faces drop the terrazzo for a smooth light face
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.708, 0.708, 0.672), vVert);
+  roughnessFactor = mix(roughnessFactor, 0.3, vVert);
   normal = normalize(normal - dHdd * gtGrad(normal, -vViewPosition, d));
 }
 `;
@@ -676,7 +679,7 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean, packs: FinishPa
   const ceiling = std(packs.ceiling
     ? { ...fromPack(packs.ceiling, 0.95), side: roleSide(THREE, "ceiling") }
     : { map: ceilMap, normalMap: ceilNormal, roughness: 0.95, side: roleSide(THREE, "ceiling") });
-  const stairs = std(packs.stairs_ramps ? fromPack(packs.stairs_ramps, 0.7) : { map: stairMap, normalMap: stairNormal, roughness: 0.7 });
+  const stairs = std(packs.stairs_ramps ? fromPack(packs.stairs_ramps, 0.7) : { map: stairMap, normalMap: stairNormal, roughness: 0.45 });
   const barriers = std(packs.barriers
     ? { ...fromPack(packs.barriers, 0.3, 0xc6cacf), metalness: 0, side: roleSide(THREE, "barriers") }
     : { color: 0xc6cacf, roughness: 0.3, metalness: 0, side: roleSide(THREE, "barriers") });
