@@ -47,7 +47,7 @@ This is the one-screen view. The cell-by-cell evidence stays in [`gaps/coverage-
 | 池袋 東武百貨店 | store site usable (OD-34 §2) | n | n | 1 POI, s; 860 tenants | search y; route n | field (unscheduled) item 26 |
 | 池袋 ルミネ池袋 | lumine.ne.jp usable (OD-34 §2) | partial: named facade, B1 directory board (#598) | partial: routed via `jr-south-gate` (#531); the door itself is not surveyed | 1 POI + 176 shop POIs | search y; route y (to the gate) | door survey (not a field (unscheduled) item) |
 | 池袋 エソラ池袋 | usable (OD-34 §2) | n | n | 1 POI + 33 shop POIs | search y; route n | field (unscheduled) item 25 |
-| 池袋 PARCO | JCSC (facts); parco.co.jp corroboration only (#502) | n | n | 1 POI, s; no tenants | search y; route n | field (unscheduled) item 27; no importable directory |
+| 池袋 PARCO | JCSC (facts); floor guide facts-only (OD-35, director 2026-11-02; supersedes #502) | n | n | 1 POI, s; 148 tenants | search y; route n | field (unscheduled) item 27 |
 | 池袋 Echika | Tokyo Metro facts | n: not in PLATEAU 13116 | n | 22 shop POIs | search y; route n | geometry source; no printed entrance tie |
 | 池袋 ISP (池袋ショッピングパーク) | facts (printed access) | n (B1 passage drawn; no named interior) | n: printed tie only | 53 shop POIs | search y; route n | desk exhausted 2026-11-02: the only position text is ISP's own site (OD-23: never sole evidence) and `metro-m-central-east-gate` has no connector → field (unscheduled) V3 |
 | 池袋 東武ホープセンター | facts (printed access) | n | n | 43 shop POIs | search y; route n | field (unscheduled) entrance |
