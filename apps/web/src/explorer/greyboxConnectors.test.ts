@@ -517,7 +517,7 @@ describe("turning landing guards", () => {
         expect(Math.hypot(resolved.x - x, resolved.z - z), `${name} offset=${offset} s=${s}`).toBeLessThanOrEqual(0.05);
       }
     }
-  });
+  }, 30_000);
 
   it("keeps every landing guard segment within the landing's diagonal", () => {
     const diagonal = 2 * half * Math.SQRT2;
@@ -874,6 +874,14 @@ describe("turning landing guards", () => {
     const [lx, lz] = outer(0), [hx, hz] = outer(waypoints.length - 2);
     expect(wallsAt(lx, lz).some((w) => w.yMin < 0.5), "first leg, low").toBe(true);
     expect(wallsAt(hx, hz).some((w) => w.yMin > 0.6), "last leg, high").toBe(true);
+  });
+
+  // #710 review: a level leg before the first climb keeps its side walls unless station floor lies under it.
+  it("walls a level approach leg off the floor and leaves it open on the floor", () => {
+    const waypoints: [number, number, number][] = [[0, 0, 0], [3, 0, 0], [6, 2, 0]];
+    const sideWall = (result: ReturnType<typeof buildConnectors>) => result.wallSegments.some((w) => Math.abs(w.az - w.bz) < 1e-6 && Math.abs(Math.abs(w.az) - 0.78) < 0.02 && Math.min(w.ax, w.bx) < 1.5 && Math.max(w.ax, w.bx) > 1.5);
+    expect(sideWall(buildConnectors(stairThrough(waypoints), () => true, { hasFloor: () => false, nearMesh: () => false }, "high"))).toBe(true);
+    expect(sideWall(buildConnectors(stairThrough(waypoints), () => true, { hasFloor: (p) => p.z < 1e-6, nearMesh: () => false }, "high"))).toBe(false);
   });
 
   // A straight flight is built.

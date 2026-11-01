@@ -278,10 +278,11 @@ function planDir(a: THREE.Vector3, b: THREE.Vector3): THREE.Vector3 {
  * The walkable regions of one connector: a strip level per flight (the legs between turning landings, discs at shallow
  * bends), a rect level per turning landing, and the connector footprints that join them (see buildConnectors).
  */
-function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number, isTurn: (index: number) => boolean, regions: Region[], levels: Map<string, { edge: Edge; landing: boolean }>) {
-  // Level legs at either end are the floor the stair starts from, not part of it: they carry no wall, so a walk edge
-  // that meets the same node from the side is not cut off. The model starts at the first and ends at the last climb.
-  const climbs = (i: number) => Math.abs(points[i + 1]!.y - points[i]!.y) > 1e-6;
+function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number, isTurn: (index: number) => boolean, floored: (index: number) => boolean, regions: Region[], levels: Map<string, { edge: Edge; landing: boolean }>) {
+  // Level legs at either end that lie on station floor are that floor, not part of the stair: they carry no wall, so a
+  // walk edge that meets the same node from the side is not cut off. Off the floor they keep their walls, or a walker
+  // could step off the generated tread. The model starts at the first and ends at the last such climb.
+  const climbs = (i: number) => Math.abs(points[i + 1]!.y - points[i]!.y) > 1e-6 || !floored(i);
   let first = 0, last = points.length - 1;
   while (first < last - 1 && !climbs(first)) first++;
   while (last > first + 1 && !climbs(last - 1)) last--;
@@ -394,7 +395,10 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       if (before.lengthSq() && after.lengthSq() && before.angleTo(after) > Math.PI / 18) bentEscalator = true;
     }
     const ownRegions: Region[] = [];
-    edgeRegions(edge, points, half, isTurn, ownRegions, levels);
+    // A leg is on the floor when both its ends and its middle are (the scope's floor test is in bundle axes).
+    const onFloor = (p: THREE.Vector3) => scope.hasFloor({ x: p.x, y: -p.z, z: p.y });
+    const floored = (i: number) => [0, 0.5, 1].every((t) => onFloor(points[i]!.clone().lerp(points[i + 1]!, t)));
+    edgeRegions(edge, points, half, isTurn, floored, ownRegions, levels);
     regionsByEdge.set(edge.id, ownRegions);
     const parts: ConnectorPart[] = [];
     const edgePath: THREE.Vector3[] = [];
