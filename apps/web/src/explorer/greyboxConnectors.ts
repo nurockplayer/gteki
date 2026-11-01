@@ -395,9 +395,15 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       if (before.lengthSq() && after.lengthSq() && before.angleTo(after) > Math.PI / 18) bentEscalator = true;
     }
     const ownRegions: Region[] = [];
-    // A leg is on the floor when both its ends and its middle are (the scope's floor test is in bundle axes).
+    // A leg is on the floor when floor lies under its centreline every 0.25 m, twice as dense as the scope's own gap test
+    // (in bundle axes): a gap anywhere along it keeps its walls. Its edges are not sampled: a station floor outline is often
+    // narrower than the stair, and walls there would cut the walk edges that join the stair from the side.
     const onFloor = (p: THREE.Vector3) => scope.hasFloor({ x: p.x, y: -p.z, z: p.y });
-    const floored = (i: number) => [0, 0.5, 1].every((t) => onFloor(points[i]!.clone().lerp(points[i + 1]!, t)));
+    const floored = (i: number) => {
+      const a = points[i]!, b = points[i + 1]!, count = Math.max(1, Math.ceil(a.distanceTo(b) / 0.25));
+      for (let k = 0; k <= count; k++) if (!onFloor(a.clone().lerp(b, k / count))) return false;
+      return true;
+    };
     edgeRegions(edge, points, half, isTurn, floored, ownRegions, levels);
     regionsByEdge.set(edge.id, ownRegions);
     const parts: ConnectorPart[] = [];

@@ -882,6 +882,8 @@ describe("turning landing guards", () => {
     const sideWall = (result: ReturnType<typeof buildConnectors>) => result.wallSegments.some((w) => Math.abs(w.az - w.bz) < 1e-6 && Math.abs(Math.abs(w.az) - 0.78) < 0.02 && Math.min(w.ax, w.bx) < 1.5 && Math.max(w.ax, w.bx) > 1.5);
     expect(sideWall(buildConnectors(stairThrough(waypoints), () => true, { hasFloor: () => false, nearMesh: () => false }, "high"))).toBe(true);
     expect(sideWall(buildConnectors(stairThrough(waypoints), () => true, { hasFloor: (p) => p.z < 1e-6, nearMesh: () => false }, "high"))).toBe(false);
+    // Floor missing over 0.3 m between the leg's ends and middle: the walls stay.
+    expect(sideWall(buildConnectors(stairThrough(waypoints), () => true, { hasFloor: (p) => p.z < 1e-6 && !(p.x > 1.1 && p.x < 1.4), nearMesh: () => false }, "high"))).toBe(true);
   });
 
   // A straight flight is built.
