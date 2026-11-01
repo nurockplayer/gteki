@@ -321,12 +321,19 @@ function boundaryWalls(
         // Between splits (region vertices included) the floor height is linear, so only the split ends are looked up.
         const count = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.z - a.z) * (t1 - t0) / ATTACHMENT_PIECE_M));
         const y0 = heightAtVertex(lerp(a, b, t0), sources), y1 = heightAtVertex(lerp(a, b, t1), sources);
+        const piece = (from: number, to: number): BoundaryWall => {
+          const p = lerp(a, b, t0 + (t1 - t0) * from / count), q = lerp(a, b, t0 + (t1 - t0) * to / count);
+          return { ax: p.x, az: p.z, bx: q.x, bz: q.z, ay: y0 + (y1 - y0) * from / count, by: y0 + (y1 - y0) * to / count, level };
+        };
+        // Consecutive kept pieces are one straight wall already.
+        let start = 0;
         for (let n = 0; n < count; n++) {
-          const p = lerp(a, b, t0 + (t1 - t0) * n / count), q = lerp(a, b, t0 + (t1 - t0) * (n + 1) / count);
-          const wall: BoundaryWall = { ax: p.x, az: p.z, bx: q.x, bz: q.z, ay: y0 + (y1 - y0) * n / count, by: y0 + (y1 - y0) * (n + 1) / count, level };
-          if (isAttachment(wall, outsidePoint(wall, outward))) continue;
-          pieces.push(wall);
+          const wall = piece(n, n + 1);
+          if (!isAttachment(wall, outsidePoint(wall, outward))) continue;
+          if (n > start) pieces.push(piece(start, n));
+          start = n + 1;
         }
+        if (count > start) pieces.push(piece(start, count));
       }
     }
     for (const wall of mergeCollinear(pieces)) {
@@ -345,6 +352,35 @@ function fromClipping(polygon: Polygon): PlanPolygon {
   });
 }
 
+/**
+ * The union of plan rings. Rings are grouped by overlapping bounds first: a ring alone in its group is its own
+ * polygon, and only groups of two or more go through polygon-clipping (most corridors on a level never touch).
+ */
+function unionRings(rings: readonly PlanPoint[][]): PlanPolygon[] {
+  const boxes = rings.map((ring) => boxOf([[ring]]));
+  const parent = rings.map((_ring, i) => i);
+  const find = (i: number): number => { while (parent[i] !== i) i = parent[i] = parent[parent[i]!]!; return i; };
+  const order = rings.map((_ring, i) => i).sort((i, j) => boxes[i]!.minX - boxes[j]!.minX);
+  for (let k = 0; k < order.length; k++) {
+    const i = order[k]!;
+    for (let m = k + 1; m < order.length && boxes[order[m]!]!.minX <= boxes[i]!.maxX; m++) {
+      if (overlaps(boxes[i]!, boxes[order[m]!]!)) parent[find(i)] = find(order[m]!);
+    }
+  }
+  const groups = new Map<number, PlanPoint[][]>();
+  for (let i = 0; i < rings.length; i++) {
+    const root = find(i), group = groups.get(root);
+    if (group) group.push(rings[i]!); else groups.set(root, [rings[i]!]);
+  }
+  const union: PlanPolygon[] = [];
+  for (const group of groups.values()) {
+    if (group.length === 1) { union.push([group[0]!.map((p) => ({ x: p.x, z: p.z }))]); continue; }
+    const polygons = group.map((ring): Polygon => [ring.map((p): [number, number] => [p.x, p.z])]);
+    union.push(...polygonClipping.union(polygons[0]!, ...polygons.slice(1)).map(fromClipping));
+  }
+  return union;
+}
+
 /** Union every region per level and emit the boundary walls the connector footprints and attachments leave. */
 export function buildWalkableModel(
   regions: readonly Region[],
@@ -359,10 +395,10 @@ export function buildWalkableModel(
   const levels = new Map<string, PlanPolygon[]>();
   const built: { level: string; union: PlanPolygon[]; box: Box; boxes: Box[]; sources: HeightSource[]; connectors: PlanPoint[][]; breakpoints: PlanPoint[] }[] = [];
   for (const [level, list] of byLevel) {
-    const polygons: Polygon[] = [];
-    for (const region of list) for (const polygon of regionPolygon(region)) polygons.push([polygon[0]!.map((p): [number, number] => [p.x, p.z])]);
-    if (!polygons.length) { levels.set(level, []); continue; }
-    const union = polygonClipping.union(polygons[0]!, ...polygons.slice(1)).map(fromClipping);
+    const rings: PlanPoint[][] = [];
+    for (const region of list) for (const polygon of regionPolygon(region)) rings.push(polygon[0]!);
+    if (!rings.length) { levels.set(level, []); continue; }
+    const union = unionRings(rings);
     levels.set(level, union);
     const connectors = list.filter((region) => region.kind === "connector").flatMap((region) => regionPolygon(region).map((polygon) => polygon[0]!));
     const breakpoints = list.filter((region) => region.kind === "strip").flatMap((region) => regionPolygon(region).flatMap((polygon) => polygon[0]!));
