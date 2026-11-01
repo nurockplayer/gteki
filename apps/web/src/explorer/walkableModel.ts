@@ -70,8 +70,19 @@ export function regionPolygon(region: Region): PlanPolygon[] {
   }
 }
 
-/** Per-region floor height at the closest point of its polygon boundary. */
-type HeightSource = { nearest(p: PlanPoint): { distance: number; height: number } };
+/** Per-region floor height at the closest point of its polygon boundary; `box` is its plan bounds. */
+type HeightSource = { box: Box; nearest(p: PlanPoint): { distance: number; height: number } };
+type Box = { minX: number; minZ: number; maxX: number; maxZ: number };
+
+function boxOf(polygons: readonly PlanPolygon[]): Box {
+  const box = { minX: Infinity, minZ: Infinity, maxX: -Infinity, maxZ: -Infinity };
+  for (const polygon of polygons) for (const ring of polygon) for (const p of ring) {
+    box.minX = Math.min(box.minX, p.x); box.maxX = Math.max(box.maxX, p.x); box.minZ = Math.min(box.minZ, p.z); box.maxZ = Math.max(box.maxZ, p.z);
+  }
+  return box;
+}
+
+const boxDistance = (box: Box, p: PlanPoint): number => Math.hypot(Math.max(box.minX - p.x, 0, p.x - box.maxX), Math.max(box.minZ - p.z, 0, p.z - box.maxZ));
 
 function closestOnSegment(p: PlanPoint, a: PlanPoint, b: PlanPoint): PlanPoint {
   const dx = b.x - a.x, dz = b.z - a.z, length2 = dx * dx + dz * dz;
@@ -126,11 +137,12 @@ function stripNearest(region: Extract<Region, { kind: "strip" }>, p: PlanPoint):
 }
 
 function heightSource(region: Region): HeightSource {
+  const polygons = regionPolygon(region), box = boxOf(polygons);
   switch (region.kind) {
-    case "strip": return { nearest: (p) => stripNearest(region, p) };
-    case "disc": return { nearest: (p) => polygonNearest(regionPolygon(region), region.y, p) };
-    case "rect": return { nearest: (p) => polygonNearest(regionPolygon(region), region.center.y, p) };
-    case "connector": return { nearest: (p) => polygonNearest(regionPolygon(region), region.y, p) };
+    case "strip": return { box, nearest: (p) => stripNearest(region, p) };
+    case "disc": return { box, nearest: (p) => polygonNearest(polygons, region.y, p) };
+    case "rect": return { box, nearest: (p) => polygonNearest(polygons, region.center.y, p) };
+    case "connector": return { box, nearest: (p) => polygonNearest(polygons, region.y, p) };
   }
 }
 
@@ -138,6 +150,7 @@ function heightSource(region: Region): HeightSource {
 function heightAtVertex(p: PlanPoint, sources: readonly HeightSource[]): number {
   let distance = Infinity, height = 0;
   for (const source of sources) {
+    if (boxDistance(source.box, p) >= distance) continue;
     const nearest = source.nearest(p);
     if (nearest.distance < distance) { distance = nearest.distance; height = nearest.height; }
   }
@@ -251,18 +264,21 @@ function boundaryWalls(
   isAttachment?: (wall: BoundaryWall, outside: { x: number; y: number; z: number }) => boolean,
 ): BoundaryWall[] {
   const walls: BoundaryWall[] = [];
+  const connectorBoxes = connectors.map((ring) => boxOf([[ring]]));
   const lerp = (a: PlanPoint, b: PlanPoint, t: number): PlanPoint => ({ x: a.x + (b.x - a.x) * t, z: a.z + (b.z - a.z) * t });
   for (const polygon of polygons) for (const ring of polygon) {
     if (ring.length < 3) continue;
     const pieces: BoundaryWall[] = [];
     for (let i = 0; i < ring.length; i++) {
       const a = ring[i]!, b = ring[(i + 1) % ring.length]!;
-      const splits = splitParameters(a, b, connectors);
+      const edgeBox = { minX: Math.min(a.x, b.x) - WALL_TOLERANCE_M, minZ: Math.min(a.z, b.z) - WALL_TOLERANCE_M, maxX: Math.max(a.x, b.x) + WALL_TOLERANCE_M, maxZ: Math.max(a.z, b.z) + WALL_TOLERANCE_M };
+      const near = connectors.filter((_ring, k) => { const c = connectorBoxes[k]!; return c.minX <= edgeBox.maxX && c.maxX >= edgeBox.minX && c.minZ <= edgeBox.maxZ && c.maxZ >= edgeBox.minZ; });
+      const splits = near.length ? splitParameters(a, b, near) : [0, 1];
       for (let k = 1; k < splits.length; k++) {
         const t0 = splits[k - 1]!, t1 = splits[k]!;
         if (t1 - t0 <= 1e-12) continue;
         const p = lerp(a, b, t0), q = lerp(a, b, t1);
-        if (onConnectorBoundary(lerp(a, b, (t0 + t1) / 2), connectors)) continue;
+        if (near.length && onConnectorBoundary(lerp(a, b, (t0 + t1) / 2), near)) continue;
         const wall: BoundaryWall = { ax: p.x, az: p.z, bx: q.x, bz: q.z, ay: heightAtVertex(p, sources), by: heightAtVertex(q, sources), level };
         if (isAttachment?.(wall, outsidePoint(wall, polygons))) continue;
         pieces.push(wall);

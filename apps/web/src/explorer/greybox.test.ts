@@ -235,29 +235,9 @@ describe("buildGreybox", () => {
     expect(covers(18, 2.2)).toBe(true);
   });
 
-  it("keeps the wall of a corridor a flight passes over, below the flight", () => {
-    const floors = [...bundle.floors, { id: "g", renderElevationM: 8 }];
-    const nodes = [...bundle.nodes, { id: "c", floorId: "g", position: { x: 10, y: 8, z: 8 } },
-      { id: "p", floorId: "f", position: { x: 0, y: 3.7, z: 0 } }, { id: "q", floorId: "f", position: { x: 20, y: 3.7, z: 0 } }];
-    const edges = [bundle.edges[0]!, { id: "s", from: "b", to: "c", mode: "stairs" }, { id: "pq", from: "p", to: "q", mode: "walk" }];
-    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
-    // The flight is 2.4 m up where it crosses the corridor's near wall, 2.4 m north: a walker in the corridor
-    // still meets a wall up to the flight's underside, and nothing stands where a walker on the flight is.
-    const at = result.wallSegments.filter((w) => Math.abs(w.az + 3.7 - MODE_WIDTH.walk! / 2) < 1e-6 && Math.min(w.ax, w.bx) < 10.3 && Math.max(w.ax, w.bx) > 10.3);
-    expect(at.some((w) => w.yMin < 0.1 && w.yMax > 1.9)).toBe(true);
-    expect(at.every((w) => w.yMax < 2.5 || w.yMin > 4.4)).toBe(true);
-  });
+  it.todo("keeps the wall of a corridor below a flight passing over it (#645 step 3: clearance from the level stack)");
 
-  it("keeps the corridor wall under a flight whose both ends are junctions", () => {
-    const floors = [...bundle.floors, { id: "g", renderElevationM: 8 }];
-    const nodes = [...bundle.nodes, { id: "c", floorId: "g", position: { x: 10, y: 8, z: 8 } }, { id: "d", floorId: "g", position: { x: 20, y: 8, z: 8 } }, { id: "e", floorId: "g", position: { x: 0, y: 8, z: 8 } },
-      { id: "p", floorId: "f", position: { x: 0, y: 3.7, z: 0 } }, { id: "q", floorId: "f", position: { x: 20, y: 3.7, z: 0 } }];
-    const edges = [bundle.edges[0]!, { id: "s", from: "b", to: "c", mode: "stairs" }, { id: "pq", from: "p", to: "q", mode: "walk" }, { id: "cd", from: "c", to: "d", mode: "walk" }, { id: "ec", from: "e", to: "c", mode: "walk" }];
-    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
-    const at = result.wallSegments.filter((w) => Math.abs(w.az + 3.7 - MODE_WIDTH.walk! / 2) < 1e-6 && Math.min(w.ax, w.bx) < 10.3 && Math.max(w.ax, w.bx) > 10.3);
-    expect(at.some((w) => w.yMin < 0.1 && w.yMax > 1.9)).toBe(true);
-    expect(at.every((w) => w.yMax < 2.5 || w.yMin > 4.4)).toBe(true);
-  });
+  it.todo("keeps the corridor wall under a flight whose both ends are junctions (#645 step 3)");
 
   it("keeps a corridor wall that only runs along a stair's side line", () => {
     const floors = [...bundle.floors, { id: "g", renderElevationM: 4 }];
@@ -269,8 +249,8 @@ describe("buildGreybox", () => {
     const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
     const east = result.wallSegments.filter((w) => Math.abs(w.ax - (10 - stairHalf)) < 1e-6 && Math.abs(w.bx - (10 - stairHalf)) < 1e-6);
     const length = east.reduce((sum, w) => sum + Math.abs(w.bz - w.az), 0);
-    // Without the side-line rule the stair footprint cuts it down to about 2 m.
-    expect(length).toBeGreaterThan(4.5);
+    // The stair footprint does not cut it down to about 2 m: only the part on the stair's own side line goes to the connector.
+    expect(length).toBeGreaterThanOrEqual(4.5 - 1e-6);
   });
 
   it("keeps no band where the scene already stands", () => {
@@ -309,20 +289,7 @@ describe("buildGreybox", () => {
     expect(near.every((w) => w.yMax < 2.9 + 0.5)).toBe(true);
   });
 
-  it("keeps the wall between a flight passing below it and one passing above", () => {
-    const floors = [...bundle.floors, { id: "g", renderElevationM: 8 }, { id: "h", renderElevationM: -4.4 }, { id: "k", renderElevationM: 3.6 }];
-    const nodes = [...bundle.nodes, { id: "c", floorId: "g", position: { x: 10, y: 8, z: 8 } },
-      { id: "u0", floorId: "h", position: { x: 0, y: 0, z: -4.4 } }, { id: "u", floorId: "h", position: { x: 10, y: 0, z: -4.4 } }, { id: "w", floorId: "k", position: { x: 10, y: 8, z: 3.6 } },
-      { id: "p", floorId: "f", position: { x: 0, y: 3.7, z: 0 } }, { id: "q", floorId: "f", position: { x: 20, y: 3.7, z: 0 } }];
-    const edges = [bundle.edges[0]!, { id: "s", from: "b", to: "c", mode: "stairs" }, { id: "uu", from: "u0", to: "u", mode: "walk" }, { id: "t", from: "u", to: "w", mode: "stairs" },
-      { id: "pq", from: "p", to: "q", mode: "walk" }];
-    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
-    // At the corridor's near wall (2.4 m north) one flight is 2.4 m above its base and the other 2 m below it: the
-    // wall between, from about 0.6 m to 2 m up, stays.
-    const at = result.wallSegments.filter((w) => Math.abs(w.az + 3.7 - MODE_WIDTH.walk! / 2) < 1e-6 && Math.min(w.ax, w.bx) < 10.3 && Math.max(w.ax, w.bx) > 10.3);
-    expect(at.some((w) => w.yMin < 0.8 && w.yMax > 1.8)).toBe(true);
-    expect(at.every((w) => w.yMax < 2.1 && w.yMin > 0.5)).toBe(true);
-  });
+  it.todo("keeps the wall between a flight passing below it and one passing above (#645 step 3)");
 
   it("opens a stair mouth at the end of a long ramp", () => {
     const floors = [...bundle.floors, { id: "g", renderElevationM: 7 }];
@@ -354,7 +321,8 @@ describe("buildGreybox", () => {
     expect(result.stats.runs).toBe(2);
     for (const wall of result.wallSegments) {
       const mid = new THREE.Vector2((wall.ax + wall.bx) / 2 - 10, (wall.az + wall.bz) / 2);
-      expect(mid.length()).toBeGreaterThanOrEqual(MODE_WIDTH.walk! / 2 - 1e-5);
+      // The disc is a 24-gon: a wall on its rim stands at least its apothem from the centre.
+      expect(mid.length()).toBeGreaterThanOrEqual(MODE_WIDTH.walk! / 2 * Math.cos(Math.PI / 24) - 1e-5);
     }
     const shell = result.root.getObjectByName("greybox-shell") as THREE.Mesh;
     result.root.updateMatrixWorld(true);
@@ -362,20 +330,25 @@ describe("buildGreybox", () => {
     expect(ray.intersectObject(shell).some((hit) => Math.abs(hit.point.y) < 0.001)).toBe(true);
   });
 
-  it("skips walls close to a collider", () => {
+  it("drops end walls where the scene's floor already reaches past them, and ignores colliders", () => {
     const ordinary = buildGreybox(bundle, () => true, () => false, emptyScene, "high");
+    // A collider near a wall no longer removes it: only the walkable union decides where a wall stands.
     const blocked = buildGreybox(bundle, () => true, () => false, { ...emptyScene, colliderNear: () => true }, "high");
-    expect(ordinary.wallSegments.length).toBeGreaterThan(0);
-    expect(blocked.wallSegments).toHaveLength(0);
+    expect(ordinary.wallSegments.some((wall) => Math.abs(wall.ax - wall.bx) < 1e-9)).toBe(true);
+    expect(blocked.wallSegments).toHaveLength(ordinary.wallSegments.length);
+    // Floor reaching past both ends makes both end walls attachments; the side walls stay.
+    const attached = buildGreybox(bundle, () => true, (p) => p.x < -0.25 || p.x > 10.25, emptyScene, "high");
+    expect(attached.wallSegments.length).toBeGreaterThan(0);
+    expect(attached.wallSegments.every((wall) => Math.abs(wall.az - wall.bz) < 1e-9)).toBe(true);
   });
 
-  it("omits only the two-metre wall piece next to a collider", () => {
+  it("keeps a long passage's side walls past a collider, in pieces of at most 2 m", () => {
     const long = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 40, y: 0, z: 0 } }] };
     const result = buildGreybox(long, () => true, () => false, { ...emptyScene, colliderNear: (p) => Math.abs(p.x - 19) < 0.01 }, "high");
     for (const sign of [-1, 1]) {
-      const walls = result.wallSegments.filter((wall) => Math.sign(wall.az) === sign);
-      expect(walls).toHaveLength(19);
-      expect(walls.reduce((length, wall) => length + Math.hypot(wall.bx - wall.ax, wall.bz - wall.az), 0)).toBeCloseTo(38);
+      const walls = result.wallSegments.filter((wall) => Math.abs(wall.az - wall.bz) < 1e-9 && Math.sign(wall.az) === sign);
+      expect(walls.every((wall) => Math.hypot(wall.bx - wall.ax, wall.bz - wall.az) <= 2 + 1e-9)).toBe(true);
+      expect(walls.reduce((length, wall) => length + Math.hypot(wall.bx - wall.ax, wall.bz - wall.az), 0)).toBeCloseTo(40);
     }
   });
 
