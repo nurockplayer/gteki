@@ -76,7 +76,8 @@ describe("walkable model", () => {
     expect(open.some(cap)).toBe(false);
     expect(outside!.x).toBeCloseTo(5.3);
     expect(outside!.y).toBeCloseTo(0);
-    expect(outside!.z).toBeCloseTo(0);
+    // The 4 m cap is probed in pieces of at most 2 m, each at its own midpoint.
+    expect(Math.abs(outside!.z)).toBeLessThan(2);
   });
 
   it("keeps each level's own full outline when levels overlap in plan", () => {

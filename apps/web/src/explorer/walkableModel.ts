@@ -20,6 +20,7 @@ const WALL_TOLERANCE_M = 1e-3;
 const MIN_WALL_M = 1e-3;
 const OUTSIDE_TEST_M = 1e-4;
 const ATTACHMENT_PROBE_M = 0.3;
+const ATTACHMENT_PIECE_M = 2;
 const DISC_SEGMENTS = 24;
 
 /** Polygons of one region in plan. A strip contributes one quad per segment, with no cap beyond its ends. */
@@ -277,11 +278,15 @@ function boundaryWalls(
       for (let k = 1; k < splits.length; k++) {
         const t0 = splits[k - 1]!, t1 = splits[k]!;
         if (t1 - t0 <= 1e-12) continue;
-        const p = lerp(a, b, t0), q = lerp(a, b, t1);
         if (near.length && onConnectorBoundary(lerp(a, b, (t0 + t1) / 2), near)) continue;
-        const wall: BoundaryWall = { ax: p.x, az: p.z, bx: q.x, bz: q.z, ay: heightAtVertex(p, sources), by: heightAtVertex(q, sources), level };
-        if (isAttachment?.(wall, outsidePoint(wall, polygons))) continue;
-        pieces.push(wall);
+        // Attachments are decided in pieces of at most 2 m: scene floor can reach along only part of a long side.
+        const count = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.z - a.z) * (t1 - t0) / ATTACHMENT_PIECE_M));
+        for (let n = 0; n < count; n++) {
+          const p = lerp(a, b, t0 + (t1 - t0) * n / count), q = lerp(a, b, t0 + (t1 - t0) * (n + 1) / count);
+          const wall: BoundaryWall = { ax: p.x, az: p.z, bx: q.x, bz: q.z, ay: heightAtVertex(p, sources), by: heightAtVertex(q, sources), level };
+          if (isAttachment?.(wall, outsidePoint(wall, polygons))) continue;
+          pieces.push(wall);
+        }
       }
     }
     for (const wall of mergeCollinear(pieces)) {
