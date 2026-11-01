@@ -123,6 +123,10 @@ describe("stairwell cuts", () => {
     expect(result.walls.every((w) => Math.min(w.ax, w.bx) >= 7.05 - 1e-6)).toBe(true);
     // Over the shallow part the floor is open.
     expect(down(root, 10, 9).filter((hit) => hit.point.y > 7.5)).toHaveLength(0);
+    // The slab's edge band runs only along the opening, not under the whole floor.
+    const band = (result.finish!.getObjectByName("greybox-stairwell-band") as THREE.Mesh).geometry.getAttribute("position");
+    expect(band.count).toBeGreaterThan(0);
+    for (let i = 0; i < band.count; i++) expect(band.getX(i)).toBeGreaterThanOrEqual(7.05 - 1e-3);
     result.dispose();
   });
 
@@ -163,6 +167,16 @@ describe("stairwell cuts", () => {
     expect(wellRails(well, well.rects, failing).length).toBeGreaterThan(0);
     expect(crossing(wellRails(well, well.rects, failing))).toHaveLength(0);
     expect(crossing(wellRails(well, well.rects))).toHaveLength(0);
+  });
+
+  it("cuts the slab over a very short level piece between two flights", () => {
+    const gap = flight([{ x: 0, y: 0, z: 0 }, { x: 8, y: 0, z: 3.2 }, { x: 8.08, y: 0, z: 3.2 }, { x: 10, y: 0, z: 4 }]);
+    const wells = stairwellWells(gap, traversable);
+    expect(wells[0]!.rects).toHaveLength(3);
+    const s = scene();
+    const result = cutStairwells(s.root, wells, { tier: "high" });
+    expect(up(s.root, 8.04, 3.25)).toHaveLength(0);
+    result.dispose();
   });
 
   it("rails no sliver across the path where two pieces of one flight meet at a small tilt", () => {

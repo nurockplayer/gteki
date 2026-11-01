@@ -41,8 +41,8 @@ const HEADROOM_M = 2.1;
 const HOLE_DEPTH_M = HEADROOM_M + SLAB_BAND_M;
 /** How far a piece's hole runs past a seam with its neighbour. */
 const SEAM_GROW_M = 0.05;
-/** An inner piece shorter than this is closed by the seams' growth on either side of it. */
-const MIN_INNER_PIECE_M = 2 * SEAM_GROW_M;
+/** Every inner piece with a direction keeps its rectangle: a dropped one would leave a strip of slab uncut. */
+const MIN_INNER_PIECE_M = 1e-3;
 
 /**
  * Where along a piece (`along` offsets from its centre) the flight runs `lo` to `hi` metres under the upper floor,
@@ -241,9 +241,9 @@ function rectPlanes(rect: StairwellRect, upperY: number): Plane[] {
 
 const horizontal = (normal: THREE.Vector3): boolean => Math.abs(normal.y) > 0.9;
 
-function rectCorners(rect: StairwellRect, height: number): THREE.Vector3[] {
-  return [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([l, w]) => rect.center.clone()
-    .addScaledVector(rect.along, l! * rect.halfLength).addScaledVector(rect.across, w! * rect.halfWidth)
+function rectCorners(rect: StairwellRect, height: number, from = -rect.halfLength, to = rect.halfLength): THREE.Vector3[] {
+  return [[from, -1], [to, -1], [to, 1], [from, 1]].map(([l, w]) => rect.center.clone()
+    .addScaledVector(rect.along, l!).addScaledVector(rect.across, w! * rect.halfWidth)
     .setY(height));
 }
 
@@ -355,7 +355,13 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   for (const well of cutWells) {
     for (const [index, rect] of well.rects.entries()) {
       const levels = new Set((heights.get(rect) ?? []).map((y) => Math.round(y * 20) / 20));
-      for (const level of levels) addBand(bands, rect, level, well.rects, index);
+      // In the upper slab's band the opening runs only as far as the cut (reach); a lower slab opens over the whole piece.
+      const reach = depthInterval(rect, well.upperY, -Infinity, HOLE_DEPTH_M);
+      for (const level of levels) {
+        const inSlab = level >= well.upperY - SLAB_BAND_M - 1e-6;
+        if (inSlab && !reach) continue;
+        addBand(bands, rect, level, well.rects, index, inSlab ? reach! : undefined);
+      }
     }
   }
 
@@ -537,8 +543,8 @@ function bandLevels(faces: readonly HorizontalFace[], rect: StairwellRect, floor
 }
 
 /** Band around one rectangle's cut boundary, on the sides no other piece of the same well covers. */
-function addBand(out: number[], rect: StairwellRect, level: number, pieces: readonly StairwellRect[], index: number): void {
-  const corners = rectCorners(rect, 0);
+function addBand(out: number[], rect: StairwellRect, level: number, pieces: readonly StairwellRect[], index: number, reach?: { from: number; to: number }): void {
+  const corners = rectCorners(rect, 0, reach?.from, reach?.to);
   for (let i = 0; i < 4; i++) {
     const from = corners[i]!, to = corners[(i + 1) % 4]!;
     // The stair mouth: the first piece's start side and the last piece's end side meet the floors, not a slab edge.
