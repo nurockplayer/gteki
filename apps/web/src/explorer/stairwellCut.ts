@@ -76,8 +76,8 @@ function pieceQuad(rect: StairwellRect, from: number, to: number): PlanPoint[] {
  * more than a step and less than HOLE_DEPTH_M under the upper floor, unioned. Rails are the union's boundary, except
  * where the flight meets the floor within a step (the line across the flight the walker steps over).
  */
-function wellRails(well: StairwellWell, opened: readonly StairwellRect[]): [THREE.Vector3, THREE.Vector3][] {
-  const rings: PlanPoint[][] = [], open: [PlanPoint, PlanPoint][] = [];
+export function wellRails(well: StairwellWell, opened: readonly StairwellRect[], union = unionRings): [THREE.Vector3, THREE.Vector3][] {
+  const rings: PlanPoint[][] = [], open: [PlanPoint, PlanPoint][] = [], seams: [PlanPoint, PlanPoint][] = [];
   const holes = new Map(opened.map((rect) => [rect, depthInterval(rect, well.upperY, WALKER_BODY.stepUpM, HOLE_DEPTH_M)] as const));
   for (const rect of opened) {
     const hole = holes.get(rect);
@@ -98,13 +98,19 @@ function wellRails(well: StairwellWell, opened: readonly StairwellRect[]): [THRE
       const [a, , , d] = pieceQuad(rect, along, along);
       open.push([a!, d!]);
     }
+    // The grown ends that meet a neighbour's hole: inside the union, so only the fallback below needs them opened.
+    for (const [along, neighbour] of [[from, well.rects[index - 1]], [to, next]] as const) {
+      if (along === hole.from || along === hole.to || !neighbour || !holes.get(neighbour)) continue;
+      const [a, , , d] = pieceQuad(rect, along, along);
+      seams.push([a!, d!]);
+    }
   }
   if (!rings.length) return [];
   // polygon-clipping can throw on exactly shared edges ("Unable to complete output ring"); one well's rails then come
-  // from its pieces' own outlines rather than failing the whole station's cut.
-  let union: ReturnType<typeof unionRings>;
-  try { union = unionRings(rings); } catch { union = rings.map((ring) => [ring]); }
-  return boundaryEdges(union, open).map(([a, b]) => [new THREE.Vector3(a.x, 0, a.z), new THREE.Vector3(b.x, 0, b.z)]);
+  // from its pieces' own outlines, open at the seams between them, rather than failing the whole station's cut.
+  let polygons: ReturnType<typeof unionRings>;
+  try { polygons = union(rings); } catch { polygons = rings.map((ring) => [ring]); open.push(...seams); }
+  return boundaryEdges(polygons, open).map(([a, b]) => [new THREE.Vector3(a.x, 0, a.z), new THREE.Vector3(b.x, 0, b.z)]);
 }
 
 /** The plan rectangle of one straight piece of a connector, in renderer coordinates. */

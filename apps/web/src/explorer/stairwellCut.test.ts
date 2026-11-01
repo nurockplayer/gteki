@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 import type { Edge } from "@gteki/schema";
-import { cutStairwells, stairwellWells } from "./stairwellCut.ts";
+import { cutStairwells, stairwellWells, wellRails } from "./stairwellCut.ts";
 import { canonicalJson, decodeRecipe, encodeRecipe, RECIPE_VERSION, sha256Hex, type CutRecipe, type MeshRecord } from "./cutRecipe.ts";
 import { resolveWalls } from "./walker.ts";
 
@@ -152,6 +152,17 @@ describe("stairwell cuts", () => {
     expect(resolveWalls(8.15, 0, 0.3, 3.3, 1.7, result.walls).x).toBeCloseTo(8.15);
     expect(resolveWalls(8.15, 0, 0.3, 3.3, 1.7, result.walls).z).toBeCloseTo(0);
     result.dispose();
+  });
+
+  it("opens the seams between pieces when the union fails, so no rail crosses the flight at the joint", () => {
+    const split = flight([{ x: 0, y: 0, z: 0 }, { x: 8, y: 0, z: 3.2 }, { x: 10, y: 0, z: 4 }]);
+    const well = stairwellWells(split, traversable)[0]!;
+    const crossing = (rails: [THREE.Vector3, THREE.Vector3][]) => rails.filter(([a, b]) =>
+      Math.min(a.z, b.z) < 0 && Math.max(a.z, b.z) > 0 && Math.abs((a.x + b.x) / 2 - 8) < 0.2);
+    const failing = () => { throw new Error("Unable to complete output ring"); };
+    expect(wellRails(well, well.rects, failing).length).toBeGreaterThan(0);
+    expect(crossing(wellRails(well, well.rects, failing))).toHaveLength(0);
+    expect(crossing(wellRails(well, well.rects))).toHaveLength(0);
   });
 
   it("rails no sliver across the path where two pieces of one flight meet at a small tilt", () => {
