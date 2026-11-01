@@ -79,12 +79,35 @@ export async function openStation(page: Page, key: StationKey, query = ""): Prom
   await page.addInitScript(PROBE_SCRIPT);
   const t0 = Date.now();
   await page.goto(`/?station=${key}&lang=en${query}`);
-  await page.waitForFunction(() => typeof (window as any).__gteki?.phase === "function", null, { timeout: 30_000 });
-  await page.waitForFunction(() => (window as any).__gteki.phase() === "ready", null, { timeout: 120_000 });
+  // Poll on a timer, not on animation frames: under SwiftShader a frame can take seconds while shaders compile (#647).
+  await page.waitForFunction(() => typeof (window as any).__gteki?.phase === "function", null, { timeout: 30_000, polling: 250 });
+  await page.waitForFunction(() => (window as any).__gteki.phase() === "ready", null, { timeout: 120_000, polling: 250 });
   const loadMs = Date.now() - t0;
   // Spawn chips render only once the station is ready; they are the user-visible readiness signal.
   await expect(page.locator(".chips .chip").first()).toBeAttached();
+  await settleFrames(page, `open ${key}`);
   return { loadMs, phase: await page.evaluate(() => (window as any).__gteki.phase()) };
+}
+
+/**
+ * Wait until the page draws frames again at a normal pace: the last 3 frames each under 1 s. Right after a station
+ * is ready (or a new floor comes into view) SwiftShader compiles shaders on the main thread and single frames take
+ * seconds; a click dispatched then waits for its input to be handled and can outlast the 15 s action timeout (#647).
+ * Polls on a timer, gives up after 60 s without failing, and logs how long it waited as [frame-settle].
+ */
+export async function settleFrames(page: Page, label: string, capMs = 60_000): Promise<number> {
+  const t0 = Date.now();
+  const mark = await page.evaluate(() => (window as any).__qa?.frames?.length ?? 0);
+  const settled = await page.waitForFunction((from) => {
+    const frames: number[] = (window as any).__qa?.frames ?? [];
+    const recent = frames.slice(Math.max(from, frames.length - 3));
+    return recent.length >= 3 && recent.every((ms) => ms < 1000);
+  }, mark, { timeout: capMs, polling: 250 }).then(() => true, () => false);
+  const waited = Date.now() - t0;
+  // At the cap, log the latest frame intervals so the threshold can be checked against what SwiftShader really does.
+  const lastFramesMs = settled ? undefined : await page.evaluate(() => ((window as any).__qa?.frames ?? []).slice(-5).map((ms: number) => Math.round(ms)));
+  console.log(`[frame-settle] ${JSON.stringify({ label, waitedMs: waited, settled, lastFramesMs })}`);
+  return waited;
 }
 
 /** Every toast text shown since page load (recorded by the probe's observer). */

@@ -322,7 +322,7 @@ function paintSignAtlas(signs: readonly ShopSign[], pxPerM: number, bladeStart: 
   const page = document.createElement("canvas");
   page.width = width;
   page.height = height;
-  const g = page.getContext("2d")!;
+  const g = page.getContext("2d", { willReadFrequently: true })!;
   const slots: SignSlot[] = [];
   let y = SIGN_GUTTER_PX, sideX = 2 * SIGN_GUTTER_PX + mainW;
   signs.forEach((sign, i) => {
@@ -520,7 +520,7 @@ export async function loadShopKit(
         const boardDisplays = ["cafe", "bakery", "deli", "sweets"];
         const cell = low ? 256 : 512, cols = 4, rows = 6;
         const canvas = document.createElement("canvas"); canvas.width = cols * cell; canvas.height = rows * cell;
-        const g = canvas.getContext("2d")!;
+        const g = canvas.getContext("2d", { willReadFrequently: true })!;
         const rect = (x: number, y: number, w: number, h: number, colour: string) => { g.fillStyle = colour; g.fillRect(x, y, w, h); };
         const poly = (points: number[], colour: string) => { g.fillStyle = colour; g.beginPath(); g.moveTo(points[0]!, points[1]!); for (let i = 2; i < points.length; i += 2) g.lineTo(points[i]!, points[i + 1]!); g.closePath(); g.fill(); };
         for (let index = 0; index < 24; index++) {
@@ -597,7 +597,7 @@ export async function loadShopKit(
         const merged = mergeByMaterial(THREE, parts); for (const part of parts) part.geometry.dispose();
         if (merged.length) { const geo = merged[0]!.geometry; const mesh = new THREE.Mesh(geo, material); owned.push(geo); mesh.name = "kit_shop_interiors"; mesh.userData = { gteki_role: "kit_shop" }; group.add(mesh); stats.interiorDrawCalls = 1; stats.interiorTriangles = triOf(geo); stats.aBoards = boards.length; }
         const spillCanvas = document.createElement("canvas"); spillCanvas.width = 2; spillCanvas.height = 64;
-        const sg = spillCanvas.getContext("2d")!; const gradient = sg.createLinearGradient(0,0,0,64); gradient.addColorStop(0,"rgba(255,255,255,0.35)"); gradient.addColorStop(1,"rgba(255,255,255,0)"); sg.fillStyle = gradient; sg.fillRect(0,0,2,64);
+        const sg = spillCanvas.getContext("2d", { willReadFrequently: true })!; const gradient = sg.createLinearGradient(0,0,0,64); gradient.addColorStop(0,"rgba(255,255,255,0.35)"); gradient.addColorStop(1,"rgba(255,255,255,0)"); sg.fillStyle = gradient; sg.fillRect(0,0,2,64);
         const st = new THREE.CanvasTexture(spillCanvas); const sm = new THREE.MeshBasicMaterial({ map: st, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }); owned.push(st,sm);
         const spillParts: { geometry: THREE_NS.BufferGeometry; material: THREE_NS.Material; matrix: THREE_NS.Matrix4 }[] = [];
         for (const polygon of new Set(placements.map((p) => p.polygon))) {

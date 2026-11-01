@@ -143,7 +143,7 @@ function pavementTexture(): THREE.CanvasTexture {
   const size = 256;
   const c = document.createElement("canvas");
   c.width = c.height = size;
-  const g = c.getContext("2d")!;
+  const g = c.getContext("2d", { willReadFrequently: true })!;
   let s = 1234567;
   const rnd = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
   // 4 × 4 slabs of 300 mm over a 1.2 m tile; per-slab tone, fine speckle, thin joints.

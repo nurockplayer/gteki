@@ -11,6 +11,7 @@
     "@gteki/navigation": "workspace:*",
     "@gteki/scene-api": "workspace:*",
     "@gteki/schema": "workspace:*",
+    "recast-navigation": "^0.43.1",
     "three": "^0.186.1"
   },
   "devDependencies": {

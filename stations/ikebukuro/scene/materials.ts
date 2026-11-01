@@ -32,7 +32,7 @@ function tileTexture(THREE: ThreeNS, c: HTMLCanvasElement, metres: number, srgb:
 function canvasTexture(THREE: ThreeNS, size: number, metres: number, paint: Paint, seed: number, srgb = true) {
   const c = document.createElement("canvas");
   c.width = c.height = size;
-  paint(c.getContext("2d")!, size, rng(seed));
+  paint(c.getContext("2d", { willReadFrequently: true })!, size, rng(seed));
   return tileTexture(THREE, c, metres, srgb);
 }
 
@@ -89,7 +89,7 @@ function normalTexture(THREE: ThreeNS, size: number, metres: number, paint: Pain
   const h = heightField(size, paint, seed, noise);
   const c = document.createElement("canvas");
   c.width = c.height = size;
-  const g = c.getContext("2d")!;
+  const g = c.getContext("2d", { willReadFrequently: true })!;
   const img = g.createImageData(size, size);
   img.data.set(normalFromHeight(h, size, metres / size, heightM));
   g.putImageData(img, 0, 0);

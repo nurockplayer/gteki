@@ -35,7 +35,18 @@ export function nodeDisplayZ(node: Node, floor: Floor | undefined): { z: number;
 }
 
 /** Polyline along the route, following edge geometry (reversed when traversed backwards). */
-export function routePolyline(bundle: StationBundle, route: RouteResult, edgePaths?: ReadonlyMap<string, readonly { x: number; y: number; z: number }[]>): PolylinePoint[] {
+/** Baked navmesh walk polylines per edge and direction, in the station ENU frame (see NavmeshPaths in @gteki/scene-api). */
+export type NavmeshEdgePaths = Readonly<Record<string, { forward?: readonly (readonly number[])[]; reverse?: readonly (readonly number[])[] }>>;
+
+/** Edges that never take a navmesh walk path: vertical connectors, and fare gates (their barriers block the navmesh). */
+const NO_NAVMESH_MODES = new Set(["stairs", "escalator", "elevator", "gate"]);
+
+/**
+ * Polyline along the route, following edge geometry (reversed when traversed backwards). With `navPaths`, a walk
+ * edge follows its baked navmesh path from snap to snap; a walk edge without one is a graph-polyline fallback,
+ * marked `sceneGap` so the viewer draws it dashed.
+ */
+export function routePolyline(bundle: StationBundle, route: RouteResult, edgePaths?: ReadonlyMap<string, readonly { x: number; y: number; z: number }[]>, navPaths?: NavmeshEdgePaths | null): PolylinePoint[] {
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
   const edges = new Map(bundle.edges.map((e) => [e.id, e]));
@@ -60,9 +71,21 @@ export function routePolyline(bundle: StationBundle, route: RouteResult, edgePat
       }
       return;
     }
+    const walk = !NO_NAVMESH_MODES.has(step.mode);
+    const nav = walk ? navPaths?.[step.edgeId]?.[step.reversed ? "reverse" : "forward"] : undefined;
+    if (nav && nav.length >= 2) {
+      // The path starts at the start node's snap, not the node itself: no straight node-to-snap join.
+      if (stepIndex === 0) points[0] = { ...points[0]!, x: nav[0]![0]!, y: nav[0]![1]!, z: nav[0]![2]!, zKnown: false };
+      for (let i = 1; i < nav.length; i++) {
+        const q = nav[i]!;
+        points.push({ x: q[0]!, y: q[1]!, z: q[2]!, zKnown: false, stepIndex, floorId: i === nav.length - 1 ? to.floorId : from.floorId });
+      }
+      return;
+    }
     const symbolicPolyline = edge?.geometryZ === "symbolic";
     // An edge whose display height is approximate (#644) is drawn the same way: dashed, never through the model.
-    const sceneGap = edge?.attributes?.sceneGap === true || edge?.attributes?.displayHeightApprox === true;
+    // So is a walk edge that has no navmesh path when the station has them (the committed fallback list).
+    const sceneGap = edge?.attributes?.sceneGap === true || edge?.attributes?.displayHeightApprox === true || (walk && !!navPaths);
     const drawn = edge?.geometry && edge.geometry.length >= 2 ? edge.geometry : null;
     const raw = drawn ? [...drawn] : [from.position, to.position];
     // Only drawn geometry is stored in edge direction; the node-to-node fallback already runs from → to.

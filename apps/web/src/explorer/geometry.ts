@@ -73,7 +73,7 @@ export function chevronTexture(color = "#5ef0ff"): THREE.CanvasTexture {
   const c = document.createElement("canvas");
   c.width = 128;
   c.height = 64;
-  const g = c.getContext("2d")!;
+  const g = c.getContext("2d", { willReadFrequently: true })!;
   g.clearRect(0, 0, 128, 64);
   g.fillStyle = "rgba(94,240,255,0.22)";
   g.fillRect(0, 0, 128, 64);
@@ -99,7 +99,7 @@ export function dashTexture(): THREE.CanvasTexture {
   const c = document.createElement("canvas");
   c.width = 80;
   c.height = 8;
-  const g = c.getContext("2d")!;
+  const g = c.getContext("2d", { willReadFrequently: true })!;
   g.clearRect(0, 0, 80, 8);
   g.fillStyle = "#ffffff";
   g.fillRect(0, 0, 50, 8);

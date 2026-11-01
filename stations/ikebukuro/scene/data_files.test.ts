@@ -67,6 +67,8 @@ const EXPECTED: Record<string, { script: string; sources: () => string[]; author
   "scene/kit_placements.json": { script: "pipeline/build_kit_catalog.py", sources: () => [PLATEAU] },
   // The atlases pack the catalog pieces' own AO bakes; the catalog source carries their provenance.
   "scene/kit_catalog_atlas.json": { script: "tools/blender/ao_atlas.py", sources: () => ["gteki-ikb-catalog-0-1-0"] },
+  // #647: navmesh walk paths are baked from the scene and greybox; the PLATEAU walk network is their input.
+  "navmesh-paths.json": { script: "packages/godot/src/navmesh-fallback.ts", sources: () => [PLATEAU] },
 };
 
 const declared: DataFile[] = src.dataFiles;

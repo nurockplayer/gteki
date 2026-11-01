@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { chooseBySearch, hooks, textIf, toasts, imageStats, labelUiOverlaps, openStation, perfWindow, save, shotPath, stationData, STATIONS, type StationKey } from "../lib/gteki.ts";
+import { chooseBySearch, hooks, settleFrames, textIf, toasts, imageStats, labelUiOverlaps, openStation, perfWindow, save, shotPath, stationData, STATIONS, type StationKey } from "../lib/gteki.ts";
 
 /** The HUD's "fast" guide tier (m/s), `GUIDE_TIERS` in apps/web/src/explorer/guidePace.ts. */
 const FAST_MPS = 6.8;
@@ -101,6 +101,8 @@ for (const key of STATIONS) {
         // ~0.13× and a long first leg (Shinjuku's GL–B1 stair) can outlast the budget on one instruction (#261). After
         // 15 s on the same line, step on with the HUD's own "Next instruction" button, as a user would.
         if (FLOW_ONLY && Date.now() - t0 >= 15_000 && !steppedOn) {
+          // Mid-walk, Shinjuku can stay above 1 s a frame under SwiftShader: wait at most 20 s, then click anyway.
+          await settleFrames(page, `${key} ${w.label} next`, 20_000);
           await page.locator(".guide-next").click();
           steppedOn = true;
         }

@@ -11,6 +11,12 @@ const bundle = {
   edges: [{ id: "e", from: "a", to: "b", mode: "walk" }],
 } as unknown as StationBundle;
 
+/** A floor probe that finds floor only within 0.5 m of the given nodes (ENU), so landing pads are laid everywhere else. */
+function floorOnlyAt(nodes: readonly { id: string; position: { x: number; y: number; z: number | null } }[], ids: readonly string[]) {
+  const at = nodes.filter((n) => ids.includes(n.id));
+  return (p: { x: number; y: number; z: number }) => at.some((n) => Math.hypot(p.x - n.position.x, p.y - n.position.y) < 0.5 && Math.abs(p.z - (n.position.z ?? 0)) < 0.5);
+}
+
 describe("unmodelledRunsByEdge", () => {
   it("detects a floorless run and extends it into the adjacent samples", () => {
     const runs = unmodelledRunsByEdge(bundle, () => true, (p) => p.x <= 2 || p.x >= 6);
@@ -43,6 +49,23 @@ describe("unmodelledRunsByEdge", () => {
     expect(unmodelledRunsByEdge(forced, () => true, () => true)[0]!.points.at(-1)!.x).toBe(10);
   });
 
+  it("yields the whole run of a skipped stairs edge, whatever its mode", () => {
+    const stairs = { ...bundle, edges: [{ id: "s", from: "a", to: "b", mode: "stairs" }] } as unknown as StationBundle;
+    const runs = unmodelledRunsByEdge(stairs, () => true, () => true, new Set(["s"]));
+    expect(runs).toHaveLength(1);
+    expect(runs[0]!.edge.id).toBe("s");
+    expect(runs[0]!.points.at(-1)!.x).toBe(10);
+    expect(unmodelledRunsByEdge(stairs, () => false, () => true, new Set(["s"]))).toEqual([]);
+  });
+
+  it("marks a skipped connector's run exactly as a sceneGap edge's", () => {
+    const sceneGap = { ...bundle, edges: [{ ...bundle.edges[0]!, attributes: { sceneGap: true } }] };
+    const skipped = unmodelledRunsByEdge(bundle, () => true, () => true, new Set(["e"]));
+    expect(skipped).toHaveLength(1);
+    expect(skipped.map((run) => run.points)).toEqual(unmodelledRunsByEdge(sceneGap, () => true, () => true).map((run) => run.points));
+    expect(unmodelledRunsByEdge(bundle, () => true, () => true, new Set(["other"]))).toEqual([]);
+  });
+
   it("keeps a short forced edge and extends by arc length across short segments", () => {
     const short = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 0.4, y: 0, z: 0 } }], edges: [{ ...bundle.edges[0]!, attributes: { sceneGap: true } }] };
     expect(unmodelledRunsByEdge(short, () => true, () => true)).toHaveLength(1);
@@ -67,9 +90,70 @@ describe("unmodelledRunsByEdge", () => {
 
 describe("buildGreybox", () => {
   const emptyScene = { colliderNear: () => false, wallHit: () => null };
+  it("emits no wall piece without plan length where two stair cuts' bounds differ only by rounding", () => {
+    // A flight whose both ends are on passages is cut from each end, in opposite directions: on a wall it crosses the
+    // two cut grids can differ by rounding only, and the slivers between them made zero-length walls (found by a
+    // random search over diagonal layouts; this is one of them).
+    const station = {
+      floors: [{ id: "f", renderElevationM: 0 }, { id: "g", renderElevationM: 4 }],
+      nodes: [{ id: "a", floorId: "f", position: { x: -2.515371093766471, y: 4.158027066922758, z: 0 } }, { id: "b", floorId: "f", position: { x: -7.491887125499859, y: 11.096805121450734, z: 0 } },
+        { id: "m", floorId: "f", position: { x: -5.369720649737605, y: 8.137859128676528, z: 0 } }, { id: "c", floorId: "g", position: { x: -11.767454803262858, y: 3.7334887520153144, z: 4 } },
+        { id: "d", floorId: "g", position: { x: -11.767454803262858 + 6 * Math.cos(3.7445089313623328), y: 3.7334887520153144 + 6 * Math.sin(3.7445089313623328), z: 4 } }],
+      edges: [{ id: "e1", from: "a", to: "m", mode: "walk" }, { id: "e2", from: "m", to: "b", mode: "walk" }, { id: "s", from: "m", to: "c", mode: "stairs" },
+        { id: "up", from: "c", to: "d", mode: "walk" }, { id: "x", from: "a", to: "c", mode: "walk" }],
+    } as unknown as StationBundle;
+    for (const tier of ["high", "low"] as const) {
+      const result = buildGreybox(station, () => true, () => false, emptyScene, tier);
+      expect(result.wallSegments.length).toBeGreaterThan(0);
+      expect(result.wallSegments.filter((w) => Math.hypot(w.bx - w.ax, w.bz - w.az) < 1e-3)).toEqual([]);
+    }
+  });
+  it("builds a missing upper stair landing and captures its walkable floor", () => {
+    const station = {
+      ...bundle,
+      floors:[{id:"lower",renderElevationM:0},{id:"upper",renderElevationM:4}],
+      nodes:[{id:"low",floorId:"lower",position:{x:0,y:0,z:0}},{id:"high",floorId:"upper",position:{x:0,y:0,z:4}},{id:"walk",floorId:"upper",position:{x:2,y:0,z:4}}],
+      edges:[{id:"stair",from:"low",to:"high",mode:"stairs"},{id:"path",from:"high",to:"walk",mode:"walk"}],
+    } as unknown as StationBundle;
+    const grey=buildGreybox(station,()=>true,p=>p.z<2 || (p.z>3 && p.x>=1.5),emptyScene,"low",true);
+    expect(grey.stats.landingPads).toBe(1);
+    // The explorer builds without nav capture: it must lay the same pad, or the baked navmesh walks a floor the scene lacks (#669 r1).
+    const live=buildGreybox(station,()=>true,p=>p.z<2 || (p.z>3 && p.x>=1.5),emptyScene,"low");
+    expect(live.stats.landingPads).toBe(1);
+    expect(live.wallSegments).toEqual(grey.wallSegments);
+    expect(grey.walkable.length).toBeGreaterThan(0);
+    expect(grey.walkable[0]!.userData.greybox).toBe(true);
+    const vertices=grey.navFloors!;
+    expect(vertices.some((_v,i)=>i%3===1 && Math.abs(vertices[i]!-4)<1e-6)).toBe(true);
+    const ray=new THREE.Raycaster(new THREE.Vector3(0,5,0),new THREE.Vector3(0,-1,0));
+    expect(ray.intersectObjects(grey.walkable).some(hit=>Math.abs(hit.point.y-4)<1e-6)).toBe(true);
+    ray.ray.origin.x=1.25;
+    expect(ray.intersectObjects(grey.walkable).some(hit=>Math.abs(hit.point.y-4)<1e-6)).toBe(true);
+  });
+  it("lays a landing pad beside the flight, never over it", () => {
+    const station = {
+      ...bundle,
+      floors:[{id:"lower",renderElevationM:0},{id:"upper",renderElevationM:4}],
+      nodes:[{id:"low",floorId:"lower",position:{x:0,y:0,z:0}},{id:"high",floorId:"upper",position:{x:4,y:0,z:4}},{id:"walk",floorId:"upper",position:{x:8,y:0,z:4}}],
+      edges:[{id:"stair",from:"low",to:"high",mode:"stairs"},{id:"path",from:"high",to:"walk",mode:"walk"}],
+    } as unknown as StationBundle;
+    const grey=buildGreybox(station,()=>true,p=>p.z<2 || (p.z>3 && p.x>=7),emptyScene,"low",true);
+    expect(grey.stats.landingPads).toBe(1);
+    const ray=new THREE.Raycaster(new THREE.Vector3(2.5,10,0),new THREE.Vector3(0,-1,0));
+    expect(ray.intersectObjects(grey.colliders).filter(hit=>hit.point.y>2)).toEqual([]);
+    ray.ray.origin.x=4.5;
+    expect(ray.intersectObjects(grey.walkable).some(hit=>Math.abs(hit.point.y-4)<1e-6)).toBe(true);
+  });
   it("uses the triangle limit for each tier", () => {
     expect(greyboxTriangleLimit("high")).toBe(150000);
     expect(greyboxTriangleLimit("low")).toBe(100000);
+  });
+  it.each([false,true])("preserves the wider floor for overlapping passages (wide first: %s)", (wideFirst) => {
+    const narrow={...bundle.edges[0]!,id:"narrow",mode:"gate" as const}, wide={...bundle.edges[0]!,id:"wide",mode:"walk" as const};
+    const station={...bundle,edges:wideFirst ? [wide,narrow] : [narrow,wide]};
+    const grey=buildGreybox(station,()=>true,()=>false,emptyScene,"low",true);
+    const ray=new THREE.Raycaster(new THREE.Vector3(5,1,1.15),new THREE.Vector3(0,-1,0));
+    expect(ray.intersectObjects(grey.walkable).some(hit=>Math.abs(hit.point.y)<1e-6)).toBe(true);
   });
   it("uses the mode width fallback and self-lit shell", () => {
     const result = buildGreybox(bundle, () => true, () => false, emptyScene, "high");
@@ -102,7 +186,8 @@ describe("buildGreybox", () => {
     const floors = [...bundle.floors, { id: "g", renderElevationM: 4 }];
     const nodes = [...bundle.nodes, { id: "c", floorId: "g", position: { x: 10, y: 6, z: 4 } }];
     const stairs = { id: "s", from: "b", to: "c", mode: "stairs", attributes: { width: { m: 4 } } };
-    const result = buildGreybox({ ...bundle, floors, nodes, edges: [bundle.edges[0]!, stairs] } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
+    // Floor at the stair's own ends, so no landing pad is laid there: this checks the passage wall opening only.
+    const result = buildGreybox({ ...bundle, floors, nodes, edges: [bundle.edges[0]!, stairs] } as unknown as StationBundle, () => true, floorOnlyAt(nodes, ["b", "c"]), emptyScene, "high");
     const half = MODE_WIDTH.walk! / 2;
     const side = (z: number) => result.wallSegments.filter((w) => Math.abs(w.az - z) < 1e-6 && Math.abs(w.bz - z) < 1e-6);
     // North in the graph is -z in the renderer: the stair leaves through the -z wall, which opens over its 4 m width.
@@ -218,7 +303,7 @@ describe("buildGreybox", () => {
     const nodes = [...bundle.nodes, { id: "c", floorId: "g", position: { x: 10, y: 6, z: 4 } },
       { id: "p", floorId: "f", position: { x: x0, y: 1, z: 0 } }, { id: "q", floorId: "f", position: { x: x0 + 0.3, y: 6, z: 0 } }];
     const edges = [bundle.edges[0]!, { id: "s", from: "b", to: "c", mode: "stairs" }, { id: "pq", from: "p", to: "q", mode: "walk" }];
-    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
+    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, floorOnlyAt(nodes, ["b", "c"]), emptyScene, "high");
     // Near q the wall is inside the footprint at about 2.6 m up the flight: no full-height wall may stand there.
     const near = result.wallSegments.filter((w) => Math.max(w.az, w.bz) < -5 && Math.min(w.ax, w.bx) > 10 - stairHalf - 0.01 && Math.min(w.ax, w.bx) < 10 - stairHalf + 0.4);
     expect(near.every((w) => w.yMax < 2.9 + 0.5)).toBe(true);
@@ -349,6 +434,61 @@ describe("buildGreybox", () => {
     expect(portalWidthAxis(box).dot(portalDepthAxis(box))).toBeCloseTo(0);
     expect(portalDepthAxis(box).dot(normal)).toBeCloseTo(1);
     expect(box.width * Math.cos(angle)).toBeGreaterThanOrEqual(0.6);
+  });
+
+  it("opens a station wall a floorless run crosses mid-segment, though its floor never changes", () => {
+    const result = buildGreybox(bundle, () => true, () => false, {
+      colliderNear: () => false,
+      wallHit: (a, b, wallsOnly) => wallsOnly && a.x < 4.75 && b.x >= 4.75 ? { x: 4.75, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) } : null,
+    }, "high");
+    expect(result.openings).toHaveLength(1);
+    expect(result.stats.portals).toBe(1);
+    expect(result.openings[0]!.center.x).toBeCloseTo(4.75);
+  });
+
+  it("opens every station wall a floorless run crosses, including one just past its start and more than eight", () => {
+    const walls = [0.03, ...Array.from({ length: 9 }, (_, i) => 1 + i)];
+    const result = buildGreybox(bundle, () => true, () => false, {
+      colliderNear: () => false,
+      wallHit: (a, b, wallsOnly) => {
+        const x = wallsOnly ? walls.find((w) => a.x < w && b.x >= w) : undefined;
+        return x === undefined ? null : { x, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) };
+      },
+    }, "high");
+    expect(result.openings.map((box) => box.center.x).sort((p, q) => p - q)).toEqual(walls.map((w) => expect.closeTo(w)));
+  });
+
+  it("opens a wall through a run's end only when the route carries on beyond it", () => {
+    const wallAt = (x: number) => ({ colliderNear: () => false, wallHit: (a: { x: number }, b: { x: number }, wallsOnly?: boolean) => wallsOnly && Math.min(a.x, b.x) <= x && Math.max(a.x, b.x) >= x ? { x, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) } : null });
+    // Ends on a wall with nothing beyond it: no opening.
+    expect(buildGreybox(bundle, () => true, () => false, wallAt(10), "high").openings).toHaveLength(0);
+    // Crosses a wall 0.02 m before its end: opened, as anywhere else on the segment.
+    expect(buildGreybox(bundle, () => true, () => false, wallAt(9.98), "high").openings).toHaveLength(1);
+    // Starts on a wall that another edge at that node comes through: opened.
+    const through = { ...bundle, nodes: [...bundle.nodes, { id: "c", floorId: "f", position: { x: -5, y: 0, z: 0 } }], edges: [...bundle.edges, { ...bundle.edges[0]!, id: "e2", from: "c", to: "a" }] } as unknown as StationBundle;
+    const openings = buildGreybox(through, () => true, () => false, wallAt(0), "high").openings;
+    expect(openings.some((box) => Math.abs(box.center.x) < 1e-6)).toBe(true);
+    // The same edge closed: nothing carries on beyond the wall, so it stays shut.
+    expect(buildGreybox(through, (e) => e.id !== "e2", () => false, wallAt(0), "high").openings).toHaveLength(0);
+  });
+
+  it("opens both of two differently oriented walls crossed 0.08 m apart", () => {
+    const result = buildGreybox(bundle, () => true, () => false, {
+      colliderNear: () => false,
+      wallHit: (a, b, wallsOnly) => !wallsOnly ? null
+        : a.x < 5 && b.x >= 5 ? { x: 5, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) }
+        : a.x < 5.08 && b.x >= 5.08 ? { x: 5.08, y: 0, z: 0, wallNormal: new THREE.Vector3(Math.SQRT1_2, 0, Math.SQRT1_2) } : null,
+    }, "high");
+    expect(result.openings).toHaveLength(2);
+  });
+
+  it("opens no wall that a floorless run only touches at an inner bend", () => {
+    const bent = { ...bundle, nodes: [bundle.nodes[0]!, { id: "b", floorId: "f", position: { x: 0, y: 5, z: 0 } }], edges: [{ id: "e", from: "a", to: "b", mode: "walk", geometry: [{ x: 0, y: 0 }, { x: 5, y: 0 }, { x: 0, y: 5 }] }] } as unknown as StationBundle;
+    const result = buildGreybox(bent, () => true, () => false, {
+      colliderNear: () => false,
+      wallHit: (a, b, wallsOnly) => wallsOnly && a.x < 5 && b.x >= 5 ? { x: 5, y: 0, z: 0, wallNormal: new THREE.Vector3(1, 0, 0) } : null,
+    }, "high");
+    expect(result.openings).toHaveLength(0);
   });
 
   it("preserves the entire floor and walls of a long straight passage", () => {

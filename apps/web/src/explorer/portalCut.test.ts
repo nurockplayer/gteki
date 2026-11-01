@@ -174,6 +174,17 @@ describe("portal cuts", () => {
     disposePortalCuts(owned); expect(disposed).toHaveBeenCalledOnce(); mesh.getMatrixAt(0, current); expect(current.equals(first)).toBe(true);
     mesh.getMatrixAt(1, current); expect(current.equals(second)).toBe(true); expect(mesh.children).not.toContain(copy);
   });
+  it("leaves animated (dynamic) instances alone instead of freezing copies of them", () => {
+    const root = new THREE.Group();
+    const mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(6, 3, 0.2), new THREE.MeshBasicMaterial(), 1);
+    const first = new THREE.Matrix4().makeTranslation(0, 1.5, 0);
+    mesh.setMatrixAt(0, first); mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); mesh.name = "escalator-steps"; root.add(mesh);
+    const owned = resources(); const result = cutPortals(root, [opening], owned);
+    expect(owned.instances).toHaveLength(0); expect(result.cutMeshes).toBe(0);
+    expect(result.skipped).toContain("escalator-steps: animated instances");
+    const current = new THREE.Matrix4(); mesh.getMatrixAt(0, current); expect(current.equals(first)).toBe(true);
+    expect(mesh.children).toHaveLength(0);
+  });
   it("filters clipped mesh hits for camera and shared casts", () => {
     const geometry = new THREE.PlaneGeometry(6, 3, 224, 224), root = new THREE.Group();
     const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });

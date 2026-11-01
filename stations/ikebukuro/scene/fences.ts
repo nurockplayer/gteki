@@ -20,7 +20,7 @@ function paintLabel(label: { ja: string; en: string }): HTMLCanvasElement {
   const c = document.createElement("canvas");
   c.width = 512;
   c.height = 256;
-  const g = c.getContext("2d")!;
+  const g = c.getContext("2d", { willReadFrequently: true })!;
   g.fillStyle = "rgba(24, 22, 18, 0.82)";
   g.fillRect(0, 0, c.width, c.height);
   // Hazard bands top and bottom: reads as a temporary barrier, not as a wall.
@@ -76,6 +76,7 @@ export function buildFenceCollider(THREE: typeof THREE_NS, fences: AccessFences[
   const collider = new THREE.Mesh(colGeo, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
   collider.name = "access_fences_collider";
   collider.userData.gteki_role = "access_fences_collider";
+  collider.userData.gteki_source = "fence";
   collider.visible = false;
   collider.updateMatrixWorld(true);
   collider.matrixAutoUpdate = false;

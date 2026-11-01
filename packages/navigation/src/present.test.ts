@@ -46,6 +46,26 @@ describe("routePolyline", () => {
     const pts = routePolyline(b, route(b, "start", "goal"));
     expect(pts.map((p) => p.sceneGap ?? false)).toEqual([false, false, true]);
   });
+
+  it("walks baked navmesh paths snap to snap, by direction, and dashes a walk edge without one", () => {
+    const b = createSyntheticBundle([edge("a-start", "a", "start"), edge("a-goal", "a", "goal")]);
+    const navPaths = {
+      // Traversed start -> a, i.e. against the edge: the reverse path is used.
+      "a-start": { forward: [[10, 0.1, 0], [0, 0.1, 0]], reverse: [[0.2, 0.1, 0], [5, 1, 0], [9.8, 0.1, 0]] },
+    };
+    const pts = routePolyline(b, route(b, "start", "goal"), undefined, navPaths);
+    // The first point is the start snap, not the start node: no straight node-to-snap join.
+    expect(pts.map((p) => [p.x, p.y])).toEqual([[0.2, 0.1], [5, 1], [9.8, 0.1], [20, 0]]);
+    expect(pts.map((p) => p.stepIndex)).toEqual([-1, 0, 0, 1]);
+    expect(pts.at(2)?.floorId).toBe(b.nodes.find((n) => n.id === "a")!.floorId);
+    // a-goal has no navmesh path: a fallback, drawn dashed; the navmesh points are not.
+    expect(pts.map((p) => p.sceneGap ?? false)).toEqual([false, false, false, true]);
+  });
+
+  it("leaves graph polylines undashed when the station has no navmesh paths", () => {
+    const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("a-goal", "a", "goal")]);
+    expect(routePolyline(b, route(b, "start", "goal"), undefined, null).some((p) => p.sceneGap)).toBe(false);
+  });
 });
 
 describe("describeRoute", () => {

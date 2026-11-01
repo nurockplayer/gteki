@@ -24,6 +24,9 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The navmesh ratchet compares a PR merge commit with its base parent.
+          fetch-depth: 2
 
       # pnpm version comes from package.json packageManager.
       - uses: pnpm/action-setup@v4

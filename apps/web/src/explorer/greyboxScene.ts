@@ -57,7 +57,7 @@ export function greyboxSceneProbes(colliders: readonly THREE.Object3D[], walls: 
       ray.near = 0; ray.far = radius;
       return dirs.some((dir) => { ray.set(origin, dir); return castCamera(ray, dynamic, dynamicSides).length > 0; });
     },
-    wallHit(a, b) {
+    wallHit(a, b, wallsOnly = false) {
       const from = R(a.x, a.y, a.z), to = R(b.x, b.y, b.z);
       const dx = to.x - from.x, dz = to.z - from.z;
       let best = Infinity;
@@ -74,10 +74,13 @@ export function greyboxSceneProbes(colliders: readonly THREE.Object3D[], walls: 
         const ox = w.ax - from.x, oz = w.az - from.z;
         const t = (ox * wz - oz * wx) / cross, u = (ox * dz - oz * dx) / cross;
         const height = from.y + (to.y - from.y) * t;
-        if (t >= 0 && t <= 1 && u >= 0 && u <= 1 && height + 1.2 >= w.yMin && height + 1.2 <= w.yMax) best = Math.min(best, t);
+        if (t >= 0 && t <= 1 && u >= 0 && u <= 1 && height + 1.2 >= w.yMin && height + 1.2 <= w.yMax && t < best) {
+          best = t;
+          if (wallsOnly) { const len = Math.hypot(wx, wz); wallNormal = len > 1e-9 ? new THREE.Vector3(-wz / len, 0, wx / len) : undefined; }
+        }
       }
       const delta = to.clone().sub(from), length = delta.length();
-      if (length > 1e-9) {
+      if (!wallsOnly && length > 1e-9) {
         ray.set(from.clone().add(new THREE.Vector3(0, 1.2, 0)), delta.divideScalar(length));
         ray.near = 0; ray.far = length;
         const hit = castCamera(ray, colliders, sides)[0];
